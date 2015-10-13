@@ -495,7 +495,7 @@ public class ParameterFormat extends TabularFormat<Object> {
         /*
          * Finished to collect the values. Now transform the values:
          *
-         *   - Singleton value of array types (either primitive or not) are expanded to a list.
+         *   - Singleton value of array types (either primitive or not) are wrapped into a list.
          *   - Values are formatted.
          *   - Value domains are formatted.
          *   - Position of the character on which to do the alignment are remembered.

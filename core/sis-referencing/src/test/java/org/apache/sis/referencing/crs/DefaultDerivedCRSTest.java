@@ -239,6 +239,6 @@ public final strictfp class DefaultDerivedCRSTest extends XMLTestCase {
         /*
          * Test marshalling and compare with the original file.
          */
-        assertMarshalEqualsFile(XML_FILE, crs, "xmlns:*", "xsi:schemaLocation", "gml:id");
+        assertMarshalEqualsFile(XML_FILE, crs, "xmlns:*", "xsi:schemaLocation");
     }
 }

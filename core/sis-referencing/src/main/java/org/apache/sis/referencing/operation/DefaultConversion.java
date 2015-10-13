@@ -17,7 +17,6 @@
 package org.apache.sis.referencing.operation;
 
 import java.util.Map;
-import java.util.AbstractMap;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.measure.converter.ConversionException;
@@ -39,7 +38,6 @@ import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.Workaround;
 import org.apache.sis.util.Utilities;
 
 
@@ -81,7 +79,7 @@ import org.apache.sis.util.Utilities;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.6
- * @version 0.6
+ * @version 0.7
  * @module
  *
  * @see DefaultTransformation
@@ -207,7 +205,18 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
                              final MathTransform       transform,
                              final ParameterValueGroup parameters)
     {
-        super(properties, method, transform, parameters);
+        super(properties, method);
+        if (transform != null) {
+            this.transform = transform;
+            checkDimensions(method, 0, transform, properties);
+        } else if (parameters == null) {
+            throw new IllegalArgumentException(Errors.getResources(properties)
+                    .getString(Errors.Keys.UnspecifiedParameterValues));
+        }
+        if (parameters != null) {
+            this.parameters = parameters.clone();
+        }
+        checkDimensions(properties);
     }
 
     /**
@@ -216,16 +225,58 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
      * typically a defining conversion.
      *
      * @param definition The defining conversion.
-     * @param sourceCRS  The source CRS.
-     * @param targetCRS  The target CRS.
+     * @param source     The new source CRS.
+     * @param target     The new target CRS.
      * @param factory    The factory to use for creating a transform from the parameters or for performing axis changes.
      */
     DefaultConversion(final Conversion definition,
-                      final CoordinateReferenceSystem sourceCRS,
-                      final CoordinateReferenceSystem targetCRS,
+                      final CoordinateReferenceSystem source,
+                      final CoordinateReferenceSystem target,
                       final MathTransformFactory factory) throws FactoryException
     {
-        super(definition, sourceCRS, targetCRS, createMathTransform(definition, sourceCRS, targetCRS, factory));
+        super(definition);
+        int interpDim = ReferencingUtilities.getDimension(super.getInterpolationCRS());
+        if (transform == null) {
+            /*
+             * If the user did not specified explicitely a MathTransform, we will need to create it
+             * from the parameters. This case happen often when creating a ProjectedCRS, because the
+             * user often did not have all needed information when he created the defining conversion:
+             * the length of semi-major and semi-minor axes were often missing. But now we know those
+             * lengths thanks to the 'sourceCRS' argument given to this method. So we can complete the
+             * parameters. This is the job of MathTransformFactory.createBaseToDerived(…).
+             */
+            if (parameters == null) {
+                throw new IllegalArgumentException(Errors.format(Errors.Keys.UnspecifiedParameterValues));
+            }
+            transform = factory.createBaseToDerived(source, parameters, target.getCoordinateSystem());
+        } else {
+            /*
+             * If the user specified explicitely a MathTransform, we may still need to swap or scale axes.
+             * If this conversion is a defining conversion (which is usually the case when creating a new
+             * ProjectedCRS), then DefaultMathTransformFactory has a specialized createBaseToDerived(…)
+             * method for this job.
+             */
+            if (sourceCRS == null && targetCRS == null && factory instanceof DefaultMathTransformFactory) {
+                transform = ((DefaultMathTransformFactory) factory).createBaseToDerived(
+                        source.getCoordinateSystem(), transform,
+                        target.getCoordinateSystem());
+            } else {
+                /*
+                 * If we can not use our SIS factory implementation, or if this conversion is not a defining
+                 * conversion (i.e. if this is the conversion of an existing ProjectedCRS, in which case the
+                 * math transform may not be normalized), then we fallback on a simpler swapAndScaleAxes(…)
+                 * method defined in this class. This is needed for AbstractCRS.forConvention(AxisConvention).
+                 */
+                transform = swapAndScaleAxes(transform, source, sourceCRS, interpDim, true,  factory);
+                transform = swapAndScaleAxes(transform, targetCRS, target, interpDim, false, factory);
+                interpDim = 0;  // Skip createPassThroughTransform(…) since it was handled by swapAndScaleAxes(…).
+            }
+        }
+        if (interpDim != 0) {
+            transform = factory.createPassThroughTransform(interpDim, transform, 0);
+        }
+        sourceCRS = source;
+        targetCRS = target;
     }
 
     /**
@@ -375,78 +426,6 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
                         Errors.Keys.IncompatibleDatum_2, datum.getName(), param));
             }
         }
-    }
-
-    /**
-     * Creates the math transform to be given to the sub-class constructor.
-     * This method is a workaround for RFE #4093999 in Java bug database
-     * ("Relax constraint on placement of this()/super() call in constructors").
-     *
-     * <p>This method may also return the parameters used for creating the math transform because those parameters
-     * may have been augmented with the semi-major and semi-minor axis lengths.  Since those parameter values have
-     * been set on a clone of {@code definition.getParameterValues()}, those values are lost (ignoring MathTransform
-     * internal) if we do not return them here.</p>
-     *
-     * @return The math transform, optionally with the parameters used for creating it.
-     *         Bundled in a {@code Map.Entry} as an ugly workaround for RFE #4093999.
-     */
-    @Workaround(library="JDK", version="1.7")
-    private static Map.Entry<ParameterValueGroup,MathTransform> createMathTransform(
-            final Conversion definition,
-            final CoordinateReferenceSystem sourceCRS,
-            final CoordinateReferenceSystem targetCRS,
-            final MathTransformFactory factory) throws FactoryException
-    {
-        final int interpDim = ReferencingUtilities.getDimension(getInterpolationCRS(definition));
-        MathTransform mt = definition.getMathTransform();
-        final Map.Entry<ParameterValueGroup,MathTransform> pair;
-        if (mt == null) {
-            /*
-             * If the user did not specified explicitely a MathTransform, we will need to create it
-             * from the parameters. This case happen often when creating a ProjectedCRS, because the
-             * user often did not have all needed information when he created the defining conversion:
-             * the length of semi-major and semi-minor axes were often missing. But now we know those
-             * lengths thanks to the 'sourceCRS' argument given to this method. So we can complete the
-             * parameters. This is the job of MathTransformFactory.createBaseToDerived(…).
-             */
-            final ParameterValueGroup parameters = definition.getParameterValues();
-            if (parameters == null) {
-                throw new IllegalArgumentException(Errors.format(Errors.Keys.UnspecifiedParameterValues));
-            }
-            mt = factory.createBaseToDerived(sourceCRS, parameters, targetCRS.getCoordinateSystem());
-            pair = new AbstractMap.SimpleEntry<ParameterValueGroup,MathTransform>(parameters, mt);
-        } else {
-            pair = new AbstractMap.SimpleEntry<ParameterValueGroup,MathTransform>(null, mt);
-            /*
-             * If the user specified explicitely a MathTransform, we may still need to swap or scale axes.
-             * If this conversion is a defining conversion (which is usually the case when creating a new
-             * ProjectedCRS), then DefaultMathTransformFactory has a specialized createBaseToDerived(…)
-             * method for this job.
-             */
-            final CoordinateReferenceSystem mtSource = definition.getSourceCRS();
-            final CoordinateReferenceSystem mtTarget = definition.getTargetCRS();
-            if (mtSource == null && mtTarget == null && factory instanceof DefaultMathTransformFactory) {
-                mt = ((DefaultMathTransformFactory) factory).createBaseToDerived(
-                        sourceCRS.getCoordinateSystem(), mt,
-                        targetCRS.getCoordinateSystem());
-            } else {
-                /*
-                 * If we can not use our SIS factory implementation, or if this conversion is not a defining
-                 * conversion (i.e. if this is the conversion of an existing ProjectedCRS, in which case the
-                 * math transform may not be normalized), then we fallback on a simpler swapAndScaleAxes(…)
-                 * method defined in this class. This is needed for AbstractCRS.forConvention(AxisConvention).
-                 */
-                mt = swapAndScaleAxes(mt, sourceCRS, mtSource, interpDim, true,  factory);
-                mt = swapAndScaleAxes(mt, mtTarget, targetCRS, interpDim, false, factory);
-                pair.setValue(mt);
-                return pair;  // Skip createPassThroughTransform(…) since it was handled by swapAndScaleAxes(…).
-            }
-        }
-        if (interpDim != 0) {
-            mt = factory.createPassThroughTransform(interpDim, mt, 0);
-        }
-        pair.setValue(mt);
-        return pair;
     }
 
     /**

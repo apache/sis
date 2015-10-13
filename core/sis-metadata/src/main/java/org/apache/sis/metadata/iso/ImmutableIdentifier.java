@@ -550,10 +550,11 @@ public class ImmutableIdentifier extends FormattableObject implements Identifier
                      * Other conventions format only for the ID[…] of root element.
                      */
                     if (isRoot && enclosing != null && convention != Convention.INTERNAL) {
-                        if (NameMeaning.usesURN(cs)) {
+                        final String auth = NameMeaning.authority(cs);
+                        if (auth != null) {
                             final String type = NameMeaning.toObjectType(enclosing.getClass());
                             if (type != null) {
-                                formatter.append(new URI(type, cs, version, code));
+                                formatter.append(new URI(type, auth, version, code));
                             }
                         }
                     }
