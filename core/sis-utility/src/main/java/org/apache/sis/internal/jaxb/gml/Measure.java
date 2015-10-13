@@ -25,6 +25,7 @@ import javax.xml.bind.annotation.XmlValue;
 import javax.xml.bind.annotation.XmlAttribute;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.jaxb.Schemas;
+import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.util.DefinitionURI;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.measure.Units;
@@ -146,7 +147,7 @@ public final class Measure {
         if (!asXPointer) {
             final Integer code = Units.getEpsgCode(unit, inAxis);
             if (code != null) {
-                return DefinitionURI.PREFIX + ":uom:EPSG::" + code;
+                return DefinitionURI.PREFIX + ":uom:" + Constants.EPSG + "::" + code;
             }
         }
         if (unit == null || unit.equals(Unit.ONE)) {

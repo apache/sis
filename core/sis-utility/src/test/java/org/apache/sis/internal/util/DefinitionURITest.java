@@ -17,8 +17,6 @@
 package org.apache.sis.internal.util;
 
 import org.opengis.referencing.ReferenceIdentifier;
-import org.apache.sis.internal.simple.SimpleIdentifier;
-import org.apache.sis.internal.simple.SimpleCitation;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
@@ -151,7 +149,7 @@ public final strictfp class DefinitionURITest extends TestCase {
      */
     @Test
     public void testToURN() {
-        final ReferenceIdentifier identifier = new SimpleIdentifier(new SimpleCitation("EPSG"), "4326", false);
-        assertEquals("urn:ogc:def:crs:EPSG::4326", DefinitionURI.format("crs", identifier));
+        assertEquals("urn:ogc:def:crs:EPSG::4326", DefinitionURI.format("crs", "EPSG", null, "4326"));
+        assertNull  ("Authority is not optional.", DefinitionURI.format("crs", null,   null, "4326"));
     }
 }
