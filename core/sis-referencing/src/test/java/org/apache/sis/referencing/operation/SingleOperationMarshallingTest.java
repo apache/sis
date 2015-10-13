@@ -51,11 +51,11 @@ import static org.apache.sis.test.ReferencingAssert.*;
 
 
 /**
- * Tests XML (un)marshalling of various coordinate operation objects.
+ * Tests XML (un)marshalling of single operations (conversions and transformations).
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.6
- * @version 0.6
+ * @version 0.7
  * @module
  */
 @DependsOn({
@@ -63,7 +63,7 @@ import static org.apache.sis.test.ReferencingAssert.*;
     CC_OperationParameterGroupTest.class,
     org.apache.sis.parameter.ParameterMarshallingTest.class
 })
-public final strictfp class OperationMarshallingTest extends XMLTestCase {
+public final strictfp class SingleOperationMarshallingTest extends XMLTestCase {
     /**
      * Creates the test operation method.
      */

@@ -51,7 +51,7 @@ import org.apache.sis.referencing.cs.AxesConvention;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.6
+ * @version 0.7
  * @module
  */
 final class SubTypes implements Comparator<Object> {
@@ -118,6 +118,9 @@ final class SubTypes implements Comparator<Object> {
             }
             if (object instanceof GeocentricCRS) {
                 return DefaultGeocentricCRS.castOrCopy((GeocentricCRS) object);
+            }
+            if (object instanceof DefaultGeodeticCRS) {     // Result of XML unmarshalling - keep as-is.
+                return (DefaultGeodeticCRS) object;
             }
             /*
              * The GeographicCRS and GeocentricCRS types are not part of ISO 19111.
