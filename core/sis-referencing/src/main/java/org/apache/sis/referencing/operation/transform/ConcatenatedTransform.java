@@ -393,8 +393,8 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
     }
 
     /**
-     * Returns all concatenated transforms. The returned list contains only <cite>single</cite>
-     * transforms, i.e. all nested concatenated transforms (if any) have been expanded.
+     * Returns all concatenated transforms. The returned list contains only <cite>single</cite> transforms,
+     * i.e. all nested concatenated transforms (if any) have been flattened.
      *
      * @return All single math transforms performed by this concatenated transform.
      *

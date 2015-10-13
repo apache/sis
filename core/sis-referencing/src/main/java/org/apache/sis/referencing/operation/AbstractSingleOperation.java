@@ -19,6 +19,7 @@ package org.apache.sis.referencing.operation;
 import java.util.Map;
 import java.util.List;
 import java.util.IdentityHashMap;
+import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.XmlElement;
@@ -64,7 +65,7 @@ import org.apache.sis.internal.jdk7.Objects;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.6
- * @version 0.6
+ * @version 0.7
  * @module
  */
 @XmlType(name="AbstractSingleOperationType", propOrder = {
@@ -92,9 +93,10 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
      * The parameter values, or {@code null} for inferring it from the math transform.
      *
      * <p><b>Consider this field as final!</b>
-     * This field is modified only at unmarshalling time by {@link #setParameters(GeneralParameterValue[])}</p>
+     * This field is non-final only for the convenience of constructors and for initialization
+     * at XML unmarshalling time by {@link #setParameters(GeneralParameterValue[])}</p>
      */
-    private ParameterValueGroup parameters;
+    ParameterValueGroup parameters;
 
     /**
      * Creates a coordinate operation from the given properties.
@@ -121,50 +123,23 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
     }
 
     /**
-     * Creates a defining conversion from the given transform and/or parameters.
-     * See {@link DefaultConversion#DefaultConversion(Map, OperationMethod, MathTransform, ParameterValueGroup)}
-     * for more information.
+     * Creates a new coordinate operation initialized from the given properties.
+     * It is caller's responsibility to:
+     *
+     * <ul>
+     *   <li>Set the following fields:<ul>
+     *     <li>{@link #sourceCRS}</li>
+     *     <li>{@link #targetCRS}</li>
+     *     <li>{@link #transform}</li>
+     *     <li>{@link #parameters}</li>
+     *   </ul></li>
+     *   <li>Invoke {@link #checkDimensions(Map)} after the above-cited fields have been set.</li>
+     * </ul>
      */
-    AbstractSingleOperation(final Map<String,?>       properties,
-                            final OperationMethod     method,
-                            final MathTransform       transform,
-                            final ParameterValueGroup parameters)
-    {
-        super(properties, null, null, null, transform);
+    AbstractSingleOperation(final Map<String,?> properties, final OperationMethod method) {
+        super(properties);
         ArgumentChecks.ensureNonNull("method", method);
-        if (transform != null) {
-            checkDimensions(method, 0, transform, properties);
-        } else if (parameters == null) {
-            throw new IllegalArgumentException(Errors.getResources(properties)
-                    .getString(Errors.Keys.UnspecifiedParameterValues));
-        }
         this.method = method;
-        this.parameters = (parameters != null) ? parameters.clone() : null;
-    }
-
-    /**
-     * Creates a new coordinate operation with the same values than the specified defining conversion,
-     * except for the source CRS, target CRS and the math transform which are set the given values.
-     *
-     * <p>This constructor is for {@link DefaultConversion} usage only,
-     * in order to create a "real" conversion from a defining conversion.</p>
-     *
-     * @param definition The defining conversion.
-     * @param sourceCRS  The source CRS.
-     * @param targetCRS  The target CRS.
-     * @param transform  The math transform, optionally with the parameters used for creating it.
-     *        Bundled in a {@code Map.Entry} as an ugly workaround for RFE #4093999 in Java bug database
-     *        ("Relax constraint on placement of this()/super() call in constructors").
-     */
-    AbstractSingleOperation(final SingleOperation definition,
-                            final CoordinateReferenceSystem sourceCRS,
-                            final CoordinateReferenceSystem targetCRS,
-                            final Map.Entry<ParameterValueGroup,MathTransform> transform)
-    {
-        super(definition, sourceCRS, targetCRS, transform.getValue());
-        method = definition.getMethod();
-        final ParameterValueGroup p = transform.getKey();
-        parameters = (p != null) ? p : getParameterValues(definition);
     }
 
     /**
@@ -511,17 +486,22 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
     }
 
     /**
-     * Invoked at unmarshalling time for creating the math transform from available information.
-     * Can return {@code null} if there is not enough information.
+     * Invoked by JAXB after unmarshalling. This method needs information provided by:
+     *
+     * <ul>
+     *   <li>{@link #setSource(CoordinateReferenceSystem)}</li>
+     *   <li>{@link #setTarget(CoordinateReferenceSystem)}</li>
+     *   <li>{@link #setParameters(GeneralParameterValue[])}</li>
+     * </ul>
+     *
+     * @see <a href="http://issues.apache.org/jira/browse/SIS-291">SIS-291</a>
      */
-    @Override
-    final MathTransform createMathTransform() {
-        if (parameters != null) try {
-            return DefaultFactories.forBuildin(MathTransformFactory.class).createBaseToDerived(
-                    super.getSourceCRS(), parameters, super.getTargetCRS().getCoordinateSystem());
+    private void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
+        if (transform == null && sourceCRS != null && targetCRS != null && parameters != null) try {
+            transform = DefaultFactories.forBuildin(MathTransformFactory.class)
+                    .createBaseToDerived(sourceCRS, parameters, targetCRS.getCoordinateSystem());
         } catch (FactoryException e) {
-            Context.warningOccured(Context.current(), AbstractCoordinateOperation.class, "createMathTransform", e, true);
+            Context.warningOccured(Context.current(), AbstractSingleOperation.class, "afterUnmarshal", e, true);
         }
-        return super.createMathTransform();
     }
 }

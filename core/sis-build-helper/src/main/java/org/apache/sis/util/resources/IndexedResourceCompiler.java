@@ -143,6 +143,7 @@ class IndexedResourceCompiler implements FilenameFilter, Comparator<Object> {
      * @throws ResourceCompilerException If an error occurred.
      * @return The number of errors found.
      */
+    @SuppressWarnings("ForLoopReplaceableByForEach")
     public int run() throws ResourceCompilerException {
         if (!sourceDirectory.isDirectory()) {
             throw new ResourceCompilerException(sourceDirectory + " not found or is not a directory.");
@@ -329,18 +330,18 @@ class IndexedResourceCompiler implements FilenameFilter, Comparator<Object> {
              * Checks if the expected arguments count (according to naming conventions)
              * matches the arguments count found in the MessageFormat pattern.
              */
-            final int argumentCount;
+            int argumentCount = 0;
+            String resource = value;
             final int index = key.lastIndexOf(ARGUMENT_COUNT_PREFIX);
-            if (index < 0) {
-                argumentCount = 0;
-                resources.put(key, value); // Text will not be formatted using MessageFormat.
-            } else try {
+            if (index >= 0) try {
                 String suffix = key.substring(index + ARGUMENT_COUNT_PREFIX.length());
                 argumentCount = Integer.parseInt(suffix);
-                resources.put(key, message.toPattern());
+                resource = message.toPattern();
             } catch (NumberFormatException exception) {
-                warning(file, key, "Bad number in resource key", exception);
-                continue;
+                // No warning - allow use of underscore for other purpose.
+            }
+            if (resources.put(key, resource) != null) {
+                warning(file, key, "Duplicated key", null);
             }
             final int expected = message.getFormatsByArgumentIndex().length;
             if (argumentCount != expected) {
@@ -620,6 +621,7 @@ search: for (int i=0; i<buffer.length(); i++) { // Length of 'buffer' will vary.
      *
      * @param message The message to log.
      */
+    @SuppressWarnings("UseOfSystemOutOrSystemErr")
     protected void info(final String message) {
         System.out.println(message);
     }
@@ -630,6 +632,7 @@ search: for (int i=0; i<buffer.length(); i++) { // Length of 'buffer' will vary.
      *
      * @param message The message to log.
      */
+    @SuppressWarnings("UseOfSystemOutOrSystemErr")
     protected void warning(final String message) {
         System.out.println(message);
     }

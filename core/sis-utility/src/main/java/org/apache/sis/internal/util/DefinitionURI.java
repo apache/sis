@@ -18,7 +18,6 @@ package org.apache.sis.internal.util;
 
 import java.util.Map;
 import java.util.Collections;
-import org.opengis.referencing.ReferenceIdentifier;
 
 import static org.apache.sis.util.CharSequences.*;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
@@ -97,9 +96,10 @@ import static org.apache.sis.internal.util.Utilities.appendUnicodeIdentifier;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.4
+ * @version 0.7
  * @module
  *
+ * @see org.apache.sis.internal.metadata.NameMeaning
  * @see <a href="http://portal.opengeospatial.org/files/?artifact_id=24045">Definition identifier URNs in OGC namespace</a>
  * @see <a href="http://www.opengeospatial.org/ogcna">OGC Naming Authority</a>
  */
@@ -132,17 +132,25 @@ public final class DefinitionURI {
 
     /**
      * The type part of a URI, or {@code null} if none (empty).
+     * Note that the set of valid types in OGC namespace is restricted.
+     * See class javadoc for more information.
      *
      * <div class="note"><b>Example:</b>
      * In the {@code "urn:ogc:def:crs:EPSG:8.2:4326"} URN, this is {@code "crs"}.</div>
+     *
+     * @see org.apache.sis.internal.metadata.NameMeaning#toObjectType(Class)
      */
     public String type;
 
     /**
      * The authority part of a URI, or {@code null} if none (empty).
+     * Note that the set of valid authorities in OGC namespace is restricted.
+     * See class javadoc for more information.
      *
      * <div class="note"><b>Example:</b>
      * In the {@code "urn:ogc:def:crs:EPSG:8.2:4326"} URN, this is {@code "EPSG"}.</div>
+     *
+     * @see org.apache.sis.internal.metadata.NameMeaning#authority(String)
      */
     public String authority;
 
@@ -451,19 +459,21 @@ public final class DefinitionURI {
      * version and code are appended omitting any characters that are not valid for a Unicode identifier.
      * If some information are missing in the given identifier, then this method returns {@code null}.
      *
-     * @param  type The object type, as one of the type documented in class javadoc, or {@code null}.
-     * @param  identifier The identifier to format.
-     * @return An identifier using the URN syntax, or {@code null} if an information is missing.
+     * @param  type      The object type as one of the types documented in class javadoc, or {@code null}.
+     * @param  authority The authority as one of the values documented in class javadoc, or {@code null}.
+     * @param  version   The code version, or {@code null}. This is the only optional information.
+     * @param  code      The code, or {@code null}.
+     * @return An identifier using the URN syntax, or {@code null} if a mandatory information is missing.
      */
-    public static String format(final String type, final ReferenceIdentifier identifier) {
+    public static String format(final String type, final String authority, final String version, final String code) {
         final StringBuilder buffer = new StringBuilder(PREFIX);
         for (int p=0; p<4; p++) {
             final String component;
             switch (p) {
-                case 0:  component = type;                      break;
-                case 1:  component = identifier.getCodeSpace(); break;
-                case 2:  component = identifier.getVersion();   break;
-                case 3:  component = identifier.getCode();      break;
+                case 0:  component = type;      break;
+                case 1:  component = authority; break;
+                case 2:  component = version;   break;
+                case 3:  component = code;      break;
                 default: throw new AssertionError(p);
             }
             if (!appendUnicodeIdentifier(buffer.append(SEPARATOR), '\u0000', component, ".-", false)) {

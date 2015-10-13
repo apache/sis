@@ -330,7 +330,7 @@ public final class MathTransforms extends Static {
      * <ul>
      *   <li>If {@code transform} is {@code null}, returns an empty list.</li>
      *   <li>Otherwise if {@code transform} is the result of a call to a {@code concatenate(…)} method,
-     *       returns all components. All nested concatenated transforms (if any) will be expanded.</li>
+     *       returns all components. All nested concatenated transforms (if any) will be flattened.</li>
      *   <li>Otherwise returns the given transform in a list of size 1.</li>
      * </ul>
      *

@@ -38,7 +38,7 @@ import static org.apache.sis.internal.util.Citations.getCodeSpace;
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.6
+ * @version 0.7
  * @module
  */
 @XmlType(name = "CodeType")
@@ -194,7 +194,9 @@ public final class Code {
              */
             if (fallback != null) {
                 if (!isHTTP) {
-                    final String urn = DefinitionURI.format(NameMeaning.toObjectType(type), fallback);
+                    final String urn = DefinitionURI.format(NameMeaning.toObjectType(type),
+                                                            NameMeaning.authority(fallback.getCodeSpace()),
+                                                            fallback.getVersion(), fallback.getCode());
                     if (urn != null) {
                         final Code code = new Code();
                         /*
