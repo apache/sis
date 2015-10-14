@@ -180,7 +180,7 @@ public class AbstractCoordinateOperation extends AbstractIdentifiedObject implem
      *
      * <p><b>Consider this field as final!</b>
      * This field is non-final only for the convenience of constructors and for initialization
-     * at XML unmarshalling time by {@link #afterUnmarshal(Unmarshaller, Object)}</p>
+     * at XML unmarshalling time by {@link AbstractSingleOperation#afterUnmarshal(Unmarshaller, Object)}</p>
      */
     MathTransform transform;
 

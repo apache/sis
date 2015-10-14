@@ -16,8 +16,9 @@
  */
 package org.apache.sis.referencing.operation;
 
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import javax.xml.bind.JAXBException;
+import org.opengis.referencing.crs.GeodeticCRS;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.test.Validators;
 import org.apache.sis.test.DependsOn;
@@ -66,9 +67,11 @@ public class DefaultConcatenatedOperationTest extends XMLTestCase {
         assertIdentifierEquals("targetCRS.identifier", "test", "test", null, "target",       getSingleton(targetCRS.getIdentifiers()));
         assertIdentifierEquals(    "step1.identifier", "test", "test", null, "step-1",       getSingleton(step1    .getIdentifiers()));
         assertIdentifierEquals(    "step2.identifier", "test", "test", null, "step-2",       getSingleton(step2    .getIdentifiers()));
-        assertSame("tmp CRS",   step1.getTargetCRS(), step2.getSourceCRS());
+        assertInstanceOf("sourceCRS", GeodeticCRS.class, sourceCRS);
+        assertInstanceOf("targetCRS", GeodeticCRS.class, targetCRS);
         assertSame("sourceCRS", step1.getSourceCRS(), sourceCRS);
         assertSame("targetCRS", step2.getTargetCRS(), targetCRS);
+        assertSame("tmp CRS",   step1.getTargetCRS(), step2.getSourceCRS());
         /*
          * Test marshalling and compare with the original file.
          */
