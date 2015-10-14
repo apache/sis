@@ -84,6 +84,13 @@ public final class SC_CRS extends PropertyType<SC_CRS, CoordinateReferenceSystem
     /**
      * Invoked by JAXB at unmarshalling time for storing the result temporarily.
      *
+     * <div class="note"><b>Note:</b>
+     * the unmarshalled CRS may be of {@code GeodeticCRS} type, which is not the most specific GeoAPI type.
+     * But the {@code GeographicCRS} and {@code GeocentricCRS} sub-types are currently not part of ISO 19111.
+     * We could substitute the CRS by a more specific type here, but this would break the references specified
+     * by {@code xlink:href} attributes. For now we live with the {@code GeodeticCRS} as-is — most of Apache SIS
+     * should be able to work with that.</div>
+     *
      * @param crs The unmarshalled element.
      */
     public void setElement(final AbstractCRS crs) {
