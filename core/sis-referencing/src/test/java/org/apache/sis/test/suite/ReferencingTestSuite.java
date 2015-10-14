@@ -26,7 +26,7 @@ import org.junit.BeforeClass;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.6
+ * @version 0.7
  * @module
  */
 @Suite.SuiteClasses({
@@ -139,6 +139,7 @@ import org.junit.BeforeClass;
     org.apache.sis.referencing.operation.DefaultTransformationTest.class,
     org.apache.sis.referencing.operation.DefaultConversionTest.class,
     org.apache.sis.referencing.operation.SingleOperationMarshallingTest.class,
+    org.apache.sis.referencing.operation.DefaultPassThroughOperationTest.class,
     org.apache.sis.referencing.operation.DefaultConcatenatedOperationTest.class,
     org.apache.sis.referencing.crs.DefaultProjectedCRSTest.class,
     org.apache.sis.referencing.crs.DefaultDerivedCRSTest.class,
