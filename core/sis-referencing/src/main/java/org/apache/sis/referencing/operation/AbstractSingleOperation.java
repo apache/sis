@@ -496,6 +496,8 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
      * @see <a href="http://issues.apache.org/jira/browse/SIS-291">SIS-291</a>
      */
     private void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
+        final CoordinateReferenceSystem sourceCRS = super.getSourceCRS();
+        final CoordinateReferenceSystem targetCRS = super.getTargetCRS();
         if (transform == null && sourceCRS != null && targetCRS != null && parameters != null) try {
             transform = DefaultFactories.forBuildin(MathTransformFactory.class)
                     .createBaseToDerived(sourceCRS, parameters, targetCRS.getCoordinateSystem());

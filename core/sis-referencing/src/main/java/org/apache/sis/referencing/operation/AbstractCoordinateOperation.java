@@ -103,6 +103,7 @@ import java.util.Objects;
 @XmlRootElement(name = "AbstractCoordinateOperation")
 @XmlSeeAlso({
     AbstractSingleOperation.class,
+    DefaultPassThroughOperation.class,
     DefaultConcatenatedOperation.class
 })
 public class AbstractCoordinateOperation extends AbstractIdentifiedObject implements CoordinateOperation {
