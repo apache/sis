@@ -38,7 +38,7 @@ import static org.apache.sis.internal.referencing.provider.ObliqueStereographic.
  * <cite>Oblique Stereographic</cite> projection (EPSG code 9809).
  * The formulas used below are from the EPSG guide.
  *
- * {@section References}
+ * <div class="section">References</div>
  * <ul>
  *   <li>{@code libproj4} is available at
  *       <a href = http://www.iogp.org/pubs/373-07-2.pdf>EPSG guide</a>.<br>
@@ -46,8 +46,8 @@ import static org.apache.sis.internal.referencing.provider.ObliqueStereographic.
  *        {@code pj_fwd.c}, {@code pj_inv.c} and {@code lib_proj.h}</li>
  * </ul>
  *
- * @author  Martin Desruisseaux (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
+ * @author  Martin Desruisseaux (Geomatys)
  * @since   0.6
  * @version 0.7
  * @module
@@ -371,4 +371,17 @@ public class ObliqueStereographic extends NormalizedProjection {
         }
         throw new ProjectionException(Errors.Keys.NoConvergence);
     }
+
+//    /**
+//     * Provides the transform equations for the spherical case of the Oblique Stereographic projection.
+//     *
+//     * @author  Rémi Maréchal (Geomatys)
+//     * @author  Martin Desruisseaux (Geomatys)
+//     * @since   0.6
+//     * @version 0.7
+//     * @module
+//     */
+//    private static final class Spherical extends ObliqueStereographic {
+//
+//    }
 }
