@@ -56,7 +56,7 @@ public class ObliqueStereographic extends NormalizedProjection {
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = -5098015759558831875L;
+    private static final long serialVersionUID = -1454098847621943639L;
 
     /**
      * Conformal latitude of origin only use
@@ -371,17 +371,4 @@ public class ObliqueStereographic extends NormalizedProjection {
         }
         throw new ProjectionException(Errors.Keys.NoConvergence);
     }
-
-//    /**
-//     * Provides the transform equations for the spherical case of the Oblique Stereographic projection.
-//     *
-//     * @author  Rémi Maréchal (Geomatys)
-//     * @author  Martin Desruisseaux (Geomatys)
-//     * @since   0.6
-//     * @version 0.7
-//     * @module
-//     */
-//    private static final class Spherical extends ObliqueStereographic {
-//
-//    }
 }
