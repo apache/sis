@@ -94,6 +94,6 @@ public final class ObliqueStereographic extends AbstractStereographic {
      */
     @Override
     protected NormalizedProjection createProjection(Parameters parameters) throws ParameterNotFoundException {
-        throw new UnsupportedOperationException("Not supported yet.");  // TODO
+        return new org.apache.sis.referencing.operation.projection.ObliqueStereographic(this, parameters);
     }
 }

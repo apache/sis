@@ -110,6 +110,7 @@ import org.junit.BeforeClass;
     org.apache.sis.referencing.operation.projection.LambertConicConformalTest.class,
     org.apache.sis.referencing.operation.projection.TransverseMercatorTest.class,
     org.apache.sis.referencing.operation.projection.PolarStereographicTest.class,
+    org.apache.sis.referencing.operation.projection.ObliqueStereographicTest.class,
 
     // Coordinate Reference System components.
     org.apache.sis.referencing.datum.BursaWolfParametersTest.class,
