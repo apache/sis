@@ -55,8 +55,9 @@ import static org.apache.sis.internal.util.DoubleDouble.verbatim;
  * in some relatively rare scenarios like 1 ± x where <var>x</var> is much smaller than 1.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @author  Rémi Marechal (Geomatys)
  * @since   0.6
- * @version 0.6
+ * @version 0.7
  * @module
  */
 final class Initializer {
@@ -295,7 +296,7 @@ final class Initializer {
         final DoubleDouble t = verbatim(sinφ);
         t.square();
         t.multiply(excentricitySquared);
-        
+
         // Compute 1 - ℯ²⋅sin²φ.  Since  ℯ²⋅sin²φ  may be small,
         // this is where double-double arithmetic has more value.
         t.negate();
@@ -304,28 +305,25 @@ final class Initializer {
     }
 
     /**
-     * Returns the radius of the conformal sphere.
+     * Returns the radius of the conformal sphere at a given latitude.
+     * The radius of conformal sphere is computed from ρ, which is the radius of curvature in
+     * the meridian at latitude φ, and ν which is the radius of curvature in the prime vertical,
+     * as below:
      *
-     * The radius of conformal sphere is computed from ρ,
-     * which is the radius of curvature in the meridian,
-     * and ν which is the radius of curvature in the prime vertical,
-     * like follow :
+     * <blockquote>Rc = √(ρ⋅ν) = √(1 – ℯ²) / (1 – ℯ²sin²φ)</blockquote>
      *
-     * <blockquote>Rc = √(ρ ν) = √(1 – e²) / (1 – e²sin²φ)</blockquote>
+     * This is a function of latitude and therefore not constant. When used for spherical projections
+     * the use of φ₀ (or φ₁ as relevant to method) for φ is suggested, except if the projection is
+     * equal area when the radius of authalic sphere should be used.
      *
-     * This is a function of latitude and therefore not constant. When used for
-     * spherical projections the use of φO(or φ1as relevant to method) for φis
-     * suggested, except if the projection is equal area
-     * when the radius of authalic sphere should be used.
-     *
-     * @param sinφ The sine of the φ latitude.
-     * @return radius of the conformal sphere at latitude φ.
+     * @param  sinφ The sine of the φ latitude.
+     * @return Radius of the conformal sphere at latitude φ.
      */
     final double radiusOfConformalSphere(final double sinφ) {
         final DoubleDouble Rc = verbatim(1);
-        Rc.subtract(excentricitySquared); //-- 1 - e²
-        Rc.sqrt();                        //-- √1 - e²
-        Rc.divide(rν2(sinφ));           //-- (√1 - e²) * (1 / (1 - e²sin²φ))
+        Rc.subtract(excentricitySquared);   //-- 1 - ℯ²
+        Rc.sqrt();                          //-- √(1 - ℯ²)
+        Rc.divide(rν2(sinφ));               //-- √(1 - ℯ²) / (1 - ℯ²sin²φ)
         return Rc.value;
     }
 

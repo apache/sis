@@ -33,39 +33,39 @@ import org.opengis.test.TestCase;
 
 
 /**
- * Test about computing method from
- * <a href = http://www.iogp.org/pubs/373-07-2.pdf> EPSG guide</a>
+ * Tests the {@link Initializer} class.
  *
- * @author Rémi Marechal (Geomatys).
- * @author Martin Desruisseaux (Geomatys)
+ * @author  Rémi Marechal (Geomatys)
+ * @author  Martin Desruisseaux (Geomatys)
  * @since   0.7
  * @version 0.7
  * @module
  */
 public strictfp class InitializerTest extends TestCase{
     /**
-     * Test computing of Radius of conformal Sphere.
+     * Tests the {@link Initializer#radiusOfConformalSphere(double)} method.
+     * This test compute the Radius of conformal Sphere using the values given by the
+     * <a href = http://www.iogp.org/pubs/373-07-2.pdf>EPSG guide</a> for the Stereographic projection.
      *
      * @see Initializer#radiusOfConformalSphere(double)
      */
     @Test
-    public void testConformalSphereRadius() {
-
-        final EnumMap<NormalizedProjection.ParameterRole, ParameterDescriptor<Double>> roles = new EnumMap<>(NormalizedProjection.ParameterRole.class);
+    public void testRadiusOfConformalSphere() {
+        final EnumMap<NormalizedProjection.ParameterRole, ParameterDescriptor<Double>> roles =
+                new EnumMap<>(NormalizedProjection.ParameterRole.class);
         roles.put(NormalizedProjection.ParameterRole.CENTRAL_MERIDIAN, LONGITUDE_OF_ORIGIN);
         roles.put(NormalizedProjection.ParameterRole.SCALE_FACTOR,     SCALE_FACTOR);
         roles.put(NormalizedProjection.ParameterRole.FALSE_EASTING,    FALSE_EASTING);
         roles.put(NormalizedProjection.ParameterRole.FALSE_NORTHING,   FALSE_NORTHING);
 
         final OperationMethod op = new ObliqueStereographic();
-
         final ParameterValueGroup p = op.getParameters().createValue();
 
-        //-- implicit names from OGC.
+        //-- Implicit parameters (OGC names).
         p.parameter("semi_major").setValue(6377397.155);
         p.parameter("inverse_flattening").setValue(299.15281);
 
-        //-- Name parameters from Epsg registry
+        //-- Explicit parameters from EPSG registry
         p.parameter("Latitude of natural origin").setValue(52.156160556);
         p.parameter("Longitude of natural origin").setValue(5.387638889);
         p.parameter("Scale factor at natural origin").setValue(0.9999079);
@@ -74,6 +74,7 @@ public strictfp class InitializerTest extends TestCase{
 
         final Initializer initializer = new Initializer(op, (Parameters) p, roles, (byte) 0);
 
-        assertEquals("Conformal Sphere Radius", 6382644.571, 6377397.155 * initializer.radiusOfConformalSphere(Math.sin(Math.toRadians(52.156160556))), Formulas.LINEAR_TOLERANCE);
+        assertEquals("Conformal Sphere Radius", 6382644.571, 6377397.155 *
+                initializer.radiusOfConformalSphere(Math.sin(Math.toRadians(52.156160556))), Formulas.LINEAR_TOLERANCE);
     }
 }
