@@ -102,6 +102,7 @@ import org.junit.BeforeClass;
     org.apache.sis.referencing.operation.transform.DefaultMathTransformFactoryTest.class,
 
     // Test map projections. Those tests need the providers tested above.
+    org.apache.sis.referencing.operation.projection.InitializerTest.class,
     org.apache.sis.referencing.operation.projection.NormalizedProjectionTest.class,
     org.apache.sis.referencing.operation.projection.EquirectangularTest.class,
     org.apache.sis.referencing.operation.projection.ConformalProjectionTest.class,
