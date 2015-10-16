@@ -19,6 +19,7 @@ package org.apache.sis.internal.referencing.provider;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.NoSuchElementException;
+import javax.xml.bind.annotation.XmlTransient;
 import javax.measure.unit.SI;
 import org.opengis.util.FactoryException;
 import org.opengis.util.InternationalString;
@@ -57,6 +58,7 @@ import static org.opengis.metadata.Identifier.AUTHORITY_KEY;
  * @version 0.6
  * @module
  */
+@XmlTransient
 public abstract class MapProjection extends AbstractProvider {
     /**
      * Serial number for inter-operability with different versions.

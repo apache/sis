@@ -37,6 +37,7 @@ import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.internal.referencing.ExtentSelector;
+import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.util.logging.Logging;
@@ -122,7 +123,7 @@ import java.util.Objects;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4
- * @version 0.5
+ * @version 0.7
  * @module
  *
  * @see DefaultEllipsoid
@@ -153,15 +154,23 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
 
     /**
      * The ellipsoid.
+     *
+     * <p><b>Consider this field as final!</b>
+     * This field is modified only at unmarshalling time by {@link #setEllipsoid(Ellipsoid)}</p>
+     *
+     * @see #getEllipsoid()
      */
-    @XmlElement
-    private final Ellipsoid ellipsoid;
+    private Ellipsoid ellipsoid;
 
     /**
      * The prime meridian.
+     *
+     * <p><b>Consider this field as final!</b>
+     * This field is modified only at unmarshalling time by {@link #setPrimeMeridian(PrimeMeridian)}</p>
+     *
+     * @see #getPrimeMeridian()
      */
-    @XmlElement
-    private final PrimeMeridian primeMeridian;
+    private PrimeMeridian primeMeridian;
 
     /**
      * Bursa-Wolf parameters for datum shifts, or {@code null} if none.
@@ -313,6 +322,7 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
      * @return The ellipsoid.
      */
     @Override
+    @XmlElement(name = "ellipsoid", required = true)
     public Ellipsoid getEllipsoid() {
         return ellipsoid;
     }
@@ -323,6 +333,7 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
      * @return The prime meridian.
      */
     @Override
+    @XmlElement(name = "primeMeridian", required = true)
     public PrimeMeridian getPrimeMeridian() {
         return primeMeridian;
     }
@@ -590,8 +601,38 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
      * reserved to JAXB, which will assign values to the fields using reflexion.
      */
     private DefaultGeodeticDatum() {
-        ellipsoid     = null;
-        primeMeridian = null;
-        bursaWolf     = null;
+        bursaWolf = null;
+        /*
+         * Ellipsoid and PrimeMeridian are mandatory for SIS working. We do not verify their presence here
+         * (because the verification would have to be done in an 'afterMarshal(…)' method and throwing an
+         * exception in that method causes the whole unmarshalling to fail). But the CD_GeodeticDatum
+         * adapter does some verifications.
+         */
+    }
+
+    /**
+     * Invoked by JAXB only at unmarshalling time.
+     *
+     * @see #getEllipsoid()
+     */
+    private void setEllipsoid(final Ellipsoid value) {
+        if (ellipsoid == null) {
+            ellipsoid = value;
+        } else {
+            ReferencingUtilities.propertyAlreadySet(DefaultGeodeticDatum.class, "setEllipsoid", "ellipsoid");
+        }
+    }
+
+    /**
+     * Invoked by JAXB only at unmarshalling time.
+     *
+     * @see #getPrimeMeridian()
+     */
+    private void setPrimeMeridian(final PrimeMeridian value) {
+        if (primeMeridian == null) {
+            primeMeridian = value;
+        } else {
+            ReferencingUtilities.propertyAlreadySet(DefaultGeodeticDatum.class, "setPrimeMeridian", "primeMeridian");
+        }
     }
 }

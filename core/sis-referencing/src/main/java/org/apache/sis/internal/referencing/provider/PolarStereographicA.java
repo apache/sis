@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.referencing.provider;
 
+import javax.xml.bind.annotation.XmlTransient;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.apache.sis.metadata.iso.citation.Citations;
@@ -33,6 +34,7 @@ import org.apache.sis.parameter.ParameterBuilder;
  *
  * @see <a href="http://www.remotesensing.org/geotiff/proj_list/polar_stereographic.html">Polar Stereographic on RemoteSensing.org</a>
  */
+@XmlTransient
 public final class PolarStereographicA extends AbstractStereographic {
     /**
      * For cross-version compatibility.

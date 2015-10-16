@@ -89,5 +89,6 @@ public final class CD_PrimeMeridian extends PropertyType<CD_PrimeMeridian, Prime
      */
     public void setElement(final DefaultPrimeMeridian datum) {
         metadata = datum;
+        if (datum.getAngularUnit() == null) incomplete("angularUnit");
     }
 }

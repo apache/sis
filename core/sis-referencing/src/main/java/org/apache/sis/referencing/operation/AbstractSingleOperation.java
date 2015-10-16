@@ -63,12 +63,18 @@ import java.util.Objects;
  * Shared implementation for {@link DefaultConversion} and {@link DefaultTransformation}.
  * Does not need to be public, as users should handle only conversions or transformations.
  *
+ * <p><b>Note:</b> this class is not strictly equivalent to {@code <gml:AbstractSingleOperationType>}
+ * because the GML schema does not define the method and parameters in this base class. Instead, they
+ * repeat those two elements in the {@code <gml:Conversion>} and {@code <gml:Transformation>} subtypes.
+ * An other difference is that SIS does not use {@code AbstractSingleOperation} as the base class of
+ * {@link DefaultPassThroughOperation}.</p>
+ *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.6
  * @version 0.7
  * @module
  */
-@XmlType(name="AbstractSingleOperationType", propOrder = {
+@XmlType(name = "AbstractSingleOperationType", propOrder = {    // See note in class javadoc.
     "method",
     "parameters"
 })
@@ -85,9 +91,13 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
 
     /**
      * The operation method.
+     *
+     * <p><b>Consider this field as final!</b>
+     * This field is modified only at unmarshalling time by {@link #setMethod(OperationMethod)}</p>
+     *
+     * @see #getMethod()
      */
-    @XmlElement
-    private final OperationMethod method;
+    private OperationMethod method;
 
     /**
      * The parameter values, or {@code null} for inferring it from the math transform.
@@ -269,6 +279,7 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
      * @return A description of the operation method.
      */
     @Override
+    @XmlElement(name = "method", required = true)
     public OperationMethod getMethod() {
         return method;
     }
@@ -408,7 +419,24 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
      * reserved to JAXB, which will assign values to the fields using reflexion.
      */
     AbstractSingleOperation() {
-        method = null;
+        /*
+         * The method is mandatory for SIS working. We do not verify its presence here because the verification
+         * would have to be done in an 'afterMarshal(…)' method and throwing an exception in that method causes
+         * the whole unmarshalling to fail. But the CC_CoordinateOperation adapter does some verifications.
+         */
+    }
+
+    /**
+     * Invoked by JAXB at unmarshalling time.
+     *
+     * @see #getMethod()
+     */
+    private void setMethod(final OperationMethod value) {
+        if (method == null) {
+            method = value;
+        } else {
+            ReferencingUtilities.propertyAlreadySet(AbstractSingleOperation.class, "setMethod", "method");
+        }
     }
 
     /**
@@ -496,6 +524,8 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
      * @see <a href="http://issues.apache.org/jira/browse/SIS-291">SIS-291</a>
      */
     private void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
+        final CoordinateReferenceSystem sourceCRS = super.getSourceCRS();
+        final CoordinateReferenceSystem targetCRS = super.getTargetCRS();
         if (transform == null && sourceCRS != null && targetCRS != null && parameters != null) try {
             transform = DefaultFactories.forBuildin(MathTransformFactory.class)
                     .createBaseToDerived(sourceCRS, parameters, targetCRS.getCoordinateSystem());

@@ -18,6 +18,7 @@ package org.apache.sis.referencing.cs;
 
 import java.util.Map;
 import java.util.List;
+import javax.xml.bind.annotation.XmlTransient;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.apache.sis.internal.metadata.AxisDirections;
@@ -54,6 +55,7 @@ import static org.apache.sis.util.Utilities.deepEquals;
  * @version 0.6
  * @module
  */
+@XmlTransient
 public class DefaultCompoundCS extends AbstractCS {
     /**
      * Serial number for inter-operability with different versions.
@@ -168,8 +170,9 @@ public class DefaultCompoundCS extends AbstractCS {
      *
      * @return All coordinate systems in this compound CS.
      */
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
     public List<CoordinateSystem> getComponents() {
-        return components;
+        return components;  // Unmodifiable.
     }
 
     /*
