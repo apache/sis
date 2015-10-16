@@ -20,8 +20,6 @@
 
 <gml:ConcatenatedOperation xsi:schemaLocation = "http://www.opengis.net/gml/3.2 http://schemas.opengis.net/gml/3.2.1/datums.xsd"
                            xmlns:gml          = "http://www.opengis.net/gml/3.2"
-                           xmlns:gmd          = "http://www.isotc211.org/2005/gmd"
-                           xmlns:gco          = "http://www.isotc211.org/2005/gco"
                            xmlns:xsi          = "http://www.w3.org/2001/XMLSchema-instance"
                            xmlns:xlink        = "http://www.w3.org/1999/xlink"
                            gml:id             = "test-coordinateOperation-concatenated">

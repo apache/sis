@@ -36,7 +36,7 @@ import org.apache.sis.util.iso.Types;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5
- * @version 0.5
+ * @version 0.6
  * @module
  */
 public abstract class EnumAdapter<ValueType extends EnumAdapter<ValueType,BoundType>,

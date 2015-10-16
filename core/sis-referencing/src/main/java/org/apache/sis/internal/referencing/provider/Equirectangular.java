@@ -17,6 +17,7 @@
 package org.apache.sis.internal.referencing.provider;
 
 import java.awt.geom.AffineTransform;
+import javax.xml.bind.annotation.XmlTransient;
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
@@ -70,6 +71,7 @@ import static java.lang.Math.*;
  *
  * @see <a href="http://www.remotesensing.org/geotiff/proj_list/equirectangular.html">Equirectangular on RemoteSensing.org</a>
  */
+@XmlTransient
 public final class Equirectangular extends AbstractProvider {
     /**
      * For cross-version compatibility.

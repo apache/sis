@@ -29,6 +29,7 @@ import org.opengis.referencing.crs.TemporalCRS;
 import org.opengis.referencing.datum.TemporalDatum;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.AbstractReferenceSystem;
+import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.measure.Units;
@@ -56,7 +57,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4
- * @version 0.6
+ * @version 0.7
  * @module
  *
  * @see org.apache.sis.referencing.datum.DefaultTemporalDatum
@@ -75,9 +76,13 @@ public class DefaultTemporalCRS extends AbstractCRS implements TemporalCRS {
 
     /**
      * The datum.
+     *
+     * <p><b>Consider this field as final!</b>
+     * This field is modified only at unmarshalling time by {@link #setDatum(TemporalDatum)}</p>
+     *
+     * @see #getDatum()
      */
-    @XmlElement(name = "temporalDatum", required = true)
-    private final TemporalDatum datum;
+    private TemporalDatum datum;
 
     /**
      * A converter from values in this CRS to values in milliseconds.
@@ -211,7 +216,8 @@ public class DefaultTemporalCRS extends AbstractCRS implements TemporalCRS {
      * @return The datum.
      */
     @Override
-    public final TemporalDatum getDatum() {
+    @XmlElement(name = "temporalDatum", required = true)
+    public TemporalDatum getDatum() {
         return datum;
     }
 
@@ -321,7 +327,25 @@ public class DefaultTemporalCRS extends AbstractCRS implements TemporalCRS {
      * reserved to JAXB, which will assign values to the fields using reflexion.
      */
     private DefaultTemporalCRS() {
-        datum = null;
+        /*
+         * The datum and the coordinate system are mandatory for SIS working. We do not verify their presence
+         * here because the verification would have to be done in an 'afterMarshal(…)' method and throwing an
+         * exception in that method causes the whole unmarshalling to fail.  But the SC_CRS adapter does some
+         * verifications.
+         */
+    }
+
+    /**
+     * Invoked by JAXB at unmarshalling time.
+     *
+     * @see #getDatum()
+     */
+    private void setDatum(final TemporalDatum value) {
+        if (datum == null) {
+            datum = value;
+        } else {
+            ReferencingUtilities.propertyAlreadySet(DefaultVerticalCRS.class, "setDatum", "temporalDatum");
+        }
     }
 
     /**

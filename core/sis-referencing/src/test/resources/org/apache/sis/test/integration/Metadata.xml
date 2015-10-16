@@ -114,12 +114,6 @@
     <gmd:MD_ReferenceSystem>
       <gmd:referenceSystemIdentifier>
         <gmd:RS_Identifier>
-          <gmd:code>
-            <gmx:Anchor xlink:href="SDN:L101:2:4326">EPSG:4326</gmx:Anchor>
-          </gmd:code>
-          <gmd:codeSpace>
-            <gco:CharacterString>L101</gco:CharacterString>
-          </gmd:codeSpace>
           <gmd:authority>
             <gmd:CI_Citation>
               <gmd:title>
@@ -140,6 +134,12 @@
               </gmd:identifier>
             </gmd:CI_Citation>
           </gmd:authority>
+          <gmd:code>
+            <gmx:Anchor xlink:href="SDN:L101:2:4326">EPSG:4326</gmx:Anchor>
+          </gmd:code>
+          <gmd:codeSpace>
+            <gco:CharacterString>L101</gco:CharacterString>
+          </gmd:codeSpace>
         </gmd:RS_Identifier>
       </gmd:referenceSystemIdentifier>
     </gmd:MD_ReferenceSystem>

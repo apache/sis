@@ -47,15 +47,20 @@ package org.apache.sis.internal.jaxb;
  */
 public final class Schemas {
     /**
-     * The root directory of OGC metadata schemas.
-     * This is the schema used by default in Apache SIS.
+     * The XSD definition for Geographic Markup Language (GML) objects.
      */
-    public static final String METADATA_ROOT = "http://schemas.opengis.net/iso/19139/20070417/";
+    public static final String GML_XSD = "http://schemas.opengis.net/gml/3.2.1/gml.xsd";
 
     /**
      * The XSD definition for metadata objects.
      */
     public static final String METADATA_XSD = "http://schemas.opengis.net/iso/19139/20070417/gmd/gmd.xsd";
+
+    /**
+     * The root directory of OGC metadata schemas.
+     * This is the schema used by default in Apache SIS.
+     */
+    public static final String METADATA_ROOT = "http://schemas.opengis.net/iso/19139/20070417/";
 
     /**
      * The root directory of ISO metadata schemas.

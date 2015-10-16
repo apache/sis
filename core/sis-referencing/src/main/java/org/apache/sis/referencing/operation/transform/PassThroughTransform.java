@@ -268,7 +268,7 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
      * used" fields public in order to keep the flexibility to replace them by a {@code modifiedCoordinates}
      * array in a future SIS version.</div>
      *
-     * @return Indices of the modified source coordinates.
+     * @return Zero-based indices of the modified source coordinates.
      *
      * @see org.apache.sis.referencing.operation.DefaultPassThroughOperation#getModifiedCoordinates()
      */

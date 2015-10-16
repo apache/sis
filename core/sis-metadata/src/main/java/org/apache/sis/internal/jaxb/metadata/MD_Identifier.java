@@ -77,6 +77,7 @@ public final class MD_Identifier extends PropertyType<MD_Identifier, Identifier>
      * Returns {@code true} if the identifier should be marshalled as a
      * {@code RS_Identifier} instead than {@code MD_Identifier}.
      */
+    @SuppressWarnings("deprecation")
     private boolean isRS() {
         return (metadata instanceof ReferenceIdentifier) || (metadata instanceof ImmutableIdentifier);
     }

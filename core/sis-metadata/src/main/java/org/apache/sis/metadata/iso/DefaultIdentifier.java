@@ -51,9 +51,6 @@ import org.apache.sis.internal.util.Citations;
  *
  * {@preformat xml
  *   <gmd:MD_Identifier>
- *     <gmd:code>
- *       <gco:CharacterString>4326</gco:CharacterString>
- *     </gmd:code>
  *     <gmd:authority>
  *       <gmd:CI_Citation>
  *         <gmd:title>
@@ -61,6 +58,9 @@ import org.apache.sis.internal.util.Citations;
  *         </gmd:title>
  *       </gmd:CI_Citation>
  *     </gmd:authority>
+ *     <gmd:code>
+ *       <gco:CharacterString>4326</gco:CharacterString>
+ *     </gmd:code>
  *   </gmd:MD_Identifier>
  * }
  *
@@ -77,14 +77,14 @@ import org.apache.sis.internal.util.Citations;
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
  * @since   0.3
- * @version 0.6
+ * @version 0.7
  * @module
  *
  * @see ImmutableIdentifier
  */
 @XmlType(name = "MD_Identifier_Type", propOrder = {
-    "code",
-    "authority"
+    "authority",
+    "code"
 })
 @XmlRootElement(name = "MD_Identifier")
 public class DefaultIdentifier extends ISOMetadata implements Identifier {

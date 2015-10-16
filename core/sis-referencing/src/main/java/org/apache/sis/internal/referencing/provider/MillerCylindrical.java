@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.referencing.provider;
 
+import javax.xml.bind.annotation.XmlTransient;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.parameter.ParameterBuilder;
@@ -51,6 +52,7 @@ import org.apache.sis.metadata.iso.citation.Citations;
  *
  * @see <a href="http://www.remotesensing.org/geotiff/proj_list/miller_cylindrical.html">Miller Cylindrical on RemoteSensing.org</a>
  */
+@XmlTransient
 public final class MillerCylindrical extends AbstractMercator {
     /**
      * For cross-version compatibility.
