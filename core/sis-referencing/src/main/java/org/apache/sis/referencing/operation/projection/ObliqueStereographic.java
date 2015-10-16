@@ -59,10 +59,15 @@ public class ObliqueStereographic extends NormalizedProjection {
     private static final long serialVersionUID = -1454098847621943639L;
 
     /**
+     * Maximum difference allowed when comparing real numbers.
+     */
+    static final double EPSILON = 1E-6;
+
+    /**
      * Conformal latitude of origin only use
      * into {@link #inverseTransform(double[], int, double[], int) }.
      */
-    private final double χ0;
+    protected final double χ0;
 
     /**
      * Value of sin(χ0) only use
@@ -70,7 +75,7 @@ public class ObliqueStereographic extends NormalizedProjection {
      *
      * @see #χ0
      */
-    private final double sinχ0;
+    protected final double sinχ0;
 
     /**
      * Value of cos(χ0) only use
@@ -78,7 +83,7 @@ public class ObliqueStereographic extends NormalizedProjection {
      *
      * @see #χ0
      */
-    private final double cosχ0;
+    protected final double cosχ0;
 
     /**
      * c, internaly parameter used to define conformal sphere, used
@@ -226,7 +231,7 @@ public class ObliqueStereographic extends NormalizedProjection {
     public MathTransform createMapProjection(final MathTransformFactory factory) throws FactoryException {
         ObliqueStereographic kernel = this;
         if (excentricity == 0) {
-//            kernel = new Spherical(this);     // not implemented yet
+            kernel = new Spherical(this);     // not implemented yet
         }
         return context.completeTransform(factory, kernel);
     }
@@ -279,6 +284,10 @@ public class ObliqueStereographic extends NormalizedProjection {
         final double cosχcosχ0 = cosχ * cosχ0;
         final double cosχsinλ  = cosχ * sinλ;
 
+        /*
+         * Moreover to convert conformal sphere coordinates into projection destination space,
+         * we retrieve same formula into spherical transformation case.
+         */
         final double B = 1 + sinχsinχ0 + cosχcosχ0 * cosλ;
 
         final double y = (sinχ * cosχ0 - cosχ * sinχ0 * cosλ) / B;
@@ -370,5 +379,96 @@ public class ObliqueStereographic extends NormalizedProjection {
             φi_1 = φi;
         }
         throw new ProjectionException(Errors.Keys.NoConvergence);
+    }
+
+    /**
+     * Provides the transform equations for the spherical case of the Oblique Stereographic projection.
+     * In other words means {@link #excentricity} = 0.
+     *
+     * @author  Rémi Maréchal (Geomatys)
+     * @author  Martin Desruisseaux (Geomatys)
+     * @since   0.6
+     * @version 0.7
+     * @module
+     */
+    static final class Spherical extends ObliqueStereographic {
+        /**
+         * Constructs a new map projection from the supplied parameters.
+         *
+         * @param parameters The parameters of the projection to be created.
+         */
+        protected Spherical(ObliqueStereographic other) {
+            super(other);
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public Matrix transform(double[] srcPts, int srcOff, double[] dstPts, int dstOff, boolean derivate) throws ProjectionException {
+            final double φ = srcPts[srcOff + 1];
+            final double λ = srcPts[srcOff];
+
+            final double sinφ      = sin(φ);
+            final double cosφ      = cos(φ);
+            final double cosλ      = cos(λ);
+            final double sinλ      = sin(λ);
+            final double sinφsinχ0 = sinφ * sinχ0;
+            final double cosφcosχ0 = cosφ * cosχ0;
+            final double cosφsinλ  = cosφ * sinλ;
+
+            final double B = 1 + sinφsinχ0 + cosφcosχ0 * cosλ;
+
+            final double y = (sinφ * cosχ0 - cosφ * sinχ0 * cosλ) / B;
+            final double x =  cosφsinλ / B;
+
+            if (dstPts != null) {
+                dstPts[dstOff  ] = x;
+                dstPts[dstOff+1] = y;
+            }
+
+            if (!derivate) {
+                return null;
+            }
+
+            final double B2 = B * B;
+
+            //-- Jacobian coefficients
+            final double dx_dλ =   cosφ * (cosλ * (1 + sinφsinχ0) + cosφcosχ0) / B2;
+
+            final double dx_dφ = - sinλ * (sinφ + sinχ0) / B2;
+
+            final double dy_dλ =   cosφsinλ * (sinχ0 + sinφ) / B2;
+
+            final double dy_dφ =  (cosφcosχ0 + cosλ * (sinφsinχ0 + 1)) / B2;
+
+            return new Matrix2(dx_dλ, dx_dφ,
+                               dy_dλ, dy_dφ);
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        protected void inverseTransform(double[] srcPts, int srcOff, double[] dstPts, int dstOff) throws ProjectionException {
+            final double x = srcPts[srcOff  ];
+            final double y = srcPts[srcOff+1];
+            final double ρ = hypot(x, y);
+            double λ, φ;
+            if (abs(ρ) < EPSILON) {
+                φ = χ0;
+                λ = 0.0;
+            } else {
+                final double c    = 2 * atan(ρ);
+                final double cosc = cos(c);
+                final double sinc = sin(c);
+                final double ct   = ρ * cosχ0 * cosc - y * sinχ0 * sinc;
+                final double t    = x * sinc;
+                φ = asin(cosc * sinχ0 + y * sinc * cosχ0 / ρ);
+                λ = atan2(t, ct);
+            }
+            dstPts[dstOff]   = λ;
+            dstPts[dstOff+1] = φ;
+        }
     }
 }
