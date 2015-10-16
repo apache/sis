@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.referencing.provider;
 
+import javax.xml.bind.annotation.XmlTransient;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
@@ -49,6 +50,7 @@ import org.apache.sis.parameter.Parameters;
  * @version 0.6
  * @module
  */
+@XmlTransient
 public final class LongitudeRotation extends AbstractProvider {
     /**
      * Serial number for inter-operability with different versions.

@@ -17,6 +17,7 @@
 package org.apache.sis.internal.referencing.provider;
 
 import javax.measure.unit.NonSI;
+import javax.xml.bind.annotation.XmlTransient;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.apache.sis.metadata.iso.citation.Citations;
@@ -33,6 +34,7 @@ import org.apache.sis.measure.Latitude;
  * @version 0.6
  * @module
  */
+@XmlTransient
 public final class PolarStereographicSouth extends AbstractStereographic {
     /**
      * For cross-version compatibility.

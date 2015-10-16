@@ -18,6 +18,8 @@ package org.apache.sis.internal.jaxb.referencing;
 
 import javax.xml.bind.annotation.XmlElementRef;
 import org.opengis.referencing.operation.CoordinateOperation;
+import org.opengis.referencing.operation.PassThroughOperation;
+import org.opengis.referencing.operation.SingleOperation;
 import org.apache.sis.internal.jaxb.gco.PropertyType;
 import org.apache.sis.referencing.operation.AbstractCoordinateOperation;
 
@@ -84,9 +86,14 @@ public final class CC_CoordinateOperation extends PropertyType<CC_CoordinateOper
     /**
      * Invoked by JAXB at unmarshalling time for storing the result temporarily.
      *
-     * @param conversion The unmarshalled element.
+     * @param operation The unmarshalled element.
      */
-    public void setElement(final AbstractCoordinateOperation conversion) {
-        metadata = conversion;
+    public void setElement(final AbstractCoordinateOperation operation) {
+        metadata = operation;
+        if ((operation instanceof PassThroughOperation) && ((PassThroughOperation) operation).getOperation() == null) {
+            incomplete("coordOperation");
+        } else if ((operation instanceof SingleOperation) && ((SingleOperation) operation).getMethod() == null) {
+            incomplete("method");
+        }
     }
 }

@@ -22,6 +22,7 @@ import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.lang.reflect.Array;
+import javax.xml.bind.annotation.XmlTransient;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterValueGroup;
@@ -58,6 +59,7 @@ import org.apache.sis.util.resources.Errors;
  * @version 0.6
  * @module
  */
+@XmlTransient
 final class TensorValues<E> extends AbstractParameterDescriptor
         implements ParameterDescriptorGroup, ParameterValueGroup, Cloneable
 {
@@ -144,6 +146,7 @@ final class TensorValues<E> extends AbstractParameterDescriptor
      * Returns a clone of this group.
      */
     @Override
+    @SuppressWarnings("CloneDoesntCallSuperClone")
     public ParameterValueGroup clone() {
         return new TensorValues<>(this, true);
     }

@@ -122,7 +122,7 @@ import java.util.Objects;
  * @version 0.7
  * @module
  */
-@XmlType(name="IdentifiedObjectType", propOrder={
+@XmlType(name = "IdentifiedObjectType", propOrder = {
     "description",
     "identifier",
     "names",
@@ -524,7 +524,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      *
      * @since 0.6
      */
-    @XmlElement
+    @XmlElement(name = "description")
     public InternationalString getDescription() {
         return (name != null) ? name.getDescription() : null;
     }
@@ -537,7 +537,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * @return The remarks, or {@code null} if none.
      */
     @Override
-    @XmlElement
+    @XmlElement(name = "remarks")
     public InternationalString getRemarks() {
         return remarks;
     }
@@ -1082,7 +1082,11 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      *
      * @see #getRemarks()
      */
-    private void setRemarks(final InternationalString remarks) {
-        this.remarks = remarks;
+    private void setRemarks(final InternationalString value) {
+        if (remarks == null) {
+            remarks = value;
+        } else {
+            ReferencingUtilities.propertyAlreadySet(AbstractIdentifiedObject.class, "setRemarks", "remarks");
+        }
     }
 }

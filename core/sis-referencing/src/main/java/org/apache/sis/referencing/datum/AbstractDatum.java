@@ -65,7 +65,7 @@ import java.util.Objects;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4
- * @version 0.6
+ * @version 0.7
  * @module
  *
  * @see org.apache.sis.referencing.cs.AbstractCS
@@ -74,7 +74,7 @@ import java.util.Objects;
 @XmlType(name = "AbstractDatumType", propOrder = {
     "domainOfValidity",
     "scope",
-    "anchorDefinition",
+    "anchorPoint",
     "realizationEpoch"
 })
 @XmlRootElement(name = "AbstractDatum")
@@ -99,9 +99,13 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
     /**
      * Description, possibly including coordinates, of the point or points used to anchor the datum
      * to the Earth. Also known as the "origin", especially for Engineering and Image Datums.
+     *
+     * <p><b>Consider this field as final!</b>
+     * This field is modified only at unmarshalling time by {@link #setAnchorPoint(InternationalString)}</p>
+     *
+     * @see #getAnchorPoint()
      */
-    @XmlElement
-    private final InternationalString anchorDefinition;
+    private InternationalString anchorDefinition;
 
     /**
      * The time after which this datum definition is valid. This time may be precise
@@ -115,15 +119,23 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
 
     /**
      * Area or region in which this datum object is valid.
+     *
+     * <p><b>Consider this field as final!</b>
+     * This field is modified only at unmarshalling time by {@link #setDomainOfValidity(Extent)}</p>
+     *
+     * @see #getDomainOfValidity()
      */
-    @XmlElement
-    private final Extent domainOfValidity;
+    private Extent domainOfValidity;
 
     /**
      * Description of domain of usage, or limitations of usage, for which this datum object is valid.
+     *
+     * <p><b>Consider this field as final!</b>
+     * This field is modified only at unmarshalling time by {@link #setScope(InternationalString)}</p>
+     *
+     * @see #getScope()
      */
-    @XmlElement
-    private final InternationalString scope;
+    private InternationalString scope;
 
     /**
      * Creates a datum from the given properties.
@@ -274,6 +286,7 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
      * @return Description, possibly including coordinates, of the point or points used to anchor the datum to the Earth.
      */
     @Override
+    @XmlElement(name = "anchorDefinition")
     public InternationalString getAnchorPoint() {
         return anchorDefinition;
     }
@@ -302,6 +315,7 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
      * @see org.apache.sis.metadata.iso.extent.DefaultExtent
      */
     @Override
+    @XmlElement(name = "domainOfValidity")
     public Extent getDomainOfValidity() {
         return domainOfValidity;
     }
@@ -312,6 +326,7 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
      * @return Description of domain of usage, or limitations of usage, for which this datum object is valid.
      */
     @Override
+    @XmlElement(name = "scope", required = true)
     public InternationalString getScope() {
         return scope;
     }
@@ -462,20 +477,58 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
      */
     AbstractDatum() {
         super(org.apache.sis.internal.referencing.NilReferencingObject.INSTANCE);
-        anchorDefinition = null;
         realizationEpoch = Long.MIN_VALUE;
-        domainOfValidity = null;
-        scope            = null;
     }
 
     /**
      * Invoked by JAXB only at unmarshalling time.
+     *
+     * @see #getAnchorPoint()
+     */
+    private void setAnchorPoint(final InternationalString value) {
+        if (anchorDefinition == null) {
+            anchorDefinition = value;
+        } else {
+            ReferencingUtilities.propertyAlreadySet(AbstractDatum.class, "setAnchorPoint", "anchorDefinition");
+        }
+    }
+
+    /**
+     * Invoked by JAXB only at unmarshalling time.
+     *
+     * @see #getRealizationEpoch()
      */
     private void setRealizationEpoch(final Date value) {
         if (realizationEpoch == Long.MIN_VALUE) {
             realizationEpoch = value.getTime();
         } else {
             ReferencingUtilities.propertyAlreadySet(AbstractDatum.class, "setRealizationEpoch", "realizationEpoch");
+        }
+    }
+
+    /**
+     * Invoked by JAXB only at unmarshalling time.
+     *
+     * @see #getDomainOfValidity()
+     */
+    private void setDomainOfValidity(final Extent value) {
+        if (domainOfValidity == null) {
+            domainOfValidity = value;
+        } else {
+            ReferencingUtilities.propertyAlreadySet(AbstractDatum.class, "setDomainOfValidity", "domainOfValidity");
+        }
+    }
+
+    /**
+     * Invoked by JAXB only at unmarshalling time.
+     *
+     * @see #getScope()
+     */
+    private void setScope(final InternationalString value) {
+        if (scope == null) {
+            scope = value;
+        } else {
+            ReferencingUtilities.propertyAlreadySet(AbstractDatum.class, "setScope", "scope");
         }
     }
 }

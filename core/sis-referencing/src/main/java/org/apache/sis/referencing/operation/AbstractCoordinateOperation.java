@@ -52,6 +52,7 @@ import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.referencing.WKTUtilities;
 import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.internal.util.CollectionsExt;
+import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.internal.system.Semaphores;
 
 import static org.apache.sis.util.Utilities.deepEquals;
@@ -92,11 +93,11 @@ import java.util.Objects;
  * @version 0.7
  * @module
  */
-@XmlType(name="AbstractCoordinateOperationType", propOrder = {
+@XmlType(name = "AbstractCoordinateOperationType", propOrder = {
     "domainOfValidity",
     "scope",
     "operationVersion",
-    "coordinateOperationAccuracy",
+    "accuracy",
     "source",
     "target"
 })
@@ -148,32 +149,44 @@ public class AbstractCoordinateOperation extends AbstractIdentifiedObject implem
     /**
      * Version of the coordinate transformation
      * (i.e., instantiation due to the stochastic nature of the parameters).
+     *
+     * <p><b>Consider this field as final!</b>
+     * This field is modified only at unmarshalling time by {@link #setOperationVersion(String)}</p>
+     *
+     * @see #getOperationVersion()
      */
-    @XmlElement
-    private final String operationVersion;
+    private String operationVersion;
 
     /**
      * Estimate(s) of the impact of this operation on point accuracy, or {@code null} if none.
      *
      * <p><b>Consider this field as final!</b>
-     * This field is non-final only for the convenience of constructors.</p>
+     * This field is non-final only for the convenience of constructors and for initialization
+     * at XML unmarshalling time by {@link #setAccuracy(PositionalAccuracy[])}.</p>
      *
      * @see #getCoordinateOperationAccuracy()
      */
-    @XmlElement
     Collection<PositionalAccuracy> coordinateOperationAccuracy;
 
     /**
      * Area in which this operation is valid, or {@code null} if not available.
+     *
+     * <p><b>Consider this field as final!</b>
+     * This field is modified only at unmarshalling time by {@link #setDomainOfValidity(Extent)}</p>
+     *
+     * @see #getDomainOfValidity()
      */
-    @XmlElement
-    private final Extent domainOfValidity;
+    private Extent domainOfValidity;
 
     /**
      * Description of domain of usage, or limitations of usage, for which this operation is valid.
+     *
+     * <p><b>Consider this field as final!</b>
+     * This field is modified only at unmarshalling time by {@link #setScope(InternationalString)}</p>
+     *
+     * @see #getScope()
      */
-    @XmlElement
-    private final InternationalString scope;
+    private InternationalString scope;
 
     /**
      * Transform from positions in the {@linkplain #getSourceCRS source coordinate reference system}
@@ -507,6 +520,7 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
      * @return The coordinate operation version, or {@code null} in none.
      */
     @Override
+    @XmlElement(name = "operationVersion")
     public String getOperationVersion() {
         return operationVersion;
     }
@@ -522,7 +536,7 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
      */
     @Override
     public Collection<PositionalAccuracy> getCoordinateOperationAccuracy() {
-        return (coordinateOperationAccuracy != null) ? coordinateOperationAccuracy : Collections.emptySet();
+        return CollectionsExt.nonNull(coordinateOperationAccuracy);
     }
 
     /**
@@ -573,6 +587,7 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
      * @return The coordinate operation valid domain, or {@code null} if not available.
      */
     @Override
+    @XmlElement(name = "domainOfValidity")
     public Extent getDomainOfValidity() {
         return domainOfValidity;
     }
@@ -583,6 +598,7 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
      * @return A description of domain of usage, or {@code null} if none.
      */
     @Override
+    @XmlElement(name = "scope", required = true)
     public InternationalString getScope() {
         return scope;
     }
@@ -844,9 +860,6 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
      */
     AbstractCoordinateOperation() {
         super(org.apache.sis.internal.referencing.NilReferencingObject.INSTANCE);
-        operationVersion = null;
-        domainOfValidity = null;
-        scope            = null;
     }
 
     /**
@@ -884,6 +897,66 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
             targetCRS = crs;
         } else {
             ReferencingUtilities.propertyAlreadySet(AbstractCoordinateOperation.class, "setTarget", "targetCRS");
+        }
+    }
+
+    /**
+     * Invoked by JAXB only at marshalling time.
+     */
+    @XmlElement(name = "coordinateOperationAccuracy")
+    private PositionalAccuracy[] getAccuracy() {
+        final Collection<PositionalAccuracy> accuracy = getCoordinateOperationAccuracy();
+        final int size = accuracy.size();
+        return (size != 0) ? accuracy.toArray(new PositionalAccuracy[size]) : null;
+    }
+
+    /**
+     * Invoked by JAXB only at unmarshalling time.
+     */
+    private void setAccuracy(final PositionalAccuracy[] values) {
+        if (coordinateOperationAccuracy == null) {
+            coordinateOperationAccuracy = UnmodifiableArrayList.wrap(values);
+        } else {
+            ReferencingUtilities.propertyAlreadySet(AbstractCoordinateOperation.class, "setAccuracy", "coordinateOperationAccuracy");
+        }
+    }
+
+    /**
+     * Invoked by JAXB only at unmarshalling time.
+     *
+     * @see #getOperationVersion()
+     */
+    private void setOperationVersion(final String value) {
+        if (operationVersion == null) {
+            operationVersion = value;
+        } else {
+            ReferencingUtilities.propertyAlreadySet(AbstractCoordinateOperation.class, "setOperationVersion", "operationVersion");
+        }
+    }
+
+    /**
+     * Invoked by JAXB only at unmarshalling time.
+     *
+     * @see #getDomainOfValidity()
+     */
+    private void setDomainOfValidity(final Extent value) {
+        if (domainOfValidity == null) {
+            domainOfValidity = value;
+        } else {
+            ReferencingUtilities.propertyAlreadySet(AbstractCoordinateOperation.class, "setDomainOfValidity", "domainOfValidity");
+        }
+    }
+
+    /**
+     * Invoked by JAXB only at unmarshalling time.
+     *
+     * @see #getScope()
+     */
+    private void setScope(final InternationalString value) {
+        if (scope == null) {
+            scope = value;
+        } else {
+            ReferencingUtilities.propertyAlreadySet(AbstractCoordinateOperation.class, "setScope", "scope");
         }
     }
 }

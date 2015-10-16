@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.referencing.provider;
 
+import javax.xml.bind.annotation.XmlTransient;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.apache.sis.metadata.iso.citation.Citations;
@@ -38,6 +39,7 @@ import org.apache.sis.util.resources.Messages;
  *
  * @see <a href="http://www.remotesensing.org/geotiff/proj_list/transverse_mercator_south_oriented.html">Transverse Mercator (South Oriented) on RemoteSensing.org</a>
  */
+@XmlTransient
 public final class TransverseMercatorSouth extends AbstractMercator {
     /**
      * For cross-version compatibility.
