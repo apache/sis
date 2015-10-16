@@ -40,7 +40,6 @@ import org.opengis.metadata.citation.Citation;
 import org.opengis.referencing.ObjectFactory;
 import org.opengis.referencing.AuthorityFactory;
 import org.opengis.referencing.IdentifiedObject;
-import org.apache.sis.internal.metadata.NameMeaning;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.jaxb.referencing.Code;
 import org.apache.sis.internal.util.Numerics;
@@ -48,7 +47,6 @@ import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.internal.metadata.NameToIdentifier;
 import org.apache.sis.internal.referencing.WKTUtilities;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
-import org.apache.sis.internal.referencing.NilReferencingObject;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.io.wkt.Formatter;
@@ -67,7 +65,6 @@ import static org.apache.sis.util.Utilities.deepEquals;
 import static org.apache.sis.internal.util.CollectionsExt.nonNull;
 import static org.apache.sis.internal.util.CollectionsExt.nonEmpty;
 import static org.apache.sis.internal.util.CollectionsExt.immutableSet;
-import static org.apache.sis.internal.util.Utilities.appendUnicodeIdentifier;
 
 // Branch-dependent imports
 import java.util.Objects;
@@ -205,9 +202,13 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
 
     /**
      * Comments on or information about this object, or {@code null} if none.
+     *
+     * <p><b>Consider this field as final!</b>
+     * This field is modified only at unmarshalling time by {@link #setRemarks(InternationalString)}</p>
+     *
+     * @see #getRemarks()
      */
-    @XmlElement
-    private final InternationalString remarks;
+    private InternationalString remarks;
 
     /**
      * {@code true} if this object is deprecated.
@@ -536,7 +537,8 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * @return The remarks, or {@code null} if none.
      */
     @Override
-    public InternationalString getRemarks(){
+    @XmlElement
+    public InternationalString getRemarks() {
         return remarks;
     }
 
@@ -890,17 +892,16 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * reserved to JAXB, which will assign values to the fields using reflexion.
      */
     AbstractIdentifiedObject() {
-        remarks = null;
         deprecated = false;
     }
 
     /**
      * The {@code gml:id}, which is mandatory. The current implementation searches for the first identifier,
-     * regardless its authority. If no identifier is found, then the name is used.
-     * If no name is found (which should not occur for valid objects), then this method returns {@code null}.
+     * regardless its authority. If no identifier is found, then the name or aliases are used. If none of the
+     * above is found (which should not occur for valid objects), then this method returns {@code null}.
      *
-     * <p>If an identifier has been found, this method returns the concatenation of the following elements
-     * separated by hyphens:</p>
+     * <p>If an identifier or a name has been found, this method returns the concatenation of the following
+     * elements separated by hyphens:</p>
      * <ul>
      *   <li>The code space in lower case, retaining only characters that are valid for Unicode identifiers.</li>
      *   <li>The object type as defined in OGC's URN (see {@link org.apache.sis.internal.util.DefinitionURI})</li>
@@ -918,59 +919,9 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
     @XmlAttribute(name = "id", namespace = Namespaces.GML, required = true)
     @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
     final String getID() {
-        final Context context = Context.current();
-        String candidate = Context.getObjectID(context, this);
-        if (candidate == null) {
-            final StringBuilder id = new StringBuilder();
-            /*
-             * We will iterate over the identifiers first. Only after the iteration is over,
-             * if we found no suitable ID, then we will use the primary name as a last resort.
-             */
-            if (identifiers != null) {
-                for (final Identifier identifier : identifiers) {
-                    if (appendUnicodeIdentifier(id, '-', identifier.getCodeSpace(), ":", true) | // Really |, not ||
-                        appendUnicodeIdentifier(id, '-', NameMeaning.toObjectType(getClass()), ":", false) |
-                        appendUnicodeIdentifier(id, '-', identifier.getCode(), ":", true))
-                    {
-                        /*
-                         * Check for ID uniqueness. If the ID is rejected, then we just need to clear
-                         * the buffer and let the iteration continue the search for another ID.
-                         */
-                        candidate = id.toString();
-                        if (Context.setObjectForID(context, this, candidate)) {
-                            return candidate;
-                        }
-                    }
-                    id.setLength(0);    // Clear the buffer for another try.
-                }
-            }
-            /*
-             * In last ressort, use the name or an alias. The name will be used without codespace since
-             * names are often verbose. If that name is also used, append a number until we find a free ID.
-             */
-            if (name == null || !appendUnicodeIdentifier(id, '-', name.getCode(), ":", false)) {
-                if (alias != null) {
-                    for (final GenericName a : alias) {
-                        if (appendUnicodeIdentifier(id, '-', a.toString(), ":", false)) {
-                            break;
-                        }
-                    }
-                }
-            }
-            if (id.length() != 0) {
-                candidate = id.toString();
-                if (!Context.setObjectForID(context, this, candidate)) {
-                    final int s = id.append('-').length();
-                    int n = 0;
-                    do {
-                        if (++n == 100) return null;    //  Arbitrary limit.
-                        candidate = id.append(n).toString();
-                        id.setLength(s);
-                    } while (!Context.setObjectForID(context, this, candidate));
-                }
-            }
-        }
-        return candidate;
+        // Implementation is provided in the NameIterator class for reducing the size of
+        // AbstractIdentifiedObject.class file in the common case where XML is not needed.
+        return NameIterator.getID(Context.current(), this, name, alias, identifiers);
     }
 
     /**
@@ -999,7 +950,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      *   <li>The first identifier, converted to the {@code "urn:} syntax if possible.</li>
      * </ul>
      */
-    @XmlElement(name = "identifier")
+    @XmlElement(required = true)
     final Code getIdentifier() {
         return Code.forIdentifiedObject(getClass(), identifiers);
     }
@@ -1047,6 +998,13 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * by all {@linkplain AbstractIdentifiedObject#getAlias() aliases} which are instance of {@link Identifier}.
      * Used by JAXB only at (un)marshalling time because GML merges the name and aliases in a single {@code <gml:name>}
      * property.
+     *
+     * <div class="section">Why we do not use {@code Identifier[]} array instead</div>
+     * It would be easier to define a {@code getNames()} method returning all identifiers in an array, and let JAXB
+     * invoke {@code setNames(Identifier[])} at unmarshalling time.  But methods expecting an array in argument are
+     * invoked by JAXB only after the full element has been unmarshalled. For some {@code AbstractIdentifiedObject}
+     * subclasses, this is too late. For example {@code DefaultOperationMethod} may need to know the operation name
+     * before to parse the parameters.
      */
     private final class Names extends AbstractCollection<Identifier> {
         /**
@@ -1084,46 +1042,47 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
          */
         @Override
         public boolean add(final Identifier id) {
-            addName(id);
+            if (NameIterator.isUnnamed(name)) {
+                name = id;
+            } else {
+                /*
+                 * Our Code and RS_Identifier implementations should always create NamedIdentifier instance,
+                 * so the 'instanceof' check should not be necessary. But we do a paranoiac check anyway.
+                 */
+                final GenericName n = id instanceof GenericName ? (GenericName) id : new NamedIdentifier(id);
+                if (alias == null) {
+                    alias = Collections.singleton(n);
+                } else {
+                    /*
+                     * This implementation is inefficient since each addition copies the array, but we rarely
+                     * have more than two aliases.  This implementation is okay for a small number of aliases
+                     * and ensures that the enclosing AbstractIdentifiedObject is unmodifiable except by this
+                     * add(…) method.
+                     *
+                     * Note about alternative approaches
+                     * ---------------------------------
+                     * An alternative approach could be to use an ArrayList and replace it by an unmodifiable
+                     * list only after unmarshalling (using an afterUnmarshal(Unmarshaller, Object) method),
+                     * but we want to avoid Unmarshaller dependency (for reducing classes loading for users
+                     * who are not interrested in XML) and it may actually be less efficient for the vast
+                     * majority of cases where there is less than 3 aliases.
+                     */
+                    final int size = alias.size();
+                    final GenericName[] names = alias.toArray(new GenericName[size + 1]);
+                    names[size] = n;
+                    alias = UnmodifiableArrayList.wrap(names);
+                }
+            }
             return true;
         }
     }
 
     /**
-     * Implementation of {@link Names#add(Identifier)}, defined in the enclosing class
-     * for access to private fields without compiler-generated bridge methods.
+     * Invoked by JAXB for setting the remarks.
+     *
+     * @see #getRemarks()
      */
-    final void addName(final Identifier id) {
-        if (name == NilReferencingObject.UNNAMED) {
-            name = id;
-        } else {
-            /*
-             * Our Code and RS_Identifier implementations should always create NamedIdentifier instance,
-             * so the 'instanceof' check should not be necessary. But we do a paranoiac check anyway.
-             */
-            final GenericName n = id instanceof GenericName ? (GenericName) id : new NamedIdentifier(id);
-            if (alias == null) {
-                alias = Collections.singleton(n);
-            } else {
-                /*
-                 * This implementation is inefficient since each addition copies the array, but we rarely
-                 * have more than two aliases.  This implementation is okay for a small number of aliases
-                 * and ensures that the enclosing AbstractIdentifiedObject is unmodifiable except by this
-                 * add(…) method.
-                 *
-                 * Note about alternative approaches
-                 * ---------------------------------
-                 * An alternative approach could be to use an ArrayList and replace it by an unmodifiable
-                 * list only after unmarshalling (using an afterUnmarshal(Unmarshaller, Object) method),
-                 * but we want to avoid Unmarshaller dependency (for reducing classes loading for users
-                 * who are not interrested in XML) and it may actually be less efficient for the vast
-                 * majority of cases where there is less than 3 aliases.
-                 */
-                final int size = alias.size();
-                final GenericName[] names = alias.toArray(new GenericName[size + 1]);
-                names[size] = n;
-                alias = UnmodifiableArrayList.wrap(names);
-            }
-        }
+    private void setRemarks(final InternationalString remarks) {
+        this.remarks = remarks;
     }
 }
