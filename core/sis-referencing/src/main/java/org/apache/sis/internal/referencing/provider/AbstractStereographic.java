@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.referencing.provider;
 
+import javax.xml.bind.annotation.XmlTransient;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.ParameterNotFoundException;
@@ -33,6 +34,7 @@ import org.apache.sis.referencing.operation.projection.PolarStereographic;
  * @version 0.6
  * @module
  */
+@XmlTransient
 abstract class AbstractStereographic extends MapProjection {
     /**
      * For cross-version compatibility.

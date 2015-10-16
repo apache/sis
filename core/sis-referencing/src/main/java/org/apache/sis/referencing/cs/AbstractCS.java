@@ -66,7 +66,7 @@ import static org.apache.sis.util.Utilities.deepEquals;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4
- * @version 0.6
+ * @version 0.7
  * @module
  *
  * @see DefaultCoordinateSystemAxis
@@ -99,9 +99,13 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
 
     /**
      * The sequence of axes for this coordinate system.
+     *
+     * <p><b>Consider this field as final!</b>
+     * This field is modified only at unmarshalling time by {@link #setAxis(CoordinateSystemAxis[])}</p>
+     *
+     * @see #getAxis(int)
      */
-    @XmlElement(name = "axis")
-    private final CoordinateSystemAxis[] axes;
+    private CoordinateSystemAxis[] axes;
 
     /**
      * Other coordinate systems derived from this coordinate systems for other axes conventions.
@@ -210,14 +214,18 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
      */
     protected AbstractCS(final CoordinateSystem cs) {
         super(cs);
-        if (cs instanceof AbstractCS) {
-            axes = ((AbstractCS) cs).axes;  // Share the array.
-        } else {
-            axes = new CoordinateSystemAxis[cs.getDimension()];
-            for (int i=0; i<axes.length; i++) {
-                axes[i] = cs.getAxis(i);
-            }
+        axes = (cs instanceof AbstractCS) ? ((AbstractCS) cs).axes : getAxes(cs);
+    }
+
+    /**
+     * Returns the axes of the given coordinate system.
+     */
+    private static CoordinateSystemAxis[] getAxes(final CoordinateSystem cs) {
+        final CoordinateSystemAxis[] axes = new CoordinateSystemAxis[cs.getDimension()];
+        for (int i=0; i<axes.length; i++) {
+            axes[i] = cs.getAxis(i);
         }
+        return axes;
     }
 
     /**
@@ -483,5 +491,27 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
     AbstractCS() {
         super(org.apache.sis.internal.referencing.NilReferencingObject.INSTANCE);
         axes = EMPTY;
+        /*
+         * Coordinate system axes are mandatory for SIS working. We do not verify their presence here
+         * (because the verification would have to be done in an 'afterMarshal(…)' method and throwing
+         * an exception in that method causes the whole unmarshalling to fail). But the CS_CoordinateSystem
+         * adapter does some verifications.
+         */
+    }
+
+    /**
+     * Invoked by JAXB at marshalling time.
+     */
+    @XmlElement(name = "axis")
+    private CoordinateSystemAxis[] getAxis() {
+        return getAxes(this);   // Give a chance to users to override getAxis(int).
+    }
+
+    /**
+     * Invoked by JAXB at unmarshalling time.
+     */
+    @SuppressWarnings("AssignmentToCollectionOrArrayFieldFromParameter")
+    private void setAxis(final CoordinateSystemAxis[] values) {
+        axes = values;
     }
 }

@@ -268,6 +268,11 @@ public class DefaultPassThroughOperation extends AbstractCoordinateOperation imp
      * reserved to JAXB, which will assign values to the fields using reflexion.
      */
     private DefaultPassThroughOperation() {
+        /*
+         * A sub-operation is mandatory for SIS working. We do not verify its presence here because the verification
+         * would have to be done in an 'afterMarshal(…)' method and throwing an exception in that method causes the
+         * whole unmarshalling to fail. But the CC_CoordinateOperation adapter does some verifications.
+         */
     }
 
     /**
@@ -277,7 +282,11 @@ public class DefaultPassThroughOperation extends AbstractCoordinateOperation imp
      * @see #getOperation()
      */
     private void setOperation(final CoordinateOperation op) {
-        operation = op;
+        if (operation == null) {
+            operation = op;
+        } else {
+            ReferencingUtilities.propertyAlreadySet(DefaultPassThroughOperation.class, "setOperation", "coordOperation");
+        }
     }
 
     /**

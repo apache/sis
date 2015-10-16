@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.referencing.provider;
 
+import javax.xml.bind.annotation.XmlTransient;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.ParameterNotFoundException;
@@ -31,11 +32,12 @@ import org.apache.sis.referencing.operation.projection.NormalizedProjection;
  * @author  Rueben Schulz (UBC)
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.6
- * @version 0.6
+ * @version 0.7
  * @module
  *
  * @see <a href="http://www.remotesensing.org/geotiff/proj_list/oblique_stereographic.html">Oblique Stereographic on RemoteSensing.org</a>
  */
+@XmlTransient
 public final class ObliqueStereographic extends AbstractStereographic {
     /**
      * For cross-version compatibility.

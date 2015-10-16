@@ -94,10 +94,12 @@ public final class SC_SingleCRS extends PropertyType<SC_SingleCRS, SingleCRS> {
      * @throws IllegalArgumentException if the unmarshalled CRS is not a single CRS.
      */
     public void setElement(final AbstractCRS crs) {
-        if (crs != null && !(crs instanceof SingleCRS)) {
+        if (!(crs instanceof SingleCRS)) {
             throw new IllegalArgumentException(Errors.format(Errors.Keys.UnexpectedValueInElement_2,
                     "baseCRS", IdentifiedObjects.getName(crs, null)));
         }
         metadata = (SingleCRS) crs;
+        if (crs.getCoordinateSystem()    == null) incomplete("coordinateSystem");
+        if (((SingleCRS) crs).getDatum() == null) incomplete("datum");
     }
 }

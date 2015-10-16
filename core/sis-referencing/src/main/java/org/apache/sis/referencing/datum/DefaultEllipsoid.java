@@ -31,9 +31,9 @@ import org.opengis.metadata.Identifier;
 import org.opengis.referencing.datum.Ellipsoid;
 import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.internal.util.Numerics;
-import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.jaxb.gml.Measure;
 import org.apache.sis.internal.jaxb.referencing.SecondDefiningParameter;
+import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.referencing.IdentifiedObjects;
@@ -112,12 +112,12 @@ import java.util.Objects;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Cédric Briançon (Geomatys)
  * @since   0.4
- * @version 0.4
+ * @version 0.7
  * @module
  *
  * @see org.apache.sis.referencing.CommonCRS#ellipsoid()
  */
-@XmlType(name="EllipsoidType", propOrder={
+@XmlType(name = "EllipsoidType", propOrder = {
     "semiMajorAxisMeasure",
     "secondDefiningParameter"
 })
@@ -698,8 +698,12 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
      */
     private DefaultEllipsoid() {
         super(org.apache.sis.internal.referencing.NilReferencingObject.INSTANCE);
-        // We need to let the DefaultEllipsoid fields unitialized
-        // because afterUnmarshal(…) will check for zero values.
+        /*
+         * We need to let the DefaultEllipsoid fields unitialized because afterUnmarshal(…)
+         * will check for zero values. We can not thrown an exception from 'afterUnmarshal'
+         * because it would cause the whole unmarshalling to fail. But the CD_Ellipsoid
+         * adapter does some verifications.
+         */
     }
 
     /**
@@ -722,6 +726,7 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
             }
         }
         if (unit == null) {
+            unit = SI.METRE;
             Measure.missingUOM(DefaultEllipsoid.class, "semiMajorAxis");
         }
     }
@@ -743,13 +748,13 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
      * @see #afterUnmarshal(Unmarshaller, Object)
      */
     private void setSemiMajorAxisMeasure(final Measure measure) {
-        if (semiMajorAxis != 0) {
-            warnDuplicated("semiMajorAxis");
-        } else {
+        if (semiMajorAxis == 0) {
             final Unit<Length> uom = unit; // In case semi-minor were defined before semi-major.
             ensureStrictlyPositive("semiMajorAxis", semiMajorAxis = measure.value);
             unit = measure.getUnit(Length.class);
             harmonizeAxisUnits(uom);
+        } else {
+            ReferencingUtilities.propertyAlreadySet(DefaultEllipsoid.class, "setSemiMajorAxisMeasure", "semiMajorAxis");
         }
     }
 
@@ -758,7 +763,7 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
      * returned object contains the values for {@link #semiMinorAxis} or {@link #inverseFlattening},
      * according to the {@link #isIvfDefinitive()} value. This method is for JAXB marshalling only.
      */
-    @XmlElement(name = "secondDefiningParameter")
+    @XmlElement(name = "secondDefiningParameter", required = true)
     private SecondDefiningParameter getSecondDefiningParameter() {
         return new SecondDefiningParameter(this, true);
     }
@@ -778,9 +783,7 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
         final Measure measure = second.measure;
         if (measure != null) {
             final boolean isIvfDefinitive = second.isIvfDefinitive();
-            if ((isIvfDefinitive ? inverseFlattening : semiMinorAxis) != 0) {
-                warnDuplicated("secondDefiningParameter");
-            } else {
+            if ((isIvfDefinitive ? inverseFlattening : semiMinorAxis) == 0) {
                 ivfDefinitive = isIvfDefinitive;
                 double value = measure.value;
                 if (isIvfDefinitive) {
@@ -792,6 +795,9 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
                     ensureStrictlyPositive("semiMinorAxis", semiMinorAxis = value);
                     harmonizeAxisUnits(measure.getUnit(Length.class));
                 }
+            } else {
+                ReferencingUtilities.propertyAlreadySet(DefaultEllipsoid.class,
+                        "setSecondDefiningParameter", "secondDefiningParameter");
             }
         }
     }
@@ -808,14 +814,5 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
         } else if (uom != null && uom != unit) {
             semiMinorAxis = uom.getConverterTo(unit).convert(semiMinorAxis);
         }
-    }
-
-    /**
-     * Emits a warning telling that the given element is repeated twice.
-     */
-    private static void warnDuplicated(final String element) {
-         // We cheat a bit for the "unmarshal" method name since there is not such method...
-        Context.warningOccured(Context.current(), DefaultEllipsoid.class, "unmarshal",
-                Errors.class, Errors.Keys.DuplicatedElement_1, element);
     }
 }

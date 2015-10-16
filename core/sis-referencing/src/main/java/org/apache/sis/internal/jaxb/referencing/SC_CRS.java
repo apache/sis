@@ -17,6 +17,8 @@
 package org.apache.sis.internal.jaxb.referencing;
 
 import javax.xml.bind.annotation.XmlElementRef;
+import org.opengis.referencing.crs.SingleCRS;
+import org.opengis.referencing.crs.CompoundCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.referencing.crs.AbstractCRS;
 import org.apache.sis.internal.jaxb.gco.PropertyType;
@@ -28,7 +30,7 @@ import org.apache.sis.internal.jaxb.gco.PropertyType;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.6
- * @version 0.6
+ * @version 0.7
  * @module
  */
 public final class SC_CRS extends PropertyType<SC_CRS, CoordinateReferenceSystem> {
@@ -95,5 +97,11 @@ public final class SC_CRS extends PropertyType<SC_CRS, CoordinateReferenceSystem
      */
     public void setElement(final AbstractCRS crs) {
         metadata = crs;
+        if (crs.getCoordinateSystem() == null) {
+            incomplete((crs instanceof CompoundCRS) ? "componentReferenceSystem" : "coordinateSystem");
+        }
+        if (crs instanceof SingleCRS && ((SingleCRS) crs).getDatum() == null) {
+            incomplete("datum");
+        }
     }
 }

@@ -29,7 +29,7 @@ import org.apache.sis.referencing.datum.DefaultGeodeticDatum;
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.4
+ * @version 0.7
  * @module
  */
 public final class CD_GeodeticDatum extends PropertyType<CD_GeodeticDatum, GeodeticDatum> {
@@ -89,5 +89,7 @@ public final class CD_GeodeticDatum extends PropertyType<CD_GeodeticDatum, Geode
      */
     public void setElement(final DefaultGeodeticDatum datum) {
         metadata = datum;
+        if (datum.getEllipsoid()     == null) incomplete("ellipsoid");
+        if (datum.getPrimeMeridian() == null) incomplete("primeMeridian");
     }
 }

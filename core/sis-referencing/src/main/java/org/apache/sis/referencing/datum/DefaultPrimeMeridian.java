@@ -84,7 +84,7 @@ import org.apache.sis.internal.referencing.Formulas;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Cédric Briançon (Geomatys)
  * @since   0.4
- * @version 0.6
+ * @version 0.7
  * @module
  *
  * @see org.apache.sis.referencing.CommonCRS#primeMeridian()
@@ -406,6 +406,12 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
      */
     private DefaultPrimeMeridian() {
         super(org.apache.sis.internal.referencing.NilReferencingObject.INSTANCE);
+        /*
+         * Angular units are mandatory for SIS working. We do not verify their presence here (because the
+         * verification would have to be done in an 'afterMarshal(…)' method and throwing an exception in
+         * that method causes the whole unmarshalling to fail). But the CD_PrimeMeridian adapter does some
+         * verifications.
+         */
     }
 
     /**
@@ -427,11 +433,10 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
                 /*
                  * Missing unit: if the Greenwich longitude is zero, any angular unit gives the same result
                  * (assuming that the missing unit was not applying an offset), so we can select a default.
-                 * If the Greenwich longitude is not zero, we can not guess. Our object will be invalid.
+                 * If the Greenwich longitude is not zero, presume egrees but log a warning.
                  */
-                if (greenwichLongitude == 0) {
-                    angularUnit = NonSI.DEGREE_ANGLE;
-                } else {
+                angularUnit = NonSI.DEGREE_ANGLE;
+                if (greenwichLongitude != 0) {
                     Measure.missingUOM(DefaultPrimeMeridian.class, "setGreenwichMeasure");
                 }
             }
