@@ -16,28 +16,26 @@
  */
 package org.apache.sis.referencing.operation.projection;
 
+import javax.measure.unit.SI;
 import org.opengis.parameter.ParameterValueGroup;
-import org.opengis.referencing.operation.MathTransform;
+import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.util.FactoryException;
-
-import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.referencing.operation.transform.ContextualParameters;
-
-import org.junit.Assert;
+import org.apache.sis.referencing.operation.matrix.Matrix2;
+import org.apache.sis.internal.referencing.Formulas;
+import org.apache.sis.test.DependsOnMethod;
+import org.apache.sis.test.DependsOn;
 import org.junit.Test;
 
-import static java.lang.Math.sqrt;
-import static java.lang.StrictMath.toRadians;
-import org.apache.sis.referencing.operation.matrix.Matrix2;
-import org.apache.sis.test.DependsOnMethod;
-import org.opengis.referencing.operation.Matrix;
+import static java.lang.StrictMath.*;
+import static org.junit.Assert.*;
 
 
 /**
- * Tests {@link ObliqueStereographic} projection.
+ * Tests the {@link ObliqueStereographic} class.
  *
  * @author  Rémi Marechal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
@@ -45,161 +43,169 @@ import org.opengis.referencing.operation.Matrix;
  * @version 0.7
  * @module
  */
+@DependsOn({
+    InitializerTest.class,
+    NormalizedProjectionTest.class
+})
 public final strictfp class ObliqueStereographicTest extends MapProjectionTestCase {
     /**
-     * Tolerance used to compare spherical and oblique formula
-     * into same parameters context.
-     */
-    private final static double EPSG_SPHERICAL_TOLERANCE = 1E-15;
-
-    /**
-     * Parameter values provided by the <a href = http://www.iogp.org/pubs/373-07-2.pdf>EPSG guide</a>
-     * for testing {@link ObliqueStereographic} transform conformity.
+     * Parameter values provided by the <a href="http://www.iogp.org/pubs/373-07-2.pdf">EPSG guide</a>
+     * for testing {@link ObliqueStereographic} transform conformity. The test uses the parameters for
+     * the <cite>Amersfoort / RD New</cite> projection:
      *
-     * @see ContextualParameters#getMatrix(boolean) where boolean is true for value n.
-     * @see ContextualParameters#getMatrix(boolean) where boolean is false for k0, a, FE, FN and R.
-     * @see Initializer#radiusOfConformalSphere(double) for value R
+     * <ul>
+     *   <li>Semi-major axis length:            <var>a</var>  = 6377397.155 metres</li>
+     *   <li>Inverse flattening:              1/<var>f</var>  = 299.15281</li>
+     *   <li>Latitude of natural origin:        <var>φ₀</var> = 52°09'22.178"N</li>
+     *   <li>Longitude of natural origin:       <var>λ₀</var> =  5°23'15.500"E</li>
+     *   <li>Scale factor at natural origin:    <var>k₀</var> = 0.9999079</li>
+     *   <li>False easting:                     <var>FE</var> = 155000.00 metres</li>
+     *   <li>False northing:                    <var>FN</var> = 463000.00 metres</li>
+     * </ul>
      *
+     * Other parameters (<var>n</var>, <var>R</var>, <var>g</var>, <var>h</var>) are computed from the above.
+     * Those parameters fall in three groups:
+     *
+     * <ul>
+     *   <li>Parameters used in linear operations (additions or multiplications) performed <strong>before</strong> the
+     *       non-linear part (the "kernel") of the map projection. Those parameters are <var>λ₀</var> and <var>n</var>
+     *       and their values are stored in the normalization matrix given by
+     *       <code>{@linkplain ContextualParameters#getMatrix(boolean) ContextualParameters.getMatrix}(true)</code>.</li>
+     *
+     *   <li>Parameters used in linear operations (additions or multiplications) performed <strong>after</strong> the
+     *       non-linear part (the "kernel") of the map projection. Those parameters are <var>k₀</var>, <var>R</var>,
+     *       <var>FE</var> and <var>FN</var> and their values are stored in the denormalization matrix given by
+     *       <code>{@linkplain ContextualParameters#getMatrix(boolean) ContextualParameters.getMatrix}(false)</code>.</li>
+     *
+     *   <li>Other parameters are either used in the non-linear "kernel" of the map projection or used for computing the
+     *       above-cited parameters.</li>
+     * </ul>
+     *
+     * <p><b>Note 1:</b> value of <var>R</var> is computed by {@link Initializer#radiusOfConformalSphere(double)}.</p>
+     *
+     * <p><b>Note 2:</b> we do not follow the Java naming convention here (constants in upper cases) in order to use
+     * as much as possible the exact same symbols as in the EPSG guide.</p>
      */
-    private final static double eSQUARED = 0.08169683 * 0.08169683,     // Excentricity squared.
-                                φ0       = 0.910296727,                 // Latitude of natural origin (rad)
-
-                                //-- Some attributs are considered as linear and put into normalize matrix and apply before transform
-                                n        = sqrt(1 + (eSQUARED * Math.pow(Math.cos(φ0), 4)) / (1 - eSQUARED)),
-
-                                //-- Some attributs are considered as linear and put into denormalize matrix and apply just after
-                                k0       = 0.9999079,
-                                a        = 6377397.155,
-                                FE       = 155000.00,
-                                FN       = 463000.00,
-                                R        = 6382644.571 / a;
+    private static final double φ0  = 0.910296727,      // Latitude of natural origin (rad)
+        /* Before kernel */     λ0  = 0.094032038,      // Longitude of natural origin (rad)
+        /*  After kernel */     R   = 6382644.571,      // Radius of conformal sphere (m)
+                                a   = 6377397.155,      // Semi-major axis length (m)
+                                ivf = 299.15281,        // Inverse flattening factor
+                                e   = 0.08169683,       // Excentricity
+        /* Before kernel */     n   = 1.000475857,      // Coefficient computed from excentricity and φ₀.
+        /*  After kernel */     k0  = 0.9999079,        // Scale factor
+        /*  After kernel */     FE  = 155000.00,        // False Easting (m)
+        /*  After kernel */     FN  = 463000.00;        // False Northing (m)
 
     /**
-     * Tested {@link ObliqueStereographic} projection.
+     * Compares the <var>n</var> value given in the EPSG guide with the value computed from the formula.
      */
-    private final ObliqueStereographic obliqueStereographic;
+    @Test
+    public void testN() {
+        assertEquals(n, sqrt(1 + (e*e * pow(cos(φ0), 4)) / (1 - e*e)), 0.5E-9);
+    }
 
     /**
-     * {@link ObliqueStereographic} projection define into spherical particularity case.
-     * Used to compute the expected transform, invert transform and derivative values
-     * when the projection is spherical.
+     * Creates a new instance of {@link ObliqueStereographic} for a sphere or an ellipsoid.
+     * The new instance is stored in the inherited {@link #transform} field.
+     *
+     * @param ellipse {@code false} for the spherical case, or {@code true} for the ellipsoidal case.
      */
-    private final ObliqueStereographic obliqueReference;
-
-    /**
-     * Tested {@link ObliqueStereographic} projection into spherical particularity case.
-     */
-    private final ObliqueStereographic.Spherical sphericalObliqueStereographic;
-
-    /**
-     * Buid tested {@link ObliqueStereographic} {@link MathTransform}.
-     */
-    public ObliqueStereographicTest() {
-
-        //-- oblique EPSG case
+    private void createNormalizedProjection(final boolean ellipse) {
         final OperationMethod op = new org.apache.sis.internal.referencing.provider.ObliqueStereographic();
+        final ParameterValueGroup p = op.getParameters().createValue();
+        /*
+         * Following parameters are not given explicitely by EPSG definitions since they are
+         * usually inferred from the datum.  However in the particular case of this test, we
+         * need to provide them. The names used below are either OGC names or SIS extensions.
+         */
+        if (!ellipse) {
+            p.parameter("semi_major").setValue(R);
+            p.parameter("semi_minor").setValue(R);
+        } else {
+            p.parameter("semi_major").setValue(a);
+            p.parameter("inverse_flattening").setValue(ivf);
+        }
+        /*
+         * Following parameters are reproduced verbatim from EPSG registry and EPSG guide.
+         */
+        p.parameter("Latitude of natural origin")    .setValue(φ0, SI.RADIAN);
+        p.parameter("Longitude of natural origin")   .setValue(λ0, SI.RADIAN);
+        p.parameter("Scale factor at natural origin").setValue(k0);
+        p.parameter("False easting")                 .setValue(FE, SI.METRE);
+        p.parameter("False northing")                .setValue(FN, SI.METRE);
 
-        final ParameterValueGroup obliqueParameters = op.getParameters().createValue();
-
-        //-- implicit names from OGC.
-        obliqueParameters.parameter("semi_major").setValue(6377397.155);
-        obliqueParameters.parameter("inverse_flattening").setValue(299.15281);
-
-        //-- Name parameters from Epsg registry
-        obliqueParameters.parameter("Latitude of natural origin").setValue(52.156160556);
-        obliqueParameters.parameter("Longitude of natural origin").setValue(5.387638889);
-        obliqueParameters.parameter("Scale factor at natural origin").setValue(0.9999079);
-        obliqueParameters.parameter("False easting").setValue(155000.00);
-        obliqueParameters.parameter("False northing").setValue(463000.00);
-
-        obliqueStereographic = new ObliqueStereographic(op, (Parameters) obliqueParameters);
-
-
-        //-- spherical case
-        final ParameterValueGroup sphericalParameters = op.getParameters().createValue();
-
-        //-- implicit names from OGC.
-        sphericalParameters.parameter("semi_major").setValue(6377397.155);
-        sphericalParameters.parameter("semi_minor").setValue(6377397.155);
-
-        //-- Name parameters from Epsg registry
-        sphericalParameters.parameter("Latitude of natural origin").setValue(52.156160556);
-        sphericalParameters.parameter("Longitude of natural origin").setValue(5.387638889);
-        sphericalParameters.parameter("Scale factor at natural origin").setValue(0.9999079);
-        sphericalParameters.parameter("False easting").setValue(155000.00);
-        sphericalParameters.parameter("False northing").setValue(463000.00);
-
-        obliqueReference              = new ObliqueStereographic(op, (Parameters) sphericalParameters);
-        sphericalObliqueStereographic = new ObliqueStereographic.Spherical(obliqueReference);
+        transform = new ObliqueStereographic(op, (Parameters) p);
     }
 
     /**
-     * {@link MathTransform#transform(org.opengis.geometry.DirectPosition, org.opengis.geometry.DirectPosition) }
-     * test with expected values from
-     * <a href = http://www.iogp.org/pubs/373-07-2.pdf> EPSG guide</a>
+     * The point given in the EPSG guide for testing the map projection.
+     * (φ<sub>t</sub>, λ<sub>t</sub>) is the source geographic coordinate in degrees and
+     * (x<sub>t</sub>, y<sub>t</sub>) is the target projected coordinate in metres.
+     */
+    private static final double φt = 53,                // Latitude in degrees
+                                λt = 6,                 // Longitude in degrees
+                                Et = 196105.283,        // Easting in metres
+                                Nt = 557057.739;        // Northing in metres
+
+    /**
+     * Tests {@link ObliqueStereographic#transform(double[], int, double[], int, boolean)}
+     * with the values given by the EPSG guide.
      *
-     * @throws FactoryException if an error occurred while creating the map projection.
-     * @throws TransformException if an error occurred while projecting a coordinate.
+     * @throws TransformException if an error occurred while projecting the coordinate.
      */
     @Test
-    public void testEPSGTransform() throws FactoryException, TransformException {
-
-        final double[] srcPts = new double[]{6, 53}; //-- deg
-        srcPts[0] = Math.toRadians(srcPts[0] - 5.387638889) ;
-        srcPts[1] = Math.toRadians(srcPts[1]);
-
+    public void testTransform() throws TransformException {
+        final double[] srcPts = new double[] {λt, φt};   // in degrees
         final double[] dstPts = new double[2];
 
-        srcPts[0] = srcPts[0] * n;
+        // Linear operations (normalization) applied by NormalizedTransform.
+        srcPts[0] = toRadians(srcPts[0]) - λ0;
+        srcPts[1] = toRadians(srcPts[1]);
+        srcPts[0] *= n;
 
-        obliqueStereographic.transform(srcPts, 0, dstPts, 0, 1);
+        // The non-linear part of map projection (the "kernel").
+        createNormalizedProjection(true);
+        transform.transform(srcPts, 0, dstPts, 0, 1);
 
-        final double destE = dstPts[0] * k0 * a * 2 * R + FE;
-        final double destN = dstPts[1] * k0 * a * 2 * R + FN;
+        // Linear operations (denormalization) applied by NormalizedTransform.
+        dstPts[0] *= (k0 * 2*R);
+        dstPts[1] *= (k0 * 2*R);
+        dstPts[0] += FE;
+        dstPts[1] += FN;
 
-        Assert.assertEquals("destination East coordinate",  196105.283, destE, Formulas.LINEAR_TOLERANCE);
-        Assert.assertEquals("destination North coordinate", 557057.739, destN, Formulas.LINEAR_TOLERANCE);
+        assertEquals("Easting",  Et, dstPts[0], Formulas.LINEAR_TOLERANCE);
+        assertEquals("Northing", Nt, dstPts[1], Formulas.LINEAR_TOLERANCE);
     }
 
-
-   /**
-     * Test method {@link ObliqueStereographic#inverseTransform(double[], int, double[], int)}
-     * test with expected values from
-     * <a href = http://www.iogp.org/pubs/373-07-2.pdf> EPSG guide</a>
+    /**
+     * Tests {@link ObliqueStereographic#inverseTransform(double[], int, double[], int)}
+     * with the values given by the EPSG guide.
      *
-     * @throws org.apache.sis.referencing.operation.projection.ProjectionException
+     * @throws TransformException if an error occurred while projecting the coordinate.
      */
     @Test
-    public void testEPSGinvertTransform() throws ProjectionException {
-
-        double srcEast  = 196105.28;
-        double srcNorth = 557057.74;
-
-        srcEast  -= FE;
-        srcNorth -= FN;
-        srcEast  /= k0;
-        srcNorth /= k0;
-        srcEast  /= a;
-        srcNorth /= a;
-        srcEast  /= (2 * R);
-        srcNorth /= (2 * R);
-
-        //-- tcheck transform
-        final double[] srcPts = new double[]{srcEast, srcNorth}; //-- meter
-
+    public void testInverseTransform() throws TransformException {
+        final double[] srcPts = new double[] {Et, Nt};  // in metres
         final double[] dstPts = new double[2];
-        obliqueStereographic.inverseTransform(srcPts, 0, dstPts, 0);
 
-        final double λO = 0.094032038;
+        // Linear operations (normalization) applied by NormalizedTransform.
+        srcPts[0] -= FE;
+        srcPts[1] -= FN;
+        srcPts[0] /= (k0 * 2*R);
+        srcPts[1] /= (k0 * 2*R);
 
-        double destλ = dstPts[0] / n + λO;
-        double destφ = dstPts[1];
+        // The non-linear part of map projection (the "kernel").
+        createNormalizedProjection(true);
+        ((NormalizedProjection) transform).inverseTransform(srcPts, 0, dstPts, 0);
 
-        destλ = Math.toDegrees(destλ);
-        destφ = Math.toDegrees(destφ);
+        // Linear operations (denormalization) applied by NormalizedTransform.
+        dstPts[0] /= n;
+        dstPts[0] = toDegrees(dstPts[0] + λ0);
+        dstPts[1] = toDegrees(dstPts[1]);
 
-        Assert.assertEquals("destination East coordinate",  6, destλ, Formulas.ANGULAR_TOLERANCE);
-        Assert.assertEquals("destination North coordinate", 53, destφ, Formulas.ANGULAR_TOLERANCE);
+        assertEquals("Longitude", λt, dstPts[0], Formulas.ANGULAR_TOLERANCE);
+        assertEquals("Latitude",  φt, dstPts[1], Formulas.ANGULAR_TOLERANCE);
     }
 
     /**
@@ -212,113 +218,124 @@ public final strictfp class ObliqueStereographicTest extends MapProjectionTestCa
      * @see org.opengis.test.referencing.ParameterizedTransformTest#testObliqueStereographic()
      */
     @Test
+    @DependsOnMethod({"testTransform", "testInverseTransform"})
     public void testObliqueStereographic() throws FactoryException, TransformException {
         createGeoApiTest(new org.apache.sis.internal.referencing.provider.ObliqueStereographic()).testObliqueStereographic();
     }
 
     /**
-     * Verifies the consistency of elliptical formulas with the spherical formulas.
-     * This test compares the results between elliptical and spherical transform formulas
-     * from the particularity case stipulated into EPSG guide.
+     * Verifies the consistency of spherical formulas with the elliptical formulas.
+     * This test transforms the point given in the EPSG guide and takes the result
+     * of the elliptical implementation as a reference.
      *
-     * @see ObliqueStereographic.Spherical#transform(double[], int, double[], int, boolean)
-     * with boolean setted to {@code false}
-     * @throws TransformException if an error occurred while projecting a coordinate.
+     * @throws TransformException if an error occurred while projecting the coordinate.
      */
     @Test
-    @DependsOnMethod("testObliqueStereographic")
-    public void EPSGEllipticalWithSphericalTransform() throws TransformException {
-
-        final double[] srcPts = new double[]{6, 53}; //-- deg
-        srcPts[0] = Math.toRadians(srcPts[0] - 5.387638889) ;
-        srcPts[1] = Math.toRadians(srcPts[1]);
-
+    @DependsOnMethod("testTransform")
+    public void testSphericalTransform() throws TransformException {
+        final double[] srcPts = new double[] {λt, φt};  // in degrees
         final double[] dstPts = new double[2];
+        final double[] refPts = new double[2];
 
-        srcPts[0] = srcPts[0] * n;
+        // Linear operations (normalization) applied by NormalizedTransform.
+        srcPts[0] = toRadians(srcPts[0]) - λ0;
+        srcPts[1] = toRadians(srcPts[1]);
+        srcPts[0] *= n;
 
-        obliqueReference.transform(srcPts, 0, dstPts, 0, 1);
+        // The non-linear part of map projection (the "kernel").
+        createNormalizedProjection(false);
+        transform.transform(srcPts, 0, refPts, 0, 1);
 
-        final double destE = dstPts[0] * k0 * a * 2 * R + FE;
-        final double destN = dstPts[1] * k0 * a * 2 * R + FN;
+        // Linear operations (denormalization) applied by NormalizedTransform.
+        refPts[0] *= (k0 * 2*R);
+        refPts[1] *= (k0 * 2*R);
+        refPts[0] += FE;
+        refPts[1] += FN;
 
-        sphericalObliqueStereographic.transform(srcPts, 0, dstPts, 0, 1);
+        // Transform the same point, now using the spherical implementation.
+        ObliqueStereographic spherical = (ObliqueStereographic) transform;
+        spherical = new ObliqueStereographic.Spherical(spherical);
+        spherical.transform(srcPts, 0, dstPts, 0, 1);
 
-        final double destSphereE = dstPts[0] * k0 * a * 2 * R + FE;
-        final double destSphereN = dstPts[1] * k0 * a * 2 * R + FN;
+        // Linear operations (denormalization) applied by NormalizedTransform.
+        dstPts[0] *= (k0 * 2*R);
+        dstPts[1] *= (k0 * 2*R);
+        dstPts[0] += FE;
+        dstPts[1] += FN;
 
-        Assert.assertEquals("destination East coordinate",  destE, destSphereE, EPSG_SPHERICAL_TOLERANCE);
-        Assert.assertEquals("destination North coordinate", destN, destSphereN, EPSG_SPHERICAL_TOLERANCE);
+        assertArrayEquals("Spherical projection", refPts, dstPts, Formulas.LINEAR_TOLERANCE);
     }
 
     /**
-     * Verifies the consistency of elliptical formulas with the spherical formulas.
-     * This test compares the results between elliptical and spherical invert transform formulas
-     * from the particularity case stipulated into EPSG guide.
+     * Verifies the consistency of spherical formulas with the elliptical formulas.
+     * This test computes the inverse transform of the point given in the EPSG guide
+     * and takes the result of the elliptical implementation as a reference.
      *
-     * @see ObliqueStereographic.Spherical#inverseTransform(double[], int, double[], int)
-     * @throws ProjectionException if an error occurred while invert transformation computing.
+     * @throws TransformException if an error occurred while projecting the coordinate.
      */
     @Test
-    @DependsOnMethod("testObliqueStereographic")
-    public void EPSGEllipticalWithSphericalInvertTransform() throws ProjectionException {
-        double srcEast  = 196105.28;
-        double srcNorth = 557057.74;
-
-        srcEast  -= FE;
-        srcNorth -= FN;
-        srcEast  /= k0;
-        srcNorth /= k0;
-        srcEast  /= a;
-        srcNorth /= a;
-        srcEast  /= (2 * R);
-        srcNorth /= (2 * R);
-
-        //-- tcheck transform
-        final double[] srcProjPts = new double[]{srcEast, srcNorth}; //-- meter
-
+    @DependsOnMethod("testInverseTransform")
+    public void testSphericalInverseTransform() throws TransformException {
+        final double[] srcPts = new double[] {Et, Nt};  // in metres
         final double[] dstPts = new double[2];
+        final double[] refPts = new double[2];
 
-        obliqueReference.inverseTransform(srcProjPts, 0, dstPts, 0);
+        // Linear operations (normalization) applied by NormalizedTransform.
+        srcPts[0] -= FE;
+        srcPts[1] -= FN;
+        srcPts[0] /= (k0 * 2*R);
+        srcPts[1] /= (k0 * 2*R);
 
-        final double destλ = dstPts[0];
-        final double destφ = dstPts[1];
+        // The non-linear part of map projection (the "kernel").
+        createNormalizedProjection(false);
+        ((NormalizedProjection) transform).inverseTransform(srcPts, 0, refPts, 0);
 
-        sphericalObliqueStereographic.inverseTransform(srcProjPts, 0, dstPts, 0);
+        // Linear operations (denormalization) applied by NormalizedTransform.
+        refPts[0] /= n;
+        refPts[0] = toDegrees(refPts[0] + λ0);
+        refPts[1] = toDegrees(refPts[1]);
 
-        final double destSphereλ = dstPts[0];
-        final double destSphereφ = dstPts[1];
+        // Transform the same point, now using the spherical implementation.
+        ObliqueStereographic spherical = (ObliqueStereographic) transform;
+        spherical = new ObliqueStereographic.Spherical(spherical);
+        spherical.inverseTransform(srcPts, 0, dstPts, 0);
 
-        Assert.assertEquals("destination East coordinate",  destλ, destSphereλ, EPSG_SPHERICAL_TOLERANCE);
-        Assert.assertEquals("destination North coordinate", destφ, destSphereφ, EPSG_SPHERICAL_TOLERANCE);
+        // Linear operations (denormalization) applied by NormalizedTransform.
+        dstPts[0] /= n;
+        dstPts[0] = toDegrees(dstPts[0] + λ0);
+        dstPts[1] = toDegrees(dstPts[1]);
+
+        assertArrayEquals("Spherical inverse projection", refPts, dstPts, Formulas.ANGULAR_TOLERANCE);
     }
 
     /**
-     * Verifies the consistency of elliptical formulas with the spherical formulas.
-     * This test compares the results between elliptical and spherical derivative formulas
-     * from the particularity case stipulated into EPSG guide.
+     * Verifies the consistency of spherical formulas with the elliptical formulas.
+     * This test computes the derivative at a point and takes the result of the elliptical
+     * implementation as a reference.
      *
-     * @see ObliqueStereographic.Spherical#transform(double[], int, double[], int, boolean)
-     * with boolean setted to {@code true}
-     * @throws ProjectionException if an error occurred while derivative computing.
+     * @throws TransformException if an error occurred while computing the derivative.
      */
     @Test
-    @DependsOnMethod("testObliqueStereographic")
-    public void EPSGEllipticalWithSphericalDerivative() throws ProjectionException {
+    @DependsOnMethod("testDerivative")
+    public void testSphericalDerivative() throws TransformException {
+        final double[] srcPts = new double[] {λt, φt};  // in degrees
+        srcPts[0] = toRadians(srcPts[0]) - λ0;
+        srcPts[1] = toRadians(srcPts[1]);
+        srcPts[0] *= n;
 
-        final Matrix2 derivativeTolerance = new Matrix2(EPSG_SPHERICAL_TOLERANCE, EPSG_SPHERICAL_TOLERANCE,
-                                                                                   EPSG_SPHERICAL_TOLERANCE, EPSG_SPHERICAL_TOLERANCE);
-        final double[] srcPts = new double[]{6, 53}; //-- deg
-        srcPts[0] = Math.toRadians(srcPts[0] - 5.387638889) ;
-        srcPts[1] = Math.toRadians(srcPts[1]);
+        // Using elliptical implementation.
+        createNormalizedProjection(false);
+        final Matrix reference = ((NormalizedProjection) transform).transform(srcPts, 0, null, 0, true);
 
-        srcPts[0] = srcPts[0] * n;
+        // Using spherical implementation.
+        ObliqueStereographic spherical = (ObliqueStereographic) transform;
+        spherical = new ObliqueStereographic.Spherical(spherical);
+        final Matrix derivative = spherical.transform(srcPts, 0, null, 0, true);
 
-        //-- Derivative
-        final Matrix expectedDerivative = obliqueReference.transform(srcPts, 0, null, 0, true);
-        final Matrix testedDerivative   = sphericalObliqueStereographic.transform(srcPts, 0, null, 0, true);
-
-        assertMatrixEquals("derivative spherical", expectedDerivative, testedDerivative, derivativeTolerance);
+        tolerance = 1E-12;
+        assertMatrixEquals("Spherical derivative", reference, derivative,
+                new Matrix2(tolerance, tolerance,
+                            tolerance, tolerance));
     }
 
     /**
@@ -327,8 +344,8 @@ public final strictfp class ObliqueStereographicTest extends MapProjectionTestCa
      * @throws TransformException Should never happen.
      */
     @Test
-    public void testSphericalDerivative() throws TransformException {
-        transform = obliqueStereographic;
+    public void testDerivative() throws TransformException {
+        createNormalizedProjection(true);
         tolerance = 1E-9;
 
         final double delta = toRadians(100.0 / 60) / 1852; // Approximatively 100 metres.

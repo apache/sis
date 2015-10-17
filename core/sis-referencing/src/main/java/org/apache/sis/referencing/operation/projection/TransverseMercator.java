@@ -34,6 +34,7 @@ import org.apache.sis.util.Workaround;
 import static java.lang.Math.*;
 import static org.apache.sis.math.MathFunctions.asinh;
 import static org.apache.sis.math.MathFunctions.atanh;
+import static org.apache.sis.internal.referencing.provider.TransverseMercator.*;
 
 
 /**
@@ -115,10 +116,10 @@ public class TransverseMercator extends ConformalProjection {
             xOffset = ParameterRole.FALSE_WESTING;
             yOffset = ParameterRole.FALSE_SOUTHING;
         }
-        roles.put(ParameterRole.CENTRAL_MERIDIAN, org.apache.sis.internal.referencing.provider.TransverseMercator.LONGITUDE_OF_ORIGIN);
-        roles.put(ParameterRole.SCALE_FACTOR,     org.apache.sis.internal.referencing.provider.TransverseMercator.SCALE_FACTOR);
-        roles.put(xOffset,                        org.apache.sis.internal.referencing.provider.TransverseMercator.FALSE_EASTING);
-        roles.put(yOffset,                        org.apache.sis.internal.referencing.provider.TransverseMercator.FALSE_NORTHING);
+        roles.put(ParameterRole.CENTRAL_MERIDIAN, LONGITUDE_OF_ORIGIN);
+        roles.put(ParameterRole.SCALE_FACTOR, SCALE_FACTOR);
+        roles.put(xOffset, FALSE_EASTING);
+        roles.put(yOffset, FALSE_NORTHING);
         return new Initializer(method, parameters, roles, isSouth ? (byte) 1 : (byte) 0);
     }
 
@@ -129,8 +130,7 @@ public class TransverseMercator extends ConformalProjection {
     @Workaround(library="JDK", version="1.7")
     private TransverseMercator(final Initializer initializer) {
         super(initializer);
-        final double φ0 = toRadians(initializer.getAndStore(
-                org.apache.sis.internal.referencing.provider.TransverseMercator.LATITUDE_OF_ORIGIN));
+        final double φ0 = toRadians(initializer.getAndStore(LATITUDE_OF_ORIGIN));
         /*
          * Opportunistically use double-double arithmetic for computation of B since we will store
          * it in the denormalization matrix, and there is no sine/cosine functions involved here.

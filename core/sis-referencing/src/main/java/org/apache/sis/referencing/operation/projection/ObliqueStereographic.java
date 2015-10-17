@@ -40,15 +40,12 @@ import static org.apache.sis.internal.referencing.provider.ObliqueStereographic.
  *
  * <div class="section">References</div>
  * <ul>
- *   <li>{@code libproj4} is available at
- *       <a href = http://www.iogp.org/pubs/373-07-2.pdf>EPSG guide</a>.<br>
- *        Relevant files are: {@code PJ_sterea.c}, {@code pj_gauss.c},
- *        {@code pj_fwd.c}, {@code pj_inv.c} and {@code lib_proj.h}</li>
+ *   <li><a href = http://www.iogp.org/pubs/373-07-2.pdf>EPSG guide</a>.</li>
  * </ul>
  *
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.6
+ * @since   0.7
  * @version 0.7
  * @module
  */
@@ -67,7 +64,7 @@ public class ObliqueStereographic extends NormalizedProjection {
      * Conformal latitude of origin only use
      * into {@link #inverseTransform(double[], int, double[], int) }.
      */
-    protected final double χ0;
+    final double χ0;
 
     /**
      * Value of sin(χ0) only use
@@ -75,7 +72,7 @@ public class ObliqueStereographic extends NormalizedProjection {
      *
      * @see #χ0
      */
-    protected final double sinχ0;
+    final double sinχ0;
 
     /**
      * Value of cos(χ0) only use
@@ -83,7 +80,7 @@ public class ObliqueStereographic extends NormalizedProjection {
      *
      * @see #χ0
      */
-    protected final double cosχ0;
+    final double cosχ0;
 
     /**
      * c, internaly parameter used to define conformal sphere, used
