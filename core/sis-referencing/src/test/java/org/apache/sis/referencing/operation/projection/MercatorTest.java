@@ -50,6 +50,7 @@ import static org.apache.sis.referencing.operation.projection.ConformalProjectio
 public final strictfp class MercatorTest extends MapProjectionTestCase {
     /**
      * Creates a new instance of {@link Mercator} for a sphere or an ellipsoid.
+     * The new instance is stored in the inherited {@link #transform} field.
      *
      * @param ellipse {@code false} for a sphere, or {@code true} for WGS84 ellipsoid.
      */

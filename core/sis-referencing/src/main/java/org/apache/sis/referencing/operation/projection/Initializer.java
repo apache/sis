@@ -321,9 +321,9 @@ final class Initializer {
      */
     final double radiusOfConformalSphere(final double sinφ) {
         final DoubleDouble Rc = verbatim(1);
-        Rc.subtract(excentricitySquared);   //-- 1 - ℯ²
-        Rc.sqrt();                          //-- √(1 - ℯ²)
-        Rc.divide(rν2(sinφ));               //-- √(1 - ℯ²) / (1 - ℯ²sin²φ)
+        Rc.subtract(excentricitySquared);       //  1 - ℯ²
+        Rc.sqrt();                              //  √(1 - ℯ²)
+        Rc.divide(rν2(sinφ));                   //  √(1 - ℯ²) / (1 - ℯ²sin²φ)
         return Rc.value;
     }
 
