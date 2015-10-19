@@ -353,7 +353,7 @@ public class LambertConicConformal extends ConformalProjection {
      * comparing two {@code LambertConicConformal} projections or formatting them in debug mode.
      */
     @Override
-    String[] getInternalParameterNames() {
+    final String[] getInternalParameterNames() {
         return new String[] {"n"};
     }
 
@@ -362,7 +362,7 @@ public class LambertConicConformal extends ConformalProjection {
      * comparing two {@code LambertConicConformal} projections or formatting them in debug mode.
      */
     @Override
-    double[] getInternalParameterValues() {
+    final double[] getInternalParameterValues() {
         return new double[] {n};
     }
 
@@ -405,7 +405,7 @@ public class LambertConicConformal extends ConformalProjection {
          * the first non-linear one moved to the "normalize" affine transform, and the linear operations
          * applied after the last non-linear one moved to the "denormalize" affine transform.
          */
-        final double θ    = srcPts[srcOff  ];     // θ = λ⋅n
+        final double θ    = srcPts[srcOff  ];     // θ = λ⋅n  (ignoring longitude of origin)
         final double φ    = srcPts[srcOff+1];     // Sign may be reversed
         final double absφ = abs(φ);
         final double sinθ = sin(θ);
@@ -430,9 +430,9 @@ public class LambertConicConformal extends ConformalProjection {
         if (!derivate) {
             return null;
         }
-        //
-        // End of map projection. Now compute the derivative.
-        //
+        /*
+         * End of map projection. Now compute the derivative.
+         */
         final double dρ;
         if (sinφ != 1) {
             dρ = n * dy_dφ(sinφ, cos(φ)) * ρ;
@@ -444,7 +444,7 @@ public class LambertConicConformal extends ConformalProjection {
     }
 
     /**
-     * Transforms the specified (<var>x</var>,<var>y</var>) coordinates and stores the (θ,φ) result in {@code dstPts}.
+     * Converts the specified (<var>x</var>,<var>y</var>) coordinates and stores the (θ,φ) result in {@code dstPts}.
      *
      * @throws ProjectionException if the point can not be converted.
      */

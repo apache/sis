@@ -34,6 +34,7 @@ import org.apache.sis.util.Workaround;
 import static java.lang.Math.*;
 import static org.apache.sis.math.MathFunctions.asinh;
 import static org.apache.sis.math.MathFunctions.atanh;
+import static org.apache.sis.internal.referencing.provider.TransverseMercator.*;
 
 
 /**
@@ -115,10 +116,10 @@ public class TransverseMercator extends ConformalProjection {
             xOffset = ParameterRole.FALSE_WESTING;
             yOffset = ParameterRole.FALSE_SOUTHING;
         }
-        roles.put(ParameterRole.CENTRAL_MERIDIAN, org.apache.sis.internal.referencing.provider.TransverseMercator.LONGITUDE_OF_ORIGIN);
-        roles.put(ParameterRole.SCALE_FACTOR,     org.apache.sis.internal.referencing.provider.TransverseMercator.SCALE_FACTOR);
-        roles.put(xOffset,                        org.apache.sis.internal.referencing.provider.TransverseMercator.FALSE_EASTING);
-        roles.put(yOffset,                        org.apache.sis.internal.referencing.provider.TransverseMercator.FALSE_NORTHING);
+        roles.put(ParameterRole.CENTRAL_MERIDIAN, LONGITUDE_OF_ORIGIN);
+        roles.put(ParameterRole.SCALE_FACTOR, SCALE_FACTOR);
+        roles.put(xOffset, FALSE_EASTING);
+        roles.put(yOffset, FALSE_NORTHING);
         return new Initializer(method, parameters, roles, isSouth ? (byte) 1 : (byte) 0);
     }
 
@@ -129,8 +130,7 @@ public class TransverseMercator extends ConformalProjection {
     @Workaround(library="JDK", version="1.7")
     private TransverseMercator(final Initializer initializer) {
         super(initializer);
-        final double φ0 = toRadians(initializer.getAndStore(
-                org.apache.sis.internal.referencing.provider.TransverseMercator.LATITUDE_OF_ORIGIN));
+        final double φ0 = toRadians(initializer.getAndStore(LATITUDE_OF_ORIGIN));
         /*
          * Opportunistically use double-double arithmetic for computation of B since we will store
          * it in the denormalization matrix, and there is no sine/cosine functions involved here.
@@ -383,33 +383,30 @@ public class TransverseMercator extends ConformalProjection {
             sinh_8η0 = sinh_4η0 * cosh_4η0;             assert identityEquals(sinh_8η0, sinh(8*η0) / 8) : η0;
         }
         /*
-         * Assuming that (λ, φ) ↦ Proj((λ, φ))
-         * where Proj is defined by: Proj((λ, φ)) : (η(λ, φ), ξ(λ, φ)).
-         *
-         * => (λ, φ) ↦ (η(λ, φ), ξ(λ, φ)).
+         * The projection of (λ,φ) is given by (η⋅B, ξ⋅B+M₀) — ignoring scale factors and false easting/northing.
+         * But the B and M₀ parameters have been merged by the constructor with other linear operations in the
+         * "denormalization" matrix. Consequently we only need to compute (η,ξ) below.
          */
-        //-- ξ(λ, φ)
-        final double ξ = cf8 * sin_8ξ0 * cosh_8η0
-                       + cf6 * sin_6ξ0 * cosh_6η0
-                       + cf4 * sin_4ξ0 * cosh_4η0
-                       + cf2 * sin_2ξ0 * cosh_2η0
-                       + ξ0;
-
-        //-- η(λ, φ)
-        final double η = cf8 * cos_8ξ0 * sinh_8η0
-                       + cf6 * cos_6ξ0 * sinh_6η0
-                       + cf4 * cos_4ξ0 * sinh_4η0
-                       + cf2 * cos_2ξ0 * sinh_2η0
-                       + η0;
-
         if (dstPts != null) {
-            dstPts[dstOff  ] = η;
-            dstPts[dstOff+1] = ξ;
+            // η(λ,φ)
+            dstPts[dstOff  ] = cf8 * cos_8ξ0 * sinh_8η0
+                             + cf6 * cos_6ξ0 * sinh_6η0
+                             + cf4 * cos_4ξ0 * sinh_4η0
+                             + cf2 * cos_2ξ0 * sinh_2η0
+                             + η0;
+            // ξ(λ,φ)
+            dstPts[dstOff+1] = cf8 * sin_8ξ0 * cosh_8η0
+                             + cf6 * sin_6ξ0 * cosh_6η0
+                             + cf4 * sin_4ξ0 * cosh_4η0
+                             + cf2 * sin_2ξ0 * cosh_2η0
+                             + ξ0;
         }
         if (!derivate) {
             return null;
         }
-
+        /*
+         * Now compute the derivative, if the user asked for it.
+         */
         final double cosλ          = cos(λ);                                        //-- λ
         final double cosφ          = cos(φ);                                        //-- φ
         final double cosh2Q        = coshQ * coshQ;                                 //-- Q
@@ -428,14 +425,14 @@ public class TransverseMercator extends ConformalProjection {
         final double dξ0_dλ = sinhQ * sinhη0 * cosλ / (cosh2Q_sin2λ * sqrt1_thQchη0);
         final double dξ0_dφ = (dQ_dφ * coshη0 / cosh2Q + dη0_dφ * sinhη0 * tanhQ) / sqrt1_thQchη0;
         /*
-         * Assuming that Jac(Proj((λ, φ))) is the Jacobian matrix of Proj((λ, φ)) function.
+         * Jac(Proj(λ,φ)) is the Jacobian matrix of Proj(λ,φ) function.
+         * So the derivative of Proj(λ,φ) is defined by:
          *
-         * So the derivative of Proj((λ, φ)) is defined by:
-         *                    ┌                              ┐
-         *                    │ dη(λ, φ) / dλ, dη(λ, φ) / dφ │
-         * Jac              = │                              │
-         *    (Proj(λ, φ))    │ dξ(λ, φ) / dλ, dξ(λ, φ) / dφ │
-         *                    └                              ┘
+         *                   ┌                        ┐
+         *                   │ ∂η(λ,φ)/∂λ, ∂η(λ,φ)/∂φ │
+         * Jac             = │                        │
+         *    (Proj(λ,φ))    │ ∂ξ(λ,φ)/∂λ, ∂ξ(λ,φ)/∂φ │
+         *                   └                        ┘
          */
         //-- dξ(λ, φ) / dλ
         final double dξ_dλ = dξ0_dλ

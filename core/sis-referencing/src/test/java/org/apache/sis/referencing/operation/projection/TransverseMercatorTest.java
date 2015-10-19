@@ -117,7 +117,7 @@ public final strictfp class TransverseMercatorTest extends MapProjectionTestCase
         createNormalizedProjection(false, 0);
         tolerance = 1E-9;
 
-        final double delta = toRadians(100.0 / 60) / 1852; // Approximatively 100 metres.
+        final double delta = toRadians(100.0 / 60) / 1852;      // Approximatively 100 metres.
         derivativeDeltas = new double[] {delta, delta};
         verifyDerivative(toRadians( 0), toRadians( 0));
         verifyDerivative(toRadians(-3), toRadians(30));
@@ -134,7 +134,7 @@ public final strictfp class TransverseMercatorTest extends MapProjectionTestCase
         createNormalizedProjection(true, 0);
         tolerance = 1E-9;
 
-        final double delta = toRadians(100.0 / 60) / 1852; // Approximatively 100 metres.
+        final double delta = toRadians(100.0 / 60) / 1852;      // Approximatively 100 metres.
         derivativeDeltas = new double[] {delta, delta};
         verifyDerivative(toRadians( 0), toRadians( 0));
         verifyDerivative(toRadians(-3), toRadians(30));

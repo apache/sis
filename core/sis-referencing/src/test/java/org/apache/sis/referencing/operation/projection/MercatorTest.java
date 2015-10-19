@@ -50,6 +50,7 @@ import static org.apache.sis.referencing.operation.projection.ConformalProjectio
 public final strictfp class MercatorTest extends MapProjectionTestCase {
     /**
      * Creates a new instance of {@link Mercator} for a sphere or an ellipsoid.
+     * The new instance is stored in the inherited {@link #transform} field.
      *
      * @param ellipse {@code false} for a sphere, or {@code true} for WGS84 ellipsoid.
      */
@@ -116,12 +117,12 @@ public final strictfp class MercatorTest extends MapProjectionTestCase {
     @Test
     @DependsOnMethod("testSpecialLatitudes")
     public void testDerivative() throws TransformException {
-        if (transform == null) {    // May have been initialized by 'testSphericalCase'.
-            createNormalizedProjection(true);       // Elliptical case
+        if (transform == null) {                                // May have been initialized by 'testSphericalCase'.
+            createNormalizedProjection(true);                   // Elliptical case
         }
-        final double delta = toRadians(100.0 / 60) / 1852;    // Approximatively 100 metres.
+        final double delta = toRadians(100.0 / 60) / 1852;      // Approximatively 100 metres.
         derivativeDeltas = new double[] {delta, delta};
-        tolerance = 1E-9;    // More severe than Formulas.LINEAR_TOLERANCE.
+        tolerance = 1E-9;                                       // More severe than Formulas.LINEAR_TOLERANCE.
         verifyDerivative(toRadians(15), toRadians( 30));
         verifyDerivative(toRadians(10), toRadians(-60));
     }
