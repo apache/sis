@@ -159,7 +159,7 @@ public final strictfp class ObliqueStereographicTest extends MapProjectionTestCa
         final double[] srcPts = new double[] {λt, φt};   // in degrees
         final double[] dstPts = new double[2];
 
-        // Linear operations (normalization) applied by NormalizedTransform.
+        // Linear operations (normalization) applied before NormalizedTransform.
         srcPts[0] = toRadians(srcPts[0]) - λ0;
         srcPts[1] = toRadians(srcPts[1]);
         srcPts[0] *= n;
@@ -168,7 +168,7 @@ public final strictfp class ObliqueStereographicTest extends MapProjectionTestCa
         createNormalizedProjection(true);
         transform.transform(srcPts, 0, dstPts, 0, 1);
 
-        // Linear operations (denormalization) applied by NormalizedTransform.
+        // Linear operations (denormalization) applied after NormalizedTransform.
         dstPts[0] *= (k0 * 2*R);
         dstPts[1] *= (k0 * 2*R);
         dstPts[0] += FE;
@@ -189,7 +189,7 @@ public final strictfp class ObliqueStereographicTest extends MapProjectionTestCa
         final double[] srcPts = new double[] {Et, Nt};  // in metres
         final double[] dstPts = new double[2];
 
-        // Linear operations (normalization) applied by NormalizedTransform.
+        // Linear operations (normalization) applied before NormalizedTransform.
         srcPts[0] -= FE;
         srcPts[1] -= FN;
         srcPts[0] /= (k0 * 2*R);
@@ -199,7 +199,7 @@ public final strictfp class ObliqueStereographicTest extends MapProjectionTestCa
         createNormalizedProjection(true);
         ((NormalizedProjection) transform).inverseTransform(srcPts, 0, dstPts, 0);
 
-        // Linear operations (denormalization) applied by NormalizedTransform.
+        // Linear operations (denormalization) applied after NormalizedTransform.
         dstPts[0] /= n;
         dstPts[0] = toDegrees(dstPts[0] + λ0);
         dstPts[1] = toDegrees(dstPts[1]);
@@ -237,7 +237,7 @@ public final strictfp class ObliqueStereographicTest extends MapProjectionTestCa
         final double[] dstPts = new double[2];
         final double[] refPts = new double[2];
 
-        // Linear operations (normalization) applied by NormalizedTransform.
+        // Linear operations (normalization) applied before NormalizedTransform.
         srcPts[0] = toRadians(srcPts[0]) - λ0;
         srcPts[1] = toRadians(srcPts[1]);
         srcPts[0] *= n;
@@ -246,7 +246,7 @@ public final strictfp class ObliqueStereographicTest extends MapProjectionTestCa
         createNormalizedProjection(false);
         transform.transform(srcPts, 0, refPts, 0, 1);
 
-        // Linear operations (denormalization) applied by NormalizedTransform.
+        // Linear operations (denormalization) applied after NormalizedTransform.
         refPts[0] *= (k0 * 2*R);
         refPts[1] *= (k0 * 2*R);
         refPts[0] += FE;
@@ -257,7 +257,7 @@ public final strictfp class ObliqueStereographicTest extends MapProjectionTestCa
         spherical = new ObliqueStereographic.Spherical(spherical);
         spherical.transform(srcPts, 0, dstPts, 0, 1);
 
-        // Linear operations (denormalization) applied by NormalizedTransform.
+        // Linear operations (denormalization) applied after NormalizedTransform.
         dstPts[0] *= (k0 * 2*R);
         dstPts[1] *= (k0 * 2*R);
         dstPts[0] += FE;
@@ -281,7 +281,7 @@ public final strictfp class ObliqueStereographicTest extends MapProjectionTestCa
         final double[] dstPts = new double[2];
         final double[] refPts = new double[2];
 
-        // Linear operations (normalization) applied by NormalizedTransform.
+        // Linear operations (normalization) applied before NormalizedTransform.
         srcPts[0] -= FE;
         srcPts[1] -= FN;
         srcPts[0] /= (k0 * 2*R);
@@ -291,7 +291,7 @@ public final strictfp class ObliqueStereographicTest extends MapProjectionTestCa
         createNormalizedProjection(false);
         ((NormalizedProjection) transform).inverseTransform(srcPts, 0, refPts, 0);
 
-        // Linear operations (denormalization) applied by NormalizedTransform.
+        // Linear operations (denormalization) applied after NormalizedTransform.
         refPts[0] /= n;
         refPts[0] = toDegrees(refPts[0] + λ0);
         refPts[1] = toDegrees(refPts[1]);
@@ -301,7 +301,7 @@ public final strictfp class ObliqueStereographicTest extends MapProjectionTestCa
         spherical = new ObliqueStereographic.Spherical(spherical);
         spherical.inverseTransform(srcPts, 0, dstPts, 0);
 
-        // Linear operations (denormalization) applied by NormalizedTransform.
+        // Linear operations (denormalization) applied after NormalizedTransform.
         dstPts[0] /= n;
         dstPts[0] = toDegrees(dstPts[0] + λ0);
         dstPts[1] = toDegrees(dstPts[1]);
@@ -350,7 +350,7 @@ public final strictfp class ObliqueStereographicTest extends MapProjectionTestCa
         createNormalizedProjection(true);
         tolerance = 1E-9;
 
-        final double delta = toRadians(100.0 / 60) / 1852; // Approximatively 100 metres.
+        final double delta = toRadians(100.0 / 60) / 1852;      // Approximatively 100 metres.
         derivativeDeltas = new double[] {delta, delta};
         verifyDerivative(toRadians( 0), toRadians( 0));
         verifyDerivative(toRadians(-3), toRadians(30));
