@@ -305,10 +305,9 @@ final class Initializer {
     }
 
     /**
-     * Returns the radius of the conformal sphere at a given latitude.
-     * The radius of conformal sphere is computed from ρ, which is the radius of curvature in
-     * the meridian at latitude φ, and ν which is the radius of curvature in the prime vertical,
-     * as below:
+     * Returns the radius of the conformal sphere (assuming a semi-major axis length of 1) at a given latitude.
+     * The radius of conformal sphere is computed from ρ, which is the radius of curvature in the meridian at
+     * latitude φ, and ν which is the radius of curvature in the prime vertical, as below:
      *
      * <blockquote>Rc = √(ρ⋅ν) = √(1 – ℯ²) / (1 – ℯ²sin²φ)</blockquote>
      *
@@ -321,9 +320,9 @@ final class Initializer {
      */
     final double radiusOfConformalSphere(final double sinφ) {
         final DoubleDouble Rc = verbatim(1);
-        Rc.subtract(excentricitySquared);   //-- 1 - ℯ²
-        Rc.sqrt();                          //-- √(1 - ℯ²)
-        Rc.divide(rν2(sinφ));               //-- √(1 - ℯ²) / (1 - ℯ²sin²φ)
+        Rc.subtract(excentricitySquared);       //  1 - ℯ²
+        Rc.sqrt();                              //  √(1 - ℯ²)
+        Rc.divide(rν2(sinφ));                   //  √(1 - ℯ²) / (1 - ℯ²sin²φ)
         return Rc.value;
     }
 

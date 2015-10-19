@@ -23,7 +23,6 @@ import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.util.FactoryException;
-
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.util.Workaround;
 import org.apache.sis.referencing.operation.matrix.Matrix2;
@@ -36,19 +35,27 @@ import static org.apache.sis.internal.referencing.provider.ObliqueStereographic.
 
 /**
  * <cite>Oblique Stereographic</cite> projection (EPSG code 9809).
- * The formulas used below are from the EPSG guide.
+ * See the <a href="http://mathworld.wolfram.com/StereographicProjection.html">Stereographic projection
+ * on MathWorld</a> for an overview.
  *
- * <div class="section">References</div>
- * <ul>
- *   <li>{@code libproj4} is available at
- *       <a href = http://www.iogp.org/pubs/373-07-2.pdf>EPSG guide</a>.<br>
- *        Relevant files are: {@code PJ_sterea.c}, {@code pj_gauss.c},
- *        {@code pj_fwd.c}, {@code pj_inv.c} and {@code lib_proj.h}</li>
- * </ul>
+ * <div class="section">Description</div>
+ * The directions starting from the central point are true, but the areas and the lengths become
+ * increasingly deformed as one moves away from the center. This projection is frequently used
+ * for mapping polar areas, but can also be used for other limited areas centered on a point.
+ *
+ * <p>This projection involves two steps: first a conversion of <em>geodetic</em> coordinates to <em>conformal</em>
+ * coordinates (i.e. latitudes and longitudes on a conformal sphere), then a spherical stereographic projection.
+ * For this reason this projection method is sometime known as <cite>"Double Stereographic"</cite>.</p>
+ *
+ * <div class="note"><b>Note:</b>
+ * there is another method known as <cite>"Oblique Stereographic Alternative"</cite> or sometime just
+ * <cite>"Stereographic"</cite>. That alternative uses a simplified conversion computing the conformal latitude
+ * of each point on the ellipsoid. Both methods are considered valid but produce slightly different results.
+ * For this reason EPSG considers them as different projection methods.</div>
  *
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.6
+ * @since   0.7
  * @version 0.7
  * @module
  */
@@ -59,68 +66,32 @@ public class ObliqueStereographic extends NormalizedProjection {
     private static final long serialVersionUID = -1454098847621943639L;
 
     /**
-     * Conformal latitude of origin only use
-     * into {@link #inverseTransform(double[], int, double[], int) }.
+     * Conformal latitude of origin (χ₀), together with its sine and cosine.
+     * In the spherical case, χ₀ = φ₀ (the geodetic latitude of origin).
      */
-    private final double χ0;
+    final double χ0, sinχ0, cosχ0;
 
     /**
-     * Value of sin(χ0) only use
-     * into {@link #transform(double[], int, double[], int, boolean)  }.
-     *
-     * @see #χ0
+     * Parameters used in the conformal sphere definition. Those parameters are used in both the
+     * {@linkplain #transform(double[], int, double[], int, boolean) forward} and
+     * {@linkplain #inverseTransform(double[], int, double[], int) inverse} projection.
+     * If the user-supplied ellipsoid is already a sphere, then those parameters are equal to 1.
      */
-    private final double sinχ0;
+    private final double c, n;
 
     /**
-     * Value of cos(χ0) only use
-     * into {@link #transform(double[], int, double[], int, boolean)  }.
-     *
-     * @see #χ0
+     * Parameters used in the {@linkplain #inverseTransform(double[], int, double[], int) inverse} projection.
+     * More precisely <var>g</var> and <var>h</var> are used to compute intermediate parameters <var>i</var>
+     * and <var>j</var>, which are themselves used to compute conformal latitude and longitude.
      */
-    private final double cosχ0;
+    private final double g, h;
 
     /**
-     * c, internaly parameter used to define conformal sphere, used
-     * into {@link #transform(double[], int, double[], int, boolean)  }
-     * and {@link #inverseTransform(double[], int, double[], int) }.
-     */
-    private final double c;
-
-    /**
-     * n, internaly parameter used to define conformal sphere, used
-     * into {@link #transform(double[], int, double[], int, boolean)  }
-     * and {@link #inverseTransform(double[], int, double[], int) }.
-     */
-    private final double n;
-
-    /**
-     * g, internaly parameter used to define conformal sphere coordinate conversion,
-     * during {@link #inverseTransform(double[], int, double[], int) }.
-     * More precisely g is used to compute i and j parameters and i and j,
-     * are used to compute only conformal longitude.
-     */
-    private final double g;
-
-    /**
-     * h, internaly parameter used to define conformal sphere coordinate conversion,
-     * during {@link #inverseTransform(double[], int, double[], int) }.
-     * More precisely h is used to compute i and j parameters and i and j,
-     * are used to compute only conformal longitude.
-     */
-    private final double h;
-
-    /**
-     * A convenient computing for 1 - {@link #excentricitySquared}.
-     */
-    private final double eS1;
-
-    /**
-     * Creates a Oblique Stereographic projection from the given parameters.
+     * Creates an Oblique Stereographic projection from the given parameters.
      * The {@code method} argument can be the description of one of the following:
      *
      * <ul>
-     *   <li><cite>"Oblique Stereographic"</cite>.</li>
+     *   <li><cite>"Oblique Stereographic"</cite>, also known as <cite>"Roussilhe"</cite>.</li>
      * </ul>
      *
      * @param method     Description of the projection parameters.
@@ -150,47 +121,52 @@ public class ObliqueStereographic extends NormalizedProjection {
      */
     private ObliqueStereographic(final Initializer initializer) {
         super(initializer);
-
-        eS1 = 1 - excentricitySquared;
-
-        final double φ0 = toRadians(initializer.getAndStore(LATITUDE_OF_ORIGIN));
-
+        final double φ0      = toRadians(initializer.getAndStore(LATITUDE_OF_ORIGIN));
+        final double sinφ0   = sin(φ0);
         final double cosφ0   = cos(φ0);
         final double cos4_φ0 = pow(cosφ0, 4);
-        n = sqrt((1 + ((excentricitySquared * cos4_φ0) / eS1)));
-
-        final double sinφ0  = sin(φ0);
-        final double esinφ0 = excentricity * sinφ0;
-
-        final double s1 = (1 +  sinφ0) / (1 -  sinφ0);
-        final double s2 = (1 - esinφ0) / (1 + esinφ0);
-        final double w1 = pow(s1 * pow(s2, excentricity), n);
-
+        final double ℯsinφ0  = excentricity * sinφ0;
+        n = sqrt(1 + ((excentricitySquared * cos4_φ0) / (1 - excentricitySquared)));
         /*
-         * Original formula : sinχ0 = ...
-         * To avoid confusion with χ0 conformal latitude of origin,
-         * renamed sinχ0 into sinχc.
+         * Following variables use upper-case because they are written that way in the EPSG guide.
          */
-        final double sinχc = (w1 - 1) / (w1 + 1);
-        c = (n + sinφ0) * (1 - sinχc) / ((n - sinφ0) * (1 + sinχc));
-
-        //-- for invert formula
+        final double S1 = (1 +  sinφ0) / (1 -  sinφ0);
+        final double S2 = (1 - ℯsinφ0) / (1 + ℯsinφ0);
+        final double w1 = pow(S1 * pow(S2, excentricity), n);
+        /*
+         * The χ₁ variable below was named χ₀ in the EPSG guide. We use the χ₁ name in order to avoid confusion with
+         * the conformal latitude of origin, which is also named χ₀ in the EPSG guide. Mathematically, χ₀ and χ₁ are
+         * computed in the same way except that χ₁ is computed with w₁ and χ₀ is computed with w₀.
+         */
+        final double sinχ1 = (w1 - 1) / (w1 + 1);
+        c = ((n + sinφ0) * (1 - sinχ1)) /
+            ((n - sinφ0) * (1 + sinχ1));
+        /*
+         * Convert the geodetic latitude of origin φ₀ to the conformal latitude of origin χ₀.
+         */
         final double w2 = c * w1;
-        χ0 = asin((w2 - 1) / (w2 + 1));
-
-        sinχ0 = sin(χ0);
+        sinχ0 = (w2 - 1) / (w2 + 1);
+        χ0    = asin(sinχ0);
         cosχ0 = cos(χ0);
-
-        final double R = initializer.radiusOfConformalSphere(sinφ0);
-
-        g = tan(PI / 4 - χ0 / 2);
-        h = 2 * tan(χ0) + g;
-
+        /*
+         * Following variables are used only by the inverse projection.
+         */
+        g = tan(PI/4 - χ0/2);
+        h = 2*tan(χ0) + g;
+        /*
+         * One of the first steps performed by the stereographic projection is to multiply the longitude by n.
+         * Since this is a linear operation, we can combine it with other linear operations performed by the
+         * normalization matrix.
+         */
         final MatrixSIS normalize   = context.getMatrix(true);
         final MatrixSIS denormalize = context.getMatrix(false);
         normalize.convertAfter(0, n, null);
-
-        final double R2 = 2 * R;
+        /*
+         * One of the last steps performed by the stereographic projection is to multiply the easting and northing
+         * by 2 times the radius of the conformal sphere. Since this is a linear operation, we combine it with other
+         * linear operations performed by the denormalization matrix.
+         */
+        final double R2 = 2 * initializer.radiusOfConformalSphere(sinφ0);
         denormalize.convertBefore(0, R2, null);
         denormalize.convertBefore(1, R2, null);
     }
@@ -207,7 +183,28 @@ public class ObliqueStereographic extends NormalizedProjection {
         n     = other.n;
         g     = other.g;
         h     = other.h;
-        eS1   = other.eS1;
+    }
+
+    /**
+     * Returns the names of additional internal parameters which need to be taken in account when
+     * comparing two {@code ObliqueStereographic} projections or formatting them in debug mode.
+     *
+     * <p>We could report any of the internal parameters. But since they are all derived from φ₀ and
+     * the {@linkplain #excentricity excentricity} and since the excentricity is already reported by
+     * the super-class, we report only χ₀ is a representative of the internal parameters.</p>
+     */
+    @Override
+    final String[] getInternalParameterNames() {
+        return new String[] {"χ₀"};
+    }
+
+    /**
+     * Returns the values of additional internal parameters which need to be taken in account when
+     * comparing two {@code ObliqueStereographic} projections or formatting them in debug mode.
+     */
+    @Override
+    final double[] getInternalParameterValues() {
+        return new double[] {χ0};
     }
 
     /**
@@ -226,7 +223,7 @@ public class ObliqueStereographic extends NormalizedProjection {
     public MathTransform createMapProjection(final MathTransformFactory factory) throws FactoryException {
         ObliqueStereographic kernel = this;
         if (excentricity == 0) {
-//            kernel = new Spherical(this);     // not implemented yet
+            kernel = new Spherical(this);
         }
         return context.completeTransform(factory, kernel);
     }
@@ -240,135 +237,196 @@ public class ObliqueStereographic extends NormalizedProjection {
      * @throws ProjectionException if the coordinate can not be converted.
      */
     @Override
-    public Matrix transform(double[] srcPts, int srcOff, double[] dstPts, int dstOff, boolean derivate) throws ProjectionException {
-        final double φ = srcPts[srcOff + 1];
-        final double λ = srcPts[srcOff];
-
-        final double sinφ      = sin(φ);
-        final double esinφ     = excentricity * sinφ;
-        final double v1_sinφ   = 1 - sinφ;
-        final double v1esinφ   = 1 + esinφ;
-        final double Sa        = (1 + sinφ)  / v1_sinφ;
-        final double Sb        = (1 - esinφ) / v1esinφ;
-        final double sbpowex   = pow(Sb, excentricity);
-        final double sasbpowex = Sa * sbpowex;
-        final double w         = c * pow(sasbpowex, n);
-        final double w1        = w + 1;
-        final double w1_w1     = (w - 1) / w1;
+    public Matrix transform(final double[] srcPts, final int srcOff,
+                            final double[] dstPts, final int dstOff,
+                            final boolean derivate) throws ProjectionException
+    {
+        final double Λ     = srcPts[srcOff  ];      // Λ = λ⋅n  (see below), ignoring longitude of origin.
+        final double φ     = srcPts[srcOff+1];
+        final double sinφ  = sin(φ);
+        final double ℯsinφ = excentricity * sinφ;
+        final double Sa    = (1 +  sinφ) / (1 -  sinφ);
+        final double Sb    = (1 - ℯsinφ) / (1 + ℯsinφ);
+        final double w     = c * pow(Sa * pow(Sb, excentricity), n);
         /*
-         * Sometimes to compute projection coordinates values, computing pass by a
-         * "conformal sphere" to approximate as better, destination projection coordinates.
+         * Convert the geodetic coordinates (φ,λ) to conformal coordinates (χ,Λ) before to apply the
+         * actual stereographic projection.  The geodetic and conformal coordinates will be the same
+         * if the ellipsoid is already a sphere.
          */
-        //-- latitude coordinate into conformal sphere space.
-        final double χ    = asin(w1_w1);
+        final double χ    = asin((w - 1) / (w + 1));
         final double cosχ = cos(χ);
         final double sinχ = sin(χ);
         /*
-         * Longitude coordinate into conformal sphere space is Λ = n(λ–ΛO)+ ΛO.
-         * But in our case, all of this linears computing are delegate into
-         * normalize matrix. See contructor for more precisions.
-         * We work directly with λ.
+         * The conformal longitude is  Λ = n⋅(λ - λ₀) + Λ₀  where λ is the geodetic longitude.
+         * But in Apache SIS implementation, the multiplication by  n  has been merged in the
+         * constructor with other linear operations performed by the "normalization" matrix.
+         * Consequently the value obtained at srcPts[srcOff] is already Λ - Λ₀, not λ - λ₀.
          */
-        final double cosλ = cos(λ);
-        final double sinλ = sin(λ);
+        final double cosΛ = cos(Λ);
+        final double sinΛ = sin(Λ);
         /*
-         * Now transform conformal sphere coordinates
-         * into projection destination space
+         * Now apply the stereographic projection on the conformal sphere using the (χ,Λ) coordinates.
+         * Note that the formulas below are the same than the formulas in the Spherical inner class.
+         * The only significant difference is that the spherical case does not contain all the above
+         * code which converted (φ,λ) into (χ,Λ).
          */
         final double sinχsinχ0 = sinχ * sinχ0;
         final double cosχcosχ0 = cosχ * cosχ0;
-        final double cosχsinλ  = cosχ * sinλ;
-
-        final double B = 1 + sinχsinχ0 + cosχcosχ0 * cosλ;
-
-        final double y = (sinχ * cosχ0 - cosχ * sinχ0 * cosλ) / B;
-        final double x =  cosχsinλ / B;
-
+        final double B = 1 + sinχsinχ0 + cosχcosχ0 * cosΛ;
         if (dstPts != null) {
-            dstPts[dstOff  ] = x;
-            dstPts[dstOff+1] = y;
+            dstPts[dstOff  ] = cosχ * sinΛ / B;                             // Easting (x)
+            dstPts[dstOff+1] = (sinχ * cosχ0 - cosχ * sinχ0 * cosΛ) / B;    // Northing (y)
         }
-
         if (!derivate) {
             return null;
         }
+        /*
+         * Now compute the derivative, if the user asked for it.
+         * Notes:
+         *
+         *     ∂Sa/∂λ = 0
+         *     ∂Sb/∂λ = 0
+         *      ∂w/∂λ = 0
+         *      ∂χ/∂λ = 0
+         *     ∂Sa/∂φ =  2⋅cosφ   / (1 -  sinφ)²
+         *     ∂Sb/∂φ = -2⋅ℯ⋅cosφ / (1 - ℯ⋅sinφ)²
+         *      ∂w/∂φ =  2⋅n⋅w⋅(1/cosφ - ℯ²⋅cosφ/(1 - ℯ²⋅sin²φ));
+         */
+        final double cosφ = cos(φ);
+        final double dχ_dφ = (1/cosφ - cosφ*excentricitySquared/(1 - ℯsinφ*ℯsinφ)) * 2*n*sqrt(w) / (w + 1);
 
-        final double cosφ   = cos(φ);
-        final double B2     = B * B;
-
-        //-- derivative code
-        //-- dSa_dλ = 0;
-        final double dSa_dφ = 2 * cosφ / (v1_sinφ * v1_sinφ);
-
-        //-- dSb_dλ = 0;
-        final double dSb_dφ = - 2 * excentricity * cosφ / (v1esinφ * v1esinφ);
-
-        //-- dsasbpowex_dλ = 0;
-        final double dsasbpowex_dφ = dSa_dφ * sbpowex + Sa * excentricity * dSb_dφ * pow(Sb, excentricity - 1);
-
-        //-- dw_dλ = 0;
-        final double dw_dφ = c * n * dsasbpowex_dφ * pow(sasbpowex, n - 1);
-
-        //-- dχ_dλ = 0;
-        final double dχ_dφ = dw_dφ / (w1 * sqrt(w));
-
-        final double addsinχsinχ0 = sinχ + sinχ0;
-
-        //-- Jacobian coefficients
-        final double dx_dλ = cosχ * (cosλ * (1 + sinχsinχ0) + cosχcosχ0) / B2;
-
-        final double dx_dφ = - dχ_dφ * sinλ * addsinχsinχ0 / B2;
-
-        final double dy_dλ = cosχsinλ * addsinχsinχ0 / B2;
-
-        final double dy_dφ = dχ_dφ * (cosχcosχ0 + cosλ * (sinχsinχ0 + 1)) / B2;
-
-        return new Matrix2(dx_dλ, dx_dφ,
-                           dy_dλ, dy_dφ);
+        final double B2 = B * B;
+        final double d = (cosχcosχ0 + cosΛ * (sinχsinχ0 + 1)) / B2;     // Matrix diagonal
+        final double t = sinΛ * (sinχ + sinχ0) / B2;                    // Matrix anti-diagonal
+        /*                   ┌              ┐
+         *                   │ ∂x/∂λ, ∂x/∂φ │
+         * Jacobian        = │              │
+         *    (Proj(λ,φ))    │ ∂y/∂λ, ∂y/∂φ │
+         *                   └              ┘
+         */
+        return new Matrix2(d*cosχ,  -t*dχ_dφ,
+                           t*cosχ,   d*dχ_dφ);
     }
 
     /**
-     * Transforms the specified (x, y) coordinates and stores the result in {@code dstPts} (angles in radians).
+     * Converts the specified (<var>x</var>,<var>y</var>) coordinates and stores the result in {@code dstPts}
+     * (angles in radians).
      *
      * @throws ProjectionException if the point can not be converted.
      */
     @Override
     protected void inverseTransform(double[] srcPts, int srcOff, double[] dstPts, int dstOff) throws ProjectionException {
-        final double x = srcPts[srcOff];
-        final double y = srcPts[srcOff + 1];
-
+        final double x = srcPts[srcOff  ];
+        final double y = srcPts[srcOff+1];
         final double i = atan(x / (h + y));
         final double j = atan(x / (g - y)) - i;
         /*
-         * Longitude coordinate into conformal sphere space is Λ = j + 2 * i
-         * Where λ = Λ + Λ0, but Λ0 is added into normalize matrix which regroup all linears operations.
-         * Also in our particularity case Geodetic longitude λ is the same.
+         * The conformal longitude is  Λ = j + 2i + Λ₀.  In the particular case of stereographic projection,
+         * the geodetic longitude λ is equals to Λ. Furthermore in Apache SIS implementation, Λ₀ is added by
+         * the denormalization matrix and shall not be handled here. The only remaining part is λ = j + 2i.
          */
-        final double λ    = j + 2*i;
-
-        //-- latitude coordinate into conformal sphere space.
-        final double χ    = χ0 + 2*atan((y - x*tan(j/2)));
-        final double sinχ = sin(χ);
-
-        final double ψ = log((1 + sinχ) / (c * (1 - sinχ))) / (2 * n);
-
-        double φi_1 = 2*atan(exp(ψ)) - PI/2;
-
+        final double λ = j + 2*i;
+        /*
+         * Calculation of geodetic latitude φ involves first the calculation of conformal latitude χ,
+         * then calculation of isometric latitude ψ, and finally calculation of φ by an iterative method.
+         */
+        final double sinχ = sin(χ0 + 2*atan(y - x*tan(j/2)));
+        final double ψ = log((1 + sinχ) / ((1 - sinχ)*c)) / (2*n);
+        double φ = 2*atan(exp(ψ)) - PI/2;                               // First approximation
         for (int it = 0; it < MAXIMUM_ITERATIONS; it++) {
-            final double sinφi_1  = sin(φi_1);
-            final double esinφi_1 = excentricity*sinφi_1;
-
-            double ψi_1 = log(tan(φi_1/2 + PI/4) * pow((1 - esinφi_1) / (1 + esinφi_1), excentricity / 2));
-
-            final double φi = φi_1 - (ψi_1 - ψ) * cos(φi_1) * (1 - esinφi_1 * esinφi_1) / eS1;
-
-            if (abs(φi - φi_1) <= ITERATION_TOLERANCE) {
-                dstPts[dstOff]     = λ;
-                dstPts[dstOff + 1] = φi;
+            final double ℯsinφ = excentricity * sin(φ);
+            final double ψi = log(tan(φ/2 + PI/4) * pow((1 - ℯsinφ) / (1 + ℯsinφ), excentricity/2));
+            final double Δφ = (ψ - ψi) * cos(φ) * (1 - ℯsinφ*ℯsinφ) / (1 - excentricitySquared);
+            φ += Δφ;
+            if (abs(Δφ) <= ITERATION_TOLERANCE) {
+                dstPts[dstOff  ] = λ;
+                dstPts[dstOff+1] = φ;
                 return;
             }
-            φi_1 = φi;
         }
         throw new ProjectionException(Errors.Keys.NoConvergence);
+    }
+
+    /**
+     * Provides the transform equations for the spherical case of the Oblique Stereographic projection.
+     * This implementation can be used when {@link #excentricity} = 0.
+     *
+     * @author  Rémi Maréchal (Geomatys)
+     * @author  Martin Desruisseaux (Geomatys)
+     * @since   0.7
+     * @version 0.7
+     * @module
+     */
+    static final class Spherical extends ObliqueStereographic {
+        /**
+         * For cross-version compatibility.
+         */
+        private static final long serialVersionUID = -1454098847621943639L;
+
+        /**
+         * Constructs a new map projection from the supplied parameters.
+         *
+         * @param parameters The parameters of the projection to be created.
+         */
+        protected Spherical(ObliqueStereographic other) {
+            super(other);
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public Matrix transform(double[] srcPts, int srcOff, double[] dstPts, int dstOff, boolean derivate) throws ProjectionException {
+            final double λ = srcPts[srcOff  ];
+            final double φ = srcPts[srcOff+1];
+            /*
+             * In the spherical case,  φ = χ  and  λ = Λ.
+             */
+            final double sinφ      = sin(φ);
+            final double cosφ      = cos(φ);
+            final double sinλ      = sin(λ);
+            final double cosλ      = cos(λ);
+            final double sinφsinφ0 = sinφ * sinχ0;
+            final double cosφcosφ0 = cosφ * cosχ0;
+            final double cosφsinλ  = cosφ * sinλ;
+            final double B = 1 + sinφsinφ0 + cosφcosφ0 * cosλ;
+            if (dstPts != null) {
+                dstPts[dstOff  ] = cosφsinλ / B;
+                dstPts[dstOff+1] = (sinφ*cosχ0 - cosφ*sinχ0 *cosλ) / B;
+            }
+            if (!derivate) {
+                return null;
+            }
+            final double B2 = B * B;
+            final double d = (cosφcosφ0 + cosλ * (sinφsinφ0 + 1)) / B2;
+            final double t = sinλ * (sinφ + sinχ0) / B2;
+            return new Matrix2(d*cosφ, -t,
+                               t*cosφ,  d);
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        protected void inverseTransform(double[] srcPts, int srcOff, double[] dstPts, int dstOff) throws ProjectionException {
+            final double x = srcPts[srcOff  ];
+            final double y = srcPts[srcOff+1];
+            final double ρ = hypot(x, y);
+            final double λ, φ;
+            if (abs(ρ) < ANGULAR_TOLERANCE) {
+                φ = χ0;
+                λ = 0.0;
+            } else {
+                final double c    = 2*atan(ρ);
+                final double cosc = cos(c);
+                final double sinc = sin(c);
+                final double ct   = ρ * cosχ0*cosc - y*sinχ0*sinc;
+                final double t    = x * sinc;
+                φ = asin(cosc*sinχ0 + y*sinc*cosχ0 / ρ);
+                λ = atan2(t, ct);
+            }
+            dstPts[dstOff]   = λ;
+            dstPts[dstOff+1] = φ;
+        }
     }
 }

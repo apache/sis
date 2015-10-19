@@ -39,7 +39,8 @@ import static org.apache.sis.internal.jdk8.JDK8.nextDown;
 @DependsOn({
     // Following dependency is where the basic parameters (e.g. SEMI_MAJOR) are tested.
     // Those parameters are needed by NoOp pseudo-projection, which is used in this package.
-    org.apache.sis.internal.referencing.provider.MapProjectionTest.class
+    org.apache.sis.internal.referencing.provider.MapProjectionTest.class,
+    InitializerTest.class
 })
 public final strictfp class NormalizedProjectionTest extends TransformTestCase {
     /**
