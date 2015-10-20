@@ -313,9 +313,9 @@ public class PolarStereographic extends ConformalProjection {
         if (!derivate) {
             return null;
         }
-        //
-        // End of map projection. Now compute the derivative.
-        //
+        /*
+         * End of map projection. Now compute the derivative.
+         */
         final double dt = t * dy_dφ(sinφ, cos(φ));
         return new Matrix2(y, dt*sinθ,   // ∂x/∂λ , ∂x/∂φ
                           -x, dt*cosθ);  // ∂y/∂λ , ∂y/∂φ

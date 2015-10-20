@@ -371,7 +371,7 @@ final class MapProjectionParameters extends DefaultParameterValueGroup {
          * This is not a standard parameter.
          */
         static final ParameterDescriptor<Boolean> DESCRIPTOR = new DefaultParameterDescriptor<>(
-                InverseFlattening.toMap(Constants.IS_IVF_DEFINITIVE), 0, 1, Boolean.class, null, null, null);
+                InverseFlattening.toMap(Constants.IS_IVF_DEFINITIVE), 0, 1, Boolean.class, null, null, Boolean.FALSE);
 
         /**
          * The parameters for the inverse flattening factor.

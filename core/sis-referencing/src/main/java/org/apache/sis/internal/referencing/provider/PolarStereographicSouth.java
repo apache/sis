@@ -22,7 +22,9 @@ import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.parameter.ParameterBuilder;
+import org.apache.sis.parameter.DefaultParameterDescriptor;
 import org.apache.sis.measure.Latitude;
+import org.apache.sis.measure.MeasurementRange;
 
 
 /**
@@ -31,7 +33,7 @@ import org.apache.sis.measure.Latitude;
  * @author  Rueben Schulz (UBC)
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.6
- * @version 0.6
+ * @version 0.7
  * @module
  */
 @XmlTransient
@@ -42,13 +44,32 @@ public final class PolarStereographicSouth extends AbstractStereographic {
     private static final long serialVersionUID = -6173635411676914083L;
 
     /**
+     * Copies all names and identifiers, but using the ESRI authority as the primary name.
+     * This is a convenience method for defining the parameters of an ESRI-specific projection
+     * using the EPSG parameters as template.
+     */
+    private static ParameterBuilder addNamesAndIdentifiers(final ParameterDescriptor<Double> source, final ParameterBuilder builder) {
+        return except(source, Citations.ESRI, null, builder.addName(sameNameAs(Citations.ESRI, source)).addName(source.getName()));
+    }
+
+    /**
+     * Returns the same parameter than the given one, except that the primary name is the ESRI name
+     * instead than the EPSG one.
+     */
+    @SuppressWarnings("unchecked")
+    private static ParameterDescriptor<Double> forESRI(final ParameterDescriptor<Double> source, final ParameterBuilder builder) {
+        return addNamesAndIdentifiers(source, builder).createBounded((MeasurementRange<Double>)
+                ((DefaultParameterDescriptor<Double>) source).getValueDomain(), source.getDefaultValue());
+    }
+
+    /**
      * The group of all parameters expected by this coordinate operation.
      */
     static final ParameterDescriptorGroup PARAMETERS;
     static {
         final ParameterBuilder builder = builder();
         final ParameterDescriptor<?>[] parameters = {
-            addNamesAndIdentifiers(Citations.ESRI, PolarStereographicB.STANDARD_PARALLEL, builder)
+            addNamesAndIdentifiers(PolarStereographicB.STANDARD_PARALLEL, builder)
                    .createBounded(Latitude.MIN_VALUE, 0, Latitude.MIN_VALUE, NonSI.DEGREE_ANGLE),
 
             forESRI(PolarStereographicB.LONGITUDE_OF_ORIGIN, builder),
