@@ -55,7 +55,7 @@ import static org.opengis.metadata.Identifier.AUTHORITY_KEY;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.6
- * @version 0.6
+ * @version 0.7
  * @module
  */
 @XmlTransient
@@ -212,18 +212,30 @@ public abstract class MapProjection extends AbstractProvider {
     }
 
     /**
-     * Copies all names and identifiers, but using the given authority as the primary name.
-     * This is a convenience method for defining the parameters of an ESRI-specific projection
-     * using the EPSG parameters as template.
+     * Copies all aliases and identifiers except the ones for the given authority.
+     * If the given replacement is non-null, then it will be used instead of the
+     * first occurrence of the omitted name.
+     *
+     * <p>This method does not copy the primary name. It is caller's responsibility to add it first.</p>
+     *
+     * @param  source      The parameter from which to copy the names.
+     * @param  except      The authority of the name to omit. Can not be EPSG.
+     * @param  replacement The name to use instead of the omitted one, or {@code null} if none.
+     * @param  builder     Where to add the names.
+     * @return The given {@code builder}, for method call chaining.
+     *
+     * @since 0.7
      */
-    static ParameterBuilder addNamesAndIdentifiers(final Citation authority,
-            final ParameterDescriptor<Double> source, final ParameterBuilder builder)
+    static ParameterBuilder except(final ParameterDescriptor<Double> source, final Citation except,
+            GenericName replacement, final ParameterBuilder builder)
     {
-        builder.addName(sameNameAs(authority, source)).addName(source.getName());
-        for (final GenericName alias : source.getAlias()) {
-            if (((Identifier) alias).getAuthority() != authority) {
-                builder.addName(alias);
+        for (GenericName alias : source.getAlias()) {
+            if (((Identifier) alias).getAuthority() == except) {
+                if (replacement == null) continue;
+                alias = replacement;
+                replacement = null;
             }
+            builder.addName(alias);
         }
         for (final Identifier id : source.getIdentifiers()) {
             builder.addIdentifier(id);
@@ -234,6 +246,10 @@ public abstract class MapProjection extends AbstractProvider {
     /**
      * Copies all names except the EPSG one from the given parameter into the builder.
      * The EPSG name is presumed the first name and identifier (this is not verified).
+     *
+     * @param  source  The parameter from which to copy the names.
+     * @param  builder Where to add the names.
+     * @return The given {@code builder}, for method call chaining.
      */
     static ParameterBuilder exceptEPSG(final ParameterDescriptor<?> source, final ParameterBuilder builder) {
         for (final GenericName alias : source.getAlias()) {
@@ -243,19 +259,10 @@ public abstract class MapProjection extends AbstractProvider {
     }
 
     /**
-     * Returns the same parameter than the given one, except that the primary name is the ESRI name
-     * instead than the EPSG one.
-     */
-    @SuppressWarnings("unchecked")
-    static ParameterDescriptor<Double> forESRI(final ParameterDescriptor<Double> source, final ParameterBuilder builder) {
-        return addNamesAndIdentifiers(Citations.ESRI, source, builder).createBounded((MeasurementRange<Double>)
-                ((DefaultParameterDescriptor<Double>) source).getValueDomain(), source.getDefaultValue());
-    }
-
-    /**
      * Creates a remarks for parameters that are not formally EPSG parameter.
      *
-     * @param origin The name of the projection for where the parameter is formally used.
+     * @param  origin The name of the projection for where the parameter is formally used.
+     * @return A remarks saying that the parameter is actually defined in {@code origin}.
      */
     static InternationalString notFormalParameter(final String origin) {
         return Messages.formatInternational(Messages.Keys.NotFormalProjectionParameter_1, origin);
