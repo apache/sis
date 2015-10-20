@@ -26,6 +26,7 @@ import org.opengis.referencing.crs.ImageCRS;
 import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.referencing.datum.ImageDatum;
 import org.apache.sis.internal.metadata.WKTKeywords;
+import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.AbstractReferenceSystem;
 import org.apache.sis.io.wkt.Formatter;
@@ -50,7 +51,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4
- * @version 0.4
+ * @version 0.7
  * @module
  */
 @XmlType(name = "ImageCRSType", propOrder = {
@@ -67,9 +68,13 @@ public class DefaultImageCRS extends AbstractCRS implements ImageCRS {
 
     /**
      * The datum.
+     *
+     * <p><b>Consider this field as final!</b>
+     * This field is modified only at unmarshalling time by {@link #setDatum(ImageDatum)}</p>
+     *
+     * @see #getDatum()
      */
-    @XmlElement(name = "imageDatum", required = true)
-    private final ImageDatum datum;
+    private ImageDatum datum;
 
     /**
      * Creates a coordinate reference system from the given properties, datum and coordinate system.
@@ -182,7 +187,8 @@ public class DefaultImageCRS extends AbstractCRS implements ImageCRS {
      * @return The datum.
      */
     @Override
-    public final ImageDatum getDatum() {
+    @XmlElement(name = "imageDatum", required = true)
+    public ImageDatum getDatum() {
         return datum;
     }
 
@@ -253,7 +259,25 @@ public class DefaultImageCRS extends AbstractCRS implements ImageCRS {
      * reserved to JAXB, which will assign values to the fields using reflexion.
      */
     private DefaultImageCRS() {
-        datum = null;
+        /*
+         * The datum and the coordinate system are mandatory for SIS working. We do not verify their presence
+         * here because the verification would have to be done in an 'afterMarshal(…)' method and throwing an
+         * exception in that method causes the whole unmarshalling to fail.  But the SC_CRS adapter does some
+         * verifications.
+         */
+    }
+
+    /**
+     * Invoked by JAXB at unmarshalling time.
+     *
+     * @see #getDatum()
+     */
+    private void setDatum(final ImageDatum value) {
+        if (datum == null) {
+            datum = value;
+        } else {
+            ReferencingUtilities.propertyAlreadySet(DefaultImageCRS.class, "setDatum", "imageDatum");
+        }
     }
 
     /**

@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.referencing.provider;
 
+import javax.xml.bind.annotation.XmlTransient;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.apache.sis.parameter.ParameterBuilder;
@@ -33,6 +34,7 @@ import org.apache.sis.metadata.iso.citation.Citations;
  *
  * @see <a href="http://www.remotesensing.org/geotiff/proj_list/lambert_conic_conformal_1sp.html">Lambert Conic Conformal 1SP on RemoteSensing.org</a>
  */
+@XmlTransient
 public final class LambertConformal1SP extends AbstractLambert {
     /**
      * For cross-version compatibility.

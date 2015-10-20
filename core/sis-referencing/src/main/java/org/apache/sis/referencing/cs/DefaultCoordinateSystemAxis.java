@@ -180,22 +180,34 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
     /**
      * The abbreviation used for this coordinate system axes.
      * Examples are <cite>"X"</cite> and <cite>"Y"</cite>.
+     *
+     * <p><b>Consider this field as final!</b>
+     * This field is modified only at unmarshalling time by {@link #setAbbreviation(String)}</p>
+     *
+     * @see #getAbbreviation()
      */
-    @XmlElement(name = "axisAbbrev", required = true)
-    private final String abbreviation;
+    private String abbreviation;
 
     /**
      * Direction of this coordinate system axis. In the case of Cartesian projected
      * coordinates, this is the direction of this coordinate system axis locally.
+     *
+     * <p><b>Consider this field as final!</b>
+     * This field is modified only at unmarshalling time by {@link #setDirection(AxisDirection)}</p>
+     *
+     * @see #getDirection()
      */
-    @XmlElement(name = "axisDirection", required = true)
-    private final AxisDirection direction;
+    private AxisDirection direction;
 
     /**
      * The unit of measure used for this coordinate system axis.
+     *
+     * <p><b>Consider this field as final!</b>
+     * This field is modified only at unmarshalling time by {@link #setUnit(Unit)}</p>
+     *
+     * @see #getUnit()
      */
-    @XmlAttribute(name= "uom", required = true)
-    private final Unit<?> unit;
+    private Unit<?> unit;
 
     /**
      * Minimal and maximal value for this axis, or negative/positive infinity if none.
@@ -208,9 +220,13 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
 
     /**
      * The range meaning for this axis, or {@code null} if unspecified.
+     *
+     * <p><b>Consider this field as final!</b>
+     * This field is modified only at unmarshalling time by {@link #setRangeMeaning(RangeMeaning)}</p>
+     *
+     * @see #getRangeMeaning()
      */
-    @XmlElement
-    private final RangeMeaning rangeMeaning;
+    private RangeMeaning rangeMeaning;
 
     /**
      * Constructs an axis from a set of properties. The properties given in argument follow the same rules
@@ -397,6 +413,7 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
      * @return The direction of this coordinate system axis.
      */
     @Override
+    @XmlElement(name = "axisDirection", required = true)
     public AxisDirection getDirection() {
         return direction;
     }
@@ -408,6 +425,7 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
      * @return The coordinate system axis abbreviation.
      */
     @Override
+    @XmlElement(name = "axisAbbrev", required = true)
     public String getAbbreviation() {
         return abbreviation;
     }
@@ -420,6 +438,7 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
      * @return The unit of measure used for ordinate values along this coordinate system axis.
      */
     @Override
+    @XmlAttribute(name= "uom", required = true)
     public Unit<?> getUnit() {
         return unit;
     }
@@ -469,6 +488,7 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
      * @return The meaning of axis value range, or {@code null} if unspecified.
      */
     @Override
+    @XmlElement(name = "rangeMeaning")
     public RangeMeaning getRangeMeaning() {
         return rangeMeaning;
     }
@@ -854,12 +874,66 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
      */
     private DefaultCoordinateSystemAxis() {
         super(org.apache.sis.internal.referencing.NilReferencingObject.INSTANCE);
-        abbreviation = null;
-        direction    = null;
-        unit         = null;
-        rangeMeaning = null;
         minimumValue = NEGATIVE_INFINITY;
         maximumValue = POSITIVE_INFINITY;
+        /*
+         * Direction and unit of measurement are mandatory for SIS working. We do not verify their presence here
+         * because the verification would have to be done in an 'afterMarshal(…)' method and throwing an exception
+         * in that method causes the whole unmarshalling to fail. But the CD_CoordinateSystemAxis adapter does some
+         * verifications.
+         */
+    }
+
+    /**
+     * Invoked by JAXB at unmarshalling time.
+     *
+     * @see #getAbbreviation()
+     */
+    private void setAbbreviation(final String value) {
+        if (abbreviation == null) {
+            abbreviation = value;
+        } else {
+            ReferencingUtilities.propertyAlreadySet(DefaultCoordinateSystemAxis.class, "setAbbreviation", "abbreviation");
+        }
+    }
+
+    /**
+     * Invoked by JAXB at unmarshalling time.
+     *
+     * @see #getDirection()
+     */
+    private void setDirection(final AxisDirection value) {
+        if (direction == null) {
+            direction = value;
+        } else {
+            ReferencingUtilities.propertyAlreadySet(DefaultCoordinateSystemAxis.class, "setDirection", "direction");
+        }
+    }
+
+    /**
+     * Invoked by JAXB at unmarshalling time.
+     *
+     * @see #getUnit()
+     */
+    private void setUnit(final Unit<?> value) {
+        if (unit == null) {
+            unit = value;
+        } else {
+            ReferencingUtilities.propertyAlreadySet(DefaultCoordinateSystemAxis.class, "setUnit", "unit");
+        }
+    }
+
+    /**
+     * Invoked by JAXB at unmarshalling time.
+     *
+     * @see #getRangeMeaning()
+     */
+    private void setRangeMeaning(final RangeMeaning value) {
+        if (rangeMeaning == null) {
+            rangeMeaning = value;
+        } else {
+            ReferencingUtilities.propertyAlreadySet(DefaultCoordinateSystemAxis.class, "setRangeMeaning", "rangeMeaning");
+        }
     }
 
     /**

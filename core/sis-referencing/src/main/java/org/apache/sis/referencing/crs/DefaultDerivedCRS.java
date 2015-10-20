@@ -452,7 +452,7 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
      * @return The coordinate system.
      */
     @Override
-    @XmlElement(name="coordinateSystem", required = true)
+    @XmlElement(name = "coordinateSystem", required = true)
     @XmlJavaTypeAdapter(CS_CoordinateSystem.class)
     public CoordinateSystem getCoordinateSystem() {
         return super.getCoordinateSystem();

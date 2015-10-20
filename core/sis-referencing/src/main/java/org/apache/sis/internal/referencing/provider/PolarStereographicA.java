@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.referencing.provider;
 
+import javax.xml.bind.annotation.XmlTransient;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.apache.sis.metadata.iso.citation.Citations;
@@ -28,16 +29,22 @@ import org.apache.sis.parameter.ParameterBuilder;
  * @author  Rueben Schulz (UBC)
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.6
- * @version 0.6
+ * @version 0.7
  * @module
  *
  * @see <a href="http://www.remotesensing.org/geotiff/proj_list/polar_stereographic.html">Polar Stereographic on RemoteSensing.org</a>
  */
+@XmlTransient
 public final class PolarStereographicA extends AbstractStereographic {
     /**
      * For cross-version compatibility.
      */
     private static final long serialVersionUID = 538262714055500925L;
+
+    /**
+     * The EPSG name for this projection.
+     */
+    public static final String NAME = "Polar Stereographic (variant A)";
 
     /**
      * The EPSG identifier, to be preferred to the name when available.
@@ -68,7 +75,7 @@ public final class PolarStereographicA extends AbstractStereographic {
 
         PARAMETERS = builder
             .addIdentifier(             IDENTIFIER)
-            .addName(                   "Polar Stereographic (variant A)")
+            .addName(                   NAME)
             .addName(Citations.OGC,     "Polar_Stereographic")
             .addName(Citations.GEOTIFF, "CT_PolarStereographic")
             .addName(Citations.PROJ4,   "stere")

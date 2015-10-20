@@ -26,6 +26,7 @@ import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransform2D;
+import org.opengis.referencing.operation.SingleOperation;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.MathTransformFactory;
@@ -40,11 +41,15 @@ import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.transform.AbstractMathTransform2D;
 import org.apache.sis.referencing.operation.transform.ContextualParameters;
+import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
+import org.apache.sis.referencing.operation.transform.MathTransformProvider;
+import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.util.Utilities;
 import org.apache.sis.internal.util.Numerics;
+import org.apache.sis.util.resources.Errors;
 
 import static java.lang.Math.*;
 
@@ -478,6 +483,43 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      */
     public MathTransform createMapProjection(final MathTransformFactory factory) throws FactoryException {
         return context.completeTransform(factory, this);
+    }
+
+    /**
+     * If this map projection can not handle the parameters given by the user but an other projection could, delegates
+     * to the other projection. This method can be invoked by some {@link #createMapProjection(MathTransformFactory)}
+     * implementations when the other projection can be seen as a special case.
+     *
+     * <div class="note"><b>Example:</b>
+     * the {@link ObliqueStereographic} formulas do not work anymore when the latitude of origin is 90°N or 90°S,
+     * because some internal coefficients become infinite. However the {@link PolarStereographic} implementation
+     * is designed especially for those special cases. So the {@code ObliqueStereographic.createMapProjection(…)}
+     * method can redirect to {@code PolarStereographic.createMapProjection(…)} when it detects such cases.</div>
+     *
+     * It is caller's responsibility to choose an alternative method that can understand the parameters which were
+     * given to this original projection.
+     *
+     * @param  factory The factory given to {@link #createMapProjection(MathTransformFactory)}.
+     * @param  name    The name of the alternative map projection to use.
+     * @return The alternative projection.
+     * @throws FactoryException if an error occurred while creating the alternative projection.
+     *
+     * @since 0.7
+     */
+    final MathTransform delegate(final MathTransformFactory factory, final String name) throws FactoryException {
+        final OperationMethod method;
+        if (factory instanceof DefaultMathTransformFactory) {
+            method = ((DefaultMathTransformFactory) factory).getOperationMethod(name);
+        } else {
+            method = ReferencingServices.getInstance().getOperationMethod(
+                    factory.getAvailableMethods(SingleOperation.class), name);
+        }
+        if (method instanceof MathTransformProvider) {
+            return ((MathTransformProvider) method).createMathTransform(factory, context);
+        } else {
+            throw new FactoryException(Errors.format(Errors.Keys.UnsupportedImplementation_1,
+                    (method != null ? method : factory).getClass()));
+        }
     }
 
     /**

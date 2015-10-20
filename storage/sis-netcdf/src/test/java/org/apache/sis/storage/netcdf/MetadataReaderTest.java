@@ -38,7 +38,7 @@ import static org.apache.sis.test.TestUtilities.formatNameAndValue;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.3
+ * @version 0.7
  * @module
  */
 @DependsOn({
@@ -114,9 +114,9 @@ public final strictfp class MetadataReaderTest extends IOTestCase {
             "  │   │   │   ├─Date……………………………………………………………………… 2005-09-22 00:00:00\n" +
             "  │   │   │   └─Date type………………………………………………………… Creation\n" +
             "  │   │   ├─Identifier\n" +
-            "  │   │   │   ├─Code……………………………………………………………………… NCEP/SST/Global_5x2p5deg/SST_Global_5x2p5deg_20050922_0000.nc\n" +
-            "  │   │   │   └─Authority\n" +
-            "  │   │   │       └─Title………………………………………………………… edu.ucar.unidata\n" +
+            "  │   │   │   ├─Authority\n" +
+            "  │   │   │   │   └─Title………………………………………………………… edu.ucar.unidata\n" +
+            "  │   │   │   └─Code……………………………………………………………………… NCEP/SST/Global_5x2p5deg/SST_Global_5x2p5deg_20050922_0000.nc\n" +
             "  │   │   └─Cited responsible party\n" +
             "  │   │       ├─Party\n" +
             "  │   │       │   └─Name…………………………………………………………… NOAA/NWS/NCEP\n" +
@@ -157,9 +157,9 @@ public final strictfp class MetadataReaderTest extends IOTestCase {
             "  ├─Metadata scope\n" +
             "  │   └─Resource scope………………………………………………………………… Dataset\n" +
             "  ├─Metadata identifier\n" +
-            "  │   ├─Code…………………………………………………………………………………………… NCEP/SST/Global_5x2p5deg/SST_Global_5x2p5deg_20050922_0000.nc\n" +
-            "  │   └─Authority\n" +
-            "  │       └─Title……………………………………………………………………………… edu.ucar.unidata\n" +
+            "  │   ├─Authority\n" +
+            "  │   │   └─Title……………………………………………………………………………… edu.ucar.unidata\n" +
+            "  │   └─Code…………………………………………………………………………………………… NCEP/SST/Global_5x2p5deg/SST_Global_5x2p5deg_20050922_0000.nc\n" +
             "  ├─Metadata standard (1 of 2)\n" +
             "  │   ├─Title………………………………………………………………………………………… Geographic Information — Metadata Part 1: Fundamentals\n" +
             "  │   ├─Cited responsible party\n" +

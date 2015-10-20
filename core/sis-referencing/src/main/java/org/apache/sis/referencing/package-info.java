@@ -67,15 +67,18 @@
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Guilhem Legal (Geomatys)
  * @since   0.4
- * @version 0.4
+ * @version 0.7
  * @module
  */
-@XmlSchema(elementFormDefault = XmlNsForm.QUALIFIED, namespace = Namespaces.GML, xmlns = {
+@XmlSchema(location = "http://schemas.opengis.net/gml/3.2.1/referenceSystems.xsd",
+           elementFormDefault = XmlNsForm.QUALIFIED, namespace = Namespaces.GML, xmlns =
+{
     @XmlNs(prefix = "gml", namespaceURI = Namespaces.GML),
     @XmlNs(prefix = "gmd", namespaceURI = Namespaces.GMD)
 })
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlJavaTypeAdapters({
+    @XmlJavaTypeAdapter(EX_Extent.class),
     @XmlJavaTypeAdapter(CI_Citation.class),
     @XmlJavaTypeAdapter(RS_Identifier.class),
     @XmlJavaTypeAdapter(StringAdapter.class),

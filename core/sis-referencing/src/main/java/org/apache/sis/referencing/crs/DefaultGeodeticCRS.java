@@ -55,7 +55,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4
- * @version 0.4
+ * @version 0.7
  * @module
  */
 @XmlType(name = "GeodeticCRSType", propOrder = {
@@ -73,9 +73,13 @@ class DefaultGeodeticCRS extends AbstractCRS implements GeodeticCRS { // If made
 
     /**
      * The datum.
+     *
+     * <p><b>Consider this field as final!</b>
+     * This field is modified only at unmarshalling time by {@link #setDatum(GeodeticDatum)}</p>
+     *
+     * @see #getDatum()
      */
-    @XmlElement(name = "geodeticDatum", required = true)
-    private final GeodeticDatum datum;
+    private GeodeticDatum datum;
 
     /**
      * Creates a coordinate reference system from the given properties, datum and coordinate system.
@@ -126,13 +130,15 @@ class DefaultGeodeticCRS extends AbstractCRS implements GeodeticCRS { // If made
     /**
      * Returns the datum.
      *
-     * This method is overridden is subclasses for documentation purpose only, mostly for showing this method in
-     * the appropriate position in javadoc (instead than at the bottom of the page). If {@code DefaultGeodeticCRS}
-     * is made public in a future SIS version, then we should make this method final and remove the overridden methods.
+     * This method is overridden is subclasses for documentation purpose only, mostly for showing
+     * this method in the appropriate position in javadoc (instead than at the bottom of the page).
+     * If {@code DefaultGeodeticCRS} is made public in a future SIS version, then we could remove
+     * the overridden methods.
      *
      * @return The datum.
      */
     @Override
+    @XmlElement(name = "geodeticDatum", required = true)
     public GeodeticDatum getDatum() {
         return datum;
     }
@@ -251,7 +257,25 @@ class DefaultGeodeticCRS extends AbstractCRS implements GeodeticCRS { // If made
      * reserved to JAXB, which will assign values to the fields using reflexion.
      */
     DefaultGeodeticCRS() {
-        datum = null;
+        /*
+         * The datum and the coordinate system are mandatory for SIS working. We do not verify their presence
+         * here because the verification would have to be done in an 'afterMarshal(…)' method and throwing an
+         * exception in that method causes the whole unmarshalling to fail.  But the SC_CRS adapter does some
+         * verifications.
+         */
+    }
+
+    /**
+     * Invoked by JAXB at unmarshalling time.
+     *
+     * @see #getDatum()
+     */
+    private void setDatum(final GeodeticDatum value) {
+        if (datum == null) {
+            datum = value;
+        } else {
+            ReferencingUtilities.propertyAlreadySet(DefaultGeodeticCRS.class, "setDatum", "geodeticDatum");
+        }
     }
 
     /**

@@ -22,6 +22,7 @@ import java.util.Collection;
 import javax.measure.unit.Unit;
 import javax.measure.unit.SI;
 import javax.measure.unit.NonSI;
+import javax.xml.bind.annotation.XmlTransient;
 import org.opengis.util.GenericName;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
@@ -48,6 +49,7 @@ import org.apache.sis.util.Workaround;
  * @version 0.6
  * @module
  */
+@XmlTransient
 abstract class AbstractProvider extends DefaultOperationMethod implements MathTransformProvider {
     /**
      * For cross-version compatibility.

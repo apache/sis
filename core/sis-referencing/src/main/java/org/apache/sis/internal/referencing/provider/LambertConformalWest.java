@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.referencing.provider;
 
+import javax.xml.bind.annotation.XmlTransient;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.apache.sis.parameter.ParameterBuilder;
@@ -40,6 +41,7 @@ import org.apache.sis.util.resources.Messages;
  * @version 0.6
  * @module
  */
+@XmlTransient
 public final class LambertConformalWest extends AbstractLambert {
     /**
      * For cross-version compatibility.

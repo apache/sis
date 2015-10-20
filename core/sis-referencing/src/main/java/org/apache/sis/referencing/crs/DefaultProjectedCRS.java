@@ -256,7 +256,7 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS<Projection> implemen
      * Returns the coordinate system.
      */
     @Override
-    @XmlElement(name="cartesianCS", required = true)
+    @XmlElement(name = "cartesianCS", required = true)
     public final CartesianCS getCoordinateSystem() {
         // See AbstractDerivedCRS.createConversionFromBase(…) for
         // an explanation about why this method is declared final.

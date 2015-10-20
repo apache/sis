@@ -26,6 +26,7 @@ import org.opengis.referencing.crs.EngineeringCRS;
 import org.opengis.referencing.datum.EngineeringDatum;
 import org.apache.sis.referencing.cs.*;
 import org.apache.sis.referencing.AbstractReferenceSystem;
+import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.io.wkt.Formatter;
 
@@ -58,7 +59,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4
- * @version 0.6
+ * @version 0.7
  * @module
  */
 @XmlType(name = "EngineeringCRSType", propOrder = {
@@ -74,9 +75,13 @@ public class DefaultEngineeringCRS extends AbstractCRS implements EngineeringCRS
 
     /**
      * The datum.
+     *
+     * <p><b>Consider this field as final!</b>
+     * This field is modified only at unmarshalling time by {@link #setDatum(EngineeringDatum)}</p>
+     *
+     * @see #getDatum()
      */
-    @XmlElement(name = "engineeringDatum", required = true)
-    private final EngineeringDatum datum;
+    private EngineeringDatum datum;
 
     /**
      * Creates a coordinate reference system from the given properties, datum and coordinate system.
@@ -189,7 +194,8 @@ public class DefaultEngineeringCRS extends AbstractCRS implements EngineeringCRS
      * @return The datum.
      */
     @Override
-    public final EngineeringDatum getDatum() {
+    @XmlElement(name = "engineeringDatum", required = true)
+    public EngineeringDatum getDatum() {
         return datum;
     }
 
@@ -265,7 +271,25 @@ public class DefaultEngineeringCRS extends AbstractCRS implements EngineeringCRS
      * reserved to JAXB, which will assign values to the fields using reflexion.
      */
     private DefaultEngineeringCRS() {
-        datum = null;
+        /*
+         * The datum and the coordinate system are mandatory for SIS working. We do not verify their presence
+         * here because the verification would have to be done in an 'afterMarshal(…)' method and throwing an
+         * exception in that method causes the whole unmarshalling to fail.  But the SC_CRS adapter does some
+         * verifications.
+         */
+    }
+
+    /**
+     * Invoked by JAXB at unmarshalling time.
+     *
+     * @see #getDatum()
+     */
+    private void setDatum(final EngineeringDatum value) {
+        if (datum == null) {
+            datum = value;
+        } else {
+            ReferencingUtilities.propertyAlreadySet(DefaultEngineeringCRS.class, "setDatum", "engineeringDatum");
+        }
     }
 
     /**
