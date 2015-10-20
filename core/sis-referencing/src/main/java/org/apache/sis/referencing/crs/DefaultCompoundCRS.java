@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.List;
 import java.util.Arrays;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import javax.xml.bind.annotation.XmlType;
@@ -112,7 +113,7 @@ import static org.apache.sis.internal.referencing.WKTUtilities.toFormattable;
  * @version 0.7
  * @module
  */
-@XmlType(name="CompoundCRSType")
+@XmlType(name = "CompoundCRSType")
 @XmlRootElement(name = "CompoundCRS")
 public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
     /**
@@ -341,6 +342,7 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
     @SuppressWarnings("unchecked")
     private void readObject(final ObjectInputStream in) throws IOException, ClassNotFoundException {
         in.defaultReadObject();
+        final List<? extends CoordinateReferenceSystem> components = this.components;
         if (components instanceof CheckedContainer<?>) {
             final Class<?> type = ((CheckedContainer<?>) components).getElementType();
             if (type == SingleCRS.class) {
@@ -538,13 +540,11 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
             crs = getSingleComponents();
             isStandardCompliant = isStandardCompliant(crs);
         }
-        if (crs != null) {    // Should never be null, except e.g. if unmarshalling invalid GML.
-            for (final CoordinateReferenceSystem element : crs) {
-                formatter.newLine();
-                formatter.append(toFormattable(element));
-            }
-            formatter.newLine();    // For writing the ID[…] element on its own line.
+        for (final CoordinateReferenceSystem element : crs) {
+            formatter.newLine();
+            formatter.append(toFormattable(element));
         }
+        formatter.newLine();    // For writing the ID[…] element on its own line.
         if (!isStandardCompliant) {
             formatter.setInvalidWKT(this, null);
         }
@@ -566,11 +566,19 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
     //////////////////////////////////////////////////////////////////////////////////////////////////
 
     /**
-     * Constructs a new object in which every attributes are set to a null value.
-     * <strong>This is not a valid object.</strong> This constructor is strictly
-     * reserved to JAXB, which will assign values to the fields using reflexion.
+     * Constructs a new object in which every attributes are set to a null or empty value.
+     * <strong>This is not a valid object.</strong> This constructor is strictly reserved
+     * to JAXB, which will assign values to the fields using reflexion.
      */
     private DefaultCompoundCRS() {
+        components = Collections.emptyList();
+        singles    = Collections.emptyList();
+        /*
+         * At least one component CRS is mandatory for SIS working. We do not verify their presence here
+         * because the verification would have to be done in an 'afterMarshal(…)' method and throwing an
+         * exception in that method causes the whole unmarshalling to fail.  But the SC_CRS adapter does
+         * some verifications (indirectly, by testing for coordinate system existence).
+         */
     }
 
     /**
@@ -590,7 +598,7 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
     @XmlElement(name = "componentReferenceSystem", required = true)
     private CoordinateReferenceSystem[] getXMLComponents() {
         final List<SingleCRS> crs = getSingleComponents();
-        return (crs != null) ? crs.toArray(new CoordinateReferenceSystem[crs.size()]) : null;
+        return crs.toArray(new CoordinateReferenceSystem[crs.size()]);
     }
 
     /**

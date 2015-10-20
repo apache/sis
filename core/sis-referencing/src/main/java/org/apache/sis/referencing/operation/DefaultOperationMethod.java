@@ -118,7 +118,7 @@ import org.apache.sis.internal.jdk7.Objects;
  * {@link org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory}.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.6
+ * @version 0.7
  * @since   0.5
  * @module
  *
@@ -126,7 +126,7 @@ import org.apache.sis.internal.jdk7.Objects;
  * @see DefaultTransformation
  * @see org.apache.sis.referencing.operation.transform.MathTransformProvider
  */
-@XmlType(name="OperationMethodType", propOrder = {
+@XmlType(name = "OperationMethodType", propOrder = {
     "formulaCitation",
     "formulaDescription",
     "sourceDimensions",
@@ -161,19 +161,25 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      * Number of dimensions in the source CRS of this operation method.
      * May be {@code null} if this method can work with any number of
      * source dimensions (e.g. <cite>Affine Transform</cite>).
+     *
+     * <p><b>Consider this field as final!</b>
+     * This field is modified only at unmarshalling time by {@link #setSourceDimensions(Integer)}</p>
+     *
+     * @see #getSourceDimensions()
      */
-    @XmlElement
-    @XmlSchemaType(name = "positiveInteger")
-    private final Integer sourceDimensions;
+    private Integer sourceDimensions;
 
     /**
      * Number of dimensions in the target CRS of this operation method.
      * May be {@code null} if this method can work with any number of
      * target dimensions (e.g. <cite>Affine Transform</cite>).
+     *
+     * <p><b>Consider this field as final!</b>
+     * This field is modified only at unmarshalling time by {@link #setTargetDimensions(Integer)}</p>
+     *
+     * @see #getTargetDimensions()
      */
-    @XmlElement
-    @XmlSchemaType(name = "positiveInteger")
-    private final Integer targetDimensions;
+    private Integer targetDimensions;
 
     /**
      * The set of parameters, or {@code null} if none.
@@ -564,6 +570,8 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      * @see org.apache.sis.referencing.operation.transform.AbstractMathTransform#getSourceDimensions()
      */
     @Override
+    @XmlElement(name = "sourceDimensions")
+    @XmlSchemaType(name = "positiveInteger")
     public Integer getSourceDimensions() {
         return sourceDimensions;
     }
@@ -577,6 +585,8 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      * @see org.apache.sis.referencing.operation.transform.AbstractMathTransform#getTargetDimensions()
      */
     @Override
+    @XmlElement(name = "targetDimensions")
+    @XmlSchemaType(name = "positiveInteger")
     public Integer getTargetDimensions() {
         return targetDimensions;
     }
@@ -777,8 +787,32 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      */
     private DefaultOperationMethod() {
         super(org.apache.sis.internal.referencing.NilReferencingObject.INSTANCE);
-        sourceDimensions = null;
-        targetDimensions = null;
+    }
+
+    /**
+     * Invoked by JAXB at unmarshalling time.
+     *
+     * @see #getSourceDimensions()
+     */
+    private void setSourceDimensions(final Integer value) {
+        if (sourceDimensions == null) {
+            sourceDimensions = value;
+        } else {
+            ReferencingUtilities.propertyAlreadySet(DefaultOperationMethod.class, "setSourceDimensions", "sourceDimensions");
+        }
+    }
+
+    /**
+     * Invoked by JAXB at unmarshalling time.
+     *
+     * @see #getTargetDimensions()
+     */
+    private void setTargetDimensions(final Integer value) {
+        if (targetDimensions == null) {
+            targetDimensions = value;
+        } else {
+            ReferencingUtilities.propertyAlreadySet(DefaultOperationMethod.class, "setTargetDimensions", "targetDimensions");
+        }
     }
 
     /**

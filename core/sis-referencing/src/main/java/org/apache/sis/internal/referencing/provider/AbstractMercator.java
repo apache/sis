@@ -17,6 +17,7 @@
 package org.apache.sis.internal.referencing.provider;
 
 import java.util.List;
+import javax.xml.bind.annotation.XmlTransient;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.GeneralParameterDescriptor;
@@ -34,6 +35,7 @@ import org.apache.sis.referencing.operation.projection.NormalizedProjection;
  * @version 0.6
  * @module
  */
+@XmlTransient
 class AbstractMercator extends MapProjection {
     /**
      * For cross-version compatibility.

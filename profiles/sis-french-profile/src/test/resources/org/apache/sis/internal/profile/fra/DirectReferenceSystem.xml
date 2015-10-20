@@ -33,9 +33,6 @@
     <fra:FRA_DirectReferenceSystem>
       <gmd:referenceSystemIdentifier>
         <gmd:RS_Identifier>
-          <gmd:code>
-            <gco:CharacterString>4326</gco:CharacterString>
-          </gmd:code>
           <gmd:authority>
             <gmd:CI_Citation>
               <gmd:title>
@@ -67,6 +64,9 @@
               </gmd:citedResponsibleParty>
             </gmd:CI_Citation>
           </gmd:authority>
+          <gmd:code>
+            <gco:CharacterString>4326</gco:CharacterString>
+          </gmd:code>
         </gmd:RS_Identifier>
       </gmd:referenceSystemIdentifier>
     </fra:FRA_DirectReferenceSystem>

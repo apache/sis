@@ -19,13 +19,17 @@ package org.apache.sis.referencing;
 import java.util.Map;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlTransient;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.opengis.referencing.ReferenceSystem;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.extent.Extent;
+import org.apache.sis.util.Workaround;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.iso.Types;
+import org.apache.sis.internal.jaxb.metadata.EX_Extent;
+import org.apache.sis.internal.referencing.ReferencingUtilities;
 
 import static org.apache.sis.util.Utilities.deepEquals;
 import static org.apache.sis.util.collection.Containers.property;
@@ -62,7 +66,7 @@ import org.apache.sis.internal.jdk7.Objects;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4
- * @version 0.4
+ * @version 0.7
  * @module
  */
 @XmlTransient
@@ -75,18 +79,23 @@ public class AbstractReferenceSystem extends AbstractIdentifiedObject implements
     /**
      * Area for which the (coordinate) reference system is valid.
      *
+     * <p><b>Consider this field as final!</b>
+     * This field is modified only at unmarshalling time by {@link #setDomainOfValidity(Extent)}</p>
+     *
      * @see #getDomainOfValidity()
      */
-    private final Extent domainOfValidity;
+    private Extent domainOfValidity;
 
     /**
      * Description of domain of usage, or limitations of usage,
      * for which this (coordinate) reference system object is valid.
      *
+     * <p><b>Consider this field as final!</b>
+     * This field is modified only at unmarshalling time by {@link #setScope(InternationalString)}</p>
+     *
      * @see #getScope()
      */
-    @XmlElement(required = true)
-    private final InternationalString scope;
+    private InternationalString scope;
 
     /**
      * Constructs a reference system from the given properties.
@@ -172,14 +181,17 @@ public class AbstractReferenceSystem extends AbstractIdentifiedObject implements
     }
 
     /**
-     * Returns the region or timeframe in which this reference system is valid,
-     * or {@code null} if unspecified.
+     * Returns the region or timeframe in which this reference system is valid, or {@code null} if unspecified.
      *
      * @return Area or region or timeframe in which this (coordinate) reference system is valid, or {@code null}.
      *
      * @see org.apache.sis.metadata.iso.extent.DefaultExtent
      */
     @Override
+    @XmlElement(name = "domainOfValidity")
+    // For an unknown reason, JAXB does not take the adapter declared in package-info for this particular property.
+    @Workaround(library = "JDK", version = "1.8")
+    @XmlJavaTypeAdapter(EX_Extent.class)
     public Extent getDomainOfValidity() {
         return domainOfValidity;
     }
@@ -191,6 +203,7 @@ public class AbstractReferenceSystem extends AbstractIdentifiedObject implements
      *         (coordinate) reference system object is valid, or {@code null}.
      */
     @Override
+    @XmlElement(name ="scope", required = true)
     public InternationalString getScope() {
         return scope;
     }
@@ -263,7 +276,31 @@ public class AbstractReferenceSystem extends AbstractIdentifiedObject implements
      * reserved to JAXB, which will assign values to the fields using reflexion.
      */
     AbstractReferenceSystem() {
-        domainOfValidity = null;
-        scope = null;
+    }
+
+    /**
+     * Invoked by JAXB only at unmarshalling time.
+     *
+     * @see #getDomainOfValidity()
+     */
+    private void setDomainOfValidity(final Extent value) {
+        if (domainOfValidity == null) {
+            domainOfValidity = value;
+        } else {
+            ReferencingUtilities.propertyAlreadySet(AbstractReferenceSystem.class, "setDomainOfValidity", "domainOfValidity");
+        }
+    }
+
+    /**
+     * Invoked by JAXB only at unmarshalling time.
+     *
+     * @see #getScope()
+     */
+    private void setScope(final InternationalString value) {
+        if (scope == null) {
+            scope = value;
+        } else {
+            ReferencingUtilities.propertyAlreadySet(AbstractReferenceSystem.class, "setScope", "scope");
+        }
     }
 }

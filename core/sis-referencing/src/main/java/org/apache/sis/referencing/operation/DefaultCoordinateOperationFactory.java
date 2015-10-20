@@ -175,12 +175,12 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
      */
     @Override
     public OperationMethod getOperationMethod(String name) throws FactoryException {
+        name = CharSequences.trimWhitespaces(name);
+        ArgumentChecks.ensureNonEmpty("name", name);
         final MathTransformFactory mtFactory = getMathTransformFactory();
         if (mtFactory instanceof DefaultMathTransformFactory) {
             return ((DefaultMathTransformFactory) mtFactory).getOperationMethod(name);
         }
-        name = CharSequences.trimWhitespaces(name);
-        ArgumentChecks.ensureNonEmpty("name", name);
         final OperationMethod method = ReferencingServices.getInstance().getOperationMethod(
                 mtFactory.getAvailableMethods(SingleOperation.class), name);
         if (method != null) {

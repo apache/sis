@@ -119,15 +119,19 @@ final class SubTypes implements Comparator<Object> {
             if (object instanceof GeocentricCRS) {
                 return DefaultGeocentricCRS.castOrCopy((GeocentricCRS) object);
             }
-            if (object instanceof DefaultGeodeticCRS) {     // Result of XML unmarshalling - keep as-is.
-                return (DefaultGeodeticCRS) object;
-            }
             /*
              * The GeographicCRS and GeocentricCRS types are not part of ISO 19111.
              * ISO uses a single type, GeodeticCRS, for both of them and infer the
              * geographic or geocentric type from the coordinate system. We do this
-             * check here for instantiating the most appropriate SIS type.
+             * check here for instantiating the most appropriate SIS type, but only
+             * if we need to create a new object anyway (see below for rational).
              */
+            if (object instanceof DefaultGeodeticCRS) {
+                // Result of XML unmarshalling — keep as-is. We avoid creating a new object because it
+                // would break object identities specified in GML document by the xlink:href attribute.
+                // However we may revisit this policy in the future. See SC_CRS.setElement(AbstractCRS).
+                return (DefaultGeodeticCRS) object;
+            }
             final Map<String,?> properties = IdentifiedObjects.getProperties(object);
             final GeodeticDatum datum = ((GeodeticCRS) object).getDatum();
             final CoordinateSystem cs = object.getCoordinateSystem();

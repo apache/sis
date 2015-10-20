@@ -29,7 +29,7 @@ import org.apache.sis.internal.jaxb.gco.PropertyType;
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.4
+ * @version 0.7
  * @module
  */
 public final class CS_CoordinateSystemAxis extends PropertyType<CS_CoordinateSystemAxis, CoordinateSystemAxis> {
@@ -89,5 +89,7 @@ public final class CS_CoordinateSystemAxis extends PropertyType<CS_CoordinateSys
      */
     public void setElement(final DefaultCoordinateSystemAxis axis) {
         metadata = axis;
+        if (axis.getDirection() == null) incomplete("axisDirection");
+        if (axis.getUnit()      == null) incomplete("unit");
     }
 }

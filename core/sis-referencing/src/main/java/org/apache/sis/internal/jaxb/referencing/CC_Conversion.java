@@ -30,7 +30,7 @@ import org.apache.sis.referencing.operation.DefaultConversion;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.6
- * @version 0.6
+ * @version 0.7
  * @module
  */
 public final class CC_Conversion extends PropertyType<CC_Conversion, Conversion> {
@@ -100,6 +100,7 @@ public final class CC_Conversion extends PropertyType<CC_Conversion, Conversion>
     public void setElement(final DefaultConversion conversion) {
         metadata = conversion;
         Context.setWrapper(Context.current(), this);
+        if (conversion.getMethod() == null) incomplete("method");
     }
 
     /**

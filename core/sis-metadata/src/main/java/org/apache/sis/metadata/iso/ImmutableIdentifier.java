@@ -19,6 +19,7 @@ package org.apache.sis.metadata.iso;
 import java.util.Map;
 import java.util.Locale;
 import java.io.Serializable;
+import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.metadata.Identifier;
@@ -122,11 +123,17 @@ import org.apache.sis.internal.jdk7.Objects;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.6
+ * @version 0.7
  * @module
  *
  * @see DefaultIdentifier
  */
+@XmlType(name = "RS_Identifier_Type", propOrder = {
+    "authority",
+    "code",
+    "codeSpace",
+    "version"
+})
 @XmlRootElement(name = "RS_Identifier")
 public class ImmutableIdentifier extends FormattableObject implements Identifier, Serializable {
     /**

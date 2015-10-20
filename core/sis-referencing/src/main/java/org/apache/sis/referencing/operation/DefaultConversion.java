@@ -256,6 +256,8 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
              * ProjectedCRS), then DefaultMathTransformFactory has a specialized createBaseToDerived(…)
              * method for this job.
              */
+            final CoordinateReferenceSystem sourceCRS = super.getSourceCRS();
+            final CoordinateReferenceSystem targetCRS = super.getTargetCRS();
             if (sourceCRS == null && targetCRS == null && factory instanceof DefaultMathTransformFactory) {
                 transform = ((DefaultMathTransformFactory) factory).createBaseToDerived(
                         source.getCoordinateSystem(), transform,

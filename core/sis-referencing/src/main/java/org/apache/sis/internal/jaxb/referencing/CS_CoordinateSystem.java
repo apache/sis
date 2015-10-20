@@ -88,5 +88,6 @@ public final class CS_CoordinateSystem extends PropertyType<CS_CoordinateSystem,
      */
     public void setElement(final AbstractCS cs) {
         metadata = cs;
+        if (cs.getDimension() == 0) incomplete("axis");
     }
 }

@@ -215,8 +215,8 @@ public class DefaultTemporalDatum extends AbstractDatum implements TemporalDatum
      * @return The date and time origin of this temporal datum.
      */
     @Override
-    @XmlElement(name = "origin")
     @XmlSchemaType(name = "dateTime")
+    @XmlElement(name = "origin", required = true)
     @XmlJavaTypeAdapter(UniversalTimeAdapter.class)
     public Date getOrigin() {
         return MetadataUtilities.toDate(origin);
@@ -322,6 +322,11 @@ public class DefaultTemporalDatum extends AbstractDatum implements TemporalDatum
      */
     private DefaultTemporalDatum() {
         origin = Long.MIN_VALUE;
+        /*
+         * The origin is mandatory for SIS working. We do not verify its presence here because the verification
+         * would have to be done in an 'afterMarshal(…)' method and throwing an exception in that method causes
+         * the whole unmarshalling to fail. But the CD_TemporalDatum adapter does some verifications.
+         */
     }
 
     /**

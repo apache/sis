@@ -29,7 +29,7 @@ import org.apache.sis.referencing.datum.DefaultEllipsoid;
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.4
+ * @version 0.7
  * @module
  */
 public final class CD_Ellipsoid extends PropertyType<CD_Ellipsoid, Ellipsoid> {
@@ -89,5 +89,7 @@ public final class CD_Ellipsoid extends PropertyType<CD_Ellipsoid, Ellipsoid> {
      */
     public void setElement(final DefaultEllipsoid ellipsoid) {
         metadata = ellipsoid;
+        if (!(ellipsoid.getSemiMajorAxis() > 0)) incomplete("semiMajorAxis");   // Use '!' for catching NaN.
+        if (!(ellipsoid.getSemiMinorAxis() > 0)) incomplete("semiMinorAxis");
     }
 }

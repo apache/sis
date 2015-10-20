@@ -26,6 +26,7 @@ import org.opengis.metadata.Identifier;
 import org.opengis.referencing.datum.ImageDatum;
 import org.opengis.referencing.datum.PixelInCell;
 import org.apache.sis.internal.metadata.WKTKeywords;
+import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.util.ComparisonMode;
@@ -48,7 +49,7 @@ import org.apache.sis.internal.jdk7.Objects;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4
- * @version 0.4
+ * @version 0.7
  * @module
  */
 @XmlType(name = "ImageDatumType")
@@ -61,9 +62,13 @@ public class DefaultImageDatum extends AbstractDatum implements ImageDatum {
 
     /**
      * Specification of the way the image grid is associated with the image data attributes.
+     *
+     * <p><b>Consider this field as final!</b>
+     * This field is modified only at unmarshalling time by {@link #setPixelInCell(PixelInCell)}</p>
+     *
+     * @see #getPixelInCell()
      */
-    @XmlElement(required = true)
-    private final PixelInCell pixelInCell;
+    private PixelInCell pixelInCell;
 
     /**
      * Creates an image datum from the given properties. The properties map is given
@@ -181,6 +186,7 @@ public class DefaultImageDatum extends AbstractDatum implements ImageDatum {
      * @return The way image grid is associated with image data attributes.
      */
     @Override
+    @XmlElement(required = true)
     public PixelInCell getPixelInCell() {
         return pixelInCell;
     }
@@ -266,6 +272,18 @@ public class DefaultImageDatum extends AbstractDatum implements ImageDatum {
      * reserved to JAXB, which will assign values to the fields using reflexion.
      */
     private DefaultImageDatum() {
-        pixelInCell = null;
+    }
+
+    /**
+     * Invoked by JAXB only at unmarshalling time.
+     *
+     * @see #getPixelInCell()
+     */
+    private void setPixelInCell(final PixelInCell value) {
+        if (pixelInCell == null) {
+            pixelInCell = value;
+        } else {
+            ReferencingUtilities.propertyAlreadySet(DefaultImageDatum.class, "setPixelInCell", "pixelInCell");
+        }
     }
 }
