@@ -24,10 +24,12 @@ import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.util.FactoryException;
 import org.apache.sis.parameter.Parameters;
-import org.apache.sis.util.Workaround;
 import org.apache.sis.referencing.operation.matrix.Matrix2;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
+import org.apache.sis.internal.referencing.provider.PolarStereographicA;
+import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.Workaround;
 
 import static java.lang.Math.*;
 import static org.apache.sis.internal.referencing.provider.ObliqueStereographic.*;
@@ -84,7 +86,7 @@ public class ObliqueStereographic extends NormalizedProjection {
      * More precisely <var>g</var> and <var>h</var> are used to compute intermediate parameters <var>i</var>
      * and <var>j</var>, which are themselves used to compute conformal latitude and longitude.
      */
-    private final double g, h;
+    final double g, h;
 
     /**
      * Creates an Oblique Stereographic projection from the given parameters.
@@ -121,12 +123,10 @@ public class ObliqueStereographic extends NormalizedProjection {
      */
     private ObliqueStereographic(final Initializer initializer) {
         super(initializer);
-        final double φ0      = toRadians(initializer.getAndStore(LATITUDE_OF_ORIGIN));
-        final double sinφ0   = sin(φ0);
-        final double cosφ0   = cos(φ0);
-        final double cos4_φ0 = pow(cosφ0, 4);
-        final double ℯsinφ0  = excentricity * sinφ0;
-        n = sqrt(1 + ((excentricitySquared * cos4_φ0) / (1 - excentricitySquared)));
+        final double φ0     = toRadians(initializer.getAndStore(LATITUDE_OF_ORIGIN));
+        final double sinφ0  = sin(φ0);
+        final double ℯsinφ0 = excentricity * sinφ0;
+        n = sqrt(1 + ((excentricitySquared * pow(cos(φ0), 4)) / (1 - excentricitySquared)));
         /*
          * Following variables use upper-case because they are written that way in the EPSG guide.
          */
@@ -221,6 +221,17 @@ public class ObliqueStereographic extends NormalizedProjection {
      */
     @Override
     public MathTransform createMapProjection(final MathTransformFactory factory) throws FactoryException {
+        if (Double.isNaN(χ0)) {
+            /*
+             * The oblique stereographic formulas can not handle the polar case.
+             * If the user gave us a latitude of origin of ±90°, delegate to the
+             * polar stereographic which is designed especially for those cases.
+             */
+            final Double φ0 = context.getValue(LATITUDE_OF_ORIGIN);
+            if (φ0 != null && abs(φ0 - 90) < Formulas.ANGULAR_TOLERANCE) {
+                return delegate(factory, PolarStereographicA.NAME);
+            }
+        }
         ObliqueStereographic kernel = this;
         if (excentricity == 0) {
             kernel = new Spherical(this);
@@ -272,10 +283,10 @@ public class ObliqueStereographic extends NormalizedProjection {
          */
         final double sinχsinχ0 = sinχ * sinχ0;
         final double cosχcosχ0 = cosχ * cosχ0;
-        final double B = 1 + sinχsinχ0 + cosχcosχ0 * cosΛ;
+        final double B = 1 + sinχsinχ0 + cosχcosχ0*cosΛ;
         if (dstPts != null) {
-            dstPts[dstOff  ] = cosχ * sinΛ / B;                             // Easting (x)
-            dstPts[dstOff+1] = (sinχ * cosχ0 - cosχ * sinχ0 * cosΛ) / B;    // Northing (y)
+            dstPts[dstOff  ] = cosχ*sinΛ / B;                           // Easting (x)
+            dstPts[dstOff+1] = (sinχ*cosχ0 - cosχ*sinχ0*cosΛ) / B;      // Northing (y)
         }
         if (!derivate) {
             return null;
@@ -294,7 +305,10 @@ public class ObliqueStereographic extends NormalizedProjection {
          */
         final double cosφ = cos(φ);
         final double dχ_dφ = (1/cosφ - cosφ*excentricitySquared/(1 - ℯsinφ*ℯsinφ)) * 2*n*sqrt(w) / (w + 1);
-
+        /*
+         * Above ∂χ/∂φ is equals to 1 in the spherical case.
+         * Remaining formulas below are the same than in the spherical case.
+         */
         final double B2 = B * B;
         final double d = (cosχcosχ0 + cosΛ * (sinχsinχ0 + 1)) / B2;     // Matrix diagonal
         final double t = sinΛ * (sinχ + sinχ0) / B2;                    // Matrix anti-diagonal
@@ -315,7 +329,10 @@ public class ObliqueStereographic extends NormalizedProjection {
      * @throws ProjectionException if the point can not be converted.
      */
     @Override
-    protected void inverseTransform(double[] srcPts, int srcOff, double[] dstPts, int dstOff) throws ProjectionException {
+    protected void inverseTransform(final double[] srcPts, final int srcOff,
+                                    final double[] dstPts, final int dstOff)
+            throws ProjectionException
+    {
         final double x = srcPts[srcOff  ];
         final double y = srcPts[srcOff+1];
         final double i = atan(x / (h + y));
@@ -333,17 +350,20 @@ public class ObliqueStereographic extends NormalizedProjection {
         final double sinχ = sin(χ0 + 2*atan(y - x*tan(j/2)));
         final double ψ = log((1 + sinχ) / ((1 - sinχ)*c)) / (2*n);
         double φ = 2*atan(exp(ψ)) - PI/2;                               // First approximation
-        for (int it = 0; it < MAXIMUM_ITERATIONS; it++) {
+        final double he = excentricity/2;
+        final double me = 1 - excentricitySquared;
+        int r = MAXIMUM_ITERATIONS;
+        do {
             final double ℯsinφ = excentricity * sin(φ);
-            final double ψi = log(tan(φ/2 + PI/4) * pow((1 - ℯsinφ) / (1 + ℯsinφ), excentricity/2));
-            final double Δφ = (ψ - ψi) * cos(φ) * (1 - ℯsinφ*ℯsinφ) / (1 - excentricitySquared);
+            final double ψi = log(tan(φ/2 + PI/4) * pow((1 - ℯsinφ) / (1 + ℯsinφ), he));
+            final double Δφ = (ψ - ψi) * cos(φ) * (1 - ℯsinφ*ℯsinφ) / me;
             φ += Δφ;
-            if (abs(Δφ) <= ITERATION_TOLERANCE) {
+            if (!(abs(Δφ) > ITERATION_TOLERANCE)) {     // Use '!' for accepting NaN.
                 dstPts[dstOff  ] = λ;
                 dstPts[dstOff+1] = φ;
                 return;
             }
-        }
+        } while (--r != 0);
         throw new ProjectionException(Errors.Keys.NoConvergence);
     }
 
@@ -376,11 +396,17 @@ public class ObliqueStereographic extends NormalizedProjection {
          * {@inheritDoc}
          */
         @Override
-        public Matrix transform(double[] srcPts, int srcOff, double[] dstPts, int dstOff, boolean derivate) throws ProjectionException {
+        public Matrix transform(final double[] srcPts, final int srcOff,
+                                final double[] dstPts, final int dstOff,
+                                final boolean derivate) throws ProjectionException
+        {
             final double λ = srcPts[srcOff  ];
             final double φ = srcPts[srcOff+1];
             /*
-             * In the spherical case,  φ = χ  and  λ = Λ.
+             * Formulas below are the same than the elliptical formulas after the geodetic coordinates
+             * have been converted to conformal coordinates.  In this spherical case we do not need to
+             * perform such conversion. Instead we have directly   χ = φ  and  Λ = λ.   The simplified
+             * EPSG formulas then become the same than Synder formulas for the spherical case.
              */
             final double sinφ      = sin(φ);
             final double cosφ      = cos(φ);
@@ -389,10 +415,10 @@ public class ObliqueStereographic extends NormalizedProjection {
             final double sinφsinφ0 = sinφ * sinχ0;
             final double cosφcosφ0 = cosφ * cosχ0;
             final double cosφsinλ  = cosφ * sinλ;
-            final double B = 1 + sinφsinφ0 + cosφcosφ0 * cosλ;
+            final double B = 1 + sinφsinφ0 + cosφcosφ0*cosλ;            // Synder 21-4
             if (dstPts != null) {
-                dstPts[dstOff  ] = cosφsinλ / B;
-                dstPts[dstOff+1] = (sinφ*cosχ0 - cosφ*sinχ0 *cosλ) / B;
+                dstPts[dstOff  ] = cosφsinλ / B;                        // Synder 21-2
+                dstPts[dstOff+1] = (sinφ*cosχ0 - cosφ*sinχ0*cosλ) / B;  // Synder 21-3
             }
             if (!derivate) {
                 return null;
@@ -408,7 +434,10 @@ public class ObliqueStereographic extends NormalizedProjection {
          * {@inheritDoc}
          */
         @Override
-        protected void inverseTransform(double[] srcPts, int srcOff, double[] dstPts, int dstOff) throws ProjectionException {
+        protected void inverseTransform(final double[] srcPts, final int srcOff,
+                                        final double[] dstPts, final int dstOff)
+                throws ProjectionException
+        {
             final double x = srcPts[srcOff  ];
             final double y = srcPts[srcOff+1];
             final double ρ = hypot(x, y);
