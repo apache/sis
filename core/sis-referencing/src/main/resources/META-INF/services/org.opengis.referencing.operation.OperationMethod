@@ -21,3 +21,4 @@ org.apache.sis.internal.referencing.provider.PolarStereographicB
 org.apache.sis.internal.referencing.provider.PolarStereographicC
 org.apache.sis.internal.referencing.provider.PolarStereographicNorth
 org.apache.sis.internal.referencing.provider.PolarStereographicSouth
+org.apache.sis.internal.referencing.provider.ObliqueStereographic

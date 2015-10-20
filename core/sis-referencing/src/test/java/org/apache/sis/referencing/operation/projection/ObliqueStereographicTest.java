@@ -21,11 +21,13 @@ import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.TransformException;
+import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.util.FactoryException;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.referencing.operation.transform.ContextualParameters;
 import org.apache.sis.referencing.operation.matrix.Matrix2;
 import org.apache.sis.internal.referencing.Formulas;
+import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.junit.Test;
@@ -343,7 +345,7 @@ public final strictfp class ObliqueStereographicTest extends MapProjectionTestCa
     /**
      * Creates a projection and derivates a few points.
      *
-     * @throws TransformException Should never happen.
+     * @throws TransformException if an error occurred while computing the derivative.
      */
     @Test
     public void testDerivative() throws TransformException {
@@ -355,5 +357,28 @@ public final strictfp class ObliqueStereographicTest extends MapProjectionTestCa
         verifyDerivative(toRadians( 0), toRadians( 0));
         verifyDerivative(toRadians(-3), toRadians(30));
         verifyDerivative(toRadians(+6), toRadians(60));
+    }
+
+    /**
+     * Tests the delegation to {@link PolarStereographic} implementation when the latitude of origin is ±90°.
+     *
+     * @throws FactoryException if an error occurred while creating the map projection.
+     * @throws TransformException if an error occurred while projecting a coordinate.
+     */
+    @Test
+    public void testPolarStereographic() throws FactoryException, TransformException {
+        final OperationMethod op = new org.apache.sis.internal.referencing.provider.ObliqueStereographic();
+        final ParameterValueGroup p = op.getParameters().createValue();
+        p.parameter("semi_major")                    .setValue(6378137);
+        p.parameter("inverse_flattening")            .setValue(298.2572236);
+        p.parameter("Latitude of natural origin")    .setValue(90);
+        p.parameter("Scale factor at natural origin").setValue(0.994);
+        p.parameter("False easting")                 .setValue(2000000);
+        p.parameter("False northing")                .setValue(2000000);
+
+        transform = new ObliqueStereographic(op, (Parameters) p).createMapProjection(
+                DefaultFactories.forBuildin(MathTransformFactory.class));
+        tolerance = 0.01;
+        verifyTransform(new double[] {44, 73}, new double[] {3320416.75, 632668.43});
     }
 }
