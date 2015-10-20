@@ -479,7 +479,7 @@ public class ContextualParameters extends Parameters implements Serializable {
          * more parameters than what it declared at ContextualParameteres construction time, or that some
          * ParameterDescriptor instances changed.
          */
-        throw new IllegalStateException(Errors.format(Errors.Keys.UnexpectedChange_1, descriptor.getName()));
+        throw new ParameterNotFoundException(Errors.format(Errors.Keys.UnexpectedChange_1, descriptor.getName()), name);
     }
 
     /**
