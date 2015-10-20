@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.referencing.provider;
 
+import javax.xml.bind.annotation.XmlTransient;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.apache.sis.parameter.ParameterBuilder;
@@ -35,6 +36,7 @@ import org.apache.sis.referencing.operation.projection.NormalizedProjection;
  *
  * @see <a href="http://www.remotesensing.org/geotiff/proj_list/transverse_mercator.html">Transverse Mercator on RemoteSensing.org</a>
  */
+@XmlTransient
 public final class TransverseMercator extends AbstractMercator {
     /**
      * For cross-version compatibility.
@@ -68,8 +70,9 @@ public final class TransverseMercator extends AbstractMercator {
         LATITUDE_OF_ORIGIN = createLatitude(builder
                 .addNamesAndIdentifiers(Mercator1SP.LATITUDE_OF_ORIGIN), true);
 
-        LONGITUDE_OF_ORIGIN = createLongitude(builder.addNamesAndIdentifiers(Mercator1SP.LONGITUDE_OF_ORIGIN)
-                .rename(Citations.NETCDF, "longitude_of_central_meridian"));
+        builder.addName(Mercator1SP.LONGITUDE_OF_ORIGIN.getName());
+        LONGITUDE_OF_ORIGIN = createLongitude(except(Mercator1SP.LONGITUDE_OF_ORIGIN, Citations.NETCDF,
+                sameNameAs(Citations.NETCDF, LambertConformal2SP.LONGITUDE_OF_FALSE_ORIGIN), builder));
 
         SCALE_FACTOR = createScale(builder
                 .addNamesAndIdentifiers(Mercator1SP.SCALE_FACTOR)

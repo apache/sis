@@ -405,7 +405,7 @@ public class Mercator extends ConformalProjection {
     }
 
     /**
-     * Transforms the specified (<var>x</var>,<var>y</var>) coordinates
+     * Converts the specified (<var>x</var>,<var>y</var>) coordinates
      * and stores the result in {@code dstPts} (angles in radians).
      *
      * @throws ProjectionException if the point can not be converted.

@@ -44,9 +44,6 @@ public final strictfp class DefaultIdentifierTest extends XMLTestCase {
     private static final String XML =
             "<gmd:MD_Identifier xmlns:gmd=\"" + Namespaces.GMD + "\" " +
                                "xmlns:gco=\"" + Namespaces.GCO + "\">\n" +
-            "  <gmd:code>\n" +
-            "    <gco:CharacterString>4326</gco:CharacterString>\n" +
-            "  </gmd:code>\n" +
             "  <gmd:authority>\n" +
             "    <gmd:CI_Citation>\n" +
             "      <gmd:title>\n" +
@@ -54,6 +51,9 @@ public final strictfp class DefaultIdentifierTest extends XMLTestCase {
             "      </gmd:title>\n" +
             "    </gmd:CI_Citation>\n" +
             "  </gmd:authority>\n" +
+            "  <gmd:code>\n" +
+            "    <gco:CharacterString>4326</gco:CharacterString>\n" +
+            "  </gmd:code>\n" +
             "</gmd:MD_Identifier>";
 
     /**

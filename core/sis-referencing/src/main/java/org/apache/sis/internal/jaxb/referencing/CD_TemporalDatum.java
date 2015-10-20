@@ -29,7 +29,7 @@ import org.apache.sis.referencing.datum.DefaultTemporalDatum;
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.4
+ * @version 0.7
  * @module
  */
 public final class CD_TemporalDatum extends PropertyType<CD_TemporalDatum, TemporalDatum> {
@@ -89,5 +89,6 @@ public final class CD_TemporalDatum extends PropertyType<CD_TemporalDatum, Tempo
      */
     public void setElement(final DefaultTemporalDatum datum) {
         metadata = datum;
+        if (datum.getOrigin() == null) incomplete("origin");
     }
 }

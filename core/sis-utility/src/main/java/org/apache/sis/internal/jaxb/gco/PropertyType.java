@@ -33,6 +33,7 @@ import org.apache.sis.xml.ReferenceResolver;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.jaxb.PrimitiveTypeProperties;
 import org.apache.sis.util.iso.SimpleInternationalString;
+import org.apache.sis.util.resources.Errors;
 
 
 /**
@@ -599,6 +600,21 @@ public abstract class PropertyType<ValueType extends PropertyType<ValueType,Boun
             }
         }
         return metadata;
+    }
+
+    /**
+     * Invoked by subclasses when the unmarshalled object is missing a component.
+     * This method is invoked when the missing component is essential to SIS working.
+     * This method is not invoked if the missing component is flagged as mandatory by GML,
+     * but is not mandatory for SIS working.
+     *
+     * @param  missing The name of the missing XML component.
+     * @throws IllegalArgumentException Always thrown.
+     *
+     * @since 0.7
+     */
+    protected final void incomplete(final String missing) throws IllegalArgumentException {
+        throw new IllegalArgumentException(Errors.format(Errors.Keys.MissingComponentInElement_2, getBoundType(), missing));
     }
 
     /*
