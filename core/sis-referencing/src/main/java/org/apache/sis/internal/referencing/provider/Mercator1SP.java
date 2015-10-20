@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.referencing.provider;
 
+import javax.xml.bind.annotation.XmlTransient;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.apache.sis.internal.util.Constants;
@@ -35,6 +36,7 @@ import org.apache.sis.metadata.iso.citation.Citations;
  *
  * @see <a href="http://www.remotesensing.org/geotiff/proj_list/mercator_1sp.html">Mercator 1SP on RemoteSensing.org</a>
  */
+@XmlTransient
 public final class Mercator1SP extends AbstractMercator {
     /**
      * For cross-version compatibility.

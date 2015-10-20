@@ -27,6 +27,7 @@ import org.opengis.referencing.datum.VerticalDatum;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.AbstractReferenceSystem;
 import org.apache.sis.internal.metadata.WKTKeywords;
+import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.io.wkt.Formatter;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
@@ -48,7 +49,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4
- * @version 0.6
+ * @version 0.7
  * @module
  *
  * @see org.apache.sis.referencing.datum.DefaultVerticalDatum
@@ -67,9 +68,13 @@ public class DefaultVerticalCRS extends AbstractCRS implements VerticalCRS {
 
     /**
      * The datum.
+     *
+     * <p><b>Consider this field as final!</b>
+     * This field is modified only at unmarshalling time by {@link #setDatum(VerticalDatum)}</p>
+     *
+     * @see #getDatum()
      */
-    @XmlElement(name = "verticalDatum", required = true)
-    private final VerticalDatum datum;
+    private VerticalDatum datum;
 
     /**
      * Creates a coordinate reference system from the given properties, datum and coordinate system.
@@ -182,7 +187,8 @@ public class DefaultVerticalCRS extends AbstractCRS implements VerticalCRS {
      * @return The datum.
      */
     @Override
-    public final VerticalDatum getDatum() {
+    @XmlElement(name = "verticalDatum", required = true)
+    public VerticalDatum getDatum() {
         return datum;
     }
 
@@ -250,7 +256,25 @@ public class DefaultVerticalCRS extends AbstractCRS implements VerticalCRS {
      * reserved to JAXB, which will assign values to the fields using reflexion.
      */
     private DefaultVerticalCRS() {
-        datum = null;
+        /*
+         * The datum and the coordinate system are mandatory for SIS working. We do not verify their presence
+         * here because the verification would have to be done in an 'afterMarshal(…)' method and throwing an
+         * exception in that method causes the whole unmarshalling to fail.  But the SC_CRS adapter does some
+         * verifications.
+         */
+    }
+
+    /**
+     * Invoked by JAXB at unmarshalling time.
+     *
+     * @see #getDatum()
+     */
+    private void setDatum(final VerticalDatum value) {
+        if (datum == null) {
+            datum = value;
+        } else {
+            ReferencingUtilities.propertyAlreadySet(DefaultVerticalCRS.class, "setDatum", "verticalDatum");
+        }
     }
 
     /**

@@ -86,14 +86,20 @@ public final class SC_SingleCRS extends PropertyType<SC_SingleCRS, SingleCRS> {
     /**
      * Invoked by JAXB at unmarshalling time for storing the result temporarily.
      *
+     * <div class="note"><b>Note:</b>
+     * the unmarshalled CRS may be of {@code GeodeticCRS} type, which is not the most specific GeoAPI type.
+     * See {@link SC_CRS#setElement(AbstractCRS)} for more discussion.</div>
+     *
      * @param crs The unmarshalled element.
      * @throws IllegalArgumentException if the unmarshalled CRS is not a single CRS.
      */
     public void setElement(final AbstractCRS crs) {
-        if (crs != null && !(crs instanceof SingleCRS)) {
+        if (!(crs instanceof SingleCRS)) {
             throw new IllegalArgumentException(Errors.format(Errors.Keys.UnexpectedValueInElement_2,
                     "baseCRS", IdentifiedObjects.getName(crs, null)));
         }
         metadata = (SingleCRS) crs;
+        if (crs.getCoordinateSystem()    == null) incomplete("coordinateSystem");
+        if (((SingleCRS) crs).getDatum() == null) incomplete("datum");
     }
 }

@@ -19,6 +19,7 @@ package org.apache.sis.internal.referencing.provider;
 import java.util.Map;
 import java.util.Arrays;
 import java.util.Collections;
+import javax.xml.bind.annotation.XmlTransient;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterNotFoundException;
@@ -60,6 +61,7 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
  * @version 0.6
  * @module
  */
+@XmlTransient
 public final class Affine extends AbstractProvider {
     /**
      * Serial number for inter-operability with different versions.

@@ -26,7 +26,7 @@ import org.junit.BeforeClass;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.6
+ * @version 0.7
  * @module
  */
 @Suite.SuiteClasses({
@@ -102,6 +102,7 @@ import org.junit.BeforeClass;
     org.apache.sis.referencing.operation.transform.DefaultMathTransformFactoryTest.class,
 
     // Test map projections. Those tests need the providers tested above.
+    org.apache.sis.referencing.operation.projection.InitializerTest.class,
     org.apache.sis.referencing.operation.projection.NormalizedProjectionTest.class,
     org.apache.sis.referencing.operation.projection.EquirectangularTest.class,
     org.apache.sis.referencing.operation.projection.ConformalProjectionTest.class,
@@ -109,6 +110,7 @@ import org.junit.BeforeClass;
     org.apache.sis.referencing.operation.projection.LambertConicConformalTest.class,
     org.apache.sis.referencing.operation.projection.TransverseMercatorTest.class,
     org.apache.sis.referencing.operation.projection.PolarStereographicTest.class,
+    org.apache.sis.referencing.operation.projection.ObliqueStereographicTest.class,
 
     // Coordinate Reference System components.
     org.apache.sis.referencing.datum.BursaWolfParametersTest.class,
@@ -139,6 +141,7 @@ import org.junit.BeforeClass;
     org.apache.sis.referencing.operation.DefaultTransformationTest.class,
     org.apache.sis.referencing.operation.DefaultConversionTest.class,
     org.apache.sis.referencing.operation.SingleOperationMarshallingTest.class,
+    org.apache.sis.referencing.operation.DefaultPassThroughOperationTest.class,
     org.apache.sis.referencing.operation.DefaultConcatenatedOperationTest.class,
     org.apache.sis.referencing.crs.DefaultProjectedCRSTest.class,
     org.apache.sis.referencing.crs.DefaultDerivedCRSTest.class,

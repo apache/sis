@@ -17,6 +17,8 @@
 package org.apache.sis.internal.jaxb.referencing;
 
 import javax.xml.bind.annotation.XmlElementRef;
+import org.opengis.referencing.crs.SingleCRS;
+import org.opengis.referencing.crs.CompoundCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.referencing.crs.AbstractCRS;
 import org.apache.sis.internal.jaxb.gco.PropertyType;
@@ -28,7 +30,7 @@ import org.apache.sis.internal.jaxb.gco.PropertyType;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.6
- * @version 0.6
+ * @version 0.7
  * @module
  */
 public final class SC_CRS extends PropertyType<SC_CRS, CoordinateReferenceSystem> {
@@ -84,9 +86,22 @@ public final class SC_CRS extends PropertyType<SC_CRS, CoordinateReferenceSystem
     /**
      * Invoked by JAXB at unmarshalling time for storing the result temporarily.
      *
+     * <div class="note"><b>Note:</b>
+     * the unmarshalled CRS may be of {@code GeodeticCRS} type, which is not the most specific GeoAPI type.
+     * But the {@code GeographicCRS} and {@code GeocentricCRS} sub-types are currently not part of ISO 19111.
+     * We could substitute the CRS by a more specific type here, but this would break the references specified
+     * by {@code xlink:href} attributes. For now we live with the {@code GeodeticCRS} as-is — most of Apache SIS
+     * should be able to work with that.</div>
+     *
      * @param crs The unmarshalled element.
      */
     public void setElement(final AbstractCRS crs) {
         metadata = crs;
+        if (crs.getCoordinateSystem() == null) {
+            incomplete((crs instanceof CompoundCRS) ? "componentReferenceSystem" : "coordinateSystem");
+        }
+        if (crs instanceof SingleCRS && ((SingleCRS) crs).getDatum() == null) {
+            incomplete("datum");
+        }
     }
 }

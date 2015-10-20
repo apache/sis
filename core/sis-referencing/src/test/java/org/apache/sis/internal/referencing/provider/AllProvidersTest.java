@@ -36,7 +36,7 @@ import static org.junit.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.6
- * @version 0.6
+ * @version 0.7
  * @module
  */
 @DependsOn({
@@ -62,7 +62,17 @@ public final strictfp class AllProvidersTest extends TestCase {
             MillerCylindrical.class,
             LambertConformal1SP.class,
             LambertConformal2SP.class,
-            LambertConformalBelgium.class
+            LambertConformalWest.class,
+            LambertConformalBelgium.class,
+            LambertConformalMichigan.class,
+            TransverseMercator.class,
+            TransverseMercatorSouth.class,
+            PolarStereographicA.class,
+            PolarStereographicB.class,
+            PolarStereographicC.class,
+            PolarStereographicNorth.class,
+            PolarStereographicSouth.class,
+            ObliqueStereographic.class
         };
     }
 

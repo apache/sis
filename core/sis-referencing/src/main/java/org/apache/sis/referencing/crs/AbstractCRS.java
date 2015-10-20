@@ -80,13 +80,16 @@ import org.apache.sis.internal.jdk7.Objects;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4
- * @version 0.6
+ * @version 0.7
  * @module
  *
  * @see AbstractCS
  * @see org.apache.sis.referencing.datum.AbstractDatum
  */
-@XmlType(name="AbstractCRSType")
+@XmlType(name = "AbstractCRSType", propOrder = {
+    "domainOfValidity",
+    "scope"
+})
 @XmlRootElement(name = "AbstractCRS")
 @XmlSeeAlso({
     AbstractDerivedCRS.class,
@@ -511,6 +514,12 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
      */
     AbstractCRS() {
         super(org.apache.sis.internal.referencing.NilReferencingObject.INSTANCE);
+        /*
+         * The coordinate system is mandatory for SIS working. We do not verify its presence here
+         * because the verification would have to be done in an 'afterMarshal(…)' method and throwing
+         * an exception in that method causes the whole unmarshalling to fail. But the SC_CRS adapter
+         * does some verifications.
+         */
     }
 
     /**

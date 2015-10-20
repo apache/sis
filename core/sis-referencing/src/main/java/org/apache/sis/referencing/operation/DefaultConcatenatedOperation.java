@@ -21,6 +21,7 @@ import java.util.Set;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedHashSet;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
@@ -353,6 +354,7 @@ final class DefaultConcatenatedOperation extends AbstractCoordinateOperation imp
      * reserved to JAXB, which will assign values to the fields using reflexion.
      */
     private DefaultConcatenatedOperation() {
+        operations = Collections.emptyList();
     }
 
     /**

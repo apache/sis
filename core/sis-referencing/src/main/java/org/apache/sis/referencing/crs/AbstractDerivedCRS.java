@@ -59,7 +59,7 @@ import static org.apache.sis.util.Utilities.deepEquals;
  * @version 0.6
  * @module
  */
-@XmlType(name="AbstractGeneralDerivedCRSType")
+@XmlType(name = "AbstractGeneralDerivedCRSType")
 @XmlRootElement(name = "AbstractGeneralDerivedCRS")
 @XmlSeeAlso({
     DefaultDerivedCRS.class,
@@ -312,7 +312,7 @@ abstract class AbstractDerivedCRS<C extends Conversion> extends AbstractCRS impl
                 ReferencingUtilities.propertyAlreadySet(AbstractDerivedCRS.class, "setBaseCRS", name);
             }
         } else {
-            throw new IllegalStateException(Errors.format(Errors.Keys.MissingValueForProperty_1, "conversion"));
+            throw new IllegalStateException(Errors.format(Errors.Keys.MissingComponentInElement_2, getInterface(), "conversion"));
         }
     }
 

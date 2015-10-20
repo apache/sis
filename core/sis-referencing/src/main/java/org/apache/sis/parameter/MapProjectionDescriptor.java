@@ -17,6 +17,7 @@
 package org.apache.sis.parameter;
 
 import java.util.Map;
+import javax.xml.bind.annotation.XmlTransient;
 import org.opengis.util.GenericName;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptor;
@@ -51,6 +52,7 @@ import org.apache.sis.util.Workaround;
  *
  * @see <a href="http://www.unidata.ucar.edu/software/netcdf-java/reference/StandardCoordinateTransforms.html">NetCDF projection parameters</a>
  */
+@XmlTransient
 final class MapProjectionDescriptor extends DefaultParameterDescriptorGroup {
     /**
      * For cross-version compatibility.

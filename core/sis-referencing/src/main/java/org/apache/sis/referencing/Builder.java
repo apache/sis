@@ -37,7 +37,7 @@ import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.Deprecable;
 import org.apache.sis.util.resources.Errors;
 
-import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
+import static org.apache.sis.util.ArgumentChecks.*;
 
 // Branch-dependent imports
 import org.apache.sis.internal.jdk8.JDK8;
@@ -754,32 +754,40 @@ public abstract class Builder<B extends Builder<B>> {
         int next = 0;
         int insertAt = aliases.size();
         for (int i = -1; i < aliases.size(); i++) {
-            final Object name = (i < 0) ? properties.get(IdentifiedObject.NAME_KEY) : aliases.get(i);
-            if (name != null) {  // Actually only the primary name can be null.
-                final boolean isIdentifier = (name instanceof Identifier);
-                if (authority.equals(isIdentifier ? ((Identifier) name).getAuthority() : getAuthority())) {
-                    /*
-                     * Found a name associated to the given authority. Process to the replacement if we still
-                     * have some elements to take in the 'replacements' array, otherwise remove the name.
-                     */
-                    if (next < length) {
-                        final CharSequence code = replacements[next++];
-                        if (!code.toString().equals(isIdentifier ? ((Identifier) name).getCode() : name.toString())) {
-                            if (i < 0) {
-                                properties.put(IdentifiedObject.NAME_KEY, (authority != getAuthority())
-                                        ? new NamedIdentifier(authority, code) : code.toString());
-                            } else {
-                                aliases.set(i, createName(authority, code));
-                            }
-                            insertAt = i + 1;
-                        }
+            final Object old = (i < 0) ? properties.get(IdentifiedObject.NAME_KEY) : aliases.get(i);
+            if (old == null) {
+                continue;       // Actually only the primary name can be null.
+            }
+            final boolean wasID = (old instanceof Identifier);   // Usually true even for aliases.
+            if (!authority.equals(wasID ? ((Identifier) old).getAuthority() : getAuthority())) {
+                continue;       // Current name is not for the authority we are looking for.
+            }
+            /*
+             * Found a name associated to the given authority. Process to the replacement if we still
+             * have some elements to take in the 'replacements' array, otherwise remove the name.
+             */
+            if (next < length) {
+                final CharSequence name;
+                ensureNonNullElement("replacements", next, name = replacements[next++]);
+                /*
+                 * If the current name matches the specified replacement, we can leave the name as-is.
+                 * Only if the name (in its local part) is not the same, proceed to the replacement.
+                 */
+                final String code = name.toString();
+                if (!code.equals(wasID ? ((Identifier) old).getCode() : old.toString())) {
+                    if (i < 0) {
+                        properties.put(IdentifiedObject.NAME_KEY,
+                                (authority != getAuthority()) ? new NamedIdentifier(authority, name) : code);
                     } else {
-                        if (i < 0) {
-                            properties.remove(IdentifiedObject.NAME_KEY);
-                        } else {
-                            aliases.remove(i--);
-                        }
+                        aliases.set(i, createName(authority, name));
                     }
+                    insertAt = i + 1;
+                }
+            } else {
+                if (i < 0) {
+                    properties.remove(IdentifiedObject.NAME_KEY);
+                } else {
+                    aliases.remove(i--);
                 }
             }
         }
@@ -788,7 +796,9 @@ public abstract class Builder<B extends Builder<B>> {
          * element of the given authority that we found (so we keep together the names of the same authority).
          */
         while (next < length) {
-            aliases.add(insertAt++, createName(authority, replacements[next++]));
+            final CharSequence name;
+            ensureNonNullElement("replacements", next, name = replacements[next++]);
+            aliases.add(insertAt++, createName(authority, name));
         }
         /*
          * If the primary name has been removed as a result of this method execution,
