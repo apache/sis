@@ -17,7 +17,7 @@
 package org.apache.sis.internal.jaxb.gmd;
 
 import javax.xml.bind.annotation.adapters.XmlAdapter;
-import org.opengis.util.Enumerated;
+import org.opengis.util.ControlledVocabulary;
 import org.apache.sis.util.iso.Types;
 
 
@@ -84,7 +84,7 @@ public abstract class EnumAdapter<ValueType extends EnumAdapter<ValueType,BoundT
      * @param  e The enumeration constant.
      * @return The text to write in the XML element.
      */
-    protected static String value(final Enumerated e) {
+    protected static String value(final ControlledVocabulary e) {
         return Types.getCodeName(e);
     }
 }
