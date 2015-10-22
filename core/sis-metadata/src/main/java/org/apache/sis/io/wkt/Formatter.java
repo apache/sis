@@ -994,9 +994,9 @@ public class Formatter implements Localized {
                 quote(text, type);
             } else {
                 /*
-                 * Code lists have no quotes. They are normally formatted by the append(Enumerated) method,
-                 * but an important exception is the CS[type] element in which the type is defined by the
-                 * interface implemented by the CoordinateSystem rather than a CodeList instance.
+                 * Code lists have no quotes. They are normally formatted by the append(ControlledVocabulary) method,
+                 * but an important exception is the CS[type] element in which the type is defined by the interface
+                 * implemented by the CoordinateSystem rather than a CodeList instance.
                  */
                 setColor(type);
                 buffer.append(text);

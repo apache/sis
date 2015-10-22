@@ -108,7 +108,7 @@ public final strictfp class TypesTest extends TestCase {
 
     /**
      * Tests the {@link Types#forEnumName(Class, String)} method with an enumeration from the JDK.
-     * Such enumerations do not implement the {@link org.opengis.util.Enumerated} interface.
+     * Such enumerations do not implement the {@link org.opengis.util.ControlledVocabulary} interface.
      *
      * @since 0.5
      */
@@ -178,7 +178,7 @@ public final strictfp class TypesTest extends TestCase {
     }
 
     /**
-     * Tests the {@link Types#getDescription(Enumerated)} method.
+     * Tests the {@link Types#getDescription(ControlledVocabulary)} method.
      */
     @Test
     public void testGetCodeDescription() {
@@ -192,7 +192,7 @@ public final strictfp class TypesTest extends TestCase {
     }
 
     /**
-     * Tests the examples given in {@link Types#getListName(Enumerated)} javadoc.
+     * Tests the examples given in {@link Types#getListName(ControlledVocabulary)} javadoc.
      */
     @Test
     public void testGetListName() {
@@ -202,7 +202,7 @@ public final strictfp class TypesTest extends TestCase {
     }
 
     /**
-     * Tests the examples given in {@link Types#getCodeName(Enumerated)} javadoc.
+     * Tests the examples given in {@link Types#getCodeName(ControlledVocabulary)} javadoc.
      */
     @Test
     public void testGetCodeName() {
@@ -212,7 +212,7 @@ public final strictfp class TypesTest extends TestCase {
     }
 
     /**
-     * Tests the examples given in {@link Types#getCodeLabel(Enumerated)} javadoc.
+     * Tests the examples given in {@link Types#getCodeLabel(ControlledVocabulary)} javadoc.
      */
     @Test
     public void testGetCodeLabel() {
@@ -222,7 +222,7 @@ public final strictfp class TypesTest extends TestCase {
     }
 
     /**
-     * Tests {@link Types#getCodeTitle(Enumerated)}.
+     * Tests {@link Types#getCodeTitle(ControlledVocabulary)}.
      */
     @Test
     public void testGetCodeTitle() {
