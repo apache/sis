@@ -52,7 +52,7 @@ import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.MathTransform;
-import org.opengis.util.Enumerated;
+import org.opengis.util.ControlledVocabulary;
 
 import org.apache.sis.measure.Units;
 import org.apache.sis.math.DecimalFunctions;
@@ -993,9 +993,9 @@ public class Formatter implements Localized {
                 quote(text, type);
             } else {
                 /*
-                 * Code lists have no quotes. They are normally formatted by the append(Enumerated) method,
-                 * but an important exception is the CS[type] element in which the type is defined by the
-                 * interface implemented by the CoordinateSystem rather than a CodeList instance.
+                 * Code lists have no quotes. They are normally formatted by the append(ControlledVocabulary) method,
+                 * but an important exception is the CS[type] element in which the type is defined by the interface
+                 * implemented by the CoordinateSystem rather than a CodeList instance.
                  */
                 setColor(type);
                 buffer.append(text);
@@ -1071,7 +1071,7 @@ public class Formatter implements Localized {
      *
      * @param code The code list to append to the WKT, or {@code null} if none.
      */
-    public void append(final Enumerated code) {
+    public void append(final ControlledVocabulary code) {
         if (code != null) {
             appendSeparator();
             setColor(ElementKind.CODE_LIST);
@@ -1315,11 +1315,13 @@ public class Formatter implements Localized {
             } else {
                 append(number.doubleValue());
             }
-        }
-        else if (value instanceof Enumerated)  append((Enumerated) value);
-        else if (value instanceof Date)        append((Date)        value);
-        else if (value instanceof Boolean)     append((Boolean)     value);
-        else if (value instanceof CharSequence) {
+        } else if (value instanceof ControlledVocabulary) {
+            append((ControlledVocabulary) value);
+        } else if (value instanceof Date) {
+            append((Date) value);
+        } else if (value instanceof Boolean) {
+            append((Boolean) value);
+        } else if (value instanceof CharSequence) {
             append((value instanceof InternationalString) ?
                     ((InternationalString) value).toString(locale) : value.toString(), null);
         } else {
