@@ -27,7 +27,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementRef;
 import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.util.CodeList;
-import org.opengis.util.Enumerated;
+import org.opengis.util.ControlledVocabulary;
 import org.opengis.annotation.UML;
 import org.opengis.annotation.Obligation;
 import org.opengis.annotation.Specification;
@@ -415,7 +415,7 @@ public abstract strictfp class AnnotationsTestCase extends TestCase {
             testingClass = type.getCanonicalName();
             UML uml = type.getAnnotation(UML.class);
             assertNotNull("Missing @UML annotation.", uml);
-            if (!Enumerated.class.isAssignableFrom(type)) {
+            if (!ControlledVocabulary.class.isAssignableFrom(type)) {
                 for (final Method method : type.getDeclaredMethods()) {
                     testingMethod = method.getName();
                     if (!isIgnored(method) && !isExtension(method)) {
@@ -443,7 +443,7 @@ public abstract strictfp class AnnotationsTestCase extends TestCase {
     public void testPackageAnnotations() {
         final Set<Package> packages = new HashSet<>();
         for (final Class<?> type : types) {
-            if (!Enumerated.class.isAssignableFrom(type)) {
+            if (!ControlledVocabulary.class.isAssignableFrom(type)) {
                 testingClass = type.getCanonicalName();
                 final Class<?> impl = getImplementation(type);
                 if (impl != null) {
@@ -484,7 +484,7 @@ public abstract strictfp class AnnotationsTestCase extends TestCase {
     @DependsOnMethod("testInterfaceAnnotations")
     public void testImplementationAnnotations() {
         for (final Class<?> type : types) {
-            if (Enumerated.class.isAssignableFrom(type)) {
+            if (ControlledVocabulary.class.isAssignableFrom(type)) {
                 // Skip code lists, since they are not the purpose of this test.
                 continue;
             }
@@ -543,7 +543,7 @@ public abstract strictfp class AnnotationsTestCase extends TestCase {
     @DependsOnMethod("testImplementationAnnotations")
     public void testMethodAnnotations() {
         for (final Class<?> type : types) {
-            if (Enumerated.class.isAssignableFrom(type)) {
+            if (ControlledVocabulary.class.isAssignableFrom(type)) {
                 // Skip code lists, since they are not the purpose of this test.
                 continue;
             }
@@ -670,7 +670,7 @@ public abstract strictfp class AnnotationsTestCase extends TestCase {
                     assertEquals("Wrong @XmlElement.", uml.identifier(), element.name());
                 }
                 final String namespace = assertExpectedNamespace(element.namespace(), wrapper.type, uml);
-                if (!Enumerated.class.isAssignableFrom(type)) {
+                if (!ControlledVocabulary.class.isAssignableFrom(type)) {
                     final String expected = getNamespace(getImplementation(type));
                     if (expected != null) { // 'assertNotNull' is 'testImplementationAnnotations()' job.
                         assertEquals("Inconsistent @XmlRootElement namespace.", expected, namespace);
