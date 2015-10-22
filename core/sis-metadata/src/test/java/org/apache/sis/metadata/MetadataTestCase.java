@@ -21,7 +21,7 @@ import java.util.Locale;
 import java.util.Random;
 import java.util.Collection;
 import org.opengis.util.CodeList;
-import org.opengis.util.Enumerated;
+import org.opengis.util.ControlledVocabulary;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.collection.CheckedContainer;
@@ -128,11 +128,11 @@ public abstract strictfp class MetadataTestCase extends AnnotationsTestCase {
         if (Date.class.isAssignableFrom(type)) {
             return new Date(random.nextInt() * 1000L);
         }
-        if (Enumerated.class.isAssignableFrom(type)) try {
+        if (ControlledVocabulary.class.isAssignableFrom(type)) try {
             if (type == CodeList.class) {
                 return null;
             }
-            final Enumerated[] codes = (Enumerated[]) type.getMethod("values", (Class[]) null).invoke(null, (Object[]) null);
+            final ControlledVocabulary[] codes = (ControlledVocabulary[]) type.getMethod("values", (Class[]) null).invoke(null, (Object[]) null);
             return codes[random.nextInt(codes.length)];
         } catch (Exception e) { // (ReflectiveOperationException) on JDK7 branch.
             fail(e.toString());
@@ -185,7 +185,7 @@ public abstract strictfp class MetadataTestCase extends AnnotationsTestCase {
     public void testPropertyValues() {
         random = TestUtilities.createRandomNumberGenerator();
         for (final Class<?> type : types) {
-            if (!Enumerated.class.isAssignableFrom(type)) {
+            if (!ControlledVocabulary.class.isAssignableFrom(type)) {
                 final Class<?> impl = getImplementation(type);
                 if (impl != null) {
                     assertTrue(type.isAssignableFrom(impl));

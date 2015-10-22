@@ -29,7 +29,7 @@ import java.text.ParsePosition;
 import java.text.ParseException;
 import java.util.regex.Matcher;
 import java.nio.charset.Charset;
-import org.opengis.util.Enumerated;
+import org.opengis.util.ControlledVocabulary;
 import org.opengis.util.InternationalString;
 import org.apache.sis.io.LineAppender;
 import org.apache.sis.io.TableAppender;
@@ -632,8 +632,8 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
                 text = ((InternationalString) value).toString(getDisplayLocale());
             } else if (value instanceof CharSequence) {
                 text = value.toString();
-            } else if (value instanceof Enumerated) {
-                text = Types.getCodeTitle((Enumerated) value).toString(getDisplayLocale());
+            } else if (value instanceof ControlledVocabulary) {
+                text = Types.getCodeTitle((ControlledVocabulary) value).toString(getDisplayLocale());
             } else if (value instanceof Enum<?>) {
                 text = CharSequences.upperCaseToSentence(((Enum<?>) value).name());
             } else if (value instanceof Locale) {

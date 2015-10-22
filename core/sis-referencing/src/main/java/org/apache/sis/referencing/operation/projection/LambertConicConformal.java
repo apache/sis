@@ -122,12 +122,12 @@ public class LambertConicConformal extends ConformalProjection {
      *
      * <p><b>Note:</b></p>
      * <ul>
-     *   <li>If φ1 = -φ2, then the cone become a cylinder and this {@code n} value become 0.
-     *       This is limiting case is the Mercator projection, but we can not compare with this class
-     *       because {@code n=0} causes indetermination like 0 × ∞ in the equations of this class.</li>
-     *   <li>If φ1 = φ2 = ±90°, then this {@code n} value become ±1. The formulas in the transform and
+     *   <li>If φ₁ = -φ₂, then the cone become a cylinder and this {@code n} value become 0.
+     *       This limiting case is the Mercator projection, but we can not use this class because
+     *       {@code n=0} causes indetermination like 0 × ∞ in the equations of this class.</li>
+     *   <li>If φ₁ = φ₂ = ±90°, then this {@code n} value become ±1. The formulas in the transform and
      *       inverse transform methods become basically the same than the ones in {@link PolarStereographic},
-     *       (de)normalization matrices contain NaN values.</li>
+     *       but (de)normalization matrices contain NaN values.</li>
      *   <li>Depending on how the formulas are written, <var>n</var> may be positive in the South hemisphere and
      *       negative in the North hemisphere (or conversely). However Apache SIS adjusts the coefficients of the
      *       (de)normalization matrices in order to keep <var>n</var> positive, because the formulas are slightly

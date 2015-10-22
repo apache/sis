@@ -31,7 +31,7 @@ import java.lang.reflect.UndeclaredThrowableException;
 import org.opengis.annotation.UML;
 import org.opengis.util.CodeList;
 import org.opengis.util.InternationalString;
-import org.opengis.util.Enumerated;
+import org.opengis.util.ControlledVocabulary;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.Locales;
 import org.apache.sis.util.CharSequences;
@@ -47,9 +47,9 @@ import org.apache.sis.internal.system.Loggers;
  * This class provides:
  *
  * <ul>
- *   <li>{@link #getStandardName(Class)}, {@link #getListName(Enumerated)} and {@link #getCodeName(Enumerated)}
- *       for fetching ISO names if possible.</li>
- *   <li>{@link #getCodeTitle(Enumerated)}, {@link #getDescription(Enumerated)} and
+ *   <li>{@link #getStandardName(Class)}, {@link #getListName(ControlledVocabulary)} and
+ *       {@link #getCodeName(ControlledVocabulary)} for fetching ISO names if possible.</li>
+ *   <li>{@link #getCodeTitle(ControlledVocabulary)}, {@link #getDescription(ControlledVocabulary)} and
  *       {@link #getDescription(Class)} for fetching human-readable descriptions.</li>
  *   <li>{@link #forStandardName(String)} and {@link #forCodeName(Class, String, boolean)} for
  *       fetching an instance from a name (converse of above {@code get} methods).</li>
@@ -140,7 +140,7 @@ public final class Types extends Static {
      * @param  code The code for which to get the class name, or {@code null}.
      * @return The ISO (preferred) or Java (fallback) class name, or {@code null} if the given code is null.
      */
-    public static String getListName(final Enumerated code) {
+    public static String getListName(final ControlledVocabulary code) {
         if (code == null) {
             return null;
         }
@@ -166,12 +166,12 @@ public final class Types extends Static {
      * @return The UML identifiers or programmatic name for the given code,
      *         or {@code null} if the given code is null.
      *
-     * @see #getCodeLabel(Enumerated)
-     * @see #getCodeTitle(Enumerated)
-     * @see #getDescription(Enumerated)
+     * @see #getCodeLabel(ControlledVocabulary)
+     * @see #getCodeTitle(ControlledVocabulary)
+     * @see #getDescription(ControlledVocabulary)
      * @see #forCodeName(Class, String, boolean)
      */
-    public static String getCodeName(final Enumerated code) {
+    public static String getCodeName(final ControlledVocabulary code) {
         if (code == null) {
             return null;
         }
@@ -183,7 +183,7 @@ public final class Types extends Static {
      * Returns a unlocalized title for the given enumeration or code list value.
      * This method builds a title using heuristics rules, which should give reasonable
      * results without the need of resource bundles. For better results, consider using
-     * {@link #getCodeTitle(Enumerated)} instead.
+     * {@link #getCodeTitle(ControlledVocabulary)} instead.
      *
      * <p>The current heuristic implementation iterates over {@linkplain CodeList#names() all code names},
      * selects the longest one excluding the {@linkplain CodeList#name() field name} if possible, then
@@ -200,11 +200,11 @@ public final class Types extends Static {
      * @param  code The code from which to get a title, or {@code null}.
      * @return A unlocalized title for the given code, or {@code null} if the given code is null.
      *
-     * @see #getCodeName(Enumerated)
-     * @see #getCodeTitle(Enumerated)
-     * @see #getDescription(Enumerated)
+     * @see #getCodeName(ControlledVocabulary)
+     * @see #getCodeTitle(ControlledVocabulary)
+     * @see #getDescription(ControlledVocabulary)
      */
-    public static String getCodeLabel(final Enumerated code) {
+    public static String getCodeLabel(final ControlledVocabulary code) {
         if (code == null) {
             return null;
         }
@@ -223,14 +223,14 @@ public final class Types extends Static {
 
     /**
      * Returns the title of the given enumeration or code list value. Title are usually much shorter than descriptions.
-     * English titles are often the same than the {@linkplain #getCodeLabel(Enumerated) code labels}.
+     * English titles are often the same than the {@linkplain #getCodeLabel(ControlledVocabulary) code labels}.
      *
      * @param  code The code for which to get the title, or {@code null}.
      * @return The title, or {@code null} if the given code is null.
      *
-     * @see #getDescription(Enumerated)
+     * @see #getDescription(ControlledVocabulary)
      */
-    public static InternationalString getCodeTitle(final Enumerated code) {
+    public static InternationalString getCodeTitle(final ControlledVocabulary code) {
         return (code != null) ? new CodeTitle(code) : null;
     }
 
@@ -242,10 +242,10 @@ public final class Types extends Static {
      * @param  code The code for which to get the localized description, or {@code null}.
      * @return The description, or {@code null} if none or if the given code is null.
      *
-     * @see #getCodeTitle(Enumerated)
+     * @see #getCodeTitle(ControlledVocabulary)
      * @see #getDescription(Class)
      */
-    public static InternationalString getDescription(final Enumerated code) {
+    public static InternationalString getDescription(final ControlledVocabulary code) {
         if (code != null) {
             final String resources = getResources(code.getClass().getName());
             if (resources != null) {
@@ -262,7 +262,7 @@ public final class Types extends Static {
      * @param  type The GeoAPI interface or code list from which to get the description, or {@code null}.
      * @return The description, or {@code null} if none or if the given type is {@code null}.
      *
-     * @see #getDescription(Enumerated)
+     * @see #getDescription(ControlledVocabulary)
      */
     public static InternationalString getDescription(final Class<?> type) {
         final String name = getStandardName(type);
@@ -380,14 +380,14 @@ public final class Types extends Static {
         /**
          * The code list for which to create a title.
          */
-        private final Enumerated code;
+        private final ControlledVocabulary code;
 
         /**
          * Creates a new international string for the given code list element.
          *
          * @param code The code list for which to create a title.
          */
-        CodeTitle(final Enumerated code) {
+        CodeTitle(final ControlledVocabulary code) {
             super("org.opengis.metadata.CodeLists", resourceKey(code));
             this.code = code;
         }
@@ -419,7 +419,7 @@ public final class Types extends Static {
     /**
      * Returns the resource key for the given code list.
      */
-    static String resourceKey(final Enumerated code) {
+    static String resourceKey(final ControlledVocabulary code) {
         String key = getCodeName(code);
         if (key.indexOf(SEPARATOR) < 0) {
             key = getListName(code) + SEPARATOR + key;
@@ -443,7 +443,7 @@ public final class Types extends Static {
      * @see Class#getEnumConstants()
      */
     @SuppressWarnings("unchecked")
-    public static <T extends Enumerated> T[] getCodeValues(final Class<T> codeType) {
+    public static <T extends ControlledVocabulary> T[] getCodeValues(final Class<T> codeType) {
         Object values;
         try {
             values = codeType.getMethod("values", (Class<?>[]) null).invoke(null, (Object[]) null);
@@ -550,8 +550,8 @@ public final class Types extends Static {
             if (values == null) {
                 throw e;
             }
-            if (values instanceof Enumerated[]) {
-                for (final Enumerated code : (Enumerated[]) values) {
+            if (values instanceof ControlledVocabulary[]) {
+                for (final ControlledVocabulary code : (ControlledVocabulary[]) values) {
                     for (final String candidate : code.names()) {
                         if (CodeListFilter.accept(candidate, name)) {
                             return enumType.cast(code);
