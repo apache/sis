@@ -229,7 +229,7 @@ public class ObliqueStereographic extends NormalizedProjection {
              * polar stereographic which is designed especially for those cases.
              */
             final Double φ0 = context.getValue(LATITUDE_OF_ORIGIN);
-            if (φ0 != null && abs(φ0 - 90) < Formulas.ANGULAR_TOLERANCE) {
+            if (φ0 != null && abs(abs(φ0) - 90) < Formulas.ANGULAR_TOLERANCE) {
                 return delegate(factory, PolarStereographicA.NAME);
             }
         }
