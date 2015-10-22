@@ -18,7 +18,7 @@ package org.apache.sis.metadata.iso;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import org.opengis.util.Enumerated;
+import org.opengis.util.ControlledVocabulary;
 import org.opengis.annotation.UML;
 import org.opengis.annotation.Specification;
 import org.apache.sis.internal.jaxb.Context;
@@ -325,7 +325,7 @@ public final strictfp class AllMetadataTest extends MetadataTestCase {
             return null;
         }
         final String classname = "org.apache.sis.internal.jaxb." +
-              (Enumerated.class.isAssignableFrom(type) ? "code" : "metadata") +
+              (ControlledVocabulary.class.isAssignableFrom(type) ? "code" : "metadata") +
               '.' + type.getAnnotation(UML.class).identifier();
         final Class<?> wrapper = Class.forName(classname);
         assertTrue("Expected a final class for " + wrapper.getName(), Modifier.isFinal(wrapper.getModifiers()));
