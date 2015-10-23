@@ -21,8 +21,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.Locale;
-
-import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
+import org.apache.sis.util.ArgumentChecks;
 
 // Branch-dependent imports
 import org.apache.sis.internal.jdk7.Objects;
@@ -62,7 +61,7 @@ public class SimpleInternationalString extends AbstractInternationalString imple
      * @param text The string for all locales.
      */
     public SimpleInternationalString(final String text) {
-        ensureNonNull("text", text);
+        ArgumentChecks.ensureNonNull("text", text);
         defaultValue = text;
     }
 

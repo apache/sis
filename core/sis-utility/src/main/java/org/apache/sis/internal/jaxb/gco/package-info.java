@@ -78,7 +78,7 @@
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.4
+ * @version 0.7
  * @module
  *
  * @see javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter

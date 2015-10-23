@@ -19,7 +19,7 @@ package org.apache.sis.internal.jaxb.code;
 import javax.xml.bind.annotation.XmlElement;
 import org.opengis.metadata.spatial.SpatialRepresentationType;
 import org.apache.sis.internal.jaxb.gmd.CodeListAdapter;
-import org.apache.sis.internal.jaxb.gmd.CodeListProxy;
+import org.apache.sis.internal.jaxb.gmd.CodeListUID;
 
 
 /**
@@ -42,10 +42,10 @@ public final class MD_SpatialRepresentationTypeCode
     }
 
     /**
-     * Creates a new adapter for the given proxy.
+     * Creates a new adapter for the given value.
      */
-    private MD_SpatialRepresentationTypeCode(final CodeListProxy proxy) {
-        super(proxy);
+    private MD_SpatialRepresentationTypeCode(final CodeListUID value) {
+        super(value);
     }
 
     /**
@@ -54,8 +54,8 @@ public final class MD_SpatialRepresentationTypeCode
      * @return The wrapper for the code list value.
      */
     @Override
-    protected MD_SpatialRepresentationTypeCode wrap(CodeListProxy proxy) {
-        return new MD_SpatialRepresentationTypeCode(proxy);
+    protected MD_SpatialRepresentationTypeCode wrap(final CodeListUID value) {
+        return new MD_SpatialRepresentationTypeCode(value);
     }
 
     /**
@@ -75,16 +75,16 @@ public final class MD_SpatialRepresentationTypeCode
      */
     @Override
     @XmlElement(name = "MD_SpatialRepresentationTypeCode")
-    public CodeListProxy getElement() {
-        return proxy;
+    public CodeListUID getElement() {
+        return identifier;
     }
 
     /**
      * Invoked by JAXB on unmarshalling.
      *
-     * @param proxy The unmarshalled value.
+     * @param value The unmarshalled value.
      */
-    public void setElement(final CodeListProxy proxy) {
-        this.proxy = proxy;
+    public void setElement(final CodeListUID value) {
+        identifier = value;
     }
 }

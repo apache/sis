@@ -20,7 +20,7 @@ import javax.xml.bind.annotation.adapters.XmlAdapter;
 import org.opengis.util.CodeList;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.internal.jaxb.Context;
-import org.apache.sis.internal.jaxb.gmd.CodeListProxy;
+import org.apache.sis.internal.jaxb.gmd.CodeListUID;
 
 
 /**
@@ -39,9 +39,9 @@ public abstract class UnsupportedCodeListAdapter<ValueType extends UnsupportedCo
         extends XmlAdapter<ValueType,CodeList<?>>
 {
     /**
-     * A proxy form of the {@link CodeList}.
+     * The value of the {@link CodeList}.
      */
-    protected CodeListProxy proxy;
+    protected CodeListUID identifier;
 
     /**
      * Empty constructor for subclasses only.
@@ -52,24 +52,24 @@ public abstract class UnsupportedCodeListAdapter<ValueType extends UnsupportedCo
     /**
      * Creates a wrapper for a {@link CodeList}, in order to handle the format specified in ISO-19139.
      *
-     * @param proxy The proxy version of {@link CodeList} to be marshalled.
+     * @param value The value of the {@link CodeList} to be marshalled.
      */
-    protected UnsupportedCodeListAdapter(final CodeListProxy proxy) {
-        this.proxy = proxy;
+    protected UnsupportedCodeListAdapter(final CodeListUID value) {
+        identifier = value;
     }
 
     /**
-     * Wraps the proxy value into an adapter.
+     * Wraps the code into an adapter.
      * Most implementations will be like below:
      *
      * {@preformat java
-     *     return new ValueType(proxy);
+     *     return new ValueType(value);
      * }
      *
-     * @param proxy The proxy version of {@link CodeList}, to be marshalled.
+     * @param value The value of {@link CodeList} to be marshalled.
      * @return The wrapper for the code list value.
      */
-    protected abstract ValueType wrap(final CodeListProxy proxy);
+    protected abstract ValueType wrap(CodeListUID value);
 
     /**
      * Returns the name of the code list class.
@@ -90,7 +90,7 @@ public abstract class UnsupportedCodeListAdapter<ValueType extends UnsupportedCo
         if (adapter == null) {
             return null;
         }
-        return Types.forCodeName(UnsupportedCodeList.class, adapter.proxy.identifier(), true);
+        return Types.forCodeName(UnsupportedCodeList.class, adapter.identifier.toString(), true);
     }
 
     /**
@@ -110,7 +110,7 @@ public abstract class UnsupportedCodeListAdapter<ValueType extends UnsupportedCo
         final StringBuilder buffer = new StringBuilder(length);
         final String codeListValue = toIdentifier(name, buffer, false);
         buffer.setLength(0);
-        return wrap(new CodeListProxy(Context.current(), getCodeListName(), codeListValue,
+        return wrap(new CodeListUID(Context.current(), getCodeListName(), codeListValue,
                 null, toIdentifier(name, buffer, true)));
     }
 
@@ -156,7 +156,7 @@ public abstract class UnsupportedCodeListAdapter<ValueType extends UnsupportedCo
      *
      * @return The {@code CodeList} value to be marshalled.
      */
-    public abstract CodeListProxy getElement();
+    public abstract CodeListUID getElement();
 
     /*
      * We do not define setter method (even abstract) since it seems to confuse JAXB.

@@ -19,7 +19,7 @@ package org.apache.sis.internal.jaxb.code;
 import javax.xml.bind.annotation.XmlElement;
 import org.opengis.metadata.spatial.TopologyLevel;
 import org.apache.sis.internal.jaxb.gmd.CodeListAdapter;
-import org.apache.sis.internal.jaxb.gmd.CodeListProxy;
+import org.apache.sis.internal.jaxb.gmd.CodeListUID;
 
 
 /**
@@ -40,10 +40,10 @@ public final class MD_TopologyLevelCode extends CodeListAdapter<MD_TopologyLevel
     }
 
     /**
-     * Creates a new adapter for the given proxy.
+     * Creates a new adapter for the given value.
      */
-    private MD_TopologyLevelCode(final CodeListProxy proxy) {
-        super(proxy);
+    private MD_TopologyLevelCode(final CodeListUID value) {
+        super(value);
     }
 
     /**
@@ -52,8 +52,8 @@ public final class MD_TopologyLevelCode extends CodeListAdapter<MD_TopologyLevel
      * @return The wrapper for the code list value.
      */
     @Override
-    protected MD_TopologyLevelCode wrap(CodeListProxy proxy) {
-        return new MD_TopologyLevelCode(proxy);
+    protected MD_TopologyLevelCode wrap(final CodeListUID value) {
+        return new MD_TopologyLevelCode(value);
     }
 
     /**
@@ -73,16 +73,16 @@ public final class MD_TopologyLevelCode extends CodeListAdapter<MD_TopologyLevel
      */
     @Override
     @XmlElement(name = "MD_TopologyLevelCode")
-    public CodeListProxy getElement() {
-        return proxy;
+    public CodeListUID getElement() {
+        return identifier;
     }
 
     /**
      * Invoked by JAXB on unmarshalling.
      *
-     * @param proxy The unmarshalled value.
+     * @param value The unmarshalled value.
      */
-    public void setElement(final CodeListProxy proxy) {
-        this.proxy = proxy;
+    public void setElement(final CodeListUID value) {
+        identifier = value;
     }
 }

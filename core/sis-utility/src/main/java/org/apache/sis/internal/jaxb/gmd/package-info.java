@@ -22,7 +22,7 @@
  *
  * @author  Cédric Briançon (Geomatys)
  * @since   0.3
- * @version 0.3
+ * @version 0.7
  * @module
  *
  * @see javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter

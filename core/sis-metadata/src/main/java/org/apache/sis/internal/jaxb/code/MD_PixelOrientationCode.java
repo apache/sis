@@ -19,7 +19,7 @@ package org.apache.sis.internal.jaxb.code;
 import javax.xml.bind.annotation.XmlElement;
 import org.opengis.metadata.spatial.PixelOrientation;
 import org.apache.sis.internal.jaxb.gmd.CodeListAdapter;
-import org.apache.sis.internal.jaxb.gmd.CodeListProxy;
+import org.apache.sis.internal.jaxb.gmd.CodeListUID;
 
 
 /**
@@ -44,8 +44,8 @@ public final class MD_PixelOrientationCode
     /**
      * Creates a new adapter for the given proxy.
      */
-    private MD_PixelOrientationCode(final CodeListProxy proxy) {
-        super(proxy);
+    private MD_PixelOrientationCode(final CodeListUID value) {
+        super(value);
     }
 
     /**
@@ -54,8 +54,8 @@ public final class MD_PixelOrientationCode
      * @return The wrapper for the code list value.
      */
     @Override
-    protected MD_PixelOrientationCode wrap(CodeListProxy proxy) {
-        return new MD_PixelOrientationCode(proxy);
+    protected MD_PixelOrientationCode wrap(final CodeListUID value) {
+        return new MD_PixelOrientationCode(value);
     }
 
     /**
@@ -83,16 +83,16 @@ public final class MD_PixelOrientationCode
      */
     @Override
     @XmlElement(name = "MD_PixelOrientationCode")
-    public CodeListProxy getElement() {
-        return proxy;
+    public CodeListUID getElement() {
+        return identifier;
     }
 
     /**
      * Invoked by JAXB on unmarshalling.
      *
-     * @param proxy The unmarshalled value.
+     * @param value The unmarshalled value.
      */
-    public void setElement(final CodeListProxy proxy) {
-        this.proxy = proxy;
+    public void setElement(final CodeListUID value) {
+        identifier = value;
     }
 }
