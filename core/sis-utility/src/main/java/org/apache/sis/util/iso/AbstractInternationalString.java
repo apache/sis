@@ -20,20 +20,31 @@ import java.util.Locale;
 import java.util.Formatter;
 import java.util.Formattable;
 import java.util.FormattableFlags;
+import org.opengis.util.ControlledVocabulary;
 import org.opengis.util.InternationalString;
 import org.apache.sis.internal.util.Utilities;
 import org.apache.sis.util.CharSequences;
 
 
 /**
- * Base class for {@linkplain String string}s that has been internationalized into several
- * {@linkplain Locale locales}. The {@link InternationalString} interface is used as a replacement
- * for the {@link String} class whenever an attribute needs to be internationalization capable.
- * The default value (as returned by {@link #toString()} and other {@link CharSequence} methods)
- * is the string in the current {@linkplain Locale#getDefault() system-wide default locale}.
+ * Base class for character strings that has been internationalized into several locales.
+ * The {@link InternationalString} interface is used instead of the {@link String} class
+ * whenever an attribute needs to be internationalization capable.
  *
- * <p>The {@linkplain Comparable natural ordering} is defined by the value returned by
- * {@link #toString()}.</p>
+ * <p>The default value (as returned by {@link #toString()} and other {@link CharSequence} methods)
+ * is the string in the current {@linkplain Locale#getDefault() system-wide default locale}.
+ * The {@linkplain Comparable natural ordering} is defined by the value returned by {@link #toString()}.</p>
+ *
+ * <div class="section">Substituting a free text by a code list</div>
+ * The ISO standard allows to substitute some character strings in the <cite>"free text"</cite> domain
+ * by a {@link org.opengis.util.CodeList} value. This can be done with:
+ *
+ * <ul>
+ *   <li>{@link Types#getCodeTitle(ControlledVocabulary)} for getting the {@link InternationalString}
+ *       instance to store in a metadata property.</li>
+ *   <li>{@link Types#forCodeTitle(CharSequence)} for retrieving the {@link org.opengis.util.CodeList}
+ *       previously stored as an {@code InternationalString}.</li>
+ * </ul>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.3

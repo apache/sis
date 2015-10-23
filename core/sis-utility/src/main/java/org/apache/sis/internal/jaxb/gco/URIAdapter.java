@@ -68,7 +68,7 @@ public final class URIAdapter extends XmlAdapter<GO_CharacterString, URI> {
         if (value != null) {
             final Context context = Context.current();
             final GO_CharacterString wrapper = CharSequenceAdapter.wrap(context, value, value.toString());
-            if (wrapper != null) {
+            if (wrapper != null && wrapper.type == 0) {
                 if (!Context.isFlagSet(context, Context.SUBSTITUTE_FILENAME)) {
                     wrapper.type = GO_CharacterString.FILENAME;
                 }

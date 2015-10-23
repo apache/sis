@@ -58,7 +58,7 @@ public final class Country extends GO_CharacterString {
     /**
      * Empty constructor for JAXB only.
      */
-    public Country() {
+    private Country() {
     }
 
     /**
