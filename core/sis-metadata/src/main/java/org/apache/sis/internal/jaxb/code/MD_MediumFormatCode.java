@@ -19,7 +19,7 @@ package org.apache.sis.internal.jaxb.code;
 import javax.xml.bind.annotation.XmlElement;
 import org.opengis.metadata.distribution.MediumFormat;
 import org.apache.sis.internal.jaxb.gmd.CodeListAdapter;
-import org.apache.sis.internal.jaxb.gmd.CodeListProxy;
+import org.apache.sis.internal.jaxb.gmd.CodeListUID;
 
 
 /**
@@ -40,10 +40,10 @@ public final class MD_MediumFormatCode extends CodeListAdapter<MD_MediumFormatCo
     }
 
     /**
-     * Creates a new adapter for the given proxy.
+     * Creates a new adapter for the given value.
      */
-    private MD_MediumFormatCode(final CodeListProxy proxy) {
-        super(proxy);
+    private MD_MediumFormatCode(final CodeListUID value) {
+        super(value);
     }
 
     /**
@@ -52,8 +52,8 @@ public final class MD_MediumFormatCode extends CodeListAdapter<MD_MediumFormatCo
      * @return The wrapper for the code list value.
      */
     @Override
-    protected MD_MediumFormatCode wrap(CodeListProxy proxy) {
-        return new MD_MediumFormatCode(proxy);
+    protected MD_MediumFormatCode wrap(final CodeListUID value) {
+        return new MD_MediumFormatCode(value);
     }
 
     /**
@@ -73,16 +73,16 @@ public final class MD_MediumFormatCode extends CodeListAdapter<MD_MediumFormatCo
      */
     @Override
     @XmlElement(name = "MD_MediumFormatCode")
-    public CodeListProxy getElement() {
-        return proxy;
+    public CodeListUID getElement() {
+        return identifier;
     }
 
     /**
      * Invoked by JAXB on unmarshalling.
      *
-     * @param proxy The unmarshalled value.
+     * @param value The unmarshalled value.
      */
-    public void setElement(final CodeListProxy proxy) {
-        this.proxy = proxy;
+    public void setElement(final CodeListUID value) {
+        identifier = value;
     }
 }

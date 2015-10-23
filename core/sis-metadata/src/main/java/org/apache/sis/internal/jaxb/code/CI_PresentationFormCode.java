@@ -19,7 +19,7 @@ package org.apache.sis.internal.jaxb.code;
 import javax.xml.bind.annotation.XmlElement;
 import org.opengis.metadata.citation.PresentationForm;
 import org.apache.sis.internal.jaxb.gmd.CodeListAdapter;
-import org.apache.sis.internal.jaxb.gmd.CodeListProxy;
+import org.apache.sis.internal.jaxb.gmd.CodeListUID;
 
 
 /**
@@ -32,9 +32,7 @@ import org.apache.sis.internal.jaxb.gmd.CodeListProxy;
  * @version 0.3
  * @module
  */
-public final class CI_PresentationFormCode
-        extends CodeListAdapter<CI_PresentationFormCode, PresentationForm>
-{
+public final class CI_PresentationFormCode extends CodeListAdapter<CI_PresentationFormCode, PresentationForm> {
     /**
      * Empty constructor for JAXB only.
      */
@@ -42,10 +40,10 @@ public final class CI_PresentationFormCode
     }
 
     /**
-     * Creates a new adapter for the given proxy.
+     * Creates a new adapter for the given value.
      */
-    private CI_PresentationFormCode(final CodeListProxy proxy) {
-        super(proxy);
+    private CI_PresentationFormCode(final CodeListUID value) {
+        super(value);
     }
 
     /**
@@ -54,8 +52,8 @@ public final class CI_PresentationFormCode
      * @return The wrapper for the code list value.
      */
     @Override
-    protected CI_PresentationFormCode wrap(CodeListProxy proxy) {
-        return new CI_PresentationFormCode(proxy);
+    protected CI_PresentationFormCode wrap(final CodeListUID value) {
+        return new CI_PresentationFormCode(value);
     }
 
     /**
@@ -75,16 +73,16 @@ public final class CI_PresentationFormCode
      */
     @Override
     @XmlElement(name = "CI_PresentationFormCode")
-    public CodeListProxy getElement() {
-        return proxy;
+    public CodeListUID getElement() {
+        return identifier;
     }
 
     /**
      * Invoked by JAXB on unmarshalling.
      *
-     * @param proxy The unmarshalled value.
+     * @param value The unmarshalled value.
      */
-    public void setElement(final CodeListProxy proxy) {
-        this.proxy = proxy;
+    public void setElement(final CodeListUID value) {
+        identifier = value;
     }
 }

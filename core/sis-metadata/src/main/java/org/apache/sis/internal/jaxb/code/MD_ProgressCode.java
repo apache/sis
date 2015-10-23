@@ -19,7 +19,7 @@ package org.apache.sis.internal.jaxb.code;
 import javax.xml.bind.annotation.XmlElement;
 import org.opengis.metadata.identification.Progress;
 import org.apache.sis.internal.jaxb.gmd.CodeListAdapter;
-import org.apache.sis.internal.jaxb.gmd.CodeListProxy;
+import org.apache.sis.internal.jaxb.gmd.CodeListUID;
 
 
 /**
@@ -40,10 +40,10 @@ public final class MD_ProgressCode extends CodeListAdapter<MD_ProgressCode, Prog
     }
 
     /**
-     * Creates a new adapter for the given proxy.
+     * Creates a new adapter for the given value.
      */
-    private MD_ProgressCode(final CodeListProxy proxy) {
-        super(proxy);
+    private MD_ProgressCode(final CodeListUID value) {
+        super(value);
     }
 
     /**
@@ -52,8 +52,8 @@ public final class MD_ProgressCode extends CodeListAdapter<MD_ProgressCode, Prog
      * @return The wrapper for the code list value.
      */
     @Override
-    protected MD_ProgressCode wrap(CodeListProxy proxy) {
-        return new MD_ProgressCode(proxy);
+    protected MD_ProgressCode wrap(final CodeListUID value) {
+        return new MD_ProgressCode(value);
     }
 
     /**
@@ -73,16 +73,16 @@ public final class MD_ProgressCode extends CodeListAdapter<MD_ProgressCode, Prog
      */
     @Override
     @XmlElement(name = "MD_ProgressCode")
-    public CodeListProxy getElement() {
-        return proxy;
+    public CodeListUID getElement() {
+        return identifier;
     }
 
     /**
      * Invoked by JAXB on unmarshalling.
      *
-     * @param proxy The unmarshalled value.
+     * @param value The unmarshalled value.
      */
-    public void setElement(final CodeListProxy proxy) {
-        this.proxy = proxy;
+    public void setElement(final CodeListUID value) {
+        identifier = value;
     }
 }

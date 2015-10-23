@@ -34,16 +34,15 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Messages;
+import org.apache.sis.util.collection.Containers;
 import org.apache.sis.internal.system.Modules;
-
-import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
 
 // Branch-dependent imports
 import java.util.Objects;
 
 
 /**
- * An international string using a {@linkplain Map map} of strings for different locales.
+ * An international string using a map of strings for different locales.
  * Strings for new locales can be {@linkplain #add(Locale, String) added},
  * but existing strings can not be removed or modified.
  * This behavior is a compromise between making constructions easier, and being suitable for
@@ -111,7 +110,7 @@ public class DefaultInternationalString extends AbstractInternationalString impl
      * @see Types#toInternationalString(Map, String)
      */
     public DefaultInternationalString(final Map<Locale,String> strings) {
-        if (isNullOrEmpty(strings)) {
+        if (Containers.isNullOrEmpty(strings)) {
             localeMap = Collections.emptyMap();
         } else {
             final Iterator<Map.Entry<Locale,String>> it = strings.entrySet().iterator();

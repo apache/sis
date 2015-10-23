@@ -19,7 +19,7 @@ package org.apache.sis.internal.jaxb.code;
 import javax.xml.bind.annotation.XmlElement;
 import org.opengis.metadata.acquisition.Context;
 import org.apache.sis.internal.jaxb.gmd.CodeListAdapter;
-import org.apache.sis.internal.jaxb.gmd.CodeListProxy;
+import org.apache.sis.internal.jaxb.gmd.CodeListUID;
 import org.apache.sis.xml.Namespaces;
 
 
@@ -41,10 +41,10 @@ public final class MI_ContextCode extends CodeListAdapter<MI_ContextCode, Contex
     }
 
     /**
-     * Creates a new adapter for the given proxy.
+     * Creates a new adapter for the given value.
      */
-    private MI_ContextCode(final CodeListProxy proxy) {
-        super(proxy);
+    private MI_ContextCode(final CodeListUID value) {
+        super(value);
     }
 
     /**
@@ -53,8 +53,8 @@ public final class MI_ContextCode extends CodeListAdapter<MI_ContextCode, Contex
      * @return The wrapper for the code list value.
      */
     @Override
-    protected MI_ContextCode wrap(CodeListProxy proxy) {
-        return new MI_ContextCode(proxy);
+    protected MI_ContextCode wrap(CodeListUID value) {
+        return new MI_ContextCode(value);
     }
 
     /**
@@ -74,16 +74,16 @@ public final class MI_ContextCode extends CodeListAdapter<MI_ContextCode, Contex
      */
     @Override
     @XmlElement(name = "MI_ContextCode", namespace = Namespaces.GMI)
-    public CodeListProxy getElement() {
-        return proxy;
+    public CodeListUID getElement() {
+        return identifier;
     }
 
     /**
      * Invoked by JAXB on unmarshalling.
      *
-     * @param proxy The unmarshalled value.
+     * @param value The unmarshalled value.
      */
-    public void setElement(final CodeListProxy proxy) {
-        this.proxy = proxy;
+    public void setElement(final CodeListUID value) {
+        identifier = value;
     }
 }

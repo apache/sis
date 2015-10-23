@@ -19,7 +19,7 @@ package org.apache.sis.internal.jaxb.code;
 import javax.xml.bind.annotation.XmlElement;
 import org.opengis.metadata.content.PolarizationOrientation;
 import org.apache.sis.internal.jaxb.gmd.CodeListAdapter;
-import org.apache.sis.internal.jaxb.gmd.CodeListProxy;
+import org.apache.sis.internal.jaxb.gmd.CodeListUID;
 import org.apache.sis.xml.Namespaces;
 
 
@@ -44,10 +44,10 @@ public final class MI_PolarizationOrientationCode
     }
 
     /**
-     * Creates a new adapter for the given proxy.
+     * Creates a new adapter for the given value.
      */
-    private MI_PolarizationOrientationCode(final CodeListProxy proxy) {
-        super(proxy);
+    private MI_PolarizationOrientationCode(final CodeListUID value) {
+        super(value);
     }
 
     /**
@@ -56,8 +56,8 @@ public final class MI_PolarizationOrientationCode
      * @return The wrapper for the code list value.
      */
     @Override
-    protected MI_PolarizationOrientationCode wrap(CodeListProxy proxy) {
-        return new MI_PolarizationOrientationCode(proxy);
+    protected MI_PolarizationOrientationCode wrap(final CodeListUID value) {
+        return new MI_PolarizationOrientationCode(value);
     }
 
     /**
@@ -77,16 +77,16 @@ public final class MI_PolarizationOrientationCode
      */
     @Override
     @XmlElement(name = "MI_PolarizationOrientationCode", namespace = Namespaces.GMI)
-    public CodeListProxy getElement() {
-        return proxy;
+    public CodeListUID getElement() {
+        return identifier;
     }
 
     /**
      * Invoked by JAXB on unmarshalling.
      *
-     * @param proxy The unmarshalled value.
+     * @param value The unmarshalled value.
      */
-    public void setElement(final CodeListProxy proxy) {
-        this.proxy = proxy;
+    public void setElement(final CodeListUID value) {
+        identifier = value;
     }
 }

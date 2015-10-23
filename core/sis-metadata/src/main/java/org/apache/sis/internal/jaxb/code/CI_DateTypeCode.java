@@ -19,7 +19,7 @@ package org.apache.sis.internal.jaxb.code;
 import javax.xml.bind.annotation.XmlElement;
 import org.opengis.metadata.citation.DateType;
 import org.apache.sis.internal.jaxb.gmd.CodeListAdapter;
-import org.apache.sis.internal.jaxb.gmd.CodeListProxy;
+import org.apache.sis.internal.jaxb.gmd.CodeListUID;
 
 
 /**
@@ -40,10 +40,10 @@ public final class CI_DateTypeCode extends CodeListAdapter<CI_DateTypeCode, Date
     }
 
     /**
-     * Creates a new adapter for the given proxy.
+     * Creates a new adapter for the given value.
      */
-    private CI_DateTypeCode(final CodeListProxy proxy) {
-        super(proxy);
+    private CI_DateTypeCode(final CodeListUID value) {
+        super(value);
     }
 
     /**
@@ -52,8 +52,8 @@ public final class CI_DateTypeCode extends CodeListAdapter<CI_DateTypeCode, Date
      * @return The wrapper for the code list value.
      */
     @Override
-    protected CI_DateTypeCode wrap(CodeListProxy proxy) {
-        return new CI_DateTypeCode(proxy);
+    protected CI_DateTypeCode wrap(final CodeListUID value) {
+        return new CI_DateTypeCode(value);
     }
 
     /**
@@ -73,16 +73,16 @@ public final class CI_DateTypeCode extends CodeListAdapter<CI_DateTypeCode, Date
      */
     @Override
     @XmlElement(name = "CI_DateTypeCode")
-    public CodeListProxy getElement() {
-        return proxy;
+    public CodeListUID getElement() {
+        return identifier;
     }
 
     /**
      * Invoked by JAXB on unmarshalling.
      *
-     * @param proxy The unmarshalled value.
+     * @param value The unmarshalled value.
      */
-    public void setElement(final CodeListProxy proxy) {
-        this.proxy = proxy;
+    public void setElement(final CodeListUID value) {
+        identifier = value;
     }
 }

@@ -51,12 +51,12 @@ public final class LanguageCode extends GO_CharacterString {
      * The language using a {@link org.opengis.util.CodeList}-like format.
      */
     @XmlElement(name = "LanguageCode")
-    private CodeListProxy proxy;
+    private CodeListUID identifier;
 
     /**
      * Empty constructor for JAXB only.
      */
-    public LanguageCode() {
+    private LanguageCode() {
     }
 
     /**
@@ -77,7 +77,7 @@ public final class LanguageCode extends GO_CharacterString {
      * @param value         The value in the language specified by the {@code codeSpace} attribute, or {@code null} if none.
      */
     private LanguageCode(final Context context, final String codeListValue, final String codeSpace, final String value) {
-        proxy = new CodeListProxy(context, "LanguageCode", codeListValue, codeSpace, value);
+        identifier = new CodeListUID(context, "LanguageCode", codeListValue, codeSpace, value);
     }
 
     /**
@@ -136,14 +136,13 @@ public final class LanguageCode extends GO_CharacterString {
      */
     public String getLanguage() {
         String code;
-        final CodeListProxy proxy = this.proxy;
-        if (proxy != null) {
+        if (identifier != null) {
             /*
              * <gmd:language>
              *   <gmd:LanguageCode codeList="(snip)#LanguageCode" codeListValue="jpn">Japanese</gmd:LanguageCode>
              * </gmd:language>
              */
-            code = proxy.identifier(); // May still be null.
+            code = identifier.toString(); // May still be null.
         } else {
             /*
              * <gmd:language>

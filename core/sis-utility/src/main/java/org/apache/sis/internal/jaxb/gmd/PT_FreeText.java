@@ -169,7 +169,7 @@ public final class PT_FreeText extends GO_CharacterString {
      * @return The character sequence for this {@code <gco:CharacterString>}.
      */
     @Override
-    public CharSequence toCharSequence() {
+    protected CharSequence toCharSequence() {
         String defaultValue = toString(); // May be null.
         if (defaultValue != null && contains(defaultValue)) {
             /*

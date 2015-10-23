@@ -19,7 +19,7 @@ package org.apache.sis.internal.jaxb.code;
 import javax.xml.bind.annotation.XmlElement;
 import org.opengis.metadata.identification.CharacterSet;
 import org.apache.sis.internal.jaxb.gmd.CodeListAdapter;
-import org.apache.sis.internal.jaxb.gmd.CodeListProxy;
+import org.apache.sis.internal.jaxb.gmd.CodeListUID;
 
 
 /**
@@ -41,10 +41,10 @@ public final class LegacyCharacterSet extends CodeListAdapter<LegacyCharacterSet
     }
 
     /**
-     * Creates a new adapter for the given proxy.
+     * Creates a new adapter for the given value.
      */
-    private LegacyCharacterSet(final CodeListProxy proxy) {
-        super(proxy);
+    private LegacyCharacterSet(final CodeListUID value) {
+        super(value);
     }
 
     /**
@@ -53,8 +53,8 @@ public final class LegacyCharacterSet extends CodeListAdapter<LegacyCharacterSet
      * @return The wrapper for the code list value.
      */
     @Override
-    protected LegacyCharacterSet wrap(CodeListProxy proxy) {
-        return new LegacyCharacterSet(proxy);
+    protected LegacyCharacterSet wrap(final CodeListUID value) {
+        return new LegacyCharacterSet(value);
     }
 
     /**
@@ -74,16 +74,16 @@ public final class LegacyCharacterSet extends CodeListAdapter<LegacyCharacterSet
      */
     @Override
     @XmlElement(name = "MD_CharacterSetCode")
-    public CodeListProxy getElement() {
-        return proxy;
+    public CodeListUID getElement() {
+        return identifier;
     }
 
     /**
      * Invoked by JAXB on unmarshalling.
      *
-     * @param proxy The unmarshalled value.
+     * @param value The unmarshalled value.
      */
-    public void setElement(final CodeListProxy proxy) {
-        this.proxy = proxy;
+    public void setElement(final CodeListUID value) {
+        identifier = value;
     }
 }
