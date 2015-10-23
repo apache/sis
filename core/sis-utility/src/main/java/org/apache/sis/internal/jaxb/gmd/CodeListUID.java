@@ -29,21 +29,25 @@ import org.apache.sis.internal.jaxb.Schemas;
 
 
 /**
- * Stores information about {@link CodeList}, in order to handle format defined in ISO-19139
- * about the {@code CodeList} tags. This object is wrapped by {@link CodeListAdapter} or, in
- * the spacial case of {@link Locale} type, by {@link LanguageCode} or {@link Country}. This
- * class provides the {@link #codeList} and {@link #codeListValue} attributes to be marshalled.
+ * Stores information about {@link CodeList} in order to marshal in the way defined by ISO-19139.
+ * This class provides the {@link #codeList} and {@link #codeListValue} attributes to be marshalled.
+ * Those attributes should be unique for each code.
+ *
+ * <div class="note">"UID" in the class name stands for "Unique Identifier".</div>
+ *
+ * This object is wrapped by {@link CodeListAdapter} or, in the special case of {@link Locale} type,
+ * by {@link LanguageCode} or {@link Country}.
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.5
+ * @version 0.7
  * @module
  *
  * @see CodeListAdapter
  */
-@XmlType(name = "CodeList", propOrder = { "codeList", "codeListValue", "codeSpace" })
-public final class CodeListProxy {
+@XmlType(name = "CodeList", propOrder = {"codeList", "codeListValue", "codeSpace"})
+public final class CodeListUID {
     /**
      * Returns the URL to a given code list in the given XML file.
      * This method concatenates the base schema URL with the given identifier.
@@ -99,7 +103,7 @@ public final class CodeListProxy {
     /**
      * Default empty constructor for JAXB.
      */
-    public CodeListProxy() {
+    CodeListUID() {
     }
 
     /**
@@ -111,7 +115,7 @@ public final class CodeListProxy {
      * @param codeSpace     The 3-letters language code of the {@code value} attribute, or {@code null} if none.
      * @param value         The value in the language specified by the {@code codeSpace} attribute, or {@code null} if none.
      */
-    public CodeListProxy(final Context context, final String codeList, final String codeListValue,
+    public CodeListUID(final Context context, final String codeList, final String codeListValue,
             final String codeSpace, final String value)
     {
         this.codeList      = schema(context, codeList);
@@ -127,7 +131,7 @@ public final class CodeListProxy {
      * @param context The current (un)marshalling context, or {@code null} if none.
      * @param code    The code list to wrap.
      */
-    CodeListProxy(final Context context, final CodeList<?> code) {
+    public CodeListUID(final Context context, final CodeList<?> code) {
         final String classID = Types.getListName(code);
         final String fieldID = Types.getCodeName(code);
         codeList = schema(context, classID);
@@ -165,9 +169,9 @@ public final class CodeListProxy {
      * code list is actually used as an enumeration, then the above attribute
      * is null and we have to use directly the {@linkplain #value} instead.
      *
-     * @return The identifier to be given to the {@code CodeList.valueOf(...)} method.
+     * @return The identifier to be given to the {@code CodeList.valueOf(…)} method.
      */
-    public String identifier() {
+    public String toString() {
         String id = codeListValue;
         if (id == null) {
             id = value;

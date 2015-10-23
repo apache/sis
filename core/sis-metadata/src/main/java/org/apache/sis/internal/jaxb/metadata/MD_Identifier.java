@@ -16,8 +16,8 @@
  */
 package org.apache.sis.internal.jaxb.metadata;
 
-import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementRef;
+import javax.xml.bind.annotation.XmlElementRefs;
 import org.opengis.metadata.Identifier;
 import org.opengis.referencing.ReferenceIdentifier;
 import org.apache.sis.metadata.iso.DefaultIdentifier;
@@ -32,7 +32,7 @@ import org.apache.sis.internal.jaxb.gco.PropertyType;
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.5
+ * @version 0.7
  * @module
  */
 public final class MD_Identifier extends PropertyType<MD_Identifier, Identifier> {
@@ -74,24 +74,22 @@ public final class MD_Identifier extends PropertyType<MD_Identifier, Identifier>
     }
 
     /**
-     * Returns {@code true} if the identifier should be marshalled as a
-     * {@code RS_Identifier} instead than {@code MD_Identifier}.
-     */
-    @SuppressWarnings("deprecation")
-    private boolean isRS() {
-        return (metadata instanceof ReferenceIdentifier);
-    }
-
-    /**
      * Invoked by JAXB at marshalling time for getting the actual metadata to write
-     * inside the {@code <gmd:MD_Identifier>} XML element.
+     * inside the {@code <gmd:MD_Identifier>} or {@code RS_Identifier} XML element.
      * This is the value or a copy of the value given in argument to the {@code wrap} method.
      *
      * @return The metadata to be marshalled.
      */
-    @XmlElementRef
-    public DefaultIdentifier getElement() {
-        return isRS() ? null : DefaultIdentifier.castOrCopy(metadata);
+    @XmlElementRefs({
+        @XmlElementRef(type = DefaultIdentifier.class),
+        @XmlElementRef(type = ImmutableIdentifier.class)
+    })
+    @SuppressWarnings("deprecation")
+    public Identifier getElement() {
+        if (metadata instanceof ReferenceIdentifier) {
+            return ImmutableIdentifier.castOrCopy((ReferenceIdentifier) metadata);
+        }
+        return DefaultIdentifier.castOrCopy(metadata);
     }
 
     /**
@@ -99,28 +97,7 @@ public final class MD_Identifier extends PropertyType<MD_Identifier, Identifier>
      *
      * @param metadata The unmarshalled metadata.
      */
-    public void setElement(final DefaultIdentifier metadata) {
-        this.metadata = metadata;
-    }
-
-    /**
-     * An alternative to {@link #getElement()} when the metadata is actually
-     * an instance of {@link ReferenceIdentifier}. In such case, the enclosing
-     * XML element will be {@code RS_Identifier} instead of {@code MD_Identifier}.
-     *
-     * @return The metadata to be marshalled.
-     */
-    @XmlElement(name = "RS_Identifier")
-    public ImmutableIdentifier getReferenceIdentifier() {
-        return isRS() ? ImmutableIdentifier.castOrCopy((ReferenceIdentifier) metadata) : null;
-    }
-
-    /**
-     * Invoked by JAXB at unmarshalling time for storing the result temporarily.
-     *
-     * @param metadata The unmarshalled metadata.
-     */
-    public void setReferenceIdentifier(final ImmutableIdentifier metadata) {
+    public void setElement(final Identifier metadata) {
         this.metadata = metadata;
     }
 }

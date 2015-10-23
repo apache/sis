@@ -17,20 +17,19 @@
 
 /**
  * Implementations of GeoAPI types from the {@link org.opengis.util} package.
- * {@code InternationalString} implementations are closely related to the {@code <gmd:textGroup>}
- * XML element found in ISO specifications. All other non-static types except the {@code Factory}
- * implementations are derived from the ISO 19103 specification.
  * The main content of this package are:
  *
  * <ul>
- *   <li>Implementations of {@link org.opengis.util.InternationalString}:
+ *   <li>Implementations of {@link org.opengis.util.InternationalString}
+ *       (related to the {@code <gmd:textGroup>} XML element found in ISO specifications):
  *     <ul>
  *       <li>{@link org.apache.sis.util.iso.SimpleInternationalString}   for wrapping a single {@link java.lang.String};</li>
  *       <li>{@link org.apache.sis.util.iso.DefaultInternationalString}  for providing many localizations in a {@link java.util.Map};</li>
  *       <li>{@link org.apache.sis.util.iso.ResourceInternationalString} for providing localizations from a {@link java.util.ResourceBundle}.</li>
+ *       <li>{@link org.apache.sis.util.iso.Types#getCodeTitle Types.getCodeTitle(CodeList)} for wrapping a {@link org.opengis.util.CodeList} value.</li>
  *     </ul>
  *   </li>
- *   <li>Implementations of {@link org.opengis.util.GenericName}:
+ *   <li>Implementations of {@link org.opengis.util.GenericName} (derived from ISO 19103):
  *     <ul>
  *       <li>{@link org.apache.sis.util.iso.DefaultLocalName}  for identifier within a {@linkplain org.apache.sis.util.iso.DefaultNameSpace name space}.</li>
  *       <li>{@link org.apache.sis.util.iso.DefaultMemberName} for identifying a member of a {@linkplain org.apache.sis.util.iso.DefaultRecord record}.</li>
@@ -38,7 +37,7 @@
  *       <li>{@link org.apache.sis.util.iso.DefaultScopedName} for a composite of a <cite>head</cite> name and a <cite>tail</cite> name.</li>
  *     </ul>
  *   </li>
- *   <li>Implementations of {@link org.opengis.util.Record} and related classes:
+ *   <li>Implementations of {@link org.opengis.util.Record} and related classes (derived from ISO 19103):
  *     <ul>
  *       <li>{@link org.apache.sis.util.iso.DefaultRecord}       for a list of logically related elements as (<var>name</var>, <var>value</var>) pairs.</li>
  *       <li>{@link org.apache.sis.util.iso.DefaultRecordType}   for definition of the type of a {@code Record}.</li>
@@ -109,7 +108,7 @@
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.3
- * @version 0.5
+ * @version 0.7
  * @module
  */
 @XmlSchema(elementFormDefault = XmlNsForm.QUALIFIED, namespace = Namespaces.GCO, xmlns = {

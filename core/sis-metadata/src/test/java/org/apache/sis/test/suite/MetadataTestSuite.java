@@ -59,7 +59,7 @@ import org.junit.BeforeClass;
     org.apache.sis.internal.jaxb.code.PT_LocaleTest.class,
     org.apache.sis.xml.FreeTextMarshallingTest.class,
     org.apache.sis.xml.NilReasonMarshallingTest.class,
-    org.apache.sis.xml.AnchorMarshallingTest.class,
+    org.apache.sis.xml.CharSequenceSubstitutionTest.class,
     org.apache.sis.xml.UUIDMarshallingTest.class,
     org.apache.sis.xml.XLinkMarshallingTest.class,
 

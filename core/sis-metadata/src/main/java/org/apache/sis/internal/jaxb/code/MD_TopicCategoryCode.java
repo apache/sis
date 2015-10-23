@@ -19,7 +19,7 @@ package org.apache.sis.internal.jaxb.code;
 import javax.xml.bind.annotation.XmlElement;
 import org.opengis.metadata.identification.TopicCategory;
 import org.apache.sis.internal.jaxb.gmd.CodeListAdapter;
-import org.apache.sis.internal.jaxb.gmd.CodeListProxy;
+import org.apache.sis.internal.jaxb.gmd.CodeListUID;
 
 
 /**
@@ -44,8 +44,8 @@ public final class MD_TopicCategoryCode extends CodeListAdapter<MD_TopicCategory
     /**
      * Creates a new adapter for the given proxy.
      */
-    private MD_TopicCategoryCode(final CodeListProxy proxy) {
-        super(proxy);
+    private MD_TopicCategoryCode(final CodeListUID value) {
+        super(value);
     }
 
     /**
@@ -54,8 +54,8 @@ public final class MD_TopicCategoryCode extends CodeListAdapter<MD_TopicCategory
      * @return The wrapper for the code list value.
      */
     @Override
-    protected MD_TopicCategoryCode wrap(CodeListProxy proxy) {
-        return new MD_TopicCategoryCode(proxy);
+    protected MD_TopicCategoryCode wrap(final CodeListUID value) {
+        return new MD_TopicCategoryCode(value);
     }
 
     /**
@@ -83,16 +83,16 @@ public final class MD_TopicCategoryCode extends CodeListAdapter<MD_TopicCategory
      */
     @Override
     @XmlElement(name = "MD_TopicCategoryCode")
-    public CodeListProxy getElement() {
-        return proxy;
+    public CodeListUID getElement() {
+        return identifier;
     }
 
     /**
      * Invoked by JAXB on unmarshalling.
      *
-     * @param proxy The unmarshalled value.
+     * @param value The unmarshalled value.
      */
-    public void setElement(final CodeListProxy proxy) {
-        this.proxy = proxy;
+    public void setElement(final CodeListUID value) {
+        identifier = value;
     }
 }
