@@ -28,12 +28,12 @@ import org.apache.sis.util.iso.Types;
  *
  * @author  Guilhem Legal (Geomatys)
  * @since   0.3
- * @version 0.3
+ * @version 0.7
  * @module
  */
-final class CodeListProxy {
+final class CodeListUID {
     /**
-     * The code space of the {@linkplain #identifier} as an URI, or {@code null}.
+     * The code space of the {@link #value} as an URI, or {@code null}.
      */
     @XmlAttribute
     String codeSpace;
@@ -42,19 +42,19 @@ final class CodeListProxy {
      * The code list identifier.
      */
     @XmlValue
-    String identifier;
+    String value;
 
     /**
      * Empty constructor for JAXB only.
      */
-    public CodeListProxy() {
+    private CodeListUID() {
     }
 
     /**
      * Creates a new adapter for the given value.
      */
-    CodeListProxy(final String codeSpace, final CodeList<?> value) {
-       this.codeSpace  = codeSpace;
-       this.identifier = Types.getCodeName(value);
+    CodeListUID(final String codeSpace, final CodeList<?> code) {
+       this.codeSpace = codeSpace;
+       value = Types.getCodeName(code);
     }
 }

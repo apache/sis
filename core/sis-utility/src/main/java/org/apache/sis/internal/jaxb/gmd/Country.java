@@ -53,12 +53,12 @@ public final class Country extends GO_CharacterString {
      * The country using a {@link org.opengis.util.CodeList}-like format.
      */
     @XmlElement(name = "Country")
-    private CodeListProxy proxy;
+    private CodeListUID identifier;
 
     /**
      * Empty constructor for JAXB only.
      */
-    public Country() {
+    private Country() {
     }
 
     /**
@@ -79,7 +79,7 @@ public final class Country extends GO_CharacterString {
      * @param value         The value in the language specified by the {@code codeSpace} attribute, or {@code null} if none.
      */
     private Country(final Context context, final String codeListValue, final String codeSpace, final String value) {
-        proxy = new CodeListProxy(context, "Country", codeListValue, codeSpace, value);
+        identifier = new CodeListUID(context, "Country", codeListValue, codeSpace, value);
     }
 
     /**
@@ -134,8 +134,8 @@ public final class Country extends GO_CharacterString {
             code = language.getLanguage();
         }
         if (country != null) {
-            final CodeListProxy proxy = country.proxy;
-            final String c = CharSequences.trimWhitespaces(proxy != null ? proxy.identifier() : country.toString());
+            final CodeListUID identifier = country.identifier;
+            final String c = CharSequences.trimWhitespaces((identifier != null ? identifier : country).toString());
             if (c != null && !c.isEmpty()) {
                 if (code == null) {
                     code = "";
