@@ -19,7 +19,7 @@ package org.apache.sis.internal.jaxb.code;
 import javax.xml.bind.annotation.XmlElement;
 import org.opengis.metadata.constraint.Restriction;
 import org.apache.sis.internal.jaxb.gmd.CodeListAdapter;
-import org.apache.sis.internal.jaxb.gmd.CodeListProxy;
+import org.apache.sis.internal.jaxb.gmd.CodeListUID;
 
 
 /**
@@ -40,28 +40,28 @@ public final class MD_RestrictionCode extends CodeListAdapter<MD_RestrictionCode
     }
 
     /**
-     * Creates a new adapter for the given proxy.
+     * Creates a new adapter for the given value.
      */
-    private MD_RestrictionCode(final CodeListProxy proxy) {
-        super(proxy);
+    private MD_RestrictionCode(final CodeListUID value) {
+        super(value);
     }
 
     /**
      * Fix the spelling of words that changed between ISO 19115:2003 and ISO 19115:2014,
-     * then wraps the proxy value into an adapter.
+     * then wraps the value into an adapter.
      *
      * <p>The spelling of "license" was changed to "licence" in latest standard, but XML
      * marshalling shall use the previous spelling until XML schema are updated.</p>
      *
-     * @param proxy The proxy version of {@link CodeList}, to be marshalled.
+     * @param value The value version of {@link CodeList}, to be marshalled.
      * @return The wrapper for the code list value.
      */
     @Override
-    protected MD_RestrictionCode wrap(CodeListProxy proxy) {
-        if ("licence".equals(proxy.codeListValue)) {
-            proxy.codeListValue = "license";
+    protected MD_RestrictionCode wrap(final CodeListUID value) {
+        if ("licence".equals(value.codeListValue)) {
+            value.codeListValue = "license";
         }
-        return new MD_RestrictionCode(proxy);
+        return new MD_RestrictionCode(value);
     }
 
     /**
@@ -81,16 +81,16 @@ public final class MD_RestrictionCode extends CodeListAdapter<MD_RestrictionCode
      */
     @Override
     @XmlElement(name = "MD_RestrictionCode")
-    public CodeListProxy getElement() {
-        return proxy;
+    public CodeListUID getElement() {
+        return identifier;
     }
 
     /**
      * Invoked by JAXB on unmarshalling.
      *
-     * @param proxy The unmarshalled value.
+     * @param value The unmarshalled value.
      */
-    public void setElement(final CodeListProxy proxy) {
-        this.proxy = proxy;
+    public void setElement(final CodeListUID value) {
+        identifier = value;
     }
 }

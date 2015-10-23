@@ -414,10 +414,10 @@ public final class Types extends Static {
 
     /**
      * The {@link InternationalString} returned by the {@code Types.getCodeTitle(…)} method.
-     * The code below is a duplicated - in a different way - of {@code CodeListProxy(CodeList)}
+     * The code below is a duplicated - in a different way - of {@code CodeListUID(CodeList)}
      * constructor ({@link org.apache.sis.internal.jaxb.code package}). This duplication exists
-     * because {@code CodeListProxy} constructor stores more information in an opportunist way.
-     * If this method is updated, please update {@code CodeListProxy(CodeList)} accordingly.
+     * because {@code CodeListUID} constructor stores more information in an opportunist way.
+     * If this method is updated, please update {@code CodeListUID(CodeList)} accordingly.
      *
      * @author  Martin Desruisseaux (Geomatys)
      * @since   0.3
