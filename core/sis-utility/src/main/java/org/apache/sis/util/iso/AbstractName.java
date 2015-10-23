@@ -46,7 +46,7 @@ import org.apache.sis.internal.jdk7.Objects;
  * For example the above-cited strings can both be split into smaller name components.
  * If such finer grain control is desired, {@link DefaultNameFactory} can be used instead of {@link Names}.</p>
  *
- * <div class="section">{@code Comparable} ordering</div>
+ * <div class="section">Natural ordering</div>
  * This class has a natural ordering that is inconsistent with {@link #equals(Object)}.
  * See {@link #compareTo(GenericName)} for more information.
  *

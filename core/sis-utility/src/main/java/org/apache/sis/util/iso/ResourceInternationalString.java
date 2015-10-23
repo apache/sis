@@ -21,8 +21,7 @@ import java.util.Locale;
 import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.MissingResourceException;
-
-import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
+import org.apache.sis.util.ArgumentChecks;
 
 
 /**
@@ -36,8 +35,8 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * See the {@link ResourceBundle#getBundle(String, Locale, ClassLoader) ResourceBundle.getBundle(…)}
  * Javadoc for more information.
  *
- * <div class="section">Example</div>
- * If a file named "{@code MyResources.properties}" exists in {@code org.mypackage}
+ * <div class="note"><b>Example:</b>
+ * if a file named "{@code MyResources.properties}" exists in {@code org.mypackage}
  * and contains the following line:
  *
  * {@preformat text
@@ -51,9 +50,10 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * }
  *
  * The {@code "some value"} string will be localized if the required properties files exist, for
- * example "{@code MyResources_fr.properties}" for French, or "{@code MyResources_it.properties}"
+ * example "{@code MyResources_fr.properties}" for French or "{@code MyResources_it.properties}"
  * for Italian, <i>etc</i>.
  * If needed, users can gain more control by overriding the {@link #getBundle(Locale)} method.
+ * </div>
  *
  * <div class="section">Class loaders</div>
  * Developers can specify explicitely the {@link ClassLoader} to use be overriding the
@@ -111,10 +111,10 @@ public class ResourceInternationalString extends AbstractInternationalString imp
      * @param key       The key for the resource to fetch.
      */
     public ResourceInternationalString(final String resources, final String key) {
+        ArgumentChecks.ensureNonNull("resources", resources);
+        ArgumentChecks.ensureNonNull("key",       key);
         this.resources = resources;
         this.key       = key;
-        ensureNonNull("resources", resources);
-        ensureNonNull("key",       key);
     }
 
     /**

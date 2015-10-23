@@ -38,7 +38,7 @@ public class StringAdapter extends XmlAdapter<GO_CharacterString, String> {
     /**
      * Empty constructor for JAXB or subclasses.
      */
-    public StringAdapter() {
+    protected StringAdapter() {
     }
 
     /**
@@ -78,7 +78,7 @@ public class StringAdapter extends XmlAdapter<GO_CharacterString, String> {
      * @param  value The wrapper for the value, or {@code null}.
      * @return The string representation of the given text, or {@code null}.
      */
-    public static String toString(final GO_CharacterString value) {
+    static String toString(final GO_CharacterString value) {
         return (value != null) ? toString(value.toCharSequence()) : null;
     }
 

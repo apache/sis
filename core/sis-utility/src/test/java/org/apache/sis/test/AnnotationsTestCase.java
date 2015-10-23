@@ -25,6 +25,7 @@ import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlSchema;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementRef;
+import javax.xml.bind.annotation.XmlElementRefs;
 import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.util.CodeList;
 import org.opengis.util.ControlledVocabulary;
@@ -657,7 +658,8 @@ public abstract strictfp class AnnotationsTestCase extends TestCase {
                              getter.getReturnType(), getSingleton(setter.getParameterTypes()));
                 element = getter.getAnnotation(XmlElement.class);
                 assertEquals("Expected @XmlElement XOR @XmlElementRef.", (element == null),
-                             getter.isAnnotationPresent(XmlElementRef.class));
+                             getter.isAnnotationPresent(XmlElementRef.class) ||
+                             getter.isAnnotationPresent(XmlElementRefs.class));
             }
             /*
              * If the annotation is @XmlElement, ensure that XmlElement.name() is equals to

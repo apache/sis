@@ -41,23 +41,62 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.internal.system.Loggers;
 
+// Branch-dependent imports
+import org.apache.sis.internal.jdk8.JDK8;
+
 
 /**
  * Static methods working on GeoAPI types and {@link CodeList} values.
  * This class provides:
  *
  * <ul>
- *   <li>{@link #getStandardName(Class)}, {@link #getListName(ControlledVocabulary)} and
- *       {@link #getCodeName(ControlledVocabulary)} for fetching ISO names if possible.</li>
- *   <li>{@link #getCodeTitle(ControlledVocabulary)}, {@link #getDescription(ControlledVocabulary)} and
- *       {@link #getDescription(Class)} for fetching human-readable descriptions.</li>
- *   <li>{@link #forStandardName(String)} and {@link #forCodeName(Class, String, boolean)} for
- *       fetching an instance from a name (converse of above {@code get} methods).</li>
+ *   <li>Methods for fetching the ISO name or description of a code list:<ul>
+ *     <li>{@link #getStandardName(Class)}            for ISO name</li>
+ *     <li>{@link #getListName(ControlledVocabulary)} for ISO name</li>
+ *     <li>{@link #getDescription(Class)}             for a description</li>
+ *   </ul></li>
+ *   <li>Methods for fetching the ISO name or description of a code value:<ul>
+ *     <li>{@link #getCodeName(ControlledVocabulary)}    for ISO name,</li>
+ *     <li>{@link #getCodeTitle(ControlledVocabulary)}   for a label or title</li>
+ *     <li>{@link #getDescription(ControlledVocabulary)} for a more verbose description</li>
+ *   </ul></li>
+ *   <li>Methods for fetching an instance from a name (converse of above {@code get} methods):<ul>
+ *     <li>{@link #forCodeName(Class, String, boolean)}</li>
+ *     <li>{@link #forEnumName(Class, String)}</li>
+ *   </ul></li>
+ * </ul>
+ *
+ * <div class="section">Substituting a free text by a code list</div>
+ * The ISO standard allows to substitute some character strings in the <cite>"free text"</cite> domain
+ * by a {@link CodeList} value.
+ *
+ * <div class="note"><b>Example:</b>
+ * in the following XML fragment, the {@code <gmi:type>} value is normally a {@code <gco:CharacterString>}
+ * but has been replaced by a {@code SensorType} code below:
+ *
+ * {@preformat xml
+ *   <gmi:MI_Instrument>
+ *     <gmi:type>
+ *       <gmi:MI_SensorTypeCode
+ *           codeList="http://navigator.eumetsat.int/metadata_schema/eum/resources/Codelist/eum_gmxCodelists.xml#CI_SensorTypeCode"
+ *           codeListValue="RADIOMETER">Radiometer</gmi:MI_SensorTypeCode>
+ *     </gmi:type>
+ *   </gmi:MI_Instrument>
+ * }
+ * </div>
+ *
+ * Such substitution can be done with:
+ *
+ * <ul>
+ *   <li>{@link #getCodeTitle(ControlledVocabulary)} for getting the {@link InternationalString} instance
+ *       to store in a metadata property.</li>
+ *   <li>{@link #forCodeTitle(CharSequence)} for retrieving the {@link CodeList} previously stored as an
+ *       {@code InternationalString}.</li>
  * </ul>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.3
- * @version 0.5
+ * @version 0.7
  * @module
  */
 public final class Types extends Static {
@@ -225,10 +264,15 @@ public final class Types extends Static {
      * Returns the title of the given enumeration or code list value. Title are usually much shorter than descriptions.
      * English titles are often the same than the {@linkplain #getCodeLabel(ControlledVocabulary) code labels}.
      *
+     * <p>The code or enumeration value given in argument to this method can be retrieved from the returned title
+     * with the {@link #forCodeTitle(CharSequence)} method. See <cite>Substituting a free text by a code list</cite>
+     * in this class javadoc for more information.</p>
+     *
      * @param  code The code for which to get the title, or {@code null}.
      * @return The title, or {@code null} if the given code is null.
      *
      * @see #getDescription(ControlledVocabulary)
+     * @see #forCodeTitle(CharSequence)
      */
     public static InternationalString getCodeTitle(final ControlledVocabulary code) {
         return (code != null) ? new CodeTitle(code) : null;
@@ -249,7 +293,7 @@ public final class Types extends Static {
         if (code != null) {
             final String resources = getResources(code.getClass().getName());
             if (resources != null) {
-                return new Description(resources, resourceKey(code));
+                return new Description(resources, Description.resourceKey(code));
             }
         }
         return null;
@@ -357,14 +401,25 @@ public final class Types extends Static {
         String fallback() {
             return CharSequences.camelCaseToSentence(key.substring(key.lastIndexOf(SEPARATOR) + 1)).toString();
         }
+
+        /**
+         * Returns the resource key for the given code list.
+         */
+        static String resourceKey(final ControlledVocabulary code) {
+            String key = getCodeName(code);
+            if (key.indexOf(SEPARATOR) < 0) {
+                key = getListName(code) + SEPARATOR + key;
+            }
+            return key;
+        }
     }
 
     /**
      * The {@link InternationalString} returned by the {@code Types.getCodeTitle(…)} method.
-     * The code below is a duplicated - in a different way - of {@code CodeListProxy(CodeList)}
+     * The code below is a duplicated - in a different way - of {@code CodeListUID(CodeList)}
      * constructor ({@link org.apache.sis.internal.jaxb.code package}). This duplication exists
-     * because {@code CodeListProxy} constructor stores more information in an opportunist way.
-     * If this method is updated, please update {@code CodeListProxy(CodeList)} accordingly.
+     * because {@code CodeListUID} constructor stores more information in an opportunist way.
+     * If this method is updated, please update {@code CodeListUID(CodeList)} accordingly.
      *
      * @author  Martin Desruisseaux (Geomatys)
      * @since   0.3
@@ -380,7 +435,7 @@ public final class Types extends Static {
         /**
          * The code list for which to create a title.
          */
-        private final ControlledVocabulary code;
+        final ControlledVocabulary code;
 
         /**
          * Creates a new international string for the given code list element.
@@ -414,17 +469,6 @@ public final class Types extends Static {
         }
         // Add more checks here (maybe in a loop) if there is more resource candidates.
         return null;
-    }
-
-    /**
-     * Returns the resource key for the given code list.
-     */
-    static String resourceKey(final ControlledVocabulary code) {
-        String key = getCodeName(code);
-        if (key.indexOf(SEPARATOR) < 0) {
-            key = getListName(code) + SEPARATOR + key;
-        }
-        return key;
     }
 
     /**
@@ -502,6 +546,7 @@ public final class Types extends Static {
                 throw new BackingStoreException(e);
             }
             typeForNames = new HashMap<Object,Object>(props);
+            JDK8.putIfAbsent(typeForNames, "MI_SensorTypeCode", "org.apache.sis.internal.metadata.SensorType");
         }
         final Object value = typeForNames.get(identifier);
         if (value == null || value instanceof Class<?>) {
@@ -590,6 +635,7 @@ public final class Types extends Static {
      * @return A code matching the given name, or {@code null} if the name is null
      *         or if no matching code is found and {@code canCreate} is {@code false}.
      *
+     * @see #getCodeName(ControlledVocabulary)
      * @see CodeList#valueOf(Class, String)
      */
     public static <T extends CodeList<T>> T forCodeName(final Class<T> codeType, String name, final boolean canCreate) {
@@ -598,6 +644,27 @@ public final class Types extends Static {
             return null;
         }
         return CodeList.valueOf(codeType, new CodeListFilter(name, canCreate));
+    }
+
+    /**
+     * Returns the code list or enumeration value for the given title, or {@code null} if none.
+     * The current implementation performs the following choice:
+     *
+     * <ul>
+     *   <li>If the given title is a value returned by a previous call to {@link #getCodeTitle(ControlledVocabulary)},
+     *       returns the code or enumeration value used for creating that title.</li>
+     *   <li>Otherwise returns {@code null}.</li>
+     * </ul>
+     *
+     * @param  title The title for which to get a code or enumeration value, or {@code null}.
+     * @return The code or enumeration value associated with the given title, or {@code null}.
+     *
+     * @since 0.7
+     *
+     * @see #getCodeTitle(ControlledVocabulary)
+     */
+    public static ControlledVocabulary forCodeTitle(final CharSequence title) {
+        return (title instanceof CodeTitle) ? ((CodeTitle) title).code : null;
     }
 
     /**

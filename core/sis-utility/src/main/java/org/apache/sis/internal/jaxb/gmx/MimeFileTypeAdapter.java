@@ -48,7 +48,7 @@ public final class MimeFileTypeAdapter extends StringAdapter {
     public GO_CharacterString marshal(final String value) {
         final Context context = Context.current();
         final GO_CharacterString wrapper = CharSequenceAdapter.wrap(context, value, value);
-        if (wrapper != null) {
+        if (wrapper != null && wrapper.type == 0) {
             if (!Context.isFlagSet(context, Context.SUBSTITUTE_MIMETYPE)) {
                 wrapper.type = GO_CharacterString.MIME_TYPE;
             }
