@@ -56,7 +56,7 @@ public final class LanguageCode extends GO_CharacterString {
     /**
      * Empty constructor for JAXB only.
      */
-    public LanguageCode() {
+    private LanguageCode() {
     }
 
     /**

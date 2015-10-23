@@ -23,6 +23,7 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlValue;
 import org.opengis.util.CodeList;
+import org.opengis.util.ControlledVocabulary;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.jaxb.Schemas;
@@ -30,8 +31,8 @@ import org.apache.sis.internal.jaxb.Schemas;
 
 /**
  * Stores information about {@link CodeList}, in order to handle format defined in ISO-19139
- * about the {@code CodeList} tags. This object is wrapped by {@link CodeListAdapter} or, in
- * the spacial case of {@link Locale} type, by {@link LanguageCode} or {@link Country}. This
+ * about {@code CodeList} elements. This object is wrapped by {@link CodeListAdapter} or, in
+ * the special case of {@link Locale} type, by {@link LanguageCode} or {@link Country}. This
  * class provides the {@link #codeList} and {@link #codeListValue} attributes to be marshalled.
  *
  * @author  Cédric Briançon (Geomatys)
@@ -42,7 +43,7 @@ import org.apache.sis.internal.jaxb.Schemas;
  *
  * @see CodeListAdapter
  */
-@XmlType(name = "CodeList", propOrder = { "codeList", "codeListValue", "codeSpace" })
+@XmlType(name = "CodeList", propOrder = {"codeList", "codeListValue", "codeSpace"})
 public final class CodeListProxy {
     /**
      * Returns the URL to a given code list in the given XML file.
@@ -99,7 +100,7 @@ public final class CodeListProxy {
     /**
      * Default empty constructor for JAXB.
      */
-    public CodeListProxy() {
+    private CodeListProxy() {
     }
 
     /**
@@ -127,7 +128,7 @@ public final class CodeListProxy {
      * @param context The current (un)marshalling context, or {@code null} if none.
      * @param code    The code list to wrap.
      */
-    CodeListProxy(final Context context, final CodeList<?> code) {
+    public CodeListProxy(final Context context, final ControlledVocabulary code) {
         final String classID = Types.getListName(code);
         final String fieldID = Types.getCodeName(code);
         codeList = schema(context, classID);

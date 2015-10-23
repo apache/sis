@@ -237,12 +237,15 @@ public final strictfp class TypesTest extends TestCase {
 
     /**
      * Tests {@link Types#getCodeTitle(ControlledVocabulary)}.
+     * Also opportunistically tests {@link Types#forCodeTitle(CharSequence)}.
      */
     @Test
     public void testGetCodeTitle() {
-        assertEquals("Download",       Types.getCodeTitle(OnLineFunction.DOWNLOAD).toString(Locale.ROOT));
-        assertEquals("Download",       Types.getCodeTitle(OnLineFunction.DOWNLOAD).toString(Locale.ENGLISH));
-        assertEquals("Téléchargement", Types.getCodeTitle(OnLineFunction.DOWNLOAD).toString(Locale.FRENCH));
+        final InternationalString title = Types.getCodeTitle(OnLineFunction.DOWNLOAD);
+        assertSame("forCodeTitle", OnLineFunction.DOWNLOAD, Types.forCodeTitle(title));
+        assertEquals("Download",       title.toString(Locale.ROOT));
+        assertEquals("Download",       title.toString(Locale.ENGLISH));
+        assertEquals("Téléchargement", title.toString(Locale.FRENCH));
     }
 
     /**

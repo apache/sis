@@ -85,9 +85,9 @@ public final class CharSequenceAdapter extends XmlAdapter<GO_CharacterString, Ch
      * @param  value The character representation of the object being marshalled.
      * @return The wrapper for the given character sequence, or {@code null}.
      */
-    public static GO_CharacterString wrap(CharSequence value) {
+    static GO_CharacterString wrap(CharSequence value) {
         if (value instanceof String) {
-            return wrap(Context.current(), value, (String) value); // Slightly more efficient variant of this method.
+            return wrap(Context.current(), value, (String) value);  // Slightly more efficient variant of this method.
         }
         /*
          * <gmd:someElement xsi:type="gmd:PT_FreeText_PropertyType">
