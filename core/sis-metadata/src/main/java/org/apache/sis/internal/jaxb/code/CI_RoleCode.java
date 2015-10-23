@@ -19,7 +19,7 @@ package org.apache.sis.internal.jaxb.code;
 import javax.xml.bind.annotation.XmlElement;
 import org.opengis.metadata.citation.Role;
 import org.apache.sis.internal.jaxb.gmd.CodeListAdapter;
-import org.apache.sis.internal.jaxb.gmd.CodeListProxy;
+import org.apache.sis.internal.jaxb.gmd.CodeListUID;
 
 
 /**
@@ -40,10 +40,10 @@ public final class CI_RoleCode extends CodeListAdapter<CI_RoleCode, Role> {
     }
 
     /**
-     * Creates a new adapter for the given proxy.
+     * Creates a new adapter for the given value.
      */
-    private CI_RoleCode(final CodeListProxy proxy) {
-        super(proxy);
+    private CI_RoleCode(final CodeListUID value) {
+        super(value);
     }
 
     /**
@@ -52,8 +52,8 @@ public final class CI_RoleCode extends CodeListAdapter<CI_RoleCode, Role> {
      * @return The wrapper for the code list value.
      */
     @Override
-    protected CI_RoleCode wrap(CodeListProxy proxy) {
-        return new CI_RoleCode(proxy);
+    protected CI_RoleCode wrap(final CodeListUID value) {
+        return new CI_RoleCode(value);
     }
 
     /**
@@ -73,16 +73,16 @@ public final class CI_RoleCode extends CodeListAdapter<CI_RoleCode, Role> {
      */
     @Override
     @XmlElement(name = "CI_RoleCode")
-    public CodeListProxy getElement() {
-        return proxy;
+    public CodeListUID getElement() {
+        return identifier;
     }
 
     /**
      * Invoked by JAXB on unmarshalling.
      *
-     * @param proxy The unmarshalled value.
+     * @param value The unmarshalled value.
      */
-    public void setElement(final CodeListProxy proxy) {
-        this.proxy = proxy;
+    public void setElement(final CodeListUID value) {
+        identifier = value;
     }
 }

@@ -16,16 +16,27 @@
  */
 package org.apache.sis.internal.jaxb.gco;
 
+import javax.xml.XMLConstants;
+import javax.xml.namespace.QName;
+import javax.xml.bind.JAXBElement;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlSchemaType;
+import javax.xml.bind.annotation.XmlElements;
+import javax.xml.bind.annotation.XmlAnyElement;
 import javax.xml.bind.annotation.XmlSeeAlso;
+import org.w3c.dom.Element;
+import org.opengis.util.CodeList;
+import org.opengis.util.ControlledVocabulary;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.jaxb.gmx.Anchor;
 import org.apache.sis.internal.jaxb.gmx.FileName;
 import org.apache.sis.internal.jaxb.gmx.MimeFileType;
+import org.apache.sis.internal.jaxb.gmd.CodeListUID;
 import org.apache.sis.util.CharSequences;
+import org.apache.sis.util.Workaround;
+import org.apache.sis.util.iso.Types;
+import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Messages;
 
 
@@ -39,9 +50,13 @@ import org.apache.sis.util.resources.Messages;
  * Consequently we unconditionally accept {@code FileName} and {@code MimeFileType} at unmarshalling time.
  * However marshalling will use the appropriate element for the kind of property to marshal.</p>
  *
+ * <p>{@code <gco:CharacterString>} can also be replaced by {@link org.opengis.util.CodeList} or some
+ * {@link java.lang.Enum} instances. See {@link Types} javadoc for an example.</p>
+ *
  * @author  Cédric Briançon (Geomatys)
+ * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.6
+ * @version 0.7
  * @module
  *
  * @see org.apache.sis.internal.jaxb.gmd.PT_FreeText
@@ -71,9 +86,15 @@ public class GO_CharacterString {
 
     /**
      * Value assigned to {@link #type} if the current {@link #text}
-     * has been found in a {@code <gco:CharacterString>} element.
+     * has been found in a {@code <gmx:Anchor>} element.
      */
     private static final byte ANCHOR = 3;
+
+    /**
+     * Value assigned to {@link #type} if the current {@link #text}
+     * has been found in an enumeration or code list element.
+     */
+    private static final byte ENUM = 4;
 
     /**
      * The XML element names for each possible {@link #type} values.
@@ -85,18 +106,24 @@ public class GO_CharacterString {
             case MIME_TYPE: return "MimeFileType";
             case FILENAME:  return "FileName";
             case ANCHOR:    return "Anchor";
+            case ENUM:      return "ControlledVocabulary";
             default:        throw new AssertionError(type);
         }
     }
 
     /**
-     * The text or anchor value, or {@code null} if none. May be an instance
-     * of {@link Anchor}, which needs to be handled in a special way.
+     * The text, code list or anchor value, or {@code null} if none.
+     * The following types need to be handled in a special way:
+     *
+     * <ul>
+     *   <li>{@link Anchor}</li>
+     *   <li>Instances for which {@link Types#forCodeTitle(CharSequence)} returns a non-null value.</li>
+     * </ul>
      */
     private CharSequence text;
 
     /**
-     * 0 if the text shall be marshalled as a {@code <gco:CharacterString>} or an anchor,
+     * 0 if the text shall be marshalled as a {@code <gco:CharacterString>},
      * or one of the static constants in this class otherwise.
      *
      * @see #FILENAME
@@ -107,7 +134,7 @@ public class GO_CharacterString {
     /**
      * Empty constructor for JAXB and subclasses.
      */
-    public GO_CharacterString() {
+    protected GO_CharacterString() {
     }
 
     /**
@@ -117,6 +144,11 @@ public class GO_CharacterString {
      */
     protected GO_CharacterString(final CharSequence text) {
         this.text = text;
+        if (text instanceof Anchor) {
+            type = ANCHOR;
+        } else if (Types.forCodeTitle(text) != null) {
+            type = ENUM;
+        }
     }
 
     /**
@@ -126,124 +158,135 @@ public class GO_CharacterString {
      * @param value    The value to set.
      * @param property 0 or one of the {@link #MIME_TYPE}, {@link #FILENAME} or {@link #ANCHOR} constants.
      */
-    private void setText(final CharSequence value, byte property) {
-        if (text != null && !value.equals(text)) {
-            /*
-             * The given value overwrite a previous one. Determine which value will be discarded
-             * using the 'type' value as a criterion, then emit a warning.
-             */
-            byte discarded = type;
-            boolean noset = false;
-            if (discarded > property) {
-                discarded = property;
-                property  = type;
-                noset     = true;
-            }
-            Context.warningOccured(Context.current(), getClass(), "setText", Messages.class,
-                    Messages.Keys.DiscardedExclusiveProperty_2, nameOf(discarded), nameOf(property));
-            if (noset) {
-                return;
-            }
-        }
-        text = value;
-        type = property;
-    }
-
-    /**
-     * Returns the text in a {@code <gco:CharacterString>} element, or {@code null} if none.
-     *
-     * @return The text, or {@code null}.
-     */
-    @XmlSchemaType(name = "string")         // Not needed, but declared as a matter of principle.
-    @XmlElement(name = "CharacterString")
-    public final String getCharacterString() {
-        return (type == 0 && !(text instanceof Anchor)) ? StringAdapter.toString(text) : null;
-    }
-
-    /**
-     * Sets the value to the given string. This method is called by JAXB at unmarshalling time.
-     *
-     * @param value The new text.
-     */
-    public final void setCharacterString(String value) {
+    private void setText(CharSequence value, byte property) {
         value = CharSequences.trimWhitespaces(value);
-        if (value != null && !value.isEmpty()) {
-            setText(value, (byte) 0);
-        }
-    }
-
-    /**
-     * Returns the text in a {@code <gmx:FileName>} element, or {@code null} if none.
-     */
-    @XmlElement(name = "FileName", namespace = Namespaces.GMX)
-    final FileName getFileName() {
-        if (type == FILENAME) {
-            final CharSequence text = this.text;
-            if (text != null && !(text instanceof Anchor)) {
-                return new FileName(text.toString());
+        if (value != null && value.length() != 0) {
+            if (text != null && !value.equals(text)) {
+                /*
+                 * The given value overwrite a previous one. Determine which value will be discarded
+                 * using the 'type' value as a criterion, then emit a warning.
+                 */
+                byte discarded = type;
+                boolean noset = false;
+                if (discarded > property) {
+                    discarded = property;
+                    property  = type;
+                    noset     = true;
+                }
+                Context.warningOccured(Context.current(), getClass(), "setText", Messages.class,
+                        Messages.Keys.DiscardedExclusiveProperty_2, nameOf(discarded), nameOf(property));
+                if (noset) {
+                    return;
+                }
             }
-        }
-        return null;
-    }
-
-    /**
-     * Invoked by JAXB for setting the filename.
-     */
-    final void setFileName(final FileName file) {
-        if (file != null) {
-            final String value = CharSequences.trimWhitespaces(file.toString());
-            if (value != null && !value.isEmpty()) {
-                setText(value, FILENAME);
-            }
+            text = value;
+            type = property;
         }
     }
 
     /**
-     * Returns the text in a {@code <gmx:MimeFileType>} element, or {@code null} if none.
-     */
-    @XmlElement(name = "MimeFileType", namespace = Namespaces.GMX)
-    final MimeFileType getMimeFileType() {
-        if (type == MIME_TYPE) {
-            final CharSequence text = this.text;
-            if (text != null && !(text instanceof Anchor)) {
-                return new MimeFileType(text.toString());
-            }
-        }
-        return null;
-    }
-
-    /**
-     * Invoked by JAXB for setting the MIME type.
-     */
-    final void setMimeFileType(final MimeFileType type) {
-        if (type != null) {
-            final String value = CharSequences.trimWhitespaces(type.toString());
-            if (value != null && !value.isEmpty()) {
-                setText(value, MIME_TYPE);
-            }
-        }
-    }
-
-    /**
-     * Returns the text associated with a reference.
-     * This method is called by JAXB at marshalling time.
+     * Returns the text in a {@code <gco:CharacterString>}, {@code <gmx:FileName>} or {@code <gmx:MimeFileType>}
+     * element, or {@code null} if none. This method does not return anything for {@code Enum} or {@code CodeList}
+     * instances, as the later are handled by {@link #getCodeList()}.
      *
-     * @return The anchor, or {@code null}.
+     * <p>This method is invoked by JAXB at marshalling time and should not need to be invoked directly.</p>
      */
-    @XmlElement(name = "Anchor", namespace = Namespaces.GMX)
-    public final Anchor getAnchor() {
-        final CharSequence text = this.text;
-        return (text instanceof Anchor) ? (Anchor) text : null;
+    @XmlElements({
+        @XmlElement(type = String.class,       name = "CharacterString"),
+        @XmlElement(type = Anchor.class,       name = "Anchor",       namespace = Namespaces.GMX),
+        @XmlElement(type = FileName.class,     name = "FileName",     namespace = Namespaces.GMX),
+        @XmlElement(type = MimeFileType.class, name = "MimeFileType", namespace = Namespaces.GMX)
+    })
+    private Object getValue() {
+        switch (type) {
+            case 0:         return StringAdapter.toString(text);
+            case FILENAME:  return new FileName(text.toString());
+            case MIME_TYPE: return new MimeFileType(text.toString());
+            case ANCHOR:    return text;    // Shall be an instance of Anchor.
+            default:        return null;    // CodeList or Enum.
+        }
     }
 
     /**
-     * Sets the value for the metadata string.
-     * This method is called by JAXB at unmarshalling time.
+     * Sets the {@code <gco:CharacterString>}, {@code <gmx:FileName>} or {@code <gmx:MimeFileType>} value.
      *
-     * @param anchor The new anchor.
+     * <p>This method is invoked by JAXB at unmarshalling time and should not need to be invoked directly.</p>
      */
-    public final void setAnchor(final Anchor anchor) {
-        setText(anchor, ANCHOR);
+    private void setValue(final Object value) {
+        if (value instanceof Anchor) {
+            setText((Anchor) value, ANCHOR);
+        } else if (value instanceof FileName) {
+            setText(value.toString(), FILENAME);
+        } else if (value instanceof MimeFileType) {
+            setText(value.toString(), MIME_TYPE);
+        } else {
+            setText((CharSequence) value, (byte) 0);
+        }
+    }
+
+    /**
+     * Returns the code list wrapped in a JAXB element, or {@code null} if the {@link #text} is not a wrapper for
+     * a code list. Only one of {@link #getValue()} and {@code getCodeList()} should return a non-null value.
+     *
+     * <div class="note"><b>Note:</b>
+     * we have to rely on a somewhat complicated mechanism because the code lists implementations in GeoAPI
+     * do not hae JAXB annotations. If those annotations are added in a future GeoAPI implementation, then
+     * we could replace this mechanism by a simple property annotated with {@code XmlElementRef}.</div>
+     *
+     * @since 0.7
+     */
+    @XmlAnyElement
+    @Workaround(library = "GeoAPI", version = "3.0")
+    private Object getCodeList() {
+        if (type != ENUM) {
+            return null;
+        }
+        final ControlledVocabulary code = Types.forCodeTitle(text);
+        final String name = Types.getListName(code);
+        final String namespace;
+        /*
+         * The namespace is usually GMD, but we also have some other namespaces link GMI.
+         * The real namespace is declared in the @XmlElement annotation of the getElement
+         * method in the JAXB adapter. We could use reflection, but we do not in order to
+         * avoid potential class loading issue and also because not all CodeList are in the
+         * same package.
+         */
+        if (name.startsWith("MD_") || name.startsWith("CI_") || name.startsWith("DS_")) {
+            namespace = Namespaces.GMD;
+        } else if (name.startsWith("MI_")) {
+            namespace = Namespaces.GMI;
+        } else if (name.startsWith("SV_") || name.equals("DCPList")) {
+            namespace = Namespaces.SRV;
+        } else if (name.startsWith("CS_") || name.startsWith("CD_") || name.startsWith("SC_")) {
+            namespace = Namespaces.GML;
+        } else {
+            namespace = XMLConstants.NULL_NS_URI;
+        }
+        return new JAXBElement<CodeListUID>(new QName(namespace, name), CodeListUID.class,
+                new CodeListUID(Context.current(), code));
+    }
+
+    /**
+     * Invoked by JAXB for any XML element which is not a {@code <gco:CharacterString>}, {@code <gmx:FileName>}
+     * or {@code <gmx:MimeFileType>}. This method presumes that the element name is the CodeList standard name.
+     * If not, the element will be ignored.
+     */
+    @SuppressWarnings("unchecked")
+    private void setCodeList(final Object value) {
+        final Element e = (Element) value;
+        if (e.getNodeType() == Element.ELEMENT_NODE) {
+            final Class<?> ct = Types.forStandardName(e.getLocalName());
+            if (ct != null && CodeList.class.isAssignableFrom(ct)) {
+                final String attribute = e.getAttribute("codeListValue");
+                if (!attribute.isEmpty()) {
+                    text = Types.getCodeTitle(Types.forCodeName((Class) ct, attribute, true));
+                    type = ENUM;
+                    return;
+                }
+            }
+            Context.warningOccured(Context.current(), GO_CharacterString.class, "setCodeList",
+                    Errors.class, Errors.Keys.UnknownType_1, e.getNodeName());
+        }
     }
 
     /**
@@ -253,9 +296,9 @@ public class GO_CharacterString {
      *
      * @return The character sequence for this {@code <gco:CharacterString>}.
      */
-    public CharSequence toCharSequence() {
+    protected CharSequence toCharSequence() {
         final CharSequence text = CharSequences.trimWhitespaces(this.text);
-        if (text != null && (text.length() != 0 || text instanceof Anchor)) { // Anchor may contain attributes.
+        if (text != null && (text.length() != 0 || text instanceof Anchor)) {       // Anchor may contain attributes.
             return text;
         }
         return null;
@@ -275,6 +318,6 @@ public class GO_CharacterString {
     @Override
     public final String toString() {
         final CharSequence text = this.text;
-        return (text != null) ? text.toString() : null; // NOSONAR: Really want to return null.
+        return (text != null) ? text.toString() : null;     // We really want to return null here.
     }
 }
