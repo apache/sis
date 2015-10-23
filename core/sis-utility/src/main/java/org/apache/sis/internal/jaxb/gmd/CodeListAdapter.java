@@ -24,8 +24,8 @@ import org.apache.sis.internal.jaxb.Context;
 
 /**
  * An adapter for {@link CodeList}, in order to implement the ISO-19139 standard. This object
- * wraps a {@link CodeListProxy}, which contain {@link CodeListProxy#codeList codeList} and
- * {@link CodeListProxy#codeListValue codeListValue} attributes. The result looks like below:
+ * wraps a {@link CodeListUID}, which contain {@link CodeListUID#codeList codeList} and
+ * {@link CodeListUID#codeListValue codeListValue} attributes. The result looks like below:
  *
  * {@preformat xml
  *   <dateType>
@@ -51,9 +51,9 @@ public abstract class CodeListAdapter<ValueType extends CodeListAdapter<ValueTyp
         BoundType extends CodeList<BoundType>> extends XmlAdapter<ValueType,BoundType>
 {
     /**
-     * A proxy form of the {@link CodeList}.
+     * The value of the {@link CodeList}.
      */
-    protected CodeListProxy proxy;
+    protected CodeListUID identifier;
 
     /**
      * Empty constructor for subclasses only.
@@ -64,28 +64,28 @@ public abstract class CodeListAdapter<ValueType extends CodeListAdapter<ValueTyp
     /**
      * Creates a wrapper for a {@link CodeList}, in order to handle the format specified in ISO-19139.
      *
-     * @param proxy The proxy version of {@link CodeList} to be marshalled.
+     * @param value The value of {@link CodeList} to be marshalled.
      */
-    protected CodeListAdapter(final CodeListProxy proxy) {
-        this.proxy = proxy;
+    protected CodeListAdapter(final CodeListUID value) {
+        identifier = value;
     }
 
     /**
-     * Wraps the proxy value into an adapter.
+     * Wraps the given value.
      * Most implementations will be like below:
      *
      * {@preformat java
-     *     return new ValueType(proxy);
+     *     return new ValueType(value);
      * }
      *
-     * However is some cases, the {@code proxy} argument may be inspected.
+     * However is some cases, the {@code value} argument may be inspected.
      * For example {@link org.apache.sis.internal.jaxb.code.MD_RestrictionCode}
      * replaces {@code "licence"} by {@code "license"} for ISO 19115:2003 compatibility.
      *
-     * @param proxy The proxy version of {@link CodeList}, to be marshalled.
+     * @param value The value of {@link CodeList}, to be marshalled.
      * @return The wrapper for the code list value.
      */
-    protected abstract ValueType wrap(final CodeListProxy proxy);
+    protected abstract ValueType wrap(CodeListUID value);
 
     /**
      * Returns the class of code list wrapped by this adapter.
@@ -103,19 +103,19 @@ public abstract class CodeListAdapter<ValueType extends CodeListAdapter<ValueTyp
      */
     @Override
     public final BoundType unmarshal(final ValueType adapter) {
-        return (adapter != null) ? Types.forCodeName(getCodeListClass(), adapter.proxy.identifier(), true) : null;
+        return (adapter != null) ? Types.forCodeName(getCodeListClass(), adapter.identifier.toString(), true) : null;
     }
 
     /**
      * Substitutes the code list by the adapter to be marshalled into an XML file
      * or stream. JAXB calls automatically this method at marshalling time.
      *
-     * @param  value The code list value.
+     * @param  code The code list value.
      * @return The adapter for the given code list.
      */
     @Override
-    public final ValueType marshal(final BoundType value) {
-        return (value != null) ? wrap(new CodeListProxy(Context.current(), value)) : null;
+    public final ValueType marshal(final BoundType code) {
+        return (code != null) ? wrap(new CodeListUID(Context.current(), code)) : null;
     }
 
     /**
@@ -124,7 +124,7 @@ public abstract class CodeListAdapter<ValueType extends CodeListAdapter<ValueTyp
      *
      * @return The {@code CodeList} value to be marshalled.
      */
-    public abstract CodeListProxy getElement();
+    public abstract CodeListUID getElement();
 
     /*
      * We do not define setter method (even abstract) since it seems to confuse JAXB.

@@ -19,7 +19,7 @@ package org.apache.sis.internal.jaxb.code;
 import javax.xml.bind.annotation.XmlElement;
 import org.opengis.metadata.distribution.MediumName;
 import org.apache.sis.internal.jaxb.gmd.CodeListAdapter;
-import org.apache.sis.internal.jaxb.gmd.CodeListProxy;
+import org.apache.sis.internal.jaxb.gmd.CodeListUID;
 
 
 /**
@@ -40,10 +40,10 @@ public final class MD_MediumNameCode extends CodeListAdapter<MD_MediumNameCode, 
     }
 
     /**
-     * Creates a new adapter for the given proxy.
+     * Creates a new adapter for the given value.
      */
-    private MD_MediumNameCode(final CodeListProxy proxy) {
-        super(proxy);
+    private MD_MediumNameCode(final CodeListUID value) {
+        super(value);
     }
 
     /**
@@ -52,8 +52,8 @@ public final class MD_MediumNameCode extends CodeListAdapter<MD_MediumNameCode, 
      * @return The wrapper for the code list value.
      */
     @Override
-    protected MD_MediumNameCode wrap(CodeListProxy proxy) {
-        return new MD_MediumNameCode(proxy);
+    protected MD_MediumNameCode wrap(final CodeListUID value) {
+        return new MD_MediumNameCode(value);
     }
 
     /**
@@ -73,16 +73,16 @@ public final class MD_MediumNameCode extends CodeListAdapter<MD_MediumNameCode, 
      */
     @Override
     @XmlElement(name = "MD_MediumNameCode")
-    public CodeListProxy getElement() {
-        return proxy;
+    public CodeListUID getElement() {
+        return identifier;
     }
 
     /**
      * Invoked by JAXB on unmarshalling.
      *
-     * @param proxy The unmarshalled value.
+     * @param value The unmarshalled value.
      */
-    public void setElement(final CodeListProxy proxy) {
-        this.proxy = proxy;
+    public void setElement(final CodeListUID value) {
+        identifier = value;
     }
 }

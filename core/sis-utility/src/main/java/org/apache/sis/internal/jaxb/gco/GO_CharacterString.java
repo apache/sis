@@ -32,7 +32,7 @@ import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.jaxb.gmx.Anchor;
 import org.apache.sis.internal.jaxb.gmx.FileName;
 import org.apache.sis.internal.jaxb.gmx.MimeFileType;
-import org.apache.sis.internal.jaxb.gmd.CodeListProxy;
+import org.apache.sis.internal.jaxb.gmd.CodeListUID;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Workaround;
 import org.apache.sis.util.iso.Types;
@@ -262,8 +262,8 @@ public class GO_CharacterString {
         } else {
             namespace = XMLConstants.NULL_NS_URI;
         }
-        return new JAXBElement<>(new QName(namespace, name), CodeListProxy.class,
-                new CodeListProxy(Context.current(), code));
+        return new JAXBElement<>(new QName(namespace, name), CodeListUID.class,
+                new CodeListUID(Context.current(), code));
     }
 
     /**

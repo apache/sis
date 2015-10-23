@@ -19,7 +19,7 @@ package org.apache.sis.internal.jaxb.code;
 import javax.xml.bind.annotation.XmlElement;
 import org.opengis.metadata.identification.DistributedComputingPlatform;
 import org.apache.sis.internal.jaxb.gmd.CodeListAdapter;
-import org.apache.sis.internal.jaxb.gmd.CodeListProxy;
+import org.apache.sis.internal.jaxb.gmd.CodeListUID;
 import org.apache.sis.xml.Namespaces;
 
 
@@ -41,10 +41,10 @@ public final class DCPList extends CodeListAdapter<DCPList, DistributedComputing
     }
 
     /**
-     * Creates a new adapter for the given proxy.
+     * Creates a new adapter for the given value.
      */
-    private DCPList(final CodeListProxy proxy) {
-        super(proxy);
+    private DCPList(final CodeListUID value) {
+        super(value);
     }
 
     /**
@@ -53,8 +53,8 @@ public final class DCPList extends CodeListAdapter<DCPList, DistributedComputing
      * @return The wrapper for the code list value.
      */
     @Override
-    protected DCPList wrap(CodeListProxy proxy) {
-        return new DCPList(proxy);
+    protected DCPList wrap(final CodeListUID value) {
+        return new DCPList(value);
     }
 
     /**
@@ -74,16 +74,16 @@ public final class DCPList extends CodeListAdapter<DCPList, DistributedComputing
      */
     @Override
     @XmlElement(name = "DCPList", namespace = Namespaces.SRV)
-    public CodeListProxy getElement() {
-        return proxy;
+    public CodeListUID getElement() {
+        return identifier;
     }
 
     /**
      * Invoked by JAXB on unmarshalling.
      *
-     * @param proxy The unmarshalled value.
+     * @param value The unmarshalled value.
      */
-    public void setElement(final CodeListProxy proxy) {
-        this.proxy = proxy;
+    public void setElement(final CodeListUID value) {
+        identifier = value;
     }
 }

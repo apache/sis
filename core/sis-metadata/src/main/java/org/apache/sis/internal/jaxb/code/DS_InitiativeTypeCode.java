@@ -19,7 +19,7 @@ package org.apache.sis.internal.jaxb.code;
 import javax.xml.bind.annotation.XmlElement;
 import org.opengis.metadata.identification.InitiativeType;
 import org.apache.sis.internal.jaxb.gmd.CodeListAdapter;
-import org.apache.sis.internal.jaxb.gmd.CodeListProxy;
+import org.apache.sis.internal.jaxb.gmd.CodeListUID;
 
 
 /**
@@ -40,10 +40,10 @@ public final class DS_InitiativeTypeCode extends CodeListAdapter<DS_InitiativeTy
     }
 
     /**
-     * Creates a new adapter for the given proxy.
+     * Creates a new adapter for the given value.
      */
-    private DS_InitiativeTypeCode(final CodeListProxy proxy) {
-        super(proxy);
+    private DS_InitiativeTypeCode(final CodeListUID value) {
+        super(value);
     }
 
     /**
@@ -52,8 +52,8 @@ public final class DS_InitiativeTypeCode extends CodeListAdapter<DS_InitiativeTy
      * @return The wrapper for the code list value.
      */
     @Override
-    protected DS_InitiativeTypeCode wrap(CodeListProxy proxy) {
-        return new DS_InitiativeTypeCode(proxy);
+    protected DS_InitiativeTypeCode wrap(final CodeListUID value) {
+        return new DS_InitiativeTypeCode(value);
     }
 
     /**
@@ -73,16 +73,16 @@ public final class DS_InitiativeTypeCode extends CodeListAdapter<DS_InitiativeTy
      */
     @Override
     @XmlElement(name = "DS_InitiativeTypeCode")
-    public CodeListProxy getElement() {
-        return proxy;
+    public CodeListUID getElement() {
+        return identifier;
     }
 
     /**
      * Invoked by JAXB on unmarshalling.
      *
-     * @param proxy The unmarshalled value.
+     * @param value The unmarshalled value.
      */
-    public void setElement(final CodeListProxy proxy) {
-        this.proxy = proxy;
+    public void setElement(final CodeListUID value) {
+        identifier = value;
     }
 }
