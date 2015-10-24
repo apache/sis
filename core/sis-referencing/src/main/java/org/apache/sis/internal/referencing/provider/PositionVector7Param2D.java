@@ -18,14 +18,10 @@ package org.apache.sis.internal.referencing.provider;
 
 import javax.xml.bind.annotation.XmlTransient;
 import org.opengis.parameter.ParameterDescriptorGroup;
-import org.apache.sis.parameter.Parameters;
-import org.apache.sis.referencing.datum.BursaWolfParameters;
 
 
 /**
- * The provider for <cite>"Geocentric translations (geocentric domain)"</cite> (EPSG:1031).
- * This is a special case of {@link PositionVector7Param} where only the translation terms
- * can be set to a non-null value.
+ * The provider for <cite>"Position Vector transformation (geog2D domain)"</cite> (EPSG:9606).
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.7
@@ -33,39 +29,32 @@ import org.apache.sis.referencing.datum.BursaWolfParameters;
  * @module
  */
 @XmlTransient
-public final class GeocentricTranslation extends GeocentricAffine {
+public final class PositionVector7Param2D extends GeocentricAffine {
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = -7160250630666911608L;
+    private static final long serialVersionUID = -6398226638364450229L;
 
     /**
      * The group of all parameters expected by this coordinate operation.
      */
-    public static final ParameterDescriptorGroup PARAMETERS;
+    private static final ParameterDescriptorGroup PARAMETERS;
     static {
         PARAMETERS = builder()
-            .addIdentifier("1031")
-            .addName("Geocentric translations (geocentric domain)")
-            .addName("Geocentric Translations")     // Ambiguous alias (does not specify the domain)
-            .createGroup(TX, TY, TZ);
+            .addIdentifier("9606")
+            .addName("Position Vector transformation (geog2D domain)")
+            .addName("Position Vector 7-param. transformation")     // Ambiguous alias (does not specify the domain)
+            .createGroup(TX, TY, TZ, RX, RY, RZ, DS);
+        /*
+         * NOTE: we omit the "Bursa-Wolf" alias because it is ambiguous, since it can apply
+         * to both "Coordinate Frame Rotation" and "Position Vector 7-param. transformation"
+         */
     }
 
     /**
      * Constructs the provider.
      */
-    public GeocentricTranslation() {
+    public PositionVector7Param2D() {
         super(2, PARAMETERS);
-    }
-
-    /**
-     * Fills the given Bursa-Wolf parameters with the specified values.
-     * Only the translation terms are extracted from the given parameter values.
-     */
-    @Override
-    void fill(final BursaWolfParameters parameters, final Parameters values) {
-        parameters.tX = values.doubleValue(TX);
-        parameters.tY = values.doubleValue(TY);
-        parameters.tZ = values.doubleValue(TZ);
     }
 }

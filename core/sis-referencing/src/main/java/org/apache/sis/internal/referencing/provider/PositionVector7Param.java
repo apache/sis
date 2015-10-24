@@ -21,7 +21,7 @@ import org.opengis.parameter.ParameterDescriptorGroup;
 
 
 /**
- * The provider for <cite>"Position Vector transformation (geog2D domain)"</cite> (EPSG:9606).
+ * The provider for <cite>"Position Vector transformation (geocentric domain)"</cite> (EPSG:1033).
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.7
@@ -41,9 +41,10 @@ public final class PositionVector7Param extends GeocentricAffine {
     public static final ParameterDescriptorGroup PARAMETERS;
     static {
         PARAMETERS = builder()
-            .addIdentifier("9606")
-            .addName("Position Vector transformation (geog2D domain)")
+            .addIdentifier("1033")
+            .addName("Position Vector transformation (geocentric domain)")
             .addName("Position Vector 7-param. transformation")     // Ambiguous alias (does not specify the domain)
+            .addName("Helmert transformation")
             .createGroup(TX, TY, TZ, RX, RY, RZ, DS);
         /*
          * NOTE: we omit the "Bursa-Wolf" alias because it is ambiguous, since it can apply

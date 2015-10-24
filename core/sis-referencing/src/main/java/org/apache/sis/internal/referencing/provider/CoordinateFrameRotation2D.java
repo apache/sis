@@ -23,9 +23,9 @@ import org.apache.sis.referencing.datum.BursaWolfParameters;
 
 
 /**
- * The provider for <cite>"Geocentric translations (geocentric domain)"</cite> (EPSG:1031).
- * This is a special case of {@link PositionVector7Param} where only the translation terms
- * can be set to a non-null value.
+ * The provider for <cite>"Coordinate Frame Rotation (geog2D domain)"</cite> (EPSG:9607).
+ * This is the same transformation than "{@link PositionVector7Param}"
+ * except that the rotation angles have the opposite sign.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.7
@@ -33,39 +33,41 @@ import org.apache.sis.referencing.datum.BursaWolfParameters;
  * @module
  */
 @XmlTransient
-public final class GeocentricTranslation extends GeocentricAffine {
+public final class CoordinateFrameRotation2D extends GeocentricAffine {
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = -7160250630666911608L;
+    private static final long serialVersionUID = 5513675854809530038L;
 
     /**
      * The group of all parameters expected by this coordinate operation.
      */
-    public static final ParameterDescriptorGroup PARAMETERS;
+    private static final ParameterDescriptorGroup PARAMETERS;
     static {
         PARAMETERS = builder()
-            .addIdentifier("1031")
-            .addName("Geocentric translations (geocentric domain)")
-            .addName("Geocentric Translations")     // Ambiguous alias (does not specify the domain)
-            .createGroup(TX, TY, TZ);
+            .addIdentifier("9607")
+            .addName("Coordinate Frame Rotation (geog2D domain)")
+            .addName("Coordinate Frame Rotation")     // Ambiguous alias (does not specify the domain)
+            .createGroup(TX, TY, TZ, RX, RY, RZ, DS);
+        /*
+         * NOTE: we omit the "Bursa-Wolf" alias because it is ambiguous, since it can apply
+         * to both "Coordinate Frame Rotation" and "Position Vector 7-param. transformation"
+         */
     }
 
     /**
      * Constructs the provider.
      */
-    public GeocentricTranslation() {
+    public CoordinateFrameRotation2D() {
         super(2, PARAMETERS);
     }
 
     /**
-     * Fills the given Bursa-Wolf parameters with the specified values.
-     * Only the translation terms are extracted from the given parameter values.
+     * {@inheritDoc}
      */
     @Override
     void fill(final BursaWolfParameters parameters, final Parameters values) {
-        parameters.tX = values.doubleValue(TX);
-        parameters.tY = values.doubleValue(TY);
-        parameters.tZ = values.doubleValue(TZ);
+        super.fill(parameters, values);
+        parameters.reverseRotation();
     }
 }

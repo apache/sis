@@ -23,7 +23,7 @@ import org.apache.sis.referencing.datum.BursaWolfParameters;
 
 
 /**
- * The provider for <cite>"Coordinate Frame Rotation (geog2D domain)"</cite> (EPSG:9607).
+ * The provider for <cite>"Coordinate Frame Rotation (geocentric domain)"</cite> (EPSG:1032).
  * This is the same transformation than "{@link PositionVector7Param}"
  * except that the rotation angles have the opposite sign.
  *
@@ -45,8 +45,8 @@ public final class CoordinateFrameRotation extends GeocentricAffine {
     public static final ParameterDescriptorGroup PARAMETERS;
     static {
         PARAMETERS = builder()
-            .addIdentifier("9607")
-            .addName("Coordinate Frame Rotation (geog2D domain)")
+            .addIdentifier("1032")
+            .addName("Coordinate Frame Rotation (geocentric domain)")
             .addName("Coordinate Frame Rotation")     // Ambiguous alias (does not specify the domain)
             .createGroup(TX, TY, TZ, RX, RY, RZ, DS);
         /*

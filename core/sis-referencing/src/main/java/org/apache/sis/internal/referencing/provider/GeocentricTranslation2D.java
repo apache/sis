@@ -23,7 +23,7 @@ import org.apache.sis.referencing.datum.BursaWolfParameters;
 
 
 /**
- * The provider for <cite>"Geocentric translations (geocentric domain)"</cite> (EPSG:1031).
+ * The provider for <cite>"Geocentric translations (geog2D domain)"</cite> (EPSG:9603).
  * This is a special case of {@link PositionVector7Param} where only the translation terms
  * can be set to a non-null value.
  *
@@ -33,7 +33,7 @@ import org.apache.sis.referencing.datum.BursaWolfParameters;
  * @module
  */
 @XmlTransient
-public final class GeocentricTranslation extends GeocentricAffine {
+public final class GeocentricTranslation2D extends GeocentricAffine {
     /**
      * Serial number for inter-operability with different versions.
      */
@@ -42,11 +42,11 @@ public final class GeocentricTranslation extends GeocentricAffine {
     /**
      * The group of all parameters expected by this coordinate operation.
      */
-    public static final ParameterDescriptorGroup PARAMETERS;
+    private static final ParameterDescriptorGroup PARAMETERS;
     static {
         PARAMETERS = builder()
-            .addIdentifier("1031")
-            .addName("Geocentric translations (geocentric domain)")
+            .addIdentifier("9603")
+            .addName("Geocentric translations (geog2D domain)")
             .addName("Geocentric Translations")     // Ambiguous alias (does not specify the domain)
             .createGroup(TX, TY, TZ);
     }
@@ -54,7 +54,7 @@ public final class GeocentricTranslation extends GeocentricAffine {
     /**
      * Constructs the provider.
      */
-    public GeocentricTranslation() {
+    public GeocentricTranslation2D() {
         super(2, PARAMETERS);
     }
 
