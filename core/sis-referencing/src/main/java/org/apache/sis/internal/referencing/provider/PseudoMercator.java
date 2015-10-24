@@ -22,7 +22,7 @@ import org.apache.sis.parameter.ParameterBuilder;
 
 
 /**
- * The provider for "<cite>Popular Visualisation Pseudo Mercator</cite>" projection (EPSG:1024).
+ * The provider for <cite>"Popular Visualisation Pseudo Mercator"</cite> projection (EPSG:1024).
  * This is also known as the "Google projection", defined by popular demand but not considered
  * a valid projection method.
  *

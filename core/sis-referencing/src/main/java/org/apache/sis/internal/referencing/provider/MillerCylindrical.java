@@ -24,7 +24,7 @@ import org.apache.sis.metadata.iso.citation.Citations;
 
 
 /**
- * The provider for "<cite>Miller Cylindrical</cite>" projection.
+ * The provider for <cite>"Miller Cylindrical"</cite> projection.
  * This is a {@link Mercator1SP} projection with the following modifications:
  *
  * <ol>
