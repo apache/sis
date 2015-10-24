@@ -35,9 +35,9 @@ import org.apache.sis.parameter.Parameters;
  * <table class="sis">
  *   <caption>Operations using geocentric affine transform</caption>
  *   <tr><th>EPSG name</th>                               <th>EPSG code</th></tr>
- *   <tr><td>Geocentric translations</td>                 <td>9603</td></tr>
- *   <tr><td>Position Vector 7-param. transformation</td> <td>9606</td></tr>
- *   <tr><td>Coordinate Frame rotation</td>               <td>9607</td></tr>
+ *   <tr><td>Geocentric translations</td>                 <td>1031</td></tr>
+ *   <tr><td>Coordinate Frame rotation</td>               <td>1032</td></tr>
+ *   <tr><td>Position Vector 7-param. transformation</td> <td>1033</td></tr>
  * </table>
  *
  * Conversions between geographic and geocentric coordinates are <strong>not</strong> part of this operation.
