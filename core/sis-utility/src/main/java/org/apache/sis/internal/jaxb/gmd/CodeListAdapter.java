@@ -44,7 +44,7 @@ import org.apache.sis.internal.jaxb.Context;
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.5
+ * @version 0.7
  * @module
  */
 public abstract class CodeListAdapter<ValueType extends CodeListAdapter<ValueType,BoundType>,

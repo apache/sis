@@ -436,7 +436,7 @@ class ProjectiveTransform extends AbstractLinearTransform implements LinearTrans
 
     /**
      * Creates an inverse transform using the specified matrix.
-     * To be overridden by {@link GeocentricTranslation}.
+     * To be overridden by {@link GeocentricAffineTransform}.
      */
     ProjectiveTransform createInverse(final Matrix matrix) {
         return new ProjectiveTransform(matrix);
