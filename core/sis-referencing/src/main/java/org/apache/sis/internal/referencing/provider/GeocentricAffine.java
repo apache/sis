@@ -22,9 +22,11 @@ import javax.xml.bind.annotation.XmlTransient;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
+import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.Transformation;
+import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.measure.Units;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.parameter.ParameterBuilder;
@@ -42,7 +44,7 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
  * @module
  */
 @XmlTransient
-public class GeocentricAffine extends AbstractProvider {
+public abstract class GeocentricAffine extends AbstractProvider {
     /**
      * Serial number for inter-operability with different versions.
      */
@@ -53,42 +55,42 @@ public class GeocentricAffine extends AbstractProvider {
      * ({@linkplain BursaWolfParameters#tX tX}) parameter value. Valid values range
      * from negative to positive infinity. Units are {@linkplain SI#METRE metres}.
      */
-    public static final ParameterDescriptor<Double> TX;
+    static final ParameterDescriptor<Double> TX;
 
     /**
      * The operation parameter descriptor for the <cite>Y-axis translation</cite>
      * ({@linkplain BursaWolfParameters#tY tY}) parameter value. Valid values range
      * from negative to positive infinity. Units are {@linkplain SI#METRE metres}.
      */
-    public static final ParameterDescriptor<Double> TY;
+    static final ParameterDescriptor<Double> TY;
 
     /**
      * The operation parameter descriptor for the <cite>Z-axis translation</cite>
      * ({@linkplain BursaWolfParameters#tZ tZ}) parameter value. Valid values range
      * from negative to positive infinity. Units are {@linkplain SI#METRE metres}.
      */
-    public static final ParameterDescriptor<Double> TZ;
+    static final ParameterDescriptor<Double> TZ;
 
     /**
      * The operation parameter descriptor for the <cite>X-axis rotation</cite>
      * ({@linkplain BursaWolfParameters#rX rX}) parameter value.
      * Units are {@linkplain NonSI#SECOND_ANGLE arc-seconds}.
      */
-    public static final ParameterDescriptor<Double> RX;
+    static final ParameterDescriptor<Double> RX;
 
     /**
      * The operation parameter descriptor for the <cite>Y-axis rotation</cite>
      * ({@linkplain BursaWolfParameters#rY rY}) parameter value.
      * Units are {@linkplain NonSI#SECOND_ANGLE arc-seconds}.
      */
-    public static final ParameterDescriptor<Double> RY;
+    static final ParameterDescriptor<Double> RY;
 
     /**
      * The operation parameter descriptor for the <cite>Z-axis rotation</cite>
      * ({@linkplain BursaWolfParameters#rZ rZ}) parameter value.
      * Units are {@linkplain NonSI#SECOND_ANGLE arc-seconds}.
      */
-    public static final ParameterDescriptor<Double> RZ;
+    static final ParameterDescriptor<Double> RZ;
 
     /**
      * The operation parameter descriptor for the <cite>Scale difference</cite>
@@ -96,8 +98,7 @@ public class GeocentricAffine extends AbstractProvider {
      * Valid values range from negative to positive infinity.
      * Units are {@linkplain Units#PPM parts per million}.
      */
-    public static final ParameterDescriptor<Double> DS;
-
+    static final ParameterDescriptor<Double> DS;
     static {
         final ParameterBuilder builder = builder();
         TX = createShift(builder.addName("X-axis translation").addName(Citations.OGC, "dx"));
@@ -115,6 +116,11 @@ public class GeocentricAffine extends AbstractProvider {
     private static ParameterDescriptor<Double> createRotation(final ParameterBuilder builder, final String name, final String alias) {
         return builder.addName(name).addName(Citations.OGC, alias).createBounded(-180*60*60, 180*60*60, 0, NonSI.SECOND_ANGLE);
     }
+
+    /**
+     * Return value for {@link #getType()}.
+     */
+    static final int TRANSLATION=1, SEVEN_PARAM=2, FRAME_ROTATION=3;
 
     /**
      * Constructs a provider with the specified parameters.
@@ -135,6 +141,12 @@ public class GeocentricAffine extends AbstractProvider {
     }
 
     /**
+     * Returns the operation type as one of {@link #TRANSLATION}, {@link #SEVEN_PARAM} or
+     * {@link #FRAME_ROTATION} constants.
+     */
+    abstract int getType();
+
+    /**
      * Creates a math transform from the specified group of parameter values.
      *
      * @param  factory Ignored (can be null).
@@ -142,26 +154,51 @@ public class GeocentricAffine extends AbstractProvider {
      * @return The created math transform.
      */
     @Override
+    @SuppressWarnings("fallthrough")
     public final MathTransform createMathTransform(final MathTransformFactory factory, final ParameterValueGroup values) {
         final BursaWolfParameters parameters = new BursaWolfParameters(null, null);
-        fill(parameters, Parameters.castOrWrap(values));
+        final Parameters pv = Parameters.castOrWrap(values);
+        switch (getType()) {
+            default:             throw new AssertionError();
+            case FRAME_ROTATION: parameters.reverseRotation();         // Fall through
+            case SEVEN_PARAM:    parameters.rX = pv.doubleValue(RX);
+                                 parameters.rY = pv.doubleValue(RY);
+                                 parameters.rZ = pv.doubleValue(RZ);
+                                 parameters.dS = pv.doubleValue(DS);
+            case TRANSLATION:    parameters.tX = pv.doubleValue(TX);   // Fall through
+                                 parameters.tY = pv.doubleValue(TY);
+                                 parameters.tZ = pv.doubleValue(TZ);
+        }
         return MathTransforms.linear(parameters.getPositionVectorTransformation(null));
     }
 
     /**
-     * Fills the given Bursa-Wolf parameters with the specified values.
-     * This method is invoked automatically by {@link #createMathTransform}.
+     * Given a matrix for an affine transform operation, finds the equivalent Bursa-Wolf parameters.
+     * It is user-responsibility to ensure that the operation is performed in the geocentric space.
      *
-     * @param parameters The Bursa-Wold parameters to set.
-     * @param values The parameter values to read. Those parameters will not be modified.
+     * @param  matrix The matrix for the affine transform in the geocentric domain.
+     * @return The Bursa-Wolf parameter values for the given matrix.
+     * @throws IllegalArgumentException if the given matrix can not be decomposed in Bursa-Wolf parameters.
      */
-    void fill(final BursaWolfParameters parameters, final Parameters values) {
-        parameters.tX = values.doubleValue(TX);
-        parameters.tY = values.doubleValue(TY);
-        parameters.tZ = values.doubleValue(TZ);
-        parameters.rX = values.doubleValue(RX);
-        parameters.rY = values.doubleValue(RY);
-        parameters.rZ = values.doubleValue(RZ);
-        parameters.dS = values.doubleValue(DS);
+    public static ParameterValueGroup getParameters(final Matrix matrix) throws IllegalArgumentException {
+        final BursaWolfParameters parameters = new BursaWolfParameters(null, null);
+        /*
+         * We use a 0.01 metre tolerance (Formulas.LINEAR_TOLERANCE) based on the knowledge that the
+         * translation terms are in metres and the rotation terms have the some order of magnitude.
+         */
+        parameters.setPositionVectorTransformation(matrix, Formulas.LINEAR_TOLERANCE);
+        final boolean isTranslation = parameters.isTranslation();
+        final Parameters values = Parameters.castOrWrap(
+                (isTranslation ? GeocentricTranslation.PARAMETERS : PositionVector7Param.PARAMETERS).createValue());
+        values.getOrCreate(TX).setValue(parameters.tX);
+        values.getOrCreate(TY).setValue(parameters.tY);
+        values.getOrCreate(TZ).setValue(parameters.tZ);
+        if (!isTranslation) {
+            values.getOrCreate(RX).setValue(parameters.rX);
+            values.getOrCreate(RY).setValue(parameters.rY);
+            values.getOrCreate(RZ).setValue(parameters.rZ);
+            values.getOrCreate(DS).setValue(parameters.dS);
+        }
+        return values;
     }
 }

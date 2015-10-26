@@ -38,7 +38,7 @@ public final class PositionVector7Param extends GeocentricAffine {
     /**
      * The group of all parameters expected by this coordinate operation.
      */
-    public static final ParameterDescriptorGroup PARAMETERS;
+    static final ParameterDescriptorGroup PARAMETERS;
     static {
         PARAMETERS = builder()
             .addIdentifier("1033")
@@ -57,5 +57,13 @@ public final class PositionVector7Param extends GeocentricAffine {
      */
     public PositionVector7Param() {
         super(2, PARAMETERS);
+    }
+
+    /**
+     * Returns the type of this operation.
+     */
+    @Override
+    int getType() {
+        return SEVEN_PARAM;
     }
 }

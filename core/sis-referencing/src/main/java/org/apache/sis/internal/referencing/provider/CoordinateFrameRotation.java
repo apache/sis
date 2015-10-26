@@ -18,8 +18,6 @@ package org.apache.sis.internal.referencing.provider;
 
 import javax.xml.bind.annotation.XmlTransient;
 import org.opengis.parameter.ParameterDescriptorGroup;
-import org.apache.sis.parameter.Parameters;
-import org.apache.sis.referencing.datum.BursaWolfParameters;
 
 
 /**
@@ -42,7 +40,7 @@ public final class CoordinateFrameRotation extends GeocentricAffine {
     /**
      * The group of all parameters expected by this coordinate operation.
      */
-    public static final ParameterDescriptorGroup PARAMETERS;
+    private static final ParameterDescriptorGroup PARAMETERS;
     static {
         PARAMETERS = builder()
             .addIdentifier("1032")
@@ -63,11 +61,10 @@ public final class CoordinateFrameRotation extends GeocentricAffine {
     }
 
     /**
-     * {@inheritDoc}
+     * Returns the type of this operation.
      */
     @Override
-    void fill(final BursaWolfParameters parameters, final Parameters values) {
-        super.fill(parameters, values);
-        parameters.reverseRotation();
+    int getType() {
+        return FRAME_ROTATION;
     }
 }

@@ -18,8 +18,6 @@ package org.apache.sis.internal.referencing.provider;
 
 import javax.xml.bind.annotation.XmlTransient;
 import org.opengis.parameter.ParameterDescriptorGroup;
-import org.apache.sis.parameter.Parameters;
-import org.apache.sis.referencing.datum.BursaWolfParameters;
 
 
 /**
@@ -42,7 +40,7 @@ public final class GeocentricTranslation extends GeocentricAffine {
     /**
      * The group of all parameters expected by this coordinate operation.
      */
-    public static final ParameterDescriptorGroup PARAMETERS;
+    static final ParameterDescriptorGroup PARAMETERS;
     static {
         PARAMETERS = builder()
             .addIdentifier("1031")
@@ -59,13 +57,10 @@ public final class GeocentricTranslation extends GeocentricAffine {
     }
 
     /**
-     * Fills the given Bursa-Wolf parameters with the specified values.
-     * Only the translation terms are extracted from the given parameter values.
+     * Returns the type of this operation.
      */
     @Override
-    void fill(final BursaWolfParameters parameters, final Parameters values) {
-        parameters.tX = values.doubleValue(TX);
-        parameters.tY = values.doubleValue(TY);
-        parameters.tZ = values.doubleValue(TZ);
+    int getType() {
+        return TRANSLATION;
     }
 }
