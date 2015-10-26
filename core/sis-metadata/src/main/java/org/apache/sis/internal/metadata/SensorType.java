@@ -18,6 +18,8 @@ package org.apache.sis.internal.metadata;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.opengis.annotation.UML;
+import org.opengis.annotation.Specification;
 import org.opengis.util.CodeList;
 
 
@@ -31,6 +33,7 @@ import org.opengis.util.CodeList;
  * @version 0.7
  * @module
  */
+@UML(identifier = "MI_SensorTypeCode", specification = Specification.ISO_19115_2)   // Actually only in XML schema.
 public final class SensorType extends CodeList<SensorType> {
     /**
      * Serial number for compatibility with different versions.
