@@ -17,7 +17,6 @@
 package org.apache.sis.referencing.operation.transform;
 
 import java.util.Arrays;
-import java.io.Serializable;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
@@ -38,14 +37,12 @@ import org.apache.sis.util.ArgumentChecks;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.5
- * @version 0.5
+ * @version 0.7
  * @module
  *
  * @see java.awt.geom.AffineTransform
  */
-class ProjectiveTransform extends AbstractLinearTransform implements LinearTransform, ExtendedPrecisionMatrix,
-        Serializable // Not Cloneable, despite the clone() method.
-{
+class ProjectiveTransform extends AbstractLinearTransform implements ExtendedPrecisionMatrix {
     /**
      * Serial number for inter-operability with different versions.
      */
@@ -68,13 +65,6 @@ class ProjectiveTransform extends AbstractLinearTransform implements LinearTrans
      * in which case the second half contains the error terms in double-double arithmetic.</p>
      */
     private final double[] elt;
-
-    /**
-     * The inverse transform. Will be created only when first needed. This field is part of the serialization form
-     * in order to avoid rounding errors if a user asks for the inverse of the inverse (i.e. the original transform)
-     * after deserialization.
-     */
-    AbstractMathTransform inverse;
 
     /**
      * Constructs a transform from the specified matrix.
@@ -420,26 +410,20 @@ class ProjectiveTransform extends AbstractLinearTransform implements LinearTrans
     public synchronized MathTransform inverse() throws NoninvertibleTransformException {
         if (inverse == null) {
             /*
-             * Note: we do not perform the following optimization, because MathTransforms.linear(…)
-             *       should never instantiate this class in the identity case.
-             *
-             *       if (isIdentity()) {
-             *           inverse = this;
-             *       } else { ... }
+             * Should never be the identity transform at this point (except during tests) because
+             * MathTransforms.linear(…) should never instantiate this class in the identity case.
+             * But we check anyway as a paranoiac safety.
              */
-            ProjectiveTransform inv = createInverse(Matrices.inverse(this));
-            inv.inverse = this;
-            inverse = inv;
+            if (isIdentity()) {
+                inverse = this;
+            } else {
+                inverse = MathTransforms.linear(Matrices.inverse(this));
+                if (inverse instanceof AbstractLinearTransform) {
+                    ((AbstractLinearTransform) inverse).inverse = this;
+                }
+            }
         }
         return inverse;
-    }
-
-    /**
-     * Creates an inverse transform using the specified matrix.
-     * To be overridden by {@link GeocentricAffineTransform}.
-     */
-    ProjectiveTransform createInverse(final Matrix matrix) {
-        return new ProjectiveTransform(matrix);
     }
 
     /**

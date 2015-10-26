@@ -89,12 +89,4 @@ final class ProjectiveTransform2D extends ProjectiveTransform implements MathTra
     public MathTransform2D inverse() throws NoninvertibleTransformException {
         return (MathTransform2D) super.inverse();
     }
-
-    /**
-     * Creates an inverse transform using the specified matrix.
-     */
-    @Override
-    ProjectiveTransform2D createInverse(final Matrix matrix) {
-        return new ProjectiveTransform2D(matrix);
-    }
 }

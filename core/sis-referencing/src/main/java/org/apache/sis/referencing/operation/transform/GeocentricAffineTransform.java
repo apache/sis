@@ -110,14 +110,6 @@ final class GeocentricAffineTransform extends ProjectiveTransform {
     }
 
     /**
-     * Creates an inverse transform using the specified matrix.
-     */
-    @Override
-    final GeocentricAffineTransform createInverse(final Matrix matrix) {
-        return new GeocentricAffineTransform(matrix, type);
-    }
-
-    /**
      * {@inheritDoc}
      */
     @Override
