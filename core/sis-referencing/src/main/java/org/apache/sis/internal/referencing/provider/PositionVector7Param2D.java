@@ -57,4 +57,12 @@ public final class PositionVector7Param2D extends GeocentricAffine {
     public PositionVector7Param2D() {
         super(2, PARAMETERS);
     }
+
+    /**
+     * Returns the type of this operation.
+     */
+    @Override
+    int getType() {
+        return SEVEN_PARAM;
+    }
 }
