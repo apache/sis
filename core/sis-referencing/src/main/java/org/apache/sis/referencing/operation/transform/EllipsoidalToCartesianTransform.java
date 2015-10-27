@@ -114,6 +114,18 @@ public class EllipsoidalToCartesianTransform extends AbstractMathTransform imple
     protected final double excentricitySquared;
 
     /**
+     * The b/a ratio where
+     * <var>a</var> is the <cite>semi-major</cite> axis length and
+     * <var>b</var> is the <cite>semi-minor</cite> axis length.
+     * Since the {@code EllipsoidalToCartesianTransform} class works on an ellipsoid where a = 1
+     * (because of the work performed by the normalization matrices), we just drop <var>a</var>
+     * in the formulas - so this field can be written as just <var>b</var>.
+     *
+     * <p>This value is related to the ε value used in EPSG guide by ε = ℯ²/b².</p>
+     */
+    private final double b;
+
+    /**
      * {@code true} if ellipsoidal coordinates include an ellipsoidal height (i.e. are 3-D).
      * If {@code false}, then the input coordinates are expected to be two-dimensional and
      * the ellipsoidal height is assumed to be 0.
@@ -150,7 +162,8 @@ public class EllipsoidalToCartesianTransform extends AbstractMathTransform imple
     public EllipsoidalToCartesianTransform(final double semiMajor, final double semiMinor, final boolean withHeight, final Unit<Length> unit) {
         ArgumentChecks.ensureStrictlyPositive("semiMajor", semiMajor);
         ArgumentChecks.ensureStrictlyPositive("semiMinor", semiMinor);
-        this.excentricitySquared = 1 - (semiMinor*semiMinor) / (semiMajor*semiMajor);
+        b = semiMinor / semiMajor;
+        excentricitySquared = 1 - (b * b);
         this.withHeight = withHeight;
         context = new ContextualParameters(GeographicToGeocentric.PARAMETERS, withHeight ? 4 : 3, 4);
         /*
@@ -359,9 +372,9 @@ public class EllipsoidalToCartesianTransform extends AbstractMathTransform imple
                                        0, dZ_dφ, sinφ);
             } else {
                 return Matrices.create(3, 2, new double[] {
-                    dX_dλ, dX_dφ,
-                    dY_dλ, dY_dφ,
-                        0, dZ_dφ});
+                        dX_dλ, dX_dφ,
+                        dY_dλ, dY_dφ,
+                            0, dZ_dφ});
             }
         } else {
             return null;
@@ -371,20 +384,23 @@ public class EllipsoidalToCartesianTransform extends AbstractMathTransform imple
     /**
      * Converts the (λ,φ) or (λ,φ,<var>h</var>) geodetic coordinates to
      * to (<var>X</var>,<var>Y</var>,<var>Z</var>) geocentric coordinates.
+     *
+     * This method performs the same conversion than {@link #transform(double[], int, double[], int, boolean)},
+     * but the formulas are repeated here for performance reasons.
      */
     @Override
     public void transform(double[] srcPts, int srcOff, final double[] dstPts, int dstOff, int numPts) {
-        final int dimSource = getSourceDimensions();
         int srcInc = 0;
         int dstInc = 0;
         if (srcPts == dstPts) {
+            final int dimSource = getSourceDimensions();
             switch (IterationStrategy.suggest(srcOff, dimSource, dstOff, 3, numPts)) {
                 case ASCENDING: {
                     break;
                 }
                 case DESCENDING: {
                     srcOff += (numPts - 1) * dimSource;
-                    dstOff += (numPts - 1) * 3;                 // Target dimension is fixed to 3.
+                    dstOff += (numPts - 1) * 3;         // Target dimension is fixed to 3.
                     srcInc = -2 * dimSource;
                     dstInc = -6;
                     break;
@@ -411,112 +427,78 @@ public class EllipsoidalToCartesianTransform extends AbstractMathTransform imple
         }
     }
 
-    /**
-     * Converts the (λ,φ) or (λ,φ,<var>h</var>) geodetic coordinates to
-     * (<var>X</var>,<var>Y</var>,<var>Z</var>) geocentric coordinates.
+    /*
+     * NOTE: we do not bother to override the methods expecting a 'float' array because those methods should
+     *       be rarely invoked. Since there is usually LinearTransforms before and after this transform, the
+     *       conversion between float and double will be handle by those LinearTransforms.   If nevertheless
+     *       this EllipsoidalToCartesianTransform is at the beginning or the end of a transformation chain,
+     *       the method inherited from the subclass will work (even if slightly slower).
      */
-    @Override
-    public void transform(float[] srcPts, int srcOff, final float[] dstPts, int dstOff, int numPts) {
-        final int dimSource = getSourceDimensions();
-        int srcInc = 0;
-        int dstInc = 0;
-        if (srcPts == dstPts) {
-            switch (IterationStrategy.suggest(srcOff, dimSource, dstOff, 3, numPts)) {
-                case ASCENDING: {
-                    break;
-                }
-                case DESCENDING: {
-                    srcOff += (numPts - 1) * dimSource;
-                    dstOff += (numPts - 1) * 3;
-                    srcInc = -2 * dimSource;
-                    dstInc = -6;
-                    break;
-                }
-                default: {
-                    srcPts = Arrays.copyOfRange(srcPts, srcOff, srcOff + numPts*dimSource);
-                    srcOff = 0;
-                    break;
-                }
-            }
-        }
-        // See transform(double[], int, double[], int, int) for in-line comments.
-        while (--numPts >= 0) {
-            final double λ      = srcPts[srcOff++];
-            final double φ      = srcPts[srcOff++];
-            final double h      = withHeight ? srcPts[srcOff++] : 0;
-            final double sinφ   = sin(φ);
-            final double ν      = 1/sqrt(1 - excentricitySquared * (sinφ*sinφ));
-            final double rcosφ  = (ν + h) * cos(φ);
-            dstPts[dstOff++]    = (float) (rcosφ * cos(λ));
-            dstPts[dstOff++]    = (float) (rcosφ * sin(λ));
-            dstPts[dstOff++]    = (float) ((ν * (1 - excentricitySquared) + h) * sinφ);
-            srcOff += srcInc;
-            dstOff += dstInc;
-        }
-    }
-
-    /**
-     * Converts the (λ,φ) or (λ,φ,<var>h</var>) geodetic coordinates to
-     * (<var>X</var>,<var>Y</var>,<var>Z</var>) geocentric coordinates.
-     */
-    @Override
-    public void transform(final float[] srcPts, int srcOff, final double[] dstPts, int dstOff, int numPts) {
-        // See transform(double[], int, double[], int, int) for in-line comments.
-        while (--numPts >= 0) {
-            final double λ      = srcPts[srcOff++];
-            final double φ      = srcPts[srcOff++];
-            final double h      = withHeight ? srcPts[srcOff++] : 0;
-            final double sinφ   = sin(φ);
-            final double ν      = 1/sqrt(1 - excentricitySquared * (sinφ*sinφ));
-            final double rcosφ  = (ν + h) * cos(φ);
-            dstPts[dstOff++]    = rcosφ * cos(λ);
-            dstPts[dstOff++]    = rcosφ * sin(λ);
-            dstPts[dstOff++]    = (ν * (1 - excentricitySquared) + h) * sinφ;
-        }
-    }
-
-    /**
-     * Converts the (λ,φ) or (λ,φ,<var>h</var>) geodetic coordinates to
-     * to (<var>X</var>,<var>Y</var>,<var>Z</var>) geocentric coordinates.
-     */
-    @Override
-    public void transform(final double[] srcPts, int srcOff, final float[] dstPts, int dstOff, int numPts) {
-        // See transform(double[], int, double[], int, int) for in-line comments.
-        while (--numPts >= 0) {
-            final double λ      = srcPts[srcOff++];
-            final double φ      = srcPts[srcOff++];
-            final double h      = withHeight ? srcPts[srcOff++] : 0;
-            final double sinφ   = sin(φ);
-            final double ν      = 1/sqrt(1 - excentricitySquared * (sinφ*sinφ));
-            final double rcosφ  = (ν + h) * cos(φ);
-            dstPts[dstOff++]    = (float) (rcosφ * cos(λ));
-            dstPts[dstOff++]    = (float) (rcosφ * sin(λ));
-            dstPts[dstOff++]    = (float) ((ν * (1 - excentricitySquared) + h) * sinφ);
-        }
-    }
 
     /**
      * Converts Cartesian coordinates (<var>X</var>,<var>Y</var>,<var>Z</var>) to ellipsoidal coordinates
      * (λ,φ) or (λ,φ,<var>h</var>).
      *
-     * @param srcPts1 The array containing the source point coordinates in simple precision.
-     * @param srcPts2 Same than {@code srcPts1} but in double precision. Exactly one of
-     *                {@code srcPts1} or {@code srcPts2} can be non-null.
-     * @param srcOff  The offset to the first point to be transformed in the source array.
-     * @param dstPts1 The array into which the transformed point coordinates are returned.
-     *                May be the same than {@code srcPts1} or {@code srcPts2}.
-     * @param dstPts2 Same than {@code dstPts1} but in double precision. Exactly one of
-     *                {@code dstPts1} or {@code dstPts2} can be non-null.
-     * @param dstOff  The offset to the location of the first transformed point that is stored
-     *                in the destination array.
-     * @param numPts  The number of point objects to be transformed.
-     * @param descending {@code true} if points should be iterated in descending order.
+     * @param  srcPts The array containing the source point coordinates.
+     * @param  srcOff The offset to the first point to be transformed in the source array.
+     * @param  dstPts The array into which the transformed point coordinates are returned.
+     *                May be the same than {@code srcPts}.
+     * @param  dstOff The offset to the location of the first transformed point that is stored in the destination array.
+     * @param  numPts The number of point objects to be transformed.
      */
-    final void inverseTransform(final float[] srcPts1, final double[] srcPts2, int srcOff,
-                                final float[] dstPts1, final double[] dstPts2, int dstOff,
-                                int numPts, final boolean descending)
-    {
-        // TODO
+    protected void inverseTransform(final double[] srcPts, int srcOff, double[] dstPts, int dstOff, int numPts) {
+        int srcInc = 0;
+        int dstInc = 0;
+        if (srcPts == dstPts) {
+            final int dimTarget = getSourceDimensions();
+            switch (IterationStrategy.suggest(srcOff, 3, dstOff, dimTarget, numPts)) {
+                case ASCENDING: {
+                    break;
+                }
+                case DESCENDING: {
+                    srcOff += (numPts - 1) * 3;             // Source dimension is fixed to 3.
+                    dstOff += (numPts - 1) * dimTarget;
+                    srcInc = -6;
+                    dstInc = -2 * dimTarget;
+                    break;
+                }
+                default: {
+                    dstPts = Arrays.copyOfRange(dstPts, dstOff, dstOff + numPts*dimTarget);
+                    dstOff = 0;
+                    break;
+                }
+            }
+        }
+        while (--numPts >= 0) {
+            final double X = srcPts[srcOff++];
+            final double Y = srcPts[srcOff++];
+            final double Z = srcPts[srcOff++];
+            final double p = hypot(X, Y);
+            /*
+             * EPSG guide gives  q = atan((Z⋅a) / (p⋅b))
+             * where in this class  a = 1  because of the normalization matrix.
+             * Since the formulas use only  sin(q)  and  cos(q), we rewrite as
+             *
+             *    cos²(q) = 1/(1 + tan²(q))         and  cos(q)  is always positive
+             *    sin²(q) = 1 - cos²(q)             and  sin(q)  has the sign of tan(q).
+             */
+            final double tanq  = Z / (p*b);
+            final double cos2q = 1/(1 + tanq*tanq);
+            final double sin2q = 1 - cos2q;
+            double φ = atan((Z + copySign(excentricitySquared * sin2q*sqrt(sin2q), tanq) / b) /
+                            (p -          excentricitySquared * cos2q*sqrt(cos2q)));
+
+            double sinφ = sin(φ);
+            double ν = 1/sqrt(1 - excentricitySquared * (sinφ*sinφ));
+
+            dstPts[dstOff++] = atan2(Y, X);     // λ
+            dstPts[dstOff++] = φ;
+            if (withHeight) {
+                dstPts[dstOff++] = p/cos(φ) - ν;    // h
+            }
+            srcOff += srcInc;
+            dstOff += dstInc;
+        }
     }
 
     /**
@@ -602,7 +584,7 @@ public class EllipsoidalToCartesianTransform extends AbstractMathTransform imple
                 point  = dstPts;
                 offset = dstOff;
             }
-            inverseTransform(null, srcPts, srcOff, null, point, offset, 1, false);
+            inverseTransform(srcPts, srcOff, point, offset, 1);
             if (!derivate) {
                 return null;
             }
@@ -618,65 +600,7 @@ public class EllipsoidalToCartesianTransform extends AbstractMathTransform imple
          */
         @Override
         public void transform(double[] srcPts, int srcOff, double[] dstPts, int dstOff, int numPts) {
-            boolean descending = false;
-            if (srcPts == dstPts) {
-                switch (IterationStrategy.suggest(srcOff, 3, dstOff, getTargetDimensions(), numPts)) {
-                    case ASCENDING: {
-                        break;
-                    }
-                    case DESCENDING: {
-                        descending = true;
-                        break;
-                    }
-                    default: {
-                        srcPts = Arrays.copyOfRange(srcPts, srcOff, srcOff + 3*numPts);
-                        srcOff = 0;
-                        break;
-                    }
-                }
-            }
-            inverseTransform(null, srcPts, srcOff, null, dstPts, dstOff, numPts, descending);
-        }
-
-        /**
-         * Transforms the given array of points.
-         */
-        @Override
-        public void transform(float[] srcPts, int srcOff, float[] dstPts, int dstOff, int numPts) {
-            boolean descending = false;
-            if (srcPts == dstPts) {
-                switch (IterationStrategy.suggest(srcOff, 3, dstOff, getTargetDimensions(), numPts)) {
-                    case ASCENDING: {
-                        break;
-                    }
-                    case DESCENDING: {
-                        descending = true;
-                        break;
-                    }
-                    default: {
-                        srcPts = Arrays.copyOfRange(srcPts, srcOff, srcOff + 3*numPts);
-                        srcOff = 0;
-                        break;
-                    }
-                }
-            }
-            inverseTransform(srcPts, null, srcOff, dstPts, null, dstOff, numPts, descending);
-        }
-
-        /**
-         * Transforms the given array of points.
-         */
-        @Override
-        public void transform(float [] srcPts, int srcOff, double[] dstPts, int dstOff, int numPts) {
-            inverseTransform(srcPts, null, srcOff, null, dstPts, dstOff, numPts, false);
-        }
-
-        /**
-         * Transforms the given array of points.
-         */
-        @Override
-        public void transform(double[] srcPts, int srcOff, float [] dstPts, int dstOff, int numPts) {
-            inverseTransform(null, srcPts, srcOff, dstPts, null, dstOff, numPts, false);
+            inverseTransform(srcPts, srcOff, dstPts, dstOff, numPts);
         }
     }
 }

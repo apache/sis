@@ -52,7 +52,6 @@ public final strictfp class EllipsoidalToCartesianTransformTest extends MathTran
      */
     @Test
     public void testGeographicToGeocentric() throws TransformException {
-        isInverseTransformSupported = false;    // TODO
         coordinate = new double[] {
              2 + ( 7 + 46.38/60)/60,    // Longitude
             53 + (48 + 33.82/60)/60,    // Latitude
