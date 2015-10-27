@@ -44,9 +44,9 @@ import org.apache.sis.referencing.operation.transform.AbstractMathTransform2D;
 import org.apache.sis.referencing.operation.transform.ContextualParameters;
 import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
 import org.apache.sis.referencing.operation.transform.MathTransformProvider;
+import org.apache.sis.internal.referencing.provider.MapProjection;
 import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.internal.referencing.Formulas;
-import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.util.Utilities;
 import org.apache.sis.internal.util.Numerics;
@@ -540,7 +540,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
 
     /**
      * Returns a copy of non-linear internal parameter values of this {@code NormalizedProjection}.
-     * The returned group contained at least the {@link #excentricity} parameter value.
+     * The returned group contains at least the {@link #excentricity} parameter value.
      * Some subclasses add more non-linear parameters, but most of them do not because many parameters
      * like the <cite>scale factor</cite> or the <cite>false easting/northing</cite> are handled by the
      * {@linkplain ContextualParameters#getMatrix(boolean) (de)normalization affine transforms} instead.
@@ -568,7 +568,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
 
     /**
      * Returns a description of the non-linear internal parameters of this {@code NormalizedProjection}.
-     * The returned group contained at least a descriptor for the {@link #excentricity} parameter.
+     * The returned group contains at least a descriptor for the {@link #excentricity} parameter.
      * Subclasses may add more parameters.
      *
      * <p>This method is for inspecting the parameter values of this non-linear kernel only,
@@ -594,19 +594,9 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
                 }
                 final String[] names = getInternalParameterNames();
                 final ParameterDescriptor<?>[] parameters = new ParameterDescriptor<?>[names.length + 1];
-                for (int i=0; i<parameters.length; i++) {
-                    final ParameterDescriptor<?> p;
-                    if (i == 0) {
-                        final ParameterDescriptorGroup existing = CollectionsExt.first(DESCRIPTORS.values());
-                        if (existing != null) {
-                            p = (ParameterDescriptor<?>) existing.descriptor("excentricity");
-                        } else {
-                            p = builder.addName(Citations.SIS, "excentricity").createBounded(0, 1, Double.NaN, null);
-                        }
-                    } else {
-                        p = builder.addName(names[i-1]).create(Double.class, null);
-                    }
-                    parameters[i] = p;
+                parameters[0] = MapProjection.EXCENTRICITY;
+                for (int i=1; i<parameters.length; i++) {
+                    parameters[i] = builder.addName(names[i-1]).create(Double.class, null);
                 }
                 group = builder.addName(CharSequences.camelCaseToSentence(type.getSimpleName())).createGroup(1, 1, parameters);
                 DESCRIPTORS.put(type, group);
