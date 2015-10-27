@@ -200,6 +200,20 @@ public class ContextualParameters extends Parameters implements Serializable {
     }
 
     /**
+     * Equivalent to the public constructor, but avoid the need for an {@link OperationMethod} instance.
+     *
+     * @param descriptor The parameter descriptor.
+     * @param srcSize    Size of the normalization matrix: source dimensions + 1.
+     * @param tgtSize    Size of the denormalization matrix: target dimensions + 1.
+     */
+    ContextualParameters(final ParameterDescriptorGroup descriptor, final int srcSize, final int tgtSize) {
+        this.descriptor  = descriptor;
+        this.normalize   = Matrices.create(srcSize, srcSize, ExtendedPrecisionMatrix.IDENTITY);
+        this.denormalize = Matrices.create(tgtSize, tgtSize, ExtendedPrecisionMatrix.IDENTITY);
+        this.values      = new ParameterValue<?>[descriptor.descriptors().size()];
+    }
+
+    /**
      * Creates a matrix for a linear step of the transforms chain.
      * It is important that the matrices created here are instances of {@link MatrixSIS}, in order
      * to allow {@link #getMatrix(boolean)} to return the reference to the (de)normalize matrices.

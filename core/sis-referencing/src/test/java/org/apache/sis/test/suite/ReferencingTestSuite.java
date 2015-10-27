@@ -88,6 +88,7 @@ import org.junit.BeforeClass;
     org.apache.sis.referencing.operation.transform.TransferFunctionTest.class,
     org.apache.sis.referencing.operation.transform.MathTransformsTest.class,
     org.apache.sis.referencing.operation.transform.ContextualParametersTest.class,
+    org.apache.sis.referencing.operation.transform.EllipsoidalToCartesianTransformTest.class,
 
     // Registration of map projections and other math transforms.
     org.apache.sis.referencing.operation.DefaultFormulaTest.class,

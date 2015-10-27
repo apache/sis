@@ -46,7 +46,7 @@ import org.apache.sis.parameter.ParameterBuilder;
  * @module
  */
 @XmlTransient
-abstract class AbridgedMolodensky extends AbstractProvider {
+public abstract class AbridgedMolodensky extends AbstractProvider {
     /**
      * Serial number for inter-operability with different versions.
      */
@@ -54,9 +54,9 @@ abstract class AbridgedMolodensky extends AbstractProvider {
 
     /**
      * The default value for geographic source and target dimensions.
-     * We have to provide a default value because the {@link #DIM} parameter is not an EPSG parameter.
-     * The default value is set to 3 because this family of operations is implicitly three-dimensional
-     * in the EPSG database.
+     * We have to provide a default value because the {@link #DIMENSION} parameter is not an EPSG parameter.
+     * The default value is set to 3 because this family of operations is implicitly three-dimensional in the
+     * EPSG database.
      *
      * <div class="note"><b>Maintenance note:</b>
      * if this default value is modified, then the handling of the two- and three-dimensional cases in
@@ -68,7 +68,7 @@ abstract class AbridgedMolodensky extends AbstractProvider {
      * The operation parameter descriptor for the number of source and target geographic dimensions (2 or 3).
      * This is an OGC-specific parameter.
      */
-    private static final ParameterDescriptor<Integer> DIM;
+    public static final ParameterDescriptor<Integer> DIMENSION;
 
     /**
      * The operation parameter descriptor for the {@code "src_semi_major"} optional parameter value.
@@ -100,7 +100,7 @@ abstract class AbridgedMolodensky extends AbstractProvider {
          * OGC parameters not defined in EPSG database.
          */
         builder.setCodeSpace(Citations.OGC, Constants.OGC).setRequired(false);
-        DIM = builder.addName("dim").createBounded(2, 3, DEFAULT_DIMENSION);
+        DIMENSION = builder.addName("dim").createBounded(2, 3, DEFAULT_DIMENSION);
         SRC_SEMI_MAJOR = builder.addName("src_semi_major").createStrictlyPositive(Double.NaN, SI.METRE);
         SRC_SEMI_MINOR = builder.addName("src_semi_minor").createStrictlyPositive(Double.NaN, SI.METRE);
         TGT_SEMI_MAJOR = builder.addName("tgt_semi_major").createStrictlyPositive(Double.NaN, SI.METRE);
