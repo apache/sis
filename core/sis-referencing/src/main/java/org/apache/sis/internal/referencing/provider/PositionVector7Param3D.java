@@ -21,9 +21,7 @@ import org.opengis.parameter.ParameterDescriptorGroup;
 
 
 /**
- * The provider for <cite>"Coordinate Frame Rotation (geocentric domain)"</cite> (EPSG:1032).
- * This is the same transformation than "{@link PositionVector7Param}"
- * except that the rotation angles have the opposite sign.
+ * The provider for <cite>"Position Vector transformation (geog3D domain)"</cite> (EPSG:1037).
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.7
@@ -31,32 +29,32 @@ import org.opengis.parameter.ParameterDescriptorGroup;
  * @module
  */
 @XmlTransient
-public final class CoordinateFrameRotation extends GeocentricAffine {
+public final class PositionVector7Param3D extends GeocentricAffine {
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = 5513675854809530038L;
+    private static final long serialVersionUID = -8909802769265229915L;
 
     /**
      * The group of all parameters expected by this coordinate operation.
      */
-    private static final ParameterDescriptorGroup PARAMETERS;
+    static final ParameterDescriptorGroup PARAMETERS;
     static {
         PARAMETERS = builder()
-            .addIdentifier("1032")
-            .addName("Coordinate Frame Rotation (geocentric domain)")
-            .createGroupWithSameParameters(PositionVector7Param.PARAMETERS);
+            .addIdentifier("1037")
+            .addName("Position Vector transformation (geog3D domain)")
+            .createGroupWithSameParameters(PositionVector7Param2D.PARAMETERS);
         /*
          * NOTE: we omit the "Bursa-Wolf" alias because it is ambiguous, since it can apply
          * to both "Coordinate Frame Rotation" and "Position Vector 7-param. transformation"
-         * We also omit "Coordinate Frame Rotation" alias for similar reason.
+         * We also omit "Position Vector 7-param. transformation" alias for similar reason.
          */
     }
 
     /**
      * Constructs the provider.
      */
-    public CoordinateFrameRotation() {
+    public PositionVector7Param3D() {
         super(3, PARAMETERS);
     }
 
@@ -65,6 +63,6 @@ public final class CoordinateFrameRotation extends GeocentricAffine {
      */
     @Override
     int getType() {
-        return FRAME_ROTATION;
+        return GEOGRAPHIC | SEVEN_PARAM;
     }
 }

@@ -1,10 +1,19 @@
 # Licensed to the Apache Software Foundation (ASF) under one or more contributor license agreements.
 # Heavier classes (e.g. having more dependencies) or classes less likely to be used, should be last.
 org.apache.sis.internal.referencing.provider.Affine
+org.apache.sis.internal.referencing.provider.LongitudeRotation
+org.apache.sis.internal.referencing.provider.GeocentricTranslation
 org.apache.sis.internal.referencing.provider.PositionVector7Param
 org.apache.sis.internal.referencing.provider.CoordinateFrameRotation
-org.apache.sis.internal.referencing.provider.GeocentricTranslation
-org.apache.sis.internal.referencing.provider.LongitudeRotation
+#org.apache.sis.internal.referencing.provider.AbridgedMolodensky
+org.apache.sis.internal.referencing.provider.GeographicToGeocentric
+org.apache.sis.internal.referencing.provider.GeocentricToGeographic
+org.apache.sis.internal.referencing.provider.GeocentricTranslation2D
+org.apache.sis.internal.referencing.provider.GeocentricTranslation3D
+org.apache.sis.internal.referencing.provider.PositionVector7Param2D
+org.apache.sis.internal.referencing.provider.PositionVector7Param3D
+org.apache.sis.internal.referencing.provider.CoordinateFrameRotation2D
+org.apache.sis.internal.referencing.provider.CoordinateFrameRotation3D
 org.apache.sis.internal.referencing.provider.Equirectangular
 org.apache.sis.internal.referencing.provider.Mercator1SP
 org.apache.sis.internal.referencing.provider.Mercator2SP

@@ -45,7 +45,6 @@ public final class GeocentricTranslation extends GeocentricAffine {
         PARAMETERS = builder()
             .addIdentifier("1031")
             .addName("Geocentric translations (geocentric domain)")
-            .addName("Geocentric Translations")     // Ambiguous alias (does not specify the domain)
             .createGroup(TX, TY, TZ);
     }
 
@@ -53,7 +52,7 @@ public final class GeocentricTranslation extends GeocentricAffine {
      * Constructs the provider.
      */
     public GeocentricTranslation() {
-        super(2, PARAMETERS);
+        super(3, PARAMETERS);
     }
 
     /**

@@ -21,9 +21,9 @@ import org.opengis.parameter.ParameterDescriptorGroup;
 
 
 /**
- * The provider for <cite>"Coordinate Frame Rotation (geocentric domain)"</cite> (EPSG:1032).
- * This is the same transformation than "{@link PositionVector7Param}"
- * except that the rotation angles have the opposite sign.
+ * The provider for <cite>"Geocentric translations (geog3D domain)"</cite> (EPSG:1035).
+ * This is a special case of {@link PositionVector7Param3D} where only the translation
+ * terms can be set to a non-null value.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.7
@@ -31,11 +31,11 @@ import org.opengis.parameter.ParameterDescriptorGroup;
  * @module
  */
 @XmlTransient
-public final class CoordinateFrameRotation extends GeocentricAffine {
+public final class GeocentricTranslation3D extends GeocentricAffine {
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = 5513675854809530038L;
+    private static final long serialVersionUID = 2208429505407588276L;
 
     /**
      * The group of all parameters expected by this coordinate operation.
@@ -43,20 +43,15 @@ public final class CoordinateFrameRotation extends GeocentricAffine {
     private static final ParameterDescriptorGroup PARAMETERS;
     static {
         PARAMETERS = builder()
-            .addIdentifier("1032")
-            .addName("Coordinate Frame Rotation (geocentric domain)")
-            .createGroupWithSameParameters(PositionVector7Param.PARAMETERS);
-        /*
-         * NOTE: we omit the "Bursa-Wolf" alias because it is ambiguous, since it can apply
-         * to both "Coordinate Frame Rotation" and "Position Vector 7-param. transformation"
-         * We also omit "Coordinate Frame Rotation" alias for similar reason.
-         */
+            .addIdentifier("1035")
+            .addName("Geocentric translations (geog3D domain)")
+            .createGroupWithSameParameters(GeocentricTranslation2D.PARAMETERS);
     }
 
     /**
      * Constructs the provider.
      */
-    public CoordinateFrameRotation() {
+    public GeocentricTranslation3D() {
         super(3, PARAMETERS);
     }
 
@@ -65,6 +60,6 @@ public final class CoordinateFrameRotation extends GeocentricAffine {
      */
     @Override
     int getType() {
-        return FRAME_ROTATION;
+        return GEOGRAPHIC | TRANSLATION;
     }
 }

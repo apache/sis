@@ -48,12 +48,17 @@ public final class GeocentricToGeographic extends AbstractProvider {
     private static final long serialVersionUID = 8459294628751497567L;
 
     /**
+     * The OGC name used for this operation method.
+     */
+    static final String NAME = "Geocentric_To_Ellipsoid";
+
+    /**
      * The group of all parameters expected by this coordinate operation.
      */
     public static final ParameterDescriptorGroup PARAMETERS;
     static {
         PARAMETERS = builder()
-            .addName(Citations.OGC, "Geocentric_To_Ellipsoid")
+            .addName(Citations.OGC, NAME)
             .createGroupForMapProjection(AbridgedMolodensky.DIMENSION);
             // Not really a map projection, but we leverage the same axis parameters.
     }

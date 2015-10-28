@@ -38,16 +38,20 @@ public final class PositionVector7Param2D extends GeocentricAffine {
     /**
      * The group of all parameters expected by this coordinate operation.
      */
-    private static final ParameterDescriptorGroup PARAMETERS;
+    static final ParameterDescriptorGroup PARAMETERS;
     static {
         PARAMETERS = builder()
             .addIdentifier("9606")
             .addName("Position Vector transformation (geog2D domain)")
-            .addName("Position Vector 7-param. transformation")     // Ambiguous alias (does not specify the domain)
-            .createGroup(TX, TY, TZ, RX, RY, RZ, DS);
+            .createGroup(AbridgedMolodensky.SRC_SEMI_MAJOR,
+                         AbridgedMolodensky.SRC_SEMI_MINOR,
+                         AbridgedMolodensky.TGT_SEMI_MAJOR,
+                         AbridgedMolodensky.TGT_SEMI_MINOR,
+                         TX, TY, TZ, RX, RY, RZ, DS);
         /*
          * NOTE: we omit the "Bursa-Wolf" alias because it is ambiguous, since it can apply
          * to both "Coordinate Frame Rotation" and "Position Vector 7-param. transformation"
+         * We also omit "Position Vector 7-param. transformation" alias for similar reason.
          */
     }
 
@@ -63,6 +67,6 @@ public final class PositionVector7Param2D extends GeocentricAffine {
      */
     @Override
     int getType() {
-        return SEVEN_PARAM;
+        return GEOGRAPHIC | SEVEN_PARAM;
     }
 }

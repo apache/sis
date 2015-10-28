@@ -74,25 +74,25 @@ public abstract class AbridgedMolodensky extends AbstractProvider {
      * The operation parameter descriptor for the {@code "src_semi_major"} optional parameter value.
      * Valid values range from 0 to infinity. Units are {@linkplain SI#METRE metres}.
      */
-    private static final ParameterDescriptor<Double> SRC_SEMI_MAJOR;
+    static final ParameterDescriptor<Double> SRC_SEMI_MAJOR;
 
     /**
      * The operation parameter descriptor for the {@code "src_semi_minor"} optional parameter value.
      * Valid values range from 0 to infinity. Units are {@linkplain SI#METRE metres}.
      */
-    private static final ParameterDescriptor<Double> SRC_SEMI_MINOR;
+    static final ParameterDescriptor<Double> SRC_SEMI_MINOR;
 
     /**
      * The operation parameter descriptor for the {@code "src_semi_major"} optional parameter value.
      * Valid values range from 0 to infinity. Units are {@linkplain SI#METRE metres}.
      */
-    private static final ParameterDescriptor<Double> TGT_SEMI_MAJOR;
+    static final ParameterDescriptor<Double> TGT_SEMI_MAJOR;
 
     /**
      * The operation parameter descriptor for the {@code "src_semi_minor"} optional parameter value.
      * Valid values range from 0 to infinity. Units are {@linkplain SI#METRE metres}.
      */
-    private static final ParameterDescriptor<Double> TGT_SEMI_MINOR;
+    static final ParameterDescriptor<Double> TGT_SEMI_MINOR;
 
     static {
         final ParameterBuilder builder = builder();
@@ -108,6 +108,6 @@ public abstract class AbridgedMolodensky extends AbstractProvider {
     }
 
     private AbridgedMolodensky() {
-        super(2, 2, null);
+        super(DEFAULT_DIMENSION, DEFAULT_DIMENSION, null);
     }
 }

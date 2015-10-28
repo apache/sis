@@ -16,12 +16,22 @@
  */
 package org.apache.sis.referencing.operation.transform;
 
+import javax.measure.unit.SI;
+import org.opengis.util.FactoryException;
+import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.TransformException;
+import org.apache.sis.internal.system.DefaultFactories;
+import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.referencing.CommonCRS;
-import org.apache.sis.test.DependsOn;
-import org.junit.Test;
 
 import static java.lang.StrictMath.toRadians;
+
+// Test dependencies
+import org.opengis.test.ToleranceModifier;
+import org.apache.sis.internal.referencing.provider.GeocentricTranslationTest;
+import org.apache.sis.test.DependsOnMethod;
+import org.apache.sis.test.DependsOn;
+import org.junit.Test;
 
 
 /**
@@ -38,12 +48,6 @@ import static java.lang.StrictMath.toRadians;
 })
 public final strictfp class EllipsoidalToCartesianTransformTest extends MathTransformTestCase {
     /**
-     * The coordinate to transform, or {@code null} if not yet created.
-     * Stored as a field for allowing test chaining.
-     */
-    private double[] coordinate;
-
-    /**
      * Tests conversion of a single point from geographic to geocentric coordinates.
      * This test uses the example given in EPSG guidance note #7.
      * The point in WGS84 is 53°48'33.820"N, 02°07'46.380"E, 73.00 metres.
@@ -52,20 +56,73 @@ public final strictfp class EllipsoidalToCartesianTransformTest extends MathTran
      */
     @Test
     public void testGeographicToGeocentric() throws TransformException {
-        coordinate = new double[] {
-             2 + ( 7 + 46.38/60)/60,    // Longitude
-            53 + (48 + 33.82/60)/60,    // Latitude
-            73.0                        // Height
-        };
         transform = EllipsoidalToCartesianTransform.createGeodeticConversion(CommonCRS.WGS84.ellipsoid(), true);
+        isInverseTransformSupported = false;    // Geocentric to geographic is not the purpose of this test.
         validate();
-        final double delta = toRadians(100.0 / 60) / 1852;  // Approximatively 100 metres.
-        derivativeDeltas = new double[] {delta, delta};
-        tolerance = 0.0005;
-        verifyTransform(coordinate, new double[] {
-            3771793.968,
-             140253.342,
-            5124304.349
-        });
+
+        final double delta = toRadians(100.0 / 60) / 1852;          // Approximatively 100 metres
+        derivativeDeltas = new double[] {delta, delta, 100};        // (Δλ, Δφ, Δh)
+        tolerance = GeocentricTranslationTest.precision(2);         // Half the precision of target sample point
+        verifyTransform(GeocentricTranslationTest.samplePoint(1),   // 53°48'33.820"N, 02°07'46.380"E, 73.00 metres
+                        GeocentricTranslationTest.samplePoint(2));  // 3771793.968,  140253.342,  5124304.349 metres
+    }
+
+    /**
+     * Tests conversion of a single point from geocentric to geographic coordinates.
+     * This method uses the same point than {@link #testGeographicToGeocentric()}.
+     *
+     * @throws TransformException should never happen.
+     */
+    @Test
+    public void testGeocentricToGeographic() throws TransformException {
+        transform = EllipsoidalToCartesianTransform.createGeodeticConversion(CommonCRS.WGS84.ellipsoid(), true).inverse();
+        isInverseTransformSupported = false;    // Geographic to geocentric is not the purpose of this test.
+        validate();
+
+        derivativeDeltas = new double[] {100, 100, 100};            // In metres
+        tolerance  = GeocentricTranslationTest.precision(1);        // Required precision for (λ,φ)
+        zTolerance = Formulas.LINEAR_TOLERANCE / 2;                 // Required precision for h
+        zDimension = new int[] {2};                                 // Dimension of h where to apply zTolerance
+        verifyTransform(GeocentricTranslationTest.samplePoint(2),   // X = 3771793.968,  Y = 140253.342,  Z = 5124304.349 metres
+                        GeocentricTranslationTest.samplePoint(1));  // 53°48'33.820"N, 02°07'46.380"E, 73.00 metres
+    }
+
+    /**
+     * Tests conversion of random points.
+     *
+     * @throws TransformException if a conversion failed.
+     */
+    @Test
+    @DependsOnMethod({
+        "testGeographicToGeocentric",
+        "testGeocentricToGeographic"
+    })
+    public void testRandomPoints() throws TransformException {
+        final double delta = toRadians(100.0 / 60) / 1852;          // Approximatively 100 metres
+        derivativeDeltas  = new double[] {delta, delta, 100};       // (Δλ, Δφ, Δh)
+        tolerance         = Formulas.LINEAR_TOLERANCE;
+        toleranceModifier = ToleranceModifier.PROJECTION;
+        transform = EllipsoidalToCartesianTransform.createGeodeticConversion(CommonCRS.WGS84.ellipsoid(), true);
+        verifyInDomain(CoordinateDomain.GEOGRAPHIC, 306954540);
+    }
+
+    /**
+     * Tests conversion of a point on an imaginary planet with high excentricity.
+     * The {@link EllipsoidalToCartesianTransform} may need to use an iterative method
+     * for reaching the expected precision.
+     *
+     * @throws FactoryException if an error occurred while creating the transform.
+     * @throws TransformException if a conversion failed.
+     */
+    @Test
+    public void testHighExcentricity() throws TransformException, FactoryException {
+        transform = new EllipsoidalToCartesianTransform(6000000, 4000000, SI.METRE, true)
+                .createGeodeticConversion(DefaultFactories.forBuildin(MathTransformFactory.class));
+
+        final double delta = toRadians(100.0 / 60) / 1852;
+        derivativeDeltas  = new double[] {delta, delta, 100};
+        tolerance         = Formulas.LINEAR_TOLERANCE;
+        toleranceModifier = ToleranceModifier.PROJECTION;
+        verifyInverse(40, 30, 10000);
     }
 }
