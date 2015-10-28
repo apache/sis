@@ -650,6 +650,67 @@ public final class Matrices extends Static {
     }
 
     /**
+     * Returns a new matrix with the same elements than the given matrix except for a row which have been omitted.
+     * This method is useful for removing a <em>target</em> dimension in an affine transform.
+     *
+     * @param  matrix The matrix where to remove a row, or {@code null}.
+     * @param  row Index of the row to remove.
+     * @return A copy of the given matrix with the specified row removed, or {@code null} if the given matrix was null.
+     *
+     * @since 0.7
+     */
+    public static Matrix removeRow(final Matrix matrix, final int row) {
+        if (matrix == null) {
+            return null;
+        }
+        final int numRow = matrix.getNumRow();
+        final int numCol = matrix.getNumCol();
+        ArgumentChecks.ensureBetween("row", 0, numRow-1, row);
+        final Matrix reduced = createZero(numRow - 1, numCol);
+        int dest = 0;
+        for (int j=0; j<numRow; j++) {
+            if (j != row) {
+                for (int i=0; i<numCol; i++) {
+                    reduced.setElement(dest, i, matrix.getElement(j, i));
+                }
+                dest++;
+            }
+        }
+        return reduced;
+    }
+
+    /**
+     * Returns a new matrix with the same elements than the given matrix except for a column which have been omitted.
+     * This method is useful for removing a <em>source</em> dimension in an affine transform. Coordinate values of
+     * the removed dimension will be presumed zero.
+     *
+     * @param  matrix The matrix where to remove a column, or {@code null}.
+     * @param  col Index of the column to remove.
+     * @return A copy of the given matrix with the specified column removed, or {@code null} if the given matrix was null.
+     *
+     * @since 0.7
+     */
+    public static Matrix removeColumn(final Matrix matrix, final int col) {
+        if (matrix == null) {
+            return null;
+        }
+        final int numRow = matrix.getNumRow();
+        final int numCol = matrix.getNumCol();
+        ArgumentChecks.ensureBetween("col", 0, numCol-1, col);
+        final Matrix reduced = createZero(numRow, numCol - 1);
+        int dest = 0;
+        for (int i=0; i<numCol; i++) {
+            if (i != col) {
+                for (int j=0; j<numRow; j++) {
+                    reduced.setElement(j, dest, matrix.getElement(j, i));
+                }
+                dest++;
+            }
+        }
+        return reduced;
+    }
+
+    /**
      * Creates a new matrix which is a copy of the given matrix.
      *
      * <div class="note"><b>Implementation note:</b>

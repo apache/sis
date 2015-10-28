@@ -21,6 +21,7 @@ import java.io.Serializable;
 import javax.measure.unit.Unit;
 import javax.measure.quantity.Length;
 import org.opengis.util.FactoryException;
+import org.opengis.geometry.DirectPosition;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.referencing.datum.Ellipsoid;
@@ -367,6 +368,17 @@ public class EllipsoidalToCartesianTransform extends AbstractMathTransform imple
                             final double[] dstPts, final int dstOff,
                             final boolean derivate)
     {
+        return transform(srcPts, srcOff, dstPts, dstOff, derivate, withHeight);
+    }
+
+    /**
+     * Implementation of {@link #transform(double[], int, double[], int, boolean)}
+     * with possibility to override the {@link #withHeight} value.
+     */
+    final Matrix transform(final double[] srcPts, final int srcOff,
+                           final double[] dstPts, final int dstOff,
+                           final boolean derivate, final boolean withHeight)
+    {
         final double λ    = srcPts[srcOff  ];                            // Longitude (radians)
         final double φ    = srcPts[srcOff+1];                            // Latitude (radians)
         final double h    = withHeight ? srcPts[srcOff+2] : 0;           // Height above the ellipsoid
@@ -622,6 +634,19 @@ next:   while (--numPts >= 0) {
         }
 
         /**
+         * Compute the derivative at the given location. We need to override this method because
+         * we will inverse 3×2 matrices in a special way, with the knowledge that <var>h</var>
+         * can be set to 0.
+         */
+        @Override
+        public Matrix derivative(final DirectPosition point) throws TransformException {
+            ArgumentChecks.ensureNonNull("point", point);
+            final double[] coordinate = point.getCoordinate();
+            ArgumentChecks.ensureDimensionMatches("point", 3, coordinate);
+            return this.transform(coordinate, 0, coordinate, 0, true);
+        }
+
+        /**
          * Inverse transforms a single coordinate in a list of ordinal values,
          * and optionally returns the derivative at that location.
          *
@@ -650,7 +675,11 @@ next:   while (--numPts >= 0) {
                 dstPts[dstOff  ] = point[0];
                 dstPts[dstOff+1] = point[1];
             }
-            return Matrices.inverse(EllipsoidalToCartesianTransform.this.transform(point, offset, null, 0, true));
+            Matrix matrix = Matrices.inverse(EllipsoidalToCartesianTransform.this.transform(point, offset, null, 0, true, true));
+            if (!withHeight) {
+                matrix = Matrices.removeRow(matrix, 2);     // Drop height
+            }
+            return matrix;
         }
 
         /**

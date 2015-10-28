@@ -18,11 +18,15 @@ package org.apache.sis.referencing.operation.transform;
 
 import javax.measure.unit.SI;
 import org.opengis.util.FactoryException;
+import org.opengis.geometry.DirectPosition;
+import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.referencing.CommonCRS;
+import org.apache.sis.geometry.DirectPosition2D;
+import org.apache.sis.geometry.GeneralDirectPosition;
 
 import static java.lang.StrictMath.toRadians;
 
@@ -124,5 +128,55 @@ public final strictfp class EllipsoidalToCartesianTransformTest extends MathTran
         tolerance         = Formulas.LINEAR_TOLERANCE;
         toleranceModifier = ToleranceModifier.PROJECTION;
         verifyInverse(40, 30, 10000);
+    }
+
+    /**
+     * Executes the derivative test using the given ellipsoid.
+     *
+     * @param  ellipsoid The ellipsoid to use for the test.
+     * @param  hasHeight {@code true} if geographic coordinates include an ellipsoidal height (i.e. are 3-D),
+     *         or {@code false} if they are only 2-D.
+     * @throws TransformException Should never happen.
+     */
+    private void testDerivative(final Ellipsoid ellipsoid, final boolean hasHeight) throws TransformException {
+        transform = EllipsoidalToCartesianTransform.createGeodeticConversion(ellipsoid, hasHeight);
+        DirectPosition point = hasHeight ? new GeneralDirectPosition(-10, 40, 200) : new DirectPosition2D(-10, 40);
+        /*
+         * Derivative of the direct transform.
+         */
+        tolerance = 1E-2;
+        derivativeDeltas = new double[] {toRadians(1.0 / 60) / 1852}; // Approximatively one metre.
+        verifyDerivative(point.getCoordinate());
+        /*
+         * Derivative of the inverse transform.
+         */
+        point = transform.transform(point, null);
+        transform = transform.inverse();
+        tolerance = 1E-8;
+        derivativeDeltas = new double[] {1}; // Approximatively one metre.
+        verifyDerivative(point.getCoordinate());
+    }
+
+    /**
+     * Tests the {@link EllipsoidalToCartesianTransform#derivative(DirectPosition)} method on a sphere.
+     *
+     * @throws TransformException Should never happen.
+     */
+    @Test
+    public void testDerivativeOnSphere() throws TransformException {
+        testDerivative(CommonCRS.SPHERE.ellipsoid(), true);
+        testDerivative(CommonCRS.SPHERE.ellipsoid(), false);
+    }
+
+    /**
+     * Tests the {@link EllipsoidalToCartesianTransform#derivative(DirectPosition)} method on an ellipsoid.
+     *
+     * @throws TransformException Should never happen.
+     */
+    @Test
+    @DependsOnMethod("testDerivativeOnSphere")
+    public void testDerivative() throws TransformException {
+        testDerivative(CommonCRS.WGS84.ellipsoid(), true);
+        testDerivative(CommonCRS.WGS84.ellipsoid(), false);
     }
 }
