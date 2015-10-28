@@ -590,7 +590,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
             if (group == null) {
                 final ParameterBuilder builder = new ParameterBuilder().setRequired(true);
                 if (Utilities.isSIS(type)) {
-                    builder.setCodeSpace(Citations.SIS, "SIS");
+                    builder.setCodeSpace(Citations.SIS, Constants.SIS);
                 }
                 final String[] names = getInternalParameterNames();
                 final ParameterDescriptor<?>[] parameters = new ParameterDescriptor<?>[names.length + 1];

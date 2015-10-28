@@ -45,11 +45,11 @@ public final class CoordinateFrameRotation2D extends GeocentricAffine {
         PARAMETERS = builder()
             .addIdentifier("9607")
             .addName("Coordinate Frame Rotation (geog2D domain)")
-            .addName("Coordinate Frame Rotation")     // Ambiguous alias (does not specify the domain)
-            .createGroup(TX, TY, TZ, RX, RY, RZ, DS);
+            .createGroupWithSameParameters(PositionVector7Param2D.PARAMETERS);
         /*
          * NOTE: we omit the "Bursa-Wolf" alias because it is ambiguous, since it can apply
          * to both "Coordinate Frame Rotation" and "Position Vector 7-param. transformation"
+         * We also omit "Coordinate Frame Rotation" alias for similar reason.
          */
     }
 
@@ -65,6 +65,6 @@ public final class CoordinateFrameRotation2D extends GeocentricAffine {
      */
     @Override
     int getType() {
-        return FRAME_ROTATION;
+        return GEOGRAPHIC | FRAME_ROTATION;
     }
 }

@@ -57,6 +57,12 @@ public final class GeographicToGeocentric extends AbstractProvider {
     private static final long serialVersionUID = -5690807111952562344L;
 
     /**
+     * The OGC name used for this operation method. The OGC name is preferred to the EPSG name
+     * because it allows to distinguish between the forward and the inverse conversion.
+     */
+    static final String NAME = "Ellipsoid_To_Geocentric";
+
+    /**
      * The group of all parameters expected by this coordinate operation.
      */
     public static final ParameterDescriptorGroup PARAMETERS;
@@ -64,7 +70,7 @@ public final class GeographicToGeocentric extends AbstractProvider {
         PARAMETERS = builder()
             .addIdentifier("9602")
             .addName("Geographic/geocentric conversions")
-            .addName(Citations.OGC, "Ellipsoid_To_Geocentric")
+            .addName(Citations.OGC, NAME)
             .createGroupForMapProjection(AbridgedMolodensky.DIMENSION);
             // Not really a map projection, but we leverage the same axis parameters.
     }
@@ -148,7 +154,7 @@ public final class GeographicToGeocentric extends AbstractProvider {
         final ParameterValue<?> semiMajor = values.parameter(Constants.SEMI_MAJOR);
         final Unit<Length> unit = semiMajor.getUnit().asType(Length.class);
         return new EllipsoidalToCartesianTransform(semiMajor.doubleValue(),
-                values.parameter(Constants.SEMI_MINOR).doubleValue(unit), is3D, unit)
+                values.parameter(Constants.SEMI_MINOR).doubleValue(unit), unit, is3D)
                 .createGeodeticConversion(factory);
     }
 

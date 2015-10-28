@@ -27,19 +27,22 @@ import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
+import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.internal.util.Numerics;
+import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.util.DoubleDouble;
 import org.apache.sis.internal.system.DefaultFactories;
+import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.internal.referencing.provider.GeographicToGeocentric;
-import org.apache.sis.referencing.operation.matrix.NoninvertibleMatrixException;
 import org.apache.sis.referencing.operation.matrix.Matrix3;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.parameter.ParameterBuilder;
+import org.apache.sis.util.resources.Errors;
 
 import static java.lang.Math.*;
 import static org.apache.sis.internal.referencing.provider.MapProjection.SEMI_MAJOR;
@@ -107,6 +110,21 @@ public class EllipsoidalToCartesianTransform extends AbstractMathTransform imple
     private static ParameterDescriptorGroup DESCRIPTOR;
 
     /**
+     * The threshold value of excentricity at which we consider that the approximated φ value should
+     * be made more accurate by the use of an iterative method. This is not needed for a planet of
+     * the excentricity of the Earth, but become useful for planets of higher excentricity.
+     *
+     * <p>Actually the need for iteration is not just a matter of excentricity. It is also a matter of
+     * <var>h</var> values. But empirical tests suggest that with Earth's excentricity (about 0.082),
+     * the limit for <var>h</var> is quite hight (close to 2000 km for a point at 30°N). This limit is
+     * reduced to about 200 km for an excentricity of 0.16. It may be possible to find a formula for
+     * the limit of <var>h</var> as a function of ℯ and φ, but this has not been explored yet.</p>
+     *
+     * @see org.apache.sis.referencing.operation.projection.ConformalProjection#EXCENTRICITY_THRESHOLD
+     */
+    private static final double EXCENTRICITY_THRESHOLD = 0.16;
+
+    /**
      * The square of excentricity: ℯ² = (a²-b²)/a² where
      * <var>a</var> is the <cite>semi-major</cite> axis length and
      * <var>b</var> is the <cite>semi-minor</cite> axis length.
@@ -121,9 +139,15 @@ public class EllipsoidalToCartesianTransform extends AbstractMathTransform imple
      * (because of the work performed by the normalization matrices), we just drop <var>a</var>
      * in the formulas - so this field can be written as just <var>b</var>.
      *
-     * <p>This value is related to the ε value used in EPSG guide by ε = ℯ²/b².</p>
+     * <p>This value is related to the ε value used in EPSG guide by ε = ℯ²/b² (assuming a=1).</p>
      */
     private final double b;
+
+    /**
+     * {@code true} if the excentricity value is greater than or equals to {@link #EXCENTRICITY_THRESHOLD},
+     * in which case the calculation of φ will need to use an iterative method.
+     */
+    private final boolean useIterations;
 
     /**
      * {@code true} if ellipsoidal coordinates include an ellipsoidal height (i.e. are 3-D).
@@ -155,15 +179,16 @@ public class EllipsoidalToCartesianTransform extends AbstractMathTransform imple
      *
      * @param semiMajor  The semi-major axis length.
      * @param semiMinor  The semi-minor axis length.
+     * @param unit       The unit of measurement for the semi-axes and the ellipsoidal height.
      * @param withHeight {@code true} if geographic coordinates include an ellipsoidal height (i.e. are 3-D),
      *                   or {@code false} if they are only 2-D.
-     * @param unit       The unit of measurement for the semi-axes and the ellipsoidal height (if any).
      */
-    public EllipsoidalToCartesianTransform(final double semiMajor, final double semiMinor, final boolean withHeight, final Unit<Length> unit) {
+    public EllipsoidalToCartesianTransform(final double semiMajor, final double semiMinor, final Unit<Length> unit, final boolean withHeight) {
         ArgumentChecks.ensureStrictlyPositive("semiMajor", semiMajor);
         ArgumentChecks.ensureStrictlyPositive("semiMinor", semiMinor);
         b = semiMinor / semiMajor;
         excentricitySquared = 1 - (b * b);
+        useIterations = (excentricitySquared >= EXCENTRICITY_THRESHOLD * EXCENTRICITY_THRESHOLD);
         this.withHeight = withHeight;
         context = new ContextualParameters(GeographicToGeocentric.PARAMETERS, withHeight ? 4 : 3, 4);
         /*
@@ -221,8 +246,9 @@ public class EllipsoidalToCartesianTransform extends AbstractMathTransform imple
     public static MathTransform createGeodeticConversion(final Ellipsoid ellipsoid, final boolean withHeight) {
         ArgumentChecks.ensureNonNull("ellipsoid", ellipsoid);
         try {
-            return new EllipsoidalToCartesianTransform(ellipsoid.getSemiMajorAxis(), ellipsoid.getSemiMinorAxis(), withHeight,
-                    ellipsoid.getAxisUnit()).createGeodeticConversion(DefaultFactories.forBuildin(MathTransformFactory.class));
+            return new EllipsoidalToCartesianTransform(
+                    ellipsoid.getSemiMajorAxis(), ellipsoid.getSemiMinorAxis(), ellipsoid.getAxisUnit(), withHeight)
+                    .createGeodeticConversion(DefaultFactories.forBuildin(MathTransformFactory.class));
         } catch (FactoryException e) {
             /*
              * Should not happen with SIS factory implementation. If it happen anyway,
@@ -250,6 +276,7 @@ public class EllipsoidalToCartesianTransform extends AbstractMathTransform imple
      * @throws FactoryException if an error occurred while creating a transform.
      *
      * @see ContextualParameters#completeTransform(MathTransformFactory, MathTransform)
+     * @see org.apache.sis.referencing.operation.projection.NormalizedProjection#createMapProjection(MathTransformFactory)
      */
     public MathTransform createGeodeticConversion(final MathTransformFactory factory) throws FactoryException {
         return context.completeTransform(factory, this);
@@ -301,7 +328,7 @@ public class EllipsoidalToCartesianTransform extends AbstractMathTransform imple
     public ParameterDescriptorGroup getParameterDescriptors() {
         synchronized (EllipsoidalToCartesianTransform.class) {
             if (DESCRIPTOR == null) {
-                DESCRIPTOR = new ParameterBuilder().setCodeSpace(Citations.SIS, "SIS")
+                DESCRIPTOR = new ParameterBuilder().setCodeSpace(Citations.SIS, Constants.SIS)
                         .addName("Ellipsoidal to Cartesian").createGroup(1, 1, DIMENSION, EXCENTRICITY);
             }
             return DESCRIPTOR;
@@ -340,22 +367,22 @@ public class EllipsoidalToCartesianTransform extends AbstractMathTransform imple
                             final double[] dstPts, final int dstOff,
                             final boolean derivate)
     {
-        final double λ      = srcPts[srcOff  ];                             // Longitude (radians)
-        final double φ      = srcPts[srcOff+1];                             // Latitude (radians)
-        final double h      = withHeight ? srcPts[srcOff+2] : 0;            // Height above the ellipsoid
-        final double cosλ   = cos(λ);
-        final double sinλ   = sin(λ);
-        final double cosφ   = cos(φ);
-        final double sinφ   = sin(φ);
-        final double ν2     = 1 / (1 - excentricitySquared*(sinφ*sinφ));    // Square of ν (see below)
-        final double ν      = sqrt(ν2);                                     // Prime vertical radius of curvature at latitude φ
-        final double r      = ν + h;
-        final double νℯ     = ν * (1 - excentricitySquared);
+        final double λ    = srcPts[srcOff  ];                            // Longitude (radians)
+        final double φ    = srcPts[srcOff+1];                            // Latitude (radians)
+        final double h    = withHeight ? srcPts[srcOff+2] : 0;           // Height above the ellipsoid
+        final double cosλ = cos(λ);
+        final double sinλ = sin(λ);
+        final double cosφ = cos(φ);
+        final double sinφ = sin(φ);
+        final double ν2   = 1 / (1 - excentricitySquared*(sinφ*sinφ));   // Square of ν (see below)
+        final double ν    = sqrt(ν2);                                    // Prime vertical radius of curvature at latitude φ
+        final double r    = ν + h;
+        final double νℯ   = ν * (1 - excentricitySquared);
         if (dstPts != null) {
             final double rcosφ = r * cosφ;
-            dstPts[dstOff  ] = rcosφ  * cosλ;                               // X: Toward prime meridian
-            dstPts[dstOff+1] = rcosφ  * sinλ;                               // Y: Toward 90° east
-            dstPts[dstOff+2] = (νℯ+h) * sinφ;                               // Z: Toward north pole
+            dstPts[dstOff  ] = rcosφ  * cosλ;                            // X: Toward prime meridian
+            dstPts[dstOff+1] = rcosφ  * sinλ;                            // Y: Toward 90° east
+            dstPts[dstOff+2] = (νℯ+h) * sinφ;                            // Z: Toward north pole
         }
         if (derivate) {
             final double sdφ   = νℯ * ν2 + h;
@@ -413,15 +440,15 @@ public class EllipsoidalToCartesianTransform extends AbstractMathTransform imple
             }
         }
         while (--numPts >= 0) {
-            final double λ      = srcPts[srcOff++];                                 // Longitude
-            final double φ      = srcPts[srcOff++];                                 // Latitude
-            final double h      = withHeight ? srcPts[srcOff++] : 0;                // Height above the ellipsoid
-            final double sinφ   = sin(φ);
-            final double ν      = 1/sqrt(1 - excentricitySquared * (sinφ*sinφ));    // Prime vertical radius of curvature at latitude φ
-            final double rcosφ  = (ν + h) * cos(φ);
-            dstPts[dstOff++]    = rcosφ * cos(λ);                                   // X: Toward prime meridian
-            dstPts[dstOff++]    = rcosφ * sin(λ);                                   // Y: Toward 90° east
-            dstPts[dstOff++]    = (ν * (1 - excentricitySquared) + h) * sinφ;       // Z: Toward north pole
+            final double λ     = srcPts[srcOff++];                                 // Longitude
+            final double φ     = srcPts[srcOff++];                                 // Latitude
+            final double h     = withHeight ? srcPts[srcOff++] : 0;                // Height above the ellipsoid
+            final double sinφ  = sin(φ);
+            final double ν     = 1/sqrt(1 - excentricitySquared * (sinφ*sinφ));    // Prime vertical radius of curvature at latitude φ
+            final double rcosφ = (ν + h) * cos(φ);
+            dstPts[dstOff++]   = rcosφ * cos(λ);                                   // X: Toward prime meridian
+            dstPts[dstOff++]   = rcosφ * sin(λ);                                   // Y: Toward 90° east
+            dstPts[dstOff++]   = (ν * (1 - excentricitySquared) + h) * sinφ;       // Z: Toward north pole
             srcOff += srcInc;
             dstOff += dstInc;
         }
@@ -437,7 +464,7 @@ public class EllipsoidalToCartesianTransform extends AbstractMathTransform imple
 
     /**
      * Converts Cartesian coordinates (<var>X</var>,<var>Y</var>,<var>Z</var>) to ellipsoidal coordinates
-     * (λ,φ) or (λ,φ,<var>h</var>).
+     * (λ,φ) or (λ,φ,<var>h</var>). This method is invoked by the transform returned by {@link #inverse()}.
      *
      * @param  srcPts The array containing the source point coordinates.
      * @param  srcOff The offset to the first point to be transformed in the source array.
@@ -445,8 +472,11 @@ public class EllipsoidalToCartesianTransform extends AbstractMathTransform imple
      *                May be the same than {@code srcPts}.
      * @param  dstOff The offset to the location of the first transformed point that is stored in the destination array.
      * @param  numPts The number of point objects to be transformed.
+     * @throws TransformException if the calculation does not converge.
      */
-    protected void inverseTransform(final double[] srcPts, int srcOff, double[] dstPts, int dstOff, int numPts) {
+    protected void inverseTransform(final double[] srcPts, int srcOff, double[] dstPts, int dstOff, int numPts)
+            throws TransformException
+    {
         int srcInc = 0;
         int dstInc = 0;
         if (srcPts == dstPts) {
@@ -469,7 +499,7 @@ public class EllipsoidalToCartesianTransform extends AbstractMathTransform imple
                 }
             }
         }
-        while (--numPts >= 0) {
+next:   while (--numPts >= 0) {
             final double X = srcPts[srcOff++];
             final double Y = srcPts[srcOff++];
             final double Z = srcPts[srcOff++];
@@ -487,22 +517,50 @@ public class EllipsoidalToCartesianTransform extends AbstractMathTransform imple
             final double sin2q = 1 - cos2q;
             double φ = atan((Z + copySign(excentricitySquared * sin2q*sqrt(sin2q), tanq) / b) /
                             (p -          excentricitySquared * cos2q*sqrt(cos2q)));
-
-            double sinφ = sin(φ);
-            double ν = 1/sqrt(1 - excentricitySquared * (sinφ*sinφ));
-
-            dstPts[dstOff++] = atan2(Y, X);     // λ
-            dstPts[dstOff++] = φ;
-            if (withHeight) {
-                dstPts[dstOff++] = p/cos(φ) - ν;    // h
+            /*
+             * The above is an approximation of φ. Usually we are done with a good approximation for
+             * a planet of the excentricity of Earth. Code below is the one that will be executed in
+             * the vast majority of cases.
+             */
+            if (!useIterations) {
+                dstPts[dstOff++] = atan2(Y, X);
+                dstPts[dstOff++] = φ;
+                if (withHeight) {
+                    final double sinφ = sin(φ);
+                    final double ν = 1/sqrt(1 - excentricitySquared * (sinφ*sinφ));
+                    dstPts[dstOff++] = p/cos(φ) - ν;
+                }
+                srcOff += srcInc;
+                dstOff += dstInc;
+            } else {
+                /*
+                 * If this code is used on a planet with high excentricity,
+                 * the φ value may need to be improved by an iterative method.
+                 */
+                int n = 0;
+                do {
+                    final double sinφ = sin(φ);
+                    final double ν = 1/sqrt(1 - excentricitySquared * (sinφ*sinφ));
+                    final double Δφ = abs(φ - (φ = atan((Z + excentricitySquared * ν * sinφ) / p)));
+                    if (!(Δφ >= Formulas.ANGULAR_TOLERANCE * (PI/180) / 4)) {   // Use ! for catching NaN.
+                        dstPts[dstOff++] = atan2(Y, X);
+                        dstPts[dstOff++] = φ;
+                        if (withHeight) {
+                            dstPts[dstOff++] = p/cos(φ) - ν;
+                        }
+                        srcOff += srcInc;
+                        dstOff += dstInc;
+                        continue next;
+                    }
+                } while (++n < 15);
+                throw new TransformException(Errors.format(Errors.Keys.NoConvergence));
             }
-            srcOff += srcInc;
-            dstOff += dstInc;
         }
     }
 
     /**
-     * Returns the inverse of this transform.
+     * Returns the inverse of this transform. The default implementation returns a transform
+     * that will delegate its work to {@link #inverseTransform(double[], int, double[], int, int)}.
      *
      * @return The conversion from Cartesian to ellipsoidal coordinates.
      */
@@ -518,7 +576,7 @@ public class EllipsoidalToCartesianTransform extends AbstractMathTransform imple
      */
     @Override
     protected int computeHashCode() {
-        return super.computeHashCode() + Numerics.hashCode(Double.doubleToLongBits(excentricitySquared));
+        return super.computeHashCode() + Numerics.hashCode(Double.doubleToLongBits(b));
     }
 
     /**
@@ -534,7 +592,7 @@ public class EllipsoidalToCartesianTransform extends AbstractMathTransform imple
         }
         if (super.equals(object, mode)) {
             final EllipsoidalToCartesianTransform that = (EllipsoidalToCartesianTransform) object;
-            return (withHeight == that.withHeight) && Numerics.equals(excentricitySquared, that.excentricitySquared);
+            return (withHeight == that.withHeight) && Numerics.equals(b, that.b);
         }
         return false;
     }
@@ -573,7 +631,7 @@ public class EllipsoidalToCartesianTransform extends AbstractMathTransform imple
         @Override
         public Matrix transform(final double[] srcPts, final int srcOff,
                                 final double[] dstPts, final int dstOff,
-                                final boolean derivate) throws NoninvertibleMatrixException
+                                final boolean derivate) throws TransformException
         {
             final double[] point;
             final int offset;
@@ -599,7 +657,9 @@ public class EllipsoidalToCartesianTransform extends AbstractMathTransform imple
          * Transforms the given array of points.
          */
         @Override
-        public void transform(double[] srcPts, int srcOff, double[] dstPts, int dstOff, int numPts) {
+        public void transform(double[] srcPts, int srcOff, double[] dstPts, int dstOff, int numPts)
+                throws TransformException
+        {
             inverseTransform(srcPts, srcOff, dstPts, dstOff, numPts);
         }
     }

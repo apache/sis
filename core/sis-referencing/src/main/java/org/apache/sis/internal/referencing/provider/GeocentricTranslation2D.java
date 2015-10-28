@@ -22,8 +22,8 @@ import org.opengis.parameter.ParameterDescriptorGroup;
 
 /**
  * The provider for <cite>"Geocentric translations (geog2D domain)"</cite> (EPSG:9603).
- * This is a special case of {@link PositionVector7Param} where only the translation terms
- * can be set to a non-null value.
+ * This is a special case of {@link PositionVector7Param2D} where only the translation
+ * terms can be set to a non-null value.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.7
@@ -40,13 +40,16 @@ public final class GeocentricTranslation2D extends GeocentricAffine {
     /**
      * The group of all parameters expected by this coordinate operation.
      */
-    private static final ParameterDescriptorGroup PARAMETERS;
+    static final ParameterDescriptorGroup PARAMETERS;
     static {
         PARAMETERS = builder()
             .addIdentifier("9603")
             .addName("Geocentric translations (geog2D domain)")
-            .addName("Geocentric Translations")     // Ambiguous alias (does not specify the domain)
-            .createGroup(TX, TY, TZ);
+            .createGroup(AbridgedMolodensky.SRC_SEMI_MAJOR,
+                         AbridgedMolodensky.SRC_SEMI_MINOR,
+                         AbridgedMolodensky.TGT_SEMI_MAJOR,
+                         AbridgedMolodensky.TGT_SEMI_MINOR,
+                         TX, TY, TZ);
     }
 
     /**
@@ -61,6 +64,6 @@ public final class GeocentricTranslation2D extends GeocentricAffine {
      */
     @Override
     int getType() {
-        return TRANSLATION;
+        return GEOGRAPHIC | TRANSLATION;
     }
 }

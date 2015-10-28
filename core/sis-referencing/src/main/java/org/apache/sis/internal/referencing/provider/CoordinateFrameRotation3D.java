@@ -21,7 +21,7 @@ import org.opengis.parameter.ParameterDescriptorGroup;
 
 
 /**
- * The provider for <cite>"Coordinate Frame Rotation (geocentric domain)"</cite> (EPSG:1032).
+ * The provider for <cite>"Coordinate Frame Rotation (geog3D domain)"</cite> (EPSG:1038).
  * This is the same transformation than "{@link PositionVector7Param}"
  * except that the rotation angles have the opposite sign.
  *
@@ -31,11 +31,11 @@ import org.opengis.parameter.ParameterDescriptorGroup;
  * @module
  */
 @XmlTransient
-public final class CoordinateFrameRotation extends GeocentricAffine {
+public final class CoordinateFrameRotation3D extends GeocentricAffine {
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = 5513675854809530038L;
+    private static final long serialVersionUID = -5605297074740440504L;
 
     /**
      * The group of all parameters expected by this coordinate operation.
@@ -43,9 +43,9 @@ public final class CoordinateFrameRotation extends GeocentricAffine {
     private static final ParameterDescriptorGroup PARAMETERS;
     static {
         PARAMETERS = builder()
-            .addIdentifier("1032")
-            .addName("Coordinate Frame Rotation (geocentric domain)")
-            .createGroupWithSameParameters(PositionVector7Param.PARAMETERS);
+            .addIdentifier("1038")
+            .addName("Coordinate Frame Rotation (geog3D domain)")
+            .createGroupWithSameParameters(PositionVector7Param3D.PARAMETERS);
         /*
          * NOTE: we omit the "Bursa-Wolf" alias because it is ambiguous, since it can apply
          * to both "Coordinate Frame Rotation" and "Position Vector 7-param. transformation"
@@ -56,7 +56,7 @@ public final class CoordinateFrameRotation extends GeocentricAffine {
     /**
      * Constructs the provider.
      */
-    public CoordinateFrameRotation() {
+    public CoordinateFrameRotation3D() {
         super(3, PARAMETERS);
     }
 
@@ -65,6 +65,6 @@ public final class CoordinateFrameRotation extends GeocentricAffine {
      */
     @Override
     int getType() {
-        return FRAME_ROTATION;
+        return GEOGRAPHIC | FRAME_ROTATION;
     }
 }
