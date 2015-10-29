@@ -31,6 +31,7 @@ import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.apache.sis.parameter.Parameterized;
 import org.apache.sis.referencing.operation.matrix.Matrices;
+import org.apache.sis.internal.referencing.provider.GeocentricAffine;
 import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.internal.system.Semaphores;
 import org.apache.sis.util.Classes;
@@ -454,6 +455,11 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
                 after = null;
             }
         }
+        /*
+         * Special case for datum shifts. Need to be done only after we processed
+         * 'beforeFormat(…)' for all objects and concatenated the affine transforms.
+         */
+        GeocentricAffine.asDatumShift(transforms);
         return transforms;
     }
 

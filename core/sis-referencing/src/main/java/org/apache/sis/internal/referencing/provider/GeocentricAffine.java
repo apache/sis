@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.referencing.provider;
 
+import java.util.List;
 import javax.measure.unit.SI;
 import javax.measure.unit.NonSI;
 import javax.xml.bind.annotation.XmlTransient;
@@ -23,17 +24,25 @@ import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
-import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.Transformation;
 import org.apache.sis.internal.referencing.Formulas;
+import org.apache.sis.internal.referencing.WKTUtilities;
+import org.apache.sis.internal.metadata.WKTKeywords;
+import org.apache.sis.internal.system.Loggers;
+import org.apache.sis.io.wkt.FormattableObject;
+import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.measure.Units;
 import org.apache.sis.parameter.Parameters;
+import org.apache.sis.parameter.Parameterized;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.metadata.iso.citation.Citations;
+import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.datum.BursaWolfParameters;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
+import org.apache.sis.referencing.operation.transform.LinearTransform;
+import org.apache.sis.util.logging.Logging;
 
 
 /**
@@ -211,32 +220,68 @@ public abstract class GeocentricAffine extends AbstractProvider {
     }
 
     /**
-     * Given a matrix for an affine transform operation, finds the equivalent Bursa-Wolf parameters.
-     * It is user-responsibility to ensure that the operation is performed in the geocentric space.
+     * Given a transformation chain, conditionally replaces the affine transform elements by an alternative object
+     * showing the Bursa-Wolf parameters. The replacement is applied if and only if the affine transform is a scale,
+     * translation or rotation in the geocentric domain.
      *
-     * @param  matrix The matrix for the affine transform in the geocentric domain.
-     * @return The Bursa-Wolf parameter values for the given matrix.
-     * @throws IllegalArgumentException if the given matrix can not be decomposed in Bursa-Wolf parameters.
+     * <p>This method is invoked only by {@code ConcatenatedTransform.getPseudoSteps()} for the need of WKT formatting.
+     * The purpose of this method is very similar to the purpose of {@code AbstractMathTransform.beforeFormat(List, int,
+     * boolean)} except that we need to perform the {@code forDatumShift(…)} work only after {@code beforeFormat(…)}
+     * finished its work for all {@code ContextualParameters}, including the {@code EllipsoidalToCartesianTransform}'s
+     * one.</p>
+     *
+     * @param transforms The full chain of concatenated transforms.
      */
-    public static ParameterValueGroup getParameters(final Matrix matrix) throws IllegalArgumentException {
-        final BursaWolfParameters parameters = new BursaWolfParameters(null, null);
-        /*
-         * We use a 0.01 metre tolerance (Formulas.LINEAR_TOLERANCE) based on the knowledge that the
-         * translation terms are in metres and the rotation terms have the some order of magnitude.
-         */
-        parameters.setPositionVectorTransformation(matrix, Formulas.LINEAR_TOLERANCE);
-        final boolean isTranslation = parameters.isTranslation();
-        final Parameters values = Parameters.castOrWrap(
-                (isTranslation ? GeocentricTranslation.PARAMETERS : PositionVector7Param.PARAMETERS).createValue());
-        values.getOrCreate(TX).setValue(parameters.tX);
-        values.getOrCreate(TY).setValue(parameters.tY);
-        values.getOrCreate(TZ).setValue(parameters.tZ);
-        if (!isTranslation) {
-            values.getOrCreate(RX).setValue(parameters.rX);
-            values.getOrCreate(RY).setValue(parameters.rY);
-            values.getOrCreate(RZ).setValue(parameters.rZ);
-            values.getOrCreate(DS).setValue(parameters.dS);
+    public static void asDatumShift(final List<Object> transforms) throws IllegalArgumentException {
+        for (int i=transforms.size() - 2; --i >= 0;) {
+            if (isOperation(GeographicToGeocentric.NAME, transforms.get(i)) &&
+                isOperation(GeocentricToGeographic.NAME, transforms.get(i+2)))
+            {
+                final Object step = transforms.get(i+1);
+                if (step instanceof LinearTransform) {
+                    final BursaWolfParameters parameters = new BursaWolfParameters(null, null);
+                    try {
+                        /*
+                         * We use a 0.01 metre tolerance (Formulas.LINEAR_TOLERANCE) based on the knowledge that the
+                         * translation terms are in metres and the rotation terms have the some order of magnitude.
+                         */
+                        parameters.setPositionVectorTransformation(((LinearTransform) step).getMatrix(), Formulas.LINEAR_TOLERANCE);
+                    } catch (IllegalArgumentException e) {
+                        /*
+                         * Should not occur, except sometime on inverse transform of relatively complex datum shifts
+                         * (more than just translation terms). We can fallback on formatting the full matrix.
+                         */
+                        Logging.recoverableException(Logging.getLogger(Loggers.WKT), GeocentricAffine.class, "asDatumShift", e);
+                        continue;
+                    }
+                    final boolean isTranslation = parameters.isTranslation();
+                    final Parameters values = Parameters.castOrWrap(
+                            (isTranslation ? GeocentricTranslation.PARAMETERS : PositionVector7Param.PARAMETERS).createValue());
+                    values.getOrCreate(TX).setValue(parameters.tX);
+                    values.getOrCreate(TY).setValue(parameters.tY);
+                    values.getOrCreate(TZ).setValue(parameters.tZ);
+                    if (!isTranslation) {
+                        values.getOrCreate(RX).setValue(parameters.rX);
+                        values.getOrCreate(RY).setValue(parameters.rY);
+                        values.getOrCreate(RZ).setValue(parameters.rZ);
+                        values.getOrCreate(DS).setValue(parameters.dS);
+                    }
+                    transforms.set(i+1, new FormattableObject() {
+                        @Override protected String formatTo(final Formatter formatter) {
+                            WKTUtilities.appendParamMT(values, formatter);
+                            return WKTKeywords.Param_MT;
+                        }
+                    });
+                }
+            }
         }
-        return values;
+    }
+
+    /**
+     * Returns {@code true} if the given object is an operation of the given name.
+     */
+    private static boolean isOperation(final String expected, final Object actual) {
+        return (actual instanceof Parameterized) &&
+               IdentifiedObjects.isHeuristicMatchForName(((Parameterized) actual).getParameterDescriptors(), expected);
     }
 }

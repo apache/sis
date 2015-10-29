@@ -189,4 +189,61 @@ public final strictfp class GeocentricTranslationTest extends MathTransformTestC
         toleranceModifier = ToleranceModifier.GEOGRAPHIC;
         verifyInDomain(CoordinateDomain.GEOGRAPHIC, 831342815);
     }
+
+    /**
+     * Tests Well Known Text formatting.
+     * The main point of this test is to verify that the affine transform between the two
+     * Geographic/Geocentric conversions have been replaced by Bursa-Wolf parameters for
+     * formatting purpose.
+     *
+     * @throws FactoryException if an error occurred while creating the transform.
+     * @throws TransformException if transformation of a sample point failed.
+     */
+    @Test
+    @DependsOnMethod("testGeographicDomain")
+    public void testWKT() throws FactoryException, TransformException {
+        testGeographicDomain();     // For creating the transform.
+        assertWktEquals("CONCAT_MT[PARAM_MT[“Ellipsoid_To_Geocentric”,\n" +
+                        "    PARAMETER[“semi_major”, 6378137.0],\n" +
+                        "    PARAMETER[“semi_minor”, 6356752.314245179]],\n" +
+                        "  PARAM_MT[“Geocentric translations (geocentric domain)”,\n" +
+                        "    PARAMETER[“dx”, 84.87],\n" +
+                        "    PARAMETER[“dy”, 96.49],\n" +
+                        "    PARAMETER[“dz”, 116.95]],\n" +
+                        "  PARAM_MT[“Geocentric_To_Ellipsoid”,\n" +
+                        "    PARAMETER[“semi_major”, 6378388.0],\n" +
+                        "    PARAMETER[“semi_minor”, 6356911.9461279465]]]");
+        /*
+         * In memory, what we have between the two Geographic/Geocentric conversions
+         * is an affine transform.
+         */
+        assertInternalWktEquals(
+                "Concat_MT[Param_MT[“Affine”,\n" +
+                "    Parameter[“num_row”, 4],\n" +
+                "    Parameter[“num_col”, 4],\n" +
+                "    Parameter[“elt_0_0”, 0.017453292519943295],\n" +
+                "    Parameter[“elt_1_1”, 0.017453292519943295],\n" +
+                "    Parameter[“elt_2_2”, 1.567855942887398E-7]],\n" +
+                "  Param_MT[“Ellipsoidal to Cartesian”,\n" +
+                "    Parameter[“excentricity”, 0.08181919084262157],\n" +
+                "    Parameter[“dim”, 3]],\n" +
+                "  Param_MT[“Affine”,\n" +
+                "    Parameter[“num_row”, 4],\n" +
+                "    Parameter[“num_col”, 4],\n" +
+                "    Parameter[“elt_0_0”, 0.9999606483644456],\n" +
+                "    Parameter[“elt_0_3”, 1.3305869758942228E-5],\n" +
+                "    Parameter[“elt_1_1”, 0.9999606483644456],\n" +
+                "    Parameter[“elt_1_3”, 1.512764667185502E-5],\n" +
+                "    Parameter[“elt_2_2”, 0.9999606483644456],\n" +
+                "    Parameter[“elt_2_3”, 1.8335353697517302E-5]],\n" +
+                "  Param_MT[“Cartesian to ellipsoidal”,\n" +
+                "    Parameter[“excentricity”, 0.08199188997902956],\n" +
+                "    Parameter[“dim”, 3]],\n" +
+                "  Param_MT[“Affine”,\n" +
+                "    Parameter[“num_row”, 4],\n" +
+                "    Parameter[“num_col”, 4],\n" +
+                "    Parameter[“elt_0_0”, 57.29577951308232],\n" +
+                "    Parameter[“elt_1_1”, 57.29577951308232],\n" +
+                "    Parameter[“elt_2_2”, 6378388.0]]]");
+    }
 }

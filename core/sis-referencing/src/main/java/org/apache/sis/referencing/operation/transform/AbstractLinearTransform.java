@@ -16,7 +16,6 @@
  */
 package org.apache.sis.referencing.operation.transform;
 
-import java.util.List;
 import java.io.Serializable;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptorGroup;
@@ -24,14 +23,7 @@ import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.Matrix;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.internal.referencing.provider.Affine;
-import org.apache.sis.internal.referencing.provider.GeocentricAffine;
-import org.apache.sis.internal.referencing.WKTUtilities;
-import org.apache.sis.internal.metadata.WKTKeywords;
-import org.apache.sis.internal.system.Loggers;
-import org.apache.sis.io.wkt.FormattableObject;
-import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.util.ComparisonMode;
-import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 
 
@@ -142,63 +134,6 @@ abstract class AbstractLinearTransform extends AbstractMathTransform implements 
         throw new UnsupportedOperationException(isAffine()
                 ? Errors.format(Errors.Keys.UnmodifiableAffineTransform)
                 : Errors.format(Errors.Keys.UnmodifiableObject_1, AbstractLinearTransform.class));
-    }
-
-    /**
-     * Given a transformation chain, conditionally replaces the element at {@code transforms.get(index)}
-     * by an alternative object showing the Bursa-Wolf parameters. The replacement is applied if and only
-     * if this transform is a translation, rotation or scale in the geocentric domain.
-     *
-     * <p>This method is invoked only by {@link ConcatenatedTransform#getPseudoSteps()}
-     * for the need of WKT formatting.</p>
-     *
-     * @param  transforms The full chain of concatenated transforms.
-     * @param  index      The index of this transform in the {@code transforms} chain.
-     * @param  inverse    Always {@code false}, except if we are formatting the inverse transform.
-     * @return {@code index} unchanged.
-     */
-    @Override
-    final int beforeFormat(final List<Object> transforms, final int index, final boolean inverse) {
-        if (false) try {    // TODO: pending the port of geocentric conversions.
-            transforms.set(index, new WKT(getMatrix()));
-            return index;
-        } catch (IllegalArgumentException e) {
-            /*
-             * Should not occur, except sometime on inverse transform of relatively complex datum shifts
-             * (more than just translation terms). We can fallback on formatting the full matrix.
-             */
-            Logging.recoverableException(Logging.getLogger(Loggers.WKT), AbstractLinearTransform.class, "beforeFormat", e);
-        }
-        return super.beforeFormat(transforms, index, inverse);
-    }
-
-    /**
-     * Used at WKT formatting time only for showing the Bursa-Wolf parameters instead than the affine coefficients.
-     */
-    private static final class WKT extends FormattableObject {
-        /**
-         * The Bursa-Wolf parameters to write in the WKT instead than the affine coefficients.
-         */
-        private final ParameterValueGroup parameters;
-
-        /**
-         * Create a new temporary object for formatting Bursa-Wolf parameters.
-         *
-         * @param  matrix The matrix for the affine transform in the geocentric domain.
-         * @throws IllegalArgumentException if the given matrix can not be decomposed in Bursa-Wolf parameters.
-         */
-        WKT(final Matrix matrix) throws IllegalArgumentException {
-            parameters = GeocentricAffine.getParameters(matrix);
-        }
-
-        /**
-         * Invoked at WKT formatting time.
-         */
-        @Override
-        protected String formatTo(final Formatter formatter) {
-            WKTUtilities.appendParamMT(parameters, formatter);
-            return WKTKeywords.Param_MT;
-        }
     }
 
     /**
