@@ -251,6 +251,14 @@ abstract class AbstractDbase3ByteReader extends CommonByteReader<SQLInvalidDbase
 
         return(knownConversions.get(Byte.toUnsignedInt(pageCodeBinaryValue)));
     }
+    
+    /**
+     * Set a charset.
+     * @param cs Charset.
+     */
+    public void setCharset(Charset cs) {
+        this.charset = cs;
+    }
 
     /**
      * Return a date from a byte array.
