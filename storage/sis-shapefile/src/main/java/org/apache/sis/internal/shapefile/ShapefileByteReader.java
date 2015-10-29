@@ -137,7 +137,7 @@ public class ShapefileByteReader extends CommonByteReader<InvalidShapefileFormat
         MappedByteReader databaseReader = null;
 
         try {
-            databaseReader = new MappedByteReader(dbaseFile);
+            databaseReader = new MappedByteReader(dbaseFile, null);
             databaseFieldsDescriptors = databaseReader.getFieldsDescriptors();
         }
         finally {

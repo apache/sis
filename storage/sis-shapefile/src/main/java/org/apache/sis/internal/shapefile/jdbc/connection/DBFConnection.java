@@ -312,7 +312,7 @@ public class DBFConnection extends AbstractConnection {
 
     /**
      * Read the next row as a set of objects.
-     * @return Map of field name / object value.
+     * @return Map of field name / object value, or null if EoF has been encountered.
      */
     public Map<String, Object> readNextRowAsObjects() {
         return byteReader.readNextRowAsObjects();

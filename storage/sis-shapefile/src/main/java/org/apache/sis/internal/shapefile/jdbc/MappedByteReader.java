@@ -19,6 +19,7 @@ package org.apache.sis.internal.shapefile.jdbc;
 import java.io.File;
 import java.nio.BufferUnderflowException;
 import java.nio.ByteOrder;
+import java.nio.charset.Charset;
 import java.util.*;
 import java.util.logging.Level;
 
@@ -39,14 +40,31 @@ public class MappedByteReader extends AbstractDbase3ByteReader implements AutoCl
     /** List of field descriptors. */
     private List<DBase3FieldDescriptor> fieldsDescriptors = new ArrayList<>();
 
+    /** Connection properties. */
+    private Properties info;
+    
     /**
      * Construct a mapped byte reader on a file.
      * @param dbase3File File.
+     * @param connectionInfos Connection properties, maybe null.
      * @throws SQLInvalidDbaseFileFormatException if the database seems to be invalid.
      * @throws SQLDbaseFileNotFoundException if the Dbase file has not been found.
      */
-    public MappedByteReader(File dbase3File) throws SQLInvalidDbaseFileFormatException, SQLDbaseFileNotFoundException {
+    public MappedByteReader(File dbase3File, Properties connectionInfos) throws SQLInvalidDbaseFileFormatException, SQLDbaseFileNotFoundException {
         super(dbase3File);
+        this.info = connectionInfos;
+        
+        // React to special features asked.
+        if (info != null) {
+            // Sometimes, DBF files have a wrong charset, or more often : none, and you have to specify it.
+            String recordCharset = (String)info.get("record_charset");
+            
+            if (recordCharset != null) {
+                Charset cs = Charset.forName(recordCharset);
+                setCharset(cs);
+            }
+        }
+        
         loadDescriptor();
     }
 
@@ -81,7 +99,26 @@ public class MappedByteReader extends AbstractDbase3ByteReader implements AutoCl
      */
     @Override
     public boolean nextRowAvailable() {
-        return getByteBuffer().hasRemaining();
+        // 1) Check for remaining bytes.
+        if (getByteBuffer().hasRemaining() == false) {
+            return false;
+        }
+        
+        // 2) Check that the immediate next byte read isn't the EOF signal.
+        byte eofCheck = getByteBuffer().get();
+        
+        boolean isEOF = (eofCheck == 0x1A);
+        this.log(Level.FINER, "log.delete_status", rowNum, eofCheck, isEOF ? "EOF" : "Active");
+        
+        if (eofCheck == 0x1A) {
+            return false;
+        }
+        else {
+            // Return one byte back.
+            int position = getByteBuffer().position();
+            getByteBuffer().position(position-1);
+            return true;
+        }
     }
 
     /**
@@ -92,8 +129,8 @@ public class MappedByteReader extends AbstractDbase3ByteReader implements AutoCl
     public Map<String, Object> readNextRowAsObjects() {
         // TODO: ignore deleted records
         /* byte isDeleted = */ getByteBuffer().get(); // denotes whether deleted or current
+        
         // read first part of record
-
         HashMap<String, Object> fieldsValues = new HashMap<>();
 
         for (DBase3FieldDescriptor fd : fieldsDescriptors) {
@@ -137,7 +174,13 @@ public class MappedByteReader extends AbstractDbase3ByteReader implements AutoCl
 
             // Translate code page value to a known charset.
             this.codePage = getByteBuffer().get();
-            this.charset = toCharset(this.codePage);
+            
+            if (this.charset == null) {
+                this.charset = toCharset(this.codePage);
+            }
+            else {
+                format(Level.INFO, "excp.record_charset", this.charset.name());
+            }
 
             getByteBuffer().get(reservedFiller2);
 
