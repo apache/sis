@@ -39,6 +39,7 @@ import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.util.DoubleDouble;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.referencing.Formulas;
+import org.apache.sis.internal.referencing.DirectPositionView;
 import org.apache.sis.internal.referencing.provider.GeographicToGeocentric;
 import org.apache.sis.referencing.operation.matrix.Matrix3;
 import org.apache.sis.referencing.operation.matrix.Matrices;
@@ -389,31 +390,62 @@ public class EllipsoidalToCartesianTransform extends AbstractMathTransform imple
     }
 
     /**
+     * Computes the derivative at the given location.
+     * This method relaxes a little bit the {@code MathTransform} contract by accepting two- or three-dimensional
+     * points even if the number of dimensions does not match the {@link #getSourceDimensions()} value.
+     *
+     * @param  point The coordinate point where to evaluate the derivative.
+     * @return The derivative at the specified point (never {@code null}).
+     * @throws TransformException if the derivative can not be evaluated at the specified point.
+     */
+    @Override
+    public Matrix derivative(final DirectPosition point) throws TransformException {
+        final int dim = point.getDimension();
+        final boolean wh;
+        final double h;
+        switch (dim) {
+            default: throw mismatchedDimension("point", getSourceDimensions(), dim);
+            case 3:  wh = true;  h = point.getOrdinate(2); break;
+            case 2:  wh = false; h = 0; break;
+        }
+        return transform(point.getOrdinate(0), point.getOrdinate(1), h, null, 0, true, wh);
+    }
+
+    /**
      * Converts the (λ,φ) or (λ,φ,<var>h</var>) geodetic coordinates to
      * to (<var>X</var>,<var>Y</var>,<var>Z</var>) geocentric coordinates,
      * and optionally returns the derivative at that location.
      *
      * @return {@inheritDoc}
+     * @throws TransformException if the point can not be transformed or
+     *         if a problem occurred while calculating the derivative.
      */
     @Override
     public Matrix transform(final double[] srcPts, final int srcOff,
                             final double[] dstPts, final int dstOff,
-                            final boolean derivate)
+                            final boolean derivate) throws TransformException
     {
-        return transform(srcPts, srcOff, dstPts, dstOff, derivate, withHeight);
+        return transform(srcPts[srcOff], srcPts[srcOff+1], withHeight ? srcPts[srcOff+2] : 0,
+                dstPts, dstOff, derivate, withHeight);
     }
 
     /**
      * Implementation of {@link #transform(double[], int, double[], int, boolean)}
      * with possibility to override the {@link #withHeight} value.
+     *
+     * @param λ        Longitude (radians).
+     * @param φ        Latitude (radians).
+     * @param h        Height above the ellipsoid divided by the length of semi-major axis.
+     * @param dstPts   The array into which the transformed coordinate is returned.
+     *                 May be {@code null} if only the derivative matrix is desired.
+     * @param dstOff   The offset to the location of the transformed point that is stored in the destination array.
+     * @param derivate {@code true} for computing the derivative, or {@code false} if not needed.
+     * @param wh       {@code true} for a 3×3 matrix, or {@code false} for a 3×2 matrix excluding the height elements.
      */
-    final Matrix transform(final double[] srcPts, final int srcOff,
-                           final double[] dstPts, final int dstOff,
-                           final boolean derivate, final boolean withHeight)
+    private Matrix transform(final double λ, final double φ, final double h,
+                             final double[] dstPts, final int dstOff,
+                             final boolean derivate, final boolean wh)
     {
-        final double λ    = srcPts[srcOff  ];                            // Longitude (radians)
-        final double φ    = srcPts[srcOff+1];                            // Latitude (radians)
-        final double h    = withHeight ? srcPts[srcOff+2] : 0;           // Height above the ellipsoid
         final double cosλ = cos(λ);
         final double sinλ = sin(λ);
         final double cosφ = cos(φ);
@@ -428,39 +460,41 @@ public class EllipsoidalToCartesianTransform extends AbstractMathTransform imple
             dstPts[dstOff+1] = rcosφ  * sinλ;                            // Y: Toward 90° east
             dstPts[dstOff+2] = (νℯ+h) * sinφ;                            // Z: Toward north pole
         }
-        if (derivate) {
-            final double sdφ   = νℯ * ν2 + h;
-            final double dX_dh = cosφ * cosλ;
-            final double dY_dh = cosφ * sinλ;
-            final double dX_dλ = -r * dY_dh;
-            final double dY_dλ =  r * dX_dh;
-            final double dX_dφ = -sdφ * (sinφ * cosλ);
-            final double dY_dφ = -sdφ * (sinφ * sinλ);
-            final double dZ_dφ =  sdφ * cosφ;
-            if (withHeight) {
-                return new Matrix3(dX_dλ, dX_dφ, dX_dh,
-                                   dY_dλ, dY_dφ, dY_dh,
-                                       0, dZ_dφ, sinφ);
-            } else {
-                return Matrices.create(3, 2, new double[] {
-                        dX_dλ, dX_dφ,
-                        dY_dλ, dY_dφ,
-                            0, dZ_dφ});
-            }
-        } else {
+        if (!derivate) {
             return null;
+        }
+        final double sdφ   = νℯ * ν2 + h;
+        final double dX_dh = cosφ * cosλ;
+        final double dY_dh = cosφ * sinλ;
+        final double dX_dλ = -r * dY_dh;
+        final double dY_dλ =  r * dX_dh;
+        final double dX_dφ = -sdφ * (sinφ * cosλ);
+        final double dY_dφ = -sdφ * (sinφ * sinλ);
+        final double dZ_dφ =  sdφ * cosφ;
+        if (wh) {
+            return new Matrix3(dX_dλ, dX_dφ, dX_dh,
+                               dY_dλ, dY_dφ, dY_dh,
+                                   0, dZ_dφ, sinφ);
+        } else {
+            return Matrices.create(3, 2, new double[] {
+                    dX_dλ, dX_dφ,
+                    dY_dλ, dY_dφ,
+                        0, dZ_dφ});
         }
     }
 
     /**
      * Converts the (λ,φ) or (λ,φ,<var>h</var>) geodetic coordinates to
      * to (<var>X</var>,<var>Y</var>,<var>Z</var>) geocentric coordinates.
-     *
      * This method performs the same conversion than {@link #transform(double[], int, double[], int, boolean)},
      * but the formulas are repeated here for performance reasons.
+     *
+     * @throws TransformException if a point can not be transformed.
      */
     @Override
-    public void transform(double[] srcPts, int srcOff, final double[] dstPts, int dstOff, int numPts) {
+    public void transform(double[] srcPts, int srcOff, final double[] dstPts, int dstOff, int numPts)
+            throws TransformException
+    {
         int srcInc = 0;
         int dstInc = 0;
         if (srcPts == dstPts) {
@@ -665,7 +699,7 @@ next:   while (--numPts >= 0) {
         }
 
         /**
-         * Compute the derivative at the given location. We need to override this method because
+         * Computes the derivative at the given location. We need to override this method because
          * we will inverse 3×2 matrices in a special way, with the knowledge that <var>h</var>
          * can be set to 0.
          */
@@ -706,15 +740,18 @@ next:   while (--numPts >= 0) {
                 dstPts[dstOff  ] = point[0];
                 dstPts[dstOff+1] = point[1];
             }
-            Matrix matrix = Matrices.inverse(EllipsoidalToCartesianTransform.this.transform(point, offset, null, 0, true, true));
+            // We need to keep h during matrix inversion because (λ,φ,h) values are not independent.
+            Matrix matrix = EllipsoidalToCartesianTransform.this.derivative(new DirectPositionView(point, offset, 3));
+            matrix = Matrices.inverse(matrix);
             if (!withHeight) {
-                matrix = Matrices.removeRow(matrix, 2);     // Drop height
+                matrix = Matrices.removeRows(matrix, 2, 3);     // Drop height only after matrix inversion is done.
             }
             return matrix;
         }
 
         /**
-         * Transforms the given array of points.
+         * Transforms the given array of points from geocentric to geographic coordinates.
+         * This method delegates the work to the enclosing class.
          */
         @Override
         public void transform(double[] srcPts, int srcOff, double[] dstPts, int dstOff, int numPts)

@@ -234,8 +234,8 @@ public abstract class AbstractMathTransform extends FormattableObject
      * @param expected  The expected dimension.
      * @param dimension The wrong dimension.
      */
-    static String mismatchedDimension(final String argument, final int expected, final int dimension) {
-        return Errors.format(Errors.Keys.MismatchedDimension_3, argument, expected, dimension);
+    static MismatchedDimensionException mismatchedDimension(final String argument, final int expected, final int dimension) {
+        return new MismatchedDimensionException(Errors.format(Errors.Keys.MismatchedDimension_3, argument, expected, dimension));
     }
 
     /**
@@ -341,8 +341,8 @@ public abstract class AbstractMathTransform extends FormattableObject
      * @param derivate {@code true} for computing the derivative, or {@code false} if not needed.
      * @return The matrix of the transform derivative at the given source position,
      *         or {@code null} if the {@code derivate} argument is {@code false}.
-     * @throws TransformException If the point can not be transformed or if a problem occurred while calculating the
-     *         derivative.
+     * @throws TransformException if the point can not be transformed or
+     *         if a problem occurred while calculating the derivative.
      *
      * @see #derivative(DirectPosition)
      * @see #transform(DirectPosition, DirectPosition)
@@ -759,7 +759,7 @@ public abstract class AbstractMathTransform extends FormattableObject
         final int dimSource = getSourceDimensions();
         final double[] coordinate = point.getCoordinate();
         if (coordinate.length != dimSource) {
-            throw new MismatchedDimensionException(mismatchedDimension("point", coordinate.length, dimSource));
+            throw mismatchedDimension("point", dimSource, coordinate.length);
         }
         final Matrix derivative = transform(coordinate, 0, null, 0, true);
         if (derivative == null) {
