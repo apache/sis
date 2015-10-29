@@ -117,7 +117,9 @@ abstract class ConformalProjection extends NormalizedProjection {
      * in which case the {@link #φ(double)} method will need to use an iterative method.
      *
      * <p><strong>Consider this field as final!</strong>
-     * It is not final only for the purpose of {@link #readObject(ObjectInputStream)}.</p>
+     * It is not final only for the purpose of {@link #readObject(ObjectInputStream)}.
+     * This field is not serialized because its value may depend on the version of this
+     * {@code ConformalProjection} class.</p>
      */
     private transient boolean useIterations;
 

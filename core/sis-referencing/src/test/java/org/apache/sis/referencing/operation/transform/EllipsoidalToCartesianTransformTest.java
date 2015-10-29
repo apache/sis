@@ -37,6 +37,8 @@ import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.junit.Test;
 
+import static org.apache.sis.test.Assert.*;
+
 
 /**
  * Tests {@link EllipsoidalToCartesianTransform}.
@@ -56,7 +58,7 @@ public final strictfp class EllipsoidalToCartesianTransformTest extends MathTran
      * This test uses the example given in EPSG guidance note #7.
      * The point in WGS84 is 53°48'33.820"N, 02°07'46.380"E, 73.00 metres.
      *
-     * @throws TransformException should never happen.
+     * @throws TransformException if conversion of the sample point failed.
      */
     @Test
     public void testGeographicToGeocentric() throws TransformException {
@@ -75,7 +77,7 @@ public final strictfp class EllipsoidalToCartesianTransformTest extends MathTran
      * Tests conversion of a single point from geocentric to geographic coordinates.
      * This method uses the same point than {@link #testGeographicToGeocentric()}.
      *
-     * @throws TransformException should never happen.
+     * @throws TransformException if conversion of the sample point failed.
      */
     @Test
     public void testGeocentricToGeographic() throws TransformException {
@@ -116,7 +118,7 @@ public final strictfp class EllipsoidalToCartesianTransformTest extends MathTran
      * for reaching the expected precision.
      *
      * @throws FactoryException if an error occurred while creating the transform.
-     * @throws TransformException if a conversion failed.
+     * @throws TransformException if conversion of the sample point failed.
      */
     @Test
     public void testHighExcentricity() throws TransformException, FactoryException {
@@ -178,5 +180,28 @@ public final strictfp class EllipsoidalToCartesianTransformTest extends MathTran
     public void testDerivative() throws TransformException {
         testDerivative(CommonCRS.WGS84.ellipsoid(), true);
         testDerivative(CommonCRS.WGS84.ellipsoid(), false);
+    }
+
+    /**
+     * Tests serialization. This method performs the same test than {@link #testGeographicToGeocentric()}
+     * and {@link #testGeocentricToGeographic()}, but on the deserialized instance. This allow us to verify
+     * that transient fields have been correctly restored.
+     *
+     * @throws TransformException if conversion of the sample point failed.
+     */
+    @Test
+    @DependsOnMethod("testRandomPoints")
+    public void testSerialization() throws TransformException {
+        transform = EllipsoidalToCartesianTransform.createGeodeticConversion(CommonCRS.WGS84.ellipsoid(), true);
+        transform = assertSerializedEquals(transform);
+        /*
+         * Below is basically a copy-and-paste of testGeographicToGeocentric(), but
+         * with isInverseTransformSupported = true for testing inverse conversion.
+         */
+        final double delta = toRadians(100.0 / 60) / 1852;
+        derivativeDeltas = new double[] {delta, delta, 100};
+        tolerance = GeocentricTranslationTest.precision(2);
+        verifyTransform(GeocentricTranslationTest.samplePoint(1),
+                        GeocentricTranslationTest.samplePoint(2));
     }
 }
