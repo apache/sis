@@ -265,7 +265,8 @@ public final class Equirectangular extends AbstractProvider {
          *   4) Scale longitude by cos(φ1).
          */
         φ1 = toRadians(φ1);
-        context.getMatrix(true).convertBefore(0, cos(φ1), null);
+        final MatrixSIS normalize = context.getMatrix(ContextualParameters.MatrixRole.NORMALIZATION);
+        normalize.convertBefore(0, cos(φ1), null);
         context.normalizeGeographicInputs(λ0)
                .convertBefore(1, null, -φ0);
         /*
@@ -280,7 +281,7 @@ public final class Equirectangular extends AbstractProvider {
             a = b / (1 - (1 - rs*rs) * (sinφ1*sinφ1));
         }
         final DoubleDouble k = new DoubleDouble(a);
-        final MatrixSIS denormalize = context.getMatrix(false);
+        final MatrixSIS denormalize = context.getMatrix(ContextualParameters.MatrixRole.DENORMALIZATION);
         denormalize.convertAfter(0, k, new DoubleDouble(fe));
         denormalize.convertAfter(1, k, new DoubleDouble(fn));
         /*

@@ -214,7 +214,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
 
     /**
      * Maps the parameters to be used for initializing {@link NormalizedProjection} and its
-     * {@linkplain ContextualParameters#getMatrix(boolean) normalization / denormalization} matrices.
+     * {@linkplain ContextualParameters#getMatrix normalization / denormalization} matrices.
      * This is an enumeration of parameters found in almost every map projections, but under different names.
      * This enumeration allows {@code NormalizedProjection} subclasses to specify which parameter names, ranges
      * and default values should be used by the
@@ -549,7 +549,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      * The returned group contains at least the {@link #excentricity} parameter value.
      * Some subclasses add more non-linear parameters, but most of them do not because many parameters
      * like the <cite>scale factor</cite> or the <cite>false easting/northing</cite> are handled by the
-     * {@linkplain ContextualParameters#getMatrix(boolean) (de)normalization affine transforms} instead.
+     * {@linkplain ContextualParameters#getMatrix (de)normalization affine transforms} instead.
      *
      * <div class="note"><b>Note:</b>
      * This method is mostly for {@linkplain org.apache.sis.io.wkt.Convention#INTERNAL debugging purposes}

@@ -30,8 +30,9 @@ import org.apache.sis.internal.referencing.provider.MercatorSpherical;
 import org.apache.sis.internal.referencing.provider.RegionalMercator;
 import org.apache.sis.internal.referencing.provider.PseudoMercator;
 import org.apache.sis.internal.util.DoubleDouble;
-import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.matrix.Matrix2;
+import org.apache.sis.referencing.operation.matrix.MatrixSIS;
+import org.apache.sis.referencing.operation.transform.ContextualParameters;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.util.Workaround;
 
@@ -242,8 +243,8 @@ public class Mercator extends ConformalProjection {
          * simple as possible, we increase the chances of efficient concatenation of an inverse with a forward
          * projection.
          */
-        final MatrixSIS   normalize = context.getMatrix(true);
-        final MatrixSIS denormalize = context.getMatrix(false);
+        final MatrixSIS normalize   = context.getMatrix(ContextualParameters.MatrixRole.NORMALIZATION);
+        final MatrixSIS denormalize = context.getMatrix(ContextualParameters.MatrixRole.DENORMALIZATION);
         denormalize.convertBefore(0, k0, null);
         denormalize.convertBefore(1, k0, null);
         if (λ0 != 0) {

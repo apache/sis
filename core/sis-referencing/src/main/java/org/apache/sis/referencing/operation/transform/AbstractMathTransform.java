@@ -1095,7 +1095,12 @@ public abstract class AbstractMathTransform extends FormattableObject
          */
         @Override
         final int beforeFormat(final List<Object> transforms, final int index, final boolean inverse) {
-            return AbstractMathTransform.this.beforeFormat(transforms, index, !inverse);
+            final ContextualParameters parameters = getContextualParameters();
+            if (parameters != null) {
+                return parameters.beforeFormat(transforms, index, inverse);
+            } else {
+                return AbstractMathTransform.this.beforeFormat(transforms, index, !inverse);
+            }
         }
 
         /**

@@ -27,6 +27,7 @@ import org.apache.sis.measure.Latitude;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.referencing.operation.matrix.Matrix2;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
+import org.apache.sis.referencing.operation.transform.ContextualParameters;
 import org.apache.sis.internal.referencing.provider.LambertConformal1SP;
 import org.apache.sis.internal.referencing.provider.LambertConformal2SP;
 import org.apache.sis.internal.referencing.provider.LambertConformalWest;
@@ -332,8 +333,8 @@ public class LambertConicConformal extends ConformalProjection {
         } else {
             sλ.negate();
         }
-        final MatrixSIS normalize   = context.getMatrix(true);
-        final MatrixSIS denormalize = context.getMatrix(false);
+        final MatrixSIS normalize   = context.getMatrix(ContextualParameters.MatrixRole.NORMALIZATION);
+        final MatrixSIS denormalize = context.getMatrix(ContextualParameters.MatrixRole.DENORMALIZATION);
         normalize  .convertAfter(0, sλ, (initializer.variant == BELGIUM) ? belgeA() : null);
         normalize  .convertAfter(1, sφ, null);
         denormalize.convertBefore(0, F, null); F.negate();

@@ -180,7 +180,7 @@ public class DefaultParameterDescriptorGroup extends AbstractParameterDescriptor
      *
      * @since 0.7
      */
-    DefaultParameterDescriptorGroup(final Map<String,?> properties, final ParameterDescriptorGroup parameters) {
+    public DefaultParameterDescriptorGroup(final Map<String,?> properties, final ParameterDescriptorGroup parameters) {
         super(properties, parameters.getMinimumOccurs(), parameters.getMaximumOccurs());
         descriptors = parameters.descriptors();    // We will share the same instance if it is safe.
         if (!(parameters instanceof DefaultParameterDescriptorGroup)

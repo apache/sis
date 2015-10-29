@@ -380,6 +380,18 @@ public abstract strictfp class MathTransformTestCase extends TransformTestCase {
     }
 
     /**
+     * Asserts that the current {@linkplain #transform transform} produces the given internal WKT.
+     *
+     * @param expected The expected internal WKT.
+     *
+     * @since 0.7
+     */
+    protected final void assertInternalWktEquals(final String expected) {
+        assertNotNull("The 'transform' field shall be assigned a value.", transform);
+        ReferencingAssert.assertWktEquals(Convention.INTERNAL, expected, transform);
+    }
+
+    /**
      * Prints the current {@linkplain #transform transform} as normal and internal WKT.
      * This method is for debugging purpose only.
      *
