@@ -280,15 +280,12 @@ abstract class ConformalProjection extends NormalizedProjection {
          * gives us more accurate results (according MercatorMethodComparison tests).
          */
         final double hℯ = 0.5 * excentricity;
-        for (int i=0; i<MAXIMUM_ITERATIONS; i++) {
+        for (int it=0; it<MAXIMUM_ITERATIONS; it++) {
             final double ℯsinφ = excentricity * sin(φ);
-            double ε = abs(φ - (φ = PI/2 - 2*atan(expOfSouthing * pow((1 - ℯsinφ)/(1 + ℯsinφ), hℯ))));
-            if (ε <= ITERATION_TOLERANCE) {
+            final double Δφ = φ - (φ = PI/2 - 2*atan(expOfSouthing * pow((1 - ℯsinφ)/(1 + ℯsinφ), hℯ)));
+            if (!(abs(Δφ) > ITERATION_TOLERANCE)) {     // Use '!' for accepting NaN.
                 return φ;
             }
-        }
-        if (Double.isNaN(expOfSouthing)) {
-            return Double.NaN;
         }
         throw new ProjectionException(Errors.Keys.NoConvergence);
     }

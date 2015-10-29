@@ -352,8 +352,7 @@ public class ObliqueStereographic extends NormalizedProjection {
         double φ = 2*atan(exp(ψ)) - PI/2;                               // First approximation
         final double he = excentricity/2;
         final double me = 1 - excentricitySquared;
-        int r = MAXIMUM_ITERATIONS;
-        do {
+        for (int it=0; it<MAXIMUM_ITERATIONS; it++) {
             final double ℯsinφ = excentricity * sin(φ);
             final double ψi = log(tan(φ/2 + PI/4) * pow((1 - ℯsinφ) / (1 + ℯsinφ), he));
             final double Δφ = (ψ - ψi) * cos(φ) * (1 - ℯsinφ*ℯsinφ) / me;
@@ -363,9 +362,12 @@ public class ObliqueStereographic extends NormalizedProjection {
                 dstPts[dstOff+1] = φ;
                 return;
             }
-        } while (--r != 0);
+        }
         throw new ProjectionException(Errors.Keys.NoConvergence);
     }
+
+
+
 
     /**
      * Provides the transform equations for the spherical case of the Oblique Stereographic projection.

@@ -541,9 +541,11 @@ public class TransverseMercator extends ConformalProjection {
         final double Q = asinh(tan(β));
         /*
          * Following usually converges in 4 iterations.
+         * The first iteration is unrolled.
          */
-        double Qp = Q, p = 0;
-        for (int i=0; i<MAXIMUM_ITERATIONS; i++) {
+        double p = excentricity * atanh(excentricity * tanh(Q));
+        double Qp = Q + p;
+        for (int it=0; it<MAXIMUM_ITERATIONS; it++) {
             final double c = excentricity * atanh(excentricity * tanh(Qp));
             Qp = Q + c;
             if (abs(c - p) <= ITERATION_TOLERANCE) {
@@ -555,6 +557,8 @@ public class TransverseMercator extends ConformalProjection {
         }
         throw new ProjectionException(Errors.Keys.NoConvergence);
     }
+
+
 
 
     /**

@@ -165,7 +165,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      * when used for a planet with an excentricity similar to Earth. But we allow a high limit
      * in case someone uses SIS for some planet with higher excentricity.
      */
-    static final int MAXIMUM_ITERATIONS = 15;
+    static final int MAXIMUM_ITERATIONS = Formulas.MAXIMUM_ITERATIONS;
 
     /**
      * The internal parameter descriptors. Keys are implementation classes.  Values are parameter descriptor groups

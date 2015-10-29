@@ -111,13 +111,13 @@ public class EllipsoidalToCartesianTransform extends AbstractMathTransform imple
     private static ParameterDescriptorGroup DESCRIPTOR;
 
     /**
-     * The threshold value of excentricity at which we consider that the approximated φ value should
-     * be made more accurate by the use of an iterative method. This is not needed for a planet of
-     * the excentricity of the Earth, but become useful for planets of higher excentricity.
+     * Minimal excentricity value before to consider that the approximated φ value should be made more accurate
+     * by the use of an iterative method. The iterative method is not needed for a planet of Earth excentricity,
+     * but become useful for planets of higher excentricity.
      *
      * <p>Actually the need for iteration is not just a matter of excentricity. It is also a matter of
      * <var>h</var> values. But empirical tests suggest that with Earth's excentricity (about 0.082),
-     * the limit for <var>h</var> is quite hight (close to 2000 km for a point at 30°N). This limit is
+     * the limit for <var>h</var> is quite high (close to 2000 km for a point at 30°N). This limit is
      * reduced to about 200 km for an excentricity of 0.16. It may be possible to find a formula for
      * the limit of <var>h</var> as a function of ℯ and φ, but this has not been explored yet.</p>
      *
@@ -549,12 +549,11 @@ next:   while (--numPts >= 0) {
                  * If this code is used on a planet with high excentricity,
                  * the φ value may need to be improved by an iterative method.
                  */
-                int n = 0;
-                do {
+                for (int it=0; it<Formulas.MAXIMUM_ITERATIONS; it++) {
                     final double sinφ = sin(φ);
                     final double ν = 1/sqrt(1 - excentricitySquared * (sinφ*sinφ));
-                    final double Δφ = abs(φ - (φ = atan((Z + excentricitySquared * ν * sinφ) / p)));
-                    if (!(Δφ >= Formulas.ANGULAR_TOLERANCE * (PI/180) / 4)) {   // Use ! for catching NaN.
+                    final double Δφ = φ - (φ = atan((Z + excentricitySquared * ν * sinφ) / p));
+                    if (!(abs(Δφ) >= Formulas.ANGULAR_TOLERANCE * (PI/180) * 0.25)) {   // Use ! for accepting NaN.
                         dstPts[dstOff++] = atan2(Y, X);
                         dstPts[dstOff++] = φ;
                         if (withHeight) {
@@ -564,7 +563,7 @@ next:   while (--numPts >= 0) {
                         dstOff += dstInc;
                         continue next;
                     }
-                } while (++n < 15);
+                }
                 throw new TransformException(Errors.format(Errors.Keys.NoConvergence));
             }
         }
