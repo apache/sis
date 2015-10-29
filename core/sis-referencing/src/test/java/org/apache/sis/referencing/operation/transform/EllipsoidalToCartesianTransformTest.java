@@ -206,7 +206,8 @@ public final strictfp class EllipsoidalToCartesianTransformTest extends MathTran
     }
 
     /**
-     * Tests Well Known Text formatting.
+     * Tests the standard Well Known Text (version 1) formatting.
+     * The result is what we show to users, but is quite different than what SIS has in memory.
      *
      * @throws TransformException should never happen.
      */
@@ -221,11 +222,18 @@ public final strictfp class EllipsoidalToCartesianTransformTest extends MathTran
         assertWktEquals("PARAM_MT[“Geocentric_To_Ellipsoid”,\n" +
                         "  PARAMETER[“semi_major”, 6378137.0],\n" +
                         "  PARAMETER[“semi_minor”, 6356752.314245179]]");
-        /*
-         * Above was what we show to users.
-         * Below is what SIS really have in memory.
-         */
-        transform = transform.inverse();
+    }
+
+    /**
+     * Tests the internal Well Known Text formatting.
+     * This WKT shows what SIS has in memory for debugging purpose.
+     * This is normally not what we show to users.
+     *
+     * @throws TransformException should never happen.
+     */
+    @Test
+    public void testInternalWKT() throws TransformException {
+        transform = EllipsoidalToCartesianTransform.createGeodeticConversion(CommonCRS.WGS84.ellipsoid(), true);
         assertInternalWktEquals(
                 "Concat_MT[Param_MT[“Affine”,\n" +
                 "    Parameter[“num_row”, 4],\n" +
