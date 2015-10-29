@@ -25,6 +25,7 @@ import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.OperationMethod;
 import org.apache.sis.referencing.operation.matrix.Matrix2;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
+import org.apache.sis.referencing.operation.transform.ContextualParameters;
 import org.apache.sis.internal.referencing.provider.TransverseMercatorSouth;
 import org.apache.sis.internal.util.DoubleDouble;
 import org.apache.sis.parameter.Parameters;
@@ -187,7 +188,7 @@ public class TransverseMercator extends ConformalProjection {
          *   - Multiply by the scale factor (done by the super-class constructor).
          *   - Add false easting and false northing (done by the super-class constructor).
          */
-        final MatrixSIS denormalize = context.getMatrix(false);
+        final MatrixSIS denormalize = context.getMatrix(ContextualParameters.MatrixRole.DENORMALIZATION);
         denormalize.convertBefore(0, B, null);
         denormalize.convertBefore(1, B, M0);
         /*

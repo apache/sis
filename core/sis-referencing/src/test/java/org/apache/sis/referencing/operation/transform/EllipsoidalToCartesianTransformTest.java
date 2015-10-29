@@ -138,7 +138,7 @@ public final strictfp class EllipsoidalToCartesianTransformTest extends MathTran
      * @param  ellipsoid The ellipsoid to use for the test.
      * @param  hasHeight {@code true} if geographic coordinates include an ellipsoidal height (i.e. are 3-D),
      *         or {@code false} if they are only 2-D.
-     * @throws TransformException Should never happen.
+     * @throws TransformException should never happen.
      */
     private void testDerivative(final Ellipsoid ellipsoid, final boolean hasHeight) throws TransformException {
         transform = EllipsoidalToCartesianTransform.createGeodeticConversion(ellipsoid, hasHeight);
@@ -162,7 +162,7 @@ public final strictfp class EllipsoidalToCartesianTransformTest extends MathTran
     /**
      * Tests the {@link EllipsoidalToCartesianTransform#derivative(DirectPosition)} method on a sphere.
      *
-     * @throws TransformException Should never happen.
+     * @throws TransformException should never happen.
      */
     @Test
     public void testDerivativeOnSphere() throws TransformException {
@@ -173,7 +173,7 @@ public final strictfp class EllipsoidalToCartesianTransformTest extends MathTran
     /**
      * Tests the {@link EllipsoidalToCartesianTransform#derivative(DirectPosition)} method on an ellipsoid.
      *
-     * @throws TransformException Should never happen.
+     * @throws TransformException should never happen.
      */
     @Test
     @DependsOnMethod("testDerivativeOnSphere")
@@ -203,5 +203,62 @@ public final strictfp class EllipsoidalToCartesianTransformTest extends MathTran
         tolerance = GeocentricTranslationTest.precision(2);
         verifyTransform(GeocentricTranslationTest.samplePoint(1),
                         GeocentricTranslationTest.samplePoint(2));
+    }
+
+    /**
+     * Tests Well Known Text formatting.
+     *
+     * @throws TransformException should never happen.
+     */
+    @Test
+    public void testWKT() throws TransformException {
+        transform = EllipsoidalToCartesianTransform.createGeodeticConversion(CommonCRS.WGS84.ellipsoid(), true);
+        assertWktEquals("PARAM_MT[“Ellipsoid_To_Geocentric”,\n" +
+                        "  PARAMETER[“semi_major”, 6378137.0],\n" +
+                        "  PARAMETER[“semi_minor”, 6356752.314245179]]");
+
+        transform = transform.inverse();
+        assertWktEquals("PARAM_MT[“Geocentric_To_Ellipsoid”,\n" +
+                        "  PARAMETER[“semi_major”, 6378137.0],\n" +
+                        "  PARAMETER[“semi_minor”, 6356752.314245179]]");
+        /*
+         * Above was what we show to users.
+         * Below is what SIS really have in memory.
+         */
+        transform = transform.inverse();
+        assertInternalWktEquals(
+                "Concat_MT[Param_MT[“Affine”,\n" +
+                "    Parameter[“num_row”, 4],\n" +
+                "    Parameter[“num_col”, 4],\n" +
+                "    Parameter[“elt_0_0”, 0.017453292519943295],\n" +
+                "    Parameter[“elt_1_1”, 0.017453292519943295],\n" +
+                "    Parameter[“elt_2_2”, 1.567855942887398E-7]],\n" +
+                "  Param_MT[“Ellipsoidal to Cartesian”,\n" +
+                "    Parameter[“excentricity”, 0.08181919084262157],\n" +
+                "    Parameter[“dim”, 3]],\n" +
+                "  Param_MT[“Affine”,\n" +
+                "    Parameter[“num_row”, 4],\n" +
+                "    Parameter[“num_col”, 4],\n" +
+                "    Parameter[“elt_0_0”, 6378137.0],\n" +
+                "    Parameter[“elt_1_1”, 6378137.0],\n" +
+                "    Parameter[“elt_2_2”, 6378137.0]]]");
+
+        transform = transform.inverse();
+        assertInternalWktEquals(
+                "Concat_MT[Param_MT[“Affine”,\n" +
+                "    Parameter[“num_row”, 4],\n" +
+                "    Parameter[“num_col”, 4],\n" +
+                "    Parameter[“elt_0_0”, 1.567855942887398E-7],\n" +
+                "    Parameter[“elt_1_1”, 1.567855942887398E-7],\n" +
+                "    Parameter[“elt_2_2”, 1.567855942887398E-7]],\n" +
+                "  Param_MT[“Cartesian to ellipsoidal”,\n" +
+                "    Parameter[“excentricity”, 0.08181919084262157],\n" +
+                "    Parameter[“dim”, 3]],\n" +
+                "  Param_MT[“Affine”,\n" +
+                "    Parameter[“num_row”, 4],\n" +
+                "    Parameter[“num_col”, 4],\n" +
+                "    Parameter[“elt_0_0”, 57.29577951308232],\n" +
+                "    Parameter[“elt_1_1”, 57.29577951308232],\n" +
+                "    Parameter[“elt_2_2”, 6378137.0]]]");
     }
 }

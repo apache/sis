@@ -208,7 +208,7 @@ final class Initializer {
          * in the (de)normalization matrices.
          */
         context.normalizeGeographicInputs(λ0);
-        final MatrixSIS denormalize = context.getMatrix(false);
+        final MatrixSIS denormalize = context.getMatrix(ContextualParameters.MatrixRole.DENORMALIZATION);
         denormalize.convertAfter(0, k, new DoubleDouble(fe));
         denormalize.convertAfter(1, k, new DoubleDouble(fn));
     }

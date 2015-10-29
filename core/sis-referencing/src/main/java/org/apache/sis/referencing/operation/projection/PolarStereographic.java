@@ -25,6 +25,7 @@ import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.Matrix;
 import org.apache.sis.referencing.operation.matrix.Matrix2;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
+import org.apache.sis.referencing.operation.transform.ContextualParameters;
 import org.apache.sis.internal.referencing.provider.PolarStereographicA;
 import org.apache.sis.internal.referencing.provider.PolarStereographicB;
 import org.apache.sis.internal.referencing.provider.PolarStereographicC;
@@ -235,12 +236,12 @@ public class PolarStereographic extends ConformalProjection {
          * At this point, all parameters have been processed. Now process to their
          * validation and the initialization of (de)normalize affine transforms.
          */
-        final MatrixSIS denormalize = context.getMatrix(false);
+        final MatrixSIS denormalize = context.getMatrix(ContextualParameters.MatrixRole.DENORMALIZATION);
         denormalize.convertBefore(0, ρ, null);
         denormalize.convertBefore(1, ρ, ρF);
         if (isNorth) {
             final Number reverseSign = verbatim(-1);
-            final MatrixSIS normalize = context.getMatrix(true);
+            final MatrixSIS normalize = context.getMatrix(ContextualParameters.MatrixRole.NORMALIZATION);
             normalize  .convertAfter (1, reverseSign, null);
             denormalize.convertBefore(1, reverseSign, null);
         }

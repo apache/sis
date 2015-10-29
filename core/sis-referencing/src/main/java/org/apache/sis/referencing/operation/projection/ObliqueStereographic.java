@@ -26,6 +26,7 @@ import org.opengis.util.FactoryException;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.referencing.operation.matrix.Matrix2;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
+import org.apache.sis.referencing.operation.transform.ContextualParameters;
 import org.apache.sis.internal.referencing.provider.PolarStereographicA;
 import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.util.resources.Errors;
@@ -158,8 +159,8 @@ public class ObliqueStereographic extends NormalizedProjection {
          * Since this is a linear operation, we can combine it with other linear operations performed by the
          * normalization matrix.
          */
-        final MatrixSIS normalize   = context.getMatrix(true);
-        final MatrixSIS denormalize = context.getMatrix(false);
+        final MatrixSIS normalize   = context.getMatrix(ContextualParameters.MatrixRole.NORMALIZATION);
+        final MatrixSIS denormalize = context.getMatrix(ContextualParameters.MatrixRole.DENORMALIZATION);
         normalize.convertAfter(0, n, null);
         /*
          * One of the last steps performed by the stereographic projection is to multiply the easting and northing

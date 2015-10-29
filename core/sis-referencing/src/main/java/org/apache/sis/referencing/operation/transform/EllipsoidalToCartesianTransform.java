@@ -17,6 +17,7 @@
 package org.apache.sis.referencing.operation.transform;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.Serializable;
@@ -40,7 +41,10 @@ import org.apache.sis.internal.util.DoubleDouble;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.internal.referencing.DirectPositionView;
+import org.apache.sis.internal.referencing.provider.GeocentricToGeographic;
 import org.apache.sis.internal.referencing.provider.GeographicToGeocentric;
+import org.apache.sis.parameter.DefaultParameterDescriptorGroup;
+import org.apache.sis.metadata.iso.ImmutableIdentifier;
 import org.apache.sis.referencing.operation.matrix.Matrix3;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
@@ -182,7 +186,7 @@ public class EllipsoidalToCartesianTransform extends AbstractMathTransform imple
      *
      * @see #getContextualParameters()
      */
-    private final ContextualParameters context;
+    final ContextualParameters context;
 
     /**
      * The inverse of this transform.
@@ -233,14 +237,16 @@ public class EllipsoidalToCartesianTransform extends AbstractMathTransform imple
          */
         context.normalizeGeographicInputs(0);
         final DoubleDouble a = new DoubleDouble(semiMajor);
-        final MatrixSIS denormalize = context.getMatrix(false);
+        final MatrixSIS denormalize = context.getMatrix(ContextualParameters.MatrixRole.DENORMALIZATION);
         for (int i=0; i<3; i++) {
             denormalize.convertAfter(i, a, null);
         }
         if (withHeight) {
             a.inverseDivide(1, 0);
-            context.getMatrix(true).convertBefore(2, a, null);    // Divide ellipsoidal height by a.
+            final MatrixSIS normalize = context.getMatrix(ContextualParameters.MatrixRole.NORMALIZATION);
+            normalize.convertBefore(2, a, null);    // Divide ellipsoidal height by a.
         }
+        context.freeze();   // Must be invoked before to create the inverse transform.
         inverse = new Inverse();
     }
 
@@ -693,9 +699,58 @@ next:   while (--numPts >= 0) {
         private static final long serialVersionUID = 6942084702259211803L;
 
         /**
+         * The inverse of the contextual parameters given by the enclosing class, created when first needed.
+         * They are used for formatting <cite>Well Known Text</cite> (WKT) and error messages.
+         *
+         * @see #getContextualParameters()
+         */
+        private transient ContextualParameters parameters;
+
+        /**
          * Creates the inverse of the enclosing transform.
          */
         Inverse() {
+        }
+
+        /**
+         * Returns the same contextual parameters than in the enclosing class,
+         * but with a different method name and the (de)normalization matrices inverted.
+         */
+        @Override
+        protected synchronized ContextualParameters getContextualParameters() {
+            if (parameters == null) {
+                parameters = new ContextualParameters(GeocentricToGeographic.PARAMETERS, context);
+            }
+            return parameters;
+        }
+
+        /**
+         * Returns the internal parameter values.
+         * This is used only for debugging purpose.
+         */
+        @Debug
+        @Override
+        public ParameterValueGroup getParameterValues() {
+            final ParameterValueGroup pg = getParameterDescriptors().createValue();
+            pg.values().addAll(EllipsoidalToCartesianTransform.this.getParameterValues().values());
+            return pg;
+        }
+
+        /**
+         * Returns a description of the internal parameters of this inverse transform.
+         * We do not cache this instance for two reasons:
+         *
+         * <ul>
+         *   <li>it is only for debugging purposes, and</li>
+         *   <li>the user may override {@link EllipsoidalToCartesianTransform#getParameterDescriptors()}.</li>
+         * </ul>
+         */
+        @Debug
+        @Override
+        public ParameterDescriptorGroup getParameterDescriptors() {
+            return new DefaultParameterDescriptorGroup(Collections.singletonMap(ParameterDescriptorGroup.NAME_KEY,
+                            new ImmutableIdentifier(Citations.SIS, Constants.SIS, "Cartesian to ellipsoidal")),
+                    EllipsoidalToCartesianTransform.this.getParameterDescriptors());
         }
 
         /**
