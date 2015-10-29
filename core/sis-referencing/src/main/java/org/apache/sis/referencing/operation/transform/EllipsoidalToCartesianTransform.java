@@ -17,6 +17,8 @@
 package org.apache.sis.referencing.operation.transform;
 
 import java.util.Arrays;
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.Serializable;
 import javax.measure.unit.Unit;
 import javax.measure.quantity.Length;
@@ -140,15 +142,31 @@ public class EllipsoidalToCartesianTransform extends AbstractMathTransform imple
      * (because of the work performed by the normalization matrices), we just drop <var>a</var>
      * in the formulas - so this field can be written as just <var>b</var>.
      *
-     * <p>This value is related to the ε value used in EPSG guide by ε = ℯ²/b² (assuming a=1).</p>
+     * <p>This value is related to {@link #excentricitySquared} and to the ε value used in EPSG guide
+     * by (assuming a=1):</p>
+     * <ul>
+     *   <li>ℯ² = 1 - b²</li>
+     *   <li>ε = ℯ²/b²</li>
+     * </ul>
+     *
+     * <p><strong>Consider this field as final!</strong>
+     * It is not final only for the purpose of {@link #readObject(ObjectInputStream)}.
+     * This field is recomputed from {@link #excentricitySquared} on deserialization.</p>
      */
-    private final double b;
+    private transient double b;
 
     /**
-     * {@code true} if the excentricity value is greater than or equals to {@link #EXCENTRICITY_THRESHOLD},
-     * in which case the calculation of φ will need to use an iterative method.
+     * Whether calculation of φ should use an iterative method after the first φ approximation.
+     * The current implementation sets this field to {@code true} at construction time when the excentricity value
+     * is greater than or equals to {@link #EXCENTRICITY_THRESHOLD}, but this policy may change in any future SIS
+     * version (for example we do not take the <var>h</var> values in account yet).
+     *
+     * <p><strong>Consider this field as final!</strong>
+     * It is not final only for the purpose of {@link #readObject(ObjectInputStream)}.
+     * This field is not serialized because its value may depend on the version of this
+     * {@code EllipsoidalToCartesianTransform} class.</p>
      */
-    private final boolean useIterations;
+    private transient boolean useIterations;
 
     /**
      * {@code true} if ellipsoidal coordinates include an ellipsoidal height (i.e. are 3-D).
@@ -167,7 +185,12 @@ public class EllipsoidalToCartesianTransform extends AbstractMathTransform imple
 
     /**
      * The inverse of this transform.
-     * Created at construction time because needed soon anyway.
+     *
+     * <div class="note"><b>Note:</b>
+     * creation of this object is not deferred to the first call to the {@link #inverse()} method because this
+     * object is lightweight and typically needed soon anyway (may be as soon as {@code ConcatenatedTransform}
+     * construction time). In addition this field is part of serialization form in order to preserve the
+     * references graph.</div>
      */
     private final AbstractMathTransform inverse;
 
@@ -218,6 +241,15 @@ public class EllipsoidalToCartesianTransform extends AbstractMathTransform imple
             context.getMatrix(true).convertBefore(2, a, null);    // Divide ellipsoidal height by a.
         }
         inverse = new Inverse();
+    }
+
+    /**
+     * Restores transient fields after deserialization.
+     */
+    private void readObject(final ObjectInputStream in) throws IOException, ClassNotFoundException {
+        in.defaultReadObject();
+        useIterations = (excentricitySquared >= EXCENTRICITY_THRESHOLD * EXCENTRICITY_THRESHOLD);
+        b = sqrt(1 - excentricitySquared);
     }
 
     /**

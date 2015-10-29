@@ -203,6 +203,12 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
 
     /**
      * The inverse of this map projection.
+     *
+     * <div class="note"><b>Note:</b>
+     * creation of this object is not deferred to the first call to the {@link #inverse()} method because this
+     * object is lightweight and typically needed soon anyway (may be as soon as {@code ConcatenatedTransform}
+     * construction time). In addition this field is part of serialization form in order to preserve the
+     * references graph.</div>
      */
     private final MathTransform2D inverse;
 
