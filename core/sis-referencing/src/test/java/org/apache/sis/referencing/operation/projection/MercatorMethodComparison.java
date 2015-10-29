@@ -160,11 +160,11 @@ public final class MercatorMethodComparison {   // No 'strictfp' keyword here si
      */
     public double byIterativeMethod(final double t) throws ProjectionException {
         final double hℯ = 0.5 * excentricity;
-        double φ = (PI/2) - 2*atan(t);                                      // Snyder (7-11)
-        for (int i=0; i<NormalizedProjection.MAXIMUM_ITERATIONS; i++) {     // Iteratively solve equation (7-9) from Snyder
+        double φ = (PI/2) - 2*atan(t);                                          // Snyder (7-11)
+        for (int it=0; it < NormalizedProjection.MAXIMUM_ITERATIONS; it++) {    // Iteratively solve equation (7-9) from Snyder
             final double ℯsinφ = excentricity * sin(φ);
-            final double Δφ = abs(φ - (φ = PI/2 - 2*atan(t * pow((1 - ℯsinφ)/(1 + ℯsinφ), hℯ))));
-            if (Δφ <= NormalizedProjection.ITERATION_TOLERANCE) {
+            final double Δφ = φ - (φ = PI/2 - 2*atan(t * pow((1 - ℯsinφ)/(1 + ℯsinφ), hℯ)));
+            if (abs(Δφ) <= NormalizedProjection.ITERATION_TOLERANCE) {
                 return φ;
             }
         }
