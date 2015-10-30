@@ -908,6 +908,10 @@ public abstract class AbstractMathTransform extends FormattableObject
             if (mode.isIgnoringMetadata()) {
                 return true;
             }
+            /*
+             * We do not compare getParameters() because they usually duplicate the internal fields.
+             * Contextual parameters, on the other hand, typically contain new information.
+             */
             return Utilities.deepEquals(this.getContextualParameters(),
                                         that.getContextualParameters(), mode);
         }
@@ -1105,8 +1109,8 @@ public abstract class AbstractMathTransform extends FormattableObject
 
         /**
          * Formats the inner part of a <cite>Well Known Text</cite> version 1 (WKT 1) element.
-         * If this inverse math transform has any parameter values, then this method format the
-         * WKT as in the {@linkplain AbstractMathTransform#formatWKT super-class method}.
+         * If this inverse math transform has any parameter values, then this method formats
+         * the WKT as in the {@linkplain AbstractMathTransform#formatWKT super-class method}.
          * Otherwise this method formats the math transform as an {@code "Inverse_MT"} entity.
          *
          * <div class="note"><b>Compatibility note:</b>

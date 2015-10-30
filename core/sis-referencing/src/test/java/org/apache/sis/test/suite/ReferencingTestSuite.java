@@ -99,6 +99,7 @@ import org.junit.BeforeClass;
     org.apache.sis.internal.referencing.provider.AffineTest.class,
     org.apache.sis.internal.referencing.provider.LongitudeRotationTest.class,
     org.apache.sis.internal.referencing.provider.GeocentricTranslationTest.class,
+    org.apache.sis.internal.referencing.provider.PositionVector7ParamTest.class,
     org.apache.sis.internal.referencing.provider.MapProjectionTest.class,
     org.apache.sis.internal.referencing.provider.AllProvidersTest.class,
     org.apache.sis.referencing.operation.transform.DefaultMathTransformFactoryTest.class,

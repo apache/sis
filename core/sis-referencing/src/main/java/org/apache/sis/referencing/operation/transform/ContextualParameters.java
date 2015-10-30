@@ -24,8 +24,6 @@ import java.util.Iterator;
 import java.util.Objects;
 import java.io.Serializable;
 import org.opengis.util.FactoryException;
-import org.opengis.referencing.operation.MathTransform;
-import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.parameter.GeneralParameterValue;
 import org.opengis.parameter.GeneralParameterDescriptor;
 import org.opengis.parameter.ParameterValue;
@@ -33,7 +31,9 @@ import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.ParameterNotFoundException;
+import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.Matrix;
+import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.apache.sis.internal.referencing.ExtendedPrecisionMatrix;
 import org.apache.sis.internal.referencing.WKTUtilities;
@@ -141,12 +141,14 @@ public class ContextualParameters extends Parameters implements Serializable {
      * @since   0.7
      * @version 0.7
      * @module
+     *
+     * @see ContextualParameters#getMatrix(MatrixRole)
      */
     public static enum MatrixRole {
         /**
          * Matrix for converting angular degrees to radians, or any other linear operations needed
-         * before to apply a non-linear operation. This matrix is typically (but not necessarily)
-         * as below:
+         * before to apply a non-linear operation. For example in a map projection, this matrix is
+         * typically (but not necessarily) as below:
          *
          * <center>{@include formulas.html#NormalizeGeographic}</center>
          */
@@ -154,7 +156,7 @@ public class ContextualParameters extends Parameters implements Serializable {
 
         /**
          * Inverse of the {@link #NORMALIZATION} matrix.
-         * This matrix is typically (but not necessarily) as below:
+         * For example in a map projection, this matrix is typically (but not necessarily) as below:
          *
          * <center>{@include formulas.html#DeormalizeGeographic}</center>
          */
@@ -162,7 +164,8 @@ public class ContextualParameters extends Parameters implements Serializable {
 
         /**
          * Matrix for scaling Cartesian coordinates to the size of the planet, or any other linear operations needed
-         * after execution of a non-linear operation. This matrix is typically (but not necessarily) as below:
+         * after execution of a non-linear operation. For example in a map projection, this matrix is typically
+         * (but not necessarily) as below:
          *
          * <center>{@include formulas.html#DenormalizeCartesian}</center>
          */
@@ -339,8 +342,8 @@ public class ContextualParameters extends Parameters implements Serializable {
      * invoked, the matrices returned by this method are {@linkplain Matrices#unmodifiable(Matrix) unmodifiable}.
      *
      *
-     * <div class="note"><b>Application to map projections</b>
-     * After {@link org.apache.sis.referencing.operation.projection.NormalizedProjection} construction, the matrices
+     * <div class="note"><b>Application to map projections:</b>
+     * after {@link org.apache.sis.referencing.operation.projection.NormalizedProjection} construction, the matrices
      * returned by {@code projection.getContextualParameters().getMatrix(…)} are initialized to the values shown below.
      * Note that some {@code NormalizedProjection} subclasses apply further modifications to those matrices.
      *
