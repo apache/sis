@@ -46,6 +46,8 @@ import static org.junit.Assert.*;
  */
 @DependsOn({
     AffineTest.class,
+    org.apache.sis.referencing.operation.transform.ProjectiveTransformTest.class,
+    org.apache.sis.referencing.operation.transform.ConcatenatedTransformTest.class,
     org.apache.sis.referencing.operation.transform.EllipsoidalToCartesianTransformTest.class
 })
 public final strictfp class GeocentricTranslationTest extends MathTransformTestCase {
@@ -214,8 +216,8 @@ public final strictfp class GeocentricTranslationTest extends MathTransformTestC
                         "    PARAMETER[“semi_major”, 6378388.0],\n" +
                         "    PARAMETER[“semi_minor”, 6356911.9461279465]]]");
         /*
-         * In memory, what we have between the two Geographic/Geocentric conversions
-         * is an affine transform.
+         * The above WKT what was we show to users. But what we have in memory is different:
+         * affines before, after and between the two Geographic/Geocentric conversions.
          */
         assertInternalWktEquals(
                 "Concat_MT[Param_MT[“Affine”,\n" +
