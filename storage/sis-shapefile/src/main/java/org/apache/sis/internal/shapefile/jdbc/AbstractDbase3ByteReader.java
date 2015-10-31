@@ -135,11 +135,9 @@ abstract class AbstractDbase3ByteReader extends CommonByteReader<SQLInvalidDbase
      * Convert the binary code page value of the Dbase 3 file to a recent Charset.
      * @param codePageBinaryValue page code binary value.
      * @return Charset.
-     * @throws SQLInvalidDbaseFileFormatException if the binary value is not one of the standard values that the DBF file should carry : the Dbase 3
-     * file might be corrupted.
      * @throws UnsupportedCharsetException if the code page as no representation in recents Charset (legacy DOS or macintosh charsets).
      */
-    protected Charset toCharset(byte codePageBinaryValue) throws SQLInvalidDbaseFileFormatException, UnsupportedCharsetException {
+    protected Charset toCharset(byte codePageBinaryValue) throws UnsupportedCharsetException {
         // Attempt to find a known conversion.
         String dbfCodePage = toCodePage(codePageBinaryValue);
 
@@ -153,21 +151,15 @@ abstract class AbstractDbase3ByteReader extends CommonByteReader<SQLInvalidDbase
                 case 0x97: dbfCodePage = "unsupported"; break; // eastern european macintosh
                 case 0x98: dbfCodePage = "unsupported"; break; // greek macintosh
                 case 0xC8: dbfCodePage = "unsupported"; break; // windows ee
-                default: dbfCodePage = "invalid"; break;
+                default: dbfCodePage = "unsupported"; break;
             }
         }
 
         assert dbfCodePage != null;
 
-        // If the code page is invalid, the database itself has chances to be invalid too.
-        if (dbfCodePage.equals("invalid")) {
-            String message = format(Level.WARNING, "excp.illegal_codepage", codePageBinaryValue, getFile().getAbsolutePath());
-            throw new SQLInvalidDbaseFileFormatException(message);
-        }
-
         // If the code page cannot find a match for a more recent Charset, we wont be able to handle this DBF.
         if (dbfCodePage.equals("unsupported")) {
-            String message = format(Level.WARNING, "excp.unsupported_codepage", dbfCodePage, getFile().getAbsolutePath());
+            String message = format(Level.WARNING, "excp.unsupported_codepage", codePageBinaryValue, getFile().getAbsolutePath());
             throw new UnsupportedCharsetException(message);
         }
 

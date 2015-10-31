@@ -20,6 +20,7 @@ import java.io.File;
 import java.nio.BufferUnderflowException;
 import java.nio.ByteOrder;
 import java.nio.charset.Charset;
+import java.nio.charset.UnsupportedCharsetException;
 import java.util.*;
 import java.util.logging.Level;
 
@@ -126,24 +127,36 @@ public class MappedByteReader extends AbstractDbase3ByteReader implements AutoCl
      * @return Map of field name / object value.
      */
     @Override
-    public Map<String, Object> readNextRowAsObjects() {
+    public Map<String, byte[]> readNextRowAsObjects() {
         // TODO: ignore deleted records
         /* byte isDeleted = */ getByteBuffer().get(); // denotes whether deleted or current
         
         // read first part of record
-        HashMap<String, Object> fieldsValues = new HashMap<>();
+        HashMap<String, byte[]> fieldsValues = new HashMap<>();
 
         for (DBase3FieldDescriptor fd : fieldsDescriptors) {
             byte[] data = new byte[fd.getLength()];
             getByteBuffer().get(data);
 
+            // Trim the bytes right.
             int length = data.length;
+            
             while (length != 0 && data[length - 1] <= ' ') {
                 length--;
             }
-
-            String value = new String(data, 0, length);
-            fieldsValues.put(fd.getName(), value);
+            
+            if (length != data.length) {
+                byte[] dataTrimmed = new byte[length];
+                
+                for(int index=0; index < length; index ++) {
+                    dataTrimmed[index] = data[index];
+                }
+                
+                fieldsValues.put(fd.getName(), dataTrimmed);
+            }
+            else {
+                fieldsValues.put(fd.getName(), data);
+            }
         }
 
         rowNum ++;
@@ -176,10 +189,16 @@ public class MappedByteReader extends AbstractDbase3ByteReader implements AutoCl
             this.codePage = getByteBuffer().get();
             
             if (this.charset == null) {
-                this.charset = toCharset(this.codePage);
+                try {
+                    this.charset = toCharset(this.codePage);
+                }
+                catch(UnsupportedCharsetException e) {
+                    // Warn the caller that he will have to perform is own conversions.
+                    format(Level.WARNING, "log.no_valid_charset", getFile().getAbsolutePath(), e.getMessage());
+                }
             }
             else {
-                format(Level.INFO, "excp.record_charset", this.charset.name());
+                format(Level.INFO, "log.record_charset", this.charset.name());
             }
 
             getByteBuffer().get(reservedFiller2);
