@@ -41,13 +41,10 @@ import org.apache.sis.internal.shapefile.jdbc.statement.DBFStatement;
  */
 public class DBFRecordBasedResultSet extends DBFResultSet {
     /** The current record. */
-    private Map<String, Object> record;
+    private Map<String, byte[]> record;
 
     /** Condition of where clause (currently, only one is handled). */
     private ConditionalClauseResolver singleConditionOfWhereClause;
-
-    /** UTF-8 charset. */
-    private static Charset UTF8 = Charset.forName("UTF-8");
 
     /**
      * Constructs a result set.
@@ -445,35 +442,27 @@ public class DBFRecordBasedResultSet extends DBFResultSet {
         assertNotClosed();
 
         getFieldDesc(columnLabel, sql); // Ensure that the field queried exists, else a null value here can be interpreted as "not existing" or "has a null value".
-        String withoutCharset = (String)record.get(columnLabel);
+        byte[] bytes = record.get(columnLabel);
 
-        if (withoutCharset == null) {
+        if (bytes == null) {
             wasNull = true;
-            return withoutCharset;
+            return null;
         }
         else {
             wasNull = false;
         }
 
-        // If a non null value has been readed, convert it to the wished Charset.
+        // If a non null value has been readed, convert it to the wished Charset (provided one has been given).
         DBFConnection cnt = (DBFConnection)((DBFStatement)getStatement()).getConnection();
-        String withDatabaseCharset = new String(withoutCharset.getBytes(), cnt.getCharset());
-        log(Level.FINER, "log.string_field_charset", columnLabel, withoutCharset, withDatabaseCharset, cnt.getCharset());
-
-        // Because the Database is old (end of 1980's), it has not been made to support UTF-8 encoding.
-        // But must users of DBase 3 don't know this, and sometimes a String field may carry such characters.
-        // Attempt to determine if the string could be an UTF-8 String instead.
-        String withUtf8Encoding = new String(withoutCharset.getBytes(), UTF8);
-
-        // If conversion contains a not convertible character, it's not an UTF-8 string.
-        // If the UTF-8 string is shorter than the one that would have given the database charset, it's a good sign : it has chances to be better.
-        boolean unsureResult = withUtf8Encoding.indexOf('\ufffd') != -1 || withUtf8Encoding.length() >= withDatabaseCharset.length();
-
-        if (unsureResult)
-            return withDatabaseCharset;
+        Charset charset = cnt.getCharset();
+        
+        if (charset == null) {
+            return new String(bytes);
+        }
         else {
-            log(Level.FINER, "log.string_field_charset", columnLabel, withoutCharset, withUtf8Encoding, UTF8);
-            return withUtf8Encoding;
+            String withDatabaseCharset = new String(bytes, charset);
+            log(Level.FINER, "log.string_field_charset", columnLabel, withDatabaseCharset, charset);
+            return withDatabaseCharset;
         }
     }
 
@@ -571,8 +560,8 @@ public class DBFRecordBasedResultSet extends DBFResultSet {
         assertNotClosed();
 
         try(DBFBuiltInMemoryResultSetForColumnsListing rs = (DBFBuiltInMemoryResultSetForColumnsListing)getFieldDesc(columnLabel, sql)) {
-            String textValue = (String)record.get(columnLabel);
-
+            String textValue = getString(columnLabel);
+            
             if (textValue == null) {
                 return null;
             }
