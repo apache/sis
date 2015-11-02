@@ -48,7 +48,8 @@ import static org.junit.Assert.*;
     AffineTest.class,
     org.apache.sis.referencing.operation.transform.ProjectiveTransformTest.class,
     org.apache.sis.referencing.operation.transform.ConcatenatedTransformTest.class,
-    org.apache.sis.referencing.operation.transform.EllipsoidalToCartesianTransformTest.class
+    org.apache.sis.referencing.operation.transform.EllipsoidalToCartesianTransformTest.class,
+    org.apache.sis.referencing.datum.BursaWolfParametersTest.class
 })
 public final strictfp class GeocentricTranslationTest extends MathTransformTestCase {
     /**
