@@ -50,13 +50,14 @@ import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.parameter.ParameterBuilder;
+import org.apache.sis.parameter.Parameters;
 import org.apache.sis.util.resources.Errors;
 
 import static java.lang.Math.*;
 import static org.apache.sis.internal.referencing.provider.MapProjection.SEMI_MAJOR;
 import static org.apache.sis.internal.referencing.provider.MapProjection.SEMI_MINOR;
 import static org.apache.sis.internal.referencing.provider.MapProjection.EXCENTRICITY;
-import static org.apache.sis.internal.referencing.provider.AbridgedMolodensky.DIMENSION;
+import static org.apache.sis.internal.referencing.provider.GeocentricAffineBetweenGeographic.DIMENSION;
 
 
 /**
@@ -356,9 +357,9 @@ public class EllipsoidalToCartesianTransform extends AbstractMathTransform imple
     @Debug
     @Override
     public ParameterValueGroup getParameterValues() {
-        final ParameterValueGroup pg = getParameterDescriptors().createValue();
-        pg.parameter("excentricity").setValue(sqrt(excentricitySquared));
-        pg.parameter("dim").setValue(getSourceDimensions());
+        final Parameters pg = Parameters.castOrWrap(getParameterDescriptors().createValue());
+        pg.getOrCreate(EXCENTRICITY).setValue(sqrt(excentricitySquared));
+        pg.getOrCreate(DIMENSION).setValue(getSourceDimensions());
         return pg;
     }
 

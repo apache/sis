@@ -17,17 +17,22 @@
 package org.apache.sis.internal.referencing.provider;
 
 import javax.xml.bind.annotation.XmlTransient;
-import javax.measure.unit.SI;
-import org.opengis.parameter.ParameterDescriptor;
-import org.apache.sis.internal.util.Constants;
+import org.opengis.util.FactoryException;
+import org.opengis.parameter.ParameterValueGroup;
+import org.opengis.parameter.ParameterDescriptorGroup;
+import org.opengis.referencing.operation.MathTransform;
+import org.opengis.referencing.operation.MathTransformFactory;
+import org.opengis.referencing.operation.OperationMethod;
 import org.apache.sis.metadata.iso.citation.Citations;
-import org.apache.sis.parameter.ParameterBuilder;
+import org.apache.sis.parameter.Parameters;
+import org.apache.sis.util.ArgumentChecks;
 
 
 /**
  * The provider for <cite>"Abridged Molodensky transformation"</cite> (EPSG:9605).
- * This provider constructs transforms between two geographic reference systems,
- * without passing though a geocentric one.
+ * This provider constructs transforms between two geographic reference systems without passing though a geocentric one.
+ * This class nevertheless extends {@link GeocentricAffineBetweenGeographic} because it is an approximation of
+ * {@link GeocentricTranslation3D}.
  *
  * <p>The translation terms (<var>dx</var>, <var>dy</var> and <var>dz</var>) are common to all authorities.
  * But remaining parameters are specified in different ways depending on the authority:</p>
@@ -46,68 +51,94 @@ import org.apache.sis.parameter.ParameterBuilder;
  * @module
  */
 @XmlTransient
-public abstract class AbridgedMolodensky extends AbstractProvider {
+public final class AbridgedMolodensky extends GeocentricAffineBetweenGeographic {
     /**
      * Serial number for inter-operability with different versions.
      */
     private static final long serialVersionUID = -3889456253400732280L;
 
     /**
-     * The default value for geographic source and target dimensions.
-     * We have to provide a default value because the {@link #DIMENSION} parameter is not an EPSG parameter.
-     * The default value is set to 3 because this family of operations is implicitly three-dimensional in the
-     * EPSG database.
-     *
-     * <div class="note"><b>Maintenance note:</b>
-     * if this default value is modified, then the handling of the two- and three-dimensional cases in
-     * {@link AbridgedMolodenskyTransform} must be adjusted accordingly.</div>
+     * The group of all parameters expected by this coordinate operation.
      */
-    private static final int DEFAULT_DIMENSION = 3;
-
-    /**
-     * The operation parameter descriptor for the number of source and target geographic dimensions (2 or 3).
-     * This is an OGC-specific parameter.
-     */
-    public static final ParameterDescriptor<Integer> DIMENSION;
-
-    /**
-     * The operation parameter descriptor for the {@code "src_semi_major"} optional parameter value.
-     * Valid values range from 0 to infinity. Units are {@linkplain SI#METRE metres}.
-     */
-    static final ParameterDescriptor<Double> SRC_SEMI_MAJOR;
-
-    /**
-     * The operation parameter descriptor for the {@code "src_semi_minor"} optional parameter value.
-     * Valid values range from 0 to infinity. Units are {@linkplain SI#METRE metres}.
-     */
-    static final ParameterDescriptor<Double> SRC_SEMI_MINOR;
-
-    /**
-     * The operation parameter descriptor for the {@code "src_semi_major"} optional parameter value.
-     * Valid values range from 0 to infinity. Units are {@linkplain SI#METRE metres}.
-     */
-    static final ParameterDescriptor<Double> TGT_SEMI_MAJOR;
-
-    /**
-     * The operation parameter descriptor for the {@code "src_semi_minor"} optional parameter value.
-     * Valid values range from 0 to infinity. Units are {@linkplain SI#METRE metres}.
-     */
-    static final ParameterDescriptor<Double> TGT_SEMI_MINOR;
-
+    private static final ParameterDescriptorGroup PARAMETERS;
     static {
-        final ParameterBuilder builder = builder();
-        /*
-         * OGC parameters not defined in EPSG database.
-         */
-        builder.setCodeSpace(Citations.OGC, Constants.OGC).setRequired(false);
-        DIMENSION = builder.addName("dim").createBounded(2, 3, DEFAULT_DIMENSION);
-        SRC_SEMI_MAJOR = builder.addName("src_semi_major").createStrictlyPositive(Double.NaN, SI.METRE);
-        SRC_SEMI_MINOR = builder.addName("src_semi_minor").createStrictlyPositive(Double.NaN, SI.METRE);
-        TGT_SEMI_MAJOR = builder.addName("tgt_semi_major").createStrictlyPositive(Double.NaN, SI.METRE);
-        TGT_SEMI_MINOR = builder.addName("tgt_semi_minor").createStrictlyPositive(Double.NaN, SI.METRE);
+        PARAMETERS = builder()
+                .addIdentifier("9605")
+                .addName("Abridged Molodensky")
+                .addName(Citations.OGC, "Abridged_Molodenski")
+                .createGroupWithSameParameters(Molodensky.PARAMETERS);
     }
 
-    private AbridgedMolodensky() {
-        super(DEFAULT_DIMENSION, DEFAULT_DIMENSION, null);
+    /**
+     * The providers for all combinations between 2D and 3D cases.
+     * Array length is 4. Index is build with following rule:
+     * <ul>
+     *   <li>Bit 1: dimension of source coordinates (0 for 2D, 1 for 3D).</li>
+     *   <li>Bit 0: dimension of target coordinates (0 for 2D, 1 for 3D).</li>
+     * </ul>
+     */
+    private final AbridgedMolodensky[] redimensioned;
+
+    /**
+     * Constructs a new provider.
+     */
+    @SuppressWarnings("ThisEscapedInObjectConstruction")
+    public AbridgedMolodensky() {
+        super(3, 3, PARAMETERS);
+        redimensioned = new AbridgedMolodensky[4];
+        redimensioned[0] = new AbridgedMolodensky(2, 2, redimensioned);
+        redimensioned[1] = new AbridgedMolodensky(2, 3, redimensioned);
+        redimensioned[2] = new AbridgedMolodensky(3, 2, redimensioned);
+        redimensioned[3] = this;
+    }
+
+    /**
+     * Constructs a provider for the given dimensions.
+     *
+     * @param sourceDimension Number of dimensions in the source CRS of this operation method.
+     * @param targetDimension Number of dimensions in the target CRS of this operation method.
+     * @param redimensioned   Providers for all combinations between 2D and 3D cases.
+     */
+    private AbridgedMolodensky(final int sourceDimension, final int targetDimension, final AbridgedMolodensky[] redimensioned) {
+        super(sourceDimension, targetDimension, PARAMETERS);
+        this.redimensioned = redimensioned;
+    }
+
+    /**
+     * Returns the same operation method, but for different number of dimensions.
+     *
+     * @param  sourceDimensions The desired number of input dimensions.
+     * @param  targetDimensions The desired number of output dimensions.
+     * @return The redimensioned operation method, or {@code this} if no change is needed.
+     */
+    @Override
+    public OperationMethod redimension(final int sourceDimensions, final int targetDimensions) {
+        ArgumentChecks.ensureBetween("sourceDimensions", 2, 3, sourceDimensions);
+        ArgumentChecks.ensureBetween("targetDimensions", 2, 3, targetDimensions);
+        return redimensioned[((sourceDimensions & 1) << 1) | (targetDimensions & 1)];
+    }
+
+    /**
+     * While Abridged Molodensky method is an approximation of geocentric translation, this is not exactly that.
+     */
+    @Override
+    int getType() {
+        return OTHER;
+    }
+
+    /**
+     * Creates an Abridged Molodensky transform from the specified group of parameter values.
+     *
+     * @param  factory The factory to use for creating concatenated transforms.
+     * @param  values  The group of parameter values.
+     * @return The created Abridged Molodensky transform.
+     * @throws FactoryException if a transform can not be created.
+     */
+    @Override
+    public MathTransform createMathTransform(final MathTransformFactory factory, final ParameterValueGroup values)
+            throws FactoryException
+    {
+        return Molodensky.createMathTransform(factory, Parameters.castOrWrap(values),
+                getSourceDimensions(), getTargetDimensions(), true);
     }
 }

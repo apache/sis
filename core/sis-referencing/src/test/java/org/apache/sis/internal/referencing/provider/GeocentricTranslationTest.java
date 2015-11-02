@@ -127,7 +127,7 @@ public final strictfp class GeocentricTranslationTest extends MathTransformTestC
         values.parameter("X-axis translation").setValue( 84.87);
         values.parameter("Y-axis translation").setValue( 96.49);
         values.parameter("Z-axis translation").setValue(116.95);
-        if ((method.getType() & GeocentricAffine.GEOGRAPHIC) != 0) {
+        if (method instanceof GeocentricAffineBetweenGeographic) {
             setEllipsoids(values, CommonCRS.WGS84.ellipsoid(), CommonCRS.ED50.ellipsoid());
         }
         tolerance = precision(targetStep);
@@ -138,7 +138,7 @@ public final strictfp class GeocentricTranslationTest extends MathTransformTestC
     /**
      * Sets the source and target ellipsoid axes in the given parameter value group.
      */
-    private static void setEllipsoids(final ParameterValueGroup values, final Ellipsoid source, final Ellipsoid target) {
+    static void setEllipsoids(final ParameterValueGroup values, final Ellipsoid source, final Ellipsoid target) {
         values.parameter("src_semi_major").setValue(source.getSemiMajorAxis());
         values.parameter("src_semi_minor").setValue(source.getSemiMinorAxis());
         values.parameter("tgt_semi_major").setValue(target.getSemiMajorAxis());

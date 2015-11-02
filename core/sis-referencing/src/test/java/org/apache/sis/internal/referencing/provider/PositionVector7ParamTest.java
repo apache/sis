@@ -18,14 +18,19 @@ package org.apache.sis.internal.referencing.provider;
 
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterValueGroup;
+import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.TransformException;
+import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.referencing.operation.transform.MathTransformTestCase;
+import org.apache.sis.referencing.CommonCRS;
+import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.junit.Test;
 
+import static java.lang.StrictMath.toRadians;
 import static org.junit.Assert.*;
 
 
@@ -49,11 +54,16 @@ public final strictfp class PositionVector7ParamTest extends MathTransformTestCa
      * IOGP Publication 373-7-2 – Geomatics Guidance Note number 7, part 2 – April 2015
      * </blockquote>
      *
-     * @param  step The step as a value from 2 to 3 inclusive.
+     * @param  step The step as a value from 1 to 4 inclusive.
      * @return The sample point at the given step.
      */
     static double[] samplePoint(final int step) {
         switch (step) {
+            case 1: return new double[] {
+                        0,
+                        0,
+                        0
+                    };
             case 2: return new double[] {
                         3657660.66,                 // X: Toward prime meridian
                          255768.55,                 // Y: Toward 90° east
@@ -64,20 +74,38 @@ public final strictfp class PositionVector7ParamTest extends MathTransformTestCa
                          255778.43,                 // Y: Toward 90° east
                         5201387.75                  // Z: Toward north pole
                     };
+            case 4: return new double[] {           // Anti-regression values (NOT provided by EPSG)
+                         0.5540 / 60 / 60,          // λ: Longitude
+                         0.1465 / 60 / 60,          // φ: Latitude
+                        -0.60                       // h: Height
+                    };
             default: throw new AssertionError(step);
         }
     }
 
     /**
-     * Creates the transform for EPSG:1238.
+     * Creates the transformation from WGS 72 to WGS 84.
+     *
+     * @param method The operation method to use.
+     * @param rotationSign {@code +1} for Position Vector, or -1 for Frame Rotation.
      */
-    private void createTransform() throws FactoryException {
-        final PositionVector7Param method = new PositionVector7Param();
+    static MathTransform createTransform(final GeocentricAffine method, final int rotationSign) throws FactoryException {
         final ParameterValueGroup values = method.getParameters().createValue();
-        values.parameter("Z-axis translation").setValue(+4.5  );    // metres
-        values.parameter("Z-axis rotation")   .setValue(+0.554);    // arc-seconds
-        values.parameter("Scale difference")  .setValue(+0.219);    // parts per million
-        transform = method.createMathTransform(DefaultFactories.forBuildin(MathTransformFactory.class), values);
+        values.parameter("Z-axis translation").setValue(+4.5  );                    // metres
+        values.parameter("Z-axis rotation")   .setValue(+0.554 * rotationSign);     // arc-seconds
+        values.parameter("Scale difference")  .setValue(+0.219);                    // parts per million
+        if (method instanceof GeocentricAffineBetweenGeographic) {
+            GeocentricTranslationTest.setEllipsoids(values, CommonCRS.WGS72.ellipsoid(), CommonCRS.WGS84.ellipsoid());
+        }
+        return method.createMathTransform(DefaultFactories.forBuildin(MathTransformFactory.class), values);
+    }
+
+    /**
+     * Creates the transformation from WGS 72 to WGS 84.
+     */
+    private void createTransform(final GeocentricAffine method) throws FactoryException {
+        transform = createTransform(method, +1);
+        validate();
     }
 
     /**
@@ -89,11 +117,29 @@ public final strictfp class PositionVector7ParamTest extends MathTransformTestCa
      */
     @Test
     public void testGeocentricDomain() throws FactoryException, TransformException {
-        createTransform();
+        createTransform(new PositionVector7Param());
         tolerance = 0.01;  // Precision for (X,Y,Z) values given by EPSG
         derivativeDeltas = new double[] {100, 100, 100};    // In metres
         assertTrue(transform instanceof LinearTransform);
         verifyTransform(samplePoint(2), samplePoint(3));
-        validate();
+    }
+
+    /**
+     * Tests <cite>"Position Vector transformation (geog3D domain)"</cite> (EPSG:1037).
+     *
+     * @throws FactoryException if an error occurred while creating the transform.
+     * @throws TransformException if transformation of a point failed.
+     */
+    @Test
+    @DependsOnMethod("testGeocentricDomain")
+    public void testGeographicDomain() throws FactoryException, TransformException {
+        final double delta = toRadians(100.0 / 60) / 1852;      // Approximatively 100 metres
+        derivativeDeltas = new double[] {delta, delta, 100};    // (Δλ, Δφ, Δh)
+        tolerance  = Formulas.ANGULAR_TOLERANCE;
+        zTolerance = Formulas.LINEAR_TOLERANCE;
+        zDimension = new int[] {2};
+        createTransform(new PositionVector7Param3D());
+        assertFalse(transform instanceof LinearTransform);
+        verifyTransform(samplePoint(1), samplePoint(4));
     }
 }

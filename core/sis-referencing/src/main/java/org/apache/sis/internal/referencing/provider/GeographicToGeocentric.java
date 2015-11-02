@@ -21,7 +21,6 @@ import javax.measure.quantity.Length;
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptorGroup;
-import org.opengis.parameter.InvalidParameterValueException;
 import org.opengis.parameter.ParameterNotFoundException;
 import org.opengis.parameter.ParameterValue;
 import org.opengis.referencing.operation.Conversion;
@@ -32,9 +31,9 @@ import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.referencing.operation.transform.EllipsoidalToCartesianTransform;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.internal.util.Constants;
+import org.apache.sis.parameter.Parameters;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
-import org.apache.sis.util.resources.Errors;
 
 
 /**
@@ -49,6 +48,8 @@ import org.apache.sis.util.resources.Errors;
  * @since   0.7
  * @version 0.7
  * @module
+ *
+ * @see GeocentricToGeographic
  */
 public final class GeographicToGeocentric extends AbstractProvider {
     /**
@@ -71,31 +72,31 @@ public final class GeographicToGeocentric extends AbstractProvider {
             .addIdentifier("9602")
             .addName("Geographic/geocentric conversions")
             .addName(Citations.OGC, NAME)
-            .createGroupForMapProjection(AbridgedMolodensky.DIMENSION);
+            .createGroupForMapProjection(GeocentricAffineBetweenGeographic.DIMENSION);
             // Not really a map projection, but we leverage the same axis parameters.
     }
 
     /**
      * The provider for the other number of dimensions (2D or 3D).
      */
-    private final GeographicToGeocentric complement;
+    private final GeographicToGeocentric redimensioned;
 
     /**
      * Constructs a provider for the 3-dimensional case.
      */
     public GeographicToGeocentric() {
         super(3, 3, PARAMETERS);
-        complement = new GeographicToGeocentric(this);
+        redimensioned = new GeographicToGeocentric(this);
     }
 
     /**
      * Constructs a provider for the 2-dimensional case.
      *
-     * @param complement The three-dimensional case.
+     * @param redimensioned The three-dimensional case.
      */
-    private GeographicToGeocentric(final GeographicToGeocentric complement) {
+    private GeographicToGeocentric(final GeographicToGeocentric redimensioned) {
         super(2, 3, PARAMETERS);
-        this.complement = complement;
+        this.redimensioned = redimensioned;
     }
 
     /**
@@ -130,26 +131,21 @@ public final class GeographicToGeocentric extends AbstractProvider {
     static MathTransform createMathTransform(final Class<?> caller, final MathTransformFactory factory,
             final ParameterValueGroup values) throws FactoryException
     {
-        boolean is3D = true;
+        boolean is3D;
         try {
             /*
              * Set 'is3D' to false if the given parameter group contains a "DIM" parameter having value 2.
              * If the parameter value is 3 or if there is no parameter value, then 'is3D' is set to true,
              * which is consistent with the default value.
              */
-            final int dimension = values.parameter("dim").intValue();
-            switch (dimension) {
-                case 2:  is3D = false;      break;
-                case 3:  /* already true */ break;
-                default: throw new InvalidParameterValueException(Errors.format(Errors.Keys.
-                            IllegalArgumentValue_2, "dim", dimension), "dim", dimension);
-            }
+            is3D = GeocentricAffineBetweenGeographic.getDimension(Parameters.castOrWrap(values)) != 2;
         } catch (ParameterNotFoundException e) {
             /*
              * Should never happen with the parameter descriptors provided by SIS, but could happen
              * if the user provided its own descriptor. Default to three-dimensional case.
              */
             Logging.recoverableException(Logging.getLogger(Loggers.COORDINATE_OPERATION), caller, "createMathTransform", e);
+            is3D = true;
         }
         final ParameterValue<?> semiMajor = values.parameter(Constants.SEMI_MAJOR);
         final Unit<Length> unit = semiMajor.getUnit().asType(Length.class);
@@ -169,6 +165,6 @@ public final class GeographicToGeocentric extends AbstractProvider {
     public OperationMethod redimension(final int sourceDimensions, final int targetDimensions) {
         ArgumentChecks.ensureBetween("sourceDimensions", 2, 3, sourceDimensions);
         ArgumentChecks.ensureBetween("targetDimensions", 3, 3, targetDimensions);
-        return (sourceDimensions == getSourceDimensions()) ? this : complement;
+        return (sourceDimensions == getSourceDimensions()) ? this : redimensioned;
     }
 }
