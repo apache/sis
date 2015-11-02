@@ -29,7 +29,7 @@ import org.opengis.parameter.ParameterDescriptorGroup;
  * @module
  */
 @XmlTransient
-public final class PositionVector7Param3D extends GeocentricAffine {
+public final class PositionVector7Param3D extends GeocentricAffineBetweenGeographic {
     /**
      * Serial number for inter-operability with different versions.
      */
@@ -55,7 +55,7 @@ public final class PositionVector7Param3D extends GeocentricAffine {
      * Constructs the provider.
      */
     public PositionVector7Param3D() {
-        super(3, PARAMETERS);
+        super(3, 3, PARAMETERS);
     }
 
     /**
@@ -63,6 +63,6 @@ public final class PositionVector7Param3D extends GeocentricAffine {
      */
     @Override
     int getType() {
-        return GEOGRAPHIC | SEVEN_PARAM;
+        return SEVEN_PARAM;
     }
 }

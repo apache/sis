@@ -31,7 +31,7 @@ import org.opengis.parameter.ParameterDescriptorGroup;
  * @module
  */
 @XmlTransient
-public final class CoordinateFrameRotation3D extends GeocentricAffine {
+public final class CoordinateFrameRotation3D extends GeocentricAffineBetweenGeographic {
     /**
      * Serial number for inter-operability with different versions.
      */
@@ -57,7 +57,7 @@ public final class CoordinateFrameRotation3D extends GeocentricAffine {
      * Constructs the provider.
      */
     public CoordinateFrameRotation3D() {
-        super(3, PARAMETERS);
+        super(3, 3, PARAMETERS);
     }
 
     /**
@@ -65,6 +65,6 @@ public final class CoordinateFrameRotation3D extends GeocentricAffine {
      */
     @Override
     int getType() {
-        return GEOGRAPHIC | FRAME_ROTATION;
+        return FRAME_ROTATION;
     }
 }

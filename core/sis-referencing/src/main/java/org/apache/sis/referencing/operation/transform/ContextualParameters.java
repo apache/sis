@@ -304,9 +304,8 @@ public class ContextualParameters extends Parameters implements Serializable {
      * <div class="note"><b>Note:</b>
      * The definition of "kernel" is left to implementors.
      * In the particular case of Apache SIS implementation of map projections,
-     * kernels are instances of {@link org.apache.sis.referencing.operation.projection.NormalizedProjection},
-     * {@link EllipsoidalToCartesianTransform} or {@link AbridgedMolodenskyTransform}.
-     * </div>
+     * kernels are instances of {@link org.apache.sis.referencing.operation.projection.NormalizedProjection}.
+     * Other "kernels" in SIS are {@link EllipsoidalToCartesianTransform} and {@link MolodenskyTransform}.</div>
      *
      * @return The description of the parameters.
      */

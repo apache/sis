@@ -31,7 +31,7 @@ import org.opengis.parameter.ParameterDescriptorGroup;
  * @module
  */
 @XmlTransient
-public final class GeocentricTranslation3D extends GeocentricAffine {
+public final class GeocentricTranslation3D extends GeocentricAffineBetweenGeographic {
     /**
      * Serial number for inter-operability with different versions.
      */
@@ -52,7 +52,7 @@ public final class GeocentricTranslation3D extends GeocentricAffine {
      * Constructs the provider.
      */
     public GeocentricTranslation3D() {
-        super(3, PARAMETERS);
+        super(3, 3, PARAMETERS);
     }
 
     /**
@@ -60,6 +60,6 @@ public final class GeocentricTranslation3D extends GeocentricAffine {
      */
     @Override
     int getType() {
-        return GEOGRAPHIC | TRANSLATION;
+        return TRANSLATION;
     }
 }

@@ -47,6 +47,12 @@ import org.apache.sis.util.logging.Logging;
 
 /**
  * The base class of operation methods performing a translation, rotation and/or scale in geocentric coordinates.
+ * Those methods may or may not include a Geographic/Geocentric conversion before the operation in geocentric domain,
+ * depending on whether or not implementations extend the {@link GeocentricAffineBetweenGeographic} subclass.
+ *
+ * <div class="note"><b>Note on class name:</b>
+ * the {@code GeocentricAffine} class name is chosen as a generalization of {@link GeocentricTranslation}.
+ * "Geocentric translations" is an operation name defined by EPSG.</div>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.7
@@ -130,26 +136,22 @@ public abstract class GeocentricAffine extends AbstractProvider {
     /**
      * Return value for {@link #getType()}.
      */
-    static final int TRANSLATION=1, SEVEN_PARAM=2, FRAME_ROTATION=3;
-
-    /**
-     * Mask that can be combined with {@link #TRANSLATION}, {@link #SEVEN_PARAM} or {@link #FRAME_ROTATION}
-     * for meaning that the operation is performed in the geographic domain.
-     */
-    static final int GEOGRAPHIC = 4;
+    static final int TRANSLATION=1, SEVEN_PARAM=2, FRAME_ROTATION=3, OTHER=0;
 
     /**
      * Constructs a provider with the specified parameters.
-     * This constructor is for subclass constructors only.
+     *
+     * @param sourceDimensions Number of dimensions in the source CRS of this operation method.
+     * @param targetDimensions Number of dimensions in the target CRS of this operation method.
      */
-    GeocentricAffine(final int dimension, final ParameterDescriptorGroup parameters) {
-        super(dimension, dimension, parameters);
+    GeocentricAffine(int sourceDimensions, int targetDimensions, ParameterDescriptorGroup parameters) {
+        super(sourceDimensions, targetDimensions, parameters);
     }
 
     /**
-     * Returns the operation type.
+     * Returns the interface implemented by all coordinate operations that extends this class.
      *
-     * @return Interface implemented by all coordinate operations that use this method.
+     * @return Fixed to {@link Transformation}.
      */
     @Override
     public final Class<Transformation> getOperationType() {
@@ -157,30 +159,32 @@ public abstract class GeocentricAffine extends AbstractProvider {
     }
 
     /**
-     * Returns the operation type as one of {@link #TRANSLATION}, {@link #SEVEN_PARAM} or
-     * {@link #FRAME_ROTATION} constants.
+     * Returns the operation sub-type as one of {@link #TRANSLATION}, {@link #SEVEN_PARAM},
+     * {@link #FRAME_ROTATION} or {@link #OTHER} constants.
      */
     abstract int getType();
 
     /**
      * Creates a math transform from the specified group of parameter values.
+     * The default implementation creates an affine transform, but some subclasses
+     * will wrap that affine operation into Geographic/Geocentric conversions.
      *
-     * @param  factory Ignored (can be null).
+     * @param  factory The factory to use for creating concatenated transforms.
      * @param  values The group of parameter values.
      * @return The created math transform.
      * @throws FactoryException if a transform can not be created.
      */
     @Override
     @SuppressWarnings("fallthrough")
-    public final MathTransform createMathTransform(final MathTransformFactory factory, final ParameterValueGroup values)
+    public MathTransform createMathTransform(final MathTransformFactory factory, final ParameterValueGroup values)
             throws FactoryException
     {
         final BursaWolfParameters parameters = new BursaWolfParameters(null, null);
         final Parameters pv = Parameters.castOrWrap(values);
-        final int type = getType();
-        switch (type & ~GEOGRAPHIC) {
+        boolean reverseRotation = false;
+        switch (getType()) {
             default:             throw new AssertionError();
-            case FRAME_ROTATION: parameters.reverseRotation();         // Fall through
+            case FRAME_ROTATION: reverseRotation = true;               // Fall through
             case SEVEN_PARAM:    parameters.rX = pv.doubleValue(RX);
                                  parameters.rY = pv.doubleValue(RY);
                                  parameters.rZ = pv.doubleValue(RZ);
@@ -189,34 +193,10 @@ public abstract class GeocentricAffine extends AbstractProvider {
                                  parameters.tY = pv.doubleValue(TY);
                                  parameters.tZ = pv.doubleValue(TZ);
         }
-        MathTransform transform = MathTransforms.linear(parameters.getPositionVectorTransformation(null));
-        if ((type & GEOGRAPHIC) != 0) {
-            /*
-             * Create a "Geographic to Geocentric" conversion with ellipsoid axis length units converted to metres
-             * (the unit implied by AbridgedMolodensky.SRC_SEMI_MAJOR) because it is the unit of Bursa-Wolf param.
-             * that we created above.
-             */
-            Parameters step = Parameters.castOrWrap(factory.getDefaultParameters(GeographicToGeocentric.NAME));
-            step.getOrCreate(MapProjection.SEMI_MAJOR).setValue(pv.doubleValue(AbridgedMolodensky.SRC_SEMI_MAJOR));
-            step.getOrCreate(MapProjection.SEMI_MINOR).setValue(pv.doubleValue(AbridgedMolodensky.SRC_SEMI_MINOR));
-            step.getOrCreate(AbridgedMolodensky.DIMENSION).setValue(getSourceDimensions());
-            final MathTransform toGeocentric = factory.createParameterizedTransform(step);
-            /*
-             * Create a "Geocentric to Geographic" conversion with ellipsoid axis length units converted to metres
-             * because this is the unit of the Geocentric CRS used above.
-             */
-            step = Parameters.castOrWrap(factory.getDefaultParameters(GeocentricToGeographic.NAME));
-            step.getOrCreate(MapProjection.SEMI_MAJOR).setValue(pv.doubleValue(AbridgedMolodensky.TGT_SEMI_MAJOR));
-            step.getOrCreate(MapProjection.SEMI_MINOR).setValue(pv.doubleValue(AbridgedMolodensky.TGT_SEMI_MINOR));
-            step.getOrCreate(AbridgedMolodensky.DIMENSION).setValue(getTargetDimensions());
-            final MathTransform toGeographic = factory.createParameterizedTransform(step);
-            /*
-             * The  Geocentric → Affine → Geographic  chain.
-             */
-            transform = factory.createConcatenatedTransform(toGeocentric,
-                        factory.createConcatenatedTransform(transform, toGeographic));
+        if (reverseRotation) {
+            parameters.reverseRotation();
         }
-        return transform;
+        return MathTransforms.linear(parameters.getPositionVectorTransformation(null));
     }
 
     /**

@@ -40,6 +40,8 @@ import org.apache.sis.metadata.iso.citation.Citations;
  * @since   0.7
  * @version 0.7
  * @module
+ *
+ * @see GeographicToGeocentric
  */
 public final class GeocentricToGeographic extends AbstractProvider {
     /**
@@ -59,31 +61,31 @@ public final class GeocentricToGeographic extends AbstractProvider {
     static {
         PARAMETERS = builder()
             .addName(Citations.OGC, NAME)
-            .createGroupForMapProjection(AbridgedMolodensky.DIMENSION);
+            .createGroupForMapProjection(GeocentricAffineBetweenGeographic.DIMENSION);
             // Not really a map projection, but we leverage the same axis parameters.
     }
 
     /**
      * The provider for the other number of dimensions (2D or 3D).
      */
-    private final GeocentricToGeographic complement;
+    private final GeocentricToGeographic redimensioned;
 
     /**
      * Constructs a provider for the 3-dimensional case.
      */
     public GeocentricToGeographic() {
         super(3, 3, PARAMETERS);
-        complement = new GeocentricToGeographic(this);
+        redimensioned = new GeocentricToGeographic(this);
     }
 
     /**
      * Constructs a provider for the 2-dimensional case.
      *
-     * @param complement The three-dimensional case.
+     * @param redimensioned The three-dimensional case.
      */
-    private GeocentricToGeographic(final GeocentricToGeographic complement) {
+    private GeocentricToGeographic(final GeocentricToGeographic redimensioned) {
         super(3, 2, PARAMETERS);
-        this.complement = complement;
+        this.redimensioned = redimensioned;
     }
 
     /**
@@ -128,6 +130,6 @@ public final class GeocentricToGeographic extends AbstractProvider {
     public OperationMethod redimension(final int sourceDimensions, final int targetDimensions) {
         ArgumentChecks.ensureBetween("sourceDimensions", 3, 3, sourceDimensions);
         ArgumentChecks.ensureBetween("targetDimensions", 2, 3, targetDimensions);
-        return (targetDimensions == getTargetDimensions()) ? this : complement;
+        return (targetDimensions == getTargetDimensions()) ? this : redimensioned;
     }
 }

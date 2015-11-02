@@ -29,7 +29,7 @@ import org.opengis.parameter.ParameterDescriptorGroup;
  * @module
  */
 @XmlTransient
-public final class PositionVector7Param2D extends GeocentricAffine {
+public final class PositionVector7Param2D extends GeocentricAffineBetweenGeographic {
     /**
      * Serial number for inter-operability with different versions.
      */
@@ -43,10 +43,10 @@ public final class PositionVector7Param2D extends GeocentricAffine {
         PARAMETERS = builder()
             .addIdentifier("9606")
             .addName("Position Vector transformation (geog2D domain)")
-            .createGroup(AbridgedMolodensky.SRC_SEMI_MAJOR,
-                         AbridgedMolodensky.SRC_SEMI_MINOR,
-                         AbridgedMolodensky.TGT_SEMI_MAJOR,
-                         AbridgedMolodensky.TGT_SEMI_MINOR,
+            .createGroup(SRC_SEMI_MAJOR,
+                         SRC_SEMI_MINOR,
+                         TGT_SEMI_MAJOR,
+                         TGT_SEMI_MINOR,
                          TX, TY, TZ, RX, RY, RZ, DS);
         /*
          * NOTE: we omit the "Bursa-Wolf" alias because it is ambiguous, since it can apply
@@ -59,7 +59,7 @@ public final class PositionVector7Param2D extends GeocentricAffine {
      * Constructs the provider.
      */
     public PositionVector7Param2D() {
-        super(2, PARAMETERS);
+        super(2, 2, PARAMETERS);
     }
 
     /**
@@ -67,6 +67,6 @@ public final class PositionVector7Param2D extends GeocentricAffine {
      */
     @Override
     int getType() {
-        return GEOGRAPHIC | SEVEN_PARAM;
+        return SEVEN_PARAM;
     }
 }

@@ -31,7 +31,7 @@ import org.opengis.parameter.ParameterDescriptorGroup;
  * @module
  */
 @XmlTransient
-public final class GeocentricTranslation2D extends GeocentricAffine {
+public final class GeocentricTranslation2D extends GeocentricAffineBetweenGeographic {
     /**
      * Serial number for inter-operability with different versions.
      */
@@ -45,10 +45,10 @@ public final class GeocentricTranslation2D extends GeocentricAffine {
         PARAMETERS = builder()
             .addIdentifier("9603")
             .addName("Geocentric translations (geog2D domain)")
-            .createGroup(AbridgedMolodensky.SRC_SEMI_MAJOR,
-                         AbridgedMolodensky.SRC_SEMI_MINOR,
-                         AbridgedMolodensky.TGT_SEMI_MAJOR,
-                         AbridgedMolodensky.TGT_SEMI_MINOR,
+            .createGroup(SRC_SEMI_MAJOR,
+                         SRC_SEMI_MINOR,
+                         TGT_SEMI_MAJOR,
+                         TGT_SEMI_MINOR,
                          TX, TY, TZ);
     }
 
@@ -56,7 +56,7 @@ public final class GeocentricTranslation2D extends GeocentricAffine {
      * Constructs the provider.
      */
     public GeocentricTranslation2D() {
-        super(2, PARAMETERS);
+        super(2, 2, PARAMETERS);
     }
 
     /**
@@ -64,6 +64,6 @@ public final class GeocentricTranslation2D extends GeocentricAffine {
      */
     @Override
     int getType() {
-        return GEOGRAPHIC | TRANSLATION;
+        return TRANSLATION;
     }
 }

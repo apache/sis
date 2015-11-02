@@ -57,7 +57,7 @@ public final class CoordinateFrameRotation extends GeocentricAffine {
      * Constructs the provider.
      */
     public CoordinateFrameRotation() {
-        super(3, PARAMETERS);
+        super(3, 3, PARAMETERS);
     }
 
     /**
