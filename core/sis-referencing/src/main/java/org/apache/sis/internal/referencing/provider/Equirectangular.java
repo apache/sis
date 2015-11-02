@@ -179,19 +179,19 @@ public final class Equirectangular extends AbstractProvider {
         // Do not declare the ESRI "Equidistant_Cylindrical" projection name below,
         // for avoiding confusion with EPSG "Equidistant Cylindrical" ellipsoidal projection.
         PARAMETERS = addIdentifierAndLegacy(builder, "1029", "9823")  // 9823 uses deprecated parameter names
-            .addName(                   "Equidistant Cylindrical (Spherical)")
-            .addName(                   "Plate Carrée")  // Not formally defined by EPSG, but cited in documentation.
-            .addName(Citations.OGC,     "Equirectangular")
-            .addName(Citations.ESRI,    "Plate_Carree")
-            .addName(Citations.GEOTIFF, "CT_Equirectangular")
-            .addName(Citations.PROJ4,   "eqc")
-            .addIdentifier(Citations.GEOTIFF, "17")
-            .createGroupForMapProjection(
-                    STANDARD_PARALLEL,
-                    LATITUDE_OF_ORIGIN,     // Not formally an Equirectangular parameter.
-                    LONGITUDE_OF_ORIGIN,
-                    FALSE_EASTING,
-                    FALSE_NORTHING);
+                .addName(                   "Equidistant Cylindrical (Spherical)")
+                .addName(                   "Plate Carrée")  // Not formally defined by EPSG, but cited in documentation.
+                .addName(Citations.OGC,     "Equirectangular")
+                .addName(Citations.ESRI,    "Plate_Carree")
+                .addName(Citations.GEOTIFF, "CT_Equirectangular")
+                .addName(Citations.PROJ4,   "eqc")
+                .addIdentifier(Citations.GEOTIFF, "17")
+                .createGroupForMapProjection(
+                        STANDARD_PARALLEL,
+                        LATITUDE_OF_ORIGIN,     // Not formally an Equirectangular parameter.
+                        LONGITUDE_OF_ORIGIN,
+                        FALSE_EASTING,
+                        FALSE_NORTHING);
     }
 
     /**

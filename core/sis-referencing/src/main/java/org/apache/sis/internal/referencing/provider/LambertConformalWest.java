@@ -71,14 +71,14 @@ public final class LambertConformalWest extends AbstractLambert {
                 .setRemarks(Messages.formatInternational(Messages.Keys.MisnamedParameter_1, "False westing")));
 
         PARAMETERS = builder
-            .addIdentifier(IDENTIFIER)
-            .addName("Lambert Conic Conformal (West Orientated)")
-            .createGroupForMapProjection(
-                    LambertConformal1SP.LATITUDE_OF_ORIGIN,
-                    LambertConformal1SP.LONGITUDE_OF_ORIGIN,
-                    LambertConformal1SP.SCALE_FACTOR,
-                                        FALSE_WESTING,
-                    LambertConformal1SP.FALSE_NORTHING);
+                .addIdentifier(IDENTIFIER)
+                .addName("Lambert Conic Conformal (West Orientated)")
+                .createGroupForMapProjection(
+                        LambertConformal1SP.LATITUDE_OF_ORIGIN,
+                        LambertConformal1SP.LONGITUDE_OF_ORIGIN,
+                        LambertConformal1SP.SCALE_FACTOR,
+                                            FALSE_WESTING,
+                        LambertConformal1SP.FALSE_NORTHING);
     }
 
     /**

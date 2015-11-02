@@ -43,13 +43,13 @@ public final class GeocentricTranslation2D extends GeocentricAffineBetweenGeogra
     static final ParameterDescriptorGroup PARAMETERS;
     static {
         PARAMETERS = builder()
-            .addIdentifier("9603")
-            .addName("Geocentric translations (geog2D domain)")
-            .createGroup(SRC_SEMI_MAJOR,
-                         SRC_SEMI_MINOR,
-                         TGT_SEMI_MAJOR,
-                         TGT_SEMI_MINOR,
-                         TX, TY, TZ);
+                .addIdentifier("9603")
+                .addName("Geocentric translations (geog2D domain)")
+                .createGroup(SRC_SEMI_MAJOR,
+                             SRC_SEMI_MINOR,
+                             TGT_SEMI_MAJOR,
+                             TGT_SEMI_MINOR,
+                             TX, TY, TZ);
     }
 
     /**

@@ -79,28 +79,28 @@ public final class TransverseMercator extends AbstractMercator {
                 .rename(Citations.NETCDF, "scale_factor_at_central_meridian"));
 
         PARAMETERS = builder
-            .addIdentifier(              "9807")
-            .addName(                    "Transverse Mercator")
-            .addName(                    "Gauss-Kruger")
-            .addName(                    "Gauss-Boaga")
-            .addName(                    "TM")
-            .addName(Citations.OGC,      "Transverse_Mercator")
-            .addName(Citations.ESRI,     "Transverse_Mercator")
-            .addName(Citations.ESRI,     "Gauss_Kruger")
-            .addName(Citations.NETCDF,   "TransverseMercator")
-            .addName(Citations.GEOTIFF,  "CT_TransverseMercator")
-            .addName(Citations.S57,      "Transverse Mercator")
-            .addName(Citations.S57,      "TME")
-            .addName(Citations.PROJ4,    "tmerc")
-            .addIdentifier(Citations.GEOTIFF,  "1")
-            .addIdentifier(Citations.MAP_INFO, "8")
-            .addIdentifier(Citations.S57,     "13")
-            .createGroupForMapProjection(
-                    LATITUDE_OF_ORIGIN,
-                    LONGITUDE_OF_ORIGIN,
-                    SCALE_FACTOR,
-                    FALSE_EASTING,
-                    FALSE_NORTHING);
+                .addIdentifier(              "9807")
+                .addName(                    "Transverse Mercator")
+                .addName(                    "Gauss-Kruger")
+                .addName(                    "Gauss-Boaga")
+                .addName(                    "TM")
+                .addName(Citations.OGC,      "Transverse_Mercator")
+                .addName(Citations.ESRI,     "Transverse_Mercator")
+                .addName(Citations.ESRI,     "Gauss_Kruger")
+                .addName(Citations.NETCDF,   "TransverseMercator")
+                .addName(Citations.GEOTIFF,  "CT_TransverseMercator")
+                .addName(Citations.S57,      "Transverse Mercator")
+                .addName(Citations.S57,      "TME")
+                .addName(Citations.PROJ4,    "tmerc")
+                .addIdentifier(Citations.GEOTIFF,  "1")
+                .addIdentifier(Citations.MAP_INFO, "8")
+                .addIdentifier(Citations.S57,     "13")
+                .createGroupForMapProjection(
+                        LATITUDE_OF_ORIGIN,
+                        LONGITUDE_OF_ORIGIN,
+                        SCALE_FACTOR,
+                        FALSE_EASTING,
+                        FALSE_NORTHING);
     }
 
     /**

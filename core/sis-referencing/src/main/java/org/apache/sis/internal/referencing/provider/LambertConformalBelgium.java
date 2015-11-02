@@ -18,7 +18,6 @@ package org.apache.sis.internal.referencing.provider;
 
 import javax.xml.bind.annotation.XmlTransient;
 import org.opengis.parameter.ParameterDescriptorGroup;
-import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.metadata.iso.citation.Citations;
 
 
@@ -50,22 +49,20 @@ public final class LambertConformalBelgium extends AbstractLambert {
      */
     static final ParameterDescriptorGroup PARAMETERS;
     static {
-        final ParameterBuilder builder = builder();
-
-        PARAMETERS = builder
-            .addIdentifier(IDENTIFIER)
-            .addName(                    "Lambert Conic Conformal (2SP Belgium)")
-            .addName(Citations.OGC,      "Lambert_Conformal_Conic_2SP_Belgium")
-            .addName(Citations.ESRI,     "Lambert_Conformal_Conic_2SP_Belgium")
-            .addIdentifier(Citations.MAP_INFO, "19")
-            .addIdentifier(Citations.S57,       "6")
-            .createGroupForMapProjection(
-                    LambertConformal2SP.LATITUDE_OF_FALSE_ORIGIN,
-                    LambertConformal2SP.LONGITUDE_OF_FALSE_ORIGIN,
-                    LambertConformal2SP.STANDARD_PARALLEL_1,
-                    LambertConformal2SP.STANDARD_PARALLEL_2,
-                    LambertConformal2SP.EASTING_AT_FALSE_ORIGIN,
-                    LambertConformal2SP.NORTHING_AT_FALSE_ORIGIN);
+        PARAMETERS = builder()
+                .addIdentifier(IDENTIFIER)
+                .addName(                    "Lambert Conic Conformal (2SP Belgium)")
+                .addName(Citations.OGC,      "Lambert_Conformal_Conic_2SP_Belgium")
+                .addName(Citations.ESRI,     "Lambert_Conformal_Conic_2SP_Belgium")
+                .addIdentifier(Citations.MAP_INFO, "19")
+                .addIdentifier(Citations.S57,       "6")
+                .createGroupForMapProjection(
+                        LambertConformal2SP.LATITUDE_OF_FALSE_ORIGIN,
+                        LambertConformal2SP.LONGITUDE_OF_FALSE_ORIGIN,
+                        LambertConformal2SP.STANDARD_PARALLEL_1,
+                        LambertConformal2SP.STANDARD_PARALLEL_2,
+                        LambertConformal2SP.EASTING_AT_FALSE_ORIGIN,
+                        LambertConformal2SP.NORTHING_AT_FALSE_ORIGIN);
     }
 
     /**

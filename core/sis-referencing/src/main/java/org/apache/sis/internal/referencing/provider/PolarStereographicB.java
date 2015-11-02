@@ -90,17 +90,17 @@ public final class PolarStereographicB extends AbstractStereographic {
                 .setRemarks(notFormalParameter("Polar Stereographic (variant A)")).setDeprecated(true));
 
         PARAMETERS = builder
-            .addIdentifier(IDENTIFIER)
-            .addName("Polar Stereographic (variant B)")
-            .addName(Citations.S57,  "Polar stereographic")
-            .addName(Citations.S57,  "PST")
-            .addIdentifier(Citations.S57, "11")
-            .createGroupForMapProjection(
-                    STANDARD_PARALLEL,
-                    LONGITUDE_OF_ORIGIN,
-                    SCALE_FACTOR,       // Not formally a parameter of this projection.
-                    FALSE_EASTING,
-                    FALSE_NORTHING);
+                .addIdentifier(IDENTIFIER)
+                .addName("Polar Stereographic (variant B)")
+                .addName(Citations.S57,  "Polar stereographic")
+                .addName(Citations.S57,  "PST")
+                .addIdentifier(Citations.S57, "11")
+                .createGroupForMapProjection(
+                        STANDARD_PARALLEL,
+                        LONGITUDE_OF_ORIGIN,
+                        SCALE_FACTOR,       // Not formally a parameter of this projection.
+                        FALSE_EASTING,
+                        FALSE_NORTHING);
     }
 
     /**

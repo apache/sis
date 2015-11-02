@@ -90,14 +90,14 @@ public class RegionalMercator extends AbstractMercator {
                 .rename(Citations.GEOTIFF, "FalseOriginNorthing"));
 
         PARAMETERS = builder
-            .addIdentifier(IDENTIFIER)
-            .addName("Mercator (variant C)")
-            .createGroupForMapProjection(
-                    Mercator2SP.STANDARD_PARALLEL,
-                    Mercator1SP.LONGITUDE_OF_ORIGIN,    // Really "natural origin", not "false origin".
-                    LATITUDE_OF_FALSE_ORIGIN,
-                    EASTING_AT_FALSE_ORIGIN,
-                    NORTHING_AT_FALSE_ORIGIN);
+                .addIdentifier(IDENTIFIER)
+                .addName("Mercator (variant C)")
+                .createGroupForMapProjection(
+                        Mercator2SP.STANDARD_PARALLEL,
+                        Mercator1SP.LONGITUDE_OF_ORIGIN,    // Really "natural origin", not "false origin".
+                        LATITUDE_OF_FALSE_ORIGIN,
+                        EASTING_AT_FALSE_ORIGIN,
+                        NORTHING_AT_FALSE_ORIGIN);
     }
 
     /**

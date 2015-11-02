@@ -152,25 +152,25 @@ public final class LambertConformal2SP extends AbstractLambert {
                 .setRequired(false).setDeprecated(true));
 
         PARAMETERS = builder
-            .addIdentifier(IDENTIFIER)
-            .addName(                    "Lambert Conic Conformal (2SP)")
-            .addName(Citations.OGC,      "Lambert_Conformal_Conic_2SP")
-            .addName(Citations.ESRI,     "Lambert_Conformal_Conic")
-            .addName(Citations.NETCDF,   "LambertConformal")
-            .addName(Citations.GEOTIFF,  "CT_LambertConfConic_2SP")
-            .addName(Citations.GEOTIFF,  "CT_LambertConfConic")
-            .addName(Citations.PROJ4,    "lcc")
-            .addIdentifier(Citations.GEOTIFF,  "8")
-            .addIdentifier(Citations.MAP_INFO, "3")
-            .addIdentifier(Citations.S57,      "6")
-            .createGroupForMapProjection(
-                    LATITUDE_OF_FALSE_ORIGIN,
-                    LONGITUDE_OF_FALSE_ORIGIN,
-                    STANDARD_PARALLEL_1,
-                    STANDARD_PARALLEL_2,
-                    scaleFactor,           // Not formally a LambertConformal2SP parameter.
-                    EASTING_AT_FALSE_ORIGIN,
-                    NORTHING_AT_FALSE_ORIGIN);
+                .addIdentifier(IDENTIFIER)
+                .addName(                    "Lambert Conic Conformal (2SP)")
+                .addName(Citations.OGC,      "Lambert_Conformal_Conic_2SP")
+                .addName(Citations.ESRI,     "Lambert_Conformal_Conic")
+                .addName(Citations.NETCDF,   "LambertConformal")
+                .addName(Citations.GEOTIFF,  "CT_LambertConfConic_2SP")
+                .addName(Citations.GEOTIFF,  "CT_LambertConfConic")
+                .addName(Citations.PROJ4,    "lcc")
+                .addIdentifier(Citations.GEOTIFF,  "8")
+                .addIdentifier(Citations.MAP_INFO, "3")
+                .addIdentifier(Citations.S57,      "6")
+                .createGroupForMapProjection(
+                        LATITUDE_OF_FALSE_ORIGIN,
+                        LONGITUDE_OF_FALSE_ORIGIN,
+                        STANDARD_PARALLEL_1,
+                        STANDARD_PARALLEL_2,
+                        scaleFactor,           // Not formally a LambertConformal2SP parameter.
+                        EASTING_AT_FALSE_ORIGIN,
+                        NORTHING_AT_FALSE_ORIGIN);
     }
 
     /**
