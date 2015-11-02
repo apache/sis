@@ -41,13 +41,13 @@ public final class PositionVector7Param2D extends GeocentricAffineBetweenGeograp
     static final ParameterDescriptorGroup PARAMETERS;
     static {
         PARAMETERS = builder()
-            .addIdentifier("9606")
-            .addName("Position Vector transformation (geog2D domain)")
-            .createGroup(SRC_SEMI_MAJOR,
-                         SRC_SEMI_MINOR,
-                         TGT_SEMI_MAJOR,
-                         TGT_SEMI_MINOR,
-                         TX, TY, TZ, RX, RY, RZ, DS);
+                .addIdentifier("9606")
+                .addName("Position Vector transformation (geog2D domain)")
+                .createGroup(SRC_SEMI_MAJOR,
+                             SRC_SEMI_MINOR,
+                             TGT_SEMI_MAJOR,
+                             TGT_SEMI_MINOR,
+                             TX, TY, TZ, RX, RY, RZ, DS);
         /*
          * NOTE: we omit the "Bursa-Wolf" alias because it is ambiguous, since it can apply
          * to both "Coordinate Frame Rotation" and "Position Vector 7-param. transformation"

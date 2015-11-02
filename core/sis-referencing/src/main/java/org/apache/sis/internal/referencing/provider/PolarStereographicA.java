@@ -74,18 +74,18 @@ public final class PolarStereographicA extends AbstractStereographic {
                 .rename(Citations.GEOTIFF, "StraightVertPoleLong"));
 
         PARAMETERS = builder
-            .addIdentifier(             IDENTIFIER)
-            .addName(                   NAME)
-            .addName(Citations.OGC,     "Polar_Stereographic")
-            .addName(Citations.GEOTIFF, "CT_PolarStereographic")
-            .addName(Citations.PROJ4,   "stere")
-            .addIdentifier(Citations.GEOTIFF, "15")
-            .createGroupForMapProjection(
-                    LATITUDE_OF_ORIGIN,     // Can be only ±90°
-                    LONGITUDE_OF_ORIGIN,
-                    SCALE_FACTOR,
-                    FALSE_EASTING,
-                    FALSE_NORTHING);
+                .addIdentifier(             IDENTIFIER)
+                .addName(                   NAME)
+                .addName(Citations.OGC,     "Polar_Stereographic")
+                .addName(Citations.GEOTIFF, "CT_PolarStereographic")
+                .addName(Citations.PROJ4,   "stere")
+                .addIdentifier(Citations.GEOTIFF, "15")
+                .createGroupForMapProjection(
+                        LATITUDE_OF_ORIGIN,     // Can be only ±90°
+                        LONGITUDE_OF_ORIGIN,
+                        SCALE_FACTOR,
+                        FALSE_EASTING,
+                        FALSE_NORTHING);
     }
 
     /**

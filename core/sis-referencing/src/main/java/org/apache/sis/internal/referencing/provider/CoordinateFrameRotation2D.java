@@ -43,9 +43,9 @@ public final class CoordinateFrameRotation2D extends GeocentricAffineBetweenGeog
     private static final ParameterDescriptorGroup PARAMETERS;
     static {
         PARAMETERS = builder()
-            .addIdentifier("9607")
-            .addName("Coordinate Frame Rotation (geog2D domain)")
-            .createGroupWithSameParameters(PositionVector7Param2D.PARAMETERS);
+                .addIdentifier("9607")
+                .addName("Coordinate Frame Rotation (geog2D domain)")
+                .createGroupWithSameParameters(PositionVector7Param2D.PARAMETERS);
         /*
          * NOTE: we omit the "Bursa-Wolf" alias because it is ambiguous, since it can apply
          * to both "Coordinate Frame Rotation" and "Position Vector 7-param. transformation"

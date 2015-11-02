@@ -41,10 +41,10 @@ public final class PositionVector7Param extends GeocentricAffine {
     static final ParameterDescriptorGroup PARAMETERS;
     static {
         PARAMETERS = builder()
-            .addIdentifier("1033")
-            .addName("Position Vector transformation (geocentric domain)")
-            .addName("Helmert transformation")
-            .createGroup(TX, TY, TZ, RX, RY, RZ, DS);
+                .addIdentifier("1033")
+                .addName("Position Vector transformation (geocentric domain)")
+                .addName("Helmert transformation")
+                .createGroup(TX, TY, TZ, RX, RY, RZ, DS);
         /*
          * NOTE: we omit the "Bursa-Wolf" alias because it is ambiguous, since it can apply
          * to both "Coordinate Frame Rotation" and "Position Vector 7-param. transformation"

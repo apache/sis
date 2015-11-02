@@ -43,9 +43,9 @@ public final class CoordinateFrameRotation extends GeocentricAffine {
     private static final ParameterDescriptorGroup PARAMETERS;
     static {
         PARAMETERS = builder()
-            .addIdentifier("1032")
-            .addName("Coordinate Frame Rotation (geocentric domain)")
-            .createGroupWithSameParameters(PositionVector7Param.PARAMETERS);
+                .addIdentifier("1032")
+                .addName("Coordinate Frame Rotation (geocentric domain)")
+                .createGroupWithSameParameters(PositionVector7Param.PARAMETERS);
         /*
          * NOTE: we omit the "Bursa-Wolf" alias because it is ambiguous, since it can apply
          * to both "Coordinate Frame Rotation" and "Position Vector 7-param. transformation"

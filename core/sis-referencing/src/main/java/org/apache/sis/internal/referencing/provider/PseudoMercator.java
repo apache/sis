@@ -18,7 +18,6 @@ package org.apache.sis.internal.referencing.provider;
 
 import javax.xml.bind.annotation.XmlTransient;
 import org.opengis.parameter.ParameterDescriptorGroup;
-import org.apache.sis.parameter.ParameterBuilder;
 
 
 /**
@@ -48,11 +47,10 @@ public final class PseudoMercator extends AbstractMercator {
      */
     private static final ParameterDescriptorGroup PARAMETERS;
     static {
-        final ParameterBuilder builder = builder();
-        PARAMETERS = builder
-            .addIdentifier(IDENTIFIER)
-            .addName("Popular Visualisation Pseudo Mercator")
-            .createGroupForMapProjection(toArray(MercatorSpherical.PARAMETERS.descriptors()));
+        PARAMETERS = builder()
+                .addIdentifier(IDENTIFIER)
+                .addName("Popular Visualisation Pseudo Mercator")
+                .createGroupForMapProjection(toArray(MercatorSpherical.PARAMETERS.descriptors()));
     }
 
     /**

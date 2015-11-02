@@ -60,14 +60,14 @@ public final class PolarStereographicC extends AbstractStereographic {
     private static final ParameterDescriptorGroup PARAMETERS;
     static {
         PARAMETERS = builder()
-            .addIdentifier(IDENTIFIER)
-            .addName("Polar Stereographic (variant C)")
-            .createGroupForMapProjection(
-                    PolarStereographicB.STANDARD_PARALLEL,
-                    PolarStereographicB.LONGITUDE_OF_ORIGIN,
-                    PolarStereographicB.SCALE_FACTOR,       // Not formally a parameter of this projection.
-                    EASTING_AT_FALSE_ORIGIN,
-                    NORTHING_AT_FALSE_ORIGIN);
+                .addIdentifier(IDENTIFIER)
+                .addName("Polar Stereographic (variant C)")
+                .createGroupForMapProjection(
+                        PolarStereographicB.STANDARD_PARALLEL,
+                        PolarStereographicB.LONGITUDE_OF_ORIGIN,
+                        PolarStereographicB.SCALE_FACTOR,       // Not formally a parameter of this projection.
+                        EASTING_AT_FALSE_ORIGIN,
+                        NORTHING_AT_FALSE_ORIGIN);
     }
 
     /**

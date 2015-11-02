@@ -41,9 +41,9 @@ public final class PositionVector7Param3D extends GeocentricAffineBetweenGeograp
     static final ParameterDescriptorGroup PARAMETERS;
     static {
         PARAMETERS = builder()
-            .addIdentifier("1037")
-            .addName("Position Vector transformation (geog3D domain)")
-            .createGroupWithSameParameters(PositionVector7Param2D.PARAMETERS);
+                .addIdentifier("1037")
+                .addName("Position Vector transformation (geog3D domain)")
+                .createGroupWithSameParameters(PositionVector7Param2D.PARAMETERS);
         /*
          * NOTE: we omit the "Bursa-Wolf" alias because it is ambiguous, since it can apply
          * to both "Coordinate Frame Rotation" and "Position Vector 7-param. transformation"

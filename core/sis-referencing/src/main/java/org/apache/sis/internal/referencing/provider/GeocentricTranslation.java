@@ -43,9 +43,9 @@ public final class GeocentricTranslation extends GeocentricAffine {
     static final ParameterDescriptorGroup PARAMETERS;
     static {
         PARAMETERS = builder()
-            .addIdentifier("1031")
-            .addName("Geocentric translations (geocentric domain)")
-            .createGroup(TX, TY, TZ);
+                .addIdentifier("1031")
+                .addName("Geocentric translations (geocentric domain)")
+                .createGroup(TX, TY, TZ);
     }
 
     /**

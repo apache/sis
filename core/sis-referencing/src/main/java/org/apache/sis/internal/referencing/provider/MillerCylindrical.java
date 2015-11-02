@@ -19,7 +19,6 @@ package org.apache.sis.internal.referencing.provider;
 import javax.xml.bind.annotation.XmlTransient;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.apache.sis.internal.util.Constants;
-import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.metadata.iso.citation.Citations;
 
 
@@ -64,14 +63,13 @@ public final class MillerCylindrical extends AbstractMercator {
      */
     private static final ParameterDescriptorGroup PARAMETERS;
     static {
-        final ParameterBuilder builder = builder().setCodeSpace(Citations.OGC, Constants.OGC);
-        PARAMETERS = builder
-            .addName      ("Miller_Cylindrical")
-            .addName      (Citations.GEOTIFF,  "CT_MillerCylindrical")
-            .addIdentifier(Citations.GEOTIFF,  "20")
-            .addName      (Citations.PROJ4,    "mill")
-            .addIdentifier(Citations.MAP_INFO, "11")
-            .createGroupForMapProjection(toArray(MercatorSpherical.PARAMETERS.descriptors()));
+        PARAMETERS = builder().setCodeSpace(Citations.OGC, Constants.OGC)
+                .addName      ("Miller_Cylindrical")
+                .addName      (Citations.GEOTIFF,  "CT_MillerCylindrical")
+                .addIdentifier(Citations.GEOTIFF,  "20")
+                .addName      (Citations.PROJ4,    "mill")
+                .addIdentifier(Citations.MAP_INFO, "11")
+                .createGroupForMapProjection(toArray(MercatorSpherical.PARAMETERS.descriptors()));
     }
 
     /**

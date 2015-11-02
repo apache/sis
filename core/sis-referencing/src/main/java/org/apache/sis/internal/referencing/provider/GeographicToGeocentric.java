@@ -69,11 +69,11 @@ public final class GeographicToGeocentric extends AbstractProvider {
     public static final ParameterDescriptorGroup PARAMETERS;
     static {
         PARAMETERS = builder()
-            .addIdentifier("9602")
-            .addName("Geographic/geocentric conversions")
-            .addName(Citations.OGC, NAME)
-            .createGroupForMapProjection(GeocentricAffineBetweenGeographic.DIMENSION);
-            // Not really a map projection, but we leverage the same axis parameters.
+                .addIdentifier("9602")
+                .addName("Geographic/geocentric conversions")
+                .addName(Citations.OGC, NAME)
+                .createGroupForMapProjection(GeocentricAffineBetweenGeographic.DIMENSION);
+                // Not really a map projection, but we leverage the same axis parameters.
     }
 
     /**

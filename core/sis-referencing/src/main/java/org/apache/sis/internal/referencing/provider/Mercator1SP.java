@@ -85,20 +85,20 @@ public final class Mercator1SP extends AbstractMercator {
                 .addName(Citations.PROJ4,   "k"));
 
         PARAMETERS = builder
-            .addIdentifier(              "9804")                        // The ellipsoidal case
-            .addName(                    "Mercator (variant A)")        // Starting from EPSG version 7.6
-            .addName(                    "Mercator (1SP)")              // Prior to EPSG version 7.6
-            .addName(Citations.OGC,      "Mercator_1SP")
-            .addName(Citations.GEOTIFF,  "CT_Mercator")
-            .addName(Citations.PROJ4,    "merc")
-            .addIdentifier(Citations.GEOTIFF,   "7")
-            .addIdentifier(Citations.MAP_INFO, "10")    // MapInfo names this projection "Mercator".
-            .createGroupForMapProjection(
-                    LATITUDE_OF_ORIGIN,
-                    LONGITUDE_OF_ORIGIN,
-                    SCALE_FACTOR,
-                    FALSE_EASTING,
-                    FALSE_NORTHING);
+                .addIdentifier(              "9804")                        // The ellipsoidal case
+                .addName(                    "Mercator (variant A)")        // Starting from EPSG version 7.6
+                .addName(                    "Mercator (1SP)")              // Prior to EPSG version 7.6
+                .addName(Citations.OGC,      "Mercator_1SP")
+                .addName(Citations.GEOTIFF,  "CT_Mercator")
+                .addName(Citations.PROJ4,    "merc")
+                .addIdentifier(Citations.GEOTIFF,   "7")
+                .addIdentifier(Citations.MAP_INFO, "10")    // MapInfo names this projection "Mercator".
+                .createGroupForMapProjection(
+                        LATITUDE_OF_ORIGIN,
+                        LONGITUDE_OF_ORIGIN,
+                        SCALE_FACTOR,
+                        FALSE_EASTING,
+                        FALSE_NORTHING);
     }
 
     /**
