@@ -69,25 +69,25 @@ public abstract class GeocentricAffineBetweenGeographic extends GeocentricAffine
      * The operation parameter descriptor for the {@code "src_semi_major"} optional parameter value.
      * Valid values range from 0 to infinity. Units are {@linkplain SI#METRE metres}.
      */
-    static final ParameterDescriptor<Double> SRC_SEMI_MAJOR;
+    public static final ParameterDescriptor<Double> SRC_SEMI_MAJOR;
 
     /**
      * The operation parameter descriptor for the {@code "src_semi_minor"} optional parameter value.
      * Valid values range from 0 to infinity. Units are {@linkplain SI#METRE metres}.
      */
-    static final ParameterDescriptor<Double> SRC_SEMI_MINOR;
+    public static final ParameterDescriptor<Double> SRC_SEMI_MINOR;
 
     /**
      * The operation parameter descriptor for the {@code "src_semi_major"} optional parameter value.
      * Valid values range from 0 to infinity. Units are {@linkplain SI#METRE metres}.
      */
-    static final ParameterDescriptor<Double> TGT_SEMI_MAJOR;
+    public static final ParameterDescriptor<Double> TGT_SEMI_MAJOR;
 
     /**
      * The operation parameter descriptor for the {@code "src_semi_minor"} optional parameter value.
      * Valid values range from 0 to infinity. Units are {@linkplain SI#METRE metres}.
      */
-    static final ParameterDescriptor<Double> TGT_SEMI_MINOR;
+    public static final ParameterDescriptor<Double> TGT_SEMI_MINOR;
 
     static {
         final ParameterBuilder builder = builder().setCodeSpace(Citations.OGC, Constants.OGC).setRequired(false);

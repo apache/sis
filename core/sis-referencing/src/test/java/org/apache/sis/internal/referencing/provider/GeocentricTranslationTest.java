@@ -56,7 +56,8 @@ public final strictfp class GeocentricTranslationTest extends MathTransformTestC
      * Returns the sample point for a step in the example given by the EPSG guidance note.
      *
      * <blockquote><b>Source:</b>
-     * §2.4.3.5 <cite>Three-parameter geocentric translations</cite> in
+     * §2.4.3.5 <cite>Three-parameter geocentric translations</cite> and
+     * §2.4.4.2 <cite>Abridged Molodensky transformation</cite> in
      * IOGP Publication 373-7-2 – Geomatics Guidance Note number 7, part 2 – April 2015
      * </blockquote>
      *
@@ -69,7 +70,7 @@ public final strictfp class GeocentricTranslationTest extends MathTransformTestC
      *   <b>Step 4:</b> Target point in ED50:   53°48'36.565"N,  02'07"51.477"E,  28.02 metres.
      * </pre>
      *
-     * @param  step The step as a value from 1 to 4 inclusive.
+     * @param  step The step as a value from 1 to 5 inclusive.
      * @return The sample point at the given step.
      */
     public static double[] samplePoint(final int step) {
@@ -89,10 +90,15 @@ public final strictfp class GeocentricTranslationTest extends MathTransformTestC
                          140349.83,                 // Y: Toward 90° east
                         5124421.30                  // Z: Toward north pole
                     };
-            case 4: return new double[] {
+            case 4: return new double[] {           // Result according geocentric translation
                          2 + ( 7 + 51.477/60)/60,   // λ: Longitude
                         53 + (48 + 36.565/60)/60,   // φ: Latitude
                         28.02                       // h: Height
+                    };
+            case 5: return new double[] {           // Result according abridged Molodensky
+                         2 + ( 7 + 51.477/60)/60,   // λ: Longitude
+                        53 + (48 + 36.563/60)/60,   // φ: Latitude
+                        28.091                      // h: Height
                     };
             default: throw new AssertionError(step);
         }
@@ -107,7 +113,8 @@ public final strictfp class GeocentricTranslationTest extends MathTransformTestC
     public static double precision(final int step) {
         switch (step) {
             case 1:
-            case 4: return 0.001 / 60 / 60 / 2;     // Half the precision of (λ,φ) values given by EPSG
+            case 4:
+            case 5: return 0.001 / 60 / 60 / 2;     // Half the precision of (λ,φ) values given by EPSG
             case 2: return 0.001 / 2;               // Half the precision for (X,Y,Z) values given by EPSG
             case 3: return 0.01 / 2;                // Half the precision for (X,Y,Z) values given by EPSG
             default: throw new AssertionError(step);

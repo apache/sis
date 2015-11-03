@@ -328,11 +328,15 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
      */
     private static String getName(final MathTransform transform) {
         if (transform instanceof AbstractMathTransform) {
-            ParameterValueGroup params = ((AbstractMathTransform) transform).getParameterValues();
-            if (params != null) {
-                String name = params.getDescriptor().getName().getCode();
-                if (name != null && !(name = name.trim()).isEmpty()) {
-                    return name;
+            ParameterValueGroup params;
+            params = ((AbstractMathTransform) transform).getContextualParameters();
+            if (params == null) {
+                params = ((AbstractMathTransform) transform).getParameterValues();
+                if (params != null) {
+                    String name = params.getDescriptor().getName().getCode();
+                    if (name != null && !(name = name.trim()).isEmpty()) {
+                        return name;
+                    }
                 }
             }
         }
