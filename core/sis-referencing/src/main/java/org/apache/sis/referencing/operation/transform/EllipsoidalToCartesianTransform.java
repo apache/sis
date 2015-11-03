@@ -213,18 +213,20 @@ public class EllipsoidalToCartesianTransform extends AbstractMathTransform imple
      * @param withHeight {@code true} if geographic coordinates include an ellipsoidal height (i.e. are 3-D),
      *                   or {@code false} if they are only 2-D.
      */
-    public EllipsoidalToCartesianTransform(final double semiMajor, final double semiMinor, final Unit<Length> unit, final boolean withHeight) {
+    public EllipsoidalToCartesianTransform(final double semiMajor, final double semiMinor,
+            final Unit<Length> unit, final boolean withHeight)
+    {
         ArgumentChecks.ensureStrictlyPositive("semiMajor", semiMajor);
         ArgumentChecks.ensureStrictlyPositive("semiMinor", semiMinor);
         b = semiMinor / semiMajor;
         excentricitySquared = 1 - (b * b);
         useIterations = (excentricitySquared >= EXCENTRICITY_THRESHOLD * EXCENTRICITY_THRESHOLD);
         this.withHeight = withHeight;
-        context = new ContextualParameters(GeographicToGeocentric.PARAMETERS, withHeight ? 4 : 3, 4);
         /*
          * Copy parameters to the ContextualParameter. Those parameters are not used directly
          * by EllipsoidToCartesian, but we need to store them in case the user asks for them.
          */
+        context = new ContextualParameters(GeographicToGeocentric.PARAMETERS, withHeight ? 4 : 3, 4);
         context.getOrCreate(SEMI_MAJOR).setValue(semiMajor, unit);
         context.getOrCreate(SEMI_MINOR).setValue(semiMinor, unit);
         if (!withHeight) {
@@ -233,7 +235,7 @@ public class EllipsoidalToCartesianTransform extends AbstractMathTransform imple
         /*
          * Prepare two affine transforms to be executed before and after this EllipsoidalToCartesianTransform:
          *
-         *   - A "normalization" transform for conversing degrees to radians and normalizing the height,
+         *   - A "normalization" transform for converting degrees to radians and normalizing the height,
          *   - A "denormalization" transform for scaling (X,Y,Z) to the semi-major axis length.
          */
         context.normalizeGeographicInputs(0);
@@ -322,7 +324,6 @@ public class EllipsoidalToCartesianTransform extends AbstractMathTransform imple
      * @throws FactoryException if an error occurred while creating a transform.
      *
      * @see ContextualParameters#completeTransform(MathTransformFactory, MathTransform)
-     * @see org.apache.sis.referencing.operation.projection.NormalizedProjection#createMapProjection(MathTransformFactory)
      */
     public MathTransform createGeodeticConversion(final MathTransformFactory factory) throws FactoryException {
         return context.completeTransform(factory, this);
@@ -338,7 +339,7 @@ public class EllipsoidalToCartesianTransform extends AbstractMathTransform imple
      *         <cite>normalize</cite> → {@code this} → <cite>denormalize</cite> transforms.
      */
     @Override
-    protected final ContextualParameters getContextualParameters() {
+    protected ContextualParameters getContextualParameters() {
         return context;
     }
 

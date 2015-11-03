@@ -60,7 +60,7 @@ public final class AbridgedMolodensky extends GeocentricAffineBetweenGeographic 
     /**
      * The group of all parameters expected by this coordinate operation.
      */
-    private static final ParameterDescriptorGroup PARAMETERS;
+    public static final ParameterDescriptorGroup PARAMETERS;
     static {
         PARAMETERS = builder()
                 .addIdentifier("9605")

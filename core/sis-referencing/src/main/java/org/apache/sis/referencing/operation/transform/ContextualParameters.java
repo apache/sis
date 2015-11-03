@@ -491,6 +491,8 @@ public class ContextualParameters extends Parameters implements Serializable {
      * @throws FactoryException if an error occurred while creating a math transform instance.
      *
      * @see org.apache.sis.referencing.operation.projection.NormalizedProjection#createMapProjection(MathTransformFactory)
+     * @see EllipsoidalToCartesianTransform#createGeodeticConversion(MathTransformFactory)
+     * @see MolodenskyTransform#createGeodeticTransformation(MathTransformFactory)
      */
     @SuppressWarnings("AssignmentToForLoopParameter")
     public synchronized MathTransform completeTransform(final MathTransformFactory factory, final MathTransform kernel)

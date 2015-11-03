@@ -67,7 +67,7 @@ public final class Molodensky extends GeocentricAffineBetweenGeographic {
      * in replacement of {@link #TGT_SEMI_MAJOR}.
      * Units are {@linkplain SI#METRE metres}.
      */
-    private static final ParameterDescriptor<Double> AXIS_LENGTH_DIFFERENCE;
+    public static final ParameterDescriptor<Double> AXIS_LENGTH_DIFFERENCE;
 
     /**
      * The operation parameter descriptor for the <cite>Flattening difference</cite> optional
@@ -75,12 +75,12 @@ public final class Molodensky extends GeocentricAffineBetweenGeographic {
      * replacement of {@link #TGT_SEMI_MINOR}.
      * Valid values range from -1 to +1, {@linkplain Unit#ONE dimensionless}.
      */
-    private static final ParameterDescriptor<Double> FLATTENING_DIFFERENCE;
+    public static final ParameterDescriptor<Double> FLATTENING_DIFFERENCE;
 
     /**
      * The group of all parameters expected by this coordinate operation.
      */
-    static final ParameterDescriptorGroup PARAMETERS;
+    public static final ParameterDescriptorGroup PARAMETERS;
     static {
         final ParameterBuilder builder = builder();
         AXIS_LENGTH_DIFFERENCE = builder.addName("Semi-major axis length difference").create(Double.NaN, SI.METRE);
@@ -197,20 +197,21 @@ public final class Molodensky extends GeocentricAffineBetweenGeographic {
          * in the geocentric domain does not have any impact on the input/output
          * geographic coordinates.
          */
-        final double a = values.doubleValue(SRC_SEMI_MAJOR);
-        final double b = values.doubleValue(SRC_SEMI_MINOR);
+        final double semiMajor = values.doubleValue(SRC_SEMI_MAJOR);
+        final double semiMinor = values.doubleValue(SRC_SEMI_MINOR);
         final double ta, tb;
         double d = values.doubleValue(AXIS_LENGTH_DIFFERENCE);
-        ta = Double.isNaN(d) ? values.doubleValue(TGT_SEMI_MAJOR) : a + d;
+        ta = Double.isNaN(d) ? values.doubleValue(TGT_SEMI_MAJOR) : semiMajor + d;
         d = values.doubleValue(FLATTENING_DIFFERENCE);
         if (Double.isNaN(d)) {
             tb = values.doubleValue(TGT_SEMI_MINOR);
         } else {
-            tb = ta*(b/a - d);
+            tb = ta*(semiMinor/semiMajor - d);
         }
-        final double dx = values.doubleValue(TX);
-        final double dy = values.doubleValue(TY);
-        final double dz = values.doubleValue(TZ);
+        final double tX = values.doubleValue(TX);
+        final double tY = values.doubleValue(TY);
+        final double tZ = values.doubleValue(TZ);
+//      ΔFlattening    =  (ta-tb)/ta - (semiMajor-semiMinor)/semiMajor;
         throw new UnsupportedOperationException("Not supported yet.");
     }
 }

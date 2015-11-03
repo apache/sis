@@ -116,6 +116,7 @@ import org.junit.BeforeClass;
     org.apache.sis.referencing.operation.transform.MathTransformsTest.class,
     org.apache.sis.referencing.operation.transform.ContextualParametersTest.class,
     org.apache.sis.referencing.operation.transform.EllipsoidalToCartesianTransformTest.class,
+    org.apache.sis.referencing.operation.transform.MolodenskyTransformTest.class,
     org.apache.sis.referencing.operation.DefaultFormulaTest.class,
     org.apache.sis.referencing.operation.DefaultOperationMethodTest.class,
     org.apache.sis.referencing.operation.AbstractSingleOperationTest.class,

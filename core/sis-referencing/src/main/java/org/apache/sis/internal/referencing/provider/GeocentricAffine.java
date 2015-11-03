@@ -71,21 +71,21 @@ public abstract class GeocentricAffine extends AbstractProvider {
      * ({@linkplain BursaWolfParameters#tX tX}) parameter value. Valid values range
      * from negative to positive infinity. Units are {@linkplain SI#METRE metres}.
      */
-    static final ParameterDescriptor<Double> TX;
+    public static final ParameterDescriptor<Double> TX;
 
     /**
      * The operation parameter descriptor for the <cite>Y-axis translation</cite>
      * ({@linkplain BursaWolfParameters#tY tY}) parameter value. Valid values range
      * from negative to positive infinity. Units are {@linkplain SI#METRE metres}.
      */
-    static final ParameterDescriptor<Double> TY;
+    public static final ParameterDescriptor<Double> TY;
 
     /**
      * The operation parameter descriptor for the <cite>Z-axis translation</cite>
      * ({@linkplain BursaWolfParameters#tZ tZ}) parameter value. Valid values range
      * from negative to positive infinity. Units are {@linkplain SI#METRE metres}.
      */
-    static final ParameterDescriptor<Double> TZ;
+    public static final ParameterDescriptor<Double> TZ;
 
     /**
      * The operation parameter descriptor for the <cite>X-axis rotation</cite>
