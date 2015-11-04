@@ -16,7 +16,6 @@
  */
 package org.apache.sis.referencing.operation.transform;
 
-import javax.measure.unit.SI;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.operation.MathTransformFactory;
@@ -59,10 +58,7 @@ public final strictfp class MolodenskyTransformTest extends MathTransformTestCas
     private void create(final boolean abridged) throws FactoryException {
         final Ellipsoid source = CommonCRS.WGS84.ellipsoid();
         final Ellipsoid target = CommonCRS.ED50.ellipsoid();
-        final double a = source.getSemiMajorAxis();
-        final double b = source.getSemiMinorAxis();
-        transform = new MolodenskyTransform(abridged, a, b, true, target.getSemiMajorAxis() - a,
-                1/target.getInverseFlattening() - 1/source.getInverseFlattening(), true, 84.87, 96.49, 116.95, SI.METRE)
+        transform = new MolodenskyTransform(source, true, target, true, 84.87, 96.49, 116.95, abridged)
                 .createGeodeticTransformation(DefaultFactories.forBuildin(MathTransformFactory.class));
 
         final double delta = toRadians(100.0 / 60) / 1852;          // Approximatively 100 metres
