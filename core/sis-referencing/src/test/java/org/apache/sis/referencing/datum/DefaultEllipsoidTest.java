@@ -38,7 +38,7 @@ import static org.apache.sis.test.MetadataAssert.*;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4
- * @version 0.4
+ * @version 0.7
  * @module
  */
 @DependsOn({
@@ -67,6 +67,33 @@ public final strictfp class DefaultEllipsoidTest extends XMLTestCase {
      */
     private static double nextLongitude(final Random random) {
         return (Longitude.MAX_VALUE - Longitude.MIN_VALUE) * random.nextDouble() + Longitude.MIN_VALUE;
+    }
+
+    /**
+     * Tests {@link DefaultEllipsoid#getEccentricity()}.
+     *
+     * @since 0.7
+     */
+    @Test
+    public void testGetEccentricity() {
+        final DefaultEllipsoid e = new DefaultEllipsoid(GeodeticDatumMock.WGS84.getEllipsoid());
+        assertEquals("semiMajorAxis",       6378137.0,            e.getSemiMajorAxis(),       STRICT);   // By definition
+        assertEquals("inverseFlattening",   298.257223563,        e.getInverseFlattening(),   STRICT);   // By definition
+        assertEquals("eccentricitySquared", 0.006694379990141317, e.getEccentricitySquared(), STRICT);
+        assertEquals("eccentricity",        0.0818191908426215,   e.getEccentricity(),        STRICT);
+    }
+
+    /**
+     * Tests {@link DefaultEllipsoid#flatteningDifference(Ellipsoid)}. This test uses the data provided
+     * in §2.4.4.2 of IOGP Publication 373-7-2 – Geomatics Guidance Note number 7, part 2 – April 2015.
+     *
+     * @since 0.7
+     */
+    @Test
+    public void testFlatteningDifference() {
+        final DefaultEllipsoid e = new DefaultEllipsoid(GeodeticDatumMock.WGS84.getEllipsoid());
+        assertEquals("flatteningDifference", 0.0,         e.flatteningDifference(GeodeticDatumMock.WGS84.getEllipsoid()), STRICT);
+        assertEquals("flatteningDifference", 1.41927E-05, e.flatteningDifference(GeodeticDatumMock.ED50 .getEllipsoid()), 1E-10);
     }
 
     /**

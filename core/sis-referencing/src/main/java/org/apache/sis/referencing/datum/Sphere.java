@@ -20,6 +20,7 @@ import java.util.Map;
 import javax.measure.unit.Unit;
 import javax.measure.quantity.Length;
 import javax.xml.bind.annotation.XmlTransient;
+import org.opengis.referencing.datum.Ellipsoid;
 
 import static java.lang.Math.*;
 
@@ -35,7 +36,7 @@ import static java.lang.Math.*;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4
- * @version 0.4
+ * @version 0.7
  * @module
  */
 @XmlTransient
@@ -79,6 +80,22 @@ final class Sphere extends DefaultEllipsoid {
     @Override
     public double getEccentricity() {
         return 0;
+    }
+
+    /**
+     * Eccentricity of a sphere is always zero.
+     */
+    @Override
+    public double getEccentricitySquared() {
+        return 0;
+    }
+
+    /**
+     * Returns the flattening factor of the other ellipsoid, since the flattening factor of {@code this} is zero.
+     */
+    @Override
+    public double flatteningDifference(final Ellipsoid other) {
+        return 1 / other.getInverseFlattening();
     }
 
     /**
