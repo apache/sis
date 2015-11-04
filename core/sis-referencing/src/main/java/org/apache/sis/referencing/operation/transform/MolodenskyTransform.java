@@ -48,9 +48,8 @@ import static java.lang.Math.*;
  * transformations (EPSG:1035 and 9603), but performed directly on geographic coordinates without
  * Geographic/Geocentric conversions.
  *
- * <div class="section">Number of dimensions</div>
- * {@code MolodenskyTransform}s works conceptually on three-dimensional coordinates, but the ellipsoidal height
- * can be omitted resulting in two-dimensional coordinates. No dimension other than 2 or 3 are allowed.
+ * <p>{@code MolodenskyTransform}s works conceptually on three-dimensional coordinates, but the ellipsoidal height
+ * can be omitted resulting in two-dimensional coordinates. No dimension other than 2 or 3 are allowed.</p>
  * <ul>
  *   <li>If the height is omitted from the input coordinates ({@code isSource3D} = {@code false}),
  *       then the {@linkplain #getSourceDimensions() source dimensions} is 2 and the height is
@@ -60,30 +59,20 @@ import static java.lang.Math.*;
  *       height (typically non-zero even if the input height was zero) is lost.</li>
  * </ul>
  *
- * <div class="section">Units of measurement</div>
- * This {@code MolodenskyTransform} class expects ordinate values if the following order and units:
+ * The transform expect ordinate values if the following order:
  * <ol>
- *   <li>longitudes in <strong>radians</strong> relative to the prime meridian (usually Greenwich),</li>
- *   <li>latitudes in <strong>radians</strong>,</li>
- *   <li>optionally heights above the ellipsoid, in same units than the ellipsoids axes.</li>
+ *   <li>longitudes (λ) relative to the prime meridian (usually Greenwich),</li>
+ *   <li>latitudes (φ),</li>
+ *   <li>optionally heights above the ellipsoid (h).</li>
  * </ol>
  *
- * For converting geographic coordinates in degrees, {@code MolodenskyTransform} instances
- * need to be concatenated with the following affine transforms:
- *
+ * The units of measurements depend on how the {@code MathTransform} has been created:
  * <ul>
- *   <li><cite>Normalization</cite> before {@code MolodenskyTransform}:<ul>
- *     <li>Conversion of (λ,φ) from degrees to radians</li>
- *   </ul></li>
- *   <li><cite>Denormalization</cite> after {@code MolodenskyTransform}:<ul>
- *     <li>Conversion of (λ,φ) from radians to degrees</li>
- *   </ul></li>
+ *   <li>{@code MolodenskyTransform} instances created directly by the constructor work with angular values in radians.
+ *       That constructor is reserved for subclasses only.</li>
+ *   <li>Transforms created by the {@link #createGeodeticTransformation createGeodeticTransformation(…)} static method
+ *       work with angular values in degrees and heights in the same units than the ellipsoid axes (usually metres).</li>
  * </ul>
- *
- * The full conversion chain including the above affine transforms
- * can be created by {@link #createGeodeticTransformation(MathTransformFactory)}.
- * Alternatively, the {@link #createGeodeticTransformation(Ellipsoid, Ellipsoid, boolean)}
- * convenience method can also be used.
  *
  * @author  Rueben Schulz (UBC)
  * @author  Martin Desruisseaux (IRD, Geomatys)
@@ -182,7 +171,29 @@ public class MolodenskyTransform extends AbstractMathTransform implements Serial
 
     /**
      * Creates a Molodensky transform from the specified parameters.
-     * Angular units of input coordinates and output coordinates are <strong>radians</strong>.
+     * This {@code MolodenskyTransform} class expects ordinate values if the following order and units:
+     * <ol>
+     *   <li>longitudes in <strong>radians</strong> relative to the prime meridian (usually Greenwich),</li>
+     *   <li>latitudes in <strong>radians</strong>,</li>
+     *   <li>optionally heights above the ellipsoid, in same units than the ellipsoids axes.</li>
+     * </ol>
+     *
+     * For converting geographic coordinates in degrees, {@code MolodenskyTransform} instances
+     * need to be concatenated with the following affine transforms:
+     *
+     * <ul>
+     *   <li><cite>Normalization</cite> before {@code MolodenskyTransform}:<ul>
+     *     <li>Conversion of (λ,φ) from degrees to radians</li>
+     *   </ul></li>
+     *   <li><cite>Denormalization</cite> after {@code MolodenskyTransform}:<ul>
+     *     <li>Conversion of (λ,φ) from radians to degrees</li>
+     *   </ul></li>
+     * </ul>
+     *
+     * After {@code MolodenskyTransform} construction,
+     * the full conversion chain including the above affine transforms can be created by
+     * <code>{@linkplain #getContextualParameters()}.{@linkplain ContextualParameters#completeTransform
+     * completeTransform}(factory, this)}</code>.
      *
      * @param source      The source ellipsoid.
      * @param isSource3D  {@code true} if the source coordinates have a height.
@@ -192,6 +203,8 @@ public class MolodenskyTransform extends AbstractMathTransform implements Serial
      * @param tY          The geocentric <var>Y</var> translation in meters.
      * @param tZ          The geocentric <var>Z</var> translation in meters.
      * @param isAbridged  {@code true} for the abridged formula, or {@code false} for the complete one.
+     *
+     * @see #createGeodeticTransformation(MathTransformFactory, Ellipsoid, boolean, Ellipsoid, boolean, double, double, double, boolean)
      */
     protected MolodenskyTransform(final Ellipsoid source, final boolean isSource3D,
                                   final Ellipsoid target, final boolean isTarget3D,
@@ -205,13 +218,13 @@ public class MolodenskyTransform extends AbstractMathTransform implements Serial
         if (isSource3D) type |= SOURCE_DIMENSION_MASK;
         if (isTarget3D) type |= TARGET_DIMENSION_MASK;
         this.type      = type;
-        this.semiMajor = source.getSemiMajorAxis();
-        this.Δa        = target.getSemiMajorAxis() - semiMajor;
+        this.semiMajor = src.getSemiMajorAxis();
+        this.Δa        = src.semiMajorDifference(target);
         this.tX        = tX;
         this.tY        = tY;
         this.tZ        = tZ;
 
-        final double semiMinor   = source.getSemiMinorAxis();
+        final double semiMinor   = src.getSemiMinorAxis();
         final double ΔFlattening = src.flatteningDifference(target);
         excentricitySquared      = src.getEccentricitySquared();
         Δfmod = isAbridged ? (semiMajor * ΔFlattening) + (semiMajor - semiMinor) * (Δa / semiMajor)
@@ -226,7 +239,7 @@ public class MolodenskyTransform extends AbstractMathTransform implements Serial
         if (isSource3D == isTarget3D) {
             context.getOrCreate(Molodensky.DIMENSION).setValue(isSource3D ? 3 : 2);
         }
-        final Unit<Length> unit = source.getAxisUnit();
+        final Unit<Length> unit = src.getAxisUnit();
         context.getOrCreate(Molodensky.TX)                    .setValue(tX, unit);
         context.getOrCreate(Molodensky.TY)                    .setValue(tY, unit);
         context.getOrCreate(Molodensky.TZ)                    .setValue(tZ, unit);
@@ -252,8 +265,9 @@ public class MolodenskyTransform extends AbstractMathTransform implements Serial
     }
 
     /**
-     * Returns the sequence of <cite>normalization</cite> → {@code this} → <cite>denormalization</cite>
-     * transforms as a whole. The transform works with input and output coordinates in the following units:
+     * Creates a transformation between two from geographic CRS. This factory method combines the
+     * {@code MolodenskyTransform} instance with the steps needed for converting values between
+     * degrees to radians. The transform works with input and output coordinates in the following units:
      *
      * <ol>
      *   <li>longitudes in degrees relative to the prime meridian (usually Greenwich),</li>
@@ -261,14 +275,31 @@ public class MolodenskyTransform extends AbstractMathTransform implements Serial
      *   <li>optionally heights above the ellipsoid, in the units given to the constructor (usually metres).</li>
      * </ol>
      *
-     * @param  factory The factory to use for creating the transform.
+     * @param factory     The factory to use for creating the transform.
+     * @param source      The source ellipsoid.
+     * @param isSource3D  {@code true} if the source coordinates have a height.
+     * @param target      The target ellipsoid.
+     * @param isTarget3D  {@code true} if the target coordinates have a height.
+     * @param tX          The geocentric <var>X</var> translation in meters.
+     * @param tY          The geocentric <var>Y</var> translation in meters.
+     * @param tZ          The geocentric <var>Z</var> translation in meters.
+     * @param isAbridged  {@code true} for the abridged formula, or {@code false} for the complete one.
      * @return The transformation between geographic coordinates.
      * @throws FactoryException if an error occurred while creating a transform.
-     *
-     * @see ContextualParameters#completeTransform(MathTransformFactory, MathTransform)
      */
-    public MathTransform createGeodeticTransformation(final MathTransformFactory factory) throws FactoryException {
-        return context.completeTransform(factory, this);
+    public static MathTransform createGeodeticTransformation(final MathTransformFactory factory,
+            final Ellipsoid source, final boolean isSource3D,
+            final Ellipsoid target, final boolean isTarget3D,
+            final double tX, final double tY, final double tZ,
+            final boolean isAbridged) throws FactoryException
+    {
+        final MolodenskyTransform tr;
+        if (!isSource3D && !isTarget3D) {
+            tr = new MolodenskyTransform2D(source, target, tX, tY, tZ, isAbridged);
+        } else {
+            tr = new MolodenskyTransform(source, isSource3D, target, isTarget3D, tX, tY, tZ, isAbridged);
+        }
+        return tr.context.completeTransform(factory, tr);
     }
 
     /**
@@ -290,7 +321,7 @@ public class MolodenskyTransform extends AbstractMathTransform implements Serial
      * The returned group contains parameter values for the number of dimensions and the excentricity.
      *
      * <div class="note"><b>Note:</b>
-     * This method is mostly for {@linkplain org.apache.sis.io.wkt.Convention#INTERNAL debugging purposes}
+     * this method is mostly for {@linkplain org.apache.sis.io.wkt.Convention#INTERNAL debugging purposes}
      * since the isolation of non-linear parameters in this class is highly implementation dependent.
      * Most GIS applications will instead be interested in the {@linkplain #getContextualParameters()
      * contextual parameters}.</div>
