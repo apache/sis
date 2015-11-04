@@ -205,7 +205,7 @@ public class ContextualParameters extends Parameters implements Serializable {
      * The inverse of {@link #normalize} or {@link #denormalize} matrices, computed when first needed.
      * Those matrices are cached only if {@link #isFrozen} is {@code true}.
      */
-    private transient MatrixSIS inverseNormalize, inverseDenormalize;
+    private transient Matrix inverseNormalize, inverseDenormalize;
 
     /**
      * The parameter values. Null elements in this array are empty slots available for adding new parameter values.
@@ -510,7 +510,24 @@ public class ContextualParameters extends Parameters implements Serializable {
         Matrix m;
         if ((m = MathTransforms.getMatrix(n)) != null)   normalize = m;
         if ((m = MathTransforms.getMatrix(d)) != null) denormalize = m;
+        inverseNormalize   = unique(factory, inverseNormalize);
+        inverseDenormalize = unique(factory, inverseDenormalize);
         return factory.createConcatenatedTransform(factory.createConcatenatedTransform(n, kernel), d);
+    }
+
+    /**
+     * Invoked for opportunistically replacing inverse matrices by unique instances. We rely on the fact that
+     * SIS's {@link DefaultMathTransformFactory} implementation caches the {@code MathTransform} instances,
+     * and that SIS implementations of {@code MathTransform.getMatrix()} return a single immutable matrix.
+     */
+    private static Matrix unique(final MathTransformFactory factory, Matrix matrix) throws FactoryException {
+        if (matrix != null) {
+            final Matrix m = MathTransforms.getMatrix(factory.createAffineTransform(matrix));
+            if (m != null) {
+                matrix = m;
+            }
+        }
+        return matrix;
     }
 
     /**
