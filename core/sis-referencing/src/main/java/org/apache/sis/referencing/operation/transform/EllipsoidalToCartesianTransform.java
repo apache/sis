@@ -27,7 +27,6 @@ import org.opengis.util.FactoryException;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptorGroup;
-import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
@@ -38,7 +37,6 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.util.DoubleDouble;
-import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.internal.referencing.DirectPositionView;
 import org.apache.sis.internal.referencing.provider.GeocentricToGeographic;
@@ -65,38 +63,28 @@ import static org.apache.sis.internal.referencing.provider.GeocentricAffineBetwe
  * This transform is usually part of a conversion from
  * {@linkplain org.apache.sis.referencing.crs.DefaultGeographicCRS geographic} to
  * {@linkplain org.apache.sis.referencing.crs.DefaultGeocentricCRS geocentric} coordinates.
- *
- * <p>Input coordinates are expected to contain:</p>
+ * Each input coordinates is expected to contain:
  * <ol>
- *   <li>longitudes in <strong>radians</strong> relative to the prime meridian (usually Greenwich),</li>
- *   <li>latitudes in <strong>radians</strong>,</li>
- *   <li>optionally heights above the ellipsoid, in units of an ellipsoid having a semi-major axis length of 1.</li>
+ *   <li>longitude (λ) relative to the prime meridian (usually Greenwich),</li>
+ *   <li>latitude (φ),</li>
+ *   <li>optionally height above the ellipsoid (h).</li>
  * </ol>
  *
- * Output coordinates are as below, in units of an ellipsoid having a semi-major axis length of 1:
+ * Output coordinates are as below:
  * <ol>
  *   <li>distance from Earth center on the X axis (toward the intersection of prime meridian and equator),</li>
  *   <li>distance from Earth center on the Y axis (toward the intersection of 90°E meridian and equator),</li>
  *   <li>distance from Earth center on the Z axis (toward North pole).</li>
  * </ol>
  *
- * <div class="section">Geographic to geocentric conversions</div>
- * For converting geographic coordinates to geocentric coordinates, {@code EllipsoidalToCartesianTransform} instances
- * need to be concatenated with the following affine transforms:
- *
+ * The units of measurements depend on how the {@code MathTransform} has been created:
  * <ul>
- *   <li><cite>Normalization</cite> before {@code EllipsoidalToCartesianTransform}:<ul>
- *     <li>Conversion of (λ,φ) from degrees to radians</li>
- *     <li>Division of (h) by the semi-major axis length</li>
- *   </ul></li>
- *   <li><cite>Denormalization</cite> after {@code EllipsoidalToCartesianTransform}:<ul>
- *     <li>Multiplication of (X,Y,Z) by the semi-major axis length</li>
- *   </ul></li>
+ *   <li>{@code EllipsoidalToCartesianTransform} instances created directly by the constructor expect (λ,φ) values
+ *       in radians and compute (X,Y,Z) values in units of an ellipsoid having a semi-major axis length of 1.
+ *       That constructor is reserved for subclasses only.</li>
+ *   <li>Transforms created by the {@link #createGeodeticConversion createGeodeticConversion(…)} static method expect
+ *       (λ,φ) values in degrees and compute (X,Y,Z) values in units of the ellipsoid axes (usually metres).</li>
  * </ul>
- *
- * The full conversion chain including the above affine transforms
- * can be created by {@link #createGeodeticConversion(MathTransformFactory)}.
- * Alternatively, the {@link #createGeodeticConversion(Ellipsoid, boolean)} convenience method can also be used.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.7
@@ -201,19 +189,51 @@ public class EllipsoidalToCartesianTransform extends AbstractMathTransform imple
     private final AbstractMathTransform inverse;
 
     /**
-     * Creates a transform from an ellipsoid of semi-major axis length of 1.
-     * Angular units of input coordinates are <strong>radians</strong>.
+     * Creates a transform from angles in radians on ellipsoid having a semi-major axis length of 1.
+     * More specifically {@code EllipsoidalToCartesianTransform} instances expect input coordinates
+     * as below:
      *
-     * <p>For a conversion from angles in degrees and height in metres, see the
-     * {@link #createGeodeticConversion(MathTransformFactory)} method.</p>
+     * <ol>
+     *   <li>longitudes in <strong>radians</strong> relative to the prime meridian (usually Greenwich),</li>
+     *   <li>latitudes in <strong>radians</strong>,</li>
+     *   <li>optionally heights above the ellipsoid, in units of an ellipsoid having a semi-major axis length of 1.</li>
+     * </ol>
+     *
+     * Output coordinates are as below, in units of an ellipsoid having a semi-major axis length of 1:
+     * <ol>
+     *   <li>distance from Earth center on the X axis (toward the intersection of prime meridian and equator),</li>
+     *   <li>distance from Earth center on the Y axis (toward the intersection of 90°E meridian and equator),</li>
+     *   <li>distance from Earth center on the Z axis (toward North pole).</li>
+     * </ol>
+     *
+     * <div class="section">Geographic to geocentric conversions</div>
+     * For converting geographic coordinates to geocentric coordinates, {@code EllipsoidalToCartesianTransform}
+     * instances need to be concatenated with the following affine transforms:
+     *
+     * <ul>
+     *   <li><cite>Normalization</cite> before {@code EllipsoidalToCartesianTransform}:<ul>
+     *     <li>Conversion of (λ,φ) from degrees to radians</li>
+     *     <li>Division of (h) by the semi-major axis length</li>
+     *   </ul></li>
+     *   <li><cite>Denormalization</cite> after {@code EllipsoidalToCartesianTransform}:<ul>
+     *     <li>Multiplication of (X,Y,Z) by the semi-major axis length</li>
+     *   </ul></li>
+     * </ul>
+     *
+     * After {@code EllipsoidalToCartesianTransform} construction,
+     * the full conversion chain including the above affine transforms can be created by
+     * <code>{@linkplain #getContextualParameters()}.{@linkplain ContextualParameters#completeTransform
+     * completeTransform}(factory, this)}</code>.
      *
      * @param semiMajor  The semi-major axis length.
      * @param semiMinor  The semi-minor axis length.
      * @param unit       The unit of measurement for the semi-axes and the ellipsoidal height.
      * @param withHeight {@code true} if geographic coordinates include an ellipsoidal height (i.e. are 3-D),
      *                   or {@code false} if they are only 2-D.
+     *
+     * @see #createGeodeticConversion(MathTransformFactory, double, double, Unit, boolean)
      */
-    public EllipsoidalToCartesianTransform(final double semiMajor, final double semiMinor,
+    protected EllipsoidalToCartesianTransform(final double semiMajor, final double semiMinor,
             final Unit<Length> unit, final boolean withHeight)
     {
         ArgumentChecks.ensureStrictlyPositive("semiMajor", semiMajor);
@@ -268,9 +288,9 @@ public class EllipsoidalToCartesianTransform extends AbstractMathTransform imple
     }
 
     /**
-     * Creates a transform from geographic to geocentric coordinates. This convenience method combines the
-     * {@code EllipsoidalToCartesianTransform} instance with the steps needed for converting degrees to radians and
-     * expressing the results in units of the given ellipsoid.
+     * Creates a transform from geographic to geocentric coordinates. This factory method combines the
+     * {@code EllipsoidalToCartesianTransform} instance with the steps needed for converting degrees to
+     * radians and expressing the results in units of the given ellipsoid.
      *
      * <p>Input coordinates are expected to contain:</p>
      * <ol>
@@ -286,47 +306,21 @@ public class EllipsoidalToCartesianTransform extends AbstractMathTransform imple
      *   <li>distance from Earth center on the Z axis (toward North pole).</li>
      * </ol>
      *
-     * @param ellipsoid  The ellipsoid of source coordinates.
+     * @param factory    The factory to use for creating and concatenating the affine transforms.
+     * @param semiMajor  The semi-major axis length.
+     * @param semiMinor  The semi-minor axis length.
+     * @param unit       The unit of measurement for the semi-axes and the ellipsoidal height.
      * @param withHeight {@code true} if geographic coordinates include an ellipsoidal height (i.e. are 3-D),
      *                   or {@code false} if they are only 2-D.
      * @return The conversion from geographic to geocentric coordinates.
-     */
-    public static MathTransform createGeodeticConversion(final Ellipsoid ellipsoid, final boolean withHeight) {
-        ArgumentChecks.ensureNonNull("ellipsoid", ellipsoid);
-        try {
-            return new EllipsoidalToCartesianTransform(
-                    ellipsoid.getSemiMajorAxis(), ellipsoid.getSemiMinorAxis(), ellipsoid.getAxisUnit(), withHeight)
-                    .createGeodeticConversion(DefaultFactories.forBuildin(MathTransformFactory.class));
-        } catch (FactoryException e) {
-            /*
-             * Should not happen with SIS factory implementation. If it happen anyway,
-             * maybe we got some custom factory implementation with limited functionality.
-             */
-            throw new IllegalStateException(e.getLocalizedMessage(), e);
-        }
-    }
-
-    /**
-     * Returns the sequence of <cite>normalization</cite> → {@code this} → <cite>denormalization</cite>
-     * transforms as a whole. The transform returned by this method expects input coordinate having the
-     * following values:
-     *
-     * <ol>
-     *   <li>longitudes in degrees relative to the prime meridian (usually Greenwich),</li>
-     *   <li>latitudes in degrees,</li>
-     *   <li>optionally heights above the ellipsoid, in the units given to the constructor (usually metres).</li>
-     * </ol>
-     *
-     * The converted coordinates will be lengths in the units given to the constructor (usually metres).
-     *
-     * @param  factory The factory to use for creating the transform.
-     * @return The conversion from geographic to geocentric coordinates.
      * @throws FactoryException if an error occurred while creating a transform.
-     *
-     * @see ContextualParameters#completeTransform(MathTransformFactory, MathTransform)
      */
-    public MathTransform createGeodeticConversion(final MathTransformFactory factory) throws FactoryException {
-        return context.completeTransform(factory, this);
+    public static MathTransform createGeodeticConversion(final MathTransformFactory factory,
+            final double semiMajor, final double semiMinor, final Unit<Length> unit, final boolean withHeight)
+            throws FactoryException
+    {
+        EllipsoidalToCartesianTransform tr = new EllipsoidalToCartesianTransform(semiMajor, semiMinor, unit, withHeight);
+        return tr.context.completeTransform(factory, tr);
     }
 
     /**
@@ -348,7 +342,7 @@ public class EllipsoidalToCartesianTransform extends AbstractMathTransform imple
      * The returned group contains parameter values for the number of dimensions and the excentricity.
      *
      * <div class="note"><b>Note:</b>
-     * This method is mostly for {@linkplain org.apache.sis.io.wkt.Convention#INTERNAL debugging purposes}
+     * this method is mostly for {@linkplain org.apache.sis.io.wkt.Convention#INTERNAL debugging purposes}
      * since the isolation of non-linear parameters in this class is highly implementation dependent.
      * Most GIS applications will instead be interested in the {@linkplain #getContextualParameters()
      * contextual parameters}.</div>

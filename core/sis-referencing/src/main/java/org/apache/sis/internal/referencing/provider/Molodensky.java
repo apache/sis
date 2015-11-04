@@ -16,10 +16,15 @@
  */
 package org.apache.sis.internal.referencing.provider;
 
+import java.util.Map;
+import java.util.Collections;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.measure.unit.SI;
 import javax.measure.unit.Unit;
+import javax.measure.quantity.Length;
+import javax.measure.converter.UnitConverter;
 import org.opengis.util.FactoryException;
+import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
@@ -29,6 +34,10 @@ import org.opengis.referencing.operation.OperationMethod;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.parameter.Parameters;
+import org.apache.sis.referencing.datum.DefaultEllipsoid;
+import org.apache.sis.referencing.operation.transform.MolodenskyTransform;
+import org.apache.sis.internal.referencing.NilReferencingObject;
+import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.util.ArgumentChecks;
 
 
@@ -191,27 +200,65 @@ public final class Molodensky extends GeocentricAffineBetweenGeographic {
         if (dimension != 0) {
             sourceDimensions = targetDimensions = dimension;
         }
-        /*
-         * The code below implicitly converts all parameter values to metres.
-         * We do not try to preserve user-specified units since the unit used
-         * in the geocentric domain does not have any impact on the input/output
-         * geographic coordinates.
-         */
-        final double semiMajor = values.doubleValue(SRC_SEMI_MAJOR);
-        final double semiMinor = values.doubleValue(SRC_SEMI_MINOR);
-        final double ta, tb;
-        double d = values.doubleValue(AXIS_LENGTH_DIFFERENCE);
-        ta = Double.isNaN(d) ? values.doubleValue(TGT_SEMI_MAJOR) : semiMajor + d;
-        d = values.doubleValue(FLATTENING_DIFFERENCE);
-        if (Double.isNaN(d)) {
-            tb = values.doubleValue(TGT_SEMI_MINOR);
-        } else {
-            tb = ta*(semiMinor/semiMajor - d);
+        final ParameterValue<?> sp = values.parameter("src_semi_major");
+        final ParameterValue<?> tp = values.parameter("tgt_semi_major");
+        final Unit<Length> srcUnit = sp.getUnit().asType(Length.class);
+        final Unit<Length> tgtUnit = tp.getUnit().asType(Length.class);
+        double sa = sp.doubleValue();
+        double ta = tp.doubleValue();
+        double sb = values.parameter("src_semi_minor").doubleValue(srcUnit);
+        double tb = values.parameter("tgt_semi_minor").doubleValue(tgtUnit);
+        double Δa = values.parameter("Semi-major axis length difference").doubleValue(srcUnit);
+        double Δf = values.parameter("Flattening difference").doubleValue(Unit.ONE);
+        final UnitConverter c = srcUnit.getConverterTo(tgtUnit);
+        if (Double.isNaN(ta)) {
+            ta = c.convert(sa + Δa);
         }
-        final double tX = values.doubleValue(TX);
-        final double tY = values.doubleValue(TY);
-        final double tZ = values.doubleValue(TZ);
-//      ΔFlattening    =  (ta-tb)/ta - (semiMajor-semiMinor)/semiMajor;
-        throw new UnsupportedOperationException("Not supported yet.");
+        if (Double.isNaN(tb)) {
+            tb = ta*(sb/sa - Δf);
+        }
+        final Map<String,?> name = Collections.singletonMap(DefaultEllipsoid.NAME_KEY, NilReferencingObject.UNNAMED);
+        final Ellipsoid source = new Ellipsoid(name, sa, sb, Δa, Δf, srcUnit);
+        final Ellipsoid target = new Ellipsoid(name, ta, tb, c.convert(-Δa), c.convert(-Δf), tgtUnit);
+        source.other = target;
+        target.other = source;
+        return MolodenskyTransform.createGeodeticTransformation(factory,
+                source, sourceDimensions >= 3,
+                target, targetDimensions >= 3,
+                values.getOrCreate(TX).doubleValue(srcUnit),
+                values.getOrCreate(TY).doubleValue(srcUnit),
+                values.getOrCreate(TZ).doubleValue(srcUnit),
+                isAbridged);
+    }
+
+    /**
+     * A temporary ellipsoid used only for passing arguments to the {@link MolodenskyTransform} constructor.
+     * The intend is to use the Δa and Δf values explicitely specified in the EPSG parameters if available,
+     * or to compute them only if no Δa or Δf values where specified.
+     */
+    @SuppressWarnings("serial")
+    private static final class Ellipsoid extends DefaultEllipsoid {
+        /** The EPSG parameter values, or NaN if unspecified. */
+        private final double Δa, Δf;
+
+        /** The ellipsoid for which Δa and Δf are valids. */
+        Ellipsoid other;
+
+        /** Creates a new temporary ellipsoid with explicitely provided Δa and Δf values. */
+        Ellipsoid(Map<String,?> name, double a, double b, double Δa, double Δf, Unit<Length> unit) {
+            super(name, a, b, Formulas.getInverseFlattening(a, b), false, unit);
+            this.Δa = Δa;
+            this.Δf = Δf;
+        }
+
+        /** Returns Δa as specified in the parameters if possible, or compute it otherwise. */
+        @Override public double semiMajorDifference(final org.opengis.referencing.datum.Ellipsoid target) {
+            return (target == other && !Double.isNaN(Δa)) ? Δa : super.semiMajorDifference(target);
+        }
+
+        /** Returns Δf as specified in the parameters if possible, or compute it otherwise. */
+        @Override public double flatteningDifference(final org.opengis.referencing.datum.Ellipsoid target) {
+            return (target == other && !Double.isNaN(Δf)) ? Δf : super.flatteningDifference(target);
+        }
     }
 }

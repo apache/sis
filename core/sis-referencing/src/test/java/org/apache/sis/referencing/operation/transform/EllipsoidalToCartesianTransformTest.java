@@ -54,15 +54,27 @@ import static org.apache.sis.test.Assert.*;
 })
 public final strictfp class EllipsoidalToCartesianTransformTest extends MathTransformTestCase {
     /**
+     * Convenience method for creating an instance from an ellipsoid.
+     */
+    private void createGeodeticConversion(final Ellipsoid ellipsoid, boolean is3D) throws FactoryException {
+        transform = EllipsoidalToCartesianTransform.createGeodeticConversion(
+                DefaultFactories.forBuildin(MathTransformFactory.class),
+                ellipsoid.getSemiMajorAxis(),
+                ellipsoid.getSemiMinorAxis(),
+                ellipsoid.getAxisUnit(), is3D);
+    }
+
+    /**
      * Tests conversion of a single point from geographic to geocentric coordinates.
      * This test uses the example given in EPSG guidance note #7.
      * The point in WGS84 is 53°48'33.820"N, 02°07'46.380"E, 73.00 metres.
      *
+     * @throws FactoryException if an error occurred while creating a transform.
      * @throws TransformException if conversion of the sample point failed.
      */
     @Test
-    public void testGeographicToGeocentric() throws TransformException {
-        transform = EllipsoidalToCartesianTransform.createGeodeticConversion(CommonCRS.WGS84.ellipsoid(), true);
+    public void testGeographicToGeocentric() throws FactoryException, TransformException {
+        createGeodeticConversion(CommonCRS.WGS84.ellipsoid(), true);
         isInverseTransformSupported = false;    // Geocentric to geographic is not the purpose of this test.
         validate();
 
@@ -77,11 +89,13 @@ public final strictfp class EllipsoidalToCartesianTransformTest extends MathTran
      * Tests conversion of a single point from geocentric to geographic coordinates.
      * This method uses the same point than {@link #testGeographicToGeocentric()}.
      *
+     * @throws FactoryException if an error occurred while creating a transform.
      * @throws TransformException if conversion of the sample point failed.
      */
     @Test
-    public void testGeocentricToGeographic() throws TransformException {
-        transform = EllipsoidalToCartesianTransform.createGeodeticConversion(CommonCRS.WGS84.ellipsoid(), true).inverse();
+    public void testGeocentricToGeographic() throws FactoryException, TransformException {
+        createGeodeticConversion(CommonCRS.WGS84.ellipsoid(), true);
+        transform = transform.inverse();
         isInverseTransformSupported = false;    // Geographic to geocentric is not the purpose of this test.
         validate();
 
@@ -96,6 +110,7 @@ public final strictfp class EllipsoidalToCartesianTransformTest extends MathTran
     /**
      * Tests conversion of random points.
      *
+     * @throws FactoryException if an error occurred while creating a transform.
      * @throws TransformException if a conversion failed.
      */
     @Test
@@ -103,12 +118,12 @@ public final strictfp class EllipsoidalToCartesianTransformTest extends MathTran
         "testGeographicToGeocentric",
         "testGeocentricToGeographic"
     })
-    public void testRandomPoints() throws TransformException {
+    public void testRandomPoints() throws FactoryException, TransformException {
         final double delta = toRadians(100.0 / 60) / 1852;          // Approximatively 100 metres
         derivativeDeltas  = new double[] {delta, delta, 100};       // (Δλ, Δφ, Δh)
         tolerance         = Formulas.LINEAR_TOLERANCE;
         toleranceModifier = ToleranceModifier.PROJECTION;
-        transform = EllipsoidalToCartesianTransform.createGeodeticConversion(CommonCRS.WGS84.ellipsoid(), true);
+        createGeodeticConversion(CommonCRS.WGS84.ellipsoid(), true);
         verifyInDomain(CoordinateDomain.GEOGRAPHIC, 306954540);
     }
 
@@ -117,13 +132,14 @@ public final strictfp class EllipsoidalToCartesianTransformTest extends MathTran
      * The {@link EllipsoidalToCartesianTransform} may need to use an iterative method
      * for reaching the expected precision.
      *
-     * @throws FactoryException if an error occurred while creating the transform.
+     * @throws FactoryException if an error occurred while creating a transform.
      * @throws TransformException if conversion of the sample point failed.
      */
     @Test
-    public void testHighExcentricity() throws TransformException, FactoryException {
-        transform = new EllipsoidalToCartesianTransform(6000000, 4000000, SI.METRE, true)
-                .createGeodeticConversion(DefaultFactories.forBuildin(MathTransformFactory.class));
+    public void testHighExcentricity() throws FactoryException, TransformException, FactoryException {
+        transform = EllipsoidalToCartesianTransform.createGeodeticConversion(
+                DefaultFactories.forBuildin(MathTransformFactory.class),
+                6000000, 4000000, SI.METRE, true);
 
         final double delta = toRadians(100.0 / 60) / 1852;
         derivativeDeltas  = new double[] {delta, delta, 100};
@@ -138,10 +154,11 @@ public final strictfp class EllipsoidalToCartesianTransformTest extends MathTran
      * @param  ellipsoid The ellipsoid to use for the test.
      * @param  hasHeight {@code true} if geographic coordinates include an ellipsoidal height (i.e. are 3-D),
      *         or {@code false} if they are only 2-D.
+     * @throws FactoryException if an error occurred while creating a transform.
      * @throws TransformException should never happen.
      */
-    private void testDerivative(final Ellipsoid ellipsoid, final boolean hasHeight) throws TransformException {
-        transform = EllipsoidalToCartesianTransform.createGeodeticConversion(ellipsoid, hasHeight);
+    private void testDerivative(final Ellipsoid ellipsoid, final boolean hasHeight) throws FactoryException, TransformException {
+        createGeodeticConversion(ellipsoid, hasHeight);
         DirectPosition point = hasHeight ? new GeneralDirectPosition(-10, 40, 200) : new DirectPosition2D(-10, 40);
         /*
          * Derivative of the direct transform.
@@ -162,10 +179,11 @@ public final strictfp class EllipsoidalToCartesianTransformTest extends MathTran
     /**
      * Tests the {@link EllipsoidalToCartesianTransform#derivative(DirectPosition)} method on a sphere.
      *
+     * @throws FactoryException if an error occurred while creating a transform.
      * @throws TransformException should never happen.
      */
     @Test
-    public void testDerivativeOnSphere() throws TransformException {
+    public void testDerivativeOnSphere() throws FactoryException, TransformException {
         testDerivative(CommonCRS.SPHERE.ellipsoid(), true);
         testDerivative(CommonCRS.SPHERE.ellipsoid(), false);
     }
@@ -173,11 +191,12 @@ public final strictfp class EllipsoidalToCartesianTransformTest extends MathTran
     /**
      * Tests the {@link EllipsoidalToCartesianTransform#derivative(DirectPosition)} method on an ellipsoid.
      *
+     * @throws FactoryException if an error occurred while creating a transform.
      * @throws TransformException should never happen.
      */
     @Test
     @DependsOnMethod("testDerivativeOnSphere")
-    public void testDerivative() throws TransformException {
+    public void testDerivative() throws FactoryException, TransformException {
         testDerivative(CommonCRS.WGS84.ellipsoid(), true);
         testDerivative(CommonCRS.WGS84.ellipsoid(), false);
     }
@@ -187,12 +206,13 @@ public final strictfp class EllipsoidalToCartesianTransformTest extends MathTran
      * and {@link #testGeocentricToGeographic()}, but on the deserialized instance. This allow us to verify
      * that transient fields have been correctly restored.
      *
+     * @throws FactoryException if an error occurred while creating a transform.
      * @throws TransformException if conversion of the sample point failed.
      */
     @Test
     @DependsOnMethod("testRandomPoints")
-    public void testSerialization() throws TransformException {
-        transform = EllipsoidalToCartesianTransform.createGeodeticConversion(CommonCRS.WGS84.ellipsoid(), true);
+    public void testSerialization() throws FactoryException, TransformException {
+        createGeodeticConversion(CommonCRS.WGS84.ellipsoid(), true);
         transform = assertSerializedEquals(transform);
         /*
          * Below is basically a copy-and-paste of testGeographicToGeocentric(), but
@@ -209,11 +229,12 @@ public final strictfp class EllipsoidalToCartesianTransformTest extends MathTran
      * Tests the standard Well Known Text (version 1) formatting.
      * The result is what we show to users, but is quite different than what SIS has in memory.
      *
+     * @throws FactoryException if an error occurred while creating a transform.
      * @throws TransformException should never happen.
      */
     @Test
-    public void testWKT() throws TransformException {
-        transform = EllipsoidalToCartesianTransform.createGeodeticConversion(CommonCRS.WGS84.ellipsoid(), true);
+    public void testWKT() throws FactoryException, TransformException {
+        createGeodeticConversion(CommonCRS.WGS84.ellipsoid(), true);
         assertWktEquals("PARAM_MT[“Ellipsoid_To_Geocentric”,\n" +
                         "  PARAMETER[“semi_major”, 6378137.0],\n" +
                         "  PARAMETER[“semi_minor”, 6356752.314245179]]");
@@ -229,11 +250,12 @@ public final strictfp class EllipsoidalToCartesianTransformTest extends MathTran
      * This WKT shows what SIS has in memory for debugging purpose.
      * This is normally not what we show to users.
      *
+     * @throws FactoryException if an error occurred while creating a transform.
      * @throws TransformException should never happen.
      */
     @Test
-    public void testInternalWKT() throws TransformException {
-        transform = EllipsoidalToCartesianTransform.createGeodeticConversion(CommonCRS.WGS84.ellipsoid(), true);
+    public void testInternalWKT() throws FactoryException, TransformException {
+        createGeodeticConversion(CommonCRS.WGS84.ellipsoid(), true);
         assertInternalWktEquals(
                 "Concat_MT[Param_MT[“Affine”,\n" +
                 "    Parameter[“num_row”, 4],\n" +

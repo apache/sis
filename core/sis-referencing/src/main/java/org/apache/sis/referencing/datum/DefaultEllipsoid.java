@@ -615,11 +615,37 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
     }
 
     /**
+     * Returns the difference between the semi-major axis length of two ellipsoids.
+     * If the two ellipsoid does not use the same unit of measurement, than the axis
+     * length of the other ellipsoid is converted into the units of this ellipsoid axis.
+     *
+     * <div class="note"><b>Example:</b>
+     * {@code WGS84.semiMajorDifference(ED50)} returns 251 metres. This information is a parameter of
+     * {@linkplain org.apache.sis.referencing.operation.transform.MolodenskyTransform Molodensky transformations}.</div>
+     *
+     * @param  other The other ellipsoid from which to get semi-major axis length difference.
+     * @return (<var>other</var> ellipsoid semi-major axis) - (<var>this</var> ellipsoid semi-major axis).
+     *
+     * @since 0.7
+     */
+    public double semiMajorDifference(final Ellipsoid other) {
+        double semiMajor = other.getSemiMajorAxis();
+        semiMajor = other.getAxisUnit().getConverterTo(getAxisUnit()).convert(semiMajor);   // Often a no-op.
+        final DoubleDouble a = new DoubleDouble(semiMajor);     // Presumed accurate in base 10 if no unit conversion.
+        a.subtract(getSemiMajorAxis());                         // Presumed accurate in base 10 (not 2) by definition.
+        return a.value;
+    }
+
+    /**
      * Returns the difference between the flattening factor of two ellipsoids.
      * This method returns 0 if the two ellipsoids are equal.
      *
+     * <div class="note"><b>Example:</b>
+     * {@code WGS84.flatteningDifference(ED50)} returns approximatively 1.41927E-05. This information is a parameter of
+     * {@linkplain org.apache.sis.referencing.operation.transform.MolodenskyTransform Molodensky transformations}.</div>
+     *
      * @param  other The other ellipsoid from which to get flattening difference.
-     * @return (other ellipsoid flattening) - (this ellipsoid flattening).
+     * @return (<var>other</var> ellipsoid flattening) - (<var>this</var> ellipsoid flattening).
      *
      * @since 0.7
      */

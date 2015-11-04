@@ -58,8 +58,9 @@ public final strictfp class MolodenskyTransformTest extends MathTransformTestCas
     private void create(final boolean abridged) throws FactoryException {
         final Ellipsoid source = CommonCRS.WGS84.ellipsoid();
         final Ellipsoid target = CommonCRS.ED50.ellipsoid();
-        transform = new MolodenskyTransform(source, true, target, true, 84.87, 96.49, 116.95, abridged)
-                .createGeodeticTransformation(DefaultFactories.forBuildin(MathTransformFactory.class));
+        transform = MolodenskyTransform.createGeodeticTransformation(
+                DefaultFactories.forBuildin(MathTransformFactory.class),
+                source, true, target, true, 84.87, 96.49, 116.95, abridged);
 
         final double delta = toRadians(100.0 / 60) / 1852;          // Approximatively 100 metres
         derivativeDeltas = new double[] {delta, delta, 100};        // (Δλ, Δφ, Δh)
