@@ -31,6 +31,7 @@ import org.opengis.metadata.Identifier;
 import org.opengis.referencing.datum.Ellipsoid;
 import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.internal.util.Numerics;
+import org.apache.sis.internal.util.DoubleDouble;
 import org.apache.sis.internal.jaxb.gml.Measure;
 import org.apache.sis.internal.jaxb.referencing.SecondDefiningParameter;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
@@ -399,15 +400,76 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
     }
 
     /**
-     * The ratio of the distance between the center and a focus of the ellipse
-     * to the length of its semi-major axis. The eccentricity can alternately be
-     * computed from the equation: <code>e = sqrt(2f - f²)</code>.
+     * The ratio of the distance between the center and a focus of the ellipse to the length of its semi-major axis.
+     * The eccentricity can alternately be computed from the equation: ℯ = √(2f - f²) where <var>f</var> is the
+     * flattening factor (not inverse).
      *
-     * @return The eccentricity of this ellipsoid.
+     * @return ℯ, the eccentricity of this ellipsoid.
      */
     public double getEccentricity() {
-        final double f = 1 - getSemiMinorAxis() / getSemiMajorAxis();
-        return sqrt(2*f - f*f);
+        final DoubleDouble e = excentricitySquared();
+        e.sqrt();
+        return e.value;
+    }
+
+    /**
+     * Returns the square of the {@link #getEccentricity() eccentricity} value.
+     *
+     * <div class="note"><b>Purpose:</b>
+     * this convenience method is provided because ℯ² is frequently used in coordinate operations,
+     * actually more often than ℯ. This convenience method avoids the cost of computing the square
+     * root when not needed.</div>
+     *
+     * @return ℯ², the square of the eccentricity value.
+     *
+     * @since 0.7
+     */
+    public double getEccentricitySquared() {
+        return excentricitySquared().value;
+    }
+
+    /**
+     * Computes the square of the eccentricity value with ℯ² = 2f - f².
+     *
+     * <div class="note"><b>Implementation note:</b>
+     * we use the flattening factor for this computation because the inverse flattening factor is usually the
+     * second defining parameter.  But even if the second defining parameter of this ellipsoid was rather the
+     * semi-minor axis, the fact that we use double-double arithmetic should give the same result anyway.</div>
+     */
+    private DoubleDouble excentricitySquared() {
+        final DoubleDouble f = flattening(this);
+        final DoubleDouble excentricitySquared = new DoubleDouble(f);
+        excentricitySquared.multiply(2, 0);
+        f.square();
+        excentricitySquared.subtract(f);
+        return excentricitySquared;
+    }
+
+    /**
+     * Computes the flattening factor (not inverse) of the given ellipsoid.
+     * This method chooses the formula depending on whether the defining parameter is the inverse flattening factor
+     * or the semi-minor axis length. The defining parameters are presumed fully accurate in base 10 (even if this
+     * is of course not possible in the reality), because those parameters are definitions given by authorities.
+     *
+     * <div class="note"><b>Analogy:</b>
+     * the conversion factor from inches to centimetres is 2.54 <em>by definition</em>. Even if we could find a more
+     * accurate value matching historical measurements, the 2.54 value is the internationally agreed value for all
+     * conversions. This value is (by convention) defined in base 10 and has no exact {@code double} representation.
+     * </div>
+     */
+    private static DoubleDouble flattening(final Ellipsoid e) {
+        final DoubleDouble f;
+        if (e.isIvfDefinitive()) {
+            f = new DoubleDouble(e.getInverseFlattening());   // Presumed accurate in base 10 (not 2) by definition.
+            f.inverseDivide(1, 0);
+        } else {
+            f = new DoubleDouble(e.getSemiMajorAxis());       // Presumed accurate in base 10 (not 2) by definition.
+            final double value = f.value;
+            final double error = f.error;
+            f.subtract(e.getSemiMinorAxis());                 // Presumed accurate in base 10 (not 2) by definition.
+            f.divide(value, error);
+        }
+        return f;
     }
 
     /**
@@ -550,6 +612,21 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
         throw new ArithmeticException(Errors.format(Errors.Keys.NoConvergenceForPoints_2,
                   new DirectPosition2D(toDegrees(λ1), toDegrees(φ1)),
                   new DirectPosition2D(toDegrees(λ2), toDegrees(φ2))));
+    }
+
+    /**
+     * Returns the difference between the flattening factor of two ellipsoids.
+     * This method returns 0 if the two ellipsoids are equal.
+     *
+     * @param  other The other ellipsoid from which to get flattening difference.
+     * @return (other ellipsoid flattening) - (this ellipsoid flattening).
+     *
+     * @since 0.7
+     */
+    public double flatteningDifference(final Ellipsoid other) {
+        final DoubleDouble f = flattening(other);
+        f.subtract(flattening(this));
+        return f.value;
     }
 
     /**
