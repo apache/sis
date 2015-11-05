@@ -301,6 +301,9 @@ public class ContextualParameters extends Parameters implements Serializable {
      */
     final synchronized ContextualParameters inverse(final ParameterDescriptorGroup desc) {
         if (inverse == null) {
+            if (!isFrozen) {
+                freeze();
+            }
             inverse = new ContextualParameters(desc, this);
         }
         assert inverse.descriptor == desc;
@@ -534,7 +537,7 @@ public class ContextualParameters extends Parameters implements Serializable {
      *
      * @see #ensureModifiable()
      */
-    final void freeze() {
+    private void freeze() {
         isFrozen = true;
         /*
          * Sort the parameter values in the same order than the parameter descriptor. This is not essential,

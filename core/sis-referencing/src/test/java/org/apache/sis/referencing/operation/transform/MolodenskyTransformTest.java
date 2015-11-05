@@ -21,7 +21,9 @@ import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.internal.system.DefaultFactories;
+import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.referencing.CommonCRS;
+import org.apache.sis.measure.Longitude;
 
 import static java.lang.StrictMath.toRadians;
 
@@ -29,6 +31,9 @@ import static java.lang.StrictMath.toRadians;
 import org.apache.sis.internal.referencing.provider.GeocentricTranslationTest;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
+import org.apache.sis.test.TestUtilities;
+import org.opengis.test.ToleranceModifier;
+import org.opengis.test.ToleranceModifiers;
 import org.junit.Test;
 
 import static org.apache.sis.test.Assert.*;
@@ -84,12 +89,20 @@ public final strictfp class MolodenskyTransformTest extends MathTransformTestCas
      */
     @Test
     public void testAbridgedMolodensky() throws FactoryException, TransformException {
-        isInverseTransformSupported = false;
         isDerivativeSupported = false;
         create(true);
         validate();
-        verifyTransform(GeocentricTranslationTest.samplePoint(1),
-                        GeocentricTranslationTest.samplePoint(5));
+        final double[] sample   = GeocentricTranslationTest.samplePoint(1);
+        final double[] expected = GeocentricTranslationTest.samplePoint(5);
+        isInverseTransformSupported = false;
+        verifyTransform(sample, expected);
+        /*
+         * When testing the inverse transformation, we need to relax slightly
+         * the tolerance for the 'h' value.
+         */
+        zTolerance = Formulas.LINEAR_TOLERANCE;
+        isInverseTransformSupported = true;
+        verifyTransform(sample, expected);
     }
 
     /**
@@ -107,12 +120,20 @@ public final strictfp class MolodenskyTransformTest extends MathTransformTestCas
     @Test
     @DependsOnMethod("testAbridgedMolodensky")
     public void testMolodensky() throws FactoryException, TransformException {
-        isInverseTransformSupported = false;
         isDerivativeSupported = false;
         create(false);
         validate();
-        verifyTransform(GeocentricTranslationTest.samplePoint(1),
-                        GeocentricTranslationTest.samplePoint(4));
+        final double[] sample   = GeocentricTranslationTest.samplePoint(1);
+        final double[] expected = GeocentricTranslationTest.samplePoint(4);
+        isInverseTransformSupported = false;
+        verifyTransform(sample, expected);
+        /*
+         * When testing the inverse transformation, we need to relax slightly
+         * the tolerance for the 'h' value.
+         */
+        zTolerance = Formulas.LINEAR_TOLERANCE;
+        isInverseTransformSupported = true;
+        verifyTransform(sample, expected);
     }
 
     /**
@@ -126,9 +147,84 @@ public final strictfp class MolodenskyTransformTest extends MathTransformTestCas
     @Test
     @DependsOnMethod("testMolodensky")
     public void testRandomPoints() throws FactoryException, TransformException {
-        isInverseTransformSupported = false;
         isDerivativeSupported = false;
         create(false);
-        verifyInDomain(CoordinateDomain.GEOGRAPHIC, 208129394);
+        tolerance  = Formulas.LINEAR_TOLERANCE * 3;     // To be converted in degrees by ToleranceModifier.GEOGRAPHIC
+        zTolerance = Formulas.LINEAR_TOLERANCE * 2;
+        toleranceModifier = ToleranceModifiers.concatenate(ToleranceModifier.GEOGRAPHIC, toleranceModifier);
+        verifyInDomain(new double[] {Longitude.MIN_VALUE, -85, -500},
+                       new double[] {Longitude.MIN_VALUE, +85, +500},
+                       new int[] {8, 8, 8},
+                       TestUtilities.createRandomNumberGenerator(208129394));
+    }
+
+    /**
+     * Tests the standard Well Known Text (version 1) formatting.
+     * The result is what we show to users, but may quite different than what SIS has in memory.
+     *
+     * @throws FactoryException if an error occurred while creating a transform.
+     * @throws TransformException should never happen.
+     */
+    @Test
+    public void testWKT() throws FactoryException, TransformException {
+        create(true);
+        assertWktEquals("PARAM_MT[“Abridged_Molodenski”,\n" +
+                        "  PARAMETER[“dim”, 3],\n" +
+                        "  PARAMETER[“dx”, 84.87],\n" +
+                        "  PARAMETER[“dy”, 96.49],\n" +
+                        "  PARAMETER[“dz”, 116.95],\n" +
+                        "  PARAMETER[“Semi-major axis length difference”, 251.0],\n" +
+                        "  PARAMETER[“Flattening difference”, 1.4192702255886284E-5],\n" +
+                        "  PARAMETER[“src_semi_major”, 6378137.0],\n" +
+                        "  PARAMETER[“src_semi_minor”, 6356752.314245179],\n" +
+                        "  PARAMETER[“tgt_semi_major”, 6378388.0],\n" +
+                        "  PARAMETER[“tgt_semi_minor”, 6356911.9461279465]]");
+
+        transform = transform.inverse();
+        assertWktEquals("PARAM_MT[“Abridged_Molodenski”,\n" +
+                        "  PARAMETER[“dim”, 3],\n" +
+                        "  PARAMETER[“dx”, -84.87],\n" +
+                        "  PARAMETER[“dy”, -96.49],\n" +
+                        "  PARAMETER[“dz”, -116.95],\n" +
+                        "  PARAMETER[“Semi-major axis length difference”, -251.0],\n" +
+                        "  PARAMETER[“Flattening difference”, -1.4192702255886284E-5],\n" +
+                        "  PARAMETER[“src_semi_major”, 6378388.0],\n" +
+                        "  PARAMETER[“src_semi_minor”, 6356911.9461279465],\n" +
+                        "  PARAMETER[“tgt_semi_major”, 6378137.0],\n" +
+                        "  PARAMETER[“tgt_semi_minor”, 6356752.314245179]]");
+    }
+
+    /**
+     * Tests the internal Well Known Text formatting.
+     * This WKT shows what SIS has in memory for debugging purpose.
+     * This is normally not what we show to users.
+     *
+     * @throws FactoryException if an error occurred while creating a transform.
+     * @throws TransformException should never happen.
+     */
+    @Test
+    public void testInternalWKT() throws FactoryException, TransformException {
+        create(true);
+        assertInternalWktEquals(
+                "Concat_MT[Param_MT[“Affine”,\n" +
+                "    Parameter[“num_row”, 4],\n" +
+                "    Parameter[“num_col”, 4],\n" +
+                "    Parameter[“elt_0_0”, 0.017453292519943295],\n" +       // Degrees to radians conversion
+                "    Parameter[“elt_1_1”, 0.017453292519943295]],\n" +
+                "  Param_MT[“Molodensky”,\n" +
+                "    Parameter[“X-axis translation”, 84.87, Unit[“metre”, 1, Id[“EPSG”, 9001]]],\n" +
+                "    Parameter[“Y-axis translation”, 96.49, Unit[“metre”, 1, Id[“EPSG”, 9001]]],\n" +
+                "    Parameter[“Z-axis translation”, 116.95, Unit[“metre”, 1, Id[“EPSG”, 9001]]],\n" +
+                "    Parameter[“Semi-major axis length difference”, 251.0, Unit[“metre”, 1, Id[“EPSG”, 9001]]],\n" +
+                "    Parameter[“Flattening difference”, 1.4192702255886284E-5, Unit[“unity”, 1, Id[“EPSG”, 9201]]],\n" +
+                "    Parameter[“src_semi_major”, 6378137.0, Unit[“metre”, 1, Id[“EPSG”, 9001]]],\n" +
+                "    Parameter[“excentricity”, 0.0818191908426215],\n" +
+                "    Parameter[“abridged”, TRUE],\n" +
+                "    Parameter[“dim”, 3]],\n" +
+                "  Param_MT[“Affine”,\n" +
+                "    Parameter[“num_row”, 4],\n" +
+                "    Parameter[“num_col”, 4],\n" +
+                "    Parameter[“elt_0_0”, 57.29577951308232],\n" +          // Radians to degrees conversion
+                "    Parameter[“elt_1_1”, 57.29577951308232]]]");
     }
 }

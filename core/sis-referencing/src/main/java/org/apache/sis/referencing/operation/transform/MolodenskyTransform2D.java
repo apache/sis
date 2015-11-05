@@ -21,7 +21,6 @@ import java.awt.geom.Point2D;
 import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform2D;
-import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.opengis.referencing.operation.TransformException;
 
 
@@ -78,7 +77,7 @@ final class MolodenskyTransform2D extends MolodenskyTransform implements MathTra
      * Returns the inverse transform of this transform.
      */
     @Override
-    public MathTransform2D inverse() throws NoninvertibleTransformException {
+    public MathTransform2D inverse() {
         return (MathTransform2D) super.inverse();
     }
 }

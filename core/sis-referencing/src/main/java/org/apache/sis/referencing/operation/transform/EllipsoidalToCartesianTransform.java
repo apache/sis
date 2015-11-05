@@ -269,12 +269,6 @@ public class EllipsoidalToCartesianTransform extends AbstractMathTransform imple
             final MatrixSIS normalize = context.getMatrix(ContextualParameters.MatrixRole.NORMALIZATION);
             normalize.convertBefore(2, a, null);    // Divide ellipsoidal height by a.
         }
-        /*
-         * 'freeze()' should be invoked before to create the inverse transform in order to allow ContextualParameters
-         * to cache the inverse matrices. This caching avoid to duplicate those matrices if they are asked later (e.g.
-         * at WKT formatting time).
-         */
-        context.freeze();
         inverse = new Inverse();
     }
 
@@ -294,8 +288,8 @@ public class EllipsoidalToCartesianTransform extends AbstractMathTransform imple
      *
      * <p>Input coordinates are expected to contain:</p>
      * <ol>
-     *   <li>longitudes in degrees relative to the prime meridian (usually Greenwich),</li>
-     *   <li>latitudes in degrees,</li>
+     *   <li>longitudes in <strong>degrees</strong> relative to the prime meridian (usually Greenwich),</li>
+     *   <li>latitudes in <strong>degrees</strong>,</li>
      *   <li>optionally heights above the ellipsoid, in units of the ellipsoid axis (usually metres).</li>
      * </ol>
      *

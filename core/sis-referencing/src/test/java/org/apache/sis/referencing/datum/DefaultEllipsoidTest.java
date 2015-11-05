@@ -84,16 +84,16 @@ public final strictfp class DefaultEllipsoidTest extends XMLTestCase {
     }
 
     /**
-     * Tests {@link DefaultEllipsoid#semiMajorDifference(Ellipsoid)}. This test uses the data provided
+     * Tests {@link DefaultEllipsoid#semiMajorAxisDifference(Ellipsoid)}. This test uses the data provided
      * in §2.4.4.2 of IOGP Publication 373-7-2 – Geomatics Guidance Note number 7, part 2 – April 2015.
      *
      * @since 0.7
      */
     @Test
-    public void testSemiMajorDifference() {
+    public void testSemiMajorAxisDifference() {
         final DefaultEllipsoid e = new DefaultEllipsoid(GeodeticDatumMock.WGS84.getEllipsoid());
-        assertEquals("semiMajorDifference",   0, e.semiMajorDifference(GeodeticDatumMock.WGS84.getEllipsoid()), STRICT);
-        assertEquals("semiMajorDifference", 251, e.semiMajorDifference(GeodeticDatumMock.ED50 .getEllipsoid()), STRICT);
+        assertEquals("semiMajorAxisDifference",   0, e.semiMajorAxisDifference(GeodeticDatumMock.WGS84.getEllipsoid()), STRICT);
+        assertEquals("semiMajorAxisDifference", 251, e.semiMajorAxisDifference(GeodeticDatumMock.ED50 .getEllipsoid()), STRICT);
     }
 
     /**

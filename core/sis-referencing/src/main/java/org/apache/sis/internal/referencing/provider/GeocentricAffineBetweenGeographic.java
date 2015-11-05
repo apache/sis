@@ -90,12 +90,12 @@ public abstract class GeocentricAffineBetweenGeographic extends GeocentricAffine
     public static final ParameterDescriptor<Double> TGT_SEMI_MINOR;
 
     static {
-        final ParameterBuilder builder = builder().setCodeSpace(Citations.OGC, Constants.OGC).setRequired(false);
-        DIMENSION      = builder.addName("dim")   .createBounded(Integer.class, 2, 3, null);
+        final ParameterBuilder builder = builder().setCodeSpace(Citations.OGC, Constants.OGC);
         SRC_SEMI_MAJOR = builder.addName("src_semi_major").createStrictlyPositive(Double.NaN, SI.METRE);
         SRC_SEMI_MINOR = builder.addName("src_semi_minor").createStrictlyPositive(Double.NaN, SI.METRE);
         TGT_SEMI_MAJOR = builder.addName("tgt_semi_major").createStrictlyPositive(Double.NaN, SI.METRE);
         TGT_SEMI_MINOR = builder.addName("tgt_semi_minor").createStrictlyPositive(Double.NaN, SI.METRE);
+        DIMENSION      = builder.addName("dim").setRequired(false).createBounded(Integer.class, 2, 3, null);
     }
 
     /**

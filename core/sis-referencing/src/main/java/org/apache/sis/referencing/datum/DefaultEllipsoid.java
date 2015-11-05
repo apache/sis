@@ -620,7 +620,7 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
      * length of the other ellipsoid is converted into the units of this ellipsoid axis.
      *
      * <div class="note"><b>Example:</b>
-     * {@code WGS84.semiMajorDifference(ED50)} returns 251 metres. This information is a parameter of
+     * {@code WGS84.semiMajorAxisDifference(ED50)} returns 251 metres. This information is a parameter of
      * {@linkplain org.apache.sis.referencing.operation.transform.MolodenskyTransform Molodensky transformations}.</div>
      *
      * @param  other The other ellipsoid from which to get semi-major axis length difference.
@@ -628,7 +628,7 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
      *
      * @since 0.7
      */
-    public double semiMajorDifference(final Ellipsoid other) {
+    public double semiMajorAxisDifference(final Ellipsoid other) {
         double semiMajor = other.getSemiMajorAxis();
         semiMajor = other.getAxisUnit().getConverterTo(getAxisUnit()).convert(semiMajor);   // Often a no-op.
         final DoubleDouble a = new DoubleDouble(semiMajor);     // Presumed accurate in base 10 if no unit conversion.
