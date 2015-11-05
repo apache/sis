@@ -71,7 +71,8 @@ import static java.lang.Math.*;
  *   <li>{@code MolodenskyTransform} instances created directly by the constructor work with angular values in radians.
  *       That constructor is reserved for subclasses only.</li>
  *   <li>Transforms created by the {@link #createGeodeticTransformation createGeodeticTransformation(…)} static method
- *       work with angular values in degrees and heights in the same units than the ellipsoid axes (usually metres).</li>
+ *       work with angular values in degrees and heights in the same units than the <strong>source</strong> ellipsoid
+ *       axes (usually metres).</li>
  * </ul>
  *
  * @author  Rueben Schulz (UBC)
@@ -175,7 +176,7 @@ public class MolodenskyTransform extends AbstractMathTransform implements Serial
      * <ol>
      *   <li>longitudes in <strong>radians</strong> relative to the prime meridian (usually Greenwich),</li>
      *   <li>latitudes in <strong>radians</strong>,</li>
-     *   <li>optionally heights above the ellipsoid, in same units than the ellipsoids axes.</li>
+     *   <li>optionally heights above the ellipsoid, in same units than the source ellipsoids axes.</li>
      * </ol>
      *
      * For converting geographic coordinates in degrees, {@code MolodenskyTransform} instances
@@ -199,9 +200,9 @@ public class MolodenskyTransform extends AbstractMathTransform implements Serial
      * @param isSource3D  {@code true} if the source coordinates have a height.
      * @param target      The target ellipsoid.
      * @param isTarget3D  {@code true} if the target coordinates have a height.
-     * @param tX          The geocentric <var>X</var> translation in meters.
-     * @param tY          The geocentric <var>Y</var> translation in meters.
-     * @param tZ          The geocentric <var>Z</var> translation in meters.
+     * @param tX          The geocentric <var>X</var> translation in same units than the source ellipsoid axes.
+     * @param tY          The geocentric <var>Y</var> translation in same units than the source ellipsoid axes.
+     * @param tZ          The geocentric <var>Z</var> translation in same units than the source ellipsoid axes.
      * @param isAbridged  {@code true} for the abridged formula, or {@code false} for the complete one.
      *
      * @see #createGeodeticTransformation(MathTransformFactory, Ellipsoid, boolean, Ellipsoid, boolean, double, double, double, boolean)
@@ -272,7 +273,7 @@ public class MolodenskyTransform extends AbstractMathTransform implements Serial
      * <ol>
      *   <li>longitudes in degrees relative to the prime meridian (usually Greenwich),</li>
      *   <li>latitudes in degrees,</li>
-     *   <li>optionally heights above the ellipsoid, in the units given to the constructor (usually metres).</li>
+     *   <li>optionally heights above the ellipsoid, in same units than the source ellipsoids axes.</li>
      * </ol>
      *
      * @param factory     The factory to use for creating the transform.
@@ -280,9 +281,9 @@ public class MolodenskyTransform extends AbstractMathTransform implements Serial
      * @param isSource3D  {@code true} if the source coordinates have a height.
      * @param target      The target ellipsoid.
      * @param isTarget3D  {@code true} if the target coordinates have a height.
-     * @param tX          The geocentric <var>X</var> translation in meters.
-     * @param tY          The geocentric <var>Y</var> translation in meters.
-     * @param tZ          The geocentric <var>Z</var> translation in meters.
+     * @param tX          The geocentric <var>X</var> translation in same units than the source ellipsoid axes.
+     * @param tY          The geocentric <var>Y</var> translation in same units than the source ellipsoid axes.
+     * @param tZ          The geocentric <var>Z</var> translation in same units than the source ellipsoid axes.
      * @param isAbridged  {@code true} for the abridged formula, or {@code false} for the complete one.
      * @return The transformation between geographic coordinates.
      * @throws FactoryException if an error occurred while creating a transform.

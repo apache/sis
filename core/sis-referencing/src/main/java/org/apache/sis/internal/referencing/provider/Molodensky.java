@@ -21,13 +21,11 @@ import java.util.Collections;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.measure.unit.SI;
 import javax.measure.unit.Unit;
-import javax.measure.quantity.Length;
-import javax.measure.converter.UnitConverter;
 import org.opengis.util.FactoryException;
-import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
+import org.opengis.parameter.ParameterNotFoundException;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.OperationMethod;
@@ -200,35 +198,50 @@ public final class Molodensky extends GeocentricAffineBetweenGeographic {
         if (dimension != 0) {
             sourceDimensions = targetDimensions = dimension;
         }
-        final ParameterValue<?> sp = values.parameter("src_semi_major");
-        final ParameterValue<?> tp = values.parameter("tgt_semi_major");
-        final Unit<Length> srcUnit = sp.getUnit().asType(Length.class);
-        final Unit<Length> tgtUnit = tp.getUnit().asType(Length.class);
-        double sa = sp.doubleValue();
-        double ta = tp.doubleValue();
-        double sb = values.parameter("src_semi_minor").doubleValue(srcUnit);
-        double tb = values.parameter("tgt_semi_minor").doubleValue(tgtUnit);
-        double Δa = values.parameter("Semi-major axis length difference").doubleValue(srcUnit);
-        double Δf = values.parameter("Flattening difference").doubleValue(Unit.ONE);
-        final UnitConverter c = srcUnit.getConverterTo(tgtUnit);
+        /*
+         * Following method calls implicitly convert parameter values to metres.
+         * We do not try to match ellipsoid axis units because:
+         *
+         *   1) It complicates the code.
+         *   2) We have no guarantees that ellipsoid unit match the coordinate system unit.
+         *   3) OGC 01-009 explicitly said that angles are in degrees and heights in metres.
+         *   4) The above is consistent with what we do for map projections.
+         */
+        double sa = values.doubleValue(SRC_SEMI_MAJOR);
+        double sb = values.doubleValue(SRC_SEMI_MINOR);
+        double ta = optional(values,   TGT_SEMI_MAJOR);
+        double tb = optional(values,   TGT_SEMI_MINOR);
+        double Δa = optional(values, AXIS_LENGTH_DIFFERENCE);
+        double Δf = optional(values, FLATTENING_DIFFERENCE);
         if (Double.isNaN(ta)) {
-            ta = c.convert(sa + Δa);
+            ta = sa + Δa;
         }
         if (Double.isNaN(tb)) {
             tb = ta*(sb/sa - Δf);
         }
         final Map<String,?> name = Collections.singletonMap(DefaultEllipsoid.NAME_KEY, NilReferencingObject.UNNAMED);
-        final Ellipsoid source = new Ellipsoid(name, sa, sb, Δa, Δf, srcUnit);
-        final Ellipsoid target = new Ellipsoid(name, ta, tb, c.convert(-Δa), c.convert(-Δf), tgtUnit);
+        final Ellipsoid source = new Ellipsoid(name, sa, sb,  Δa,  Δf);
+        final Ellipsoid target = new Ellipsoid(name, ta, tb, -Δa, -Δf);
         source.other = target;
         target.other = source;
         return MolodenskyTransform.createGeodeticTransformation(factory,
                 source, sourceDimensions >= 3,
                 target, targetDimensions >= 3,
-                values.getOrCreate(TX).doubleValue(srcUnit),
-                values.getOrCreate(TY).doubleValue(srcUnit),
-                values.getOrCreate(TZ).doubleValue(srcUnit),
+                values.doubleValue(TX),
+                values.doubleValue(TY),
+                values.doubleValue(TZ),
                 isAbridged);
+    }
+
+    /**
+     * Returns the value of the given parameter, or NaN if undefined.
+     */
+    private static double optional(final Parameters values, final ParameterDescriptor<Double> parameter) {
+        try {
+            return values.doubleValue(parameter);
+        } catch (ParameterNotFoundException | IllegalStateException e) {
+            return Double.NaN;
+        }
     }
 
     /**
@@ -241,12 +254,12 @@ public final class Molodensky extends GeocentricAffineBetweenGeographic {
         /** The EPSG parameter values, or NaN if unspecified. */
         private final double Δa, Δf;
 
-        /** The ellipsoid for which Δa and Δf are valids. */
+        /** The ellipsoid for which Δa and Δf are valid. */
         Ellipsoid other;
 
         /** Creates a new temporary ellipsoid with explicitely provided Δa and Δf values. */
-        Ellipsoid(Map<String,?> name, double a, double b, double Δa, double Δf, Unit<Length> unit) {
-            super(name, a, b, Formulas.getInverseFlattening(a, b), false, unit);
+        Ellipsoid(Map<String,?> name, double a, double b, double Δa, double Δf) {
+            super(name, a, b, Formulas.getInverseFlattening(a, b), false, SI.METRE);
             this.Δa = Δa;
             this.Δf = Δf;
         }
