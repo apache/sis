@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.io.Serializable;
 import javax.measure.unit.Unit;
 import javax.measure.quantity.Length;
+import javax.measure.converter.UnitConverter;
 import org.opengis.util.FactoryException;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.parameter.ParameterValueGroup;
@@ -33,8 +34,10 @@ import org.apache.sis.referencing.datum.DefaultEllipsoid;
 import org.apache.sis.internal.referencing.provider.Molodensky;
 import org.apache.sis.internal.referencing.provider.AbridgedMolodensky;
 import org.apache.sis.internal.referencing.provider.MapProjection;
+import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Debug;
 
 import static java.lang.Math.*;
@@ -89,6 +92,15 @@ public class MolodenskyTransform extends AbstractMathTransform implements Serial
     private static final long serialVersionUID = 7206439437113286122L;
 
     /**
+     * Internal parameter descriptor, used only for debugging purpose.
+     * Created only when first needed.
+     *
+     * @see #getParameterDescriptors()
+     */
+    @Debug
+    private static ParameterDescriptorGroup DESCRIPTOR;
+
+    /**
      * The value of 1/sin(1″) multiplied by the conversion factor from arc-seconds to radians (π/180)/(60⋅60).
      * This is the final multiplication factor for Δλ and Δφ.
      */
@@ -127,9 +139,28 @@ public class MolodenskyTransform extends AbstractMathTransform implements Serial
     private final byte type;
 
     /**
-     * X,Y,Z shifts in units of the semi-major axis of the source ellipsoid.
+     * Shift along the geocentric X axis (toward prime meridian)
+     * in units of the semi-major axis of the source ellipsoid.
+     *
+     * @see org.apache.sis.referencing.datum.BursaWolfParameters#tX
      */
-    private final double tX, tY, tZ;
+    protected final double tX;
+
+    /**
+     * Shift along the geocentric Y axis (toward 90°E)
+     * in units of the semi-major axis of the source ellipsoid.
+     *
+     * @see org.apache.sis.referencing.datum.BursaWolfParameters#tY
+     */
+    protected final double tY;
+
+    /**
+     * Shift along the geocentric Z axis (toward north pole)
+     * in units of the semi-major axis of the source ellipsoid.
+     *
+     * @see org.apache.sis.referencing.datum.BursaWolfParameters#tZ
+     */
+    protected final double tZ;
 
     /**
      * Semi-major axis length (<var>a</var>) of the source ellipsoid.
@@ -141,12 +172,15 @@ public class MolodenskyTransform extends AbstractMathTransform implements Serial
      * This can be computed by ℯ² = (a²-b²)/a² where
      * <var>a</var> is the <cite>semi-major</cite> axis length and
      * <var>b</var> is the <cite>semi-minor</cite> axis length.
+     *
+     * @see DefaultEllipsoid#getEccentricitySquared()
      */
     private final double excentricitySquared;
 
     /**
      * Difference in the semi-major axes of the target and source ellipsoids: {@code Δa = target a - source a}.
-     * This field is needed explicitely only for the non-abridged form of Molodensky transformation.
+     *
+     * @see DefaultEllipsoid#semiMajorAxisDifference(Ellipsoid)
      */
     private final double Δa;
 
@@ -172,6 +206,13 @@ public class MolodenskyTransform extends AbstractMathTransform implements Serial
     private final ContextualParameters context;
 
     /**
+     * The inverse of this Molodensky transform.
+     *
+     * @see #inverse()
+     */
+    private MolodenskyTransform inverse;
+
+    /**
      * Creates a Molodensky transform from the specified parameters.
      * This {@code MolodenskyTransform} class expects ordinate values if the following order and units:
      * <ol>
@@ -186,11 +227,9 @@ public class MolodenskyTransform extends AbstractMathTransform implements Serial
      * <ul>
      *   <li><cite>Normalization</cite> before {@code MolodenskyTransform}:<ul>
      *     <li>Conversion of (λ,φ) from degrees to radians.</li>
-     *     <li>Any implementation-dependent linear conversion of <var>h</var>.</li>
      *   </ul></li>
      *   <li><cite>Denormalization</cite> after {@code MolodenskyTransform}:<ul>
      *     <li>Conversion of (λ,φ) from radians to degrees.</li>
-     *     <li>Any implementation-dependent linear conversion of <var>h</var>.</li>
      *   </ul></li>
      * </ul>
      *
@@ -223,34 +262,30 @@ public class MolodenskyTransform extends AbstractMathTransform implements Serial
         if (isTarget3D) type |= TARGET_DIMENSION_MASK;
         this.type      = type;
         this.semiMajor = src.getSemiMajorAxis();
-        this.Δa        = src.semiMajorDifference(target);
+        this.Δa        = src.semiMajorAxisDifference(target);
         this.tX        = tX;
         this.tY        = tY;
         this.tZ        = tZ;
 
-        final double semiMinor   = src.getSemiMinorAxis();
-        final double ΔFlattening = src.flatteningDifference(target);
-        excentricitySquared      = src.getEccentricitySquared();
-        Δfmod = isAbridged ? (semiMajor * ΔFlattening) + (semiMajor - semiMinor) * (Δa / semiMajor)
-                           : (semiMinor * ΔFlattening);
+        final double semiMinor = src.getSemiMinorAxis();
+        final double Δf = src.flatteningDifference(target);
+        excentricitySquared = src.getEccentricitySquared();
+        Δfmod = isAbridged ? (semiMajor * Δf) + (semiMajor - semiMinor) * (Δa / semiMajor)
+                           : (semiMinor * Δf);
         /*
          * Copy parameters to the ContextualParameter. Those parameters are not used directly
          * by EllipsoidToCartesian, but we need to store them in case the user asks for them.
          * When both EPSG and OGC parameters exist for equivalent information, we use EPSG ones.
          */
+        final Unit<Length> unit = src.getAxisUnit();
+        final UnitConverter c = target.getAxisUnit().getConverterTo(unit);
         context = new ContextualParameters(isAbridged ? AbridgedMolodensky.PARAMETERS : Molodensky.PARAMETERS,
                                            isSource3D ? 4 : 3, isTarget3D ? 4 : 3);
-        if (isSource3D == isTarget3D) {
-            context.getOrCreate(Molodensky.DIMENSION).setValue(isSource3D ? 3 : 2);
-        }
-        final Unit<Length> unit = src.getAxisUnit();
-        context.getOrCreate(Molodensky.TX)                    .setValue(tX, unit);
-        context.getOrCreate(Molodensky.TY)                    .setValue(tY, unit);
-        context.getOrCreate(Molodensky.TZ)                    .setValue(tZ, unit);
-        context.getOrCreate(Molodensky.AXIS_LENGTH_DIFFERENCE).setValue(Δa, unit);
-        context.getOrCreate(Molodensky.FLATTENING_DIFFERENCE) .setValue(ΔFlattening, Unit.ONE);
-        context.getOrCreate(Molodensky.SRC_SEMI_MAJOR)        .setValue(semiMajor,   unit);
-        context.getOrCreate(Molodensky.SRC_SEMI_MINOR)        .setValue(semiMinor,   unit);
+        setEPSG(context, unit, Δf);
+        context.getOrCreate(Molodensky.SRC_SEMI_MAJOR).setValue(semiMajor,   unit);
+        context.getOrCreate(Molodensky.SRC_SEMI_MINOR).setValue(semiMinor,   unit);
+        context.getOrCreate(Molodensky.TGT_SEMI_MAJOR).setValue(c.convert(target.getSemiMajorAxis()), unit);
+        context.getOrCreate(Molodensky.TGT_SEMI_MINOR).setValue(c.convert(target.getSemiMinorAxis()), unit);
         /*
          * Prepare two affine transforms to be executed before and after this MolodenskyTransform:
          *
@@ -259,13 +294,26 @@ public class MolodenskyTransform extends AbstractMathTransform implements Serial
          */
         context.normalizeGeographicInputs(0);
         context.denormalizeGeographicOutputs(0);
-        /*
-         * In the particular case of abridged Molondensky, there is some more terms than we can
-         * delegate to the matrices. We can not do that for the non-abridged formulas however.
-         */
-        if (isTarget3D && isAbridged) {
-            context.getMatrix(ContextualParameters.MatrixRole.DENORMALIZATION).convertAfter(2, null, -Δa);
+    }
+
+    /**
+     * Sets the "dim" parameter and the EPSG parameters in the given group.
+     * The OGC parameters other than "dim" are not set by this method.
+     *
+     * @param pg   Where to set the parameters.
+     * @param unit The unit of measurement to declare.
+     * @param Δf   The flattening difference to set.
+     */
+    private void setEPSG(final Parameters pg, final Unit<?> unit, final double Δf) {
+        final int dim = getSourceDimensions();
+        if (dim == getTargetDimensions()) {
+            pg.getOrCreate(Molodensky.DIMENSION).setValue(dim);
         }
+        pg.getOrCreate(Molodensky.TX)                    .setValue(tX, unit);
+        pg.getOrCreate(Molodensky.TY)                    .setValue(tY, unit);
+        pg.getOrCreate(Molodensky.TZ)                    .setValue(tZ, unit);
+        pg.getOrCreate(Molodensky.AXIS_LENGTH_DIFFERENCE).setValue(Δa, unit);
+        pg.getOrCreate(Molodensky.FLATTENING_DIFFERENCE) .setValue(Δf, Unit.ONE);
     }
 
     /**
@@ -274,8 +322,8 @@ public class MolodenskyTransform extends AbstractMathTransform implements Serial
      * degrees to radians. The transform works with input and output coordinates in the following units:
      *
      * <ol>
-     *   <li>longitudes in degrees relative to the prime meridian (usually Greenwich),</li>
-     *   <li>latitudes in degrees,</li>
+     *   <li>longitudes in <strong>degrees</strong> relative to the prime meridian (usually Greenwich),</li>
+     *   <li>latitudes in <strong>degrees</strong>,</li>
      *   <li>optionally heights above the ellipsoid, in same units than the source ellipsoids axes.</li>
      * </ol>
      *
@@ -300,10 +348,21 @@ public class MolodenskyTransform extends AbstractMathTransform implements Serial
         final MolodenskyTransform tr;
         if (!isSource3D && !isTarget3D) {
             tr = new MolodenskyTransform2D(source, target, tX, tY, tZ, isAbridged);
+            tr.inverse = new MolodenskyTransform2D(target, source, -tX, -tY, -tZ, isAbridged);
         } else {
             tr = new MolodenskyTransform(source, isSource3D, target, isTarget3D, tX, tY, tZ, isAbridged);
+            tr.inverse = new MolodenskyTransform(target, isTarget3D, source, isSource3D, -tX, -tY, -tZ, isAbridged);
         }
+        tr.inverse.inverse = tr;
         return tr.context.completeTransform(factory, tr);
+    }
+
+    /**
+     * Returns the unit of measurement of axis lengths. Current implementation arbitrarily
+     * returns the units of {@link #Δa} (this may change in any future SIS version).
+     */
+    private Unit<?> getLinearUnit() {
+        return context.getOrCreate(Molodensky.AXIS_LENGTH_DIFFERENCE).getUnit();
     }
 
     /**
@@ -321,8 +380,8 @@ public class MolodenskyTransform extends AbstractMathTransform implements Serial
     }
 
     /**
-     * Returns a copy of internal parameter values of this {@code MolodenskyTransform} transform.
-     * The returned group contains parameter values for the number of dimensions and the excentricity.
+     * Returns a copy of internal parameter values of this {@code MolodenskyTransform}.
+     * The returned group contains parameter values for the excentricity and the shift among others.
      *
      * <div class="note"><b>Note:</b>
      * this method is mostly for {@linkplain org.apache.sis.io.wkt.Convention#INTERNAL debugging purposes}
@@ -336,12 +395,11 @@ public class MolodenskyTransform extends AbstractMathTransform implements Serial
     @Override
     public ParameterValueGroup getParameterValues() {
         final Parameters pg = Parameters.castOrWrap(getParameterDescriptors().createValue());
-        final int dimension = getSourceDimensions();
-        if (dimension == getTargetDimensions()) {
-            pg.getOrCreate(Molodensky.DIMENSION).setValue(dimension);
-        }
+        final Unit<?> unit = getLinearUnit();
+        setEPSG(pg, unit, context.doubleValue(Molodensky.FLATTENING_DIFFERENCE));
+        pg.getOrCreate(Molodensky.SRC_SEMI_MAJOR).setValue(semiMajor, unit);
         pg.getOrCreate(MapProjection.EXCENTRICITY).setValue(sqrt(excentricitySquared));
-        // TODO: add other parameters
+        pg.parameter("abridged").setValue(isAbridged());
         return pg;
     }
 
@@ -354,7 +412,12 @@ public class MolodenskyTransform extends AbstractMathTransform implements Serial
     @Debug
     @Override
     public ParameterDescriptorGroup getParameterDescriptors() {
-        return null; // TODO
+        synchronized (MolodenskyTransform.class) {
+            if (DESCRIPTOR == null) {
+                DESCRIPTOR = Molodensky.internal();
+            }
+            return DESCRIPTOR;
+        }
     }
 
     /**
@@ -499,11 +562,12 @@ public class MolodenskyTransform extends AbstractMathTransform implements Serial
         dstPts[dstOff++] = φ + ANGULAR_SCALE * ((t*cosφ - tXY)*sinφ + tZ*cosφ) / ρ;
         if (isTarget3D) {
             t = Δfmod * sin2φ;                                              // A term in the calculation of Δh
+            double d = Δa;
             if (!abridged) {
-                t = t/νden - Δa*νden;
-                // Note: in abridged Molodensky case, 'Δa' subtracted by the denormalization matrix.
+                t /= νden;
+                d *= νden;
             }
-            dstPts[dstOff++] = h + tXY*cosφ + tZ*sinφ + t;
+            dstPts[dstOff++] = h + tXY*cosφ + tZ*sinφ + t - d;
         }
         if (!derivate) {
             return null;
@@ -585,10 +649,12 @@ public class MolodenskyTransform extends AbstractMathTransform implements Serial
             dstPts[dstOff++] = φ + ANGULAR_SCALE * ((t*cosφ - tXY)*sinφ + tZ*cosφ) / ρ;
             if (isTarget3D) {
                 t = Δfmod * sin2φ;
+                double d = Δa;
                 if (!abridged) {
-                    t = t/νden - Δa*νden;
+                    t /= νden;
+                    d *= νden;
                 }
-                dstPts[dstOff++] = h + tXY*cosφ + tZ*sinφ + t;
+                dstPts[dstOff++] = h + tXY*cosφ + tZ*sinφ + t - d;
             }
             srcOff += srcInc;
             dstOff += dstInc;
@@ -610,4 +676,54 @@ public class MolodenskyTransform extends AbstractMathTransform implements Serial
      *       the method inherited from the subclass will work (even if slightly slower).
      */
 
+    /**
+     * Returns the inverse of this Molodensky transform. The source ellipsoid of the returned transform will
+     * be the target ellipsoid of this transform, and conversely.
+     *
+     * @return A Molodensky transform from the target ellipsoid to the source ellipsoid of this transform.
+     */
+    @Override
+    public MathTransform inverse() {
+        return inverse;
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     */
+    @Override
+    protected int computeHashCode() {
+        return super.computeHashCode() + type + Numerics.hashCode(
+                        Double.doubleToLongBits(Δa)
+                +       Double.doubleToLongBits(Δfmod)
+                + 31 * (Double.doubleToLongBits(tX)
+                + 31 * (Double.doubleToLongBits(tY)
+                + 31 * (Double.doubleToLongBits(tZ)))));
+    }
+
+    /**
+     * Compares the specified object with this math transform for equality.
+     *
+     * @return {@inheritDoc}
+     */
+    @Override
+    public boolean equals(final Object object, final ComparisonMode mode) {
+        if (object == this) {
+            // Slight optimization
+            return true;
+        }
+        if (super.equals(object, mode)) {
+            final MolodenskyTransform that = (MolodenskyTransform) object;
+            return type == that.type
+                   && Numerics.equals(tX,                  that.tX)
+                   && Numerics.equals(tY,                  that.tY)
+                   && Numerics.equals(tZ,                  that.tZ)
+                   && Numerics.equals(Δa,                  that.Δa)
+                   && Numerics.equals(Δfmod,               that.Δfmod)
+                   && Numerics.equals(semiMajor,           that.semiMajor)
+                   && Numerics.equals(excentricitySquared, that.excentricitySquared);
+        }
+        return false;
+    }
 }

@@ -37,8 +37,10 @@ import org.apache.sis.referencing.operation.transform.MolodenskyTransform;
 import org.apache.sis.internal.referencing.NilReferencingObject;
 import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.internal.system.Loggers;
+import org.apache.sis.internal.util.Constants;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
+import org.apache.sis.util.Debug;
 
 
 /**
@@ -94,7 +96,10 @@ public final class Molodensky extends GeocentricAffineBetweenGeographic {
         final ParameterBuilder builder = builder();
         AXIS_LENGTH_DIFFERENCE = builder.addName("Semi-major axis length difference").create(Double.NaN, SI.METRE);
         FLATTENING_DIFFERENCE  = builder.addName("Flattening difference").createBounded(-1, +1, Double.NaN, Unit.ONE);
-        PARAMETERS = builder
+        builder.setRequired(false);
+        ParameterDescriptor<Double> a = builder.addName(TGT_SEMI_MAJOR.getName()).createStrictlyPositive(Double.NaN, SI.METRE);
+        ParameterDescriptor<Double> b = builder.addName(TGT_SEMI_MINOR.getName()).createStrictlyPositive(Double.NaN, SI.METRE);
+        PARAMETERS = builder.setRequired(true)
                 .addIdentifier("9604")
                 .addName("Molodensky")
                 .addName(Citations.OGC, "Molodenski")
@@ -105,7 +110,30 @@ public final class Molodensky extends GeocentricAffineBetweenGeographic {
                              AXIS_LENGTH_DIFFERENCE,            // EPSG only
                              FLATTENING_DIFFERENCE,             // EPSG only
                              SRC_SEMI_MAJOR, SRC_SEMI_MINOR,    // OGC only
-                             TGT_SEMI_MAJOR, TGT_SEMI_MINOR);   // OGC only
+                             a, b);                             // OGC only
+    }
+
+    /**
+     * Creates a descriptor for the internal parameters of {@link MolodenskyTransform}.
+     * This is identical to the standard parameters except that the last 3 OGC parameters
+     * are replaced by the excentricity.
+     *
+     * @return Internal parameter descriptor.
+     */
+    @Debug
+    public static ParameterDescriptorGroup internal() {
+        final ParameterBuilder builder = builder().setCodeSpace(Citations.SIS, Constants.SIS);
+        ParameterDescriptor<Boolean> abridged = builder.addName("abridged").create(Boolean.class, null);
+        return builder.addName("Molodensky")
+                .createGroup(DIMENSION,
+                             TX,
+                             TY,
+                             TZ,
+                             AXIS_LENGTH_DIFFERENCE,
+                             FLATTENING_DIFFERENCE,
+                             SRC_SEMI_MAJOR,
+                             MapProjection.EXCENTRICITY,
+                             abridged);
     }
 
     /**
@@ -271,8 +299,8 @@ public final class Molodensky extends GeocentricAffineBetweenGeographic {
         }
 
         /** Returns Δa as specified in the parameters if possible, or compute it otherwise. */
-        @Override public double semiMajorDifference(final org.opengis.referencing.datum.Ellipsoid target) {
-            return (target == other && !Double.isNaN(Δa)) ? Δa : super.semiMajorDifference(target);
+        @Override public double semiMajorAxisDifference(final org.opengis.referencing.datum.Ellipsoid target) {
+            return (target == other && !Double.isNaN(Δa)) ? Δa : super.semiMajorAxisDifference(target);
         }
 
         /** Returns Δf as specified in the parameters if possible, or compute it otherwise. */
