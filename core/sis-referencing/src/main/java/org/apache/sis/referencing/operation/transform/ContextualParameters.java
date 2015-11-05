@@ -180,7 +180,7 @@ public class ContextualParameters extends Parameters implements Serializable {
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = 4899134192407586472L;
+    private static final long serialVersionUID = 6769546741493459341L;
 
     /**
      * The parameters that represents the sequence of transforms as a whole. The parameter values may be used
@@ -202,12 +202,6 @@ public class ContextualParameters extends Parameters implements Serializable {
     private Matrix normalize, denormalize;
 
     /**
-     * The inverse of {@link #normalize} or {@link #denormalize} matrices, computed when first needed.
-     * Those matrices are cached only if {@link #isFrozen} is {@code true}.
-     */
-    private transient Matrix inverseNormalize, inverseDenormalize;
-
-    /**
      * The parameter values. Null elements in this array are empty slots available for adding new parameter values.
      * The array length is the maximum number of parameters allowed, which is determined by the {@link #descriptor}.
      *
@@ -215,6 +209,12 @@ public class ContextualParameters extends Parameters implements Serializable {
      * {@link #completeTransform(MathTransformFactory, MathTransform)} has been invoked.</p>
      */
     private ParameterValue<?>[] values;
+
+    /**
+     * If the inverse coordinate operation can be described by another {@code ContextualParameters} instance,
+     * a reference to that instance. Otherwise {@code null}.
+     */
+    private ContextualParameters inverse;
 
     /**
      * {@code false} if this parameter group is modifiable, or {@code true} if it has been made unmodifiable
@@ -268,14 +268,15 @@ public class ContextualParameters extends Parameters implements Serializable {
     /**
      * Creates a {@code ContextualParameters} for the inverse operation.
      *
-     * @param  inverse Descriptor of the inverse operation.
+     * @param  desc    Descriptor of the inverse operation.
      * @param  forward The parameters created for the forward operation.
      */
-    ContextualParameters(final ParameterDescriptorGroup inverse, final ContextualParameters forward) {
-        descriptor  = inverse;
+    private ContextualParameters(final ParameterDescriptorGroup desc, final ContextualParameters forward) {
+        descriptor  = desc;
         normalize   = forward.getMatrix(MatrixRole.INVERSE_DENORMALIZATION);
         denormalize = forward.getMatrix(MatrixRole.INVERSE_NORMALIZATION);
         values      = forward.values;
+        inverse     = forward;
         isFrozen    = true;
     }
 
@@ -290,6 +291,20 @@ public class ContextualParameters extends Parameters implements Serializable {
         }
         final int n = size + 1;
         return Matrices.create(n, n, ExtendedPrecisionMatrix.IDENTITY);
+    }
+
+    /**
+     * Creates a {@code ContextualParameters} for the inverse operation.
+     *
+     * @param  desc Descriptor of the inverse operation.
+     * @return Parameters for the inverse operation.
+     */
+    final synchronized ContextualParameters inverse(final ParameterDescriptorGroup desc) {
+        if (inverse == null) {
+            inverse = new ContextualParameters(desc, this);
+        }
+        assert inverse.descriptor == desc;
+        return inverse;
     }
 
     /**
@@ -315,14 +330,24 @@ public class ContextualParameters extends Parameters implements Serializable {
     }
 
     /**
-     * Ensures that this instance is modifiable.
+     * Ensures that this {@code ContextualParameters} instance is modifiable.
      *
      * @throws IllegalStateException if this {@code ContextualParameter} has been made unmodifiable.
      */
     private void ensureModifiable() throws IllegalStateException {
+        assert Thread.holdsLock(this);
         if (isFrozen) {
             throw new IllegalStateException(Errors.format(Errors.Keys.UnmodifiableObject_1, getClass()));
         }
+    }
+
+    /**
+     * Returns the given matrix as an unmodifiable one if this {@code ContextualParameters} instance is unmodifiable.
+     * Note that if this instance is modifiable, then we <strong>must</strong> return a direct reference to the matrix,
+     * not a wrapper, because the caller may need to modify it.
+     */
+    private MatrixSIS toMatrixSIS(final Matrix m) {
+        return isFrozen ? Matrices.unmodifiable(m) : (MatrixSIS) m;
     }
 
     /**
@@ -365,40 +390,32 @@ public class ContextualParameters extends Parameters implements Serializable {
      *
      * @since 0.7
      */
-    public final synchronized MatrixSIS getMatrix(final MatrixRole role) {
-        Matrix m;
-        switch (role) {
-            default: throw new AssertionError(role);              // If it happen, then it would be a SIS bug.
-            case NORMALIZATION:           m = normalize;          break;
-            case DENORMALIZATION:         m = denormalize;        break;
-            case INVERSE_NORMALIZATION:   m = inverseNormalize;   break;
-            case INVERSE_DENORMALIZATION: m = inverseDenormalize; break;
-        }
-        if (m != null) {
-            if (!isFrozen) {
-                return (MatrixSIS) m;       // Must be the same instance, not a copy.
-            } else {
-                return Matrices.unmodifiable(m);
+    public final MatrixSIS getMatrix(MatrixRole role) {
+        final Matrix fallback;
+        final ContextualParameters inverse;
+        synchronized (this) {
+            switch (role) {
+                default:                      throw new AssertionError(role);
+                case NORMALIZATION:           return toMatrixSIS(normalize);
+                case DENORMALIZATION:         return toMatrixSIS(denormalize);
+                case INVERSE_NORMALIZATION:   role = MatrixRole.DENORMALIZATION; fallback = normalize; break;
+                case INVERSE_DENORMALIZATION: role = MatrixRole.NORMALIZATION; fallback = denormalize; break;
             }
+            inverse = this.inverse;     // Copy the reference while we are inside the synchronized block.
         }
-        switch (role) {
-            default: throw new AssertionError(role);       // If it happen, then it would be a SIS bug.
-            case INVERSE_NORMALIZATION:   m = normalize;   break;
-            case INVERSE_DENORMALIZATION: m = denormalize; break;
-        }
-        final MatrixSIS inverse;
-        try {
-            inverse = Matrices.unmodifiable(Matrices.inverse(m));
+        /*
+         * Following must be outside the synchronized block in order to avoid potential deadlock while invoking
+         * inverse.getMatrix(role). We do not cache the matrix here, but 'inverse' is likely to have cached it.
+         */
+        final Matrix m;
+        if (inverse != null) {
+            m = inverse.getMatrix(role);
+        } else try {
+            m = Matrices.inverse(fallback);
         } catch (NoninvertibleMatrixException e) {
             throw new IllegalStateException(Errors.format(Errors.Keys.CanNotCompute_1, role), e);
         }
-        if (isFrozen) {
-            switch (role) {
-                case INVERSE_NORMALIZATION:   inverseNormalize   = inverse; break;
-                case INVERSE_DENORMALIZATION: inverseDenormalize = inverse; break;
-            }
-        }
-        return inverse;
+        return Matrices.unmodifiable(m);
     }
 
     /**
@@ -509,24 +526,7 @@ public class ContextualParameters extends Parameters implements Serializable {
         Matrix m;
         if ((m = MathTransforms.getMatrix(n)) != null)   normalize = m;
         if ((m = MathTransforms.getMatrix(d)) != null) denormalize = m;
-        inverseNormalize   = unique(factory, inverseNormalize);
-        inverseDenormalize = unique(factory, inverseDenormalize);
         return factory.createConcatenatedTransform(factory.createConcatenatedTransform(n, kernel), d);
-    }
-
-    /**
-     * Invoked for opportunistically replacing inverse matrices by unique instances. We rely on the fact that
-     * SIS's {@link DefaultMathTransformFactory} implementation caches the {@code MathTransform} instances,
-     * and that SIS implementations of {@code MathTransform.getMatrix()} return a single immutable matrix.
-     */
-    private static Matrix unique(final MathTransformFactory factory, Matrix matrix) throws FactoryException {
-        if (matrix != null) {
-            final Matrix m = MathTransforms.getMatrix(factory.createAffineTransform(matrix));
-            if (m != null) {
-                matrix = m;
-            }
-        }
-        return matrix;
     }
 
     /**

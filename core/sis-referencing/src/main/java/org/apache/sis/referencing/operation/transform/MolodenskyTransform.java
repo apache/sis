@@ -127,7 +127,7 @@ public class MolodenskyTransform extends AbstractMathTransform implements Serial
     private final byte type;
 
     /**
-     * X,Y,Z shift in units of the semi-major axis.
+     * X,Y,Z shifts in units of the semi-major axis of the source ellipsoid.
      */
     private final double tX, tY, tZ;
 
@@ -137,7 +137,8 @@ public class MolodenskyTransform extends AbstractMathTransform implements Serial
     private final double semiMajor;
 
     /**
-     * The square of excentricity: ℯ² = (a²-b²)/a² where
+     * The square of excentricity of the source ellipsoid.
+     * This can be computed by ℯ² = (a²-b²)/a² where
      * <var>a</var> is the <cite>semi-major</cite> axis length and
      * <var>b</var> is the <cite>semi-minor</cite> axis length.
      */
@@ -184,10 +185,12 @@ public class MolodenskyTransform extends AbstractMathTransform implements Serial
      *
      * <ul>
      *   <li><cite>Normalization</cite> before {@code MolodenskyTransform}:<ul>
-     *     <li>Conversion of (λ,φ) from degrees to radians</li>
+     *     <li>Conversion of (λ,φ) from degrees to radians.</li>
+     *     <li>Any implementation-dependent linear conversion of <var>h</var>.</li>
      *   </ul></li>
      *   <li><cite>Denormalization</cite> after {@code MolodenskyTransform}:<ul>
-     *     <li>Conversion of (λ,φ) from radians to degrees</li>
+     *     <li>Conversion of (λ,φ) from radians to degrees.</li>
+     *     <li>Any implementation-dependent linear conversion of <var>h</var>.</li>
      *   </ul></li>
      * </ul>
      *
