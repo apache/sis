@@ -700,14 +700,6 @@ next:   while (--numPts >= 0) {
         private static final long serialVersionUID = 6942084702259211803L;
 
         /**
-         * The inverse of the contextual parameters given by the enclosing class, created when first needed.
-         * They are used for formatting <cite>Well Known Text</cite> (WKT) and error messages.
-         *
-         * @see #getContextualParameters()
-         */
-        private transient ContextualParameters parameters;
-
-        /**
          * Creates the inverse of the enclosing transform.
          */
         Inverse() {
@@ -718,11 +710,8 @@ next:   while (--numPts >= 0) {
          * but with a different method name and the (de)normalization matrices inverted.
          */
         @Override
-        protected synchronized ContextualParameters getContextualParameters() {
-            if (parameters == null) {
-                parameters = new ContextualParameters(GeocentricToGeographic.PARAMETERS, context);
-            }
-            return parameters;
+        protected ContextualParameters getContextualParameters() {
+            return context.inverse(GeocentricToGeographic.PARAMETERS);
         }
 
         /**
