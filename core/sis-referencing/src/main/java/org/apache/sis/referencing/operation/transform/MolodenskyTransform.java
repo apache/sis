@@ -107,36 +107,19 @@ public class MolodenskyTransform extends AbstractMathTransform implements Serial
     private static final double ANGULAR_SCALE = 1.00000000000391744;
 
     /**
-     * A mask value for {@link #type}.
-     * <ul>
-     *   <li>If set, the source coordinates are three-dimensional.</li>
-     *   <li>If unset, the source coordinates are two-dimensional.</li>
-     * </ul>
+     * {@code true} if the source coordinates have a height.
      */
-    private static final byte SOURCE_DIMENSION_MASK = 1;
+    private final boolean isSource3D;
 
     /**
-     * A mask value for {@link #type}.
-     * <ul>
-     *   <li>If set, the target coordinates are three-dimensional.</li>
-     *   <li>If unset, the target coordinates are two-dimensional.</li>
-     * </ul>
+     * {@code true} if the target coordinates have a height.
      */
-    private static final byte TARGET_DIMENSION_MASK = 2;
+    private final boolean isTarget3D;
 
     /**
-     * A mask value for {@link #type}.
-     * <ul>
-     *   <li>If set, the transform uses the abridged formulas.</li>
-     *   <li>If unset, the transform uses the complete formulas.</li>
-     * </ul>
+     * {@code true} for the abridged formula, or {@code false} for the complete one.
      */
-    private static final byte ABRIDGED_MASK = 4;
-
-    /**
-     * Bitwise combination of the {@code *_MASK} constants.
-     */
-    private final byte type;
+    private final boolean isAbridged;
 
     /**
      * Shift along the geocentric X axis (toward prime meridian)
@@ -257,15 +240,14 @@ public class MolodenskyTransform extends AbstractMathTransform implements Serial
         ArgumentChecks.ensureNonNull("source", source);
         ArgumentChecks.ensureNonNull("target", target);
         final DefaultEllipsoid src = DefaultEllipsoid.castOrCopy(source);
-        byte type = isAbridged ? ABRIDGED_MASK : 0;
-        if (isSource3D) type |= SOURCE_DIMENSION_MASK;
-        if (isTarget3D) type |= TARGET_DIMENSION_MASK;
-        this.type      = type;
-        this.semiMajor = src.getSemiMajorAxis();
-        this.Δa        = src.semiMajorAxisDifference(target);
-        this.tX        = tX;
-        this.tY        = tY;
-        this.tZ        = tZ;
+        this.isSource3D = isSource3D;
+        this.isTarget3D = isTarget3D;
+        this.isAbridged = isAbridged;
+        this.semiMajor  = src.getSemiMajorAxis();
+        this.Δa         = src.semiMajorAxisDifference(target);
+        this.tX         = tX;
+        this.tY         = tY;
+        this.tZ         = tZ;
 
         final double semiMinor = src.getSemiMinorAxis();
         final double Δf = src.flatteningDifference(target);
@@ -399,7 +381,7 @@ public class MolodenskyTransform extends AbstractMathTransform implements Serial
         setEPSG(pg, unit, context.doubleValue(Molodensky.FLATTENING_DIFFERENCE));
         pg.getOrCreate(Molodensky.SRC_SEMI_MAJOR).setValue(semiMajor, unit);
         pg.getOrCreate(MapProjection.EXCENTRICITY).setValue(sqrt(excentricitySquared));
-        pg.parameter("abridged").setValue(isAbridged());
+        pg.parameter("abridged").setValue(isAbridged);
         return pg;
     }
 
@@ -439,23 +421,13 @@ public class MolodenskyTransform extends AbstractMathTransform implements Serial
     }
 
     /**
-     * Returns {@code true} if this Molodensky transform uses abridged formulas instead than the complete ones.
-     * This is the value of the {@code isAbridged} boolean argument given to the constructor.
-     *
-     * @return {@code true} if this transform uses abridged formulas.
-     */
-    public boolean isAbridged() {
-        return (type & ABRIDGED_MASK) != 0;
-    }
-
-    /**
      * Gets the dimension of input points.
      *
      * @return The input dimension, which is 2 or 3.
      */
     @Override
     public final int getSourceDimensions() {
-        return (type & SOURCE_DIMENSION_MASK) != 0 ? 3 : 2;
+        return isSource3D ? 3 : 2;
     }
 
     /**
@@ -465,7 +437,7 @@ public class MolodenskyTransform extends AbstractMathTransform implements Serial
      */
     @Override
     public final int getTargetDimensions() {
-        return (type & TARGET_DIMENSION_MASK) != 0 ? 3 : 2;
+        return isTarget3D ? 3 : 2;
     }
 
     /**
@@ -504,8 +476,6 @@ public class MolodenskyTransform extends AbstractMathTransform implements Serial
                             final double[] dstPts, final int dstOff,
                             final boolean derivate) throws TransformException
     {
-        final boolean isSource3D = (type & SOURCE_DIMENSION_MASK) != 0;
-        final boolean isTarget3D = (type & TARGET_DIMENSION_MASK) != 0;
         return transform(srcPts[srcOff], srcPts[srcOff+1], isSource3D ? srcPts[srcOff+2] : 0,
                          isSource3D, dstPts, dstOff, isTarget3D, derivate);
     }
@@ -527,7 +497,6 @@ public class MolodenskyTransform extends AbstractMathTransform implements Serial
                              final double[] dstPts, int dstOff, final boolean isTarget3D,
                              final boolean derivate) throws TransformException
     {
-        final boolean abridged = (type & ABRIDGED_MASK) != 0;
         /*
          * Abridged Molodensky formulas from EPSG guidance note:
          *
@@ -552,7 +521,7 @@ public class MolodenskyTransform extends AbstractMathTransform implements Serial
         double ρ = semiMajor * (1 - excentricitySquared) / (ρden *= νden);  // (also complete calculation of ρden)
         double ν = semiMajor / νden;
         double t = Δfmod * 2;                                               // A term in the calculation of Δφ
-        if (!abridged) {
+        if (!isAbridged) {
             ρ += h;
             ν += h;
             t = t*(0.5/νden + 0.5/ρden) + Δa*excentricitySquared/νden;
@@ -563,7 +532,7 @@ public class MolodenskyTransform extends AbstractMathTransform implements Serial
         if (isTarget3D) {
             t = Δfmod * sin2φ;                                              // A term in the calculation of Δh
             double d = Δa;
-            if (!abridged) {
+            if (!isAbridged) {
                 t /= νden;
                 d *= νden;
             }
@@ -584,9 +553,6 @@ public class MolodenskyTransform extends AbstractMathTransform implements Serial
      */
     @Override
     public void transform(double[] srcPts, int srcOff, double[] dstPts, int dstOff, int numPts) throws TransformException {
-        final boolean abridged = (type & ABRIDGED_MASK)         != 0;
-        final boolean isSource3D = (type & SOURCE_DIMENSION_MASK) != 0;
-        final boolean isTarget3D = (type & TARGET_DIMENSION_MASK) != 0;
         int srcInc = 0;
         int dstInc = 0;
         int offFinal = 0;
@@ -639,7 +605,7 @@ public class MolodenskyTransform extends AbstractMathTransform implements Serial
             double ρ = semiMajor * (1 - excentricitySquared) / (ρden *= νden);
             double ν = semiMajor / νden;
             double t = Δfmod * 2;
-            if (!abridged) {
+            if (!isAbridged) {
                 ρ += h;
                 ν += h;
                 t = t*(0.5/νden + 0.5/ρden) + Δa*excentricitySquared/νden;
@@ -650,7 +616,7 @@ public class MolodenskyTransform extends AbstractMathTransform implements Serial
             if (isTarget3D) {
                 t = Δfmod * sin2φ;
                 double d = Δa;
-                if (!abridged) {
+                if (!isAbridged) {
                     t /= νden;
                     d *= νden;
                 }
@@ -694,12 +660,14 @@ public class MolodenskyTransform extends AbstractMathTransform implements Serial
      */
     @Override
     protected int computeHashCode() {
-        return super.computeHashCode() + type + Numerics.hashCode(
+        int code = super.computeHashCode() + Numerics.hashCode(
                         Double.doubleToLongBits(Δa)
                 +       Double.doubleToLongBits(Δfmod)
                 + 31 * (Double.doubleToLongBits(tX)
                 + 31 * (Double.doubleToLongBits(tY)
                 + 31 * (Double.doubleToLongBits(tZ)))));
+        if (isAbridged) code = ~code;
+        return code;
     }
 
     /**
@@ -715,14 +683,16 @@ public class MolodenskyTransform extends AbstractMathTransform implements Serial
         }
         if (super.equals(object, mode)) {
             final MolodenskyTransform that = (MolodenskyTransform) object;
-            return type == that.type
-                   && Numerics.equals(tX,                  that.tX)
-                   && Numerics.equals(tY,                  that.tY)
-                   && Numerics.equals(tZ,                  that.tZ)
-                   && Numerics.equals(Δa,                  that.Δa)
-                   && Numerics.equals(Δfmod,               that.Δfmod)
-                   && Numerics.equals(semiMajor,           that.semiMajor)
-                   && Numerics.equals(excentricitySquared, that.excentricitySquared);
+            return isSource3D == that.isSource3D
+                && isTarget3D == that.isTarget3D
+                && isAbridged == that.isAbridged
+                && Numerics.equals(tX,                  that.tX)
+                && Numerics.equals(tY,                  that.tY)
+                && Numerics.equals(tZ,                  that.tZ)
+                && Numerics.equals(Δa,                  that.Δa)
+                && Numerics.equals(Δfmod,               that.Δfmod)
+                && Numerics.equals(semiMajor,           that.semiMajor)
+                && Numerics.equals(excentricitySquared, that.excentricitySquared);
         }
         return false;
     }
