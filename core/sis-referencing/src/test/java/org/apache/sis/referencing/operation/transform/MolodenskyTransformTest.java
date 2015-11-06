@@ -73,6 +73,36 @@ public final strictfp class MolodenskyTransformTest extends MathTransformTestCas
         zTolerance = GeocentricTranslationTest.precision(3);        // Required precision for h
         zDimension = new int[] {2};                                 // Dimension of h where to apply zTolerance
         assertFalse(transform.isIdentity());
+        validate();
+    }
+
+    /**
+     * Tests the derivative of the Abridged Molodensky transformation.
+     *
+     * @throws FactoryException if an error occurred while creating a transform step.
+     * @throws TransformException if the transformation failed.
+     */
+    @Test
+    public void testAbridgedMolodenskyDerivative() throws FactoryException, TransformException {
+        create(true);
+        verifyDerivative( 0,  0,  0);
+        verifyDerivative(-3, 30,  7);
+        verifyDerivative(+6, 60, 20);
+    }
+
+    /**
+     * Tests the derivative of the Molodensky transformation.
+     *
+     * @throws FactoryException if an error occurred while creating a transform step.
+     * @throws TransformException if the transformation failed.
+     */
+    @Test
+    @DependsOnMethod("testAbridgedMolodenskyDerivative")
+    public void testMolodenskyDerivative() throws FactoryException, TransformException {
+        create(false);
+        verifyDerivative( 0,  0,  0);
+        verifyDerivative(-3, 30,  7);
+        verifyDerivative(+6, 60, 20);
     }
 
     /**
@@ -88,10 +118,9 @@ public final strictfp class MolodenskyTransformTest extends MathTransformTestCas
      * @throws TransformException if the transformation failed.
      */
     @Test
+    @DependsOnMethod("testAbridgedMolodenskyDerivative")
     public void testAbridgedMolodensky() throws FactoryException, TransformException {
-        isDerivativeSupported = false;
         create(true);
-        validate();
         final double[] sample   = GeocentricTranslationTest.samplePoint(1);
         final double[] expected = GeocentricTranslationTest.samplePoint(5);
         isInverseTransformSupported = false;
@@ -118,11 +147,9 @@ public final strictfp class MolodenskyTransformTest extends MathTransformTestCas
      * @throws TransformException if the transformation failed.
      */
     @Test
-    @DependsOnMethod("testAbridgedMolodensky")
+    @DependsOnMethod({"testAbridgedMolodensky", "testMolodenskyDerivative"})
     public void testMolodensky() throws FactoryException, TransformException {
-        isDerivativeSupported = false;
         create(false);
-        validate();
         final double[] sample   = GeocentricTranslationTest.samplePoint(1);
         final double[] expected = GeocentricTranslationTest.samplePoint(4);
         isInverseTransformSupported = false;
@@ -147,7 +174,6 @@ public final strictfp class MolodenskyTransformTest extends MathTransformTestCas
     @Test
     @DependsOnMethod("testMolodensky")
     public void testRandomPoints() throws FactoryException, TransformException {
-        isDerivativeSupported = false;
         create(false);
         tolerance  = Formulas.LINEAR_TOLERANCE * 3;     // To be converted in degrees by ToleranceModifier.GEOGRAPHIC
         zTolerance = Formulas.LINEAR_TOLERANCE * 2;
