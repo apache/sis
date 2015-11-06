@@ -36,10 +36,8 @@ import org.apache.sis.referencing.datum.DefaultEllipsoid;
 import org.apache.sis.referencing.operation.transform.MolodenskyTransform;
 import org.apache.sis.internal.referencing.NilReferencingObject;
 import org.apache.sis.internal.referencing.Formulas;
-import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.Debug;
 
 
@@ -272,8 +270,8 @@ public final class Molodensky extends GeocentricAffineBetweenGeographic {
             if (value != null) {
                 return value;
             }
-        } catch (ParameterNotFoundException e) {
-            Logging.recoverableException(Logging.getLogger(Loggers.COORDINATE_OPERATION), Molodensky.class, "createMathTransform", e);
+        } catch (ParameterNotFoundException | IllegalStateException e) {
+            // Ignore - this is okay for this method contract.
         }
         return Double.NaN;
     }

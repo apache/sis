@@ -20,6 +20,9 @@ import org.opengis.util.FactoryException;
 import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.TransformException;
+import org.opengis.parameter.ParameterValueGroup;
+import org.apache.sis.internal.referencing.provider.AbridgedMolodensky;
+import org.apache.sis.internal.referencing.provider.Molodensky;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.referencing.CommonCRS;
@@ -29,11 +32,13 @@ import static java.lang.StrictMath.toRadians;
 
 // Test dependencies
 import org.apache.sis.internal.referencing.provider.GeocentricTranslationTest;
+import org.apache.sis.test.mock.MathTransformFactoryMock;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestUtilities;
 import org.opengis.test.ToleranceModifier;
 import org.opengis.test.ToleranceModifiers;
+import org.opengis.test.referencing.ParameterizedTransformTest;
 import org.junit.Test;
 
 import static org.apache.sis.test.Assert.*;
@@ -169,7 +174,7 @@ public final strictfp class MolodenskyTransformTest extends MathTransformTestCas
      * high for this test.
      *
      * @throws FactoryException if an error occurred while creating a transform step.
-     * @throws TransformException if a conversion failed.
+     * @throws TransformException if a transformation failed.
      */
     @Test
     @DependsOnMethod("testMolodensky")
@@ -182,6 +187,49 @@ public final strictfp class MolodenskyTransformTest extends MathTransformTestCas
                        new double[] {Longitude.MIN_VALUE, +85, +500},
                        new int[] {8, 8, 8},
                        TestUtilities.createRandomNumberGenerator(208129394));
+    }
+
+    /**
+     * Tests the creation through the provider.
+     *
+     * @throws FactoryException if an error occurred while creating a transform step.
+     * @throws TransformException if a transformation failed.
+     */
+    @Test
+    @DependsOnMethod("testRandomPoints")
+    public void testProvider() throws FactoryException, TransformException {
+        final MathTransformFactory factory = new MathTransformFactoryMock(new Molodensky());
+        final ParameterValueGroup parameters = factory.getDefaultParameters("Molodenski");
+        parameters.parameter("dim").setValue(3);
+        parameters.parameter("dx").setValue(-3.0);
+        parameters.parameter("dy").setValue(142.0);
+        parameters.parameter("dz").setValue(183.0);
+        parameters.parameter("src_semi_major").setValue(6378206.4);
+        parameters.parameter("src_semi_minor").setValue(6356583.8);
+        parameters.parameter("tgt_semi_major").setValue(6378137.0);
+        parameters.parameter("tgt_semi_minor").setValue(6356752.31414036);
+        transform = factory.createParameterizedTransform(parameters);
+        assertEquals(3, transform.getSourceDimensions());
+        assertEquals(3, transform.getTargetDimensions());
+        final double delta = toRadians(100.0 / 60) / 1852;          // Approximatively 100 metres
+        derivativeDeltas = new double[] {delta, delta, 100};        // (Δλ, Δφ, Δh)
+        tolerance = Formulas.ANGULAR_TOLERANCE * 5;
+        zTolerance = Formulas.LINEAR_TOLERANCE * 5;
+        zDimension = new int[] {2};
+        verifyInDomain(CoordinateDomain.RANGE_10, ORDINATE_COUNT);
+    }
+
+    /**
+     * Runs the test defined in the GeoAPI-conformance module.
+     *
+     * @throws FactoryException if an error occurred while creating a transform step.
+     * @throws TransformException if a transformation failed.
+     */
+//  @Test
+    @DependsOnMethod("testProvider")
+    @org.junit.Ignore("Need to investigate a 1cm error in height value.")
+    public void runGeoapiTest() throws FactoryException, TransformException {
+        new ParameterizedTransformTest(new MathTransformFactoryMock(new AbridgedMolodensky())).testAbridgedMolodensky();
     }
 
     /**
