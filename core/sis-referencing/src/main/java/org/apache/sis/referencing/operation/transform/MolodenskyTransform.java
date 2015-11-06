@@ -30,6 +30,7 @@ import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.TransformException;
+import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.datum.DefaultEllipsoid;
 import org.apache.sis.internal.referencing.provider.Molodensky;
 import org.apache.sis.internal.referencing.provider.AbridgedMolodensky;
@@ -516,32 +517,94 @@ public class MolodenskyTransform extends AbstractMathTransform implements Serial
         final double sinφ  = sin(φ);
         final double cosφ  = cos(φ);
         final double sin2φ = sinφ * sinφ;
-              double ρden  = 1 - excentricitySquared * sin2φ;               // Denominator of ρ (completed later)
-        final double νden  = sqrt(ρden);                                    // Denominator of ν
-        double ρ = semiMajor * (1 - excentricitySquared) / (ρden *= νden);  // (also complete calculation of ρden)
-        double ν = semiMajor / νden;
+        final double ν2den = 1 - excentricitySquared*sin2φ;                 // Square of the denominator of ν
+        final double νden  = sqrt(ν2den);                                   // Denominator of ν
+        final double ρden  = ν2den * νden;                                  // Denominator of ρ
+        double ρ = semiMajor * (1 - excentricitySquared) / ρden;            // Other notation: Rm = ρ
+        double ν = semiMajor / νden;                                        // Other notation: Rn = ν
         double t = Δfmod * 2;                                               // A term in the calculation of Δφ
         if (!isAbridged) {
             ρ += h;
             ν += h;
-            t = t*(0.5/νden + 0.5/ρden) + Δa*excentricitySquared/νden;
+            t = t*(0.5/νden + 0.5/ρden)                 // = Δf⋅[ν⋅(b/a) + ρ⋅(a/b)]     (without the +h in ν and ρ)
+                    + Δa*excentricitySquared/νden;      // = Δa⋅[ℯ²⋅ν/a]
         }
-        final double tXY = tY*sinλ + tX*cosλ;
-        dstPts[dstOff++] = λ + ANGULAR_SCALE * (tY*cosλ - tX*sinλ) / (ν*cosφ);
-        dstPts[dstOff++] = φ + ANGULAR_SCALE * ((t*cosφ - tXY)*sinφ + tZ*cosφ) / ρ;
-        if (isTarget3D) {
-            t = Δfmod * sin2φ;                                              // A term in the calculation of Δh
-            double d = Δa;
-            if (!isAbridged) {
-                t /= νden;
-                d *= νden;
+        final double spcλ = tY*sinλ + tX*cosλ;                      // "spc" stands for "sin plus cos"
+        final double cmsλ = tY*cosλ - tX*sinλ;                      // "cms" stands for "cos minus sin"
+        final double cmsφ = (tZ + t*sinφ)*cosφ - spcλ*sinφ;
+        final double scaleX = ANGULAR_SCALE / (ν*cosφ);
+        final double scaleY = ANGULAR_SCALE / ρ;
+        if (dstPts != null) {
+            dstPts[dstOff++] = λ + (cmsλ * scaleX);
+            dstPts[dstOff++] = φ + (cmsφ * scaleY);
+            if (isTarget3D) {
+                double t1 = Δfmod * sin2φ;          // A term in the calculation of Δh
+                double t2 = Δa;
+                if (!isAbridged) {
+                    t1 /= νden;                     // = Δf⋅(b/a)⋅ν⋅sin²φ
+                    t2 *= νden;                     // = Δa⋅(a/ν)
+                }
+                dstPts[dstOff++] = h + spcλ*cosφ + tZ*sinφ + t1 - t2;
             }
-            dstPts[dstOff++] = h + tXY*cosφ + tZ*sinφ + t - d;
         }
         if (!derivate) {
             return null;
         }
-        return null;  // TODO
+        /*
+         * At this point the (Abridged) Molodensky transformation is finished.
+         * Code below this point is only for computing the derivative, if requested.
+         * Note: variable names do not necessarily tell all the terms that they contain.
+         */
+        final Matrix matrix   = Matrices.createDiagonal(getTargetDimensions(), getSourceDimensions());
+        final double sinφcosφ = sinφ * cosφ;
+        final double dν       = excentricitySquared*sinφcosφ / ν2den;
+        final double dν3ρ     = 3*dν * (1 - excentricitySquared) / ν2den;
+        //    double dXdλ     = spcλ;
+        final double dYdλ     = cmsλ * sinφ;
+        final double dZdλ     = cmsλ * cosφ;
+              double dXdφ     = dYdλ / cosφ;
+              double dYdφ     = -tZ*sinφ - cosφ*spcλ  +  t*(1 - 2*sin2φ);
+              double dZdφ     =  tZ*cosφ - sinφ*spcλ;
+        if (isAbridged) {
+            /*
+             *   Δfmod  =  (a⋅Δf) + (f⋅Δa)
+             *   t      =  2⋅Δfmod
+             *   dXdh   =  0  so no need to set the matrix element.
+             *   dYdh   =  0  so no need to set the matrix element.
+             */
+            dXdφ -= cmsλ * dν;
+            dYdφ -= cmsφ * dν3ρ;
+            dZdφ += t*cosφ*sinφ;
+        } else {
+            /*
+             *   Δfmod  =  b⋅Δf
+             *   t      =  Δf⋅[ν⋅(b/a) + ρ⋅(a/b)]    (real ν and ρ, without + h)
+             *   ν         is actually ν + h
+             *   ρ         is actually ρ + h
+             */
+            final double dρ = dν3ρ * νden * (semiMajor / ρ);    // Reminder: that ρ contains a h term.
+            dXdφ -= dν * cmsλ * semiMajor / (νden*ν);           // Reminder: that ν contains a h term.
+            dYdφ -= dρ * dZdφ - (Δfmod*(dν*2/(1 - excentricitySquared) + (1 + 1/ν2den)*(dν - dρ))
+                                  + Δa*(dν + 1)*excentricitySquared) * sinφcosφ / νden;
+            if (isSource3D) {
+                final double dXdh =  cmsλ / ν;
+                final double dYdh = -cmsφ / ρ;
+                matrix.setElement(0, 2, -dXdh * scaleX);
+                matrix.setElement(1, 2, +dYdh * scaleY);
+            }
+            final double t1 = Δfmod * (dν*sin2φ + 2*sinφcosφ);
+            final double t2 = Δa * dν;
+            dZdφ += t1/νden + t2*νden;
+        }
+        matrix.setElement(0, 0, 1 - spcλ * scaleX);
+        matrix.setElement(1, 1, 1 + dYdφ * scaleY);
+        matrix.setElement(0, 1,   + dXdφ * scaleX);
+        matrix.setElement(1, 0,   - dYdλ * scaleY);
+        if (isTarget3D) {
+            matrix.setElement(2, 0, dZdλ);
+            matrix.setElement(2, 1, dZdφ);
+        }
+        return matrix;
     }
 
     /**
@@ -600,19 +663,19 @@ public class MolodenskyTransform extends AbstractMathTransform implements Serial
             final double sinφ  = sin(φ);
             final double cosφ  = cos(φ);
             final double sin2φ = sinφ * sinφ;
-                  double ρden  = 1 - excentricitySquared * sin2φ;
-            final double νden  = sqrt(ρden);
-            double ρ = semiMajor * (1 - excentricitySquared) / (ρden *= νden);
-            double ν = semiMajor / νden;
-            double t = Δfmod * 2;
+                  double ρden  = 1 - excentricitySquared * sin2φ;               // Denominator of ρ (completed later)
+            final double νden  = sqrt(ρden);                                    // Denominator of ν
+            double ρ = semiMajor * (1 - excentricitySquared) / (ρden *= νden);  // (also complete calculation of ρden)
+            double ν = semiMajor / νden;                                        // Other notation: Rm = ρ and Rn = ν
+            double t = Δfmod * 2;                                               // A term in the calculation of Δφ
             if (!isAbridged) {
                 ρ += h;
                 ν += h;
                 t = t*(0.5/νden + 0.5/ρden) + Δa*excentricitySquared/νden;
             }
-            final double tXY = tY*sinλ + tX*cosλ;
+            final double spcλ = tY*sinλ + tX*cosλ;
             dstPts[dstOff++] = λ + ANGULAR_SCALE * (tY*cosλ - tX*sinλ) / (ν*cosφ);
-            dstPts[dstOff++] = φ + ANGULAR_SCALE * ((t*cosφ - tXY)*sinφ + tZ*cosφ) / ρ;
+            dstPts[dstOff++] = φ + ANGULAR_SCALE * ((t*cosφ - spcλ)*sinφ + tZ*cosφ) / ρ;
             if (isTarget3D) {
                 t = Δfmod * sin2φ;
                 double d = Δa;
@@ -620,7 +683,7 @@ public class MolodenskyTransform extends AbstractMathTransform implements Serial
                     t /= νden;
                     d *= νden;
                 }
-                dstPts[dstOff++] = h + tXY*cosφ + tZ*sinφ + t - d;
+                dstPts[dstOff++] = h + spcλ*cosφ + tZ*sinφ + t - d;
             }
             srcOff += srcInc;
             dstOff += dstInc;
