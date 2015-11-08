@@ -305,7 +305,17 @@ public class ShapefileByteReader extends CommonByteReader<InvalidShapefileFormat
 
         // create a line from the points
         for(int index=0; index < numPoints; index ++) {
-            if (index == 0) {
+            // Check if this index is one that begins a new part.
+            boolean newPolygon = false;
+
+            for(int j=0; j < partsIndexes.length; j ++) {
+                if (partsIndexes[j] == index) {
+                    newPolygon = true;
+                    break;
+                }
+            }
+            
+            if (newPolygon) {
                 poly.startPath(xPoints[index], yPoints[index]);                
             }
             else {
