@@ -83,11 +83,11 @@ public abstract class MapProjection extends AbstractProvider {
     public static final DefaultParameterDescriptor<Double> SEMI_MINOR;
 
     /**
-     * The ellipsoid excentricity, computed from the semi-major and semi-minor axis lengths.
+     * The ellipsoid eccentricity, computed from the semi-major and semi-minor axis lengths.
      * This a SIS-specific parameter used mostly for debugging purpose.
      */
     @Debug
-    public static final DefaultParameterDescriptor<Double> EXCENTRICITY;
+    public static final DefaultParameterDescriptor<Double> ECCENTRICITY;
     static {
         final MeasurementRange<Double> valueDomain = MeasurementRange.createGreaterThan(0, SI.METRE);
         final GenericName[] aliases = {
@@ -116,8 +116,8 @@ public abstract class MapProjection extends AbstractProvider {
          */
         properties.clear();
         properties.put(AUTHORITY_KEY, Citations.SIS);
-        properties.put(NAME_KEY, "excentricity");
-        EXCENTRICITY = new DefaultParameterDescriptor<>(properties, 1, 1, Double.class,
+        properties.put(NAME_KEY, "eccentricity");
+        ECCENTRICITY = new DefaultParameterDescriptor<>(properties, 1, 1, Double.class,
                 MeasurementRange.create(0d, true, 1d, true, null), null, null);
     }
 

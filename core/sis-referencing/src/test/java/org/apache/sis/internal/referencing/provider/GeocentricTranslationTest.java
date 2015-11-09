@@ -235,7 +235,7 @@ public final strictfp class GeocentricTranslationTest extends MathTransformTestC
                 "    Parameter[“elt_1_1”, 0.017453292519943295],\n" +
                 "    Parameter[“elt_2_2”, 1.567855942887398E-7]],\n" +
                 "  Param_MT[“Ellipsoidal to Cartesian”,\n" +
-                "    Parameter[“excentricity”, 0.08181919084262157],\n" +
+                "    Parameter[“eccentricity”, 0.08181919084262157],\n" +
                 "    Parameter[“dim”, 3]],\n" +
                 "  Param_MT[“Affine”,\n" +
                 "    Parameter[“num_row”, 4],\n" +
@@ -247,7 +247,7 @@ public final strictfp class GeocentricTranslationTest extends MathTransformTestC
                 "    Parameter[“elt_2_2”, 0.9999606483644456],\n" +
                 "    Parameter[“elt_2_3”, 1.8335353697517302E-5]],\n" +
                 "  Param_MT[“Cartesian to ellipsoidal”,\n" +
-                "    Parameter[“excentricity”, 0.08199188997902956],\n" +
+                "    Parameter[“eccentricity”, 0.08199188997902956],\n" +
                 "    Parameter[“dim”, 3]],\n" +
                 "  Param_MT[“Affine”,\n" +
                 "    Parameter[“num_row”, 4],\n" +

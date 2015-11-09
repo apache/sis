@@ -73,7 +73,7 @@ public class TransverseMercator extends ConformalProjection {
 
     /**
      * Coefficients in the series expansion of the forward projection,
-     * depending only on {@linkplain #excentricity excentricity} value.
+     * depending only on {@linkplain #eccentricity eccentricity} value.
      * The series expansion is of the following form:
      *
      *     <blockquote>cf₂⋅ｆ(2θ) + cf₄⋅ｆ(4θ) + cf₆⋅ｆ(6θ) + cf₈⋅ｆ(8θ)</blockquote>
@@ -164,7 +164,7 @@ public class TransverseMercator extends ConformalProjection {
          * NOTE: the EPSG documentation makes special cases for φ₀ = 0 or ±π/2. This is not
          * needed here; we verified that the code below produces naturally the expected values.
          */
-        final double Q = asinh(tan(φ0)) - excentricity * atanh(excentricity * sin(φ0));
+        final double Q = asinh(tan(φ0)) - eccentricity * atanh(eccentricity * sin(φ0));
         final double β = atan(sinh(Q));
         final DoubleDouble M0 = new DoubleDouble();
         M0.value = cf8 * sin(8*β)
@@ -216,7 +216,7 @@ public class TransverseMercator extends ConformalProjection {
          * 'n' value at serialization time.
          */
         final DoubleDouble t = new DoubleDouble(1, 0);
-        t.subtract(excentricitySquared, 0);
+        t.subtract(eccentricitySquared, 0);
         t.sqrt();
         t.ratio_1m_1p();
         computeCoefficients(t.doubleValue());
@@ -240,7 +240,7 @@ public class TransverseMercator extends ConformalProjection {
      *
      * As much as possible, b/a should be computed from the map projection parameters.
      * However if those parameters are not available anymore, then they can be computed
-     * from the excentricity as:
+     * from the eccentricity as:
      *
      *     <blockquote>b/a = √(1 - ℯ²)</blockquote>
      *
@@ -294,7 +294,7 @@ public class TransverseMercator extends ConformalProjection {
     @Override
     public MathTransform createMapProjection(final MathTransformFactory factory) throws FactoryException {
         TransverseMercator kernel = this;
-        if (excentricity == 0) {
+        if (eccentricity == 0) {
             kernel = new Spherical(this);
         }
         return context.completeTransform(factory, kernel);
@@ -316,8 +316,8 @@ public class TransverseMercator extends ConformalProjection {
         final double λ     = srcPts[srcOff  ];
         final double φ     = srcPts[srcOff+1];
         final double sinλ  = sin(λ);
-        final double ℯsinφ = sin(φ) * excentricity;
-        final double Q     = asinh(tan(φ)) - atanh(ℯsinφ) * excentricity;
+        final double ℯsinφ = sin(φ) * eccentricity;
+        final double Q     = asinh(tan(φ)) - atanh(ℯsinφ) * eccentricity;
         final double coshQ = cosh(Q);
         final double η0    = atanh(sinλ / coshQ);
         /*
@@ -418,7 +418,7 @@ public class TransverseMercator extends ConformalProjection {
         final double sqrt1_thQchη0 = sqrt(1 - (tanhQ * tanhQ) * (coshη0 * coshη0)); //-- Qη0
 
         //-- dQ_dλ = 0;
-        final double dQ_dφ  = 1 / cosφ - excentricitySquared * cosφ / (1 - ℯsinφ * ℯsinφ);
+        final double dQ_dφ  = 1 / cosφ - eccentricitySquared * cosφ / (1 - ℯsinφ * ℯsinφ);
 
         final double dη0_dλ =   cosλ * coshQ         / cosh2Q_sin2λ;
         final double dη0_dφ = - dQ_dφ * sinλ * sinhQ / cosh2Q_sin2λ;
@@ -544,10 +544,10 @@ public class TransverseMercator extends ConformalProjection {
          * Following usually converges in 4 iterations.
          * The first iteration is unrolled.
          */
-        double p = excentricity * atanh(excentricity * tanh(Q));
+        double p = eccentricity * atanh(eccentricity * tanh(Q));
         double Qp = Q + p;
         for (int it=0; it<MAXIMUM_ITERATIONS; it++) {
-            final double c = excentricity * atanh(excentricity * tanh(Qp));
+            final double c = eccentricity * atanh(eccentricity * tanh(Qp));
             Qp = Q + c;
             if (abs(c - p) <= ITERATION_TOLERANCE) {
                 dstPts[dstOff  ] = asin(tanh(η0) / cos(β));

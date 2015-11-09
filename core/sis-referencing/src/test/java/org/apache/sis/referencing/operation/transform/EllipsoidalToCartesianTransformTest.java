@@ -128,7 +128,7 @@ public final strictfp class EllipsoidalToCartesianTransformTest extends MathTran
     }
 
     /**
-     * Tests conversion of a point on an imaginary planet with high excentricity.
+     * Tests conversion of a point on an imaginary planet with high eccentricity.
      * The {@link EllipsoidalToCartesianTransform} may need to use an iterative method
      * for reaching the expected precision.
      *
@@ -136,7 +136,7 @@ public final strictfp class EllipsoidalToCartesianTransformTest extends MathTran
      * @throws TransformException if conversion of the sample point failed.
      */
     @Test
-    public void testHighExcentricity() throws FactoryException, TransformException, FactoryException {
+    public void testHighEccentricity() throws FactoryException, TransformException, FactoryException {
         transform = EllipsoidalToCartesianTransform.createGeodeticConversion(
                 DefaultFactories.forBuildin(MathTransformFactory.class),
                 6000000, 4000000, SI.METRE, true);
@@ -264,7 +264,7 @@ public final strictfp class EllipsoidalToCartesianTransformTest extends MathTran
                 "    Parameter[“elt_1_1”, 0.017453292519943295],\n" +
                 "    Parameter[“elt_2_2”, 1.567855942887398E-7]],\n" +
                 "  Param_MT[“Ellipsoidal to Cartesian”,\n" +
-                "    Parameter[“excentricity”, 0.08181919084262157],\n" +
+                "    Parameter[“eccentricity”, 0.08181919084262157],\n" +
                 "    Parameter[“dim”, 3]],\n" +
                 "  Param_MT[“Affine”,\n" +
                 "    Parameter[“num_row”, 4],\n" +
@@ -282,7 +282,7 @@ public final strictfp class EllipsoidalToCartesianTransformTest extends MathTran
                 "    Parameter[“elt_1_1”, 1.567855942887398E-7],\n" +
                 "    Parameter[“elt_2_2”, 1.567855942887398E-7]],\n" +
                 "  Param_MT[“Cartesian to ellipsoidal”,\n" +
-                "    Parameter[“excentricity”, 0.08181919084262157],\n" +
+                "    Parameter[“eccentricity”, 0.08181919084262157],\n" +
                 "    Parameter[“dim”, 3]],\n" +
                 "  Param_MT[“Affine”,\n" +
                 "    Parameter[“num_row”, 4],\n" +

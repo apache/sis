@@ -41,16 +41,16 @@ import static java.lang.Math.*;     // Not StrictMath in this particular case.
  *
  * In our measurements, both the iterative process (USGS) and the series expansion (EPSG) have the
  * same accuracy when applied on the WGS84 ellipsoid. However the EPSG formula is 2 times faster.
- * On the other hand, accuracy of the EPSG formula decreases when we increase the excentricity,
+ * On the other hand, accuracy of the EPSG formula decreases when we increase the eccentricity,
  * while the iterative process keeps its accuracy (at the cost of more iterations).
- * For the Earth (excentricity of about 0.082) the errors are less than 0.01 millimetres.
+ * For the Earth (eccentricity of about 0.082) the errors are less than 0.01 millimetres.
  * But the errors become centimetric (for a hypothetical planet of the size of the Earth)
- * before excentricity 0.2 and increase quickly after excentricity 0.3.
+ * before eccentricity 0.2 and increase quickly after eccentricity 0.3.
  *
  * <p>For the WGS84 ellipsoid and the iteration tolerance given by the {@link NormalizedProjection#ITERATION_TOLERANCE}
  * constant (currently about 0.25 cm on Earth), the two methods have equivalent precision. Computing φ values for
  * millions of random numbers and verifying which method is the most accurate give fifty-fifty results: each method
- * win in about 50% of cases. But as we increase the excentricity, the iterative method wins more often.</p>
+ * win in about 50% of cases. But as we increase the eccentricity, the iterative method wins more often.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.6
@@ -65,9 +65,9 @@ public final class MercatorMethodComparison {   // No 'strictfp' keyword here si
     private static final PrintStream out = System.out;
 
     /**
-     * Ellipsoid excentricity. Value 0 means that the ellipsoid is spherical.
+     * Ellipsoid eccentricity. Value 0 means that the ellipsoid is spherical.
      */
-    private final double excentricity;
+    private final double eccentricity;
 
     /**
      * Coefficients used in the series expansion.
@@ -76,34 +76,34 @@ public final class MercatorMethodComparison {   // No 'strictfp' keyword here si
 
     /**
      * Creates a new instance for the excentricty of the WGS84 ellipsoid, which is approximatively 0.08181919084262157.
-     * Reminder: the excentricity of a sphere is 0.
+     * Reminder: the eccentricity of a sphere is 0.
      */
     public MercatorMethodComparison() {
-        this(0.00669437999014133);  // Squared excentricity.
+        this(0.00669437999014133);  // Squared eccentricity.
     }
 
     /**
-     * Creates a new instance for the same excentricity than the given projection.
+     * Creates a new instance for the same eccentricity than the given projection.
      *
-     * @param projection the projection from which to take the excentricity.
+     * @param projection the projection from which to take the eccentricity.
      */
     public MercatorMethodComparison(final NormalizedProjection projection) {
-        this(projection.excentricitySquared);
+        this(projection.eccentricitySquared);
     }
 
     /**
-     * Creates a new instance for the given squared excentricity.
+     * Creates a new instance for the given squared eccentricity.
      *
-     * @param e2 the square of the excentricity.
+     * @param e2 the square of the eccentricity.
      */
     public MercatorMethodComparison(final double e2) {
-        excentricity = sqrt(e2);
+        eccentricity = sqrt(e2);
         final double e4 = e2 * e2;
         final double e6 = e2 * e4;
         final double e8 = e4 * e4;
         /*
          * For each line below, add the smallest values first in order to reduce rounding errors.
-         * The smallest values are the one using the excentricity raised to the highest power.
+         * The smallest values are the one using the eccentricity raised to the highest power.
          */
         c2χ  =    13/   360.* e8  +   1/ 12.* e6  +  5/24.* e4  +  e2/2;
         c4χ  =   811/ 11520.* e8  +  29/240.* e6  +  7/48.* e4;
@@ -159,10 +159,10 @@ public final class MercatorMethodComparison {   // No 'strictfp' keyword here si
      * @throws ProjectionException if the iteration does not converge.
      */
     public double byIterativeMethod(final double t) throws ProjectionException {
-        final double hℯ = 0.5 * excentricity;
+        final double hℯ = 0.5 * eccentricity;
         double φ = (PI/2) - 2*atan(t);                                          // Snyder (7-11)
         for (int it=0; it < NormalizedProjection.MAXIMUM_ITERATIONS; it++) {    // Iteratively solve equation (7-9) from Snyder
-            final double ℯsinφ = excentricity * sin(φ);
+            final double ℯsinφ = eccentricity * sin(φ);
             final double Δφ = φ - (φ = PI/2 - 2*atan(t * pow((1 - ℯsinφ)/(1 + ℯsinφ), hℯ)));
             if (abs(Δφ) <= NormalizedProjection.ITERATION_TOLERANCE) {
                 return φ;
@@ -178,8 +178,8 @@ public final class MercatorMethodComparison {   // No 'strictfp' keyword here si
      * Basically a copy of {@link ConformalProjection#expOfNorthing(double, double)}.
      */
     final double expOfNorthing(final double φ) {
-        final double ℯsinφ = excentricity * sin(φ);
-        return tan(PI/4 + 0.5*φ) * pow((1 - ℯsinφ) / (1 + ℯsinφ), 0.5*excentricity);
+        final double ℯsinφ = eccentricity * sin(φ);
+        return tan(PI/4 + 0.5*φ) * pow((1 - ℯsinφ) / (1 + ℯsinφ), 0.5*eccentricity);
     }
 
     /**
@@ -221,13 +221,13 @@ public final class MercatorMethodComparison {   // No 'strictfp' keyword here si
             }
         }
         /*
-         * At this point we finished to collect the statistics for the excentricity of this particular
+         * At this point we finished to collect the statistics for the eccentricity of this particular
          * MercatorMethodComparison instance. If this method call is only part of a longer calculation
          * for various excentricty values, print a summary in a single line.
          * Otherwise print more verbose results.
          */
         if (summarize != null) {
-            summarize.append(String.valueOf(excentricity));                     summarize.nextColumn();
+            summarize.append(String.valueOf(eccentricity));                     summarize.nextColumn();
             summarize.append(String.valueOf(iterativeMethodErrors.mean()));     summarize.nextColumn();
             summarize.append(String.valueOf(iterativeMethodErrors.maximum()));  summarize.nextColumn();
             summarize.append(String.valueOf(seriesExpansionErrors.mean()));     summarize.nextColumn();
@@ -242,7 +242,7 @@ public final class MercatorMethodComparison {   // No 'strictfp' keyword here si
             if (projection == null) {
                 stats = ArraysExt.remove(stats, 2, 1);
             }
-            out.println("Comparison of different ways to compute φ for excentricity " + excentricity + '.');
+            out.println("Comparison of different ways to compute φ for eccentricity " + eccentricity + '.');
             out.println("Values are in units of " + NormalizedProjection.ITERATION_TOLERANCE + " radians (about "
                     + round(toDegrees(NormalizedProjection.ITERATION_TOLERANCE) * 60 * ReferencingServices.NAUTICAL_MILE * 1000)
                     + " mm on Earth).");
@@ -258,21 +258,21 @@ public final class MercatorMethodComparison {   // No 'strictfp' keyword here si
     }
 
     /**
-     * Prints the error of the two methods for various excentricity values.
-     * The intend of this method is to find an excentricity threshold value where we consider the errors too high.
+     * Prints the error of the two methods for various eccentricity values.
+     * The intend of this method is to find an eccentricity threshold value where we consider the errors too high.
      *
-     * <p>This method is used for determining empirically a value for {@link ConformalProjection#EXCENTRICITY_THRESHOLD}.
+     * <p>This method is used for determining empirically a value for {@link ConformalProjection#ECCENTRICITY_THRESHOLD}.
      * The current threshold value is shown by inserting a horizontal line separator in the table when that threshold
      * is crossed.</p>
      *
-     * @param min The first excentricity value to test.
-     * @param max The maximal excentricity value to test.
+     * @param min The first eccentricity value to test.
+     * @param max The maximal eccentricity value to test.
      * @throws ProjectionException if an error occurred in {@link #φ(double)}.
      */
     public static void printErrorForExcentricities(final double min, final double max) throws ProjectionException {
         final TableAppender table = new TableAppender(out);
         table.appendHorizontalSeparator();
-        table.append("Excentricity");            table.nextColumn();
+        table.append("Eccentricity");            table.nextColumn();
         table.append("Mean iterative error");    table.nextColumn();
         table.append("Maximal iterative error"); table.nextColumn();
         table.append("Mean series error");       table.nextColumn();
@@ -280,13 +280,13 @@ public final class MercatorMethodComparison {   // No 'strictfp' keyword here si
         table.appendHorizontalSeparator();
         boolean crossThreshold = false;
         final double step = 0.01;
-        double excentricity;
-        for (int i=0; (excentricity = min + step*i) < max; i++) {
-            if (!crossThreshold && excentricity >= ConformalProjection.EXCENTRICITY_THRESHOLD) {
+        double eccentricity;
+        for (int i=0; (eccentricity = min + step*i) < max; i++) {
+            if (!crossThreshold && eccentricity >= ConformalProjection.ECCENTRICITY_THRESHOLD) {
                 crossThreshold = true;
                 table.appendHorizontalSeparator();
             }
-            final MercatorMethodComparison alt = new MercatorMethodComparison(excentricity * excentricity);
+            final MercatorMethodComparison alt = new MercatorMethodComparison(eccentricity * eccentricity);
             alt.compare(null, 10000, table);
         }
         table.appendHorizontalSeparator();
@@ -339,7 +339,7 @@ public final class MercatorMethodComparison {   // No 'strictfp' keyword here si
      * @throws InterruptedException if the thread has been interrupted between two benchmarks.
      */
     public static void main(String[] args) throws ProjectionException, InterruptedException {
-        out.println("Comparison of the errors of series expension and iterative method for various excentricity values.");
+        out.println("Comparison of the errors of series expension and iterative method for various eccentricity values.");
         printErrorForExcentricities(0.08, 0.3);
 
         out.println();
@@ -351,7 +351,7 @@ public final class MercatorMethodComparison {   // No 'strictfp' keyword here si
         c.compare(projection, 10000, null);
 
         out.println();
-        out.println("Comparison of the errors for the WGS84 excentricity.");
+        out.println("Comparison of the errors for the WGS84 eccentricity.");
         out.println("The 'ConformalProjection' errors should be the same than the series expansion errors:");
         out.println();
         projection = new NoOp(true);
@@ -359,7 +359,7 @@ public final class MercatorMethodComparison {   // No 'strictfp' keyword here si
         c.compare(projection, 1000000, null);
 
         out.println();
-        out.println("Comparison of the errors for the excentricity of an imaginary ellipsoid.");
+        out.println("Comparison of the errors for the eccentricity of an imaginary ellipsoid.");
         out.println("The 'ConformalProjection' errors should be the close to the iterative method errors:");
         out.println();
         projection = new NoOp(100, 95);

@@ -162,14 +162,14 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
     /**
      * Maximum number of iterations for iterative computations.
      * The iterative methods used in subclasses should converge quickly (in 3 or 4 iterations)
-     * when used for a planet with an excentricity similar to Earth. But we allow a high limit
-     * in case someone uses SIS for some planet with higher excentricity.
+     * when used for a planet with an eccentricity similar to Earth. But we allow a high limit
+     * in case someone uses SIS for some planet with higher eccentricity.
      */
     static final int MAXIMUM_ITERATIONS = Formulas.MAXIMUM_ITERATIONS;
 
     /**
      * The internal parameter descriptors. Keys are implementation classes.  Values are parameter descriptor groups
-     * containing at least a parameter for the {@link #excentricity} value, and optionally other internal parameter
+     * containing at least a parameter for the {@link #eccentricity} value, and optionally other internal parameter
      * added by some subclasses.
      *
      * <p>Entries are created only when first needed. Those descriptors are usually never created since they are
@@ -188,18 +188,18 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
     final ContextualParameters context;
 
     /**
-     * Ellipsoid excentricity, equals to <code>sqrt({@linkplain #excentricitySquared})</code>.
+     * Ellipsoid eccentricity, equals to <code>sqrt({@linkplain #eccentricitySquared})</code>.
      * Value 0 means that the ellipsoid is spherical.
      */
-    protected final double excentricity;
+    protected final double eccentricity;
 
     /**
-     * The square of excentricity: ℯ² = (a²-b²)/a² where
-     * <var>ℯ</var> is the {@linkplain #excentricity excentricity},
+     * The square of eccentricity: ℯ² = (a²-b²)/a² where
+     * <var>ℯ</var> is the {@linkplain #eccentricity eccentricity},
      * <var>a</var> is the <cite>semi-major</cite> axis length and
      * <var>b</var> is the <cite>semi-minor</cite> axis length.
      */
-    protected final double excentricitySquared;
+    protected final double eccentricitySquared;
 
     /**
      * The inverse of this map projection.
@@ -233,7 +233,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
     protected static enum ParameterRole {
         /**
          * Maps the <cite>semi-major axis length</cite> parameter (symbol: <var>a</var>).
-         * This value is used for computing {@link NormalizedProjection#excentricity},
+         * This value is used for computing {@link NormalizedProjection#eccentricity},
          * and is also a multiplication factor for the denormalization matrix.
          *
          * <p>Unless specified otherwise, this is always mapped to a parameter named {@code "semi_major"}.
@@ -243,7 +243,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
 
         /**
          * Maps the <cite>semi-minor axis length</cite> parameter (symbol: <var>b</var>).
-         * This value is used for computing {@link NormalizedProjection#excentricity}.
+         * This value is used for computing {@link NormalizedProjection#eccentricity}.
          *
          * <p>Unless specified otherwise, this is always mapped to a parameter named {@code "semi_minor"}.
          * {@code NormalizedProjection} subclasses typically do not need to provide a value for this key.</p>
@@ -420,8 +420,8 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      */
     NormalizedProjection(final Initializer initializer) {
         context             = initializer.context;
-        excentricitySquared = initializer.excentricitySquared.value;
-        excentricity        = sqrt(excentricitySquared);  // DoubleDouble.sqrt() does not make any difference here.
+        eccentricitySquared = initializer.eccentricitySquared.value;
+        eccentricity        = sqrt(eccentricitySquared);  // DoubleDouble.sqrt() does not make any difference here.
         inverse             = new Inverse();
     }
 
@@ -433,8 +433,8 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      */
     NormalizedProjection(final NormalizedProjection other) {
         context             = other.context;
-        excentricity        = other.excentricity;
-        excentricitySquared = other.excentricitySquared;
+        eccentricity        = other.eccentricity;
+        eccentricitySquared = other.eccentricitySquared;
         inverse             = new Inverse();
     }
 
@@ -546,7 +546,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
 
     /**
      * Returns a copy of non-linear internal parameter values of this {@code NormalizedProjection}.
-     * The returned group contains at least the {@link #excentricity} parameter value.
+     * The returned group contains at least the {@link #eccentricity} parameter value.
      * Some subclasses add more non-linear parameters, but most of them do not because many parameters
      * like the <cite>scale factor</cite> or the <cite>false easting/northing</cite> are handled by the
      * {@linkplain ContextualParameters#getMatrix (de)normalization affine transforms} instead.
@@ -563,7 +563,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
     @Override
     public ParameterValueGroup getParameterValues() {
         final ParameterValueGroup group = getParameterDescriptors().createValue();
-        group.parameter("excentricity").setValue(excentricity);
+        group.parameter("eccentricity").setValue(eccentricity);
         final String[] names  = getInternalParameterNames();
         final double[] values = getInternalParameterValues();
         for (int i=0; i<names.length; i++) {
@@ -574,7 +574,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
 
     /**
      * Returns a description of the non-linear internal parameters of this {@code NormalizedProjection}.
-     * The returned group contains at least a descriptor for the {@link #excentricity} parameter.
+     * The returned group contains at least a descriptor for the {@link #eccentricity} parameter.
      * Subclasses may add more parameters.
      *
      * <p>This method is for inspecting the parameter values of this non-linear kernel only,
@@ -600,7 +600,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
                 }
                 final String[] names = getInternalParameterNames();
                 final ParameterDescriptor<?>[] parameters = new ParameterDescriptor<?>[names.length + 1];
-                parameters[0] = MapProjection.EXCENTRICITY;
+                parameters[0] = MapProjection.ECCENTRICITY;
                 for (int i=1; i<parameters.length; i++) {
                     parameters[i] = builder.addName(names[i-1]).create(Double.class, null);
                 }
@@ -612,7 +612,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
     }
 
     /**
-     * Returns the names of any additional internal parameters (other than {@link #excentricity})
+     * Returns the names of any additional internal parameters (other than {@link #eccentricity})
      * that this projection has. The length of this array must be the same than the length of the
      * {@link #getInternalParameterValues()} array, if the later is non-null.
      */
@@ -621,7 +621,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
     }
 
     /**
-     * Returns the values of any additional internal parameters (other than {@link #excentricity}) that
+     * Returns the values of any additional internal parameters (other than {@link #eccentricity}) that
      * this projection has. Those values are also compared by {@link #equals(Object, ComparisonMode)}.
      */
     double[] getInternalParameterValues() {
@@ -757,7 +757,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      */
     @Override
     protected int computeHashCode() {
-        long c = Double.doubleToLongBits(excentricity);
+        long c = Double.doubleToLongBits(eccentricity);
         final double[] parameters = getInternalParameterValues();
         if (parameters != null) {
             for (int i=0; i<parameters.length; i++) {
@@ -769,7 +769,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
 
     /**
      * Compares the given object with this transform for equivalence. The default implementation checks if
-     * {@code object} is an instance of the same class than {@code this}, then compares the excentricity.
+     * {@code object} is an instance of the same class than {@code this}, then compares the eccentricity.
      *
      * <p>If this method returns {@code true}, then for any given identical source position, the two compared map
      * projections shall compute the same target position. Many of the {@linkplain #getContextualParameters()
@@ -804,23 +804,23 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
                 if (!Objects.equals(context, that.context)) {
                     return false;
                 }
-                // Fall through for comparing the excentricity.
+                // Fall through for comparing the eccentricity.
             }
             case IGNORE_METADATA: {
                 /*
-                 * There is no need to compare both 'excentricity' and 'excentricitySquared' since the former
-                 * is computed from the later. We are better to compare 'excentricitySquared' since it is the
+                 * There is no need to compare both 'eccentricity' and 'eccentricitySquared' since the former
+                 * is computed from the later. We are better to compare 'eccentricitySquared' since it is the
                  * original value from which the other value is derived.
                  */
-                if (!Numerics.equals(excentricitySquared, that.excentricitySquared)) {
+                if (!Numerics.equals(eccentricitySquared, that.eccentricitySquared)) {
                     return false;
                 }
                 break;
             }
             default: {
                 /*
-                 * We want to compare the excentricity with a tolerance threshold corresponding approximatively
-                 * to an error of 1 cm on Earth. The excentricity for an ellipsoid of semi-major axis a=1 is:
+                 * We want to compare the eccentricity with a tolerance threshold corresponding approximatively
+                 * to an error of 1 cm on Earth. The eccentricity for an ellipsoid of semi-major axis a=1 is:
                  *
                  *     ℯ² = 1 - b²
                  *
@@ -838,12 +838,12 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
                  *     ε′  ≈   ε⋅(ℯ - 1/ℯ)
                  *
                  * Note that  ε′  is negative for  ℯ < 1  so we actually need to compute  ε⋅(1/ℯ - ℯ)  instead.
-                 * The result is less than 2E-8 for the excentricity of the Earth.
+                 * The result is less than 2E-8 for the eccentricity of the Earth.
                  */
-                final double e = max(excentricity, that.excentricity);
-                if (!Numerics.epsilonEqual(excentricity, that.excentricity, ANGULAR_TOLERANCE * (1/e - e))) {
+                final double e = max(eccentricity, that.eccentricity);
+                if (!Numerics.epsilonEqual(eccentricity, that.eccentricity, ANGULAR_TOLERANCE * (1/e - e))) {
                     assert (mode != ComparisonMode.DEBUG) : Numerics.messageForDifference(
-                            "excentricity", excentricity, that.excentricity);
+                            "eccentricity", eccentricity, that.eccentricity);
                     return false;
                 }
                 break;
