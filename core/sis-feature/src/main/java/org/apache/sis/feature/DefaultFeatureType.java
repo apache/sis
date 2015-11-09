@@ -235,6 +235,7 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
      * @param properties     Any feature operation, any feature attribute type and any feature
      *                       association role that carries characteristics of a feature type.
      */
+    @SuppressWarnings("ThisEscapedInObjectConstruction")
     public DefaultFeatureType(final Map<String,?> identification, final boolean isAbstract,
             final FeatureType[] superTypes, final PropertyType... properties)
     {
@@ -684,8 +685,9 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
      * @return The parents of this feature type, or an empty set if none.
      */
     @Override
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
     public final Set<FeatureType> getSuperTypes() {
-        return superTypes;
+        return superTypes;      // Immutable
     }
 
     /**
@@ -732,6 +734,7 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
      * Returns the map from names to indices in an array of properties.
      * This is used for {@link DenseFeature} implementation.
      */
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
     final Map<String,Integer> indices() {
         return indices;
     }

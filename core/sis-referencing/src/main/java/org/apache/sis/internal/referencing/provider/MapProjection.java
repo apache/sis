@@ -44,6 +44,7 @@ import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Messages;
+import org.apache.sis.util.Debug;
 
 import static org.opengis.metadata.Identifier.AUTHORITY_KEY;
 
@@ -80,6 +81,13 @@ public abstract class MapProjection extends AbstractProvider {
      * <p>Some names for this parameter are {@code "semi_minor"}, {@code "SemiMinor"} and {@code "b"}.</p>
      */
     public static final DefaultParameterDescriptor<Double> SEMI_MINOR;
+
+    /**
+     * The ellipsoid eccentricity, computed from the semi-major and semi-minor axis lengths.
+     * This a SIS-specific parameter used mostly for debugging purpose.
+     */
+    @Debug
+    public static final DefaultParameterDescriptor<Double> ECCENTRICITY;
     static {
         final MeasurementRange<Double> valueDomain = MeasurementRange.createGreaterThan(0, SI.METRE);
         final GenericName[] aliases = {
@@ -103,6 +111,14 @@ public abstract class MapProjection extends AbstractProvider {
         aliases[2] = new NamedIdentifier(Citations.GEOTIFF, "SemiMinor");
         aliases[3] = new NamedIdentifier(Citations.PROJ4,   "b");
         SEMI_MINOR = new DefaultParameterDescriptor<>(properties, 1, 1, Double.class, valueDomain, null, null);
+        /*
+         * SIS-specific parameter for debugging purpose only.
+         */
+        properties.clear();
+        properties.put(AUTHORITY_KEY, Citations.SIS);
+        properties.put(NAME_KEY, "eccentricity");
+        ECCENTRICITY = new DefaultParameterDescriptor<>(properties, 1, 1, Double.class,
+                MeasurementRange.create(0d, true, 1d, true, null), null, null);
     }
 
     /**

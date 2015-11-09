@@ -31,6 +31,7 @@ import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.apache.sis.parameter.Parameterized;
 import org.apache.sis.referencing.operation.matrix.Matrices;
+import org.apache.sis.internal.referencing.provider.GeocentricAffine;
 import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.internal.system.Semaphores;
 import org.apache.sis.util.Classes;
@@ -53,7 +54,7 @@ import org.apache.sis.util.resources.Errors;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.5
- * @version 0.5
+ * @version 0.7
  * @module
  *
  * @see org.opengis.referencing.operation.MathTransformFactory#createConcatenatedTransform(MathTransform, MathTransform)
@@ -327,11 +328,15 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
      */
     private static String getName(final MathTransform transform) {
         if (transform instanceof AbstractMathTransform) {
-            ParameterValueGroup params = ((AbstractMathTransform) transform).getParameterValues();
-            if (params != null) {
-                String name = params.getDescriptor().getName().getCode();
-                if (name != null && !(name = name.trim()).isEmpty()) {
-                    return name;
+            ParameterValueGroup params;
+            params = ((AbstractMathTransform) transform).getContextualParameters();
+            if (params == null) {
+                params = ((AbstractMathTransform) transform).getParameterValues();
+                if (params != null) {
+                    String name = params.getDescriptor().getName().getCode();
+                    if (name != null && !(name = name.trim()).isEmpty()) {
+                        return name;
+                    }
                 }
             }
         }
@@ -454,6 +459,11 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
                 after = null;
             }
         }
+        /*
+         * Special case for datum shifts. Need to be done only after we processed
+         * 'beforeFormat(…)' for all objects and concatenated the affine transforms.
+         */
+        GeocentricAffine.asDatumShift(transforms);
         return transforms;
     }
 

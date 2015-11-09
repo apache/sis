@@ -34,6 +34,11 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * @module
  */
 public final strictfp class DataIdentificationTest extends TestCase {
+    /**
+     * Tests marshalling and unmarshalling of a XML fragment.
+     *
+     * @throws JAXBException if an error occurred during (un)marshalling.
+     */
     @Test
     public void testMarshalling() throws JAXBException {
         final String xml =

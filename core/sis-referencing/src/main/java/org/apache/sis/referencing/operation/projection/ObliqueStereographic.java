@@ -26,6 +26,7 @@ import org.opengis.util.FactoryException;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.referencing.operation.matrix.Matrix2;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
+import org.apache.sis.referencing.operation.transform.ContextualParameters;
 import org.apache.sis.internal.referencing.provider.PolarStereographicA;
 import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.util.resources.Errors;
@@ -125,14 +126,14 @@ public class ObliqueStereographic extends NormalizedProjection {
         super(initializer);
         final double φ0     = toRadians(initializer.getAndStore(LATITUDE_OF_ORIGIN));
         final double sinφ0  = sin(φ0);
-        final double ℯsinφ0 = excentricity * sinφ0;
-        n = sqrt(1 + ((excentricitySquared * pow(cos(φ0), 4)) / (1 - excentricitySquared)));
+        final double ℯsinφ0 = eccentricity * sinφ0;
+        n = sqrt(1 + ((eccentricitySquared * pow(cos(φ0), 4)) / (1 - eccentricitySquared)));
         /*
          * Following variables use upper-case because they are written that way in the EPSG guide.
          */
         final double S1 = (1 +  sinφ0) / (1 -  sinφ0);
         final double S2 = (1 - ℯsinφ0) / (1 + ℯsinφ0);
-        final double w1 = pow(S1 * pow(S2, excentricity), n);
+        final double w1 = pow(S1 * pow(S2, eccentricity), n);
         /*
          * The χ₁ variable below was named χ₀ in the EPSG guide. We use the χ₁ name in order to avoid confusion with
          * the conformal latitude of origin, which is also named χ₀ in the EPSG guide. Mathematically, χ₀ and χ₁ are
@@ -158,8 +159,8 @@ public class ObliqueStereographic extends NormalizedProjection {
          * Since this is a linear operation, we can combine it with other linear operations performed by the
          * normalization matrix.
          */
-        final MatrixSIS normalize   = context.getMatrix(true);
-        final MatrixSIS denormalize = context.getMatrix(false);
+        final MatrixSIS normalize   = context.getMatrix(ContextualParameters.MatrixRole.NORMALIZATION);
+        final MatrixSIS denormalize = context.getMatrix(ContextualParameters.MatrixRole.DENORMALIZATION);
         normalize.convertAfter(0, n, null);
         /*
          * One of the last steps performed by the stereographic projection is to multiply the easting and northing
@@ -190,7 +191,7 @@ public class ObliqueStereographic extends NormalizedProjection {
      * comparing two {@code ObliqueStereographic} projections or formatting them in debug mode.
      *
      * <p>We could report any of the internal parameters. But since they are all derived from φ₀ and
-     * the {@linkplain #excentricity excentricity} and since the excentricity is already reported by
+     * the {@linkplain #eccentricity eccentricity} and since the eccentricity is already reported by
      * the super-class, we report only χ₀ is a representative of the internal parameters.</p>
      */
     @Override
@@ -233,7 +234,7 @@ public class ObliqueStereographic extends NormalizedProjection {
             }
         }
         ObliqueStereographic kernel = this;
-        if (excentricity == 0) {
+        if (eccentricity == 0) {
             kernel = new Spherical(this);
         }
         return context.completeTransform(factory, kernel);
@@ -255,10 +256,10 @@ public class ObliqueStereographic extends NormalizedProjection {
         final double Λ     = srcPts[srcOff  ];      // Λ = λ⋅n  (see below), ignoring longitude of origin.
         final double φ     = srcPts[srcOff+1];
         final double sinφ  = sin(φ);
-        final double ℯsinφ = excentricity * sinφ;
+        final double ℯsinφ = eccentricity * sinφ;
         final double Sa    = (1 +  sinφ) / (1 -  sinφ);
         final double Sb    = (1 - ℯsinφ) / (1 + ℯsinφ);
-        final double w     = c * pow(Sa * pow(Sb, excentricity), n);
+        final double w     = c * pow(Sa * pow(Sb, eccentricity), n);
         /*
          * Convert the geodetic coordinates (φ,λ) to conformal coordinates (χ,Λ) before to apply the
          * actual stereographic projection.  The geodetic and conformal coordinates will be the same
@@ -304,7 +305,7 @@ public class ObliqueStereographic extends NormalizedProjection {
          *      ∂w/∂φ =  2⋅n⋅w⋅(1/cosφ - ℯ²⋅cosφ/(1 - ℯ²⋅sin²φ));
          */
         final double cosφ = cos(φ);
-        final double dχ_dφ = (1/cosφ - cosφ*excentricitySquared/(1 - ℯsinφ*ℯsinφ)) * 2*n*sqrt(w) / (w + 1);
+        final double dχ_dφ = (1/cosφ - cosφ*eccentricitySquared/(1 - ℯsinφ*ℯsinφ)) * 2*n*sqrt(w) / (w + 1);
         /*
          * Above ∂χ/∂φ is equals to 1 in the spherical case.
          * Remaining formulas below are the same than in the spherical case.
@@ -350,11 +351,10 @@ public class ObliqueStereographic extends NormalizedProjection {
         final double sinχ = sin(χ0 + 2*atan(y - x*tan(j/2)));
         final double ψ = log((1 + sinχ) / ((1 - sinχ)*c)) / (2*n);
         double φ = 2*atan(exp(ψ)) - PI/2;                               // First approximation
-        final double he = excentricity/2;
-        final double me = 1 - excentricitySquared;
-        int r = MAXIMUM_ITERATIONS;
-        do {
-            final double ℯsinφ = excentricity * sin(φ);
+        final double he = eccentricity/2;
+        final double me = 1 - eccentricitySquared;
+        for (int it=0; it<MAXIMUM_ITERATIONS; it++) {
+            final double ℯsinφ = eccentricity * sin(φ);
             final double ψi = log(tan(φ/2 + PI/4) * pow((1 - ℯsinφ) / (1 + ℯsinφ), he));
             final double Δφ = (ψ - ψi) * cos(φ) * (1 - ℯsinφ*ℯsinφ) / me;
             φ += Δφ;
@@ -363,13 +363,16 @@ public class ObliqueStereographic extends NormalizedProjection {
                 dstPts[dstOff+1] = φ;
                 return;
             }
-        } while (--r != 0);
+        }
         throw new ProjectionException(Errors.Keys.NoConvergence);
     }
 
+
+
+
     /**
      * Provides the transform equations for the spherical case of the Oblique Stereographic projection.
-     * This implementation can be used when {@link #excentricity} = 0.
+     * This implementation can be used when {@link #eccentricity} = 0.
      *
      * @author  Rémi Maréchal (Geomatys)
      * @author  Martin Desruisseaux (Geomatys)

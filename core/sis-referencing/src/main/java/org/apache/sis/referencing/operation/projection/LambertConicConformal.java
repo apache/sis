@@ -27,6 +27,7 @@ import org.apache.sis.measure.Latitude;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.referencing.operation.matrix.Matrix2;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
+import org.apache.sis.referencing.operation.transform.ContextualParameters;
 import org.apache.sis.internal.referencing.provider.LambertConformal1SP;
 import org.apache.sis.internal.referencing.provider.LambertConformal2SP;
 import org.apache.sis.internal.referencing.provider.LambertConformalWest;
@@ -261,13 +262,13 @@ public class LambertConicConformal extends ConformalProjection {
         φ2 = toRadians(φ2);
         /*
          * Compute constants. We do not need to use special formulas for the spherical case below,
-         * since rν(sinφ) = 1 and expOfNorthing(φ) = tan(π/4 + φ/2) when the excentricity is zero.
+         * since rν(sinφ) = 1 and expOfNorthing(φ) = tan(π/4 + φ/2) when the eccentricity is zero.
          * However we need special formulas for φ1 ≈ φ2 in the calculation of n, otherwise we got
          * a 0/0 indetermination.
          */
         final double sinφ1 = sin(φ1);
         final double m1 = initializer.scaleAtφ(sinφ1, cos(φ1));
-        final double t1 = expOfNorthing(φ1, excentricity*sinφ1);
+        final double t1 = expOfNorthing(φ1, eccentricity*sinφ1);
         /*
          * Compute n = (ln m₁ – ln m₂) / (ln t₁ – ln t₂), which we rewrite as ln(m₁/m₂) / ln(t₁/t₂)
          * for reducing the amount of calls to the logarithmic function. Note that this equation
@@ -276,7 +277,7 @@ public class LambertConicConformal extends ConformalProjection {
         if (abs(φ1 - φ2) >= ANGULAR_TOLERANCE) {  // Should be 'true' for 2SP case.
             final double sinφ2 = sin(φ2);
             final double m2 = initializer.scaleAtφ(sinφ2, cos(φ2));
-            final double t2 = expOfNorthing(φ2, excentricity*sinφ2);
+            final double t2 = expOfNorthing(φ2, eccentricity*sinφ2);
             n = log(m1/m2) / log(t1/t2);    // Tend toward 0/0 if φ1 ≈ φ2.
         } else {
             n = -sinφ1;
@@ -305,7 +306,7 @@ public class LambertConicConformal extends ConformalProjection {
         DoubleDouble rF = null;
         if (φ0 != copySign(PI/2, -n)) {    // For reducing the rounding error documented in expOfNorthing(+π/2).
             rF = new DoubleDouble(F);
-            rF.multiply(pow(expOfNorthing(φ0, excentricity*sin(φ0)), n), 0);
+            rF.multiply(pow(expOfNorthing(φ0, eccentricity*sin(φ0)), n), 0);
         }
         /*
          * At this point, all parameters have been processed. Now store
@@ -332,8 +333,8 @@ public class LambertConicConformal extends ConformalProjection {
         } else {
             sλ.negate();
         }
-        final MatrixSIS normalize   = context.getMatrix(true);
-        final MatrixSIS denormalize = context.getMatrix(false);
+        final MatrixSIS normalize   = context.getMatrix(ContextualParameters.MatrixRole.NORMALIZATION);
+        final MatrixSIS denormalize = context.getMatrix(ContextualParameters.MatrixRole.DENORMALIZATION);
         normalize  .convertAfter(0, sλ, (initializer.variant == BELGIUM) ? belgeA() : null);
         normalize  .convertAfter(1, sφ, null);
         denormalize.convertBefore(0, F, null); F.negate();
@@ -381,7 +382,7 @@ public class LambertConicConformal extends ConformalProjection {
     @Override
     public MathTransform createMapProjection(final MathTransformFactory factory) throws FactoryException {
         LambertConicConformal kernel = this;
-        if (excentricity == 0) {
+        if (eccentricity == 0) {
             kernel = new Spherical(this);
         }
         return context.completeTransform(factory, kernel);
@@ -414,7 +415,7 @@ public class LambertConicConformal extends ConformalProjection {
         final double ρ;     // EPSG guide uses "r", but we keep the symbol from Snyder p. 108 for consistency with PolarStereographic.
         if (absφ < PI/2) {
             sinφ = sin(φ);
-            ρ = pow(expOfNorthing(φ, excentricity*sinφ), n);
+            ρ = pow(expOfNorthing(φ, eccentricity*sinφ), n);
         } else if (absφ < PI/2 + ANGULAR_TOLERANCE) {
             sinφ = 1;
             ρ = (φ*n >= 0) ? POSITIVE_INFINITY : 0;

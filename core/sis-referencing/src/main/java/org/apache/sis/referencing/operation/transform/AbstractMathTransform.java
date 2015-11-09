@@ -234,8 +234,8 @@ public abstract class AbstractMathTransform extends FormattableObject
      * @param expected  The expected dimension.
      * @param dimension The wrong dimension.
      */
-    static String mismatchedDimension(final String argument, final int expected, final int dimension) {
-        return Errors.format(Errors.Keys.MismatchedDimension_3, argument, expected, dimension);
+    static MismatchedDimensionException mismatchedDimension(final String argument, final int expected, final int dimension) {
+        return new MismatchedDimensionException(Errors.format(Errors.Keys.MismatchedDimension_3, argument, expected, dimension));
     }
 
     /**
@@ -341,8 +341,8 @@ public abstract class AbstractMathTransform extends FormattableObject
      * @param derivate {@code true} for computing the derivative, or {@code false} if not needed.
      * @return The matrix of the transform derivative at the given source position,
      *         or {@code null} if the {@code derivate} argument is {@code false}.
-     * @throws TransformException If the point can not be transformed or if a problem occurred while calculating the
-     *         derivative.
+     * @throws TransformException if the point can not be transformed or
+     *         if a problem occurred while calculating the derivative.
      *
      * @see #derivative(DirectPosition)
      * @see #transform(DirectPosition, DirectPosition)
@@ -759,7 +759,7 @@ public abstract class AbstractMathTransform extends FormattableObject
         final int dimSource = getSourceDimensions();
         final double[] coordinate = point.getCoordinate();
         if (coordinate.length != dimSource) {
-            throw new MismatchedDimensionException(mismatchedDimension("point", coordinate.length, dimSource));
+            throw mismatchedDimension("point", dimSource, coordinate.length);
         }
         final Matrix derivative = transform(coordinate, 0, null, 0, true);
         if (derivative == null) {
@@ -908,6 +908,10 @@ public abstract class AbstractMathTransform extends FormattableObject
             if (mode.isIgnoringMetadata()) {
                 return true;
             }
+            /*
+             * We do not compare getParameters() because they usually duplicate the internal fields.
+             * Contextual parameters, on the other hand, typically contain new information.
+             */
             return Utilities.deepEquals(this.getContextualParameters(),
                                         that.getContextualParameters(), mode);
         }
@@ -1095,13 +1099,18 @@ public abstract class AbstractMathTransform extends FormattableObject
          */
         @Override
         final int beforeFormat(final List<Object> transforms, final int index, final boolean inverse) {
-            return AbstractMathTransform.this.beforeFormat(transforms, index, !inverse);
+            final ContextualParameters parameters = getContextualParameters();
+            if (parameters != null) {
+                return parameters.beforeFormat(transforms, index, inverse);
+            } else {
+                return AbstractMathTransform.this.beforeFormat(transforms, index, !inverse);
+            }
         }
 
         /**
          * Formats the inner part of a <cite>Well Known Text</cite> version 1 (WKT 1) element.
-         * If this inverse math transform has any parameter values, then this method format the
-         * WKT as in the {@linkplain AbstractMathTransform#formatWKT super-class method}.
+         * If this inverse math transform has any parameter values, then this method formats
+         * the WKT as in the {@linkplain AbstractMathTransform#formatWKT super-class method}.
          * Otherwise this method formats the math transform as an {@code "Inverse_MT"} entity.
          *
          * <div class="note"><b>Compatibility note:</b>

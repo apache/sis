@@ -128,7 +128,7 @@ public strictfp class MetadataAssert extends Assert {
                 WKT_FORMAT.setConvention(convention);
                 wkt = WKT_FORMAT.format(object);
             }
-            if (!wkt.matches(expected)) {
+            if (!wkt.matches(expected.replace("\n", System.lineSeparator()))) {
                 fail("WKT does not match the expected regular expression. The WKT that we got is:\n" + wkt);
             }
         }

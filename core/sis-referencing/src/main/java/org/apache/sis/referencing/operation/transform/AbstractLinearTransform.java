@@ -16,8 +16,10 @@
  */
 package org.apache.sis.referencing.operation.transform;
 
+import java.io.Serializable;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptorGroup;
+import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.Matrix;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.internal.referencing.provider.Affine;
@@ -37,13 +39,23 @@ import org.apache.sis.util.resources.Errors;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.6
- * @version 0.6
+ * @version 0.7
  * @module
  */
-@SuppressWarnings("CloneInNonCloneableClass")
-abstract class AbstractLinearTransform extends AbstractMathTransform
-        implements LinearTransform, Matrix // Not Cloneable, despite the clone() method.
-{
+@SuppressWarnings("CloneInNonCloneableClass")   // Intentionally not Cloneable despite the clone() method.
+abstract class AbstractLinearTransform extends AbstractMathTransform implements LinearTransform, Matrix, Serializable {
+    /**
+     * For cross-version compatibility.
+     */
+    private static final long serialVersionUID = -4649708313541868599L;
+
+    /**
+     * The inverse transform, or {@code null} if not yet created.
+     * This field is part of the serialization form in order to avoid rounding errors if a user
+     * asks for the inverse of the inverse (i.e. the original transform) after deserialization.
+     */
+    MathTransform inverse;
+
     /**
      * Constructs a transform.
      */

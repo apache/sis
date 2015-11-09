@@ -527,7 +527,7 @@ public abstract class AbstractFeature implements Feature, Serializable {
              */
             final FeatureType valueType = ((Feature) value).getType();
             final FeatureType base = role.getValueType();
-            if (base != valueType && DefaultFeatureType.maybeAssignableFrom(base, valueType)) {
+            if (base == valueType || DefaultFeatureType.maybeAssignableFrom(base, valueType)) {
                 return isSingleton ? value : singletonList(Feature.class, role.getMinimumOccurs(), value);
             } else {
                 throw illegalPropertyType(role.getName(), valueType.getName());
