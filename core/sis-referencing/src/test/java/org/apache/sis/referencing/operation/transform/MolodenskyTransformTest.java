@@ -301,12 +301,12 @@ public final strictfp class MolodenskyTransformTest extends MathTransformTestCas
                 "    Parameter[“elt_0_0”, 0.017453292519943295],\n" +       // Degrees to radians conversion
                 "    Parameter[“elt_1_1”, 0.017453292519943295]],\n" +
                 "  Param_MT[“Molodensky”,\n" +
-                "    Parameter[“X-axis translation”, 84.87, Unit[“metre”, 1, Id[“EPSG”, 9001]]],\n" +
-                "    Parameter[“Y-axis translation”, 96.49, Unit[“metre”, 1, Id[“EPSG”, 9001]]],\n" +
-                "    Parameter[“Z-axis translation”, 116.95, Unit[“metre”, 1, Id[“EPSG”, 9001]]],\n" +
-                "    Parameter[“Semi-major axis length difference”, 251.0, Unit[“metre”, 1, Id[“EPSG”, 9001]]],\n" +
-                "    Parameter[“Flattening difference”, 1.4192702255886284E-5, Unit[“unity”, 1, Id[“EPSG”, 9201]]],\n" +
-                "    Parameter[“src_semi_major”, 6378137.0, Unit[“metre”, 1, Id[“EPSG”, 9001]]],\n" +
+                "    Parameter[“X-axis translation”, 84.87],\n" +
+                "    Parameter[“Y-axis translation”, 96.49],\n" +
+                "    Parameter[“Z-axis translation”, 116.95],\n" +
+                "    Parameter[“Semi-major axis length difference”, 251.0],\n" +
+                "    Parameter[“Flattening difference”, 1.4192702255886284E-5],\n" +
+                "    Parameter[“src_semi_major”, 6378137.0],\n" +
                 "    Parameter[“eccentricity”, 0.0818191908426215],\n" +
                 "    Parameter[“abridged”, TRUE],\n" +
                 "    Parameter[“dim”, 3]],\n" +
