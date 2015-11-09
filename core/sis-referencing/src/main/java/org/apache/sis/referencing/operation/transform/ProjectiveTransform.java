@@ -17,7 +17,6 @@
 package org.apache.sis.referencing.operation.transform;
 
 import java.util.Arrays;
-import java.io.Serializable;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
@@ -38,14 +37,12 @@ import org.apache.sis.util.ArgumentChecks;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.5
- * @version 0.5
+ * @version 0.7
  * @module
  *
  * @see java.awt.geom.AffineTransform
  */
-class ProjectiveTransform extends AbstractLinearTransform implements LinearTransform, ExtendedPrecisionMatrix,
-        Serializable // Not Cloneable, despite the clone() method.
-{
+class ProjectiveTransform extends AbstractLinearTransform implements ExtendedPrecisionMatrix {
     /**
      * Serial number for inter-operability with different versions.
      */
@@ -68,13 +65,6 @@ class ProjectiveTransform extends AbstractLinearTransform implements LinearTrans
      * in which case the second half contains the error terms in double-double arithmetic.</p>
      */
     private final double[] elt;
-
-    /**
-     * The inverse transform. Will be created only when first needed. This field is part of the serialization form
-     * in order to avoid rounding errors if a user asks for the inverse of the inverse (i.e. the original transform)
-     * after deserialization.
-     */
-    AbstractMathTransform inverse;
 
     /**
      * Constructs a transform from the specified matrix.
@@ -158,7 +148,7 @@ class ProjectiveTransform extends AbstractLinearTransform implements LinearTrans
      * instead than using a factory method.</div>
      */
     @Override
-    public boolean isIdentity() {
+    public final boolean isIdentity() {
         if (numRow != numCol) {
             return false;
         }
@@ -180,9 +170,9 @@ class ProjectiveTransform extends AbstractLinearTransform implements LinearTrans
      * @return {@inheritDoc}
      */
     @Override
-    public Matrix transform(final double[] srcPts, final int srcOff,
-                            final double[] dstPts, final int dstOff,
-                            final boolean derivate)
+    public final Matrix transform(final double[] srcPts, final int srcOff,
+                                  final double[] dstPts, final int dstOff,
+                                  final boolean derivate)
     {
         transform(srcPts, srcOff, dstPts, dstOff, 1);
         return derivate ? derivative((DirectPosition) null) : null;
@@ -205,7 +195,7 @@ class ProjectiveTransform extends AbstractLinearTransform implements LinearTrans
      * @param numPts The number of points to be transformed.
      */
     @Override
-    public void transform(double[] srcPts, int srcOff, double[] dstPts, int dstOff, int numPts) {
+    public final void transform(double[] srcPts, int srcOff, double[] dstPts, int dstOff, int numPts) {
         final int srcDim, dstDim;
         int srcInc = srcDim = numCol - 1; // The last ordinate will be assumed equal to 1.
         int dstInc = dstDim = numRow - 1;
@@ -276,7 +266,7 @@ class ProjectiveTransform extends AbstractLinearTransform implements LinearTrans
      * @param numPts The number of points to be transformed.
      */
     @Override
-    public void transform(float[] srcPts, int srcOff, float[] dstPts, int dstOff, int numPts) {
+    public final void transform(float[] srcPts, int srcOff, float[] dstPts, int dstOff, int numPts) {
         final int srcDim, dstDim;
         int srcInc = srcDim = numCol-1;
         int dstInc = dstDim = numRow-1;
@@ -332,7 +322,7 @@ class ProjectiveTransform extends AbstractLinearTransform implements LinearTrans
      * @param numPts The number of points to be transformed.
      */
     @Override
-    public void transform(double[] srcPts, int srcOff, float[] dstPts, int dstOff, int numPts) {
+    public final void transform(double[] srcPts, int srcOff, float[] dstPts, int dstOff, int numPts) {
         final int srcDim = numCol-1;
         final int dstDim = numRow-1;
         final double[] buffer = new double[numRow];
@@ -367,7 +357,7 @@ class ProjectiveTransform extends AbstractLinearTransform implements LinearTrans
      * @param numPts The number of points to be transformed.
      */
     @Override
-    public void transform(float[] srcPts, int srcOff, double[] dstPts, int dstOff, int numPts) {
+    public final void transform(float[] srcPts, int srcOff, double[] dstPts, int dstOff, int numPts) {
         final int srcDim = numCol - 1;
         final int dstDim = numRow - 1;
         final double[] buffer = new double[numRow];
@@ -399,7 +389,7 @@ class ProjectiveTransform extends AbstractLinearTransform implements LinearTrans
      * @param point Ignored (can be {@code null}).
      */
     @Override
-    public Matrix derivative(final DirectPosition point) {
+    public final Matrix derivative(final DirectPosition point) {
         final int srcDim = numCol - 1;
         final int dstDim = numRow - 1;
         final MatrixSIS matrix = Matrices.createZero(dstDim, srcDim);
@@ -420,26 +410,20 @@ class ProjectiveTransform extends AbstractLinearTransform implements LinearTrans
     public synchronized MathTransform inverse() throws NoninvertibleTransformException {
         if (inverse == null) {
             /*
-             * Note: we do not perform the following optimization, because MathTransforms.linear(…)
-             *       should never instantiate this class in the identity case.
-             *
-             *       if (isIdentity()) {
-             *           inverse = this;
-             *       } else { ... }
+             * Should never be the identity transform at this point (except during tests) because
+             * MathTransforms.linear(…) should never instantiate this class in the identity case.
+             * But we check anyway as a paranoiac safety.
              */
-            ProjectiveTransform inv = createInverse(Matrices.inverse(this));
-            inv.inverse = this;
-            inverse = inv;
+            if (isIdentity()) {
+                inverse = this;
+            } else {
+                inverse = MathTransforms.linear(Matrices.inverse(this));
+                if (inverse instanceof AbstractLinearTransform) {
+                    ((AbstractLinearTransform) inverse).inverse = this;
+                }
+            }
         }
         return inverse;
-    }
-
-    /**
-     * Creates an inverse transform using the specified matrix.
-     * To be overridden by {@link GeocentricTranslation}.
-     */
-    ProjectiveTransform createInverse(final Matrix matrix) {
-        return new ProjectiveTransform(matrix);
     }
 
     /**

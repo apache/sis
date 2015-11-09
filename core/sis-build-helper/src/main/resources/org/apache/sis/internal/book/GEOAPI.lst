@@ -115,6 +115,7 @@ LegalConstraints
 Lineage
 LinearCS
 LogicalConsistency
+Matrix
 MaintenanceFrequency
 MaintenanceInformation
 MathTransform

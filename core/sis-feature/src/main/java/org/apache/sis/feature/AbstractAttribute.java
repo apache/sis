@@ -336,11 +336,12 @@ public abstract class AbstractAttribute<V> extends Field<V> implements Attribute
      * @see DefaultAttributeType#characteristics()
      */
     @Override
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
     public Map<String,Attribute<?>> characteristics() {
         if (characteristics == null) {
             characteristics = newCharacteristicsMap();
         }
-        return characteristics;
+        return characteristics;     // Intentionally modifiable
     }
 
     /**

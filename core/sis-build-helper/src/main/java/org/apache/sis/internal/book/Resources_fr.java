@@ -28,8 +28,8 @@ public final class Resources_fr extends Resources {
     @Override
     protected Object[][] getContents() {
         final Object[][] resources = super.getContents();
-        resources[0][1] = "Chapitre suivant";
-        resources[1][1] = "Chapitre précédent";
+        resources[0][1] = "Chapitre précédent";
+        resources[1][1] = "Chapitre suivant";
         resources[2][1] = "Dans ce chapitre:";
         return resources;
     }

@@ -18,11 +18,10 @@ package org.apache.sis.internal.referencing.provider;
 
 import javax.xml.bind.annotation.XmlTransient;
 import org.opengis.parameter.ParameterDescriptorGroup;
-import org.apache.sis.parameter.ParameterBuilder;
 
 
 /**
- * The provider for "<cite>Popular Visualisation Pseudo Mercator</cite>" projection (EPSG:1024).
+ * The provider for <cite>"Popular Visualisation Pseudo Mercator"</cite> projection (EPSG:1024).
  * This is also known as the "Google projection", defined by popular demand but not considered
  * a valid projection method.
  *
@@ -48,11 +47,10 @@ public final class PseudoMercator extends AbstractMercator {
      */
     private static final ParameterDescriptorGroup PARAMETERS;
     static {
-        final ParameterBuilder builder = builder();
-        PARAMETERS = builder
-            .addIdentifier(IDENTIFIER)
-            .addName("Popular Visualisation Pseudo Mercator")
-            .createGroupForMapProjection(toArray(MercatorSpherical.PARAMETERS.descriptors()));
+        PARAMETERS = builder()
+                .addIdentifier(IDENTIFIER)
+                .addName("Popular Visualisation Pseudo Mercator")
+                .createGroupForMapProjection(toArray(MercatorSpherical.PARAMETERS.descriptors()));
     }
 
     /**

@@ -114,5 +114,5 @@ public interface Dbase3ByteReader {
      * Read the next row as a set of objects.
      * @return Map of field name / object value.
      */
-    public Map<String, Object> readNextRowAsObjects();
+    public Map<String, byte[]> readNextRowAsObjects();
 }

@@ -377,8 +377,8 @@ public final class Matrices extends Static {
      * </ul>
      *
      * <div class="note"><b>Example:</b>
-     * It is legal to transform from (<i>easting</i>, <i>northing</i>, <i>up</i>) to
-     * (<i>easting</i>, <i>northing</i>) - this is the first above case, but illegal
+     * it is legal to transform from (<i>easting</i>, <i>northing</i>, <i>up</i>) to
+     * (<i>easting</i>, <i>northing</i>) — this is the first above case — but illegal
      * to transform (<i>easting</i>, <i>northing</i>) to (<i>easting</i>, <i>up</i>).</div>
      *
      * <div class="section">Example</div>
@@ -487,7 +487,7 @@ public final class Matrices extends Static {
 
     /**
      * Creates a matrix for a transform that keep only a subset of source ordinate values.
-     * The matrix size will be ({@code selectedDimensions.length}+1) × ({@code sourceDimensions}+1).
+     * The matrix size will be ({@code selectedDimensions.length} + 1) × ({@code sourceDimensions} + 1).
      * The matrix will contain only zero elements, except for the following cells which will contain 1:
      *
      * <ul>
@@ -541,7 +541,7 @@ public final class Matrices extends Static {
     }
 
     /**
-     * Creates a matrix which converts a subset of ordinates with another matrix.
+     * Creates a matrix which converts a subset of ordinates using the transform given by another matrix.
      * For example giving (<var>latitude</var>, <var>longitude</var>, <var>height</var>) coordinates,
      * a pass through operation can convert the height values from feet to metres without affecting
      * the (<var>latitude</var>, <var>longitude</var>) values.
@@ -647,6 +647,75 @@ public final class Matrices extends Static {
         }
         matrix.setElement(lastRow, lastColumn, subMatrix.getElement(targetDimensions, sourceDimensions));
         return matrix;
+    }
+
+    /**
+     * Returns a new matrix with the same elements than the given matrix except for the specified rows.
+     * This method is useful for removing a range of <em>target</em> dimensions in an affine transform.
+     *
+     * @param  matrix The matrix where to remove rows, or {@code null}.
+     * @param  lower  Index of the first row to remove (inclusive).
+     * @param  upper  Index after the last row to remove (exclusive).
+     * @return A copy of the given matrix with the specified rows removed,
+     *         or {@code null} if the given matrix was null.
+     *
+     * @since 0.7
+     */
+    public static Matrix removeRows(final Matrix matrix, final int lower, final int upper) {
+        if (matrix == null) {
+            return null;
+        }
+        final int numRow = matrix.getNumRow();
+        final int numCol = matrix.getNumCol();
+        ArgumentChecks.ensureValidIndexRange(numRow, lower, upper);
+        final Matrix reduced = createZero(numRow - (upper - lower), numCol);
+        int dest = 0;
+        for (int j=0; j<numRow; j++) {
+            if (j == lower) {
+                j = upper;
+                if (j == numRow) break;
+            }
+            for (int i=0; i<numCol; i++) {
+                reduced.setElement(dest, i, matrix.getElement(j, i));
+            }
+            dest++;
+        }
+        return reduced;
+    }
+
+    /**
+     * Returns a new matrix with the same elements than the given matrix except for the specified columns.
+     * This method is useful for removing a range of <em>source</em> dimensions in an affine transform.
+     * Coordinates will be converted as if the values in the removed dimensions were zeros.
+     *
+     * @param  matrix The matrix where to remove columns, or {@code null}.
+     * @param  lower  Index of the first column to remove (inclusive).
+     * @param  upper  Index after the last column to remove (exclusive).
+     * @return A copy of the given matrix with the specified columns removed,
+     *         or {@code null} if the given matrix was null.
+     *
+     * @since 0.7
+     */
+    public static Matrix removeColumns(final Matrix matrix, final int lower, final int upper) {
+        if (matrix == null) {
+            return null;
+        }
+        final int numRow = matrix.getNumRow();
+        final int numCol = matrix.getNumCol();
+        ArgumentChecks.ensureValidIndexRange(numCol, lower, upper);
+        final Matrix reduced = createZero(numRow, numCol - (upper - lower));
+        int dest = 0;
+        for (int i=0; i<numCol; i++) {
+            if (i == lower) {
+                i = upper;
+                if (i == numCol) break;
+            }
+            for (int j=0; j<numRow; j++) {
+                reduced.setElement(j, dest, matrix.getElement(j, i));
+            }
+            dest++;
+        }
+        return reduced;
     }
 
     /**

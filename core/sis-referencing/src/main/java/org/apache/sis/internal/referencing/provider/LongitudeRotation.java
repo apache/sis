@@ -58,11 +58,6 @@ public final class LongitudeRotation extends AbstractProvider {
     private static final long serialVersionUID = -2104496465933824935L;
 
     /**
-     * The name of the {@link #OFFSET} parameter.
-     */
-    static final String NAME = "Longitude offset";
-
-    /**
      * The operation parameter descriptor for the <cite>"longitude offset"</cite> parameter value.
      */
     private static final ParameterDescriptor<Double> OFFSET;
@@ -73,7 +68,7 @@ public final class LongitudeRotation extends AbstractProvider {
     private static final ParameterDescriptorGroup PARAMETERS;
     static {
         final ParameterBuilder builder = builder();
-        OFFSET = createLongitude(builder.addIdentifier("8602").addName(NAME));
+        OFFSET = createLongitude(builder.addIdentifier("8602").addName("Longitude offset"));
         PARAMETERS = builder.addIdentifier("9601").addName("Longitude rotation").createGroup(OFFSET);
     }
 

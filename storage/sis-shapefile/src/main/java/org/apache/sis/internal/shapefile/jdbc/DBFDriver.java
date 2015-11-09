@@ -16,13 +16,16 @@
  */
 package org.apache.sis.internal.shapefile.jdbc;
 
-import java.io.*;
-import java.sql.*;
-import java.util.*;
-import java.util.logging.*;
+import java.io.File;
+import java.sql.Connection;
+import java.sql.Driver;
+import java.sql.DriverPropertyInfo;
+import java.util.Objects;
+import java.util.Properties;
+import java.util.logging.Logger;
 
 import org.apache.sis.internal.shapefile.jdbc.connection.DBFConnection;
-import org.apache.sis.internal.system.*;
+import org.apache.sis.internal.system.Modules;
 
 
 /**
@@ -61,7 +64,7 @@ public class DBFDriver extends AbstractJDBC implements Driver {
      * Attempts to make a database connection to the given filename.
      *
      * @param  url  The path to a {@code .dbf} file.
-     * @param  info Ignored in current implementation.
+     * @param  info Properties to ask for special features, behavior, or compatibility.
      * @return A connection to the given DBF file.
      * @throws SQLInvalidDbaseFileFormatException if the database file format is invalid.
      * @throws SQLDbaseFileNotFoundException if the database file doesn't exist.
@@ -69,11 +72,10 @@ public class DBFDriver extends AbstractJDBC implements Driver {
      */
     @Override
     @SuppressWarnings("resource") // the function opens a connection.
-    public Connection connect(final String url, @SuppressWarnings("unused") Properties info) throws SQLInvalidDbaseFileFormatException, SQLDbaseFileNotFoundException {
+    public Connection connect(final String url, Properties info) throws SQLInvalidDbaseFileFormatException, SQLDbaseFileNotFoundException {
         Objects.requireNonNull(url, "the DBase3 url cannot be null");
         File file = new File(url);
-
-        return new DBFConnection(file, new MappedByteReader(file));
+        return new DBFConnection(file, new MappedByteReader(file, info));
     }
 
     /**

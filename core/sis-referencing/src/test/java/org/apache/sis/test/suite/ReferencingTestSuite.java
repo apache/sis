@@ -74,45 +74,7 @@ import org.junit.BeforeClass;
     org.apache.sis.internal.jaxb.referencing.CC_GeneralOperationParameterTest.class,
     org.apache.sis.internal.jaxb.referencing.CC_OperationParameterGroupTest.class,
 
-    // Test transforms other than map projections.
-    org.apache.sis.referencing.operation.transform.CoordinateDomainTest.class,
-    org.apache.sis.referencing.operation.transform.IterationStrategyTest.class,
-    org.apache.sis.referencing.operation.transform.AbstractMathTransformTest.class,
-    org.apache.sis.referencing.operation.transform.ProjectiveTransformTest.class,
-    org.apache.sis.referencing.operation.transform.LinearTransformTest.class,
-    org.apache.sis.referencing.operation.transform.ExponentialTransform1DTest.class,
-    org.apache.sis.referencing.operation.transform.LogarithmicTransform1DTest.class,
-    org.apache.sis.referencing.operation.transform.CopyTransformTest.class,
-    org.apache.sis.referencing.operation.transform.PassThroughTransformTest.class,
-    org.apache.sis.referencing.operation.transform.ConcatenatedTransformTest.class,
-    org.apache.sis.referencing.operation.transform.TransferFunctionTest.class,
-    org.apache.sis.referencing.operation.transform.MathTransformsTest.class,
-    org.apache.sis.referencing.operation.transform.ContextualParametersTest.class,
-
-    // Registration of map projections and other math transforms.
-    org.apache.sis.referencing.operation.DefaultFormulaTest.class,
-    org.apache.sis.referencing.operation.DefaultOperationMethodTest.class,
-    org.apache.sis.referencing.operation.AbstractSingleOperationTest.class,
-    // Other test classes from the 'operation' package after the CRS tests below.
-    org.apache.sis.referencing.operation.transform.OperationMethodSetTest.class,
-    org.apache.sis.internal.referencing.provider.AffineTest.class,
-    org.apache.sis.internal.referencing.provider.LongitudeRotationTest.class,
-    org.apache.sis.internal.referencing.provider.MapProjectionTest.class,
-    org.apache.sis.internal.referencing.provider.AllProvidersTest.class,
-    org.apache.sis.referencing.operation.transform.DefaultMathTransformFactoryTest.class,
-
-    // Test map projections. Those tests need the providers tested above.
-    org.apache.sis.referencing.operation.projection.InitializerTest.class,
-    org.apache.sis.referencing.operation.projection.NormalizedProjectionTest.class,
-    org.apache.sis.referencing.operation.projection.EquirectangularTest.class,
-    org.apache.sis.referencing.operation.projection.ConformalProjectionTest.class,
-    org.apache.sis.referencing.operation.projection.MercatorTest.class,
-    org.apache.sis.referencing.operation.projection.LambertConicConformalTest.class,
-    org.apache.sis.referencing.operation.projection.TransverseMercatorTest.class,
-    org.apache.sis.referencing.operation.projection.PolarStereographicTest.class,
-    org.apache.sis.referencing.operation.projection.ObliqueStereographicTest.class,
-
-    // Coordinate Reference System components.
+    // Coordinate Reference System components (except derived CRS).
     org.apache.sis.referencing.datum.BursaWolfParametersTest.class,
     org.apache.sis.referencing.datum.TimeDependentBWPTest.class,
     org.apache.sis.referencing.datum.DefaultEllipsoidTest.class,
@@ -138,6 +100,50 @@ import org.junit.BeforeClass;
     org.apache.sis.referencing.crs.DefaultTemporalCRSTest.class,
     org.apache.sis.referencing.crs.DefaultEngineeringCRSTest.class,
     org.apache.sis.referencing.crs.DefaultImageCRSTest.class,
+
+    // Test transforms other than map projections.
+    org.apache.sis.referencing.operation.transform.CoordinateDomainTest.class,
+    org.apache.sis.referencing.operation.transform.IterationStrategyTest.class,
+    org.apache.sis.referencing.operation.transform.AbstractMathTransformTest.class,
+    org.apache.sis.referencing.operation.transform.ProjectiveTransformTest.class,
+    org.apache.sis.referencing.operation.transform.LinearTransformTest.class,
+    org.apache.sis.referencing.operation.transform.ExponentialTransform1DTest.class,
+    org.apache.sis.referencing.operation.transform.LogarithmicTransform1DTest.class,
+    org.apache.sis.referencing.operation.transform.CopyTransformTest.class,
+    org.apache.sis.referencing.operation.transform.PassThroughTransformTest.class,
+    org.apache.sis.referencing.operation.transform.ConcatenatedTransformTest.class,
+    org.apache.sis.referencing.operation.transform.TransferFunctionTest.class,
+    org.apache.sis.referencing.operation.transform.MathTransformsTest.class,
+    org.apache.sis.referencing.operation.transform.ContextualParametersTest.class,
+    org.apache.sis.referencing.operation.transform.EllipsoidalToCartesianTransformTest.class,
+    org.apache.sis.referencing.operation.transform.MolodenskyTransformTest.class,
+    org.apache.sis.referencing.operation.DefaultFormulaTest.class,
+    org.apache.sis.referencing.operation.DefaultOperationMethodTest.class,
+    org.apache.sis.referencing.operation.AbstractSingleOperationTest.class,
+    org.apache.sis.referencing.operation.transform.OperationMethodSetTest.class,
+
+    // Registration of map projections and other math transforms.
+    org.apache.sis.internal.referencing.provider.AffineTest.class,
+    org.apache.sis.internal.referencing.provider.LongitudeRotationTest.class,
+    org.apache.sis.internal.referencing.provider.GeocentricTranslationTest.class,
+    org.apache.sis.internal.referencing.provider.PositionVector7ParamTest.class,
+    org.apache.sis.internal.referencing.provider.CoordinateFrameRotationTest.class,
+    org.apache.sis.internal.referencing.provider.MapProjectionTest.class,
+    org.apache.sis.internal.referencing.provider.AllProvidersTest.class,
+    org.apache.sis.referencing.operation.transform.DefaultMathTransformFactoryTest.class,
+
+    // Test map projections. Those tests need the providers tested above.
+    org.apache.sis.referencing.operation.projection.InitializerTest.class,
+    org.apache.sis.referencing.operation.projection.NormalizedProjectionTest.class,
+    org.apache.sis.referencing.operation.projection.EquirectangularTest.class,
+    org.apache.sis.referencing.operation.projection.ConformalProjectionTest.class,
+    org.apache.sis.referencing.operation.projection.MercatorTest.class,
+    org.apache.sis.referencing.operation.projection.LambertConicConformalTest.class,
+    org.apache.sis.referencing.operation.projection.TransverseMercatorTest.class,
+    org.apache.sis.referencing.operation.projection.PolarStereographicTest.class,
+    org.apache.sis.referencing.operation.projection.ObliqueStereographicTest.class,
+
+    // Coordinate operation and derived Coordinate Reference Systems (cyclic dependency).
     org.apache.sis.referencing.operation.DefaultTransformationTest.class,
     org.apache.sis.referencing.operation.DefaultConversionTest.class,
     org.apache.sis.referencing.operation.SingleOperationMarshallingTest.class,
@@ -148,6 +154,7 @@ import org.junit.BeforeClass;
     org.apache.sis.referencing.crs.SubTypesTest.class,
     org.apache.sis.referencing.crs.DefaultCompoundCRSTest.class,
     org.apache.sis.referencing.crs.HardCodedCRSTest.class,
+
     org.apache.sis.referencing.factory.GIGS3002.class,
     org.apache.sis.referencing.factory.GIGS3003.class,
     org.apache.sis.referencing.factory.GIGS3004.class,

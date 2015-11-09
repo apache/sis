@@ -24,8 +24,6 @@ import java.util.Iterator;
 import java.util.Objects;
 import java.io.Serializable;
 import org.opengis.util.FactoryException;
-import org.opengis.referencing.operation.MathTransform;
-import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.parameter.GeneralParameterValue;
 import org.opengis.parameter.GeneralParameterDescriptor;
 import org.opengis.parameter.ParameterValue;
@@ -33,7 +31,9 @@ import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.ParameterNotFoundException;
+import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.Matrix;
+import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.apache.sis.internal.referencing.ExtendedPrecisionMatrix;
 import org.apache.sis.internal.referencing.WKTUtilities;
@@ -108,7 +108,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  *     and gives the linear parameters to the {@link #normalizeGeographicInputs normalizeGeographicInputs(…)} and
  *     {@link MatrixSIS#convertAfter MatrixSIS.convertAfter(…)} methods, which will create the matrices show above.
  *     The projection constructor is free to apply additional operations on the two affine transforms
- *     ({@linkplain #getMatrix(boolean) normalize / denormalize}) before or after the above-cited
+ *     ({@linkplain #getMatrix(MatrixRole) normalize / denormalize}) before or after the above-cited
  *     methods have been invoked.</li>
  *
  *   <li>After all parameter values have been set and the normalize / denormalize matrices defined,
@@ -126,7 +126,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.6
- * @version 0.6
+ * @version 0.7
  * @module
  *
  * @see org.apache.sis.referencing.operation.projection.NormalizedProjection
@@ -134,13 +134,57 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  */
 public class ContextualParameters extends Parameters implements Serializable {
     /**
+     * Whether a matrix is used for <cite>normalization</cite> or <cite>denormalization</cite>
+     * before or after a non-linear operation.
+     *
+     * @author  Martin Desruisseaux (Geomatys)
+     * @since   0.7
+     * @version 0.7
+     * @module
+     *
+     * @see ContextualParameters#getMatrix(MatrixRole)
+     */
+    public static enum MatrixRole {
+        /**
+         * Matrix for converting angular degrees to radians, or any other linear operations needed
+         * before to apply a non-linear operation. For example in a map projection, this matrix is
+         * typically (but not necessarily) as below:
+         *
+         * <center>{@include formulas.html#NormalizeGeographic}</center>
+         */
+        NORMALIZATION,
+
+        /**
+         * Inverse of the {@link #NORMALIZATION} matrix.
+         * For example in a map projection, this matrix is typically (but not necessarily) as below:
+         *
+         * <center>{@include formulas.html#DeormalizeGeographic}</center>
+         */
+        INVERSE_NORMALIZATION,
+
+        /**
+         * Matrix for scaling Cartesian coordinates to the size of the planet, or any other linear operations needed
+         * after execution of a non-linear operation. For example in a map projection, this matrix is typically
+         * (but not necessarily) as below:
+         *
+         * <center>{@include formulas.html#DenormalizeCartesian}</center>
+         */
+        DENORMALIZATION,
+
+        /**
+         * Inverse of the {@link #DENORMALIZATION} matrix.
+         */
+        INVERSE_DENORMALIZATION
+    }
+
+    /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = 4899134192407586472L;
+    private static final long serialVersionUID = 6769546741493459341L;
 
     /**
      * The parameters that represents the sequence of transforms as a whole. The parameter values may be used
-     * in the {@linkplain #getMatrix(boolean) (de)normalization} transforms, in the kernel, or both.
+     * in the {@linkplain #getMatrix(MatrixRole) (de)normalization} transforms, in the kernel, or both.
      *
      * @see #getDescriptor()
      */
@@ -149,11 +193,11 @@ public class ContextualParameters extends Parameters implements Serializable {
     /**
      * The affine transform to be applied before (<cite>normalize</cite>) and after (<cite>denormalize</cite>)
      * the kernel operation. On {@code ContextualParameters} construction, those affines are initially identity
-     * transforms, to be modified in-place by callers of {@link #getMatrix(boolean)} or related methods.
+     * transforms, to be modified in-place by callers of {@link #getMatrix(MatrixRole)} or related methods.
      * After the {@link #completeTransform(MathTransformFactory, MathTransform)} method has been invoked,
      * those matrices are typically (but not necessarily) replaced by the {@link LinearTransform} instances itself.
      *
-     * @see #getMatrix(boolean)
+     * @see #getMatrix(MatrixRole)
      */
     private Matrix normalize, denormalize;
 
@@ -167,8 +211,16 @@ public class ContextualParameters extends Parameters implements Serializable {
     private ParameterValue<?>[] values;
 
     /**
+     * If the inverse coordinate operation can be described by another {@code ContextualParameters} instance,
+     * a reference to that instance. Otherwise {@code null}.
+     */
+    private ContextualParameters inverse;
+
+    /**
      * {@code false} if this parameter group is modifiable, or {@code true} if it has been made unmodifiable
      * (frozen) by a call to {@link #completeTransform(MathTransformFactory, MathTransform)}.
+     *
+     * @see #freeze()
      */
     private boolean isFrozen;
 
@@ -181,7 +233,7 @@ public class ContextualParameters extends Parameters implements Serializable {
      * <ul>
      *   <li>Set the relevant parameter values by calls to
      *     <code>{@linkplain #parameter(String) parameter(…)}.setValue(…)</code>.</li>
-     *   <li>Modify the element values in {@linkplain #getMatrix(boolean) normalization / denormalization}
+     *   <li>Modify the element values in {@linkplain #getMatrix(MatrixRole) normalization / denormalization}
      *     affine transforms, optionally by calls to the convenience methods in this class.</li>
      *   <li>Get the complete transforms chain with a call
      *     {@link #completeTransform(MathTransformFactory, MathTransform) completeTransform(…)}</li>
@@ -200,9 +252,38 @@ public class ContextualParameters extends Parameters implements Serializable {
     }
 
     /**
+     * Equivalent to the public constructor, but avoid the need for an {@link OperationMethod} instance.
+     *
+     * @param descriptor The parameter descriptor.
+     * @param srcSize    Size of the normalization matrix: source dimensions + 1.
+     * @param tgtSize    Size of the denormalization matrix: target dimensions + 1.
+     */
+    ContextualParameters(final ParameterDescriptorGroup descriptor, final int srcSize, final int tgtSize) {
+        this.descriptor  = descriptor;
+        this.normalize   = Matrices.create(srcSize, srcSize, ExtendedPrecisionMatrix.IDENTITY);
+        this.denormalize = Matrices.create(tgtSize, tgtSize, ExtendedPrecisionMatrix.IDENTITY);
+        this.values      = new ParameterValue<?>[descriptor.descriptors().size()];
+    }
+
+    /**
+     * Creates a {@code ContextualParameters} for the inverse operation.
+     *
+     * @param  desc    Descriptor of the inverse operation.
+     * @param  forward The parameters created for the forward operation.
+     */
+    private ContextualParameters(final ParameterDescriptorGroup desc, final ContextualParameters forward) {
+        descriptor  = desc;
+        normalize   = forward.getMatrix(MatrixRole.INVERSE_DENORMALIZATION);
+        denormalize = forward.getMatrix(MatrixRole.INVERSE_NORMALIZATION);
+        values      = forward.values;
+        inverse     = forward;
+        isFrozen    = true;
+    }
+
+    /**
      * Creates a matrix for a linear step of the transforms chain.
      * It is important that the matrices created here are instances of {@link MatrixSIS}, in order
-     * to allow {@link #getMatrix(boolean)} to return the reference to the (de)normalize matrices.
+     * to allow {@link #getMatrix(MatrixRole)} to return the reference to the (de)normalize matrices.
      */
     private static MatrixSIS linear(final String name, final Integer size) {
         if (size == null) {
@@ -213,19 +294,36 @@ public class ContextualParameters extends Parameters implements Serializable {
     }
 
     /**
+     * Creates a {@code ContextualParameters} for the inverse operation.
+     *
+     * @param  desc Descriptor of the inverse operation.
+     * @return Parameters for the inverse operation.
+     */
+    final synchronized ContextualParameters inverse(final ParameterDescriptorGroup desc) {
+        if (inverse == null) {
+            if (!isFrozen) {
+                freeze();
+            }
+            inverse = new ContextualParameters(desc, this);
+        }
+        assert inverse.descriptor == desc;
+        return inverse;
+    }
+
+    /**
      * Returns the parameters for the <cite>normalize</cite> → <cite>non-linear kernel</cite> →
      * <cite>denormalize</cite> sequence as a whole. This is the parameter descriptor of the
      * {@linkplain org.apache.sis.referencing.operation.DefaultOperationMethod operation method}
      * given to the constructor.
      *
      * <p>The values for those parameters is given by the {@link #values()} method. Those values may be used in
-     * the {@linkplain #getMatrix(boolean) normalization / denormalization} transforms, in the kernel, or both.</p>
+     * the {@linkplain #getMatrix(MatrixRole) normalization / denormalization} transforms, in the kernel, or both.</p>
      *
      * <div class="note"><b>Note:</b>
      * The definition of "kernel" is left to implementors.
      * In the particular case of Apache SIS implementation of map projections,
-     * kernels are subclasses of {@link org.apache.sis.referencing.operation.projection.NormalizedProjection}.
-     * </div>
+     * kernels are instances of {@link org.apache.sis.referencing.operation.projection.NormalizedProjection}.
+     * Other "kernels" in SIS are {@link EllipsoidalToCartesianTransform} and {@link MolodenskyTransform}.</div>
      *
      * @return The description of the parameters.
      */
@@ -235,14 +333,24 @@ public class ContextualParameters extends Parameters implements Serializable {
     }
 
     /**
-     * Ensures that this instance is modifiable.
+     * Ensures that this {@code ContextualParameters} instance is modifiable.
      *
      * @throws IllegalStateException if this {@code ContextualParameter} has been made unmodifiable.
      */
     private void ensureModifiable() throws IllegalStateException {
+        assert Thread.holdsLock(this);
         if (isFrozen) {
             throw new IllegalStateException(Errors.format(Errors.Keys.UnmodifiableObject_1, getClass()));
         }
+    }
+
+    /**
+     * Returns the given matrix as an unmodifiable one if this {@code ContextualParameters} instance is unmodifiable.
+     * Note that if this instance is modifiable, then we <strong>must</strong> return a direct reference to the matrix,
+     * not a wrapper, because the caller may need to modify it.
+     */
+    private MatrixSIS toMatrixSIS(final Matrix m) {
+        return isFrozen ? Matrices.unmodifiable(m) : (MatrixSIS) m;
     }
 
     /**
@@ -261,33 +369,68 @@ public class ContextualParameters extends Parameters implements Serializable {
      * invoked, the matrices returned by this method are {@linkplain Matrices#unmodifiable(Matrix) unmodifiable}.
      *
      *
-     * <div class="section">Application to map projections</div>
-     * After {@link org.apache.sis.referencing.operation.projection.NormalizedProjection} construction, the matrices
+     * <div class="note"><b>Application to map projections:</b>
+     * after {@link org.apache.sis.referencing.operation.projection.NormalizedProjection} construction, the matrices
      * returned by {@code projection.getContextualParameters().getMatrix(…)} are initialized to the values shown below.
      * Note that some {@code NormalizedProjection} subclasses apply further modifications to those matrices.
      *
      * <table class="sis">
-     *   <caption>Initial matrix coefficients after construction</caption>
+     *   <caption>Initial matrix coefficients after {@code NormalizedProjection} construction</caption>
      *   <tr>
-     *     <th>{@code getMatrix(true)}</th>
-     *     <th class="sep">{@code getMatrix(false)}</th>
+     *     <th>{@code getMatrix(NORMALIZATION)}</th>
+     *     <th class="sep">{@code getMatrix(DENORMALIZATION)}</th>
      *   </tr><tr>
      *     <td>{@include formulas.html#NormalizeGeographic}</td>
      *     <td class="sep">{@include formulas.html#DenormalizeCartesian}</td>
      *   </tr>
      * </table>
+     * </div>
+     *
+     * @param  role {@code NORMALIZATION} for fetching the <cite>normalization</cite> transform to apply before the kernel,
+     *         {@code DENORMALIZATION} for the <cite>denormalization</cite> transform to apply after the kernel,
+     *         or {@code INVERSE_*} for the inverse of the above-cited matrices.
+     * @return The matrix for the requested normalization or denormalization affine transform.
+     *
+     * @since 0.7
+     */
+    public final MatrixSIS getMatrix(MatrixRole role) {
+        final Matrix fallback;
+        final ContextualParameters inverse;
+        synchronized (this) {
+            switch (role) {
+                default:                      throw new AssertionError(role);
+                case NORMALIZATION:           return toMatrixSIS(normalize);
+                case DENORMALIZATION:         return toMatrixSIS(denormalize);
+                case INVERSE_NORMALIZATION:   role = MatrixRole.DENORMALIZATION; fallback = normalize; break;
+                case INVERSE_DENORMALIZATION: role = MatrixRole.NORMALIZATION; fallback = denormalize; break;
+            }
+            inverse = this.inverse;     // Copy the reference while we are inside the synchronized block.
+        }
+        /*
+         * Following must be outside the synchronized block in order to avoid potential deadlock while invoking
+         * inverse.getMatrix(role). We do not cache the matrix here, but 'inverse' is likely to have cached it.
+         */
+        final Matrix m;
+        if (inverse != null) {
+            m = inverse.getMatrix(role);
+        } else try {
+            m = Matrices.inverse(fallback);
+        } catch (NoninvertibleMatrixException e) {
+            throw new IllegalStateException(Errors.format(Errors.Keys.CanNotCompute_1, role), e);
+        }
+        return Matrices.unmodifiable(m);
+    }
+
+    /**
+     * @deprecated Replaced by {@link #getMatrix(MatrixRole)}.
      *
      * @param  norm {@code true} for fetching the <cite>normalization</cite> transform to apply before the kernel,
      *         or {@code false} for the <cite>denormalization</cite> transform to apply after the kernel.
      * @return The matrix for the requested normalization ({@code true}) or denormalization ({@code false}) affine transform.
      */
+    @Deprecated
     public final MatrixSIS getMatrix(final boolean norm) {
-        final Matrix m = norm ? normalize : denormalize;
-        if (!isFrozen) {
-            return (MatrixSIS) m;       // Must be the same instance, not a copy.
-        } else {
-            return Matrices.unmodifiable(m);
-        }
+        return getMatrix(norm ? MatrixRole.NORMALIZATION : MatrixRole.DENORMALIZATION);
     }
 
     /**
@@ -305,7 +448,7 @@ public class ContextualParameters extends Parameters implements Serializable {
      *         Callers can change that matrix directly if they want to apply additional normalization operations.
      * @throws IllegalStateException if this {@code ContextualParameter} has been made unmodifiable.
      */
-    public MatrixSIS normalizeGeographicInputs(final double λ0) {
+    public synchronized MatrixSIS normalizeGeographicInputs(final double λ0) {
         ensureModifiable();
         /*
          * In theory the check for (λ0 != 0) is useless. However Java has a notion of negative zero, and we want
@@ -339,7 +482,7 @@ public class ContextualParameters extends Parameters implements Serializable {
      *         Callers can change that matrix directly if they want to apply additional denormalization operations.
      * @throws IllegalStateException if this {@code ContextualParameter} has been made unmodifiable.
      */
-    public MatrixSIS denormalizeGeographicOutputs(final double λ0) {
+    public synchronized MatrixSIS denormalizeGeographicOutputs(final double λ0) {
         ensureModifiable();
         final DoubleDouble toDegrees = DoubleDouble.createRadiansToDegrees();
         final MatrixSIS denormalize = (MatrixSIS) this.denormalize;  // Must be the same instance, not a copy.
@@ -351,7 +494,7 @@ public class ContextualParameters extends Parameters implements Serializable {
     /**
      * Marks this {@code ContextualParameter} as unmodifiable and creates the
      * <cite>normalize</cite> → {@code kernel} → <cite>denormalize</cite> transforms chain.
-     * This method shall be invoked only after the {@linkplain #getMatrix(boolean) (de)normalization}
+     * This method shall be invoked only after the {@linkplain #getMatrix(MatrixRole) (de)normalization}
      * matrices have been set to their final values.
      *
      * <p>The transforms chain created by this method does not include any step for
@@ -368,52 +511,14 @@ public class ContextualParameters extends Parameters implements Serializable {
      * @throws FactoryException if an error occurred while creating a math transform instance.
      *
      * @see org.apache.sis.referencing.operation.projection.NormalizedProjection#createMapProjection(MathTransformFactory)
+     * @see EllipsoidalToCartesianTransform#createGeodeticConversion(MathTransformFactory, double, double, Unit, boolean)
      */
     @SuppressWarnings("AssignmentToForLoopParameter")
-    public MathTransform completeTransform(final MathTransformFactory factory, final MathTransform kernel)
+    public synchronized MathTransform completeTransform(final MathTransformFactory factory, final MathTransform kernel)
             throws FactoryException
     {
         if (!isFrozen) {
-            isFrozen = true;
-            /*
-             * Sort the parameter values in the same order than the parameter descriptor. This is not essential,
-             * but makes easier to read 'toString()' output by ensuring a consistent order for most projections.
-             * Some WKT parsers other than SIS may also require the parameter values to be listed in that specific
-             * order. We proceed by first copying all parameters in a temporary HashMap:
-             */
-            final Map<ParameterDescriptor<?>, ParameterValue<?>> parameters = new IdentityHashMap<>(values.length);
-            for (ParameterValue<?> p : values) {
-                if (p == null) {
-                    break;  // The first null value in the array indicates the end of sequence.
-                }
-                p = DefaultParameterValue.unmodifiable(p);
-                final ParameterDescriptor<?> desc = p.getDescriptor();
-                if (parameters.put(desc, p) != null) {
-                    // Should never happen unless ParameterValue.descriptor changed (contract violation).
-                    throw new IllegalStateException(Errors.format(Errors.Keys.ElementAlreadyPresent_1, desc.getName()));
-                }
-            }
-            /*
-             * Then, copy all HashMap values back to the 'values' array in the order they are declared in the
-             * descriptor. Implementation note: the iteration termination condition uses the values array, not
-             * the descriptors list, because the former is often shorter than the later. We should never reach
-             * the end of descriptors list before the end of values array because 'descriptors' contains all
-             * 'parameters' keys. This is verified by the 'assert' below.
-             */
-            values = new ParameterValue<?>[parameters.size()];
-            assert descriptor.descriptors().containsAll(parameters.keySet());
-            final Iterator<GeneralParameterDescriptor> it = descriptor.descriptors().iterator();
-            for (int i=0; i < values.length;) {
-                /*
-                 * No need to check for it.hasNext(), since a NoSuchElementException below would be a bug in
-                 * our algorithm (or a concurrent change in the 'descriptor.descriptors()' list, which would
-                 * be a contract violation). See above 'assert'.
-                 */
-                final ParameterValue<?> p = parameters.get(it.next());
-                if (p != null) {
-                    values[i++] = p;
-                }
-            }
+            freeze();
         }
         /*
          * Creates the ConcatenatedTransform, letting the factory returns the cached instance
@@ -425,6 +530,54 @@ public class ContextualParameters extends Parameters implements Serializable {
         if ((m = MathTransforms.getMatrix(n)) != null)   normalize = m;
         if ((m = MathTransforms.getMatrix(d)) != null) denormalize = m;
         return factory.createConcatenatedTransform(factory.createConcatenatedTransform(n, kernel), d);
+    }
+
+    /**
+     * Marks this contextual parameter as unmodifiable.
+     *
+     * @see #ensureModifiable()
+     */
+    private void freeze() {
+        isFrozen = true;
+        /*
+         * Sort the parameter values in the same order than the parameter descriptor. This is not essential,
+         * but makes easier to read 'toString()' output by ensuring a consistent order for most projections.
+         * Some WKT parsers other than SIS may also require the parameter values to be listed in that specific
+         * order. We proceed by first copying all parameters in a temporary HashMap:
+         */
+        final Map<ParameterDescriptor<?>, ParameterValue<?>> parameters = new IdentityHashMap<>(values.length);
+        for (ParameterValue<?> p : values) {
+            if (p == null) {
+                break;  // The first null value in the array indicates the end of sequence.
+            }
+            p = DefaultParameterValue.unmodifiable(p);
+            final ParameterDescriptor<?> desc = p.getDescriptor();
+            if (parameters.put(desc, p) != null) {
+                // Should never happen unless ParameterValue.descriptor changed (contract violation).
+                throw new IllegalStateException(Errors.format(Errors.Keys.ElementAlreadyPresent_1, desc.getName()));
+            }
+        }
+        /*
+         * Then, copy all HashMap values back to the 'values' array in the order they are declared in the
+         * descriptor. Implementation note: the iteration termination condition uses the values array, not
+         * the descriptors list, because the former is often shorter than the later. We should never reach
+         * the end of descriptors list before the end of values array because 'descriptors' contains all
+         * 'parameters' keys. This is verified by the 'assert' below.
+         */
+        values = new ParameterValue<?>[parameters.size()];
+        assert descriptor.descriptors().containsAll(parameters.keySet());
+        final Iterator<GeneralParameterDescriptor> it = descriptor.descriptors().iterator();
+        for (int i=0; i < values.length;) {
+            /*
+             * No need to check for it.hasNext(), since a NoSuchElementException below would be a bug in
+             * our algorithm (or a concurrent change in the 'descriptor.descriptors()' list, which would
+             * be a contract violation). See above 'assert'.
+             */
+            final ParameterValue<?> p = parameters.get(it.next());
+            if (p != null) {
+                values[i++] = p;
+            }
+        }
     }
 
     /**
@@ -443,7 +596,7 @@ public class ContextualParameters extends Parameters implements Serializable {
      * @throws ParameterNotFoundException if there is no parameter of the given name.
      */
     @Override
-    public ParameterValue<?> parameter(final String name) throws ParameterNotFoundException {
+    public synchronized ParameterValue<?> parameter(final String name) throws ParameterNotFoundException {
         final GeneralParameterDescriptor desc = descriptor.descriptor(name);
         if (!(desc instanceof ParameterDescriptor<?>)) {
             throw parameterNotFound(name);
@@ -490,7 +643,7 @@ public class ContextualParameters extends Parameters implements Serializable {
      */
     @Override
     @SuppressWarnings("unchecked")
-    public List<GeneralParameterValue> values() {
+    public synchronized List<GeneralParameterValue> values() {
         int upper = values.length;
         while (upper != 0 && values[upper - 1] == null) {
             upper--;
@@ -534,7 +687,7 @@ public class ContextualParameters extends Parameters implements Serializable {
      * @return A clone of this parameter value group.
      */
     @Override
-    public ContextualParameters clone() {
+    public synchronized ContextualParameters clone() {
         /*
          * Creates a new parameter array with enough room for adding new parameters.
          * Then replace each element by a modifiable clone.
@@ -549,6 +702,7 @@ public class ContextualParameters extends Parameters implements Serializable {
         }
         /*
          * Now proceed to the clone of this ContextualParameters instance.
+         * We do not clone inverseFoo fields since they shall be null for modifiable instances.
          */
         final ContextualParameters clone = (ContextualParameters) super.clone();
         clone.values      = param;
@@ -562,7 +716,7 @@ public class ContextualParameters extends Parameters implements Serializable {
      * implementation-dependent and may change in any future version.
      */
     @Override
-    public int hashCode() {
+    public synchronized int hashCode() {
         return (normalize.hashCode() + 31*denormalize.hashCode()) ^ Arrays.hashCode(values) ^ (int) serialVersionUID;
     }
 
@@ -573,7 +727,7 @@ public class ContextualParameters extends Parameters implements Serializable {
      * @return {@code true} if the given object is equal to this one.
      */
     @Override
-    public boolean equals(final Object object) {
+    public synchronized boolean equals(final Object object) {
         if (object != null && object.getClass() == getClass()) {
             final ContextualParameters that = (ContextualParameters) object;
             return Objects.equals(descriptor,  that.descriptor)  &&
@@ -688,17 +842,17 @@ public class ContextualParameters extends Parameters implements Serializable {
          * in order to apply a change of axis order). We need to separate the "user-defined"
          * step from the "normalize" step.
          */
-        Matrix userDefined = inverse ? denormalize : normalize;
-        if (!inverse) try {
-            userDefined = Matrices.inverse(userDefined);
-        } catch (NoninvertibleMatrixException e) {
+        MatrixSIS userDefined;
+        try {
+            userDefined = getMatrix(inverse ? MatrixRole.DENORMALIZATION : MatrixRole.INVERSE_NORMALIZATION);
+        } catch (IllegalStateException e) {
             // Should never happen. But if it does, we abandon the attempt to change
             // the list elements and will format the objects in their "raw" format.
             unexpectedException(e);
             return index;
         }
         if (hasBefore) {
-            userDefined = Matrices.multiply(userDefined, before);
+            userDefined = userDefined.multiply(before);
         }
         /*
          * At this point "userDefined" is the affine transform to show to user instead of the
@@ -734,10 +888,9 @@ public class ContextualParameters extends Parameters implements Serializable {
          * Note that if this operation fails, we will cancel everything we would have done
          * in this method (i.e. we do not touch the transforms list at all).
          */
-        userDefined = inverse ? normalize : denormalize;
         if (!inverse) try {
-            userDefined = Matrices.inverse(userDefined);
-        } catch (NoninvertibleMatrixException e) {
+            userDefined = getMatrix(inverse ? MatrixRole.NORMALIZATION : MatrixRole.INVERSE_DENORMALIZATION);
+        } catch (IllegalStateException e) {
             unexpectedException(e);
             return index;
         }
@@ -808,7 +961,7 @@ public class ContextualParameters extends Parameters implements Serializable {
      * because this error should occurs only in the context of WKT formatting of a concatenated
      * transform.</p>
      */
-    private static void unexpectedException(final NoninvertibleMatrixException e) {
-        Logging.unexpectedException(Logging.getLogger(Loggers.WKT), ConcatenatedTransform.class, "formatTo", e);
+    private static void unexpectedException(final IllegalStateException e) {
+        Logging.unexpectedException(Logging.getLogger(Loggers.WKT), ConcatenatedTransform.class, "formatTo", e.getCause());
     }
 }

@@ -46,7 +46,7 @@ public final strictfp class LongitudeRotationTest extends TestCase {
     public void testCreateMathTransform() {
         final LongitudeRotation provider = new LongitudeRotation();
         ParameterValueGroup p = provider.getParameters().createValue();
-        p.parameter(LongitudeRotation.NAME).setValue(2.5969213, NonSI.GRADE);   // Paris meridian
+        p.parameter("Longitude offset").setValue(2.5969213, NonSI.GRADE);   // Paris meridian
         final MathTransform mt = provider.createMathTransform(null, p);
         /*
          * Verify the full matrix. Note that the longitude offset is expected to be in degrees.
@@ -69,7 +69,7 @@ public final strictfp class LongitudeRotationTest extends TestCase {
     public void testWKT() {
         final LongitudeRotation provider = new LongitudeRotation();
         final ParameterValueGroup p = provider.getParameters().createValue();
-        p.parameter(LongitudeRotation.NAME).setValue(2.5969213, NonSI.GRADE);
+        p.parameter("Longitude offset").setValue(2.5969213, NonSI.GRADE);
         assertWktEquals(
                 "PARAM_MT[“Affine parametric transformation”,\n" +
                 "  PARAMETER[“A2”, 2.33722917, ID[“EPSG”, 8625]]]", provider.createMathTransform(null, p));

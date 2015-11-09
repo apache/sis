@@ -66,7 +66,7 @@ public final strictfp class MercatorTest extends MapProjectionTestCase {
 
     /**
      * Tests the WKT formatting of {@link NormalizedProjection}. For the Mercator projection, we expect only
-     * the ellipsoid excentricity. We expect nothing else because all other parameters are used
+     * the ellipsoid eccentricity. We expect nothing else because all other parameters are used
      * by the (de)normalization affine transforms instead than the {@link Mercator} class itself.
      *
      * @see LambertConicConformalTest#testNormalizedWKT()
@@ -76,7 +76,7 @@ public final strictfp class MercatorTest extends MapProjectionTestCase {
         createNormalizedProjection(true);
         assertWktEquals(
                 "PARAM_MT[“Mercator”,\n" +
-                "  PARAMETER[“excentricity”, 0.0818191908426215]]");
+                "  PARAMETER[“eccentricity”, 0.0818191908426215]]");
     }
 
     /**
