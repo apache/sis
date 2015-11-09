@@ -307,7 +307,7 @@ public final strictfp class MolodenskyTransformTest extends MathTransformTestCas
                 "    Parameter[“Semi-major axis length difference”, 251.0, Unit[“metre”, 1, Id[“EPSG”, 9001]]],\n" +
                 "    Parameter[“Flattening difference”, 1.4192702255886284E-5, Unit[“unity”, 1, Id[“EPSG”, 9201]]],\n" +
                 "    Parameter[“src_semi_major”, 6378137.0, Unit[“metre”, 1, Id[“EPSG”, 9001]]],\n" +
-                "    Parameter[“excentricity”, 0.0818191908426215],\n" +
+                "    Parameter[“eccentricity”, 0.0818191908426215],\n" +
                 "    Parameter[“abridged”, TRUE],\n" +
                 "    Parameter[“dim”, 3]],\n" +
                 "  Param_MT[“Affine”,\n" +

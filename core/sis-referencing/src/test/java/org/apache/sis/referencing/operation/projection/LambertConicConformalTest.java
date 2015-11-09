@@ -91,10 +91,10 @@ public final strictfp class LambertConicConformalTest extends MapProjectionTestC
 
     /**
      * Tests the WKT formatting of {@link NormalizedProjection}. For the Lambert Conformal projection, we expect
-     * the internal {@code n} parameter in addition to the excentricity.
+     * the internal {@code n} parameter in addition to the eccentricity.
      *
      * <div class="section">Note on accuracy</div>
-     * The value of the excentricity parameter should be fully accurate because it is calculated using only the
+     * The value of the eccentricity parameter should be fully accurate because it is calculated using only the
      * {@link Math#sqrt(double)} function (ignoring basic algebraic operations) which, according javadoc, must
      * give the result closest to the true mathematical result. But the functions involved in the calculation of
      * <var>n</var> do not have such strong guarantees. So we use a regular expression in this test for ignoring
@@ -105,7 +105,7 @@ public final strictfp class LambertConicConformalTest extends MapProjectionTestC
         createNormalizedProjection(true, 40);
         assertWktEqualsRegex("(?m)\\Q" +
                 "PARAM_MT[“Lambert conic conformal”,\n" +
-                "  PARAMETER[“excentricity”, 0.0818191908426215],\n" +
+                "  PARAMETER[“eccentricity”, 0.0818191908426215],\n" +
                 "  PARAMETER[“n”, 0.64278760968653\\E\\d*\\]\\]");  // 0.6427876096865393 in the original test.
     }
 
@@ -138,7 +138,7 @@ public final strictfp class LambertConicConformalTest extends MapProjectionTestC
         assertEquals ("Inverse -∞", +PI/2, inverseTransform(-INF), NORMALIZED_TOLERANCE);
 
         // Like the north case, but with sign inversed.
-        createNormalizedProjection(((LambertConicConformal) transform).excentricity != 0, -40);
+        createNormalizedProjection(((LambertConicConformal) transform).eccentricity != 0, -40);
         validate();
 
         assertEquals ("Not a number",     NaN, transform(NaN),            NORMALIZED_TOLERANCE);

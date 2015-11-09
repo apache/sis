@@ -152,14 +152,14 @@ public class MolodenskyTransform extends AbstractMathTransform implements Serial
     private final double semiMajor;
 
     /**
-     * The square of excentricity of the source ellipsoid.
+     * The square of eccentricity of the source ellipsoid.
      * This can be computed by ℯ² = (a²-b²)/a² where
      * <var>a</var> is the <cite>semi-major</cite> axis length and
      * <var>b</var> is the <cite>semi-minor</cite> axis length.
      *
      * @see DefaultEllipsoid#getEccentricitySquared()
      */
-    private final double excentricitySquared;
+    private final double eccentricitySquared;
 
     /**
      * Difference in the semi-major axes of the target and source ellipsoids: {@code Δa = target a - source a}.
@@ -252,7 +252,7 @@ public class MolodenskyTransform extends AbstractMathTransform implements Serial
 
         final double semiMinor = src.getSemiMinorAxis();
         final double Δf = src.flatteningDifference(target);
-        excentricitySquared = src.getEccentricitySquared();
+        eccentricitySquared = src.getEccentricitySquared();
         Δfmod = isAbridged ? (semiMajor * Δf) + (semiMajor - semiMinor) * (Δa / semiMajor)
                            : (semiMinor * Δf);
         /*
@@ -364,7 +364,7 @@ public class MolodenskyTransform extends AbstractMathTransform implements Serial
 
     /**
      * Returns a copy of internal parameter values of this {@code MolodenskyTransform}.
-     * The returned group contains parameter values for the excentricity and the shift among others.
+     * The returned group contains parameter values for the eccentricity and the shift among others.
      *
      * <div class="note"><b>Note:</b>
      * this method is mostly for {@linkplain org.apache.sis.io.wkt.Convention#INTERNAL debugging purposes}
@@ -381,14 +381,14 @@ public class MolodenskyTransform extends AbstractMathTransform implements Serial
         final Unit<?> unit = getLinearUnit();
         setEPSG(pg, unit, context.doubleValue(Molodensky.FLATTENING_DIFFERENCE));
         pg.getOrCreate(Molodensky.SRC_SEMI_MAJOR).setValue(semiMajor, unit);
-        pg.getOrCreate(MapProjection.EXCENTRICITY).setValue(sqrt(excentricitySquared));
+        pg.getOrCreate(MapProjection.ECCENTRICITY).setValue(sqrt(eccentricitySquared));
         pg.parameter("abridged").setValue(isAbridged);
         return pg;
     }
 
     /**
      * Returns a description of the internal parameters of this {@code MolodenskyTransform} transform.
-     * The returned group contains parameter descriptors for the number of dimensions and the excentricity.
+     * The returned group contains parameter descriptors for the number of dimensions and the eccentricity.
      *
      * @return A description of the internal parameters.
      */
@@ -517,17 +517,17 @@ public class MolodenskyTransform extends AbstractMathTransform implements Serial
         final double sinφ  = sin(φ);
         final double cosφ  = cos(φ);
         final double sin2φ = sinφ * sinφ;
-        final double ν2den = 1 - excentricitySquared*sin2φ;                 // Square of the denominator of ν
+        final double ν2den = 1 - eccentricitySquared*sin2φ;                 // Square of the denominator of ν
         final double νden  = sqrt(ν2den);                                   // Denominator of ν
         final double ρden  = ν2den * νden;                                  // Denominator of ρ
-        double ρ = semiMajor * (1 - excentricitySquared) / ρden;            // Other notation: Rm = ρ
+        double ρ = semiMajor * (1 - eccentricitySquared) / ρden;            // Other notation: Rm = ρ
         double ν = semiMajor / νden;                                        // Other notation: Rn = ν
         double t = Δfmod * 2;                                               // A term in the calculation of Δφ
         if (!isAbridged) {
             ρ += h;
             ν += h;
             t = t*(0.5/νden + 0.5/ρden)                 // = Δf⋅[ν⋅(b/a) + ρ⋅(a/b)]     (without the +h in ν and ρ)
-                    + Δa*excentricitySquared/νden;      // = Δa⋅[ℯ²⋅ν/a]
+                    + Δa*eccentricitySquared/νden;      // = Δa⋅[ℯ²⋅ν/a]
         }
         final double spcλ = tY*sinλ + tX*cosλ;                      // "spc" stands for "sin plus cos"
         final double cmsλ = tY*cosλ - tX*sinλ;                      // "cms" stands for "cos minus sin"
@@ -557,8 +557,8 @@ public class MolodenskyTransform extends AbstractMathTransform implements Serial
          */
         final Matrix matrix   = Matrices.createDiagonal(getTargetDimensions(), getSourceDimensions());
         final double sinφcosφ = sinφ * cosφ;
-        final double dν       = excentricitySquared*sinφcosφ / ν2den;
-        final double dν3ρ     = 3*dν * (1 - excentricitySquared) / ν2den;
+        final double dν       = eccentricitySquared*sinφcosφ / ν2den;
+        final double dν3ρ     = 3*dν * (1 - eccentricitySquared) / ν2den;
         //    double dXdλ     = spcλ;
         final double dYdλ     = cmsλ * sinφ;
         final double dZdλ     = cmsλ * cosφ;
@@ -584,8 +584,8 @@ public class MolodenskyTransform extends AbstractMathTransform implements Serial
              */
             final double dρ = dν3ρ * νden * (semiMajor / ρ);    // Reminder: that ρ contains a h term.
             dXdφ -= dν * cmsλ * semiMajor / (νden*ν);           // Reminder: that ν contains a h term.
-            dYdφ -= dρ * dZdφ - (Δfmod*(dν*2/(1 - excentricitySquared) + (1 + 1/ν2den)*(dν - dρ))
-                                  + Δa*(dν + 1)*excentricitySquared) * sinφcosφ / νden;
+            dYdφ -= dρ * dZdφ - (Δfmod*(dν*2/(1 - eccentricitySquared) + (1 + 1/ν2den)*(dν - dρ))
+                                  + Δa*(dν + 1)*eccentricitySquared) * sinφcosφ / νden;
             if (isSource3D) {
                 final double dXdh =  cmsλ / ν;
                 final double dYdh = -cmsφ / ρ;
@@ -663,15 +663,15 @@ public class MolodenskyTransform extends AbstractMathTransform implements Serial
             final double sinφ  = sin(φ);
             final double cosφ  = cos(φ);
             final double sin2φ = sinφ * sinφ;
-                  double ρden  = 1 - excentricitySquared * sin2φ;               // Denominator of ρ (completed later)
+                  double ρden  = 1 - eccentricitySquared * sin2φ;               // Denominator of ρ (completed later)
             final double νden  = sqrt(ρden);                                    // Denominator of ν
-            double ρ = semiMajor * (1 - excentricitySquared) / (ρden *= νden);  // (also complete calculation of ρden)
+            double ρ = semiMajor * (1 - eccentricitySquared) / (ρden *= νden);  // (also complete calculation of ρden)
             double ν = semiMajor / νden;                                        // Other notation: Rm = ρ and Rn = ν
             double t = Δfmod * 2;                                               // A term in the calculation of Δφ
             if (!isAbridged) {
                 ρ += h;
                 ν += h;
-                t = t*(0.5/νden + 0.5/ρden) + Δa*excentricitySquared/νden;
+                t = t*(0.5/νden + 0.5/ρden) + Δa*eccentricitySquared/νden;
             }
             final double spcλ = tY*sinλ + tX*cosλ;
             dstPts[dstOff++] = λ + ANGULAR_SCALE * (tY*cosλ - tX*sinλ) / (ν*cosφ);
@@ -755,7 +755,7 @@ public class MolodenskyTransform extends AbstractMathTransform implements Serial
                 && Numerics.equals(Δa,                  that.Δa)
                 && Numerics.equals(Δfmod,               that.Δfmod)
                 && Numerics.equals(semiMajor,           that.semiMajor)
-                && Numerics.equals(excentricitySquared, that.excentricitySquared);
+                && Numerics.equals(eccentricitySquared, that.eccentricitySquared);
         }
         return false;
     }

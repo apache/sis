@@ -407,7 +407,7 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
      * @return ℯ, the eccentricity of this ellipsoid.
      */
     public double getEccentricity() {
-        final DoubleDouble e = excentricitySquared();
+        final DoubleDouble e = eccentricitySquared();
         e.sqrt();
         return e.value;
     }
@@ -425,7 +425,7 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
      * @since 0.7
      */
     public double getEccentricitySquared() {
-        return excentricitySquared().value;
+        return eccentricitySquared().value;
     }
 
     /**
@@ -436,13 +436,13 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
      * second defining parameter.  But even if the second defining parameter of this ellipsoid was rather the
      * semi-minor axis, the fact that we use double-double arithmetic should give the same result anyway.</div>
      */
-    private DoubleDouble excentricitySquared() {
+    private DoubleDouble eccentricitySquared() {
         final DoubleDouble f = flattening(this);
-        final DoubleDouble excentricitySquared = new DoubleDouble(f);
-        excentricitySquared.multiply(2, 0);
+        final DoubleDouble eccentricitySquared = new DoubleDouble(f);
+        eccentricitySquared.multiply(2, 0);
         f.square();
-        excentricitySquared.subtract(f);
-        return excentricitySquared;
+        eccentricitySquared.subtract(f);
+        return eccentricitySquared;
     }
 
     /**

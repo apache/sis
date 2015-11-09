@@ -114,7 +114,7 @@ public final class Molodensky extends GeocentricAffineBetweenGeographic {
     /**
      * Creates a descriptor for the internal parameters of {@link MolodenskyTransform}.
      * This is identical to the standard parameters except that the last 3 OGC parameters
-     * are replaced by the excentricity.
+     * are replaced by the eccentricity.
      *
      * @return Internal parameter descriptor.
      */
@@ -130,7 +130,7 @@ public final class Molodensky extends GeocentricAffineBetweenGeographic {
                              AXIS_LENGTH_DIFFERENCE,
                              FLATTENING_DIFFERENCE,
                              SRC_SEMI_MAJOR,
-                             MapProjection.EXCENTRICITY,
+                             MapProjection.ECCENTRICITY,
                              abridged);
     }
 

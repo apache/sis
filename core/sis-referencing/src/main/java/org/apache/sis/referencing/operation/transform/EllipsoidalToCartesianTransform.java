@@ -54,7 +54,7 @@ import org.apache.sis.util.resources.Errors;
 import static java.lang.Math.*;
 import static org.apache.sis.internal.referencing.provider.MapProjection.SEMI_MAJOR;
 import static org.apache.sis.internal.referencing.provider.MapProjection.SEMI_MINOR;
-import static org.apache.sis.internal.referencing.provider.MapProjection.EXCENTRICITY;
+import static org.apache.sis.internal.referencing.provider.MapProjection.ECCENTRICITY;
 import static org.apache.sis.internal.referencing.provider.GeocentricAffineBetweenGeographic.DIMENSION;
 
 
@@ -107,26 +107,26 @@ public class EllipsoidalToCartesianTransform extends AbstractMathTransform imple
     private static ParameterDescriptorGroup DESCRIPTOR;
 
     /**
-     * Minimal excentricity value before to consider that the approximated φ value should be made more accurate
-     * by the use of an iterative method. The iterative method is not needed for a planet of Earth excentricity,
-     * but become useful for planets of higher excentricity.
+     * Minimal eccentricity value before to consider that the approximated φ value should be made more accurate
+     * by the use of an iterative method. The iterative method is not needed for a planet of Earth eccentricity,
+     * but become useful for planets of higher eccentricity.
      *
-     * <p>Actually the need for iteration is not just a matter of excentricity. It is also a matter of
-     * <var>h</var> values. But empirical tests suggest that with Earth's excentricity (about 0.082),
+     * <p>Actually the need for iteration is not just a matter of eccentricity. It is also a matter of
+     * <var>h</var> values. But empirical tests suggest that with Earth's eccentricity (about 0.082),
      * the limit for <var>h</var> is quite high (close to 2000 km for a point at 30°N). This limit is
-     * reduced to about 200 km for an excentricity of 0.16. It may be possible to find a formula for
+     * reduced to about 200 km for an eccentricity of 0.16. It may be possible to find a formula for
      * the limit of <var>h</var> as a function of ℯ and φ, but this has not been explored yet.</p>
      *
-     * @see org.apache.sis.referencing.operation.projection.ConformalProjection#EXCENTRICITY_THRESHOLD
+     * @see org.apache.sis.referencing.operation.projection.ConformalProjection#ECCENTRICITY_THRESHOLD
      */
-    private static final double EXCENTRICITY_THRESHOLD = 0.16;
+    private static final double ECCENTRICITY_THRESHOLD = 0.16;
 
     /**
-     * The square of excentricity: ℯ² = (a²-b²)/a² where
+     * The square of eccentricity: ℯ² = (a²-b²)/a² where
      * <var>a</var> is the <cite>semi-major</cite> axis length and
      * <var>b</var> is the <cite>semi-minor</cite> axis length.
      */
-    protected final double excentricitySquared;
+    protected final double eccentricitySquared;
 
     /**
      * The b/a ratio where
@@ -136,7 +136,7 @@ public class EllipsoidalToCartesianTransform extends AbstractMathTransform imple
      * (because of the work performed by the normalization matrices), we just drop <var>a</var>
      * in the formulas - so this field can be written as just <var>b</var>.
      *
-     * <p>This value is related to {@link #excentricitySquared} and to the ε value used in EPSG guide
+     * <p>This value is related to {@link #eccentricitySquared} and to the ε value used in EPSG guide
      * by (assuming a=1):</p>
      * <ul>
      *   <li>ℯ² = 1 - b²</li>
@@ -145,14 +145,14 @@ public class EllipsoidalToCartesianTransform extends AbstractMathTransform imple
      *
      * <p><strong>Consider this field as final!</strong>
      * It is not final only for the purpose of {@link #readObject(ObjectInputStream)}.
-     * This field is recomputed from {@link #excentricitySquared} on deserialization.</p>
+     * This field is recomputed from {@link #eccentricitySquared} on deserialization.</p>
      */
     private transient double b;
 
     /**
      * Whether calculation of φ should use an iterative method after the first φ approximation.
-     * The current implementation sets this field to {@code true} at construction time when the excentricity value
-     * is greater than or equals to {@link #EXCENTRICITY_THRESHOLD}, but this policy may change in any future SIS
+     * The current implementation sets this field to {@code true} at construction time when the eccentricity value
+     * is greater than or equals to {@link #ECCENTRICITY_THRESHOLD}, but this policy may change in any future SIS
      * version (for example we do not take the <var>h</var> values in account yet).
      *
      * <p><strong>Consider this field as final!</strong>
@@ -239,8 +239,8 @@ public class EllipsoidalToCartesianTransform extends AbstractMathTransform imple
         ArgumentChecks.ensureStrictlyPositive("semiMajor", semiMajor);
         ArgumentChecks.ensureStrictlyPositive("semiMinor", semiMinor);
         b = semiMinor / semiMajor;
-        excentricitySquared = 1 - (b * b);
-        useIterations = (excentricitySquared >= EXCENTRICITY_THRESHOLD * EXCENTRICITY_THRESHOLD);
+        eccentricitySquared = 1 - (b * b);
+        useIterations = (eccentricitySquared >= ECCENTRICITY_THRESHOLD * ECCENTRICITY_THRESHOLD);
         this.withHeight = withHeight;
         /*
          * Copy parameters to the ContextualParameter. Those parameters are not used directly
@@ -277,8 +277,8 @@ public class EllipsoidalToCartesianTransform extends AbstractMathTransform imple
      */
     private void readObject(final ObjectInputStream in) throws IOException, ClassNotFoundException {
         in.defaultReadObject();
-        useIterations = (excentricitySquared >= EXCENTRICITY_THRESHOLD * EXCENTRICITY_THRESHOLD);
-        b = sqrt(1 - excentricitySquared);
+        useIterations = (eccentricitySquared >= ECCENTRICITY_THRESHOLD * ECCENTRICITY_THRESHOLD);
+        b = sqrt(1 - eccentricitySquared);
     }
 
     /**
@@ -333,7 +333,7 @@ public class EllipsoidalToCartesianTransform extends AbstractMathTransform imple
 
     /**
      * Returns a copy of internal parameter values of this {@code EllipsoidalToCartesianTransform} transform.
-     * The returned group contains parameter values for the number of dimensions and the excentricity.
+     * The returned group contains parameter values for the number of dimensions and the eccentricity.
      *
      * <div class="note"><b>Note:</b>
      * this method is mostly for {@linkplain org.apache.sis.io.wkt.Convention#INTERNAL debugging purposes}
@@ -347,14 +347,14 @@ public class EllipsoidalToCartesianTransform extends AbstractMathTransform imple
     @Override
     public ParameterValueGroup getParameterValues() {
         final Parameters pg = Parameters.castOrWrap(getParameterDescriptors().createValue());
-        pg.getOrCreate(EXCENTRICITY).setValue(sqrt(excentricitySquared));
+        pg.getOrCreate(ECCENTRICITY).setValue(sqrt(eccentricitySquared));
         pg.getOrCreate(DIMENSION).setValue(getSourceDimensions());
         return pg;
     }
 
     /**
      * Returns a description of the internal parameters of this {@code EllipsoidalToCartesianTransform} transform.
-     * The returned group contains parameter descriptors for the number of dimensions and the excentricity.
+     * The returned group contains parameter descriptors for the number of dimensions and the eccentricity.
      *
      * @return A description of the internal parameters.
      */
@@ -364,7 +364,7 @@ public class EllipsoidalToCartesianTransform extends AbstractMathTransform imple
         synchronized (EllipsoidalToCartesianTransform.class) {
             if (DESCRIPTOR == null) {
                 DESCRIPTOR = new ParameterBuilder().setCodeSpace(Citations.SIS, Constants.SIS)
-                        .addName("Ellipsoidal to Cartesian").createGroup(1, 1, DIMENSION, EXCENTRICITY);
+                        .addName("Ellipsoidal to Cartesian").createGroup(1, 1, DIMENSION, ECCENTRICITY);
             }
             return DESCRIPTOR;
         }
@@ -451,10 +451,10 @@ public class EllipsoidalToCartesianTransform extends AbstractMathTransform imple
         final double sinλ = sin(λ);
         final double cosφ = cos(φ);
         final double sinφ = sin(φ);
-        final double ν2   = 1 / (1 - excentricitySquared*(sinφ*sinφ));   // Square of ν (see below)
+        final double ν2   = 1 / (1 - eccentricitySquared*(sinφ*sinφ));   // Square of ν (see below)
         final double ν    = sqrt(ν2);                                    // Prime vertical radius of curvature at latitude φ
         final double r    = ν + h;
-        final double νℯ   = ν * (1 - excentricitySquared);
+        final double νℯ   = ν * (1 - eccentricitySquared);
         if (dstPts != null) {
             final double rcosφ = r * cosφ;
             dstPts[dstOff  ] = rcosφ  * cosλ;                            // X: Toward prime meridian
@@ -523,11 +523,11 @@ public class EllipsoidalToCartesianTransform extends AbstractMathTransform imple
             final double φ     = srcPts[srcOff++];                                 // Latitude
             final double h     = withHeight ? srcPts[srcOff++] : 0;                // Height above the ellipsoid
             final double sinφ  = sin(φ);
-            final double ν     = 1/sqrt(1 - excentricitySquared * (sinφ*sinφ));    // Prime vertical radius of curvature at latitude φ
+            final double ν     = 1/sqrt(1 - eccentricitySquared * (sinφ*sinφ));    // Prime vertical radius of curvature at latitude φ
             final double rcosφ = (ν + h) * cos(φ);
             dstPts[dstOff++]   = rcosφ * cos(λ);                                   // X: Toward prime meridian
             dstPts[dstOff++]   = rcosφ * sin(λ);                                   // Y: Toward 90° east
-            dstPts[dstOff++]   = (ν * (1 - excentricitySquared) + h) * sinφ;       // Z: Toward north pole
+            dstPts[dstOff++]   = (ν * (1 - eccentricitySquared) + h) * sinφ;       // Z: Toward north pole
             srcOff += srcInc;
             dstOff += dstInc;
         }
@@ -594,11 +594,11 @@ next:   while (--numPts >= 0) {
             final double tanq  = Z / (p*b);
             final double cos2q = 1/(1 + tanq*tanq);
             final double sin2q = 1 - cos2q;
-            double φ = atan((Z + copySign(excentricitySquared * sin2q*sqrt(sin2q), tanq) / b) /
-                            (p -          excentricitySquared * cos2q*sqrt(cos2q)));
+            double φ = atan((Z + copySign(eccentricitySquared * sin2q*sqrt(sin2q), tanq) / b) /
+                            (p -          eccentricitySquared * cos2q*sqrt(cos2q)));
             /*
              * The above is an approximation of φ. Usually we are done with a good approximation for
-             * a planet of the excentricity of Earth. Code below is the one that will be executed in
+             * a planet of the eccentricity of Earth. Code below is the one that will be executed in
              * the vast majority of cases.
              */
             if (!useIterations) {
@@ -606,20 +606,20 @@ next:   while (--numPts >= 0) {
                 dstPts[dstOff++] = φ;
                 if (withHeight) {
                     final double sinφ = sin(φ);
-                    final double ν = 1/sqrt(1 - excentricitySquared * (sinφ*sinφ));
+                    final double ν = 1/sqrt(1 - eccentricitySquared * (sinφ*sinφ));
                     dstPts[dstOff++] = p/cos(φ) - ν;
                 }
                 srcOff += srcInc;
                 dstOff += dstInc;
             } else {
                 /*
-                 * If this code is used on a planet with high excentricity,
+                 * If this code is used on a planet with high eccentricity,
                  * the φ value may need to be improved by an iterative method.
                  */
                 for (int it=0; it<Formulas.MAXIMUM_ITERATIONS; it++) {
                     final double sinφ = sin(φ);
-                    final double ν = 1/sqrt(1 - excentricitySquared * (sinφ*sinφ));
-                    final double Δφ = φ - (φ = atan((Z + excentricitySquared * ν * sinφ) / p));
+                    final double ν = 1/sqrt(1 - eccentricitySquared * (sinφ*sinφ));
+                    final double Δφ = φ - (φ = atan((Z + eccentricitySquared * ν * sinφ) / p));
                     if (!(abs(Δφ) >= Formulas.ANGULAR_TOLERANCE * (PI/180) * 0.25)) {   // Use ! for accepting NaN.
                         dstPts[dstOff++] = atan2(Y, X);
                         dstPts[dstOff++] = φ;

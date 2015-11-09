@@ -42,7 +42,7 @@ import static org.apache.sis.internal.util.DoubleDouble.verbatim;
  *
  * <ul>
  *   <li>To convert degrees to radians, than back to degrees and find the original value.</li>
- *   <li>To convert axis length (optionally with flattening factor) to excentricity, then back
+ *   <li>To convert axis length (optionally with flattening factor) to eccentricity, then back
  *       to axis length and find the original value.</li>
  * </ul>
  *
@@ -75,8 +75,8 @@ final class Initializer {
     final Parameters parameters;
 
     /**
-     * The square of excentricity: ℯ² = (a²-b²)/a² where
-     * <var>ℯ</var> is the {@linkplain #excentricity excentricity},
+     * The square of eccentricity: ℯ² = (a²-b²)/a² where
+     * <var>ℯ</var> is the {@linkplain #eccentricity eccentricity},
      * <var>a</var> is the <cite>semi-major</cite> axis length and
      * <var>b</var> is the <cite>semi-minor</cite> axis length.
      *
@@ -85,7 +85,7 @@ final class Initializer {
      * {@code double} parameter value without rounding errors. This wish usually do not apply to other internal
      * {@link NormalizedProjection} parameters.</p>
      */
-    final DoubleDouble excentricitySquared;
+    final DoubleDouble eccentricitySquared;
 
     /**
      * Map projection variant. This is a convenience field left at
@@ -130,7 +130,7 @@ final class Initializer {
         final double fn = getAndStore(roles.get(ParameterRole.FALSE_NORTHING))
                         - getAndStore(roles.get(ParameterRole.FALSE_SOUTHING));
 
-        excentricitySquared = new DoubleDouble();
+        eccentricitySquared = new DoubleDouble();
         DoubleDouble k = new DoubleDouble(a);  // The value by which to multiply all results of normalized projection.
         if (a != b) {
             /*
@@ -161,16 +161,16 @@ final class Initializer {
             if (isIvfDefinitive) {
                 final DoubleDouble f = new DoubleDouble(parameters.parameter(Constants.INVERSE_FLATTENING).doubleValue());
                 f.inverseDivide(1,0);
-                excentricitySquared.setFrom(f);
-                excentricitySquared.multiply(2,0);
+                eccentricitySquared.setFrom(f);
+                eccentricitySquared.multiply(2,0);
                 f.square();
-                excentricitySquared.subtract(f);
+                eccentricitySquared.subtract(f);
             } else {
                 final DoubleDouble rs = new DoubleDouble(b);
                 rs.divide(k);    // rs = b/a
                 rs.square();
-                excentricitySquared.value = 1;
-                excentricitySquared.subtract(rs);
+                eccentricitySquared.value = 1;
+                eccentricitySquared.subtract(rs);
             }
             final ParameterDescriptor<? extends Number> radius = roles.get(ParameterRole.LATITUDE_OF_CONFORMAL_SPHERE_RADIUS);
             if (radius != null) {
@@ -188,7 +188,7 @@ final class Initializer {
                  * Equivalent Java code:
                  *
                  *     final double sinφ = sin(toRadians(parameters.doubleValue(radius)));
-                 *     k = b / (1 - excentricitySquared * (sinφ*sinφ));
+                 *     k = b / (1 - eccentricitySquared * (sinφ*sinφ));
                  */
                 k = rν2(sin(toRadians(parameters.doubleValue(radius))));
                 k.inverseDivide(b, 0);
@@ -255,11 +255,11 @@ final class Initializer {
 
     /**
      * Returns {@code b/a} where {@code a} is the semi-major axis length and {@code b} the semi-minor axis length.
-     * We retrieve this value from the excentricity with {@code b/a = sqrt(1-ℯ²)}.
+     * We retrieve this value from the eccentricity with {@code b/a = sqrt(1-ℯ²)}.
      */
     final DoubleDouble axisLengthRatio() {
         final DoubleDouble b = new DoubleDouble(1,0);
-        b.subtract(excentricitySquared);
+        b.subtract(eccentricitySquared);
         b.sqrt();
         return b;
     }
@@ -291,11 +291,11 @@ final class Initializer {
      */
     private DoubleDouble rν2(final double sinφ) {
         if (DoubleDouble.DISABLED) {
-            return verbatim(1 - excentricitySquared.value * (sinφ*sinφ));
+            return verbatim(1 - eccentricitySquared.value * (sinφ*sinφ));
         }
         final DoubleDouble t = verbatim(sinφ);
         t.square();
-        t.multiply(excentricitySquared);
+        t.multiply(eccentricitySquared);
 
         // Compute 1 - ℯ²⋅sin²φ.  Since  ℯ²⋅sin²φ  may be small,
         // this is where double-double arithmetic has more value.
@@ -320,7 +320,7 @@ final class Initializer {
      */
     final double radiusOfConformalSphere(final double sinφ) {
         final DoubleDouble Rc = verbatim(1);
-        Rc.subtract(excentricitySquared);       //  1 - ℯ²
+        Rc.subtract(eccentricitySquared);       //  1 - ℯ²
         Rc.sqrt();                              //  √(1 - ℯ²)
         Rc.divide(rν2(sinφ));                   //  √(1 - ℯ²) / (1 - ℯ²sin²φ)
         return Rc.value;

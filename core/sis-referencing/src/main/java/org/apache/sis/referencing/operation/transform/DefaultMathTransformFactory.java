@@ -555,7 +555,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
              * NormalizedProjection class (our base class for all map projection implementations)
              * to known that the ellipsoid definitive parameter is the inverse flattening factor
              * instead than the semi-major axis length. It makes a small difference in the accuracy
-             * of the excentricity parameter.
+             * of the eccentricity parameter.
              */
             if (isIvfDefinitive) try {
                 parameters.parameter(Constants.INVERSE_FLATTENING).setValue(ellipsoid.getInverseFlattening());

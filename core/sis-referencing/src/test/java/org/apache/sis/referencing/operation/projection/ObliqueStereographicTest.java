@@ -93,8 +93,8 @@ public final strictfp class ObliqueStereographicTest extends MapProjectionTestCa
         /*  After kernel */     R   = 6382644.571,      // Radius of conformal sphere (m)
                                 a   = 6377397.155,      // Semi-major axis length (m)
                                 ivf = 299.15281,        // Inverse flattening factor
-                                e   = 0.08169683,       // Excentricity
-        /* Before kernel */     n   = 1.000475857,      // Coefficient computed from excentricity and φ₀.
+                                e   = 0.08169683,       // Eccentricity
+        /* Before kernel */     n   = 1.000475857,      // Coefficient computed from eccentricity and φ₀.
         /*  After kernel */     k0  = 0.9999079,        // Scale factor
         /*  After kernel */     FE  = 155000.00,        // False Easting (m)
         /*  After kernel */     FN  = 463000.00;        // False Northing (m)
