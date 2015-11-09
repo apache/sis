@@ -225,11 +225,26 @@ public final strictfp class MolodenskyTransformTest extends MathTransformTestCas
      * @throws FactoryException if an error occurred while creating a transform step.
      * @throws TransformException if a transformation failed.
      */
-//  @Test
+    @Test
     @DependsOnMethod("testProvider")
-    @org.junit.Ignore("Need to investigate a 1cm error in height value.")
     public void runGeoapiTest() throws FactoryException, TransformException {
         new ParameterizedTransformTest(new MathTransformFactoryMock(new AbridgedMolodensky())).testAbridgedMolodensky();
+    }
+
+    /**
+     * Verifies that creating a Molodensky operation with same source and target ellipsoid and zero translation
+     * results in an identity affine transform.
+     *
+     * @throws FactoryException if an error occurred while creating a transform step.
+     */
+    @Test
+    public void testIdentity() throws FactoryException {
+        final Ellipsoid source = CommonCRS.WGS84.ellipsoid();
+        transform = MolodenskyTransform.createGeodeticTransformation(
+                DefaultFactories.forBuildin(MathTransformFactory.class), source, false, source, false, 0, 0, 0, false);
+        assertInstanceOf("Expected optimized type.", LinearTransform.class, transform);
+        assertTrue(transform.isIdentity());
+        validate();
     }
 
     /**
