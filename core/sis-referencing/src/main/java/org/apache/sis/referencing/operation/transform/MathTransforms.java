@@ -143,7 +143,7 @@ public final class MathTransforms extends Static {
         if (candidate != null) {
             return candidate;
         }
-        return new ProjectiveTransform(matrix);
+        return new ProjectiveTransform(matrix).optimize();
     }
 
     /**

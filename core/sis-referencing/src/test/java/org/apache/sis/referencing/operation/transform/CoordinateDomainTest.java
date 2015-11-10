@@ -34,7 +34,7 @@ import static org.junit.Assert.*;
  * @version 0.6
  * @module
  */
-public class CoordinateDomainTest extends TestCase {
+public strictfp class CoordinateDomainTest extends TestCase {
     /**
      * The tolerance threshold used in this test suite.
      */

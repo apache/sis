@@ -26,6 +26,9 @@ import org.opengis.referencing.operation.TransformException;
 
 /**
  * Projective transform in 2D case.
+ * This class is used only if the transform is not affine, i.e. the last row in the 3×3 matrix is not [0 0 1].
+ * Otherwise {@link org.apache.sis.internal.referencing.j2d.AffineTransform2D} should be used instead
+ * (unless {@link java.awt.geom.AffineTransform} is not available on the target platform).
  *
  * @author  Jan Jezek (UWB)
  * @author  Martin Desruisseaux (Geomatys)

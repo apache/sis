@@ -21,6 +21,7 @@ import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.Matrix;
+import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.internal.referencing.provider.Affine;
 import org.apache.sis.util.ComparisonMode;
@@ -103,6 +104,29 @@ abstract class AbstractLinearTransform extends AbstractMathTransform implements 
     @Override
     public int getNumCol() {
         return getSourceDimensions() + 1;
+    }
+
+    /**
+     * Creates the inverse transform of this object.
+     */
+    @Override
+    public synchronized MathTransform inverse() throws NoninvertibleTransformException {
+        if (inverse == null) {
+            /*
+             * Should never be the identity transform at this point (except during tests) because
+             * MathTransforms.linear(…) should never instantiate this class in the identity case.
+             * But we check anyway as a paranoiac safety.
+             */
+            if (isIdentity()) {
+                inverse = this;
+            } else {
+                inverse = MathTransforms.linear(Matrices.inverse(this));
+                if (inverse instanceof AbstractLinearTransform) {
+                    ((AbstractLinearTransform) inverse).inverse = this;
+                }
+            }
+        }
+        return inverse;
     }
 
     /**
