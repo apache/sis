@@ -34,7 +34,7 @@ import org.opengis.parameter.ParameterDescriptorGroup;
  * @module
  */
 @SuppressWarnings("CloneInNonCloneableClass")
-final class ParameterValueGroupWrapper implements ParameterValueGroup {
+final strictfp class ParameterValueGroupWrapper implements ParameterValueGroup {
     /**
      * The implementation to hide.
      */

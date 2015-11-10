@@ -519,6 +519,9 @@ public final class Matrices extends Static {
      * }
      * </div>
      *
+     * The inverse of the matrix created by this method will put {@link Double#NaN} values in the extra dimensions.
+     * Other dimensions will work as expected.
+     *
      * @param  sourceDimensions The number of dimensions in source coordinates.
      * @param  selectedDimensions The 0-based indices of source ordinate values to keep.
      *         The length of this array will be the number of dimensions in target coordinates.

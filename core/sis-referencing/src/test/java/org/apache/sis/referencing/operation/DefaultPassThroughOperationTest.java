@@ -43,7 +43,7 @@ import static org.opengis.test.Assert.*;
     DefaultTransformationTest.class,
     SingleOperationMarshallingTest.class
 })
-public strictfp final class DefaultPassThroughOperationTest extends XMLTestCase {
+public final strictfp class DefaultPassThroughOperationTest extends XMLTestCase {
     /**
      * An XML file in this package containing a projected CRS definition.
      */

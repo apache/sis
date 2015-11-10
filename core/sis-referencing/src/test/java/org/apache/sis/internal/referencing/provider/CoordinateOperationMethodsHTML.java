@@ -65,7 +65,7 @@ import org.apache.sis.test.HTMLGenerator;
  * @version 0.6
  * @module
  */
-public final class CoordinateOperationMethodsHTML extends HTMLGenerator {
+public final strictfp class CoordinateOperationMethodsHTML extends HTMLGenerator {
     /**
      * Generates the HTML report.
      *
