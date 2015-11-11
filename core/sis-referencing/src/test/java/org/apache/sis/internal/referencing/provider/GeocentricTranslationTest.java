@@ -122,15 +122,11 @@ public final strictfp class GeocentricTranslationTest extends MathTransformTestC
     }
 
     /**
-     * Tests transformation of the sample point from WGS84 to ED50.
+     * Creates a transformation for the given method.
      *
-     * @param method     The method to test.
-     * @param sourceStep The {@link #samplePoint(int)} to use as the source coordinate.
-     * @param targetStep The {@link #samplePoint(int)} expected as a result of the transformation.
+     * @param method The method to test.
      */
-    private void datumShift(final GeocentricAffine method, final int sourceStep, final int targetStep)
-            throws FactoryException, TransformException
-    {
+    private void create(final GeocentricAffine method) throws FactoryException {
         final ParameterValueGroup values = method.getParameters().createValue();
         values.parameter("X-axis translation").setValue( 84.87);
         values.parameter("Y-axis translation").setValue( 96.49);
@@ -138,9 +134,7 @@ public final strictfp class GeocentricTranslationTest extends MathTransformTestC
         if (method instanceof GeocentricAffineBetweenGeographic) {
             setEllipsoids(values, CommonCRS.WGS84.ellipsoid(), CommonCRS.ED50.ellipsoid());
         }
-        tolerance = precision(targetStep);
         transform = method.createMathTransform(DefaultFactories.forBuildin(MathTransformFactory.class), values);
-        verifyTransform(samplePoint(sourceStep), samplePoint(targetStep));
     }
 
     /**
@@ -154,6 +148,18 @@ public final strictfp class GeocentricTranslationTest extends MathTransformTestC
     }
 
     /**
+     * Tests transformation of the sample point from WGS84 to ED50.
+     *
+     * @param sourceStep The {@link #samplePoint(int)} to use as the source coordinate.
+     * @param targetStep The {@link #samplePoint(int)} expected as a result of the transformation.
+     */
+    private void datumShift(final int sourceStep, final int targetStep) throws TransformException {
+        tolerance = precision(targetStep);
+        verifyTransform(samplePoint(sourceStep), samplePoint(targetStep));
+        validate();
+    }
+
+    /**
      * Tests <cite>"Geocentric translations (geocentric domain)"</cite> (EPSG:1031).
      *
      * @throws FactoryException if an error occurred while creating the transform.
@@ -161,10 +167,10 @@ public final strictfp class GeocentricTranslationTest extends MathTransformTestC
      */
     @Test
     public void testGeocentricDomain() throws FactoryException, TransformException {
-        derivativeDeltas = new double[] {100, 100, 100};    // In metres
-        datumShift(new GeocentricTranslation(), 2, 3);
+        create(new GeocentricTranslation());
         assertTrue(transform instanceof LinearTransform);
-        validate();
+        derivativeDeltas = new double[] {100, 100, 100};    // In metres
+        datumShift(2, 3);
     }
 
     /**
@@ -176,13 +182,13 @@ public final strictfp class GeocentricTranslationTest extends MathTransformTestC
     @Test
     @DependsOnMethod("testGeocentricDomain")
     public void testGeographicDomain() throws FactoryException, TransformException {
+        create(new GeocentricTranslation3D());
+        assertFalse(transform instanceof LinearTransform);
         final double delta = toRadians(100.0 / 60) / 1852;      // Approximatively 100 metres
         derivativeDeltas = new double[] {delta, delta, 100};    // (Δλ, Δφ, Δh)
         zTolerance = Formulas.LINEAR_TOLERANCE / 2;             // Half the precision of h value given by EPSG
         zDimension = new int[] {2};                             // Dimension of h where to apply zTolerance
-        datumShift(new GeocentricTranslation3D(), 1, 4);
-        assertFalse(transform instanceof LinearTransform);
-        validate();
+        datumShift(1, 4);
     }
 
     /**
@@ -201,19 +207,46 @@ public final strictfp class GeocentricTranslationTest extends MathTransformTestC
     }
 
     /**
+     * Tests Well Known Text formatting of a two-dimensional transform.
+     * The main point of this test is to verify that Geographic 2D/3D conversions have been
+     * inserted before and after the transform, and that Geographic/Geocentric conversions
+     * have been replaced by Bursa-Wolf parameters for formatting purpose.
+     *
+     * @throws FactoryException if an error occurred while creating the transform.
+     */
+    @Test
+    @DependsOnMethod("testWKT3D")
+    public void testWKT2D() throws FactoryException {
+        create(new GeocentricTranslation2D());
+        assertWktEquals("CONCAT_MT[\n" +
+                        "  INVERSE_MT[PARAM_MT[“Geographic3D to 2D conversion”]],\n" +
+                        "  PARAM_MT[“Ellipsoid_To_Geocentric”,\n" +
+                        "    PARAMETER[“semi_major”, 6378137.0],\n" +
+                        "    PARAMETER[“semi_minor”, 6356752.314245179]],\n" +
+                        "  PARAM_MT[“Geocentric translations (geocentric domain)”,\n" +
+                        "    PARAMETER[“dx”, 84.87],\n" +
+                        "    PARAMETER[“dy”, 96.49],\n" +
+                        "    PARAMETER[“dz”, 116.95]],\n" +
+                        "  PARAM_MT[“Geocentric_To_Ellipsoid”,\n" +
+                        "    PARAMETER[“semi_major”, 6378388.0],\n" +
+                        "    PARAMETER[“semi_minor”, 6356911.9461279465]],\n" +
+                        "  PARAM_MT[“Geographic3D to 2D conversion”]]");
+    }
+
+    /**
      * Tests Well Known Text formatting.
      * The main point of this test is to verify that the affine transform between the two
      * Geographic/Geocentric conversions have been replaced by Bursa-Wolf parameters for
      * formatting purpose.
      *
      * @throws FactoryException if an error occurred while creating the transform.
-     * @throws TransformException if transformation of a sample point failed.
      */
     @Test
     @DependsOnMethod("testGeographicDomain")
-    public void testWKT() throws FactoryException, TransformException {
-        testGeographicDomain();     // For creating the transform.
-        assertWktEquals("CONCAT_MT[PARAM_MT[“Ellipsoid_To_Geocentric”,\n" +
+    public void testWKT3D() throws FactoryException {
+        create(new GeocentricTranslation3D());
+        assertWktEquals("CONCAT_MT[\n" +
+                        "  PARAM_MT[“Ellipsoid_To_Geocentric”,\n" +
                         "    PARAMETER[“semi_major”, 6378137.0],\n" +
                         "    PARAMETER[“semi_minor”, 6356752.314245179]],\n" +
                         "  PARAM_MT[“Geocentric translations (geocentric domain)”,\n" +
@@ -228,7 +261,8 @@ public final strictfp class GeocentricTranslationTest extends MathTransformTestC
          * affines before, after and between the two Geographic/Geocentric conversions.
          */
         assertInternalWktEquals(
-                "Concat_MT[Param_MT[“Affine”,\n" +
+                "Concat_MT[\n" +
+                "  Param_MT[“Affine”,\n" +
                 "    Parameter[“num_row”, 4],\n" +
                 "    Parameter[“num_col”, 4],\n" +
                 "    Parameter[“elt_0_0”, 0.017453292519943295],\n" +

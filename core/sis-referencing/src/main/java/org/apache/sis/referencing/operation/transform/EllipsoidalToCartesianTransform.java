@@ -16,6 +16,7 @@
  */
 package org.apache.sis.referencing.operation.transform;
 
+import java.util.List;
 import java.util.Arrays;
 import java.util.Collections;
 import java.io.IOException;
@@ -41,6 +42,7 @@ import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.internal.referencing.DirectPositionView;
 import org.apache.sis.internal.referencing.provider.GeocentricToGeographic;
 import org.apache.sis.internal.referencing.provider.GeographicToGeocentric;
+import org.apache.sis.internal.referencing.provider.Geographic3Dto2D;
 import org.apache.sis.parameter.DefaultParameterDescriptorGroup;
 import org.apache.sis.metadata.iso.ImmutableIdentifier;
 import org.apache.sis.referencing.operation.matrix.Matrix3;
@@ -249,9 +251,6 @@ public class EllipsoidalToCartesianTransform extends AbstractMathTransform imple
         context = new ContextualParameters(GeographicToGeocentric.PARAMETERS, withHeight ? 4 : 3, 4);
         context.getOrCreate(SEMI_MAJOR).setValue(semiMajor, unit);
         context.getOrCreate(SEMI_MINOR).setValue(semiMinor, unit);
-        if (!withHeight) {
-            context.getOrCreate(DIMENSION).setValue(2);
-        }
         /*
          * Prepare two affine transforms to be executed before and after this EllipsoidalToCartesianTransform:
          *
@@ -538,7 +537,7 @@ public class EllipsoidalToCartesianTransform extends AbstractMathTransform imple
      *       be rarely invoked. Since there is usually LinearTransforms before and after this transform, the
      *       conversion between float and double will be handle by those LinearTransforms.   If nevertheless
      *       this EllipsoidalToCartesianTransform is at the beginning or the end of a transformation chain,
-     *       the method inherited from the subclass will work (even if slightly slower).
+     *       the methods inherited from the subclass will work (but may be slightly slower).
      */
 
     /**
@@ -798,5 +797,39 @@ next:   while (--numPts >= 0) {
         {
             inverseTransform(srcPts, srcOff, dstPts, dstOff, numPts);
         }
+
+        /**
+         * Given a transformation chain to format in WKT, inserts a "Geographic 3D to 2D" pseudo-conversion
+         * after this transform (normally {@code transforms.get(index)}) if this conversion computes no height.
+         *
+         * @param  transforms The full chain of concatenated transforms.
+         * @param  index      The index of this transform in the {@code transforms} chain.
+         * @return Index of this transform in the {@code transforms} chain after processing.
+         */
+        @Override
+        final int beforeFormat(final List<Object> transforms, int index, final boolean inverse) {
+            index = super.beforeFormat(transforms, index, inverse);
+            if (!withHeight) {
+                transforms.add(++index, new Geographic3Dto2D.WKT(false));
+            }
+            return index;
+        }
+    }
+
+    /**
+     * Given a transformation chain to format in WKT, inserts a "Geographic 2D to 3D" pseudo-conversion
+     * before this transform (normally {@code transforms.get(index)}) if this conversion expects no height.
+     *
+     * @param  transforms The full chain of concatenated transforms.
+     * @param  index      The index of this transform in the {@code transforms} chain.
+     * @return Index of this transform in the {@code transforms} chain after processing.
+     */
+    @Override
+    final int beforeFormat(final List<Object> transforms, int index, final boolean inverse) {
+        index = super.beforeFormat(transforms, index, inverse);
+        if (!withHeight) {
+            transforms.add(index++, new Geographic3Dto2D.WKT(true));
+        }
+        return index;
     }
 }

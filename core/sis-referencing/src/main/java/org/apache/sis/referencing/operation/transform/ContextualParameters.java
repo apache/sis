@@ -807,7 +807,7 @@ public class ContextualParameters extends Parameters implements Serializable {
      * @param  transforms The full chain of concatenated transforms.
      * @param  index      The index of this transform in the {@code transforms} chain.
      * @param  inverse    Always {@code false}, except if we are formatting the inverse transform.
-     * @return Index of the last transform processed. Iteration should continue at that index + 1.
+     * @return Index of this transform in the {@code transforms} chain after processing.
      *
      * @see ConcatenatedTransform#getPseudoSteps()
      * @see AbstractMathTransform#beforeFormat(List, int, boolean)
@@ -941,12 +941,11 @@ public class ContextualParameters extends Parameters implements Serializable {
                 assert (old instanceof LinearTransform);
             }
         } else {
-            index++;
             if (hasAfter) {
-                final Object old = transforms.set(index, after);
+                final Object old = transforms.set(index + 1, after);
                 assert (old instanceof LinearTransform);
             } else {
-                transforms.add(index, after);
+                transforms.add(index + 1, after);
             }
         }
         return index;
