@@ -27,6 +27,11 @@ import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
+import org.apache.sis.parameter.Parameterized;
+import org.apache.sis.io.wkt.Formatter;
+import org.apache.sis.io.wkt.FormattableObject;
+import org.apache.sis.internal.metadata.WKTKeywords;
+import org.apache.sis.internal.referencing.WKTUtilities;
 
 
 /**
@@ -49,7 +54,7 @@ public final class Geographic3Dto2D extends AbstractProvider {
     /**
      * The group of all parameters expected by this coordinate operation (in this case, none).
      */
-    private static final ParameterDescriptorGroup PARAMETERS =
+    static final ParameterDescriptorGroup PARAMETERS =
             builder().addIdentifier("9659").addName("Geographic3D to 2D conversion").createGroup();
 
     /**
@@ -105,5 +110,63 @@ public final class Geographic3Dto2D extends AbstractProvider {
             throw new FactoryException(e);  // Should never happen.
         }
         return transform;
+    }
+
+    /**
+     * A temporary placeholder used for formatting a {@code PARAM_MT["Geographic 3D to 2D conversion"]}
+     * element in Well-Known Text format. This placeholder is needed there is no {@link MathTransform}
+     * implementation for the Geographic 3D to 2D conversion, since we use affine transform instead.
+     */
+    public static final class WKT extends FormattableObject implements Parameterized {
+        /**
+         * {@code true} if this placeholder is for the inverse transform instead than the direct one.
+         */
+        private final boolean inverse;
+
+        /**
+         * Creates a new object to be formatted.
+         *
+         * @param inverse {@code false} for the "Geographic3D to 2D" operation, or {@code true} for its inverse.
+         */
+        public WKT(final boolean inverse) {
+            this.inverse = inverse;
+        }
+
+        /**
+         * Returns the parameters descriptor.
+         */
+        @Override
+        public ParameterDescriptorGroup getParameterDescriptors() {
+            return PARAMETERS;
+        }
+
+        /**
+         * Returns the parameter values.
+         */
+        @Override
+        public ParameterValueGroup getParameterValues() {
+            return PARAMETERS.createValue();
+        }
+
+        /**
+         * Formats a <cite>Well Known Text</cite> version 1 (WKT 1) element for a transform using this group of parameters.
+         *
+         * <div class="note"><b>Compatibility note:</b>
+         * {@code Param_MT} is defined in the WKT 1 specification only.
+         * If the {@linkplain Formatter#getConvention() formatter convention} is set to WKT 2,
+         * then this method silently uses the WKT 1 convention without raising an error.</div>
+         *
+         * @return {@code "Param_MT"} or {@code "Inverse_MT"}.
+         */
+        @Override
+        protected String formatTo(final Formatter formatter) {
+            if (inverse) {
+                formatter.append(new WKT(false));
+                return WKTKeywords.Inverse_MT;
+            } else {
+                WKTUtilities.appendParamMT(getParameterValues(), formatter);
+                return WKTKeywords.Param_MT;
+            }
+        }
     }
 }

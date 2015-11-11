@@ -295,7 +295,8 @@ public final strictfp class MolodenskyTransformTest extends MathTransformTestCas
     public void testInternalWKT() throws FactoryException, TransformException {
         create(true);
         assertInternalWktEquals(
-                "Concat_MT[Param_MT[“Affine”,\n" +
+                "Concat_MT[\n" +
+                "  Param_MT[“Affine”,\n" +
                 "    Parameter[“num_row”, 4],\n" +
                 "    Parameter[“num_col”, 4],\n" +
                 "    Parameter[“elt_0_0”, 0.017453292519943295],\n" +       // Degrees to radians conversion

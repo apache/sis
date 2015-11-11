@@ -932,7 +932,7 @@ public abstract class AbstractMathTransform extends FormattableObject
      * @param  transforms The full chain of concatenated transforms.
      * @param  index      The index of this transform in the {@code transforms} chain.
      * @param  inverse    Always {@code false}, except if we are formatting the inverse transform.
-     * @return Index of the last transform processed. Iteration should continue at that index + 1.
+     * @return Index of this transform in the {@code transforms} chain after processing.
      *
      * @see ConcatenatedTransform#getPseudoSteps()
      */
@@ -1098,7 +1098,7 @@ public abstract class AbstractMathTransform extends FormattableObject
          * but with the knowledge that this transform is an inverse transform.
          */
         @Override
-        final int beforeFormat(final List<Object> transforms, final int index, final boolean inverse) {
+        int beforeFormat(final List<Object> transforms, final int index, final boolean inverse) {
             final ContextualParameters parameters = getContextualParameters();
             if (parameters != null) {
                 return parameters.beforeFormat(transforms, index, inverse);
