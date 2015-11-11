@@ -784,6 +784,7 @@ public class ContextualParameters extends Parameters implements Serializable {
         @Override
         protected String formatTo(final Formatter formatter) {
             if (inverse) {
+                formatter.newLine();
                 formatter.append(new WKT(false));
                 return WKTKeywords.Inverse_MT;
             } else {
@@ -888,7 +889,7 @@ public class ContextualParameters extends Parameters implements Serializable {
          * Note that if this operation fails, we will cancel everything we would have done
          * in this method (i.e. we do not touch the transforms list at all).
          */
-        if (!inverse) try {
+        try {
             userDefined = getMatrix(inverse ? MatrixRole.NORMALIZATION : MatrixRole.INVERSE_DENORMALIZATION);
         } catch (IllegalStateException e) {
             unexpectedException(e);

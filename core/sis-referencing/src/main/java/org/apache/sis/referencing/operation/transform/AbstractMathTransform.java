@@ -1127,6 +1127,7 @@ public abstract class AbstractMathTransform extends FormattableObject
                 WKTUtilities.appendParamMT(parameters, formatter);
                 return WKTKeywords.Param_MT;
             } else {
+                formatter.newLine();
                 formatter.append((FormattableObject) AbstractMathTransform.this);
                 return WKTKeywords.Inverse_MT;
             }
