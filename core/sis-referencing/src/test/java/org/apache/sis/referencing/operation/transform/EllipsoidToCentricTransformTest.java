@@ -16,10 +16,12 @@
  */
 package org.apache.sis.referencing.operation.transform;
 
+import java.util.Iterator;
 import javax.measure.unit.SI;
 import org.opengis.util.FactoryException;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.datum.Ellipsoid;
+import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.internal.system.DefaultFactories;
@@ -41,7 +43,7 @@ import static org.apache.sis.test.Assert.*;
 
 
 /**
- * Tests {@link EllipsoidalToCartesianTransform}.
+ * Tests {@link EllipsoidToCentricTransform}.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.7
@@ -52,16 +54,17 @@ import static org.apache.sis.test.Assert.*;
     CoordinateDomainTest.class,
     ContextualParametersTest.class
 })
-public final strictfp class EllipsoidalToCartesianTransformTest extends MathTransformTestCase {
+public final strictfp class EllipsoidToCentricTransformTest extends MathTransformTestCase {
     /**
      * Convenience method for creating an instance from an ellipsoid.
      */
     private void createGeodeticConversion(final Ellipsoid ellipsoid, boolean is3D) throws FactoryException {
-        transform = EllipsoidalToCartesianTransform.createGeodeticConversion(
+        transform = EllipsoidToCentricTransform.createGeodeticConversion(
                 DefaultFactories.forBuildin(MathTransformFactory.class),
                 ellipsoid.getSemiMajorAxis(),
                 ellipsoid.getSemiMinorAxis(),
-                ellipsoid.getAxisUnit(), is3D);
+                ellipsoid.getAxisUnit(), is3D,
+                EllipsoidToCentricTransform.TargetType.CARTESIAN);
     }
 
     /**
@@ -129,7 +132,7 @@ public final strictfp class EllipsoidalToCartesianTransformTest extends MathTran
 
     /**
      * Tests conversion of a point on an imaginary planet with high eccentricity.
-     * The {@link EllipsoidalToCartesianTransform} may need to use an iterative method
+     * The {@link EllipsoidToCentricTransform} may need to use an iterative method
      * for reaching the expected precision.
      *
      * @throws FactoryException if an error occurred while creating a transform.
@@ -137,9 +140,9 @@ public final strictfp class EllipsoidalToCartesianTransformTest extends MathTran
      */
     @Test
     public void testHighEccentricity() throws FactoryException, TransformException, FactoryException {
-        transform = EllipsoidalToCartesianTransform.createGeodeticConversion(
+        transform = EllipsoidToCentricTransform.createGeodeticConversion(
                 DefaultFactories.forBuildin(MathTransformFactory.class),
-                6000000, 4000000, SI.METRE, true);
+                6000000, 4000000, SI.METRE, true, EllipsoidToCentricTransform.TargetType.CARTESIAN);
 
         final double delta = toRadians(100.0 / 60) / 1852;
         derivativeDeltas  = new double[] {delta, delta, 100};
@@ -177,7 +180,7 @@ public final strictfp class EllipsoidalToCartesianTransformTest extends MathTran
     }
 
     /**
-     * Tests the {@link EllipsoidalToCartesianTransform#derivative(DirectPosition)} method on a sphere.
+     * Tests the {@link EllipsoidToCentricTransform#derivative(DirectPosition)} method on a sphere.
      *
      * @throws FactoryException if an error occurred while creating a transform.
      * @throws TransformException should never happen.
@@ -189,7 +192,7 @@ public final strictfp class EllipsoidalToCartesianTransformTest extends MathTran
     }
 
     /**
-     * Tests the {@link EllipsoidalToCartesianTransform#derivative(DirectPosition)} method on an ellipsoid.
+     * Tests the {@link EllipsoidToCentricTransform#derivative(DirectPosition)} method on an ellipsoid.
      *
      * @throws FactoryException if an error occurred while creating a transform.
      * @throws TransformException should never happen.
@@ -226,14 +229,54 @@ public final strictfp class EllipsoidalToCartesianTransformTest extends MathTran
     }
 
     /**
-     * Tests the standard Well Known Text (version 1) formatting.
+     * Tests {@link EllipsoidToCentricTransform#concatenate(MathTransform, boolean, MathTransformFactory)}.
+     * The test creates <cite>"Geographic 3D to 2D conversion"</cite>, <cite>"Geographic/Geocentric conversions"</cite>
+     * and <cite>"Geocentric translation"</cite> transforms, then concatenate them.
+     *
+     * <p>Because this test involves a lot of steps, this is more an integration test than a unit test:
+     * a failure here may not be easy to debug.</p>
+     *
+     * @throws FactoryException if an error occurred while creating a transform.
+     *
+     * @see GeocentricTranslationTest#testWKT2D()
+     */
+    @Test
+    public void testConcatenate() throws FactoryException {
+        transform = GeocentricTranslationTest.createDatumShiftForGeographic2D(
+                DefaultFactories.forBuildin(MathTransformFactory.class));
+        final Iterator<MathTransform> it = MathTransforms.getSteps(transform).iterator();
+        MathTransform step;
+
+        assertInstanceOf("Degrees to radians", LinearTransform.class, step = it.next());
+        assertEquals("sourceDimensions", 2, step.getSourceDimensions());
+        assertEquals("tourceDimensions", 2, step.getTargetDimensions());
+
+        assertInstanceOf("Ellipsoid to geocentric", EllipsoidToCentricTransform.class, step = it.next());
+        assertEquals("sourceDimensions", 2, step.getSourceDimensions());
+        assertEquals("tourceDimensions", 3, step.getTargetDimensions());
+
+        assertInstanceOf("Datum shift", LinearTransform.class, step = it.next());
+        assertEquals("sourceDimensions", 3, step.getSourceDimensions());
+        assertEquals("tourceDimensions", 3, step.getTargetDimensions());
+
+        assertInstanceOf("Geocentric to ellipsoid", AbstractMathTransform.Inverse.class, step = it.next());
+        assertEquals("sourceDimensions", 3, step.getSourceDimensions());
+        assertEquals("tourceDimensions", 2, step.getTargetDimensions());
+
+        assertInstanceOf("Degrees to radians", LinearTransform.class, step = it.next());
+        assertEquals("sourceDimensions", 2, step.getSourceDimensions());
+        assertEquals("tourceDimensions", 2, step.getTargetDimensions());
+    }
+
+    /**
+     * Tests the standard Well Known Text (version 1) formatting for three-dimensional transforms.
      * The result is what we show to users, but is quite different than what SIS has in memory.
      *
      * @throws FactoryException if an error occurred while creating a transform.
      * @throws TransformException should never happen.
      */
     @Test
-    public void testWKT() throws FactoryException, TransformException {
+    public void testWKT3D() throws FactoryException, TransformException {
         createGeodeticConversion(CommonCRS.WGS84.ellipsoid(), true);
         assertWktEquals("PARAM_MT[“Ellipsoid_To_Geocentric”,\n" +
                         "  PARAMETER[“semi_major”, 6378137.0],\n" +
@@ -243,6 +286,30 @@ public final strictfp class EllipsoidalToCartesianTransformTest extends MathTran
         assertWktEquals("PARAM_MT[“Geocentric_To_Ellipsoid”,\n" +
                         "  PARAMETER[“semi_major”, 6378137.0],\n" +
                         "  PARAMETER[“semi_minor”, 6356752.314245179]]");
+    }
+
+    /**
+     * Tests the standard Well Known Text (version 1) formatting for two-dimensional transforms.
+     * The result is what we show to users, but is quite different than what SIS has in memory.
+     *
+     * @throws FactoryException if an error occurred while creating a transform.
+     * @throws TransformException should never happen.
+     */
+    @Test
+    public void testWKT2D() throws FactoryException, TransformException {
+        createGeodeticConversion(CommonCRS.WGS84.ellipsoid(), false);
+        assertWktEquals("CONCAT_MT[\n" +
+                        "  INVERSE_MT[PARAM_MT[“Geographic3D to 2D conversion”]],\n" +
+                        "  PARAM_MT[“Ellipsoid_To_Geocentric”,\n" +
+                        "    PARAMETER[“semi_major”, 6378137.0],\n" +
+                        "    PARAMETER[“semi_minor”, 6356752.314245179]]]");
+
+        transform = transform.inverse();
+        assertWktEquals("CONCAT_MT[\n" +
+                        "  PARAM_MT[“Geocentric_To_Ellipsoid”,\n" +
+                        "    PARAMETER[“semi_major”, 6378137.0],\n" +
+                        "    PARAMETER[“semi_minor”, 6356752.314245179]],\n" +
+                        "  PARAM_MT[“Geographic3D to 2D conversion”]]");
     }
 
     /**
@@ -257,14 +324,16 @@ public final strictfp class EllipsoidalToCartesianTransformTest extends MathTran
     public void testInternalWKT() throws FactoryException, TransformException {
         createGeodeticConversion(CommonCRS.WGS84.ellipsoid(), true);
         assertInternalWktEquals(
-                "Concat_MT[Param_MT[“Affine”,\n" +
+                "Concat_MT[\n" +
+                "  Param_MT[“Affine”,\n" +
                 "    Parameter[“num_row”, 4],\n" +
                 "    Parameter[“num_col”, 4],\n" +
                 "    Parameter[“elt_0_0”, 0.017453292519943295],\n" +
                 "    Parameter[“elt_1_1”, 0.017453292519943295],\n" +
                 "    Parameter[“elt_2_2”, 1.567855942887398E-7]],\n" +
-                "  Param_MT[“Ellipsoidal to Cartesian”,\n" +
+                "  Param_MT[“Ellipsoid to centric”,\n" +
                 "    Parameter[“eccentricity”, 0.08181919084262157],\n" +
+                "    Parameter[“target”, “CARTESIAN”],\n" +
                 "    Parameter[“dim”, 3]],\n" +
                 "  Param_MT[“Affine”,\n" +
                 "    Parameter[“num_row”, 4],\n" +
@@ -275,14 +344,16 @@ public final strictfp class EllipsoidalToCartesianTransformTest extends MathTran
 
         transform = transform.inverse();
         assertInternalWktEquals(
-                "Concat_MT[Param_MT[“Affine”,\n" +
+                "Concat_MT[\n" +
+                "  Param_MT[“Affine”,\n" +
                 "    Parameter[“num_row”, 4],\n" +
                 "    Parameter[“num_col”, 4],\n" +
                 "    Parameter[“elt_0_0”, 1.567855942887398E-7],\n" +
                 "    Parameter[“elt_1_1”, 1.567855942887398E-7],\n" +
                 "    Parameter[“elt_2_2”, 1.567855942887398E-7]],\n" +
-                "  Param_MT[“Cartesian to ellipsoidal”,\n" +
+                "  Param_MT[“Centric to ellipsoid”,\n" +
                 "    Parameter[“eccentricity”, 0.08181919084262157],\n" +
+                "    Parameter[“target”, “CARTESIAN”],\n" +
                 "    Parameter[“dim”, 3]],\n" +
                 "  Param_MT[“Affine”,\n" +
                 "    Parameter[“num_row”, 4],\n" +

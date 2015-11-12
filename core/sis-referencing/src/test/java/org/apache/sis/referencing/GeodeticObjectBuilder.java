@@ -46,7 +46,7 @@ import org.apache.sis.util.resources.Errors;
  * @version 0.6
  * @module
  */
-public class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> {
+public strictfp class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> {
     /**
      * The name of the conversion used by {@code ProjectedCRS} or {@code DerivedCRS},
      * or {@code null} if unspecified.

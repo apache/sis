@@ -105,6 +105,7 @@ import org.junit.BeforeClass;
     org.apache.sis.referencing.operation.transform.CoordinateDomainTest.class,
     org.apache.sis.referencing.operation.transform.IterationStrategyTest.class,
     org.apache.sis.referencing.operation.transform.AbstractMathTransformTest.class,
+    org.apache.sis.referencing.operation.transform.ScaleTransformTest.class,
     org.apache.sis.referencing.operation.transform.ProjectiveTransformTest.class,
     org.apache.sis.referencing.operation.transform.LinearTransformTest.class,
     org.apache.sis.referencing.operation.transform.ExponentialTransform1DTest.class,
@@ -115,7 +116,7 @@ import org.junit.BeforeClass;
     org.apache.sis.referencing.operation.transform.TransferFunctionTest.class,
     org.apache.sis.referencing.operation.transform.MathTransformsTest.class,
     org.apache.sis.referencing.operation.transform.ContextualParametersTest.class,
-    org.apache.sis.referencing.operation.transform.EllipsoidalToCartesianTransformTest.class,
+    org.apache.sis.referencing.operation.transform.EllipsoidToCentricTransformTest.class,
     org.apache.sis.referencing.operation.transform.MolodenskyTransformTest.class,
     org.apache.sis.referencing.operation.DefaultFormulaTest.class,
     org.apache.sis.referencing.operation.DefaultOperationMethodTest.class,
@@ -124,6 +125,7 @@ import org.junit.BeforeClass;
 
     // Registration of map projections and other math transforms.
     org.apache.sis.internal.referencing.provider.AffineTest.class,
+    org.apache.sis.internal.referencing.provider.Geographic3Dto2DTest.class,
     org.apache.sis.internal.referencing.provider.LongitudeRotationTest.class,
     org.apache.sis.internal.referencing.provider.GeocentricTranslationTest.class,
     org.apache.sis.internal.referencing.provider.PositionVector7ParamTest.class,

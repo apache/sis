@@ -323,7 +323,7 @@ public class ContextualParameters extends Parameters implements Serializable {
      * The definition of "kernel" is left to implementors.
      * In the particular case of Apache SIS implementation of map projections,
      * kernels are instances of {@link org.apache.sis.referencing.operation.projection.NormalizedProjection}.
-     * Other "kernels" in SIS are {@link EllipsoidalToCartesianTransform} and {@link MolodenskyTransform}.</div>
+     * Other "kernels" in SIS are {@link EllipsoidToCentricTransform} and {@link MolodenskyTransform}.</div>
      *
      * @return The description of the parameters.
      */
@@ -511,7 +511,6 @@ public class ContextualParameters extends Parameters implements Serializable {
      * @throws FactoryException if an error occurred while creating a math transform instance.
      *
      * @see org.apache.sis.referencing.operation.projection.NormalizedProjection#createMapProjection(MathTransformFactory)
-     * @see EllipsoidalToCartesianTransform#createGeodeticConversion(MathTransformFactory, double, double, Unit, boolean)
      */
     @SuppressWarnings("AssignmentToForLoopParameter")
     public synchronized MathTransform completeTransform(final MathTransformFactory factory, final MathTransform kernel)
@@ -784,6 +783,7 @@ public class ContextualParameters extends Parameters implements Serializable {
         @Override
         protected String formatTo(final Formatter formatter) {
             if (inverse) {
+                formatter.newLine();
                 formatter.append(new WKT(false));
                 return WKTKeywords.Inverse_MT;
             } else {
@@ -807,7 +807,7 @@ public class ContextualParameters extends Parameters implements Serializable {
      * @param  transforms The full chain of concatenated transforms.
      * @param  index      The index of this transform in the {@code transforms} chain.
      * @param  inverse    Always {@code false}, except if we are formatting the inverse transform.
-     * @return Index of the last transform processed. Iteration should continue at that index + 1.
+     * @return Index of this transform in the {@code transforms} chain after processing.
      *
      * @see ConcatenatedTransform#getPseudoSteps()
      * @see AbstractMathTransform#beforeFormat(List, int, boolean)
@@ -888,7 +888,7 @@ public class ContextualParameters extends Parameters implements Serializable {
          * Note that if this operation fails, we will cancel everything we would have done
          * in this method (i.e. we do not touch the transforms list at all).
          */
-        if (!inverse) try {
+        try {
             userDefined = getMatrix(inverse ? MatrixRole.NORMALIZATION : MatrixRole.INVERSE_DENORMALIZATION);
         } catch (IllegalStateException e) {
             unexpectedException(e);
@@ -941,12 +941,11 @@ public class ContextualParameters extends Parameters implements Serializable {
                 assert (old instanceof LinearTransform);
             }
         } else {
-            index++;
             if (hasAfter) {
-                final Object old = transforms.set(index, after);
+                final Object old = transforms.set(index + 1, after);
                 assert (old instanceof LinearTransform);
             } else {
-                transforms.add(index, after);
+                transforms.add(index + 1, after);
             }
         }
         return index;

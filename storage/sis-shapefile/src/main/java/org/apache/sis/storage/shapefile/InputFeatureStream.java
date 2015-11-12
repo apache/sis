@@ -21,10 +21,12 @@ import java.io.InputStream;
 import java.sql.SQLFeatureNotSupportedException;
 import java.text.DecimalFormat;
 import java.text.MessageFormat;
+import java.util.List;
 
 import org.apache.sis.feature.DefaultFeatureType;
 import org.apache.sis.internal.shapefile.SQLShapefileNotFoundException;
 import org.apache.sis.internal.shapefile.ShapefileByteReader;
+import org.apache.sis.internal.shapefile.ShapefileDescriptor;
 import org.apache.sis.internal.shapefile.jdbc.*;
 import org.apache.sis.internal.shapefile.jdbc.connection.DBFConnection;
 import org.apache.sis.internal.shapefile.jdbc.metadata.DBFDatabaseMetaData;
@@ -164,6 +166,33 @@ public class InputFeatureStream extends InputStream {
         catch(SQLNotNumericException | SQLNotDateException e) {
             throw new DataStoreQueryResultException(e.getMessage(), e);
         }
+    }
+    
+    /**
+     * Return the features type.
+     * @return Features type.
+     */
+    public DefaultFeatureType getFeaturesType()
+    {
+        return this.featuresType;
+    }
+    
+    /**
+     * Returns the shapefile descriptor.
+     * @return Shapefile descriptor.
+     */
+    public ShapefileDescriptor getShapefileDescriptor()
+    {
+        return this.shapefileReader.getShapefileDescriptor();
+    }
+    
+    /** 
+     * Returns the database fields descriptors.
+     * @return List of fields descriptors. 
+     */
+    public List<DBase3FieldDescriptor> getDatabaseFieldsDescriptors()
+    {
+        return this.shapefileReader.getFieldsDescriptors();
     }
     
     /**

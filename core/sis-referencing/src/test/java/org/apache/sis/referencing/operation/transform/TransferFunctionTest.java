@@ -36,7 +36,7 @@ import static org.opengis.test.Assert.*;
  * @module
  */
 @DependsOn(ExponentialTransform1DTest.class)
-public final class TransferFunctionTest extends TestCase {
+public final strictfp class TransferFunctionTest extends TestCase {
     /**
      * Tests the creation of a linear transfer function.
      */

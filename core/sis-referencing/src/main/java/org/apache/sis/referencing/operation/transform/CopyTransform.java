@@ -79,9 +79,9 @@ final class CopyTransform extends AbstractLinearTransform {
     static CopyTransform create(final Matrix matrix) {
         final int srcDim = matrix.getNumCol() - 1;
         final int dstDim = matrix.getNumRow() - 1;
-        for (int i=0; i<=srcDim; i++) {
+        for (int i=0; i <= srcDim; i++) {
             if (matrix.getElement(dstDim, i) != (i == srcDim ? 1 : 0)) {
-                // Not an affine transform.
+                // Not an affine transform (ignoring if square or not).
                 return null;
             }
         }
