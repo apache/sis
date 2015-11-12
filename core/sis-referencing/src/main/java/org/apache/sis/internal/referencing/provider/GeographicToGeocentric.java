@@ -24,21 +24,15 @@ import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.ParameterValue;
 import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.MathTransform;
-import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.apache.sis.referencing.operation.transform.EllipsoidToCentricTransform;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.internal.util.Constants;
-import org.apache.sis.util.ArgumentChecks;
 
 
 /**
  * The provider for <cite>"Geographic/geocentric conversions"</cite> (EPSG:9602).
  * This provider creates transforms from geographic to geocentric coordinate reference systems.
- *
- * <p>By default, this provider creates a transform from a three-dimensional ellipsoidal coordinate system,
- * which is the behavior implied in OGC's WKT. However a SIS-specific {@code "dim"} parameter allows to transform
- * from a two-dimensional ellipsoidal coordinate system instead.</p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.7
@@ -73,26 +67,10 @@ public final class GeographicToGeocentric extends AbstractProvider {
     }
 
     /**
-     * The provider for the other number of dimensions (2D or 3D).
-     */
-    private final GeographicToGeocentric redimensioned;
-
-    /**
      * Constructs a provider for the 3-dimensional case.
      */
     public GeographicToGeocentric() {
         super(3, 3, PARAMETERS);
-        redimensioned = new GeographicToGeocentric(this);
-    }
-
-    /**
-     * Constructs a provider for the 2-dimensional case.
-     *
-     * @param redimensioned The three-dimensional case.
-     */
-    private GeographicToGeocentric(final GeographicToGeocentric redimensioned) {
-        super(2, 3, PARAMETERS);
-        this.redimensioned = redimensioned;
     }
 
     /**
@@ -132,19 +110,5 @@ public final class GeographicToGeocentric extends AbstractProvider {
         return EllipsoidToCentricTransform.createGeodeticConversion(factory, semiMajor.doubleValue(),
                 values.parameter(Constants.SEMI_MINOR).doubleValue(unit), unit, true,
                 EllipsoidToCentricTransform.TargetType.CARTESIAN);
-    }
-
-    /**
-     * Returns the same operation method, but for different number of dimensions.
-     *
-     * @param  sourceDimensions The desired number of input dimensions.
-     * @param  targetDimensions The desired number of output dimensions.
-     * @return The redimensioned operation method, or {@code this} if no change is needed.
-     */
-    @Override
-    public OperationMethod redimension(final int sourceDimensions, final int targetDimensions) {
-        ArgumentChecks.ensureBetween("sourceDimensions", 2, 3, sourceDimensions);
-        ArgumentChecks.ensureBetween("targetDimensions", 3, 3, targetDimensions);
-        return (sourceDimensions == getSourceDimensions()) ? this : redimensioned;
     }
 }

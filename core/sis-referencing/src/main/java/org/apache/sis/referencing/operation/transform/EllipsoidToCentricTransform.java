@@ -111,7 +111,7 @@ public class EllipsoidToCentricTransform extends AbstractMathTransform implement
      * <p><b>TODO:</b> The spherical case is not yet implemented.
      * We could also consider supporting the cylindrical case, but its usefulness is not obvious.</p>
      *
-     * @author  Martin Desruisseaux (IRD, Geomatys)
+     * @author  Martin Desruisseaux (Geomatys)
      * @since   0.7
      * @version 0.7
      * @module

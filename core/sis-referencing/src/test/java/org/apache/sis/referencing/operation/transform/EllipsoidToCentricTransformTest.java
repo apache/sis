@@ -16,10 +16,12 @@
  */
 package org.apache.sis.referencing.operation.transform;
 
+import java.util.Iterator;
 import javax.measure.unit.SI;
 import org.opengis.util.FactoryException;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.datum.Ellipsoid;
+import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.internal.system.DefaultFactories;
@@ -224,6 +226,46 @@ public final strictfp class EllipsoidToCentricTransformTest extends MathTransfor
         tolerance = GeocentricTranslationTest.precision(2);
         verifyTransform(GeocentricTranslationTest.samplePoint(1),
                         GeocentricTranslationTest.samplePoint(2));
+    }
+
+    /**
+     * Tests {@link EllipsoidToCentricTransform#concatenate(MathTransform, boolean, MathTransformFactory)}.
+     * The test creates <cite>"Geographic 3D to 2D conversion"</cite>, <cite>"Geographic/Geocentric conversions"</cite>
+     * and <cite>"Geocentric translation"</cite> transforms, then concatenate them.
+     *
+     * <p>Because this test involves a lot of steps, this is more an integration test than a unit test:
+     * a failure here may not be easy to debug.</p>
+     *
+     * @throws FactoryException if an error occurred while creating a transform.
+     *
+     * @see GeocentricTranslationTest#testWKT2D()
+     */
+    @Test
+    public void testConcatenate() throws FactoryException {
+        transform = GeocentricTranslationTest.createDatumShiftForGeographic2D(
+                DefaultFactories.forBuildin(MathTransformFactory.class));
+        final Iterator<MathTransform> it = MathTransforms.getSteps(transform).iterator();
+        MathTransform step;
+
+        assertInstanceOf("Degrees to radians", LinearTransform.class, step = it.next());
+        assertEquals("sourceDimensions", 2, step.getSourceDimensions());
+        assertEquals("tourceDimensions", 2, step.getTargetDimensions());
+
+        assertInstanceOf("Ellipsoid to geocentric", EllipsoidToCentricTransform.class, step = it.next());
+        assertEquals("sourceDimensions", 2, step.getSourceDimensions());
+        assertEquals("tourceDimensions", 3, step.getTargetDimensions());
+
+        assertInstanceOf("Datum shift", LinearTransform.class, step = it.next());
+        assertEquals("sourceDimensions", 3, step.getSourceDimensions());
+        assertEquals("tourceDimensions", 3, step.getTargetDimensions());
+
+        assertInstanceOf("Geocentric to ellipsoid", AbstractMathTransform.Inverse.class, step = it.next());
+        assertEquals("sourceDimensions", 3, step.getSourceDimensions());
+        assertEquals("tourceDimensions", 2, step.getTargetDimensions());
+
+        assertInstanceOf("Degrees to radians", LinearTransform.class, step = it.next());
+        assertEquals("sourceDimensions", 2, step.getSourceDimensions());
+        assertEquals("tourceDimensions", 2, step.getTargetDimensions());
     }
 
     /**

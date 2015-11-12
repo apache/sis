@@ -22,19 +22,13 @@ import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
-import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.util.FactoryException;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.metadata.iso.citation.Citations;
 
 
 /**
  * The provider for the <strong>inverse</strong> of "<cite>Geographic/geocentric conversions</cite>" (EPSG:9602).
  * This provider creates transforms from geocentric to geographic coordinate reference systems.
- *
- * <p>By default, this provider creates a transform to a three-dimensional ellipsoidal coordinate system,
- * which is the behavior implied in OGC's WKT. However a SIS-specific {@code "dim"} parameter allows to
- * transform to a two-dimensional ellipsoidal coordinate system instead.</p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.7
@@ -66,26 +60,10 @@ public final class GeocentricToGeographic extends AbstractProvider {
     }
 
     /**
-     * The provider for the other number of dimensions (2D or 3D).
-     */
-    private final GeocentricToGeographic redimensioned;
-
-    /**
      * Constructs a provider for the 3-dimensional case.
      */
     public GeocentricToGeographic() {
         super(3, 3, PARAMETERS);
-        redimensioned = new GeocentricToGeographic(this);
-    }
-
-    /**
-     * Constructs a provider for the 2-dimensional case.
-     *
-     * @param redimensioned The three-dimensional case.
-     */
-    private GeocentricToGeographic(final GeocentricToGeographic redimensioned) {
-        super(3, 2, PARAMETERS);
-        this.redimensioned = redimensioned;
     }
 
     /**
@@ -117,19 +95,5 @@ public final class GeocentricToGeographic extends AbstractProvider {
             throw new FactoryException(e);
         }
         return tr;
-    }
-
-    /**
-     * Returns the same operation method, but for different number of dimensions.
-     *
-     * @param  sourceDimensions The desired number of input dimensions.
-     * @param  targetDimensions The desired number of output dimensions.
-     * @return The redimensioned operation method, or {@code this} if no change is needed.
-     */
-    @Override
-    public OperationMethod redimension(final int sourceDimensions, final int targetDimensions) {
-        ArgumentChecks.ensureBetween("sourceDimensions", 3, 3, sourceDimensions);
-        ArgumentChecks.ensureBetween("targetDimensions", 2, 3, targetDimensions);
-        return (targetDimensions == getTargetDimensions()) ? this : redimensioned;
     }
 }

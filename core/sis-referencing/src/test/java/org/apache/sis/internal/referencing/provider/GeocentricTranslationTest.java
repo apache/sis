@@ -19,11 +19,13 @@ package org.apache.sis.internal.referencing.provider;
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.datum.Ellipsoid;
+import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.test.ToleranceModifier;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.referencing.Formulas;
+import org.apache.sis.parameter.Parameters;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.operation.transform.CoordinateDomain;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
@@ -128,13 +130,36 @@ public final strictfp class GeocentricTranslationTest extends MathTransformTestC
      */
     private void create(final GeocentricAffine method) throws FactoryException {
         final ParameterValueGroup values = method.getParameters().createValue();
-        values.parameter("X-axis translation").setValue( 84.87);
-        values.parameter("Y-axis translation").setValue( 96.49);
-        values.parameter("Z-axis translation").setValue(116.95);
+        setTranslation(values);
         if (method instanceof GeocentricAffineBetweenGeographic) {
             setEllipsoids(values, CommonCRS.WGS84.ellipsoid(), CommonCRS.ED50.ellipsoid());
         }
         transform = method.createMathTransform(DefaultFactories.forBuildin(MathTransformFactory.class), values);
+    }
+
+    /**
+     * Creates a "Geographic 2D to 3D → Geocentric → Affine → Geographic → Geographic 3D to 2D" chain
+     * using EPSG or OGC standard operation methods and parameters. This is used for integration tests.
+     *
+     * @param  factory The math transform factory to use for creating and concatenating the transform.
+     * @return The chain of transforms.
+     * @throws FactoryException if an error occurred while creating a transform.
+     */
+    public static MathTransform createDatumShiftForGeographic2D(final MathTransformFactory factory) throws FactoryException {
+        final Parameters values = Parameters.castOrWrap(factory.getDefaultParameters("Geocentric translations (geog2D domain)"));
+        setTranslation(values);
+        setEllipsoids(values, CommonCRS.WGS84.ellipsoid(), CommonCRS.ED50.ellipsoid());
+        return Geographic3Dto2DTest.createDatumShiftForGeographic2D(factory,
+                new GeocentricTranslation().createMathTransform(factory, values), values);
+    }
+
+    /**
+     * Sets the translation parameters in the given parameter value group.
+     */
+    private static void setTranslation(final ParameterValueGroup values) {
+        values.parameter("X-axis translation").setValue( 84.87);
+        values.parameter("Y-axis translation").setValue( 96.49);
+        values.parameter("Z-axis translation").setValue(116.95);
     }
 
     /**
@@ -218,6 +243,13 @@ public final strictfp class GeocentricTranslationTest extends MathTransformTestC
     @DependsOnMethod("testWKT3D")
     public void testWKT2D() throws FactoryException {
         create(new GeocentricTranslation2D());
+        verifyWKT2D();
+    }
+
+    /**
+     * Verifies the WKT formatting of current transform.
+     */
+    private void verifyWKT2D() {
         assertWktEquals("CONCAT_MT[\n" +
                         "  INVERSE_MT[PARAM_MT[“Geographic3D to 2D conversion”]],\n" +
                         "  PARAM_MT[“Ellipsoid_To_Geocentric”,\n" +
@@ -291,5 +323,19 @@ public final strictfp class GeocentricTranslationTest extends MathTransformTestC
                 "    Parameter[“elt_0_0”, 57.29577951308232],\n" +
                 "    Parameter[“elt_1_1”, 57.29577951308232],\n" +
                 "    Parameter[“elt_2_2”, 6378388.0]]]");
+    }
+
+    /**
+     * Tests "Geographic 2D to 3D → Geocentric → Affine → Geographic → Geographic 3D to 2D" chain
+     * created from a {@link MathTransformFactory}. Because this test involves a lot of steps,
+     * this is more an integration test than a unit test: a failure here may not be easy to debug.
+     *
+     * @throws FactoryException if an error occurred while creating the transform.
+     */
+    @Test
+    @DependsOnMethod("testWKT2D")
+    public void testIntegration() throws FactoryException {
+        transform = createDatumShiftForGeographic2D(DefaultFactories.forBuildin(MathTransformFactory.class));
+        verifyWKT2D();
     }
 }
