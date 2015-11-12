@@ -140,7 +140,7 @@ public final strictfp class MolodenskyTransformTest extends MathTransformTestCas
     }
 
     /**
-     * Tests using the same EPSG example than the one provided in {@link EllipsoidalToCartesianTransformTest}.
+     * Tests using the same EPSG example than the one provided in {@link EllipsoidToCentricTransformTest}.
      *
      * <ul>
      *   <li>Source point in WGS84: 53°48'33.820"N, 02°07'46.380"E, 73.00 metres.</li>
@@ -295,7 +295,8 @@ public final strictfp class MolodenskyTransformTest extends MathTransformTestCas
     public void testInternalWKT() throws FactoryException, TransformException {
         create(true);
         assertInternalWktEquals(
-                "Concat_MT[Param_MT[“Affine”,\n" +
+                "Concat_MT[\n" +
+                "  Param_MT[“Affine”,\n" +
                 "    Parameter[“num_row”, 4],\n" +
                 "    Parameter[“num_col”, 4],\n" +
                 "    Parameter[“elt_0_0”, 0.017453292519943295],\n" +       // Degrees to radians conversion

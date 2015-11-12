@@ -158,6 +158,13 @@ public final class Matrices extends Static {
     }
 
     /**
+     * Creates a matrix filled with zero values, using double-double precision if {@code precision} is {@code true}.
+     */
+    static MatrixSIS createZero(final int numRow, final int numCol, final boolean precision) {
+        return precision ? GeneralMatrix.createExtendedPrecision(numRow, numCol, false) : createZero(numRow, numCol);
+    }
+
+    /**
      * Creates a matrix of size {@code numRow} × {@code numCol} initialized to the given elements.
      * The elements array size must be equals to {@code numRow*numCol}. Column indices vary fastest.
      *
@@ -519,6 +526,9 @@ public final class Matrices extends Static {
      * }
      * </div>
      *
+     * The inverse of the matrix created by this method will put {@link Double#NaN} values in the extra dimensions.
+     * Other dimensions will work as expected.
+     *
      * @param  sourceDimensions The number of dimensions in source coordinates.
      * @param  selectedDimensions The 0-based indices of source ordinate values to keep.
      *         The length of this array will be the number of dimensions in target coordinates.
@@ -650,72 +660,13 @@ public final class Matrices extends Static {
     }
 
     /**
-     * Returns a new matrix with the same elements than the given matrix except for the specified rows.
-     * This method is useful for removing a range of <em>target</em> dimensions in an affine transform.
-     *
-     * @param  matrix The matrix where to remove rows, or {@code null}.
-     * @param  lower  Index of the first row to remove (inclusive).
-     * @param  upper  Index after the last row to remove (exclusive).
-     * @return A copy of the given matrix with the specified rows removed,
-     *         or {@code null} if the given matrix was null.
-     *
-     * @since 0.7
+     * Returns {@code true} if the given matrix is likely to use extended precision.
+     * A value of {@code true} is not a guarantee that the matrix uses extended precision,
+     * but a value of {@code false} is a guarantee that it does not.
      */
-    public static Matrix removeRows(final Matrix matrix, final int lower, final int upper) {
-        if (matrix == null) {
-            return null;
-        }
-        final int numRow = matrix.getNumRow();
-        final int numCol = matrix.getNumCol();
-        ArgumentChecks.ensureValidIndexRange(numRow, lower, upper);
-        final Matrix reduced = createZero(numRow - (upper - lower), numCol);
-        int dest = 0;
-        for (int j=0; j<numRow; j++) {
-            if (j == lower) {
-                j = upper;
-                if (j == numRow) break;
-            }
-            for (int i=0; i<numCol; i++) {
-                reduced.setElement(dest, i, matrix.getElement(j, i));
-            }
-            dest++;
-        }
-        return reduced;
-    }
-
-    /**
-     * Returns a new matrix with the same elements than the given matrix except for the specified columns.
-     * This method is useful for removing a range of <em>source</em> dimensions in an affine transform.
-     * Coordinates will be converted as if the values in the removed dimensions were zeros.
-     *
-     * @param  matrix The matrix where to remove columns, or {@code null}.
-     * @param  lower  Index of the first column to remove (inclusive).
-     * @param  upper  Index after the last column to remove (exclusive).
-     * @return A copy of the given matrix with the specified columns removed,
-     *         or {@code null} if the given matrix was null.
-     *
-     * @since 0.7
-     */
-    public static Matrix removeColumns(final Matrix matrix, final int lower, final int upper) {
-        if (matrix == null) {
-            return null;
-        }
-        final int numRow = matrix.getNumRow();
-        final int numCol = matrix.getNumCol();
-        ArgumentChecks.ensureValidIndexRange(numCol, lower, upper);
-        final Matrix reduced = createZero(numRow, numCol - (upper - lower));
-        int dest = 0;
-        for (int i=0; i<numCol; i++) {
-            if (i == lower) {
-                i = upper;
-                if (i == numCol) break;
-            }
-            for (int j=0; j<numRow; j++) {
-                reduced.setElement(j, dest, matrix.getElement(j, i));
-            }
-            dest++;
-        }
-        return reduced;
+    private static boolean isExtendedPrecision(final Matrix matrix) {
+        return (matrix instanceof MatrixSIS) ? ((MatrixSIS) matrix).isExtendedPrecision() :
+               (matrix instanceof ExtendedPrecisionMatrix);  // Not guarantee that the matrix really uses double-double.
     }
 
     /**
@@ -724,7 +675,7 @@ public final class Matrices extends Static {
      * <div class="note"><b>Implementation note:</b>
      * For square matrix with a size between {@value org.apache.sis.referencing.operation.matrix.Matrix1#SIZE}
      * and {@value org.apache.sis.referencing.operation.matrix.Matrix4#SIZE} inclusive, the returned matrix is
-     * guaranteed to be an instance of one of {@link Matrix1} … {@link Matrix4} subtypes.</div>
+     * usually an instance of one of {@link Matrix1} … {@link Matrix4} subtypes.</div>
      *
      * @param matrix The matrix to copy, or {@code null}.
      * @return A copy of the given matrix, or {@code null} if the given matrix was null.
@@ -740,7 +691,7 @@ public final class Matrices extends Static {
         if (size != matrix.getNumCol()) {
             return new NonSquareMatrix(matrix);
         }
-        if (!(matrix instanceof ExtendedPrecisionMatrix)) {
+        if (!isExtendedPrecision(matrix)) {
             switch (size) {
                 case 1: return new Matrix1(matrix);
                 case 2: return new Matrix2(matrix);

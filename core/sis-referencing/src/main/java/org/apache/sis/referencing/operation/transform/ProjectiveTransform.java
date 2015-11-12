@@ -19,8 +19,6 @@ package org.apache.sis.referencing.operation.transform;
 import java.util.Arrays;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.operation.Matrix;
-import org.opengis.referencing.operation.MathTransform;
-import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.internal.referencing.ExtendedPrecisionMatrix;
@@ -87,6 +85,30 @@ class ProjectiveTransform extends AbstractLinearTransform implements ExtendedPre
                 }
             }
         }
+    }
+
+    /**
+     * If a more efficient implementation of this math transform can be used, returns it.
+     * Otherwise returns {@code this} unchanged.
+     */
+    final LinearTransform optimize() {
+        final int n = (numRow - 1) * numCol;
+        for (int i = 0; i != numCol;) {
+            if (elt[n + i] != (++i == numCol ? 1 : 0)) {
+                return this;    // Transform is not affine (ignoring if square or not).
+            }
+        }
+        /*
+         * Note: we could check for CopyTransform case here, but this check is rather done in
+         * MathTransforms.linear(Matrix) in order to avoid ProjectiveTransform instantiation.
+         */
+        for (int i=0; i<n; i++) {
+            // Non-zero elements are allowed to appear only on the diagonal.
+            if (elt[i] != 0 && (i / numCol) != (i % numCol)) {
+                return this;
+            }
+        }
+        return new ScaleTransform(numRow, numCol, elt);
     }
 
     /**
@@ -195,7 +217,7 @@ class ProjectiveTransform extends AbstractLinearTransform implements ExtendedPre
      * @param numPts The number of points to be transformed.
      */
     @Override
-    public final void transform(double[] srcPts, int srcOff, double[] dstPts, int dstOff, int numPts) {
+    public final void transform(double[] srcPts, int srcOff, final double[] dstPts, int dstOff, int numPts) {
         final int srcDim, dstDim;
         int srcInc = srcDim = numCol - 1; // The last ordinate will be assumed equal to 1.
         int dstInc = dstDim = numRow - 1;
@@ -266,7 +288,7 @@ class ProjectiveTransform extends AbstractLinearTransform implements ExtendedPre
      * @param numPts The number of points to be transformed.
      */
     @Override
-    public final void transform(float[] srcPts, int srcOff, float[] dstPts, int dstOff, int numPts) {
+    public final void transform(float[] srcPts, int srcOff, final float[] dstPts, int dstOff, int numPts) {
         final int srcDim, dstDim;
         int srcInc = srcDim = numCol-1;
         int dstInc = dstDim = numRow-1;
@@ -322,7 +344,7 @@ class ProjectiveTransform extends AbstractLinearTransform implements ExtendedPre
      * @param numPts The number of points to be transformed.
      */
     @Override
-    public final void transform(double[] srcPts, int srcOff, float[] dstPts, int dstOff, int numPts) {
+    public final void transform(final double[] srcPts, int srcOff, final float[] dstPts, int dstOff, int numPts) {
         final int srcDim = numCol-1;
         final int dstDim = numRow-1;
         final double[] buffer = new double[numRow];
@@ -357,7 +379,7 @@ class ProjectiveTransform extends AbstractLinearTransform implements ExtendedPre
      * @param numPts The number of points to be transformed.
      */
     @Override
-    public final void transform(float[] srcPts, int srcOff, double[] dstPts, int dstOff, int numPts) {
+    public final void transform(final float[] srcPts, int srcOff, final double[] dstPts, int dstOff, int numPts) {
         final int srcDim = numCol - 1;
         final int dstDim = numRow - 1;
         final double[] buffer = new double[numRow];
@@ -401,29 +423,6 @@ class ProjectiveTransform extends AbstractLinearTransform implements ExtendedPre
             mix++; // Skip translation column.
         }
         return matrix;
-    }
-
-    /**
-     * Creates the inverse transform of this object.
-     */
-    @Override
-    public synchronized MathTransform inverse() throws NoninvertibleTransformException {
-        if (inverse == null) {
-            /*
-             * Should never be the identity transform at this point (except during tests) because
-             * MathTransforms.linear(…) should never instantiate this class in the identity case.
-             * But we check anyway as a paranoiac safety.
-             */
-            if (isIdentity()) {
-                inverse = this;
-            } else {
-                inverse = MathTransforms.linear(Matrices.inverse(this));
-                if (inverse instanceof AbstractLinearTransform) {
-                    ((AbstractLinearTransform) inverse).inverse = this;
-                }
-            }
-        }
-        return inverse;
     }
 
     /**

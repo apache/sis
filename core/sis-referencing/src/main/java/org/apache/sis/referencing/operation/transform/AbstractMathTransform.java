@@ -21,12 +21,14 @@ import java.util.Arrays;
 import java.io.Serializable;
 import javax.measure.unit.SI;
 import javax.measure.unit.NonSI;
+import org.opengis.util.FactoryException;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.MismatchedDimensionException;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
+import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.opengis.referencing.operation.OperationMethod;
@@ -79,7 +81,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.5
- * @version 0.6
+ * @version 0.7
  * @module
  *
  * @see DefaultMathTransformFactory
@@ -785,9 +787,9 @@ public abstract class AbstractMathTransform extends FormattableObject
     }
 
     /**
-     * Concatenates in an optimized way this math transform with the given one. A new math transform
-     * is created to perform the combined transformation. The {@code applyOtherFirst} value determines
-     * the transformation order as bellow:
+     * Concatenates in an optimized way this math transform with the given one.
+     * A new math transform is created to perform the combined transformation.
+     * The {@code applyOtherFirst} value determines the transformation order as bellow:
      *
      * <ul>
      *   <li>If {@code applyOtherFirst} is {@code true}, then transforming a point
@@ -809,9 +811,12 @@ public abstract class AbstractMathTransform extends FormattableObject
      * @param  other The math transform to apply.
      * @param  applyOtherFirst {@code true} if the transformation order is {@code other} followed by {@code this},
      *         or {@code false} if the transformation order is {@code this} followed by {@code other}.
+     * @param  factory The factory which is (indirectly) invoking this method, or {@code null} if none.
      * @return The combined math transform, or {@code null} if no optimized combined transform is available.
      */
-    MathTransform concatenate(final MathTransform other, final boolean applyOtherFirst) {
+    MathTransform concatenate(MathTransform other, boolean applyOtherFirst, MathTransformFactory factory)
+            throws FactoryException
+    {
         return null;
     }
 
@@ -932,7 +937,7 @@ public abstract class AbstractMathTransform extends FormattableObject
      * @param  transforms The full chain of concatenated transforms.
      * @param  index      The index of this transform in the {@code transforms} chain.
      * @param  inverse    Always {@code false}, except if we are formatting the inverse transform.
-     * @return Index of the last transform processed. Iteration should continue at that index + 1.
+     * @return Index of this transform in the {@code transforms} chain after processing.
      *
      * @see ConcatenatedTransform#getPseudoSteps()
      */
@@ -1098,7 +1103,7 @@ public abstract class AbstractMathTransform extends FormattableObject
          * but with the knowledge that this transform is an inverse transform.
          */
         @Override
-        final int beforeFormat(final List<Object> transforms, final int index, final boolean inverse) {
+        int beforeFormat(final List<Object> transforms, final int index, final boolean inverse) {
             final ContextualParameters parameters = getContextualParameters();
             if (parameters != null) {
                 return parameters.beforeFormat(transforms, index, inverse);
@@ -1127,6 +1132,7 @@ public abstract class AbstractMathTransform extends FormattableObject
                 WKTUtilities.appendParamMT(parameters, formatter);
                 return WKTKeywords.Param_MT;
             } else {
+                formatter.newLine();
                 formatter.append((FormattableObject) AbstractMathTransform.this);
                 return WKTKeywords.Inverse_MT;
             }

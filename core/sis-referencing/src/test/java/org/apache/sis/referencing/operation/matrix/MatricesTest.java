@@ -364,17 +364,17 @@ public final strictfp class MatricesTest extends TestCase {
     }
 
     /**
-     * Tests {@link Matrices#removeRows(Matrix, int, int)}
+     * Tests {@link MatrixSIS#removeRows(int, int)}
      */
     @Test
     public void testRemoveRows() {
-        Matrix matrix = Matrices.create(4, 5, new double[] {
+        MatrixSIS matrix = Matrices.create(4, 5, new double[] {
             1, 2, 7, 8, 9,
             3, 4, 6, 7, 8,
             9, 8, 7, 6, 5,
             4, 3, 2, 1, 0
         });
-        matrix = Matrices.removeRows(matrix, 3, 4);
+        matrix = matrix.removeRows(3, 4);
         assertEquals(Matrices.create(3, 5, new double[] {
             1, 2, 7, 8, 9,
             3, 4, 6, 7, 8,
@@ -383,17 +383,17 @@ public final strictfp class MatricesTest extends TestCase {
     }
 
     /**
-     * Tests {@link Matrices#removeColumns(Matrix, int, int)}
+     * Tests {@link MatrixSIS#removeColumns(int, int)}
      */
     @Test
     public void testRemoveColumns() {
-        Matrix matrix = Matrices.create(4, 5, new double[] {
+        MatrixSIS matrix = Matrices.create(4, 5, new double[] {
             1, 2, 7, 8, 9,
             3, 4, 6, 7, 8,
             9, 8, 7, 6, 5,
             4, 3, 2, 1, 0
         });
-        matrix = Matrices.removeColumns(matrix, 2, 4);
+        matrix = matrix.removeColumns(2, 4);
         assertEquals(Matrices.create(4, 3, new double[] {
             1, 2, 9,
             3, 4, 8,

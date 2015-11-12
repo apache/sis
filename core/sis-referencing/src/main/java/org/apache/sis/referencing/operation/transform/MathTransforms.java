@@ -19,6 +19,7 @@ package org.apache.sis.referencing.operation.transform;
 import java.util.List;
 import java.util.Collections;
 import java.awt.geom.AffineTransform;
+import org.opengis.util.FactoryException;
 import org.opengis.geometry.MismatchedDimensionException;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
@@ -52,7 +53,7 @@ import static org.apache.sis.util.ArgumentChecks.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5
- * @version 0.6
+ * @version 0.7
  * @module
  *
  * @see MathTransformFactory
@@ -143,7 +144,7 @@ public final class MathTransforms extends Static {
         if (candidate != null) {
             return candidate;
         }
-        return new ProjectiveTransform(matrix);
+        return new ProjectiveTransform(matrix).optimize();
     }
 
     /**
@@ -185,7 +186,7 @@ public final class MathTransforms extends Static {
             if (compound == null) {
                 compound = tr;
             } else {
-                compound = ConcatenatedTransform.create(compound, tr);
+                compound = concatenate(compound, tr);
             }
         }
         assert isValid(getSteps(compound)) : compound;
@@ -210,7 +211,12 @@ public final class MathTransforms extends Static {
     {
         ensureNonNull("tr1", tr1);
         ensureNonNull("tr2", tr2);
-        final MathTransform tr = ConcatenatedTransform.create(tr1, tr2);
+        final MathTransform tr;
+        try {
+            tr = ConcatenatedTransform.create(tr1, tr2, null);
+        } catch (FactoryException e) {
+            throw new IllegalArgumentException(e);      // Should never happen actually.
+        }
         assert isValid(getSteps(tr)) : tr;
         return tr;
     }
@@ -310,7 +316,7 @@ public final class MathTransforms extends Static {
      * (because their matrices should have been multiplied together).
      * This is used for assertion purposes only.
      */
-    private static boolean isValid(final List<MathTransform> steps) {
+    static boolean isValid(final List<MathTransform> steps) {
         boolean wasLinear = false;
         for (final MathTransform step : steps) {
             if (step instanceof LinearTransform) {

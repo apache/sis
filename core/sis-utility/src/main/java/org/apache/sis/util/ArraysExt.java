@@ -75,6 +75,7 @@ import java.util.Objects;
  *
  * @see Arrays
  */
+@SuppressWarnings("ReturnOfCollectionOrArrayField")     // Array constants in this class are immutable empty arrays.
 public final class ArraysExt extends Static {
     /**
      * An empty array of {@code double} primitive type.
@@ -399,6 +400,7 @@ public final class ArraysExt extends Static {
      * @throws IllegalArgumentException  If {@code length} is negative.
      * @throws IndexOutOfBoundsException If {@code first} or {@code first+length} is out of array bounds.
      */
+    @SuppressWarnings("SuspiciousSystemArraycopy")
     private static <T> T doRemove(final T array, final int first, final int length)
             throws NullArgumentException, IllegalArgumentException, IndexOutOfBoundsException
     {
@@ -668,6 +670,7 @@ public final class ArraysExt extends Static {
      * @throws IllegalArgumentException  If {@code length} is negative.
      * @throws IndexOutOfBoundsException If {@code first} or {@code first+length} is out of array bounds.
      */
+    @SuppressWarnings("SuspiciousSystemArraycopy")
     private static <T> T doInsert(final T array, final int first, final int length)
             throws NullArgumentException, IllegalArgumentException, IndexOutOfBoundsException
     {
@@ -961,6 +964,7 @@ public final class ArraysExt extends Static {
      * @throws IllegalArgumentException  If {@code length} is negative.
      * @throws IndexOutOfBoundsException If {@code srcOff}, {@code srcOff+length} or {@code dstOff} is out of array bounds,
      */
+    @SuppressWarnings("SuspiciousSystemArraycopy")
     private static <T> T doInsert(final T src, final int srcOff,
                                   final T dst, final int dstOff, final int length)
             throws NullArgumentException, IllegalArgumentException, IndexOutOfBoundsException
