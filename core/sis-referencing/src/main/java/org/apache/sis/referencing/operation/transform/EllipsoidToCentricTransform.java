@@ -109,7 +109,8 @@ public class EllipsoidToCentricTransform extends AbstractMathTransform implement
      * Whether the output coordinate system is Cartesian or Spherical.
      *
      * <p><b>TODO:</b> The spherical case is not yet implemented.
-     * We could also consider supporting the cylindrical case, but its usefulness is not obvious.</p>
+     * We could also consider supporting the cylindrical case, but its usefulness is not obvious.
+     * See <a href="http://issues.apache.org/jira/browse/SIS-302">SIS-302</a>.</p>
      *
      * @author  Martin Desruisseaux (Geomatys)
      * @since   0.7

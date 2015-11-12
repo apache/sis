@@ -26,6 +26,7 @@ import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.ParameterNotFoundException;
+import org.opengis.parameter.InvalidParameterValueException;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.OperationMethod;
@@ -37,6 +38,7 @@ import org.apache.sis.referencing.operation.transform.MolodenskyTransform;
 import org.apache.sis.internal.referencing.NilReferencingObject;
 import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.internal.util.Constants;
+import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Debug;
 
@@ -222,9 +224,14 @@ public final class Molodensky extends GeocentricAffineBetweenGeographic {
     static MathTransform createMathTransform(final MathTransformFactory factory, final Parameters values,
             int sourceDimensions, int targetDimensions, final boolean isAbridged) throws FactoryException
     {
-        int dimension = getDimension(values);
-        if (dimension != 0) {
-            sourceDimensions = targetDimensions = dimension;
+        final Integer dim = values.getValue(DIMENSION);
+        if (dim != null) {
+            final int n = dim;  // Unboxing.
+            if (n != 2 && n != 3) {
+                throw new InvalidParameterValueException(Errors.format(
+                        Errors.Keys.IllegalArgumentValue_2, "dim", dim), "dim", dim);
+            }
+            sourceDimensions = targetDimensions = n;
         }
         /*
          * Following method calls implicitly convert parameter values to metres.
