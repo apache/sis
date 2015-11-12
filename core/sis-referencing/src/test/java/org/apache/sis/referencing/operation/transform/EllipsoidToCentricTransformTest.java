@@ -61,7 +61,8 @@ public final strictfp class EllipsoidToCentricTransformTest extends MathTransfor
                 DefaultFactories.forBuildin(MathTransformFactory.class),
                 ellipsoid.getSemiMajorAxis(),
                 ellipsoid.getSemiMinorAxis(),
-                ellipsoid.getAxisUnit(), is3D);
+                ellipsoid.getAxisUnit(), is3D,
+                EllipsoidToCentricTransform.TargetType.CARTESIAN);
     }
 
     /**
@@ -139,7 +140,7 @@ public final strictfp class EllipsoidToCentricTransformTest extends MathTransfor
     public void testHighEccentricity() throws FactoryException, TransformException, FactoryException {
         transform = EllipsoidToCentricTransform.createGeodeticConversion(
                 DefaultFactories.forBuildin(MathTransformFactory.class),
-                6000000, 4000000, SI.METRE, true);
+                6000000, 4000000, SI.METRE, true, EllipsoidToCentricTransform.TargetType.CARTESIAN);
 
         final double delta = toRadians(100.0 / 60) / 1852;
         derivativeDeltas  = new double[] {delta, delta, 100};
@@ -290,6 +291,7 @@ public final strictfp class EllipsoidToCentricTransformTest extends MathTransfor
                 "    Parameter[“elt_2_2”, 1.567855942887398E-7]],\n" +
                 "  Param_MT[“Ellipsoid to centric”,\n" +
                 "    Parameter[“eccentricity”, 0.08181919084262157],\n" +
+                "    Parameter[“target”, “CARTESIAN”],\n" +
                 "    Parameter[“dim”, 3]],\n" +
                 "  Param_MT[“Affine”,\n" +
                 "    Parameter[“num_row”, 4],\n" +
@@ -309,6 +311,7 @@ public final strictfp class EllipsoidToCentricTransformTest extends MathTransfor
                 "    Parameter[“elt_2_2”, 1.567855942887398E-7]],\n" +
                 "  Param_MT[“Centric to ellipsoid”,\n" +
                 "    Parameter[“eccentricity”, 0.08181919084262157],\n" +
+                "    Parameter[“target”, “CARTESIAN”],\n" +
                 "    Parameter[“dim”, 3]],\n" +
                 "  Param_MT[“Affine”,\n" +
                 "    Parameter[“num_row”, 4],\n" +

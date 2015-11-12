@@ -28,6 +28,7 @@ import org.opengis.util.FactoryException;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterValueGroup;
+import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
@@ -74,11 +75,15 @@ import static org.apache.sis.internal.referencing.provider.GeocentricAffineBetwe
  * </ol>
  *
  * Output coordinates are as below:
- * <ol>
- *   <li>distance from Earth center on the X axis (toward the intersection of prime meridian and equator),</li>
- *   <li>distance from Earth center on the Y axis (toward the intersection of 90°E meridian and equator),</li>
- *   <li>distance from Earth center on the Z axis (toward North pole).</li>
- * </ol>
+ * <ul>
+ *   <li>In the Cartesian case:
+ *     <ol>
+ *       <li>distance from Earth center on the X axis (toward the intersection of prime meridian and equator),</li>
+ *       <li>distance from Earth center on the Y axis (toward the intersection of 90°E meridian and equator),</li>
+ *       <li>distance from Earth center on the Z axis (toward North pole).</li>
+ *     </ol>
+ *   </li>
+ * </ul>
  *
  * The units of measurements depend on how the {@code MathTransform} has been created:
  * <ul>
@@ -99,6 +104,26 @@ public class EllipsoidToCentricTransform extends AbstractMathTransform implement
      * Serial number for inter-operability with different versions.
      */
     private static final long serialVersionUID = -3352045463953828140L;
+
+    /**
+     * Whether the output coordinate system is Cartesian or Spherical.
+     *
+     * <p><b>TODO:</b> The spherical case is not yet implemented.
+     * We could also consider supporting the cylindrical case, but its usefulness is not obvious.</p>
+     *
+     * @author  Martin Desruisseaux (IRD, Geomatys)
+     * @since   0.7
+     * @version 0.7
+     * @module
+     */
+    public static enum TargetType {
+        /**
+         * Indicates conversions from
+         * {@linkplain org.apache.sis.referencing.cs.DefaultEllipsoidalCS ellipsoidal} to
+         * {@linkplain org.apache.sis.referencing.cs.DefaultCartesianCS Cartesian} coordinate system.
+         */
+        CARTESIAN
+    }
 
     /**
      * Internal parameter descriptor, used only for debugging purpose.
@@ -137,7 +162,7 @@ public class EllipsoidToCentricTransform extends AbstractMathTransform implement
      * <var>b</var> is the <cite>semi-minor</cite> axis length.
      * Since the {@code EllipsoidToCentricTransform} class works on an ellipsoid where a = 1
      * (because of the work performed by the normalization matrices), we just drop <var>a</var>
-     * in the formulas - so this field can be written as just <var>b</var>.
+     * in the formulas - so this field could be written as just <var>b</var>.
      *
      * <p>This value is related to {@link #eccentricitySquared} and to the ε value used in EPSG guide
      * by (assuming a=1):</p>
@@ -150,7 +175,7 @@ public class EllipsoidToCentricTransform extends AbstractMathTransform implement
      * It is not final only for the purpose of {@link #readObject(ObjectInputStream)}.
      * This field is recomputed from {@link #eccentricitySquared} on deserialization.</p>
      */
-    private transient double b;
+    private transient double axisRatio;
 
     /**
      * Whether calculation of φ should use an iterative method after the first φ approximation.
@@ -231,18 +256,20 @@ public class EllipsoidToCentricTransform extends AbstractMathTransform implement
      * @param semiMajor  The semi-major axis length.
      * @param semiMinor  The semi-minor axis length.
      * @param unit       The unit of measurement for the semi-axes and the ellipsoidal height.
-     * @param withHeight {@code true} if geographic coordinates include an ellipsoidal height (i.e. are 3-D),
-     *                   or {@code false} if they are only 2-D.
+     * @param withHeight {@code true} if source geographic coordinates include an ellipsoidal height
+     *                   (i.e. are 3-D), or {@code false} if they are only 2-D.
+     * @param target     Whether the target coordinate shall be Cartesian or Spherical.
      *
-     * @see #createGeodeticConversion(MathTransformFactory, double, double, Unit, boolean)
+     * @see #createGeodeticConversion(MathTransformFactory, double, double, Unit, boolean, TargetType)
      */
     protected EllipsoidToCentricTransform(final double semiMajor, final double semiMinor,
-            final Unit<Length> unit, final boolean withHeight)
+            final Unit<Length> unit, final boolean withHeight, final TargetType target)
     {
         ArgumentChecks.ensureStrictlyPositive("semiMajor", semiMajor);
         ArgumentChecks.ensureStrictlyPositive("semiMinor", semiMinor);
-        b = semiMinor / semiMajor;
-        eccentricitySquared = 1 - (b * b);
+        ArgumentChecks.ensureNonNull("target", target);
+        axisRatio = semiMinor / semiMajor;
+        eccentricitySquared = 1 - (axisRatio * axisRatio);
         useIterations = (eccentricitySquared >= ECCENTRICITY_THRESHOLD * ECCENTRICITY_THRESHOLD);
         this.withHeight = withHeight;
         /*
@@ -278,7 +305,7 @@ public class EllipsoidToCentricTransform extends AbstractMathTransform implement
     private void readObject(final ObjectInputStream in) throws IOException, ClassNotFoundException {
         in.defaultReadObject();
         useIterations = (eccentricitySquared >= ECCENTRICITY_THRESHOLD * ECCENTRICITY_THRESHOLD);
-        b = sqrt(1 - eccentricitySquared);
+        axisRatio = sqrt(1 - eccentricitySquared);
     }
 
     /**
@@ -304,16 +331,17 @@ public class EllipsoidToCentricTransform extends AbstractMathTransform implement
      * @param semiMajor  The semi-major axis length.
      * @param semiMinor  The semi-minor axis length.
      * @param unit       The unit of measurement for the semi-axes and the ellipsoidal height.
-     * @param withHeight {@code true} if geographic coordinates include an ellipsoidal height (i.e. are 3-D),
-     *                   or {@code false} if they are only 2-D.
+     * @param withHeight {@code true} if source geographic coordinates include an ellipsoidal height
+     *                   (i.e. are 3-D), or {@code false} if they are only 2-D.
+     * @param target     Whether the target coordinate shall be Cartesian or Spherical.
      * @return The conversion from geographic to geocentric coordinates.
      * @throws FactoryException if an error occurred while creating a transform.
      */
     public static MathTransform createGeodeticConversion(final MathTransformFactory factory,
-            final double semiMajor, final double semiMinor, final Unit<Length> unit, final boolean withHeight)
-            throws FactoryException
+            final double semiMajor, final double semiMinor, final Unit<Length> unit,
+            final boolean withHeight, final TargetType target) throws FactoryException
     {
-        EllipsoidToCentricTransform tr = new EllipsoidToCentricTransform(semiMajor, semiMinor, unit, withHeight);
+        EllipsoidToCentricTransform tr = new EllipsoidToCentricTransform(semiMajor, semiMinor, unit, withHeight, target);
         return tr.context.completeTransform(factory, tr);
     }
 
@@ -348,6 +376,7 @@ public class EllipsoidToCentricTransform extends AbstractMathTransform implement
     public ParameterValueGroup getParameterValues() {
         final Parameters pg = Parameters.castOrWrap(getParameterDescriptors().createValue());
         pg.getOrCreate(ECCENTRICITY).setValue(sqrt(eccentricitySquared));
+        pg.parameter("target").setValue(getTargetType());
         pg.getOrCreate(DIMENSION).setValue(getSourceDimensions());
         return pg;
     }
@@ -363,8 +392,10 @@ public class EllipsoidToCentricTransform extends AbstractMathTransform implement
     public ParameterDescriptorGroup getParameterDescriptors() {
         synchronized (EllipsoidToCentricTransform.class) {
             if (DESCRIPTOR == null) {
-                DESCRIPTOR = new ParameterBuilder().setCodeSpace(Citations.SIS, Constants.SIS)
-                        .addName("Ellipsoid to centric").createGroup(1, 1, DIMENSION, ECCENTRICITY);
+                final ParameterBuilder builder = new ParameterBuilder().setCodeSpace(Citations.SIS, Constants.SIS);
+                final ParameterDescriptor<TargetType> target = builder.setRequired(true)
+                        .addName("target").create(TargetType.class, TargetType.CARTESIAN);
+                DESCRIPTOR = builder.addName("Ellipsoid to centric").createGroup(1, 1, ECCENTRICITY, target, DIMENSION);
             }
             return DESCRIPTOR;
         }
@@ -388,6 +419,15 @@ public class EllipsoidToCentricTransform extends AbstractMathTransform implement
     @Override
     public final int getTargetDimensions() {
         return 3;
+    }
+
+    /**
+     * Returns whether the target coordinate system is Cartesian or Spherical.
+     *
+     * @return Whether the target coordinate system is Cartesian or Spherical.
+     */
+    public final TargetType getTargetType() {
+        return TargetType.CARTESIAN;
     }
 
     /**
@@ -591,10 +631,10 @@ next:   while (--numPts >= 0) {
              *    cos²(q) = 1/(1 + tan²(q))         and  cos(q)  is always positive
              *    sin²(q) = 1 - cos²(q)             and  sin(q)  has the sign of tan(q).
              */
-            final double tanq  = Z / (p*b);
+            final double tanq  = Z / (p*axisRatio);
             final double cos2q = 1/(1 + tanq*tanq);
             final double sin2q = 1 - cos2q;
-            double φ = atan((Z + copySign(eccentricitySquared * sin2q*sqrt(sin2q), tanq) / b) /
+            double φ = atan((Z + copySign(eccentricitySquared * sin2q*sqrt(sin2q), tanq) / axisRatio) /
                             (p -          eccentricitySquared * cos2q*sqrt(cos2q)));
             /*
              * The above is an approximation of φ. Usually we are done with a good approximation for
@@ -654,7 +694,7 @@ next:   while (--numPts >= 0) {
      */
     @Override
     protected int computeHashCode() {
-        return super.computeHashCode() + Numerics.hashCode(Double.doubleToLongBits(b));
+        return super.computeHashCode() + Numerics.hashCode(Double.doubleToLongBits(axisRatio));
     }
 
     /**
@@ -670,7 +710,7 @@ next:   while (--numPts >= 0) {
         }
         if (super.equals(object, mode)) {
             final EllipsoidToCentricTransform that = (EllipsoidToCentricTransform) object;
-            return (withHeight == that.withHeight) && Numerics.equals(b, that.b);
+            return (withHeight == that.withHeight) && Numerics.equals(axisRatio, that.axisRatio);
         }
         return false;
     }
@@ -932,6 +972,6 @@ next:   while (--numPts >= 0) {
         final ParameterValue<Double> p = context.getOrCreate(SEMI_MAJOR);
         final Unit<Length> unit = p.getUnit().asType(Length.class);
         return new EllipsoidToCentricTransform(p.doubleValue(),
-                context.getOrCreate(SEMI_MINOR).doubleValue(unit), unit, false);
+                context.getOrCreate(SEMI_MINOR).doubleValue(unit), unit, false, getTargetType());
     }
 }

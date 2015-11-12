@@ -130,7 +130,8 @@ public final class GeographicToGeocentric extends AbstractProvider {
         final ParameterValue<?> semiMajor = values.parameter(Constants.SEMI_MAJOR);
         final Unit<Length> unit = semiMajor.getUnit().asType(Length.class);
         return EllipsoidToCentricTransform.createGeodeticConversion(factory, semiMajor.doubleValue(),
-                values.parameter(Constants.SEMI_MINOR).doubleValue(unit), unit, true);
+                values.parameter(Constants.SEMI_MINOR).doubleValue(unit), unit, true,
+                EllipsoidToCentricTransform.TargetType.CARTESIAN);
     }
 
     /**
