@@ -22,7 +22,6 @@ import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
-import org.opengis.parameter.InvalidParameterValueException;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
@@ -31,7 +30,6 @@ import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.parameter.Parameters;
-import org.apache.sis.util.resources.Errors;
 
 
 /**
@@ -108,27 +106,6 @@ public abstract class GeocentricAffineBetweenGeographic extends GeocentricAffine
      */
     GeocentricAffineBetweenGeographic(int sourceDimensions, int targetDimensions, ParameterDescriptorGroup parameters) {
         super(sourceDimensions, targetDimensions, parameters);
-    }
-
-    /**
-     * Returns the number of dimensions declared in the given parameter group, or 0 if none.
-     * If this method returns a non-zero value, then it is guaranteed to be either 2 or 3.
-     *
-     * @param  values The values from which to get the dimension.
-     * @return The dimension, or 0 if none.
-     * @throws InvalidParameterValueException if the dimension parameter has an invalid value.
-     */
-    static int getDimension(final Parameters values) throws InvalidParameterValueException {
-        final Integer value = values.getValue(DIMENSION);
-        if (value == null) {
-            return 0;
-        }
-        final int dimension = value;  // Unboxing.
-        if (dimension != 2 && dimension != 3) {
-            throw new InvalidParameterValueException(Errors.format(
-                    Errors.Keys.IllegalArgumentValue_2, "dim", value), "dim", value);
-        }
-        return dimension;
     }
 
     /**
