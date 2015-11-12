@@ -207,8 +207,7 @@ public abstract class GeocentricAffine extends AbstractProvider {
      * <p>This method is invoked only by {@code ConcatenatedTransform.getPseudoSteps()} for the need of WKT formatting.
      * The purpose of this method is very similar to the purpose of {@code AbstractMathTransform.beforeFormat(List, int,
      * boolean)} except that we need to perform the {@code forDatumShift(…)} work only after {@code beforeFormat(…)}
-     * finished its work for all {@code ContextualParameters}, including the {@code EllipsoidalToCartesianTransform}'s
-     * one.</p>
+     * finished its work for all {@code ContextualParameters}, including the {@code EllipsoidToCentricTransform}'s one.</p>
      *
      * @param transforms The full chain of concatenated transforms.
      */

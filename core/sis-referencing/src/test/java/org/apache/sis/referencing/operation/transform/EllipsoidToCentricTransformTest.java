@@ -41,7 +41,7 @@ import static org.apache.sis.test.Assert.*;
 
 
 /**
- * Tests {@link EllipsoidalToCartesianTransform}.
+ * Tests {@link EllipsoidToCentricTransform}.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.7
@@ -52,12 +52,12 @@ import static org.apache.sis.test.Assert.*;
     CoordinateDomainTest.class,
     ContextualParametersTest.class
 })
-public final strictfp class EllipsoidalToCartesianTransformTest extends MathTransformTestCase {
+public final strictfp class EllipsoidToCentricTransformTest extends MathTransformTestCase {
     /**
      * Convenience method for creating an instance from an ellipsoid.
      */
     private void createGeodeticConversion(final Ellipsoid ellipsoid, boolean is3D) throws FactoryException {
-        transform = EllipsoidalToCartesianTransform.createGeodeticConversion(
+        transform = EllipsoidToCentricTransform.createGeodeticConversion(
                 DefaultFactories.forBuildin(MathTransformFactory.class),
                 ellipsoid.getSemiMajorAxis(),
                 ellipsoid.getSemiMinorAxis(),
@@ -129,7 +129,7 @@ public final strictfp class EllipsoidalToCartesianTransformTest extends MathTran
 
     /**
      * Tests conversion of a point on an imaginary planet with high eccentricity.
-     * The {@link EllipsoidalToCartesianTransform} may need to use an iterative method
+     * The {@link EllipsoidToCentricTransform} may need to use an iterative method
      * for reaching the expected precision.
      *
      * @throws FactoryException if an error occurred while creating a transform.
@@ -137,7 +137,7 @@ public final strictfp class EllipsoidalToCartesianTransformTest extends MathTran
      */
     @Test
     public void testHighEccentricity() throws FactoryException, TransformException, FactoryException {
-        transform = EllipsoidalToCartesianTransform.createGeodeticConversion(
+        transform = EllipsoidToCentricTransform.createGeodeticConversion(
                 DefaultFactories.forBuildin(MathTransformFactory.class),
                 6000000, 4000000, SI.METRE, true);
 
@@ -177,7 +177,7 @@ public final strictfp class EllipsoidalToCartesianTransformTest extends MathTran
     }
 
     /**
-     * Tests the {@link EllipsoidalToCartesianTransform#derivative(DirectPosition)} method on a sphere.
+     * Tests the {@link EllipsoidToCentricTransform#derivative(DirectPosition)} method on a sphere.
      *
      * @throws FactoryException if an error occurred while creating a transform.
      * @throws TransformException should never happen.
@@ -189,7 +189,7 @@ public final strictfp class EllipsoidalToCartesianTransformTest extends MathTran
     }
 
     /**
-     * Tests the {@link EllipsoidalToCartesianTransform#derivative(DirectPosition)} method on an ellipsoid.
+     * Tests the {@link EllipsoidToCentricTransform#derivative(DirectPosition)} method on an ellipsoid.
      *
      * @throws FactoryException if an error occurred while creating a transform.
      * @throws TransformException should never happen.
@@ -288,7 +288,7 @@ public final strictfp class EllipsoidalToCartesianTransformTest extends MathTran
                 "    Parameter[“elt_0_0”, 0.017453292519943295],\n" +
                 "    Parameter[“elt_1_1”, 0.017453292519943295],\n" +
                 "    Parameter[“elt_2_2”, 1.567855942887398E-7]],\n" +
-                "  Param_MT[“Ellipsoidal to Cartesian”,\n" +
+                "  Param_MT[“Ellipsoid to centric”,\n" +
                 "    Parameter[“eccentricity”, 0.08181919084262157],\n" +
                 "    Parameter[“dim”, 3]],\n" +
                 "  Param_MT[“Affine”,\n" +
@@ -307,7 +307,7 @@ public final strictfp class EllipsoidalToCartesianTransformTest extends MathTran
                 "    Parameter[“elt_0_0”, 1.567855942887398E-7],\n" +
                 "    Parameter[“elt_1_1”, 1.567855942887398E-7],\n" +
                 "    Parameter[“elt_2_2”, 1.567855942887398E-7]],\n" +
-                "  Param_MT[“Cartesian to ellipsoidal”,\n" +
+                "  Param_MT[“Centric to ellipsoid”,\n" +
                 "    Parameter[“eccentricity”, 0.08181919084262157],\n" +
                 "    Parameter[“dim”, 3]],\n" +
                 "  Param_MT[“Affine”,\n" +

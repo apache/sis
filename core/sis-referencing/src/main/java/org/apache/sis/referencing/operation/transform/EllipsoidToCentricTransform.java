@@ -62,9 +62,9 @@ import static org.apache.sis.internal.referencing.provider.GeocentricAffineBetwe
 
 
 /**
- * Transform from two- or three- dimensional ellipsoidal coordinates to Cartesian coordinates.
- * This transform is usually part of a conversion from
- * {@linkplain org.apache.sis.referencing.crs.DefaultGeographicCRS geographic} to
+ * Transform from two- or three- dimensional ellipsoidal coordinates to (geo)centric coordinates.
+ * This transform is usually (but not necessarily) part of a conversion from
+ * {@linkplain org.apache.sis.referencing.crs.DefaultGeographicCRS geographic} to Cartesian
  * {@linkplain org.apache.sis.referencing.crs.DefaultGeocentricCRS geocentric} coordinates.
  * Each input coordinates is expected to contain:
  * <ol>
@@ -82,7 +82,7 @@ import static org.apache.sis.internal.referencing.provider.GeocentricAffineBetwe
  *
  * The units of measurements depend on how the {@code MathTransform} has been created:
  * <ul>
- *   <li>{@code EllipsoidalToCartesianTransform} instances created directly by the constructor expect (λ,φ) values
+ *   <li>{@code EllipsoidToCentricTransform} instances created directly by the constructor expect (λ,φ) values
  *       in radians and compute (X,Y,Z) values in units of an ellipsoid having a semi-major axis length of 1.
  *       That constructor is reserved for subclasses only.</li>
  *   <li>Transforms created by the {@link #createGeodeticConversion createGeodeticConversion(…)} static method expect
@@ -94,7 +94,7 @@ import static org.apache.sis.internal.referencing.provider.GeocentricAffineBetwe
  * @version 0.7
  * @module
  */
-public class EllipsoidalToCartesianTransform extends AbstractMathTransform implements Serializable {
+public class EllipsoidToCentricTransform extends AbstractMathTransform implements Serializable {
     /**
      * Serial number for inter-operability with different versions.
      */
@@ -135,7 +135,7 @@ public class EllipsoidalToCartesianTransform extends AbstractMathTransform imple
      * The b/a ratio where
      * <var>a</var> is the <cite>semi-major</cite> axis length and
      * <var>b</var> is the <cite>semi-minor</cite> axis length.
-     * Since the {@code EllipsoidalToCartesianTransform} class works on an ellipsoid where a = 1
+     * Since the {@code EllipsoidToCentricTransform} class works on an ellipsoid where a = 1
      * (because of the work performed by the normalization matrices), we just drop <var>a</var>
      * in the formulas - so this field can be written as just <var>b</var>.
      *
@@ -161,7 +161,7 @@ public class EllipsoidalToCartesianTransform extends AbstractMathTransform imple
      * <p><strong>Consider this field as final!</strong>
      * It is not final only for the purpose of {@link #readObject(ObjectInputStream)}.
      * This field is not serialized because its value may depend on the version of this
-     * {@code EllipsoidalToCartesianTransform} class.</p>
+     * {@code EllipsoidToCentricTransform} class.</p>
      */
     private transient boolean useIterations;
 
@@ -193,7 +193,7 @@ public class EllipsoidalToCartesianTransform extends AbstractMathTransform imple
 
     /**
      * Creates a transform from angles in radians on ellipsoid having a semi-major axis length of 1.
-     * More specifically {@code EllipsoidalToCartesianTransform} instances expect input coordinates
+     * More specifically {@code EllipsoidToCentricTransform} instances expect input coordinates
      * as below:
      *
      * <ol>
@@ -210,20 +210,20 @@ public class EllipsoidalToCartesianTransform extends AbstractMathTransform imple
      * </ol>
      *
      * <div class="section">Geographic to geocentric conversions</div>
-     * For converting geographic coordinates to geocentric coordinates, {@code EllipsoidalToCartesianTransform}
+     * For converting geographic coordinates to geocentric coordinates, {@code EllipsoidToCentricTransform}
      * instances need to be concatenated with the following affine transforms:
      *
      * <ul>
-     *   <li><cite>Normalization</cite> before {@code EllipsoidalToCartesianTransform}:<ul>
+     *   <li><cite>Normalization</cite> before {@code EllipsoidToCentricTransform}:<ul>
      *     <li>Conversion of (λ,φ) from degrees to radians</li>
      *     <li>Division of (h) by the semi-major axis length</li>
      *   </ul></li>
-     *   <li><cite>Denormalization</cite> after {@code EllipsoidalToCartesianTransform}:<ul>
+     *   <li><cite>Denormalization</cite> after {@code EllipsoidToCentricTransform}:<ul>
      *     <li>Multiplication of (X,Y,Z) by the semi-major axis length</li>
      *   </ul></li>
      * </ul>
      *
-     * After {@code EllipsoidalToCartesianTransform} construction,
+     * After {@code EllipsoidToCentricTransform} construction,
      * the full conversion chain including the above affine transforms can be created by
      * <code>{@linkplain #getContextualParameters()}.{@linkplain ContextualParameters#completeTransform
      * completeTransform}(factory, this)}</code>.
@@ -236,7 +236,7 @@ public class EllipsoidalToCartesianTransform extends AbstractMathTransform imple
      *
      * @see #createGeodeticConversion(MathTransformFactory, double, double, Unit, boolean)
      */
-    protected EllipsoidalToCartesianTransform(final double semiMajor, final double semiMinor,
+    protected EllipsoidToCentricTransform(final double semiMajor, final double semiMinor,
             final Unit<Length> unit, final boolean withHeight)
     {
         ArgumentChecks.ensureStrictlyPositive("semiMajor", semiMajor);
@@ -246,14 +246,14 @@ public class EllipsoidalToCartesianTransform extends AbstractMathTransform imple
         useIterations = (eccentricitySquared >= ECCENTRICITY_THRESHOLD * ECCENTRICITY_THRESHOLD);
         this.withHeight = withHeight;
         /*
-         * Copy parameters to the ContextualParameter. Those parameters are not used directly
-         * by EllipsoidToCartesian, but we need to store them in case the user asks for them.
+         * Copy parameters to the ContextualParameter. Those parameters are not used directly by
+         * EllipsoidToCentricTransform, but we need to store them in case the user asks for them.
          */
         context = new ContextualParameters(GeographicToGeocentric.PARAMETERS, withHeight ? 4 : 3, 4);
         context.getOrCreate(SEMI_MAJOR).setValue(semiMajor, unit);
         context.getOrCreate(SEMI_MINOR).setValue(semiMinor, unit);
         /*
-         * Prepare two affine transforms to be executed before and after this EllipsoidalToCartesianTransform:
+         * Prepare two affine transforms to be executed before and after this EllipsoidToCentricTransform:
          *
          *   - A "normalization" transform for converting degrees to radians and normalizing the height,
          *   - A "denormalization" transform for scaling (X,Y,Z) to the semi-major axis length.
@@ -283,7 +283,7 @@ public class EllipsoidalToCartesianTransform extends AbstractMathTransform imple
 
     /**
      * Creates a transform from geographic to geocentric coordinates. This factory method combines the
-     * {@code EllipsoidalToCartesianTransform} instance with the steps needed for converting degrees to
+     * {@code EllipsoidToCentricTransform} instance with the steps needed for converting degrees to
      * radians and expressing the results in units of the given ellipsoid.
      *
      * <p>Input coordinates are expected to contain:</p>
@@ -313,7 +313,7 @@ public class EllipsoidalToCartesianTransform extends AbstractMathTransform imple
             final double semiMajor, final double semiMinor, final Unit<Length> unit, final boolean withHeight)
             throws FactoryException
     {
-        EllipsoidalToCartesianTransform tr = new EllipsoidalToCartesianTransform(semiMajor, semiMinor, unit, withHeight);
+        EllipsoidToCentricTransform tr = new EllipsoidToCentricTransform(semiMajor, semiMinor, unit, withHeight);
         return tr.context.completeTransform(factory, tr);
     }
 
@@ -332,7 +332,7 @@ public class EllipsoidalToCartesianTransform extends AbstractMathTransform imple
     }
 
     /**
-     * Returns a copy of internal parameter values of this {@code EllipsoidalToCartesianTransform} transform.
+     * Returns a copy of internal parameter values of this {@code EllipsoidToCentricTransform} transform.
      * The returned group contains parameter values for the number of dimensions and the eccentricity.
      *
      * <div class="note"><b>Note:</b>
@@ -353,7 +353,7 @@ public class EllipsoidalToCartesianTransform extends AbstractMathTransform imple
     }
 
     /**
-     * Returns a description of the internal parameters of this {@code EllipsoidalToCartesianTransform} transform.
+     * Returns a description of the internal parameters of this {@code EllipsoidToCentricTransform} transform.
      * The returned group contains parameter descriptors for the number of dimensions and the eccentricity.
      *
      * @return A description of the internal parameters.
@@ -361,10 +361,10 @@ public class EllipsoidalToCartesianTransform extends AbstractMathTransform imple
     @Debug
     @Override
     public ParameterDescriptorGroup getParameterDescriptors() {
-        synchronized (EllipsoidalToCartesianTransform.class) {
+        synchronized (EllipsoidToCentricTransform.class) {
             if (DESCRIPTOR == null) {
                 DESCRIPTOR = new ParameterBuilder().setCodeSpace(Citations.SIS, Constants.SIS)
-                        .addName("Ellipsoidal to Cartesian").createGroup(1, 1, DIMENSION, ECCENTRICITY);
+                        .addName("Ellipsoid to centric").createGroup(1, 1, DIMENSION, ECCENTRICITY);
             }
             return DESCRIPTOR;
         }
@@ -537,7 +537,7 @@ public class EllipsoidalToCartesianTransform extends AbstractMathTransform imple
      * NOTE: we do not bother to override the methods expecting a 'float' array because those methods should
      *       be rarely invoked. Since there is usually LinearTransforms before and after this transform, the
      *       conversion between float and double will be handle by those LinearTransforms.   If nevertheless
-     *       this EllipsoidalToCartesianTransform is at the beginning or the end of a transformation chain,
+     *       this EllipsoidToCentricTransform is at the beginning or the end of a transformation chain,
      *       the methods inherited from the subclass will work (but may be slightly slower).
      */
 
@@ -640,7 +640,7 @@ next:   while (--numPts >= 0) {
      * Returns the inverse of this transform. The default implementation returns a transform
      * that will delegate its work to {@link #inverseTransform(double[], int, double[], int, int)}.
      *
-     * @return The conversion from Cartesian to ellipsoidal coordinates.
+     * @return The conversion from (geo)centric to ellipsoidal coordinates.
      */
     @Override
     public MathTransform inverse() {
@@ -669,7 +669,7 @@ next:   while (--numPts >= 0) {
             return true;
         }
         if (super.equals(object, mode)) {
-            final EllipsoidalToCartesianTransform that = (EllipsoidalToCartesianTransform) object;
+            final EllipsoidToCentricTransform that = (EllipsoidToCentricTransform) object;
             return (withHeight == that.withHeight) && Numerics.equals(b, that.b);
         }
         return false;
@@ -716,7 +716,7 @@ next:   while (--numPts >= 0) {
         @Override
         public ParameterValueGroup getParameterValues() {
             final ParameterValueGroup pg = getParameterDescriptors().createValue();
-            pg.values().addAll(EllipsoidalToCartesianTransform.this.getParameterValues().values());
+            pg.values().addAll(EllipsoidToCentricTransform.this.getParameterValues().values());
             return pg;
         }
 
@@ -726,15 +726,15 @@ next:   while (--numPts >= 0) {
          *
          * <ul>
          *   <li>it is only for debugging purposes, and</li>
-         *   <li>the user may override {@link EllipsoidalToCartesianTransform#getParameterDescriptors()}.</li>
+         *   <li>the user may override {@link EllipsoidToCentricTransform#getParameterDescriptors()}.</li>
          * </ul>
          */
         @Debug
         @Override
         public ParameterDescriptorGroup getParameterDescriptors() {
             return new DefaultParameterDescriptorGroup(Collections.singletonMap(ParameterDescriptorGroup.NAME_KEY,
-                            new ImmutableIdentifier(Citations.SIS, Constants.SIS, "Cartesian to ellipsoidal")),
-                    EllipsoidalToCartesianTransform.this.getParameterDescriptors());
+                            new ImmutableIdentifier(Citations.SIS, Constants.SIS, "Centric to ellipsoid")),
+                    EllipsoidToCentricTransform.this.getParameterDescriptors());
         }
 
         /**
@@ -780,7 +780,7 @@ next:   while (--numPts >= 0) {
                 dstPts[dstOff+1] = point[1];
             }
             // We need to keep h during matrix inversion because (λ,φ,h) values are not independent.
-            Matrix matrix = EllipsoidalToCartesianTransform.this.derivative(new DirectPositionView(point, offset, 3));
+            Matrix matrix = EllipsoidToCentricTransform.this.derivative(new DirectPositionView(point, offset, 3));
             matrix = Matrices.inverse(matrix);
             if (!withHeight) {
                 matrix = MatrixSIS.castOrCopy(matrix).removeRows(2, 3);     // Drop height only after matrix inversion is done.
@@ -809,7 +809,7 @@ next:   while (--numPts >= 0) {
          *   <li><cite>Geographic 3D to 2D conversion</cite> (EPSG:9659)</li>
          * </ol>
          *
-         * Replacing the above sequence by a two-dimensional {@code EllipsoidalToCartesianTransform} instance
+         * Replacing the above sequence by a two-dimensional {@code EllipsoidToCentricTransform} instance
          * allow the following optimizations:
          *
          * <ul>
@@ -889,7 +889,7 @@ next:   while (--numPts >= 0) {
      *   <li><cite>Geographic/geocentric conversions</cite> (EPSG:9602)</li>
      * </ol>
      *
-     * Replacing the above sequence by a two-dimensional {@code EllipsoidalToCartesianTransform} instance
+     * Replacing the above sequence by a two-dimensional {@code EllipsoidToCentricTransform} instance
      * allow the following optimizations:
      *
      * <ul>
@@ -928,10 +928,10 @@ next:   while (--numPts >= 0) {
      * Creates a transform with the same parameters than this transform,
      * but expecting two-dimensional inputs instead than three-dimensional.
      */
-    final EllipsoidalToCartesianTransform create2D() {
+    final EllipsoidToCentricTransform create2D() {
         final ParameterValue<Double> p = context.getOrCreate(SEMI_MAJOR);
         final Unit<Length> unit = p.getUnit().asType(Length.class);
-        return new EllipsoidalToCartesianTransform(p.doubleValue(),
+        return new EllipsoidToCentricTransform(p.doubleValue(),
                 context.getOrCreate(SEMI_MINOR).doubleValue(unit), unit, false);
     }
 }
