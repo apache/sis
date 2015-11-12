@@ -95,6 +95,86 @@ public class ShapefileDescriptor {
     }
 
     /**
+     * Returns the version of the shapefile.
+     * @return Version.
+     */
+    public int getVersion() {
+        return this.version;
+    }
+
+    /**
+     * Returns the ESRI shape type in the shapefile.
+     * @return Shape type.
+     */
+    public ShapeTypeEnum getShapeType() {
+        return this.shapeType;
+    }
+
+    /**
+     * Returns the X Min property.
+     * @return XMin.
+     */
+    public double getXmin() {
+        return this.xmin;
+    }
+
+    /**
+     * Returns the Y Min property.
+     * @return YMin.
+     */
+    public double getYmin() {
+        return this.ymin;
+    }
+
+    /**
+     * Returns the X Max property.
+     * @return XMax.
+     */
+    public double getXmax() {
+        return this.xmax;
+    }
+
+    /**
+     * Returns the Y Max property.
+     * @return YMax.
+     */
+    public double getYmax() {
+        return this.ymax;
+    }
+
+    /**
+     * Returns the Z Min property.
+     * @return ZMin.
+     */
+    public double getZmin() {
+        return this.zmin;
+    }
+
+    /**
+     * Returns the Z Max property.
+     * @return ZMax.
+     */
+    public double getZmax() {
+        return this.zmax;
+    }
+
+    /**
+     * Returns the M Min property. 
+     * @return M min.
+     */
+    public double getMmin() {
+        return this.mmin;
+    }
+    
+    /**
+     * Returns the M Max property.
+     * @return M Max.
+     */
+    public double getMmax(){
+        return this.mmax;
+    }
+
+    /**
      * @see java.lang.Object#toString()
      */
     @Override
