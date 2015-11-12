@@ -59,8 +59,8 @@ public final class PolarStereographicNorth extends AbstractStereographic {
                        0, Latitude.MAX_VALUE, Latitude.MAX_VALUE, NonSI.DEGREE_ANGLE);
 
         PARAMETERS = builder
-            .addName(Citations.ESRI, "Stereographic_North_Pole")
-            .createGroupForMapProjection(parameters);
+                .addName(Citations.ESRI, "Stereographic_North_Pole")
+                .createGroupForMapProjection(parameters);
     }
 
     /**

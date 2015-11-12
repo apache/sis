@@ -100,7 +100,7 @@ abstract class ConformalProjection extends NormalizedProjection {
     static final boolean ALLOW_TRIGONOMETRIC_IDENTITIES = true;
 
     /**
-     * The threshold value of {@link #excentricity} at which we consider the accuracy of the
+     * The threshold value of {@link #eccentricity} at which we consider the accuracy of the
      * series expansion insufficient. This threshold is determined empirically with the help
      * of the {@code MercatorMethodComparison} class in the test directory.
      * We choose the value where:
@@ -110,20 +110,22 @@ abstract class ConformalProjection extends NormalizedProjection {
      *   <li>the maximal error of series expansion become greater than {@link NormalizedProjection#ANGULAR_TOLERANCE}.</li>
      * </ul>
      */
-    static final double EXCENTRICITY_THRESHOLD = 0.16;
+    static final double ECCENTRICITY_THRESHOLD = 0.16;
 
     /**
-     * {@code true} if the {@link #excentricity} value is greater than or equals to {@link #EXCENTRICITY_THRESHOLD},
+     * {@code true} if the {@link #eccentricity} value is greater than or equals to {@link #ECCENTRICITY_THRESHOLD},
      * in which case the {@link #φ(double)} method will need to use an iterative method.
      *
      * <p><strong>Consider this field as final!</strong>
-     * It is not final only for the purpose of {@link #readObject(ObjectInputStream)}.</p>
+     * It is not final only for the purpose of {@link #readObject(ObjectInputStream)}.
+     * This field is not serialized because its value may depend on the version of this
+     * {@code ConformalProjection} class.</p>
      */
     private transient boolean useIterations;
 
     /**
      * Coefficients in the series expansion of the inverse projection,
-     * depending only on {@linkplain #excentricity excentricity} value.
+     * depending only on {@linkplain #eccentricity eccentricity} value.
      * The series expansion is of the following form, where ｆ(θ) is typically sin(θ):
      *
      *     <blockquote>ci₂⋅ｆ(2θ) + ci₄⋅ｆ(4θ) + ci₆⋅ｆ(6θ) + ci₈⋅ｆ(8θ)</blockquote>
@@ -152,18 +154,18 @@ abstract class ConformalProjection extends NormalizedProjection {
     }
 
     /**
-     * Computes the coefficients in the series expansions from the {@link #excentricitySquared} value.
+     * Computes the coefficients in the series expansions from the {@link #eccentricitySquared} value.
      * This method shall be invoked after {@code ConformalProjection} construction or deserialization.
      */
     void computeCoefficients() {
-        useIterations = (excentricity >= EXCENTRICITY_THRESHOLD);
-        final double e2 = excentricitySquared;
+        useIterations = (eccentricity >= ECCENTRICITY_THRESHOLD);
+        final double e2 = eccentricitySquared;
         final double e4 = e2 * e2;
         final double e6 = e2 * e4;
         final double e8 = e4 * e4;
         /*
          * For each line below, add the smallest values first in order to reduce rounding errors.
-         * The smallest values are the one using the excentricity raised to the highest power.
+         * The smallest values are the one using the eccentricity raised to the highest power.
          */
         ci2  =    13/   360.* e8  +   1/ 12.* e6  +  5/24.* e4  +  e2/2;
         ci4  =   811/ 11520.* e8  +  29/240.* e6  +  7/48.* e4;
@@ -222,7 +224,7 @@ abstract class ConformalProjection extends NormalizedProjection {
      *
      * <b>Note:</b> §1.3.3 in Geomatics Guidance Note number 7 part 2 (April 2015) uses a series expansion
      * while USGS used an iterative method. The series expansion is twice faster than the iterative method
-     * for the same precision, but this precision is achieved "only" for relatively small excentricity like
+     * for the same precision, but this precision is achieved "only" for relatively small eccentricity like
      * the Earth's one. See the {@code MercatorMethodComparison} class in the test package for more discussion.
      *
      * @param  expOfSouthing The <em>reciprocal</em> of the value returned by {@link #expOfNorthing}.
@@ -235,7 +237,7 @@ abstract class ConformalProjection extends NormalizedProjection {
     final double φ(final double expOfSouthing) throws ProjectionException {
         /*
          * Get a first approximation of φ from Snyder (7-11). The result below would be exact if the
-         * ellipsoid was actually a sphere. But if the excentricity is different than 0, then we will
+         * ellipsoid was actually a sphere. But if the eccentricity is different than 0, then we will
          * need to add a correction.
          *
          * Note that the φ value computed by the line below is called χ in EPSG guide.
@@ -273,22 +275,19 @@ abstract class ConformalProjection extends NormalizedProjection {
         }
         /*
          * We should never reach this point for map projections on Earth. But if the ellipsoid is for some
-         * other planet having a high excentricity, then the above series expansion may not be sufficient.
+         * other planet having a high eccentricity, then the above series expansion may not be sufficient.
          * Try to improve by iteratively solving equation (7-9) from Snyder. However instead than using
          * Snyder (7-11) as the starting point, we take the result of above calculation as the initial φ.
          * Assuming that it is closer to the real φ value, this save us some iteration loops and usually
          * gives us more accurate results (according MercatorMethodComparison tests).
          */
-        final double hℯ = 0.5 * excentricity;
-        for (int i=0; i<MAXIMUM_ITERATIONS; i++) {
-            final double ℯsinφ = excentricity * sin(φ);
-            double ε = abs(φ - (φ = PI/2 - 2*atan(expOfSouthing * pow((1 - ℯsinφ)/(1 + ℯsinφ), hℯ))));
-            if (ε <= ITERATION_TOLERANCE) {
+        final double hℯ = 0.5 * eccentricity;
+        for (int it=0; it<MAXIMUM_ITERATIONS; it++) {
+            final double ℯsinφ = eccentricity * sin(φ);
+            final double Δφ = φ - (φ = PI/2 - 2*atan(expOfSouthing * pow((1 - ℯsinφ)/(1 + ℯsinφ), hℯ)));
+            if (!(abs(Δφ) > ITERATION_TOLERANCE)) {     // Use '!' for accepting NaN.
                 return φ;
             }
-        }
-        if (Double.isNaN(expOfSouthing)) {
-            return Double.NaN;
         }
         throw new ProjectionException(Errors.Keys.NoConvergence);
     }
@@ -345,7 +344,7 @@ abstract class ConformalProjection extends NormalizedProjection {
      * </ul>
      *
      * @param  φ     The latitude in radians.
-     * @param  ℯsinφ The sine of the φ argument multiplied by {@link #excentricity}.
+     * @param  ℯsinφ The sine of the φ argument multiplied by {@link #eccentricity}.
      * @return {@code Math.exp} of the Mercator projection of the given latitude.
      *
      * @see #φ(double)
@@ -359,7 +358,7 @@ abstract class ConformalProjection extends NormalizedProjection {
          * favorises slightly the North hemisphere (but the differences are very small). In Apache SIS,
          * we handle that by changing the sign of some terms in the (de)normalisation matrices.
          */
-        return tan(PI/4 + 0.5*φ) * pow((1 - ℯsinφ) / (1 + ℯsinφ), 0.5*excentricity);
+        return tan(PI/4 + 0.5*φ) * pow((1 - ℯsinφ) / (1 + ℯsinφ), 0.5*eccentricity);
     }
 
     /**
@@ -377,7 +376,7 @@ abstract class ConformalProjection extends NormalizedProjection {
      * @see #φ(double)
      */
     final double dy_dφ(final double sinφ, final double cosφ) {
-        return (1 / cosφ)  -  excentricitySquared * cosφ / (1 - excentricitySquared * (sinφ*sinφ));
+        return (1 / cosφ)  -  eccentricitySquared * cosφ / (1 - eccentricitySquared * (sinφ*sinφ));
     }
 
     /**

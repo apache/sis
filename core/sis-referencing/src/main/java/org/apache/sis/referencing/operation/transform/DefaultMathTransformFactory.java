@@ -152,7 +152,7 @@ import org.apache.sis.internal.jdk8.JDK8;
  *
  * @author  Martin Desruisseaux (Geomatys, IRD)
  * @since   0.6
- * @version 0.6
+ * @version 0.7
  * @module
  *
  * @see MathTransformProvider
@@ -560,7 +560,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
              * NormalizedProjection class (our base class for all map projection implementations)
              * to known that the ellipsoid definitive parameter is the inverse flattening factor
              * instead than the semi-major axis length. It makes a small difference in the accuracy
-             * of the excentricity parameter.
+             * of the eccentricity parameter.
              */
             if (isIvfDefinitive) try {
                 parameters.parameter(Constants.INVERSE_FLATTENING).setValue(ellipsoid.getInverseFlattening());
@@ -782,12 +782,15 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
             throws FactoryException
     {
         lastMethod.remove();
+        ArgumentChecks.ensureNonNull("tr1", tr1);
+        ArgumentChecks.ensureNonNull("tr2", tr2);
         final MathTransform tr;
         try {
-            tr = MathTransforms.concatenate(tr1, tr2);
+            tr = ConcatenatedTransform.create(tr1, tr2, this);
         } catch (IllegalArgumentException exception) {
             throw new FactoryException(exception);
         }
+        assert MathTransforms.isValid(MathTransforms.getSteps(tr)) : tr;
         return unique(tr);
     }
 

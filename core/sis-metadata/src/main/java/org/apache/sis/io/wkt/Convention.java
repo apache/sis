@@ -187,7 +187,9 @@ public enum Convention {
      *   <li>All quoted texts (not only the remarks) preserve non-ASCII characters.</li>
      *   <li>Map projections are shown as SIS stores them internally, i.e. with the separation between
      *       linear and non-linear steps, rather than as a single operation.</li>
-     *   <li>{@code CompoundCRS} shows nested compound CRS if any (the structure is not flattened).</li>
+     *   <li>{@code Parameter} elements omit the unit of measurement if that unit is equal to the default unit
+     *       (as declared in the parameter descriptor).</li>
+     *   <li>{@code CompoundCRS} elements show nested compound CRS if any (the structure is not flattened).</li>
      *   <li>{@code Id} elements are formatted for child elements in addition to the root one.</li>
      *   <li>{@code Id} element omits the {@code URI} sub-element if the later is derived by Apache SIS
      *       from the {@code Id} properties.</li>

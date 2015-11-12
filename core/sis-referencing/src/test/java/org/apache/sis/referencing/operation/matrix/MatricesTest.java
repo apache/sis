@@ -364,6 +364,45 @@ public final strictfp class MatricesTest extends TestCase {
     }
 
     /**
+     * Tests {@link MatrixSIS#removeRows(int, int)}
+     */
+    @Test
+    public void testRemoveRows() {
+        MatrixSIS matrix = Matrices.create(4, 5, new double[] {
+            1, 2, 7, 8, 9,
+            3, 4, 6, 7, 8,
+            9, 8, 7, 6, 5,
+            4, 3, 2, 1, 0
+        });
+        matrix = matrix.removeRows(3, 4);
+        assertEquals(Matrices.create(3, 5, new double[] {
+            1, 2, 7, 8, 9,
+            3, 4, 6, 7, 8,
+            9, 8, 7, 6, 5
+        }), matrix);
+    }
+
+    /**
+     * Tests {@link MatrixSIS#removeColumns(int, int)}
+     */
+    @Test
+    public void testRemoveColumns() {
+        MatrixSIS matrix = Matrices.create(4, 5, new double[] {
+            1, 2, 7, 8, 9,
+            3, 4, 6, 7, 8,
+            9, 8, 7, 6, 5,
+            4, 3, 2, 1, 0
+        });
+        matrix = matrix.removeColumns(2, 4);
+        assertEquals(Matrices.create(4, 3, new double[] {
+            1, 2, 9,
+            3, 4, 8,
+            9, 8, 5,
+            4, 3, 0
+        }), matrix);
+    }
+
+    /**
      * Tests {@link Matrices#copy(Matrix)}
      */
     @Test

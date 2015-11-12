@@ -126,6 +126,7 @@ final class UnmodifiableMatrix extends MatrixSIS {
      * Returns a copy of this matrix that users can modify.
      */
     @Override
+    @SuppressWarnings("CloneDoesntCallSuperClone")
     public MatrixSIS clone() {
         return castOrCopy(matrix.clone());
     }

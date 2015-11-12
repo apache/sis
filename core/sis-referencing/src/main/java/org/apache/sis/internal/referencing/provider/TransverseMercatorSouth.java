@@ -62,17 +62,17 @@ public final class TransverseMercatorSouth extends AbstractMercator {
                 .setRemarks(Messages.formatInternational(Messages.Keys.MisnamedParameter_1, "False southing")));
 
         PARAMETERS = builder
-            .addIdentifier(IDENTIFIER)
-            .addName(                    "Transverse Mercator (South Orientated)")
-            .addName(Citations.OGC,      "Transverse_Mercator_South_Orientated")
-            .addName(Citations.GEOTIFF,  "CT_TransvMercator_SouthOriented")
-            .addIdentifier(Citations.GEOTIFF,  "27")
-            .createGroupForMapProjection(
-                    TransverseMercator.LATITUDE_OF_ORIGIN,
-                    TransverseMercator.LONGITUDE_OF_ORIGIN,
-                    TransverseMercator.SCALE_FACTOR,
-                    LambertConformalWest.FALSE_WESTING,
-                    falseSouthing);
+                .addIdentifier(IDENTIFIER)
+                .addName(                    "Transverse Mercator (South Orientated)")
+                .addName(Citations.OGC,      "Transverse_Mercator_South_Orientated")
+                .addName(Citations.GEOTIFF,  "CT_TransvMercator_SouthOriented")
+                .addIdentifier(Citations.GEOTIFF,  "27")
+                .createGroupForMapProjection(
+                        TransverseMercator.LATITUDE_OF_ORIGIN,
+                        TransverseMercator.LONGITUDE_OF_ORIGIN,
+                        TransverseMercator.SCALE_FACTOR,
+                        LambertConformalWest.FALSE_WESTING,
+                        falseSouthing);
     }
 
     /**

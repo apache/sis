@@ -19,6 +19,8 @@ package org.apache.sis.internal.shapefile.jdbc;
 import java.io.File;
 import java.nio.BufferUnderflowException;
 import java.nio.ByteOrder;
+import java.nio.charset.Charset;
+import java.nio.charset.UnsupportedCharsetException;
 import java.util.*;
 import java.util.logging.Level;
 
@@ -39,14 +41,31 @@ public class MappedByteReader extends AbstractDbase3ByteReader {
     /** List of field descriptors. */
     private List<DBase3FieldDescriptor> fieldsDescriptors = new ArrayList<DBase3FieldDescriptor>();
 
+    /** Connection properties. */
+    private Properties info;
+
     /**
      * Construct a mapped byte reader on a file.
      * @param dbase3File File.
+     * @param connectionInfos Connection properties, maybe null.
      * @throws SQLInvalidDbaseFileFormatException if the database seems to be invalid.
      * @throws SQLDbaseFileNotFoundException if the Dbase file has not been found.
      */
-    public MappedByteReader(File dbase3File) throws SQLInvalidDbaseFileFormatException, SQLDbaseFileNotFoundException {
+    public MappedByteReader(File dbase3File, Properties connectionInfos) throws SQLInvalidDbaseFileFormatException, SQLDbaseFileNotFoundException {
         super(dbase3File);
+        this.info = connectionInfos;
+
+        // React to special features asked.
+        if (info != null) {
+            // Sometimes, DBF files have a wrong charset, or more often : none, and you have to specify it.
+            String recordCharset = (String)info.get("record_charset");
+
+            if (recordCharset != null) {
+                Charset cs = Charset.forName(recordCharset);
+                setCharset(cs);
+            }
+        }
+
         loadDescriptor();
     }
 
@@ -81,7 +100,26 @@ public class MappedByteReader extends AbstractDbase3ByteReader {
      */
     @Override
     public boolean nextRowAvailable() {
-        return getByteBuffer().hasRemaining();
+        // 1) Check for remaining bytes.
+        if (getByteBuffer().hasRemaining() == false) {
+            return false;
+        }
+
+        // 2) Check that the immediate next byte read isn't the EOF signal.
+        byte eofCheck = getByteBuffer().get();
+
+        boolean isEOF = (eofCheck == 0x1A);
+        this.log(Level.FINER, "log.delete_status", rowNum, eofCheck, isEOF ? "EOF" : "Active");
+
+        if (eofCheck == 0x1A) {
+            return false;
+        }
+        else {
+            // Return one byte back.
+            int position = getByteBuffer().position();
+            getByteBuffer().position(position-1);
+            return true;
+        }
     }
 
     /**
@@ -89,24 +127,36 @@ public class MappedByteReader extends AbstractDbase3ByteReader {
      * @return Map of field name / object value.
      */
     @Override
-    public Map<String, Object> readNextRowAsObjects() {
+    public Map<String, byte[]> readNextRowAsObjects() {
         // TODO: ignore deleted records
         /* byte isDeleted = */ getByteBuffer().get(); // denotes whether deleted or current
-        // read first part of record
 
-        HashMap<String, Object> fieldsValues = new HashMap<String,Object>();
+        // read first part of record
+        HashMap<String, byte[]> fieldsValues = new HashMap<String, byte[]>();
 
         for (DBase3FieldDescriptor fd : fieldsDescriptors) {
             byte[] data = new byte[fd.getLength()];
             getByteBuffer().get(data);
 
+            // Trim the bytes right.
             int length = data.length;
+
             while (length != 0 && data[length - 1] <= ' ') {
                 length--;
             }
 
-            String value = new String(data, 0, length);
-            fieldsValues.put(fd.getName(), value);
+            if (length != data.length) {
+                byte[] dataTrimmed = new byte[length];
+
+                for(int index=0; index < length; index ++) {
+                    dataTrimmed[index] = data[index];
+                }
+
+                fieldsValues.put(fd.getName(), dataTrimmed);
+            }
+            else {
+                fieldsValues.put(fd.getName(), data);
+            }
         }
 
         rowNum ++;
@@ -137,7 +187,19 @@ public class MappedByteReader extends AbstractDbase3ByteReader {
 
             // Translate code page value to a known charset.
             this.codePage = getByteBuffer().get();
-            this.charset = toCharset(this.codePage);
+
+            if (this.charset == null) {
+                try {
+                    this.charset = toCharset(this.codePage);
+                }
+                catch(UnsupportedCharsetException e) {
+                    // Warn the caller that he will have to perform is own conversions.
+                    format(Level.WARNING, "log.no_valid_charset", getFile().getAbsolutePath(), e.getMessage());
+                }
+            }
+            else {
+                format(Level.INFO, "log.record_charset", this.charset.name());
+            }
 
             getByteBuffer().get(reservedFiller2);
 

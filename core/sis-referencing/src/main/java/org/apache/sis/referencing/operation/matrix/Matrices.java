@@ -159,6 +159,13 @@ public final class Matrices extends Static {
     }
 
     /**
+     * Creates a matrix filled with zero values, using double-double precision if {@code precision} is {@code true}.
+     */
+    static MatrixSIS createZero(final int numRow, final int numCol, final boolean precision) {
+        return precision ? GeneralMatrix.createExtendedPrecision(numRow, numCol, false) : createZero(numRow, numCol);
+    }
+
+    /**
      * Creates a matrix of size {@code numRow} × {@code numCol} initialized to the given elements.
      * The elements array size must be equals to {@code numRow*numCol}. Column indices vary fastest.
      *
@@ -378,8 +385,8 @@ public final class Matrices extends Static {
      * </ul>
      *
      * <div class="note"><b>Example:</b>
-     * It is legal to transform from (<i>easting</i>, <i>northing</i>, <i>up</i>) to
-     * (<i>easting</i>, <i>northing</i>) - this is the first above case, but illegal
+     * it is legal to transform from (<i>easting</i>, <i>northing</i>, <i>up</i>) to
+     * (<i>easting</i>, <i>northing</i>) — this is the first above case — but illegal
      * to transform (<i>easting</i>, <i>northing</i>) to (<i>easting</i>, <i>up</i>).</div>
      *
      * <div class="section">Example</div>
@@ -488,7 +495,7 @@ public final class Matrices extends Static {
 
     /**
      * Creates a matrix for a transform that keep only a subset of source ordinate values.
-     * The matrix size will be ({@code selectedDimensions.length}+1) × ({@code sourceDimensions}+1).
+     * The matrix size will be ({@code selectedDimensions.length} + 1) × ({@code sourceDimensions} + 1).
      * The matrix will contain only zero elements, except for the following cells which will contain 1:
      *
      * <ul>
@@ -520,6 +527,9 @@ public final class Matrices extends Static {
      * }
      * </div>
      *
+     * The inverse of the matrix created by this method will put {@link Double#NaN} values in the extra dimensions.
+     * Other dimensions will work as expected.
+     *
      * @param  sourceDimensions The number of dimensions in source coordinates.
      * @param  selectedDimensions The 0-based indices of source ordinate values to keep.
      *         The length of this array will be the number of dimensions in target coordinates.
@@ -542,7 +552,7 @@ public final class Matrices extends Static {
     }
 
     /**
-     * Creates a matrix which converts a subset of ordinates with another matrix.
+     * Creates a matrix which converts a subset of ordinates using the transform given by another matrix.
      * For example giving (<var>latitude</var>, <var>longitude</var>, <var>height</var>) coordinates,
      * a pass through operation can convert the height values from feet to metres without affecting
      * the (<var>latitude</var>, <var>longitude</var>) values.
@@ -651,12 +661,22 @@ public final class Matrices extends Static {
     }
 
     /**
+     * Returns {@code true} if the given matrix is likely to use extended precision.
+     * A value of {@code true} is not a guarantee that the matrix uses extended precision,
+     * but a value of {@code false} is a guarantee that it does not.
+     */
+    private static boolean isExtendedPrecision(final Matrix matrix) {
+        return (matrix instanceof MatrixSIS) ? ((MatrixSIS) matrix).isExtendedPrecision() :
+               (matrix instanceof ExtendedPrecisionMatrix);  // Not guarantee that the matrix really uses double-double.
+    }
+
+    /**
      * Creates a new matrix which is a copy of the given matrix.
      *
      * <div class="note"><b>Implementation note:</b>
      * For square matrix with a size between {@value org.apache.sis.referencing.operation.matrix.Matrix1#SIZE}
      * and {@value org.apache.sis.referencing.operation.matrix.Matrix4#SIZE} inclusive, the returned matrix is
-     * guaranteed to be an instance of one of {@link Matrix1} … {@link Matrix4} subtypes.</div>
+     * usually an instance of one of {@link Matrix1} … {@link Matrix4} subtypes.</div>
      *
      * @param matrix The matrix to copy, or {@code null}.
      * @return A copy of the given matrix, or {@code null} if the given matrix was null.
@@ -672,7 +692,7 @@ public final class Matrices extends Static {
         if (size != matrix.getNumCol()) {
             return new NonSquareMatrix(matrix);
         }
-        if (!(matrix instanceof ExtendedPrecisionMatrix)) {
+        if (!isExtendedPrecision(matrix)) {
             switch (size) {
                 case 1: return new Matrix1(matrix);
                 case 2: return new Matrix2(matrix);

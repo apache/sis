@@ -96,6 +96,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final short CanNotComputeDerivative = 1;
 
         /**
+         * Can not compute “{0}”.
+         */
+        public static final short CanNotCompute_1 = 201;
+
+        /**
          * Can not concatenate transforms “{0}” and “{1}”.
          */
         public static final short CanNotConcatenateTransforms_2 = 160;

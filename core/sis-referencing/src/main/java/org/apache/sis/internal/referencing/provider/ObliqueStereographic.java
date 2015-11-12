@@ -21,13 +21,12 @@ import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.ParameterNotFoundException;
 import org.apache.sis.metadata.iso.citation.Citations;
-import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.referencing.operation.projection.NormalizedProjection;
 
 
 /**
- * The provider for "<cite>Oblique Stereographic</cite>" projection (EPSG:9809).
+ * The provider for <cite>"Oblique Stereographic"</cite> projection (EPSG:9809).
  *
  * @author  Rueben Schulz (UBC)
  * @author  Martin Desruisseaux (Geomatys)
@@ -61,25 +60,24 @@ public final class ObliqueStereographic extends AbstractStereographic {
      */
     private static final ParameterDescriptorGroup PARAMETERS;
     static {
-        final ParameterBuilder builder = builder();
-        PARAMETERS = builder
-            .addIdentifier(             "9809")
-            .addName(                   "Oblique Stereographic")
-            .addName(Citations.OGC,     "Oblique_Stereographic")
-            .addName(Citations.ESRI,    "Double_Stereographic")
-            .addName(Citations.GEOTIFF, "CT_ObliqueStereographic")
-            .addName(Citations.S57,     "Oblique stereographic")
-            .addName(Citations.S57,     "OST")
-            .addName(Citations.PROJ4,   "sterea")
-            .addName(                   "Roussilhe")
-            .addIdentifier(Citations.GEOTIFF, "16")
-            .addIdentifier(Citations.S57,     "14")
-            .createGroupForMapProjection(
-                    LATITUDE_OF_ORIGIN,
-                    LONGITUDE_OF_ORIGIN,
-                    SCALE_FACTOR,
-                    FALSE_EASTING,
-                    FALSE_NORTHING);
+        PARAMETERS = builder()
+                .addIdentifier(             "9809")
+                .addName(                   "Oblique Stereographic")
+                .addName(Citations.OGC,     "Oblique_Stereographic")
+                .addName(Citations.ESRI,    "Double_Stereographic")
+                .addName(Citations.GEOTIFF, "CT_ObliqueStereographic")
+                .addName(Citations.S57,     "Oblique stereographic")
+                .addName(Citations.S57,     "OST")
+                .addName(Citations.PROJ4,   "sterea")
+                .addName(                   "Roussilhe")
+                .addIdentifier(Citations.GEOTIFF, "16")
+                .addIdentifier(Citations.S57,     "14")
+                .createGroupForMapProjection(
+                        LATITUDE_OF_ORIGIN,
+                        LONGITUDE_OF_ORIGIN,
+                        SCALE_FACTOR,
+                        FALSE_EASTING,
+                        FALSE_NORTHING);
     }
 
     /**
