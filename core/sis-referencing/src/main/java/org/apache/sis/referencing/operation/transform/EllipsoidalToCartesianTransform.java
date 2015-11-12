@@ -26,6 +26,7 @@ import javax.measure.unit.Unit;
 import javax.measure.quantity.Length;
 import org.opengis.util.FactoryException;
 import org.opengis.geometry.DirectPosition;
+import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.referencing.operation.Matrix;
@@ -782,7 +783,7 @@ next:   while (--numPts >= 0) {
             Matrix matrix = EllipsoidalToCartesianTransform.this.derivative(new DirectPositionView(point, offset, 3));
             matrix = Matrices.inverse(matrix);
             if (!withHeight) {
-                matrix = Matrices.removeRows(matrix, 2, 3);     // Drop height only after matrix inversion is done.
+                matrix = MatrixSIS.castOrCopy(matrix).removeRows(2, 3);     // Drop height only after matrix inversion is done.
             }
             return matrix;
         }
@@ -796,6 +797,51 @@ next:   while (--numPts >= 0) {
                 throws TransformException
         {
             inverseTransform(srcPts, srcOff, dstPts, dstOff, numPts);
+        }
+
+        /**
+         * If this transform returns three-dimensional outputs, and if the transform just after this one
+         * just drops the height values, then replaces this transform by a two-dimensional one.
+         * The intend is to handle the following sequence of operations defined in the EPSG database:
+         *
+         * <ol>
+         *   <li>Inverse of <cite>Geographic/geocentric conversions</cite> (EPSG:9602)</li>
+         *   <li><cite>Geographic 3D to 2D conversion</cite> (EPSG:9659)</li>
+         * </ol>
+         *
+         * Replacing the above sequence by a two-dimensional {@code EllipsoidalToCartesianTransform} instance
+         * allow the following optimizations:
+         *
+         * <ul>
+         *   <li>Avoid computation of <var>h</var> value.</li>
+         *   <li>Allow use of the more efficient {@link java.awt.geom.AffineTransform} after this transform
+         *       instead than a transform based on a matrix of size 3×4.</li>
+         * </ul>
+         */
+        @Override
+        final MathTransform concatenate(final MathTransform other, final boolean applyOtherFirst,
+                final MathTransformFactory factory) throws FactoryException
+        {
+            if (!applyOtherFirst && withHeight && other instanceof LinearTransform && other.getTargetDimensions() == 2) {
+                /*
+                 * Found a 3×4 matrix after this transform. We can reduce to a 3×3 matrix only if no dimension
+                 * use the column that we are about to drop (i.e. all coefficients in that column are zero).
+                 */
+                Matrix matrix = ((LinearTransform) other).getMatrix();
+                if (matrix.getElement(0,2) == 0 &&
+                    matrix.getElement(1,2) == 0 &&
+                    matrix.getElement(2,2) == 0)
+                {
+                    matrix = MatrixSIS.castOrCopy(matrix).removeColumns(2, 3);
+                    final MathTransform tr2D = create2D().inverse();
+                    if (factory != null) {
+                        return factory.createConcatenatedTransform(tr2D, factory.createAffineTransform(matrix));
+                    } else {
+                        return ConcatenatedTransform.create(tr2D, MathTransforms.linear(matrix), factory);
+                    }
+                }
+            }
+            return super.concatenate(other, applyOtherFirst, factory);
         }
 
         /**
@@ -831,5 +877,61 @@ next:   while (--numPts >= 0) {
             transforms.add(index++, new Geographic3Dto2D.WKT(true));
         }
         return index;
+    }
+
+    /**
+     * If this transform expects three-dimensional inputs, and if the transform just before this one
+     * unconditionally sets the height to zero, then replaces this transform by a two-dimensional one.
+     * The intend is to handle the following sequence of operations defined in the EPSG database:
+     *
+     * <ol>
+     *   <li>Inverse of <cite>Geographic 3D to 2D conversion</cite> (EPSG:9659)</li>
+     *   <li><cite>Geographic/geocentric conversions</cite> (EPSG:9602)</li>
+     * </ol>
+     *
+     * Replacing the above sequence by a two-dimensional {@code EllipsoidalToCartesianTransform} instance
+     * allow the following optimizations:
+     *
+     * <ul>
+     *   <li>Avoid computation of <var>h</var> value.</li>
+     *   <li>Allow use of the more efficient {@link java.awt.geom.AffineTransform} before this transform
+     *       instead than a transform based on a matrix of size 4×3.</li>
+     * </ul>
+     */
+    @Override
+    final MathTransform concatenate(final MathTransform other, final boolean applyOtherFirst,
+            final MathTransformFactory factory) throws FactoryException
+    {
+        if (applyOtherFirst && withHeight && other instanceof LinearTransform && other.getSourceDimensions() == 2) {
+            /*
+             * Found a 4×3 matrix before this transform. We can reduce to a 3×3 matrix only if the row that we are
+             * about to drop unconditionnaly set the height to zero (i.e. all coefficients in that row are zero).
+             */
+            Matrix matrix = ((LinearTransform) other).getMatrix();
+            if (matrix.getElement(2,0) == 0 &&
+                matrix.getElement(2,1) == 0 &&
+                matrix.getElement(2,2) == 0)
+            {
+                matrix = MatrixSIS.castOrCopy(matrix).removeRows(2, 3);
+                final MathTransform tr2D = create2D();
+                if (factory != null) {
+                    return factory.createConcatenatedTransform(factory.createAffineTransform(matrix), tr2D);
+                } else {
+                    return ConcatenatedTransform.create(MathTransforms.linear(matrix), tr2D, factory);
+                }
+            }
+        }
+        return super.concatenate(other, applyOtherFirst, factory);
+    }
+
+    /**
+     * Creates a transform with the same parameters than this transform,
+     * but expecting two-dimensional inputs instead than three-dimensional.
+     */
+    final EllipsoidalToCartesianTransform create2D() {
+        final ParameterValue<Double> p = context.getOrCreate(SEMI_MAJOR);
+        final Unit<Length> unit = p.getUnit().asType(Length.class);
+        return new EllipsoidalToCartesianTransform(p.doubleValue(),
+                context.getOrCreate(SEMI_MINOR).doubleValue(unit), unit, false);
     }
 }

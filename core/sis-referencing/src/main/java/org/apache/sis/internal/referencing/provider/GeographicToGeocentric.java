@@ -21,19 +21,15 @@ import javax.measure.quantity.Length;
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptorGroup;
-import org.opengis.parameter.ParameterNotFoundException;
 import org.opengis.parameter.ParameterValue;
 import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.MathTransformFactory;
-import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.referencing.operation.transform.EllipsoidalToCartesianTransform;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.internal.util.Constants;
-import org.apache.sis.parameter.Parameters;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.logging.Logging;
 
 
 /**
@@ -72,7 +68,7 @@ public final class GeographicToGeocentric extends AbstractProvider {
                 .addIdentifier("9602")
                 .addName("Geographic/geocentric conversions")
                 .addName(Citations.OGC, NAME)
-                .createGroupForMapProjection(GeocentricAffineBetweenGeographic.DIMENSION);
+                .createGroupForMapProjection();
                 // Not really a map projection, but we leverage the same axis parameters.
     }
 
@@ -121,36 +117,20 @@ public final class GeographicToGeocentric extends AbstractProvider {
     public MathTransform createMathTransform(final MathTransformFactory factory, final ParameterValueGroup values)
             throws FactoryException
     {
-        return createMathTransform(GeographicToGeocentric.class, factory, values);
+        return create(factory, values);
     }
 
     /**
      * Implementation of {@link #createMathTransform(MathTransformFactory, ParameterValueGroup)}
      * shared with {@link GeocentricToGeographic}.
      */
-    static MathTransform createMathTransform(final Class<?> caller, final MathTransformFactory factory,
-            final ParameterValueGroup values) throws FactoryException
+    static MathTransform create(final MathTransformFactory factory, final ParameterValueGroup values)
+            throws FactoryException
     {
-        boolean is3D;
-        try {
-            /*
-             * Set 'is3D' to false if the given parameter group contains a "DIM" parameter having value 2.
-             * If the parameter value is 3 or if there is no parameter value, then 'is3D' is set to true,
-             * which is consistent with the default value.
-             */
-            is3D = GeocentricAffineBetweenGeographic.getDimension(Parameters.castOrWrap(values)) != 2;
-        } catch (ParameterNotFoundException e) {
-            /*
-             * Should never happen with the parameter descriptors provided by SIS, but could happen
-             * if the user provided its own descriptor. Default to three-dimensional case.
-             */
-            Logging.recoverableException(Logging.getLogger(Loggers.COORDINATE_OPERATION), caller, "createMathTransform", e);
-            is3D = true;
-        }
         final ParameterValue<?> semiMajor = values.parameter(Constants.SEMI_MAJOR);
         final Unit<Length> unit = semiMajor.getUnit().asType(Length.class);
         return EllipsoidalToCartesianTransform.createGeodeticConversion(factory, semiMajor.doubleValue(),
-                values.parameter(Constants.SEMI_MINOR).doubleValue(unit), unit, is3D);
+                values.parameter(Constants.SEMI_MINOR).doubleValue(unit), unit, true);
     }
 
     /**

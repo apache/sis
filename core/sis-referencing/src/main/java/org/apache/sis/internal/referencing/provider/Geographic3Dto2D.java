@@ -52,10 +52,14 @@ public final class Geographic3Dto2D extends AbstractProvider {
     private static final long serialVersionUID = -9103595336196565505L;
 
     /**
+     * The EPSG name used for this operation method.
+     */
+    static final String NAME = "Geographic3D to 2D conversion";
+
+    /**
      * The group of all parameters expected by this coordinate operation (in this case, none).
      */
-    static final ParameterDescriptorGroup PARAMETERS =
-            builder().addIdentifier("9659").addName("Geographic3D to 2D conversion").createGroup();
+    static final ParameterDescriptorGroup PARAMETERS = builder().addIdentifier("9659").addName(NAME).createGroup();
 
     /**
      * The unique instance, created when first needed.

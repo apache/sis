@@ -19,6 +19,8 @@ package org.apache.sis.referencing.operation.transform;
 import java.io.Serializable;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransform1D;
+import org.opengis.referencing.operation.MathTransformFactory;
+import org.opengis.util.FactoryException;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.util.ComparisonMode;
 
@@ -219,11 +221,13 @@ final class ExponentialTransform1D extends AbstractMathTransform1D implements Se
      * @param  applyOtherFirst {@code true} if the transformation order is {@code other}
      *         followed by {@code this}, or {@code false} if the transformation order is
      *         {@code this} followed by {@code other}.
-     * @return The combined math transform, or {@code null} if no optimized combined
-     *         transform is available.
+     * @param  factory The factory which is (indirectly) invoking this method, or {@code null} if none.
+     * @return The combined math transform, or {@code null} if no optimized combined transform is available.
      */
     @Override
-    final MathTransform concatenate(final MathTransform other, final boolean applyOtherFirst) {
+    final MathTransform concatenate(final MathTransform other, final boolean applyOtherFirst,
+            final MathTransformFactory factory) throws FactoryException
+    {
         if (other instanceof LinearTransform) {
             final LinearTransform1D linear = (LinearTransform1D) other;
             if (applyOtherFirst) {
@@ -240,7 +244,7 @@ final class ExponentialTransform1D extends AbstractMathTransform1D implements Se
         } else if (other instanceof LogarithmicTransform1D) {
             return concatenateLog((LogarithmicTransform1D) other, applyOtherFirst);
         }
-        return super.concatenate(other, applyOtherFirst);
+        return super.concatenate(other, applyOtherFirst, factory);
     }
 
     /**

@@ -25,6 +25,7 @@ import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.InvalidParameterValueException;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
+import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.internal.util.Constants;
@@ -53,7 +54,7 @@ public abstract class GeocentricAffineBetweenGeographic extends GeocentricAffine
     /**
      * The operation parameter descriptor for the number of source and target geographic dimensions (2 or 3).
      * This is an OGC-specific parameter for the {@link Molodensky} and {@link AbridgedMolodensky} operations,
-     * but Apache SIS uses it also for Geographic/Geocentric conversions.
+     * but Apache SIS uses it also for internal parameters of Geographic/Geocentric.
      *
      * <p>We do not provide default value for this parameter (neither we do for other OGC-specific parameters
      * in this class) because this parameter is used with both two- and three-dimensional operation methods.
@@ -144,7 +145,6 @@ public abstract class GeocentricAffineBetweenGeographic extends GeocentricAffine
     {
         final Parameters pv = Parameters.castOrWrap(values);
         final MathTransform affine = super.createMathTransform(factory, pv);
-        final int dimension = getDimension(pv);
         /*
          * Create a "Geographic to Geocentric" conversion with ellipsoid axis length units converted to metres
          * (the unit implied by SRC_SEMI_MAJOR) because it is the unit of Bursa-Wolf param. that we created above.
@@ -152,8 +152,14 @@ public abstract class GeocentricAffineBetweenGeographic extends GeocentricAffine
         Parameters step = Parameters.castOrWrap(factory.getDefaultParameters(GeographicToGeocentric.NAME));
         step.getOrCreate(MapProjection.SEMI_MAJOR).setValue(pv.doubleValue(SRC_SEMI_MAJOR));
         step.getOrCreate(MapProjection.SEMI_MINOR).setValue(pv.doubleValue(SRC_SEMI_MINOR));
-        step.getOrCreate(DIMENSION).setValue(dimension != 0 ? dimension : getSourceDimensions());
-        final MathTransform toGeocentric = factory.createParameterizedTransform(step);
+        MathTransform toGeocentric = factory.createParameterizedTransform(step);
+        MathTransform reduce = null;
+        if (getSourceDimensions() == 2) try {
+            reduce = factory.createParameterizedTransform(factory.getDefaultParameters(Geographic3Dto2D.NAME));
+            toGeocentric = factory.createConcatenatedTransform(reduce.inverse(), toGeocentric);
+        } catch (NoninvertibleTransformException e) {
+            throw new FactoryException(e);
+        }
         /*
          * Create a "Geocentric to Geographic" conversion with ellipsoid axis length units converted to metres
          * because this is the unit of the Geocentric CRS used above.
@@ -161,8 +167,11 @@ public abstract class GeocentricAffineBetweenGeographic extends GeocentricAffine
         step = Parameters.castOrWrap(factory.getDefaultParameters(GeocentricToGeographic.NAME));
         step.getOrCreate(MapProjection.SEMI_MAJOR).setValue(pv.doubleValue(TGT_SEMI_MAJOR));
         step.getOrCreate(MapProjection.SEMI_MINOR).setValue(pv.doubleValue(TGT_SEMI_MINOR));
-        step.getOrCreate(DIMENSION).setValue(dimension != 0 ? dimension : getTargetDimensions());
-        final MathTransform toGeographic = factory.createParameterizedTransform(step);
+        MathTransform toGeographic = factory.createParameterizedTransform(step);
+        if (getTargetDimensions() == 2) {
+            // 'reduce' should not be null since we provide only "2 to 2" or "3 to 3" dimensions.
+            toGeographic = factory.createConcatenatedTransform(toGeographic, reduce);
+        }
         /*
          * The  Geocentric → Affine → Geographic  chain.
          */
