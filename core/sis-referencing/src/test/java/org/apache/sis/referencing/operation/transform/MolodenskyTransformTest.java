@@ -140,7 +140,7 @@ public final strictfp class MolodenskyTransformTest extends MathTransformTestCas
     }
 
     /**
-     * Tests using the same EPSG example than the one provided in {@link EllipsoidalToCartesianTransformTest}.
+     * Tests using the same EPSG example than the one provided in {@link EllipsoidToCentricTransformTest}.
      *
      * <ul>
      *   <li>Source point in WGS84: 53°48'33.820"N, 02°07'46.380"E, 73.00 metres.</li>

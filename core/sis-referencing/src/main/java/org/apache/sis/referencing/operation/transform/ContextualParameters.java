@@ -323,7 +323,7 @@ public class ContextualParameters extends Parameters implements Serializable {
      * The definition of "kernel" is left to implementors.
      * In the particular case of Apache SIS implementation of map projections,
      * kernels are instances of {@link org.apache.sis.referencing.operation.projection.NormalizedProjection}.
-     * Other "kernels" in SIS are {@link EllipsoidalToCartesianTransform} and {@link MolodenskyTransform}.</div>
+     * Other "kernels" in SIS are {@link EllipsoidToCentricTransform} and {@link MolodenskyTransform}.</div>
      *
      * @return The description of the parameters.
      */
@@ -511,7 +511,7 @@ public class ContextualParameters extends Parameters implements Serializable {
      * @throws FactoryException if an error occurred while creating a math transform instance.
      *
      * @see org.apache.sis.referencing.operation.projection.NormalizedProjection#createMapProjection(MathTransformFactory)
-     * @see EllipsoidalToCartesianTransform#createGeodeticConversion(MathTransformFactory, double, double, Unit, boolean)
+     * @see EllipsoidToCentricTransform#createGeodeticConversion(MathTransformFactory, double, double, Unit, boolean)
      */
     @SuppressWarnings("AssignmentToForLoopParameter")
     public synchronized MathTransform completeTransform(final MathTransformFactory factory, final MathTransform kernel)

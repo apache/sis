@@ -26,7 +26,7 @@ import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.MathTransformFactory;
-import org.apache.sis.referencing.operation.transform.EllipsoidalToCartesianTransform;
+import org.apache.sis.referencing.operation.transform.EllipsoidToCentricTransform;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.util.ArgumentChecks;
@@ -129,7 +129,7 @@ public final class GeographicToGeocentric extends AbstractProvider {
     {
         final ParameterValue<?> semiMajor = values.parameter(Constants.SEMI_MAJOR);
         final Unit<Length> unit = semiMajor.getUnit().asType(Length.class);
-        return EllipsoidalToCartesianTransform.createGeodeticConversion(factory, semiMajor.doubleValue(),
+        return EllipsoidToCentricTransform.createGeodeticConversion(factory, semiMajor.doubleValue(),
                 values.parameter(Constants.SEMI_MINOR).doubleValue(unit), unit, true);
     }
 
