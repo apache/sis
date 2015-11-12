@@ -17,7 +17,6 @@
 package org.apache.sis.internal.referencing.provider;
 
 import org.opengis.util.FactoryException;
-import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
@@ -42,7 +41,7 @@ import static org.opengis.test.Assert.*;
 @DependsOn(AffineTest.class)
 public final strictfp class Geographic3Dto2DTest extends TestCase {
     /**
-     * Tests {@link Geographic3Dto2D#createMathTransform(ParameterValueGroup)}.
+     * Tests {@code Geographic3Dto2D.createMathTransform(…)}.
      *
      * @throws FactoryException should never happen.
      * @throws NoninvertibleTransformException should never happen.
