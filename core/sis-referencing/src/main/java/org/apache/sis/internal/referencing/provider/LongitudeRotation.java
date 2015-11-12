@@ -18,14 +18,12 @@ package org.apache.sis.internal.referencing.provider;
 
 import javax.xml.bind.annotation.XmlTransient;
 import org.opengis.parameter.ParameterValueGroup;
-import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.ParameterNotFoundException;
 import org.opengis.referencing.operation.Transformation;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.apache.sis.internal.referencing.j2d.AffineTransform2D;
-import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.parameter.Parameters;
 
 
@@ -58,18 +56,11 @@ public final class LongitudeRotation extends AbstractProvider {
     private static final long serialVersionUID = -2104496465933824935L;
 
     /**
-     * The operation parameter descriptor for the <cite>"longitude offset"</cite> parameter value.
-     */
-    private static final ParameterDescriptor<Double> OFFSET;
-
-    /**
      * The group of all parameters expected by this coordinate operation.
      */
     private static final ParameterDescriptorGroup PARAMETERS;
     static {
-        final ParameterBuilder builder = builder();
-        OFFSET = createLongitude(builder.addIdentifier("8602").addName("Longitude offset"));
-        PARAMETERS = builder.addIdentifier("9601").addName("Longitude rotation").createGroup(OFFSET);
+        PARAMETERS = builder().addIdentifier("9601").addName("Longitude rotation").createGroup(GeographicOffsets.TX);
     }
 
     /**
@@ -109,7 +100,7 @@ public final class LongitudeRotation extends AbstractProvider {
     public MathTransform createMathTransform(final MathTransformFactory factory, final ParameterValueGroup values)
             throws ParameterNotFoundException
     {
-        final double offset = Parameters.castOrWrap(values).doubleValue(OFFSET);
+        final double offset = Parameters.castOrWrap(values).doubleValue(GeographicOffsets.TX);
         return new AffineTransform2D(1, 0, 0, 1, offset, 0);
     }
 }

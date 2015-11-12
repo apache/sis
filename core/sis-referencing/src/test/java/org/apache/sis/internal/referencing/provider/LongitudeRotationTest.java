@@ -40,7 +40,7 @@ import static org.apache.sis.test.MetadataAssert.*;
 @DependsOn(AffineTest.class)
 public final strictfp class LongitudeRotationTest extends TestCase {
     /**
-     * Tests {@link LongitudeRotation#createMathTransform(ParameterValueGroup)}.
+     * Tests {@code LongitudeRotation.createMathTransform(…)}.
      */
     @Test
     public void testCreateMathTransform() {

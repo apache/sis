@@ -125,6 +125,7 @@ import org.junit.BeforeClass;
 
     // Registration of map projections and other math transforms.
     org.apache.sis.internal.referencing.provider.AffineTest.class,
+    org.apache.sis.internal.referencing.provider.GeographicOffsetsTest.class,
     org.apache.sis.internal.referencing.provider.Geographic3Dto2DTest.class,
     org.apache.sis.internal.referencing.provider.LongitudeRotationTest.class,
     org.apache.sis.internal.referencing.provider.GeocentricTranslationTest.class,
