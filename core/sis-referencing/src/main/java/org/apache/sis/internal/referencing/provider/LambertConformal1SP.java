@@ -75,17 +75,17 @@ public final class LambertConformal1SP extends AbstractLambert {
                 .addNamesAndIdentifiers(Mercator1SP.LATITUDE_OF_ORIGIN));
 
         PARAMETERS = builder
-            .addIdentifier(IDENTIFIER)
-            .addName(                    "Lambert Conic Conformal (1SP)")
-            .addName(Citations.OGC,      "Lambert_Conformal_Conic_1SP")
-            .addName(Citations.GEOTIFF,  "CT_LambertConfConic_1SP")
-            .addIdentifier(Citations.GEOTIFF, "9")
-            .createGroupForMapProjection(
-                    LATITUDE_OF_ORIGIN,
-                    LONGITUDE_OF_ORIGIN,
-                    SCALE_FACTOR,
-                    FALSE_EASTING,
-                    FALSE_NORTHING);
+                .addIdentifier(IDENTIFIER)
+                .addName(                    "Lambert Conic Conformal (1SP)")
+                .addName(Citations.OGC,      "Lambert_Conformal_Conic_1SP")
+                .addName(Citations.GEOTIFF,  "CT_LambertConfConic_1SP")
+                .addIdentifier(Citations.GEOTIFF, "9")
+                .createGroupForMapProjection(
+                        LATITUDE_OF_ORIGIN,
+                        LONGITUDE_OF_ORIGIN,
+                        SCALE_FACTOR,
+                        FALSE_EASTING,
+                        FALSE_NORTHING);
     }
 
     /**

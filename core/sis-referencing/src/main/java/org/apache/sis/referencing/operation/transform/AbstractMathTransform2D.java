@@ -105,7 +105,7 @@ public abstract class AbstractMathTransform2D extends AbstractMathTransform impl
     }
 
     /**
-     * Implementation of {@link #transform(DirectPosition, DirectPosition)} shared by the inverse transform.
+     * Implementation of {@link #transform(Point2D, Point2D)} shared by the inverse transform.
      */
     static Point2D transform(final AbstractMathTransform tr, final Point2D ptSrc, final Point2D ptDst) throws TransformException {
         final double[] ord = new double[] {ptSrc.getX(), ptSrc.getY()};

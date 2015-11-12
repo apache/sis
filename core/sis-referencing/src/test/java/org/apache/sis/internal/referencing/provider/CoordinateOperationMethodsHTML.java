@@ -68,7 +68,7 @@ import org.apache.sis.internal.jdk8.JDK8;
  * @version 0.6
  * @module
  */
-public final class CoordinateOperationMethodsHTML extends HTMLGenerator {
+public final strictfp class CoordinateOperationMethodsHTML extends HTMLGenerator {
     /**
      * Generates the HTML report.
      *

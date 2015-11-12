@@ -19,6 +19,8 @@ package org.apache.sis.referencing.operation.transform;
 import java.io.Serializable;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransform1D;
+import org.opengis.referencing.operation.MathTransformFactory;
+import org.opengis.util.FactoryException;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.util.ComparisonMode;
 
@@ -172,15 +174,18 @@ final class PowerTransform1D extends AbstractMathTransform1D implements Serializ
      * @param  other The math transform to apply.
      * @param  applyOtherFirst {@code true} if the transformation order is {@code other} followed by {@code this},
      *         or {@code false} if the transformation order is {@code this} followed by {@code other}.
+     * @param  factory The factory which is (indirectly) invoking this method, or {@code null} if none.
      * @return The combined math transform, or {@code null} if no optimized combined transform is available.
      */
     @Override
-    final MathTransform concatenate(final MathTransform other, final boolean applyOtherFirst) {
+    final MathTransform concatenate(final MathTransform other, final boolean applyOtherFirst,
+            final MathTransformFactory factory) throws FactoryException
+    {
         if (other instanceof PowerTransform1D) {
             return create(power + ((PowerTransform1D) other).power);
         }
         // TODO: more optimization could go here for logarithmic and exponential cases.
-        return super.concatenate(other, applyOtherFirst);
+        return super.concatenate(other, applyOtherFirst, factory);
     }
 
     /**

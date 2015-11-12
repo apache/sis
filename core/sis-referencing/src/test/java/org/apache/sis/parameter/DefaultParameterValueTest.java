@@ -607,8 +607,14 @@ public final strictfp class DefaultParameterValueTest extends TestCase {
     @Test
     @DependsOnMethod("testWKT")
     public void testWKT_withUnformattableUnit() {
-        final DefaultParameterValue<Double> p = create("Angle", 10.3, Units.valueOfEPSG(9111));
+        final Unit<?> degreesAndMinutes = Units.valueOfEPSG(9111);
+        DefaultParameterValue<Double> p = create("Angle", 10.3, degreesAndMinutes);
         assertWktEquals(Convention.WKT1,     "PARAMETER[“Angle”, 10.3]", p);  // 10.3 DM  ==  10.5°
+        assertWktEquals(Convention.WKT2,     "PARAMETER[“Angle”, 10.5, ANGLEUNIT[“degree”, 0.017453292519943295]]", p);
+        assertWktEquals(Convention.INTERNAL, "Parameter[“Angle”, 10.3]", p);   // Value in same unit than descriptor.
+
+        p = create("Angle", 0, NonSI.DEGREE_ANGLE);
+        p.setValue(10.3, degreesAndMinutes);  // Can not be formatted in WKT1.
         assertWktEquals(Convention.WKT2,     "PARAMETER[“Angle”, 10.5, ANGLEUNIT[“degree”, 0.017453292519943295]]", p);
         assertWktEquals(Convention.INTERNAL, "Parameter[“Angle”, 10.3, Unit[“D.M”, 0.017453292519943295, Id[“EPSG”, 9111]]]", p);
     }

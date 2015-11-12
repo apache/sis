@@ -33,7 +33,7 @@ import org.apache.sis.internal.metadata.ReferencingServices;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.5
+ * @version 0.7
  * @module
  */
 @SuppressWarnings("serial")
@@ -57,6 +57,11 @@ public final strictfp class GeodeticDatumMock extends IdentifiedObjectMock imple
      * The "North American Datum 1927" datum with "Clarke 1866" ellipsoid.
      */
     public static final GeodeticDatum NAD27 = new GeodeticDatumMock("NAD27", 6378206.4, 6356583.8, 294.97869821390583, false);
+
+    /**
+     * The "European Datum 1950" datum with "International 1924" ellipsoid.
+     */
+    public static final GeodeticDatum ED50 = new GeodeticDatumMock("ED50", 6378388, 6356912, 297, true);
 
     /**
      * The "Nouvelle Triangulation Française" (EPSG:6807) datum with "Clarke 1880 (IGN)" ellipsoid.

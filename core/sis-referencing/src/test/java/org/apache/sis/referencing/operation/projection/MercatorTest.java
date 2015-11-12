@@ -18,6 +18,7 @@ package org.apache.sis.referencing.operation.projection;
 
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.TransformException;
+import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.internal.referencing.provider.Mercator1SP;
 import org.apache.sis.internal.referencing.provider.Mercator2SP;
@@ -43,7 +44,7 @@ import static org.apache.sis.referencing.operation.projection.ConformalProjectio
  * @author  Simon Reynard (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
  * @since   0.6
- * @version 0.6
+ * @version 0.7
  * @module
  */
 @DependsOn(ConformalProjectionTest.class)
@@ -66,17 +67,59 @@ public final strictfp class MercatorTest extends MapProjectionTestCase {
 
     /**
      * Tests the WKT formatting of {@link NormalizedProjection}. For the Mercator projection, we expect only
-     * the ellipsoid excentricity. We expect nothing else because all other parameters are used
+     * the ellipsoid eccentricity. We expect nothing else because all other parameters are used
      * by the (de)normalization affine transforms instead than the {@link Mercator} class itself.
+     *
+     * @throws NoninvertibleTransformException should never happen.
      *
      * @see LambertConicConformalTest#testNormalizedWKT()
      */
     @Test
-    public void testNormalizedWKT() {
+    public void testNormalizedWKT() throws NoninvertibleTransformException {
         createNormalizedProjection(true);
-        assertWktEquals(
-                "PARAM_MT[“Mercator”,\n" +
-                "  PARAMETER[“excentricity”, 0.0818191908426215]]");
+        assertWktEquals("PARAM_MT[“Mercator”,\n" +
+                        "  PARAMETER[“eccentricity”, 0.0818191908426215]]");
+
+        transform = transform.inverse();
+        assertWktEquals("INVERSE_MT[\n" +
+                        "  PARAM_MT[“Mercator”,\n" +
+                        "    PARAMETER[“eccentricity”, 0.0818191908426215]]]");
+    }
+
+    /**
+     * Tests WKT of a complete map projection.
+     *
+     * @throws FactoryException if an error occurred while creating the map projection.
+     * @throws NoninvertibleTransformException should never happen.
+     */
+    @Test
+    @DependsOnMethod("testNormalizedWKT")
+    public void testCompleteWKT() throws FactoryException, NoninvertibleTransformException {
+        createCompleteProjection(new Mercator1SP(), true,
+                  0.5,    // Central meridian
+                  0,      // Latitude of origin (none)
+                  0,      // Standard parallel (none)
+                  0.997,  // Scale factor
+                200,      // False easting
+                100);     // False northing
+
+        assertWktEquals("PARAM_MT[“Mercator_1SP”,\n" +
+                        "  PARAMETER[“semi_major”, 6378137.0],\n" +
+                        "  PARAMETER[“semi_minor”, 6356752.314245179],\n" +
+                        "  PARAMETER[“central_meridian”, 0.5],\n" +
+                        "  PARAMETER[“scale_factor”, 0.997],\n" +
+                        "  PARAMETER[“false_easting”, 200.0],\n" +
+                        "  PARAMETER[“false_northing”, 100.0]]");
+
+        transform = transform.inverse();
+        assertWktEquals("INVERSE_MT[\n" +
+                        "  PARAM_MT[“Mercator_1SP”,\n" +
+                        "    PARAMETER[“semi_major”, 6378137.0],\n" +
+                        "    PARAMETER[“semi_minor”, 6356752.314245179],\n" +
+                        "    PARAMETER[“central_meridian”, 0.5],\n" +
+                        "    PARAMETER[“scale_factor”, 0.997],\n" +
+                        "    PARAMETER[“false_easting”, 200.0],\n" +
+                        "    PARAMETER[“false_northing”, 100.0]]]");
     }
 
     /**
