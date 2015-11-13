@@ -27,6 +27,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.lang.reflect.Constructor;
+import java.io.Serializable;
 import javax.measure.quantity.Length;
 import javax.measure.unit.SI;
 import javax.measure.unit.Unit;
@@ -34,11 +35,11 @@ import javax.measure.converter.ConversionException;
 
 import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterValueGroup;
-import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.ParameterNotFoundException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.cs.CoordinateSystem;
+import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
@@ -55,6 +56,7 @@ import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.referencing.j2d.ParameterizedAffine;
+import org.apache.sis.internal.referencing.provider.AbstractProvider;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.cs.CoordinateSystems;
@@ -320,7 +322,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      * @return Methods available in this factory for coordinate operations of the given type.
      *
      * @see #getDefaultParameters(String)
-     * @see #createParameterizedTransform(ParameterValueGroup)
+     * @see #createParameterizedTransform(ParameterValueGroup, Context)
      * @see DefaultOperationMethod#getOperationType()
      */
     @Override
@@ -397,15 +399,15 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      *
      * <p>This function creates new parameter instances at every call.
      * Parameters are intended to be modified by the user before to be given to the
-     * {@link #createParameterizedTransform createParameterizedTransform(…)} constructor.</p>
+     * {@link #createParameterizedTransform createParameterizedTransform(…)} method.</p>
      *
      * @param  method The case insensitive name of the coordinate operation method to search for.
      * @return A new group of parameter values for the {@code OperationMethod} identified by the given name.
      * @throws NoSuchIdentifierException if there is no method registered for the given name or identifier.
      *
      * @see #getAvailableMethods(Class)
-     * @see #createParameterizedTransform(ParameterValueGroup)
-     * @see org.apache.sis.referencing.operation.transform.AbstractMathTransform#getParameterValues()
+     * @see #createParameterizedTransform(ParameterValueGroup, Context)
+     * @see AbstractMathTransform#getParameterValues()
      */
     @Override
     public ParameterValueGroup getDefaultParameters(final String method) throws NoSuchIdentifierException {
@@ -413,181 +415,422 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
     }
 
     /**
-     * Returns the value of the given parameter in the given unit, or {@code NaN} if the parameter is not set.
+     * Creates a transform from a group of parameters.
+     * The set of expected parameters varies for each operation.
      *
-     * <p><b>NOTE:</b> Do not merge this function with {@code ensureSet(…)}. We keep those two methods
-     * separated in order to give to {@code createBaseToDerived(…)} a "all or nothing" behavior.</p>
-     */
-    private static double getValue(final ParameterValue<?> parameter, final Unit<Length> unit) {
-        return (parameter.getValue() != null) ? parameter.doubleValue(unit) : Double.NaN;
-    }
-
-    /**
-     * Ensures that a value is set in the given parameter.
-     *
-     * <ul>
-     *   <li>If the parameter has no value, then it is set to the given value.<li>
-     *   <li>If the parameter already has a value, then the parameter is left unchanged
-     *       but its value is compared to the given one for consistency.</li>
-     * </ul>
-     *
-     * @param parameter The parameter which must have a value.
-     * @param actual    The current parameter value, or {@code NaN} if none.
-     * @param expected  The expected parameter value, derived from the ellipsoid.
-     * @param unit      The unit of {@code value}.
-     * @param tolerance Maximal difference (in unit of {@code unit}) for considering the two values as equivalent.
-     * @return {@code true} if there is a mismatch between the actual value and the expected one.
-     */
-    private static boolean ensureSet(final ParameterValue<?> parameter, final double actual,
-            final double expected, final Unit<?> unit, final double tolerance)
-    {
-        if (Math.abs(actual - expected) <= tolerance) {
-            return false;
-        }
-        if (Double.isNaN(actual)) {
-            parameter.setValue(expected, unit);
-            return false;
-        }
-        return true;
-    }
-
-    /**
-     * Creates a transform from a base CRS to a derived CS using the given parameters.
-     * This convenience constructor:
-     *
-     * <ol>
-     *   <li>Infers the {@code "semi_major"} and {@code "semi_minor"} parameters values from the
-     *       {@linkplain org.apache.sis.referencing.datum.DefaultEllipsoid ellipsoid} associated
-     *       to the {@code baseCRS}, if those parameters are not explicitly given and if they are
-     *       applicable (typically for cartographic projections).</li>
-     *   <li>{@linkplain #createConcatenatedTransform Concatenates} the
-     *       {@linkplain #createParameterizedTransform(ParameterValueGroup) parameterized transform}
-     *       with any other transform required for performing units changes and ordinates swapping.</li>
-     * </ol>
-     *
-     * The {@code OperationMethod} instance used by this constructor can be obtained by a call to
-     * {@link #getLastMethodUsed()}.
-     *
-     * <div class="section">Modification of given parameters</div>
-     * If this method needs to set the values of {@code "semi_major"} and {@code "semi_minor"} parameters,
-     * then it sets those values directly on the given {@code parameters} instance – not on a clone – for
-     * allowing the caller to get back the complete parameter values.
-     * However this method only fills missing values, it never modify existing values.
-     *
-     * @param  baseCRS    The source coordinate reference system.
-     * @param  parameters The parameter values for the transform.
-     * @param  derivedCS  The target coordinate system.
-     * @return The parameterized transform from {@code baseCRS} to {@code derivedCS},
-     *         including unit conversions and axis swapping.
-     * @throws NoSuchIdentifierException if there is no transform registered for the coordinate operation method.
+     * @param  parameters The parameter values. The {@linkplain ParameterDescriptorGroup#getName() parameter group name}
+     *         shall be the name of the desired {@linkplain DefaultOperationMethod operation method}.
+     * @return The transform created from the given parameters.
+     * @throws NoSuchIdentifierException if there is no method for the given parameter group name.
      * @throws FactoryException if the object creation failed. This exception is thrown
      *         if some required parameter has not been supplied, or has illegal value.
      *
-     * @see org.apache.sis.parameter.ParameterBuilder#createGroupForMapProjection(ParameterDescriptor...)
+     * @deprecated Replaced by {@link #createParameterizedTransform(ParameterValueGroup, Context)}
+     *             where the {@code Context} argument can be null.
      */
     @Override
-    public MathTransform createBaseToDerived(final CoordinateReferenceSystem baseCRS,
-            final ParameterValueGroup parameters, final CoordinateSystem derivedCS)
+    @Deprecated
+    public MathTransform createParameterizedTransform(final ParameterValueGroup parameters)
             throws NoSuchIdentifierException, FactoryException
     {
-        ArgumentChecks.ensureNonNull("baseCRS",    baseCRS);
-        ArgumentChecks.ensureNonNull("parameters", parameters);
-        ArgumentChecks.ensureNonNull("derivedCS",  derivedCS);
-        /*
-         * If the user's parameters do not contain semi-major and semi-minor axis lengths, infer
-         * them from the ellipsoid. We have to do that because those parameters are often omitted,
-         * since the standard place where to provide this information is in the ellipsoid object.
+        return createParameterizedTransform(parameters, null);
+    }
+
+    /**
+     * Information about the context (for example source and target coordinate systems) in which a new parameterized
+     * transform is going to be used. {@link DefaultMathTransformFactory} uses this information for various purposes:
+     *
+     * <ul>
+     *   <li>Complete some parameters if they were not provided. In particular, the {@linkplain #getSourceEllipsoid()
+     *       source ellipsoid} can be used for providing values for the {@code "semi_major"} and {@code "semi_minor"}
+     *       parameters in map projections.</li>
+     *   <li>{@linkplain CoordinateSystems#swapAndScaleAxes Swap and scale axes} if the source or the target
+     *       coordinate systems are not {@linkplain AxesConvention#NORMALIZED normalized}.</li>
+     * </ul>
+     *
+     * @author  Martin Desruisseaux (Geomatys)
+     * @version 0.7
+     * @since   0.7
+     * @module
+     */
+    public static class Context implements Serializable {
+        /**
+         * For cross-version compatibility.
          */
-        RuntimeException failure = null;
-        final Ellipsoid ellipsoid = ReferencingUtilities.getEllipsoidOfGeographicCRS(baseCRS);
-        if (ellipsoid != null) {
-            ParameterValue<?> mismatchedParam = null;
-            double mismatchedValue = 0;
-            try {
-                final ParameterValue<?> semiMajor = parameters.parameter(Constants.SEMI_MAJOR);
-                final ParameterValue<?> semiMinor = parameters.parameter(Constants.SEMI_MINOR);
-                final Unit<Length>      axisUnit  = ellipsoid.getAxisUnit();
-                /*
-                 * The two calls to getOptional(…) shall succeed before we write anything, in order to have a
-                 * "all or nothing" behavior as much as possible. Note that Ellipsoid.getSemi**Axis() have no
-                 * reason to fail, so we don't take precaution for them.
-                 */
-                final double a   = getValue(semiMajor, axisUnit);
-                final double b   = getValue(semiMinor, axisUnit);
-                final double tol = SI.METRE.getConverterTo(axisUnit).convert(ELLIPSOID_PRECISION);
-                if (ensureSet(semiMajor, a, ellipsoid.getSemiMajorAxis(), axisUnit, tol)) {
-                    mismatchedParam = semiMajor;
-                    mismatchedValue = a;
-                }
-                if (ensureSet(semiMinor, b, ellipsoid.getSemiMinorAxis(), axisUnit, tol)) {
-                    mismatchedParam = semiMinor;
-                    mismatchedValue = b;
-                }
-            } catch (IllegalArgumentException | IllegalStateException e) {
-                /*
-                 * Parameter not found, or is not numeric, or unit of measurement is not linear.
-                 * Those exceptions should never occur with map projections, but may happen for
-                 * some other operations like Molodenski¹.
-                 *
-                 * Do not touch to the parameters. We will see if createParameterizedTransform(…)
-                 * can do something about that. If it can not, createParameterizedTransform(…) is
-                 * the right place to throw the exception.
-                 *
-                 *  ¹ The actual Molodenski parameter names are "src_semi_major" and "src_semi_minor".
-                 *    But we do not try to set them because we have no way to set the corresponding
-                 *    "tgt_semi_major" and "tgt_semi_minor" parameters anyway.
-                 */
-                failure = e;
+        private static final long serialVersionUID = 6963581151055917955L;
+
+        /**
+         * Coordinate system of the source or target points.
+         */
+        private CoordinateSystem sourceCS, targetCS;
+
+        /**
+         * The ellipsoid of the source or target ellipsoidal coordinate system, or {@code null} if it does not apply.
+         * Valid only if {@link #source} or {@link #target} is an instance of {@link EllipsoidalCS}.
+         */
+        private Ellipsoid sourceEllipsoid, targetEllipsoid;
+
+        /**
+         * Creates a new context with all properties initialized to {@code null}.
+         */
+        public Context() {
+        }
+
+        /**
+         * Sets the source coordinate system to the given value.
+         * The source ellipsoid is unconditionally set to {@code null}.
+         *
+         * @param cs The coordinate system to set as the source (can be {@code null}).
+         */
+        public void setSource(final CoordinateSystem cs) {
+            sourceCS = cs;
+            sourceEllipsoid = null;
+        }
+
+        /**
+         * Sets the source ellipsoid and coordinate system to values inferred from the given CRS.
+         *
+         * @param crs The source coordinate reference system (can be {@code null}).
+         */
+        public void setSource(final CoordinateReferenceSystem crs) {
+            sourceCS = (crs != null) ? crs.getCoordinateSystem() : null;
+            sourceEllipsoid = ReferencingUtilities.getEllipsoidOfGeographicCRS(crs);
+        }
+
+        /**
+         * Sets the target coordinate system to the given value.
+         * The target ellipsoid is unconditionally set to {@code null}.
+         *
+         * @param cs The coordinate system to set as the target (can be {@code null}).
+         */
+        public void setTarget(final CoordinateSystem cs) {
+            targetCS = cs;
+            targetEllipsoid = null;
+        }
+
+        /**
+         * Sets the target ellipsoid and coordinate system to values inferred from the given CRS.
+         *
+         * @param crs The target coordinate reference system (can be {@code null}).
+         */
+        public void setTarget(final CoordinateReferenceSystem crs) {
+            targetCS = (crs != null) ? crs.getCoordinateSystem() : null;
+            targetEllipsoid = ReferencingUtilities.getEllipsoidOfGeographicCRS(crs);
+        }
+
+        /**
+         * Returns the source coordinate system, or {@code null} if unspecified.
+         *
+         * @return The source coordinate system, or {@code null}.
+         */
+        public CoordinateSystem getSourceCS() {
+            return sourceCS;
+        }
+
+        /**
+         * Returns the ellipsoid of the source ellipsoidal coordinate system, or {@code null} if it does not apply.
+         * This information is valid only if {@link #getSourceCS()} returns an instance of {@link EllipsoidalCS}.
+         *
+         * @return the ellipsoid of the source ellipsoidal coordinate system, or {@code null} if it does not apply.
+         */
+        public Ellipsoid getSourceEllipsoid() {
+            return sourceEllipsoid;
+        }
+
+        /**
+         * Returns the target coordinate system, or {@code null} if unspecified.
+         *
+         * @return The target coordinate system, or {@code null}.
+         */
+        public CoordinateSystem getTargetCS() {
+            return targetCS;
+        }
+
+        /**
+         * Returns the ellipsoid of the target ellipsoidal coordinate system, or {@code null} if it does not apply.
+         * This information is valid only if {@link #getTargetCS()} returns an instance of {@link EllipsoidalCS}.
+         *
+         * @return the ellipsoid of the target ellipsoidal coordinate system, or {@code null} if it does not apply.
+         */
+        public Ellipsoid getTargetEllipsoid() {
+            return targetEllipsoid;
+        }
+
+        /**
+         * Returns the value of the given parameter in the given unit, or {@code NaN} if the parameter is not set.
+         *
+         * <p><b>NOTE:</b> Do not merge this function with {@code ensureSet(…)}. We keep those two methods
+         * separated in order to give to {@code createParameterizedTransform(…)} a "all or nothing" behavior.</p>
+         */
+        private static double getValue(final ParameterValue<?> parameter, final Unit<Length> unit) {
+            return (parameter.getValue() != null) ? parameter.doubleValue(unit) : Double.NaN;
+        }
+
+        /**
+         * Ensures that a value is set in the given parameter.
+         *
+         * <ul>
+         *   <li>If the parameter has no value, then it is set to the given value.<li>
+         *   <li>If the parameter already has a value, then the parameter is left unchanged
+         *       but its value is compared to the given one for consistency.</li>
+         * </ul>
+         *
+         * @param parameter The parameter which must have a value.
+         * @param actual    The current parameter value, or {@code NaN} if none.
+         * @param expected  The expected parameter value, derived from the ellipsoid.
+         * @param unit      The unit of {@code value}.
+         * @param tolerance Maximal difference (in unit of {@code unit}) for considering the two values as equivalent.
+         * @return {@code true} if there is a mismatch between the actual value and the expected one.
+         */
+        private static boolean ensureSet(final ParameterValue<?> parameter, final double actual,
+                final double expected, final Unit<?> unit, final double tolerance)
+        {
+            if (Math.abs(actual - expected) <= tolerance) {
+                return false;
             }
-            final boolean isIvfDefinitive;
-            if (mismatchedParam != null) {
-                final LogRecord record = Messages.getResources((Locale) null).getLogRecord(Level.WARNING,
-                        Messages.Keys.MismatchedEllipsoidAxisLength_3, ellipsoid.getName().getCode(),
-                        mismatchedParam.getDescriptor().getName().getCode(), mismatchedValue);
-                record.setLoggerName(Loggers.COORDINATE_OPERATION);
-                Logging.log(DefaultMathTransformFactory.class, "createBaseToDerived", record);
-                isIvfDefinitive = false;
+            if (Double.isNaN(actual)) {
+                parameter.setValue(expected, unit);
+                return false;
+            }
+            return true;
+        }
+
+        /**
+         * Completes the given parameter group with information about source or target ellipsoid axis lengths,
+         * if available. This method writes semi-major and semi-minor parameter values only if they do not
+         * already exists in the given parameters.
+         *
+         * @param  parameters The parameter values for the transform.
+         * @param  ellipsoid  The ellipsoid from which to get axis lengths of flattening factor, or {@code null}.
+         * @param  semiMajor  {@code "semi_major}, {@code "src_semi_major} or {@code "tgt_semi_major} parameter name.
+         * @param  semiMinor  {@code "semi_minor}, {@code "src_semi_minor} or {@code "tgt_semi_minor} parameter name.
+         * @param  inverseFlattening {@code true} if this method can try to set the {@code "inverse_flattening"} parameter.
+         * @return The exception if the operation failed, or {@code null} if none. This exception is not thrown now
+         *         because the caller may succeed in creating the transform anyway, or otherwise may produce a more
+         *         informative exception.
+         */
+        private static RuntimeException setEllipsoid(final ParameterValueGroup parameters, final Ellipsoid ellipsoid,
+                final String semiMajor, final String semiMinor, final boolean inverseFlattening)
+        {
+            RuntimeException failure = null;
+            if (ellipsoid != null) {
+                ParameterValue<?> mismatchedParam = null;
+                double mismatchedValue = 0;
+                try {
+                    final ParameterValue<?> ap = parameters.parameter(semiMajor);
+                    final ParameterValue<?> bp = parameters.parameter(semiMinor);
+                    final Unit<Length> unit = ellipsoid.getAxisUnit();
+                    /*
+                     * The two calls to getValue(…) shall succeed before we write anything, in order to have a
+                     * "all or nothing" behavior as much as possible. Note that Ellipsoid.getSemi**Axis() have
+                     * no reason to fail, so we do not take precaution for them.
+                     */
+                    final double a   = getValue(ap, unit);
+                    final double b   = getValue(bp, unit);
+                    final double tol = SI.METRE.getConverterTo(unit).convert(ELLIPSOID_PRECISION);
+                    if (ensureSet(ap, a, ellipsoid.getSemiMajorAxis(), unit, tol)) {
+                        mismatchedParam = ap;
+                        mismatchedValue = a;
+                    }
+                    if (ensureSet(bp, b, ellipsoid.getSemiMinorAxis(), unit, tol)) {
+                        mismatchedParam = bp;
+                        mismatchedValue = b;
+                    }
+                } catch (IllegalArgumentException | IllegalStateException e) {
+                    /*
+                     * Parameter not found, or is not numeric, or unit of measurement is not linear.
+                     * Do not touch to the parameters. We will see if createParameterizedTransform(…)
+                     * can do something about that. If it can not, createParameterizedTransform(…) is
+                     * the right place to throw the exception.
+                     */
+                    failure = e;
+                }
+                final boolean isIvfDefinitive;
+                if (mismatchedParam != null) {
+                    final LogRecord record = Messages.getResources((Locale) null).getLogRecord(Level.WARNING,
+                            Messages.Keys.MismatchedEllipsoidAxisLength_3, ellipsoid.getName().getCode(),
+                            mismatchedParam.getDescriptor().getName().getCode(), mismatchedValue);
+                    record.setLoggerName(Loggers.COORDINATE_OPERATION);
+                    Logging.log(DefaultMathTransformFactory.class, "createParameterizedTransform", record);
+                    isIvfDefinitive = false;
+                } else {
+                    isIvfDefinitive = inverseFlattening && ellipsoid.isIvfDefinitive();
+                }
+                /*
+                 * Following is specific to Apache SIS. We use this non-standard API for allowing the
+                 * NormalizedProjection class (our base class for all map projection implementations)
+                 * to known that the ellipsoid definitive parameter is the inverse flattening factor
+                 * instead than the semi-major axis length. It makes a small difference in the accuracy
+                 * of the eccentricity parameter.
+                 */
+                if (isIvfDefinitive) try {
+                    parameters.parameter(Constants.INVERSE_FLATTENING).setValue(ellipsoid.getInverseFlattening());
+                } catch (ParameterNotFoundException e) {
+                    /*
+                     * Should never happen with Apache SIS implementation, but may happen if the given parameters come
+                     * from another implementation. We can safely abandon our attempt to set the inverse flattening value,
+                     * since it was redundant with semi-minor axis length.
+                     */
+                    Logging.recoverableException(Logging.getLogger(Loggers.COORDINATE_OPERATION),
+                            DefaultMathTransformFactory.class, "createParameterizedTransform", e);
+                }
+            }
+            return failure;
+        }
+
+        /**
+         * Completes the given parameter group with information about source and target ellipsoid axis lengths,
+         * if available. This method writes semi-major and semi-minor parameter values only if they do not
+         * already exists in the given parameters.
+         *
+         * @param  method Description of the transform to be created, or {@code null} if unknown.
+         * @param  parameters The parameter values for the transform.
+         * @return The exception if the operation failed, or {@code null} if none. This exception is not thrown now
+         *         because the caller may succeed in creating the transform anyway, or otherwise may produce a more
+         *         informative exception.
+         */
+        final RuntimeException setEllipsoids(final OperationMethod method, final ParameterValueGroup parameters) {
+            final int n;
+            if (method instanceof AbstractProvider) {
+                n = ((AbstractProvider) method).getNumEllipsoids();
             } else {
-                isIvfDefinitive = ellipsoid.isIvfDefinitive();
+                // Fallback used only when the information is not available in
+                // a more reliable way from AbstractProvider.getNumEllipsoids().
+                n = (sourceEllipsoid == null) ? 0 : (targetEllipsoid == null) ? 1 : 2;
             }
-            /*
-             * Following is specific to Apache SIS. We use this non-standard API for allowing the
-             * NormalizedProjection class (our base class for all map projection implementations)
-             * to known that the ellipsoid definitive parameter is the inverse flattening factor
-             * instead than the semi-major axis length. It makes a small difference in the accuracy
-             * of the eccentricity parameter.
-             */
-            if (isIvfDefinitive) try {
-                parameters.parameter(Constants.INVERSE_FLATTENING).setValue(ellipsoid.getInverseFlattening());
-            } catch (ParameterNotFoundException e) {
-                /*
-                 * Should never happen with Apache SIS implementation, but may happen if the given parameters come
-                 * from another implementation. We can safely abandon our attempt to set the inverse flattening value,
-                 * since it was redundant with semi-minor axis length.
-                 */
-                Logging.recoverableException(Logging.getLogger(Loggers.COORDINATE_OPERATION),
-                        DefaultMathTransformFactory.class, "createBaseToDerived", e);
+            switch (n) {
+                case 0: {
+                    return null;
+                }
+                case 1: {
+                    return setEllipsoid(parameters, getSourceEllipsoid(), Constants.SEMI_MAJOR, Constants.SEMI_MINOR, true);
+                }
+                case 2: {
+                    final RuntimeException f1, f2;
+                    f1 = setEllipsoid(parameters, getSourceEllipsoid(), "src_semi_major", "src_semi_minor", false);
+                    f2 = setEllipsoid(parameters, getTargetEllipsoid(), "tgt_semi_major", "tgt_semi_minor", false);
+                    if (f2 != null) {
+                        if (f1 == null) {
+                            return f2;
+                        }
+                        f1.addSuppressed(f2);
+                    }
+                    return f1;
+                }
+                default: throw new AssertionError(n);
             }
         }
-        MathTransform baseToDerived;
+    }
+
+    /**
+     * Creates a transform from a group of parameters.
+     * The set of expected parameters varies for each operation.
+     * The easiest way to provide parameter values is to get an initially empty group for the desired
+     * operation by calling {@link #getDefaultParameters(String)}, then to fill the parameter values.
+     * Example:
+     *
+     * {@preformat java
+     *     ParameterValueGroup group = factory.getDefaultParameters("Transverse_Mercator");
+     *     group.parameter("semi_major").setValue(6378137.000);
+     *     group.parameter("semi_minor").setValue(6356752.314);
+     *     MathTransform mt = factory.createParameterizedTransform(group, null);
+     * }
+     *
+     * Sometime the {@code "semi_major"} and {@code "semi_minor"} parameter values are not explicitly provided,
+     * but rather inferred from the {@linkplain org.apache.sis.referencing.datum.DefaultGeodeticDatum geodetic
+     * datum} of the source Coordinate Reference System. If the given {@code context} argument is non-null,
+     * then this method will use those contextual information for:
+     *
+     * <ol>
+     *   <li>Inferring the {@code "semi_major"}, {@code "semi_minor"}, {@code "src_semi_major"},
+     *       {@code "src_semi_minor"}, {@code "tgt_semi_major"} or {@code "tgt_semi_minor"} parameters values
+     *       from the {@linkplain org.apache.sis.referencing.datum.DefaultEllipsoid ellipsoids} associated to
+     *       the source or target CRS, if those parameters are not explicitly given and if they are relevant
+     *       for the coordinate operation method.</li>
+     *   <li>{@linkplain #createConcatenatedTransform Concatenating} the parameterized transform
+     *       with any other transforms required for performing units changes and ordinates swapping.</li>
+     * </ol>
+     *
+     * If this method needs to set the values of {@code "semi_major"}, {@code "semi_minor"} or similar parameters,
+     * then it sets those values directly on the given {@code parameters} instance – not on a clone – for allowing
+     * the caller to get back the complete parameter values.
+     * However this method only fills missing values, it never modify existing values.
+     *
+     * <p>The {@code OperationMethod} instance used by this constructor can be obtained by a call to
+     * {@link #getLastMethodUsed()}.</p>
+     *
+     * @param  parameters The parameter values. The {@linkplain ParameterDescriptorGroup#getName() parameter group name}
+     *         shall be the name of the desired {@linkplain DefaultOperationMethod operation method}.
+     * @param  context Information about the context (for example source and target coordinate systems)
+     *         in which the new transform is going to be used, or {@code null} if none.
+     * @return The transform created from the given parameters.
+     * @throws NoSuchIdentifierException if there is no method for the given parameter group name.
+     * @throws FactoryException if the object creation failed. This exception is thrown
+     *         if some required parameter has not been supplied, or has illegal value.
+     *
+     * @see #getDefaultParameters(String)
+     * @see #getAvailableMethods(Class)
+     * @see #getLastMethodUsed()
+     * @see org.apache.sis.parameter.ParameterBuilder#createGroupForMapProjection(ParameterDescriptor...)
+     */
+    public MathTransform createParameterizedTransform(final ParameterValueGroup parameters,
+            final Context context) throws NoSuchIdentifierException, FactoryException
+    {
+        ArgumentChecks.ensureNonNull("parameters", parameters);
+        final String methodName  = parameters.getDescriptor().getName().getCode();
+        OperationMethod  method  = null;
+        RuntimeException failure = null;
+        MathTransform transform;
         try {
-            baseToDerived = createParameterizedTransform(parameters);
-            final OperationMethod method = lastMethod.get();
-            baseToDerived = createBaseToDerived(baseCRS.getCoordinateSystem(), baseToDerived, derivedCS);
-            lastMethod.set(method);
+            method = getOperationMethod(methodName);
+            if (!(method instanceof MathTransformProvider)) {
+                throw new NoSuchIdentifierException(Errors.format( // For now, handle like an unknown operation.
+                        Errors.Keys.UnsupportedImplementation_1, Classes.getClass(method)), methodName);
+            }
+            /*
+             * If the user's parameters do not contain semi-major and semi-minor axis lengths, infer
+             * them from the ellipsoid. We have to do that because those parameters are often omitted,
+             * since the standard place where to provide this information is in the ellipsoid object.
+             */
+            if (context != null) {
+                failure = context.setEllipsoids(method, parameters);
+            }
+            /*
+             * Catch only exceptions which may be the result of improper parameter usage (e.g. a value out of range).
+             * Do not catch exception caused by programming errors (e.g. null pointer exception).
+             */
+            try {
+                transform = ((MathTransformProvider) method).createMathTransform(this, parameters);
+            } catch (IllegalArgumentException | IllegalStateException exception) {
+                throw new FactoryException(exception);
+            }
+            /*
+             * Cache the transform that we just created and make sure that the number of dimensions
+             * is compatible with the OperationMethod instance. Then make final adjustment for axis
+             * directions and units of measurement.
+             */
+            transform = unique(transform);
+            method = DefaultOperationMethod.redimension(method, transform.getSourceDimensions(),
+                                                                transform.getTargetDimensions());
+            if (context != null) {
+                transform = swapAndScaleAxes(transform, context);
+            }
         } catch (FactoryException e) {
             if (failure != null) {
                 e.addSuppressed(failure);
             }
             throw e;
+        } finally {
+            lastMethod.set(method);     // May be null in case of failure, which is intended.
         }
-        return baseToDerived;
+        return transform;
     }
 
     /**
-     * Creates a transform from a base to a derived CS using an existing parameterized transform.
-     * This convenience constructor {@linkplain #createConcatenatedTransform concatenates} the given parameterized
-     * transform with any other transform required for performing units changes and ordinates swapping.
+     * Given a transform between normalized spaces,
+     * create a transform taking in account axis directions and units of measurement.
+     * This method {@linkplain #createConcatenatedTransform concatenates} the given parameterized transform
+     * with any other transform required for performing units changes and ordinates swapping.
      *
      * <p>The given {@code parameterized} transform shall expect
      * {@linkplain org.apache.sis.referencing.cs.AxesConvention#NORMALIZED normalized} input coordinates and
@@ -601,23 +844,19 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      * both of them with ({@linkplain org.opengis.referencing.cs.AxisDirection#EAST East},
      * {@linkplain org.opengis.referencing.cs.AxisDirection#NORTH North}) axis orientations.</div>
      *
-     * @param  baseCS        The source coordinate system.
-     * @param  parameterized A <cite>base to derived</cite> transform for normalized input and output coordinates.
-     * @param  derivedCS     The target coordinate system.
-     * @return The transform from {@code baseCS} to {@code derivedCS}, including unit conversions and axis swapping.
-     * @throws FactoryException if the object creation failed. This exception is thrown
-     *         if some required parameter has not been supplied, or has illegal value.
+     * @param  parameterized A transform for normalized input and output coordinates.
+     * @param  context Source and target coordinate systems in which the transform is going to be used.
+     * @return A transform taking in account unit conversions and axis swapping.
+     * @throws FactoryException if the object creation failed.
      *
      * @see org.apache.sis.referencing.cs.AxesConvention#NORMALIZED
      * @see org.apache.sis.referencing.operation.DefaultConversion#DefaultConversion(Map, OperationMethod, MathTransform, ParameterValueGroup)
      */
-    public MathTransform createBaseToDerived(final CoordinateSystem baseCS,
-            final MathTransform parameterized, final CoordinateSystem derivedCS)
-            throws FactoryException
-    {
-        ArgumentChecks.ensureNonNull("baseCS",        baseCS);
+    public MathTransform swapAndScaleAxes(final MathTransform parameterized, final Context context) throws FactoryException {
         ArgumentChecks.ensureNonNull("parameterized", parameterized);
-        ArgumentChecks.ensureNonNull("derivedCS",     derivedCS);
+        ArgumentChecks.ensureNonNull("context", context);
+        final CoordinateSystem sourceCS = context.getSourceCS();
+        final CoordinateSystem targetCS = context.getTargetCS();
         /*
          * Computes matrix for swapping axis and performing units conversion.
          * There is one matrix to apply before projection on (longitude,latitude)
@@ -626,8 +865,8 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
          */
         final Matrix swap1, swap3;
         try {
-            swap1 = CoordinateSystems.swapAndScaleAxes(baseCS, CoordinateSystems.replaceAxes(baseCS, AxesConvention.NORMALIZED));
-            swap3 = CoordinateSystems.swapAndScaleAxes(CoordinateSystems.replaceAxes(derivedCS, AxesConvention.NORMALIZED), derivedCS);
+            swap1 = (sourceCS != null) ? CoordinateSystems.swapAndScaleAxes(sourceCS, CoordinateSystems.replaceAxes(sourceCS, AxesConvention.NORMALIZED)) : null;
+            swap3 = (targetCS != null) ? CoordinateSystems.swapAndScaleAxes(CoordinateSystems.replaceAxes(targetCS, AxesConvention.NORMALIZED), targetCS) : null;
         } catch (IllegalArgumentException | ConversionException cause) {
             throw new FactoryException(cause);
         }
@@ -637,8 +876,8 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
          * For example the projection (step2) is usually two-dimensional while the source
          * coordinate system (step1) may be three-dimensional if it has a height.
          */
-        MathTransform step1 = createAffineTransform(swap1);
-        MathTransform step3 = createAffineTransform(swap3);
+        MathTransform step1 = (swap1 != null) ? createAffineTransform(swap1) : MathTransforms.identity(parameterized.getSourceDimensions());
+        MathTransform step3 = (swap3 != null) ? createAffineTransform(swap3) : MathTransforms.identity(parameterized.getTargetDimensions());
         MathTransform step2 = parameterized;
         /*
          * If the target coordinate system has a height, instructs the projection to pass
@@ -676,61 +915,65 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
     }
 
     /**
-     * Creates a transform from a group of parameters.
-     * The set of expected parameters varies for each operation.
-     * The easiest way to provide parameter values is to get an initially empty group for the desired
-     * operation by calling {@link #getDefaultParameters(String)}, then to fill the parameter values.
-     * Example:
+     * Creates a transform from a base CRS to a derived CS using the given parameters.
+     * If this method needs to set the values of {@code "semi_major"} and {@code "semi_minor"} parameters,
+     * then it sets those values directly on the given {@code parameters} instance – not on a clone – for
+     * allowing the caller to get back the complete parameter values.
+     * However this method only fills missing values, it never modify existing values.
      *
-     * {@preformat java
-     *     ParameterValueGroup group = factory.getDefaultParameters("Transverse_Mercator");
-     *     group.parameter("semi_major").setValue(6378137.000);
-     *     group.parameter("semi_minor").setValue(6356752.314);
-     *     MathTransform mt = factory.createParameterizedTransform(group);
-     * }
-     *
-     * @param  parameters The parameter values. The {@linkplain ParameterDescriptorGroup#getName() parameter group name}
-     *         shall be the name of the desired {@linkplain DefaultOperationMethod operation method}.
-     * @return The transform created from the given parameters.
-     * @throws NoSuchIdentifierException if there is no method for the given parameter group name.
+     * @param  baseCRS    The source coordinate reference system.
+     * @param  parameters The parameter values for the transform.
+     * @param  derivedCS  The target coordinate system.
+     * @return The parameterized transform from {@code baseCRS} to {@code derivedCS},
+     *         including unit conversions and axis swapping.
+     * @throws NoSuchIdentifierException if there is no transform registered for the coordinate operation method.
      * @throws FactoryException if the object creation failed. This exception is thrown
      *         if some required parameter has not been supplied, or has illegal value.
      *
-     * @see #getDefaultParameters(String)
-     * @see #getAvailableMethods(Class)
-     * @see #getLastMethodUsed()
+     * @deprecated Replaced by {@link #createParameterizedTransform(ParameterValueGroup, Context)}.
      */
     @Override
-    public MathTransform createParameterizedTransform(final ParameterValueGroup parameters)
+    @Deprecated
+    public MathTransform createBaseToDerived(final CoordinateReferenceSystem baseCRS,
+            final ParameterValueGroup parameters, final CoordinateSystem derivedCS)
             throws NoSuchIdentifierException, FactoryException
     {
+        ArgumentChecks.ensureNonNull("baseCRS",    baseCRS);
         ArgumentChecks.ensureNonNull("parameters", parameters);
-        final String methodName = parameters.getDescriptor().getName().getCode();
-        OperationMethod method = null;
-        try {
-            method = getOperationMethod(methodName);
-            if (!(method instanceof MathTransformProvider)) {
-                throw new NoSuchIdentifierException(Errors.format( // For now, handle like an unknown operation.
-                        Errors.Keys.UnsupportedImplementation_1, Classes.getClass(method)), methodName);
-            }
-            MathTransform transform;
-            try {
-                transform  = ((MathTransformProvider) method).createMathTransform(this, parameters);
-            } catch (IllegalArgumentException | IllegalStateException exception) {
-                /*
-                 * Catch only exceptions which may be the result of improper parameter
-                 * usage (e.g. a value out of range). Do not catch exception caused by
-                 * programming errors (e.g. null pointer exception).
-                 */
-                throw new FactoryException(exception);
-            }
-            transform = unique(transform);
-            method = DefaultOperationMethod.redimension(method,
-                    transform.getSourceDimensions(), transform.getTargetDimensions());
-            return transform;
-        } finally {
-            lastMethod.set(method); // May be null in case of failure, which is intended.
-        }
+        ArgumentChecks.ensureNonNull("derivedCS",  derivedCS);
+        final Context context = new Context();
+        context.setSource(baseCRS);
+        context.setTarget(derivedCS);
+        return createParameterizedTransform(parameters, context);
+    }
+
+    /**
+     * Creates a transform from a base to a derived CS using an existing parameterized transform.
+     * The given {@code parameterized} transform shall expect
+     * {@linkplain org.apache.sis.referencing.cs.AxesConvention#NORMALIZED normalized} input coordinates and
+     * produce normalized output coordinates.
+     *
+     * @param  baseCS        The source coordinate system.
+     * @param  parameterized A <cite>base to derived</cite> transform for normalized input and output coordinates.
+     * @param  derivedCS     The target coordinate system.
+     * @return The transform from {@code baseCS} to {@code derivedCS}, including unit conversions and axis swapping.
+     * @throws FactoryException if the object creation failed. This exception is thrown
+     *         if some required parameter has not been supplied, or has illegal value.
+     *
+     * @deprecated Replaced by {@link #swapAndScaleAxes(MathTransform, Context)}.
+     */
+    @Deprecated
+    public MathTransform createBaseToDerived(final CoordinateSystem baseCS,
+            final MathTransform parameterized, final CoordinateSystem derivedCS)
+            throws FactoryException
+    {
+        ArgumentChecks.ensureNonNull("baseCS",        baseCS);
+        ArgumentChecks.ensureNonNull("parameterized", parameterized);
+        ArgumentChecks.ensureNonNull("derivedCS",     derivedCS);
+        final Context context = new Context();
+        context.setSource(baseCS);
+        context.setTarget(derivedCS);
+        return swapAndScaleAxes(parameterized, context);
     }
 
     /**
@@ -884,13 +1127,11 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      * in the currently running thread. Returns {@code null} if not applicable.
      *
      * <p>Invoking {@code getLastMethodUsed()} can be useful after a call to
-     * {@link #createParameterizedTransform createParameterizedTransform(…)}, or after a call to another
-     * constructor that delegates its work to {@code createParameterizedTransform(…)}, for example
-     * {@link #createBaseToDerived createBaseToDerived(…)}.</p>
+     * {@link #createParameterizedTransform createParameterizedTransform(…)}.</p>
      *
      * @return The last method used by a {@code create(…)} constructor, or {@code null} if unknown of unsupported.
      *
-     * @see #createParameterizedTransform(ParameterValueGroup)
+     * @see #createParameterizedTransform(ParameterValueGroup, Context)
      */
     @Override
     public OperationMethod getLastMethodUsed() {

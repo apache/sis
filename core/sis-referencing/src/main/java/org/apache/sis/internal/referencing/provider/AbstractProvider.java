@@ -46,11 +46,11 @@ import org.apache.sis.util.Workaround;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.6
- * @version 0.6
+ * @version 0.7
  * @module
  */
 @XmlTransient
-abstract class AbstractProvider extends DefaultOperationMethod implements MathTransformProvider {
+public abstract class AbstractProvider extends DefaultOperationMethod implements MathTransformProvider {
     /**
      * For cross-version compatibility.
      */
@@ -184,5 +184,32 @@ abstract class AbstractProvider extends DefaultOperationMethod implements MathTr
      */
     static ParameterDescriptor<Double> createShift(final ParameterBuilder builder) {
         return builder.create(0.0, SI.METRE);
+    }
+
+    /**
+     * Returns the number of ellipsoids (0, 1 or 2) concerned by this operation. This method is invoked by
+     * {@link org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory} for determining
+     * if this operation has {@code "semi_major"}, {@code "semi_minor"}, {@code "src_semi_major"} or
+     * {@code "src_semi_minor"} parameters that may need to be filled with values inferred from the
+     * source or target {@link org.apache.sis.referencing.datum.DefaultGeodeticDatum}.
+     * Meaning of return values:
+     *
+     * <ul>
+     *   <li>0 if neither the source coordinate system or the destination coordinate system is ellipsoidal.
+     *       There is no parameter that need to be completed.</li>
+     *   <li>1 if this operation has {@code "semi_major"} and {@code "semi_minor"} parameters that need
+     *       to be set to the axis lengths of the source ellipsoid.</li>
+     *   <li>2 if this operation has {@code "src_semi_major"}, {@code "src_semi_minor"}, {@code "tgt_semi_major"}
+     *       and {@code "tgt_semi_minor"} parameters that need to be set to the axis lengths of the source and
+     *       target ellipsoids.</li>
+     * </ul>
+     *
+     * This method is just a hint. If the information is not provided, {@code DefaultMathTransformFactory}
+     * will try to infer it from the type of user-specified source and target CRS.
+     *
+     * @return 0, 1 or 2.
+     */
+    public int getNumEllipsoids() {
+        return 0;
     }
 }
