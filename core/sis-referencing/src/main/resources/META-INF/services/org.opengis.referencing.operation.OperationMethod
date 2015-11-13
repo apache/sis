@@ -3,7 +3,8 @@
 org.apache.sis.internal.referencing.provider.Affine
 org.apache.sis.internal.referencing.provider.Geographic3Dto2D
 org.apache.sis.internal.referencing.provider.GeographicOffsets
-org.apache.sis.internal.referencing.provider.GeographicOffsets3D
+org.apache.sis.internal.referencing.provider.GeographicOffsets2D
+org.apache.sis.internal.referencing.provider.VerticalOffset
 org.apache.sis.internal.referencing.provider.LongitudeRotation
 org.apache.sis.internal.referencing.provider.GeocentricTranslation
 org.apache.sis.internal.referencing.provider.PositionVector7Param
