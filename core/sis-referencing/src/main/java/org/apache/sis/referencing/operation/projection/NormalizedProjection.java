@@ -72,7 +72,7 @@ import java.util.Objects;
  *
  *   <li>On output, the {@link #transform(double[],int,double[],int,boolean) transform(…)} method returns
  *   (<var>x</var>, <var>y</var>) values on a sphere or ellipse having a semi-major axis length (<var>a</var>) of 1.
- *   The multiplication by the scale factor (<var>k</var>₀) and the translation by false easting (FE) and false
+ *   The multiplication by the scale factor (<var>k₀</var>) and the translation by false easting (FE) and false
  *   northing (FN) are applied by the {@linkplain ContextualParameters#getMatrix denormalization} affine transform.</li>
  * </ul>
  *
@@ -281,7 +281,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
         CENTRAL_MERIDIAN,
 
         /**
-         * Maps the <cite>scale factor</cite> parameter (symbol: <var>k</var>₀).
+         * Maps the <cite>scale factor</cite> parameter (symbol: <var>k₀</var>).
          * This is a multiplication factor for the (<var>x</var>,<var>y</var>) values obtained after map projections.
          *
          * <p>Some common names for this parameter are:</p>
