@@ -429,7 +429,7 @@ public class Statistics implements DoubleConsumer, LongConsumer, Cloneable, Seri
     /**
      * Returns the standard deviation. If the sample values given to the {@code accept(…)}
      * methods have a uniform distribution, then the returned value should be close to
-     * <code>sqrt({@linkplain #span() span}<sup>2</sup> / 12)</code>. If they have a
+     * <code>sqrt({@linkplain #span() span}² / 12)</code>. If they have a
      * Gaussian distribution (which is the most common case), then the returned value
      * is related to the <a href="http://en.wikipedia.org/wiki/Error_function">error
      * function</a>.

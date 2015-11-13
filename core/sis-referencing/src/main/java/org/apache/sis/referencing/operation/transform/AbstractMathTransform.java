@@ -358,8 +358,8 @@ public abstract class AbstractMathTransform extends FormattableObject
      * transforming many points. The supplied array of ordinal values will contain packed ordinal values.
      *
      * <div class="note"><b>Example:</b> if the source dimension is 3, then the ordinates will be packed in this order:
-     * (<var>x<sub>0</sub></var>,<var>y<sub>0</sub></var>,<var>z<sub>0</sub></var>,
-     *  <var>x<sub>1</sub></var>,<var>y<sub>1</sub></var>,<var>z<sub>1</sub></var> …).
+     * (<var>x₀</var>,<var>y₀</var>,<var>z₀</var>,
+     *  <var>x₁</var>,<var>y₁</var>,<var>z₁</var> …).
      * </div>
      *
      * The default implementation invokes {@link #transform(double[], int, double[], int, boolean)} in a loop,

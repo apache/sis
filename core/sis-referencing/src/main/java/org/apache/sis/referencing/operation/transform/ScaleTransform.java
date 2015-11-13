@@ -184,8 +184,8 @@ final class ScaleTransform extends AbstractLinearTransform implements ExtendedPr
      * equal to <code>{@link Matrix#getNumCol}-1</code>. For example, for square matrix of size 4×4, coordinate
      * points are three-dimensional and stored in the arrays starting at the specified offset ({@code srcOff}) in
      * the order
-     * <code>[x<sub>0</sub>, y<sub>0</sub>, z<sub>0</sub>,
-     *        x<sub>1</sub>, y<sub>1</sub>, z<sub>1</sub>...,
+     * <code>[x₀, y₀, z₀,
+     *        x₁, y₁, z₁...,
      *        x<sub>n</sub>, y<sub>n</sub>, z<sub>n</sub>]</code>.
      *
      * @param srcPts The array containing the source point coordinates.
@@ -218,8 +218,8 @@ final class ScaleTransform extends AbstractLinearTransform implements ExtendedPr
      * equal to <code>{@link Matrix#getNumCol()} - 1</code>. For example, for square matrix of size 4×4, coordinate
      * points are three-dimensional and stored in the arrays starting at the specified offset ({@code srcOff})
      * in the order
-     * <code>[x<sub>0</sub>, y<sub>0</sub>, z<sub>0</sub>,
-     *        x<sub>1</sub>, y<sub>1</sub>, z<sub>1</sub>...,
+     * <code>[x₀, y₀, z₀,
+     *        x₁, y₁, z₁...,
      *        x<sub>n</sub>, y<sub>n</sub>, z<sub>n</sub>]</code>.
      *
      * @param srcPts The array containing the source point coordinates.
