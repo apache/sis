@@ -332,11 +332,12 @@ public abstract class AbstractAttribute<V> extends Field<V> implements Cloneable
      *
      * @see DefaultAttributeType#characteristics()
      */
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
     public Map<String,AbstractAttribute<?>> characteristics() {
         if (characteristics == null) {
             characteristics = newCharacteristicsMap();
         }
-        return characteristics;
+        return characteristics;     // Intentionally modifiable
     }
 
     /**

@@ -171,6 +171,7 @@ public final class CodeListUID {
      *
      * @return The identifier to be given to the {@code CodeList.valueOf(…)} method.
      */
+    @Override
     public String toString() {
         String id = codeListValue;
         if (id == null) {

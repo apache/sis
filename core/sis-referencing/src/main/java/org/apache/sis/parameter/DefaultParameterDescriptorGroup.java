@@ -147,7 +147,7 @@ public class DefaultParameterDescriptorGroup extends AbstractParameterDescriptor
      *   </tr>
      * </table>
      *
-     * @param properties    The properties to be given to the identified object.
+     * @param properties    The properties to be given to the new parameter group.
      * @param minimumOccurs The {@linkplain #getMinimumOccurs() minimum number of times} that values
      *                      for this parameter group are required, or 0 if no restriction.
      * @param maximumOccurs The {@linkplain #getMaximumOccurs() maximum number of times} that values
@@ -166,12 +166,39 @@ public class DefaultParameterDescriptorGroup extends AbstractParameterDescriptor
     }
 
     /**
+     * Constructs a group with the same parameters than another group. This is a convenience constructor for
+     * operations that expect the same parameters than another operation, but perform a different process.
+     *
+     * <div class="note"><b>Example:</b>
+     * the various <cite>"Coordinate Frame Rotation"</cite> variants (EPSG codes 1032, 1038 and 9607)
+     * expect the same parameters than their <cite>"Position Vector transformation"</cite> counterpart
+     * (EPSG codes 1033, 1037 and 9606) but perform the rotation in the opposite direction.</div>
+     *
+     * @param properties The properties to be given to the new parameter group.
+     * @param parameters The existing group from which to copy the {@linkplain #descriptors() parameter descriptors}.
+     *
+     * @since 0.7
+     */
+    public DefaultParameterDescriptorGroup(final Map<String,?> properties, final ParameterDescriptorGroup parameters) {
+        super(properties, parameters.getMinimumOccurs(), parameters.getMaximumOccurs());
+        descriptors = parameters.descriptors();    // We will share the same instance if it is safe.
+        if (!(parameters instanceof DefaultParameterDescriptorGroup)
+            || ((DefaultParameterDescriptorGroup) parameters).descriptors != descriptors)
+        {
+            // Note sure where the list come from, we are better to copy its content.
+            final GeneralParameterDescriptor[] p = descriptors.toArray(new GeneralParameterDescriptor[descriptors.size()]);
+            verifyNames(properties, p);
+            descriptors = asList(p);
+        }
+    }
+
+    /**
      * Creates a mandatory parameter group without cloning the given array. This constructor shall
      * be used only when we know that the given array is already a copy of the user-provided array.
      */
     DefaultParameterDescriptorGroup(final Map<String,?> properties, final GeneralParameterDescriptor[] parameters) {
         super(properties, 1, 1);
-        verifyNames(properties, parameters.clone());
+        verifyNames(properties, parameters);
         descriptors = asList(parameters);
     }
 

@@ -162,7 +162,7 @@ final class DenseFeature extends AbstractFeature implements Cloneable {
                 }
             }
         }
-        properties = c; // Store only on success.
+        properties = c;     // Store only on success.
     }
 
     /**

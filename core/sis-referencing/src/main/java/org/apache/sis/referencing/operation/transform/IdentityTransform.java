@@ -16,7 +16,6 @@
  */
 package org.apache.sis.referencing.operation.transform;
 
-import java.io.Serializable;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
@@ -37,7 +36,7 @@ import org.apache.sis.internal.referencing.j2d.AffineTransform2D;
  * @version 0.6
  * @module
  */
-final class IdentityTransform extends AbstractLinearTransform implements Serializable {
+final class IdentityTransform extends AbstractLinearTransform {
     /**
      * Serial number for inter-operability with different versions.
      */

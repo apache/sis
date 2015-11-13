@@ -24,7 +24,7 @@ import org.apache.sis.parameter.ParameterBuilder;
 
 
 /**
- * The provider for "<cite>Mercator (variant C)</cite>" projection (EPSG:1044).
+ * The provider for <cite>"Mercator (variant C)"</cite> projection (EPSG:1044).
  *
  * <div class="note"><b>Note on naming:</b>
  * The "Regional Mercator" class name is inspired by MapInfo practice, while not exactly the same projection.
@@ -90,14 +90,14 @@ public class RegionalMercator extends AbstractMercator {
                 .rename(Citations.GEOTIFF, "FalseOriginNorthing"));
 
         PARAMETERS = builder
-            .addIdentifier(IDENTIFIER)
-            .addName("Mercator (variant C)")
-            .createGroupForMapProjection(
-                    Mercator2SP.STANDARD_PARALLEL,
-                    Mercator1SP.LONGITUDE_OF_ORIGIN,    // Really "natural origin", not "false origin".
-                    LATITUDE_OF_FALSE_ORIGIN,
-                    EASTING_AT_FALSE_ORIGIN,
-                    NORTHING_AT_FALSE_ORIGIN);
+                .addIdentifier(IDENTIFIER)
+                .addName("Mercator (variant C)")
+                .createGroupForMapProjection(
+                        Mercator2SP.STANDARD_PARALLEL,
+                        Mercator1SP.LONGITUDE_OF_ORIGIN,    // Really "natural origin", not "false origin".
+                        LATITUDE_OF_FALSE_ORIGIN,
+                        EASTING_AT_FALSE_ORIGIN,
+                        NORTHING_AT_FALSE_ORIGIN);
     }
 
     /**

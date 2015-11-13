@@ -16,8 +16,12 @@
  */
 package org.apache.sis.storage.shapefile;
 
+import static org.junit.Assert.assertNotNull;
+
 import java.io.File;
 import java.net.URISyntaxException;
+import java.text.MessageFormat;
+import java.util.logging.Logger;
 
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.test.TestCase;
@@ -77,6 +81,31 @@ public final strictfp class ShapeFileTest extends TestCase {
         readAll(shp);
      }
 
+     /**
+      * Test loading of shapefile descriptors. 
+      * @throws URISyntaxException if the resource name is incorrect.
+      * @throws DataStoreException if a general file reading trouble occurs.
+      */
+     @Test
+     public void testDescriptors() throws URISyntaxException, DataStoreException {
+         Logger log = org.apache.sis.util.logging.Logging.getLogger(ShapeFileTest.class.getName());
+         
+         ShapeFile shp = new ShapeFile(path("ABRALicenseePt_4326_clipped.shp"));
+         shp.loadDescriptors();
+         
+         assertNotNull("The features type of the shapefile should have been set.", shp.getFeaturesType());
+         log.info(MessageFormat.format("ABRALicenseePt_4326_clipped.shp features type : {0}", shp.getFeaturesType()));
+         
+         assertNotNull("The shapefile descriptor of the shapefile should have been set.", shp.getShapefileDescriptor());
+         log.info(MessageFormat.format("ABRALicenseePt_4326_clipped.shp shapefile descriptor : {0}", shp.getShapefileDescriptor()));
+
+         assertNotNull("The DBase III fields descriptors of the shapefile should have been set.", shp.getDatabaseFieldsDescriptors());
+         log.info(MessageFormat.format("ABRALicenseePt_4326_clipped.shp DBase fields descriptors : {0}", shp.getDatabaseFieldsDescriptors()));
+         
+         // Loading of the descriptor shall not prevent the shapefile from being red again.
+         readAll(shp);
+     }
+     
     /**
      * Read all the shapefile content.
      * @param shp Shapefile to read.

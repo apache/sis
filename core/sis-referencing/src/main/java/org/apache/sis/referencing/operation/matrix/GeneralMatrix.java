@@ -240,6 +240,14 @@ class GeneralMatrix extends MatrixSIS implements ExtendedPrecisionMatrix {
     }
 
     /**
+     * Returns {@code true} if this matrix uses extended precision.
+     */
+    @Override
+    final boolean isExtendedPrecision() {
+        return elements.length > numRow * numCol;
+    }
+
+    /**
      * Stores the value at the specified row and column in the given {@code dd} object.
      * This method does not need to verify argument validity.
      */

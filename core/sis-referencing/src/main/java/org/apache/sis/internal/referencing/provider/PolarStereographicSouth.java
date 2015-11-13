@@ -79,8 +79,8 @@ public final class PolarStereographicSouth extends AbstractStereographic {
         };
 
         PARAMETERS = builder
-            .addName(Citations.ESRI, "Stereographic_South_Pole")
-            .createGroupForMapProjection(parameters);
+                .addName(Citations.ESRI, "Stereographic_South_Pole")
+                .createGroupForMapProjection(parameters);
     }
 
     /**

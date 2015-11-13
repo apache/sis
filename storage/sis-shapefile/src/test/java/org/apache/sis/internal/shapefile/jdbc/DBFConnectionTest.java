@@ -17,6 +17,7 @@
 package org.apache.sis.internal.shapefile.jdbc;
 
 import java.sql.*;
+import java.util.Properties;
 
 import org.apache.sis.internal.shapefile.jdbc.connection.DBFConnection;
 import org.apache.sis.test.DependsOnMethod;
@@ -41,6 +42,25 @@ public class DBFConnectionTest extends AbstractTestBaseForInternalJDBC {
     public void openCloseConnection() throws SQLException {
         final Driver driver = new DBFDriver();
         final Connection connection = driver.connect(dbfFile.getAbsolutePath(), null);
+        assertFalse("Connection should be opened", connection.isClosed());
+        assertTrue ("Connection should be valid",  connection.isValid(0));
+
+        connection.close();
+        assertTrue ("Connection should be closed", connection.isClosed());
+        assertFalse("Connection should no more be valid", connection.isValid(0));
+    }
+
+    /**
+     * Open and close a connection.
+     * @throws SQLException if an error occurred while opening the database.
+     */
+    @Test
+    public void openCloseConnectionWithAnotherCharset() throws SQLException {
+        Properties info = new Properties();
+        info.put("record_charset", "UTF-8");
+        
+        final Driver driver = new DBFDriver();
+        final Connection connection = driver.connect(dbfFile.getAbsolutePath(), info);
         assertFalse("Connection should be opened", connection.isClosed());
         assertTrue ("Connection should be valid",  connection.isValid(0));
 

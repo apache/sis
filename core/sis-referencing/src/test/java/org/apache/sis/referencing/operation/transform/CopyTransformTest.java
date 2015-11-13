@@ -18,20 +18,23 @@ package org.apache.sis.referencing.operation.transform;
 
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.internal.referencing.provider.Affine;
+import org.apache.sis.referencing.operation.matrix.Matrices;
 
 // Test imports
 import org.junit.Test;
 import org.apache.sis.test.DependsOn;
+import org.apache.sis.test.DependsOnMethod;
 
 import static org.apache.sis.test.ReferencingAssert.*;
 
 
 /**
  * Tests the {@link CopyTransform} class.
+ * Also opportunistically tests consistency with {@link ProjectiveTransform}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5
- * @version 0.6
+ * @version 0.7
  * @module
  */
 @DependsOn({
@@ -88,7 +91,7 @@ public final strictfp class CopyTransformTest extends MathTransformTestCase {
      * @throws TransformException should never happen.
      */
     @Test
-    public void test3D() throws TransformException {
+    public void testConstantDimension() throws TransformException {
         create(3, 2, 1, 0);
         assertIsNotIdentity(transform);
 
@@ -111,7 +114,8 @@ public final strictfp class CopyTransformTest extends MathTransformTestCase {
      * @throws TransformException should never happen.
      */
     @Test
-    public void test3Dto2D() throws TransformException {
+    @DependsOnMethod("testConstantDimension")
+    public void testDimensionReduction() throws TransformException {
         isInverseTransformSupported = false;
         create(3, 0, 1);
         assertIsNotIdentity(transform);
@@ -127,5 +131,26 @@ public final strictfp class CopyTransformTest extends MathTransformTestCase {
 
         makeProjectiveTransform();
         verifyTransform(source, target);
+    }
+
+    /**
+     * Tests a transform with more output dimensions than input dimensions.
+     * The extra dimension has values set to 0. This kind of transform happen
+     * in the inverse of <cite>"Geographic 3D to 2D conversion"</cite> (EPSG:9659).
+     *
+     * @throws TransformException should never happen.
+     */
+    @Test
+    @DependsOnMethod("testDimensionReduction")
+    public void testDimensionAugmentation() throws TransformException {
+        transform = new ProjectiveTransform(Matrices.create(4, 3, new double[] {
+                0, 1, 0,
+                1, 0, 0,
+                0, 0, 0,
+                0, 0, 1}));
+
+        assertInstanceOf("inverse", CopyTransform.class, transform.inverse());
+        verifyTransform(new double[] {2,3,    6,0,    2, Double.NaN},
+                        new double[] {3,2,0,  0,6,0,  Double.NaN, 2, 0});
     }
 }

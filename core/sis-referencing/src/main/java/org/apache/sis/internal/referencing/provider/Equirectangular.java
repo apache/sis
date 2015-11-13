@@ -179,19 +179,19 @@ public final class Equirectangular extends AbstractProvider {
         // Do not declare the ESRI "Equidistant_Cylindrical" projection name below,
         // for avoiding confusion with EPSG "Equidistant Cylindrical" ellipsoidal projection.
         PARAMETERS = addIdentifierAndLegacy(builder, "1029", "9823")  // 9823 uses deprecated parameter names
-            .addName(                   "Equidistant Cylindrical (Spherical)")
-            .addName(                   "Plate Carrée")  // Not formally defined by EPSG, but cited in documentation.
-            .addName(Citations.OGC,     "Equirectangular")
-            .addName(Citations.ESRI,    "Plate_Carree")
-            .addName(Citations.GEOTIFF, "CT_Equirectangular")
-            .addName(Citations.PROJ4,   "eqc")
-            .addIdentifier(Citations.GEOTIFF, "17")
-            .createGroupForMapProjection(
-                    STANDARD_PARALLEL,
-                    LATITUDE_OF_ORIGIN,     // Not formally an Equirectangular parameter.
-                    LONGITUDE_OF_ORIGIN,
-                    FALSE_EASTING,
-                    FALSE_NORTHING);
+                .addName(                   "Equidistant Cylindrical (Spherical)")
+                .addName(                   "Plate Carrée")  // Not formally defined by EPSG, but cited in documentation.
+                .addName(Citations.OGC,     "Equirectangular")
+                .addName(Citations.ESRI,    "Plate_Carree")
+                .addName(Citations.GEOTIFF, "CT_Equirectangular")
+                .addName(Citations.PROJ4,   "eqc")
+                .addIdentifier(Citations.GEOTIFF, "17")
+                .createGroupForMapProjection(
+                        STANDARD_PARALLEL,
+                        LATITUDE_OF_ORIGIN,     // Not formally an Equirectangular parameter.
+                        LONGITUDE_OF_ORIGIN,
+                        FALSE_EASTING,
+                        FALSE_NORTHING);
     }
 
     /**
@@ -265,7 +265,8 @@ public final class Equirectangular extends AbstractProvider {
          *   4) Scale longitude by cos(φ1).
          */
         φ1 = toRadians(φ1);
-        context.getMatrix(true).convertBefore(0, cos(φ1), null);
+        final MatrixSIS normalize = context.getMatrix(ContextualParameters.MatrixRole.NORMALIZATION);
+        normalize.convertBefore(0, cos(φ1), null);
         context.normalizeGeographicInputs(λ0)
                .convertBefore(1, null, -φ0);
         /*
@@ -280,7 +281,7 @@ public final class Equirectangular extends AbstractProvider {
             a = b / (1 - (1 - rs*rs) * (sinφ1*sinφ1));
         }
         final DoubleDouble k = new DoubleDouble(a);
-        final MatrixSIS denormalize = context.getMatrix(false);
+        final MatrixSIS denormalize = context.getMatrix(ContextualParameters.MatrixRole.DENORMALIZATION);
         denormalize.convertAfter(0, k, new DoubleDouble(fe));
         denormalize.convertAfter(1, k, new DoubleDouble(fn));
         /*

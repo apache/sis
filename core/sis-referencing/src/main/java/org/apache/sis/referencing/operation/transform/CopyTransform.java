@@ -17,7 +17,6 @@
 package org.apache.sis.referencing.operation.transform;
 
 import java.util.Arrays;
-import java.io.Serializable;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
@@ -39,10 +38,10 @@ import org.apache.sis.referencing.operation.matrix.Matrices;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5
- * @version 0.6
+ * @version 0.7
  * @module
  */
-final class CopyTransform extends AbstractLinearTransform implements Serializable {
+final class CopyTransform extends AbstractLinearTransform {
     /**
      * Serial number for inter-operability with different versions.
      */
@@ -59,11 +58,6 @@ final class CopyTransform extends AbstractLinearTransform implements Serializabl
      * The length of this array is the target dimension.
      */
     private final int[] indices;
-
-    /**
-     * The inverse transform. Will be created only when first needed.
-     */
-    private transient MathTransform inverse;
 
     /**
      * Creates a new transform.
@@ -85,9 +79,9 @@ final class CopyTransform extends AbstractLinearTransform implements Serializabl
     static CopyTransform create(final Matrix matrix) {
         final int srcDim = matrix.getNumCol() - 1;
         final int dstDim = matrix.getNumRow() - 1;
-        for (int i=0; i<=srcDim; i++) {
+        for (int i=0; i <= srcDim; i++) {
             if (matrix.getElement(dstDim, i) != (i == srcDim ? 1 : 0)) {
-                // Not an affine transform.
+                // Not an affine transform (ignoring if square or not).
                 return null;
             }
         }
@@ -339,8 +333,9 @@ final class CopyTransform extends AbstractLinearTransform implements Serializabl
     public synchronized MathTransform inverse() throws NoninvertibleTransformException {
         if (inverse == null) {
             /*
-             * Note: we do not perform the following optimization, because MathTransforms.linear(…)
-             *       should never instantiate this class in the identity case.
+             * Note: no need to perform the following check as this point because MathTransforms.linear(…)
+             *       should never instantiate this class in the identity case and because we perform an
+             *       equivalent check later anyway.
              *
              *       if (isIdentity()) {
              *           inverse = this;
@@ -361,7 +356,7 @@ final class CopyTransform extends AbstractLinearTransform implements Serializabl
             for (int j=srcDim; --j>=0;) {
                 if (reverse[j] < 0) {
                     final MatrixSIS matrix = Matrices.createZero(srcDim + 1, dstDim + 1);
-                    for (j=0; j<srcDim; j++) { // NOSONAR: the outer loop will not continue.
+                    for (j=0; j<srcDim; j++) {      // Okay to reuse 'j' since the outer loop will not continue.
                         final int i = reverse[j];
                         if (i >= 0) {
                             matrix.setElement(j, i, 1);
@@ -371,14 +366,16 @@ final class CopyTransform extends AbstractLinearTransform implements Serializabl
                     }
                     matrix.setElement(srcDim, dstDim, 1);
                     inverse = MathTransforms.linear(matrix);
-                    if (inverse instanceof ProjectiveTransform) {
-                        ((ProjectiveTransform) inverse).inverse = this;
+                    if (inverse instanceof AbstractLinearTransform) {
+                        ((AbstractLinearTransform) inverse).inverse = this;
                     }
                     return inverse;
                 }
             }
             /*
-             * At this point, we known that we can create the inverse transform.
+             * At this point, we know that we can create the inverse transform.
+             * If this transform is the identity transform (we should never happen,
+             * but we are paranoiac), then the old and new arrays would be equal.
              */
             CopyTransform copyInverse = this;
             if (!Arrays.equals(reverse, indices)) {

@@ -24,6 +24,9 @@ import org.apache.sis.io.wkt.Symbols;
 import org.apache.sis.io.wkt.WKTFormat;
 import org.apache.sis.io.wkt.Convention;
 
+// Branch-specific imports
+import org.apache.sis.internal.jdk7.JDK7;
+
 
 /**
  * Assertion methods used by the {@code sis-metadata} module in addition of the ones inherited
@@ -128,7 +131,7 @@ public strictfp class MetadataAssert extends Assert {
                 WKT_FORMAT.setConvention(convention);
                 wkt = WKT_FORMAT.format(object);
             }
-            if (!wkt.matches(expected)) {
+            if (!wkt.matches(expected.replace("\n", JDK7.lineSeparator()))) {
                 fail("WKT does not match the expected regular expression. The WKT that we got is:\n" + wkt);
             }
         }

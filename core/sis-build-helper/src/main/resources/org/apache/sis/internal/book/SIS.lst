@@ -1,5 +1,7 @@
+AbstractMathTransform
 AngleFormat
 DefaultEllipsoid
+DefaultGeodeticDatum
 DefaultMetadata
 Envelopes
 GeneralEnvelope

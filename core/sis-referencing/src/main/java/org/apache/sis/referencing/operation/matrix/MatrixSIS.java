@@ -55,7 +55,7 @@ import org.apache.sis.util.resources.Errors;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4
- * @version 0.6
+ * @version 0.7
  * @module
  *
  * @see Matrices
@@ -224,6 +224,13 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
      * @see Matrices#create(int, int, double[])
      */
     public abstract void setElements(final double[] elements);
+
+    /**
+     * Returns {@code true} if this matrix uses extended precision.
+     */
+    boolean isExtendedPrecision() {
+        return false;
+    }
 
     /**
      * Returns {@code true} if this matrix represents an affine transform.
@@ -452,6 +459,77 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
      */
     public MatrixSIS inverse() throws NoninvertibleMatrixException {
         return Solver.inverse(this, true);
+    }
+
+    /**
+     * Returns a new matrix with the same elements than this matrix except for the specified rows.
+     * This method is useful for removing a range of <em>target</em> dimensions in an affine transform.
+     *
+     * @param  lower Index of the first row to remove (inclusive).
+     * @param  upper Index after the last row to remove (exclusive).
+     * @return A copy of this matrix with the specified rows removed.
+     *
+     * @since 0.7
+     */
+    public MatrixSIS removeRows(final int lower, final int upper) {
+        final int numRow = getNumRow();
+        final int numCol = getNumCol();
+        ArgumentChecks.ensureValidIndexRange(numRow, lower, upper);
+        final DoubleDouble dd = isExtendedPrecision() ? new DoubleDouble() : null;
+        final MatrixSIS reduced = Matrices.createZero(numRow - (upper - lower), numCol, dd != null);
+        int dest = 0;
+        for (int j=0; j<numRow; j++) {
+            if (j == lower) {
+                j = upper;
+                if (j == numRow) break;
+            }
+            for (int i=0; i<numCol; i++) {
+                if (dd != null) {
+                    get(j, i, dd);
+                    reduced.set(dest, i, dd);
+                } else {
+                    reduced.setElement(dest, i, getElement(j, i));
+                }
+            }
+            dest++;
+        }
+        return reduced;
+    }
+
+    /**
+     * Returns a new matrix with the same elements than this matrix except for the specified columns.
+     * This method is useful for removing a range of <em>source</em> dimensions in an affine transform.
+     * Coordinates will be converted as if the values in the removed dimensions were zeros.
+     *
+     * @param  lower  Index of the first column to remove (inclusive).
+     * @param  upper  Index after the last column to remove (exclusive).
+     * @return A copy of this matrix with the specified columns removed.
+     *
+     * @since 0.7
+     */
+    public MatrixSIS removeColumns(final int lower, final int upper) {
+        final int numRow = getNumRow();
+        final int numCol = getNumCol();
+        ArgumentChecks.ensureValidIndexRange(numCol, lower, upper);
+        final DoubleDouble dd = isExtendedPrecision() ? new DoubleDouble() : null;
+        final MatrixSIS reduced = Matrices.createZero(numRow, numCol - (upper - lower), dd != null);
+        int dest = 0;
+        for (int i=0; i<numCol; i++) {
+            if (i == lower) {
+                i = upper;
+                if (i == numCol) break;
+            }
+            for (int j=0; j<numRow; j++) {
+                if (dd != null) {
+                    get(j, i, dd);
+                    reduced.set(j, dest, dd);
+                } else {
+                    reduced.setElement(j, dest, getElement(j, i));
+                }
+            }
+            dest++;
+        }
+        return reduced;
     }
 
     /**

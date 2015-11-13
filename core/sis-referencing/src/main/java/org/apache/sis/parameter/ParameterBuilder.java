@@ -368,6 +368,31 @@ public class ParameterBuilder extends Builder<ParameterBuilder> {
     }
 
     /**
+     * Creates a descriptor group with the same parameters than another group. This is a convenience constructor
+     * for operations that expect the same parameters than another operation, but perform a different process.
+     *
+     * <div class="note"><b>Example:</b>
+     * the various <cite>"Coordinate Frame Rotation"</cite> variants (EPSG codes 1032, 1038 and 9607)
+     * expect the same parameters than their <cite>"Position Vector transformation"</cite> counterpart
+     * (EPSG codes 1033, 1037 and 9606) but perform the rotation in the opposite direction.</div>
+     *
+     * @param parameters The existing group from which to copy the parameters.
+     * @return The parameter descriptor group.
+     *
+     * @since 0.7
+     */
+    public ParameterDescriptorGroup createGroupWithSameParameters(final ParameterDescriptorGroup parameters) {
+        final ParameterDescriptorGroup group;
+        onCreate(false);
+        try {
+            group = new DefaultParameterDescriptorGroup(properties, parameters);
+        } finally {
+            onCreate(true);
+        }
+        return group;
+    }
+
+    /**
      * Creates a descriptor group for a map projection. This method automatically adds mandatory parameters
      * for the <cite>semi-major</cite> and <cite>semi-minor axis length</cite>. Those parameters are usually
      * not explicitely included in parameter definitions since the axis lengths can be inferred from the

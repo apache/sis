@@ -34,6 +34,7 @@ import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ObjectConverters;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.Debug;
 
 import static org.apache.sis.referencing.IdentifiedObjects.isHeuristicMatchForName;
 
@@ -111,7 +112,7 @@ import org.apache.sis.internal.jdk8.JDK8;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.6
+ * @version 0.7
  * @module
  */
 @XmlTransient
@@ -759,5 +760,34 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable {
             // this method is currently invoked only with increasing index values.
             throw new IndexOutOfBoundsException(name);
         }
+    }
+
+    /**
+     * Returns a string representation of this group.
+     * The default implementation delegates to {@link ParameterFormat}.
+     *
+     * <p>This method is for information purpose only and may change in future SIS version.</p>
+     *
+     * @since 0.7
+     */
+    @Debug
+    @Override
+    public String toString() {
+        return ParameterFormat.sharedFormat(this);
+    }
+
+    /**
+     * Prints a string representation of this group to the {@linkplain System#out standard output stream}.
+     * If a {@linkplain java.io.Console console} is attached to the running JVM (i.e. if the application
+     * is run from the command-line and the output is not redirected to a file) and if Apache SIS thinks
+     * that the console supports the ANSI escape codes (a.k.a. X3.64), then a syntax coloring will be applied.
+     *
+     * <p>This is a convenience method for debugging purpose and for console applications.</p>
+     *
+     * @since 0.7
+     */
+    @Debug
+    public void print() {
+        ParameterFormat.print(this);
     }
 }
