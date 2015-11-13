@@ -53,7 +53,8 @@ public final strictfp class AllProvidersTest extends TestCase {
         return new Class<?>[] {
             Affine.class,
             GeographicOffsets.class,
-            GeographicOffsets3D.class,
+            GeographicOffsets2D.class,
+            VerticalOffset.class,
             LongitudeRotation.class,
             CoordinateFrameRotation.class,
             CoordinateFrameRotation2D.class,

@@ -16,24 +16,26 @@
  */
 package org.apache.sis.internal.referencing.provider;
 
-import javax.xml.bind.annotation.XmlTransient;
+import javax.measure.unit.SI;
 import javax.measure.unit.NonSI;
+import javax.xml.bind.annotation.XmlTransient;
+import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.ParameterNotFoundException;
-import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.Transformation;
-import org.apache.sis.internal.referencing.j2d.AffineTransform2D;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.parameter.Parameters;
+import org.apache.sis.referencing.operation.matrix.Matrix4;
+import org.apache.sis.referencing.operation.transform.MathTransforms;
 
 
 /**
- * The provider for <cite>"Geographic2D offsets"</cite> (EPSG:9619).
- * The default implementation handles the 2D case.
- * The {@link GeographicOffsets3D} subclass adds a third dimension.
+ * Base class for all transformations that perform a translation in the geographic domain.
+ * This base class defines a provider for <cite>"Geographic3D offsets"</cite> (EPSG:9660),
+ * but subclasses will provide different operations.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.7
@@ -58,28 +60,34 @@ public class GeographicOffsets extends AbstractProvider {
     static final ParameterDescriptor<Double> TY;
 
     /**
+     * The operation parameter descriptor for the <cite>"Vertical Offset"</cite> parameter value.
+     */
+    static final ParameterDescriptor<Double> TZ;
+
+    /**
      * The group of all parameters expected by this coordinate operation.
      */
     private static final ParameterDescriptorGroup PARAMETERS;
     static {
         final ParameterBuilder builder = builder();
-        TY = builder.addIdentifier("8601").addName("Latitude offset").create(0, NonSI.DEGREE_ANGLE);
+        TY = builder.addIdentifier("8601").addName("Latitude offset") .create(0, NonSI.DEGREE_ANGLE);
         TX = builder.addIdentifier("8602").addName("Longitude offset").create(0, NonSI.DEGREE_ANGLE);
-        PARAMETERS = builder.addIdentifier("9619").addName("Geographic2D offsets").createGroup(TY, TX);
+        TZ = builder.addIdentifier("8603").addName("Vertical Offset") .create(0, SI.METRE);
+        PARAMETERS = builder.addIdentifier("9660").addName("Geographic3D offsets").createGroup(TY, TX, TZ);
     }
 
     /**
      * Constructs a provider with default parameters.
      */
     public GeographicOffsets() {
-        super(2, 2, PARAMETERS);
+        super(3, 3, PARAMETERS);
     }
 
     /**
-     * For subclass constructor only.
+     * For subclasses constructor only.
      */
-    GeographicOffsets(ParameterDescriptorGroup parameters) {
-        super(3, 3, parameters);
+    GeographicOffsets(int dim, ParameterDescriptorGroup parameters) {
+        super(dim, dim, parameters);
     }
 
     /**
@@ -94,7 +102,7 @@ public class GeographicOffsets extends AbstractProvider {
 
     /**
      * Creates a transform from the specified group of parameter values.
-     * The parameter values are unconditionally converted to degrees.
+     * The parameter values are unconditionally converted to degrees and metres.
      *
      * @param  factory Ignored (can be null).
      * @param  values The group of parameter values.
@@ -106,6 +114,10 @@ public class GeographicOffsets extends AbstractProvider {
             throws ParameterNotFoundException
     {
         final Parameters pv = Parameters.castOrWrap(values);
-        return new AffineTransform2D(1, 0, 0, 1, pv.doubleValue(TX), pv.doubleValue(TY));
+        final Matrix4 t = new Matrix4();
+        t.m03 = pv.doubleValue(TX);
+        t.m13 = pv.doubleValue(TY);
+        t.m23 = pv.doubleValue(TZ);
+        return MathTransforms.linear(t);
     }
 }

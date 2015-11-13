@@ -22,63 +22,50 @@ import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.ParameterNotFoundException;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
-import org.apache.sis.internal.referencing.j2d.AffineTransform2D;
 import org.apache.sis.parameter.Parameters;
+import org.apache.sis.referencing.operation.matrix.Matrix2;
+import org.apache.sis.referencing.operation.transform.MathTransforms;
 
 
 /**
- * The provider for <cite>"Longitude rotation"</cite> (EPSG:9601).
- * The "Longitude rotation" is created as an affine transform containing only a translation term in degrees.
- * Advantage of using an affine transform for such simple operation is that this {@code AffineTransform} can
- * be efficiently concatenated with other affine transform instances.
+ * The provider for <cite>"Vertical Offset"</cite> (EPSG:9616).
+ * The Apache SIS implementation of this operation method always perform the vertical offset in metres.
+ * The vertical axis of source and target CRS shall be converted to metres before this operation is applied.
  *
- * <blockquote><p><b>Operation name:</b> {@code Longitude rotation}</p>
- * <table class="sis">
- *   <caption>Operation parameters</caption>
- *   <tr><th>Parameter name</th> <th>Default value</th></tr>
- *   <tr><td>{@code Longitude offset}</td> <td></td></tr>
- * </table></blockquote>
+ * <p><b>IMPORTANT:</b> if the source and target axis directions are opposite, then the input coordinates
+ * need to be multiplied by -1 <strong>before</strong> the operation is applied. This order is required
+ * for consistency with the sign of <cite>"Vertical Offset"</cite> parameter value.</p>
  *
- * The Apache SIS implementation of this operation method always perform the longitude rotation in degrees.
- * The longitude axis of source and target CRS shall be converted to degrees before this operation is applied.
- *
- * @author  Martin Desruisseaux (IRD, Geomatys)
- * @since   0.6
+ * @author  Martin Desruisseaux (Geomatys)
+ * @since   0.7
  * @version 0.7
  * @module
  */
 @XmlTransient
-public final class LongitudeRotation extends GeographicOffsets {
+public final class VerticalOffset extends GeographicOffsets {
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = -2104496465933824935L;
+    private static final long serialVersionUID = -8309224700931038020L;
 
     /**
      * The group of all parameters expected by this coordinate operation.
      */
     private static final ParameterDescriptorGroup PARAMETERS;
     static {
-        PARAMETERS = builder().addIdentifier("9601").addName("Longitude rotation").createGroup(TX);
+        PARAMETERS = builder().addIdentifier("9616").addName("Vertical Offset").createGroup(TZ);
     }
 
     /**
      * Constructs a provider with default parameters.
      */
-    public LongitudeRotation() {
-        super(2, PARAMETERS);
+    public VerticalOffset() {
+        super(1, PARAMETERS);
     }
 
     /**
      * Creates a transform from the specified group of parameter values.
-     * The parameter value is unconditionally converted to degrees.
-     *
-     * <p>The operation is created as an affine transform between two two-dimensional CRS. We do not override the
-     * {@link AffineTransform2D#getParameterDescriptors()} and {@link AffineTransform2D#getParameterValues()} methods
-     * in order to make that fact clearer, in the hope to reduce ambiguity about the nature of the transform.
-     * Note also that the "Longitude rotation" operation has unit of measurement while the "Affine" operation
-     * does not, so maybe our unconditional conversion to degrees would be more surprising for the user if the
-     * operation was shown as a "Longitude rotation".</p>
+     * The parameter value is unconditionally converted to metres.
      *
      * @param  factory Ignored (can be null).
      * @param  values The group of parameter values.
@@ -90,6 +77,8 @@ public final class LongitudeRotation extends GeographicOffsets {
             throws ParameterNotFoundException
     {
         final Parameters pv = Parameters.castOrWrap(values);
-        return new AffineTransform2D(1, 0, 0, 1, pv.doubleValue(TX), 0);
+        final Matrix2 t = new Matrix2();
+        t.m01 = pv.doubleValue(TZ);
+        return MathTransforms.linear(t);
     }
 }
