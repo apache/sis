@@ -109,6 +109,18 @@ public abstract class GeocentricAffineBetweenGeographic extends GeocentricAffine
     }
 
     /**
+     * Notifies {@code DefaultMathTransformFactory} that map projections require values for the
+     * {@code "src_semi_major"}, {@code "src_semi_minor"} , {@code "tgt_semi_major"} and
+     * {@code "tgt_semi_minor"} parameters.
+     *
+     * @return 2, meaning that the operation requires source and target ellipsoids.
+     */
+    @Override
+    public final int getNumEllipsoids() {
+        return 2;
+    }
+
+    /**
      * Creates a math transform from the specified group of parameter values.
      * This method wraps the affine operation into Geographic/Geocentric conversions.
      *

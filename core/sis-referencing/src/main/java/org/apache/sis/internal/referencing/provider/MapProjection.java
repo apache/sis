@@ -203,6 +203,17 @@ public abstract class MapProjection extends AbstractProvider {
      */
     protected abstract NormalizedProjection createProjection(final Parameters parameters) throws ParameterNotFoundException;
 
+    /**
+     * Notifies {@code DefaultMathTransformFactory} that map projections require
+     * values for the {@code "semi_major"} and {@code "semi_minor"} parameters.
+     *
+     * @return 1, meaning that the operation requires a source ellipsoid.
+     */
+    @Override
+    public final int getNumEllipsoids() {
+        return 1;
+    }
+
 
 
 

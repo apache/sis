@@ -212,6 +212,17 @@ public final class Equirectangular extends AbstractProvider {
     }
 
     /**
+     * Notifies {@code DefaultMathTransformFactory} that map projections require
+     * values for the {@code "semi_major"} and {@code "semi_minor"} parameters.
+     *
+     * @return 1, meaning that the operation requires a source ellipsoid.
+     */
+    @Override
+    public final int getNumEllipsoids() {
+        return 1;
+    }
+
+    /**
      * Gets a parameter value identified by the given descriptor and stores it only if different than zero.
      *
      * @param  source     The parameters from which to read the value.

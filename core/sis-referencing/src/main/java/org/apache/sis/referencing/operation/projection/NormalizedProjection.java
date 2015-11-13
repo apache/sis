@@ -98,9 +98,8 @@ import java.util.Objects;
  * The first matrix on the left side is for {@linkplain org.apache.sis.referencing.cs.CoordinateSystems#swapAndScaleAxes
  * swapping axes} from (<var>latitude</var>, <var>longitude</var>) to (<var>longitude</var>, <var>latitude</var>) order.
  * This matrix is shown here for completeness, but is not managed by this projection package. Axes swapping is managed
- * at a {@linkplain org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory#createBaseToDerived(
- * org.opengis.referencing.cs.CoordinateSystem, org.opengis.referencing.operation.MathTransform,
- * org.opengis.referencing.cs.CoordinateSystem) higher level}.</div>
+ * at a {@linkplain org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory#createParameterizedTransform
+ * higher level}.</div>
  *
  * {@code NormalizedProjection} does not store the above cited parameters (central meridian, scale factor, <i>etc.</i>)
  * on intend (except indirectly), in order to make clear that those parameters are not used by subclasses.
@@ -131,7 +130,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = 1969740225939106310L;
+    private static final long serialVersionUID = -4010883312927645853L;
 
     /**
      * Maximum difference allowed when comparing longitudes or latitudes in radians.
