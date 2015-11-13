@@ -30,8 +30,9 @@ import org.apache.sis.internal.referencing.provider.MercatorSpherical;
 import org.apache.sis.internal.referencing.provider.RegionalMercator;
 import org.apache.sis.internal.referencing.provider.PseudoMercator;
 import org.apache.sis.internal.util.DoubleDouble;
-import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.matrix.Matrix2;
+import org.apache.sis.referencing.operation.matrix.MatrixSIS;
+import org.apache.sis.referencing.operation.transform.ContextualParameters;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.util.Workaround;
 
@@ -243,8 +244,8 @@ public class Mercator extends ConformalProjection {
          * simple as possible, we increase the chances of efficient concatenation of an inverse with a forward
          * projection.
          */
-        final MatrixSIS   normalize = context.getMatrix(true);
-        final MatrixSIS denormalize = context.getMatrix(false);
+        final MatrixSIS normalize   = context.getMatrix(ContextualParameters.MatrixRole.NORMALIZATION);
+        final MatrixSIS denormalize = context.getMatrix(ContextualParameters.MatrixRole.DENORMALIZATION);
         denormalize.convertBefore(0, k0, null);
         denormalize.convertBefore(1, k0, null);
         if (λ0 != 0) {
@@ -258,7 +259,7 @@ public class Mercator extends ConformalProjection {
             denormalize.convertBefore(0, null, offset);
         }
         if (φ0 != 0) {
-            denormalize.convertBefore(1, null, verbatim(-log(expOfNorthing(φ0, excentricity * sin(φ0)))));
+            denormalize.convertBefore(1, null, verbatim(-log(expOfNorthing(φ0, eccentricity * sin(φ0)))));
         }
         if (variant == MILLER) {
             normalize  .convertBefore(1, 0.80, null);
@@ -317,7 +318,7 @@ public class Mercator extends ConformalProjection {
     @Override
     public MathTransform createMapProjection(final MathTransformFactory factory) throws FactoryException {
         Mercator kernel = this;
-        if ((variant & SPHERICAL) != 0 || excentricity == 0) {
+        if ((variant & SPHERICAL) != 0 || eccentricity == 0) {
             kernel = new Spherical(this);
         }
         return context.completeTransform(factory, kernel);
@@ -353,7 +354,7 @@ public class Mercator extends ConformalProjection {
                 // about why we perform explicit checks for the pole cases.
                 final double a = abs(φ);
                 if (a < PI/2) {
-                    y = log(expOfNorthing(φ, excentricity * sinφ));     // Snyder (7-7)
+                    y = log(expOfNorthing(φ, eccentricity * sinφ));     // Snyder (7-7)
                 } else {
                     y = copySign(a <= (PI/2 + ANGULAR_TOLERANCE) ? POSITIVE_INFINITY : NaN, φ);
                 }
@@ -394,7 +395,7 @@ public class Mercator extends ConformalProjection {
                     final double a = abs(φ);
                     final double y;
                     if (a < PI/2) {
-                        y = log(expOfNorthing(φ, excentricity * sin(φ)));
+                        y = log(expOfNorthing(φ, eccentricity * sin(φ)));
                     } else {
                         y = copySign(a <= (PI/2 + ANGULAR_TOLERANCE) ? POSITIVE_INFINITY : NaN, φ);
                     }

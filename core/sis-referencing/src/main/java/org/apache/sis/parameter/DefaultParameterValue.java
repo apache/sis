@@ -953,9 +953,14 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
              * is identical in both units (typically the 0 value).
              */
             if (!ignoreUnits && !Double.isNaN(value)) {
+                // Test equivalent to unit.equals(contextualUnit) but more aggressive.
                 ignoreUnits = Numerics.equals(value, doubleValue(contextualUnit));
             }
-            if (!ignoreUnits || !convention.isSimplified() || !hasContextualUnit(formatter)) {
+            if (ignoreUnits && convention != Convention.INTERNAL) {
+                // One last check about if we are really allowed to ignore units.
+                ignoreUnits = convention.isSimplified() && hasContextualUnit(formatter);
+            }
+            if (!ignoreUnits) {
                 if (!isWKT1) {
                     formatter.append(unit);
                 } else if (!ignoreUnits) {

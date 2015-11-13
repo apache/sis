@@ -67,6 +67,11 @@ public final class Formulas extends Static {
     public static final long JULIAN_YEAR_LENGTH = 31557600000L;
 
     /**
+     * Maximum number of iterations for iterative computations.
+     */
+    public static final int MAXIMUM_ITERATIONS = 15;
+
+    /**
      * Do not allow instantiation of this class.
      */
     private Formulas() {

@@ -25,7 +25,7 @@ import org.apache.sis.metadata.iso.citation.Citations;
 
 
 /**
- * The provider for "<cite>Mercator (variant B)</cite>" projection (EPSG:9805).
+ * The provider for <cite>"Mercator (variant B)"</cite> projection (EPSG:9805).
  *
  * <p>This provider reuses some of the parameters defined in {@link Mercator2SP}.</p>
  *
@@ -94,22 +94,22 @@ public final class Mercator2SP extends AbstractMercator {
                 .setRemarks(remarks).setDeprecated(true));
 
         PARAMETERS = builder
-            .addIdentifier(             "9805")
-            .addName(                   "Mercator (variant B)")     // Starting from EPSG version 7.6
-            .addName(                   "Mercator (2SP)")           // Prior to EPSG version 7.6
-            .addName(Citations.OGC,     "Mercator_2SP")
-            .addName(Citations.ESRI,    "Mercator")
-            .addName(Citations.NETCDF,  "Mercator")
-            .addName(sameNameAs(Citations.PROJ4, Mercator1SP.PARAMETERS))
-            .addIdentifier(Citations.MAP_INFO, "26")    // MapInfo names this projection "Regional Mercator".
-            .addIdentifier(Citations.S57,       "8")
-            .createGroupForMapProjection(
-                    STANDARD_PARALLEL,
-                    latitudeOfOrigin,       // Not formally a Mercator2SP parameter.
-                    Mercator1SP.LONGITUDE_OF_ORIGIN,
-                    SCALE_FACTOR,           // Not formally a Mercator2SP parameter.
-                    FALSE_EASTING,
-                    FALSE_NORTHING);
+                .addIdentifier(             "9805")
+                .addName(                   "Mercator (variant B)")     // Starting from EPSG version 7.6
+                .addName(                   "Mercator (2SP)")           // Prior to EPSG version 7.6
+                .addName(Citations.OGC,     "Mercator_2SP")
+                .addName(Citations.ESRI,    "Mercator")
+                .addName(Citations.NETCDF,  "Mercator")
+                .addName(sameNameAs(Citations.PROJ4, Mercator1SP.PARAMETERS))
+                .addIdentifier(Citations.MAP_INFO, "26")    // MapInfo names this projection "Regional Mercator".
+                .addIdentifier(Citations.S57,       "8")
+                .createGroupForMapProjection(
+                        STANDARD_PARALLEL,
+                        latitudeOfOrigin,       // Not formally a Mercator2SP parameter.
+                        Mercator1SP.LONGITUDE_OF_ORIGIN,
+                        SCALE_FACTOR,           // Not formally a Mercator2SP parameter.
+                        FALSE_EASTING,
+                        FALSE_NORTHING);
     }
 
     /**

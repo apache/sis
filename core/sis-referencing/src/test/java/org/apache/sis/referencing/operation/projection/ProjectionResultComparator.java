@@ -105,7 +105,7 @@ final strictfp class ProjectionResultComparator extends NormalizedProjection {
                 final Class<?> sphericalClass = spherical.getClass();
                 final Class<?> ellipticalClass = sphericalClass.getSuperclass();
                 assertEquals("Class name for the spherical formulas.", "Spherical", sphericalClass.getSimpleName());
-                assertEquals("Excentricity of spherical case.", 0, spherical.excentricity, 0);
+                assertEquals("Eccentricity of spherical case.", 0, spherical.eccentricity, 0);
                 assertSame("In SIS implementation, the spherical cases are defined as inner classes named “Spherical”"
                         + " which extend their enclosing class. This is only a convention, which we verify here. But"
                         + " there is nothing wrong if a future version choose to not follow this convention anymore.",

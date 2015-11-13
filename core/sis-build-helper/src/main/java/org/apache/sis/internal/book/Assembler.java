@@ -75,6 +75,13 @@ public final class Assembler {
     private static final String LINE_SEPARATOR = "\n";
 
     /**
+     * Minimal number of characters in a Java identifier before to allows a line break before the next identifier.
+     * This value if used in expressions like {@code foo.bar()} for deciding whether or not we accept line break
+     * between {@code foo} and {@code .bar()}.
+     */
+    private static final int MINIMAL_LENGTH_BEFORE_BREAK = 3;
+
+    /**
      * The directory of all input files to process.
      */
     private final File inputDirectory;
@@ -313,6 +320,10 @@ public final class Assembler {
                                 ((Element) node).setAttribute("class", style);
                             }
                         }
+                        String text = insertWordSeparator(node.getTextContent());
+                        if (text != null) {
+                            node.setTextContent(text);
+                        }
                         return; // Do not scan recursively the <code> text content.
                     }
                     else {
@@ -458,6 +469,48 @@ public final class Assembler {
         ref.setAttribute("href", "#" + reference);
         ref.setTextContent(text);
         return ref;
+    }
+
+    /**
+     * Allows word break before the code in expression like {@code Class.method()}.
+     * If there is nothing to change in the given text, returns {@code null}.
+     */
+    private static String insertWordSeparator(String text) {
+        StringBuilder buffer = null;
+        for (int i=text.length() - 1; --i > MINIMAL_LENGTH_BEFORE_BREAK;) {
+            if (text.charAt(i) == '.' && Character.isJavaIdentifierStart(text.charAt(i+1))) {
+                final char b = text.charAt(i-1);
+                if (Character.isJavaIdentifierPart(b) || b == ')') {
+                    /*
+                     * Verifiy if the element to eventually put on the next line is a call to a method.
+                     * For now we split only calls to method for avoiding to split for example every
+                     * elements in a package name.
+                     */
+                    for (int j=i; ++j < text.length();) {
+                        final char c = text.charAt(j);
+                        if (!Character.isJavaIdentifierPart(c)) {
+                            if (c == '(') {
+                                /*
+                                 * Found a call to a method. But we also require the word before it
+                                 * to have more than 3 letters.
+                                 */
+                                for (j = i; Character.isJavaIdentifierPart(text.charAt(--j));) {
+                                    if (j == i - MINIMAL_LENGTH_BEFORE_BREAK) {
+                                        if (buffer == null) {
+                                            buffer = new StringBuilder(text);
+                                        }
+                                        buffer.insert(i, '\u200B');     // Zero-width space.
+                                        break;
+                                    }
+                                }
+                            }
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        return (buffer != null) ? buffer.toString() : null;
     }
 
     /**

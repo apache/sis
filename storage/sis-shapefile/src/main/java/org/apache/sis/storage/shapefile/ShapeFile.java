@@ -17,10 +17,12 @@
 package org.apache.sis.storage.shapefile;
 
 import java.io.File;
-
-// Branch-dependent imports
+import java.util.List;
 import org.apache.sis.internal.jdk7.Objects;
 
+import org.apache.sis.feature.DefaultFeatureType;
+import org.apache.sis.internal.shapefile.ShapefileDescriptor;
+import org.apache.sis.internal.shapefile.jdbc.DBase3FieldDescriptor;
 
 /**
  * Provides a ShapeFile Reader.
@@ -40,6 +42,15 @@ public class ShapeFile {
     /** Database file. */
     private File databaseFile;
 
+    /** Type of the features contained in this shapefile. */
+    private DefaultFeatureType featuresType;
+
+    /** Shapefile descriptor. */
+    private ShapefileDescriptor shapefileDescriptor;
+
+    /** Database field descriptors. */
+    private List<DBase3FieldDescriptor> databaseFieldsDescriptors;
+
     /**
      * Construct a Shapefile from a file.
      * @param shpfile file to read.
@@ -56,6 +67,30 @@ public class ShapeFile {
     }
 
     /**
+     * Return the default feature type.
+     * @return Feature type.
+     */
+    public DefaultFeatureType getFeaturesType() {
+        return this.featuresType;
+    }
+
+    /**
+     * Returns the shapefile descriptor.
+     * @return Shapefile descriptor.
+     */
+    public ShapefileDescriptor getShapefileDescriptor() {
+        return this.shapefileDescriptor;
+    }
+
+    /**
+     * Returns the database fields descriptors.
+     * @return List of fields descriptors.
+     */
+    public List<DBase3FieldDescriptor> getDatabaseFieldsDescriptors() {
+        return this.databaseFieldsDescriptors;
+    }
+
+    /**
      * Find features corresponding to an SQL request SELECT * FROM database.
      * @return Features
      * @throws DbaseFileNotFoundException if the database file has not been found.
@@ -64,6 +99,25 @@ public class ShapeFile {
      * @throws InvalidShapefileFormatException if the shapefile format is invalid.
      */
     public InputFeatureStream findAll() throws InvalidDbaseFileFormatException, ShapefileNotFoundException, DbaseFileNotFoundException, InvalidShapefileFormatException {
-        return new InputFeatureStream(shapeFile, databaseFile);
+        InputFeatureStream is = new InputFeatureStream(shapeFile, databaseFile);
+        this.featuresType = is.getFeaturesType();
+        this.shapefileDescriptor = is.getShapefileDescriptor();
+        this.databaseFieldsDescriptors = is.getDatabaseFieldsDescriptors();
+        return is;
+    }
+
+    /**
+     * Load shapefile descriptors : features types, shapefileDescriptor, database field descriptors :
+     * this is also automatically done when executing a query on it, by findAll.
+     * @throws DbaseFileNotFoundException if the database file has not been found.
+     * @throws ShapefileNotFoundException if the shapefile has not been found.
+     * @throws InvalidDbaseFileFormatException if the database file format is invalid.
+     * @throws InvalidShapefileFormatException if the shapefile format is invalid.
+     */
+    public void loadDescriptors() throws InvalidDbaseFileFormatException, InvalidShapefileFormatException, ShapefileNotFoundException, DbaseFileNotFoundException {
+        // Doing an simple query will init the internal descriptors.
+        // It prepares a SELECT * FROM <DBase> but don't read a record by itself.
+        InputFeatureStream is = findAll();
+        is.close();
     }
 }

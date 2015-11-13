@@ -62,8 +62,10 @@ public final strictfp class ContextualParametersTest extends TestCase {
     public void testParameters() {
         final ContextualParameters p = create(1, 1);
         assertTrue("values().isEmpty()",       p.values().isEmpty());
-        assertTrue("normalize.isIdentity()",   p.getMatrix(true).isIdentity());
-        assertTrue("denormalize.isIdentity()", p.getMatrix(false).isIdentity());
+        assertTrue("normalize.isIdentity()",   p.getMatrix(ContextualParameters.MatrixRole.NORMALIZATION).isIdentity());
+        assertTrue("denormalize.isIdentity()", p.getMatrix(ContextualParameters.MatrixRole.DENORMALIZATION).isIdentity());
+        assertTrue("normalize.isIdentity()",   p.getMatrix(ContextualParameters.MatrixRole.INVERSE_NORMALIZATION).isIdentity());
+        assertTrue("denormalize.isIdentity()", p.getMatrix(ContextualParameters.MatrixRole.INVERSE_DENORMALIZATION).isIdentity());
 
         final ParameterValue<?> p1 = p.parameter("Mandatory 1");
         final ParameterValue<?> p2 = p.parameter("Mandatory 2");

@@ -21,6 +21,8 @@ import java.io.IOException;
 import java.nio.ByteOrder;
 import java.text.MessageFormat;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.apache.sis.feature.DefaultAttributeType;
 import org.apache.sis.feature.DefaultFeatureType;
@@ -28,6 +30,7 @@ import org.apache.sis.internal.shapefile.jdbc.*;
 import org.apache.sis.storage.shapefile.InvalidShapefileFormatException;
 import org.apache.sis.storage.shapefile.ShapeTypeEnum;
 import org.apache.sis.feature.AbstractFeature;
+import org.apache.sis.util.logging.Logging;
 
 import com.esri.core.geometry.*;
 
@@ -141,7 +144,7 @@ public class ShapefileByteReader extends CommonByteReader<InvalidShapefileFormat
         MappedByteReader databaseReader = null;
 
         try {
-            databaseReader = new MappedByteReader(dbaseFile);
+            databaseReader = new MappedByteReader(dbaseFile, null);
             databaseFieldsDescriptors = databaseReader.getFieldsDescriptors();
         }
         finally {
@@ -208,38 +211,123 @@ public class ShapefileByteReader extends CommonByteReader<InvalidShapefileFormat
     /**
      * Load polygon feature.
      * @param feature Feature to fill.
-     * @throws InvalidShapefileFormatException if the polygon cannot be handled.
      */
-    private void loadPolygonFeature(AbstractFeature feature) throws InvalidShapefileFormatException {
+    private void loadPolygonFeature(AbstractFeature feature) {
         /* double xmin = */getByteBuffer().getDouble();
         /* double ymin = */getByteBuffer().getDouble();
         /* double xmax = */getByteBuffer().getDouble();
         /* double ymax = */getByteBuffer().getDouble();
-        int NumParts = getByteBuffer().getInt();
-        int NumPoints = getByteBuffer().getInt();
+        int numParts = getByteBuffer().getInt();
+        int numPoints = getByteBuffer().getInt();
 
-        if (NumParts > 1) {
-            throw new InvalidShapefileFormatException("Polygons with multiple linear rings have not implemented yet.");
+        Polygon poly;
+
+        // Handle multiple polygon parts.
+        if (numParts > 1) {
+            Logger log = Logging.getLogger(ShapefileByteReader.class.getName());
+
+            if (log.isLoggable(Level.FINER)) {
+                String format = "Polygon with multiple linear rings encountered at position {0,number} with {1,number} parts.";
+                String message = MessageFormat.format(format, getByteBuffer().position(), numParts);
+                log.finer(message);
+            }
+
+            poly = readMultiplePolygonParts(numParts, numPoints);
+        }
+        else {
+            // Polygon with an unique part.
+            poly = readUniquePolygonPart(numPoints);
         }
 
-        // read the one part
-        @SuppressWarnings("unused")
-        int Part = getByteBuffer().getInt();
+        feature.setPropertyValue(GEOMETRY_NAME, poly);
+    }
+
+    /**
+     * Read a polygon that has a unique part.
+     * @param numPoints Number of the points of the polygon.
+     * @return Polygon.
+     */
+    @Deprecated // As soon as the readMultiplePolygonParts method proofs working well, this readUniquePolygonPart method can be removed and all calls be deferred to readMultiplePolygonParts.
+    private Polygon readUniquePolygonPart(int numPoints) {
+        int part = getByteBuffer().getInt();
+
         Polygon poly = new Polygon();
 
         // create a line from the points
         double xpnt = getByteBuffer().getDouble();
         double ypnt = getByteBuffer().getDouble();
-        // Point oldpnt = new Point(xpnt, ypnt);
+
         poly.startPath(xpnt, ypnt);
 
-        for (int j = 0; j < NumPoints - 1; j++) {
+        for (int j = 0; j < numPoints - 1; j++) {
             xpnt = getByteBuffer().getDouble();
             ypnt = getByteBuffer().getDouble();
             poly.lineTo(xpnt, ypnt);
         }
 
-        feature.setPropertyValue(GEOMETRY_NAME, poly);
+        return poly;
+    }
+
+    /**
+     * Read a polygon that has multiple parts.
+     * @param numParts Number of parts of this polygon.
+     * @param numPoints Total number of points of this polygon, all parts considered.
+     * @return a multiple part polygon.
+     */
+    private Polygon readMultiplePolygonParts(int numParts, int numPoints) {
+        /**
+         * From ESRI Specification :
+         * Parts : 0 5  (meaning : 0 designs the first v1, 5 designs the first v5 on the points list below).
+         * Points : v1 v2 v3 v4 v1 v5 v8 v7 v6 v5
+         *
+         * POSITION  FIELD       VALUE      TYPE      NUMBER     ORDER
+         * Byte 0    Shape Type  5          Integer   1          Little
+         * Byte 4    Box         Box        Double    4          Little
+         * Byte 36   NumParts    NumParts   Integer   1          Little
+         * Byte 40   NumPoints   NumPoints  Integer   1          Little
+         * Byte 44   Parts       Parts      Integer   NumParts   Little
+         * Byte X    Points      Points     Point     NumPoints  Little
+         */
+        int[] partsIndexes = new int[numParts];
+
+        // Read all the parts indexes (starting at byte 44).
+        for(int index=0; index < numParts; index ++) {
+            partsIndexes[index] = getByteBuffer().getInt();
+        }
+
+        // Read all the points.
+        double[] xPoints = new double[numPoints];
+        double[] yPoints = new double[numPoints];
+
+        for(int index=0; index < numPoints; index ++) {
+            xPoints[index] = getByteBuffer().getDouble();
+            yPoints[index] = getByteBuffer().getDouble();
+        }
+
+        // Create the polygon from the points.
+        Polygon poly = new Polygon();
+
+        // create a line from the points
+        for(int index=0; index < numPoints; index ++) {
+            // Check if this index is one that begins a new part.
+            boolean newPolygon = false;
+
+            for(int j=0; j < partsIndexes.length; j ++) {
+                if (partsIndexes[j] == index) {
+                    newPolygon = true;
+                    break;
+                }
+            }
+
+            if (newPolygon) {
+                poly.startPath(xPoints[index], yPoints[index]);
+            }
+            else {
+                poly.lineTo(xPoints[index], yPoints[index]);
+            }
+        }
+
+        return poly;
     }
 
     /**

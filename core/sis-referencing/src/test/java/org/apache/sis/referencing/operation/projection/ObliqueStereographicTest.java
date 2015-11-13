@@ -71,12 +71,12 @@ public final strictfp class ObliqueStereographicTest extends MapProjectionTestCa
      *   <li>Parameters used in linear operations (additions or multiplications) performed <strong>before</strong> the
      *       non-linear part (the "kernel") of the map projection. Those parameters are <var>λ₀</var> and <var>n</var>
      *       and their values are stored in the normalization matrix given by
-     *       <code>{@linkplain ContextualParameters#getMatrix(boolean) ContextualParameters.getMatrix}(true)</code>.</li>
+     *       <code>{@linkplain ContextualParameters#getMatrix ContextualParameters.getMatrix}(NORMALIZATION)</code>.</li>
      *
      *   <li>Parameters used in linear operations (additions or multiplications) performed <strong>after</strong> the
      *       non-linear part (the "kernel") of the map projection. Those parameters are <var>k₀</var>, <var>R</var>,
      *       <var>FE</var> and <var>FN</var> and their values are stored in the denormalization matrix given by
-     *       <code>{@linkplain ContextualParameters#getMatrix(boolean) ContextualParameters.getMatrix}(false)</code>.</li>
+     *       <code>{@linkplain ContextualParameters#getMatrix ContextualParameters.getMatrix}(DENORMALIZATION)</code>.</li>
      *
      *   <li>Other parameters are either used in the non-linear "kernel" of the map projection or used for computing the
      *       above-cited parameters.</li>
@@ -92,8 +92,8 @@ public final strictfp class ObliqueStereographicTest extends MapProjectionTestCa
         /*  After kernel */     R   = 6382644.571,      // Radius of conformal sphere (m)
                                 a   = 6377397.155,      // Semi-major axis length (m)
                                 ivf = 299.15281,        // Inverse flattening factor
-                                e   = 0.08169683,       // Excentricity
-        /* Before kernel */     n   = 1.000475857,      // Coefficient computed from excentricity and φ₀.
+                                e   = 0.08169683,       // Eccentricity
+        /* Before kernel */     n   = 1.000475857,      // Coefficient computed from eccentricity and φ₀.
         /*  After kernel */     k0  = 0.9999079,        // Scale factor
         /*  After kernel */     FE  = 155000.00,        // False Easting (m)
         /*  After kernel */     FN  = 463000.00;        // False Northing (m)

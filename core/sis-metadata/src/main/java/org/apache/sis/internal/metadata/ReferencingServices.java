@@ -153,6 +153,7 @@ public class ReferencingServices extends OptionalDependency {
      *
      * @return The singleton instance.
      */
+    @SuppressWarnings("DoubleCheckedLocking")
     public static ReferencingServices getInstance() {
         ReferencingServices c = instance;
         if (c == null) {

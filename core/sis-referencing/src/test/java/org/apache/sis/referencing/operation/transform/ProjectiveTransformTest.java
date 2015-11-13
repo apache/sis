@@ -17,6 +17,7 @@
 package org.apache.sis.referencing.operation.transform;
 
 import org.opengis.referencing.operation.Matrix;
+import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransform1D;
 import org.opengis.referencing.operation.MathTransform2D;
 import org.opengis.referencing.operation.MathTransformFactory;
@@ -48,11 +49,11 @@ import org.opengis.test.referencing.TransformTestCase;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5
- * @version 0.5
+ * @version 0.7
  * @module
  */
 @RunWith(JUnit4.class)
-@DependsOn(AbstractMathTransformTest.class)
+@DependsOn({AbstractMathTransformTest.class, ScaleTransformTest.class})
 public strictfp class ProjectiveTransformTest extends TransformTestCase {
     /**
      * The factory to use for creating linear transforms.
@@ -77,12 +78,22 @@ public strictfp class ProjectiveTransformTest extends TransformTestCase {
     public ProjectiveTransformTest() {
         this(new MathTransformFactoryBase() {
             @Override
-            public ProjectiveTransform createAffineTransform(final Matrix matrix) {
+            public MathTransform createAffineTransform(final Matrix matrix) {
+                final ProjectiveTransform pt;
                 if (matrix.getNumRow() == 3 && matrix.getNumCol() == 3) {
-                    return new ProjectiveTransform2D(matrix);
+                    pt = new ProjectiveTransform2D(matrix);
                 } else {
-                    return new ProjectiveTransform(matrix);
+                    pt = new ProjectiveTransform(matrix);
                 }
+                MathTransform tr = pt.optimize();
+                if (tr != pt) {
+                    /*
+                     * Opportunistically tests ScaledTransform together with ProjectiveTransform.
+                     * We takes ScaledTransform as a reference implementation since it is simpler.
+                     */
+                    tr = new TransformResultComparator(tr, pt);
+                }
+                return tr;
             }
         });
     }
@@ -181,6 +192,9 @@ public strictfp class ProjectiveTransformTest extends TransformTestCase {
      */
     @After
     public final void ensureImplementRightInterface() {
+        if (transform instanceof TransformResultComparator) {
+            transform = ((TransformResultComparator) transform).tested;
+        }
         /*
          * Below is a copy of MathTransformTestCase.validate(), with minor modifications
          * due to the fact that this class does not extend MathTransformTestCase.

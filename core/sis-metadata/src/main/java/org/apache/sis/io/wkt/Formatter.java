@@ -78,6 +78,9 @@ import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.metadata.iso.ImmutableIdentifier;
 import org.apache.sis.metadata.iso.extent.Extents;
 
+// Branch-specific imports
+import org.apache.sis.internal.jdk7.JDK7;
+
 
 /**
  * Provides support methods for formatting a <cite>Well Known Text</cite> (WKT).
@@ -494,7 +497,6 @@ public class Formatter implements Localized {
      *
      * <p>This method has no effect in any of the following cases:</p>
      * <ul>
-     *   <li>WKT formatting has not yet started.</li>
      *   <li>This method has already been invoked before the next {@code append(…)}.</li>
      *   <li>The indentation is {@link WKTFormat#SINGLE_LINE}.</li>
      * </ul>
@@ -547,6 +549,8 @@ public class Formatter implements Localized {
             } else {
                 buffer.append(symbols.getSeparator());
             }
+        } else if (requestNewLine) {
+            buffer.append(JDK7.lineSeparator()).append(CharSequences.spaces(margin));
         }
         requestNewLine = false;
     }
@@ -558,7 +562,7 @@ public class Formatter implements Localized {
      * @param keyword The element keyword (e.g. {@code "DATUM"}, {@code "AXIS"}, <i>etc</i>).
      */
     private void openElement(final boolean newLine, String keyword) {
-        if (newLine) {
+        if (newLine && buffer.length() != elementStart) {
             newLine();
         }
         appendSeparator();

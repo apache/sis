@@ -25,6 +25,7 @@ import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.Matrix;
 import org.apache.sis.referencing.operation.matrix.Matrix2;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
+import org.apache.sis.referencing.operation.transform.ContextualParameters;
 import org.apache.sis.internal.referencing.provider.PolarStereographicA;
 import org.apache.sis.internal.referencing.provider.PolarStereographicB;
 import org.apache.sis.internal.referencing.provider.PolarStereographicC;
@@ -207,7 +208,7 @@ public class PolarStereographic extends ConformalProjection {
              *
              * In the spherical case, should give ρ == 2.
              */
-            ρ = verbatim(2 / sqrt(pow(1+excentricity, 1+excentricity) * pow(1-excentricity, 1-excentricity)));
+            ρ = verbatim(2 / sqrt(pow(1+eccentricity, 1+eccentricity) * pow(1-eccentricity, 1-eccentricity)));
             ρF = null;
         } else {
             /*
@@ -229,19 +230,19 @@ public class PolarStereographic extends ConformalProjection {
              */
             final double sinφ1 = sin(φ1);
             final double mF = initializer.scaleAtφ(sinφ1, cos(φ1));
-            ρ = verbatim(mF / expOfNorthing(φ1, excentricity*sinφ1));
+            ρ = verbatim(mF / expOfNorthing(φ1, eccentricity*sinφ1));
             ρF = (variant == C) ? verbatim(-mF) : null;
         }
         /*
          * At this point, all parameters have been processed. Now process to their
          * validation and the initialization of (de)normalize affine transforms.
          */
-        final MatrixSIS denormalize = context.getMatrix(false);
+        final MatrixSIS denormalize = context.getMatrix(ContextualParameters.MatrixRole.DENORMALIZATION);
         denormalize.convertBefore(0, ρ, null);
         denormalize.convertBefore(1, ρ, ρF);
         if (isNorth) {
             final Number reverseSign = verbatim(-1);
-            final MatrixSIS normalize = context.getMatrix(true);
+            final MatrixSIS normalize = context.getMatrix(ContextualParameters.MatrixRole.NORMALIZATION);
             normalize  .convertAfter (1, reverseSign, null);
             denormalize.convertBefore(1, reverseSign, null);
         }
@@ -269,7 +270,7 @@ public class PolarStereographic extends ConformalProjection {
     @Override
     public MathTransform createMapProjection(final MathTransformFactory factory) throws FactoryException {
         PolarStereographic kernel = this;
-        if (excentricity == 0) {
+        if (eccentricity == 0) {
             kernel = new Spherical(this);
         }
         return context.completeTransform(factory, kernel);
@@ -304,7 +305,7 @@ public class PolarStereographic extends ConformalProjection {
          * The next step is to compute ρ = 2⋅a⋅k₀⋅t / …, but those steps are
          * applied by the denormalization matrix and shall not be done here.
          */
-        final double t = expOfNorthing(φ, excentricity*sinφ);
+        final double t = expOfNorthing(φ, eccentricity*sinφ);
         final double x = t * sinθ;
         final double y = t * cosθ;
         if (dstPts != null) {

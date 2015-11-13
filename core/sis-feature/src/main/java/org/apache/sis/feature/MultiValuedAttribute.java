@@ -119,8 +119,9 @@ final class MultiValuedAttribute<V> extends AbstractAttribute<V> {
      * @return The attribute values in a <cite>live</cite> collection.
      */
     @Override
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
     public Collection<V> getValues() {
-        return values;
+        return values;      // Intentionally modifiable
     }
 
     /**

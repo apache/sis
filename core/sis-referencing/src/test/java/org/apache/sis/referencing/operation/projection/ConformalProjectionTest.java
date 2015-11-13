@@ -154,7 +154,7 @@ public final strictfp class ConformalProjectionTest extends TransformTestCase {
      * @return {@code Math.exp} of the Mercator projection of the given latitude.
      */
     private static double expOfNorthing(final ConformalProjection projection, final double φ) {
-        return projection.expOfNorthing(φ, projection.excentricity * sin(φ));
+        return projection.expOfNorthing(φ, projection.eccentricity * sin(φ));
     }
 
     /**
@@ -286,7 +286,7 @@ public final strictfp class ConformalProjectionTest extends TransformTestCase {
     @Test
     public void compareWithSeriesExpansion() throws ProjectionException {
         final ConformalProjection projection = new NoOp(true);
-        final MercatorMethodComparison comparator = new MercatorMethodComparison(projection.excentricitySquared);
+        final MercatorMethodComparison comparator = new MercatorMethodComparison(projection.eccentricitySquared);
         final Random random = TestUtilities.createRandomNumberGenerator();
         final int numSamples = 2000;
         for (int i=0; i<numSamples; i++) {

@@ -61,16 +61,16 @@ public final class LambertConformalMichigan extends AbstractLambert {
                 .createStrictlyPositive(Double.NaN, Unit.ONE);
 
         PARAMETERS = builder
-            .addIdentifier(IDENTIFIER)
-            .addName("Lambert Conic Conformal (2SP Michigan)")
-            .createGroupForMapProjection(
-                    LambertConformal2SP.LATITUDE_OF_FALSE_ORIGIN,
-                    LambertConformal2SP.LONGITUDE_OF_FALSE_ORIGIN,
-                    LambertConformal2SP.STANDARD_PARALLEL_1,
-                    LambertConformal2SP.STANDARD_PARALLEL_2,
-                    LambertConformal2SP.EASTING_AT_FALSE_ORIGIN,
-                    LambertConformal2SP.NORTHING_AT_FALSE_ORIGIN,
-                    SCALE_FACTOR);
+                .addIdentifier(IDENTIFIER)
+                .addName("Lambert Conic Conformal (2SP Michigan)")
+                .createGroupForMapProjection(
+                        LambertConformal2SP.LATITUDE_OF_FALSE_ORIGIN,
+                        LambertConformal2SP.LONGITUDE_OF_FALSE_ORIGIN,
+                        LambertConformal2SP.STANDARD_PARALLEL_1,
+                        LambertConformal2SP.STANDARD_PARALLEL_2,
+                        LambertConformal2SP.EASTING_AT_FALSE_ORIGIN,
+                        LambertConformal2SP.NORTHING_AT_FALSE_ORIGIN,
+                        SCALE_FACTOR);
     }
 
     /**

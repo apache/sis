@@ -201,8 +201,7 @@ public class TransferFunction implements Cloneable, Serializable {
             } else if (TransferFunctionType.EXPONENTIAL.equals(type)) {
                 transform = ExponentialTransform1D.create(base, scale);
                 if (offset != 0) {  // Rarely occurs in practice.
-                    transform = (MathTransform1D) ConcatenatedTransform.create(
-                            transform, LinearTransform1D.create(0, offset));
+                    transform = MathTransforms.concatenate(transform, LinearTransform1D.create(0, offset));
                 }
             } else if (TransferFunctionType.LOGARITHMIC.equals(type)) {
                 if (scale == 1) {
@@ -213,7 +212,7 @@ public class TransferFunction implements Cloneable, Serializable {
                      * The ExponentialTransform1D.concatenate(…) method will rewrite the equation using
                      * mathematical identities. The result will be a function with a different base.
                      */
-                    transform = (MathTransform1D) ConcatenatedTransform.create(
+                    transform = MathTransforms.concatenate(
                             LogarithmicTransform1D.create(base, 0),
                             LinearTransform1D.create(scale, offset));
                 }
