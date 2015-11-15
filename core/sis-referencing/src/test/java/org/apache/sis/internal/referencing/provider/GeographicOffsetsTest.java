@@ -19,9 +19,15 @@ package org.apache.sis.internal.referencing.provider;
 import javax.measure.unit.NonSI;
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterValueGroup;
+import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.TransformException;
-import org.opengis.test.referencing.TransformTestCase;
 import org.apache.sis.internal.referencing.Formulas;
+import org.apache.sis.internal.system.DefaultFactories;
+import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
+
+// Test dependencies
+import org.opengis.test.referencing.TransformTestCase;
+import org.apache.sis.referencing.cs.HardCodedCS;
 import org.apache.sis.test.DependsOn;
 import org.junit.Test;
 
@@ -102,6 +108,39 @@ public final strictfp class GeographicOffsetsTest extends TransformTestCase {
         final double[] target = new double[transform.getTargetDimensions()];
         source[0] = -2.55;              // 2.55 metres up, sign reversed in order to match target axis direction.
         target[0] =  7.18 * 0.3048;     // 7.18 feet down.
+        verifyTransform(source, target);
+    }
+
+    /**
+     * Tests {@code VerticalOffset.createMathTransform(…)} indirectly, through a call to the math transform factory
+     * with the source and target coordinate systems specified. The intend of this test is to verify that the change
+     * of axis direction is properly handled, given source CRS axis direction up and target CRS axis direction down.
+     *
+     * @throws FactoryException if an error occurred while creating the transform.
+     * @throws TransformException should never happen.
+     */
+    @Test
+    public void testCreateWithContext() throws FactoryException, TransformException {
+        final DefaultMathTransformFactory factory = DefaultFactories.forBuildin(
+                MathTransformFactory.class, DefaultMathTransformFactory.class);
+        final ParameterValueGroup pv = factory.getDefaultParameters("Vertical Offset");
+        pv.parameter("Vertical Offset").setValue(15.55, NonSI.FOOT);
+        /*
+         * Now create the MathTransform. But at the difference of the above testVerticalOffset() method,
+         * we supply information about axis directions. The operation parameter shall have the same sign
+         * than in the EPSG database (which is positive), and the source and target ordinates shall have
+         * the same sign than in the EPSG example (positive too). However we do not test unit conversion
+         * in this method (EPSG sample point uses feet units), only axis direction.
+         */
+        final DefaultMathTransformFactory.Context context = new DefaultMathTransformFactory.Context();
+        context.setSource(HardCodedCS.GRAVITY_RELATED_HEIGHT);  // Direction up, in metres.
+        context.setTarget(HardCodedCS.DEPTH);                   // Direction down, in metres.
+        transform = factory.createParameterizedTransform(pv, context);
+        tolerance = Formulas.LINEAR_TOLERANCE;
+        final double[] source = new double[transform.getSourceDimensions()];
+        final double[] target = new double[transform.getTargetDimensions()];
+        source[0] = 2.55;              // 2.55 metres up, same sign than in EPSG example (positive).
+        target[0] = 7.18 * 0.3048;     // 7.18 feet down.
         verifyTransform(source, target);
     }
 }
