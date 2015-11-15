@@ -57,6 +57,7 @@ import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.referencing.j2d.ParameterizedAffine;
 import org.apache.sis.internal.referencing.provider.AbstractProvider;
+import org.apache.sis.internal.referencing.provider.VerticalOffset;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.cs.CoordinateSystems;
@@ -471,6 +472,15 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
         private Ellipsoid sourceEllipsoid, targetEllipsoid;
 
         /**
+         * The provider that created the parameterized {@link MathTransform} instance, or {@code null}
+         * if this information does not apply. This field is used for transferring information between
+         * {@code createParameterizedTransform(…)} and {@code swapAndScaleAxes(…)}.
+         *
+         * @todo We could make this information public as a replacement of {@link #getLastMethodUsed()}.
+         */
+        OperationMethod provider;
+
+        /**
          * Creates a new context with all properties initialized to {@code null}.
          */
         public Context() {
@@ -812,8 +822,13 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
             transform = unique(transform);
             method = DefaultOperationMethod.redimension(method, transform.getSourceDimensions(),
                                                                 transform.getTargetDimensions());
-            if (context != null) {
+            if (context != null) try {
+                context.provider = method;
                 transform = swapAndScaleAxes(transform, context);
+            } finally {
+                context.provider = null;
+                // For now we conservatively reset the provider information to null. But if we choose to make
+                // that information public in a future SIS version, then we would remove this 'finally' block.
             }
         } catch (FactoryException e) {
             if (failure != null) {
@@ -879,6 +894,14 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
         MathTransform step1 = (swap1 != null) ? createAffineTransform(swap1) : MathTransforms.identity(parameterized.getSourceDimensions());
         MathTransform step3 = (swap3 != null) ? createAffineTransform(swap3) : MathTransforms.identity(parameterized.getTargetDimensions());
         MathTransform step2 = parameterized;
+        /*
+         * Special case for the way EPSG handles reversal of axis direction. For now the "Vertical Offset" (EPSG:9616)
+         * method is the only one for which we found a need for special case. But if more special cases are added in a
+         * future SIS version, then we should replace the static method by a non-static one defined in AbstractProvider.
+         */
+        if (context.provider instanceof VerticalOffset) {
+            step2 = VerticalOffset.postCreate(step2, swap3);
+        }
         /*
          * If the target coordinate system has a height, instructs the projection to pass
          * the height unchanged from the base CRS to the target CRS. After this block, the
