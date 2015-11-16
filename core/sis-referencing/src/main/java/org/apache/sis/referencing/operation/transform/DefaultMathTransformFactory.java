@@ -438,8 +438,8 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
     }
 
     /**
-     * Information about the context (for example source and target coordinate systems) in which a new parameterized
-     * transform is going to be used. {@link DefaultMathTransformFactory} uses this information for various purposes:
+     * Source and target coordinate systems for which a new parameterized transform is going to be used.
+     * {@link DefaultMathTransformFactory} uses this information for:
      *
      * <ul>
      *   <li>Complete some parameters if they were not provided. In particular, the {@linkplain #getSourceEllipsoid()

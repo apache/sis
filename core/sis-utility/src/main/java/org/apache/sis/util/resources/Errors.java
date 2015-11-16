@@ -1051,6 +1051,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final short UnsupportedImplementation_1 = 127;
 
         /**
+         * The “{0}” interpolation is unsupported.
+         */
+        public static final short UnsupportedInterpolation_1 = 202;
+
+        /**
          * The ‘{0}’ operation is unsupported.
          */
         public static final short UnsupportedOperation_1 = 128;
