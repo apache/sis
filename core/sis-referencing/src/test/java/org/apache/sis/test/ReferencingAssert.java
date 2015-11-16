@@ -371,7 +371,7 @@ public strictfp class ReferencingAssert extends MetadataAssert {
             assertFalse("e2.contains(e1)",   ae.contains  (e1, true));
         }
         final int dimension = e1.getDimension();
-        final int numCases = (int) round(pow(3, dimension));
+        final int numCases = toIntExact(round(pow(3, dimension)));
         final GeneralDirectPosition pos = new GeneralDirectPosition(dimension);
         for (int index=0; index<numCases; index++) {
             int n = index;

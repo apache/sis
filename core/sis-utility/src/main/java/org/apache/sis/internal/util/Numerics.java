@@ -180,7 +180,7 @@ public final class Numerics extends Static {
         if (data == null) return null;
         final int[] result = new int[data.length];
         for (int i=0; i<data.length; i++) {
-            result[i] = (int) Math.round(data[i]);
+            result[i] = Math.toIntExact(Math.round(data[i]));
         }
         return result;
     }

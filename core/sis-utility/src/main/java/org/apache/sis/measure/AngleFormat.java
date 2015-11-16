@@ -1044,12 +1044,12 @@ public class AngleFormat extends Format implements Localized {
                 }
                 final Number userObject;
                 if (hasMore) {
-                    userObject = Integer.valueOf((int) Math.round(value));
+                    userObject = Math.toIntExact(Math.round(value));
                 } else {
                     // Use Float instead of Double because we don't want to give a false impression of accuracy
                     // (when formatting the seconds field, at least the 10 last bits of the 'double' value are
                     // non-significant).
-                    userObject = Float.valueOf((float) value);
+                    userObject = (float) value;
                 }
                 it.addFieldLimit(Field.forCode(field), userObject, startPosition);
             } else {
