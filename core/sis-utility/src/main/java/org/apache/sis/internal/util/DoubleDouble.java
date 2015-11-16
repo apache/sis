@@ -284,7 +284,7 @@ public final class DoubleDouble extends Number {
     @Override public double doubleValue() {return value;}
     @Override public float  floatValue()  {return (float) value;}
     @Override public long   longValue()   {return Math.round(value);}
-    @Override public int    intValue()    {return (int) longValue();}
+    @Override public int    intValue()    {return Math.toIntExact(longValue());}
 
     /**
      * Suggests an {@link #error} for the given value. The {@code DoubleDouble} class contains a hard-coded list
