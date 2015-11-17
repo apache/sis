@@ -160,7 +160,7 @@ public final class FranceGeocentricInterpolation extends AbstractProvider {
      * Helper class for loading the RGF93 data file.
      * This class is used only for loading the file, then discarded.
      */
-    private static final class Grid extends DatumShiftGrid {
+    static final class Grid extends DatumShiftGrid {
         /**
          * Serial number for inter-operability with different versions.
          */
@@ -183,11 +183,11 @@ public final class FranceGeocentricInterpolation extends AbstractProvider {
          */
         Grid(final double[] gridGeometry) {
             super(gridGeometry[0],  // x₀
-                  gridGeometry[1],  // y₀
+                  gridGeometry[2],  // y₀
                   gridGeometry[4],  // Δx
                   gridGeometry[5],  // Δy
                   numCells(gridGeometry, 0),
-                  numCells(gridGeometry, 1));
+                  numCells(gridGeometry, 2));
             final int size = Math.multiplyExact(nx, ny);
             offsets = new float[3][];
             for (int i=0; i<offsets.length; i++) {
@@ -197,9 +197,11 @@ public final class FranceGeocentricInterpolation extends AbstractProvider {
 
         /**
          * Helper method for computing the {@link #nx} or {@link #ny} value.
+         *
+         * @param p 0 for computing {@code nx}, or 2 for computing {@code ny}.
          */
-        private static int numCells(final double[] g, final int offset) {
-            return Math.toIntExact(Math.round((g[offset+2] - g[offset]) / g[offset+4] + 1));
+        private static int numCells(final double[] g, final int p) {
+            return Math.toIntExact(Math.round((g[p+1] - g[p]) / g[4+p/2] + 1));
         }
 
         /**
@@ -231,10 +233,13 @@ public final class FranceGeocentricInterpolation extends AbstractProvider {
                     throw new EOFException(Errors.format(Errors.Keys.UnexpectedEndOfFile_1, file));
                 }
                 final int length = CharSequences.skipTrailingWhitespaces(line, 0, line.length());
-                if (length < 0) {
+                if (length <= 0) {
                     continue;   // Skip empty lines.
                 }
                 int p = CharSequences.skipLeadingWhitespaces(line, 0, length);
+                if (line.charAt(p) == '#') {
+                    continue;   // Skip comment lines (not officially part of the format).
+                }
                 if (!line.regionMatches(true, p, HEADER, 0, HEADER.length())) {
                     break;      // End of header.
                 }
