@@ -49,7 +49,7 @@ import org.apache.sis.util.ArgumentChecks;
  *   For datum shifts in France, the (<var>x</var>,<var>y</var>) arguments are longitude and latitude in angular degrees
  *   but the translations are (<var>ΔX</var>, <var>ΔY</var>, <var>ΔZ</var>) geocentric offsets in <em>metres</em>.
  *   Those offsets will not be added directly to the given (<var>λ</var>,<var>φ</var>) coordinates since there is
- *   a Geographic/Geocentric conversion in the middle
+ *   a geographic/geocentric conversion in the middle
  *   (see {@link org.apache.sis.referencing.operation.transform.InterpolatedGeocentricTransform}).
  *   </p></li>
  *
@@ -57,8 +57,10 @@ import org.apache.sis.util.ArgumentChecks;
  *   Some remote sensing raster data are provided with a <cite>localization grid</cite> giving pixel coordinates
  *   (e.g. latitude and longitude). This can been seen as a change from {@linkplain DefaultImageDatum image datum}
  *   to {@linkplain DefaultGeodeticDatum geodetic datum}. The coordinate transformation process can sometime be
- *   performed by a mathematical conversion (for example an affine transform) applied as a first approximation,
- *   followed by small corrections for the residual part. {@code DatumShiftGrid} can describe the small corrections part.
+ *   performed by a mathematical conversion (for example an affine transform) applied as a
+ *   {@linkplain org.apache.sis.referencing.operation.builder.LinearTransformBuilder first approximation},
+ *   followed by small corrections for the residual part.
+ *   {@code DatumShiftGrid} can describe the small corrections part.
  *   </p></li>
  * </ul></div>
  *
@@ -84,11 +86,11 @@ public abstract class DatumShiftGrid implements Serializable {
 
     /**
      * Multiplication factor for converting a coordinate into grid index.
-     * The (<var>gx</var>, <var>gy</var>) index of a cell in the grid is given by:
+     * The (<var>gridX</var>, <var>gridY</var>) indices of a cell in the grid are given by:
      *
      * <ul>
-     *   <li><var>gx</var> = (<var>x</var> - <var>x₀</var>) × {@code scaleX}</li>
-     *   <li><var>gy</var> = (<var>y</var> - <var>y₀</var>) × {@code scaleY}</li>
+     *   <li><var>gridX</var> = (<var>x</var> - <var>x₀</var>) ⋅ {@code scaleX}</li>
+     *   <li><var>gridY</var> = (<var>y</var> - <var>y₀</var>) ⋅ {@code scaleY}</li>
      * </ul>
      */
     protected final double scaleX, scaleY;
@@ -165,8 +167,8 @@ public abstract class DatumShiftGrid implements Serializable {
      * where the number of dimension is determined by the length of the {@code offsets} array:
      * <ol>
      *   <li>Convert the given (<var>x</var>,<var>y</var>) coordinate into grid coordinate
-     *       using the formula documented in {@link #scaleX} and {@link #scaleY} fields.<li>
-     *   <li>Clamp the grid coordinate into the ([0 … {@link #nx}-2], [0 … {@link #ny}-2]) range inclusive.</li>
+     *       using the formula documented in {@link #scaleX} and {@link #scaleY} fields.</li>
+     *   <li>Clamp the grid coordinate into the [0 … {@link #nx} - 2] and [0 … {@link #ny} - 2] ranges, inclusive.</li>
      *   <li>Using {@link #getCellValue(int, int, int)}, get the four cell values around the coordinate.</li>
      *   <li>Apply a bilinear interpolation and store the result in {@code offset[dim]}.</li>
      * </ol>
