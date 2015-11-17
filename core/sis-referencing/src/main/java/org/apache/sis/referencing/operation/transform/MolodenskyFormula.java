@@ -164,7 +164,7 @@ abstract class MolodenskyFormula extends AbstractMathTransform implements Serial
     MolodenskyFormula(final Ellipsoid source, final boolean isSource3D,
                       final Ellipsoid target, final boolean isTarget3D,
                       final double tX, final double tY, final double tZ,
-                      final boolean isAbridged,
+                      final boolean isAbridged, final boolean setAxisLengths,
                       final ParameterDescriptorGroup descriptor)
     {
         ArgumentChecks.ensureNonNull("source", source);
@@ -192,10 +192,12 @@ abstract class MolodenskyFormula extends AbstractMathTransform implements Serial
         final UnitConverter c = target.getAxisUnit().getConverterTo(unit);
         context = new ContextualParameters(descriptor, isSource3D ? 4 : 3, isTarget3D ? 4 : 3);
         setContextualParameters(context, unit, Δf);
-        context.getOrCreate(Molodensky.SRC_SEMI_MAJOR).setValue(semiMajor, unit);
-        context.getOrCreate(Molodensky.SRC_SEMI_MINOR).setValue(semiMinor, unit);
-        context.getOrCreate(Molodensky.TGT_SEMI_MAJOR).setValue(c.convert(target.getSemiMajorAxis()), unit);
-        context.getOrCreate(Molodensky.TGT_SEMI_MINOR).setValue(c.convert(target.getSemiMinorAxis()), unit);
+        if (setAxisLengths) {
+            context.getOrCreate(Molodensky.SRC_SEMI_MAJOR).setValue(semiMajor, unit);
+            context.getOrCreate(Molodensky.SRC_SEMI_MINOR).setValue(semiMinor, unit);
+            context.getOrCreate(Molodensky.TGT_SEMI_MAJOR).setValue(c.convert(target.getSemiMajorAxis()), unit);
+            context.getOrCreate(Molodensky.TGT_SEMI_MINOR).setValue(c.convert(target.getSemiMinorAxis()), unit);
+        }
         /*
          * Prepare two affine transforms to be executed before and after the MolodenskyTransform:
          *
@@ -282,19 +284,34 @@ abstract class MolodenskyFormula extends AbstractMathTransform implements Serial
 
     /**
      * Implementation of {@link #transform(double[], int, double[], int, boolean)} with possibility
-     * to override whether the source and target coordinates are two- or three-dimensional.
+     * to override some field values. In this method signature, parameters having the same name than
+     * fields have the same value, except if some special circumstances:
      *
-     * @param λ        Longitude (radians).
-     * @param φ        Latitude (radians).
-     * @param h        Height above the ellipsoid in unit of semi-major axis.
-     * @param dstPts   The array into which the transformed coordinate is returned.
-     *                 May be {@code null} if only the derivative matrix is desired.
-     * @param dstOff   The offset to the location of the transformed point that is stored in the destination array.
-     * @param derivate {@code true} for computing the derivative, or {@code false} if not needed.
+     * <ul>
+     *   <li>{@code isSource3D} and {@code isTarget3D} parameters have the same values than {@link #isSource3D} and
+     *       {@link #isTarget3D} fields respectively, except when the user explicitly requested the derivative of a
+     *       point with a different number of dimensions (this should be very rare).</li>
+     *   <li>{@code tX}, {@code tY} and {@code tZ} parameters always have the values of {@link #tX}, {@link #tY}
+     *       and {@link #tZ} fields when this method is invoked by {@link MolodenskyTransform}. But those values
+     *       may be slightly different when this method is invoked by {@link InterpolatedGeocentricTransform}.</li>
+     * </ul>
+     *
+     * @param λ           Longitude (radians).
+     * @param φ           Latitude (radians).
+     * @param h           Height above the ellipsoid in unit of semi-major axis.
+     * @param isSource3D  The {@link #isSource3D} field value (except when computing derivative).
+     * @param dstPts      The array into which the transformed coordinate is returned, or {@code null}.
+     * @param dstOff      The offset to the location of the transformed point that is stored in the destination array.
+     * @param isTarget3D  The {@link #isTarget3D} field value (except when computing derivative).
+     * @param tX          The {@link #tX} field value (or a slightly different value during geocentric interpolation).
+     * @param tY          The {@link #tY} field value (or a slightly different value during geocentric interpolation).
+     * @param tZ          The {@link #tZ} field value (or a slightly different value during geocentric interpolation).
+     * @param derivate    {@code true} for computing the derivative, or {@code false} if not needed.
      * @throws TransformException if a point can not be transformed.
      */
     final Matrix transform(final double λ, final double φ, final double h, final boolean isSource3D,
                            final double[] dstPts, int dstOff, final boolean isTarget3D,
+                           double tX, double tY, double tZ,
                            final boolean derivate) throws TransformException
     {
         /*

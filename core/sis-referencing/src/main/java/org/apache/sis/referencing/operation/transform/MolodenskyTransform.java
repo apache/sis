@@ -100,11 +100,11 @@ public class MolodenskyTransform extends MolodenskyFormula {
 
     /**
      * Creates a Molodensky transform from the specified parameters.
-     * This {@code MolodenskyTransform} class expects ordinate values if the following order and units:
+     * This {@code MolodenskyTransform} class expects ordinate values in the following order and units:
      * <ol>
      *   <li>longitudes in <strong>radians</strong> relative to the prime meridian (usually Greenwich),</li>
      *   <li>latitudes in <strong>radians</strong>,</li>
-     *   <li>optionally heights above the ellipsoid, in same units than the source ellipsoids axes.</li>
+     *   <li>optionally heights above the ellipsoid, in same units than the source ellipsoid axes.</li>
      * </ol>
      *
      * For converting geographic coordinates in degrees, {@code MolodenskyTransform} instances
@@ -140,7 +140,7 @@ public class MolodenskyTransform extends MolodenskyFormula {
                                   final double tX, final double tY, final double tZ,
                                   final boolean isAbridged)
     {
-        super(source, isSource3D, target, isTarget3D, tX, tY, tZ, isAbridged,
+        super(source, isSource3D, target, isTarget3D, tX, tY, tZ, isAbridged, true,
                 isAbridged ? AbridgedMolodensky.PARAMETERS : Molodensky.PARAMETERS);
     }
 
@@ -241,7 +241,7 @@ public class MolodenskyTransform extends MolodenskyFormula {
             case 3:  withHeight = true;  h = point.getOrdinate(2); break;
             case 2:  withHeight = false; h = 0; break;
         }
-        return transform(point.getOrdinate(0), point.getOrdinate(1), h, withHeight, null, 0, withHeight, true);
+        return transform(point.getOrdinate(0), point.getOrdinate(1), h, withHeight, null, 0, withHeight, tX, tY, tZ, true);
     }
 
     /**
@@ -258,7 +258,7 @@ public class MolodenskyTransform extends MolodenskyFormula {
                             final boolean derivate) throws TransformException
     {
         return transform(srcPts[srcOff], srcPts[srcOff+1], isSource3D ? srcPts[srcOff+2] : 0,
-                         isSource3D, dstPts, dstOff, isTarget3D, derivate);
+                         isSource3D, dstPts, dstOff, isTarget3D, tX, tY, tZ, derivate);
     }
 
     /**
