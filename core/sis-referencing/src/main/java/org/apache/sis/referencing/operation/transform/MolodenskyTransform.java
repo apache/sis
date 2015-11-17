@@ -17,28 +17,18 @@
 package org.apache.sis.referencing.operation.transform;
 
 import java.util.Arrays;
-import java.io.Serializable;
 import javax.measure.unit.Unit;
-import javax.measure.quantity.Length;
-import javax.measure.converter.UnitConverter;
 import org.opengis.util.FactoryException;
 import org.opengis.geometry.DirectPosition;
-import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.TransformException;
-import org.apache.sis.referencing.operation.matrix.Matrices;
-import org.apache.sis.referencing.datum.DefaultEllipsoid;
 import org.apache.sis.internal.referencing.provider.Molodensky;
 import org.apache.sis.internal.referencing.provider.AbridgedMolodensky;
-import org.apache.sis.internal.referencing.provider.MapProjection;
-import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.parameter.Parameters;
-import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Debug;
 
 import static java.lang.Math.*;
@@ -86,7 +76,7 @@ import static java.lang.Math.*;
  * @version 0.7
  * @module
  */
-public class MolodenskyTransform extends AbstractMathTransform implements Serializable {
+public class MolodenskyTransform extends MolodenskyFormula {
     /**
      * Serial number for inter-operability with different versions.
      */
@@ -100,94 +90,6 @@ public class MolodenskyTransform extends AbstractMathTransform implements Serial
      */
     @Debug
     private static ParameterDescriptorGroup DESCRIPTOR;
-
-    /**
-     * The value of 1/sin(1″) multiplied by the conversion factor from arc-seconds to radians (π/180)/(60⋅60).
-     * This is the final multiplication factor for Δλ and Δφ.
-     */
-    private static final double ANGULAR_SCALE = 1.00000000000391744;
-
-    /**
-     * {@code true} if the source coordinates have a height.
-     */
-    private final boolean isSource3D;
-
-    /**
-     * {@code true} if the target coordinates have a height.
-     */
-    private final boolean isTarget3D;
-
-    /**
-     * {@code true} for the abridged formula, or {@code false} for the complete one.
-     */
-    private final boolean isAbridged;
-
-    /**
-     * Shift along the geocentric X axis (toward prime meridian)
-     * in units of the semi-major axis of the source ellipsoid.
-     *
-     * @see org.apache.sis.referencing.datum.BursaWolfParameters#tX
-     */
-    protected final double tX;
-
-    /**
-     * Shift along the geocentric Y axis (toward 90°E)
-     * in units of the semi-major axis of the source ellipsoid.
-     *
-     * @see org.apache.sis.referencing.datum.BursaWolfParameters#tY
-     */
-    protected final double tY;
-
-    /**
-     * Shift along the geocentric Z axis (toward north pole)
-     * in units of the semi-major axis of the source ellipsoid.
-     *
-     * @see org.apache.sis.referencing.datum.BursaWolfParameters#tZ
-     */
-    protected final double tZ;
-
-    /**
-     * Semi-major axis length (<var>a</var>) of the source ellipsoid.
-     */
-    private final double semiMajor;
-
-    /**
-     * The square of eccentricity of the source ellipsoid.
-     * This can be computed by ℯ² = (a²-b²)/a² where
-     * <var>a</var> is the <cite>semi-major</cite> axis length and
-     * <var>b</var> is the <cite>semi-minor</cite> axis length.
-     *
-     * @see DefaultEllipsoid#getEccentricitySquared()
-     */
-    private final double eccentricitySquared;
-
-    /**
-     * Difference in the semi-major axes of the target and source ellipsoids: {@code Δa = target a - source a}.
-     *
-     * @see DefaultEllipsoid#semiMajorAxisDifference(Ellipsoid)
-     */
-    private final double Δa;
-
-    /**
-     * Difference between the flattening of the target and source ellipsoids (Δf), opportunistically modified
-     * with additional terms. The value depends on whether this Molodensky transform is abridged or not:
-     *
-     * <ul>
-     *   <li>For Molodensky, this field is set to (b⋅Δf).</li>
-     *   <li>For Abridged Molodensky, this field is set to (a⋅Δf) + (f⋅Δa).</li>
-     * </ul>
-     *
-     * where Δf = <var>target flattening</var> - <var>source flattening</var>.
-     */
-    private final double Δfmod;
-
-    /**
-     * The parameters used for creating this conversion.
-     * They are used for formatting <cite>Well Known Text</cite> (WKT) and error messages.
-     *
-     * @see #getContextualParameters()
-     */
-    private final ContextualParameters context;
 
     /**
      * The inverse of this Molodensky transform.
@@ -238,45 +140,8 @@ public class MolodenskyTransform extends AbstractMathTransform implements Serial
                                   final double tX, final double tY, final double tZ,
                                   final boolean isAbridged)
     {
-        ArgumentChecks.ensureNonNull("source", source);
-        ArgumentChecks.ensureNonNull("target", target);
-        final DefaultEllipsoid src = DefaultEllipsoid.castOrCopy(source);
-        this.isSource3D = isSource3D;
-        this.isTarget3D = isTarget3D;
-        this.isAbridged = isAbridged;
-        this.semiMajor  = src.getSemiMajorAxis();
-        this.Δa         = src.semiMajorAxisDifference(target);
-        this.tX         = tX;
-        this.tY         = tY;
-        this.tZ         = tZ;
-
-        final double semiMinor = src.getSemiMinorAxis();
-        final double Δf = src.flatteningDifference(target);
-        eccentricitySquared = src.getEccentricitySquared();
-        Δfmod = isAbridged ? (semiMajor * Δf) + (semiMajor - semiMinor) * (Δa / semiMajor)
-                           : (semiMinor * Δf);
-        /*
-         * Copy parameters to the ContextualParameter. Those parameters are not used directly
-         * by EllipsoidToCartesian, but we need to store them in case the user asks for them.
-         * When both EPSG and OGC parameters exist for equivalent information, we use EPSG ones.
-         */
-        final Unit<Length> unit = src.getAxisUnit();
-        final UnitConverter c = target.getAxisUnit().getConverterTo(unit);
-        context = new ContextualParameters(isAbridged ? AbridgedMolodensky.PARAMETERS : Molodensky.PARAMETERS,
-                                           isSource3D ? 4 : 3, isTarget3D ? 4 : 3);
-        setEPSG(context, unit, Δf);
-        context.getOrCreate(Molodensky.SRC_SEMI_MAJOR).setValue(semiMajor,   unit);
-        context.getOrCreate(Molodensky.SRC_SEMI_MINOR).setValue(semiMinor,   unit);
-        context.getOrCreate(Molodensky.TGT_SEMI_MAJOR).setValue(c.convert(target.getSemiMajorAxis()), unit);
-        context.getOrCreate(Molodensky.TGT_SEMI_MINOR).setValue(c.convert(target.getSemiMinorAxis()), unit);
-        /*
-         * Prepare two affine transforms to be executed before and after this MolodenskyTransform:
-         *
-         *   - A "normalization" transform for converting degrees to radians,
-         *   - A "denormalization" transform for for converting radians to degrees.
-         */
-        context.normalizeGeographicInputs(0);
-        context.denormalizeGeographicOutputs(0);
+        super(source, isSource3D, target, isTarget3D, tX, tY, tZ, isAbridged,
+                isAbridged ? AbridgedMolodensky.PARAMETERS : Molodensky.PARAMETERS);
     }
 
     /**
@@ -287,11 +152,9 @@ public class MolodenskyTransform extends AbstractMathTransform implements Serial
      * @param unit The unit of measurement to declare.
      * @param Δf   The flattening difference to set.
      */
-    private void setEPSG(final Parameters pg, final Unit<?> unit, final double Δf) {
-        final int dim = getSourceDimensions();
-        if (dim == getTargetDimensions()) {
-            pg.getOrCreate(Molodensky.DIMENSION).setValue(dim);
-        }
+    @Override
+    final void setContextualParameters(final Parameters pg, final Unit<?> unit, final double Δf) {
+        super.setContextualParameters(pg, unit, Δf);
         pg.getOrCreate(Molodensky.TX)                    .setValue(tX, unit);
         pg.getOrCreate(Molodensky.TY)                    .setValue(tY, unit);
         pg.getOrCreate(Molodensky.TZ)                    .setValue(tZ, unit);
@@ -341,69 +204,6 @@ public class MolodenskyTransform extends AbstractMathTransform implements Serial
     }
 
     /**
-     * Returns the unit of measurement of axis lengths. Current implementation arbitrarily
-     * returns the units of {@link #Δa} (this may change in any future SIS version).
-     */
-    private Unit<?> getLinearUnit() {
-        return context.getOrCreate(Molodensky.AXIS_LENGTH_DIFFERENCE).getUnit();
-    }
-
-    /**
-     * Returns the parameters used for creating the complete transformation. Those parameters describe a sequence
-     * of <cite>normalize</cite> → {@code this} → <cite>denormalize</cite> transforms, <strong>not</strong>
-     * including {@linkplain org.apache.sis.referencing.cs.CoordinateSystems#swapAndScaleAxes axis swapping}.
-     * Those parameters are used for formatting <cite>Well Known Text</cite> (WKT) and error messages.
-     *
-     * @return The parameters values for the sequence of
-     *         <cite>normalize</cite> → {@code this} → <cite>denormalize</cite> transforms.
-     */
-    @Override
-    protected ContextualParameters getContextualParameters() {
-        return context;
-    }
-
-    /**
-     * Returns a copy of internal parameter values of this {@code MolodenskyTransform}.
-     * The returned group contains parameter values for the eccentricity and the shift among others.
-     *
-     * <div class="note"><b>Note:</b>
-     * this method is mostly for {@linkplain org.apache.sis.io.wkt.Convention#INTERNAL debugging purposes}
-     * since the isolation of non-linear parameters in this class is highly implementation dependent.
-     * Most GIS applications will instead be interested in the {@linkplain #getContextualParameters()
-     * contextual parameters}.</div>
-     *
-     * @return A copy of the internal parameter values for this transform.
-     */
-    @Debug
-    @Override
-    public ParameterValueGroup getParameterValues() {
-        final Parameters pg = Parameters.castOrWrap(getParameterDescriptors().createValue());
-        final Unit<?> unit = getLinearUnit();
-        setEPSG(pg, unit, context.doubleValue(Molodensky.FLATTENING_DIFFERENCE));
-        pg.getOrCreate(Molodensky.SRC_SEMI_MAJOR).setValue(semiMajor, unit);
-        pg.getOrCreate(MapProjection.ECCENTRICITY).setValue(sqrt(eccentricitySquared));
-        pg.parameter("abridged").setValue(isAbridged);
-        return pg;
-    }
-
-    /**
-     * Returns a description of the internal parameters of this {@code MolodenskyTransform} transform.
-     * The returned group contains parameter descriptors for the number of dimensions and the eccentricity.
-     *
-     * @return A description of the internal parameters.
-     */
-    @Debug
-    @Override
-    public ParameterDescriptorGroup getParameterDescriptors() {
-        synchronized (MolodenskyTransform.class) {
-            if (DESCRIPTOR == null) {
-                DESCRIPTOR = Molodensky.internal();
-            }
-            return DESCRIPTOR;
-        }
-    }
-
-    /**
      * Returns {@code true} if this transform is the identity one.
      * Molodensky transform is considered identity (minus rounding errors) if:
      *
@@ -419,26 +219,6 @@ public class MolodenskyTransform extends AbstractMathTransform implements Serial
     @Override
     public boolean isIdentity() {
         return tX == 0 && tY == 0 && tZ == 0 && Δa == 0 && Δfmod == 0 && getSourceDimensions() == getTargetDimensions();
-    }
-
-    /**
-     * Gets the dimension of input points.
-     *
-     * @return The input dimension, which is 2 or 3.
-     */
-    @Override
-    public final int getSourceDimensions() {
-        return isSource3D ? 3 : 2;
-    }
-
-    /**
-     * Gets the dimension of output points.
-     *
-     * @return The output dimension, which is 2 or 3.
-     */
-    @Override
-    public final int getTargetDimensions() {
-        return isTarget3D ? 3 : 2;
     }
 
     /**
@@ -479,132 +259,6 @@ public class MolodenskyTransform extends AbstractMathTransform implements Serial
     {
         return transform(srcPts[srcOff], srcPts[srcOff+1], isSource3D ? srcPts[srcOff+2] : 0,
                          isSource3D, dstPts, dstOff, isTarget3D, derivate);
-    }
-
-    /**
-     * Implementation of {@link #transform(double[], int, double[], int, boolean)} with possibility
-     * to override whether the source and target coordinates are two- or three-dimensional.
-     *
-     * @param λ        Longitude (radians).
-     * @param φ        Latitude (radians).
-     * @param h        Height above the ellipsoid in unit of semi-major axis.
-     * @param dstPts   The array into which the transformed coordinate is returned.
-     *                 May be {@code null} if only the derivative matrix is desired.
-     * @param dstOff   The offset to the location of the transformed point that is stored in the destination array.
-     * @param derivate {@code true} for computing the derivative, or {@code false} if not needed.
-     * @throws TransformException if a point can not be transformed.
-     */
-    private Matrix transform(final double λ, final double φ, final double h, final boolean isSource3D,
-                             final double[] dstPts, int dstOff, final boolean isTarget3D,
-                             final boolean derivate) throws TransformException
-    {
-        /*
-         * Abridged Molodensky formulas from EPSG guidance note:
-         *
-         *     ν   = a / √(1 - ℯ²⋅sin²φ)                        : radius of curvature in the prime vertical
-         *     ρ   = a⋅(1 – ℯ²) / (1 – ℯ²⋅sin²φ)^(3/2)          : radius of curvature in the meridian
-         *     Δλ″ = (-tX⋅sinλ + tY⋅cosλ) / (ν⋅cosφ⋅sin1″)
-         *     Δφ″ = (-tX⋅sinφ⋅cosλ - tY⋅sinφ⋅sinλ + tZ⋅cosφ + [a⋅Δf + f⋅Δa]⋅sin(2φ)) / (ρ⋅sin1″)
-         *     Δh  = tX⋅cosφ⋅cosλ + tY⋅cosφ⋅sinλ + tZ⋅sinφ + (a⋅Δf + f⋅Δa)⋅sin²φ - Δa
-         *
-         * we set:
-         *
-         *    dfm     = (a⋅Δf + f⋅Δa) in abridged case (b⋅Δf in non-abridged case)
-         *    sin(2φ) = 2⋅sin(φ)⋅cos(φ)
-         */
-        final double sinλ  = sin(λ);
-        final double cosλ  = cos(λ);
-        final double sinφ  = sin(φ);
-        final double cosφ  = cos(φ);
-        final double sin2φ = sinφ * sinφ;
-        final double ν2den = 1 - eccentricitySquared*sin2φ;                 // Square of the denominator of ν
-        final double νden  = sqrt(ν2den);                                   // Denominator of ν
-        final double ρden  = ν2den * νden;                                  // Denominator of ρ
-        double ρ = semiMajor * (1 - eccentricitySquared) / ρden;            // Other notation: Rm = ρ
-        double ν = semiMajor / νden;                                        // Other notation: Rn = ν
-        double t = Δfmod * 2;                                               // A term in the calculation of Δφ
-        if (!isAbridged) {
-            ρ += h;
-            ν += h;
-            t = t*(0.5/νden + 0.5/ρden)                 // = Δf⋅[ν⋅(b/a) + ρ⋅(a/b)]     (without the +h in ν and ρ)
-                    + Δa*eccentricitySquared/νden;      // = Δa⋅[ℯ²⋅ν/a]
-        }
-        final double spcλ = tY*sinλ + tX*cosλ;                      // "spc" stands for "sin plus cos"
-        final double cmsλ = tY*cosλ - tX*sinλ;                      // "cms" stands for "cos minus sin"
-        final double cmsφ = (tZ + t*sinφ)*cosφ - spcλ*sinφ;
-        final double scaleX = ANGULAR_SCALE / (ν*cosφ);
-        final double scaleY = ANGULAR_SCALE / ρ;
-        if (dstPts != null) {
-            dstPts[dstOff++] = λ + (cmsλ * scaleX);
-            dstPts[dstOff++] = φ + (cmsφ * scaleY);
-            if (isTarget3D) {
-                double t1 = Δfmod * sin2φ;          // A term in the calculation of Δh
-                double t2 = Δa;
-                if (!isAbridged) {
-                    t1 /= νden;                     // = Δf⋅(b/a)⋅ν⋅sin²φ
-                    t2 *= νden;                     // = Δa⋅(a/ν)
-                }
-                dstPts[dstOff++] = h + spcλ*cosφ + tZ*sinφ + t1 - t2;
-            }
-        }
-        if (!derivate) {
-            return null;
-        }
-        /*
-         * At this point the (Abridged) Molodensky transformation is finished.
-         * Code below this point is only for computing the derivative, if requested.
-         * Note: variable names do not necessarily tell all the terms that they contain.
-         */
-        final Matrix matrix   = Matrices.createDiagonal(getTargetDimensions(), getSourceDimensions());
-        final double sinφcosφ = sinφ * cosφ;
-        final double dν       = eccentricitySquared*sinφcosφ / ν2den;
-        final double dν3ρ     = 3*dν * (1 - eccentricitySquared) / ν2den;
-        //    double dXdλ     = spcλ;
-        final double dYdλ     = cmsλ * sinφ;
-        final double dZdλ     = cmsλ * cosφ;
-              double dXdφ     = dYdλ / cosφ;
-              double dYdφ     = -tZ*sinφ - cosφ*spcλ  +  t*(1 - 2*sin2φ);
-              double dZdφ     =  tZ*cosφ - sinφ*spcλ;
-        if (isAbridged) {
-            /*
-             *   Δfmod  =  (a⋅Δf) + (f⋅Δa)
-             *   t      =  2⋅Δfmod
-             *   dXdh   =  0  so no need to set the matrix element.
-             *   dYdh   =  0  so no need to set the matrix element.
-             */
-            dXdφ -= cmsλ * dν;
-            dYdφ -= cmsφ * dν3ρ;
-            dZdφ += t*cosφ*sinφ;
-        } else {
-            /*
-             *   Δfmod  =  b⋅Δf
-             *   t      =  Δf⋅[ν⋅(b/a) + ρ⋅(a/b)]    (real ν and ρ, without + h)
-             *   ν         is actually ν + h
-             *   ρ         is actually ρ + h
-             */
-            final double dρ = dν3ρ * νden * (semiMajor / ρ);    // Reminder: that ρ contains a h term.
-            dXdφ -= dν * cmsλ * semiMajor / (νden*ν);           // Reminder: that ν contains a h term.
-            dYdφ -= dρ * dZdφ - (Δfmod*(dν*2/(1 - eccentricitySquared) + (1 + 1/ν2den)*(dν - dρ))
-                                  + Δa*(dν + 1)*eccentricitySquared) * sinφcosφ / νden;
-            if (isSource3D) {
-                final double dXdh =  cmsλ / ν;
-                final double dYdh = -cmsφ / ρ;
-                matrix.setElement(0, 2, -dXdh * scaleX);
-                matrix.setElement(1, 2, +dYdh * scaleY);
-            }
-            final double t1 = Δfmod * (dν*sin2φ + 2*sinφcosφ);
-            final double t2 = Δa * dν;
-            dZdφ += t1/νden + t2*νden;
-        }
-        matrix.setElement(0, 0, 1 - spcλ * scaleX);
-        matrix.setElement(1, 1, 1 + dYdφ * scaleY);
-        matrix.setElement(0, 1,   + dXdφ * scaleX);
-        matrix.setElement(1, 0,   - dYdλ * scaleY);
-        if (isTarget3D) {
-            matrix.setElement(2, 0, dZdλ);
-            matrix.setElement(2, 1, dZdφ);
-        }
-        return matrix;
     }
 
     /**
@@ -650,9 +304,9 @@ public class MolodenskyTransform extends AbstractMathTransform implements Serial
             }
         }
         /*
-         * The code in the following loop is basically a copy-and-paste of the code in the above
-         * transform(λ, φ, h, isSource3D, dstPts, dstOff, isTarget3D, false) method, but without the
-         * code for computing the derivative matrix.
+         * The code in the following loop is basically a copy-and-paste of the code in the
+         * MolodenskyFormula.transform(λ, φ, h, …) method, but without derivative matrix
+         * computation and without support for coordinate-dependent (tX,tY,tZ) values.
          */
         while (--numPts >= 0) {
             final double λ     = srcPts[srcOff++];
@@ -671,17 +325,18 @@ public class MolodenskyTransform extends AbstractMathTransform implements Serial
             if (!isAbridged) {
                 ρ += h;
                 ν += h;
-                t = t*(0.5/νden + 0.5/ρden) + Δa*eccentricitySquared/νden;
+                t = t*(0.5/νden + 0.5/ρden)                 // = Δf⋅[ν⋅(b/a) + ρ⋅(a/b)]     (without the +h in ν and ρ)
+                        + Δa*eccentricitySquared/νden;      // = Δa⋅[ℯ²⋅ν/a]
             }
             final double spcλ = tY*sinλ + tX*cosλ;
             dstPts[dstOff++] = λ + ANGULAR_SCALE * (tY*cosλ - tX*sinλ) / (ν*cosφ);
             dstPts[dstOff++] = φ + ANGULAR_SCALE * ((t*cosφ - spcλ)*sinφ + tZ*cosφ) / ρ;
             if (isTarget3D) {
-                t = Δfmod * sin2φ;
+                t = Δfmod * sin2φ;                          // A term in the calculation of Δh
                 double d = Δa;
                 if (!isAbridged) {
-                    t /= νden;
-                    d *= νden;
+                    t /= νden;                              // = Δf⋅(b/a)⋅ν⋅sin²φ
+                    d *= νden;                              // = Δa⋅(a/ν)
                 }
                 dstPts[dstOff++] = h + spcλ*cosφ + tZ*sinφ + t - d;
             }
@@ -717,46 +372,25 @@ public class MolodenskyTransform extends AbstractMathTransform implements Serial
     }
 
     /**
-     * {@inheritDoc}
+     * Returns a description of the internal parameters of this {@code MolodenskyTransform} transform.
+     * The returned group contains parameter descriptors for the number of dimensions and the eccentricity.
      *
-     * @return {@inheritDoc}
-     */
-    @Override
-    protected int computeHashCode() {
-        int code = super.computeHashCode() + Numerics.hashCode(
-                        Double.doubleToLongBits(Δa)
-                +       Double.doubleToLongBits(Δfmod)
-                + 31 * (Double.doubleToLongBits(tX)
-                + 31 * (Double.doubleToLongBits(tY)
-                + 31 * (Double.doubleToLongBits(tZ)))));
-        if (isAbridged) code = ~code;
-        return code;
-    }
-
-    /**
-     * Compares the specified object with this math transform for equality.
+     * <div class="note"><b>Note:</b>
+     * this method is mostly for {@linkplain org.apache.sis.io.wkt.Convention#INTERNAL debugging purposes}
+     * since the isolation of non-linear parameters in this class is highly implementation dependent.
+     * Most GIS applications will instead be interested in the {@linkplain #getContextualParameters()
+     * contextual parameters}.</div>
      *
-     * @return {@inheritDoc}
+     * @return A description of the internal parameters.
      */
+    @Debug
     @Override
-    public boolean equals(final Object object, final ComparisonMode mode) {
-        if (object == this) {
-            // Slight optimization
-            return true;
+    public ParameterDescriptorGroup getParameterDescriptors() {
+        synchronized (MolodenskyTransform.class) {
+            if (DESCRIPTOR == null) {
+                DESCRIPTOR = Molodensky.internal();
+            }
+            return DESCRIPTOR;
         }
-        if (super.equals(object, mode)) {
-            final MolodenskyTransform that = (MolodenskyTransform) object;
-            return isSource3D == that.isSource3D
-                && isTarget3D == that.isTarget3D
-                && isAbridged == that.isAbridged
-                && Numerics.equals(tX,                  that.tX)
-                && Numerics.equals(tY,                  that.tY)
-                && Numerics.equals(tZ,                  that.tZ)
-                && Numerics.equals(Δa,                  that.Δa)
-                && Numerics.equals(Δfmod,               that.Δfmod)
-                && Numerics.equals(semiMajor,           that.semiMajor)
-                && Numerics.equals(eccentricitySquared, that.eccentricitySquared);
-        }
-        return false;
     }
 }
