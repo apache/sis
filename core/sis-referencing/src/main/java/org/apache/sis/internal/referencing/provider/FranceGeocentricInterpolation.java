@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.referencing.provider;
 
+import java.util.Arrays;
 import java.util.Locale;
 import java.util.NoSuchElementException;
 import java.util.StringTokenizer;
@@ -44,6 +45,7 @@ import org.apache.sis.util.Workaround;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.WeakValueHashMap;
+import org.apache.sis.referencing.datum.DatumShiftGrid;
 
 
 /**
@@ -142,7 +144,8 @@ public final class FranceGeocentricInterpolation extends AbstractProvider {
             grid = grids.get(file);
             if (grid == null) {
                 try (final BufferedReader in = Files.newBufferedReader(file)) {
-                    grid = new Grid(in, file);
+                    grid = new Grid(Grid.readHeader(in, file));
+                    grid.load(in, file);
                 } catch (IOException | RuntimeException e) {
                     // NumberFormatException, ArithmeticException, NoSuchElementException, possibly other.
                     throw new FactoryException(Errors.format(Errors.Keys.CanNotParseFile_2, Grid.HEADER, file), e);
@@ -169,6 +172,37 @@ public final class FranceGeocentricInterpolation extends AbstractProvider {
         static final String HEADER = "GR3D";
 
         /**
+         * Geocentric translations among <var>X</var>, <var>Y</var>, <var>Z</var> axes.
+         */
+        private final float[][] offsets;
+
+        /**
+         * Creates an initially empty grid geometry.
+         *
+         * @param gridGeometry The value returned by {@link #readHeader(BufferedReader, Path)}.
+         */
+        Grid(final double[] gridGeometry) {
+            super(gridGeometry[0],  // x₀
+                  gridGeometry[1],  // y₀
+                  gridGeometry[4],  // Δx
+                  gridGeometry[5],  // Δy
+                  numCells(gridGeometry, 0),
+                  numCells(gridGeometry, 1));
+            final int size = Math.multiplyExact(nx, ny);
+            offsets = new float[3][];
+            for (int i=0; i<offsets.length; i++) {
+                Arrays.fill(offsets[i] = new float[size], Float.NaN);
+            }
+        }
+
+        /**
+         * Helper method for computing the {@link #nx} or {@link #ny} value.
+         */
+        private static int numCells(final double[] g, final int offset) {
+            return Math.toIntExact(Math.round((g[offset+2] - g[offset]) / g[offset+4] + 1));
+        }
+
+        /**
          * Returns the value in the {@code GR3D1} line of the header.
          * The header should be like below, but the only essential line for this class is the one
          * starting with "GR3D1". We also check that "GR3D2" declares the expected interpolation.
@@ -187,7 +221,7 @@ public final class FranceGeocentricInterpolation extends AbstractProvider {
          * @throws FactoryException if an problem is found with the file content.
          */
         @Workaround(library="JDK", version="1.7")
-        private static double[] readHeader(final BufferedReader in, final Path file) throws IOException, FactoryException {
+        static double[] readHeader(final BufferedReader in, final Path file) throws IOException, FactoryException {
             double[] gridGeometry = null;
             String line;
             while (true) {
@@ -254,29 +288,25 @@ public final class FranceGeocentricInterpolation extends AbstractProvider {
          * @throws FactoryException if an problem is found with the file content.
          * @throws ArithmeticException if the width or the height exceed the integer capacity.
          */
-        Grid(final BufferedReader in, final Path file) throws IOException, FactoryException {
-            super(3, readHeader(in, file));
-            if (width < 2 || height < 2) {
-                throw new FactoryException(Errors.format(Errors.Keys.CanNotParseFile_2, HEADER, file));
-            }
+        final void load(final BufferedReader in, final Path file) throws IOException, FactoryException {
             final float[] tX = offsets[0];
             final float[] tY = offsets[1];
             final float[] tZ = offsets[2];
             String line;
             while ((line = in.readLine()) != null) {
                 final StringTokenizer t = new StringTokenizer(line.trim());
-                final int    n = Integer.parseInt  (t.nextToken());             // Ignored
-                final double x = Double.parseDouble(t.nextToken());             // Longitude
-                final double y = Double.parseDouble(t.nextToken());             // Latitude
-                final int    i = Math.toIntExact(Math.round((x - x0) / Δx));    // Column index
-                final int    j = Math.toIntExact(Math.round((y - y0) / Δy));    // Row index
-                if (i < 0 || i >= width) {
-                    throw new FactoryException(Errors.format(Errors.Keys.ValueOutOfRange_4, "x", x, x0, xf));
+                final int    n = Integer.parseInt  (t.nextToken());               // Ignored
+                final double x = Double.parseDouble(t.nextToken());               // Longitude
+                final double y = Double.parseDouble(t.nextToken());               // Latitude
+                final int    i = Math.toIntExact(Math.round((x - x0) * scaleX));  // Column index
+                final int    j = Math.toIntExact(Math.round((y - y0) * scaleY));  // Row index
+                if (i < 0 || i >= nx) {
+                    throw new FactoryException(Errors.format(Errors.Keys.ValueOutOfRange_4, "x", x, x0, x0 + nx/scaleX));
                 }
-                if (j < 0 || j >= height) {
-                    throw new FactoryException(Errors.format(Errors.Keys.ValueOutOfRange_4, "y", y, y0, yf));
+                if (j < 0 || j >= ny) {
+                    throw new FactoryException(Errors.format(Errors.Keys.ValueOutOfRange_4, "y", y, y0, y0 + ny/scaleY));
                 }
-                final int p = j*width + i;
+                final int p = j*nx + i;
                 if (!Double.isNaN(tX[p]) || !Double.isNaN(tY[p]) || !Double.isNaN(tZ[p])) {
                     throw new FactoryException(Errors.format(Errors.Keys.ValueAlreadyDefined_1, x + ", " + y));
                 }
@@ -284,6 +314,14 @@ public final class FranceGeocentricInterpolation extends AbstractProvider {
                 tY[p] = Float.parseFloat(t.nextToken());
                 tZ[p] = Float.parseFloat(t.nextToken());
             }
+        }
+
+        /**
+         * Returns the cell value at the given dimension and grid index.
+         */
+        @Override
+        protected double getCellValue(final int dim, final int gridX, final int gridY) {
+            return offsets[dim][gridX + gridY*nx];
         }
     }
 }
