@@ -164,6 +164,7 @@
       </fileset>
       <fileset dir="${project.root}/core/sis-referencing/src/test/resources">
         <include name="**/*.xml"/>
+        <include name="**/*.txt"/>
       </fileset>
     </copy>
     <copy todir="${build.test.classes.dir}">
