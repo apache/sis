@@ -44,11 +44,14 @@ import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.internal.util.PatchedUnitFormat;
 import org.apache.sis.internal.util.Numerics;
+import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.LenientComparable;
 import org.apache.sis.util.ObjectConverters;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.logging.Logging;
+import org.apache.sis.util.UnconvertibleObjectException;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 import static org.apache.sis.util.Utilities.deepEquals;
@@ -543,9 +546,25 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      * @see #getValue()
      */
     @Override
-    public void setValue(final Object value) throws InvalidParameterValueException {
-        // Use 'unit' instead than 'getUnit()' despite class Javadoc claims because units are not expected
-        // to be involved in this method. We just want the current unit setting to be unchanged.
+    public void setValue(Object value) throws InvalidParameterValueException {
+        /*
+         * Try to convert the value only for a limited amount of types. In particular we want to allow conversions
+         * between java.io.File and java.nio.file.Path for easier transition between JDK6 and JDK7. We do not want
+         * to allow too many conversions for reducing the risk of unexpected behavior.  If we fail to convert, try
+         * to set the value anyway since the user may have redefined the setValue(Object, Unit) method.
+         */
+        if (isFile(value)) try {
+            value = ObjectConverters.convert(value, descriptor.getValueClass());
+        } catch (UnconvertibleObjectException e) {
+            // Level.FINE (not WARNING) because this log duplicates the exception
+            // that 'setValue(Object, Unit)' may throw (with a better message).
+            Logging.recoverableException(Logging.getLogger(Loggers.COORDINATE_OPERATION),
+                    DefaultParameterValue.class, "setValue", e);
+        }
+        /*
+         * Use 'unit' instead than 'getUnit()' despite class Javadoc claims because units are not expected
+         * to be involved in this method. We just want the current unit setting to be unchanged.
+         */
         setValue(value, unit);
     }
 
