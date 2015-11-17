@@ -26,6 +26,7 @@ import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.TransformException;
+import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.referencing.operation.transform.MathTransformTestCase;
 import org.apache.sis.test.DependsOnMethod;
@@ -60,12 +61,12 @@ public final strictfp class FranceGeocentricInterpolationTest extends MathTransf
                          2 + (25 + 29.89599/60)/60, //  2°25′29.89599″  in RGF93
                         48 + (50 + 40.00502/60)/60  // 48°50′40.00502″
                     };
-            case 2: return new double[] {
-                        -168.253,                   // ΔX: Toward prime meridian
-                         -58.609,                   // ΔY: Toward 90° east
-                         320.170                    // ΔZ: Toward north pole
+            case 2: return new double[] {           // Direction reversed compared to NTG_88 document.
+                         168.253,                   // ΔX: Toward prime meridian
+                          58.609,                   // ΔY: Toward 90° east
+                        -320.170                    // ΔZ: Toward north pole
                     };
-            case 4: return new double[] {
+            case 3: return new double[] {
                          2 + (25 + 32.4187/60)/60,  //  2°25′32.4187″  in NTF
                         48 + (50 + 40.2441/60)/60   // 48°50′40.2441″
                     };
@@ -107,20 +108,24 @@ public final strictfp class FranceGeocentricInterpolationTest extends MathTransf
     }
 
     /**
-     * Tests transformation of sample point.
+     * Tests transformation of sample point from RGF93 to NTF.
+     * We call this transformation "forward" because it uses the grid values directly,
+     * without doing first an approximation followed by an iteration.
      *
      * @throws FactoryException if an error occurred while loading the grid.
      * @throws TransformException if an error occurred while transforming the coordinate.
      */
-//  @Test
+    @Test
     @DependsOnMethod("testGrid")
-    public void testTransform() throws FactoryException, TransformException {
+    public void testForwardTransform() throws FactoryException, TransformException {
         final URL file = FranceGeocentricInterpolationTest.class.getResource("GR3DF97A.txt");
         assertNotNull("Test file \"GR3DF97A.txt\" not found.", file);
         final FranceGeocentricInterpolation provider = new FranceGeocentricInterpolation();
         final ParameterValueGroup values = provider.getParameters().createValue();
         values.parameter("Geocentric translations file").setValue(file);    // Automatic conversion from URL to Path.
         transform = provider.createMathTransform(DefaultFactories.forBuildin(MathTransformFactory.class), values);
-        // TODO
+        tolerance = Formulas.ANGULAR_TOLERANCE;
+        isInverseTransformSupported = false;
+        verifyTransform(samplePoint(1), samplePoint(3));
     }
 }

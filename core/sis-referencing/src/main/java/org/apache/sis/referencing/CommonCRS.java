@@ -118,6 +118,7 @@ import static org.apache.sis.internal.util.Constants.CRS84;
  * @version 0.5
  * @module
  */
+@SuppressWarnings("DoubleCheckedLocking")
 public enum CommonCRS {
     /**
      * World Geodetic System 1984.

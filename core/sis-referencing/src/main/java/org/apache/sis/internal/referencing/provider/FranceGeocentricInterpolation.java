@@ -16,6 +16,8 @@
  */
 package org.apache.sis.internal.referencing.provider;
 
+import java.util.Map;
+import java.util.HashMap;
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.NoSuchElementException;
@@ -29,6 +31,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import javax.xml.bind.annotation.XmlTransient;
+import javax.measure.unit.SI;
+import org.opengis.metadata.Identifier;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
@@ -45,7 +49,11 @@ import org.apache.sis.util.Workaround;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.WeakValueHashMap;
+import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.datum.DatumShiftGrid;
+import org.apache.sis.referencing.datum.DefaultEllipsoid;
+import org.apache.sis.referencing.operation.transform.InterpolatedGeocentricTransform;
+import org.apache.sis.metadata.iso.citation.Citations;
 
 
 /**
@@ -77,7 +85,7 @@ public final class FranceGeocentricInterpolation extends AbstractProvider {
     /**
      * The group of all parameters expected by this coordinate operation.
      */
-    private static final ParameterDescriptorGroup PARAMETERS;
+    public static final ParameterDescriptorGroup PARAMETERS;
     static {
         final ParameterBuilder builder = builder();
         FILE = builder
@@ -153,7 +161,19 @@ public final class FranceGeocentricInterpolation extends AbstractProvider {
             }
             grids.put(file, grid);
         }
-        return null; // TODO
+        /*
+         * Create the transform from RGF93 to NTF (which is the direction that use the interpolation grid
+         * directly without iteration), then invert it. We do not cache the ellipsoid because it will not
+         * be kept after construction.
+         */
+        final Map<String,Object> properties = new HashMap<>(4);
+        properties.put(DefaultEllipsoid.NAME_KEY, "Clarke 1880 (IGN)");
+        properties.put(Identifier.CODE_KEY, "7011");
+        properties.put(Identifier.AUTHORITY_KEY, Citations.EPSG);
+        return InterpolatedGeocentricTransform.createGeodeticTransformation(factory,
+                CommonCRS.ETRS89.ellipsoid(), false,        // GRS 1980 ellipsoid
+                DefaultEllipsoid.createEllipsoid(properties, 6378249.2, 6356515, SI.METRE), false,
+                -168, -60, 320, grid);  // TODO: invert
     }
 
     /**
@@ -273,10 +293,11 @@ public final class FranceGeocentricInterpolation extends AbstractProvider {
         }
 
         /**
-         * Loads the given file. Data columns are
+         * Loads the given file with the sign of all data reversed. Data columns are
          *
          *     (unknown), longitude, latitude, tX, tY, tZ, accuracy code, data sheet (ignored)
          *
+         * where the longitude and latitude values are in RGF93 system.
          * Example:
          *
          * {@preformat text
@@ -284,6 +305,10 @@ public final class FranceGeocentricInterpolation extends AbstractProvider {
          *     00002   -5.500000000   41.100000000  -165.169   -66.948   316.007  99  -0157
          *     00002   -5.500000000   41.200000000  -165.312   -66.796   316.200  99  -0157
          * }
+         *
+         * Translation values in the IGN file are from NTF to RGF93, but Apache SIS implementation needs
+         * the opposite direction (from RGF93 to NTF). The reason is that SIS expect the source datum to
+         * be the datum in which longitude and latitude values are expressed.
          *
          * @param  in Reader of the RGF93 datum shift file.
          * @param  file Path to the file being read, used only for error reporting.
@@ -300,7 +325,7 @@ public final class FranceGeocentricInterpolation extends AbstractProvider {
             String line;
             while ((line = in.readLine()) != null) {
                 final StringTokenizer t = new StringTokenizer(line.trim());
-                final int    n = Integer.parseInt  (t.nextToken());               // Ignored
+                t.nextToken();                                                    // Ignored
                 final double x = Double.parseDouble(t.nextToken());               // Longitude
                 final double y = Double.parseDouble(t.nextToken());               // Latitude
                 final int    i = Math.toIntExact(Math.round((x - x0) * scaleX));  // Column index
@@ -315,9 +340,9 @@ public final class FranceGeocentricInterpolation extends AbstractProvider {
                 if (!Double.isNaN(tX[p]) || !Double.isNaN(tY[p]) || !Double.isNaN(tZ[p])) {
                     throw new FactoryException(Errors.format(Errors.Keys.ValueAlreadyDefined_1, x + ", " + y));
                 }
-                tX[p] = Float.parseFloat(t.nextToken());
-                tY[p] = Float.parseFloat(t.nextToken());
-                tZ[p] = Float.parseFloat(t.nextToken());
+                tX[p] = -Float.parseFloat(t.nextToken());  // See javadoc for the reason why we reverse the sign.
+                tY[p] = -Float.parseFloat(t.nextToken());
+                tZ[p] = -Float.parseFloat(t.nextToken());
             }
         }
 
