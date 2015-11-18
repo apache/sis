@@ -436,6 +436,11 @@ public class EllipsoidToCentricTransform extends AbstractMathTransform implement
      * This method relaxes a little bit the {@code MathTransform} contract by accepting two- or three-dimensional
      * points even if the number of dimensions does not match the {@link #getSourceDimensions()} value.
      *
+     * <div class="note"><b>Rational:</b>
+     * that flexibility on the number of dimensions is required for calculation of {@linkplain #inverse() inverse}
+     * transform derivative, because that calculation needs to inverse a square matrix with all terms in it before
+     * to drop the last row in the two-dimensional case.</div>
+     *
      * @param  point The coordinate point where to evaluate the derivative.
      * @return The derivative at the specified point (never {@code null}).
      * @throws TransformException if the derivative can not be evaluated at the specified point.

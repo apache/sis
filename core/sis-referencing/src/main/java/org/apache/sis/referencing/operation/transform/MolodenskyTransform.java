@@ -19,7 +19,6 @@ package org.apache.sis.referencing.operation.transform;
 import java.util.Arrays;
 import javax.measure.unit.Unit;
 import org.opengis.util.FactoryException;
-import org.opengis.geometry.DirectPosition;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.operation.Matrix;
@@ -222,29 +221,6 @@ public class MolodenskyTransform extends MolodenskyFormula {
     }
 
     /**
-     * Computes the derivative at the given location.
-     * This method relaxes a little bit the {@code MathTransform} contract by accepting two- or three-dimensional
-     * points even if the number of dimensions does not match the {@link #getSourceDimensions()} or
-     * {@link #getTargetDimensions()} values.
-     *
-     * @param  point The coordinate point where to evaluate the derivative.
-     * @return The derivative at the specified point (never {@code null}).
-     * @throws TransformException if the derivative can not be evaluated at the specified point.
-     */
-    @Override
-    public Matrix derivative(final DirectPosition point) throws TransformException {
-        final int dim = point.getDimension();
-        final boolean withHeight;
-        final double h;
-        switch (dim) {
-            default: throw mismatchedDimension("point", getSourceDimensions(), dim);
-            case 3:  withHeight = true;  h = point.getOrdinate(2); break;
-            case 2:  withHeight = false; h = 0; break;
-        }
-        return transform(point.getOrdinate(0), point.getOrdinate(1), h, withHeight, null, 0, withHeight, tX, tY, tZ, true);
-    }
-
-    /**
      * Transforms the (λ,φ) or (λ,φ,<var>h</var>) coordinates between two geographic CRS,
      * and optionally returns the derivative at that location.
      *
@@ -258,7 +234,7 @@ public class MolodenskyTransform extends MolodenskyFormula {
                             final boolean derivate) throws TransformException
     {
         return transform(srcPts[srcOff], srcPts[srcOff+1], isSource3D ? srcPts[srcOff+2] : 0,
-                         isSource3D, dstPts, dstOff, isTarget3D, tX, tY, tZ, derivate);
+                         dstPts, dstOff, tX, tY, tZ, derivate);
     }
 
     /**

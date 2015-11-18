@@ -288,9 +288,6 @@ abstract class MolodenskyFormula extends AbstractMathTransform implements Serial
      * fields have the same value, except if some special circumstances:
      *
      * <ul>
-     *   <li>{@code isSource3D} and {@code isTarget3D} parameters have the same values than {@link #isSource3D} and
-     *       {@link #isTarget3D} fields respectively, except when the user explicitly requested the derivative of a
-     *       point with a different number of dimensions (this should be very rare).</li>
      *   <li>{@code tX}, {@code tY} and {@code tZ} parameters always have the values of {@link #tX}, {@link #tY}
      *       and {@link #tZ} fields when this method is invoked by {@link MolodenskyTransform}. But those values
      *       may be slightly different when this method is invoked by {@link InterpolatedGeocentricTransform}.</li>
@@ -299,20 +296,16 @@ abstract class MolodenskyFormula extends AbstractMathTransform implements Serial
      * @param λ           Longitude (radians).
      * @param φ           Latitude (radians).
      * @param h           Height above the ellipsoid in unit of semi-major axis.
-     * @param isSource3D  The {@link #isSource3D} field value (except when computing derivative).
      * @param dstPts      The array into which the transformed coordinate is returned, or {@code null}.
      * @param dstOff      The offset to the location of the transformed point that is stored in the destination array.
-     * @param isTarget3D  The {@link #isTarget3D} field value (except when computing derivative).
      * @param tX          The {@link #tX} field value (or a slightly different value during geocentric interpolation).
      * @param tY          The {@link #tY} field value (or a slightly different value during geocentric interpolation).
      * @param tZ          The {@link #tZ} field value (or a slightly different value during geocentric interpolation).
      * @param derivate    {@code true} for computing the derivative, or {@code false} if not needed.
      * @throws TransformException if a point can not be transformed.
      */
-    final Matrix transform(final double λ, final double φ, final double h, final boolean isSource3D,
-                           final double[] dstPts, int dstOff, final boolean isTarget3D,
-                           double tX, double tY, double tZ,
-                           final boolean derivate) throws TransformException
+    final Matrix transform(final double λ, final double φ, final double h, final double[] dstPts, int dstOff,
+                           double tX, double tY, double tZ, final boolean derivate) throws TransformException
     {
         /*
          * Abridged Molodensky formulas from EPSG guidance note:

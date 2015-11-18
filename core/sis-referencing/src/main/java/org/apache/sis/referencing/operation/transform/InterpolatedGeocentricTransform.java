@@ -151,7 +151,7 @@ public class InterpolatedGeocentricTransform extends MolodenskyFormula {
         final double λ = srcPts[srcOff];
         final double φ = srcPts[srcOff+1];
         grid.offsetAt(Math.toDegrees(λ), Math.toDegrees(φ), offset);    // TODO: avoid conversion to degrees.
-        return transform(λ, φ, isSource3D ? srcPts[srcOff+2] : 0, isSource3D,
-                dstPts, dstOff, isTarget3D, offset[0], offset[1], offset[2], derivate);
+        return transform(λ, φ, isSource3D ? srcPts[srcOff+2] : 0,
+                dstPts, dstOff, offset[0], offset[1], offset[2], derivate);
     }
 }
