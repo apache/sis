@@ -36,7 +36,11 @@ import org.apache.sis.util.ArgumentChecks;
  * translations in geocentric coordinates (<var>X</var>,<var>Y</var>,<var>Z</var>). This {@code DatumShiftGrid}
  * class can describe both cases, but will be used with different {@code MathTransform} implementations.</p>
  *
- * <div class="note"><b>Use cases:</b><ul>
+ * <div class="note"><b>Use cases:</b>
+ * NADCON, NTv2 and other grids are used in the contexts described below. But be aware of units of measurement!
+ * In particular, input geographic coordinates (λ,φ) need to be in <strong>radians</strong> for use with SIS
+ * {@link org.apache.sis.referencing.operation.transform.InterpolatedGeocentricTransform} implementation.
+ * <ul>
  *   <li><p><b>Datum shift by geographic translations</b><br>
  *   For datum shifts using NADCON or NTv2 grids, the (<var>x</var>,<var>y</var>) arguments are longitude (λ)
  *   and latitude (φ) in angular <em>degrees</em> and the translations are (<var>Δλ</var>, <var>Δφ</var>)
@@ -153,6 +157,27 @@ public abstract class DatumShiftGrid implements Serializable {
             domain.y += domain.height;
         }
         return domain;
+    }
+
+    /**
+     * Returns an average offset value for the given dimension. The default implementation computes the average of all
+     * values returned by {@link #getCellValue getCellValue(…)}, but subclasses may override with more specific values.
+     *
+     * <div class="note"><b>Example:</b>
+     * The <cite>"France geocentric interpolation"</cite> (ESPG:9655) fixes those "average" values to -168, -60
+     * and +320 metres for dimensions 0 (geocentric X), 1 (geocentric Y) and 2 (geocentric Z) respectively.</div>
+     *
+     * @param dim The dimension for which to get an average value.
+     * @return A value close to the average for the given dimension.
+     */
+    public double getAverageOffset(final int dim) {
+        double sum = 0;
+        for (int gridY=0; gridY<ny; gridY++) {
+            for (int gridX=0; gridX<nx; gridX++) {
+                sum += getCellValue(dim, gridX, gridY);
+            }
+        }
+        return sum / (nx * ny);
     }
 
     /**

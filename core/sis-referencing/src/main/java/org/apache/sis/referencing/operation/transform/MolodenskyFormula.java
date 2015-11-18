@@ -164,7 +164,7 @@ abstract class MolodenskyFormula extends AbstractMathTransform implements Serial
     MolodenskyFormula(final Ellipsoid source, final boolean isSource3D,
                       final Ellipsoid target, final boolean isTarget3D,
                       final double tX, final double tY, final double tZ,
-                      final boolean isAbridged, final boolean setAxisLengths,
+                      final boolean isAbridged,
                       final ParameterDescriptorGroup descriptor)
     {
         ArgumentChecks.ensureNonNull("source", source);
@@ -192,12 +192,10 @@ abstract class MolodenskyFormula extends AbstractMathTransform implements Serial
         final UnitConverter c = target.getAxisUnit().getConverterTo(unit);
         context = new ContextualParameters(descriptor, isSource3D ? 4 : 3, isTarget3D ? 4 : 3);
         setContextualParameters(context, unit, Δf);
-        if (setAxisLengths) {
-            context.getOrCreate(Molodensky.SRC_SEMI_MAJOR).setValue(semiMajor, unit);
-            context.getOrCreate(Molodensky.SRC_SEMI_MINOR).setValue(semiMinor, unit);
-            context.getOrCreate(Molodensky.TGT_SEMI_MAJOR).setValue(c.convert(target.getSemiMajorAxis()), unit);
-            context.getOrCreate(Molodensky.TGT_SEMI_MINOR).setValue(c.convert(target.getSemiMinorAxis()), unit);
-        }
+        context.getOrCreate(Molodensky.SRC_SEMI_MAJOR).setValue(semiMajor, unit);
+        context.getOrCreate(Molodensky.SRC_SEMI_MINOR).setValue(semiMinor, unit);
+        context.getOrCreate(Molodensky.TGT_SEMI_MAJOR).setValue(c.convert(target.getSemiMajorAxis()), unit);
+        context.getOrCreate(Molodensky.TGT_SEMI_MINOR).setValue(c.convert(target.getSemiMinorAxis()), unit);
         /*
          * Prepare two affine transforms to be executed before and after the MolodenskyTransform:
          *
@@ -206,6 +204,30 @@ abstract class MolodenskyFormula extends AbstractMathTransform implements Serial
          */
         context.normalizeGeographicInputs(0);
         context.denormalizeGeographicOutputs(0);
+    }
+
+    /**
+     * Returns a copy of internal parameter values of this transform.
+     * The returned group contains parameter values for the eccentricity and the shift among others.
+     *
+     * <div class="note"><b>Note:</b>
+     * this method is mostly for {@linkplain org.apache.sis.io.wkt.Convention#INTERNAL debugging purposes}
+     * since the isolation of non-linear parameters in this class is highly implementation dependent.
+     * Most GIS applications will instead be interested in the {@linkplain #getContextualParameters()
+     * contextual parameters}.</div>
+     *
+     * @return A copy of the internal parameter values for this transform.
+     */
+    @Debug
+    @Override
+    public ParameterValueGroup getParameterValues() {
+        final Parameters pg = Parameters.castOrWrap(getParameterDescriptors().createValue());
+        final Unit<?> unit = context.getOrCreate(Molodensky.SRC_SEMI_MAJOR).getUnit();
+        setContextualParameters(pg, unit, context.doubleValue(Molodensky.FLATTENING_DIFFERENCE));
+        pg.getOrCreate(Molodensky.SRC_SEMI_MAJOR).setValue(semiMajor, unit);
+        pg.getOrCreate(MapProjection.ECCENTRICITY).setValue(sqrt(eccentricitySquared));
+        pg.parameter("abridged").setValue(isAbridged);
+        return pg;
     }
 
     /**
@@ -236,30 +258,6 @@ abstract class MolodenskyFormula extends AbstractMathTransform implements Serial
     @Override
     protected ContextualParameters getContextualParameters() {
         return context;
-    }
-
-    /**
-     * Returns a copy of internal parameter values of this transform.
-     * The returned group contains parameter values for the eccentricity and the shift among others.
-     *
-     * <div class="note"><b>Note:</b>
-     * this method is mostly for {@linkplain org.apache.sis.io.wkt.Convention#INTERNAL debugging purposes}
-     * since the isolation of non-linear parameters in this class is highly implementation dependent.
-     * Most GIS applications will instead be interested in the {@linkplain #getContextualParameters()
-     * contextual parameters}.</div>
-     *
-     * @return A copy of the internal parameter values for this transform.
-     */
-    @Debug
-    @Override
-    public ParameterValueGroup getParameterValues() {
-        final Parameters pg = Parameters.castOrWrap(getParameterDescriptors().createValue());
-        final Unit<?> unit = context.getOrCreate(Molodensky.SRC_SEMI_MAJOR).getUnit();
-        setContextualParameters(pg, unit, context.doubleValue(Molodensky.FLATTENING_DIFFERENCE));
-        pg.getOrCreate(Molodensky.SRC_SEMI_MAJOR).setValue(semiMajor, unit);
-        pg.getOrCreate(MapProjection.ECCENTRICITY).setValue(sqrt(eccentricitySquared));
-        pg.parameter("abridged").setValue(isAbridged);
-        return pg;
     }
 
     /**

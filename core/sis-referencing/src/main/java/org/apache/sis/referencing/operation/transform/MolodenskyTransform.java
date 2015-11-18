@@ -139,7 +139,7 @@ public class MolodenskyTransform extends MolodenskyFormula {
                                   final double tX, final double tY, final double tZ,
                                   final boolean isAbridged)
     {
-        super(source, isSource3D, target, isTarget3D, tX, tY, tZ, isAbridged, true,
+        super(source, isSource3D, target, isTarget3D, tX, tY, tZ, isAbridged,
                 isAbridged ? AbridgedMolodensky.PARAMETERS : Molodensky.PARAMETERS);
     }
 
@@ -181,7 +181,7 @@ public class MolodenskyTransform extends MolodenskyFormula {
      * @param tY          The geocentric <var>Y</var> translation in same units than the source ellipsoid axes.
      * @param tZ          The geocentric <var>Z</var> translation in same units than the source ellipsoid axes.
      * @param isAbridged  {@code true} for the abridged formula, or {@code false} for the complete one.
-     * @return The transformation between geographic coordinates.
+     * @return The transformation between geographic coordinates in degrees.
      * @throws FactoryException if an error occurred while creating a transform.
      */
     public static MathTransform createGeodeticTransformation(final MathTransformFactory factory,
