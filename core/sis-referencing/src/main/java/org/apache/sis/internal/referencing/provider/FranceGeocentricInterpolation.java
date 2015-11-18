@@ -16,9 +16,8 @@
  */
 package org.apache.sis.internal.referencing.provider;
 
-import java.util.Map;
-import java.util.HashMap;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Locale;
 import java.util.NoSuchElementException;
 import java.util.StringTokenizer;
@@ -32,16 +31,18 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.measure.unit.SI;
-import org.opengis.metadata.Identifier;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.ParameterNotFoundException;
+import org.opengis.parameter.InvalidParameterValueException;
+import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.Transformation;
 import org.opengis.util.FactoryException;
 import org.apache.sis.internal.system.Loggers;
+import org.apache.sis.internal.referencing.NilReferencingObject;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.util.CharSequences;
@@ -53,7 +54,6 @@ import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.datum.DatumShiftGrid;
 import org.apache.sis.referencing.datum.DefaultEllipsoid;
 import org.apache.sis.referencing.operation.transform.InterpolatedGeocentricTransform;
-import org.apache.sis.metadata.iso.citation.Citations;
 
 
 /**
@@ -80,7 +80,7 @@ public final class FranceGeocentricInterpolation extends AbstractProvider {
     /**
      * The operation parameter descriptor for the <cite>Geocentric translations file</cite> parameter value.
      */
-    private static final ParameterDescriptor<Path> FILE;
+    public static final ParameterDescriptor<Path> FILE;
 
     /**
      * The group of all parameters expected by this coordinate operation.
@@ -95,20 +95,19 @@ public final class FranceGeocentricInterpolation extends AbstractProvider {
         PARAMETERS = builder
                 .addIdentifier("9655")
                 .addName("France geocentric interpolation")
-                .createGroup(FILE, GeocentricAffineBetweenGeographic.DIMENSION);
+                .createGroup(GeocentricAffineBetweenGeographic.DIMENSION,       // Not an EPSG parameter.
+                             GeocentricAffineBetweenGeographic.SRC_SEMI_MAJOR,
+                             GeocentricAffineBetweenGeographic.SRC_SEMI_MINOR,
+                             GeocentricAffineBetweenGeographic.TGT_SEMI_MAJOR,
+                             GeocentricAffineBetweenGeographic.TGT_SEMI_MINOR,
+                             FILE);
     }
-
-    /**
-     * Cache of the grids loaded so far.
-     */
-    private final WeakValueHashMap<Path,Grid> grids;
 
     /**
      * Constructs a provider.
      */
     public FranceGeocentricInterpolation() {
         super(2, 2, PARAMETERS);
-        grids = new WeakValueHashMap<>(Path.class);
     }
 
     /**
@@ -117,7 +116,7 @@ public final class FranceGeocentricInterpolation extends AbstractProvider {
      * @return Fixed to {@link Transformation}.
      */
     @Override
-    public final Class<Transformation> getOperationType() {
+    public Class<Transformation> getOperationType() {
         return Transformation.class;
     }
 
@@ -134,7 +133,39 @@ public final class FranceGeocentricInterpolation extends AbstractProvider {
     }
 
     /**
+     * Creates the source or the target ellipsoid. This is a temporary ellipsoid
+     * used only at {@link InterpolatedGeocentricTransform} time, then discarded.
+     *
+     * @param values     The parameter group from which to get the axis lengths.
+     * @param semiMajor  The descriptor for locating the semi-major axis parameter.
+     * @param semiMinor  The descriptor for locating the semi-minor axis parameter.
+     * @param candidate  An ellipsoid to return if the axis lengths match the lengths found in the parameters,
+     *                   or {@code null} if none. The intend is to use the pre-defined "GRS 1980" ellipsoid if
+     *                   we can, because that ellipsoid is defined by inverse flattening factor instead than by
+     *                   semi-minor axis length.
+     * @return A temporary ellipsoid encapsulating the axis lengths found in the parameters.
+     */
+    private static Ellipsoid createEllipsoid(final Parameters values,
+                                             final ParameterDescriptor<Double> semiMajor,
+                                             final ParameterDescriptor<Double> semiMinor,
+                                             final Ellipsoid candidate)
+    {
+        final double semiMajorAxis = values.doubleValue(semiMajor);     // Converted to metres.
+        final double semiMinorAxis = values.doubleValue(semiMinor);     // Converted to metres.
+        if (candidate != null && Math.abs(candidate.getSemiMajorAxis() - semiMajorAxis) < 1E-6
+                              && Math.abs(candidate.getSemiMinorAxis() - semiMinorAxis) < 1E-6)
+        {
+            return candidate;
+        }
+        return DefaultEllipsoid.createEllipsoid(Collections.singletonMap(Ellipsoid.NAME_KEY,
+                NilReferencingObject.UNNAMED), semiMajorAxis, semiMinorAxis, SI.METRE);
+    }
+
+    /**
      * Creates a transform from the specified group of parameter values.
+     * This method creates the transform from <em>target</em> to <em>source</em>
+     * (which is the direction that use the interpolation grid directly without iteration),
+     * then inverts the transform.
      *
      * @param  factory Ignored (can be null).
      * @param  values The group of parameter values.
@@ -146,50 +177,61 @@ public final class FranceGeocentricInterpolation extends AbstractProvider {
     public MathTransform createMathTransform(final MathTransformFactory factory, final ParameterValueGroup values)
             throws ParameterNotFoundException, FactoryException
     {
-        final Path file = Parameters.castOrWrap(values).getValue(FILE);
-        Grid grid;
-        synchronized (grids) {
-            grid = grids.get(file);
-            if (grid == null) {
-                try (final BufferedReader in = Files.newBufferedReader(file)) {
-                    grid = new Grid(Grid.readHeader(in, file));
-                    grid.load(in, file);
-                } catch (IOException | RuntimeException e) {
-                    // NumberFormatException, ArithmeticException, NoSuchElementException, possibly other.
-                    throw new FactoryException(Errors.format(Errors.Keys.CanNotParseFile_2, Grid.HEADER, file), e);
-                }
-            }
-            grids.put(file, grid);
+        boolean withHeights = false;
+        final Parameters pg = Parameters.castOrWrap(values);
+        final Integer dim = pg.getValue(Molodensky.DIMENSION);
+        if (dim != null) switch (dim) {
+            case 2:  break;
+            case 3:  withHeights = true; break;
+            default: throw new InvalidParameterValueException(Errors.format(Errors.Keys.IllegalArgumentValue_2, "dim", dim), "dim", dim);
         }
-        /*
-         * Create the transform from RGF93 to NTF (which is the direction that use the interpolation grid
-         * directly without iteration), then invert it. We do not cache the ellipsoid because it will not
-         * be kept after construction.
-         */
-        final Map<String,Object> properties = new HashMap<>(4);
-        properties.put(DefaultEllipsoid.NAME_KEY, "Clarke 1880 (IGN)");
-        properties.put(Identifier.CODE_KEY, "7011");
-        properties.put(Identifier.AUTHORITY_KEY, Citations.EPSG);
+        final Grid grid = Grid.load(pg.getValue(FILE));
         return InterpolatedGeocentricTransform.createGeodeticTransformation(factory,
-                CommonCRS.ETRS89.ellipsoid(), false,        // GRS 1980 ellipsoid
-                DefaultEllipsoid.createEllipsoid(properties, 6378249.2, 6356515, SI.METRE), false,
-                -168, -60, 320, grid);  // TODO: invert
+                createEllipsoid(pg, Molodensky.TGT_SEMI_MAJOR, Molodensky.TGT_SEMI_MINOR, CommonCRS.ETRS89.ellipsoid()), withHeights, // GRS 1980 ellipsoid
+                createEllipsoid(pg, Molodensky.SRC_SEMI_MAJOR, Molodensky.SRC_SEMI_MINOR, null), withHeights,                         // Clarke 1880 (IGN) ellipsoid
+                grid);  // TODO: invert
     }
 
     /**
-     * Helper class for loading the RGF93 data file.
-     * This class is used only for loading the file, then discarded.
+     * RGF93 datum shift grid.
      */
-    static final class Grid extends DatumShiftGrid {
+    public static final class Grid extends DatumShiftGrid {
         /**
          * Serial number for inter-operability with different versions.
          */
         private static final long serialVersionUID = 2151790417501356919L;
 
         /**
+         * Cache of the grids loaded so far. This cache will usually contains only one element:
+         * the grid for the {@code "GR3DF97A.txt"} file.
+         */
+        private static final WeakValueHashMap<Path,Grid> CACHE = new WeakValueHashMap<>(Path.class);
+
+        /**
          * The keyword expected at the beginning of every lines in the header.
          */
-        static final String HEADER = "GR3D";
+        private static final String HEADER = "GR3D";
+
+        /**
+         * Returns the grid of the given name. This method returns the cached instance if it still exists,
+         * or reload the grid otherwise.
+         */
+        static Grid load(final Path file) throws FactoryException {
+            synchronized (CACHE) {
+                Grid grid = CACHE.get(file);
+                if (grid == null) {
+                    try (final BufferedReader in = Files.newBufferedReader(file)) {
+                        grid = new Grid(readHeader(in, file));
+                        grid.load(in, file);
+                    } catch (IOException | RuntimeException e) {
+                        // NumberFormatException, ArithmeticException, NoSuchElementException, possibly other.
+                        throw new FactoryException(Errors.format(Errors.Keys.CanNotParseFile_2, HEADER, file), e);
+                    }
+                }
+                CACHE.put(file, grid);
+                return grid;
+            }
+        }
 
         /**
          * Geocentric translations among <var>X</var>, <var>Y</var>, <var>Z</var> axes.
@@ -201,7 +243,7 @@ public final class FranceGeocentricInterpolation extends AbstractProvider {
          *
          * @param gridGeometry The value returned by {@link #readHeader(BufferedReader, Path)}.
          */
-        Grid(final double[] gridGeometry) {
+        private Grid(final double[] gridGeometry) {
             super(gridGeometry[0],  // x₀
                   gridGeometry[2],  // y₀
                   gridGeometry[4],  // Δx
@@ -243,7 +285,7 @@ public final class FranceGeocentricInterpolation extends AbstractProvider {
          * @throws FactoryException if an problem is found with the file content.
          */
         @Workaround(library="JDK", version="1.7")
-        static double[] readHeader(final BufferedReader in, final Path file) throws IOException, FactoryException {
+        private static double[] readHeader(final BufferedReader in, final Path file) throws IOException, FactoryException {
             double[] gridGeometry = null;
             String line;
             while (true) {
@@ -318,7 +360,7 @@ public final class FranceGeocentricInterpolation extends AbstractProvider {
          * @throws FactoryException if an problem is found with the file content.
          * @throws ArithmeticException if the width or the height exceed the integer capacity.
          */
-        final void load(final BufferedReader in, final Path file) throws IOException, FactoryException {
+        private void load(final BufferedReader in, final Path file) throws IOException, FactoryException {
             final float[] tX = offsets[0];
             final float[] tY = offsets[1];
             final float[] tZ = offsets[2];
@@ -347,7 +389,30 @@ public final class FranceGeocentricInterpolation extends AbstractProvider {
         }
 
         /**
+         * Returns the average translation parameters from source (RGF93) to target (NTF).
+         * The numerical values are given by operation EPSG:1651, but SIS implementation
+         * uses the opposite signs (because we reverse the direction of the operation).
+         *
+         * @param dim The dimension for which to get an average value. Can be only 0, 1 or 2.
+         * @return A value close to the average for the given dimension.
+         */
+        @Override
+        public double getAverageOffset(final int dim) {
+            switch (dim) {
+                case 0: return  168;        // Sign reversed (see above).
+                case 1: return   60;
+                case 2: return -320;
+                default: throw new IllegalArgumentException();
+            }
+        }
+
+        /**
          * Returns the cell value at the given dimension and grid index.
+         *
+         * @param dim    The dimension for which to get an average value. Can be only 0, 1 or 2.
+         * @param gridX  The grid index along the <var>x</var> axis, from 0 inclusive to {@link #nx} exclusive.
+         * @param gridY  The grid index along the <var>y</var> axis, from 0 inclusive to {@link #ny} exclusive.
+         * @return The offset at the given dimension in the grid cell at the given index.
          */
         @Override
         protected double getCellValue(final int dim, final int gridX, final int gridY) {
