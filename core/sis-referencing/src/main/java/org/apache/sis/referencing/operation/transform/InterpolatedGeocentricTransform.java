@@ -16,6 +16,7 @@
  */
 package org.apache.sis.referencing.operation.transform;
 
+import javax.measure.unit.Unit;
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
@@ -26,10 +27,10 @@ import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.internal.referencing.provider.FranceGeocentricInterpolation;
 import org.apache.sis.internal.referencing.provider.GeocentricAffineBetweenGeographic;
-import org.apache.sis.internal.referencing.provider.MapProjection;
 import org.apache.sis.internal.referencing.provider.Molodensky;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.metadata.iso.citation.Citations;
+import org.apache.sis.parameter.Parameters;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.referencing.datum.DatumShiftGrid;
 import org.apache.sis.util.ArgumentChecks;
@@ -190,9 +191,29 @@ public class InterpolatedGeocentricTransform extends MolodenskyFormula {
     }
 
     /**
+     * Returns the parameter descriptor to declare for the given grid. This method returns the descriptor of
+     * <cite>"France geocentric interpolation"</cite> (ESPG:9655) only if the given grid is recognized as a
+     * grid created by the {@link FranceGeocentricInterpolation} for a geographic area likely to be France.
+     * Otherwise a more neutral (but non-standard) descriptor is returned.
+     */
+    private static ParameterDescriptorGroup descriptor(final DatumShiftGrid grid) {
+        if (grid instanceof FranceGeocentricInterpolation.Grid) {
+            return FranceGeocentricInterpolation.PARAMETERS;        // Defined by EPSG.
+        }
+        synchronized (InterpolatedGeocentricTransform.class) {
+            if (DESCRIPTOR == null) {
+                DESCRIPTOR = createDescriptor(true);                // Non-standard.
+            }
+            return DESCRIPTOR;
+        }
+    }
+
+    /**
      * Creates a Apache SIS descriptor for the {@code InterpolatedGeocentricTransform} parameters.
+     * The returned descriptor is non-standard, but allows {@code InterpolatedGeocentricTransform}
+     * to be used for other geographic areas than France.
      *
-     * @param internal  {@code true} for internal parameters, or {@code false} for contextual parameters.
+     * @param internal {@code true} for internal parameters, or {@code false} for contextual parameters.
      * @return The parameter descriptor.
      */
     private static ParameterDescriptorGroup createDescriptor(final boolean internal) {
@@ -202,16 +223,11 @@ public class InterpolatedGeocentricTransform extends MolodenskyFormula {
                 GeocentricAffineBetweenGeographic.SRC_SEMI_MINOR,
                 GeocentricAffineBetweenGeographic.TGT_SEMI_MAJOR,
                 GeocentricAffineBetweenGeographic.TGT_SEMI_MINOR,
-                GeocentricAffineBetweenGeographic.TX,
-                GeocentricAffineBetweenGeographic.TY,
-                GeocentricAffineBetweenGeographic.TZ,
                 FranceGeocentricInterpolation.FILE
         };
         if (internal) {
-            param[1] = Molodensky.AXIS_LENGTH_DIFFERENCE;
-            param[2] = Molodensky.FLATTENING_DIFFERENCE;
-            param[3] = Molodensky.SRC_SEMI_MAJOR;
-            param[4] = MapProjection.ECCENTRICITY;
+            param[3] = Molodensky.AXIS_LENGTH_DIFFERENCE;
+            param[4] = Molodensky.FLATTENING_DIFFERENCE;
         }
         return new ParameterBuilder().setRequired(true)
                 .setCodeSpace(Citations.SIS, Constants.SIS)
@@ -220,18 +236,16 @@ public class InterpolatedGeocentricTransform extends MolodenskyFormula {
     }
 
     /**
-     * Returns the parameter descriptor for the given grid.
+     * Invoked by the constructor for setting the contextual parameters.
+     *
+     * @param pg   Where to set the parameters.
+     * @param unit Ignored.
+     * @param Δf   Ignored.
      */
-    private static ParameterDescriptorGroup descriptor(final DatumShiftGrid grid) {
-        if (grid instanceof FranceGeocentricInterpolation.Grid) {
-            return FranceGeocentricInterpolation.PARAMETERS;
-        }
-        synchronized (InterpolatedGeocentricTransform.class) {
-            if (DESCRIPTOR == null) {
-                DESCRIPTOR = createDescriptor(true);
-            }
-            return DESCRIPTOR;
-        }
+    @Override
+    void setContextualParameters(final Parameters pg, final Unit<?> unit, final double Δf) {
+        super.setContextualParameters(pg, unit, Δf);
+        // TODO
     }
 
     /**

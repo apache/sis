@@ -83,7 +83,9 @@ public final class FranceGeocentricInterpolation extends AbstractProvider {
     public static final ParameterDescriptor<Path> FILE;
 
     /**
-     * The group of all parameters expected by this coordinate operation.
+     * The group of all parameters expected by this coordinate operation. The only parameter formally defined by EPSG
+     * is {@link #FILE}. All other parameters have been taken from {@link Molodensky} since geocentric interpolations
+     * can be though as a Molodensky operations with non-constant (ΔX, ΔY, ΔZ) geocentric translation terms.
      */
     public static final ParameterDescriptorGroup PARAMETERS;
     static {
@@ -95,11 +97,11 @@ public final class FranceGeocentricInterpolation extends AbstractProvider {
         PARAMETERS = builder
                 .addIdentifier("9655")
                 .addName("France geocentric interpolation")
-                .createGroup(GeocentricAffineBetweenGeographic.DIMENSION,       // Not an EPSG parameter.
-                             GeocentricAffineBetweenGeographic.SRC_SEMI_MAJOR,
-                             GeocentricAffineBetweenGeographic.SRC_SEMI_MINOR,
-                             GeocentricAffineBetweenGeographic.TGT_SEMI_MAJOR,
-                             GeocentricAffineBetweenGeographic.TGT_SEMI_MINOR,
+                .createGroup(Molodensky.DIMENSION,       // Not an EPSG parameter.
+                             Molodensky.SRC_SEMI_MAJOR,
+                             Molodensky.SRC_SEMI_MINOR,
+                             Molodensky.TGT_SEMI_MAJOR,
+                             Molodensky.TGT_SEMI_MINOR,
                              FILE);
     }
 
