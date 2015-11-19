@@ -28,7 +28,6 @@ import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.datum.DefaultEllipsoid;
 import org.apache.sis.internal.referencing.provider.Molodensky;
-import org.apache.sis.internal.referencing.provider.MapProjection;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.util.ArgumentChecks;
@@ -191,11 +190,11 @@ abstract class MolodenskyFormula extends AbstractMathTransform implements Serial
         final Unit<Length> unit = src.getAxisUnit();
         final UnitConverter c = target.getAxisUnit().getConverterTo(unit);
         context = new ContextualParameters(descriptor, isSource3D ? 4 : 3, isTarget3D ? 4 : 3);
-        setContextualParameters(context, unit, Δf);
         context.getOrCreate(Molodensky.SRC_SEMI_MAJOR).setValue(semiMajor, unit);
         context.getOrCreate(Molodensky.SRC_SEMI_MINOR).setValue(semiMinor, unit);
         context.getOrCreate(Molodensky.TGT_SEMI_MAJOR).setValue(c.convert(target.getSemiMajorAxis()), unit);
         context.getOrCreate(Molodensky.TGT_SEMI_MINOR).setValue(c.convert(target.getSemiMinorAxis()), unit);
+        setContextualParameters(context, unit, Δf);
         /*
          * Prepare two affine transforms to be executed before and after the MolodenskyTransform:
          *
@@ -223,9 +222,9 @@ abstract class MolodenskyFormula extends AbstractMathTransform implements Serial
     public ParameterValueGroup getParameterValues() {
         final Parameters pg = Parameters.castOrWrap(getParameterDescriptors().createValue());
         final Unit<?> unit = context.getOrCreate(Molodensky.SRC_SEMI_MAJOR).getUnit();
-        setContextualParameters(pg, unit, context.doubleValue(Molodensky.FLATTENING_DIFFERENCE));
         pg.getOrCreate(Molodensky.SRC_SEMI_MAJOR).setValue(semiMajor, unit);
-        pg.getOrCreate(MapProjection.ECCENTRICITY).setValue(sqrt(eccentricitySquared));
+        pg.getOrCreate(Molodensky.SRC_SEMI_MINOR).setValue(context.doubleValue(Molodensky.SRC_SEMI_MINOR));
+        setContextualParameters(pg, unit, context.doubleValue(Molodensky.FLATTENING_DIFFERENCE));
         pg.parameter("abridged").setValue(isAbridged);
         return pg;
     }

@@ -95,7 +95,7 @@ public class MolodenskyTransform extends MolodenskyFormula {
      *
      * @see #inverse()
      */
-    private MolodenskyTransform inverse;
+    private final MolodenskyTransform inverse;
 
     /**
      * Creates a Molodensky transform from the specified parameters.
@@ -141,6 +141,25 @@ public class MolodenskyTransform extends MolodenskyFormula {
     {
         super(source, isSource3D, target, isTarget3D, tX, tY, tZ, isAbridged,
                 isAbridged ? AbridgedMolodensky.PARAMETERS : Molodensky.PARAMETERS);
+        if (!isSource3D && !isTarget3D) {
+            inverse = new MolodenskyTransform2D(this, source, target);
+        } else {
+            inverse = new MolodenskyTransform(this, source, target);
+        }
+    }
+
+    /**
+     * Constructs the inverse of a Molodensky transform.
+     *
+     * @param inverse The transform for which to create the inverse.
+     * @param source  The source ellipsoid of the given {@code inverse} transform.
+     * @param target  The target ellipsoid of the given {@code inverse} transform.
+     */
+    MolodenskyTransform(final MolodenskyTransform inverse, final Ellipsoid source, final Ellipsoid target) {
+        super(target, inverse.isTarget3D,
+              source, inverse.isSource3D,
+              -inverse.tX, -inverse.tY, -inverse.tZ, inverse.isAbridged, inverse.context.getDescriptor());
+        this.inverse = inverse;
     }
 
     /**
@@ -193,12 +212,10 @@ public class MolodenskyTransform extends MolodenskyFormula {
         final MolodenskyTransform tr;
         if (!isSource3D && !isTarget3D) {
             tr = new MolodenskyTransform2D(source, target, tX, tY, tZ, isAbridged);
-            tr.inverse = new MolodenskyTransform2D(target, source, -tX, -tY, -tZ, isAbridged);
         } else {
             tr = new MolodenskyTransform(source, isSource3D, target, isTarget3D, tX, tY, tZ, isAbridged);
-            tr.inverse = new MolodenskyTransform(target, isTarget3D, source, isSource3D, -tX, -tY, -tZ, isAbridged);
         }
-        tr.inverse.inverse = tr;
+        tr.inverse.context.completeTransform(factory, null);
         return tr.context.completeTransform(factory, tr);
     }
 

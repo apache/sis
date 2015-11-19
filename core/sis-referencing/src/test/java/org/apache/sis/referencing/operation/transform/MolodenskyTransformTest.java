@@ -259,28 +259,28 @@ public final strictfp class MolodenskyTransformTest extends MathTransformTestCas
         create(true);
         assertWktEquals("PARAM_MT[“Abridged_Molodenski”,\n" +
                         "  PARAMETER[“dim”, 3],\n" +
+                        "  PARAMETER[“src_semi_major”, 6378137.0],\n" +
+                        "  PARAMETER[“src_semi_minor”, 6356752.314245179],\n" +
+                        "  PARAMETER[“tgt_semi_major”, 6378388.0],\n" +
+                        "  PARAMETER[“tgt_semi_minor”, 6356911.9461279465],\n" +
                         "  PARAMETER[“dx”, 84.87],\n" +
                         "  PARAMETER[“dy”, 96.49],\n" +
                         "  PARAMETER[“dz”, 116.95],\n" +
                         "  PARAMETER[“Semi-major axis length difference”, 251.0],\n" +
-                        "  PARAMETER[“Flattening difference”, 1.4192702255886284E-5],\n" +
-                        "  PARAMETER[“src_semi_major”, 6378137.0],\n" +
-                        "  PARAMETER[“src_semi_minor”, 6356752.314245179],\n" +
-                        "  PARAMETER[“tgt_semi_major”, 6378388.0],\n" +
-                        "  PARAMETER[“tgt_semi_minor”, 6356911.9461279465]]");
+                        "  PARAMETER[“Flattening difference”, 1.4192702255886284E-5]]");
 
         transform = transform.inverse();
         assertWktEquals("PARAM_MT[“Abridged_Molodenski”,\n" +
                         "  PARAMETER[“dim”, 3],\n" +
+                        "  PARAMETER[“src_semi_major”, 6378388.0],\n" +
+                        "  PARAMETER[“src_semi_minor”, 6356911.9461279465],\n" +
+                        "  PARAMETER[“tgt_semi_major”, 6378137.0],\n" +
+                        "  PARAMETER[“tgt_semi_minor”, 6356752.314245179],\n" +
                         "  PARAMETER[“dx”, -84.87],\n" +
                         "  PARAMETER[“dy”, -96.49],\n" +
                         "  PARAMETER[“dz”, -116.95],\n" +
                         "  PARAMETER[“Semi-major axis length difference”, -251.0],\n" +
-                        "  PARAMETER[“Flattening difference”, -1.4192702255886284E-5],\n" +
-                        "  PARAMETER[“src_semi_major”, 6378388.0],\n" +
-                        "  PARAMETER[“src_semi_minor”, 6356911.9461279465],\n" +
-                        "  PARAMETER[“tgt_semi_major”, 6378137.0],\n" +
-                        "  PARAMETER[“tgt_semi_minor”, 6356752.314245179]]");
+                        "  PARAMETER[“Flattening difference”, -1.4192702255886284E-5]]");
     }
 
     /**
@@ -302,13 +302,13 @@ public final strictfp class MolodenskyTransformTest extends MathTransformTestCas
                 "    Parameter[“elt_0_0”, 0.017453292519943295],\n" +       // Degrees to radians conversion
                 "    Parameter[“elt_1_1”, 0.017453292519943295]],\n" +
                 "  Param_MT[“Molodensky”,\n" +
+                "    Parameter[“src_semi_major”, 6378137.0],\n" +
+                "    Parameter[“src_semi_minor”, 6356752.314245179],\n" +
+                "    Parameter[“Semi-major axis length difference”, 251.0],\n" +
+                "    Parameter[“Flattening difference”, 1.4192702255886284E-5],\n" +
                 "    Parameter[“X-axis translation”, 84.87],\n" +
                 "    Parameter[“Y-axis translation”, 96.49],\n" +
                 "    Parameter[“Z-axis translation”, 116.95],\n" +
-                "    Parameter[“Semi-major axis length difference”, 251.0],\n" +
-                "    Parameter[“Flattening difference”, 1.4192702255886284E-5],\n" +
-                "    Parameter[“src_semi_major”, 6378137.0],\n" +
-                "    Parameter[“eccentricity”, 0.0818191908426215],\n" +
                 "    Parameter[“abridged”, TRUE],\n" +
                 "    Parameter[“dim”, 3]],\n" +
                 "  Param_MT[“Affine”,\n" +

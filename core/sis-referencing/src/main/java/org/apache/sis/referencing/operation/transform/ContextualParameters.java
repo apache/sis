@@ -512,7 +512,6 @@ public class ContextualParameters extends Parameters implements Serializable {
      *
      * @see org.apache.sis.referencing.operation.projection.NormalizedProjection#createMapProjection(MathTransformFactory)
      */
-    @SuppressWarnings("AssignmentToForLoopParameter")
     public synchronized MathTransform completeTransform(final MathTransformFactory factory, final MathTransform kernel)
             throws FactoryException
     {
@@ -528,6 +527,9 @@ public class ContextualParameters extends Parameters implements Serializable {
         Matrix m;
         if ((m = MathTransforms.getMatrix(n)) != null)   normalize = m;
         if ((m = MathTransforms.getMatrix(d)) != null) denormalize = m;
+        if (kernel == null) {   // Undocumented feature useful for MolodenskyTransform constructor.
+            return null;
+        }
         return factory.createConcatenatedTransform(factory.createConcatenatedTransform(n, kernel), d);
     }
 
