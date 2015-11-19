@@ -25,6 +25,7 @@ import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.TransformException;
+import org.apache.sis.internal.referencing.provider.DatumShiftGridFile;
 import org.apache.sis.internal.referencing.provider.FranceGeocentricInterpolation;
 import org.apache.sis.internal.referencing.provider.GeocentricAffineBetweenGeographic;
 import org.apache.sis.internal.referencing.provider.Molodensky;
@@ -197,7 +198,7 @@ public class InterpolatedGeocentricTransform extends MolodenskyFormula {
      * Otherwise a more neutral (but non-standard) descriptor is returned.
      */
     private static ParameterDescriptorGroup descriptor(final DatumShiftGrid grid) {
-        if (grid instanceof FranceGeocentricInterpolation.Grid) {
+        if (grid instanceof DatumShiftGridFile) {
             return FranceGeocentricInterpolation.PARAMETERS;        // Defined by EPSG.
         }
         synchronized (InterpolatedGeocentricTransform.class) {
