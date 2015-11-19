@@ -20,7 +20,6 @@ import java.io.Serializable;
 import org.opengis.geometry.Envelope;
 import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.internal.util.DoubleDouble;
-import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.util.ArgumentChecks;
 
 
@@ -42,16 +41,16 @@ import org.apache.sis.util.ArgumentChecks;
  * {@link org.apache.sis.referencing.operation.transform.InterpolatedGeocentricTransform} implementation.
  * <ul>
  *   <li><p><b>Datum shift by geographic translations</b><br>
- *   For datum shifts using NADCON or NTv2 grids, the (<var>x</var>,<var>y</var>) arguments are longitude (λ)
- *   and latitude (φ) in angular <em>degrees</em> and the translations are (<var>Δλ</var>, <var>Δφ</var>)
- *   offsets in angular <em>seconds</em>, converted to degrees for Apache SIS needs. Those offsets will be
- *   added or subtracted by {@link org.apache.sis.referencing.operation.transform.InterpolatedTransform}
+ *   NADCON and NTv2 grids are defined with longitude (λ) and latitude (φ) inputs in angular <em>degrees</em>
+ *   and give (<var>Δλ</var>, <var>Δφ</var>) translations in angular <em>seconds</em>.
+ *   However Apache SIS needs all those values to be converted to <strong>radians</strong>.
+ *   The translations will be applied by {@link org.apache.sis.referencing.operation.transform.InterpolatedTransform}
  *   directly on the given (<var>λ</var>,<var>φ</var>) coordinates.
  *   </p></li>
  *
  *   <li><p><b>Datum shift by geocentric translations</b><br>
- *   For datum shifts in France, the (<var>x</var>,<var>y</var>) arguments are longitude and latitude in angular degrees
- *   but the translations are (<var>ΔX</var>, <var>ΔY</var>, <var>ΔZ</var>) geocentric offsets in <em>metres</em>.
+ *   France interpolation grid is defined with longitude (λ) and latitude (φ) inputs in angular <em>degrees</em>
+ *   and gives (<var>ΔX</var>, <var>ΔY</var>, <var>ΔZ</var>) geocentric translations in <em>metres</em>.
  *   Those offsets will not be added directly to the given (<var>λ</var>,<var>φ</var>) coordinates since there is
  *   a geographic/geocentric conversion in the middle
  *   (see {@link org.apache.sis.referencing.operation.transform.InterpolatedGeocentricTransform}).
@@ -83,6 +82,9 @@ public abstract class DatumShiftGrid implements Serializable {
 
     /**
      * Coordinate of the center of the cell at grid index (0,0).
+     * This is usually a geographic coordinate (<var>λ₀</var>,<var>φ₀</var>) in <strong>radians</strong>,
+     * but other usages are allowed for users who instantiate
+     * {@link org.apache.sis.referencing.operation.transform.InterpolatedTransform} themselves.
      * The (<var>x₀</var>, <var>y₀</var>) coordinate is often the minimal (<var>x</var>,<var>y</var>) value
      * of the grid, but not necessarily if the <var>Δx</var> or <var>Δy</var> increments are negative.
      */
@@ -105,10 +107,11 @@ public abstract class DatumShiftGrid implements Serializable {
     protected final int nx, ny;
 
     /**
-     * Creates a new grid.
+     * Creates a new datum shift grid for the given grid geometry.
+     * The actual offset values need to be provided by subclasses.
      *
-     * @param x0  First ordinate (often longitude) of the center of the cell at grid index (0,0).
-     * @param y0  Second ordinate (often latitude) of the center of the cell at grid index (0,0).
+     * @param x0  First ordinate (often longitude in radians) of the center of the cell at grid index (0,0).
+     * @param y0  Second ordinate (often latitude in radians) of the center of the cell at grid index (0,0).
      * @param Δx  Increment in <var>x</var> value between cells at index <var>gridX</var> and <var>gridX</var> + 1.
      * @param Δy  Increment in <var>y</var> value between cells at index <var>gridY</var> and <var>gridY</var> + 1.
      * @param nx  Number of cells along the <var>x</var> axis in the grid.
@@ -124,25 +127,39 @@ public abstract class DatumShiftGrid implements Serializable {
         this.ny = ny;
         ArgumentChecks.ensureStrictlyPositive("nx", nx);
         ArgumentChecks.ensureStrictlyPositive("ny", ny);
-        /*
-         * The intend of DoubleDouble arithmetic here is to avoid rounding errors on the assumption that
-         * the Δx and Δy values are defined in base 10 in the grid. For example 1 / 1E-5 gives 99999.9…,
-         * while DoubleDouble below gives the expected result.  Since we use Math.floor(double) for grid
-         * indices computation, the difference is significant.
-         */
-        final DoubleDouble dd = new DoubleDouble(Δx);
-        dd.inverseDivide(1, 0);
-        scaleX = dd.value;
-        dd.value = Δy;
-        dd.error = DoubleDouble.errorForWellKnownValue(Δy);
-        dd.inverseDivide(1, 0);
-        scaleY = dd.value;
+        scaleX = 1 / Δx;
+        scaleY = 1 / Δy;
     }
 
     /**
-     * Returns the domain of validity of the (<var>x</var>,<var>y</var>) coordinates that can be specified to the
-     * {@link #offsetAt(double, double, double[])} method. Coordinates outside that domain of validity will still
+     * Creates a new datum shift grid with the same grid geometry than the given grid.
+     *
+     * @param other The other datum shift grid from which to copy the grid geometry.
+     */
+    protected DatumShiftGrid(final DatumShiftGrid other) {
+        x0 = other.x0;
+        y0 = other.y0;
+        nx = other.nx;
+        ny = other.ny;
+        scaleX = other.scaleX;
+        scaleY = other.scaleY;
+    }
+
+    /**
+     * Returns the number of dimensions of the translation vectors interpolated by this datum shift grid.
+     * The number of dimension is usually 2 or 3, but other values are allowed.
+     *
+     * @return Number of dimensions of translation vectors.
+     */
+    public abstract int getShiftDimensions();
+
+    /**
+     * Returns the domain of validity of the (<var>x</var>,<var>y</var>) coordinate values that can be specified
+     * to the {@link #offsetAt offsetAt(x, y, …)} method. Coordinates outside that domain of validity will still
      * be accepted, but the result of offset computation may be very wrong.
+     *
+     * <p>In the datum shift grids used by {@link org.apache.sis.referencing.operation.transform.InterpolatedTransform},
+     * the domain of validity is longitude and latitude in <strong>radians</strong>.</p>
      *
      * @return The domain covered by this grid.
      */
@@ -160,55 +177,63 @@ public abstract class DatumShiftGrid implements Serializable {
     }
 
     /**
-     * Returns an average offset value for the given dimension. The default implementation computes the average of all
-     * values returned by {@link #getCellValue getCellValue(…)}, but subclasses may override with more specific values.
+     * Returns an average offset value for the given dimension.
+     * Those average values shall provide a good "first guess" before to interpolate the actual offset value
+     * at the (<var>x</var>,<var>y</var>) coordinate. This "first guess" is needed for inverse transform.
+     *
+     * <div class="section">Default implementation</div>
+     * The default implementation computes the average of all values returned by
+     * {@link #getCellValue getCellValue(dim, …)}, but subclasses may override with more specific values.
      *
      * <div class="note"><b>Example:</b>
-     * The <cite>"France geocentric interpolation"</cite> (ESPG:9655) fixes those "average" values to -168, -60
-     * and +320 metres for dimensions 0 (geocentric X), 1 (geocentric Y) and 2 (geocentric Z) respectively.</div>
+     * In the <cite>"France geocentric interpolation"</cite> (ESPG:9655) operation method, those "average" values
+     * are fixed by definition to -168, -60 and +320 metres for dimensions 0, 1 and 2 respectively
+     * (geocentric <var>X</var>, <var>Y</var> and <var>Z</var>).</div>
      *
-     * @param dim The dimension for which to get an average value.
+     * @param dim  The dimension for which to get an average value,
+     *             from 0 inclusive to {@link #getShiftDimensions()} exclusive.
      * @return A value close to the average for the given dimension.
      */
     public double getAverageOffset(final int dim) {
-        double sum = 0;
+        final DoubleDouble sum = new DoubleDouble();
         for (int gridY=0; gridY<ny; gridY++) {
             for (int gridX=0; gridX<nx; gridX++) {
-                sum += getCellValue(dim, gridX, gridY);
+                sum.add(getCellValue(dim, gridX, gridY));
             }
         }
-        return sum / (nx * ny);
+        return sum.value / (nx * ny);
     }
 
     /**
-     * Interpolates the translation to apply for the given coordinate.
-     * This method usually returns an array of length 2 or 3, but it could be of any length
-     * (provided that this length never change). The values in the returned array are often
-     * for the same dimensions than <var>x</var> and <var>y</var>, but not necessarily.
+     * Interpolates the translation to apply for the given coordinate. The result is stored in the
+     * given {@code offsets} array, which shall have a length of at least {@link #getShiftDimensions()}.
+     * The computed translation values are often for the same dimensions than the given <var>x</var> and <var>y</var>
+     * values, but not necessarily.
      * See the class javadoc for use cases.
      *
      * <div class="section">Default implementation</div>
      * The default implementation performs the following steps for each dimension {@code dim},
-     * where the number of dimension is determined by the length of the {@code offsets} array:
+     * where the number of dimension is determined by {@link #getShiftDimensions()}.
      * <ol>
      *   <li>Convert the given (<var>x</var>,<var>y</var>) coordinate into grid coordinate
      *       using the formula documented in {@link #scaleX} and {@link #scaleY} fields.</li>
      *   <li>Clamp the grid coordinate into the [0 … {@link #nx} - 2] and [0 … {@link #ny} - 2] ranges, inclusive.</li>
      *   <li>Using {@link #getCellValue(int, int, int)}, get the four cell values around the coordinate.</li>
-     *   <li>Apply a bilinear interpolation and store the result in {@code offset[dim]}.</li>
+     *   <li>Apply a bilinear interpolation and store the result in {@code offsets[dim]}.</li>
      * </ol>
      *
-     * @param x       First ordinate (often longitude, but not necessarily) of the point for which to get the offset.
-     * @param y       Second ordinate (often latitude, but not necessarily) of the point for which to get the offset.
-     * @param offset  A pre-allocated array where to write the offset vector.
+     * @param x        First ordinate (often longitude, but not necessarily) of the point for which to get the offset.
+     * @param y        Second ordinate (often latitude, but not necessarily) of the point for which to get the offset.
+     * @param offsets  A pre-allocated array where to write the translation vector.
      */
-    public void offsetAt(double x, double y, double[] offset) {
+    public void offsetAt(double x, double y, double[] offsets) {
         final int gridX = Math.max(0, Math.min(nx - 2, (int) Math.floor(x = (x - x0) * scaleX)));
         final int gridY = Math.max(0, Math.min(ny - 2, (int) Math.floor(y = (y - y0) * scaleY)));
         x -= gridX;
         y -= gridY;
-        for (int dim=0; dim<offset.length; dim++) {
-            offset[dim] = (1-y) * ((1-x) * getCellValue(dim, gridX, gridY  ) + x*getCellValue(dim, gridX+1, gridY  ))
+        final int n = getShiftDimensions();
+        for (int dim = 0; dim < n; dim++) {
+            offsets[dim] = (1-y) * ((1-x) * getCellValue(dim, gridX, gridY  ) + x*getCellValue(dim, gridX+1, gridY  ))
                            + y  * ((1-x) * getCellValue(dim, gridX, gridY+1) + x*getCellValue(dim, gridX+1, gridY+1));
         }
     }
@@ -216,43 +241,11 @@ public abstract class DatumShiftGrid implements Serializable {
     /**
      * Returns the offset stored at the given grid indices along the given dimension.
      *
-     * @param dim    The dimension of the offset component to get.
+     * @param dim    The dimension of the offset component to get,
+     *               from 0 inclusive to {@link #getShiftDimensions()} exclusive.
      * @param gridX  The grid index along the <var>x</var> axis, from 0 inclusive to {@link #nx} exclusive.
      * @param gridY  The grid index along the <var>y</var> axis, from 0 inclusive to {@link #ny} exclusive.
      * @return The offset at the given dimension in the grid cell at the given index.
      */
     protected abstract double getCellValue(int dim, int gridX, int gridY);
-
-    /**
-     * Returns {@code true} if the given grid contains the same data than this grid.
-     *
-     * @param  other The other object to compare with this datum shift grid.
-     * @return {@code true} if the given object is non-null, of the same class than this {@code DatumShiftGrid}
-     *         and contains the same data.
-     */
-    @Override
-    public boolean equals(final Object other) {
-        if (other != null && other.getClass() == getClass()) {
-            final DatumShiftGrid that = (DatumShiftGrid) other;
-            return nx == that.nx
-                && ny == that.ny
-                && Numerics.equals(x0,     that.x0)
-                && Numerics.equals(y0,     that.y0)
-                && Numerics.equals(scaleX, that.scaleX)
-                && Numerics.equals(scaleY, that.scaleY);
-        }
-        return false;
-    }
-
-    /**
-     * Returns a hash code value for this datum shift grid.
-     */
-    @Override
-    public int hashCode() {
-        return Numerics.hashCode(
-                 Double.doubleToLongBits(x0) + 31*
-                (Double.doubleToLongBits(y0) + 31*
-                (Double.doubleToLongBits(scaleX) + 31*
-                 Double.doubleToLongBits(scaleY))));
-    }
 }

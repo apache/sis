@@ -87,7 +87,8 @@ public final strictfp class FranceGeocentricInterpolationTest extends MathTransf
     public void testGrid() throws URISyntaxException, IOException, FactoryException {
         final URL file = FranceGeocentricInterpolationTest.class.getResource("GR3DF97A.txt");
         assertNotNull("Test file \"GR3DF97A.txt\" not found.", file);
-        final FranceGeocentricInterpolation.Grid grid = FranceGeocentricInterpolation.Grid.load(Paths.get(file.toURI()));
+        final DatumShiftGridFile grid = FranceGeocentricInterpolation.getOrLoad(
+                Paths.get(file.toURI()), new double[] {168, 60, -320}, 0.001);
         /*
          * Verify envelope.
          */
