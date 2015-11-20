@@ -16,7 +16,7 @@
  */
 package org.apache.sis.storage.shapefile;
 
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
 
 import java.io.File;
 import java.net.URISyntaxException;
@@ -104,6 +104,42 @@ public final strictfp class ShapeFileTest extends TestCase {
          
          // Loading of the descriptor shall not prevent the shapefile from being red again.
          readAll(shp);
+     }
+     
+     /**
+      * Checks that the reader is able to detect EoF signs in the DBase file.
+      * @throws URISyntaxException if the resource name is incorrect.
+      * @throws DataStoreException if a general file reading trouble occurs.
+      */
+     @Test
+     public void testHandleEofNotification() throws URISyntaxException, DataStoreException {
+         ShapeFile shp = new ShapeFile(path("DEPARTEMENT.SHP"));
+         Feature first = null, last = null;
+
+         Logger log = org.apache.sis.util.logging.Logging.getLogger(ShapeFileTest.class.getName());
+
+         try(InputFeatureStream is = shp.findAll()) {
+             Feature feature = is.readFeature();
+
+             // Read and retain the first and the last feature.
+             while(feature != null) {
+                 if (first == null) {
+                     first = feature;
+                 }
+                 
+                 // Advice : To debug just before the last record, put a conditional breakpoint on department name "MEURTHE-ET-MOSELLE".
+                 String deptName = (String)feature.getProperty("NOM_DEPT").getValue();
+                 log.info(deptName);
+
+                 last = feature;
+                 feature = is.readFeature();
+             }
+         }
+         
+         assertNotNull("No record has been found in the DBase file or Shapefile.", first);
+         assertNotNull("This test is not working well : last feature should always be set if any feature has been found.", last);
+         assertEquals("The first record red must be JURA department.", "JURA", first.getProperty("NOM_DEPT").getValue());
+         assertEquals("The last record red must be DEUX-SEVRES department.", "DEUX-SEVRES", last.getProperty("NOM_DEPT").getValue());
      }
      
     /**

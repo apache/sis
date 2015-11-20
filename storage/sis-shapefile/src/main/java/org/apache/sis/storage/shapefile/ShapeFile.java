@@ -60,10 +60,30 @@ public class ShapeFile {
 
         shapeFile = new File(shpfile);
 
-        // Deduct database file name.
+        // Deduct database file name by suffixing it by dbf (trying to respect the same case).
         StringBuilder dbfFileName = new StringBuilder(shpfile);
-        dbfFileName.replace(shpfile.length() - 3, shpfile.length(), "dbf");
+        
+        String dbfSuffix = null;
+        dbfSuffix = shpfile.endsWith("shp") ? "dbf" : dbfSuffix;
+        dbfSuffix = shpfile.endsWith("SHP") ? "DBF" : dbfSuffix;
+        dbfSuffix = shpfile.endsWith("Shp") ? "Dbf" : dbfSuffix;
+        dbfSuffix = (dbfSuffix == null) ? "dbf" : dbfSuffix;
+        
+        dbfFileName.replace(shpfile.length() - 3, shpfile.length(), dbfSuffix);
         databaseFile = new File(dbfFileName.toString());
+    }
+    
+    /**
+     * Construct a Shapefile from a file.
+     * @param shpfile file to read.
+     * @param dbasefile Associated DBase file.
+     */
+    public ShapeFile(String shpfile, String dbasefile) {
+        Objects.requireNonNull(shpfile, "The shapefile to load cannot be null.");
+        Objects.requireNonNull(dbasefile, "The DBase III file to load cannot be null.");
+        
+        this.shapeFile = new File(shpfile);
+        this.databaseFile = new File(dbasefile);
     }
 
     /**

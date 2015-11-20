@@ -46,6 +46,9 @@ public class DBFRecordBasedResultSet extends DBFResultSet {
     /** Condition of where clause (currently, only one is handled). */
     private ConditionalClauseResolver singleConditionOfWhereClause;
 
+    /** Indicates that the last result set record matching conditions has already been returned, and a further call of next() shall throw a "no more record" exception. */
+    private boolean lastResultSetRecordAlreadyReturned;
+    
     /**
      * Constructs a result set.
      * @param stmt Parent statement.
@@ -498,7 +501,13 @@ public class DBFRecordBasedResultSet extends DBFResultSet {
 
         // Check that we aren't at the end of the Database file.
         if (cnt.nextRowAvailable() == false) {
-            throw new SQLNoResultException(format(Level.WARNING, "excp.no_more_results", sql, getFile().getName()), sql, getFile());
+            if (this.lastResultSetRecordAlreadyReturned) {
+                throw new SQLNoResultException(format(Level.WARNING, "excp.no_more_results", sql, getFile().getName()), sql, getFile());
+            }
+            else {
+                this.lastResultSetRecordAlreadyReturned = true;
+                return false;
+            }
         }
 
         return nextRecordMatchingConditions();
@@ -525,7 +534,7 @@ public class DBFRecordBasedResultSet extends DBFResultSet {
             recordMatchesConditions = singleConditionOfWhereClause == null || singleConditionOfWhereClause.isVerified(this);
         }
 
-        return recordMatchesConditions && cnt.nextRowAvailable(); // Beware of the end of database !
+        return recordMatchesConditions;
     }
 
     /**
