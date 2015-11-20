@@ -19,6 +19,7 @@ package org.apache.sis.internal.referencing.provider;
 import java.util.Arrays;
 import java.nio.file.Path;
 import java.lang.reflect.Array;
+import org.apache.sis.math.DecimalFunctions;
 import org.apache.sis.util.collection.Cache;
 import org.apache.sis.referencing.datum.DatumShiftGrid;
 
@@ -26,6 +27,13 @@ import org.apache.sis.referencing.datum.DatumShiftGrid;
 /**
  * A datum shift grid loaded from a file.
  * The filename is usually a parameter defined in the EPSG database.
+ *
+ * <p>This class is in internal package (not public API) because it makes the following assumptions:</p>
+ * <ul>
+ *   <li>Single floating-point precision ({@code float)} is sufficient.</li>
+ *   <li>Values were defined in base 10, usually in ASCII files. This assumption has an impact on conversions
+ *       from {@code float} to {@code double} performed by the {@link #getCellValue(int, int, int)} method.</li>
+ * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.7
@@ -203,6 +211,9 @@ public abstract class DatumShiftGridFile extends DatumShiftGrid {
 
         /**
          * Returns the cell value at the given dimension and grid index.
+         * This method casts the {@code float} values to {@code double} by setting the extra <em>decimal</em> digits
+         * (not the <em>binary</em> digits) to 0. This is on the assumption that the {@code float} values were parsed
+         * from an ASCII file, or any other medium that format numbers in base 10.
          *
          * @param dim    The dimension for which to get an average value.
          * @param gridX  The grid index along the <var>x</var> axis, from 0 inclusive to {@link #nx} exclusive.
@@ -211,7 +222,7 @@ public abstract class DatumShiftGridFile extends DatumShiftGrid {
          */
         @Override
         protected final double getCellValue(final int dim, final int gridX, final int gridY) {
-            return offsets[dim][gridX + gridY*nx];
+            return DecimalFunctions.floatToDouble(offsets[dim][gridX + gridY*nx]);
         }
     }
 }

@@ -16,6 +16,8 @@
  */
 package org.apache.sis.internal.referencing.provider;
 
+import org.apache.sis.math.DecimalFunctions;
+
 
 /**
  * A datum shift grid which store the values in {@code short[]} array.
@@ -81,13 +83,16 @@ final class DatumShiftGridCompressed extends DatumShiftGridFile {
             if (computeAverages) {
                 averages[dim] = grid.getAverageOffset(dim);
             }
-            final double average = averages[dim];
+            final double average = averages[dim] / scale;
             final float[] offsets = grid.offsets[dim];
             final short[] compressed = new short[offsets.length];
             for (int i=0; i<offsets.length; i++) {
-                final double c = (offsets[i] - average) / scale;
-                final double e = (compressed[i] = (short) c) - c;
-                if (!(Math.abs(e) < Math.ulp((float) c))) {         // Use '!' for catching NaN values.
+                double c = DecimalFunctions.floatToDouble(offsets[i]);  // Presume that values were defined in base 10 (usually in an ASCII file).
+                c /= scale;                                             // The scale is usually a power of 10 (so the above conversion helps).
+                final float tolerance = Math.ulp((float) c);            // Maximum difference for considering that we do not lost any digit.
+                c -= average;
+                c -= (compressed[i] = (short) Math.round(c));
+                if (!(Math.abs(c) < tolerance)) {                       // Use '!' for catching NaN values.
                     return grid;    // Can not compress.
                 }
             }
@@ -138,5 +143,24 @@ final class DatumShiftGridCompressed extends DatumShiftGridFile {
     @Override
     protected double getCellValue(final int dim, final int gridX, final int gridY) {
         return data[dim][gridX + gridY*nx] * scale + averages[dim];
+    }
+
+    /**
+     * Copy of {@link org.apache.sis.referencing.datum.DatumShiftGrid} rewritten in a way that
+     * reduce the number of arithmetic operations for efficiency reasons.
+     */
+    @Override
+    public void offsetAt(double x, double y, double[] offsets) {
+        final int gridX = Math.max(0, Math.min(nx - 2, (int) Math.floor(x = (x - x0) * scaleX)));
+        final int gridY = Math.max(0, Math.min(ny - 2, (int) Math.floor(y = (y - y0) * scaleY)));
+        x -= gridX;
+        y -= gridY;
+        final int p0 = nx*gridY + gridX;
+        final int p1 = nx + p0;
+        for (int dim = 0; dim < data.length; dim++) {
+            final short[] values = data[dim];
+            offsets[dim] = ((1-y) * ((1-x)*values[p0] + x*values[p0+1])
+                             + y  * ((1-x)*values[p1] + x*values[p1+1])) * scale + averages[dim];
+        }
     }
 }

@@ -20,6 +20,7 @@ import javax.measure.unit.Unit;
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
+import org.opengis.geometry.MismatchedDimensionException;
 import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
@@ -34,6 +35,7 @@ import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.referencing.datum.DatumShiftGrid;
+import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Debug;
 
@@ -57,7 +59,7 @@ import org.apache.sis.util.Debug;
  *   <li>Convert input geographic coordinate (λ,φ) to geocentric coordinate (X,Y,Z).</li>
  *   <li>Ask {@link DatumShiftGrid} for the offset to apply for coordinate (λ,φ).
  *       But instead of returning a (Δλ, Δφ) offset, the grid shall return a (ΔX, ΔY, ΔZ) offset.</li>
- *   <li>Convert the shifted geocentric coordinate (X + ΔX, Y + ΔY, Z + ΔZ) back to a geographic coordinate.</li>
+ *   <li>Convert the shifted geocentric coordinate (X+ΔX, Y+ΔY, Z+ΔZ) back to a geographic coordinate.</li>
  * </ol>
  *
  * <div class="note"><b>Source:</b> IGN document {@code NTG_88.pdf},
@@ -151,6 +153,10 @@ public class InterpolatedGeocentricTransform extends MolodenskyFormula {
               false,    // Non-abridged Molodensky
               descriptor(grid));
 
+        final int dim = grid.getShiftDimensions();
+        if (dim != 3) {
+            throw new MismatchedDimensionException(Errors.format(Errors.Keys.MismatchedDimension_3, "grid", 3, dim));
+        }
         this.grid = grid;
     }
 

@@ -229,6 +229,7 @@ public final class FranceGeocentricInterpolation extends AbstractProvider {
                         // NumberFormatException, ArithmeticException, NoSuchElementException, possibly other.
                         throw new FactoryException(Errors.format(Errors.Keys.CanNotParseFile_2, HEADER, file), e);
                     }
+                    grid = grid.useSharedData();
                 }
             } finally {
                 handler.putAndUnlock(grid);
