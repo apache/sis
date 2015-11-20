@@ -16,7 +16,8 @@
  */
 package org.apache.sis.storage.shapefile;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 import java.io.File;
 import java.net.URISyntaxException;
@@ -25,6 +26,7 @@ import java.util.logging.Logger;
 
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.test.TestCase;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.opengis.feature.Feature;
 
@@ -111,7 +113,7 @@ public final strictfp class ShapeFileTest extends TestCase {
       * @throws URISyntaxException if the resource name is incorrect.
       * @throws DataStoreException if a general file reading trouble occurs.
       */
-     @Test
+     @Test @Ignore // TODO Adapt with another shapefile.
      public void testHandleEofNotification() throws URISyntaxException, DataStoreException {
          ShapeFile shp = new ShapeFile(path("DEPARTEMENT.SHP"));
          Feature first = null, last = null;
