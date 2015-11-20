@@ -218,7 +218,7 @@ public final class Equirectangular extends AbstractProvider {
      * @return 1, meaning that the operation requires a source ellipsoid.
      */
     @Override
-    public final int getNumEllipsoids() {
+    public final int getEllipsoidsMask() {
         return 1;
     }
 

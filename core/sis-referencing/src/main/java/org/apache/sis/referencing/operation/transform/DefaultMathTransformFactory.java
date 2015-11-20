@@ -17,7 +17,6 @@
 package org.apache.sis.referencing.operation.transform;
 
 import java.util.IdentityHashMap;
-import java.util.Locale;
 import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.Set;
@@ -499,12 +498,14 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
 
         /**
          * Sets the source ellipsoid and coordinate system to values inferred from the given CRS.
+         * The source ellipsoid will be non-null only if the given CRS is geographic (not geocentric).
          *
          * @param crs The source coordinate reference system (can be {@code null}).
          */
         public void setSource(final CoordinateReferenceSystem crs) {
             sourceCS = (crs != null) ? crs.getCoordinateSystem() : null;
             sourceEllipsoid = ReferencingUtilities.getEllipsoidOfGeographicCRS(crs);
+            // Ellipsoid is intentionally null for GeocentricCRS.
         }
 
         /**
@@ -520,12 +521,14 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
 
         /**
          * Sets the target ellipsoid and coordinate system to values inferred from the given CRS.
+         * The target ellipsoid will be non-null only if the given CRS is geographic (not geocentric).
          *
          * @param crs The target coordinate reference system (can be {@code null}).
          */
         public void setTarget(final CoordinateReferenceSystem crs) {
             targetCS = (crs != null) ? crs.getCoordinateSystem() : null;
             targetEllipsoid = ReferencingUtilities.getEllipsoidOfGeographicCRS(crs);
+            // Ellipsoid is intentionally null for GeocentricCRS.
         }
 
         /**
@@ -620,9 +623,15 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
          *         informative exception.
          */
         private static RuntimeException setEllipsoid(final ParameterValueGroup parameters, final Ellipsoid ellipsoid,
-                final String semiMajor, final String semiMinor, final boolean inverseFlattening)
+                final String semiMajor, final String semiMinor, final boolean inverseFlattening, RuntimeException failure)
         {
-            RuntimeException failure = null;
+            /*
+             * Note: we could also consider to set the "dim" parameter here based on the number of dimensions
+             * of the coordinate system. But except for the Molodensky operation, this would be SIS-specific.
+             * A more portable way is to concatenate a "Geographic 3D to 2D" operation after the transform if
+             * we see that the dimensions do not match. It also avoid attempt to set a "dim" parameter on map
+             * projections, which is not allowed.
+             */
             if (ellipsoid != null) {
                 ParameterValue<?> mismatchedParam = null;
                 double mismatchedValue = 0;
@@ -653,11 +662,15 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
                      * can do something about that. If it can not, createParameterizedTransform(…) is
                      * the right place to throw the exception.
                      */
-                    failure = e;
+                    if (failure == null) {
+                        failure = e;
+                    } else {
+                        failure.addSuppressed(e);
+                    }
                 }
                 final boolean isIvfDefinitive;
                 if (mismatchedParam != null) {
-                    final LogRecord record = Messages.getResources((Locale) null).getLogRecord(Level.WARNING,
+                    final LogRecord record = Messages.getResources(null).getLogRecord(Level.WARNING,
                             Messages.Keys.MismatchedEllipsoidAxisLength_3, ellipsoid.getName().getCode(),
                             mismatchedParam.getDescriptor().getName().getCode(), mismatchedValue);
                     record.setLoggerName(Loggers.COORDINATE_OPERATION);
@@ -700,32 +713,33 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
          *         informative exception.
          */
         final RuntimeException setEllipsoids(final OperationMethod method, final ParameterValueGroup parameters) {
-            final int n;
+            int n;
             if (method instanceof AbstractProvider) {
-                n = ((AbstractProvider) method).getNumEllipsoids();
+                n = ((AbstractProvider) method).getEllipsoidsMask();
             } else {
                 // Fallback used only when the information is not available in
-                // a more reliable way from AbstractProvider.getNumEllipsoids().
-                n = (sourceEllipsoid == null) ? 0 : (targetEllipsoid == null) ? 1 : 2;
+                // a more reliable way from AbstractProvider.getEllipsoidsMask().
+                n = 0;
+                if (sourceEllipsoid != null) n  = 1;
+                if (targetEllipsoid != null) n |= 2;
             }
             switch (n) {
-                case 0: {
-                    return null;
-                }
-                case 1: {
-                    return setEllipsoid(parameters, getSourceEllipsoid(), Constants.SEMI_MAJOR, Constants.SEMI_MINOR, true);
-                }
-                case 2: {
-                    final RuntimeException f1, f2;
-                    f1 = setEllipsoid(parameters, getSourceEllipsoid(), "src_semi_major", "src_semi_minor", false);
-                    f2 = setEllipsoid(parameters, getTargetEllipsoid(), "tgt_semi_major", "tgt_semi_minor", false);
-                    if (f2 != null) {
-                        if (f1 == null) {
-                            return f2;
+                case 0: return null;
+                case 1: return setEllipsoid(parameters, getSourceEllipsoid(), Constants.SEMI_MAJOR, Constants.SEMI_MINOR, true, null);
+                case 2: return setEllipsoid(parameters, getTargetEllipsoid(), Constants.SEMI_MAJOR, Constants.SEMI_MINOR, true, null);
+                case 3: {
+                    RuntimeException failure = null;
+                    if (sourceCS != null) try {
+                        final ParameterValue<?> p = parameters.parameter("dim");
+                        if (p.getValue() == null) {
+                            p.setValue(sourceCS.getDimension());
                         }
-                        f1.addSuppressed(f2);
+                    } catch (IllegalArgumentException | IllegalStateException e) {
+                        failure = e;
                     }
-                    return f1;
+                    failure = setEllipsoid(parameters, getSourceEllipsoid(), "src_semi_major", "src_semi_minor", false, failure);
+                    failure = setEllipsoid(parameters, getTargetEllipsoid(), "tgt_semi_major", "tgt_semi_minor", false, failure);
+                    return failure;
                 }
                 default: throw new AssertionError(n);
             }
@@ -1091,16 +1105,16 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
     }
 
     /**
-     * Creates a math transform object from a XML string. The default implementation
-     * always throws an exception, since this constructor is not yet implemented.
+     * There is no XML format for math transforms.
      *
      * @param  xml Math transform encoded in XML format.
      * @throws FactoryException if the object creation failed.
      */
     @Override
+    @Deprecated
     public MathTransform createFromXML(String xml) throws FactoryException {
         lastMethod.remove();
-        throw new FactoryException("Not yet implemented.");
+        throw new FactoryException(Errors.format(Errors.Keys.UnsupportedOperation_1, "createFromXML"));
     }
 
     /**
