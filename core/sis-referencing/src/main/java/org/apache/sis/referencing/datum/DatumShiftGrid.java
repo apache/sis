@@ -159,8 +159,9 @@ public abstract class DatumShiftGrid implements Serializable {
      * to the {@link #offsetAt offsetAt(x, y, …)} method. Coordinates outside that domain of validity will still
      * be accepted, but the result of offset computation may be very wrong.
      *
-     * <p>In the datum shift grids used by {@link org.apache.sis.referencing.operation.transform.InterpolatedTransform},
-     * the domain of validity is longitude and latitude in <strong>radians</strong>.</p>
+     * <p>In datum shift grids used by {@link org.apache.sis.referencing.operation.transform.InterpolatedGeocentricTransform},
+     * the domain of validity is always expressed as longitudes and latitudes in <strong>radians</strong>.
+     * The envelope is usually in radians for simpler (non-geocentric) interpolations too, for consistency reasons.</p>
      *
      * @return The domain covered by this grid.
      */

@@ -399,8 +399,8 @@ public final class FranceGeocentricInterpolation extends AbstractProvider {
         do {
             final StringTokenizer t = new StringTokenizer(line.trim());
             t.nextToken();                                                // Ignored
-            final double x = Double.parseDouble(t.nextToken());           // Longitude
-            final double y = Double.parseDouble(t.nextToken());           // Latitude
+            final double x = Double.parseDouble(t.nextToken());           // Longitude in degrees
+            final double y = Double.parseDouble(t.nextToken());           // Latitude in degrees
             final int    i = Math.toIntExact(Math.round((x - x0) / Δx));  // Column index
             final int    j = Math.toIntExact(Math.round((y - y0) / Δy));  // Row index
             if (i < 0 || i >= nx) {

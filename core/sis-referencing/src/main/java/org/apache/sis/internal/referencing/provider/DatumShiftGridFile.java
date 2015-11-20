@@ -32,6 +32,8 @@ import java.nio.file.Path;
  *
  * <p>This class is in internal package (not public API) because it makes the following assumptions:</p>
  * <ul>
+ *   <li>Values <var>x₀</var>, <var>y₀</var>, <var>Δx</var> and <var>Δy</var>
+ *       given to the constructor are in degrees and needs to be converted to radians.</li>
  *   <li>Single floating-point precision ({@code float)} is sufficient.</li>
  *   <li>Values were defined in base 10, usually in ASCII files. This assumption has an impact on conversions
  *       from {@code float} to {@code double} performed by the {@link #getCellValue(int, int, int)} method.</li>
@@ -73,9 +75,10 @@ public abstract class DatumShiftGridFile extends DatumShiftGrid {
     /**
      * Creates a new datum shift grid for the given grid geometry.
      * The actual offset values need to be provided by subclasses.
+     * All {@code double} values given to this constructor will be converted from degrees to radians.
      *
-     * @param x0  First ordinate (often longitude in radians) of the center of the cell at grid index (0,0).
-     * @param y0  Second ordinate (often latitude in radians) of the center of the cell at grid index (0,0).
+     * @param x0  Longitude in degrees of the center of the cell at grid index (0,0).
+     * @param y0  Latitude in degrees of the center of the cell at grid index (0,0).
      * @param Δx  Increment in <var>x</var> value between cells at index <var>gridX</var> and <var>gridX</var> + 1.
      * @param Δy  Increment in <var>y</var> value between cells at index <var>gridY</var> and <var>gridY</var> + 1.
      * @param nx  Number of cells along the <var>x</var> axis in the grid.
@@ -86,7 +89,11 @@ public abstract class DatumShiftGridFile extends DatumShiftGrid {
                        final int    nx, final int    ny,
                        final Path file)
     {
-        super(x0, y0, Δx, Δy, nx, ny);
+        super(Math.toRadians(x0),
+              Math.toRadians(y0),
+              Math.toRadians(Δx),
+              Math.toRadians(Δy),
+              nx, ny);
         this.file = file;
     }
 
@@ -192,6 +199,7 @@ public abstract class DatumShiftGridFile extends DatumShiftGrid {
 
         /**
          * Creates a new datum shift grid with the given grid geometry, filename and number of shift dimensions.
+         * All {@code double} values given to this constructor will be converted from degrees to radians.
          */
         Float(final double x0, final double y0,
               final double Δx, final double Δy,

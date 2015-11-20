@@ -158,10 +158,10 @@ public final strictfp class FranceGeocentricInterpolationTest extends TestCase {
      */
     private static void verifyGrid(final DatumShiftGridFile grid) {
         final Envelope envelope = grid.getDomainOfValidity();
-        assertEquals("xmin",  2.2 - 0.05, envelope.getMinimum(0), 1E-10);
-        assertEquals("xmax",  2.5 + 0.05, envelope.getMaximum(0), 1E-10);
-        assertEquals("ymin", 48.5 - 0.05, envelope.getMinimum(1), 1E-10);
-        assertEquals("ymax", 49.0 + 0.05, envelope.getMaximum(1), 1E-10);
+        assertEquals("xmin",  2.2 - 0.05, Math.toDegrees(envelope.getMinimum(0)), 1E-10);
+        assertEquals("xmax",  2.5 + 0.05, Math.toDegrees(envelope.getMaximum(0)), 1E-10);
+        assertEquals("ymin", 48.5 - 0.05, Math.toDegrees(envelope.getMinimum(1)), 1E-10);
+        assertEquals("ymax", 49.0 + 0.05, Math.toDegrees(envelope.getMaximum(1)), 1E-10);
         assertEquals("shiftDimensions", 3, grid.getShiftDimensions());
         /*
          * Interpolate the (ΔX, ΔY, ΔZ) at a point.
@@ -169,7 +169,7 @@ public final strictfp class FranceGeocentricInterpolationTest extends TestCase {
         final double[] point    = samplePoint(1);
         final double[] expected = samplePoint(2);
         final double[] offset   = new double[3];
-        grid.offsetAt(point[0], point[1], offset);
+        grid.offsetAt(Math.toRadians(point[0]), Math.toRadians(point[1]), offset);
         assertArrayEquals("(ΔX, ΔY, ΔZ)", expected, offset, 0.0005);
     }
 
