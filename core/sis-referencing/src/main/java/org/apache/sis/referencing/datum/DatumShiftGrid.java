@@ -20,6 +20,7 @@ import java.io.Serializable;
 import org.opengis.geometry.Envelope;
 import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.internal.util.DoubleDouble;
+import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.util.ArgumentChecks;
 
 
@@ -233,8 +234,8 @@ public abstract class DatumShiftGrid implements Serializable {
         y -= gridY;
         final int n = getShiftDimensions();
         for (int dim = 0; dim < n; dim++) {
-            offsets[dim] = (1-y) * ((1-x) * getCellValue(dim, gridX, gridY  ) + x*getCellValue(dim, gridX+1, gridY  ))
-                           + y  * ((1-x) * getCellValue(dim, gridX, gridY+1) + x*getCellValue(dim, gridX+1, gridY+1));
+            offsets[dim] = (1-y) * ((1-x)*getCellValue(dim, gridX, gridY  ) + x*getCellValue(dim, gridX+1, gridY  ))
+                            + y  * ((1-x)*getCellValue(dim, gridX, gridY+1) + x*getCellValue(dim, gridX+1, gridY+1));
         }
     }
 
@@ -248,4 +249,41 @@ public abstract class DatumShiftGrid implements Serializable {
      * @return The offset at the given dimension in the grid cell at the given index.
      */
     protected abstract double getCellValue(int dim, int gridX, int gridY);
+
+    /**
+     * Returns {@code true} if the given object is a grid containing the same data than this grid.
+     *
+     * @param  other The other object to compare with this datum shift grid.
+     * @return {@code true} if the given object is non-null, of the same class than this {@code DatumShiftGrid}
+     *         and contains the same data.
+     */
+    @Override
+    public boolean equals(final Object other) {
+        if (other != null && other.getClass() == getClass()) {
+            final DatumShiftGrid that = (DatumShiftGrid) other;
+            return nx == that.nx
+                && ny == that.ny
+                && Numerics.equals(x0,     that.x0)
+                && Numerics.equals(y0,     that.y0)
+                && Numerics.equals(scaleX, that.scaleX)
+                && Numerics.equals(scaleY, that.scaleY);
+        }
+        return false;
+    }
+
+    /**
+     * Returns a hash code value for this datum shift grid.
+     * This method does not need to compute a hash code from all grid values.
+     * Comparing some metadata like the grid filename is considered sufficient
+     *
+     * @return A hash code based on metadata.
+     */
+    @Override
+    public int hashCode() {
+        return Numerics.hashCode(Double.doubleToLongBits(x0)
+                         + 31 * (Double.doubleToLongBits(y0)
+                         + 31 * (Double.doubleToLongBits(scaleX)
+                         + 31 *  Double.doubleToLongBits(scaleY))))
+                         + 37 * nx + ny;
+    }
 }

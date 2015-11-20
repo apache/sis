@@ -470,13 +470,13 @@ abstract class MolodenskyFormula extends AbstractMathTransform implements Serial
             return isSource3D == that.isSource3D
                 && isTarget3D == that.isTarget3D
                 && isAbridged == that.isAbridged
-                && Numerics.equals(tX,                  that.tX)
-                && Numerics.equals(tY,                  that.tY)
-                && Numerics.equals(tZ,                  that.tZ)
-                && Numerics.equals(Δa,                  that.Δa)
-                && Numerics.equals(Δfmod,               that.Δfmod)
-                && Numerics.equals(semiMajor,           that.semiMajor)
-                && Numerics.equals(eccentricitySquared, that.eccentricitySquared);
+                && Numerics.epsilonEqual(tX,                  that.tX,                  mode)
+                && Numerics.epsilonEqual(tY,                  that.tY,                  mode)
+                && Numerics.epsilonEqual(tZ,                  that.tZ,                  mode)
+                && Numerics.epsilonEqual(Δa,                  that.Δa,                  mode)
+                && Numerics.epsilonEqual(Δfmod,               that.Δfmod,               mode)
+                && Numerics.epsilonEqual(semiMajor,           that.semiMajor,           mode)
+                && Numerics.epsilonEqual(eccentricitySquared, that.eccentricitySquared, mode);
         }
         return false;
     }

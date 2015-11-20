@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.referencing.provider;
 
+import java.util.Arrays;
 import org.apache.sis.math.DecimalFunctions;
 
 
@@ -165,5 +166,32 @@ final class DatumShiftGridCompressed extends DatumShiftGridFile {
             offsets[dim] = ((1-y) * ((1-x)*values[p0] + x*values[p0+1])
                              + y  * ((1-x)*values[p1] + x*values[p1+1])) * scale + averages[dim];
         }
+    }
+
+    /**
+     * Returns {@code true} if the given object is a grid containing the same data than this grid.
+     *
+     * @param  other The other object to compare with this datum shift grid.
+     * @return {@code true} if the given object is non-null, an instance of {@code DatumShiftGridCompressed}
+     *         and contains the same data.
+     */
+    @Override
+    public boolean equals(final Object other) {
+        if (super.equals(other)) {
+            final DatumShiftGridCompressed that = (DatumShiftGridCompressed) other;
+            return Double.doubleToLongBits(scale) == Double.doubleToLongBits(that.scale)
+                   && Arrays.equals(averages, that.averages);
+        }
+        return false;
+    }
+
+    /**
+     * Returns a hash code value for this datum shift grid.
+     *
+     * @return {@inheritDoc}
+     */
+    @Override
+    public int hashCode() {
+        return super.hashCode() + Arrays.hashCode(averages);
     }
 }

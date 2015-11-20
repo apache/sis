@@ -130,14 +130,42 @@ public abstract class DatumShiftGridFile extends DatumShiftGrid {
     abstract Object[] getData();
 
     /**
-     * Returns the value to shown in {@code PARAMETER} WKT elements.
-     * Current implementation returns the grid filename.
+     * Returns {@code true} if the given object is a grid containing the same data than this grid.
      *
-     * @return The grid filename.
+     * @param  other The other object to compare with this datum shift grid.
+     * @return {@code true} if the given object is non-null, of the same class than this {@code DatumShiftGrid}
+     *         and contains the same data.
+     */
+    @Override
+    public boolean equals(final Object other) {
+        if (other == this) {    // Optimization for a common case.
+            return true;
+        }
+        if (super.equals(other)) {
+            final DatumShiftGridFile that = (DatumShiftGridFile) other;
+            return file.equals(that.file) && Arrays.deepEquals(getData(), that.getData());
+        }
+        return false;
+    }
+
+    /**
+     * Returns a hash code value for this datum shift grid.
+     *
+     * @return {@inheritDoc}
+     */
+    @Override
+    public int hashCode() {
+        return super.hashCode() + file.hashCode();
+    }
+
+    /**
+     * Returns a string representation of this grid.
+     *
+     * @return A string representation for debugging purpose.
      */
     @Override
     public String toString() {
-        return file.getFileName().toString();
+        return "DatumShiftGrid[\"" + file.getFileName() + "\"]";
     }
 
 
@@ -151,7 +179,7 @@ public abstract class DatumShiftGridFile extends DatumShiftGrid {
      * @version 0.7
      * @module
      */
-    static class Float extends DatumShiftGridFile {
+    static final class Float extends DatumShiftGridFile {
         /**
          * Serial number for inter-operability with different versions.
          */
