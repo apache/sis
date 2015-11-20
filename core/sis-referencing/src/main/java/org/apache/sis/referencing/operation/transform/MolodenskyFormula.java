@@ -27,6 +27,7 @@ import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.datum.DefaultEllipsoid;
+import org.apache.sis.referencing.datum.DatumShiftGrid;
 import org.apache.sis.internal.referencing.provider.Molodensky;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.parameter.Parameters;
@@ -35,6 +36,9 @@ import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Debug;
 
 import static java.lang.Math.*;
+
+// Branch-specific imports
+import java.util.Objects;
 
 
 /**
@@ -147,6 +151,25 @@ abstract class MolodenskyFormula extends AbstractMathTransform implements Serial
     final ContextualParameters context;
 
     /**
+     * The grid of datum shifts from source datum to target datum.
+     * This can be non-null only for {@link InterpolatedGeocentricTransform}.
+     */
+    final DatumShiftGrid grid;
+
+    /**
+     * Constructs the inverse of a Molodensky transform.
+     *
+     * @param inverse The transform for which to create the inverse.
+     * @param source  The source ellipsoid of the given {@code inverse} transform.
+     * @param target  The target ellipsoid of the given {@code inverse} transform.
+     */
+    MolodenskyFormula(final MolodenskyFormula inverse, final Ellipsoid source, final Ellipsoid target) {
+        this(target, inverse.isTarget3D,
+              source, inverse.isSource3D,
+              -inverse.tX, -inverse.tY, -inverse.tZ, inverse.grid, inverse.isAbridged, inverse.context.getDescriptor());
+    }
+
+    /**
      * Creates a Molodensky transform from the specified parameters.
      *
      * @param source      The source ellipsoid.
@@ -156,6 +179,7 @@ abstract class MolodenskyFormula extends AbstractMathTransform implements Serial
      * @param tX          The geocentric <var>X</var> translation in same units than the source ellipsoid axes.
      * @param tY          The geocentric <var>Y</var> translation in same units than the source ellipsoid axes.
      * @param tZ          The geocentric <var>Z</var> translation in same units than the source ellipsoid axes.
+     * @param grid        Interpolation grid in geocentric coordinates, or {@code null} if none.
      * @param isAbridged  {@code true} for the abridged formula, or {@code false} for the complete one.
      * @param descriptor  The contextual parameter descriptor.
      */
@@ -163,7 +187,7 @@ abstract class MolodenskyFormula extends AbstractMathTransform implements Serial
     MolodenskyFormula(final Ellipsoid source, final boolean isSource3D,
                       final Ellipsoid target, final boolean isTarget3D,
                       final double tX, final double tY, final double tZ,
-                      final boolean isAbridged,
+                      final DatumShiftGrid grid, final boolean isAbridged,
                       final ParameterDescriptorGroup descriptor)
     {
         ArgumentChecks.ensureNonNull("source", source);
@@ -177,6 +201,7 @@ abstract class MolodenskyFormula extends AbstractMathTransform implements Serial
         this.tX         = tX;
         this.tY         = tY;
         this.tZ         = tZ;
+        this.grid       = grid;
 
         final double semiMinor = src.getSemiMinorAxis();
         final double Δf = src.flatteningDifference(target);
@@ -322,11 +347,13 @@ abstract class MolodenskyFormula extends AbstractMathTransform implements Serial
      * @param tX          The {@link #tX} field value (or a slightly different value during geocentric interpolation).
      * @param tY          The {@link #tY} field value (or a slightly different value during geocentric interpolation).
      * @param tZ          The {@link #tZ} field value (or a slightly different value during geocentric interpolation).
+     * @param offset      An array of length 3 if this method should use the interpolation grid, or {@code null} otherwise.
      * @param derivate    {@code true} for computing the derivative, or {@code false} if not needed.
      * @throws TransformException if a point can not be transformed.
      */
     final Matrix transform(final double λ, final double φ, final double h, final double[] dstPts, int dstOff,
-                           double tX, double tY, double tZ, final boolean derivate) throws TransformException
+                           double tX, double tY, double tZ, double[] offset, final boolean derivate)
+            throws TransformException
     {
         /*
          * Abridged Molodensky formulas from EPSG guidance note:
@@ -359,20 +386,34 @@ abstract class MolodenskyFormula extends AbstractMathTransform implements Serial
             t = t*(0.5/νden + 0.5/ρden)                 // = Δf⋅[ν⋅(b/a) + ρ⋅(a/b)]     (without the +h in ν and ρ)
                     + Δa*eccentricitySquared/νden;      // = Δa⋅[ℯ²⋅ν/a]
         }
-        final double spcλ = tY*sinλ + tX*cosλ;                      // "spc" stands for "sin plus cos"
-        final double cmsλ = tY*cosλ - tX*sinλ;                      // "cms" stands for "cos minus sin"
-        final double cmsφ = (tZ + t*sinφ)*cosφ - spcλ*sinφ;
-        final double scaleX = ANGULAR_SCALE / (ν*cosφ);
-        final double scaleY = ANGULAR_SCALE / ρ;
+        double spcλ, cmsλ, cmsφ, scaleX, scaleY;        // Intermediate terms to be reused by the derivative
+        double λt, φt;                                  // The target geographic coordinates
+        do {
+            spcλ = tY*sinλ + tX*cosλ;                   // "spc" stands for "sin plus cos"
+            cmsλ = tY*cosλ - tX*sinλ;                   // "cms" stands for "cos minus sin"
+            cmsφ = (tZ + t*sinφ)*cosφ - spcλ*sinφ;
+            scaleX = ANGULAR_SCALE / (ν*cosφ);
+            scaleY = ANGULAR_SCALE / ρ;
+            λt = λ + (cmsλ * scaleX);
+            φt = φ + (cmsφ * scaleY);
+            if (offset == null) break;
+
+            // Following is executed only in InterpolatedGeocentricTransform case.
+            grid.offsetAt(λt, φt, offset);
+            tX = -offset[0];
+            tY = -offset[1];
+            tZ = -offset[2];
+            offset = null;
+        } while (true);
         if (dstPts != null) {
-            dstPts[dstOff++] = λ + (cmsλ * scaleX);
-            dstPts[dstOff++] = φ + (cmsφ * scaleY);
+            dstPts[dstOff++] = λt;
+            dstPts[dstOff++] = φt;
             if (isTarget3D) {
-                double t1 = Δfmod * sin2φ;          // A term in the calculation of Δh
+                double t1 = Δfmod * sin2φ;              // A term in the calculation of Δh
                 double t2 = Δa;
                 if (!isAbridged) {
-                    t1 /= νden;                     // = Δf⋅(b/a)⋅ν⋅sin²φ
-                    t2 *= νden;                     // = Δa⋅(a/ν)
+                    t1 /= νden;                         // = Δf⋅(b/a)⋅ν⋅sin²φ
+                    t2 *= νden;                         // = Δa⋅(a/ν)
                 }
                 dstPts[dstOff++] = h + spcλ*cosφ + tZ*sinφ + t1 - t2;
             }
@@ -451,7 +492,7 @@ abstract class MolodenskyFormula extends AbstractMathTransform implements Serial
                 + 31 * (Double.doubleToLongBits(tY)
                 + 31 * (Double.doubleToLongBits(tZ)))));
         if (isAbridged) code = ~code;
-        return code;
+        return code + Objects.hashCode(grid);
     }
 
     /**
@@ -470,6 +511,7 @@ abstract class MolodenskyFormula extends AbstractMathTransform implements Serial
             return isSource3D == that.isSource3D
                 && isTarget3D == that.isTarget3D
                 && isAbridged == that.isAbridged
+                && Objects .equals      (grid,                that.grid)
                 && Numerics.epsilonEqual(tX,                  that.tX,                  mode)
                 && Numerics.epsilonEqual(tY,                  that.tY,                  mode)
                 && Numerics.epsilonEqual(tZ,                  that.tZ,                  mode)

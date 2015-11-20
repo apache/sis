@@ -30,14 +30,16 @@ import org.apache.sis.internal.referencing.provider.DatumShiftGridFile;
 import org.apache.sis.internal.referencing.provider.FranceGeocentricInterpolation;
 import org.apache.sis.internal.referencing.provider.GeocentricAffineBetweenGeographic;
 import org.apache.sis.internal.referencing.provider.Molodensky;
+import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.referencing.datum.DatumShiftGrid;
+import org.apache.sis.io.wkt.FormattableObject;
+import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Debug;
 
 // Branch-specific imports
@@ -104,9 +106,23 @@ public class InterpolatedGeocentricTransform extends MolodenskyFormula {
     private static ParameterDescriptorGroup DESCRIPTOR, INTERNAL;
 
     /**
-     * The grid of datum shifts from source datum to target datum.
+     * The inverse of this interpolated geocentric transform.
+     *
+     * @see #inverse()
      */
-    protected final DatumShiftGrid grid;
+    private final InterpolatedGeocentricTransform inverse;
+
+    /**
+     * Constructs the inverse of an interpolated geocentric transform.
+     *
+     * @param inverse The transform for which to create the inverse.
+     * @param source  The source ellipsoid of the given {@code inverse} transform.
+     * @param target  The target ellipsoid of the given {@code inverse} transform.
+     */
+    InterpolatedGeocentricTransform(final InterpolatedGeocentricTransform inverse, final Ellipsoid source, final Ellipsoid target) {
+        super(inverse, source, target);
+        this.inverse = inverse;
+    }
 
     /**
      * Creates a transform from the specified parameters.
@@ -154,17 +170,14 @@ public class InterpolatedGeocentricTransform extends MolodenskyFormula {
               grid.getAverageOffset(0),
               grid.getAverageOffset(1),
               grid.getAverageOffset(2),
-              false,    // Non-abridged Molodensky
+              grid, false,    // Non-abridged Molodensky
               descriptor(grid));
 
         final int dim = grid.getShiftDimensions();
         if (dim != 3) {
             throw new MismatchedDimensionException(Errors.format(Errors.Keys.MismatchedDimension_3, "grid", 3, dim));
         }
-        this.grid = grid;
-        if (grid instanceof DatumShiftGridFile) {
-            context.getOrCreate(FranceGeocentricInterpolation.FILE).setValue(((DatumShiftGridFile) grid).file);
-        }
+        inverse = new Inverse(this, source, target);
     }
 
     /**
@@ -291,27 +304,90 @@ public class InterpolatedGeocentricTransform extends MolodenskyFormula {
         final double φ = srcPts[srcOff+1];
         grid.offsetAt(λ, φ, offset);
         return transform(λ, φ, isSource3D ? srcPts[srcOff+2] : 0,
-                dstPts, dstOff, offset[0], offset[1], offset[2], derivate);
+                dstPts, dstOff, offset[0], offset[1], offset[2], null, derivate);
     }
 
     /**
-     * {@inheritDoc}
+     * Returns the inverse of this interpolated geocentric transform.
+     * The source ellipsoid of the returned transform will be the target ellipsoid of this transform, and conversely.
      *
-     * @return {@inheritDoc}
+     * @return A transform from the target ellipsoid to the source ellipsoid of this transform.
      */
     @Override
-    protected int computeHashCode() {
-        return super.computeHashCode() + grid.hashCode();
+    public MathTransform inverse() {
+        return inverse;
     }
 
+
+
+
+
     /**
-     * {@inheritDoc}
+     * The inverse of the enclosing {@link InterpolatedGeocentricTransform}.
+     * This transform applies an algorithm similar to the one documented in the enclosing class,
+     * with the following differences:
      *
-     * @return {@inheritDoc}
+     * <ol>
+     *   <li>First, target coordinates are estimated using the ({@link #tX}, {@link #tY}, {@link #tZ}) translation.</li>
+     *   <li>A new ({@code ΔX}, {@code ΔY}, {@code ΔZ}) translation is interpolated at the geographic coordinates found
+     *       in above step, and target coordinates are recomputed again using that new translation.</li>
+     * </ol>
+     *
+     * @author  Martin Desruisseaux (Geomatys)
+     * @since   0.7
+     * @version 0.7
+     * @module
      */
-    @Override
-    public boolean equals(final Object object, final ComparisonMode mode) {
-        return super.equals(object, mode) && grid.equals(((InterpolatedGeocentricTransform) object).grid);
+    private static final class Inverse extends InterpolatedGeocentricTransform {
+        /**
+         * Serial number for inter-operability with different versions.
+         */
+        private static final long serialVersionUID = -3520896803296425651L;
+
+        /**
+         * Constructs the inverse of an interpolated geocentric transform.
+         *
+         * @param inverse The transform for which to create the inverse.
+         * @param source  The source ellipsoid of the given {@code inverse} transform.
+         * @param target  The target ellipsoid of the given {@code inverse} transform.
+         */
+        Inverse(final InterpolatedGeocentricTransform inverse, final Ellipsoid source, final Ellipsoid target) {
+           super(inverse, source, target);
+        }
+
+        /**
+         * Transforms the (λ,φ) or (λ,φ,<var>h</var>) coordinates between two geographic CRS,
+         * and optionally returns the derivative at that location.
+         *
+         * @return {@inheritDoc}
+         * @throws TransformException if the point can not be transformed or
+         *         if a problem occurred while calculating the derivative.
+         */
+        @Override
+        public Matrix transform(final double[] srcPts, final int srcOff,
+                                final double[] dstPts, final int dstOff,
+                                final boolean derivate) throws TransformException
+        {
+            return transform(srcPts[srcOff], srcPts[srcOff+1], isSource3D ? srcPts[srcOff+2] : 0,
+                             dstPts, dstOff, tX, tY, tZ, new double[3], derivate);
+        }
+
+        /**
+         * Formats the inner part of a <cite>Well Known Text</cite> version 1 (WKT 1) element
+         * as an {@code "Inverse_MT"} entity.
+         *
+         * <div class="note"><b>Compatibility note:</b>
+         * {@code Inverse_MT} is defined in the WKT 1 specification only.</div>
+         *
+         * @param  formatter The formatter to use.
+         * @return The WKT element name, which is {@code "Inverse_MT"}.
+         */
+        @Override
+        protected String formatTo(final Formatter formatter) {
+            formatter.newLine();
+            formatter.append((FormattableObject) super.inverse());
+            return WKTKeywords.Inverse_MT;
+        }
     }
 
     /**
