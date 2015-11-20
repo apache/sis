@@ -17,9 +17,12 @@
 package org.apache.sis.internal.referencing.provider;
 
 import java.net.URL;
-import java.io.IOException;
-import java.nio.file.Paths;
 import java.net.URISyntaxException;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.Path;
 import org.opengis.geometry.Envelope;
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterValueGroup;
@@ -32,9 +35,10 @@ import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.datum.HardCodedDatum;
 import org.apache.sis.referencing.operation.transform.MathTransformTestCase;
 import org.apache.sis.test.DependsOnMethod;
+import org.apache.sis.test.TestStep;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.opengis.test.Assert.*;
 
 
 /**
@@ -77,7 +81,7 @@ public final strictfp class FranceGeocentricInterpolationTest extends MathTransf
     }
 
     /**
-     * Tests grid file loading an interpolation of sample X, Y, Z geocentric coordinates.
+     * Tests a small grid file with interpolations in geocentric coordinates.
      *
      * @throws URISyntaxException if the URL to the test file can not be converted to a path.
      * @throws IOException if an error occurred while loading the grid.
@@ -85,18 +89,66 @@ public final strictfp class FranceGeocentricInterpolationTest extends MathTransf
      */
     @Test
     public void testGrid() throws URISyntaxException, IOException, FactoryException {
-        final URL file = FranceGeocentricInterpolationTest.class.getResource("GR3DF97A.txt");
-        assertNotNull("Test file \"GR3DF97A.txt\" not found.", file);
-        final DatumShiftGridFile grid = FranceGeocentricInterpolation.getOrLoad(
-                Paths.get(file.toURI()), new double[] {168, 60, -320}, 0.001);
-        /*
-         * Verify envelope.
-         */
+        testGridAsShorts(testGridAsFloats());
+    }
+
+    /**
+     * Tests a small grid file with interpolations in geocentric coordinates as {@code float} values.
+     *
+     * <p>This method is part of a chain.
+     * The next method is {@link #testGridAsShorts(DatumShiftGridFile)}.</p>
+     *
+     * @return The loaded grid with values as {@code float}.
+     * @throws URISyntaxException if the URL to the test file can not be converted to a path.
+     * @throws IOException if an error occurred while loading the grid.
+     * @throws FactoryException if an error occurred while computing the grid.
+     */
+    @TestStep
+    private static DatumShiftGridFile testGridAsFloats() throws URISyntaxException, IOException, FactoryException {
+        final URL url = FranceGeocentricInterpolationTest.class.getResource("GR3DF97A.txt");
+        assertNotNull("Test file \"GR3DF97A.txt\" not found.", url);
+        final Path file = Paths.get(url.toURI());
+        final DatumShiftGridFile.Float grid;
+        try (final BufferedReader in = Files.newBufferedReader(file)) {
+            grid = FranceGeocentricInterpolation.load(in, file);
+        }
+        assertEquals("getCellValue",  168.196, grid.getCellValue(0, 2, 1), 0);
+        assertEquals("getCellValue",   58.778, grid.getCellValue(1, 2, 1), 0);
+        assertEquals("getCellValue", -320.127, grid.getCellValue(2, 2, 1), 0);
+        verifyGrid(grid);
+        return grid;
+    }
+
+    /**
+     * Tests a small grid file with interpolations in geocentric coordinates as {@code short} values.
+     *
+     * <p>This method is part of a chain.
+     * The previous method is {@link #testGridAsFloats()}.</p>
+     *
+     * @param  grid The grid created by {@link #testGridAsFloats()}.
+     * @return The given grid, but compressed as {@code short} values.
+     */
+    @TestStep
+    private static DatumShiftGridFile testGridAsShorts(DatumShiftGridFile grid) {
+        grid = DatumShiftGridCompressed.compress((DatumShiftGridFile.Float) grid, new double[] {168, 60, -320}, 0.001);
+        assertInstanceOf("Failed to compress 'float' values into 'short' values.", DatumShiftGridCompressed.class, grid);
+        assertEquals("getCellValue",  168.196, ((DatumShiftGridCompressed) grid).getCellValue(0, 2, 1), 0);
+        assertEquals("getCellValue",   58.778, ((DatumShiftGridCompressed) grid).getCellValue(1, 2, 1), 0);
+        assertEquals("getCellValue", -320.127, ((DatumShiftGridCompressed) grid).getCellValue(2, 2, 1), 0);
+        verifyGrid(grid);
+        return grid;
+    }
+
+    /**
+     * Verify the envelope and the interpolation performed by the given grid.
+     */
+    private static void verifyGrid(final DatumShiftGridFile grid) {
         final Envelope envelope = grid.getDomainOfValidity();
         assertEquals("xmin",  2.2 - 0.05, envelope.getMinimum(0), 1E-10);
         assertEquals("xmax",  2.5 + 0.05, envelope.getMaximum(0), 1E-10);
         assertEquals("ymin", 48.5 - 0.05, envelope.getMinimum(1), 1E-10);
         assertEquals("ymax", 49.0 + 0.05, envelope.getMaximum(1), 1E-10);
+        assertEquals("shiftDimensions", 3, grid.getShiftDimensions());
         /*
          * Interpolate the (ΔX, ΔY, ΔZ) at a point.
          */
@@ -105,6 +157,24 @@ public final strictfp class FranceGeocentricInterpolationTest extends MathTransf
         final double[] offset   = new double[3];
         grid.offsetAt(point[0], point[1], offset);
         assertArrayEquals("(ΔX, ΔY, ΔZ)", expected, offset, 0.0005);
+    }
+
+    /**
+     * Tests the {@link FranceGeocentricInterpolation#getOrLoad(Path, double[], double)} method and its cache.
+     *
+     * @throws URISyntaxException if the URL to the test file can not be converted to a path.
+     * @throws FactoryException if an error occurred while computing the grid.
+     */
+    @Test
+    @DependsOnMethod("testGrid")
+    public void testGetOrLoad() throws URISyntaxException, FactoryException {
+        final URL file = FranceGeocentricInterpolationTest.class.getResource("GR3DF97A.txt");
+        assertNotNull("Test file \"GR3DF97A.txt\" not found.", file);
+        final DatumShiftGridFile grid = FranceGeocentricInterpolation.getOrLoad(
+                Paths.get(file.toURI()), new double[] {168, 60, -320}, 0.001);
+        verifyGrid(grid);
+        assertSame("Expected a cached value.", grid, FranceGeocentricInterpolation.getOrLoad(
+                Paths.get(file.toURI()), new double[] {168, 60, -320}, 0.001));
     }
 
     /**
@@ -136,12 +206,17 @@ public final strictfp class FranceGeocentricInterpolationTest extends MathTransf
      * @throws TransformException if an error occurred while transforming the coordinate.
      */
     @Test
-    @DependsOnMethod("testGrid")
+    @DependsOnMethod("testGetOrLoad")
     public void testForwardTransform() throws FactoryException, TransformException {
         final URL file = FranceGeocentricInterpolationTest.class.getResource("GR3DF97A.txt");
         assertNotNull("Test file \"GR3DF97A.txt\" not found.", file);
         create(file);
         isInverseTransformSupported = false;
         verifyTransform(samplePoint(1), samplePoint(3));
+        /*
+         * Input:     2.424971108333333    48.84444583888889
+         * Expected:  2.425671861111111    48.84451225
+         * Actual:    2.4256718922236735   48.84451219111167
+         */
     }
 }
