@@ -17,11 +17,13 @@
 package org.apache.sis.internal.referencing.provider;
 
 import java.util.Arrays;
-import java.nio.file.Path;
 import java.lang.reflect.Array;
 import org.apache.sis.math.DecimalFunctions;
 import org.apache.sis.util.collection.Cache;
 import org.apache.sis.referencing.datum.DatumShiftGrid;
+
+// Branch-specific imports
+import java.nio.file.Path;
 
 
 /**
@@ -66,7 +68,7 @@ public abstract class DatumShiftGridFile extends DatumShiftGrid {
      * (except for {@link #equals(Object)} and {@link #hashCode()}), but can be used by math
      * transform for setting the parameter values.
      */
-    private final String file;
+    public final Path file;
 
     /**
      * Creates a new datum shift grid for the given grid geometry.
@@ -85,7 +87,7 @@ public abstract class DatumShiftGridFile extends DatumShiftGrid {
                        final Path file)
     {
         super(x0, y0, Δx, Δy, nx, ny);
-        this.file = file.getFileName().toString();
+        this.file = file;
     }
 
     /**
@@ -135,7 +137,7 @@ public abstract class DatumShiftGridFile extends DatumShiftGrid {
      */
     @Override
     public String toString() {
-        return file;
+        return file.getFileName().toString();
     }
 
 

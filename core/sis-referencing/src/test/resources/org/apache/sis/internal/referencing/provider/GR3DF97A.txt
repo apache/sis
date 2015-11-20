@@ -3,6 +3,13 @@
 # The full file is available at http://www.ign.fr and is documented in NTG_88.pdf:
 # "Grille de paramètres de transformation de coordonnées" version 1.0, April 1997.
 #
+# Direct link to data: http://geodesie.ign.fr/contenu/fichiers/documentation/rgf93/
+# (fetched on November 2015). Full file size is 1.3 Mb. License is similar to the
+# EPSG's one (can be freely redistributed provided that commerciality is based on
+# value added by the provider). The amount of data that we reproduce here is less
+# than 0.14% of the full grid and is not for production use - those values may be
+# modified with artifical values for testing purpose in any future SIS version.
+#
 # We reproduce here only a few lines around 2.424971108°E 48.844445839°N,
 # which is the sample point used in the test documented in NTG_88.pdf.
 #
