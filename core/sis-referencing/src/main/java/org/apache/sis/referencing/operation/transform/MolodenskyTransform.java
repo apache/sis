@@ -139,7 +139,7 @@ public class MolodenskyTransform extends MolodenskyFormula {
                                   final double tX, final double tY, final double tZ,
                                   final boolean isAbridged)
     {
-        super(source, isSource3D, target, isTarget3D, tX, tY, tZ, isAbridged,
+        super(source, isSource3D, target, isTarget3D, tX, tY, tZ, null, isAbridged,
                 isAbridged ? AbridgedMolodensky.PARAMETERS : Molodensky.PARAMETERS);
         if (!isSource3D && !isTarget3D) {
             inverse = new MolodenskyTransform2D(this, source, target);
@@ -156,9 +156,7 @@ public class MolodenskyTransform extends MolodenskyFormula {
      * @param target  The target ellipsoid of the given {@code inverse} transform.
      */
     MolodenskyTransform(final MolodenskyTransform inverse, final Ellipsoid source, final Ellipsoid target) {
-        super(target, inverse.isTarget3D,
-              source, inverse.isSource3D,
-              -inverse.tX, -inverse.tY, -inverse.tZ, inverse.isAbridged, inverse.context.getDescriptor());
+        super(inverse, source, target);
         this.inverse = inverse;
     }
 
@@ -257,7 +255,7 @@ public class MolodenskyTransform extends MolodenskyFormula {
                             final boolean derivate) throws TransformException
     {
         return transform(srcPts[srcOff], srcPts[srcOff+1], isSource3D ? srcPts[srcOff+2] : 0,
-                         dstPts, dstOff, tX, tY, tZ, derivate);
+                         dstPts, dstOff, tX, tY, tZ, null, derivate);
     }
 
     /**
@@ -305,7 +303,7 @@ public class MolodenskyTransform extends MolodenskyFormula {
         /*
          * The code in the following loop is basically a copy-and-paste of the code in the
          * MolodenskyFormula.transform(λ, φ, h, …) method, but without derivative matrix
-         * computation and without support for coordinate-dependent (tX,tY,tZ) values.
+         * computation and without support for interpolation of (tX,tY,tZ) values in a grid.
          */
         while (--numPts >= 0) {
             final double λ     = srcPts[srcOff++];

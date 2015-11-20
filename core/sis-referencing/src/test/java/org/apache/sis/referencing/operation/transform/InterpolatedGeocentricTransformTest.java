@@ -76,7 +76,8 @@ public final strictfp class InterpolatedGeocentricTransformTest extends MathTran
      */
     @Test
     public void testForwardTransform() throws FactoryException, TransformException {
-        create();
+        create();   // Create the inverse of the transform we are interrested in.
+        transform = transform.inverse();
         isInverseTransformSupported = false;
         verifyTransform(FranceGeocentricInterpolationTest.samplePoint(1),
                         FranceGeocentricInterpolationTest.samplePoint(3));
@@ -97,6 +98,8 @@ public final strictfp class InterpolatedGeocentricTransformTest extends MathTran
     @DependsOnMethod("testForwardTransform")
     public void testInverseTransform() throws FactoryException, TransformException {
         create();
-        // TODO
+        isInverseTransformSupported = false;
+        verifyTransform(FranceGeocentricInterpolationTest.samplePoint(3),
+                        FranceGeocentricInterpolationTest.samplePoint(1));
     }
 }

@@ -569,7 +569,7 @@ public abstract class AbstractMathTransform extends FormattableObject
                 }
             }
             for (int i=0; i<srcStop; i++) {
-                buffer[bufferedSrcOff + i] = (double) srcPts[srcOff + i];
+                buffer[bufferedSrcOff + i] = srcPts[srcOff + i];
             }
             assert !IterationStrategy.suggest(bufferedSrcOff, dimSource, 0, dimTarget, numBufferedPts).needBuffer;
             try {
@@ -714,7 +714,7 @@ public abstract class AbstractMathTransform extends FormattableObject
                 dstLength = numPts * dimTarget;
             }
             for (int i=0; i<srcLength; i++) {
-                buffer[i] = (double) srcPts[srcOff++];
+                buffer[i] = srcPts[srcOff++];
             }
             try {
                 transform(buffer, 0, dstPts, dstOff, numBufferedPts);

@@ -36,6 +36,7 @@ import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.Transformation;
+import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.opengis.util.FactoryException;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.referencing.NilReferencingObject;
@@ -248,12 +249,18 @@ public final class FranceGeocentricInterpolation extends AbstractProvider {
         }
         final Path file = pg.getValue(FILE);
         final DatumShiftGridFile grid = getOrLoad(file, !isRecognized(file) ? null : new double[] {TX, TY, TZ}, PRECISION);
-        return InterpolatedGeocentricTransform.createGeodeticTransformation(factory,
+        MathTransform tr = InterpolatedGeocentricTransform.createGeodeticTransformation(factory,
                 createEllipsoid(pg, Molodensky.TGT_SEMI_MAJOR,
                                     Molodensky.TGT_SEMI_MINOR, CommonCRS.ETRS89.ellipsoid()), withHeights, // GRS 1980 ellipsoid
                 createEllipsoid(pg, Molodensky.SRC_SEMI_MAJOR,
                                     Molodensky.SRC_SEMI_MINOR, null), withHeights,  // Clarke 1880 (IGN) ellipsoid
-                grid);  // TODO: invert
+                grid);
+        try {
+            tr = tr.inverse();
+        } catch (NoninvertibleTransformException e) {
+            throw new FactoryException(e);  // Should never happen.
+        }
+        return tr;
     }
 
     /**
