@@ -25,16 +25,8 @@ import java.nio.file.Paths;
 import java.nio.file.Path;
 import org.opengis.geometry.Envelope;
 import org.opengis.util.FactoryException;
-import org.opengis.parameter.ParameterValueGroup;
-import org.opengis.referencing.datum.Ellipsoid;
-import org.opengis.referencing.operation.MathTransformFactory;
-import org.opengis.referencing.operation.TransformException;
-import org.apache.sis.internal.referencing.Formulas;
-import org.apache.sis.internal.system.DefaultFactories;
-import org.apache.sis.referencing.CommonCRS;
-import org.apache.sis.referencing.datum.HardCodedDatum;
-import org.apache.sis.referencing.operation.transform.MathTransformTestCase;
 import org.apache.sis.test.DependsOnMethod;
+import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestStep;
 import org.junit.Test;
 
@@ -49,7 +41,7 @@ import static org.opengis.test.Assert.*;
  * @version 0.7
  * @module
  */
-public final strictfp class FranceGeocentricInterpolationTest extends MathTransformTestCase {
+public final strictfp class FranceGeocentricInterpolationTest extends TestCase {
     /**
      * Returns the sample point for a step in the example given by the NTG_88 guidance note.
      *
@@ -61,7 +53,7 @@ public final strictfp class FranceGeocentricInterpolationTest extends MathTransf
      * @param  step The step as a value from 1 to 3 inclusive.
      * @return The sample point at the given step.
      */
-    private static double[] samplePoint(final int step) {
+    public static double[] samplePoint(final int step) {
         switch (step) {
             case 1: return new double[] {
                          2 + (25 + 29.89599/60)/60, //  2°25′29.89599″  in RGF93
@@ -175,48 +167,5 @@ public final strictfp class FranceGeocentricInterpolationTest extends MathTransf
         verifyGrid(grid);
         assertSame("Expected a cached value.", grid, FranceGeocentricInterpolation.getOrLoad(
                 Paths.get(file.toURI()), new double[] {168, 60, -320}, 0.001));
-    }
-
-    /**
-     * Creates the <cite>"France geocentric interpolation"</cite> transform.
-     *
-     * @param  file The grid to load.
-     * @throws FactoryException if an error occurred while loading the grid.
-     */
-    private void create(final URL file) throws FactoryException {
-        final Ellipsoid source = HardCodedDatum.NTF.getEllipsoid();     // Clarke 1880 (IGN)
-        final Ellipsoid target = CommonCRS.ETRS89.ellipsoid();          // GRS 1980 ellipsoid
-        final FranceGeocentricInterpolation provider = new FranceGeocentricInterpolation();
-        final ParameterValueGroup values = provider.getParameters().createValue();
-        values.parameter("src_semi_major").setValue(source.getSemiMajorAxis());
-        values.parameter("src_semi_minor").setValue(source.getSemiMinorAxis());
-        values.parameter("tgt_semi_major").setValue(target.getSemiMajorAxis());
-        values.parameter("tgt_semi_minor").setValue(target.getSemiMinorAxis());
-        values.parameter("Geocentric translations file").setValue(file);    // Automatic conversion from URL to Path.
-        transform = provider.createMathTransform(DefaultFactories.forBuildin(MathTransformFactory.class), values);
-        tolerance = Formulas.ANGULAR_TOLERANCE;
-    }
-
-    /**
-     * Tests transformation of sample point from RGF93 to NTF.
-     * We call this transformation "forward" because it uses the grid values directly,
-     * without doing first an approximation followed by an iteration.
-     *
-     * @throws FactoryException if an error occurred while loading the grid.
-     * @throws TransformException if an error occurred while transforming the coordinate.
-     */
-    @Test
-    @DependsOnMethod("testGetOrLoad")
-    public void testForwardTransform() throws FactoryException, TransformException {
-        final URL file = FranceGeocentricInterpolationTest.class.getResource("GR3DF97A.txt");
-        assertNotNull("Test file \"GR3DF97A.txt\" not found.", file);
-        create(file);
-        isInverseTransformSupported = false;
-        verifyTransform(samplePoint(1), samplePoint(3));
-        /*
-         * Input:     2.424971108333333    48.84444583888889
-         * Expected:  2.425671861111111    48.84451225
-         * Actual:    2.4256718922236735   48.84451219111167
-         */
     }
 }

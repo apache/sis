@@ -134,6 +134,7 @@ import org.junit.BeforeClass;
     org.apache.sis.internal.referencing.provider.FranceGeocentricInterpolationTest.class,
     org.apache.sis.internal.referencing.provider.MapProjectionTest.class,
     org.apache.sis.internal.referencing.provider.AllProvidersTest.class,
+    org.apache.sis.referencing.operation.transform.InterpolatedGeocentricTransformTest.class,
     org.apache.sis.referencing.operation.transform.DefaultMathTransformFactoryTest.class,
 
     // Test map projections. Those tests need the providers tested above.
