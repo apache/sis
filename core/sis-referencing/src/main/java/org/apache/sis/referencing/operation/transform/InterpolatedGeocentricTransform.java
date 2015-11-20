@@ -37,6 +37,7 @@ import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.referencing.datum.DatumShiftGrid;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Debug;
 
 // Branch-specific imports
@@ -291,6 +292,26 @@ public class InterpolatedGeocentricTransform extends MolodenskyFormula {
         grid.offsetAt(Math.toDegrees(λ), Math.toDegrees(φ), offset);    // TODO: avoid conversion to degrees.
         return transform(λ, φ, isSource3D ? srcPts[srcOff+2] : 0,
                 dstPts, dstOff, offset[0], offset[1], offset[2], derivate);
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     */
+    @Override
+    protected int computeHashCode() {
+        return super.computeHashCode() + grid.hashCode();
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     */
+    @Override
+    public boolean equals(final Object object, final ComparisonMode mode) {
+        return super.equals(object, mode) && grid.equals(((InterpolatedGeocentricTransform) object).grid);
     }
 
     /**
