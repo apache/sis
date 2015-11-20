@@ -104,6 +104,9 @@ public final strictfp class FranceGeocentricInterpolationTest extends TestCase {
         try (final BufferedReader in = Files.newBufferedReader(file)) {
             grid = FranceGeocentricInterpolation.load(in, file);
         }
+        assertEquals("getAverageOffset",  168.2587, grid.getAverageOffset(0), 1E-4);
+        assertEquals("getAverageOffset",   58.7163, grid.getAverageOffset(1), 1E-4);
+        assertEquals("getAverageOffset", -320.1801, grid.getAverageOffset(2), 1E-4);
         assertEquals("getCellValue",  168.196, grid.getCellValue(0, 2, 1), 0);
         assertEquals("getCellValue",   58.778, grid.getCellValue(1, 2, 1), 0);
         assertEquals("getCellValue", -320.127, grid.getCellValue(2, 2, 1), 0);
@@ -122,8 +125,15 @@ public final strictfp class FranceGeocentricInterpolationTest extends TestCase {
      */
     @TestStep
     private static DatumShiftGridFile testGridAsShorts(DatumShiftGridFile grid) {
-        grid = DatumShiftGridCompressed.compress((DatumShiftGridFile.Float) grid, new double[] {168, 60, -320}, 0.001);
+        grid = DatumShiftGridCompressed.compress((DatumShiftGridFile.Float) grid, new double[] {
+                FranceGeocentricInterpolation.TX,           //  168 metres
+                FranceGeocentricInterpolation.TY,           //   60 metres
+                FranceGeocentricInterpolation.TZ},          // -320 metres
+                FranceGeocentricInterpolation.PRECISION);
         assertInstanceOf("Failed to compress 'float' values into 'short' values.", DatumShiftGridCompressed.class, grid);
+        assertEquals("getAverageOffset",  168, grid.getAverageOffset(0), 0);
+        assertEquals("getAverageOffset",   60, grid.getAverageOffset(1), 0);
+        assertEquals("getAverageOffset", -320, grid.getAverageOffset(2), 0);
         assertEquals("getCellValue",  168.196, ((DatumShiftGridCompressed) grid).getCellValue(0, 2, 1), 0);
         assertEquals("getCellValue",   58.778, ((DatumShiftGridCompressed) grid).getCellValue(1, 2, 1), 0);
         assertEquals("getCellValue", -320.127, ((DatumShiftGridCompressed) grid).getCellValue(2, 2, 1), 0);
@@ -163,9 +173,17 @@ public final strictfp class FranceGeocentricInterpolationTest extends TestCase {
         final URL file = FranceGeocentricInterpolationTest.class.getResource("GR3DF97A.txt");
         assertNotNull("Test file \"GR3DF97A.txt\" not found.", file);
         final DatumShiftGridFile grid = FranceGeocentricInterpolation.getOrLoad(
-                Paths.get(file.toURI()), new double[] {168, 60, -320}, 0.001);
+                Paths.get(file.toURI()), new double[] {
+                        FranceGeocentricInterpolation.TX,
+                        FranceGeocentricInterpolation.TY,
+                        FranceGeocentricInterpolation.TZ},
+                        FranceGeocentricInterpolation.PRECISION);
         verifyGrid(grid);
         assertSame("Expected a cached value.", grid, FranceGeocentricInterpolation.getOrLoad(
-                Paths.get(file.toURI()), new double[] {168, 60, -320}, 0.001));
+                Paths.get(file.toURI()), new double[] {
+                        FranceGeocentricInterpolation.TX,
+                        FranceGeocentricInterpolation.TY,
+                        FranceGeocentricInterpolation.TZ},
+                        FranceGeocentricInterpolation.PRECISION));
     }
 }

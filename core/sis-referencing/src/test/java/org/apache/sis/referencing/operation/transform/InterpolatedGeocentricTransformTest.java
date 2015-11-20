@@ -48,10 +48,11 @@ public final strictfp class InterpolatedGeocentricTransformTest extends MathTran
     /**
      * Creates the <cite>"France geocentric interpolation"</cite> transform.
      *
-     * @param  file The grid to load.
      * @throws FactoryException if an error occurred while loading the grid.
      */
-    private void create(final URL file) throws FactoryException {
+    private void create() throws FactoryException {
+        final URL file = FranceGeocentricInterpolationTest.class.getResource("GR3DF97A.txt");
+        assertNotNull("Test file \"GR3DF97A.txt\" not found.", file);
         final Ellipsoid source = HardCodedDatum.NTF.getEllipsoid();     // Clarke 1880 (IGN)
         final Ellipsoid target = CommonCRS.ETRS89.ellipsoid();          // GRS 1980 ellipsoid
         final FranceGeocentricInterpolation provider = new FranceGeocentricInterpolation();
@@ -74,11 +75,8 @@ public final strictfp class InterpolatedGeocentricTransformTest extends MathTran
      * @throws TransformException if an error occurred while transforming the coordinate.
      */
     @Test
-    @DependsOnMethod("testGetOrLoad")
     public void testForwardTransform() throws FactoryException, TransformException {
-        final URL file = FranceGeocentricInterpolationTest.class.getResource("GR3DF97A.txt");
-        assertNotNull("Test file \"GR3DF97A.txt\" not found.", file);
-        create(file);
+        create();
         isInverseTransformSupported = false;
         verifyTransform(FranceGeocentricInterpolationTest.samplePoint(1),
                         FranceGeocentricInterpolationTest.samplePoint(3));
@@ -87,5 +85,18 @@ public final strictfp class InterpolatedGeocentricTransformTest extends MathTran
          * Expected:  2.425671861111111    48.84451225
          * Actual:    2.4256718922236735   48.84451219111167
          */
+    }
+
+    /**
+     * Tests transformation of sample point from NTF to RGF93.
+     *
+     * @throws FactoryException if an error occurred while loading the grid.
+     * @throws TransformException if an error occurred while transforming the coordinate.
+     */
+    @Test
+    @DependsOnMethod("testForwardTransform")
+    public void testInverseTransform() throws FactoryException, TransformException {
+        create();
+        // TODO
     }
 }

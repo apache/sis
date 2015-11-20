@@ -39,6 +39,9 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Debug;
 
+// Branch-specific imports
+import java.nio.file.Path;
+
 
 /**
  * Transforms between two geographic CRS by performing geocentric translations interpolated from a grid file.
@@ -205,7 +208,10 @@ public class InterpolatedGeocentricTransform extends MolodenskyFormula {
      */
     private static ParameterDescriptorGroup descriptor(final DatumShiftGrid grid) {
         if (grid instanceof DatumShiftGridFile) {
-            return FranceGeocentricInterpolation.PARAMETERS;        // Defined by EPSG.
+            final Path file = ((DatumShiftGridFile) grid).file;
+            if ((FranceGeocentricInterpolation.isRecognized(file))) {
+                return FranceGeocentricInterpolation.PARAMETERS;        // Defined by EPSG.
+            }
         }
         synchronized (InterpolatedGeocentricTransform.class) {
             if (DESCRIPTOR == null) {

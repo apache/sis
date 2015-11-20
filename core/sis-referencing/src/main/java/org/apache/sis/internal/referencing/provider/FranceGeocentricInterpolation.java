@@ -25,9 +25,6 @@ import java.util.logging.LogRecord;
 import java.io.BufferedReader;
 import java.io.EOFException;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.measure.unit.SI;
 import org.opengis.parameter.ParameterValueGroup;
@@ -54,6 +51,11 @@ import org.apache.sis.referencing.operation.transform.InterpolatedGeocentricTran
 
 import static java.lang.Float.parseFloat;
 
+// Branch-specific imports
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.Files;
+
 
 /**
  * The provider for <cite>"France geocentric interpolation"</cite> (ESPG:9655).
@@ -62,6 +64,19 @@ import static java.lang.Float.parseFloat;
  * <p><b>Source:</b> IGN document {@code NTG_88.pdf},
  * <cite>"Grille de paramètres de transformation de coordonnées"</cite>
  * at <a href="http://www.ign.fr">http://www.ign.fr</a>.</p>
+ *
+ * In principle, this operation method is designed specifically for the French mapping
+ * (e.g. EPSG:1053 <cite>"NTF to RGF93 (1)"</cite>) using the following hard-coded parameters:
+ * <ul>
+ *   <li>Source ellipsoid: Clarke 1880</li>
+ *   <li>Target ellipsoid: RGF93</li>
+ *   <li>Initial X-axis translation: {@value #TX} (sign reversed)</li>
+ *   <li>Initial Y-axis translation: {@value #TY} (sign reversed)</li>
+ *   <li>Initial Z-axis translation: {@value #TZ} (sign reversed)</li>
+ * </ul>
+ *
+ * However the Apache SIS implementation is designed in such a way that this operation method
+ * could be used for other areas.
  *
  * @author  Simon Reynard (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
@@ -77,9 +92,36 @@ public final class FranceGeocentricInterpolation extends AbstractProvider {
     private static final long serialVersionUID = -4707304160205218546L;
 
     /**
+     * Geocentric translation parameters to use as a first guess before to use the grid in France.
+     * The values of those parameters are specified by the NTG_88 document and apply only for France.
+     * If the geocentric interpolation is used for other area, other parameter values will be needed.
+     *
+     * <p>The values used by SIS are from source (RGF93) to target (NTF). This is the opposite of the
+     * direction defined in NTG_88. Consequently the signs need to be the opposite of NTG_88 values.</p>
+     */
+    public static final double TX = 168, TY = 60, TZ = -320;
+
+    /**
+     * Precision of offset values in the grid file. The "GR3DF97A.txt" file uses a precision of 0.001.
+     * But we define here one more digit in case a user gives a more accurate grid.
+     *
+     * Note that value of {@code ulp((float) max(|TX|, |TY|, |TZ|))} is about 3E-5. Consequently the
+     * value of {@code PRECISION} should not be lower than 1E-4 (assuming that we want a power of 10).
+     */
+    static final double PRECISION = 0.0001;
+
+    /**
      * The keyword expected at the beginning of every lines in the header.
      */
     private static final String HEADER = "GR3D";
+
+    /**
+     * Name of the default grid file, as mentioned in the NTG_88 document.
+     * We use the 5 first characters ({@code "gr3df"}) as a sentinel value for French grid file.
+     *
+     * @see #isRecognized(Path)
+     */
+    private static final String DEFAULT = "gr3df97a.txt";
 
     /**
      * The operation parameter descriptor for the <cite>Geocentric translations file</cite> parameter value.
@@ -97,7 +139,7 @@ public final class FranceGeocentricInterpolation extends AbstractProvider {
         FILE = builder
                 .addIdentifier("8727")
                 .addName("Geocentric translations file")
-                .create(Path.class, Paths.get("gr3df97a.txt"));
+                .create(Path.class, Paths.get(DEFAULT));
         PARAMETERS = builder
                 .addIdentifier("9655")
                 .addName("France geocentric interpolation")
@@ -114,6 +156,19 @@ public final class FranceGeocentricInterpolation extends AbstractProvider {
      */
     public FranceGeocentricInterpolation() {
         super(2, 2, PARAMETERS);
+    }
+
+    /**
+     * Returns {@code true} if the given path seems to be a grid published by the French mapping agency for France.
+     * In principle this <cite>"France geocentric interpolation"</cite> is designed specifically for use with the
+     * {@code "gr3df97a.txt"} grid, but in fact the Apache SIS implementation should be flexible enough for use
+     * with other area.
+     *
+     * @param file The grid file.
+     * @return {@code true} if the given file looks like a fie from the French mapping agency.
+     */
+    public static boolean isRecognized(final Path file) {
+        return file.getFileName().toString().regionMatches(true, 0, DEFAULT, 0, 5);
     }
 
     /**
@@ -191,12 +246,8 @@ public final class FranceGeocentricInterpolation extends AbstractProvider {
             case 3:  withHeights = true; break;
             default: throw new InvalidParameterValueException(Errors.format(Errors.Keys.IllegalArgumentValue_2, "dim", dim), "dim", dim);
         }
-        /*
-         * Array contains average translation parameters from source (RGF93) to target (NTF).
-         * The numerical values are given by operation EPSG:1651, but SIS implementation
-         * uses the opposite signs (because we reverse the direction of the operation).
-         */
-        final DatumShiftGridFile grid = getOrLoad(pg.getValue(FILE), new double[] {168, 60, -320}, 0.001);
+        final Path file = pg.getValue(FILE);
+        final DatumShiftGridFile grid = getOrLoad(file, !isRecognized(file) ? null : new double[] {TX, TY, TZ}, PRECISION);
         return InterpolatedGeocentricTransform.createGeodeticTransformation(factory,
                 createEllipsoid(pg, Molodensky.TGT_SEMI_MAJOR,
                                     Molodensky.TGT_SEMI_MINOR, CommonCRS.ETRS89.ellipsoid()), withHeights, // GRS 1980 ellipsoid

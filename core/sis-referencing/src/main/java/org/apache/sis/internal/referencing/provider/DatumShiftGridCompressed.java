@@ -80,10 +80,13 @@ final class DatumShiftGridCompressed extends DatumShiftGridFile {
             averages = new double[data.length];
         }
         for (int dim = 0; dim < data.length; dim++) {
+            final double average;
             if (computeAverages) {
-                averages[dim] = grid.getAverageOffset(dim);
+                average = Math.rint(grid.getAverageOffset(dim) / scale);
+                averages[dim] = average * scale;
+            } else {
+                average = averages[dim] / scale;
             }
-            final double average = averages[dim] / scale;
             final float[] offsets = grid.offsets[dim];
             final short[] compressed = new short[offsets.length];
             for (int i=0; i<offsets.length; i++) {
