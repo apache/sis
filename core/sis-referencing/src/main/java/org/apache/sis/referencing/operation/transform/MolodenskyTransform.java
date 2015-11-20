@@ -163,21 +163,27 @@ public class MolodenskyTransform extends MolodenskyFormula {
     }
 
     /**
-     * Sets the "dim" parameter and the EPSG parameters in the given group.
-     * The OGC parameters other than "dim" are not set by this method.
+     * Invoked by constructor and by {@link #getParameterValues()} for setting all parameters other than axis lengths.
      *
-     * @param pg   Where to set the parameters.
-     * @param unit The unit of measurement to declare.
-     * @param Δf   The flattening difference to set.
+     * @param pg         Where to set the parameters.
+     * @param semiMinor  Ignored.
+     * @param unit       The unit of measurement to declare.
+     * @param Δf         The flattening difference to set, or NaN if this method should fetch that value itself.
      */
     @Override
-    final void setContextualParameters(final Parameters pg, final Unit<?> unit, final double Δf) {
-        super.setContextualParameters(pg, unit, Δf);
+    final void completeParameters(final Parameters pg, final double semiMinor, final Unit<?> unit, double Δf) {
+        if (Double.isNaN(Δf)) {
+            Δf = context.doubleValue(Molodensky.FLATTENING_DIFFERENCE);
+        }
+        super.completeParameters(pg, semiMinor, unit, Δf);
         pg.getOrCreate(Molodensky.TX)                    .setValue(tX, unit);
         pg.getOrCreate(Molodensky.TY)                    .setValue(tY, unit);
         pg.getOrCreate(Molodensky.TZ)                    .setValue(tZ, unit);
         pg.getOrCreate(Molodensky.AXIS_LENGTH_DIFFERENCE).setValue(Δa, unit);
         pg.getOrCreate(Molodensky.FLATTENING_DIFFERENCE) .setValue(Δf, Unit.ONE);
+        if (pg != context) {
+            pg.parameter("abridged").setValue(isAbridged);  // Only in internal parameters.
+        }
     }
 
     /**

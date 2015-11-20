@@ -20,9 +20,6 @@ import java.net.URL;
 import java.net.URISyntaxException;
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.nio.file.Path;
 import org.opengis.geometry.Envelope;
 import org.opengis.util.FactoryException;
 import org.apache.sis.test.DependsOnMethod;
@@ -31,6 +28,11 @@ import org.apache.sis.test.TestStep;
 import org.junit.Test;
 
 import static org.opengis.test.Assert.*;
+
+// Branch-dependent imports
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.Path;
 
 
 /**
@@ -46,7 +48,7 @@ public final strictfp class FranceGeocentricInterpolationTest extends TestCase {
      * Returns the sample point for a step in the example given by the NTG_88 guidance note.
      *
      * <blockquote><b>Source:</b>
-     * <cite>"Grille de paramètres de transformation de coordonnées GRD3F97A"</cite>
+     * <cite>"Grille de paramètres de transformation de coordonnées GR3DF97A"</cite>
      * version 1.0, April 1997 in <a href="http://www.ign.fr">http://www.ign.fr</a>
      * </blockquote>
      *
@@ -70,6 +72,16 @@ public final strictfp class FranceGeocentricInterpolationTest extends TestCase {
                     };
             default: throw new AssertionError(step);
         }
+    }
+
+    /**
+     * Tests {@link FranceGeocentricInterpolation#isRecognized(Path)}.
+     */
+    @Test
+    public void testIsRecognized() {
+        assertTrue (FranceGeocentricInterpolation.isRecognized(Paths.get("GR3DF97A.txt")));
+        assertTrue (FranceGeocentricInterpolation.isRecognized(Paths.get("gr3df")));
+        assertFalse(FranceGeocentricInterpolation.isRecognized(Paths.get("gr3d")));
     }
 
     /**
