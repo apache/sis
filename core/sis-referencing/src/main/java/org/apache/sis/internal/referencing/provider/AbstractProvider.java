@@ -187,11 +187,11 @@ public abstract class AbstractProvider extends DefaultOperationMethod implements
     }
 
     /**
-     * Returns the number of ellipsoids (0, 1 or 2) concerned by this operation. This method is invoked by
-     * {@link org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory} for determining
-     * if this operation has {@code "semi_major"}, {@code "semi_minor"}, {@code "src_semi_major"} or
-     * {@code "src_semi_minor"} parameters that may need to be filled with values inferred from the
-     * source or target {@link org.apache.sis.referencing.datum.DefaultGeodeticDatum}.
+     * Flags whether the source and/or target ellipsoid are concerned by this operation. This method is invoked by
+     * {@link org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory} for determining if this
+     * operation has {@code "semi_major"}, {@code "semi_minor"}, {@code "src_semi_major"}, {@code "src_semi_minor"}
+     * parameters that may need to be filled with values inferred from the source or target
+     * {@link org.apache.sis.referencing.datum.DefaultGeodeticDatum}.
      * Meaning of return values:
      *
      * <ul>
@@ -199,7 +199,9 @@ public abstract class AbstractProvider extends DefaultOperationMethod implements
      *       There is no parameter that need to be completed.</li>
      *   <li>1 if this operation has {@code "semi_major"} and {@code "semi_minor"} parameters that need
      *       to be set to the axis lengths of the source ellipsoid.</li>
-     *   <li>2 if this operation has {@code "src_semi_major"}, {@code "src_semi_minor"}, {@code "tgt_semi_major"}
+     *   <li>2 if this operation has {@code "semi_major"} and {@code "semi_minor"} parameters that need
+     *       to be set to the axis lengths of the target ellipsoid.</li>
+     *   <li>3 if this operation has {@code "src_semi_major"}, {@code "src_semi_minor"}, {@code "tgt_semi_major"}
      *       and {@code "tgt_semi_minor"} parameters that need to be set to the axis lengths of the source and
      *       target ellipsoids.</li>
      * </ul>
@@ -207,9 +209,9 @@ public abstract class AbstractProvider extends DefaultOperationMethod implements
      * This method is just a hint. If the information is not provided, {@code DefaultMathTransformFactory}
      * will try to infer it from the type of user-specified source and target CRS.
      *
-     * @return 0, 1 or 2.
+     * @return 0, 1, 2 or 3.
      */
-    public int getNumEllipsoids() {
+    public int getEllipsoidsMask() {
         return 0;
     }
 }

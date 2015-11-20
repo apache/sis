@@ -186,11 +186,11 @@ public final class FranceGeocentricInterpolation extends AbstractProvider {
      * {@code "src_semi_major"}, {@code "src_semi_minor"} , {@code "tgt_semi_major"} and
      * {@code "tgt_semi_minor"} parameters.
      *
-     * @return 2, meaning that the operation requires source and target ellipsoids.
+     * @return 3, meaning that the operation requires source and target ellipsoids.
      */
     @Override
-    public int getNumEllipsoids() {
-        return 2;
+    public int getEllipsoidsMask() {
+        return 3;
     }
 
     /**

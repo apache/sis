@@ -260,10 +260,13 @@ abstract class MolodenskyFormula extends AbstractMathTransform implements Serial
      * @param Δf         The flattening difference to set, or NaN if this method should fetch that value itself.
      */
     void completeParameters(final Parameters pg, final double semiMinor, final Unit<?> unit, final double Δf) {
-        final int dim = getSourceDimensions();
-        if (dim == getTargetDimensions()) {
-            pg.getOrCreate(Molodensky.DIMENSION).setValue(dim);
-        }
+        /*
+         * Unconditionally set the "dim" parameters to the number of source dimensions (do not check for consistency
+         * with the number of target dimensions) because source dimensions determine the value of ellipsoidal heights,
+         * which may change the horizontal numerical values. By contrast, the number of target dimensions does not have
+         * any impact on numerical values (it can just causes a drop of the third value).
+         */
+        pg.getOrCreate(Molodensky.DIMENSION).setValue(getSourceDimensions());
     }
 
     /**

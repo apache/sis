@@ -90,7 +90,7 @@ public final class GeographicToGeocentric extends AbstractProvider {
      * @return 1, meaning that the operation requires a source ellipsoid.
      */
     @Override
-    public final int getNumEllipsoids() {
+    public int getEllipsoidsMask() {
         return 1;
     }
 
