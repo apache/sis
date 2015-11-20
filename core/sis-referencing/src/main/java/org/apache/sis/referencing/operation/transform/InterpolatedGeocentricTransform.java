@@ -161,6 +161,9 @@ public class InterpolatedGeocentricTransform extends MolodenskyFormula {
             throw new MismatchedDimensionException(Errors.format(Errors.Keys.MismatchedDimension_3, "grid", 3, dim));
         }
         this.grid = grid;
+        if (grid instanceof DatumShiftGridFile) {
+            context.getOrCreate(FranceGeocentricInterpolation.FILE).setValue(((DatumShiftGridFile) grid).file);
+        }
     }
 
     /**
@@ -210,7 +213,7 @@ public class InterpolatedGeocentricTransform extends MolodenskyFormula {
         if (grid instanceof DatumShiftGridFile) {
             final Path file = ((DatumShiftGridFile) grid).file;
             if ((FranceGeocentricInterpolation.isRecognized(file))) {
-                return FranceGeocentricInterpolation.PARAMETERS;        // Defined by EPSG.
+                return FranceGeocentricInterpolation.PARAMETERS;    // Defined by EPSG.
             }
         }
         synchronized (InterpolatedGeocentricTransform.class) {
@@ -249,16 +252,24 @@ public class InterpolatedGeocentricTransform extends MolodenskyFormula {
     }
 
     /**
-     * Invoked by the constructor for setting the contextual parameters.
+     * Invoked by constructor and by {@link #getParameterValues()} for setting all parameters other than axis lengths.
      *
-     * @param pg   Where to set the parameters.
-     * @param unit Ignored.
-     * @param Δf   Ignored.
+     * @param pg         Where to set the parameters.
+     * @param semiMinor  The semi minor axis length, in unit of {@code unit}.
+     * @param unit       The unit of measurement to declare.
+     * @param Δf         Ignored.
      */
     @Override
-    void setContextualParameters(final Parameters pg, final Unit<?> unit, final double Δf) {
-        super.setContextualParameters(pg, unit, Δf);
-        // TODO
+    final void completeParameters(final Parameters pg, final double semiMinor, final Unit<?> unit, double Δf) {
+        super.completeParameters(pg, semiMinor, unit, Δf);
+        if (pg != context) {
+            Δf = Δfmod / semiMajor;
+            pg.getOrCreate(Molodensky.AXIS_LENGTH_DIFFERENCE).setValue(Δa, unit);
+            pg.getOrCreate(Molodensky.FLATTENING_DIFFERENCE) .setValue(Δf, Unit.ONE);
+        }
+        if (grid instanceof DatumShiftGridFile) {
+            pg.getOrCreate(FranceGeocentricInterpolation.FILE).setValue(((DatumShiftGridFile) grid).file);
+        }
     }
 
     /**

@@ -99,7 +99,7 @@ public final class FranceGeocentricInterpolation extends AbstractProvider {
      * <p>The values used by SIS are from source (RGF93) to target (NTF). This is the opposite of the
      * direction defined in NTG_88. Consequently the signs need to be the opposite of NTG_88 values.</p>
      */
-    public static final double TX = 168, TY = 60, TZ = -320;
+    static final double TX = 168, TY = 60, TZ = -320;
 
     /**
      * Precision of offset values in the grid file. The "GR3DF97A.txt" file uses a precision of 0.001.

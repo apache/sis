@@ -194,7 +194,7 @@ abstract class MolodenskyFormula extends AbstractMathTransform implements Serial
         context.getOrCreate(Molodensky.SRC_SEMI_MINOR).setValue(semiMinor, unit);
         context.getOrCreate(Molodensky.TGT_SEMI_MAJOR).setValue(c.convert(target.getSemiMajorAxis()), unit);
         context.getOrCreate(Molodensky.TGT_SEMI_MINOR).setValue(c.convert(target.getSemiMinorAxis()), unit);
-        setContextualParameters(context, unit, Δf);
+        completeParameters(context, semiMinor, unit, Δf);
         /*
          * Prepare two affine transforms to be executed before and after the MolodenskyTransform:
          *
@@ -220,25 +220,46 @@ abstract class MolodenskyFormula extends AbstractMathTransform implements Serial
     @Debug
     @Override
     public ParameterValueGroup getParameterValues() {
-        final Parameters pg = Parameters.castOrWrap(getParameterDescriptors().createValue());
         final Unit<?> unit = context.getOrCreate(Molodensky.SRC_SEMI_MAJOR).getUnit();
+        final double semiMinor = context.getOrCreate(Molodensky.SRC_SEMI_MINOR).doubleValue(unit);
+        final Parameters pg = Parameters.castOrWrap(getParameterDescriptors().createValue());
         pg.getOrCreate(Molodensky.SRC_SEMI_MAJOR).setValue(semiMajor, unit);
-        pg.getOrCreate(Molodensky.SRC_SEMI_MINOR).setValue(context.doubleValue(Molodensky.SRC_SEMI_MINOR));
-        setContextualParameters(pg, unit, context.doubleValue(Molodensky.FLATTENING_DIFFERENCE));
-        pg.parameter("abridged").setValue(isAbridged);
+        pg.getOrCreate(Molodensky.SRC_SEMI_MINOR).setValue(semiMinor, unit);
+        completeParameters(pg, semiMinor, unit, Double.NaN);
         return pg;
     }
 
     /**
-     * Invoked by the constructor for setting the contextual parameters. This base implementation sets
-     * only the "dim" parameter, but the {@link MolodenskyTransform} subclass will override this method
-     * for setting also the EPSG parameters.
+     * Sets parameters values in the given group for parameters other than axis lengths.
+     * This method is invoked for both completing contextual parameters ({@code pg == context}) and
+     * for completing internal parameters ({@code pg != context}). When this method is invoked, the
+     * following parameters are already set:
      *
-     * @param pg   Where to set the parameters.
-     * @param unit The unit of measurement to declare.
-     * @param Δf   The flattening difference to set.
+     * <ul>
+     *   <li>{@code "src_semi_major"}</li>
+     *   <li>{@code "src_semi_minor"}</li>
+     *   <li>{@code "tgt_semi_major"} (contextual parameters only)</li>
+     *   <li>{@code "tgt_semi_minor"} (contextual parameters only)</li>
+     * </ul>
+     *
+     * The default implementation sets the {@code "dim"} parameter.
+     * Subclasses shall override this method for completing also the following parameters:
+     *
+     * <ul>
+     *   <li><cite>"X-axis translation"</cite> (Molodensky only)</li>
+     *   <li><cite>"Y-axis translation"</cite> (Molodensky only)</li>
+     *   <li><cite>"Z-axis translation"</cite> (Molodensky only)</li>
+     *   <li><cite>"Geocentric translations file"</cite> (Geocentric interpolations only)</li>
+     *   <li><cite>"Semi-major axis length difference"</cite> (Always for Molodensky, internal WKT only for geocentric interpolations)</li>
+     *   <li><cite>"Flattening difference"</cite> (Always for Molodensky, internal WKT only for geocentric interpolations)</li>
+     * </ul>
+     *
+     * @param pg         Where to set the parameters.
+     * @param semiMinor  The semi minor axis length, in unit of {@code unit}.
+     * @param unit       The unit of measurement to declare.
+     * @param Δf         The flattening difference to set, or NaN if this method should fetch that value itself.
      */
-    void setContextualParameters(final Parameters pg, final Unit<?> unit, final double Δf) {
+    void completeParameters(final Parameters pg, final double semiMinor, final Unit<?> unit, final double Δf) {
         final int dim = getSourceDimensions();
         if (dim == getTargetDimensions()) {
             pg.getOrCreate(Molodensky.DIMENSION).setValue(dim);
