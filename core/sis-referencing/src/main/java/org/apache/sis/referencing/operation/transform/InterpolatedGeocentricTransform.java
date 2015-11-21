@@ -73,18 +73,18 @@ import java.nio.file.Path;
  * at <a href="http://www.ign.fr">http://www.ign.fr</a>.
  * Note however that the signs of (ΔX, ΔY, ΔZ) values expected by this class are the opposite of the
  * signs used in NTG_88 document. This is because NTG_88 grid defines shifts from target to source,
- * while this class expects shifts from source to target.</div>
+ * while this class expects shifts from source to target.
  *
- * Above algorithm is not the same as a (theoretical) {@link EllipsoidToCentricTransform} →
+ * <p>This algorithm is not the same as a (theoretical) {@link EllipsoidToCentricTransform} →
  * {@link InterpolatedTransform} → (inverse of {@code EllipsoidToCentricTransform}) concatenation
  * because the {@code DatumShiftGrid} inputs are geographic coordinates even if the interpolated
- * grid values are in geocentric space.
+ * grid values are in geocentric space.</p></div>
  *
- * <div class="note"><b>Implementation note:</b>
- * while this transformation is conceptually defined as a translation in geocentric coordinates, the current
- * Apache SIS implementation rather uses the Molodensy (non-abridged) approximation for performance reasons.
- * Errors are less than 1 centimetre for the France geocentric interpolation.
- * By comparison, the finest accuracy reported in the France grid file is 5 centimetres.</div>
+ * <div class="section">Implementation</div>
+ * While this transformation is conceptually defined as a translation in geocentric coordinates, the current
+ * Apache SIS implementation rather uses the {@linkplain MolodenskyTransform Molodensy} (non-abridged) approximation
+ * for performance reasons. Errors are less than 1 centimetre for the France geocentric interpolation.
+ * By comparison, the finest accuracy reported in the grid file for France is 5 centimetres.
  *
  * @author  Simon Reynard (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)

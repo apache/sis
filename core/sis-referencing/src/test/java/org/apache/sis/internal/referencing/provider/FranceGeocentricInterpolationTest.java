@@ -42,10 +42,15 @@ import java.nio.file.Path;
  * @since   0.7
  * @version 0.7
  * @module
+ *
+ * @see GeocentricTranslationTest#testFranceGeocentricInterpolationPoint()
+ * @see org.apache.sis.referencing.operation.transform.MolodenskyTransformTest#testFranceGeocentricInterpolationPoint()
  */
 public final strictfp class FranceGeocentricInterpolationTest extends TestCase {
     /**
      * Returns the sample point for a step in the example given by the NTG_88 guidance note.
+     * The steps numbers go from 1 (NTF) to 3 (RGF93).
+     * Precision is given by {@link #ANGULAR_TOLERANCE}.
      *
      * <blockquote><b>Source:</b>
      * <cite>"Grille de paramètres de transformation de coordonnées GR3DF97A"</cite>
@@ -57,22 +62,27 @@ public final strictfp class FranceGeocentricInterpolationTest extends TestCase {
      */
     public static double[] samplePoint(final int step) {
         switch (step) {
-            case 1: return new double[] {
-                         2 + (25 + 29.89599/60)/60, //  2°25′29.89599″  in RGF93
-                        48 + (50 + 40.00502/60)/60  // 48°50′40.00502″
-                    };
-            case 2: return new double[] {           // Direction reversed compared to NTG_88 document.
-                         168.253,                   // ΔX: Toward prime meridian
-                          58.609,                   // ΔY: Toward 90° east
-                        -320.170                    // ΔZ: Toward north pole
-                    };
-            case 3: return new double[] {
-                         2 + (25 + 32.4187/60)/60,  //  2°25′32.4187″  in NTF
+            case 1: return new double[] {           // NTF
+                         2 + (25 + 32.4187/60)/60,  //  2°25′32.4187″
                         48 + (50 + 40.2441/60)/60   // 48°50′40.2441″
+                    };
+            case 2: return new double[] {           // RGF93 with constant (ΔX,ΔY,ΔZ)
+                         2 + (25 + 29.8273/60)/60,  //  2°25′29.8273″
+                        48 + (50 + 39.9967/60)/60   // 48°50′39.9967″
+                    };
+            case 3: return new double[] {           // RGF93 with interpolated (ΔX,ΔY,ΔZ)
+                         2 + (25 + 29.89599/60)/60, //  2°25′29.89599″
+                        48 + (50 + 40.00502/60)/60  // 48°50′40.00502″
                     };
             default: throw new AssertionError(step);
         }
     }
+
+    /**
+     * The precision of values returned by {@link #samplePoint(int)}, in degrees.
+     * Use as the tolerance threshold in assertions.
+     */
+    public static final double ANGULAR_TOLERANCE = (0.0001 / 60 / 60) / 2;
 
     /**
      * Tests {@link FranceGeocentricInterpolation#isRecognized(Path)}.
@@ -165,10 +175,15 @@ public final strictfp class FranceGeocentricInterpolationTest extends TestCase {
         assertEquals("shiftDimensions", 3, grid.getShiftDimensions());
         /*
          * Interpolate the (ΔX, ΔY, ΔZ) at a point.
+         * Directions (signs) are reversed compared to NTG_88 document.
          */
-        final double[] point    = samplePoint(1);
-        final double[] expected = samplePoint(2);
-        final double[] offset   = new double[3];
+        final double[] expected = {
+             168.253,       // ΔX: Toward prime meridian
+              58.609,       // ΔY: Toward 90° east
+            -320.170        // ΔZ: Toward north pole
+        };
+        final double[] point  = samplePoint(3);
+        final double[] offset = new double[3];
         grid.offsetAt(Math.toRadians(point[0]), Math.toRadians(point[1]), offset);
         assertArrayEquals("(ΔX, ΔY, ΔZ)", expected, offset, 0.0005);
     }
