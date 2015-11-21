@@ -116,7 +116,7 @@ public class DBase3FieldDescriptor extends AutoChecker {
      */
     public String getName() {
         int length = fieldName.length;
-        while (length != 0 && fieldName[length - 1] <= ' ') {
+        while (length != 0 && Byte.toUnsignedInt(fieldName[length - 1]) <= ' ') {
             length--;
         }
         return new String(this.fieldName, 0, length);
@@ -135,7 +135,7 @@ public class DBase3FieldDescriptor extends AutoChecker {
      */
     @Override
     public String toString() {
-        String text = format("toString", getName(), fieldType, fieldLength, fieldDecimalCount);
+        String text = format("toString", getName(), fieldType, Byte.toUnsignedInt(fieldLength), Byte.toUnsignedInt(fieldDecimalCount));
         return text;
     }
 }

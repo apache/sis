@@ -83,7 +83,7 @@ public class MappedByteReader extends AbstractDbase3ByteReader implements AutoCl
             getByteBuffer().get(data);
 
             int length = data.length;
-            while (length != 0 && data[length - 1] <= ' ') {
+            while (length != 0 && Byte.toUnsignedInt(data[length - 1]) <= ' ') {
                 length--;
             }
 
@@ -141,7 +141,7 @@ public class MappedByteReader extends AbstractDbase3ByteReader implements AutoCl
             // Trim the bytes right.
             int length = data.length;
             
-            while (length != 0 && data[length - 1] <= ' ') {
+            while (length != 0 && Byte.toUnsignedInt(data[length - 1]) <= ' ') {
                 length--;
             }
             
