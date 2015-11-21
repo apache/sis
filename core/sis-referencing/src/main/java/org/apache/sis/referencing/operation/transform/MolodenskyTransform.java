@@ -68,6 +68,16 @@ import static java.lang.Math.*;
  *       axes (usually metres).</li>
  * </ul>
  *
+ * <div class="section">Comparison of Molodensky and geocentric translation</div>
+ * Compared to the <cite>"Geocentric translation (geographic domain)"</cite> method,
+ * the Molodensky method has errors usually within a few centimetres.
+ * The Abridged Molodensky method has more noticeable errors, of a few tenths of centimetres.
+ *
+ * <p>Another difference between Molodensky and geocentric translation methods is their behavior when crossing the
+ * anti-meridian. If a datum shift causes a longitude to cross the anti-meridian (e.g. 179.999° become 180.001°),
+ * the Molodensky method will keep 180.001° as-is while the geocentric translation method will wrap the longitude
+ * to -179.999°. Such wrap-around behavior may or may not be desired, depending on the applications.</p>
+ *
  * @author  Rueben Schulz (UBC)
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Rémi Maréchal (Geomatys)

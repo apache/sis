@@ -16,26 +16,36 @@
  */
 package org.apache.sis.referencing.operation.transform;
 
+import java.util.Arrays;
+import java.io.IOException;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.datum.Ellipsoid;
+import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.parameter.ParameterValueGroup;
+import org.apache.sis.internal.referencing.provider.FranceGeocentricInterpolation;
 import org.apache.sis.internal.referencing.provider.AbridgedMolodensky;
 import org.apache.sis.internal.referencing.provider.Molodensky;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.referencing.CommonCRS;
-import org.apache.sis.measure.Longitude;
+import org.apache.sis.math.StatisticsFormat;
+import org.apache.sis.math.Statistics;
 
-import static java.lang.StrictMath.toRadians;
+import static java.lang.StrictMath.*;
+import static org.apache.sis.internal.metadata.ReferencingServices.NAUTICAL_MILE;
 
 // Test dependencies
+import org.apache.sis.internal.referencing.provider.FranceGeocentricInterpolationTest;
 import org.apache.sis.internal.referencing.provider.GeocentricTranslationTest;
+import org.apache.sis.referencing.datum.HardCodedDatum;
 import org.apache.sis.test.mock.MathTransformFactoryMock;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestUtilities;
+import org.apache.sis.test.TestCase;
+import org.opengis.test.CalculationType;
 import org.opengis.test.ToleranceModifier;
 import org.opengis.test.ToleranceModifiers;
 import org.opengis.test.referencing.ParameterizedTransformTest;
@@ -45,7 +55,10 @@ import static org.apache.sis.test.Assert.*;
 
 
 /**
- * Tests {@link MolodenskyTransform}.
+ * Tests {@link MolodenskyTransform}. The {@link #compareWithGeocentricTranslation()}
+ * method uses {@link EllipsoidToCentricTransform} as a reference implementation.
+ * The errors compared to geocentric translations should not be greater than
+ * approximatively 1 centimetre.
  *
  * @author  Tara Athan
  * @author  Martin Desruisseaux (Geomatys)
@@ -56,9 +69,81 @@ import static org.apache.sis.test.Assert.*;
  */
 @DependsOn({
     CoordinateDomainTest.class,
-    ContextualParametersTest.class
+    ContextualParametersTest.class,
+    EllipsoidToCentricTransformTest.class   // Used as a reference implementation
 })
 public final strictfp class MolodenskyTransformTest extends MathTransformTestCase {
+    /**
+     * Creates a new test case.
+     */
+    public MolodenskyTransformTest() {
+        final double delta = toRadians(100.0 / 60) / 1852;      // Approximatively 100 metres
+        derivativeDeltas   = new double[] {delta, delta, 100};  // (Δλ, Δφ, Δh)
+        λDimension         = new int[] {0};                     // Dimension for which to ignore ±360° differences.
+        zDimension         = new int[] {2};                     // Dimension of h where to apply zTolerance
+        zTolerance         = Formulas.LINEAR_TOLERANCE;         // Tolerance for ellipsoidal heights (h)
+        tolerance          = Formulas.ANGULAR_TOLERANCE;        // Tolerance for longitude and latitude in degrees
+    }
+
+    /**
+     * Compares the Molodensky (non-abridged) transform with a geocentric translation.
+     * Molodensky is an approximation of geocentric translation, so we test here how good this approximation is.
+     * If {@link TestCase#verbose} is {@code true}, then this method will print error statistics.
+     *
+     * @throws FactoryException if an error occurred while creating a transform step.
+     * @throws TransformException if a transformation failed.
+     * @throws IOException should never happen.
+     *
+     * @see #compareWithGeocentricTranslation()
+     */
+    @SuppressWarnings("fallthrough")
+    private void compareWithGeocentricTranslation(
+            final Ellipsoid source, final Ellipsoid target,
+            final double tX,   final double tY,   final double tZ,
+            final double xmin, final double ymin, final double zmin,
+            final double xmax, final double ymax, final double zmax)
+            throws FactoryException, TransformException, IOException
+    {
+        final MathTransform reference;
+        final MathTransformFactory factory = DefaultFactories.forBuildin(MathTransformFactory.class);
+        transform = MolodenskyTransform.createGeodeticTransformation(factory, source, true, target, true, tX, tY, tZ, false);
+        reference = GeocentricTranslationTest.createDatumShiftForGeographic3D(factory, source, target, tX, tY, tZ);
+        final float[] srcPts = verifyInDomain(
+                new double[] {xmin, ymin, zmin},
+                new double[] {xmax, ymax, zmax},
+                new int[]    {  10,   10,   10},
+                TestUtilities.createRandomNumberGenerator(103627524044558476L));
+        /*
+         * Transform the same input coordinates using Molodensky transform (actual) and using the reference
+         * implementation (expected). If we were asked to print statistics, compute them before to test the
+         * values since the statistics may be a useful information in case of problem.
+         */
+        final double[] actual   = new double[srcPts.length];
+        final double[] expected = new double[srcPts.length];
+        transform.transform(srcPts, 0, actual,   0, srcPts.length / 3);
+        reference.transform(srcPts, 0, expected, 0, srcPts.length / 3);
+        if (TestCase.verbose) {
+            final Statistics[] stats = {
+                new Statistics("|Δλ| (~cm)"),
+                new Statistics("|Δφ| (~cm)"),
+                new Statistics("|Δh| (cm)")
+            };
+            for (int i=0; i<srcPts.length; i++) {
+                double Δ = actual[i] - expected[i];
+                final int j = i % stats.length;
+                switch (j) {
+                    case 0: Δ *= cos(toRadians(expected[i+1]));     // Fall through
+                    case 1: Δ *= 60 * NAUTICAL_MILE; break;         // Approximative conversion to metres
+                }
+                Δ *= 100;   // Conversion to centimetres.
+                stats[j].accept(abs(Δ));
+            }
+            StatisticsFormat.getInstance().format(stats, TestCase.out);
+        }
+        assertCoordinatesEqual("Comparison of Molodensky and geocentric translation", 3,
+                expected, 0, actual, 0, expected.length / 3, CalculationType.DIRECT_TRANSFORM);
+    }
+
     /**
      * Creates a Molodensky transform for a datum shift from WGS84 to ED50.
      * Tolerance thresholds are also initialized.
@@ -70,13 +155,14 @@ public final strictfp class MolodenskyTransformTest extends MathTransformTestCas
         final Ellipsoid target = CommonCRS.ED50.ellipsoid();
         transform = MolodenskyTransform.createGeodeticTransformation(
                 DefaultFactories.forBuildin(MathTransformFactory.class),
-                source, true, target, true, 84.87, 96.49, 116.95, abridged);
+                source, true, target, true,
+                GeocentricTranslationTest.TX,
+                GeocentricTranslationTest.TY,
+                GeocentricTranslationTest.TZ,
+                abridged);
 
-        final double delta = toRadians(100.0 / 60) / 1852;          // Approximatively 100 metres
-        derivativeDeltas = new double[] {delta, delta, 100};        // (Δλ, Δφ, Δh)
         tolerance  = GeocentricTranslationTest.precision(1);        // Half the precision of target sample point
         zTolerance = GeocentricTranslationTest.precision(3);        // Required precision for h
-        zDimension = new int[] {2};                                 // Dimension of h where to apply zTolerance
         assertFalse(transform.isIdentity());
         validate();
     }
@@ -169,9 +255,84 @@ public final strictfp class MolodenskyTransformTest extends MathTransformTestCas
     }
 
     /**
+     * Tests the point used in {@link FranceGeocentricInterpolationTest}. We use this test for measuring the
+     * errors induced by the use of the Molodensky approximation instead than a real geocentric translation.
+     * The error is approximatively 1 centimetre, which is about 6 times more than the accuracy of the point
+     * given in {@code FranceGeocentricInterpolationTest}.
+     *
+     * @throws FactoryException if an error occurred while creating the transform.
+     * @throws TransformException if transformation of a point failed.
+     *
+     * @see GeocentricTranslationTest#testFranceGeocentricInterpolationPoint()
+     */
+    @Test
+    @DependsOnMethod("testMolodensky")
+    public void testFranceGeocentricInterpolationPoint() throws FactoryException, TransformException {
+        transform = MolodenskyTransform.createGeodeticTransformation(
+                DefaultFactories.forBuildin(MathTransformFactory.class),
+                HardCodedDatum.NTF.getEllipsoid(), true,        // Clarke 1880 (IGN)
+                CommonCRS.ETRS89.ellipsoid(), true,             // GRS 1980 ellipsoid
+               -FranceGeocentricInterpolation.TX,
+               -FranceGeocentricInterpolation.TY,
+               -FranceGeocentricInterpolation.TZ,
+                false);
+        /*
+         * Code below is a copy-and-paste of GeocentricTranslationTest.testFranceGeocentricInterpolationPoint(),
+         * but with the tolerance threshold increased. We do not let the error goes beyond 1 cm however.
+         */
+        tolerance = min(Formulas.ANGULAR_TOLERANCE, FranceGeocentricInterpolationTest.ANGULAR_TOLERANCE * 6);
+        final double[] source   = Arrays.copyOf(FranceGeocentricInterpolationTest.samplePoint(1), 3);
+        final double[] expected = Arrays.copyOf(FranceGeocentricInterpolationTest.samplePoint(2), 3);
+        expected[2] = 43.15;  // Anti-regression (this value is not provided in NTG_88 guidance note).
+        verifyTransform(source, expected);
+        validate();
+    }
+
+    /**
+     * Compares the Molodensky (non-abridged) transforms with geocentric translations.
+     * Molodensky is an approximation of geocentric translation, so we test here how good this
+     * approximation is. This test performs the comparison for the following transformations:
+     *
+     * <ul>
+     *   <li>Transformation from NTF to RGF93. Those CRS are the source and target of <cite>"France geocentric
+     *       interpolation"</cite> (ESPG:9655). This test allows us to verify the accuracy documented in
+     *       {@link InterpolatedGeocentricTransform}.</li>
+     *   <li>(More areas may be added later).</li>
+     * </ul>
+     *
+     * If {@link TestCase#verbose} is {@code true}, then this method will print error statistics.
+     *
+     * @throws FactoryException if an error occurred while creating a transform step.
+     * @throws TransformException if a transformation failed.
+     * @throws IOException should never happen.
+     *
+     * @see #testFranceGeocentricInterpolationPoint()
+     */
+    @Test
+    @DependsOnMethod("testFranceGeocentricInterpolationPoint")
+    public void compareWithGeocentricTranslation() throws FactoryException, TransformException, IOException {
+        /*
+         * Disable the test for inverse transformations because they are not the purpose of this test.
+         * Errors of inverse transformations are added to the error of forward transformations, which
+         * would force us to double the tolerance threshold.
+         */
+        isInverseTransformSupported = false;
+        tolerance         = 3*Formulas.LINEAR_TOLERANCE; // To be converted in degrees by ToleranceModifier.GEOGRAPHIC
+        zTolerance        = 4*Formulas.LINEAR_TOLERANCE;
+        toleranceModifier = ToleranceModifiers.concatenate(ToleranceModifier.GEOGRAPHIC, toleranceModifier);
+        compareWithGeocentricTranslation(HardCodedDatum.NTF.getEllipsoid(),   // Clarke 1880 (IGN)
+                                         CommonCRS.ETRS89.ellipsoid(),        // GRS 1980 ellipsoid
+                                         FranceGeocentricInterpolation.TX,
+                                         FranceGeocentricInterpolation.TY,
+                                         FranceGeocentricInterpolation.TZ,
+                                         -5.5, 41.0, -200,   // Geographic area of GR2DF97A datum shift grid.
+                                         10.0, 52.0, +200);
+    }
+
+    /**
      * Tests conversion of random points. The test is performed with the Molodensky transform,
-     * not the abridged one, because the errors caused by the abridged Molondeky method is too
-     * high for this test.
+     * not the abridged one, because the errors caused by the abridged Molodensky method are
+     * too high for this test.
      *
      * @throws FactoryException if an error occurred while creating a transform step.
      * @throws TransformException if a transformation failed.
@@ -183,9 +344,9 @@ public final strictfp class MolodenskyTransformTest extends MathTransformTestCas
         tolerance  = Formulas.LINEAR_TOLERANCE * 3;     // To be converted in degrees by ToleranceModifier.GEOGRAPHIC
         zTolerance = Formulas.LINEAR_TOLERANCE * 2;
         toleranceModifier = ToleranceModifiers.concatenate(ToleranceModifier.GEOGRAPHIC, toleranceModifier);
-        verifyInDomain(new double[] {Longitude.MIN_VALUE, -85, -500},
-                       new double[] {Longitude.MIN_VALUE, +85, +500},
-                       new int[] {8, 8, 8},
+        verifyInDomain(new double[] {-179, -85, -500},
+                       new double[] {+179, +85, +500},
+                       new int[]    {   8,   8,    8},
                        TestUtilities.createRandomNumberGenerator(208129394));
     }
 
@@ -211,11 +372,8 @@ public final strictfp class MolodenskyTransformTest extends MathTransformTestCas
         transform = factory.createParameterizedTransform(parameters);
         assertEquals(3, transform.getSourceDimensions());
         assertEquals(3, transform.getTargetDimensions());
-        final double delta = toRadians(100.0 / 60) / 1852;          // Approximatively 100 metres
-        derivativeDeltas = new double[] {delta, delta, 100};        // (Δλ, Δφ, Δh)
-        tolerance = Formulas.ANGULAR_TOLERANCE * 5;
-        zTolerance = Formulas.LINEAR_TOLERANCE * 5;
-        zDimension = new int[] {2};
+        tolerance  = Formulas.ANGULAR_TOLERANCE * 5;
+        zTolerance = Formulas.LINEAR_TOLERANCE  * 5;
         verifyInDomain(CoordinateDomain.RANGE_10, ORDINATE_COUNT);
     }
 

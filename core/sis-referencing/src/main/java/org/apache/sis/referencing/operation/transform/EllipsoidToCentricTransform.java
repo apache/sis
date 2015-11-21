@@ -30,6 +30,7 @@ import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
+import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
@@ -344,6 +345,34 @@ public class EllipsoidToCentricTransform extends AbstractMathTransform implement
     {
         EllipsoidToCentricTransform tr = new EllipsoidToCentricTransform(semiMajor, semiMinor, unit, withHeight, target);
         return tr.context.completeTransform(factory, tr);
+    }
+
+    /**
+     * Creates a transform from geographic to Cartesian geocentric coordinates (convenience method).
+     * Invoking this method is equivalent to the following:
+     *
+     * {@preformat java
+     *     createGeodeticConversion(factory,
+     *             ellipsoid.getSemiMajorAxis(),
+     *             ellipsoid.getSemiMinorAxis(),
+     *             ellipsoid.getAxisUnit(),
+     *             withHeight, TargetType.CARTESIAN);
+     * }
+     *
+     * The target type is assumed Cartesian because this is the most frequently used target.
+     *
+     * @param factory    The factory to use for creating and concatenating the affine transforms.
+     * @param ellipsoid  The semi-major and semi-minor axis lengths with their unit of measurement.
+     * @param withHeight {@code true} if source geographic coordinates include an ellipsoidal height
+     *                   (i.e. are 3-D), or {@code false} if they are only 2-D.
+     * @return The conversion from geographic to Cartesian geocentric coordinates.
+     * @throws FactoryException if an error occurred while creating a transform.
+     */
+    public static MathTransform createGeodeticConversion(final MathTransformFactory factory,
+            final Ellipsoid ellipsoid, final boolean withHeight) throws FactoryException
+    {
+        return createGeodeticConversion(factory, ellipsoid.getSemiMajorAxis(), ellipsoid.getSemiMinorAxis(),
+                ellipsoid.getAxisUnit(), withHeight, TargetType.CARTESIAN);
     }
 
     /**

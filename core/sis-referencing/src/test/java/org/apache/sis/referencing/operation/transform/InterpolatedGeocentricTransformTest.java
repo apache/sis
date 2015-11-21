@@ -23,10 +23,13 @@ import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.internal.referencing.provider.FranceGeocentricInterpolation;
-import org.apache.sis.internal.referencing.provider.FranceGeocentricInterpolationTest;
 import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.referencing.CommonCRS;
+
+// Test dependencies
+import org.apache.sis.internal.referencing.provider.FranceGeocentricInterpolationTest;
+import org.apache.sis.internal.referencing.provider.GeocentricTranslationTest;
 import org.apache.sis.referencing.datum.HardCodedDatum;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
@@ -36,14 +39,24 @@ import static org.opengis.test.Assert.*;
 
 
 /**
- * Tests {@link InterpolatedGeocentricTransform}.
+ * Tests {@link InterpolatedGeocentricTransform}. The accuracy of using the Molodensky approximation
+ * instead than the real geocentric translation is verified by the following tests:
+ *
+ * <ul>
+ *   <li>{@link GeocentricTranslationTest#testFranceGeocentricInterpolationPoint()}</li>
+ *   <li>{@link MolodenskyTransformTest#testFranceGeocentricInterpolationPoint()}</li>
+ * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.7
  * @version 0.7
  * @module
  */
-@DependsOn(FranceGeocentricInterpolationTest.class)
+@DependsOn({
+    MolodenskyTransformTest.class,
+    GeocentricTranslationTest.class,
+    FranceGeocentricInterpolationTest.class
+})
 public final strictfp class InterpolatedGeocentricTransformTest extends MathTransformTestCase {
     /**
      * Creates the <cite>"France geocentric interpolation"</cite> transform.
@@ -79,8 +92,8 @@ public final strictfp class InterpolatedGeocentricTransformTest extends MathTran
         create();   // Create the inverse of the transform we are interrested in.
         transform = transform.inverse();
         isInverseTransformSupported = false;
-        verifyTransform(FranceGeocentricInterpolationTest.samplePoint(1),
-                        FranceGeocentricInterpolationTest.samplePoint(3));
+        verifyTransform(FranceGeocentricInterpolationTest.samplePoint(3),
+                        FranceGeocentricInterpolationTest.samplePoint(1));
         /*
          * Input:     2.424971108333333    48.84444583888889
          * Expected:  2.425671861111111    48.84451225
@@ -99,7 +112,7 @@ public final strictfp class InterpolatedGeocentricTransformTest extends MathTran
     public void testInverseTransform() throws FactoryException, TransformException {
         create();
         isInverseTransformSupported = false;
-        verifyTransform(FranceGeocentricInterpolationTest.samplePoint(3),
-                        FranceGeocentricInterpolationTest.samplePoint(1));
+        verifyTransform(FranceGeocentricInterpolationTest.samplePoint(1),
+                        FranceGeocentricInterpolationTest.samplePoint(3));
     }
 }
