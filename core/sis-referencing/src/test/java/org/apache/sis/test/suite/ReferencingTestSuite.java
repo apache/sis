@@ -131,6 +131,7 @@ import org.junit.BeforeClass;
     org.apache.sis.internal.referencing.provider.GeocentricTranslationTest.class,
     org.apache.sis.internal.referencing.provider.PositionVector7ParamTest.class,
     org.apache.sis.internal.referencing.provider.CoordinateFrameRotationTest.class,
+    org.apache.sis.internal.referencing.provider.MolodenskyTest.class,
     org.apache.sis.internal.referencing.provider.FranceGeocentricInterpolationTest.class,
     org.apache.sis.internal.referencing.provider.MapProjectionTest.class,
     org.apache.sis.internal.referencing.provider.AllProvidersTest.class,
