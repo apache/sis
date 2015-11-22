@@ -159,14 +159,17 @@ abstract class MolodenskyFormula extends AbstractMathTransform implements Serial
     /**
      * Constructs the inverse of a Molodensky transform.
      *
-     * @param inverse The transform for which to create the inverse.
-     * @param source  The source ellipsoid of the given {@code inverse} transform.
-     * @param target  The target ellipsoid of the given {@code inverse} transform.
+     * @param inverse     The transform for which to create the inverse.
+     * @param source      The source ellipsoid of the given {@code inverse} transform.
+     * @param target      The target ellipsoid of the given {@code inverse} transform.
+     * @param descriptor  The contextual parameter descriptor.
      */
-    MolodenskyFormula(final MolodenskyFormula inverse, final Ellipsoid source, final Ellipsoid target) {
+    MolodenskyFormula(final MolodenskyFormula inverse, final Ellipsoid source, final Ellipsoid target,
+            final ParameterDescriptorGroup descriptor)
+    {
         this(target, inverse.isTarget3D,
-              source, inverse.isSource3D,
-              -inverse.tX, -inverse.tY, -inverse.tZ, inverse.grid, inverse.isAbridged, inverse.context.getDescriptor());
+             source, inverse.isSource3D,
+             -inverse.tX, -inverse.tY, -inverse.tZ, inverse.grid, inverse.isAbridged, descriptor);
     }
 
     /**

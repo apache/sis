@@ -166,7 +166,7 @@ public class MolodenskyTransform extends MolodenskyFormula {
      * @param target  The target ellipsoid of the given {@code inverse} transform.
      */
     MolodenskyTransform(final MolodenskyTransform inverse, final Ellipsoid source, final Ellipsoid target) {
-        super(inverse, source, target);
+        super(inverse, source, target, inverse.context.getDescriptor());
         this.inverse = inverse;
     }
 

@@ -135,7 +135,7 @@ public final class Molodensky extends GeocentricAffineBetweenGeographic {
 
     /**
      * The providers for all combinations between 2D and 3D cases.
-     * Array length is 4. Index is build with following rule:
+     * Array length is 4. Index is built with following rule:
      * <ul>
      *   <li>Bit 1: dimension of source coordinates (0 for 2D, 1 for 3D).</li>
      *   <li>Bit 0: dimension of target coordinates (0 for 2D, 1 for 3D).</li>

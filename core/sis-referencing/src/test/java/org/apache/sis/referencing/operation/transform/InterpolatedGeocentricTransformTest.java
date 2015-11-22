@@ -94,6 +94,7 @@ public final strictfp class InterpolatedGeocentricTransformTest extends MathTran
         isInverseTransformSupported = false;
         verifyTransform(FranceGeocentricInterpolationTest.samplePoint(3),
                         FranceGeocentricInterpolationTest.samplePoint(1));
+        validate();
         /*
          * Input:     2.424971108333333    48.84444583888889
          * Expected:  2.425671861111111    48.84451225
@@ -114,5 +115,65 @@ public final strictfp class InterpolatedGeocentricTransformTest extends MathTran
         isInverseTransformSupported = false;
         verifyTransform(FranceGeocentricInterpolationTest.samplePoint(1),
                         FranceGeocentricInterpolationTest.samplePoint(3));
+        validate();
+    }
+
+    /**
+     * Tests the Well Known Text (version 1) formatting.
+     * The result is what we show to users, but may quite different than what SIS has in memory.
+     *
+     * @throws FactoryException if an error occurred while creating a transform.
+     * @throws TransformException should never happen.
+     */
+    @Test
+    public void testWKT() throws FactoryException, TransformException {
+        create();
+        transform = transform.inverse();
+        assertWktEqualsRegex("(?m)\\Q" +
+                "PARAM_MT[“Geocentric interpolation”,\n" +
+                "  PARAMETER[“dim”, 2],\n" +
+                "  PARAMETER[“src_semi_major”, 6378137.0],\n" +
+                "  PARAMETER[“src_semi_minor”, 6356752.314140356],\n" +
+                "  PARAMETER[“tgt_semi_major”, 6378249.2],\n" +
+                "  PARAMETER[“tgt_semi_minor”, 6356515.0],\n" +
+                "  PARAMETER[“Geocentric translations file”, “\\E.*\\W\\QGR3DF97A.txt”]]\\E");
+
+        transform = transform.inverse();
+        assertWktEqualsRegex("(?m)\\Q" +
+                "PARAM_MT[“Geocentric inverse interpolation”,\n" +
+                "  PARAMETER[“dim”, 2],\n" +
+                "  PARAMETER[“src_semi_major”, 6378249.2],\n" +
+                "  PARAMETER[“src_semi_minor”, 6356515.0],\n" +
+                "  PARAMETER[“tgt_semi_major”, 6378137.0],\n" +
+                "  PARAMETER[“tgt_semi_minor”, 6356752.314140356],\n" +
+                "  PARAMETER[“Geocentric translations file”, “\\E.*\\W\\QGR3DF97A.txt”]]\\E");
+    }
+
+    /**
+     * Tests the internal Well Known Text formatting.
+     * This WKT shows what SIS has in memory for debugging purpose.
+     * This is normally not what we show to users.
+     *
+     * @throws FactoryException if an error occurred while creating a transform.
+     * @throws TransformException should never happen.
+     */
+    @Test
+    public void testInternalWKT() throws FactoryException, TransformException {
+        create();
+        assertInternalWktEqualsRegex("(?m)\\Q" +
+                "Concat_MT[\n" +
+                "  Param_MT[“Affine parametric transformation”,\n" +
+                "    Parameter[“A0”, 0.017453292519943295, Id[“EPSG”, 8623]],\n" +   // Degrees to radians conversion
+                "    Parameter[“B1”, 0.017453292519943295, Id[“EPSG”, 8640]]],\n" +
+                "  Param_MT[“Geocentric inverse interpolation”,\n" +
+                "    Parameter[“src_semi_major”, 6378249.2],\n" +
+                "    Parameter[“src_semi_minor”, 6356515.0],\n" +
+                "    Parameter[“Semi-major axis length difference”, -112.2],\n" +
+                "    Parameter[“Flattening difference”, -5.455231352930652E-5],\n" +
+                "    ParameterFile[“Geocentric translations file”, “\\E.*\\W\\QGR3DF97A.txt”, Id[“EPSG”, 8727]],\n" +
+                "    Parameter[“dim”, 2]],\n" +
+                "  Param_MT[“Affine parametric transformation”,\n" +
+                "    Parameter[“A0”, 57.29577951308232, Id[“EPSG”, 8623]],\n" +      // Radians to degrees conversion
+                "    Parameter[“B1”, 57.29577951308232, Id[“EPSG”, 8640]]]]\\E");
     }
 }

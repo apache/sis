@@ -16,6 +16,7 @@
  */
 package org.apache.sis.referencing.operation.transform;
 
+import java.util.Arrays;
 import javax.measure.unit.Unit;
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterDescriptor;
@@ -28,22 +29,15 @@ import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.internal.referencing.provider.DatumShiftGridFile;
 import org.apache.sis.internal.referencing.provider.FranceGeocentricInterpolation;
-import org.apache.sis.internal.referencing.provider.GeocentricAffineBetweenGeographic;
 import org.apache.sis.internal.referencing.provider.Molodensky;
-import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.referencing.datum.DatumShiftGrid;
-import org.apache.sis.io.wkt.FormattableObject;
-import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Debug;
-
-// Branch-specific imports
-import java.nio.file.Path;
 
 
 /**
@@ -83,7 +77,7 @@ import java.nio.file.Path;
  * <div class="section">Implementation</div>
  * While this transformation is conceptually defined as a translation in geocentric coordinates, the current
  * Apache SIS implementation rather uses the {@linkplain MolodenskyTransform Molodensy} (non-abridged) approximation
- * for performance reasons. Errors are less than 1 centimetre for the France geocentric interpolation.
+ * for performance reasons. Errors are less than 3 centimetres for the France geocentric interpolation.
  * By comparison, the finest accuracy reported in the grid file for France is 5 centimetres.
  *
  * @author  Simon Reynard (Geomatys)
@@ -99,11 +93,37 @@ public class InterpolatedGeocentricTransform extends MolodenskyFormula {
     private static final long serialVersionUID = -5691721806681489940L;
 
     /**
-     * Parameter descriptor, created only when first needed.
-     *
-     * @see #getParameterDescriptors()
+     * Parameter descriptor to use with the contextual parameters for the forward transformation.
+     * We do not use the <cite>"France geocentric interpolation"</cite> (ESPG:9655) descriptor
+     * because their "forward" transformation is our "inverse" transformation, and conversely.
+     * The {@code DESCRIPTOR} defined here is non-standard, but allows this class to be used
+     * for other geographic areas than France.
      */
-    private static ParameterDescriptorGroup DESCRIPTOR, INTERNAL;
+    private static final ParameterDescriptorGroup DESCRIPTOR;
+
+    /**
+     * Parameter descriptor to use with the contextual parameters for the inverse transformation.
+     * We do not use the <cite>"France geocentric interpolation"</cite> (ESPG:9655) descriptor
+     * because it is specific to a single country, has hard-coded parameters and uses a sign
+     * convention for (ΔX,ΔY,ΔZ) translations different than the one used in this class.
+     * The {@code INVERSE} descriptor defined here is non-standard, but allows this class
+     * to be used for other geographic areas than France.
+     */
+    private static final ParameterDescriptorGroup INVERSE;
+    static {
+        final ParameterBuilder builder = new ParameterBuilder()
+                .setRequired(true).setCodeSpace(Citations.SIS, Constants.SIS);
+        final ParameterDescriptor<?>[] param = new ParameterDescriptor<?>[] {
+                Molodensky.DIMENSION,
+                Molodensky.SRC_SEMI_MAJOR,
+                Molodensky.SRC_SEMI_MINOR,
+                Molodensky.TGT_SEMI_MAJOR,
+                Molodensky.TGT_SEMI_MINOR,
+                FranceGeocentricInterpolation.FILE
+        };
+        DESCRIPTOR = builder.addName("Geocentric interpolation").createGroup(param);
+        INVERSE = builder.addName("Geocentric inverse interpolation").createGroup(param);
+    }
 
     /**
      * The inverse of this interpolated geocentric transform.
@@ -119,8 +139,8 @@ public class InterpolatedGeocentricTransform extends MolodenskyFormula {
      * @param source  The source ellipsoid of the given {@code inverse} transform.
      * @param target  The target ellipsoid of the given {@code inverse} transform.
      */
-    InterpolatedGeocentricTransform(final InterpolatedGeocentricTransform inverse, final Ellipsoid source, final Ellipsoid target) {
-        super(inverse, source, target);
+    InterpolatedGeocentricTransform(final InterpolatedGeocentricTransform inverse, Ellipsoid source, Ellipsoid target) {
+        super(inverse, source, target, INVERSE);
         this.inverse = inverse;
     }
 
@@ -171,13 +191,17 @@ public class InterpolatedGeocentricTransform extends MolodenskyFormula {
               grid.getAverageOffset(1),
               grid.getAverageOffset(2),
               grid, false,    // Non-abridged Molodensky
-              descriptor(grid));
+              DESCRIPTOR);
 
         final int dim = grid.getShiftDimensions();
         if (dim != 3) {
             throw new MismatchedDimensionException(Errors.format(Errors.Keys.MismatchedDimension_3, "grid", 3, dim));
         }
-        inverse = new Inverse(this, source, target);
+        if (isSource3D || isTarget3D) {
+            inverse = new Inverse(this, source, target);
+        } else {
+            inverse = new InterpolatedGeocentricTransform2D.Inverse(this, source, target);
+        }
     }
 
     /**
@@ -213,56 +237,13 @@ public class InterpolatedGeocentricTransform extends MolodenskyFormula {
     {
         ArgumentChecks.ensureNonNull("grid", grid);
         final InterpolatedGeocentricTransform tr;
-        tr = new InterpolatedGeocentricTransform(source, isSource3D, target, isTarget3D, grid);
+        if (isSource3D || isTarget3D) {
+            tr = new InterpolatedGeocentricTransform(source, isSource3D, target, isTarget3D, grid);
+        } else {
+            tr = new InterpolatedGeocentricTransform2D(source, target, grid);
+        }
+        tr.inverse.context.completeTransform(factory, null);
         return tr.context.completeTransform(factory, tr);
-    }
-
-    /**
-     * Returns the parameter descriptor to declare for the given grid. This method returns the descriptor of
-     * <cite>"France geocentric interpolation"</cite> (ESPG:9655) only if the given grid is recognized as a
-     * grid created by the {@link FranceGeocentricInterpolation} for a geographic area likely to be France.
-     * Otherwise a more neutral (but non-standard) descriptor is returned.
-     */
-    private static ParameterDescriptorGroup descriptor(final DatumShiftGrid grid) {
-        if (grid instanceof DatumShiftGridFile) {
-            final Path file = ((DatumShiftGridFile) grid).file;
-            if ((FranceGeocentricInterpolation.isRecognized(file))) {
-                return FranceGeocentricInterpolation.PARAMETERS;    // Defined by EPSG.
-            }
-        }
-        synchronized (InterpolatedGeocentricTransform.class) {
-            if (DESCRIPTOR == null) {
-                DESCRIPTOR = createDescriptor(true);                // Non-standard.
-            }
-            return DESCRIPTOR;
-        }
-    }
-
-    /**
-     * Creates a Apache SIS descriptor for the {@code InterpolatedGeocentricTransform} parameters.
-     * The returned descriptor is non-standard, but allows {@code InterpolatedGeocentricTransform}
-     * to be used for other geographic areas than France.
-     *
-     * @param internal {@code true} for internal parameters, or {@code false} for contextual parameters.
-     * @return The parameter descriptor.
-     */
-    private static ParameterDescriptorGroup createDescriptor(final boolean internal) {
-        final ParameterDescriptor<?>[] param = new ParameterDescriptor<?>[] {
-                GeocentricAffineBetweenGeographic.DIMENSION,
-                GeocentricAffineBetweenGeographic.SRC_SEMI_MAJOR,
-                GeocentricAffineBetweenGeographic.SRC_SEMI_MINOR,
-                GeocentricAffineBetweenGeographic.TGT_SEMI_MAJOR,
-                GeocentricAffineBetweenGeographic.TGT_SEMI_MINOR,
-                FranceGeocentricInterpolation.FILE
-        };
-        if (internal) {
-            param[3] = Molodensky.AXIS_LENGTH_DIFFERENCE;
-            param[4] = Molodensky.FLATTENING_DIFFERENCE;
-        }
-        return new ParameterBuilder().setRequired(true)
-                .setCodeSpace(Citations.SIS, Constants.SIS)
-                .addName("Geocentric interpolation")
-                .createGroup(param);
     }
 
     /**
@@ -308,6 +289,67 @@ public class InterpolatedGeocentricTransform extends MolodenskyFormula {
     }
 
     /**
+     * Transforms the (λ,φ) or (λ,φ,<var>h</var>) coordinates between two geographic CRS.
+     * This method performs the same work than the above
+     * {@link #transform(double[], int, double[], int, boolean) transform(…)} method,
+     * but on an arbitrary amount of coordinates and without computing derivative.
+     *
+     * @throws TransformException if a point can not be transformed.
+     */
+    @Override
+    public void transform(double[] srcPts, int srcOff, double[] dstPts, int dstOff, int numPts) throws TransformException {
+        int srcInc = isSource3D ? 3 : 2;
+        int dstInc = isTarget3D ? 3 : 2;
+        int offFinal = 0;
+        double[] dstFinal  = null;
+        if (srcPts == dstPts) {
+            switch (IterationStrategy.suggest(srcOff, srcInc, dstOff, dstInc, numPts)) {
+                case ASCENDING: {
+                    break;
+                }
+                case DESCENDING: {
+                    srcOff += (numPts-1) * srcInc;  srcInc = -srcInc;
+                    dstOff += (numPts-1) * dstInc;  dstInc = -dstInc;
+                    break;
+                }
+                default: {  // BUFFER_SOURCE, but also a reasonable default for any case.
+                    srcPts = Arrays.copyOfRange(srcPts, srcOff, srcOff + numPts*srcInc);
+                    srcOff = 0;
+                    break;
+                }
+                case BUFFER_TARGET: {
+                    dstFinal = dstPts;
+                    offFinal = dstOff;
+                    dstPts = new double[numPts * dstInc];
+                    dstOff = 0;
+                    break;
+                }
+            }
+        }
+        final double[] offset = new double[3];
+        while (--numPts >= 0) {
+            final double λ = srcPts[srcOff  ];
+            final double φ = srcPts[srcOff+1];
+            grid.offsetAt(λ, φ, offset);
+            transform(λ, φ, isSource3D ? srcPts[srcOff+2] : 0,
+                      dstPts, dstOff, offset[0], offset[1], offset[2], null, false);
+            srcOff += srcInc;
+            dstOff += dstInc;
+        }
+        if (dstFinal != null) {
+            System.arraycopy(dstPts, 0, dstFinal, offFinal, dstPts.length);
+        }
+    }
+
+    /*
+     * NOTE: we do not bother to override the methods expecting a 'float' array because those methods should
+     *       be rarely invoked. Since there is usually LinearTransforms before and after this transform, the
+     *       conversion between float and double will be handle by those LinearTransforms.   If nevertheless
+     *       this MolodenskyTransform is at the beginning or the end of a transformation chain,  the methods
+     *       inherited from the subclass will work (but may be slightly slower).
+     */
+
+    /**
      * Returns the inverse of this interpolated geocentric transform.
      * The source ellipsoid of the returned transform will be the target ellipsoid of this transform, and conversely.
      *
@@ -338,7 +380,7 @@ public class InterpolatedGeocentricTransform extends MolodenskyFormula {
      * @version 0.7
      * @module
      */
-    private static final class Inverse extends InterpolatedGeocentricTransform {
+    static class Inverse extends InterpolatedGeocentricTransform {
         /**
          * Serial number for inter-operability with different versions.
          */
@@ -373,20 +415,53 @@ public class InterpolatedGeocentricTransform extends MolodenskyFormula {
         }
 
         /**
-         * Formats the inner part of a <cite>Well Known Text</cite> version 1 (WKT 1) element
-         * as an {@code "Inverse_MT"} entity.
+         * Transforms the (λ,φ) or (λ,φ,<var>h</var>) coordinates between two geographic CRS.
+         * This method performs the same work than the above
+         * {@link #transform(double[], int, double[], int, boolean) transform(…)} method,
+         * but on an arbitrary amount of coordinates and without computing derivative.
          *
-         * <div class="note"><b>Compatibility note:</b>
-         * {@code Inverse_MT} is defined in the WKT 1 specification only.</div>
-         *
-         * @param  formatter The formatter to use.
-         * @return The WKT element name, which is {@code "Inverse_MT"}.
+         * @throws TransformException if a point can not be transformed.
          */
         @Override
-        protected String formatTo(final Formatter formatter) {
-            formatter.newLine();
-            formatter.append((FormattableObject) super.inverse());
-            return WKTKeywords.Inverse_MT;
+        public void transform(double[] srcPts, int srcOff, double[] dstPts, int dstOff, int numPts) throws TransformException {
+            int srcInc = isSource3D ? 3 : 2;
+            int dstInc = isTarget3D ? 3 : 2;
+            int offFinal = 0;
+            double[] dstFinal  = null;
+            if (srcPts == dstPts) {
+                switch (IterationStrategy.suggest(srcOff, srcInc, dstOff, dstInc, numPts)) {
+                    case ASCENDING: {
+                        break;
+                    }
+                    case DESCENDING: {
+                        srcOff += (numPts-1) * srcInc;  srcInc = -srcInc;
+                        dstOff += (numPts-1) * dstInc;  dstInc = -dstInc;
+                        break;
+                    }
+                    default: {  // BUFFER_SOURCE, but also a reasonable default for any case.
+                        srcPts = Arrays.copyOfRange(srcPts, srcOff, srcOff + numPts*srcInc);
+                        srcOff = 0;
+                        break;
+                    }
+                    case BUFFER_TARGET: {
+                        dstFinal = dstPts;
+                        offFinal = dstOff;
+                        dstPts = new double[numPts * dstInc];
+                        dstOff = 0;
+                        break;
+                    }
+                }
+            }
+            final double[] offset = new double[3];
+            while (--numPts >= 0) {
+                transform(srcPts[srcOff], srcPts[srcOff+1], isSource3D ? srcPts[srcOff+2] : 0,
+                          dstPts, dstOff, tX, tY, tZ, offset, false);
+                srcOff += srcInc;
+                dstOff += dstInc;
+            }
+            if (dstFinal != null) {
+                System.arraycopy(dstPts, 0, dstFinal, offFinal, dstPts.length);
+            }
         }
     }
 
@@ -405,11 +480,16 @@ public class InterpolatedGeocentricTransform extends MolodenskyFormula {
     @Debug
     @Override
     public ParameterDescriptorGroup getParameterDescriptors() {
-        synchronized (InterpolatedGeocentricTransform.class) {
-            if (INTERNAL == null) {
-                INTERNAL = createDescriptor(true);
-            }
-            return INTERNAL;
-        }
+        final ParameterDescriptor<?>[] param = new ParameterDescriptor<?>[] {
+                Molodensky.DIMENSION,
+                Molodensky.SRC_SEMI_MAJOR,
+                Molodensky.SRC_SEMI_MINOR,
+                Molodensky.AXIS_LENGTH_DIFFERENCE,
+                Molodensky.FLATTENING_DIFFERENCE,
+                FranceGeocentricInterpolation.FILE
+        };
+        return new ParameterBuilder().setRequired(true)
+                .setCodeSpace(Citations.SIS, Constants.SIS)
+                .addName(context.getDescriptor().getName()).createGroup(param);
     }
 }
