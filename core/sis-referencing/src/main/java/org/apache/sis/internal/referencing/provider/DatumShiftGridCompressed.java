@@ -163,8 +163,11 @@ final class DatumShiftGridCompressed extends DatumShiftGridFile {
         final int p1 = nx + p0;
         for (int dim = 0; dim < data.length; dim++) {
             final short[] values = data[dim];
-            offsets[dim] = ((1-y) * ((1-x)*values[p0] + x*values[p0+1])
-                             + y  * ((1-x)*values[p1] + x*values[p1+1])) * scale + averages[dim];
+            double r0 = values[p0];
+            double r1 = values[p1];
+            r0 +=  x * (values[p0+1] - r0);
+            r1 +=  x * (values[p1+1] - r1);
+            offsets[dim] = (y * (r1 - r0) + r0) * scale + averages[dim];
         }
     }
 

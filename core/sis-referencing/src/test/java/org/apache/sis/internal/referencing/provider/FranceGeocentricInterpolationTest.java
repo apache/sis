@@ -48,6 +48,12 @@ import java.nio.file.Path;
  */
 public final strictfp class FranceGeocentricInterpolationTest extends TestCase {
     /**
+     * Name of the file containing a small extract of the "{@code GR3DF97A.txt}" file.
+     * The amount of data in this test file is less than 0.14% of the original file.
+     */
+    public static final String TEST_FILE = "GR3DF-extract.txt";
+
+    /**
      * Returns the sample point for a step in the example given by the NTG_88 guidance note.
      * The steps numbers go from 1 (NTF) to 3 (RGF93).
      * Precision is given by {@link #ANGULAR_TOLERANCE}.
@@ -92,6 +98,7 @@ public final strictfp class FranceGeocentricInterpolationTest extends TestCase {
         assertTrue (FranceGeocentricInterpolation.isRecognized(Paths.get("GR3DF97A.txt")));
         assertTrue (FranceGeocentricInterpolation.isRecognized(Paths.get("gr3df")));
         assertFalse(FranceGeocentricInterpolation.isRecognized(Paths.get("gr3d")));
+        assertTrue (FranceGeocentricInterpolation.isRecognized(Paths.get(TEST_FILE)));
     }
 
     /**
@@ -127,8 +134,8 @@ public final strictfp class FranceGeocentricInterpolationTest extends TestCase {
      */
     @TestStep
     private static DatumShiftGridFile testGridAsFloats() throws URISyntaxException, IOException, FactoryException {
-        final URL url = FranceGeocentricInterpolationTest.class.getResource("GR3DF97A.txt");
-        assertNotNull("Test file \"GR3DF97A.txt\" not found.", url);
+        final URL url = FranceGeocentricInterpolationTest.class.getResource(TEST_FILE);
+        assertNotNull("Test file \"" + TEST_FILE + "\" not found.", url);
         final Path file = Paths.get(url.toURI());
         final DatumShiftGridFile.Float grid;
         try (final BufferedReader in = Files.newBufferedReader(file)) {
@@ -205,8 +212,8 @@ public final strictfp class FranceGeocentricInterpolationTest extends TestCase {
     @Test
     @DependsOnMethod("testGrid")
     public void testGetOrLoad() throws URISyntaxException, FactoryException {
-        final URL file = FranceGeocentricInterpolationTest.class.getResource("GR3DF97A.txt");
-        assertNotNull("Test file \"GR3DF97A.txt\" not found.", file);
+        final URL file = FranceGeocentricInterpolationTest.class.getResource(TEST_FILE);
+        assertNotNull("Test file \"" + TEST_FILE + "\" not found.", file);
         final DatumShiftGridFile grid = FranceGeocentricInterpolation.getOrLoad(
                 Paths.get(file.toURI()), new double[] {
                         FranceGeocentricInterpolation.TX,

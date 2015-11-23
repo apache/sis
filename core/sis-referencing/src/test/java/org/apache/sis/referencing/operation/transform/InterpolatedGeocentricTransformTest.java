@@ -64,8 +64,8 @@ public final strictfp class InterpolatedGeocentricTransformTest extends MathTran
      * @throws FactoryException if an error occurred while loading the grid.
      */
     private void create() throws FactoryException {
-        final URL file = FranceGeocentricInterpolationTest.class.getResource("GR3DF97A.txt");
-        assertNotNull("Test file \"GR3DF97A.txt\" not found.", file);
+        final URL file = FranceGeocentricInterpolationTest.class.getResource(FranceGeocentricInterpolationTest.TEST_FILE);
+        assertNotNull("Test file \"" + FranceGeocentricInterpolationTest.TEST_FILE + "\" not found.", file);
         final Ellipsoid source = HardCodedDatum.NTF.getEllipsoid();     // Clarke 1880 (IGN)
         final Ellipsoid target = CommonCRS.ETRS89.ellipsoid();          // GRS 1980 ellipsoid
         final FranceGeocentricInterpolation provider = new FranceGeocentricInterpolation();
@@ -136,7 +136,8 @@ public final strictfp class InterpolatedGeocentricTransformTest extends MathTran
                 "  PARAMETER[“src_semi_minor”, 6356752.314140356],\n" +
                 "  PARAMETER[“tgt_semi_major”, 6378249.2],\n" +
                 "  PARAMETER[“tgt_semi_minor”, 6356515.0],\n" +
-                "  PARAMETER[“Geocentric translations file”, “\\E.*\\W\\QGR3DF97A.txt”]]\\E");
+                "  PARAMETER[“Geocentric translations file”, “\\E.*\\W\\Q" +
+                             FranceGeocentricInterpolationTest.TEST_FILE + "”]]\\E");
 
         transform = transform.inverse();
         assertWktEqualsRegex("(?m)\\Q" +
@@ -146,7 +147,8 @@ public final strictfp class InterpolatedGeocentricTransformTest extends MathTran
                 "  PARAMETER[“src_semi_minor”, 6356515.0],\n" +
                 "  PARAMETER[“tgt_semi_major”, 6378137.0],\n" +
                 "  PARAMETER[“tgt_semi_minor”, 6356752.314140356],\n" +
-                "  PARAMETER[“Geocentric translations file”, “\\E.*\\W\\QGR3DF97A.txt”]]\\E");
+                "  PARAMETER[“Geocentric translations file”, “\\E.*\\W\\Q" +
+                             FranceGeocentricInterpolationTest.TEST_FILE + "”]]\\E");
     }
 
     /**
@@ -170,7 +172,8 @@ public final strictfp class InterpolatedGeocentricTransformTest extends MathTran
                 "    Parameter[“src_semi_minor”, 6356515.0],\n" +
                 "    Parameter[“Semi-major axis length difference”, -112.2],\n" +
                 "    Parameter[“Flattening difference”, -5.455231352930652E-5],\n" +
-                "    ParameterFile[“Geocentric translations file”, “\\E.*\\W\\QGR3DF97A.txt”, Id[“EPSG”, 8727]],\n" +
+                "    ParameterFile[“Geocentric translations file”, “\\E.*\\W\\Q" +
+                                   FranceGeocentricInterpolationTest.TEST_FILE + "”, Id[“EPSG”, 8727]],\n" +
                 "    Parameter[“dim”, 2]],\n" +
                 "  Param_MT[“Affine parametric transformation”,\n" +
                 "    Parameter[“A0”, 57.29577951308232, Id[“EPSG”, 8623]],\n" +      // Radians to degrees conversion

@@ -334,7 +334,7 @@ abstract class MolodenskyFormula extends AbstractMathTransform implements Serial
     /**
      * Implementation of {@link #transform(double[], int, double[], int, boolean)} with possibility
      * to override some field values. In this method signature, parameters having the same name than
-     * fields have the same value, except if some special circumstances:
+     * fields have the same value, except in some special circumstances:
      *
      * <ul>
      *   <li>{@code tX}, {@code tY} and {@code tZ} parameters always have the values of {@link #tX}, {@link #tY}
