@@ -235,8 +235,11 @@ public abstract class DatumShiftGrid implements Serializable {
         y -= gridY;
         final int n = getShiftDimensions();
         for (int dim = 0; dim < n; dim++) {
-            offsets[dim] = (1-y) * ((1-x)*getCellValue(dim, gridX, gridY  ) + x*getCellValue(dim, gridX+1, gridY  ))
-                            + y  * ((1-x)*getCellValue(dim, gridX, gridY+1) + x*getCellValue(dim, gridX+1, gridY+1));
+            double r0 = getCellValue(dim, gridX,   gridY  );
+            double r1 = getCellValue(dim, gridX,   gridY+1);
+            r0 +=  x * (getCellValue(dim, gridX+1, gridY  ) - r0);
+            r1 +=  x * (getCellValue(dim, gridX+1, gridY+1) - r1);
+            offsets[dim] = y * (r1 - r0) + r0;
         }
     }
 
