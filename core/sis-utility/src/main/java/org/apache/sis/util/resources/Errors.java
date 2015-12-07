@@ -524,6 +524,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final short MismatchedDimension_3 = 59;
 
         /**
+         * The grid geometry must be the same for “{0}” and “{1}”.
+         */
+        public static final short MismatchedGridGeometry_2 = 203;
+
+        /**
          * Mismatched matrix sizes: expected {0}×{1} but got {2}×{3}.
          */
         public static final short MismatchedMatrixSize_4 = 60;

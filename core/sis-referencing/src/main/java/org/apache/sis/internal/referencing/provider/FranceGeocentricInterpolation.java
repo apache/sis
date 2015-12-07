@@ -424,9 +424,9 @@ public final class FranceGeocentricInterpolation extends AbstractProvider {
                             Δy = gridGeometry[5];
                             nx = Math.toIntExact(Math.round((xf - x0) / Δx + 1));
                             ny = Math.toIntExact(Math.round((yf - y0) / Δy + 1));
-                            grid = new DatumShiftGridFile.Float<>(
+                            grid = new DatumShiftGridFile.Float<>(3,
                                     NonSI.DEGREE_ANGLE, SI.METRE, false,
-                                    x0, y0, Δx, Δy, nx, ny, PARAMETERS, file, 3);
+                                    x0, y0, Δx, Δy, nx, ny, PARAMETERS, file);
                         }
                         break;
                     }

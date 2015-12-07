@@ -20,13 +20,17 @@ import java.util.Arrays;
 import java.lang.reflect.Array;
 import javax.measure.unit.Unit;
 import javax.measure.quantity.Quantity;
+import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
+import org.opengis.parameter.GeneralParameterDescriptor;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.apache.sis.math.DecimalFunctions;
 import org.apache.sis.util.collection.Cache;
+import org.apache.sis.util.Debug;
+import org.apache.sis.parameter.Parameters;
 import org.apache.sis.referencing.datum.DatumShiftGrid;
-import org.apache.sis.internal.referencing.j2d.AffineTransform2D;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
+import org.apache.sis.internal.referencing.j2d.AffineTransform2D;
 
 // Branch-specific imports
 import java.nio.file.Path;
@@ -81,11 +85,11 @@ public abstract class DatumShiftGridFile<C extends Quantity, T extends Quantity>
     public final ParameterDescriptorGroup descriptor;
 
     /**
-     * The file from which the grid has been loaded. This is not used directly by this class
+     * The files from which the grid has been loaded. This is not used directly by this class
      * (except for {@link #equals(Object)} and {@link #hashCode()}), but can be used by math
      * transform for setting the parameter values.
      */
-    public final Path file;
+    private final Path[] files;
 
     /**
      * Number of grid cells along the <var>x</var> axis.
@@ -120,14 +124,17 @@ public abstract class DatumShiftGridFile<C extends Quantity, T extends Quantity>
                        final double Δx, final double Δy,
                        final int    nx, final int    ny,
                        final ParameterDescriptorGroup descriptor,
-                       final Path file) throws NoninvertibleTransformException
+                       final Path... files) throws NoninvertibleTransformException
     {
         super(coordinateUnit, (LinearTransform) new AffineTransform2D(Δx, 0, 0, Δy, x0, y0).inverse(),
                 new int[] {nx, ny}, isCellValueRatio, translationUnit);
         this.descriptor = descriptor;
-        this.file       = file;
+        this.files      = files;
         this.nx         = nx;
         this.accuracy   = Double.NaN;
+        if (files.length == 0) {
+            throw new IllegalArgumentException();
+        }
     }
 
     /**
@@ -138,7 +145,7 @@ public abstract class DatumShiftGridFile<C extends Quantity, T extends Quantity>
     DatumShiftGridFile(final DatumShiftGridFile<C,T> other) {
         super(other);
         descriptor = other.descriptor;
-        file       = other.file;
+        files      = other.files;
         nx         = other.nx;
         accuracy   = other.accuracy;
     }
@@ -184,6 +191,24 @@ public abstract class DatumShiftGridFile<C extends Quantity, T extends Quantity>
     abstract Object[] getData();
 
     /**
+     * Sets all parameters for a value of type {@link Path} to the values given to th constructor.
+     *
+     * @param parameters The parameter group where to set the values.
+     */
+    public final void setFileParameters(final Parameters parameters) {
+        int i = 0;  // The 'files' array should always contains at least one element.
+        for (final GeneralParameterDescriptor gd : descriptor.descriptors()) {
+            if (gd instanceof ParameterDescriptor<?>) {
+                final ParameterDescriptor<?> d = (ParameterDescriptor<?>) gd;
+                if (Path.class.isAssignableFrom(d.getValueClass())) {
+                    parameters.getOrCreate(d).setValue(files[i]);
+                    if (++i == files.length) break;
+                }
+            }
+        }
+    }
+
+    /**
      * Returns {@code this} casted to the given type, after verification that those types are valid.
      */
     @SuppressWarnings("unchecked")
@@ -209,7 +234,7 @@ public abstract class DatumShiftGridFile<C extends Quantity, T extends Quantity>
         }
         if (super.equals(other)) {
             final DatumShiftGridFile<?,?> that = (DatumShiftGridFile<?,?>) other;
-            return file.equals(that.file) && Arrays.deepEquals(getData(), that.getData());
+            return Arrays.equals(files, that.files) && Arrays.deepEquals(getData(), that.getData());
         }
         return false;
     }
@@ -221,7 +246,7 @@ public abstract class DatumShiftGridFile<C extends Quantity, T extends Quantity>
      */
     @Override
     public int hashCode() {
-        return super.hashCode() + file.hashCode();
+        return super.hashCode() + Arrays.hashCode(files);
     }
 
     /**
@@ -229,9 +254,10 @@ public abstract class DatumShiftGridFile<C extends Quantity, T extends Quantity>
      *
      * @return A string representation for debugging purpose.
      */
+    @Debug
     @Override
     public String toString() {
-        return "DatumShiftGrid[\"" + file.getFileName() + "\"]";
+        return "DatumShiftGrid[\"" + files[0].getFileName() + "\"]";
     }
 
 
@@ -260,16 +286,17 @@ public abstract class DatumShiftGridFile<C extends Quantity, T extends Quantity>
          * Creates a new datum shift grid with the given grid geometry, filename and number of shift dimensions.
          * All {@code double} values given to this constructor will be converted from degrees to radians.
          */
-        Float(final Unit<C> coordinateUnit,
+        Float(final int dim,
+              final Unit<C> coordinateUnit,
               final Unit<T> translationUnit,
               final boolean isCellValueRatio,
               final double x0, final double y0,
               final double Δx, final double Δy,
               final int    nx, final int    ny,
               final ParameterDescriptorGroup descriptor,
-              final Path file, final int dim) throws NoninvertibleTransformException
+              final Path... files) throws NoninvertibleTransformException
         {
-            super(coordinateUnit, translationUnit, isCellValueRatio, x0, y0, Δx, Δy, nx, ny, descriptor, file);
+            super(coordinateUnit, translationUnit, isCellValueRatio, x0, y0, Δx, Δy, nx, ny, descriptor, files);
             offsets = new float[dim][];
             final int size = Math.multiplyExact(nx, ny);
             for (int i=0; i<dim; i++) {

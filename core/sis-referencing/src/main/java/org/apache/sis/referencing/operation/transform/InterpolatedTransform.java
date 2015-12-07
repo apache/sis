@@ -25,8 +25,6 @@ import javax.measure.converter.UnitConverter;
 import javax.measure.converter.LinearConverter;
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterValueGroup;
-import org.opengis.parameter.ParameterDescriptor;
-import org.opengis.parameter.GeneralParameterDescriptor;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
@@ -46,7 +44,6 @@ import org.apache.sis.internal.referencing.provider.DatumShiftGridFile;
 
 // Branch-specific imports
 import java.util.Objects;
-import java.nio.file.Path;
 
 
 /**
@@ -166,20 +163,10 @@ public class InterpolatedTransform extends AbstractMathTransform implements Seri
          * Create the contextual parameters using the descriptor of the provider that created the datum shift grid.
          * If that provider is unknown, default (for now) to NTv2. This default may change in any future SIS version.
          */
+        context = new ContextualParameters((grid instanceof DatumShiftGridFile<?,?>)
+                ? ((DatumShiftGridFile<?,?>) grid).descriptor : NTv2.PARAMETERS, dimension + 1, dimension + 1);
         if (grid instanceof DatumShiftGridFile<?,?>) {
-            final DatumShiftGridFile<?,?> gridFile = (DatumShiftGridFile<?,?>) grid;
-            context = new ContextualParameters(gridFile.descriptor, dimension + 1, dimension + 1);
-            for (final GeneralParameterDescriptor gd : gridFile.descriptor.descriptors()) {
-                if (gd instanceof ParameterDescriptor<?>) {
-                    final ParameterDescriptor<?> d = (ParameterDescriptor<?>) gd;
-                    if (Path.class.isAssignableFrom(d.getValueClass())) {
-                        context.getOrCreate(d).setValue(gridFile.file);
-                        break;
-                    }
-                }
-            }
-        } else {
-            context = new ContextualParameters(NTv2.PARAMETERS, dimension + 1, dimension + 1);
+            ((DatumShiftGridFile<?,?>) grid).setFileParameters(context);
         }
         /*
          * Set the normalization matrix to the conversion from grid coordinates (e.g. seconds of angle)

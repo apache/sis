@@ -40,4 +40,5 @@ org.apache.sis.internal.referencing.provider.PolarStereographicNorth
 org.apache.sis.internal.referencing.provider.PolarStereographicSouth
 org.apache.sis.internal.referencing.provider.ObliqueStereographic
 org.apache.sis.internal.referencing.provider.NTv2
+org.apache.sis.internal.referencing.provider.NADCON
 org.apache.sis.internal.referencing.provider.FranceGeocentricInterpolation

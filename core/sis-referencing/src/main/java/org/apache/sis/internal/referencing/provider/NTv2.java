@@ -23,7 +23,6 @@ import java.util.Arrays;
 import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
-import java.io.EOFException;
 import java.io.IOException;
 import java.nio.ByteOrder;
 import java.nio.ByteBuffer;
@@ -170,7 +169,7 @@ public final class NTv2 extends AbstractProvider {
      * @version 0.7
      * @module
      */
-    private static final class Loader {
+    private static final class Loader extends DatumShiftGridLoader {
         /**
          * Size of a record. This value applies to both the header records and the data records.
          * In the case of header records, this is the size of the key plus the size of the value.
@@ -222,21 +221,6 @@ public final class NTv2 extends AbstractProvider {
         }
 
         /**
-         * The file to load, used only if we have errors to report.
-         */
-        private final Path file;
-
-        /**
-         * The channel opened on the file.
-         */
-        private final ReadableByteChannel channel;
-
-        /**
-         * The buffer to use for transferring data from the channel.
-         */
-        private final ByteBuffer buffer;
-
-        /**
          * The header content. Keys are strings like {@code "VERSION"}, {@code "SYSTEM_F"},
          * <var>etc.</var>. Values are {@link String}, {@link Integer} or {@link Double}.
          * If some keys are unrecognized, they will be put in this map with the {@code null} value
@@ -264,12 +248,8 @@ public final class NTv2 extends AbstractProvider {
          * @throws FactoryException if a data record can not be parsed.
          */
         Loader(final ReadableByteChannel channel, final Path file) throws IOException, FactoryException {
-            this.file    = file;
-            this.channel = channel;
-            this.header  = new LinkedHashMap<>();
-            this.buffer  = ByteBuffer.allocate(4096);
-            channel.read(buffer);
-            buffer.flip();
+            super(channel, ByteBuffer.allocate(4096), file);
+            this.header = new LinkedHashMap<>();
             ensureBufferContains(RECORD_LENGTH);
             if (isLittleEndian(buffer.getInt(KEY_LENGTH))) {
                 buffer.order(ByteOrder.LITTLE_ENDIAN);
@@ -315,13 +295,13 @@ public final class NTv2 extends AbstractProvider {
             final String name = (String) get("GS_TYPE");
             if (name.equalsIgnoreCase("SECONDS")) {         // Most common value
                 unit = NonSI.SECOND_ANGLE;
-                precision = 1;
+                precision = SECOND_PRECISION;                       // Used only as a hint; will not hurt if wrong.
             } else if (name.equalsIgnoreCase("MINUTES")) {
                 unit = NonSI.MINUTE_ANGLE;
-                precision = 0.001;                          // Used only as a hint; will not hurt if wrong.
+                precision = SECOND_PRECISION / 60;                  // Used only as a hint; will not hurt if wrong.
             } else if (name.equalsIgnoreCase("DEGREES")) {
                 unit = NonSI.DEGREE_ANGLE;
-                precision = 0.00001;                        // Used only as a hint; will not hurt if wrong.
+                precision = SECOND_PRECISION / DEGREES_TO_SECONDS;  // Used only as a hint; will not hurt if wrong.
             } else {
                 throw new FactoryException(Errors.format(Errors.Keys.UnexpectedValueInElement_2, "GS_TYPE", name));
             }
@@ -346,8 +326,8 @@ public final class NTv2 extends AbstractProvider {
              * sign of longitude translations; instead, this reversal will be handled by grid.coordinateToGrid
              * MathTransform and its inverse.
              */
-            final DatumShiftGridFile.Float<Angle,Angle> grid = new DatumShiftGridFile.Float<>(
-                    unit, unit, true, -xmin, ymin, -dx, dy, width, height, PARAMETERS, file, 2);
+            final DatumShiftGridFile.Float<Angle,Angle> grid = new DatumShiftGridFile.Float<>(2,
+                    unit, unit, true, -xmin, ymin, -dx, dy, width, height, PARAMETERS, file);
             @SuppressWarnings("MismatchedReadAndWriteOfArray") final float[] tx = grid.offsets[0];
             @SuppressWarnings("MismatchedReadAndWriteOfArray") final float[] ty = grid.offsets[1];
             for (int i=0; i<count; i++) {
@@ -368,31 +348,6 @@ public final class NTv2 extends AbstractProvider {
          */
         private static boolean isLittleEndian(final int n) {
             return Integer.compareUnsigned(n, Integer.reverseBytes(n)) > 0;
-        }
-
-        /**
-         * Makes sure that the buffer contains at least <var>n</var> remaining bytes.
-         * It is caller's responsibility to ensure that the given number of bytes is
-         * not greater than the {@linkplain ByteBuffer#capacity() buffer capacity}.
-         *
-         * @param  n The minimal number of bytes needed in the {@linkplain #buffer}.
-         * @throws EOFException If the channel has reached the end of stream.
-         * @throws IOException If an other kind of error occurred while reading.
-         */
-        private void ensureBufferContains(int n) throws IOException {
-            assert n >= 0 && n <= buffer.capacity() : n;
-            n -= buffer.remaining();
-            if (n > 0) {
-                buffer.compact();
-                do {
-                    final int c = channel.read(buffer);
-                    if (c < 0) {
-                        throw new EOFException(Errors.format(Errors.Keys.UnexpectedEndOfFile_1, file));
-                    }
-                    n -= c;
-                } while (n > 0);
-                buffer.flip();
-            }
         }
 
         /**

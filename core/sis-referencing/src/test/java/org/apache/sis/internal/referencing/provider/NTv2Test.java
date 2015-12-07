@@ -63,11 +63,6 @@ public final strictfp class NTv2Test extends TestCase {
     public static final String TEST_FILE = "NTF_R93-extract.gsb";
 
     /**
-     * Conversion factor from degrees to seconds.
-     */
-    private static final double DEGREES_TO_SECONDS = 3600;
-
-    /**
      * Best accuracy found in the "{@code NTF_R93.gsb}" file.
      */
     private static final float ACCURACY = 0.001618f;
@@ -154,8 +149,8 @@ public final strictfp class NTv2Test extends TestCase {
         final double[] indices  = new double[position.length];
         final double[] vector   = new double[2];
         for (int i=0; i<expected.length; i++) {
-            position[i] *= DEGREES_TO_SECONDS;
-            expected[i] *= DEGREES_TO_SECONDS;
+            position[i] *= DatumShiftGridLoader.DEGREES_TO_SECONDS;
+            expected[i] *= DatumShiftGridLoader.DEGREES_TO_SECONDS;
             expected[i] -= position[i];  // We will test the interpolated shifts rather than final coordinates.
         }
         grid.getCoordinateToGrid().transform(position, 0, indices, 0, 1);
@@ -163,11 +158,11 @@ public final strictfp class NTv2Test extends TestCase {
         vector[0] *= -cellSize;   // Was positive toward west.
         vector[1] *= +cellSize;
         assertArrayEquals("interpolateInCell", expected, vector,
-                FranceGeocentricInterpolationTest.ANGULAR_TOLERANCE * DEGREES_TO_SECONDS);
+                FranceGeocentricInterpolationTest.ANGULAR_TOLERANCE * DatumShiftGridLoader.DEGREES_TO_SECONDS);
 
         // Same test than above, but let DatumShiftGrid do the conversions for us.
         assertArrayEquals("interpolateAt", expected, grid.interpolateAt(position),
-                FranceGeocentricInterpolationTest.ANGULAR_TOLERANCE * DEGREES_TO_SECONDS);
+                FranceGeocentricInterpolationTest.ANGULAR_TOLERANCE * DatumShiftGridLoader.DEGREES_TO_SECONDS);
         assertSame("Grid should be cached.", grid, NTv2.getOrLoad(file));
     }
 
@@ -262,6 +257,6 @@ public final strictfp class NTv2Test extends TestCase {
      * Moves the buffer position to the next record.
      */
     private static void nextRecord(final ByteBuffer buffer) {
-        buffer.position(((buffer.position() / 16) + 1) * 16);
+        buffer.position(((buffer.position() / 16) + 1) * 16);   // "16" is the length of records in NTv2 format.
     }
 }
