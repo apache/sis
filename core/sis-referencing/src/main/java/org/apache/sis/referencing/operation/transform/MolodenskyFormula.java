@@ -236,7 +236,8 @@ abstract class MolodenskyFormula extends AbstractMathTransform implements Serial
 
     /**
      * Returns a copy of internal parameter values of this transform.
-     * The returned group contains parameter values for the eccentricity and the shift among others.
+     * The returned group contains parameters for the source ellipsoid semi-axis lengths
+     * and the differences between source and target ellipsoid parameters.
      *
      * <div class="note"><b>Note:</b>
      * this method is mostly for {@linkplain org.apache.sis.io.wkt.Convention#INTERNAL debugging purposes}

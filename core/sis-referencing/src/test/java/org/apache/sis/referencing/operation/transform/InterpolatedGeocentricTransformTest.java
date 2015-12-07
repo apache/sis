@@ -59,11 +59,12 @@ import static org.opengis.test.Assert.*;
 })
 public final strictfp class InterpolatedGeocentricTransformTest extends MathTransformTestCase {
     /**
-     * Creates the <cite>"France geocentric interpolation"</cite> transform.
+     * Creates the <cite>"France geocentric interpolation"</cite> transform,
+     * including the normalization and denormalization parts.
      *
      * @throws FactoryException if an error occurred while loading the grid.
      */
-    private void create() throws FactoryException {
+    private void createGeodeticTransformation() throws FactoryException {
         final URL file = FranceGeocentricInterpolationTest.class.getResource(FranceGeocentricInterpolationTest.TEST_FILE);
         assertNotNull("Test file \"" + FranceGeocentricInterpolationTest.TEST_FILE + "\" not found.", file);
         final Ellipsoid source = HardCodedDatum.NTF.getEllipsoid();     // Clarke 1880 (IGN)
@@ -89,7 +90,7 @@ public final strictfp class InterpolatedGeocentricTransformTest extends MathTran
      */
     @Test
     public void testForwardTransform() throws FactoryException, TransformException {
-        create();   // Create the inverse of the transform we are interrested in.
+        createGeodeticTransformation();   // Create the inverse of the transform we are interrested in.
         transform = transform.inverse();
         isInverseTransformSupported = false;
         verifyTransform(FranceGeocentricInterpolationTest.samplePoint(3),
@@ -111,11 +112,29 @@ public final strictfp class InterpolatedGeocentricTransformTest extends MathTran
     @Test
     @DependsOnMethod("testForwardTransform")
     public void testInverseTransform() throws FactoryException, TransformException {
-        create();
+        createGeodeticTransformation();
         isInverseTransformSupported = false;
         verifyTransform(FranceGeocentricInterpolationTest.samplePoint(1),
                         FranceGeocentricInterpolationTest.samplePoint(3));
         validate();
+    }
+
+    /**
+     * Tests the derivatives at the sample point. This method compares the derivatives computed by
+     * the transform with an estimation of derivatives computed by the finite differences method.
+     *
+     * @throws FactoryException if an error occurred while loading the grid.
+     * @throws TransformException if an error occurred while transforming the coordinate.
+     */
+    @Test
+    @DependsOnMethod("testForwardTransform")
+    public void testDerivative() throws FactoryException, TransformException {
+        createGeodeticTransformation();
+        transform = transform.inverse();
+        final double delta = (100.0 / 60) / 1852;      // Approximatively 100 metres.
+        derivativeDeltas = new double[] {delta, delta};
+        tolerance = 1E-5;   // Empirical value.
+        verifyDerivative(FranceGeocentricInterpolationTest.samplePoint(1));
     }
 
     /**
@@ -127,7 +146,7 @@ public final strictfp class InterpolatedGeocentricTransformTest extends MathTran
      */
     @Test
     public void testWKT() throws FactoryException, TransformException {
-        create();
+        createGeodeticTransformation();
         transform = transform.inverse();
         assertWktEqualsRegex("(?m)\\Q" +
                 "PARAM_MT[“Geocentric interpolation”,\n" +
@@ -161,7 +180,7 @@ public final strictfp class InterpolatedGeocentricTransformTest extends MathTran
      */
     @Test
     public void testInternalWKT() throws FactoryException, TransformException {
-        create();
+        createGeodeticTransformation();
         assertInternalWktEqualsRegex("(?m)\\Q" +
                 "Concat_MT[\n" +
                 "  Param_MT[“Affine parametric transformation”,\n" +

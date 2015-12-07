@@ -117,6 +117,18 @@ public final class FranceGeocentricInterpolation extends AbstractProvider {
     static final double PRECISION = 0.0001;
 
     /**
+     * Accuracies of offset values. Accuracies in GR3D files are defined by standard-deviations rounded
+     * to integer values. The mapping given in NTG_88 document is:
+     *
+     *   01 =  5 cm,
+     *   02 = 10 cm,
+     *   03 = 20 cm,
+     *   04 = 50 cm and
+     *   99 &gt; 1 m.
+     */
+    private static final double[] ACCURACY = {0.05, 0.1, 0.2, 0.5, 1};
+
+    /**
      * The keyword expected at the beginning of every lines in the header.
      */
     private static final String HEADER = "GR3D";
@@ -278,7 +290,7 @@ public final class FranceGeocentricInterpolation extends AbstractProvider {
      * (which is the direction that use the interpolation grid directly without iteration),
      * then inverts the transform.
      *
-     * @param  factory Ignored (can be null).
+     * @param  factory The factory to use if this constructor needs to create other math transforms.
      * @param  values The group of parameter values.
      * @return The created math transform.
      * @throws ParameterNotFoundException if a required parameter was not found.
@@ -332,7 +344,7 @@ public final class FranceGeocentricInterpolation extends AbstractProvider {
                     try (final BufferedReader in = Files.newBufferedReader(file)) {
                         final DatumShiftGridFile.Float<Angle,Length> g = load(in, file);
                         grid = DatumShiftGridCompressed.compress(g, averages, scale);
-                    } catch (IOException | RuntimeException e) {
+                    } catch (IOException | NoninvertibleTransformException | RuntimeException e) {
                         // NumberFormatException, ArithmeticException, NoSuchElementException, possibly other.
                         throw new FactoryException(Errors.format(Errors.Keys.CanNotParseFile_2, HEADER, file), e);
                     }
@@ -357,7 +369,7 @@ public final class FranceGeocentricInterpolation extends AbstractProvider {
      * @throws ArithmeticException if the width or the height exceed the integer capacity.
      */
     static DatumShiftGridFile.Float<Angle,Length> load(final BufferedReader in, final Path file)
-            throws IOException, FactoryException
+            throws IOException, FactoryException, NoninvertibleTransformException
     {
         DatumShiftGridFile.Float<Angle,Length> grid = null;
         double x0 = 0;
@@ -414,7 +426,7 @@ public final class FranceGeocentricInterpolation extends AbstractProvider {
                             ny = Math.toIntExact(Math.round((yf - y0) / Δy + 1));
                             grid = new DatumShiftGridFile.Float<>(
                                     NonSI.DEGREE_ANGLE, SI.METRE, false,
-                                    x0, y0, Δx, Δy, nx, ny, file, 3);
+                                    x0, y0, Δx, Δy, nx, ny, PARAMETERS, file, 3);
                         }
                         break;
                     }
@@ -474,6 +486,11 @@ public final class FranceGeocentricInterpolation extends AbstractProvider {
             tX[p] = -parseFloat(t.nextToken());  // See javadoc for the reason why we reverse the sign.
             tY[p] = -parseFloat(t.nextToken());
             tZ[p] = -parseFloat(t.nextToken());
+            final double accuracy = ACCURACY[Math.min(ACCURACY.length-1,
+                    Math.max(0, Integer.parseInt(t.nextToken()) - 1))];
+            if (!(accuracy >= grid.accuracy)) {   // Use '!' for replacing the initial NaN.
+                grid.accuracy = accuracy;
+            }
         } while ((line = in.readLine()) != null);
         return grid;
     }

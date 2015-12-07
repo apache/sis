@@ -127,7 +127,7 @@ public final class Matrix2 extends MatrixSIS {
         if (matrix == null || matrix instanceof Matrix2) {
             return (Matrix2) matrix;
         }
-        ensureSizeMatch(SIZE, matrix);
+        ensureSizeMatch(SIZE, SIZE, matrix);
         return new Matrix2(matrix);
     }
 

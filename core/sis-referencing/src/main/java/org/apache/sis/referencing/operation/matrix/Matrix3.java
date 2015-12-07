@@ -139,7 +139,7 @@ public final class Matrix3 extends MatrixSIS {
         if (matrix == null || matrix instanceof Matrix3) {
             return (Matrix3) matrix;
         }
-        ensureSizeMatch(SIZE, matrix);
+        ensureSizeMatch(SIZE, SIZE, matrix);
         return new Matrix3(matrix);
     }
 

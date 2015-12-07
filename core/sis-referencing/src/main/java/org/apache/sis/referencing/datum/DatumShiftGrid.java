@@ -35,6 +35,7 @@ import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.internal.util.DoubleDouble;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.measure.Units;
 
 // Branch-dependent imports
 import java.util.Objects;
@@ -100,6 +101,24 @@ import java.util.Objects;
  * </ul></div>
  *
  * Implementations of this class shall be immutable and thread-safe.
+ *
+ * <div class="section">Number of dimensions</div>
+ * Input coordinates and translation vectors can have any number of dimensions. However in the current implementation,
+ * only the two first dimensions are used for interpolating the translation vectors. This restriction appears in the
+ * following method signatures:
+ *
+ * <ul>
+ *   <li>{@link #interpolateAtNormalized(double, double, double[])}
+ *       where the two first {@code double} values are (<var>x</var>,<var>y</var>) normalized ordinates.</li>
+ *   <li>{@link #interpolateInCell(double, double, double[])}
+ *       where the two first {@code double} values are (<var>x</var>,<var>y</var>) grid indices.</li>
+ *   <li>{@link #getCellValue(int, int, int)}
+ *       where the two last {@code int} values are (<var>x</var>,<var>y</var>) grid indices.</li>
+ * </ul>
+ *
+ * Note that the above restriction does not prevent {@code DatumShiftGrid} to interpolate translation vectors
+ * in more than two dimensions. See the above <cite>datum shift by geocentric translations</cite> use case for
+ * an example.
  *
  * <div class="section">Serialization</div>
  * Serialized objects of this class are not guaranteed to be compatible with future Apache SIS releases.
@@ -231,7 +250,7 @@ public abstract class DatumShiftGrid<C extends Quantity, T extends Quantity> imp
             final Matrix m = coordinateToGrid.getMatrix();
             if (Matrices.isAffine(m)) {
                 final int n = m.getNumCol() - 1;
-                final double toUnit = c.convert(1);
+                final double toUnit = Units.derivative(c, 0);
                 switch (m.getNumRow()) {
                     default: y0 = m.getElement(1,n); scaleY = diagonal(m, 1, n) * toUnit;   // Fall through
                     case 1:  x0 = m.getElement(0,n); scaleX = diagonal(m, 0, n) * toUnit;
@@ -277,6 +296,16 @@ public abstract class DatumShiftGrid<C extends Quantity, T extends Quantity> imp
     }
 
     /**
+     * Returns the number of cells along each axis in the grid. The length of this array is equal to
+     * {@code coordinateToGrid} target dimensions.
+     *
+     * @return The number of cells along each axis in the grid.
+     */
+    public int[] getGridSize() {
+        return gridSize.clone();
+    }
+
+    /**
      * Returns the domain of validity of input coordinates that can be specified to the
      * {@link #interpolateAt interpolateAt(…)} method. Coordinates outside that domain of
      * validity will still be accepted, but the extrapolated results may be very wrong.
@@ -305,16 +334,6 @@ public abstract class DatumShiftGrid<C extends Quantity, T extends Quantity> imp
      */
     public Unit<C> getCoordinateUnit() {
         return coordinateUnit;
-    }
-
-    /**
-     * Returns the number of cells along each axis in the grid. The length of this array is equal to
-     * {@code coordinateToGrid} target dimensions.
-     *
-     * @return The number of cells along each axis in the grid.
-     */
-    public int[] getGridSize() {
-        return gridSize.clone();
     }
 
     /**
@@ -489,7 +508,32 @@ public abstract class DatumShiftGrid<C extends Quantity, T extends Quantity> imp
     }
 
     /**
-     * Returns the translation stored at the given grid indices for the given dimension.
+     * Returns the derivative at the given grid indices.
+     *
+     * <div class="section">Default implementation</div>
+     * The current implementation assumes that the derivative is constant everywhere in the cell
+     * at the given indices. It does not yet take in account the fractional part of {@code gridX}
+     * and {@code gridY}, because empirical tests suggest that the accuracy of such interpolation
+     * is uncertain.
+     *
+     * @param  gridX First grid ordinate of the point for which to get the translation.
+     * @param  gridY Second grid ordinate of the point for which to get the translation.
+     * @return The derivative at the given location.
+     */
+    public Matrix derivativeInCell(final double gridX, final double gridY) {
+        final int ix = Math.max(0, Math.min(gridSize[0] - 2, (int) gridX));
+        final int iy = Math.max(0, Math.min(gridSize[1] - 2, (int) gridY));
+        final Matrix derivative = Matrices.createDiagonal(getTranslationDimensions(), gridSize.length);
+        for (int j=derivative.getNumRow(); --j>=0;) {
+            final double orig = getCellValue(j, iy, ix);
+            derivative.setElement(j, 0, derivative.getElement(j, 0) + (getCellValue(j, iy+1, ix) - orig));
+            derivative.setElement(j, 1, derivative.getElement(j, 1) + (getCellValue(j, iy, ix+1) - orig));
+        }
+        return derivative;
+    }
+
+    /**
+     * Returns the translation stored at the given two-dimensional grid indices for the given dimension.
      * The returned value is considered representative of the value in the center of the grid cell.
      * The output unit of measurement depends on the {@link #isCellValueRatio()} boolean:
      *
@@ -538,6 +582,28 @@ public abstract class DatumShiftGrid<C extends Quantity, T extends Quantity> imp
         }
         return sum.value / (nx * ny);
     }
+
+    /**
+     * Returns an estimation of cell value precision (not to be confused with accuracy).
+     * This information can be determined in different ways:
+     *
+     * <ul>
+     *   <li>If the data are read from an ASCII file with a fixed number of digits, then a suggested value is half
+     *       the precision of the last digit (i.e. 0.5 × 10⁻ⁿ where <var>n</var> is the number of digits after the
+     *       comma).</li>
+     *   <li>If there is no indication about precision, then this method should return a value smaller than the
+     *       best accuracy found in the grid. Accuracy are often specified on a cell-by-cell basis in grid files.</li>
+     * </ul>
+     *
+     * The output unit of measurement is the same than the one documented in {@link #getCellValue}.
+     * In particular if {@link #isCellValueRatio()} returns {@code true}, then the accuracy is in
+     * units of grid cell size.
+     *
+     * <p>This information is used for determining a tolerance threshold in iterative calculation.</p>
+     *
+     * @return An estimation of cell value precision.
+     */
+    public abstract double getCellPrecision();
 
     /**
      * Returns {@code true} if the translation values in the cells are divided by the cell size.
