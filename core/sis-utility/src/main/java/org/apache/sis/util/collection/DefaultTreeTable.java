@@ -45,9 +45,9 @@ import java.util.Objects;
  *
  * {@preformat java
  *     public class CityLocation {
- *         public static final TableColumn<String> CITY_NAME  = new TableColumn<>(String.class);
- *         public static final TableColumn<Float>  LATITUDE   = new TableColumn<>(Float .class);
- *         public static final TableColumn<Float>  LONGTITUDE = new TableColumn<>(Float .class);
+ *         public static final TableColumn<String> CITY_NAME  = new TableColumn<>(String.class, "City name");
+ *         public static final TableColumn<Float>  LATITUDE   = new TableColumn<>(Float.class,  "Latitude");
+ *         public static final TableColumn<Float>  LONGTITUDE = new TableColumn<>(Float.class,  "Longitude");
  *
  *         public TreeTable createTable() {
  *             DefaultTreeTable table = new DefaultTreeTable(CITY_NAME, LATITUDE, LONGITUDE);
