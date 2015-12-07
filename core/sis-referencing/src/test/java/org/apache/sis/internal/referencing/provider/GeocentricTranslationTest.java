@@ -40,7 +40,7 @@ import org.apache.sis.test.DependsOn;
 import org.junit.Test;
 
 import static java.lang.StrictMath.toRadians;
-import static org.junit.Assert.*;
+import static org.opengis.test.Assert.*;
 
 
 /**
@@ -195,8 +195,12 @@ public final strictfp class GeocentricTranslationTest extends MathTransformTestC
         final Parameters values = Parameters.castOrWrap(factory.getDefaultParameters("Geocentric translations (geog2D domain)"));
         setTranslation(values);
         setEllipsoids(values, CommonCRS.WGS84.ellipsoid(), CommonCRS.ED50.ellipsoid());
-        return Geographic3Dto2DTest.createDatumShiftForGeographic2D(factory,
-                new GeocentricTranslation().createMathTransform(factory, values), values);
+        final MathTransform gt = new GeocentricTranslation().createMathTransform(factory, values);
+        assertFalse("isIdentity", gt.isIdentity());
+        assertEquals("sourceDimensions", 3, gt.getSourceDimensions());
+        assertEquals("targetDimensions", 3, gt.getTargetDimensions());
+        assertInstanceOf("Geocentric translation", LinearTransform.class, gt);
+        return Geographic3Dto2DTest.createDatumShiftForGeographic2D(factory, gt, values);
     }
 
     /**

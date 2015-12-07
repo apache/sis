@@ -151,6 +151,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final short CanNotRepresentInFormat_2 = 10;
 
         /**
+         * Target dimension {0} depends on excluded source dimensions.
+         */
+        public static final short CanNotSeparateTargetDimension_1 = 175;
+
+        /**
          * Can not set a value for property “{0}”.
          */
         public static final short CanNotSetPropertyValue_1 = 11;
@@ -477,11 +482,6 @@ public final class Errors extends IndexedResourceBundle {
          * Argument ‘{0}’ can not take an infinite value.
          */
         public static final short InfiniteArgumentValue_1 = 51;
-
-        /**
-         * Inseparable transform.
-         */
-        public static final short InseparableTransform = 175;
 
         /**
          * Argument ‘{0}’ shall contain at least {1} elements. A number of {2} is insufficient.
@@ -1039,6 +1039,11 @@ public final class Errors extends IndexedResourceBundle {
          * Coordinate reference system has not been specified.
          */
         public static final short UnspecifiedCRS = 173;
+
+        /**
+         * Dimensions have not been specified.
+         */
+        public static final short UnspecifiedDimensions = 204;
 
         /**
          * No format is specified for objects of class ‘{0}’.

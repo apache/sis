@@ -435,6 +435,7 @@ public class InterpolatedTransform extends AbstractMathTransform implements Seri
             return true;
         }
         return super.equals(object, mode) && Objects.equals(grid, ((InterpolatedTransform) object).grid);
+        // No need to compare the contextual parameters since this is done by super-class.
     }
 
     /**

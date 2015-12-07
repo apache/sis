@@ -524,6 +524,7 @@ abstract class MolodenskyFormula extends AbstractMathTransform implements Serial
                 && Numerics.epsilonEqual(semiMajor,           that.semiMajor,           mode)
                 && Numerics.epsilonEqual(eccentricitySquared, that.eccentricitySquared, mode)
                 && Objects .equals(grid, that.grid);
+                // No need to compare the contextual parameters since this is done by super-class.
         }
         return false;
     }
