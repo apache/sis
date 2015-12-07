@@ -1,28 +1,28 @@
+# All configurations
+ide-project/local-src/
+target/
+tmp/
+*.tmp
+*.log
+*.orig
+.svn/
+
+# NetBeans IDE files
+ide-project/NetBeans/build/
+ide-project/NetBeans/dist/
+nbactions.xml
+nbproject
+
 # Eclipse IDE files
 .classpath
 .project
 .settings/
 
-# Maven output
-target/
-
-# Apple 
-.DS_Store
-*.tmp
-tmp/
-*.log
-*.orig
-
-# Old SVN files
-.svn/
-
-
-nbactions.xml
-nbproject
-
-# Intellij files
+# IntelliJ IDE files
 *.iml
 *.ipr
 *.iws
 .idea/
 
+# MacOS
+.DS_Store
