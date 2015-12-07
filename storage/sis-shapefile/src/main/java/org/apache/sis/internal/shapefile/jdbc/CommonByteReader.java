@@ -33,7 +33,7 @@ import org.apache.sis.internal.shapefile.AutoChecker;
  * @since   0.5
  * @module
  */
-public abstract class CommonByteReader<InvalidFormatException extends Exception, FNFException extends Exception> extends AutoChecker  implements AutoCloseable  {
+public abstract class CommonByteReader<InvalidFormatException extends Exception, FNFException extends Exception> extends AutoChecker implements AutoCloseable  {
     /** The File. */
     private File file;
 
@@ -65,28 +65,28 @@ public abstract class CommonByteReader<InvalidFormatException extends Exception,
      */
     public CommonByteReader(File f, Class<InvalidFormatException> invalidFormatException, Class<FNFException> fileNotFoundException) throws FNFException, InvalidFormatException {
         Objects.requireNonNull(f, "The file cannot be null.");
-        classInvalidFormatException = invalidFormatException;
-        classFNFException = fileNotFoundException;
+        this.classInvalidFormatException = invalidFormatException;
+        this.classFNFException = fileNotFoundException;
 
-        file = f;
+        this.file = f;
 
         try {
-            fis = new FileInputStream(file);
+            this.fis = new FileInputStream(this.file);
         }
         catch(FileNotFoundException e) {
-            throwException(classInvalidFormatException, e.getMessage(), e);
+            throwException(this.classInvalidFormatException, e.getMessage(), e);
             throw new RuntimeException("this place should not be reached.");
         }
 
-        fc = fis.getChannel();
+        this.fc = this.fis.getChannel();
 
         try {
-            int fsize = (int)fc.size();
-            byteBuffer = fc.map(FileChannel.MapMode.READ_ONLY, 0, fsize);
+            int fsize = (int)this.fc.size();
+            this.byteBuffer = this.fc.map(FileChannel.MapMode.READ_ONLY, 0, fsize);
         }
         catch(IOException e) {
-            String message = format(Level.WARNING, "excp.reader_cannot_be_created", file.getAbsolutePath(), e.getMessage());
-            throwException(classFNFException, message, e);
+            String message = format(Level.WARNING, "excp.reader_cannot_be_created", this.file.getAbsolutePath(), e.getMessage());
+            throwException(this.classFNFException, message, e);
             throw new RuntimeException("this place should not be reached.");
         }
    }
@@ -97,13 +97,13 @@ public abstract class CommonByteReader<InvalidFormatException extends Exception,
      */
     @Override
     public void close() throws IOException {
-        if (fc != null)
-            fc.close();
+        if (this.fc != null)
+            this.fc.close();
 
-        if (fis != null)
-            fis.close();
+        if (this.fis != null)
+            this.fis.close();
 
-        isClosed = true;
+        this.isClosed = true;
     }
 
     /**
@@ -111,7 +111,7 @@ public abstract class CommonByteReader<InvalidFormatException extends Exception,
      * @return true if it is closed.
      */
     public boolean isClosed() {
-        return isClosed;
+        return this.isClosed;
     }
 
     /**
@@ -119,7 +119,7 @@ public abstract class CommonByteReader<InvalidFormatException extends Exception,
      * @return Byte Buffer.
      */
     public MappedByteBuffer getByteBuffer() {
-        return byteBuffer;
+        return this.byteBuffer;
     }
 
     /**
@@ -127,6 +127,6 @@ public abstract class CommonByteReader<InvalidFormatException extends Exception,
      * @return File.
      */
     public File getFile() {
-        return file;
+        return this.file;
     }
 }

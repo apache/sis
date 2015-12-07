@@ -41,8 +41,8 @@ public class SQLNoResultException extends SQLException {
      */
     public SQLNoResultException(String message, String sqlStatement, File dbf) {
         super(message);
-        sql = sqlStatement;
-        database = dbf;
+        this.sql = sqlStatement;
+        this.database = dbf;
     }
 
     /**
@@ -50,7 +50,7 @@ public class SQLNoResultException extends SQLException {
      * @return SQL statement.
      */
     public String getSQL() {
-        return sql;
+        return this.sql;
     }
 
     /**
@@ -58,6 +58,6 @@ public class SQLNoResultException extends SQLException {
      * @return The database that was queried.
      */
     public File getDatabase() {
-        return database;
+        return this.database;
     }
 }

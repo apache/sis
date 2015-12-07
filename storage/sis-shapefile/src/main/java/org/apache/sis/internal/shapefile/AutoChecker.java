@@ -34,7 +34,7 @@ import org.apache.sis.util.logging.Logging;
  */
 public abstract class AutoChecker {
     /** Logger. */
-    private Logger logger = Logging.getLogger(getClass().getSimpleName());
+    private static Logger LOGGER = Logging.getLogger(AutoChecker.class.getSimpleName());
 
     /**
      * Format a resource bundle message.
@@ -95,7 +95,7 @@ public abstract class AutoChecker {
         Objects.requireNonNull(logLevel, "The log level cannot be null.");
 
         String message = format(key, args);
-        logger.log(logLevel, message);
+        LOGGER.log(logLevel, message);
         return(message);
     }
 
@@ -112,10 +112,19 @@ public abstract class AutoChecker {
         Objects.requireNonNull(logLevel, "The log level cannot be null.");
 
         String message = format(classForResourceBundleName, key, args);
-        logger.log(logLevel, message);
+        LOGGER.log(logLevel, message);
         return(message);
     }
 
+    /**
+     * Tells if the logger of the base class will log this level of log.
+     * @param level Wished level of logging.
+     * @return true if it will log it.
+     */
+    protected boolean isLoggable(Level level) {
+        return LOGGER.isLoggable(level);
+    }
+    
     /**
      * Logs (and take the time to format an entry log) only if the logger accepts the message.
      * @param logLevel Log level.
@@ -125,7 +134,7 @@ public abstract class AutoChecker {
     final protected void log(Level logLevel, String key, Object... args) {
         Objects.requireNonNull(logLevel, "The log level cannot be null.");
 
-        if (logger.isLoggable(logLevel))
+        if (LOGGER.isLoggable(logLevel))
             format(logLevel, key, args);
     }
 
@@ -171,6 +180,6 @@ public abstract class AutoChecker {
      * @return logger.
      */
     public Logger getLogger() {
-        return logger;
+        return LOGGER;
     }
 }

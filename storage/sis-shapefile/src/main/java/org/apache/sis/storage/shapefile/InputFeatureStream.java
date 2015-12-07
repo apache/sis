@@ -22,11 +22,12 @@ import java.sql.SQLFeatureNotSupportedException;
 import java.text.DecimalFormat;
 import java.text.MessageFormat;
 import java.util.List;
+import java.util.ResourceBundle;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.apache.sis.feature.DefaultFeatureType;
-import org.apache.sis.internal.shapefile.SQLShapefileNotFoundException;
-import org.apache.sis.internal.shapefile.ShapefileByteReader;
-import org.apache.sis.internal.shapefile.ShapefileDescriptor;
+import org.apache.sis.internal.shapefile.*;
 import org.apache.sis.internal.shapefile.jdbc.*;
 import org.apache.sis.internal.shapefile.jdbc.connection.DBFConnection;
 import org.apache.sis.internal.shapefile.jdbc.metadata.DBFDatabaseMetaData;
@@ -36,6 +37,7 @@ import org.apache.sis.internal.shapefile.jdbc.sql.SQLInvalidStatementException;
 import org.apache.sis.internal.shapefile.jdbc.sql.SQLUnsupportedParsingFeatureException;
 import org.apache.sis.internal.shapefile.jdbc.statement.DBFStatement;
 import org.apache.sis.storage.DataStoreClosedException;
+import org.apache.sis.util.logging.Logging;
 import org.opengis.feature.Feature;
 
 /**
@@ -47,6 +49,12 @@ import org.opengis.feature.Feature;
  * @module
  */
 public class InputFeatureStream extends InputStream {
+    /** Logger. */
+    private static Logger LOGGER = Logging.getLogger(InputFeatureStream.class.getSimpleName());
+    
+    /** Resource bundle. */
+    private ResourceBundle rsc = ResourceBundle.getBundle(InputFeatureStream.class.getName());
+    
     /** Dedicated connection to DBF. */
     private DBFConnection connection;
 
@@ -67,6 +75,12 @@ public class InputFeatureStream extends InputStream {
 
     /** Database file. */
     private File databaseFile;
+    
+    /** Shapefile index. */
+    private File shapefileIndex;
+    
+    /** Indicates that the shape file has a valid index provided with it. */
+    private boolean hasShapefileIndex; 
 
     /** Type of the features contained in this shapefile. */
     private DefaultFeatureType featuresType;
@@ -78,20 +92,37 @@ public class InputFeatureStream extends InputStream {
      * Create an input stream of features over a connection.
      * @param shpfile Shapefile.
      * @param dbaseFile Database file.
+     * @param shpfileIndex Shapefile index, null if none provided, will be checked for existence.
+     * @param sqlStatement SQL Statement to run, if null, a SELECT * FROM DBF will occurs.
      * @throws InvalidShapefileFormatException if the shapefile format is invalid.
      * @throws InvalidDbaseFileFormatException if the Dbase file format is invalid.
      * @throws ShapefileNotFoundException if the shapefile has not been found.
      * @throws DbaseFileNotFoundException if the database file has not been found.
      */
-    public InputFeatureStream(File shpfile, File dbaseFile) throws InvalidDbaseFileFormatException, InvalidShapefileFormatException, ShapefileNotFoundException, DbaseFileNotFoundException {
+    public InputFeatureStream(File shpfile, File dbaseFile, File shpfileIndex, String sqlStatement) throws InvalidDbaseFileFormatException, InvalidShapefileFormatException, ShapefileNotFoundException, DbaseFileNotFoundException {
         try {
-            connection = (DBFConnection)new DBFDriver().connect(dbaseFile.getAbsolutePath(), null);
-            sql = MessageFormat.format("SELECT * FROM {0}", dbaseFile.getName());
-            shapefile = shpfile;
-            databaseFile = dbaseFile;
+            this.connection = (DBFConnection)new DBFDriver().connect(dbaseFile.getAbsolutePath(), null);
+            
+            if (sqlStatement == null) {
+                this.sql = MessageFormat.format("SELECT * FROM {0}", dbaseFile.getName());
+            }
+            else {
+                this.sql = sqlStatement;
+            }
+            
+            this.shapefile = shpfile;
+            this.databaseFile = dbaseFile;
+            
+            if (shpfileIndex != null && (shpfileIndex.exists() && shpfileIndex.isFile())) {
+                this.shapefileIndex = shpfileIndex;
+                this.hasShapefileIndex = true;
+            }
+            else {
+                this.hasShapefileIndex = false;
+            }
     
-            shapefileReader = new ShapefileByteReader(shapefile, databaseFile);
-            featuresType = shapefileReader.getFeaturesType();
+            this.shapefileReader = new ShapefileByteReader(this.shapefile, this.databaseFile, this.shapefileIndex);
+            this.featuresType = this.shapefileReader.getFeaturesType();
     
             try {
                 executeQuery();
@@ -118,7 +149,34 @@ public class InputFeatureStream extends InputStream {
             throw new ShapefileNotFoundException(ex.getMessage(), ex);
         }
     }
+    
+    /**
+     * Create an input stream of features over a connection, responding to a SELECT * FROM DBF statement.
+     * @param shpfile Shapefile.
+     * @param dbaseFile Database file.
+     * @param shpfileIndex Shapefile index, null if none provided, will be checked for existence.
+     * @throws InvalidShapefileFormatException if the shapefile format is invalid.
+     * @throws InvalidDbaseFileFormatException if the Dbase file format is invalid.
+     * @throws ShapefileNotFoundException if the shapefile has not been found.
+     * @throws DbaseFileNotFoundException if the database file has not been found.
+     */
+    public InputFeatureStream(File shpfile, File dbaseFile, File shpfileIndex) throws InvalidDbaseFileFormatException, InvalidShapefileFormatException, ShapefileNotFoundException, DbaseFileNotFoundException {
+        this(shpfile, dbaseFile, shpfileIndex, null);
+    }
 
+    /**
+     * Create an input stream of features over a connection, responding to a SELECT * FROM DBF statement.
+     * @param shpfile Shapefile.
+     * @param dbaseFile Database file.
+     * @throws InvalidShapefileFormatException if the shapefile format is invalid.
+     * @throws InvalidDbaseFileFormatException if the Dbase file format is invalid.
+     * @throws ShapefileNotFoundException if the shapefile has not been found.
+     * @throws DbaseFileNotFoundException if the database file has not been found.
+     */
+    public InputFeatureStream(File shpfile, File dbaseFile) throws InvalidDbaseFileFormatException, InvalidShapefileFormatException, ShapefileNotFoundException, DbaseFileNotFoundException {
+        this(shpfile, dbaseFile, null);
+    }
+    
     /**
      * @see java.io.InputStream#read()
      */
@@ -140,16 +198,16 @@ public class InputFeatureStream extends InputStream {
      */
     @Override
     public void close() {
-        rs.close();
-        stmt.close();
-        connection.close();
+        this.rs.close();
+        this.stmt.close();
+        this.connection.close();
     }
 
     /**
      * Read next feature responding to the SQL query.
      * @return Feature, null if no more feature is available.
      * @throws DataStoreClosedException if the current connection used to query the shapefile has been closed.
-     * @throws DataStoreQueryException if the statement used to query the shapefile content is incorrect.
+     * @throws DataStoreQueryException if the statement used to query the shapefile content is incorrect, or requires a shapefile index to be executed and none is available.
      * @throws DataStoreQueryResultException if the shapefile results cause a trouble (wrong format, for example).
      * @throws InvalidShapefileFormatException if the shapefile structure shows a problem.
      */
@@ -166,14 +224,16 @@ public class InputFeatureStream extends InputStream {
         catch(SQLNotNumericException | SQLNotDateException e) {
             throw new DataStoreQueryResultException(e.getMessage(), e);
         }
+        catch(SQLNoDirectAccessAvailableException e) {
+            throw new DataStoreQueryException(e.getMessage(), e);
+        }
     }
     
     /**
      * Return the features type.
      * @return Features type.
      */
-    public DefaultFeatureType getFeaturesType()
-    {
+    public DefaultFeatureType getFeaturesType() {
         return this.featuresType;
     }
     
@@ -181,8 +241,7 @@ public class InputFeatureStream extends InputStream {
      * Returns the shapefile descriptor.
      * @return Shapefile descriptor.
      */
-    public ShapefileDescriptor getShapefileDescriptor()
-    {
+    public ShapefileDescriptor getShapefileDescriptor() {
         return this.shapefileReader.getShapefileDescriptor();
     }
     
@@ -190,9 +249,16 @@ public class InputFeatureStream extends InputStream {
      * Returns the database fields descriptors.
      * @return List of fields descriptors. 
      */
-    public List<DBase3FieldDescriptor> getDatabaseFieldsDescriptors()
-    {
+    public List<DBase3FieldDescriptor> getDatabaseFieldsDescriptors() {
         return this.shapefileReader.getFieldsDescriptors();
+    }
+    
+    /**
+     * Checks if the shapefile has an index provided with it.
+     * @return true if an index file (.shx) has been given with the shapefile.
+     */
+    public boolean hasShapefileIndex() {
+        return this.hasShapefileIndex;
     }
     
     /**
@@ -207,26 +273,55 @@ public class InputFeatureStream extends InputStream {
      * @throws SQLUnsupportedParsingFeatureException if a SQL ability is not currently available through this driver.
      * @throws SQLFeatureNotSupportedException if a SQL ability is not currently available through this driver.
      * @throws InvalidShapefileFormatException if the shapefile format is invalid.
+     * @throws SQLNoDirectAccessAvailableException if the underlying SQL statement requires a direct access in the shapefile, but the shapefile cannot allow it.
      */
-    private Feature internalReadFeature() throws SQLConnectionClosedException, SQLInvalidStatementException, SQLIllegalParameterException, SQLNoSuchFieldException, SQLUnsupportedParsingFeatureException, SQLNotNumericException, SQLNotDateException, SQLFeatureNotSupportedException, InvalidShapefileFormatException {
+    private Feature internalReadFeature() throws SQLConnectionClosedException, SQLInvalidStatementException, SQLIllegalParameterException, SQLNoSuchFieldException, SQLUnsupportedParsingFeatureException, SQLNotNumericException, SQLNotDateException, SQLFeatureNotSupportedException, InvalidShapefileFormatException, SQLNoDirectAccessAvailableException {
         try {
-            if (endOfFile) {
+            if (this.endOfFile) {
                 return null;
             }
 
-            if (rs.next() == false) {
-                endOfFile = true;
+            int previousRecordNumber = this.rs.getRowNum();
+            
+            if (this.rs.next() == false) {
+                this.endOfFile = true;
                 return null;
             }
-
-            Feature feature = featuresType.newInstance();
-            shapefileReader.completeFeature(feature);
-            DBFDatabaseMetaData metadata = (DBFDatabaseMetaData)connection.getMetaData();
+            
+            int currentRecordNumber = this.rs.getRowNum();
+            
+            // On the shapefile, only jump in another place if a direct access is needed.
+            boolean directAccesRequired = currentRecordNumber != (previousRecordNumber + 1);
+            
+            if (directAccesRequired) {
+                try {
+                    if (LOGGER.isLoggable(Level.FINER)) {
+                        MessageFormat format = new MessageFormat(this.rsc.getString("log.shapefile_reading_with_direct_access"));
+                        LOGGER.finer(format.format(new Object[] {previousRecordNumber, currentRecordNumber}));
+                    }
+                    
+                    this.shapefileReader.setRowNum(currentRecordNumber);
+                }
+                catch(SQLInvalidRecordNumberForDirectAccessException e) {
+                    // This would be an internal API problem, because as soon as we handle a shapefile index, we shall go through its relative shape feature file correctly.
+                    throw new RuntimeException(e.getMessage(), e);
+                }
+            }
+            else {
+                if (LOGGER.isLoggable(Level.FINER)) {
+                    MessageFormat format = new MessageFormat(this.rsc.getString("log.shapefile_reading_with_sequential_access"));
+                    LOGGER.finer(format.format(new Object[] {previousRecordNumber, currentRecordNumber}));
+                }
+            }
+            
+            Feature feature = this.featuresType.newInstance();
+            this.shapefileReader.completeFeature(feature);
+            DBFDatabaseMetaData metadata = (DBFDatabaseMetaData)this.connection.getMetaData();
 
             try(DBFBuiltInMemoryResultSetForColumnsListing rsDatabase = (DBFBuiltInMemoryResultSetForColumnsListing)metadata.getColumns(null, null, null, null)) {
                 while(rsDatabase.next()) {
                     String fieldName = rsDatabase.getString("COLUMN_NAME");
-                    Object fieldValue = rs.getObject(fieldName);
+                    Object fieldValue = this.rs.getObject(fieldName);
 
                     // FIXME To allow features to be filled again, the values are converted to String again : feature should allow any kind of data.
                     String stringValue;
@@ -272,7 +367,7 @@ public class InputFeatureStream extends InputStream {
      * @throws SQLInvalidStatementException if the given SQL Statement is invalid.
      */
     private void executeQuery() throws SQLConnectionClosedException, SQLInvalidStatementException {
-        stmt = (DBFStatement)connection.createStatement();
-        rs = (DBFRecordBasedResultSet)stmt.executeQuery(sql);
+        this.stmt = (DBFStatement)this.connection.createStatement();
+        this.rs = (DBFRecordBasedResultSet)this.stmt.executeQuery(this.sql);
     }
 }

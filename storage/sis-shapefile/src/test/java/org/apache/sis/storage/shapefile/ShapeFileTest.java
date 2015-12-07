@@ -144,6 +144,49 @@ public final strictfp class ShapeFileTest extends TestCase {
          assertEquals("The last record red must be DEUX-SEVRES department.", "DEUX-SEVRES", last.getProperty("NOM_DEPT").getValue());
      }
      
+     /**
+      * Testing direct access in the shapefile.
+      * @throws URISyntaxException if the resource name is incorrect.
+      * @throws DataStoreException if a general file reading trouble occurs.
+      */
+     @Test 
+     public void testDirectAcces() throws DataStoreException, URISyntaxException {
+         ShapeFile shp = new ShapeFile(path("ABRALicenseePt_4326_clipped.shp"));
+         
+         // 1) Find the third record, sequentially.
+         Feature thirdFeature;
+         
+         try(InputFeatureStream isSequential = shp.findAll()) {
+             isSequential.readFeature();
+             isSequential.readFeature();
+             thirdFeature = isSequential.readFeature();
+         }
+         
+         // Take one of its key fields and another field for reference, and its geometry.
+         Double sequentialAddressId = Double.valueOf((String)(thirdFeature.getProperty("ADDRID")).getValue());
+         String sequentialAddress = (String)(thirdFeature.getProperty("ADDRESS")).getValue();
+         Object sequentialGeometry = thirdFeature.getPropertyValue("geometry");
+         
+         // 2) Now attempt a direct access to this feature.         
+         Feature directFeature;
+         String sql = MessageFormat.format("SELECT * FROM ABRALicenseePt_4326_clipped WHERE ADDRID = {0,number,#0}", sequentialAddressId);
+         
+         try(InputFeatureStream isDirect = shp.find(sql)) {
+             directFeature = isDirect.readFeature();
+             assertNotNull("The direct access feature returned should not be null", directFeature);
+         }
+
+         assertNotNull("The field ADDRID in the direct access feature has not been found again.", directFeature.getProperty("ADDRID"));
+         
+         Double directAddressId = Double.valueOf((String)(directFeature.getProperty("ADDRID")).getValue());
+         String directAddress = (String)(directFeature.getProperty("ADDRESS")).getValue();
+         Object directGeometry = directFeature.getPropertyValue("geometry");
+         
+         assertEquals("DBase part : direct access didn't returned the same address id than sequential access.", sequentialAddressId, directAddressId);
+         assertEquals("DBase part : direct access didn't returned the same address than sequential access.", sequentialAddress, directAddress);
+         assertEquals("Shapefile part : direct access didn't returned the same geometry than sequential access.", sequentialGeometry, directGeometry);
+     }
+     
     /**
      * Read all the shapefile content.
      * @param shp Shapefile to read.

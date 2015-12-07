@@ -33,11 +33,11 @@ import java.util.logging.Level;
  * @module
  */
 abstract class AbstractDbase3ByteReader extends CommonByteReader<SQLInvalidDbaseFileFormatException, SQLDbaseFileNotFoundException> implements Dbase3ByteReader {
-    /** Number of bytes in the header. */
-    protected short dbaseHeaderBytes;
+    /** First data record position, in bytes. */
+    protected short firstRecordPosition;
 
-    /** Number of bytes in the record. */
-    protected short dbaseRecordBytes;
+    /** Size of one record, in bytes. */
+    protected short recordLength;
 
     /** Reserved (dBASE IV) Filled with 00h. */
     protected byte[] reservedFiller1 = new byte[2];
@@ -86,9 +86,6 @@ abstract class AbstractDbase3ByteReader extends CommonByteReader<SQLInvalidDbase
     /** Date of last update; in YYMMDD format. */
     protected byte[] dbaseLastUpdate = new byte[3];
 
-    /** Current row rumber. */
-    protected int rowNum;
-
     /**
      * Map a dbf file.
      * @param file Database file.
@@ -104,7 +101,7 @@ abstract class AbstractDbase3ByteReader extends CommonByteReader<SQLInvalidDbase
      * @return Charset.
      */
     @Override public Charset getCharset() {
-        return charset;
+        return this.charset;
     }
 
     /**
@@ -112,23 +109,31 @@ abstract class AbstractDbase3ByteReader extends CommonByteReader<SQLInvalidDbase
      * @return Date of the last update.
      */
     @Override public Date getDateOfLastUpdate() {
-        return toDate(dbaseLastUpdate);
+        return toDate(this.dbaseLastUpdate);
+    }
+    
+    /**
+     * Returns the first record position, in bytes, in the DBase file.
+     * @return First record position.
+     */
+    @Override public short getFirstRecordPosition() {
+        return this.firstRecordPosition;
     }
 
+    /**
+     * Returns the length (in bytes) of one record in this DBase file, including the delete flag. 
+     * @return Record length.
+     */
+    @Override public short getRecordLength() {
+        return this.recordLength;
+    }
+    
     /**
      * Returns the record count.
      * @return Record count.
      */
     @Override public int getRowCount() {
-        return rowCount;
-    }
-
-    /**
-     * Returns the current record number.
-     * @return Current record number.
-     */
-    @Override public int getRowNum() {
-        return rowNum;
+        return this.rowCount;
     }
 
     /**

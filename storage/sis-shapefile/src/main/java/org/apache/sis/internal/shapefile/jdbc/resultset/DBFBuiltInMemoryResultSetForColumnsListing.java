@@ -50,7 +50,7 @@ public class DBFBuiltInMemoryResultSetForColumnsListing extends BuiltInMemoryRes
      */
     public DBFBuiltInMemoryResultSetForColumnsListing(DBFStatement stmt, List<DBase3FieldDescriptor> fieldsDescriptors) {
         super(stmt, "driver list columns in this DBase 3 file");
-        itDescriptor = fieldsDescriptors.iterator();
+        this.itDescriptor = fieldsDescriptors.iterator();
     }
 
     /**
@@ -64,21 +64,21 @@ public class DBFBuiltInMemoryResultSetForColumnsListing extends BuiltInMemoryRes
             // String => table name
             case "TABLE_NAME": {
                 String tableName = getTableName();
-                wasNull = (tableName == null);
+                this.wasNull = (tableName == null);
                 return tableName;
             }
 
             // String => column name
             case "COLUMN_NAME": {
-                String columnName = current.getName();
-                wasNull = (columnName == null);
+                String columnName = this.current.getName();
+                this.wasNull = (columnName == null);
                 return columnName;
             }
 
             // String => Data source dependent type name, for a UDT the type name is fully qualified
             case "TYPE_NAME": {
-                String typeName = current.getType() != null ? toColumnTypeName() : null;
-                wasNull = (typeName == null);
+                String typeName = this.current.getType() != null ? toColumnTypeName() : null;
+                this.wasNull = (typeName == null);
                 return typeName;
             }
 
@@ -89,42 +89,42 @@ public class DBFBuiltInMemoryResultSetForColumnsListing extends BuiltInMemoryRes
 
             // String => table catalog (may be null)
             case "TABLE_CAT": {
-                wasNull = true;
+                this.wasNull = true;
                 return null;
             }
 
             // String => table schema (may be null)
             case "TABLE_SCHEM": {
-                wasNull = true;
+                this.wasNull = true;
                 return null;
             }
 
             // String => comment describing column (may be null)
             case "REMARKS":
-                wasNull = true;
+                this.wasNull = true;
                 return null;
 
             // String => default value for the column, which should be interpreted as a string when the value is enclosed in single quotes (may be null)
             case "COLUMN_DEF": {
-                wasNull = true;
+                this.wasNull = true;
                 return null;
             }
 
             // String => catalog of table that is the scope of a reference attribute (null if DATA_TYPE isn't REF)
             case "SCOPE_CATALOG": {
-                wasNull = true;
+                this.wasNull = true;
                 return null;
             }
 
             // String => schema of table that is the scope of a reference attribute (null if the DATA_TYPE isn't REF)
             case "SCOPE_SCHEMA": {
-                wasNull = true;
+                this.wasNull = true;
                 return null;
             }
 
             // String => table name that this the scope of a reference attribute (null if the DATA_TYPE isn't REF)
             case "SCOPE_TABLE": {
-                wasNull = true;
+                this.wasNull = true;
                 return null;
             }
 
@@ -135,7 +135,7 @@ public class DBFBuiltInMemoryResultSetForColumnsListing extends BuiltInMemoryRes
              * empty string --- if it cannot be determined whether the column is auto incremented
              */
             case "IS_AUTOINCREMENT": {
-                wasNull = false;
+                this.wasNull = false;
                 return "NO";
             }
 
@@ -146,7 +146,7 @@ public class DBFBuiltInMemoryResultSetForColumnsListing extends BuiltInMemoryRes
              * empty string --- if it cannot be determined whether this is a generated column
              */
             case "IS_GENERATEDCOLUMN": {
-                wasNull = false;
+                this.wasNull = false;
                 return "NO";
             }
 
@@ -168,20 +168,20 @@ public class DBFBuiltInMemoryResultSetForColumnsListing extends BuiltInMemoryRes
         switch(columnLabel) {
             // int => SQL type from java.sql.Types
             case "DATA_TYPE": {
-                wasNull = false;
+                this.wasNull = false;
                 return toSQLDataType();
             }
 
             // int => column size.
             case "COLUMN_SIZE": {
-                wasNull = false;
+                this.wasNull = false;
                 return toPrecision();
             }
 
             // int => the number of fractional digits. Null is returned for data types where DECIMAL_DIGITS is not applicable.
             case "DECIMAL_DIGITS": {
                 int scale = toScale();
-                wasNull = toScale() == -1;
+                this.wasNull = toScale() == -1;
                 return scale == -1 ? 0 : scale;
             }
 
@@ -197,13 +197,13 @@ public class DBFBuiltInMemoryResultSetForColumnsListing extends BuiltInMemoryRes
              * columnNullableUnknown - nullability unknown
              */
             case "NULLABLE": {
-                wasNull = false;
+                this.wasNull = false;
                 return DatabaseMetaData.columnNullableUnknown;
             }
 
             // int => unused
             case "SQL_DATA_TYPE": {
-                wasNull = false;
+                this.wasNull = false;
                 return toSQLDataType();
             }
 
@@ -218,7 +218,7 @@ public class DBFBuiltInMemoryResultSetForColumnsListing extends BuiltInMemoryRes
 
             // int => index of column in table (starting at 1)
             case "ORDINAL_POSITION": {
-                return columnIndex;
+                return this.columnIndex;
             }
 
             /**
@@ -228,19 +228,19 @@ public class DBFBuiltInMemoryResultSetForColumnsListing extends BuiltInMemoryRes
 
             // short => source type of a distinct type or user-generated Ref type, SQL type from java.sql.Types (null if DATA_TYPE isn't DISTINCT or user-generated REF)
             case "SOURCE_DATA_TYPE": {
-                wasNull = true;
+                this.wasNull = true;
                 return 0;
             }
 
             // is not used.
             case "BUFFER_LENGTH": {
-                wasNull = false;
+                this.wasNull = false;
                 return 0;
             }
 
             // int => unused
             case "SQL_DATETIME_SUB": {
-                wasNull = false;
+                this.wasNull = false;
                 return 0;
             }
 
@@ -257,15 +257,15 @@ public class DBFBuiltInMemoryResultSetForColumnsListing extends BuiltInMemoryRes
      * @see java.sql.ResultSet#next()
      */
     @Override public boolean next() throws SQLNoResultException {
-        if (itDescriptor.hasNext()) {
-            current = itDescriptor.next();
-            columnIndex ++;
+        if (this.itDescriptor.hasNext()) {
+            this.current = this.itDescriptor.next();
+            this.columnIndex ++;
             return true;
         }
         else {
-            if (afterLast) {
+            if (this.afterLast) {
                 // The ResultSet has no more records and has been call one time too much.
-                afterLast = true;
+                this.afterLast = true;
 
                 String message = format(Level.WARNING, "excp.no_more_desc", getTableName());
                 throw new SQLNoResultException(message, "asking columns desc", getFile());
@@ -281,7 +281,7 @@ public class DBFBuiltInMemoryResultSetForColumnsListing extends BuiltInMemoryRes
      * @return SQL Datatype.
      */
     private int toSQLDataType() {
-        switch(current.getType()) {
+        switch(this.current.getType()) {
             case AutoIncrement:
                 return Types.INTEGER;
 
@@ -337,7 +337,7 @@ public class DBFBuiltInMemoryResultSetForColumnsListing extends BuiltInMemoryRes
      * @return Column type name.
      */
     private String toColumnTypeName() {
-        switch(current.getType()) {
+        switch(this.current.getType()) {
             case AutoIncrement:
                 return "AUTO_INCREMENT";
 
@@ -393,11 +393,11 @@ public class DBFBuiltInMemoryResultSetForColumnsListing extends BuiltInMemoryRes
      * @return Precision of the current field.
      */
     public int toPrecision() {
-        switch(current.getType()) {
+        switch(this.current.getType()) {
             case AutoIncrement:
             case Character:
             case Integer:
-               return current.getLength();
+               return this.current.getLength();
 
             case Date:
                 return 8;
@@ -405,7 +405,7 @@ public class DBFBuiltInMemoryResultSetForColumnsListing extends BuiltInMemoryRes
             case Double:
             case FloatingPoint:
             case Number:
-                return current.getLength();
+                return this.current.getLength();
 
             case Logical:
                 return 0;
@@ -413,7 +413,7 @@ public class DBFBuiltInMemoryResultSetForColumnsListing extends BuiltInMemoryRes
             case Currency:
             case DateTime:
             case TimeStamp:
-                return current.getLength();
+                return this.current.getLength();
 
             case Memo:
             case Picture:
@@ -422,7 +422,7 @@ public class DBFBuiltInMemoryResultSetForColumnsListing extends BuiltInMemoryRes
                 return 0;
 
             default:
-                return current.getLength();
+                return this.current.getLength();
         }
     }
 
@@ -431,7 +431,7 @@ public class DBFBuiltInMemoryResultSetForColumnsListing extends BuiltInMemoryRes
      * @return Scale of the current field, -1 means : this field is not numeric.
      */
     private int toScale() {
-        switch(current.getType()) {
+        switch(this.current.getType()) {
             case AutoIncrement:
             case Logical:
                 return 0;
@@ -441,7 +441,7 @@ public class DBFBuiltInMemoryResultSetForColumnsListing extends BuiltInMemoryRes
             case FloatingPoint:
             case Number:
             case Currency:
-                return current.getDecimalCount();
+                return this.current.getDecimalCount();
 
             case Character:
             case Date:
