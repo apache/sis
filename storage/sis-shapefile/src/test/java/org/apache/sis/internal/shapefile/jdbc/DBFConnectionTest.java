@@ -41,7 +41,7 @@ public class DBFConnectionTest extends AbstractTestBaseForInternalJDBC {
     @Test
     public void openCloseConnection() throws SQLException {
         final Driver driver = new DBFDriver();
-        final Connection connection = driver.connect(dbfFile.getAbsolutePath(), null);
+        final Connection connection = driver.connect(this.dbfFile.getAbsolutePath(), null);
         assertFalse("Connection should be opened", connection.isClosed());
         assertTrue ("Connection should be valid",  connection.isValid(0));
 
@@ -60,7 +60,7 @@ public class DBFConnectionTest extends AbstractTestBaseForInternalJDBC {
         info.put("record_charset", "UTF-8");
         
         final Driver driver = new DBFDriver();
-        final Connection connection = driver.connect(dbfFile.getAbsolutePath(), info);
+        final Connection connection = driver.connect(this.dbfFile.getAbsolutePath(), info);
         assertFalse("Connection should be opened", connection.isClosed());
         assertTrue ("Connection should be valid",  connection.isValid(0));
 
@@ -78,14 +78,14 @@ public class DBFConnectionTest extends AbstractTestBaseForInternalJDBC {
     public void connectionClosed() throws SQLException {
         // Open and close an connection.
         final Driver driver = new DBFDriver();
-        final Connection connection = driver.connect(dbfFile.getAbsolutePath(), null);
+        final Connection connection = driver.connect(this.dbfFile.getAbsolutePath(), null);
         connection.close();
 
         // Then, attempt to use it.
         try {
             connection.createStatement();
         } catch(SQLConnectionClosedException e) {
-            assertEquals("The database name in this exception is not well set.", e.getDatabase().getName(), dbfFile.getName());
+            assertEquals("The database name in this exception is not well set.", e.getDatabase().getName(), this.dbfFile.getName());
             throw e;
         }
     }

@@ -16,9 +16,10 @@
  */
 package org.apache.sis.internal.shapefile;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.nio.ByteOrder;
+import java.nio.MappedByteBuffer;
+import java.nio.channels.FileChannel;
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.logging.Level;
@@ -54,22 +55,38 @@ public class ShapefileByteReader extends CommonByteReader<InvalidShapefileFormat
 
     /** Type of the features contained in this shapefile. */
     private DefaultFeatureType featuresType;
-
+    
+    /** Shapefile index. */
+    private File shapeFileIndex;
+    
+    /** Shapefile indexes (loaded from .SHX file, if any found). */
+    private ArrayList<Integer> indexes;
+    
+    /** Shapefile records lengths (loaded from .SHX file, if any found). */
+    private ArrayList<Integer> recordsLengths;
+    
     /**
      * Construct a shapefile byte reader.
      * @param shapefile Shapefile.
      * @param dbaseFile underlying database file name.
+     * @param shapefileIndex Shapefile index, if any. Null else.
      * @throws InvalidShapefileFormatException if the shapefile format is invalid.
      * @throws SQLInvalidDbaseFileFormatException if the database file format is invalid.
      * @throws SQLShapefileNotFoundException if the shapefile has not been found.
      * @throws SQLDbaseFileNotFoundException if the database file has not been found.
      */
-    public ShapefileByteReader(File shapefile, File dbaseFile) throws InvalidShapefileFormatException, SQLInvalidDbaseFileFormatException, SQLShapefileNotFoundException, SQLDbaseFileNotFoundException {
+    public ShapefileByteReader(File shapefile, File dbaseFile, File shapefileIndex) throws InvalidShapefileFormatException, SQLInvalidDbaseFileFormatException, SQLShapefileNotFoundException, SQLDbaseFileNotFoundException {
         super(shapefile, InvalidShapefileFormatException.class, SQLShapefileNotFoundException.class);
+        this.shapeFileIndex = shapefileIndex;
+        
         loadDatabaseFieldDescriptors(dbaseFile);
         loadDescriptor();
+        
+        if (this.shapeFileIndex != null) {
+            loadShapefileIndexes();
+        }
 
-        featuresType = getFeatureType(shapefile.getName());
+        this.featuresType = getFeatureType(shapefile.getName());
     }
 
     /**
@@ -77,7 +94,7 @@ public class ShapefileByteReader extends CommonByteReader<InvalidShapefileFormat
      * @return Fields descriptors.
      */
     public List<DBase3FieldDescriptor> getFieldsDescriptors() {
-        return databaseFieldsDescriptors;
+        return this.databaseFieldsDescriptors;
     }
 
     /**
@@ -85,7 +102,7 @@ public class ShapefileByteReader extends CommonByteReader<InvalidShapefileFormat
      * @return Shapefile descriptor.
      */
     public ShapefileDescriptor getShapefileDescriptor() {
-        return shapefileDescriptor;
+        return this.shapefileDescriptor;
     }
 
     /**
@@ -93,7 +110,7 @@ public class ShapefileByteReader extends CommonByteReader<InvalidShapefileFormat
      * @return Features type.
      */
     public DefaultFeatureType getFeaturesType() {
-        return featuresType;
+        return this.featuresType;
     }
 
     /**
@@ -104,13 +121,13 @@ public class ShapefileByteReader extends CommonByteReader<InvalidShapefileFormat
     private DefaultFeatureType getFeatureType(final String name) {
         Objects.requireNonNull(name, "The feature name cannot be null.");
 
-        final int n = databaseFieldsDescriptors.size();
+        final int n = this.databaseFieldsDescriptors.size();
         final DefaultAttributeType<?>[] attributes = new DefaultAttributeType<?>[n + 1];
         final Map<String, Object> properties = new HashMap<>(4);
 
         // Load data field.
         for (int i = 0; i < n; i++) {
-            properties.put(DefaultAttributeType.NAME_KEY, databaseFieldsDescriptors.get(i).getName());
+            properties.put(DefaultAttributeType.NAME_KEY, this.databaseFieldsDescriptors.get(i).getName());
             attributes[i] = new DefaultAttributeType<>(properties, String.class, 1, 1, null);
         }
 
@@ -127,7 +144,54 @@ public class ShapefileByteReader extends CommonByteReader<InvalidShapefileFormat
      * Load shapefile descriptor.
      */
     private void loadDescriptor() {
-        shapefileDescriptor = new ShapefileDescriptor(getByteBuffer());
+        this.shapefileDescriptor = new ShapefileDescriptor(getByteBuffer());
+    }
+
+    /**
+     * Load shapefile indexes.
+     * @return true if shapefile indexes has been read,
+     * false if none where available or a problem occured.
+     */
+    private boolean loadShapefileIndexes() {
+        if (this.shapeFileIndex == null) {
+            return false;
+        }
+        
+        try(FileInputStream fis = new FileInputStream(this.shapeFileIndex); FileChannel fc = fis.getChannel()) {
+            try {
+                int fsize = (int)fc.size();
+                MappedByteBuffer indexesByteBuffer = fc.map(FileChannel.MapMode.READ_ONLY, 0, fsize);
+                
+                // Indexes entries follow.
+                this.indexes = new ArrayList<>();
+                this.recordsLengths = new ArrayList<>();
+                indexesByteBuffer.position(100);
+                indexesByteBuffer.order(ByteOrder.BIG_ENDIAN);
+                
+                while(indexesByteBuffer.hasRemaining()) {
+                    this.indexes.add(indexesByteBuffer.getInt());        // Data offset : the position of the record in the main shapefile, expressed in words (16 bits).
+                    this.recordsLengths.add(indexesByteBuffer.getInt()); // Length of this shapefile record.
+                }
+                
+                log(Level.INFO, "log.index_has_been_read", this.shapeFileIndex.getAbsolutePath(), this.indexes.size(), this.getFile().getAbsolutePath());
+                return true;
+            }
+            catch(IOException e) {
+                log(Level.WARNING, "log.invalid_file_content_for_shapefile_index", this.shapeFileIndex.getAbsolutePath(), e.getMessage());
+                this.shapeFileIndex = null;
+                return false;
+            }
+        }
+        catch(FileNotFoundException e) {
+            log(Level.WARNING, "log.no_shapefile_index_found_at_location", this.shapeFileIndex.getAbsolutePath(), this.getFile().getAbsolutePath());
+            this.shapeFileIndex = null;
+            return false;
+        }
+        catch(IOException e) {
+            log(Level.WARNING, "log.invalid_file_content_for_shapefile_index", this.shapeFileIndex.getAbsolutePath(), e.getMessage());
+            this.shapeFileIndex = null;
+            return false;
+        }
     }
 
     /**
@@ -141,7 +205,7 @@ public class ShapefileByteReader extends CommonByteReader<InvalidShapefileFormat
 
         try {
             databaseReader = new MappedByteReader(dbaseFile, null);
-            databaseFieldsDescriptors = databaseReader.getFieldsDescriptors();
+            this.databaseFieldsDescriptors = databaseReader.getFieldsDescriptors();
         }
         finally {
             if (databaseReader != null) {
@@ -154,6 +218,42 @@ public class ShapefileByteReader extends CommonByteReader<InvalidShapefileFormat
         }
     }
 
+    /**
+     * Direct access to a feature by its record number.
+     * @param recordNumber Record number.
+     * @throws SQLNoDirectAccessAvailableException if this shape file doesn't allow direct acces, because it has no index.
+     * @throws SQLInvalidRecordNumberForDirectAccessException if the record number asked for is invalid (below the start, after the end).
+     */
+    public void setRowNum(int recordNumber) throws SQLNoDirectAccessAvailableException, SQLInvalidRecordNumberForDirectAccessException {
+        // Check that the asked record number is not before the first.
+        if (recordNumber < 1) {
+            String message = format(Level.SEVERE, "excp.wrong_direct_access_before_start", recordNumber, getFile().getAbsolutePath());
+            throw new SQLInvalidRecordNumberForDirectAccessException(recordNumber, message);
+        }
+
+        // Check that the shapefile allows direct access : it won't if it has no index.
+        if (this.shapeFileIndex == null) {
+            String message = format(Level.SEVERE, "excp.no_direct_access", getFile().getAbsolutePath());
+            throw new SQLNoDirectAccessAvailableException(message);
+        }
+        
+        int position = this.indexes.get(recordNumber - 1) * 2; // Indexes unit are words (16 bits).
+        
+        // Check that the asked record number is not after the last.
+        if (position >= this.getByteBuffer().capacity()) {
+            String message = format(Level.SEVERE, "excp.wrong_direct_access_after_last", recordNumber, getFile().getAbsolutePath());
+            throw new SQLInvalidRecordNumberForDirectAccessException(recordNumber, message);
+        }
+        
+        try {
+            getByteBuffer().position(position);
+        }
+        catch(IllegalArgumentException e) {
+            String message = format(Level.SEVERE, "assert.wrong_position", recordNumber, position, getFile().getAbsolutePath(), e.getMessage());
+            throw new RuntimeException(message, e);
+        }
+    }
+    
     /**
      * Complete a feature with shapefile content.
      * @param feature Feature to complete.
@@ -171,7 +271,7 @@ public class ShapefileByteReader extends CommonByteReader<InvalidShapefileFormat
         ShapeTypeEnum type = ShapeTypeEnum.get(iShapeType);
 
         if (type == null)
-            throw new InvalidShapefileFormatException(MessageFormat.format("The shapefile feature type {0} doesn''t match to any known feature type.", featuresType));
+            throw new InvalidShapefileFormatException(MessageFormat.format("The shapefile feature type {0} doesn''t match to any known feature type.", this.featuresType));
 
         switch (type) {
             case Point:
@@ -245,7 +345,7 @@ public class ShapefileByteReader extends CommonByteReader<InvalidShapefileFormat
      */
     @Deprecated // As soon as the readMultiplePolygonParts method proofs working well, this readUniquePolygonPart method can be removed and all calls be deferred to readMultiplePolygonParts.
     private Polygon readUniquePolygonPart(int numPoints) {
-        int part = getByteBuffer().getInt();
+        /*int part = */ getByteBuffer().getInt();
         
         Polygon poly = new Polygon();
 

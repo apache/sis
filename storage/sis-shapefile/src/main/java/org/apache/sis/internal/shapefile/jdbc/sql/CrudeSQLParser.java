@@ -37,7 +37,7 @@ public class CrudeSQLParser extends AbstractJDBC {
      */
     public CrudeSQLParser(DBFRecordBasedResultSet resultset) {
         Objects.requireNonNull(resultset, "The ResultSet given to the SQL parser cannot be null.");
-        rs = resultset;
+        this.rs = resultset;
     }
 
     /**
@@ -48,11 +48,11 @@ public class CrudeSQLParser extends AbstractJDBC {
     public ConditionalClauseResolver parse() throws SQLInvalidStatementException {
         logStep("parse");
 
-        String sql = rs.getSQL().trim();
+        String sql = this.rs.getSQL().trim();
 
         if (sql.toLowerCase().startsWith("select * from ") == false) {
             String message = format(Level.WARNING, "excp.limited_feature_syntax", sql);
-            throw new SQLInvalidStatementException(message, rs.getSQL(), rs.getFile());
+            throw new SQLInvalidStatementException(message, this.rs.getSQL(), this.rs.getFile());
         }
 
         final String whereWord = " where ";
@@ -69,7 +69,7 @@ public class CrudeSQLParser extends AbstractJDBC {
         // If the condition is empty, it's a syntax error because a WHERE clause went before.
         if (whereCondition.isEmpty()) {
             String message = format(Level.WARNING, "excp.where_without_conditions", sql);
-            throw new SQLInvalidStatementException(message, rs.getSQL(), rs.getFile());
+            throw new SQLInvalidStatementException(message, this.rs.getSQL(), this.rs.getFile());
         }
 
         // Currently, all the condition are made of three parts :
@@ -80,7 +80,7 @@ public class CrudeSQLParser extends AbstractJDBC {
 
         if (parts.length != 3) {
             String message = format(Level.WARNING, "excp.limited_feature_conditional_parsing", whereCondition, sql);
-            throw new SQLInvalidStatementException(message, rs.getSQL(), rs.getFile());
+            throw new SQLInvalidStatementException(message, this.rs.getSQL(), this.rs.getFile());
         }
 
         // Detect and promote litterals in parameters to their best types.
@@ -124,7 +124,7 @@ public class CrudeSQLParser extends AbstractJDBC {
      * @see org.apache.sis.internal.shapefile.jdbc.AbstractJDBC#getFile()
      */
     @Override protected File getFile() {
-        return rs.getFile();
+        return this.rs.getFile();
     }
 
     /**
