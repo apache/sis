@@ -729,7 +729,9 @@ next:   while (--numPts >= 0) {
      */
     @Override
     protected int computeHashCode() {
-        return super.computeHashCode() + Numerics.hashCode(Double.doubleToLongBits(axisRatio));
+        int code = super.computeHashCode() + Numerics.hashCode(Double.doubleToLongBits(axisRatio));
+        if (withHeight) code += 37;
+        return code;
     }
 
     /**
@@ -746,6 +748,7 @@ next:   while (--numPts >= 0) {
         if (super.equals(object, mode)) {
             final EllipsoidToCentricTransform that = (EllipsoidToCentricTransform) object;
             return (withHeight == that.withHeight) && Numerics.equals(axisRatio, that.axisRatio);
+            // No need to compare the contextual parameters since this is done by super-class.
         }
         return false;
     }
