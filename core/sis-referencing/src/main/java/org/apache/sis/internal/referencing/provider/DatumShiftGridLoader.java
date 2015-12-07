@@ -16,11 +16,16 @@
  */
 package org.apache.sis.internal.referencing.provider;
 
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import java.io.EOFException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.ReadableByteChannel;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.resources.Messages;
+import org.apache.sis.util.logging.Logging;
+import org.apache.sis.internal.system.Loggers;
 
 // Branch-dependent imports
 import java.nio.file.Path;
@@ -127,5 +132,18 @@ class DatumShiftGridLoader {
             ensureBufferContains(Math.min(n, buffer.capacity()));
         }
         buffer.position(p);
+    }
+
+    /**
+     * Logs a message about a grid which is about to be loaded.
+     *
+     * @param caller The provider to logs as the source class.
+     *               The source method will be set to {@code "createMathTransform"}.
+     * @param file   The grid file, as a {@link String} or a {@link Path}.
+     */
+    static void log(final Class<?> caller, final Object file) {
+        final LogRecord record = Messages.getResources(null).getLogRecord(Level.FINE, Messages.Keys.LoadingDatumShiftFile_1, file);
+        record.setLoggerName(Loggers.COORDINATE_OPERATION);
+        Logging.log(caller, "createMathTransform", record);
     }
 }

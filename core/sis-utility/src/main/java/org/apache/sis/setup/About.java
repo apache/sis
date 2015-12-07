@@ -42,16 +42,21 @@ import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Version;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.logging.LoggerFactory;
+import org.apache.sis.util.resources.Messages;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.collection.TreeTables;
 import org.apache.sis.util.collection.DefaultTreeTable;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.system.Modules;
+import org.apache.sis.internal.system.DataDirectory;
 
 import static java.lang.System.getProperty;
 import static org.apache.sis.util.collection.TableColumn.NAME;
 import static org.apache.sis.util.collection.TableColumn.VALUE_AS_TEXT;
+
+// Branch-dependent imports
+import java.nio.file.Path;
 
 
 /**
@@ -71,7 +76,7 @@ import static org.apache.sis.util.collection.TableColumn.VALUE_AS_TEXT;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.3
+ * @version 0.7
  * @module
  */
 public enum About {
@@ -112,6 +117,8 @@ public enum About {
      * <ul>
      *   <li>User directory</li>
      *   <li>Default directory</li>
+     *   <li>SIS data directory</li>
+     *   <li>Temporary directory</li>
      *   <li>Java home directory</li>
      * </ul>
      */
@@ -309,19 +316,36 @@ fill:   for (int i=0; ; i++) {
                 }
                 case 10: {
                     if (sections.contains(PATHS)) {
+                        nameKey = Vocabulary.Keys.DataDirectory;
+                        value = System.getenv(DataDirectory.ENV);
+                        if (value == null) {
+                            value = Messages.getResources(locale).getString(Messages.Keys.DataDirectoryNotSpecified_1, DataDirectory.ENV);
+                        } else {
+                            final Path path = DataDirectory.getRootDirectory();
+                            if (path != null) {
+                                value = path.toString();
+                            } else {
+                                value = value + " (" + resources.getString(Vocabulary.Keys.Invalid) + ')';
+                            }
+                        }
+                    }
+                    break;
+                }
+                case 11: {
+                    if (sections.contains(PATHS)) {
                         nameKey = Vocabulary.Keys.TemporaryFiles;
                         value = getProperty("java.io.tmpdir");
                     }
                     break;
                 }
-                case 11: {
+                case 12: {
                     if (sections.contains(PATHS)) {
                         nameKey = Vocabulary.Keys.JavaHome;
                         value = javaHome = getProperty("java.home");
                     }
                     break;
                 }
-                case 12: {
+                case 13: {
                     newSection = LIBRARIES;
                     if (sections.contains(LIBRARIES)) {
                         nameKey = Vocabulary.Keys.JavaExtensions;
@@ -329,7 +353,7 @@ fill:   for (int i=0; ; i++) {
                     }
                     break;
                 }
-                case 13: {
+                case 14: {
                     if (sections.contains(LIBRARIES)) {
                         nameKey = Vocabulary.Keys.Classpath;
                         value = classpath(getProperty("java.class.path"), false);

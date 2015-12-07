@@ -87,6 +87,43 @@ public final class Messages extends IndexedResourceBundle {
         public static final short CreatedNamedObject_2 = 16;
 
         /**
+         * The {0} environment variable is defined, but the given “{1}” value is not an existing
+         * directory.
+         */
+        public static final short DataDirectoryDoesNotExist_2 = 20;
+
+        /**
+         * Apache SIS is not authorized to access the “{1}” sub-directory in the directory given by the
+         * {0} environment variable.
+         */
+        public static final short DataDirectoryNotAccessible_2 = 26;
+
+        /**
+         * Apache SIS is not authorized to read information given by the “{0}” environment variable.
+         */
+        public static final short DataDirectoryNotAuthorized_1 = 25;
+
+        /**
+         * The “{1}” directory specified by the {0} environment variable exists but is not readable.
+         */
+        public static final short DataDirectoryNotReadable_2 = 21;
+
+        /**
+         * The “{0}” environment variable is not set.
+         */
+        public static final short DataDirectoryNotSpecified_1 = 22;
+
+        /**
+         * Apache SIS can not write in the “{1}” directory given by the {0} environment variable.
+         */
+        public static final short DataDirectoryNotWritable_2 = 23;
+
+        /**
+         * Environment variable {0} specifies the “{1}” data directory.
+         */
+        public static final short DataDirectory_2 = 24;
+
+        /**
          * Property “{0}” has been discarded in favor of “{1}”, because those two properties are
          * mutually exclusive.
          */
@@ -106,6 +143,11 @@ public final class Messages extends IndexedResourceBundle {
          * Parsing of “{0}” done, but some elements were ignored.
          */
         public static final short IncompleteParsing_1 = 14;
+
+        /**
+         * Loading datum shift file “{0}”.
+         */
+        public static final short LoadingDatumShiftFile_1 = 27;
 
         /**
          * Text were discarded for some locales.

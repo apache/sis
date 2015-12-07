@@ -146,6 +146,11 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final short CycleOmitted = 12;
 
         /**
+         * Data directory
+         */
+        public static final short DataDirectory = 88;
+
+        /**
          * Daylight time
          */
         public static final short DaylightTime = 13;
@@ -219,6 +224,11 @@ public final class Vocabulary extends IndexedResourceBundle {
          * Index
          */
         public static final short Index = 22;
+
+        /**
+         * Invalid
+         */
+        public static final short Invalid = 89;
 
         /**
          * Java extensions

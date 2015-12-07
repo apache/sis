@@ -74,7 +74,7 @@ public final strictfp class NTv2Test extends TestCase {
      * @throws URISyntaxException if the URL to the test file can not be converted to a path.
      * @throws IOException if an error occurred while loading the grid.
      * @throws FactoryException if an error occurred while computing the grid.
-     * @throws TransformException if an error occurred while computing the envelope.
+     * @throws TransformException if an error occurred while computing the envelope or testing the point.
      */
     @Test
     public void testLoader() throws URISyntaxException, IOException, FactoryException, TransformException {
@@ -96,7 +96,7 @@ public final strictfp class NTv2Test extends TestCase {
      * @param  file Path to the official {@code "NTF_R93.gsb"} file.
      * @throws IOException if an error occurred while loading the grid.
      * @throws FactoryException if an error occurred while computing the grid.
-     * @throws TransformException if an error occurred while computing the envelope.
+     * @throws TransformException if an error occurred while computing the envelope or testing the point.
      */
     public static void testRGF93(final Path file) throws IOException, FactoryException, TransformException {
         testRGF93(file, -19800, 36000, 147600, 187200);

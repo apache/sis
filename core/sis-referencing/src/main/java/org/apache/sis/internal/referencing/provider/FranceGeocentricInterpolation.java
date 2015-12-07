@@ -43,6 +43,7 @@ import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.opengis.util.FactoryException;
 import org.apache.sis.internal.system.Loggers;
+import org.apache.sis.internal.system.DataDirectory;
 import org.apache.sis.internal.referencing.NilReferencingObject;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.parameter.Parameters;
@@ -308,7 +309,7 @@ public final class FranceGeocentricInterpolation extends AbstractProvider {
             case 3:  withHeights = true; break;
             default: throw new InvalidParameterValueException(Errors.format(Errors.Keys.IllegalArgumentValue_2, "dim", dim), "dim", dim);
         }
-        final Path file = pg.getValue(FILE);
+        final Path file = pg.getMandatoryValue(FILE);
         final DatumShiftGridFile<Angle,Length> grid = getOrLoad(file, !isRecognized(file) ? null : new double[] {TX, TY, TZ}, PRECISION);
         MathTransform tr = InterpolatedGeocentricTransform.createGeodeticTransformation(factory,
                 createEllipsoid(pg, Molodensky.TGT_SEMI_MAJOR,
@@ -335,13 +336,15 @@ public final class FranceGeocentricInterpolation extends AbstractProvider {
     static DatumShiftGridFile<Angle,Length> getOrLoad(final Path file, final double[] averages, final double scale)
             throws FactoryException
     {
-        DatumShiftGridFile<?,?> grid = DatumShiftGridFile.CACHE.peek(file);
+        final Path resolved = DataDirectory.DATUM_CHANGES.resolve(file).toAbsolutePath();
+        DatumShiftGridFile<?,?> grid = DatumShiftGridFile.CACHE.peek(resolved);
         if (grid == null) {
-            final Cache.Handler<DatumShiftGridFile<?,?>> handler = DatumShiftGridFile.CACHE.lock(file);
+            final Cache.Handler<DatumShiftGridFile<?,?>> handler = DatumShiftGridFile.CACHE.lock(resolved);
             try {
                 grid = handler.peek();
                 if (grid == null) {
-                    try (final BufferedReader in = Files.newBufferedReader(file)) {
+                    try (final BufferedReader in = Files.newBufferedReader(resolved)) {
+                        DatumShiftGridLoader.log(FranceGeocentricInterpolation.class, file);
                         final DatumShiftGridFile.Float<Angle,Length> g = load(in, file);
                         grid = DatumShiftGridCompressed.compress(g, averages, scale);
                     } catch (IOException | NoninvertibleTransformException | RuntimeException e) {
