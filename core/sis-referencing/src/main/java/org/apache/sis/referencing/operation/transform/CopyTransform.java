@@ -19,7 +19,6 @@ package org.apache.sis.referencing.operation.transform;
 import java.util.Arrays;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.operation.Matrix;
-import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.matrix.Matrices;
@@ -330,7 +329,7 @@ final class CopyTransform extends AbstractLinearTransform {
      * Creates the inverse transform of this object.
      */
     @Override
-    public synchronized MathTransform inverse() throws NoninvertibleTransformException {
+    public synchronized LinearTransform inverse() throws NoninvertibleTransformException {
         if (inverse == null) {
             /*
              * Note: no need to perform the following check as this point because MathTransforms.linear(…)

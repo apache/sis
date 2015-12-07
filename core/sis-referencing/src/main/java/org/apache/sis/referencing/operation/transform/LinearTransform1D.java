@@ -142,7 +142,7 @@ class LinearTransform1D extends AbstractMathTransform1D implements LinearTransfo
      * Creates the inverse transform of this object.
      */
     @Override
-    public MathTransform1D inverse() throws NoninvertibleTransformException {
+    public LinearTransform1D inverse() throws NoninvertibleTransformException {
         if (inverse == null) {
             /*
              * Note: we do not perform the following optimization, because MathTransforms.linear(…)
@@ -158,10 +158,10 @@ class LinearTransform1D extends AbstractMathTransform1D implements LinearTransfo
                 inverse.inverse = this;
                 this.inverse = inverse;
             } else {
-                inverse = super.inverse();
+                inverse = super.inverse();      // Throws NoninvertibleTransformException
             }
         }
-        return inverse;
+        return (LinearTransform1D) inverse;
     }
 
     /**

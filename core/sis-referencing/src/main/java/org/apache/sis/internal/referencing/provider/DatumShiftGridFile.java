@@ -29,7 +29,6 @@ import org.apache.sis.util.collection.Cache;
 import org.apache.sis.util.Debug;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.referencing.datum.DatumShiftGrid;
-import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.internal.referencing.j2d.AffineTransform2D;
 
 // Branch-specific imports
@@ -126,7 +125,7 @@ public abstract class DatumShiftGridFile<C extends Quantity, T extends Quantity>
                        final ParameterDescriptorGroup descriptor,
                        final Path... files) throws NoninvertibleTransformException
     {
-        super(coordinateUnit, (LinearTransform) new AffineTransform2D(Δx, 0, 0, Δy, x0, y0).inverse(),
+        super(coordinateUnit, new AffineTransform2D(Δx, 0, 0, Δy, x0, y0).inverse(),
                 new int[] {nx, ny}, isCellValueRatio, translationUnit);
         this.descriptor = descriptor;
         this.files      = files;
