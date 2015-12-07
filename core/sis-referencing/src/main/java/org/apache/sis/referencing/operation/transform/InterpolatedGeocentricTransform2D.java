@@ -18,6 +18,8 @@ package org.apache.sis.referencing.operation.transform;
 
 import java.awt.Shape;
 import java.awt.geom.Point2D;
+import javax.measure.quantity.Angle;
+import javax.measure.quantity.Length;
 import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform2D;
@@ -42,7 +44,7 @@ final class InterpolatedGeocentricTransform2D extends InterpolatedGeocentricTran
     /**
      * Constructs a 2D transform.
      */
-    InterpolatedGeocentricTransform2D(final Ellipsoid source, final Ellipsoid target, final DatumShiftGrid grid) {
+    InterpolatedGeocentricTransform2D(final Ellipsoid source, final Ellipsoid target, final DatumShiftGrid<Angle,Length> grid) {
         super(source, false, target, false, grid);
     }
 

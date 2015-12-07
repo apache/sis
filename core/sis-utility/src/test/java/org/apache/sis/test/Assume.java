@@ -16,7 +16,6 @@
  */
 package org.apache.sis.test;
 
-import java.io.IOException;
 import org.apache.sis.internal.system.DataDirectory;
 
 // Branch-specific imports
@@ -51,9 +50,8 @@ public final strictfp class Assume extends org.junit.Assume {
      * @param  type The directory where to search for the given file.
      * @param  file The file that needs to exist.
      * @return The path to the given file.
-     * @throws IOException if the directory exists but a problem occurred while reading it.
      */
-    public static Path assumeDataExists(final DataDirectory type, final String file) throws IOException {
+    public static Path assumeDataExists(final DataDirectory type, final String file) {
         assumeNotNull(System.getenv(DataDirectory.ENV));
         Path path = type.getDirectory();
         assumeNotNull(path);
