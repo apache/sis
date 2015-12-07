@@ -171,7 +171,7 @@ public final strictfp class InterpolatedGeocentricTransformTest extends MathTran
                 "    Parameter[“src_semi_major”, 6378249.2],\n" +
                 "    Parameter[“src_semi_minor”, 6356515.0],\n" +
                 "    Parameter[“Semi-major axis length difference”, -112.2],\n" +
-                "    Parameter[“Flattening difference”, -5.455231352930652E-5],\n" +
+                "    Parameter[“Flattening difference”, -5.4738838833299144E-5],\n" +
                 "    ParameterFile[“Geocentric translations file”, “\\E.*\\W\\Q" +
                                    FranceGeocentricInterpolationTest.TEST_FILE + "”, Id[“EPSG”, 8727]],\n" +
                 "    Parameter[“dim”, 2]],\n" +

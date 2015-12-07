@@ -242,27 +242,27 @@ public final class Units extends Static {
      *   <li>This method tries to returns unique instances for some common units.</li>
      * </ul>
      *
-     * @param  <A>    The quantity measured by the unit.
+     * @param  <Q>    The quantity measured by the unit.
      * @param  unit   The unit to multiply.
      * @param  factor The multiplication factor.
      * @return The unit multiplied by the given factor.
      */
     @Workaround(library="JSR-275", version="0.9.3")
     @SuppressWarnings("unchecked")
-    public static <A extends Quantity> Unit<A> multiply(Unit<A> unit, final double factor) {
+    public static <Q extends Quantity> Unit<Q> multiply(Unit<Q> unit, final double factor) {
         if (SI.RADIAN.equals(unit)) {
             if (abs(factor - (PI / 180)) <= (EPS * PI/180)) {
-                return (Unit<A>) NonSI.DEGREE_ANGLE;
+                return (Unit<Q>) NonSI.DEGREE_ANGLE;
             }
             if (abs(factor - (PI / 200)) <= (EPS * PI/200)) {
-                return (Unit<A>) NonSI.GRADE;
+                return (Unit<Q>) NonSI.GRADE;
             }
         } else if (SI.METRE.equals(unit)) {
             if (abs(factor - 0.3048) <= (EPS * 0.3048)) {
-                return (Unit<A>) NonSI.FOOT;
+                return (Unit<Q>) NonSI.FOOT;
             }
             if (abs(factor - (1200.0/3937)) <= (EPS * (1200.0/3937))) {
-                return (Unit<A>) NonSI.FOOT_SURVEY_US;
+                return (Unit<Q>) NonSI.FOOT_SURVEY_US;
             }
         }
         if (abs(factor - 1) > EPS) {
@@ -289,13 +289,13 @@ public final class Units extends Static {
      * since a measurement in kilometres must be multiplied by 1000 in order to give the equivalent
      * measurement in the "standard" units (here <var>metres</var>).</p>
      *
-     * @param  <A>  The quantity measured by the unit.
+     * @param  <Q>  The quantity measured by the unit.
      * @param  unit The unit for which we want the multiplication factor to standard unit.
      * @return The factor by which to multiply a measurement in the given unit in order to
      *         get an equivalent measurement in the standard unit.
      */
     @Workaround(library="JSR-275", version="0.9.3")
-    public static <A extends Quantity> double toStandardUnit(final Unit<A> unit) {
+    public static <Q extends Quantity> double toStandardUnit(final Unit<Q> unit) {
         return derivative(unit.getConverterTo(unit.toSI()), 0);
     }
 

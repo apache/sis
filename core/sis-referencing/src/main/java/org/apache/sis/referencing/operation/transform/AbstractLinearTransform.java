@@ -16,6 +16,7 @@
  */
 package org.apache.sis.referencing.operation.transform;
 
+import java.util.Arrays;
 import java.io.Serializable;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptorGroup;
@@ -158,6 +159,63 @@ abstract class AbstractLinearTransform extends AbstractMathTransform implements 
         throw new UnsupportedOperationException(isAffine()
                 ? Errors.format(Errors.Keys.UnmodifiableAffineTransform)
                 : Errors.format(Errors.Keys.UnmodifiableObject_1, AbstractLinearTransform.class));
+    }
+
+    /**
+     * Transforms an array of relative distance vectors. Distance vectors are transformed without applying
+     * the translation components. The default implementation is not very efficient, but it should not be
+     * an issue since this method is not invoked often.
+     *
+     * @since 0.7
+     */
+    @Override
+    public void deltaTransform(double[] srcPts, int srcOff, double[] dstPts, int dstOff, int numPts) {
+        int offFinal = 0;
+        double[] dstFinal = null;
+        final int srcDim, dstDim;
+        int srcInc = srcDim = getSourceDimensions();
+        int dstInc = dstDim = getTargetDimensions();
+        if (srcPts == dstPts) {
+            switch (IterationStrategy.suggest(srcOff, srcDim, dstOff, dstDim, numPts)) {
+                case ASCENDING: {
+                    break;
+                }
+                case DESCENDING: {
+                    srcOff += (numPts - 1) * srcDim;  srcInc = -srcInc;
+                    dstOff += (numPts - 1) * dstDim;  dstInc = -dstInc;
+                    break;
+                }
+                default: {
+                    srcPts = Arrays.copyOfRange(srcPts, srcOff, srcOff + numPts*srcDim);
+                    srcOff = 0;
+                    break;
+                }
+                case BUFFER_TARGET: {
+                    dstFinal = dstPts; dstPts = new double[numPts * dstInc];
+                    offFinal = dstOff; dstOff = 0;
+                    break;
+                }
+            }
+        }
+        final double[] buffer = new double[dstDim];
+        while (--numPts >= 0) {
+            for (int j=0; j<dstDim; j++) {
+                double sum = 0;
+                for (int i=0; i<srcDim; i++) {
+                    final double e = getElement(j, i);
+                    if (e != 0) {   // See the comment in ProjectiveTransform for the purpose of this test.
+                        sum += srcPts[srcOff + i] * e;
+                    }
+                }
+                buffer[j] = sum;
+            }
+            System.arraycopy(buffer, 0, dstPts, dstOff, dstDim);
+            srcOff += srcInc;
+            dstOff += dstInc;
+        }
+        if (dstFinal != null) {
+            System.arraycopy(dstPts, 0, dstFinal, offFinal, dstPts.length);
+        }
     }
 
     /**

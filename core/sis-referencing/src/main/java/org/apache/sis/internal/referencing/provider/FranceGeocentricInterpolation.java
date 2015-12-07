@@ -27,6 +27,9 @@ import java.io.EOFException;
 import java.io.IOException;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.measure.unit.SI;
+import javax.measure.unit.NonSI;
+import javax.measure.quantity.Angle;
+import javax.measure.quantity.Length;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
@@ -294,7 +297,7 @@ public final class FranceGeocentricInterpolation extends AbstractProvider {
             default: throw new InvalidParameterValueException(Errors.format(Errors.Keys.IllegalArgumentValue_2, "dim", dim), "dim", dim);
         }
         final Path file = pg.getValue(FILE);
-        final DatumShiftGridFile grid = getOrLoad(file, !isRecognized(file) ? null : new double[] {TX, TY, TZ}, PRECISION);
+        final DatumShiftGridFile<Angle,Length> grid = getOrLoad(file, !isRecognized(file) ? null : new double[] {TX, TY, TZ}, PRECISION);
         MathTransform tr = InterpolatedGeocentricTransform.createGeodeticTransformation(factory,
                 createEllipsoid(pg, Molodensky.TGT_SEMI_MAJOR,
                                     Molodensky.TGT_SEMI_MINOR, CommonCRS.ETRS89.ellipsoid()), withHeights, // GRS 1980 ellipsoid
@@ -317,17 +320,17 @@ public final class FranceGeocentricInterpolation extends AbstractProvider {
      * @param  averages  An "average" value for the offset in each dimension, or {@code null} if unknown.
      * @param  scale     The factor by which to multiply each compressed value before to add to the average value.
      */
-    static DatumShiftGridFile getOrLoad(final Path file, final double[] averages, final double scale)
+    static DatumShiftGridFile<Angle,Length> getOrLoad(final Path file, final double[] averages, final double scale)
             throws FactoryException
     {
-        DatumShiftGridFile grid = DatumShiftGridFile.CACHE.peek(file);
+        DatumShiftGridFile<?,?> grid = DatumShiftGridFile.CACHE.peek(file);
         if (grid == null) {
-            final Cache.Handler<DatumShiftGridFile> handler = DatumShiftGridFile.CACHE.lock(file);
+            final Cache.Handler<DatumShiftGridFile<?,?>> handler = DatumShiftGridFile.CACHE.lock(file);
             try {
                 grid = handler.peek();
                 if (grid == null) {
                     try (final BufferedReader in = Files.newBufferedReader(file)) {
-                        final DatumShiftGridFile.Float g = load(in, file);
+                        final DatumShiftGridFile.Float<Angle,Length> g = load(in, file);
                         grid = DatumShiftGridCompressed.compress(g, averages, scale);
                     } catch (IOException | RuntimeException e) {
                         // NumberFormatException, ArithmeticException, NoSuchElementException, possibly other.
@@ -339,7 +342,7 @@ public final class FranceGeocentricInterpolation extends AbstractProvider {
                 handler.putAndUnlock(grid);
             }
         }
-        return grid;
+        return grid.castTo(Angle.class, Length.class);
     }
 
     /**
@@ -353,10 +356,10 @@ public final class FranceGeocentricInterpolation extends AbstractProvider {
      * @throws FactoryException if an problem is found with the file content.
      * @throws ArithmeticException if the width or the height exceed the integer capacity.
      */
-    static DatumShiftGridFile.Float load(final BufferedReader in, final Path file)
+    static DatumShiftGridFile.Float<Angle,Length> load(final BufferedReader in, final Path file)
             throws IOException, FactoryException
     {
-        DatumShiftGridFile.Float grid = null;
+        DatumShiftGridFile.Float<Angle,Length> grid = null;
         double x0 = 0;
         double xf = 0;
         double y0 = 0;
@@ -409,7 +412,9 @@ public final class FranceGeocentricInterpolation extends AbstractProvider {
                             Δy = gridGeometry[5];
                             nx = Math.toIntExact(Math.round((xf - x0) / Δx + 1));
                             ny = Math.toIntExact(Math.round((yf - y0) / Δy + 1));
-                            grid = new DatumShiftGridFile.Float(x0, y0, Δx, Δy, nx, ny, file, 3);
+                            grid = new DatumShiftGridFile.Float<>(
+                                    NonSI.DEGREE_ANGLE, SI.METRE, false,
+                                    x0, y0, Δx, Δy, nx, ny, file, 3);
                         }
                         break;
                     }

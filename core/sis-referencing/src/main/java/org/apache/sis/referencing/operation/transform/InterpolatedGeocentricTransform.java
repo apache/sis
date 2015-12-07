@@ -18,6 +18,8 @@ package org.apache.sis.referencing.operation.transform;
 
 import java.util.Arrays;
 import javax.measure.unit.Unit;
+import javax.measure.quantity.Angle;
+import javax.measure.quantity.Length;
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
@@ -69,7 +71,7 @@ import org.apache.sis.util.Debug;
  * signs used in NTG_88 document. This is because NTG_88 grid defines shifts from target to source,
  * while this class expects shifts from source to target.
  *
- * <p>This algorithm is not the same as a (theoretical) {@link EllipsoidToCentricTransform} →
+ * <p><b>Note:</b> this algorithm is not the same as a (theoretical) {@link EllipsoidToCentricTransform} →
  * {@link InterpolatedTransform} → (inverse of {@code EllipsoidToCentricTransform}) concatenation
  * because the {@code DatumShiftGrid} inputs are geographic coordinates even if the interpolated
  * grid values are in geocentric space.</p></div>
@@ -175,27 +177,30 @@ public class InterpolatedGeocentricTransform extends MolodenskyFormula {
      * @param target      The target ellipsoid.
      * @param isTarget3D  {@code true} if the target coordinates have a height.
      * @param grid        The grid of datum shifts from source to target datum.
-     *                    The {@link DatumShiftGrid#offsetAt DatumShiftGrid.offsetAt(…)} method shall expect
-     *                    input geographic coordinates in <strong>radians</strong> and computes (ΔX, ΔY, ΔZ)
-     *                    shifts from <em>source</em> to <em>target</em> in the unit of source ellipsoid axes.
+     *                    The {@link DatumShiftGrid#interpolateInCell DatumShiftGrid.interpolateInCell(…)} method
+     *                    shall compute (ΔX, ΔY, ΔZ) translations from <em>source</em> to <em>target</em> in the
+     *                    unit of source ellipsoid axes.
      *
      * @see #createGeodeticTransformation(MathTransformFactory, Ellipsoid, boolean, Ellipsoid, boolean, DatumShiftGrid)
      */
     protected InterpolatedGeocentricTransform(final Ellipsoid source, final boolean isSource3D,
                                               final Ellipsoid target, final boolean isTarget3D,
-                                              final DatumShiftGrid grid)
+                                              final DatumShiftGrid<Angle,Length> grid)
     {
         super(source, isSource3D,
               target, isTarget3D,
-              grid.getAverageOffset(0),
-              grid.getAverageOffset(1),
-              grid.getAverageOffset(2),
-              grid, false,    // Non-abridged Molodensky
-              DESCRIPTOR);
+              grid.getCellMean(0),
+              grid.getCellMean(1),
+              grid.getCellMean(2),
+              grid, false, DESCRIPTOR);
 
-        final int dim = grid.getShiftDimensions();
+        final int dim = grid.getTranslationDimensions();
         if (dim != 3) {
             throw new MismatchedDimensionException(Errors.format(Errors.Keys.MismatchedDimension_3, "grid", 3, dim));
+        }
+        Object unit = "ratio";
+        if (grid.isCellValueRatio() || (unit = grid.getTranslationUnit()) != source.getAxisUnit()) {
+            throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalUnitFor_2, "translation", unit));
         }
         if (isSource3D || isTarget3D) {
             inverse = new Inverse(this, source, target);
@@ -224,16 +229,16 @@ public class InterpolatedGeocentricTransform extends MolodenskyFormula {
      * @param target      The target ellipsoid.
      * @param isTarget3D  {@code true} if the target coordinates have a height.
      * @param grid        The grid of datum shifts from source to target datum.
-     *                    The {@link DatumShiftGrid#offsetAt DatumShiftGrid.offsetAt(…)} method shall expect
-     *                    input geographic coordinates in <strong>radians</strong> and computes (ΔX, ΔY, ΔZ)
-     *                    shifts from <em>source</em> to <em>target</em> in the unit of source ellipsoid axes.
+     *                    The {@link DatumShiftGrid#interpolateInCell DatumShiftGrid.interpolateInCell(…)} method
+     *                    shall compute (ΔX, ΔY, ΔZ) translations from <em>source</em> to <em>target</em> in the
+     *                    unit of source ellipsoid axes.
      * @return The transformation between geographic coordinates in degrees.
      * @throws FactoryException if an error occurred while creating a transform.
      */
     public static MathTransform createGeodeticTransformation(final MathTransformFactory factory,
             final Ellipsoid source, final boolean isSource3D,
             final Ellipsoid target, final boolean isTarget3D,
-            final DatumShiftGrid grid) throws FactoryException
+            final DatumShiftGrid<Angle,Length> grid) throws FactoryException
     {
         ArgumentChecks.ensureNonNull("grid", grid);
         final InterpolatedGeocentricTransform tr;
@@ -258,12 +263,12 @@ public class InterpolatedGeocentricTransform extends MolodenskyFormula {
     final void completeParameters(final Parameters pg, final double semiMinor, final Unit<?> unit, double Δf) {
         super.completeParameters(pg, semiMinor, unit, Δf);
         if (pg != context) {
-            Δf = Δfmod / semiMajor;
+            Δf = Δfmod / semiMinor;
             pg.getOrCreate(Molodensky.AXIS_LENGTH_DIFFERENCE).setValue(Δa, unit);
             pg.getOrCreate(Molodensky.FLATTENING_DIFFERENCE) .setValue(Δf, Unit.ONE);
         }
-        if (grid instanceof DatumShiftGridFile) {
-            pg.getOrCreate(FranceGeocentricInterpolation.FILE).setValue(((DatumShiftGridFile) grid).file);
+        if (grid instanceof DatumShiftGridFile<?,?>) {
+            pg.getOrCreate(FranceGeocentricInterpolation.FILE).setValue(((DatumShiftGridFile<?,?>) grid).file);
         }
     }
 
@@ -280,12 +285,12 @@ public class InterpolatedGeocentricTransform extends MolodenskyFormula {
                             final double[] dstPts, final int dstOff,
                             final boolean derivate) throws TransformException
     {
-        final double[] offset = new double[3];
+        final double[] vector = new double[3];
         final double λ = srcPts[srcOff];
         final double φ = srcPts[srcOff+1];
-        grid.offsetAt(λ, φ, offset);
+        grid.interpolateAtNormalized(λ, φ, vector);
         return transform(λ, φ, isSource3D ? srcPts[srcOff+2] : 0,
-                dstPts, dstOff, offset[0], offset[1], offset[2], null, derivate);
+                dstPts, dstOff, vector[0], vector[1], vector[2], null, derivate);
     }
 
     /**
@@ -330,7 +335,7 @@ public class InterpolatedGeocentricTransform extends MolodenskyFormula {
         while (--numPts >= 0) {
             final double λ = srcPts[srcOff  ];
             final double φ = srcPts[srcOff+1];
-            grid.offsetAt(λ, φ, offset);
+            grid.interpolateAtNormalized(λ, φ, offset);
             transform(λ, φ, isSource3D ? srcPts[srcOff+2] : 0,
                       dstPts, dstOff, offset[0], offset[1], offset[2], null, false);
             srcOff += srcInc;

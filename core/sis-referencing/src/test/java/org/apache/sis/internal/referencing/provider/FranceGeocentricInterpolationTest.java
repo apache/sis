@@ -20,8 +20,11 @@ import java.net.URL;
 import java.net.URISyntaxException;
 import java.io.BufferedReader;
 import java.io.IOException;
+import javax.measure.quantity.Angle;
+import javax.measure.quantity.Length;
 import org.opengis.geometry.Envelope;
 import org.opengis.util.FactoryException;
+import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestStep;
@@ -115,9 +118,10 @@ public final strictfp class FranceGeocentricInterpolationTest extends TestCase {
      * @throws URISyntaxException if the URL to the test file can not be converted to a path.
      * @throws IOException if an error occurred while loading the grid.
      * @throws FactoryException if an error occurred while computing the grid.
+     * @throws TransformException if an error occurred while computing the envelope.
      */
     @Test
-    public void testGrid() throws URISyntaxException, IOException, FactoryException {
+    public void testGrid() throws URISyntaxException, IOException, FactoryException, TransformException {
         testGridAsShorts(testGridAsFloats());
     }
 
@@ -131,22 +135,22 @@ public final strictfp class FranceGeocentricInterpolationTest extends TestCase {
      * @throws URISyntaxException if the URL to the test file can not be converted to a path.
      * @throws IOException if an error occurred while loading the grid.
      * @throws FactoryException if an error occurred while computing the grid.
+     * @throws TransformException if an error occurred while computing the envelope.
      */
     @TestStep
-    private static DatumShiftGridFile testGridAsFloats() throws URISyntaxException, IOException, FactoryException {
+    private static DatumShiftGridFile<Angle,Length> testGridAsFloats()
+            throws URISyntaxException, IOException, FactoryException, TransformException
+    {
         final URL url = FranceGeocentricInterpolationTest.class.getResource(TEST_FILE);
         assertNotNull("Test file \"" + TEST_FILE + "\" not found.", url);
         final Path file = Paths.get(url.toURI());
-        final DatumShiftGridFile.Float grid;
+        final DatumShiftGridFile.Float<Angle,Length> grid;
         try (final BufferedReader in = Files.newBufferedReader(file)) {
             grid = FranceGeocentricInterpolation.load(in, file);
         }
-        assertEquals("getAverageOffset",  168.2587, grid.getAverageOffset(0), 1E-4);
-        assertEquals("getAverageOffset",   58.7163, grid.getAverageOffset(1), 1E-4);
-        assertEquals("getAverageOffset", -320.1801, grid.getAverageOffset(2), 1E-4);
-        assertEquals("getCellValue",  168.196, grid.getCellValue(0, 2, 1), 0);
-        assertEquals("getCellValue",   58.778, grid.getCellValue(1, 2, 1), 0);
-        assertEquals("getCellValue", -320.127, grid.getCellValue(2, 2, 1), 0);
+        assertEquals("getCellMean",  168.2587, grid.getCellMean(0), 0.0001);
+        assertEquals("getCellMean",   58.7163, grid.getCellMean(1), 0.0001);
+        assertEquals("getCellMean", -320.1801, grid.getCellMean(2), 0.0001);
         verifyGrid(grid);
         return grid;
     }
@@ -159,35 +163,50 @@ public final strictfp class FranceGeocentricInterpolationTest extends TestCase {
      *
      * @param  grid The grid created by {@link #testGridAsFloats()}.
      * @return The given grid, but compressed as {@code short} values.
+     * @throws TransformException if an error occurred while computing the envelope.
      */
     @TestStep
-    private static DatumShiftGridFile testGridAsShorts(DatumShiftGridFile grid) {
-        grid = DatumShiftGridCompressed.compress((DatumShiftGridFile.Float) grid, new double[] {
+    private static DatumShiftGridFile<Angle,Length> testGridAsShorts(DatumShiftGridFile<Angle,Length> grid)
+            throws TransformException
+    {
+        grid = DatumShiftGridCompressed.compress((DatumShiftGridFile.Float<Angle,Length>) grid, new double[] {
                 FranceGeocentricInterpolation.TX,           //  168 metres
                 FranceGeocentricInterpolation.TY,           //   60 metres
                 FranceGeocentricInterpolation.TZ},          // -320 metres
                 FranceGeocentricInterpolation.PRECISION);
         assertInstanceOf("Failed to compress 'float' values into 'short' values.", DatumShiftGridCompressed.class, grid);
-        assertEquals("getAverageOffset",  168, grid.getAverageOffset(0), 0);
-        assertEquals("getAverageOffset",   60, grid.getAverageOffset(1), 0);
-        assertEquals("getAverageOffset", -320, grid.getAverageOffset(2), 0);
-        assertEquals("getCellValue",  168.196, ((DatumShiftGridCompressed) grid).getCellValue(0, 2, 1), 0);
-        assertEquals("getCellValue",   58.778, ((DatumShiftGridCompressed) grid).getCellValue(1, 2, 1), 0);
-        assertEquals("getCellValue", -320.127, ((DatumShiftGridCompressed) grid).getCellValue(2, 2, 1), 0);
+        assertEquals("getCellMean",  168, grid.getCellMean(0), STRICT);
+        assertEquals("getCellMean",   60, grid.getCellMean(1), STRICT);
+        assertEquals("getCellMean", -320, grid.getCellMean(2), STRICT);
         verifyGrid(grid);
         return grid;
     }
 
     /**
-     * Verify the envelope and the interpolation performed by the given grid.
+     * Verifies the envelope and the interpolation performed by the given grid.
+     *
+     * @throws TransformException if an error occurred while computing the envelope.
      */
-    private static void verifyGrid(final DatumShiftGridFile grid) {
+    private static void verifyGrid(final DatumShiftGridFile<Angle,Length> grid) throws TransformException {
         final Envelope envelope = grid.getDomainOfValidity();
-        assertEquals("xmin",  2.2 - 0.05, Math.toDegrees(envelope.getMinimum(0)), 1E-10);
-        assertEquals("xmax",  2.5 + 0.05, Math.toDegrees(envelope.getMaximum(0)), 1E-10);
-        assertEquals("ymin", 48.5 - 0.05, Math.toDegrees(envelope.getMinimum(1)), 1E-10);
-        assertEquals("ymax", 49.0 + 0.05, Math.toDegrees(envelope.getMaximum(1)), 1E-10);
-        assertEquals("shiftDimensions", 3, grid.getShiftDimensions());
+        assertEquals("xmin",  2.2 - 0.05, envelope.getMinimum(0), 1E-12);
+        assertEquals("xmax",  2.5 + 0.05, envelope.getMaximum(0), 1E-12);
+        assertEquals("ymin", 48.5 - 0.05, envelope.getMinimum(1), 1E-12);
+        assertEquals("ymax", 49.0 + 0.05, envelope.getMaximum(1), 1E-12);
+        /*
+         * The values in the NTG_88 document are:
+         *
+         * (gridX=2, gridY=3)  00002    2.400000000   48.800000000  -168.252   -58.630   320.170  01   2314
+         * (gridX=2, gridY=4)  00002    2.400000000   48.900000000  -168.275   -58.606   320.189  01   2314
+         * (gridX=3, gridY=3)  00002    2.500000000   48.800000000  -168.204   -58.594   320.125  01   2314
+         * (gridX=3, gridY=4)  00002    2.500000000   48.900000000  -168.253   -58.554   320.165  01   2314
+         *
+         * Directions (signs) are reversed compared to NTG_88 document.
+         */
+        assertEquals("translationDimensions", 3, grid.getTranslationDimensions());
+        assertEquals("getCellValue",  168.196, grid.getCellValue(0, 2, 1), STRICT);
+        assertEquals("getCellValue",   58.778, grid.getCellValue(1, 2, 1), STRICT);
+        assertEquals("getCellValue", -320.127, grid.getCellValue(2, 2, 1), STRICT);
         /*
          * Interpolate the (ΔX, ΔY, ΔZ) at a point.
          * Directions (signs) are reversed compared to NTG_88 document.
@@ -198,9 +217,8 @@ public final strictfp class FranceGeocentricInterpolationTest extends TestCase {
             -320.170        // ΔZ: Toward north pole
         };
         final double[] point  = samplePoint(3);
-        final double[] offset = new double[3];
-        grid.offsetAt(Math.toRadians(point[0]), Math.toRadians(point[1]), offset);
-        assertArrayEquals("(ΔX, ΔY, ΔZ)", expected, offset, 0.0005);
+        final double[] vector = grid.interpolateAt(point[0], point[1]);
+        assertArrayEquals("(ΔX, ΔY, ΔZ)", expected, vector, 0.0005);
     }
 
     /**
@@ -208,13 +226,14 @@ public final strictfp class FranceGeocentricInterpolationTest extends TestCase {
      *
      * @throws URISyntaxException if the URL to the test file can not be converted to a path.
      * @throws FactoryException if an error occurred while computing the grid.
+     * @throws TransformException if an error occurred while computing the envelope.
      */
     @Test
     @DependsOnMethod("testGrid")
-    public void testGetOrLoad() throws URISyntaxException, FactoryException {
+    public void testGetOrLoad() throws URISyntaxException, FactoryException, TransformException {
         final URL file = FranceGeocentricInterpolationTest.class.getResource(TEST_FILE);
         assertNotNull("Test file \"" + TEST_FILE + "\" not found.", file);
-        final DatumShiftGridFile grid = FranceGeocentricInterpolation.getOrLoad(
+        final DatumShiftGridFile<Angle,Length> grid = FranceGeocentricInterpolation.getOrLoad(
                 Paths.get(file.toURI()), new double[] {
                         FranceGeocentricInterpolation.TX,
                         FranceGeocentricInterpolation.TY,

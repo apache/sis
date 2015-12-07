@@ -17,6 +17,7 @@
 package org.apache.sis.internal.referencing.provider;
 
 import java.util.Arrays;
+import javax.measure.quantity.Quantity;
 import org.apache.sis.math.DecimalFunctions;
 
 
@@ -26,16 +27,26 @@ import org.apache.sis.math.DecimalFunctions;
  * increase the precision in the common case where the shifts are specified with no more than
  * 5 digits in base 10 in ASCII files.
  *
+ * @param <C> Dimension of the coordinate unit (usually {@link javax.measure.quantity.Angle}).
+ * @param <T> Dimension of the translation unit (usually {@link javax.measure.quantity.Angle}
+ *            or {@link javax.measure.quantity.Length}).
+ *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.7
  * @version 0.7
  * @module
  */
-final class DatumShiftGridCompressed extends DatumShiftGridFile {
+final class DatumShiftGridCompressed<C extends Quantity, T extends Quantity> extends DatumShiftGridFile<C,T> {
     /**
      * Serial number for inter-operability with different versions.
      */
     private static final long serialVersionUID = 4847888093457104917L;
+
+    /**
+     * Maximal grid index along the <var>y</var> axis.
+     * This is the number of grid cells minus 2.
+     */
+    private final int ymax;
 
     /**
      * An "average" value for the offset in each dimension.
@@ -56,10 +67,11 @@ final class DatumShiftGridCompressed extends DatumShiftGridFile {
     /**
      * Creates a new datum shift grid for the same geometry than the given grid but different data.
      */
-    private DatumShiftGridCompressed(final DatumShiftGridFile grid, final double[] averages,
+    private DatumShiftGridCompressed(final DatumShiftGridFile<C,T> grid, final double[] averages,
             final short[][] data, final double scale)
     {
         super(grid);
+        this.ymax     = getGridSize()[1] - 2;
         this.averages = averages;
         this.data     = data;
         this.scale    = scale;
@@ -74,7 +86,9 @@ final class DatumShiftGridCompressed extends DatumShiftGridFile {
      * @param  scale     The factor by which to multiply each compressed value before to add to the average value.
      * @return The grid to use (may or may not be compressed).
      */
-    static DatumShiftGridFile compress(final DatumShiftGridFile.Float grid, double[] averages, final double scale) {
+    static <C extends Quantity, T extends Quantity> DatumShiftGridFile<C,T> compress(
+            final DatumShiftGridFile.Float<C,T> grid, double[] averages, final double scale)
+    {
         final short[][] data = new short[grid.offsets.length][];
         final boolean computeAverages = (averages == null);
         if (computeAverages) {
@@ -83,7 +97,7 @@ final class DatumShiftGridCompressed extends DatumShiftGridFile {
         for (int dim = 0; dim < data.length; dim++) {
             final double average;
             if (computeAverages) {
-                average = Math.rint(grid.getAverageOffset(dim) / scale);
+                average = Math.rint(grid.getCellMean(dim) / scale);
                 averages[dim] = average * scale;
             } else {
                 average = averages[dim] / scale;
@@ -102,15 +116,15 @@ final class DatumShiftGridCompressed extends DatumShiftGridFile {
             }
             data[dim] = compressed;
         }
-        return new DatumShiftGridCompressed(grid, averages, data, scale);
+        return new DatumShiftGridCompressed<>(grid, averages, data, scale);
     }
 
     /**
      * Returns a new grid with the same geometry than this grid but different data arrays.
      */
     @Override
-    final DatumShiftGridFile setData(final Object[] other) {
-        return new DatumShiftGridCompressed(this, averages, (short[][]) other, scale);
+    final DatumShiftGridFile<C,T> setData(final Object[] other) {
+        return new DatumShiftGridCompressed<>(this, averages, (short[][]) other, scale);
     }
 
     /**
@@ -126,7 +140,7 @@ final class DatumShiftGridCompressed extends DatumShiftGridFile {
      * Returns the number of shift dimensions.
      */
     @Override
-    public final int getShiftDimensions() {
+    public final int getTranslationDimensions() {
         return data.length;
     }
 
@@ -137,7 +151,7 @@ final class DatumShiftGridCompressed extends DatumShiftGridFile {
      * @return A value close to the average for the given dimension.
      */
     @Override
-    public double getAverageOffset(final int dim) {
+    public double getCellMean(final int dim) {
         return averages[dim];
     }
 
@@ -145,7 +159,7 @@ final class DatumShiftGridCompressed extends DatumShiftGridFile {
      * Returns the cell value at the given grid index.
      */
     @Override
-    protected double getCellValue(final int dim, final int gridX, final int gridY) {
+    public double getCellValue(final int dim, final int gridX, final int gridY) {
         return data[dim][gridX + gridY*nx] * scale + averages[dim];
     }
 
@@ -154,20 +168,32 @@ final class DatumShiftGridCompressed extends DatumShiftGridFile {
      * reduce the number of arithmetic operations for efficiency reasons.
      */
     @Override
-    public void offsetAt(double x, double y, double[] offsets) {
-        final int gridX = Math.max(0, Math.min(nx - 2, (int) Math.floor(x = (x - x0) * scaleX)));
-        final int gridY = Math.max(0, Math.min(ny - 2, (int) Math.floor(y = (y - y0) * scaleY)));
-        x -= gridX;
-        y -= gridY;
-        final int p0 = nx*gridY + gridX;
+    public void interpolateInCell(double gridX, double gridY, double[] vector) {
+        int ix = (int) gridX;  gridX -= ix;
+        int iy = (int) gridY;  gridY -= iy;
+        if (ix < 0) {
+            ix = 0;
+            gridX = -1;
+        } else if (ix >= nx - 1) {
+            ix = nx - 2;
+            gridX = +1;
+        }
+        if (iy < 0) {
+            iy = 0;
+            gridY = -1;
+        } else if (iy > ymax) {   // Subtraction of 2 already done by the constructor.
+            iy = ymax;
+            gridY = +1;
+        }
+        final int p0 = nx*iy + ix;
         final int p1 = nx + p0;
         for (int dim = 0; dim < data.length; dim++) {
             final short[] values = data[dim];
             double r0 = values[p0];
             double r1 = values[p1];
-            r0 +=  x * (values[p0+1] - r0);
-            r1 +=  x * (values[p1+1] - r1);
-            offsets[dim] = (y * (r1 - r0) + r0) * scale + averages[dim];
+            r0 +=  gridX * (values[p0+1] - r0);
+            r1 +=  gridX * (values[p1+1] - r1);
+            vector[dim] = (gridY * (r1 - r0) + r0) * scale + averages[dim];
         }
     }
 
@@ -181,7 +207,7 @@ final class DatumShiftGridCompressed extends DatumShiftGridFile {
     @Override
     public boolean equals(final Object other) {
         if (super.equals(other)) {
-            final DatumShiftGridCompressed that = (DatumShiftGridCompressed) other;
+            final DatumShiftGridCompressed<?,?> that = (DatumShiftGridCompressed<?,?>) other;
             return Double.doubleToLongBits(scale) == Double.doubleToLongBits(that.scale)
                    && Arrays.equals(averages, that.averages);
         }
