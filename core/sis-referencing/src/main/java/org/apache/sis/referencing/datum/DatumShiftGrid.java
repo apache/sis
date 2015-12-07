@@ -429,7 +429,7 @@ public abstract class DatumShiftGrid<C extends Quantity, T extends Quantity> imp
         c.transform(ordinates, 0, vector, 0, 1);
         interpolateInCell(vector[0], vector[1], vector);
         if (isCellValueRatio()) {
-            ((LinearTransform) c.inverse()).deltaTransform(vector, 0, vector, 0, 1);
+            c.inverse().deltaTransform(vector, 0, vector, 0, 1);
         }
         if (vector.length != dim) {
             vector = Arrays.copyOf(vector, dim);

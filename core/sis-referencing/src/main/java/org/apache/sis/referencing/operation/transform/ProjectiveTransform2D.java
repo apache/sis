@@ -19,9 +19,9 @@ package org.apache.sis.referencing.operation.transform;
 import java.awt.Shape;
 import java.awt.geom.Point2D;
 import org.opengis.referencing.operation.Matrix;
-import org.opengis.referencing.operation.MathTransform2D;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.opengis.referencing.operation.TransformException;
+import org.apache.sis.internal.referencing.j2d.LinearTransform2D;
 
 
 /**
@@ -33,10 +33,10 @@ import org.opengis.referencing.operation.TransformException;
  * @author  Jan Jezek (UWB)
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5
- * @version 0.5
+ * @version 0.7
  * @module
  */
-final class ProjectiveTransform2D extends ProjectiveTransform implements MathTransform2D {
+final class ProjectiveTransform2D extends ProjectiveTransform implements LinearTransform2D {
     /**
      * For cross-version compatibility.
      */
@@ -87,9 +87,10 @@ final class ProjectiveTransform2D extends ProjectiveTransform implements MathTra
 
     /**
      * Creates the inverse transform of this object.
+     * The inverse shall be linear and two-dimensional.
      */
     @Override
-    public MathTransform2D inverse() throws NoninvertibleTransformException {
-        return (MathTransform2D) super.inverse();
+    public LinearTransform2D inverse() throws NoninvertibleTransformException {
+        return (LinearTransform2D) super.inverse();
     }
 }

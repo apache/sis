@@ -19,6 +19,7 @@ package org.apache.sis.referencing.operation.transform;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
+import org.opengis.referencing.operation.NoninvertibleTransformException;
 
 
 /**
@@ -117,4 +118,19 @@ public interface LinearTransform extends MathTransform {
      * @since 0.7
      */
     void deltaTransform(double[] srcPts, int srcOff, double[] dstPts, int dstOff, int numPts) throws TransformException;
+
+    /**
+     * Returns the inverse transform of this object, which shall also be linear.
+     * The target of the inverse transform is the source of the original.
+     * The source of the inverse transform is the target of the original.
+     *
+     * @return The inverse transform.
+     * @throws NoninvertibleTransformException if the transform can not be inverted.
+     *
+     * @see java.awt.geom.AffineTransform#createInverse()
+     *
+     * @since 0.7
+     */
+    @Override
+    LinearTransform inverse() throws NoninvertibleTransformException;
 }

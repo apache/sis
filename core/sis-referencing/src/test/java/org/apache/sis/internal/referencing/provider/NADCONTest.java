@@ -26,7 +26,6 @@ import javax.measure.quantity.Angle;
 import org.opengis.geometry.Envelope;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.TransformException;
-import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.referencing.operation.matrix.Matrix3;
 import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.geometry.Envelopes;
@@ -165,7 +164,7 @@ public final strictfp class NADCONTest extends TestCase {
                 new Matrix3(cellSize,  0,  xmin,
                             0,  cellSize,  ymin,
                             0,         0,    1),
-                ((LinearTransform) grid.getCoordinateToGrid().inverse()).getMatrix(), STRICT);
+                grid.getCoordinateToGrid().inverse().getMatrix(), STRICT);
         /*
          * Test the Meades Ranch station. If we were using the complete Conus files, we would obtain
          * after conversion the grid indices listed on the left side. But since we are using a sub-set

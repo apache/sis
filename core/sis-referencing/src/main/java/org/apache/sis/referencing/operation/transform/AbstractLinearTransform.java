@@ -20,7 +20,6 @@ import java.util.Arrays;
 import java.io.Serializable;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptorGroup;
-import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.apache.sis.referencing.operation.matrix.Matrices;
@@ -56,7 +55,7 @@ abstract class AbstractLinearTransform extends AbstractMathTransform implements 
      * This field is part of the serialization form in order to avoid rounding errors if a user
      * asks for the inverse of the inverse (i.e. the original transform) after deserialization.
      */
-    MathTransform inverse;
+    LinearTransform inverse;
 
     /**
      * Constructs a transform.
@@ -111,7 +110,7 @@ abstract class AbstractLinearTransform extends AbstractMathTransform implements 
      * Creates the inverse transform of this object.
      */
     @Override
-    public synchronized MathTransform inverse() throws NoninvertibleTransformException {
+    public synchronized LinearTransform inverse() throws NoninvertibleTransformException {
         if (inverse == null) {
             /*
              * Should never be the identity transform at this point (except during tests) because

@@ -29,7 +29,6 @@ import org.opengis.geometry.Envelope;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.operation.matrix.Matrix3;
-import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.test.TestCase;
@@ -134,7 +133,7 @@ public final strictfp class NTv2Test extends TestCase {
                 new Matrix3(-cellSize,  0,  xmax,
                             0,  +cellSize,  ymin,
                             0,          0,    1),
-                ((LinearTransform) grid.getCoordinateToGrid().inverse()).getMatrix(), STRICT);
+                grid.getCoordinateToGrid().inverse().getMatrix(), STRICT);
         /*
          * Test the same point than FranceGeocentricInterpolationTest, which is itself derived from the
          * NTG_88 guidance note.  If we were using the official NTF_R93.gsb file, we would obtain after
