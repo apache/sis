@@ -64,6 +64,7 @@ import org.apache.sis.internal.metadata.AxisDirections;
  *
  * @see org.apache.sis.referencing.crs.DefaultVerticalCRS
  * @see org.apache.sis.referencing.datum.DefaultVerticalDatum
+ * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createVerticalCS(String)
  */
 @XmlType(name = "VerticalCSType")
 @XmlRootElement(name = "VerticalCS")

@@ -94,6 +94,8 @@ import org.apache.sis.util.Classes;
  * @since   0.6
  * @version 0.7
  * @module
+ *
+ * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createDerivedCRS(String)
  */
 @XmlType(name="DerivedCRSType", propOrder = {
     "baseCRS",

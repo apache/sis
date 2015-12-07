@@ -129,6 +129,7 @@ import java.util.Objects;
  * @see DefaultEllipsoid
  * @see DefaultPrimeMeridian
  * @see org.apache.sis.referencing.CommonCRS#datum()
+ * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createGeodeticDatum(String)
  */
 @XmlType(name = "GeodeticDatumType", propOrder = {
     "primeMeridian",

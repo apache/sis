@@ -85,6 +85,8 @@ import static org.apache.sis.internal.util.Constants.CRS84;
  * @since   0.4
  * @version 0.6
  * @module
+ *
+ * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createGeographicCRS(String)
  */
 @XmlTransient
 public class DefaultGeographicCRS extends DefaultGeodeticCRS implements GeographicCRS {

@@ -80,6 +80,7 @@ import java.util.Objects;
  * @see org.apache.sis.referencing.CommonCRS.Temporal#datum()
  * @see org.apache.sis.referencing.cs.DefaultTimeCS
  * @see org.apache.sis.referencing.crs.DefaultTemporalCRS
+ * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createTemporalDatum(String)
  */
 @XmlType(name = "TemporalDatumType")
 @XmlRootElement(name = "TemporalDatum")

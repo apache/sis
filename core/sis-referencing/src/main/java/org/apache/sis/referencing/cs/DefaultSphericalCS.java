@@ -55,6 +55,8 @@ import org.apache.sis.measure.Units;
  * @since   0.4
  * @version 0.4
  * @module
+ *
+ * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createSphericalCS(String)
  */
 @XmlType(name = "SphericalCSType")
 @XmlRootElement(name = "SphericalCS")
