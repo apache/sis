@@ -34,10 +34,11 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.logging.Logging;
+import org.apache.sis.util.resources.Errors;
 
 
 /**
- * Search in an authority factory for objects equal, ignoring metadata, to a given object.
+ * Search in an authority factory for objects approximatively equal to a given object.
  * This class can be used for fetching a fully {@linkplain AbstractIdentifiedObject identified object}
  * from an incomplete one, for example from an object without "{@code ID[…]}" or "{@code AUTHORITY[…]}"
  * element in <cite>Well Known Text</cite>.
@@ -49,7 +50,7 @@ import org.apache.sis.util.logging.Logging;
  *   <li>Optionally configure that instance by calling its setter methods.</li>
  *   <li>Perform a search by invoking the {@link #find(IdentifiedObject)} or
  *       {@link #findIdentifier(IdentifiedObject)} methods.</li>
- *   <li>Reuse the same {@code IdentifiedObjectFinder} instance for consecutive searches.</li>
+ *   <li>The same {@code IdentifiedObjectFinder} instance can be reused for consecutive searches.</li>
  * </ol>
  *
  * <div class="section">Thread safety</div>
@@ -66,43 +67,34 @@ import org.apache.sis.util.logging.Logging;
  */
 public class IdentifiedObjectFinder {
     /**
+     * The criterion for determining if a candidate found by {@code IdentifiedObjectFinder}
+     * should be considered equals to the requested object.
+     */
+    private static final ComparisonMode COMPARISON_MODE = ComparisonMode.APPROXIMATIVE;
+
+    /**
      * The factory to use for creating objects. This is the factory specified at construction time.
-     * We do not put this field in public API because the factory may not be the one the user would
-     * expect. Some of our {@link GeodeticAuthorityFactory} implementations will use a wrapper
-     * factory rather than the factory on which {@code createIdentifiedObjectFinder()} was invoked.
      */
     final AuthorityFactory factory;
 
     /**
      * The proxy for objects creation. This is usually set at construction time.
-     * But in the particular case of {@link CachingAuthorityFactory#Finder}, this
-     * is left to {@code null} and assigned only when a backing store factory is
-     * in use.
-     *
-     * <p>If this field is initialized only when needed, then the following methods
-     * must be overridden and ensure that the initialization has been performed:</p>
-     * <ul>
-     *   <li>{@link #getAuthority()}</li>
-     *   <li>{@link #getCodeCandidates(IdentifiedObject)}</li>
-     *   <li>{@link #find(IdentifiedObject)} (see note below)</li>
-     *   <li>{@link #findIdentifier(IdentifiedObject)} (see note below)</li>
-     * </ul>
-     *
-     * Note: the {@code find(…)} methods do not need to be overridden if all other methods
-     * are overridden and the {@link #create(String, int)} method is overridden too.
      */
     private AuthorityFactoryProxy<?> proxy;
 
     /**
-     * The parent finder, or {@code null} if none. This field is non-null only if this
-     * finder is wrapped by another finder like {@link CachingAuthorityFactory.Finder}.
+     * The cache or the adapter which is wrapping this finder, or {@code null} if none.
+     * An example of wrapper is {@link CachingAuthorityFactory}'s finder.
+     *
+     * @see #setWrapper(IdentifiedObjectFinder)
      */
-    private IdentifiedObjectFinder parent;
+    private IdentifiedObjectFinder wrapper;
 
     /**
-     * The comparison mode.
+     * The object in process of being searched, or {@code null} if none.
+     * This is used by {@link #find(IdentifiedObject)} for detecting recursivity.
      */
-    private ComparisonMode comparisonMode = ComparisonMode.IGNORE_METADATA;
+    private transient IdentifiedObject searching;
 
     /**
      * {@code true} for performing full scans, or {@code false} otherwise.
@@ -121,11 +113,28 @@ public class IdentifiedObjectFinder {
      *
      * @see GeodeticAuthorityFactory#createIdentifiedObjectFinder(Class)
      */
-    protected IdentifiedObjectFinder(final AuthorityFactory factory,
-            final Class<? extends IdentifiedObject> type)
-    {
+    protected IdentifiedObjectFinder(final AuthorityFactory factory, final Class<? extends IdentifiedObject> type) {
         this.factory = factory;
         proxy = AuthorityFactoryProxy.getInstance(type);
+    }
+
+    /**
+     * Declares that the given cache or adapter is the wrapper of this finder.
+     * This method should be invoked at wrapper construction time.
+     * An example of wrapper is {@link CachingAuthorityFactory}'s finder.
+     *
+     * <p>This method also copies the configuration of the given finder, thus providing a central place
+     * where to add calls to setters methods if such methods are added in a future SIS version.</p>
+     *
+     * <div class="section">Maintenance note</div>
+     * Adding properties to this method is not sufficient. See also the classes that override
+     * {@link #setFullScanAllowed(boolean)} — some of them may be defined in other packages.
+     *
+     * @param other The cache or the adapter wrapping this finder.
+     */
+    final void setWrapper(final IdentifiedObjectFinder other) {
+        wrapper = other;
+        setFullScanAllowed(other.isFullScanAllowed());
     }
 
     /**
@@ -146,51 +155,6 @@ public class IdentifiedObjectFinder {
      */
     public Citation getAuthority() throws FactoryException {
         return factory.getAuthority();
-    }
-
-    /**
-     * Sets the given finder as the parent of this finder. The parent is typically a
-     * {@link CachingAuthorityFactory} which will be used by {@link #findFromParent}.
-     *
-     * @param other The new parent.
-     */
-    final void setParent(final IdentifiedObjectFinder other) {
-        parent = other;
-    }
-
-    /**
-     * Copies the configuration of the given finder. This method provides a central place
-     * where to add call to setters methods if such methods are added in a future version.
-     *
-     * <div class="section">Maintenance note</div>
-     * Adding properties to this method is not sufficient. See also the classes that override
-     * {@link #setFullScanAllowed(boolean)} - some of them may be defined in other packages.
-     */
-    final void copyConfiguration(final IdentifiedObjectFinder other) {
-        setComparisonMode (other.getComparisonMode());
-        setFullScanAllowed(other.isFullScanAllowed());
-    }
-
-    /**
-     * Returns the criterion used for determining if a candidate found by this {@code IdentifiedObjectFinder}
-     * should be considered equals to the requested object.
-     * The default value is {@link ComparisonMode#IGNORE_METADATA}.
-     *
-     * @return The criterion to use for comparing objects.
-     */
-    public ComparisonMode getComparisonMode() {
-        return comparisonMode;
-    }
-
-    /**
-     * Sets the criterion used for determining if a candidate found by this {@code IdentifiedObjectFinder}
-     * should be considered equals to the requested object.
-     *
-     * @param mode The criterion to use for comparing objects.
-     */
-    public void setComparisonMode(final ComparisonMode mode) {
-        ArgumentChecks.ensureNonNull("mode", mode);
-        comparisonMode = mode;
     }
 
     /**
@@ -216,15 +180,14 @@ public class IdentifiedObjectFinder {
     }
 
     /**
-     * Lookups an object which is {@linkplain Utilities#equalsIgnoreMetadata equal, ignoring metadata},
-     * to the specified object.
+     * Lookups an object which is approximatively equal to the specified object.
      * The default implementation tries to instantiate some {@linkplain AbstractIdentifiedObject identified objects}
      * from the authority factory specified at construction time, in the following order:
      *
      * <ul>
      *   <li>If the specified object contains {@linkplain AbstractIdentifiedObject#getIdentifiers() identifiers}
      *       associated to the same authority than the factory, then those identifiers are used for
-     *       {@linkplain GeodeticAuthorityFactory#createObject creating objects} to be tested.</li>
+     *       {@linkplain GeodeticAuthorityFactory#createObject(String) creating objects} to be tested.</li>
      *   <li>If the authority factory can create objects from their {@linkplain AbstractIdentifiedObject#getName() name}
      *       in addition of identifiers, then the name and {@linkplain AbstractIdentifiedObject#getAlias() aliases} are
      *       used for creating objects to be tested.</li>
@@ -233,7 +196,7 @@ public class IdentifiedObjectFinder {
      * </ul>
      *
      * The first of the above created objects which is equal to the specified object in the
-     * the sense of {@link Utilities#equalsIgnoreMetadata(Object, Object)} is returned.
+     * the sense of {@link ComparisonMode#APPROXIMATIVE} is returned.
      *
      * @param  object The object looked up.
      * @return The identified object, or {@code null} if not found.
@@ -241,33 +204,70 @@ public class IdentifiedObjectFinder {
      */
     public IdentifiedObject find(final IdentifiedObject object) throws FactoryException {
         ArgumentChecks.ensureNonNull("object", object);
-        /*
-         * First check if one of the identifiers can be used to spot directly an
-         * identified object (and check it's actually equal to one in the factory).
-         */
-        IdentifiedObject candidate = createFromIdentifiers(object);
-        if (candidate != null) {
-            return candidate;
+        final IdentifiedObject state = searching;
+        try {
+            searching = object;
+            if (state == null) {
+                /*
+                 * First check if one of the identifiers can be used to find directly an identified object.
+                 * Verify that the object that we found is actually equal to given one; we do not blindly
+                 * trust the identifiers in the user object.
+                 */
+                IdentifiedObject candidate = createFromIdentifiers(object);
+                if (candidate != null) {
+                    return candidate;
+                }
+                /*
+                 * We are unable to find the object from its identifiers. Try a quick name lookup.
+                 * Some implementations like the one backed by the EPSG database are capable to find
+                 * an object from its name.
+                 */
+                candidate = createFromNames(object);
+                if (candidate != null) {
+                    return candidate;
+                }
+                /*
+                 * Here we exhausted the quick paths. Perform a full scan (costly) if we are allowed to,
+                 * otherwise abandon.
+                 */
+                return fullScan ? createFromCodes(object) : null;
+            } else if (state != object) {
+                /*
+                 * This 'find' method may be invoked recursively by some implementations that need to resolve
+                 * the dependencies of the given object. For example if the given object is a geodetic CRS,
+                 * the finder backed by the EPSG database will first search for a matching ellipsoid in order
+                 * to reduce the scope of the search. Note that since dependencies can be of any type, we
+                 * have to temporarily change the proxy.
+                 *
+                 * When invoked recursively, we delegate to the wrapper if it exists. The wrapper is typically
+                 * a CachingAuthorityFactory.Finder, in which case we want to leverage its cache capability.
+                 */
+                IdentifiedObjectFinder finder = wrapper;
+                if (finder == null) {
+                    finder = this;
+                }
+                final AuthorityFactoryProxy<?> old = finder.proxy;
+                finder.proxy = AuthorityFactoryProxy.getInstance(object.getClass());
+                try {
+                    return finder.find(object);
+                } finally {
+                    finder.proxy = old;
+                }
+            } else {
+                throw new IllegalArgumentException(Errors.format(Errors.Keys.RecursiveCreateCallForKey_1, object.getName()));
+            }
+        } finally {
+            searching = state;
         }
-        /*
-         * We are unable to find the object from its identifiers. Try a quick name lookup.
-         * Some implementations like the one backed by the EPSG database are capable to find
-         * an object from its name.
-         */
-        candidate = createFromNames(object);
-        if (candidate != null) {
-            return candidate;
-        }
-        /*
-         * Here we exhausted the quick paths. Bail out if the user does not want a full scan.
-         */
-        return fullScan ? createFromCodes(object) : null;
     }
 
     /**
-     * Returns the identifier of the specified object, or {@code null} if none. The default
-     * implementation invokes <code>{@linkplain #find find}(object)</code> and extracts the
-     * code from the returned {@linkplain AbstractIdentifiedObject identified object}.
+     * Returns the identifier of the specified object, or {@code null} if none.
+     * On some implementations, invoking this method is more efficient than invoking
+     * {@link #find(IdentifiedObject)} when the full object is not needed.
+     *
+     * <p>The default implementation invokes <code>{@linkplain #find find}(object)</code> and extracts
+     * the identifier code from the returned {@linkplain AbstractIdentifiedObject identified object}.</p>
      *
      * @param  object The object looked up.
      * @return The identifier of the given object, or {@code null} if none were found.
@@ -287,53 +287,8 @@ public class IdentifiedObjectFinder {
     }
 
     /**
-     * Lookups an object from the parent finder, of from this finder if there is no parent.
-     * A parent finder exists only if this finder is wrapped by another finder. The parent
-     * can be the {@link CachingAuthorityFactory} finder or {@link AuthorityFactoryAdapter}
-     * finder.
-     *
-     * <p>This method should be considered as an implementation details.
-     * It is needed by {@link org.apache.sis.referencing.factory.epsg.EPSGFactory}.
-     * The main purpose of this method is to allow {@link DirectAuthorityFactory}
-     * implementations to look for dependencies while leveraging the cache managed
-     * by their {@link CachingAuthorityFactory} wrappers.</p>
-     *
-     * @param  object The object looked up.
-     * @param  type The type of object to look for. It does not need to be the type specified
-     *         at construction time. This relaxation exists in order to allow dependencies lookup,
-     *         since the dependencies may be of different kinds.
-     * @return The identified object, or {@code null} if not found.
-     * @throws FactoryException if an error occurred while creating an object.
-     */
-    final IdentifiedObject findFromParent(final IdentifiedObject object,
-            final Class<? extends IdentifiedObject> type) throws FactoryException
-    {
-        return findFromParent(object, AuthorityFactoryProxy.getInstance(type));
-    }
-
-    /**
-     * Implementation of {@link #findFromParent(IdentifiedObject, Class)}, which may invoke itself
-     * recursively.  This method delegates to the parent if there is one, but still save and setup
-     * the proxy for this context frame. This is because {@link CachingAuthorityFactory} delegates
-     * to {@link DirectAuthorityFactory}, which delegate back to {@link CachingAuthorityFactory}
-     * through this method (for object dependencies lookup), etc.
-     */
-    private IdentifiedObject findFromParent(final IdentifiedObject object,
-            final AuthorityFactoryProxy<?> type) throws FactoryException
-    {
-        final IdentifiedObjectFinder parent = this.parent;
-        final AuthorityFactoryProxy<?> old = proxy;
-        proxy = type;
-        try {
-            return (parent != null) ? parent.findFromParent(object, type) : find(object);
-        } finally {
-            proxy = old;
-        }
-    }
-
-    /**
-     * Creates an object {@linkplain Utilities#equalsIgnoreMetadata equal, ignoring metadata}, to the
-     * specified object using only the {@linkplain AbstractIdentifiedObject#getIdentifiers identifiers}.
+     * Creates an object equals (optionally ignoring metadata), to the specified object
+     * using only the {@linkplain AbstractIdentifiedObject#getIdentifiers identifiers}.
      * If no such object is found, returns {@code null}.
      *
      * <p>This method may be used in order to get a fully identified object from a partially identified one.</p>
@@ -355,12 +310,12 @@ public class IdentifiedObjectFinder {
             final String code = IdentifiedObjects.toString(id);
             final IdentifiedObject candidate;
             try {
-                candidate = (IdentifiedObject) proxy.createFromAPI(factory, code);
+                candidate = create(code);
             } catch (NoSuchAuthorityCodeException e) {
                 // The identifier was not recognized. No problem, let's go on.
                 continue;
             }
-            if (Utilities.deepEquals(candidate, object, comparisonMode)) {
+            if (Utilities.deepEquals(candidate, object, COMPARISON_MODE)) {
                 return candidate;
             }
         }
@@ -368,10 +323,9 @@ public class IdentifiedObjectFinder {
     }
 
     /**
-     * Creates an object {@linkplain Utilities#equalsIgnoreMetadata equal, ignoring metadata}, to
-     * the specified object using only the {@linkplain AbstractIdentifiedObject#getName name} and
-     * {@linkplain AbstractIdentifiedObject#getAlias aliases}. If no such object is found, returns
-     * {@code null}.
+     * Creates an object equals (optionally ignoring metadata), to the specified object using only the
+     * {@linkplain AbstractIdentifiedObject#getName name} and {@linkplain AbstractIdentifiedObject#getAlias aliases}.
+     * If no such object is found, returns {@code null}.
      *
      * <p>This method may be used with some {@linkplain GeodeticAuthorityFactory authority factory}
      * implementations like the one backed by the EPSG database, which are capable to find an object
@@ -388,7 +342,7 @@ public class IdentifiedObjectFinder {
         String code = object.getName().getCode();
         IdentifiedObject candidate;
         try {
-            candidate = (IdentifiedObject) proxy.createFromAPI(factory, code);
+            candidate = create(code);
         } catch (FactoryException e) {
             /*
              * The identifier was not recognized. We will continue later will aliases.
@@ -398,18 +352,18 @@ public class IdentifiedObjectFinder {
              */
             candidate = null;
         }
-        if (Utilities.deepEquals(candidate, object, comparisonMode)) {
+        if (Utilities.deepEquals(candidate, object, COMPARISON_MODE)) {
             return candidate;
         }
         for (final GenericName id : object.getAlias()) {
             code = id.toString();
             try {
-                candidate = (IdentifiedObject) proxy.createFromAPI(factory, code);
+                candidate = create(code);
             } catch (FactoryException e) {
                 // The name was not recognized. No problem, let's go on.
                 continue;
             }
-            if (Utilities.deepEquals(candidate, object, comparisonMode)) {
+            if (Utilities.deepEquals(candidate, object, COMPARISON_MODE)) {
                 return candidate;
             }
         }
@@ -417,10 +371,10 @@ public class IdentifiedObjectFinder {
     }
 
     /**
-     * Creates an object {@linkplain Utilities#equalsIgnoreMetadata equal, ignoring metadata}, to the
-     * specified object. This method scans the {@linkplain #getAuthorityCodes authority codes},
+     * Creates an object equals (optionally ignoring metadata), to the specified object.
+     * This method scans the {@linkplain #getCodeCandidates(IdentifiedObject) authority codes},
      * create the objects and returns the first one which is equal to the specified object in
-     * the sense of {@link Utilities#equalsIgnoreMetadata equalsIgnoreMetadata}.
+     * the sense of {@link Utilities#deepEquals(Object, Object, ComparisonMode)}.
      *
      * <p>This method may be used in order to get a fully {@linkplain AbstractIdentifiedObject identified
      * object} from an object without {@linkplain AbstractIdentifiedObject#getIdentifiers() identifiers}.</p>
@@ -443,11 +397,11 @@ public class IdentifiedObjectFinder {
             for (final String code : codes) {
                 final IdentifiedObject candidate;
                 try {
-                    candidate = (IdentifiedObject) proxy.createFromAPI(factory, code);
+                    candidate = create(code);
                 } catch (FactoryException e) {
                     continue;
                 }
-                if (Utilities.deepEquals(candidate, object, comparisonMode)) {
+                if (Utilities.deepEquals(candidate, object, COMPARISON_MODE)) {
                     return candidate;
                 }
             }
@@ -459,11 +413,24 @@ public class IdentifiedObjectFinder {
     }
 
     /**
+     * Creates an object for the given code. This method is invoked by the default implementation of
+     * {@link #find(IdentifiedObject)} and {@link #findIdentifier(IdentifiedObject)} methods for each
+     * code returned by the {@link #getCodeCandidates(IdentifiedObject)} method, in iteration order,
+     * until an object approximatively equals to the requested object is found.
+     *
+     * @param  code The authority code for which to create an object.
+     * @return The identified object for the given code, or {@code null} to stop attempts.
+     * @throws FactoryException if an error occurred while creating the object.
+     */
+    private IdentifiedObject create(final String code) throws FactoryException {
+        return (IdentifiedObject) proxy.createFromAPI(factory, code);
+    }
+
+    /**
      * Returns a set of authority codes that <strong>may</strong> identify the same object than the specified one.
      * The returned set must contains <em>at least</em> the code of every objects that are
-     * {@linkplain Utilities#equalsIgnoreMetadata equal, ignoring metadata}, to the specified one.
-     * However the set is not required to contains only the codes of those objects;
-     * it may conservatively contains the code for more objects if an exact search is too expensive.
+     * {@linkplain ComparisonMode#APPROXIMATIVE approximatively equal} to the specified one.
+     * However the set may conservatively contains the code for more objects if an exact search is too expensive.
      *
      * <p>This method is invoked by the default {@link #find(IdentifiedObject)} method implementation.
      * The caller iterates through the returned codes, instantiate the objects and compare them with

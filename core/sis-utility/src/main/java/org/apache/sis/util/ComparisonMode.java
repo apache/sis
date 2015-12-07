@@ -178,14 +178,15 @@ public enum ComparisonMode {
     }
 
     /**
-     * If the two given objects are equals according one of the modes enumerated in this class,
-     * then returns that mode. Otherwise returns {@code null}. This method is used mostly for
-     * diagnostic purpose.
+     * If the two given objects are equal according one of the modes enumerated in this class,
+     * then returns that mode. Otherwise returns {@code null}.
+     *
+     * <p><b>Note:</b> this method never return the {@link #DEBUG} mode.</p>
      *
      * @param  o1 The first object to compare, or {@code null}.
      * @param  o2 The second object to compare, or {@code null}.
-     * @return The must suitable comparison mode, or {@code null} if the two given objects
-     *         are not equal for any mode in this enumeration.
+     * @return The most suitable comparison mode, or {@code null} if the two given objects
+     *         are not equal according any mode in this enumeration.
      */
     public static ComparisonMode equalityLevel(final Object o1, Object o2) {
         if (o1 == o2) {
