@@ -134,6 +134,7 @@ import org.junit.BeforeClass;
     org.apache.sis.internal.referencing.provider.MolodenskyTest.class,
     org.apache.sis.internal.referencing.provider.FranceGeocentricInterpolationTest.class,
     org.apache.sis.internal.referencing.provider.NTv2Test.class,
+    org.apache.sis.internal.referencing.provider.NADCONTest.class,
     org.apache.sis.internal.referencing.provider.MapProjectionTest.class,
     org.apache.sis.internal.referencing.provider.AllProvidersTest.class,
     org.apache.sis.referencing.operation.transform.InterpolatedTransformTest.class,

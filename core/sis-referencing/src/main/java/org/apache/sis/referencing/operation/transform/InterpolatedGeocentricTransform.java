@@ -268,7 +268,7 @@ public class InterpolatedGeocentricTransform extends MolodenskyFormula {
             pg.getOrCreate(Molodensky.FLATTENING_DIFFERENCE) .setValue(Δf, Unit.ONE);
         }
         if (grid instanceof DatumShiftGridFile<?,?>) {
-            pg.getOrCreate(FranceGeocentricInterpolation.FILE).setValue(((DatumShiftGridFile<?,?>) grid).file);
+            ((DatumShiftGridFile<?,?>) grid).setFileParameters(pg);
         }
     }
 

@@ -166,6 +166,8 @@
         <include name="**/*.xml"/>
         <include name="**/*.txt"/>
         <include name="**/*.gsb"/>
+        <include name="**/*.laa"/>
+        <include name="**/*.loa"/>
       </fileset>
     </copy>
     <copy todir="${build.test.classes.dir}">

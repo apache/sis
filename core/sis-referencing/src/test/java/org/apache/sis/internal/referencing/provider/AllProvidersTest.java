@@ -91,6 +91,7 @@ public final strictfp class AllProvidersTest extends TestCase {
             PolarStereographicSouth.class,
             ObliqueStereographic.class,
             NTv2.class,
+            NADCON.class,
             FranceGeocentricInterpolation.class
         };
     }
