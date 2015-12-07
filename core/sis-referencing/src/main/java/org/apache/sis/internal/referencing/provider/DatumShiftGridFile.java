@@ -18,9 +18,12 @@ package org.apache.sis.internal.referencing.provider;
 
 import java.util.Arrays;
 import java.lang.reflect.Array;
+import javax.measure.unit.Unit;
+import javax.measure.quantity.Quantity;
 import org.apache.sis.math.DecimalFunctions;
 import org.apache.sis.util.collection.Cache;
 import org.apache.sis.referencing.datum.DatumShiftGrid;
+import org.apache.sis.internal.referencing.j2d.AffineTransform2D;
 
 // Branch-specific imports
 import java.nio.file.Path;
@@ -39,12 +42,16 @@ import java.nio.file.Path;
  *       from {@code float} to {@code double} performed by the {@link #getCellValue(int, int, int)} method.</li>
  * </ul>
  *
+ * @param <C> Dimension of the coordinate unit (usually {@link javax.measure.quantity.Angle}).
+ * @param <T> Dimension of the translation unit (usually {@link javax.measure.quantity.Angle}
+ *            or {@link javax.measure.quantity.Length}).
+ *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.7
  * @version 0.7
  * @module
  */
-public abstract class DatumShiftGridFile extends DatumShiftGrid {
+public abstract class DatumShiftGridFile<C extends Quantity, T extends Quantity> extends DatumShiftGrid<C,T> {
     /**
      * Serial number for inter-operability with different versions.
      */
@@ -55,8 +62,8 @@ public abstract class DatumShiftGridFile extends DatumShiftGrid {
      * data exceed 32768 (about 128 kilobytes if the values use the {@code float} type). in which case
      * the oldest grids will be replaced by weak references.
      */
-    static final Cache<Path, DatumShiftGridFile> CACHE = new Cache<Path, DatumShiftGridFile>(4, 32*1024, true) {
-        @Override protected int cost(final DatumShiftGridFile grid) {
+    static final Cache<Path, DatumShiftGridFile<?,?>> CACHE = new Cache<Path, DatumShiftGridFile<?,?>>(4, 32*1024, true) {
+        @Override protected int cost(final DatumShiftGridFile<?,?> grid) {
             int p = 1;
             for (final Object array : grid.getData()) {
                 p *= Array.getLength(array);
@@ -73,9 +80,13 @@ public abstract class DatumShiftGridFile extends DatumShiftGrid {
     public final Path file;
 
     /**
+     * Number of grid cells along the <var>x</var> axis.
+     */
+    final int nx;
+
+    /**
      * Creates a new datum shift grid for the given grid geometry.
      * The actual offset values need to be provided by subclasses.
-     * All {@code double} values given to this constructor will be converted from degrees to radians.
      *
      * @param x0  Longitude in degrees of the center of the cell at grid index (0,0).
      * @param y0  Latitude in degrees of the center of the cell at grid index (0,0).
@@ -84,17 +95,18 @@ public abstract class DatumShiftGridFile extends DatumShiftGrid {
      * @param nx  Number of cells along the <var>x</var> axis in the grid.
      * @param ny  Number of cells along the <var>y</var> axis in the grid.
      */
-    DatumShiftGridFile(final double x0, final double y0,
+    DatumShiftGridFile(final Unit<C> coordinateUnit,
+                       final Unit<T> translationUnit,
+                       final boolean isCellValueRatio,
+                       final double x0, final double y0,
                        final double Δx, final double Δy,
                        final int    nx, final int    ny,
                        final Path file)
     {
-        super(Math.toRadians(x0),
-              Math.toRadians(y0),
-              Math.toRadians(Δx),
-              Math.toRadians(Δy),
-              nx, ny);
+        super(coordinateUnit, new AffineTransform2D(1/Δx, 0, 0, 1/Δy, -x0/Δx, -y0/Δy),
+                new int[] {nx, ny}, isCellValueRatio, translationUnit);
         this.file = file;
+        this.nx   = nx;
     }
 
     /**
@@ -102,18 +114,19 @@ public abstract class DatumShiftGridFile extends DatumShiftGrid {
      *
      * @param other The other datum shift grid from which to copy the grid geometry.
      */
-    DatumShiftGridFile(final DatumShiftGridFile other) {
+    DatumShiftGridFile(final DatumShiftGridFile<C,T> other) {
         super(other);
         this.file = other.file;
+        this.nx   = other.nx;
     }
 
     /**
      * If a grid exists in the cache for the same data, returns a new grid sharing the same data arrays.
      * Otherwise returns {@code this}.
      */
-    final DatumShiftGridFile useSharedData() {
+    final DatumShiftGridFile<C,T> useSharedData() {
         final Object[] data = getData();
-        for (final DatumShiftGridFile grid : CACHE.values()) {
+        for (final DatumShiftGridFile<?,?> grid : CACHE.values()) {
             final Object[] other = grid.getData();
             if (Arrays.deepEquals(data, other)) {
                 return setData(other);
@@ -129,12 +142,24 @@ public abstract class DatumShiftGridFile extends DatumShiftGrid {
      * reference the same grid (e.g. symbolic link, lower case versus upper case in a case-insensitive file
      * system).
      */
-    abstract DatumShiftGridFile setData(Object[] other);
+    abstract DatumShiftGridFile<C,T> setData(Object[] other);
 
     /**
      * Returns the data for each shift dimensions.
      */
     abstract Object[] getData();
+
+    /**
+     * Returns {@code this} casted to the given type, after verification that those types are valid.
+     */
+    @SuppressWarnings("unchecked")
+    final <NC extends Quantity, NT extends Quantity> DatumShiftGridFile<NC,NT> castTo(
+            final Class<NC> coordinateType, final Class<NT> translationType)
+    {
+        super.getCoordinateUnit() .asType(coordinateType);
+        super.getTranslationUnit().asType(translationType);
+        return (DatumShiftGridFile<NC,NT>) this;
+    }
 
     /**
      * Returns {@code true} if the given object is a grid containing the same data than this grid.
@@ -149,7 +174,7 @@ public abstract class DatumShiftGridFile extends DatumShiftGrid {
             return true;
         }
         if (super.equals(other)) {
-            final DatumShiftGridFile that = (DatumShiftGridFile) other;
+            final DatumShiftGridFile<?,?> that = (DatumShiftGridFile<?,?>) other;
             return file.equals(that.file) && Arrays.deepEquals(getData(), that.getData());
         }
         return false;
@@ -186,7 +211,7 @@ public abstract class DatumShiftGridFile extends DatumShiftGrid {
      * @version 0.7
      * @module
      */
-    static final class Float extends DatumShiftGridFile {
+    static final class Float<C extends Quantity, T extends Quantity> extends DatumShiftGridFile<C,T> {
         /**
          * Serial number for inter-operability with different versions.
          */
@@ -201,12 +226,15 @@ public abstract class DatumShiftGridFile extends DatumShiftGrid {
          * Creates a new datum shift grid with the given grid geometry, filename and number of shift dimensions.
          * All {@code double} values given to this constructor will be converted from degrees to radians.
          */
-        Float(final double x0, final double y0,
+        Float(final Unit<C> coordinateUnit,
+              final Unit<T> translationUnit,
+              final boolean isCellValueRatio,
+              final double x0, final double y0,
               final double Δx, final double Δy,
               final int    nx, final int    ny,
               final Path file, final int dim)
         {
-            super(x0, y0, Δx, Δy, nx, ny, file);
+            super(coordinateUnit, translationUnit, isCellValueRatio, x0, y0, Δx, Δy, nx, ny, file);
             offsets = new float[dim][];
             final int size = Math.multiplyExact(nx, ny);
             for (int i=0; i<dim; i++) {
@@ -217,7 +245,7 @@ public abstract class DatumShiftGridFile extends DatumShiftGrid {
         /**
          * Creates a new grid of the same geometry than the given grid but using a different data array.
          */
-        private Float(final DatumShiftGridFile grid, final float[][] offsets) {
+        private Float(final DatumShiftGridFile<C,T> grid, final float[][] offsets) {
             super(grid);
             this.offsets = offsets;
         }
@@ -226,8 +254,8 @@ public abstract class DatumShiftGridFile extends DatumShiftGrid {
          * Returns a new grid with the same geometry than this grid but different data arrays.
          */
         @Override
-        final DatumShiftGridFile setData(final Object[] other) {
-            return new Float(this, (float[][]) other);
+        final DatumShiftGridFile<C,T> setData(final Object[] other) {
+            return new Float<>(this, (float[][]) other);
         }
 
         /**
@@ -243,7 +271,7 @@ public abstract class DatumShiftGridFile extends DatumShiftGrid {
          * Returns the number of shift dimension.
          */
         @Override
-        public final int getShiftDimensions() {
+        public final int getTranslationDimensions() {
             return offsets.length;
         }
 
@@ -259,7 +287,7 @@ public abstract class DatumShiftGridFile extends DatumShiftGrid {
          * @return The offset at the given dimension in the grid cell at the given index.
          */
         @Override
-        protected final double getCellValue(final int dim, final int gridX, final int gridY) {
+        public final double getCellValue(final int dim, final int gridX, final int gridY) {
             return DecimalFunctions.floatToDouble(offsets[dim][gridX + gridY*nx]);
         }
     }

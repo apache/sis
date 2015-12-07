@@ -239,7 +239,7 @@ class LinearTransform1D extends AbstractMathTransform1D implements LinearTransfo
     public void transform(final double[] srcPts, int srcOff,
                           final double[] dstPts, int dstOff, int numPts)
     {
-        if (srcPts!=dstPts || srcOff>=dstOff) {
+        if (srcPts != dstPts || srcOff >= dstOff) {
             while (--numPts >= 0) {
                 dstPts[dstOff++] = offset + scale * srcPts[srcOff++];
             }
@@ -261,7 +261,7 @@ class LinearTransform1D extends AbstractMathTransform1D implements LinearTransfo
     public void transform(final float[] srcPts, int srcOff,
                           final float[] dstPts, int dstOff, int numPts)
     {
-        if (srcPts!=dstPts || srcOff>=dstOff) {
+        if (srcPts != dstPts || srcOff >= dstOff) {
             while (--numPts >= 0) {
                 dstPts[dstOff++] = (float) (offset + scale * srcPts[srcOff++]);
             }
@@ -298,6 +298,29 @@ class LinearTransform1D extends AbstractMathTransform1D implements LinearTransfo
     {
         while (--numPts >= 0) {
             dstPts[dstOff++] = offset + scale * srcPts[srcOff++];
+        }
+    }
+
+    /**
+     * Transforms many distance vectors in a list of ordinal values.
+     * The default implementation computes the values from the {@link #scale} coefficient only.
+     *
+     * @since 0.7
+     */
+    @Override
+    public void deltaTransform(final double[] srcPts, int srcOff,
+                               final double[] dstPts, int dstOff, int numPts)
+    {
+        if (srcPts != dstPts || srcOff >= dstOff) {
+            while (--numPts >= 0) {
+                dstPts[dstOff++] = scale * srcPts[srcOff++];
+            }
+        } else {
+            srcOff += numPts;
+            dstOff += numPts;
+            while (--numPts >= 0) {
+                dstPts[--dstOff] = scale * srcPts[--srcOff];
+            }
         }
     }
 

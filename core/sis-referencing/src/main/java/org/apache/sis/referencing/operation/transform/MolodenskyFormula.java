@@ -154,7 +154,7 @@ abstract class MolodenskyFormula extends AbstractMathTransform implements Serial
      * The grid of datum shifts from source datum to target datum.
      * This can be non-null only for {@link InterpolatedGeocentricTransform}.
      */
-    final DatumShiftGrid grid;
+    final DatumShiftGrid<?,?> grid;
 
     /**
      * Constructs the inverse of a Molodensky transform.
@@ -174,6 +174,7 @@ abstract class MolodenskyFormula extends AbstractMathTransform implements Serial
 
     /**
      * Creates a Molodensky transform from the specified parameters.
+     * If a non-null {@code grid} is specified, it is caller's responsibility to verify its validity.
      *
      * @param source      The source ellipsoid.
      * @param isSource3D  {@code true} if the source coordinates have a height.
@@ -190,7 +191,7 @@ abstract class MolodenskyFormula extends AbstractMathTransform implements Serial
     MolodenskyFormula(final Ellipsoid source, final boolean isSource3D,
                       final Ellipsoid target, final boolean isTarget3D,
                       final double tX, final double tY, final double tZ,
-                      final DatumShiftGrid grid, final boolean isAbridged,
+                      final DatumShiftGrid<?,?> grid, final boolean isAbridged,
                       final ParameterDescriptorGroup descriptor)
     {
         ArgumentChecks.ensureNonNull("source", source);
@@ -402,7 +403,7 @@ abstract class MolodenskyFormula extends AbstractMathTransform implements Serial
             if (offset == null) break;
 
             // Following is executed only in InterpolatedGeocentricTransform case.
-            grid.offsetAt(λt, φt, offset);
+            grid.interpolateAtNormalized(λt, φt, offset);
             tX = -offset[0];
             tY = -offset[1];
             tZ = -offset[2];
@@ -514,14 +515,14 @@ abstract class MolodenskyFormula extends AbstractMathTransform implements Serial
             return isSource3D == that.isSource3D
                 && isTarget3D == that.isTarget3D
                 && isAbridged == that.isAbridged
-                && Objects .equals      (grid,                that.grid)
                 && Numerics.epsilonEqual(tX,                  that.tX,                  mode)
                 && Numerics.epsilonEqual(tY,                  that.tY,                  mode)
                 && Numerics.epsilonEqual(tZ,                  that.tZ,                  mode)
                 && Numerics.epsilonEqual(Δa,                  that.Δa,                  mode)
                 && Numerics.epsilonEqual(Δfmod,               that.Δfmod,               mode)
                 && Numerics.epsilonEqual(semiMajor,           that.semiMajor,           mode)
-                && Numerics.epsilonEqual(eccentricitySquared, that.eccentricitySquared, mode);
+                && Numerics.epsilonEqual(eccentricitySquared, that.eccentricitySquared, mode)
+                && Objects .equals(grid, that.grid);
         }
         return false;
     }

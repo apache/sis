@@ -16,12 +16,28 @@
  */
 package org.apache.sis.referencing.datum;
 
+import java.util.Arrays;
+import java.io.IOException;
 import java.io.Serializable;
+import java.io.ObjectInputStream;
+import javax.measure.unit.Unit;
+import javax.measure.quantity.Quantity;
+import javax.measure.converter.UnitConverter;
+import javax.measure.converter.LinearConverter;
 import org.opengis.geometry.Envelope;
-import org.apache.sis.geometry.Envelope2D;
+import org.opengis.geometry.MismatchedDimensionException;
+import org.opengis.referencing.operation.Matrix;
+import org.opengis.referencing.operation.TransformException;
+import org.apache.sis.referencing.operation.matrix.Matrices;
+import org.apache.sis.referencing.operation.transform.LinearTransform;
+import org.apache.sis.geometry.GeneralEnvelope;
+import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.internal.util.DoubleDouble;
-import org.apache.sis.internal.util.Numerics;
+import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
+
+// Branch-dependent imports
+import java.util.Objects;
 
 
 /**
@@ -30,29 +46,44 @@ import org.apache.sis.util.ArgumentChecks;
  * like NTv2, NADCON or RGF93. But this class could also be used for other kind of transformations,
  * provided that the shifts are <strong>small</strong> (otherwise algorithms may not converge).
  *
- * <p>{@linkplain DefaultGeodeticDatum Geodetic datum} changes impact directly two kinds of coordinates:
- * geographic and geocentric. Translations given by {@code DatumShiftGrid} instances are often, but not always,
+ * <p>{@linkplain DefaultGeodeticDatum Geodetic datum} changes can be implemented by translations in geographic
+ * or geocentric coordinates. Translations given by {@code DatumShiftGrid} instances are often, but not always,
  * applied directly on geographic coordinates (<var>λ</var>,<var>φ</var>). But some algorithms rather apply the
  * translations in geocentric coordinates (<var>X</var>,<var>Y</var>,<var>Z</var>). This {@code DatumShiftGrid}
  * class can describe both cases, but will be used with different {@code MathTransform} implementations.</p>
  *
+ * <p>Steps for calculation of a translation vector:</p>
+ * <ol>
+ *   <li>Coordinates are given in some "real world" unit.
+ *       The expected unit is given by {@link #getCoordinateUnit()}.</li>
+ *   <li>Above coordinates are converted to grid indices including fractional parts.
+ *       That conversion is given by {@link #getCoordinateToGrid()}.</li>
+ *   <li>Translation vectors are interpolated at the position of above grid indices.
+ *       That interpolation is done by {@link #interpolateInCell interpolateInCell(…)}.</li>
+ *   <li>If the above translations were given as a ratio of the real translation divided by the size of grid cells, apply
+ *       the inverse of the conversion given at step 2. This information is given by {@link #isCellValueRatio()}.</li>
+ *   <li>The resulting translation vectors are in the unit given by {@link #getTranslationUnit()}.</li>
+ * </ol>
+ *
+ * The {@link #interpolateAt interpolateAt(…)} method performs all those steps.
+ * But that method is provided only for convenience; it is not used by Apache SIS.
+ * For performance reasons SIS {@code MathTransform} implementations perform all the above-cited steps themselves,
+ * and apply the interpolated translations on coordinate values in their own step between above steps 3 and 4.
+ *
  * <div class="note"><b>Use cases:</b>
- * NADCON, NTv2 and other grids are used in the contexts described below. But be aware of units of measurement!
- * In particular, input geographic coordinates (λ,φ) need to be in <strong>radians</strong> for use with SIS
- * {@link org.apache.sis.referencing.operation.transform.InterpolatedGeocentricTransform} implementation.
  * <ul>
  *   <li><p><b>Datum shift by geographic translations</b><br>
- *   NADCON and NTv2 grids are defined with longitude (λ) and latitude (φ) inputs in angular <em>degrees</em>
- *   and give (<var>Δλ</var>, <var>Δφ</var>) translations in angular <em>seconds</em>.
- *   However Apache SIS needs all those values to be converted to <strong>radians</strong>.
+ *   NADCON and NTv2 grids are defined with longitude (<var>λ</var>) and latitude (<var>φ</var>) inputs in angular
+ *   <em>degrees</em> and give (<var>Δλ</var>, <var>Δφ</var>) translations in angular <em>seconds</em>.
+ *   However SIS stores the translation values in units of grid cell rather than angular seconds.
  *   The translations will be applied by {@link org.apache.sis.referencing.operation.transform.InterpolatedTransform}
  *   directly on the given (<var>λ</var>,<var>φ</var>) coordinates.
  *   </p></li>
  *
  *   <li><p><b>Datum shift by geocentric translations</b><br>
- *   France interpolation grid is defined with longitude (λ) and latitude (φ) inputs in angular <em>degrees</em>
- *   and gives (<var>ΔX</var>, <var>ΔY</var>, <var>ΔZ</var>) geocentric translations in <em>metres</em>.
- *   Those offsets will not be added directly to the given (<var>λ</var>,<var>φ</var>) coordinates since there is
+ *   France interpolation grid is defined with longitude (<var>λ</var>) and latitude (<var>φ</var>) inputs in angular
+ *   <em>degrees</em> and gives (<var>ΔX</var>, <var>ΔY</var>, <var>ΔZ</var>) geocentric translations in <em>metres</em>.
+ *   Those translations will not be added directly to the given (<var>λ</var>,<var>φ</var>) coordinates since there is
  *   a geographic/geocentric conversion in the middle
  *   (see {@link org.apache.sis.referencing.operation.transform.InterpolatedGeocentricTransform}).
  *   </p></li>
@@ -68,119 +99,419 @@ import org.apache.sis.util.ArgumentChecks;
  *   </p></li>
  * </ul></div>
  *
- * <p>Implementations of this class shall be immutable and thread-safe.</p>
+ * Implementations of this class shall be immutable and thread-safe.
+ *
+ * <div class="section">Serialization</div>
+ * Serialized objects of this class are not guaranteed to be compatible with future Apache SIS releases.
+ * Serialization support is appropriate for short term storage or RMI between applications running the
+ * same version of Apache SIS. But for long term storage, an established datum shift grid format like
+ * NTv2 should be preferred.
+ *
+ * @param <C> Dimension of the coordinate unit (usually {@link javax.measure.quantity.Angle}).
+ * @param <T> Dimension of the translation unit (usually {@link javax.measure.quantity.Angle}
+ *            or {@link javax.measure.quantity.Length}).
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.7
  * @version 0.7
  * @module
  */
-public abstract class DatumShiftGrid implements Serializable {
+public abstract class DatumShiftGrid<C extends Quantity, T extends Quantity> implements Serializable {
     /**
      * Serial number for inter-operability with different versions.
      */
     private static final long serialVersionUID = 8405276545243175808L;
 
     /**
-     * Coordinate of the center of the cell at grid index (0,0).
-     * This is usually a geographic coordinate (<var>λ₀</var>,<var>φ₀</var>) in <strong>radians</strong>,
-     * but other usages are allowed for users who instantiate
-     * {@link org.apache.sis.referencing.operation.transform.InterpolatedTransform} themselves.
-     * The (<var>x₀</var>, <var>y₀</var>) coordinate is often the minimal (<var>x</var>,<var>y</var>) value
-     * of the grid, but not necessarily if the <var>Δx</var> or <var>Δy</var> increments are negative.
+     * The unit of measurements of input values, before conversion to grid indices by {@link #coordinateToGrid}.
+     * The coordinate unit is typically {@link javax.measure.unit.NonSI#DEGREE_ANGLE}.
+     *
+     * @see #getCoordinateUnit()
      */
-    protected final double x0, y0;
+    private final Unit<C> coordinateUnit;
 
     /**
-     * Multiplication factor for converting a coordinate into grid index.
-     * The (<var>gridX</var>, <var>gridY</var>) indices of a cell in the grid are given by:
+     * Conversion from the "real world" coordinates to grid indices including fractional parts.
+     * This is the conversion that needs to be applied before to interpolate.
+     *
+     * @see #getCoordinateToGrid()
+     */
+    private final LinearTransform coordinateToGrid;
+
+    /**
+     * The unit of measurement of output values, as interpolated by the {@link #interpolateAt} method.
+     *
+     * @see #getTranslationUnit()
+     */
+    private final Unit<T> translationUnit;
+
+    /**
+     * {@code true} if the translation interpolated by {@link #interpolateInCell interpolateInCell(…)}
+     * are divided by grid cell size. If {@code true}, then the inverse of {@link #coordinateToGrid}
+     * needs to be applied on the interpolated values as a delta transform.
+     * Such conversion is applied (if needed) by the {@link #interpolateAt} method.
+     *
+     * @see #isCellValueRatio()
+     */
+    private final boolean isCellValueRatio;
+
+    /**
+     * Number of grid cells in along each dimension. This is usually an array of length 2 containing
+     * the number of grid cells along the <var>x</var> and <var>y</var> axes.
+     */
+    private final int[] gridSize;
+
+    /**
+     * Conversion from (λ,φ) coordinates in radians to grid indices (x,y).
      *
      * <ul>
-     *   <li><var>gridX</var> = (<var>x</var> - <var>x₀</var>) ⋅ {@code scaleX}</li>
-     *   <li><var>gridY</var> = (<var>y</var> - <var>y₀</var>) ⋅ {@code scaleY}</li>
+     *   <li>x  =  (λ - λ₀) ⋅ {@code scaleX}  =  λ ⋅ {@code scaleX} + x₀</li>
+     *   <li>y  =  (φ - φ₀) ⋅ {@code scaleY}  =  φ ⋅ {@code scaleY} + y₀</li>
      * </ul>
-     */
-    protected final double scaleX, scaleY;
-
-    /**
-     * Number of cells in the grid along the <var>x</var> and <var>y</var> axes.
-     */
-    protected final int nx, ny;
-
-    /**
-     * Creates a new datum shift grid for the given grid geometry.
-     * The actual offset values need to be provided by subclasses.
      *
-     * @param x0  First ordinate (often longitude in radians) of the center of the cell at grid index (0,0).
-     * @param y0  Second ordinate (often latitude in radians) of the center of the cell at grid index (0,0).
-     * @param Δx  Increment in <var>x</var> value between cells at index <var>gridX</var> and <var>gridX</var> + 1.
-     * @param Δy  Increment in <var>y</var> value between cells at index <var>gridY</var> and <var>gridY</var> + 1.
-     * @param nx  Number of cells along the <var>x</var> axis in the grid.
-     * @param ny  Number of cells along the <var>y</var> axis in the grid.
+     * Those factors are extracted from the {@link #coordinateToGrid} transform for performance purposes.
      */
-    protected DatumShiftGrid(final double x0, final double y0,
-                             final double Δx, final double Δy,
-                             final int    nx, final int    ny)
+    private transient double scaleX, scaleY, x0, y0;
+
+    /**
+     * Creates a new datum shift grid for the given size and units.
+     * The actual cell values need to be provided by subclasses.
+     *
+     * <p>Meaning of argument values is documented more extensively in {@link #getCoordinateUnit()},
+     * {@link #getCoordinateToGrid()}, {@link #isCellValueRatio()} and {@link #getTranslationUnit()}
+     * methods. The argument order is roughly the order in which they are used in the process of
+     * interpolating translation vectors.</p>
+     *
+     * @param coordinateUnit    The unit of measurement of input values, before conversion to grid indices by {@code coordinateToGrid}.
+     * @param coordinateToGrid  Conversion from the "real world" coordinates to grid indices including fractional parts.
+     * @param gridSize          Number of cells along each axis in the grid. The length of this array shall be equal to {@code coordinateToGrid} target dimensions.
+     * @param isCellValueRatio  {@code true} if results of {@link #interpolateInCell interpolateInCell(…)} are divided by grid cell size.
+     * @param translationUnit   The unit of measurement of output values.
+     */
+    protected DatumShiftGrid(final Unit<C> coordinateUnit, final LinearTransform coordinateToGrid,
+            int[] gridSize, final boolean isCellValueRatio, final Unit<T> translationUnit)
     {
-        this.x0 = x0;
-        this.y0 = y0;
-        this.nx = nx;
-        this.ny = ny;
-        ArgumentChecks.ensureStrictlyPositive("nx", nx);
-        ArgumentChecks.ensureStrictlyPositive("ny", ny);
-        scaleX = 1 / Δx;
-        scaleY = 1 / Δy;
+        ArgumentChecks.ensureNonNull("coordinateUnit",   coordinateUnit);
+        ArgumentChecks.ensureNonNull("coordinateToGrid", coordinateToGrid);
+        ArgumentChecks.ensureNonNull("gridSize",         gridSize);
+        ArgumentChecks.ensureNonNull("translationUnit",  translationUnit);
+        int n = coordinateToGrid.getTargetDimensions();
+        if (n != gridSize.length) {
+            throw new MismatchedDimensionException(Errors.format(
+                    Errors.Keys.MismatchedDimension_3, "gridSize", n, gridSize.length));
+        }
+        this.coordinateUnit   = coordinateUnit;
+        this.coordinateToGrid = coordinateToGrid;
+        this.isCellValueRatio = isCellValueRatio;
+        this.translationUnit  = translationUnit;
+        this.gridSize = gridSize = gridSize.clone();
+        for (int i=0; i<gridSize.length; i++) {
+            if ((n = gridSize[i]) < 2) {
+                throw new IllegalArgumentException(Errors.format(n <= 0
+                        ? Errors.Keys.ValueNotGreaterThanZero_2
+                        : Errors.Keys.IllegalArgumentValue_2, "gridSize[" + i + ']', n));
+            }
+        }
+        computeConversionFactors();
     }
 
     /**
-     * Creates a new datum shift grid with the same grid geometry than the given grid.
+     * Computes the conversion factors needed by {@link #interpolateAtNormalized(double, double, double[])}.
+     * This method takes only the 2 first dimensions. If a conversion factor can not be computed, then it is
+     * set to NaN.
+     */
+    @SuppressWarnings("fallthrough")
+    private void computeConversionFactors() {
+        scaleX = Double.NaN;
+        scaleY = Double.NaN;
+        x0     = Double.NaN;
+        y0     = Double.NaN;
+        final UnitConverter c = coordinateUnit.toSI().getConverterTo(coordinateUnit);
+        if (c instanceof LinearConverter && c.convert(0) == 0) {
+            final Matrix m = coordinateToGrid.getMatrix();
+            if (Matrices.isAffine(m)) {
+                final int n = m.getNumCol() - 1;
+                final double toUnit = c.convert(1);
+                switch (m.getNumRow()) {
+                    default: y0 = m.getElement(1,n); scaleY = diagonal(m, 1, n) * toUnit;   // Fall through
+                    case 1:  x0 = m.getElement(0,n); scaleX = diagonal(m, 0, n) * toUnit;
+                    case 0:  break;
+                }
+            }
+        }
+    }
+
+    /**
+     * Returns the value on the diagonal of the given matrix, provided that all other non-translation terms are 0.
+     *
+     * @param m The matrix from which to get the scale factor on a row.
+     * @param j The row for which to get the scale factor.
+     * @param n Index of the last column.
+     * @return The scale factor on the diagonal, or NaN.
+     */
+    private static double diagonal(final Matrix m, final int j, int n) {
+        while (--n >= 0) {
+            if (j != n && m.getElement(j, n) != 0) {
+                return Double.NaN;
+            }
+        }
+        return m.getElement(j, j);
+    }
+
+    /**
+     * Creates a new datum shift grid with the same grid geometry (size and units) than the given grid.
      *
      * @param other The other datum shift grid from which to copy the grid geometry.
      */
-    protected DatumShiftGrid(final DatumShiftGrid other) {
-        x0 = other.x0;
-        y0 = other.y0;
-        nx = other.nx;
-        ny = other.ny;
-        scaleX = other.scaleX;
-        scaleY = other.scaleY;
+    protected DatumShiftGrid(final DatumShiftGrid<C,T> other) {
+        ArgumentChecks.ensureNonNull("other", other);
+        coordinateUnit   = other.coordinateUnit;
+        coordinateToGrid = other.coordinateToGrid;
+        isCellValueRatio = other.isCellValueRatio;
+        translationUnit  = other.translationUnit;
+        gridSize         = other.gridSize;
+        scaleX           = other.scaleX;
+        scaleY           = other.scaleY;
+        x0               = other.x0;
+        y0               = other.y0;
+    }
+
+    /**
+     * Returns the domain of validity of input coordinates that can be specified to the
+     * {@link #interpolateAt interpolateAt(…)} method. Coordinates outside that domain of
+     * validity will still be accepted, but the extrapolated results may be very wrong.
+     *
+     * <p>The unit of measurement for the coordinate values in the returned envelope is
+     * given by {@link #getCoordinateUnit()}. The complete CRS is undefined.</p>
+     *
+     * @return The domain covered by this grid.
+     * @throws TransformException if an error occurred while computing the envelope.
+     */
+    public Envelope getDomainOfValidity() throws TransformException {
+        final GeneralEnvelope env = new GeneralEnvelope(gridSize.length);
+        for (int i=0; i<gridSize.length; i++) {
+            env.setRange(i, -0.5, gridSize[i] - 0.5);
+        }
+        return Envelopes.transform(getCoordinateToGrid().inverse(), env);
+    }
+
+    /**
+     * Returns the unit of measurement of input values, before conversion to grid indices.
+     * The coordinate unit is usually {@link javax.measure.unit.NonSI#DEGREE_ANGLE}, but other units are allowed.
+     *
+     * @return The unit of measurement of input values before conversion to grid indices.
+     *
+     * @see org.apache.sis.referencing.operation.AbstractCoordinateOperation#getInterpolationCRS()
+     */
+    public Unit<C> getCoordinateUnit() {
+        return coordinateUnit;
+    }
+
+    /**
+     * Returns the number of cells along each axis in the grid. The length of this array is equal to
+     * {@code coordinateToGrid} target dimensions.
+     *
+     * @return The number of cells along each axis in the grid.
+     */
+    public int[] getGridSize() {
+        return gridSize.clone();
+    }
+
+    /**
+     * Conversion from the "real world" coordinates to grid indices including fractional parts.
+     * The input points given to the {@code MathTransform} shall be in the unit of measurement
+     * given by {@link #getCoordinateUnit()}.
+     * The output points are grid indices with integer values in the center of grid cells.
+     *
+     * <p>This transform is usually two-dimensional and linear, in which case conversions from (<var>x</var>,<var>y</var>)
+     * coordinates to ({@code gridX}, {@code gridY}) indices can be done with the following formulas:</p>
+     * <ul>
+     *   <li><var>gridX</var> = (<var>x</var> - <var>x₀</var>) / <var>Δx</var></li>
+     *   <li><var>gridY</var> = (<var>y</var> - <var>y₀</var>) / <var>Δy</var></li>
+     * </ul>
+     *
+     * where:
+     * <ul>
+     *   <li>(<var>x₀</var>, <var>y₀</var>) is the coordinate of the center of the cell at grid index (0,0).</li>
+     *   <li><var>Δx</var> and <var>Δy</var> are the distances between two cells on the <var>x</var> and <var>y</var>
+     *       axes respectively, in the unit of measurement given by {@link #getCoordinateUnit()}.</li>
+     * </ul>
+     *
+     * The {@code coordinateToGrid} transform for the above formulas can be represented by the following matrix:
+     *
+     * {@preformat math
+     *   ┌                      ┐
+     *   │ 1/Δx      0   -x₀/Δx │
+     *   │    0   1/Δy   -y₀/Δy │
+     *   │    0      0        1 │
+     *   └                      ┘
+     * }
+     *
+     * @return Conversion from the "real world" coordinates to grid indices including fractional parts.
+     */
+    public LinearTransform getCoordinateToGrid() {
+        return coordinateToGrid;
     }
 
     /**
      * Returns the number of dimensions of the translation vectors interpolated by this datum shift grid.
-     * The number of dimension is usually 2 or 3, but other values are allowed.
+     * This number of dimensions is not necessarily equals to the number of source or target dimensions
+     * of the "{@linkplain #getCoordinateToGrid() coordinate to grid}" transform.
+     * The number of translation dimensions is usually 2 or 3, but other values are allowed.
      *
      * @return Number of dimensions of translation vectors.
      */
-    public abstract int getShiftDimensions();
+    public abstract int getTranslationDimensions();
 
     /**
-     * Returns the domain of validity of the (<var>x</var>,<var>y</var>) coordinate values that can be specified
-     * to the {@link #offsetAt offsetAt(x, y, …)} method. Coordinates outside that domain of validity will still
-     * be accepted, but the result of offset computation may be very wrong.
+     * Returns the unit of measurement of output values, as interpolated by the {@code interpolateAt(…)} method.
+     * Apache SIS {@code MathTransform} implementations restrict the translation units to the following values:
      *
-     * <p>In datum shift grids used by {@link org.apache.sis.referencing.operation.transform.InterpolatedGeocentricTransform},
-     * the domain of validity is always expressed as longitudes and latitudes in <strong>radians</strong>.
-     * The envelope is usually in radians for simpler (non-geocentric) interpolations too, for consistency reasons.</p>
+     * <ul>
+     *   <li>For {@link org.apache.sis.referencing.operation.transform.InterpolatedTransform}, the translation
+     *       unit shall be the same than the {@linkplain #getCoordinateUnit() coordinate unit}.</li>
+     *   <li>For {@link org.apache.sis.referencing.operation.transform.InterpolatedGeocentricTransform},
+     *       the translation unit shall be the same than the unit of source ellipsoid axis lengths.</li>
+     * </ul>
      *
-     * @return The domain covered by this grid.
+     * @return The unit of measurement of output values interpolated by {@code interpolateAt(…)}.
+     *
+     * @see #interpolateAt
      */
-    public Envelope getDomainOfValidity() {
-        final Envelope2D domain = new Envelope2D(null, x0 - 0.5/scaleX, y0 - 0.5/scaleY, nx/scaleX, ny/scaleY);
-        if (domain.width < 0) {
-            domain.width = -domain.width;
-            domain.x += domain.width;
-        }
-        if (domain.height < 0) {
-            domain.height = -domain.height;
-            domain.y += domain.height;
-        }
-        return domain;
+    public Unit<T> getTranslationUnit() {
+        return translationUnit;
     }
 
     /**
-     * Returns an average offset value for the given dimension.
-     * Those average values shall provide a good "first guess" before to interpolate the actual offset value
+     * Interpolates the translation to apply for the given coordinate.
+     * The input values are in the unit given by {@link #getCoordinateUnit()}.
+     * The output values are in the unit given by {@link #getTranslationUnit()}.
+     * The length of the returned array is given by {@link #getTranslationDimensions()}.
+     *
+     * <div class="section">Default implementation</div>
+     * The default implementation performs the following steps:
+     * <ol>
+     *   <li>Convert the given coordinate into grid indices using the transform given by {@link #getCoordinateToGrid()}.</li>
+     *   <li>Interpolate the translation vector at the above grid indices with a call to {@link #interpolateInCell}.</li>
+     *   <li>If {@link #isCellValueRatio()} returns {@code true}, {@linkplain LinearTransform#deltaTransform delta transform}
+     *       the translation vector by the inverse of the conversion given at step 1.</li>
+     * </ol>
+     *
+     * @param ordinates  The "real world" ordinate (often longitude and latitude, but not necessarily)
+     *                   of the point for which to get the translation.
+     * @return The translation vector at the given position.
+     * @throws TransformException if an error occurred while computing the translation vector.
+     */
+    public double[] interpolateAt(final double... ordinates) throws TransformException {
+        final LinearTransform c = getCoordinateToGrid();
+        ArgumentChecks.ensureDimensionMatches("ordinates", c.getSourceDimensions(), ordinates);
+        final int dim = getTranslationDimensions();
+        double[] vector = new double[Math.max(dim, c.getTargetDimensions())];
+        c.transform(ordinates, 0, vector, 0, 1);
+        interpolateInCell(vector[0], vector[1], vector);
+        if (isCellValueRatio()) {
+            ((LinearTransform) c.inverse()).deltaTransform(vector, 0, vector, 0, 1);
+        }
+        if (vector.length != dim) {
+            vector = Arrays.copyOf(vector, dim);
+        }
+        return vector;
+    }
+
+    /**
+     * Interpolates the translation to apply for the given two-dimensional normalized coordinates.
+     * "Normalized coordinates" are coordinates in the unit of measurement given by {@link Unit#toSI()}.
+     * For angular coordinates, this is radians. For linear coordinates, this is metres.
+     *
+     * <p>The result is stored in the given {@code vector} array, which shall have a length of at least
+     * {@link #getTranslationDimensions()}. The output unit of measurement is the same than the one
+     * documented in {@link #getCellValue}.</p>
+     *
+     * @param x First "real world" ordinate (often longitude in radians) of the point for which to get the translation.
+     * @param y Second "real world" ordinate (often latitude in radians) of the point for which to get the translation.
+     * @param vector A pre-allocated array where to write the translation vector.
+     */
+    public final void interpolateAtNormalized(final double x, final double y, final double[] vector) {
+        interpolateInCell(x * scaleX + x0, y * scaleY + y0, vector);
+    }
+
+    /**
+     * Interpolates the translation to apply for the given two-dimensional grid indices. The result is stored in
+     * the given {@code vector} array, which shall have a length of at least {@link #getTranslationDimensions()}.
+     * The output unit of measurement is the same than the one documented in {@link #getCellValue}.
+     *
+     * <div class="section">Default implementation</div>
+     * The default implementation performs the following steps for each dimension <var>dim</var>,
+     * where the number of dimension is determined by {@link #getTranslationDimensions()}.
+     *
+     * <ol>
+     *   <li>Clamp the {@code gridX} index into the [0 … {@code gridSize[0]} - 2] range, inclusive.</li>
+     *   <li>Clamp the {@code gridY} index into the [0 … {@code gridSize[1]} - 2] range, inclusive.</li>
+     *   <li>Using {@link #getCellValue}, get the cell values around the given indices.</li>
+     *   <li>Apply a bilinear interpolation and store the result in {@code vector[dim]}.</li>
+     * </ol>
+     *
+     * @param gridX   First grid ordinate of the point for which to get the translation.
+     * @param gridY   Second grid ordinate of the point for which to get the translation.
+     * @param vector  A pre-allocated array where to write the translation vector.
+     */
+    public void interpolateInCell(double gridX, double gridY, final double[] vector) {
+        int ix = (int) gridX;  gridX -= ix;
+        int iy = (int) gridY;  gridY -= iy;
+        int n;
+        /*
+         * Because ((int) gridX) rounds toward 0, we know that (ix < 0) means that (gridX <= -1).
+         * With ix=0 we get (gridX-ix <= -1). So we set gridX = -1 for avoiding too far extrapolations.
+         * A similar reasoning apply to the gridX = +1 statement.
+         */
+        if (ix < 0) {
+            ix = 0;
+            gridX = -1;
+        } else if (ix > (n = gridSize[0] - 2)) {
+            ix = n;
+            gridX = +1;
+        }
+        if (iy < 0) {
+            iy = 0;
+            gridY = -1;
+        } else if (iy > (n = gridSize[1] - 2)) {
+            iy = n;
+            gridY = +1;
+        }
+        n = getTranslationDimensions();
+        for (int dim = 0; dim < n; dim++) {
+            double r0 = getCellValue(dim, ix, iy  );
+            double r1 = getCellValue(dim, ix, iy+1);
+            r0 +=  gridX * (getCellValue(dim, ix+1, iy  ) - r0);
+            r1 +=  gridX * (getCellValue(dim, ix+1, iy+1) - r1);
+            vector[dim] = gridY * (r1 - r0) + r0;
+        }
+    }
+
+    /**
+     * Returns the translation stored at the given grid indices for the given dimension.
+     * The returned value is considered representative of the value in the center of the grid cell.
+     * The output unit of measurement depends on the {@link #isCellValueRatio()} boolean:
+     *
+     * <ul>
+     *   <li>If {@code false}, the value returned by this method shall be in the unit of measurement
+     *       given by {@link #getTranslationUnit()}.</li>
+     *   <li>If {@code true}, the value returned by this method is the ratio of the translation divided by the
+     *       distance between grid cells in the <var>dim</var> dimension (<var>Δx</var> or <var>Δy</var> in the
+     *       {@linkplain #DatumShiftGrid(Unit, LinearTransform, int[], boolean, Unit) constructor javadoc}).</li>
+     * </ul>
+     *
+     * @param dim    The dimension of the translation vector component to get,
+     *               from 0 inclusive to {@link #getTranslationDimensions()} exclusive.
+     * @param gridX  The grid index on the <var>x</var> axis, from 0 inclusive to {@link #nx} exclusive.
+     * @param gridY  The grid index on the <var>y</var> axis, from 0 inclusive to {@link #ny} exclusive.
+     * @return The translation for the given dimension in the grid cell at the given index.
+     */
+    public abstract double getCellValue(int dim, int gridX, int gridY);
+
+    /**
+     * Returns an average translation value for the given dimension.
+     * Those average values shall provide a good "first guess" before to interpolate the actual translation value
      * at the (<var>x</var>,<var>y</var>) coordinate. This "first guess" is needed for inverse transform.
      *
      * <div class="section">Default implementation</div>
@@ -192,12 +523,14 @@ public abstract class DatumShiftGrid implements Serializable {
      * are fixed by definition to -168, -60 and +320 metres for dimensions 0, 1 and 2 respectively
      * (geocentric <var>X</var>, <var>Y</var> and <var>Z</var>).</div>
      *
-     * @param dim  The dimension for which to get an average value,
-     *             from 0 inclusive to {@link #getShiftDimensions()} exclusive.
-     * @return A value close to the average for the given dimension.
+     * @param dim  The dimension for which to get an average translation value,
+     *             from 0 inclusive to {@link #getTranslationDimensions()} exclusive.
+     * @return A translation value close to the average for the given dimension.
      */
-    public double getAverageOffset(final int dim) {
+    public double getCellMean(final int dim) {
         final DoubleDouble sum = new DoubleDouble();
+        final int nx = gridSize[0];
+        final int ny = gridSize[1];
         for (int gridY=0; gridY<ny; gridY++) {
             for (int gridX=0; gridX<nx; gridX++) {
                 sum.add(getCellValue(dim, gridX, gridY));
@@ -207,52 +540,18 @@ public abstract class DatumShiftGrid implements Serializable {
     }
 
     /**
-     * Interpolates the translation to apply for the given coordinate. The result is stored in the
-     * given {@code offsets} array, which shall have a length of at least {@link #getShiftDimensions()}.
-     * The computed translation values are often for the same dimensions than the given <var>x</var> and <var>y</var>
-     * values, but not necessarily.
-     * See the class javadoc for use cases.
+     * Returns {@code true} if the translation values in the cells are divided by the cell size.
+     * If {@code true}, then the values returned by {@link #getCellValue getCellValue(…)},
+     * {@link #getCellMean getCellMean(…)} and {@link #interpolateInCell interpolateInCell(…)} methods
+     * are the ratio of the translation divided by the distance between grid cells in the requested
+     * dimension (<var>Δx</var> or <var>Δy</var> in the {@linkplain #DatumShiftGrid(Unit, LinearTransform,
+     * int[], boolean, Unit) constructor javadoc}).
      *
-     * <div class="section">Default implementation</div>
-     * The default implementation performs the following steps for each dimension {@code dim},
-     * where the number of dimension is determined by {@link #getShiftDimensions()}.
-     * <ol>
-     *   <li>Convert the given (<var>x</var>,<var>y</var>) coordinate into grid coordinate
-     *       using the formula documented in {@link #scaleX} and {@link #scaleY} fields.</li>
-     *   <li>Clamp the grid coordinate into the [0 … {@link #nx} - 2] and [0 … {@link #ny} - 2] ranges, inclusive.</li>
-     *   <li>Using {@link #getCellValue(int, int, int)}, get the four cell values around the coordinate.</li>
-     *   <li>Apply a bilinear interpolation and store the result in {@code offsets[dim]}.</li>
-     * </ol>
-     *
-     * @param x        First ordinate (often longitude, but not necessarily) of the point for which to get the offset.
-     * @param y        Second ordinate (often latitude, but not necessarily) of the point for which to get the offset.
-     * @param offsets  A pre-allocated array where to write the translation vector.
+     * @return {@code true} if the translation values in the cells are divided by the cell size.
      */
-    public void offsetAt(double x, double y, double[] offsets) {
-        final int gridX = Math.max(0, Math.min(nx - 2, (int) Math.floor(x = (x - x0) * scaleX)));
-        final int gridY = Math.max(0, Math.min(ny - 2, (int) Math.floor(y = (y - y0) * scaleY)));
-        x -= gridX;
-        y -= gridY;
-        final int n = getShiftDimensions();
-        for (int dim = 0; dim < n; dim++) {
-            double r0 = getCellValue(dim, gridX,   gridY  );
-            double r1 = getCellValue(dim, gridX,   gridY+1);
-            r0 +=  x * (getCellValue(dim, gridX+1, gridY  ) - r0);
-            r1 +=  x * (getCellValue(dim, gridX+1, gridY+1) - r1);
-            offsets[dim] = y * (r1 - r0) + r0;
-        }
+    public boolean isCellValueRatio() {
+        return isCellValueRatio;
     }
-
-    /**
-     * Returns the offset stored at the given grid indices along the given dimension.
-     *
-     * @param dim    The dimension of the offset component to get,
-     *               from 0 inclusive to {@link #getShiftDimensions()} exclusive.
-     * @param gridX  The grid index along the <var>x</var> axis, from 0 inclusive to {@link #nx} exclusive.
-     * @param gridY  The grid index along the <var>y</var> axis, from 0 inclusive to {@link #ny} exclusive.
-     * @return The offset at the given dimension in the grid cell at the given index.
-     */
-    protected abstract double getCellValue(int dim, int gridX, int gridY);
 
     /**
      * Returns {@code true} if the given object is a grid containing the same data than this grid.
@@ -264,13 +563,12 @@ public abstract class DatumShiftGrid implements Serializable {
     @Override
     public boolean equals(final Object other) {
         if (other != null && other.getClass() == getClass()) {
-            final DatumShiftGrid that = (DatumShiftGrid) other;
-            return nx == that.nx
-                && ny == that.ny
-                && Numerics.equals(x0,     that.x0)
-                && Numerics.equals(y0,     that.y0)
-                && Numerics.equals(scaleX, that.scaleX)
-                && Numerics.equals(scaleY, that.scaleY);
+            final DatumShiftGrid<?,?> that = (DatumShiftGrid<?,?>) other;
+            return Arrays .equals(gridSize,         that.gridSize)     // Test first the value that are most likely to differ
+                && Objects.equals(coordinateToGrid, that.coordinateToGrid)
+                && Objects.equals(coordinateUnit,   that.coordinateUnit)
+                && Objects.equals(translationUnit,  that.translationUnit)
+                && isCellValueRatio == that.isCellValueRatio;
         }
         return false;
     }
@@ -284,10 +582,14 @@ public abstract class DatumShiftGrid implements Serializable {
      */
     @Override
     public int hashCode() {
-        return Numerics.hashCode(Double.doubleToLongBits(x0)
-                         + 31 * (Double.doubleToLongBits(y0)
-                         + 31 * (Double.doubleToLongBits(scaleX)
-                         + 31 *  Double.doubleToLongBits(scaleY))))
-                         + 37 * nx + ny;
+        return Objects.hashCode(coordinateToGrid) + 37 * Arrays.hashCode(gridSize);
+    }
+
+    /**
+     * Invoked after deserialization. This method computes the transient fields.
+     */
+    private void readObject(final ObjectInputStream in) throws IOException, ClassNotFoundException {
+        in.defaultReadObject();
+        computeConversionFactors();
     }
 }

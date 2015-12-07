@@ -223,7 +223,7 @@ public final class Matrices extends Static {
      * Argument validity shall be verified by the caller.
      *
      * @param useEnvelopes {@code true} if source and destination envelopes shall be taken in account.
-     *        If {@code false}, then source and destination envelopes will be ignored and may be null.
+     *        If {@code false}, then source and destination envelopes will be ignored and can be null.
      */
     @SuppressWarnings("null")
     private static MatrixSIS createTransform(final Envelope srcEnvelope, final AxisDirection[] srcAxes,
@@ -713,7 +713,7 @@ public final class Matrices extends Static {
      */
     public static MatrixSIS unmodifiable(final Matrix matrix) {
         if (matrix == null || matrix instanceof UnmodifiableMatrix) {
-            return (UnmodifiableMatrix) matrix;
+            return (MatrixSIS) matrix;
         } else {
             return new UnmodifiableMatrix(matrix);
         }
