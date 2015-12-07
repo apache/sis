@@ -81,6 +81,7 @@ import java.util.Objects;
  * @see org.apache.sis.referencing.CommonCRS.Vertical#datum()
  * @see org.apache.sis.referencing.cs.DefaultVerticalCS
  * @see org.apache.sis.referencing.crs.DefaultVerticalCRS
+ * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createVerticalDatum(String)
  */
 @XmlType(name = "VerticalDatumType")
 @XmlRootElement(name = "VerticalDatum")

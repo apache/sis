@@ -51,6 +51,9 @@ import java.util.Objects;
  * @since   0.4
  * @version 0.7
  * @module
+ *
+ * @see org.apache.sis.referencing.crs.DefaultImageCRS
+ * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createImageDatum(String)
  */
 @XmlType(name = "ImageDatumType")
 @XmlRootElement(name = "ImageDatum")

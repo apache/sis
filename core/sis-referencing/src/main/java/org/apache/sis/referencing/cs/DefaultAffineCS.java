@@ -54,6 +54,8 @@ import org.apache.sis.measure.Units;
  * @since   0.4
  * @version 0.4
  * @module
+ *
+ * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createAffineCS(String)
  */
 @XmlType(name = "AffineCSType")
 @XmlRootElement(name = "AffineCS")

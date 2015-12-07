@@ -54,6 +54,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  *
  * @see org.apache.sis.referencing.datum.DefaultVerticalDatum
  * @see org.apache.sis.referencing.cs.DefaultVerticalCS
+ * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createVerticalCRS(String)
  */
 @XmlType(name = "VerticalCRSType", propOrder = {
     "coordinateSystem",

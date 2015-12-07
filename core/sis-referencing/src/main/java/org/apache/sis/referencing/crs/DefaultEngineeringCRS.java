@@ -61,6 +61,9 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * @since   0.4
  * @version 0.7
  * @module
+ *
+ * @see org.apache.sis.referencing.datum.DefaultEngineeringDatum
+ * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createEngineeringCRS(String)
  */
 @XmlType(name = "EngineeringCRSType", propOrder = {
     "coordinateSystem",

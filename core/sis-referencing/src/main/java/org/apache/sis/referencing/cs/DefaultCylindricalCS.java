@@ -53,6 +53,7 @@ import org.apache.sis.measure.Units;
  * @module
  *
  * @see DefaultPolarCS
+ * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createCylindricalCS(String)
  */
 @XmlType(name = "CylindricalCSType")
 @XmlRootElement(name = "CylindricalCS")

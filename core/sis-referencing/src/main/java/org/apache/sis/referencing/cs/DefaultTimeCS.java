@@ -54,6 +54,7 @@ import org.apache.sis.measure.Units;
  *
  * @see org.apache.sis.referencing.crs.DefaultTemporalCRS
  * @see org.apache.sis.referencing.datum.DefaultTemporalDatum
+ * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createTimeCS(String)
  */
 @XmlType(name = "TimeCSType")
 @XmlRootElement(name = "TimeCS")

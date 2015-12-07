@@ -53,6 +53,9 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * @since   0.4
  * @version 0.7
  * @module
+ *
+ * @see org.apache.sis.referencing.datum.DefaultImageDatum
+ * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createImageCRS(String)
  */
 @XmlType(name = "ImageCRSType", propOrder = {
     "cartesianCS",

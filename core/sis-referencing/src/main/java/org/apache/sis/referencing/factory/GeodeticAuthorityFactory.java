@@ -163,6 +163,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      *
      * @see #createGeodeticDatum(String)
      * @see #createEllipsoidalCS(String)
+     * @see org.apache.sis.referencing.crs.DefaultGeographicCRS
      */
     public GeographicCRS createGeographicCRS(final String code) throws NoSuchAuthorityCodeException, FactoryException {
         return cast(GeographicCRS.class, createCoordinateReferenceSystem(code), code);
@@ -181,6 +182,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * @see #createGeodeticDatum(String)
      * @see #createCartesianCS(String)
      * @see #createSphericalCS(String)
+     * @see org.apache.sis.referencing.crs.DefaultGeocentricCRS
      */
     public GeocentricCRS createGeocentricCRS(final String code) throws NoSuchAuthorityCodeException, FactoryException {
         return cast(GeocentricCRS.class, createCoordinateReferenceSystem(code), code);
@@ -198,6 +200,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      *
      * @see #createGeographicCRS(String)
      * @see #createCartesianCS(String)
+     * @see org.apache.sis.referencing.crs.DefaultProjectedCRS
      */
     public ProjectedCRS createProjectedCRS(final String code) throws NoSuchAuthorityCodeException, FactoryException {
         return cast(ProjectedCRS.class, createCoordinateReferenceSystem(code), code);
@@ -215,6 +218,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      *
      * @see #createVerticalDatum(String)
      * @see #createVerticalCS(String)
+     * @see org.apache.sis.referencing.crs.DefaultVerticalCRS
      */
     public VerticalCRS createVerticalCRS(final String code) throws NoSuchAuthorityCodeException, FactoryException {
         return cast(VerticalCRS.class, createCoordinateReferenceSystem(code), code);
@@ -232,6 +236,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      *
      * @see #createTemporalDatum(String)
      * @see #createTimeCS(String)
+     * @see org.apache.sis.referencing.crs.DefaultTemporalCRS
      */
     public TemporalCRS createTemporalCRS(final String code) throws NoSuchAuthorityCodeException, FactoryException {
         return cast(TemporalCRS.class, createCoordinateReferenceSystem(code), code);
@@ -249,6 +254,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      *
      * @see #createVerticalCRS(String)
      * @see #createTemporalCRS(String)
+     * @see org.apache.sis.referencing.crs.DefaultCompoundCRS
      */
     public CompoundCRS createCompoundCRS(final String code) throws NoSuchAuthorityCodeException, FactoryException {
         return cast(CompoundCRS.class, createCoordinateReferenceSystem(code), code);
@@ -263,6 +269,8 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * @return The coordinate reference system for the given code.
      * @throws NoSuchAuthorityCodeException if the specified {@code code} was not found.
      * @throws FactoryException if the object creation failed for some other reason.
+     *
+     * @see org.apache.sis.referencing.crs.DefaultDerivedCRS
      */
     public DerivedCRS createDerivedCRS(final String code) throws NoSuchAuthorityCodeException, FactoryException {
         return cast(DerivedCRS.class, createCoordinateReferenceSystem(code), code);
@@ -279,6 +287,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * @throws FactoryException if the object creation failed for some other reason.
      *
      * @see #createEngineeringDatum(String)
+     * @see org.apache.sis.referencing.crs.DefaultEngineeringCRS
      */
     public EngineeringCRS createEngineeringCRS(final String code) throws NoSuchAuthorityCodeException, FactoryException {
         return cast(EngineeringCRS.class, createCoordinateReferenceSystem(code), code);
@@ -295,6 +304,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * @throws FactoryException if the object creation failed for some other reason.
      *
      * @see #createImageDatum(String)
+     * @see org.apache.sis.referencing.crs.DefaultImageCRS
      */
     public ImageCRS createImageCRS(final String code) throws NoSuchAuthorityCodeException, FactoryException {
         return cast(ImageCRS.class, createCoordinateReferenceSystem(code), code);
@@ -332,6 +342,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * @see #createPrimeMeridian(String)
      * @see #createGeographicCRS(String)
      * @see #createGeocentricCRS(String)
+     * @see org.apache.sis.referencing.datum.DefaultGeodeticDatum
      */
     public GeodeticDatum createGeodeticDatum(final String code) throws NoSuchAuthorityCodeException, FactoryException {
         return cast(GeodeticDatum.class, createDatum(code), code);
@@ -348,6 +359,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * @throws FactoryException if the object creation failed for some other reason.
      *
      * @see #createVerticalCRS(String)
+     * @see org.apache.sis.referencing.datum.DefaultVerticalDatum
      */
     public VerticalDatum createVerticalDatum(final String code) throws NoSuchAuthorityCodeException, FactoryException {
         return cast(VerticalDatum.class, createDatum(code), code);
@@ -364,6 +376,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * @throws FactoryException if the object creation failed for some other reason.
      *
      * @see #createTemporalCRS(String)
+     * @see org.apache.sis.referencing.datum.DefaultTemporalDatum
      */
     public TemporalDatum createTemporalDatum(final String code) throws NoSuchAuthorityCodeException, FactoryException {
         return cast(TemporalDatum.class, createDatum(code), code);
@@ -380,6 +393,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * @throws FactoryException if the object creation failed for some other reason.
      *
      * @see #createEngineeringCRS(String)
+     * @see org.apache.sis.referencing.datum.DefaultEngineeringDatum
      */
     public EngineeringDatum createEngineeringDatum(final String code) throws NoSuchAuthorityCodeException, FactoryException {
         return cast(EngineeringDatum.class, createDatum(code), code);
@@ -396,6 +410,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * @throws FactoryException if the object creation failed for some other reason.
      *
      * @see #createImageCRS(String)
+     * @see org.apache.sis.referencing.datum.DefaultImageDatum
      */
     public ImageDatum createImageDatum(final String code) throws NoSuchAuthorityCodeException, FactoryException {
         return cast(ImageDatum.class, createDatum(code), code);
@@ -413,6 +428,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      *
      * @see #createGeodeticDatum(String)
      * @see #createEllipsoidalCS(String)
+     * @see org.apache.sis.referencing.datum.DefaultEllipsoid
      */
     public Ellipsoid createEllipsoid(final String code) throws NoSuchAuthorityCodeException, FactoryException {
         return cast(Ellipsoid.class, createObject(code), code);
@@ -429,6 +445,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * @throws FactoryException if the object creation failed for some other reason.
      *
      * @see #createGeodeticDatum(String)
+     * @see org.apache.sis.referencing.datum.DefaultPrimeMeridian
      */
     public PrimeMeridian createPrimeMeridian(final String code) throws NoSuchAuthorityCodeException, FactoryException {
         return cast(PrimeMeridian.class, createObject(code), code);
@@ -446,6 +463,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      *
      * @see #createCoordinateReferenceSystem(String)
      * @see #createDatum(String)
+     * @see org.apache.sis.metadata.iso.extent.DefaultExtent
      */
     public Extent createExtent(final String code) throws NoSuchAuthorityCodeException, FactoryException {
         return cast(Extent.class, createObject(code), code);
@@ -482,6 +500,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * @see #createEllipsoid(String)
      * @see #createGeodeticDatum(String)
      * @see #createGeographicCRS(String)
+     * @see org.apache.sis.referencing.cs.DefaultEllipsoidalCS
      */
     public EllipsoidalCS createEllipsoidalCS(final String code) throws NoSuchAuthorityCodeException, FactoryException {
         return cast(EllipsoidalCS.class, createCoordinateSystem(code), code);
@@ -499,6 +518,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      *
      * @see #createVerticalDatum(String)
      * @see #createVerticalCRS(String)
+     * @see org.apache.sis.referencing.cs.DefaultVerticalCS
      */
     public VerticalCS createVerticalCS(final String code) throws NoSuchAuthorityCodeException, FactoryException {
         return cast(VerticalCS.class, createCoordinateSystem(code), code);
@@ -516,6 +536,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      *
      * @see #createTemporalDatum(String)
      * @see #createTemporalCRS(String)
+     * @see org.apache.sis.referencing.cs.DefaultTimeCS
      */
     public TimeCS createTimeCS(final String code) throws NoSuchAuthorityCodeException, FactoryException {
         return cast(TimeCS.class, createCoordinateSystem(code), code);
@@ -533,6 +554,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      *
      * @see #createProjectedCRS(String)
      * @see #createGeocentricCRS(String)
+     * @see org.apache.sis.referencing.cs.DefaultCartesianCS
      */
     public CartesianCS createCartesianCS(final String code) throws NoSuchAuthorityCodeException, FactoryException {
         return cast(CartesianCS.class, createCoordinateSystem(code), code);
@@ -549,6 +571,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * @throws FactoryException if the object creation failed for some other reason.
      *
      * @see #createGeocentricCRS(String)
+     * @see org.apache.sis.referencing.cs.DefaultSphericalCS
      */
     public SphericalCS createSphericalCS(final String code) throws NoSuchAuthorityCodeException, FactoryException {
         return cast(SphericalCS.class, createCoordinateSystem(code), code);
@@ -563,6 +586,8 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * @return The coordinate system for the given code.
      * @throws NoSuchAuthorityCodeException if the specified {@code code} was not found.
      * @throws FactoryException if the object creation failed for some other reason.
+     *
+     * @see org.apache.sis.referencing.cs.DefaultCylindricalCS
      */
     public CylindricalCS createCylindricalCS(final String code) throws NoSuchAuthorityCodeException, FactoryException {
         return cast(CylindricalCS.class, createCoordinateSystem(code), code);
@@ -577,6 +602,8 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * @return The coordinate system for the given code.
      * @throws NoSuchAuthorityCodeException if the specified {@code code} was not found.
      * @throws FactoryException if the object creation failed for some other reason.
+     *
+     * @see org.apache.sis.referencing.cs.DefaultPolarCS
      */
     public PolarCS createPolarCS(final String code) throws NoSuchAuthorityCodeException, FactoryException {
         return cast(PolarCS.class, createCoordinateSystem(code), code);
@@ -593,6 +620,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * @throws FactoryException if the object creation failed for some other reason.
      *
      * @see #createCoordinateSystem(String)
+     * @see org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis
      */
     public CoordinateSystemAxis createCoordinateSystemAxis(final String code)
             throws NoSuchAuthorityCodeException, FactoryException
@@ -623,6 +651,8 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * @return The parameter descriptor for the given code.
      * @throws NoSuchAuthorityCodeException if the specified {@code code} was not found.
      * @throws FactoryException if the object creation failed for some other reason.
+     *
+     * @see org.apache.sis.parameter.DefaultParameterDescriptor
      */
     public ParameterDescriptor<?> createParameterDescriptor(final String code)
             throws NoSuchAuthorityCodeException, FactoryException
@@ -639,6 +669,8 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * @return The operation method for the given code.
      * @throws NoSuchAuthorityCodeException if the specified {@code code} was not found.
      * @throws FactoryException if the object creation failed for some other reason.
+     *
+     * @see org.apache.sis.referencing.operation.DefaultOperationMethod
      */
     public OperationMethod createOperationMethod(final String code) throws NoSuchAuthorityCodeException, FactoryException {
         return cast(OperationMethod.class, createObject(code), code);
@@ -653,6 +685,8 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * @return The operation for the given code.
      * @throws NoSuchAuthorityCodeException if the specified {@code code} was not found.
      * @throws FactoryException if the object creation failed for some other reason.
+     *
+     * @see org.apache.sis.referencing.operation.AbstractCoordinateOperation
      */
     public CoordinateOperation createCoordinateOperation(final String code)
             throws NoSuchAuthorityCodeException, FactoryException

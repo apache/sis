@@ -88,6 +88,7 @@ import org.apache.sis.internal.referencing.Formulas;
  * @module
  *
  * @see org.apache.sis.referencing.CommonCRS#primeMeridian()
+ * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createPrimeMeridian(String)
  */
 @XmlType(name = "PrimeMeridianType")
 @XmlRootElement(name = "PrimeMeridian")

@@ -117,6 +117,7 @@ import java.util.Objects;
  * @module
  *
  * @see org.apache.sis.referencing.CommonCRS#ellipsoid()
+ * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createEllipsoid(String)
  */
 @XmlType(name = "EllipsoidType", propOrder = {
     "semiMajorAxisMeasure",
