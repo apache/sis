@@ -281,6 +281,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final short ExcessiveStringSize = 153;
 
         /**
+         * No factory of kind ‘{0}’ found.
+         */
+        public static final short FactoryNotFound_1 = 205;
+
+        /**
          * File “{0}” has not been found.
          */
         public static final short FileNotFound_1 = 166;
