@@ -90,6 +90,7 @@ public final strictfp class AllProvidersTest extends TestCase {
             PolarStereographicNorth.class,
             PolarStereographicSouth.class,
             ObliqueStereographic.class,
+            NTv2.class,
             FranceGeocentricInterpolation.class
         };
     }

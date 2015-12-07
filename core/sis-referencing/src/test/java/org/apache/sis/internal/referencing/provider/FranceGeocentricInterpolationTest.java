@@ -148,6 +148,7 @@ public final strictfp class FranceGeocentricInterpolationTest extends TestCase {
         try (final BufferedReader in = Files.newBufferedReader(file)) {
             grid = FranceGeocentricInterpolation.load(in, file);
         }
+        assertEquals("cellPrecision",   0.005, grid.getCellPrecision(), STRICT);
         assertEquals("getCellMean",  168.2587, grid.getCellMean(0), 0.0001);
         assertEquals("getCellMean",   58.7163, grid.getCellMean(1), 0.0001);
         assertEquals("getCellMean", -320.1801, grid.getCellMean(2), 0.0001);
@@ -175,6 +176,7 @@ public final strictfp class FranceGeocentricInterpolationTest extends TestCase {
                 FranceGeocentricInterpolation.TZ},          // -320 metres
                 FranceGeocentricInterpolation.PRECISION);
         assertInstanceOf("Failed to compress 'float' values into 'short' values.", DatumShiftGridCompressed.class, grid);
+        assertEquals("cellPrecision", 0.0005, grid.getCellPrecision(), STRICT);
         assertEquals("getCellMean",  168, grid.getCellMean(0), STRICT);
         assertEquals("getCellMean",   60, grid.getCellMean(1), STRICT);
         assertEquals("getCellMean", -320, grid.getCellMean(2), STRICT);
@@ -204,9 +206,10 @@ public final strictfp class FranceGeocentricInterpolationTest extends TestCase {
          * Directions (signs) are reversed compared to NTG_88 document.
          */
         assertEquals("translationDimensions", 3, grid.getTranslationDimensions());
-        assertEquals("getCellValue",  168.196, grid.getCellValue(0, 2, 1), STRICT);
-        assertEquals("getCellValue",   58.778, grid.getCellValue(1, 2, 1), STRICT);
-        assertEquals("getCellValue", -320.127, grid.getCellValue(2, 2, 1), STRICT);
+        assertEquals("grid.accuracy",      0.05, grid.accuracy,              STRICT);
+        assertEquals("getCellValue",    168.196, grid.getCellValue(0, 2, 1), STRICT);
+        assertEquals("getCellValue",     58.778, grid.getCellValue(1, 2, 1), STRICT);
+        assertEquals("getCellValue",   -320.127, grid.getCellValue(2, 2, 1), STRICT);
         /*
          * Interpolate the (ΔX, ΔY, ΔZ) at a point.
          * Directions (signs) are reversed compared to NTG_88 document.

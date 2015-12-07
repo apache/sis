@@ -210,7 +210,7 @@ public class InterpolatedGeocentricTransform extends MolodenskyFormula {
     }
 
     /**
-     * Creates a transformation between two from geographic CRS. This factory method combines the
+     * Creates a transformation between two geographic CRS. This factory method combines the
      * {@code InterpolatedGeocentricTransform} instance with the steps needed for converting values between
      * degrees to radians. The transform works with input and output coordinates in the following units:
      *
@@ -472,7 +472,8 @@ public class InterpolatedGeocentricTransform extends MolodenskyFormula {
 
     /**
      * Returns a description of the internal parameters of this {@code InterpolatedGeocentricTransform} transform.
-     * The returned group contains parameter descriptors for the number of dimensions and the eccentricity.
+     * The returned group contains parameters for the source ellipsoid semi-axis lengths and the differences between
+     * source and target ellipsoid parameters.
      *
      * <div class="note"><b>Note:</b>
      * this method is mostly for {@linkplain org.apache.sis.io.wkt.Convention#INTERNAL debugging purposes}

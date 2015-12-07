@@ -150,6 +150,11 @@ public final class Messages extends IndexedResourceBundle {
         public static final short UnknownElementsInText = 13;
 
         /**
+         * Loading of “{0}” done, but some records were ignored because of unrecognized keywords: {1}
+         */
+        public static final short UnknownKeywordInRecord_2 = 19;
+
+        /**
          * Can not parse “{1}” as an instance of ‘{0}’. The value is stored as plain text instead, but
          * will be ignored by some processing.
          */

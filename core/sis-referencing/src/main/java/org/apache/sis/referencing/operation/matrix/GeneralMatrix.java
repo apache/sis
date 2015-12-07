@@ -172,27 +172,6 @@ class GeneralMatrix extends MatrixSIS implements ExtendedPrecisionMatrix {
     }
 
     /**
-     * Copies the elements of the given matrix in the given array.
-     * This method ignores the error terms, if any.
-     *
-     * @param matrix   The matrix to copy.
-     * @param numRow   The number of rows to copy (usually {@code matrix.getNumRow()}).
-     * @param numCol   The number of columns to copy (usually {@code matrix.getNumCol()}).
-     * @param elements Where to copy the elements.
-     */
-    private static void getElements(final Matrix matrix, final int numRow, final int numCol, final double[] elements) {
-        if (matrix instanceof MatrixSIS) {
-            ((MatrixSIS) matrix).getElements(elements);
-        } else {
-            for (int k=0,j=0; j<numRow; j++) {
-                for (int i=0; i<numCol; i++) {
-                    elements[k++] = matrix.getElement(j, i);
-                }
-            }
-        }
-    }
-
-    /**
      * Infers all {@link DoubleDouble#error} with a default values inferred from {@link DoubleDouble#value}.
      * For example if a matrix element is exactly 3.141592653589793, there is good chances that the user's
      * intend was to specify the {@link Math#PI} value, in which case this method will infer that we would

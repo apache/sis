@@ -128,6 +128,18 @@ final class DatumShiftGridCompressed<C extends Quantity, T extends Quantity> ext
     }
 
     /**
+     * Suggests a precision for the translation values in this grid.
+     *
+     * @return A precision for the translation values in this grid.
+     */
+    @Override
+    public double getCellPrecision() {
+        // 5* is for converting 0.1 × 10⁻ⁿ to 0.5 × 10⁻ⁿ
+        // where n is the number of significant digits.
+        return Math.min(super.getCellPrecision(), 5*scale);
+    }
+
+    /**
      * Returns direct references (not cloned) to the data arrays.
      */
     @Override

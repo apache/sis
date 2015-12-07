@@ -87,16 +87,17 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
     }
 
     /**
-     * Ensures that the given matrix is a square matrix having the given dimension.
+     * Ensures that the given matrix has the given dimension.
      * This is a convenience method for subclasses.
      */
-    static void ensureSizeMatch(final int size, final Matrix matrix) {
-        final int numRow = matrix.getNumRow();
-        final int numCol = matrix.getNumCol();
-        if (numRow != size || numCol != size) {
-            final Integer n = size;
+    static void ensureSizeMatch(final int numRow, final int numCol, final Matrix matrix)
+            throws MismatchedMatrixSizeException
+    {
+        final int othRow = matrix.getNumRow();
+        final int othCol = matrix.getNumCol();
+        if (numRow != othRow || numCol != othCol) {
             throw new MismatchedMatrixSizeException(Errors.format(
-                    Errors.Keys.MismatchedMatrixSize_4, n, n, numRow, numCol));
+                    Errors.Keys.MismatchedMatrixSize_4, numRow, numCol, othRow, othCol));
         }
     }
 
@@ -214,6 +215,27 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
     }
 
     /**
+     * Copies the elements of the given matrix in the given array.
+     * This method ignores the error terms, if any.
+     *
+     * @param matrix   The matrix to copy.
+     * @param numRow   {@code matrix.getNumRow()}.
+     * @param numCol   {@code matrix.getNumCol()}.
+     * @param elements Where to copy the elements.
+     */
+    static void getElements(final Matrix matrix, final int numRow, final int numCol, final double[] elements) {
+        if (matrix instanceof MatrixSIS) {
+            ((MatrixSIS) matrix).getElements(elements);
+        } else {
+            for (int k=0,j=0; j<numRow; j++) {
+                for (int i=0; i<numCol; i++) {
+                    elements[k++] = matrix.getElement(j, i);
+                }
+            }
+        }
+    }
+
+    /**
      * Sets all matrix elements from a flat, row-major (column indices vary fastest) array.
      * The array length shall be <code>{@linkplain #getNumRow()} * {@linkplain #getNumCol()}</code>.
      *
@@ -224,6 +246,25 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
      * @see Matrices#create(int, int, double[])
      */
     public abstract void setElements(final double[] elements);
+
+    /**
+     * Sets this matrix to the values of another matrix.
+     * The given matrix must have the same size.
+     *
+     * @param matrix  The matrix to copy.
+     * @throws MismatchedMatrixSizeException if the given matrix has a different size than this matrix.
+     *
+     * @since 0.7
+     */
+    public void setMatrix(final Matrix matrix) throws MismatchedMatrixSizeException {
+        ArgumentChecks.ensureNonNull("matrix", matrix);
+        final int numRow = getNumRow();
+        final int numCol = getNumCol();
+        ensureSizeMatch(numRow, numCol, matrix);
+        final double[] elements = new double[numRow * numCol];
+        getElements(matrix, numRow, numCol, elements);
+        setElements(elements);
+    }
 
     /**
      * Returns {@code true} if this matrix uses extended precision.
