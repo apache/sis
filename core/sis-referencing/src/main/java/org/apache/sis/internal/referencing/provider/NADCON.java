@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.referencing.provider;
 
+import java.util.AbstractMap;
 import java.io.IOException;
 import java.nio.ByteOrder;
 import java.nio.ByteBuffer;
@@ -36,8 +37,10 @@ import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.apache.sis.referencing.operation.transform.InterpolatedTransform;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.parameter.Parameters;
+import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.collection.Cache;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.internal.system.DataDirectory;
 
 // Branch-dependent imports
 import java.nio.file.Path;
@@ -132,37 +135,43 @@ public final class NADCON extends AbstractProvider {
     {
         final Parameters pg  = Parameters.castOrWrap(values);
         return InterpolatedTransform.createGeodeticTransformation(factory,
-                getOrLoad(pg.getValue(LATITUDE), pg.getValue(LONGITUDE)));
+                getOrLoad(pg.getMandatoryValue(LATITUDE), pg.getMandatoryValue(LONGITUDE)));
     }
 
     /**
      * Returns the grid of the given name. This method returns the cached instance if it still exists,
      * or load the grid otherwise.
      *
-     * @param latitude   Name of the grid file for latitude shifts.
-     * @param longitude  Name of the grid file for longitude shifts.
+     * @param latitudeShifts   Name of the grid file for latitude shifts.
+     * @param longitudeShifts  Name of the grid file for longitude shifts.
      */
-    static DatumShiftGridFile<Angle,Angle> getOrLoad(final Path latitude, final Path longitude)
+    static DatumShiftGridFile<Angle,Angle> getOrLoad(final Path latitudeShifts, final Path longitudeShifts)
             throws FactoryException
     {
-        DatumShiftGridFile<?,?> grid = DatumShiftGridFile.CACHE.peek(latitude);
+        final Path rlat = DataDirectory.DATUM_CHANGES.resolve(latitudeShifts).toAbsolutePath();
+        final Path rlon = DataDirectory.DATUM_CHANGES.resolve(longitudeShifts).toAbsolutePath();
+        final Object key = new AbstractMap.SimpleImmutableEntry<>(rlat, rlon);
+        DatumShiftGridFile<?,?> grid = DatumShiftGridFile.CACHE.peek(key);
         if (grid == null) {
-            final Cache.Handler<DatumShiftGridFile<?,?>> handler = DatumShiftGridFile.CACHE.lock(latitude);
+            final Cache.Handler<DatumShiftGridFile<?,?>> handler = DatumShiftGridFile.CACHE.lock(key);
             try {
                 grid = handler.peek();
                 if (grid == null) {
                     final Loader loader;
-                    Path file = null;
+                    Path file = latitudeShifts;
                     try {
                         // Note: buffer size must be divisible by the size of 'float' data type.
                         final ByteBuffer buffer = ByteBuffer.allocate(4096).order(ByteOrder.LITTLE_ENDIAN);
                         final FloatBuffer fb = buffer.asFloatBuffer();
-                        try (final ReadableByteChannel in = Files.newByteChannel(file = latitude)) {
+                        try (final ReadableByteChannel in = Files.newByteChannel(rlat)) {
+                            DatumShiftGridLoader.log(NADCON.class, CharSequences.commonPrefix(
+                                    latitudeShifts.toString(), longitudeShifts.toString()).toString() + '…');
                             loader = new Loader(in, buffer, file);
-                            loader.readGrid(fb, null, longitude);
+                            loader.readGrid(fb, null, longitudeShifts);
                         }
                         buffer.clear();
-                        try (final ReadableByteChannel in = Files.newByteChannel(file = longitude)) {
+                        file = longitudeShifts;
+                        try (final ReadableByteChannel in = Files.newByteChannel(rlon)) {
                             new Loader(in, buffer, file).readGrid(fb, loader, null);
                         }
                     } catch (IOException | NoninvertibleTransformException | RuntimeException e) {
@@ -193,6 +202,11 @@ public final class NADCON extends AbstractProvider {
      * <p>Records are ordered from South to North. Each record (except the header) is an entire row of grid points,
      * with values ordered from West to East. Each value is a {@code float} encoded in little endian byte order.
      * Each record ends with a 4 byte separator.</p>
+     *
+     * <p>Record data use a different convention than the record header. The header uses degrees of angle with
+     * positive values East. But the offset values after the header are in seconds of angle with positive values
+     * West. The {@code DatumShiftGrid} returned by this loader uses the header convention, which also matches
+     * the order in which offset values appear in each row.</p>
      *
      * @author  Martin Desruisseaux (Geomatys)
      * @author  Rueben Schulz (UBC)
@@ -360,31 +374,31 @@ public final class NADCON extends AbstractProvider {
          *
          * The result is stored in the {@link #grid} field.
          *
-         * @param fb        A {@code FloatBuffer} view over the full {@link #buffer} range.
-         * @param latitude  The previously loaded latitude shifts, or {@code null} if not yet loaded.
-         * @param longitude The file for the longitude grid, or {@code null} if identical to {@link #file}.
+         * @param fb              A {@code FloatBuffer} view over the full {@link #buffer} range.
+         * @param latitudeShifts  The previously loaded latitude shifts, or {@code null} if not yet loaded.
+         * @param longitudeShifts The file for the longitude grid, or {@code null} if identical to {@link #file}.
          */
-        final void readGrid(final FloatBuffer fb, final Loader latitude, final Path longitude)
+        final void readGrid(final FloatBuffer fb, final Loader latitudeShifts, final Path longitudeShifts)
                 throws IOException, FactoryException, NoninvertibleTransformException
         {
             final int dim;
             final double scale;
-            if (latitude == null) {
+            if (latitudeShifts == null) {
                 dim   = 1;                          // Dimension of latitudes.
                 scale = DEGREES_TO_SECONDS * Δy;    // NADCON shifts are positive north.
                 grid  = new DatumShiftGridFile.Float<>(2, NonSI.DEGREE_ANGLE, NonSI.DEGREE_ANGLE,
-                        true, x0, y0, Δx, Δy, nx, ny, PARAMETERS, file, longitude);
+                        true, x0, y0, Δx, Δy, nx, ny, PARAMETERS, file, longitudeShifts);
                 grid.accuracy = SECOND_PRECISION / DEGREES_TO_SECONDS;
             } else {
-                if (x0 != latitude.x0 || Δx != latitude.Δx || nx != latitude.nx ||
-                    y0 != latitude.y0 || Δy != latitude.Δy || ny != latitude.ny || nz != latitude.nz)
+                if (x0 != latitudeShifts.x0 || Δx != latitudeShifts.Δx || nx != latitudeShifts.nx ||
+                    y0 != latitudeShifts.y0 || Δy != latitudeShifts.Δy || ny != latitudeShifts.ny || nz != latitudeShifts.nz)
                 {
                     throw new FactoryException(Errors.format(Errors.Keys.MismatchedGridGeometry_2,
-                            latitude.file.getFileName(), file.getFileName()));
+                            latitudeShifts.file.getFileName(), file.getFileName()));
                 }
                 dim   = 0;                          // Dimension of longitudes
                 scale = -DEGREES_TO_SECONDS * Δx;   // NADCON shifts are positive west.
-                grid  = latitude.grid;              // Continue writing in existing grid.
+                grid  = latitudeShifts.grid;        // Continue writing in existing grid.
             }
             final float[] array = grid.offsets[dim];
             if (ascii != null) {

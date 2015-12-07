@@ -42,6 +42,7 @@ import org.opengis.referencing.operation.Transformation;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.apache.sis.referencing.operation.transform.InterpolatedTransform;
 import org.apache.sis.internal.system.Loggers;
+import org.apache.sis.internal.system.DataDirectory;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.util.collection.Cache;
@@ -125,7 +126,7 @@ public final class NTv2 extends AbstractProvider {
             throws ParameterNotFoundException, FactoryException
     {
         final Parameters pg = Parameters.castOrWrap(values);
-        return InterpolatedTransform.createGeodeticTransformation(factory, getOrLoad(pg.getValue(FILE)));
+        return InterpolatedTransform.createGeodeticTransformation(factory, getOrLoad(pg.getMandatoryValue(FILE)));
     }
 
     /**
@@ -135,13 +136,15 @@ public final class NTv2 extends AbstractProvider {
      * @param file Name of the datum shift grid file to load.
      */
     static DatumShiftGridFile<Angle,Angle> getOrLoad(final Path file) throws FactoryException {
-        DatumShiftGridFile<?,?> grid = DatumShiftGridFile.CACHE.peek(file);
+        final Path resolved = DataDirectory.DATUM_CHANGES.resolve(file).toAbsolutePath();
+        DatumShiftGridFile<?,?> grid = DatumShiftGridFile.CACHE.peek(resolved);
         if (grid == null) {
-            final Cache.Handler<DatumShiftGridFile<?,?>> handler = DatumShiftGridFile.CACHE.lock(file);
+            final Cache.Handler<DatumShiftGridFile<?,?>> handler = DatumShiftGridFile.CACHE.lock(resolved);
             try {
                 grid = handler.peek();
                 if (grid == null) {
-                    try (final ReadableByteChannel in = Files.newByteChannel(file)) {
+                    try (final ReadableByteChannel in = Files.newByteChannel(resolved)) {
+                        DatumShiftGridLoader.log(NTv2.class, file);
                         final Loader loader = new Loader(in, file);
                         grid = loader.readGrid();
                         loader.reportWarnings();

@@ -69,7 +69,7 @@ public abstract class DatumShiftGridFile<C extends Quantity, T extends Quantity>
      * data exceed 32768 (about 128 kilobytes if the values use the {@code float} type). in which case
      * the oldest grids will be replaced by weak references.
      */
-    static final Cache<Path, DatumShiftGridFile<?,?>> CACHE = new Cache<Path, DatumShiftGridFile<?,?>>(4, 32*1024, true) {
+    static final Cache<Object, DatumShiftGridFile<?,?>> CACHE = new Cache<Object, DatumShiftGridFile<?,?>>(4, 32*1024, true) {
         @Override protected int cost(final DatumShiftGridFile<?,?> grid) {
             int p = 1;
             for (final Object array : grid.getData()) {
