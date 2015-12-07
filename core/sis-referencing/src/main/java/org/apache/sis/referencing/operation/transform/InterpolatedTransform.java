@@ -145,6 +145,7 @@ public class InterpolatedTransform extends AbstractMathTransform implements Seri
      *
      * @see #createGeodeticTransformation(MathTransformFactory, DatumShiftGrid)
      */
+    @SuppressWarnings("OverridableMethodCallDuringObjectConstruction")
     protected <T extends Quantity> InterpolatedTransform(final DatumShiftGrid<T,T> grid)
             throws NoninvertibleMatrixException
     {
@@ -198,7 +199,7 @@ public class InterpolatedTransform extends AbstractMathTransform implements Seri
          * Denormalization is the inverse of all above conversions.
          */
         context.getMatrix(ContextualParameters.MatrixRole.DENORMALIZATION).setMatrix(normalize.inverse());
-        inverse = new Inverse();
+        inverse = createInverse();
     }
 
     /**
@@ -234,7 +235,11 @@ public class InterpolatedTransform extends AbstractMathTransform implements Seri
         ArgumentChecks.ensureNonNull("grid", grid);
         final InterpolatedTransform tr;
         try {
-            tr = new InterpolatedTransform(grid);
+            if (grid.getTranslationDimensions() == 2) {
+                tr = new InterpolatedTransform2D(grid);
+            } else {
+                tr = new InterpolatedTransform(grid);
+            }
         } catch (NoninvertibleMatrixException e) {
             throw new FactoryException(e.getLocalizedMessage(), e);
         }
@@ -390,7 +395,7 @@ public class InterpolatedTransform extends AbstractMathTransform implements Seri
      */
 
     /**
-     * Returns the inverse of this interpolated geocentric transform.
+     * Returns the inverse of this interpolated transform.
      * The source ellipsoid of the returned transform will be the target ellipsoid of this transform, and conversely.
      *
      * @return A transform from the target ellipsoid to the source ellipsoid of this transform.
@@ -398,6 +403,14 @@ public class InterpolatedTransform extends AbstractMathTransform implements Seri
     @Override
     public MathTransform inverse() {
         return inverse;
+    }
+
+    /**
+     * Invoked at construction time for creating the inverse transform.
+     * To overridden by the two-dimensional transform case.
+     */
+    InterpolatedTransform.Inverse createInverse() {
+        return new Inverse();
     }
 
     /**
@@ -434,7 +447,7 @@ public class InterpolatedTransform extends AbstractMathTransform implements Seri
      * @since   0.7
      * @module
      */
-    private final class Inverse extends AbstractMathTransform.Inverse {
+    class Inverse extends AbstractMathTransform.Inverse {
         /**
          * Serial number for inter-operability with different versions.
          */
@@ -463,8 +476,8 @@ public class InterpolatedTransform extends AbstractMathTransform implements Seri
          * @throws TransformException If there is no convergence.
          */
         @Override
-        public Matrix transform(final double[] srcPts, final int srcOff, double[] dstPts, int dstOff,
-                                final boolean derivate) throws TransformException
+        public final Matrix transform(final double[] srcPts, final int srcOff, double[] dstPts, int dstOff,
+                                      final boolean derivate) throws TransformException
         {
             if (dstPts == null) {
                 dstPts = new double[dimension];
@@ -516,7 +529,7 @@ public class InterpolatedTransform extends AbstractMathTransform implements Seri
          * @throws TransformException if a point can not be transformed.
          */
         @Override
-        public void transform(double[] srcPts, int srcOff, final double[] dstPts, int dstOff, int numPts)
+        public final void transform(double[] srcPts, int srcOff, final double[] dstPts, int dstOff, int numPts)
                 throws TransformException
         {
             int inc = dimension;
