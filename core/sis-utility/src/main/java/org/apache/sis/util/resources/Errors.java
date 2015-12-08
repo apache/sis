@@ -201,6 +201,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final short DirectoryNotExpected_1 = 165;
 
         /**
+         * The factory has been disposed.
+         */
+        public static final short DisposedFactory = 206;
+
+        /**
          * Element “{0}” is duplicated.
          */
         public static final short DuplicatedElement_1 = 16;

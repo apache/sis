@@ -32,9 +32,10 @@ import org.opengis.util.GenericName;
 import org.opengis.util.NameFactory;
 import org.opengis.util.FactoryException;
 import org.opengis.util.InternationalString;
-import org.apache.sis.metadata.iso.citation.Citations;
+import org.apache.sis.internal.util.Citations;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.util.iso.AbstractFactory;
+import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
 
@@ -79,8 +80,12 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
 
     /**
      * Returns the organization or party responsible for definition and maintenance of the database.
+     * This method may return {@code null} if it can not obtain this information, for example because
+     * the connection to a database is not available.
      *
-     * @return The organization responsible for definition of the database.
+     * @return The organization responsible for definition of the database, or {@code null} if unknown.
+     *
+     * @see #getVendor()
      */
     @Override
     public abstract Citation getAuthority();
@@ -92,7 +97,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * <p>The default implementation returns always {@code null}.</p>
      *
      * @return A description of the underlying backing store, or {@code null} if none.
-     * @throws FactoryException if a failure occurs while fetching the backing store description.
+     * @throws FactoryException if a failure occurred while fetching the backing store description.
      */
     public InternationalString getBackingStoreDescription() throws FactoryException {
         return null;
@@ -751,7 +756,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
         final GenericName name  = nameFactory.parseGenericName(null, code);
         if (name instanceof ScopedName) {
             final GenericName scope = ((ScopedName) name).path();
-            if (Citations.identifierMatches(getAuthority(), scope.toString())) {
+            if (Citations.identifierMatches(getAuthority(), null, scope.toString())) {
                 return name.tip().toString().trim();
             }
         }
@@ -767,9 +772,10 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * @return An exception initialized with an error message built from the specified informations.
      */
     protected final NoSuchAuthorityCodeException noSuchAuthorityCode(final Class<?> type, final String code) {
-        final InternationalString authority = getAuthority().getTitle();
+        final String authority = Citations.getIdentifier(getAuthority(), false);
         return new NoSuchAuthorityCodeException(Errors.format(Errors.Keys.NoSuchAuthorityCode_3,
-                   authority, type, code), authority.toString(), trimAuthority(code), code);
+                   (authority != null) ? authority : Vocabulary.formatInternational(Vocabulary.Keys.Untitled),
+                   type, code), authority, trimAuthority(code), code);
     }
 
     /**
@@ -795,7 +801,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
         } else {
             actual = object.getClass();
         }
-        throw new NoSuchAuthorityCodeException(Errors.format(Errors.Keys.UnexpectedTypeForReference_3,
-                code, type, actual), getAuthority().getTitle().toString(), trimAuthority(code), code);
+        throw new NoSuchAuthorityCodeException(Errors.format(Errors.Keys.UnexpectedTypeForReference_3, code, type, actual),
+                Citations.getIdentifier(getAuthority(), false), trimAuthority(code), code);
     }
 }
