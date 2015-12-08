@@ -149,8 +149,9 @@ public class IdentifiedObjectFinder {
 
     /**
      * Returns the authority of the factory used by this finder.
+     * The default implementation delegates to {@link GeodeticAuthorityFactory#getAuthority()}.
      *
-     * @return The authority of the factory used for the searches.
+     * @return The authority of the factory used for the searches, or {@code null} if unknown.
      * @throws FactoryException If an error occurred while fetching the authority.
      */
     public Citation getAuthority() throws FactoryException {

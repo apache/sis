@@ -18,7 +18,11 @@ package org.apache.sis.referencing.factory;
 
 import java.util.Set;
 import java.util.Map;
+import java.util.Deque;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.WeakHashMap;
+import java.util.concurrent.TimeUnit;
 import java.lang.ref.WeakReference;
 import java.io.PrintWriter;
 import javax.measure.unit.Unit;
@@ -34,30 +38,45 @@ import org.opengis.util.InternationalString;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.parameter.ParameterDescriptor;
+import org.apache.sis.util.Classes;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.Disposable;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.collection.Cache;
 import org.apache.sis.internal.referencing.NilReferencingObject;
-import org.apache.sis.internal.simple.SimpleCitation;
 import org.apache.sis.internal.system.DefaultFactories;
+import org.apache.sis.internal.system.DelayedExecutor;
+import org.apache.sis.internal.system.DelayedRunnable;
 import org.apache.sis.internal.system.Loggers;
+import org.apache.sis.util.resources.Errors;
 
 
 /**
- * An authority factory that caches all objects created by another factory.
+ * A concurrent authority factory that caches all objects created by another factory.
  * All {@code createFoo(String)} methods first check if a previously created object exists for the given code.
  * If such object exists, it is returned. Otherwise, the object creation is delegated to another factory given
  * by {@link #createBackingStore()} and the result is cached in this factory.
  *
- * <p>Objects are cached by strong references, up to the amount of objects specified at construction time.
- * If a greater amount of objects are cached, the oldest ones will be retained through a
- * {@linkplain WeakReference weak reference} instead of a strong one.
- * This means that this caching factory will continue to return them as long as they are in use somewhere
- * else in the Java virtual machine, but will be discarded (and recreated on the fly if needed) otherwise.</p>
+ * <p>{@code CachingAuthorityFactory} delays the call to {@code createBackingStore()} until first needed,
+ * and {@linkplain Disposable#dispose() dispose} it after some timeout. This approach allows to establish
+ * a connection to a database (for example) and keep it only for a relatively short amount of time.</p>
  *
- * <div class="section">Not for subclasses</div>
+ * <div class="section">Caching strategy</div>
+ * Objects are cached by strong references, up to the amount of objects specified at construction time.
+ * If a greater amount of objects are cached, then the oldest ones will be retained through a
+ * {@linkplain WeakReference weak reference} instead of a strong one.
+ * This means that this caching factory will continue to return those objects as long as they are in use somewhere
+ * else in the Java virtual machine, but will be discarded (and recreated on the fly if needed) otherwise.
+ *
+ * <div class="section">Multi-threading</div>
+ * The cache managed by this class is concurrent. However the backing stores are assumed non-concurrent.
+ * If two or more threads are accessing this factory in same time, then two or more backing store instances
+ * may be created. The maximal amount of instances to create is specified at {@code CachingAuthorityFactory}
+ * construction time. If more backing store instances are needed, some of the threads will block until an
+ * instance become available.
+ *
+ * <div class="section">Note for subclasses</div>
  * This abstract class does not implement any of the {@link DatumAuthorityFactory}, {@link CSAuthorityFactory},
  * {@link CRSAuthorityFactory} and {@link CoordinateOperationAuthorityFactory} interfaces.
  * Subclasses should select the interfaces that they choose to implement.
@@ -69,24 +88,14 @@ import org.apache.sis.internal.system.Loggers;
  */
 public abstract class CachingAuthorityFactory extends GeodeticAuthorityFactory implements Disposable {
     /**
-     * The default value for {@link #maxStrongReferences}.
-     */
-    static final int DEFAULT_MAX = 100;
-
-    /**
-     * The citation for unknown authority name.
-     */
-    private static final Citation UNKNOWN = new SimpleCitation("Unknown");
-
-    /**
      * The authority, cached after first requested.
      */
     private transient volatile Citation authority;
 
     /**
-     * The pool of cached objects. The keys are instances of {@link Key} or {@link CodePair}.
+     * The pool of cached objects.
      */
-    private final Cache<Object,Object> cache;
+    private final Cache<Key,Object> cache;
 
     /**
      * The pool of objects identified by {@link Finder#find(IdentifiedObject)} for each comparison modes.
@@ -97,22 +106,145 @@ public abstract class CachingAuthorityFactory extends GeodeticAuthorityFactory i
     private final Map<IdentifiedObject, IdentifiedObject> findPool = new WeakHashMap<>();
 
     /**
-     * Constructs an instance with a default number of entries to keep by strong reference.
+     * Holds the reference to a backing store used by {@link CachingAuthorityFactory} together with information
+     * about its usage. In a mono-thread application, there is typically only one {@code BackingStore} instance
+     * at a given time. However if more than one than one thread are requesting new objects concurrently, then
+     * many instances may exist for the same {@code CachingAuthorityFactory}.
+     *
+     * <p>If the backing store is currently in use, then {@code BackingStore} counts how many recursive invocations
+     * of a {@link #factory} {@code createFoo(String)} method is under way in the current thread.
+     * This information is used in order to reuse the same factory instead than creating new instances
+     * when a {@code GeodeticAuthorityFactory} implementation invokes itself indirectly through the
+     * {@link CachingAuthorityFactory}. This assumes that factory implementations are reentrant.</p>
+     *
+     * <p>If the backing store has been released, then {@code BackingStore} keep the release timestamp.
+     * This information is used for prioritize the backing stores to dispose.</p>
+     */
+    private static final class BackingStore {
+        /**
+         * The factory used as a backing store.
+         */
+        final GeodeticAuthorityFactory factory;
+
+        /**
+         * Incremented on every call to {@link CachingAuthorityFactory#getBackingStore()} and decremented on every call
+         * to {@link CachingAuthorityFactory#release()}. When this value reach zero, the factory is really released.
+         */
+        int depth;
+
+        /**
+         * The timestamp (<strong>not</strong> relative to epoch) at the time the backing store factory has been
+         * released. This timestamp shall be obtained by a call to {@link System#nanoTime()} for consistency with
+         * {@link DelayedRunnable}.
+         */
+        long timestamp;
+
+        /**
+         * Creates new backing store information for the given factory.
+         */
+        BackingStore(final GeodeticAuthorityFactory factory) {
+            this.factory = factory;
+        }
+
+        /**
+         * Returns a string representation for debugging purpose only.
+         */
+        @Debug
+        @Override
+        public String toString() {
+            final String text;
+            final Number value;
+            if (depth != 0) {
+                text = "%s in use with at depth %d";
+                value = depth;
+            } else {
+                text = "%s made available %d seconds ago";
+                value = (System.nanoTime() - timestamp) / 1E+9;   // Convert nanoseconds to seconds.
+            }
+            return String.format(text, Classes.getShortClassName(factory), value);
+        }
+    }
+
+    /**
+     * The backing store in use by the current thread.
+     */
+    private final ThreadLocal<BackingStore> currentStore = new ThreadLocal<>();
+
+    /**
+     * The backing store instances previously created and released for future reuse.
+     * Last used factories must be {@linkplain Deque#addLast(Object) added last}.
+     * This is used as a LIFO stack.
+     */
+    private final Deque<BackingStore> availableStores = new LinkedList<>();
+
+    /**
+     * The amount of backing stores that can still be created. This number is decremented in a block synchronized
+     * on {@link #availableStores} every time a backing store is in use, and incremented once released.
+     */
+    private int remainingBackingStores;
+
+    /**
+     * {@code true} if the call to {@link #disposeExpired()} is scheduled for future execution in the background
+     * cleaner thread.  A value of {@code true} implies that this factory contains at least one active backing store.
+     * However the reciprocal is not true: this field may be set to {@code false} while a worker factory is currently
+     * in use because this field is set to {@code true} only when a worker factory is {@linkplain #release() released}.
+     *
+     * <p>Note that we can not use {@code !stores.isEmpty()} as a replacement of {@code isActive}
+     * because the queue is empty if all backing stores are currently in use.</p>
+     *
+     * <p>Every access to this field must be performed in a block synchronized on {@link #availableStores}.</p>
+     */
+    private boolean isActive;
+
+    /**
+     * {@code true} if {@link #dispose()} has been invoked.
+     *
+     * <p>Every access to this field must be performed in a block synchronized on {@link #availableStores}.</p>
+     */
+    private boolean isDisposed;
+
+    /**
+     * The delay of inactivity (in nanoseconds) before to close a backing store.
+     * Every access to this field must be performed in a block synchronized on {@link #availableStores}.
+     *
+     * @see #getTimeout(TimeUnit)
+     */
+    private long timeout = 60_000_000_000L;     // One minute
+
+    /**
+     * The maximal difference between the scheduled time and the actual time in order to perform the factory disposal,
+     * in nanoseconds. This is used as a tolerance value for possible wait time inaccuracy.
+     */
+    static final long TIMEOUT_RESOLUTION = 200_000_000L;    // 0.2 second
+
+    /**
+     * Constructs an instance with a default number of threads and a default number of entries to keep
+     * by strong references. Note that those default values may change in any future SIS versions based
+     * on experience gained.
      */
     protected CachingAuthorityFactory() {
-        this(DEFAULT_MAX);
+        this(100, 8);
+        /*
+         * NOTE: if the default maximum number of backing stores (currently 8) is augmented,
+         * make sure to augment the number of runner threads in the "StressTest" class to a greater amount.
+         */
     }
 
     /**
      * Constructs an instance with the specified number of entries to keep by strong references.
-     * In a number of object greater than {@code maxStrongReferences} are created, then the strong references
+     * If a number of object greater than {@code maxStrongReferences} are created, then the strong references
      * for the eldest ones will be replaced by weak references.
      *
      * @param maxStrongReferences The maximum number of objects to keep by strong reference.
+     * @param maxConcurrentQueries The maximal amount of backing stores to use concurrently.
+     *        If more than this amount of threads are querying this {@code CachingAuthorityFactory} concurrently,
+     *        additional threads will be blocked until a backing store become available.
      */
-    protected CachingAuthorityFactory(final int maxStrongReferences) {
-        super(DefaultFactories.forBuildin(NameFactory.class));    // TODO
+    protected CachingAuthorityFactory(final int maxStrongReferences, final int maxConcurrentQueries) {
+        super(DefaultFactories.forBuildin(NameFactory.class));
         ArgumentChecks.ensurePositive("maxStrongReferences", maxStrongReferences);
+        ArgumentChecks.ensureStrictlyPositive("maxConcurrentQueries", maxConcurrentQueries);
+        remainingBackingStores = maxConcurrentQueries;
         cache = new Cache<>(20, maxStrongReferences, false);
         cache.setKeyCollisionAllowed(true);
         /*
@@ -124,20 +256,238 @@ public abstract class CachingAuthorityFactory extends GeodeticAuthorityFactory i
     }
 
     /**
-     * Returns the backing store authority factory. The returned backing store must be thread-safe.
-     * This method shall be used together with {@link #release()} in a {@code try ... finally} block.
-     *
-     * @return The backing store to use in {@code createXXX(…)} methods.
-     * @throws FactoryException if the creation of backing store failed.
+     * Returns the number of backing stores. This count does not include the backing stores
+     * that are currently under execution. This method is used only for testing purpose.
      */
-    private GeodeticAuthorityFactory getBackingStore() throws FactoryException {
-        throw new UnsupportedOperationException("Not yet implemented");
+    @Debug
+    final int countBackingStores() {
+        synchronized (availableStores) {
+            return availableStores.size();
+        }
     }
 
     /**
-     * Releases the backing store previously obtained with {@link #getBackingStore}.
+     * Creates a new backing store authority factory. This method is invoked the first time a {@code createFoo(String)}
+     * method is invoked. It may also be invoked again if additional factories are needed in different threads,
+     * or if all factories have been disposed after the timeout.
+     *
+     * <div class="section">Multi-threading</div>
+     * This method (but not necessarily the returned factory) needs to be thread-safe;
+     * {@code CachingAuthorityFactory} does not hold any lock when invoking this method.
+     * Subclasses are responsible to apply their own synchronization if needed,
+     * but are encouraged to avoid doing so if possible.
+     * In addition, implementations should not invoke other {@code CachingAuthorityFactory}
+     * methods during this method execution in order to avoid never-ending loop.
+     *
+     * @return The backing store to uses in {@code createFoo(String)} methods.
+     * @throws UnavailableFactoryException if the backing store is unavailable because an optional resource is missing.
+     * @throws FactoryException if the creation of backing store failed for another reason.
+     */
+    protected abstract GeodeticAuthorityFactory createBackingStore() throws UnavailableFactoryException, FactoryException;
+
+    /**
+     * Returns a backing store authority factory. This method <strong>must</strong>
+     * be used together with {@link #release()} in a {@code try ... finally} block.
+     *
+     * @return The backing store to use in {@code createXXX(…)} methods.
+     * @throws FactoryException if the backing store creation failed.
+     */
+    private GeodeticAuthorityFactory getBackingStore() throws FactoryException {
+        /*
+         * First checks if the current thread is already using a factory. If yes, we will
+         * avoid creating new factories on the assumption that factories are reentrant.
+         */
+        BackingStore usage = currentStore.get();
+        if (usage == null) {
+            synchronized (availableStores) {
+                if (isDisposed) {
+                    throw new UnavailableFactoryException(Errors.format(Errors.Keys.DisposedFactory));
+                }
+                /**
+                 * If we have reached the maximal amount of backing stores allowed, wait for a backing store
+                 * to become available. In theory the 0.2 second timeout is not necessary, but we put it as a
+                 * safety in case we fail to invoke a notify() matching this wait(), for example someone else
+                 * is waiting on this monitor or because the release(…) method threw an exception.
+                 */
+                while (remainingBackingStores == 0) {
+                    try {
+                        availableStores.wait(TIMEOUT_RESOLUTION);
+                    } catch (InterruptedException e) {
+                        // Someone does not want to let us sleep.
+                        throw new FactoryException(e.getLocalizedMessage(), e);
+                    }
+                }
+                /*
+                 * Reuse the most recently used factory, if available. If there is no factory available for reuse,
+                 * creates a new one. We do not add it to the queue now; it will be done by the release(…) method.
+                 */
+                usage = availableStores.pollLast();
+                remainingBackingStores--;       // Should be done last when we are sure to not fail.
+            }
+            /*
+             * If there is a need to create a new factory, do that outside the synchronized block because this
+             * creation may involve a lot of client code. This is better for reducing the dead-lock risk.
+             * Subclasses are responsible of synchronizing their createBackingStore() method if necessary.
+             */
+            try {
+                if (usage == null) {
+                    final GeodeticAuthorityFactory factory = createBackingStore();
+                    if (factory == null) {
+                        throw new UnavailableFactoryException(Errors.format(
+                                Errors.Keys.FactoryNotFound_1, GeodeticAuthorityFactory.class));
+                    }
+                    usage = new BackingStore(factory);
+                    currentStore.set(usage);
+                }
+                assert usage.depth == 0 : usage;
+            } finally {
+                /*
+                 * If any kind of error occurred, restore the 'remainingBackingStores' field as if no code were executed.
+                 * This code would not have been needed if we were allowed to decrement 'remainingBackingStores' only as
+                 * the very last step (when we know that everything else succeed). But it needed to be decremented inside
+                 * the synchronized block.
+                 */
+                if (usage == null) {
+                    synchronized (availableStores) {
+                        remainingBackingStores++;
+                    }
+                }
+            }
+        }
+        /*
+         * Increment below is safe even if outside the synchronized block,
+         * because each thread own exclusively its BackingStore instance
+         */
+        usage.depth++;
+        return usage.factory;
+    }
+
+    /**
+     * Releases the backing store previously obtained with {@link #getBackingStore()}.
+     * This method marks the factory as available for reuse by other threads.
      */
     private void release() {
+        final BackingStore usage = currentStore.get();     // A null value here would be an error in our algorithm.
+        if (--usage.depth == 0) {
+            synchronized (availableStores) {
+                if (isDisposed) return;
+                remainingBackingStores++;       // Must be done first in case an exception happen after this point.
+                usage.timestamp = System.nanoTime();
+                availableStores.addLast(usage);
+                /*
+                 * If the backing store we just released is the first one, awake the
+                 * disposer thread which was waiting for an indefinite amount of time.
+                 */
+                if (!isActive) {
+                    isActive = true;
+                    DelayedExecutor.schedule(new DisposeTask(usage.timestamp + timeout));
+                }
+                availableStores.notify();    // We released only one backing store, so awake only one thread - not all of them.
+            }
+        }
+        assert usage.depth >= 0 : usage;
+    }
+
+    /**
+     * A task for invoking {@link CachingAuthorityFactory#disposeExpired()} after a delay.
+     */
+    private final class DisposeTask extends DelayedRunnable {
+        /**
+         * Creates a new task to be executed at the given time,
+         * in nanoseconds relative to {@link System#nanoTime()}.
+         */
+        DisposeTask(final long timestamp) {
+            super(timestamp);
+        }
+
+        /** Invoked when the delay expired. */
+        @Override public void run() {
+            disposeExpired();
+        }
+    }
+
+    /**
+     * Disposes the expired backing stores. This method should be invoked from a background task only.
+     * This method may reschedule the task again for an other execution if it appears that at least one
+     * backing store was not ready for disposal.
+     *
+     * @see #dispose()
+     */
+    final void disposeExpired() {
+        int count = 0;
+        final Disposable[] toDispose;
+        synchronized (availableStores) {
+            toDispose = new Disposable[availableStores.size()];
+            final Iterator<BackingStore> it = availableStores.iterator();
+            final long nanoTime = System.nanoTime();
+            while (it.hasNext()) {
+                final BackingStore store = it.next();
+                /*
+                 * Computes how much time we need to wait again before we can dispose the factory.
+                 * If this time is greater than some arbitrary amount, do not dispose the factory
+                 * and wait again.
+                 */
+                final long nextTime = store.timestamp + timeout;
+                if (nextTime - nanoTime > TIMEOUT_RESOLUTION) {
+                    /*
+                     * Found a factory which is not expired. Stop the search,
+                     * since the iteration is expected to be ordered.
+                     */
+                    DelayedExecutor.schedule(new DisposeTask(nextTime));
+                    break;
+                }
+                /*
+                 * Found an expired factory. Adds it to the list of
+                 * factories to dispose and search for other factories.
+                 */
+                it.remove();
+                if (store.factory instanceof Disposable) {
+                    toDispose[count++] = (Disposable) store.factory;
+                }
+            }
+            /*
+             * The stores list is empty if all worker factories in the queue have been disposed.
+             * Note that some worker factories may still be active outside the queue, because the
+             * workers are added to the queue only after completion of their work.
+             * In the later case, release() will reschedule a new task.
+             */
+            isActive = !availableStores.isEmpty();
+        }
+        /*
+         * We must dispose the factories from outside the synchronized block.
+         */
+        while (--count >= 0) {
+            toDispose[count].dispose();
+        }
+    }
+
+    /**
+     * Returns the amount of time that {@code CachingAuthorityFactory} will wait before to dispose a backing store.
+     * This delay is measured from the last time the backing store has been used by a {@code createFoo(String)} method.
+     *
+     * @param unit The desired unit of measurement for the timeout.
+     * @return The current timeout in the given unit of measurement.
+     */
+    public long getTimeout(final TimeUnit unit) {
+        synchronized (availableStores) {
+            return unit.convert(timeout, TimeUnit.NANOSECONDS);
+        }
+    }
+
+    /**
+     * Sets a timer for disposing the backing store after the specified amount of time of inactivity.
+     * If a new backing store is needed after the disposal of the last one, then the {@link #createBackingStore()}
+     * method will be invoked again.
+     *
+     * @param delay The delay of inactivity before to close a backing store.
+     * @param unit  The unit of measurement of the given delay.
+     */
+    public void setTimeout(long delay, final TimeUnit unit) {
+        ArgumentChecks.ensureStrictlyPositive("delay", delay);
+        delay = unit.toNanos(delay);
+        synchronized (availableStores) {
+            timeout = delay;                // Will be taken in account after the next factory to dispose.
+        }
     }
 
     /**
@@ -155,7 +505,10 @@ public abstract class CachingAuthorityFactory extends GeodeticAuthorityFactory i
      *   </li>
      * </ul>
      *
-     * @return The organization responsible for definition of the database.
+     * If this method can not get a backing store factory (for example because no database connection is available),
+     * then this method returns {@code null}.
+     *
+     * @return The organization responsible for definition of the database, or {@code null} if unavailable.
      */
     @Override
     public Citation getAuthority() {
@@ -170,7 +523,6 @@ public abstract class CachingAuthorityFactory extends GeodeticAuthorityFactory i
                 release();
             }
         } catch (FactoryException e) {
-            c = UNKNOWN;
             Logging.unexpectedException(Logging.getLogger(Loggers.CRS_FACTORY),
                     CachingAuthorityFactory.class, "getAuthority", e);
         }
@@ -936,15 +1288,30 @@ public abstract class CachingAuthorityFactory extends GeodeticAuthorityFactory i
 
     /**
      * The key objects to use in the {@link CachingAuthorityFactory#cache}.
+     * This is one of the following pairs of values:
+     * <ul>
+     *   <li>For all {@code CachingAuthorityFactory.createFoo(String)} methods:
+     *     <ol>
+     *       <li>The {@code Foo} {@link Class} of the cached object.</li>
+     *       <li>The authority code of the cached object.</li>
+     *     </ol>
+     *   </li>
+     *   <li>For {@link CachingAuthorityFactory#createFromCoordinateReferenceSystemCodes(String, String)}:
+     *     <ol>
+     *       <li>The authority code of source CRS (stored in the "type" field even if the name is not right).</li>
+     *       <li>The authority code of target CRS (stored in the "code" field).</li>
+     *     </ol>
+     *   </li>
+     * </ul>
      *
      * @see <a href="http://jira.geotoolkit.org/browse/GEOTK-2">GEOTK-2</a>
      */
     private static final class Key {
-        /** The type of the cached object.    */ final Class<?> type;
+        /** The type of the cached object.    */ final Object type;
         /** The cached object authority code. */ final String code;
 
         /** Creates a new key for the given type and code. */
-        Key(final Class<?> type, final String code) {
+        Key(final Object type, final String code) {
             this.type = type;
             this.code = code;
         }
@@ -965,12 +1332,18 @@ public abstract class CachingAuthorityFactory extends GeodeticAuthorityFactory i
 
         /** String representation used by {@link CacheRecord}. */
         @Override @Debug public String toString() {
-            final StringBuilder buffer = new StringBuilder("Key[").append(code);
-            if (buffer.length() > 15) { // Arbitrary limit in string length.
-                buffer.setLength(15);
-                buffer.append('…');
+            final StringBuilder buffer = new StringBuilder();
+            if (type instanceof Class<?>) {
+                buffer.append("Code[“").append(code);
+                if (buffer.length() > 15) { // Arbitrary limit in string length.
+                    buffer.setLength(15);
+                    buffer.append('…');
+                }
+                buffer.append("” : ").append(((Class<?>) type).getSimpleName());
+            } else {
+                buffer.append("CodePair[“").append(type).append("” → “").append(code).append('”');
             }
-            return buffer.append(" : ").append(type.getSimpleName()).append(']').toString();
+            return buffer.append(']').toString();
         }
     }
 
@@ -1039,7 +1412,7 @@ public abstract class CachingAuthorityFactory extends GeodeticAuthorityFactory i
     {
         ArgumentChecks.ensureNonNull("sourceCRS", sourceCRS);
         ArgumentChecks.ensureNonNull("targetCRS", targetCRS);
-        final CodePair key = new CodePair(trimAuthority(sourceCRS), trimAuthority(targetCRS));
+        final Key key = new Key(trimAuthority(sourceCRS), trimAuthority(targetCRS));
         Object value = cache.peek(key);
         if (!(value instanceof Set<?>)) {
             final Cache.Handler<Object> handler = cache.lock(key);
@@ -1058,40 +1431,6 @@ public abstract class CachingAuthorityFactory extends GeodeticAuthorityFactory i
             }
         }
         return (Set<CoordinateOperation>) value;
-    }
-
-    /**
-     * A pair of codes for operations to cache with
-     * {@link CachingAuthorityFactory#createFromCoordinateReferenceSystemCodes(String, String)}.
-     */
-    private static final class CodePair {
-        /** Codes of source and target CRS. */
-        private final String source, target;
-
-        /** Creates a new key for the given pair of codes. */
-        public CodePair(final String source, final String target) {
-            this.source = source;
-            this.target = target;
-        }
-
-        /** Returns the hash code value for this key. */
-        @Override public int hashCode() {
-            return source.hashCode() + target.hashCode() * 31;
-        }
-
-        /** Compares this key with the given object for equality .*/
-        @Override public boolean equals(final Object other) {
-            if (other instanceof CodePair) {
-                final CodePair that = (CodePair) other;
-                return source.equals(that.source) && target.equals(that.target);
-            }
-            return false;
-        }
-
-        /** String representation used by {@link CacheRecord}. */
-        @Override @Debug public String toString() {
-            return "CodePair[" + source + " → " + target + ']';
-        }
     }
 
     /**
@@ -1280,10 +1619,32 @@ public abstract class CachingAuthorityFactory extends GeodeticAuthorityFactory i
      */
     @Override
     public void dispose() {
-        cache.clear();
-        authority = null;
-        synchronized (findPool) {
-            findPool.clear();
+        try {
+            int count = 0;
+            final Disposable[] factories;
+            synchronized (availableStores) {
+                isDisposed = true;
+                remainingBackingStores = 0;
+                factories = new Disposable[availableStores.size()];
+                BackingStore store;
+                while ((store = availableStores.pollFirst()) != null) {
+                    if (store.factory instanceof Disposable) {
+                        factories[count++] = (Disposable) store.factory;
+                    }
+                }
+            }
+            /*
+             * Factory disposal must be done outside the synchronized block.
+             */
+            while (--count >= 0) {
+                factories[count].dispose();
+            }
+        } finally {
+            synchronized (findPool) {
+                findPool.clear();
+            }
+            cache.clear();
+            authority = null;
         }
     }
 }
