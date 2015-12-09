@@ -534,28 +534,6 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
     }
 
     /**
-     * Returns a description of the underlying backing store, or {@code null} if unknown.
-     * The default implementation performs the following steps:
-     * <ol>
-     *   <li>get an instance of the backing store,</li>
-     *   <li>delegate to its {@link GeodeticAuthorityFactory#getBackingStoreDescription()} method,</li>
-     *   <li>release the backing store.</li>
-     * </ol>
-     *
-     * @return A description of the underlying backing store, or {@code null} if none.
-     * @throws FactoryException if a failure occurred while fetching the backing store description.
-     */
-    @Override
-    public InternationalString getBackingStoreDescription() throws FactoryException {
-        final GeodeticAuthorityFactory factory = getBackingStore();
-        try {
-            return factory.getBackingStoreDescription();
-        } finally {
-            release();
-        }
-    }
-
-    /**
      * Returns the set of authority codes for objects of the given type.
      * The default implementation performs the following steps:
      * <ol>
