@@ -536,7 +536,7 @@ public final class Matrices extends Static {
      * @throws IllegalArgumentException if a value of {@code selectedDimensions} is lower than 0
      *         or not smaller than {@code sourceDimensions}.
      *
-     * @see org.apache.sis.referencing.operation.transform.MathTransforms#dimensionFilter(int, int[])
+     * @see org.apache.sis.referencing.operation.transform.TransformSeparator
      */
     public static MatrixSIS createDimensionSelect(final int sourceDimensions, final int[] selectedDimensions) {
         final int numTargetDim = selectedDimensions.length;

@@ -467,7 +467,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
 
         /**
          * The ellipsoid of the source or target ellipsoidal coordinate system, or {@code null} if it does not apply.
-         * Valid only if {@link #source} or {@link #target} is an instance of {@link EllipsoidalCS}.
+         * Valid only if {@link #sourceCS} or {@link #targetCS} is an instance of {@link EllipsoidalCS}.
          */
         private Ellipsoid sourceEllipsoid, targetEllipsoid;
 
