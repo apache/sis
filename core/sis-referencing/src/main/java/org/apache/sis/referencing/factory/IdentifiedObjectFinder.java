@@ -84,7 +84,7 @@ public class IdentifiedObjectFinder {
 
     /**
      * The cache or the adapter which is wrapping this finder, or {@code null} if none.
-     * An example of wrapper is {@link CachingAuthorityFactory}'s finder.
+     * An example of wrapper is {@link ConcurrentAuthorityFactory}'s finder.
      *
      * @see #setWrapper(IdentifiedObjectFinder)
      */
@@ -121,7 +121,7 @@ public class IdentifiedObjectFinder {
     /**
      * Declares that the given cache or adapter is the wrapper of this finder.
      * This method should be invoked at wrapper construction time.
-     * An example of wrapper is {@link CachingAuthorityFactory}'s finder.
+     * An example of wrapper is {@link ConcurrentAuthorityFactory}'s finder.
      *
      * <p>This method also copies the configuration of the given finder, thus providing a central place
      * where to add calls to setters methods if such methods are added in a future SIS version.</p>
@@ -241,7 +241,7 @@ public class IdentifiedObjectFinder {
                  * have to temporarily change the proxy.
                  *
                  * When invoked recursively, we delegate to the wrapper if it exists. The wrapper is typically
-                 * a CachingAuthorityFactory.Finder, in which case we want to leverage its cache capability.
+                 * a ConcurrentAuthorityFactory.Finder, in which case we want to leverage its cache capability.
                  */
                 IdentifiedObjectFinder finder = wrapper;
                 if (finder == null) {

@@ -31,7 +31,7 @@ import org.apache.sis.util.Debug;
 
 
 /**
- * Implementation of {@link CachingAuthorityFactory#printCacheContent(PrintWriter)}.
+ * Implementation of {@link ConcurrentAuthorityFactory#printCacheContent(PrintWriter)}.
  * Instance of this class represent a single record in the cache content to be listed.
  *
  * @author  Martin Desruisseaux (Geomatys)
@@ -39,7 +39,7 @@ import org.apache.sis.util.Debug;
  * @version 0.7
  * @module
  *
- * @see CachingAuthorityFactory#printCacheContent(PrintWriter)
+ * @see ConcurrentAuthorityFactory#printCacheContent(PrintWriter)
  */
 @Debug
 final class CacheRecord implements Comparable<CacheRecord> {
@@ -95,7 +95,7 @@ final class CacheRecord implements Comparable<CacheRecord> {
     }
 
     /**
-     * Implementation of the public {@link CachingAuthorityFactory#printCacheContent()} method.
+     * Implementation of the public {@link ConcurrentAuthorityFactory#printCacheContent()} method.
      *
      * @param cache The cache.
      * @param out The output writer, or {@code null} for the standard output stream.

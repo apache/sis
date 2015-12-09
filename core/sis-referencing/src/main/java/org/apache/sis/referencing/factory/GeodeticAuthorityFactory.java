@@ -64,14 +64,16 @@ import org.apache.sis.util.ArgumentChecks;
  */
 public abstract class GeodeticAuthorityFactory extends AbstractFactory implements AuthorityFactory {
     /**
-     * The factory to use for creating {@link GenericName} instances.
+     * The factory to use for parsing authority code as {@link GenericName} instances.
+     *
+     * @see #trimAuthority(String)
      */
     protected final NameFactory nameFactory;
 
     /**
      * Creates a new authority factory for geodetic objects.
      *
-     * @param nameFactory The factory to use for creating {@link GenericName} instances.
+     * @param nameFactory The factory to use for parsing authority code as {@link GenericName} instances.
      */
     protected GeodeticAuthorityFactory(final NameFactory nameFactory) {
         ArgumentChecks.ensureNonNull("nameFactory", nameFactory);
@@ -765,13 +767,13 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
 
     /**
      * Creates an exception for an unknown authority code.
-     * This convenience method is provided for implementation of {@code createXXX} methods.
+     * This convenience method is provided for implementation of {@code createFoo(String)} methods.
      *
      * @param  type  The GeoAPI interface that was to be created (e.g. {@code CoordinateReferenceSystem.class}).
      * @param  code  The unknown authority code.
      * @return An exception initialized with an error message built from the specified informations.
      */
-    protected final NoSuchAuthorityCodeException noSuchAuthorityCode(final Class<?> type, final String code) {
+    protected NoSuchAuthorityCodeException noSuchAuthorityCode(final Class<?> type, final String code) {
         final String authority = Citations.getIdentifier(getAuthority(), false);
         return new NoSuchAuthorityCodeException(Errors.format(Errors.Keys.NoSuchAuthorityCode_3,
                    (authority != null) ? authority : Vocabulary.formatInternational(Vocabulary.Keys.Untitled),

@@ -45,7 +45,6 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.collection.Cache;
 import org.apache.sis.internal.referencing.NilReferencingObject;
-import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.system.DelayedExecutor;
 import org.apache.sis.internal.system.DelayedRunnable;
 import org.apache.sis.internal.system.Loggers;
@@ -58,7 +57,7 @@ import org.apache.sis.util.resources.Errors;
  * If such object exists, it is returned. Otherwise, the object creation is delegated to another factory given
  * by {@link #createBackingStore()} and the result is cached in this factory.
  *
- * <p>{@code CachingAuthorityFactory} delays the call to {@code createBackingStore()} until first needed,
+ * <p>{@code ConcurrentAuthorityFactory} delays the call to {@code createBackingStore()} until first needed,
  * and {@linkplain Disposable#dispose() dispose} it after some timeout. This approach allows to establish
  * a connection to a database (for example) and keep it only for a relatively short amount of time.</p>
  *
@@ -72,7 +71,7 @@ import org.apache.sis.util.resources.Errors;
  * <div class="section">Multi-threading</div>
  * The cache managed by this class is concurrent. However the backing stores are assumed non-concurrent.
  * If two or more threads are accessing this factory in same time, then two or more backing store instances
- * may be created. The maximal amount of instances to create is specified at {@code CachingAuthorityFactory}
+ * may be created. The maximal amount of instances to create is specified at {@code ConcurrentAuthorityFactory}
  * construction time. If more backing store instances are needed, some of the threads will block until an
  * instance become available.
  *
@@ -86,7 +85,7 @@ import org.apache.sis.util.resources.Errors;
  * @version 0.7
  * @module
  */
-public abstract class CachingAuthorityFactory extends GeodeticAuthorityFactory implements Disposable {
+public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactory implements Disposable {
     /**
      * The authority, cached after first requested.
      */
@@ -106,16 +105,16 @@ public abstract class CachingAuthorityFactory extends GeodeticAuthorityFactory i
     private final Map<IdentifiedObject, IdentifiedObject> findPool = new WeakHashMap<>();
 
     /**
-     * Holds the reference to a backing store used by {@link CachingAuthorityFactory} together with information
+     * Holds the reference to a backing store used by {@link ConcurrentAuthorityFactory} together with information
      * about its usage. In a mono-thread application, there is typically only one {@code BackingStore} instance
      * at a given time. However if more than one than one thread are requesting new objects concurrently, then
-     * many instances may exist for the same {@code CachingAuthorityFactory}.
+     * many instances may exist for the same {@code ConcurrentAuthorityFactory}.
      *
      * <p>If the backing store is currently in use, then {@code BackingStore} counts how many recursive invocations
      * of a {@link #factory} {@code createFoo(String)} method is under way in the current thread.
      * This information is used in order to reuse the same factory instead than creating new instances
      * when a {@code GeodeticAuthorityFactory} implementation invokes itself indirectly through the
-     * {@link CachingAuthorityFactory}. This assumes that factory implementations are reentrant.</p>
+     * {@link ConcurrentAuthorityFactory}. This assumes that factory implementations are reentrant.</p>
      *
      * <p>If the backing store has been released, then {@code BackingStore} keep the release timestamp.
      * This information is used for prioritize the backing stores to dispose.</p>
@@ -127,8 +126,8 @@ public abstract class CachingAuthorityFactory extends GeodeticAuthorityFactory i
         final GeodeticAuthorityFactory factory;
 
         /**
-         * Incremented on every call to {@link CachingAuthorityFactory#getBackingStore()} and decremented on every call
-         * to {@link CachingAuthorityFactory#release()}. When this value reach zero, the factory is really released.
+         * Incremented on every call to {@link ConcurrentAuthorityFactory#getBackingStore()} and decremented on every call
+         * to {@link ConcurrentAuthorityFactory#release()}. When this value reach zero, the factory is really released.
          */
         int depth;
 
@@ -221,9 +220,11 @@ public abstract class CachingAuthorityFactory extends GeodeticAuthorityFactory i
      * Constructs an instance with a default number of threads and a default number of entries to keep
      * by strong references. Note that those default values may change in any future SIS versions based
      * on experience gained.
+     *
+     * @param nameFactory The factory to use for parsing authority code as {@link GenericName} instances.
      */
-    protected CachingAuthorityFactory() {
-        this(100, 8);
+    protected ConcurrentAuthorityFactory(final NameFactory nameFactory) {
+        this(nameFactory, 100, 8);
         /*
          * NOTE: if the default maximum number of backing stores (currently 8) is augmented,
          * make sure to augment the number of runner threads in the "StressTest" class to a greater amount.
@@ -235,13 +236,16 @@ public abstract class CachingAuthorityFactory extends GeodeticAuthorityFactory i
      * If a number of object greater than {@code maxStrongReferences} are created, then the strong references
      * for the eldest ones will be replaced by weak references.
      *
+     * @param nameFactory The factory to use for parsing authority code as {@link GenericName} instances.
      * @param maxStrongReferences The maximum number of objects to keep by strong reference.
      * @param maxConcurrentQueries The maximal amount of backing stores to use concurrently.
-     *        If more than this amount of threads are querying this {@code CachingAuthorityFactory} concurrently,
+     *        If more than this amount of threads are querying this {@code ConcurrentAuthorityFactory} concurrently,
      *        additional threads will be blocked until a backing store become available.
      */
-    protected CachingAuthorityFactory(final int maxStrongReferences, final int maxConcurrentQueries) {
-        super(DefaultFactories.forBuildin(NameFactory.class));
+    protected ConcurrentAuthorityFactory(final NameFactory nameFactory,
+            final int maxStrongReferences, final int maxConcurrentQueries)
+    {
+        super(nameFactory);
         ArgumentChecks.ensurePositive("maxStrongReferences", maxStrongReferences);
         ArgumentChecks.ensureStrictlyPositive("maxConcurrentQueries", maxConcurrentQueries);
         remainingBackingStores = maxConcurrentQueries;
@@ -249,7 +253,7 @@ public abstract class CachingAuthorityFactory extends GeodeticAuthorityFactory i
         cache.setKeyCollisionAllowed(true);
         /*
          * Key collision is usually an error. But in this case we allow them in order to enable recursivity.
-         * If during the creation of an object the program asks to this CachingAuthorityFactory for the same
+         * If during the creation of an object the program asks to this ConcurrentAuthorityFactory for the same
          * object (using the same key), then the default Cache implementation considers that situation as an
          * error unless the above property has been set to 'true'.
          */
@@ -273,10 +277,10 @@ public abstract class CachingAuthorityFactory extends GeodeticAuthorityFactory i
      *
      * <div class="section">Multi-threading</div>
      * This method (but not necessarily the returned factory) needs to be thread-safe;
-     * {@code CachingAuthorityFactory} does not hold any lock when invoking this method.
+     * {@code ConcurrentAuthorityFactory} does not hold any lock when invoking this method.
      * Subclasses are responsible to apply their own synchronization if needed,
      * but are encouraged to avoid doing so if possible.
-     * In addition, implementations should not invoke other {@code CachingAuthorityFactory}
+     * In addition, implementations should not invoke other {@code ConcurrentAuthorityFactory}
      * methods during this method execution in order to avoid never-ending loop.
      *
      * @return The backing store to uses in {@code createFoo(String)} methods.
@@ -389,7 +393,7 @@ public abstract class CachingAuthorityFactory extends GeodeticAuthorityFactory i
     }
 
     /**
-     * A task for invoking {@link CachingAuthorityFactory#disposeExpired()} after a delay.
+     * A task for invoking {@link ConcurrentAuthorityFactory#disposeExpired()} after a delay.
      */
     private final class DisposeTask extends DelayedRunnable {
         /**
@@ -462,7 +466,7 @@ public abstract class CachingAuthorityFactory extends GeodeticAuthorityFactory i
     }
 
     /**
-     * Returns the amount of time that {@code CachingAuthorityFactory} will wait before to dispose a backing store.
+     * Returns the amount of time that {@code ConcurrentAuthorityFactory} will wait before to dispose a backing store.
      * This delay is measured from the last time the backing store has been used by a {@code createFoo(String)} method.
      *
      * @param unit The desired unit of measurement for the timeout.
@@ -524,7 +528,7 @@ public abstract class CachingAuthorityFactory extends GeodeticAuthorityFactory i
             }
         } catch (FactoryException e) {
             Logging.unexpectedException(Logging.getLogger(Loggers.CRS_FACTORY),
-                    CachingAuthorityFactory.class, "getAuthority", e);
+                    ConcurrentAuthorityFactory.class, "getAuthority", e);
         }
         return c;
     }
@@ -533,7 +537,7 @@ public abstract class CachingAuthorityFactory extends GeodeticAuthorityFactory i
      * Returns a description of the underlying backing store, or {@code null} if unknown.
      * The default implementation performs the following steps:
      * <ol>
-     *   <li>Get an instance of the backing store,</li>
+     *   <li>get an instance of the backing store,</li>
      *   <li>delegate to its {@link GeodeticAuthorityFactory#getBackingStoreDescription()} method,</li>
      *   <li>release the backing store.</li>
      * </ol>
@@ -555,7 +559,7 @@ public abstract class CachingAuthorityFactory extends GeodeticAuthorityFactory i
      * Returns the set of authority codes for objects of the given type.
      * The default implementation performs the following steps:
      * <ol>
-     *   <li>Get an instance of the backing store,</li>
+     *   <li>get an instance of the backing store,</li>
      *   <li>delegate to its {@link GeodeticAuthorityFactory#getAuthorityCodes(Class)} method,</li>
      *   <li>release the backing store.</li>
      * </ol>
@@ -584,7 +588,7 @@ public abstract class CachingAuthorityFactory extends GeodeticAuthorityFactory i
      * Gets a description of the object corresponding to a code.
      * The default implementation performs the following steps:
      * <ol>
-     *   <li>Get an instance of the backing store,</li>
+     *   <li>get an instance of the backing store,</li>
      *   <li>delegate to its {@link GeodeticAuthorityFactory#getDescriptionText(String)} method,</li>
      *   <li>release the backing store.</li>
      * </ol>
@@ -1287,16 +1291,16 @@ public abstract class CachingAuthorityFactory extends GeodeticAuthorityFactory i
     }
 
     /**
-     * The key objects to use in the {@link CachingAuthorityFactory#cache}.
+     * The key objects to use in the {@link ConcurrentAuthorityFactory#cache}.
      * This is one of the following pairs of values:
      * <ul>
-     *   <li>For all {@code CachingAuthorityFactory.createFoo(String)} methods:
+     *   <li>For all {@code ConcurrentAuthorityFactory.createFoo(String)} methods:
      *     <ol>
      *       <li>The {@code Foo} {@link Class} of the cached object.</li>
      *       <li>The authority code of the cached object.</li>
      *     </ol>
      *   </li>
-     *   <li>For {@link CachingAuthorityFactory#createFromCoordinateReferenceSystemCodes(String, String)}:
+     *   <li>For {@link ConcurrentAuthorityFactory#createFromCoordinateReferenceSystemCodes(String, String)}:
      *     <ol>
      *       <li>The authority code of source CRS (stored in the "type" field even if the name is not right).</li>
      *       <li>The authority code of target CRS (stored in the "code" field).</li>
@@ -1483,7 +1487,7 @@ public abstract class CachingAuthorityFactory extends GeodeticAuthorityFactory i
         /**
          * Creates a finder for the given type of objects.
          */
-        Finder(final CachingAuthorityFactory factory, final Class<? extends IdentifiedObject> type) {
+        Finder(final ConcurrentAuthorityFactory factory, final Class<? extends IdentifiedObject> type) {
             super(factory, type);
         }
 
@@ -1505,10 +1509,10 @@ public abstract class CachingAuthorityFactory extends GeodeticAuthorityFactory i
             assert Thread.holdsLock(this);
             assert (acquireCount == 0) == (finder == null) : acquireCount;
             if (acquireCount == 0) {
-                final GeodeticAuthorityFactory delegate = ((CachingAuthorityFactory) factory).getBackingStore();
+                final GeodeticAuthorityFactory delegate = ((ConcurrentAuthorityFactory) factory).getBackingStore();
                 /*
                  * Set 'acquireCount' only after we succeed in fetching the factory, and before any operation on it.
-                 * The intend is to get CachingAuthorityFactory.release() invoked if and only if the getBackingStore()
+                 * The intend is to get ConcurrentAuthorityFactory.release() invoked if and only if the getBackingStore()
                  * method succeed, no matter what happen after this point.
                  */
                 acquireCount = 1;
@@ -1530,7 +1534,7 @@ public abstract class CachingAuthorityFactory extends GeodeticAuthorityFactory i
             }
             if (--acquireCount == 0) {
                 finder = null;
-                ((CachingAuthorityFactory) factory).release();
+                ((ConcurrentAuthorityFactory) factory).release();
             }
         }
 
@@ -1567,7 +1571,7 @@ public abstract class CachingAuthorityFactory extends GeodeticAuthorityFactory i
          */
         @Override
         public IdentifiedObject find(final IdentifiedObject object) throws FactoryException {
-            final Map<IdentifiedObject, IdentifiedObject> findPool = ((CachingAuthorityFactory) factory).findPool;
+            final Map<IdentifiedObject, IdentifiedObject> findPool = ((ConcurrentAuthorityFactory) factory).findPool;
             synchronized (findPool) {
                 final IdentifiedObject candidate = findPool.get(object);
                 if (candidate != null) {
