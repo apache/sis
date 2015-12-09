@@ -31,6 +31,7 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.internal.system.Supervisor;
 import org.apache.sis.internal.system.SupervisorMBean;
+import org.apache.sis.internal.util.X364;
 
 
 /**
@@ -50,7 +51,7 @@ import org.apache.sis.internal.system.SupervisorMBean;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.4
+ * @version 0.7
  * @module
  */
 final class AboutSC extends SubCommand {
@@ -77,19 +78,20 @@ final class AboutSC extends SubCommand {
         if (hasUnexpectedFileCount(0, brief ? 0 : 1)) {
             return Command.INVALID_ARGUMENT_EXIT_CODE;
         }
+        String[] warnings = null;
         final String configuration;
-        if (brief) {
+        if (brief && files.isEmpty()) {
             configuration = Vocabulary.getResources(locale).getString(
                     Vocabulary.Keys.Version_2, "Apache SIS", Version.SIS);
         } else {
+            final EnumSet<About> sections = EnumSet.allOf(About.class);
+            if (!options.containsKey(Option.VERBOSE)) {
+                sections.remove(About.LIBRARIES);
+            }
             if (files.isEmpty()) {
                 /*
                  * Provide information about the local SIS installation.
                  */
-                final EnumSet<About> sections = EnumSet.allOf(About.class);
-                if (!options.containsKey(Option.VERBOSE)) {
-                    sections.remove(About.LIBRARIES);
-                }
                 configuration = About.configuration(sections, locale, timezone).toString();
             } else {
                 /*
@@ -104,7 +106,8 @@ final class AboutSC extends SubCommand {
                     try (JMXConnector jmxc = JMXConnectorFactory.connect(url)) {
                         final MBeanServerConnection mbsc = jmxc.getMBeanServerConnection();
                         final SupervisorMBean bean = JMX.newMBeanProxy(mbsc, new ObjectName(Supervisor.NAME), SupervisorMBean.class);
-                        configuration = bean.configuration().toString();
+                        configuration = bean.configuration(sections, locale, timezone).toString();
+                        warnings = bean.warnings(locale);
                     }
                 } catch (IOException e) {
                     error(Errors.format(Errors.Keys.CanNotConnectTo_1, path), e);
@@ -113,6 +116,28 @@ final class AboutSC extends SubCommand {
             }
         }
         out.println(configuration);
+        if (warnings != null) {
+            out.println();
+            if (colors) {
+                out.print(X364.BACKGROUND_RED.sequence());
+                out.print(X364.BOLD.sequence());
+                out.print(' ');
+            }
+            out.print(Vocabulary.getResources(locale).getLabel(Vocabulary.Keys.Warnings));
+            if (colors) {
+                out.print(' ');
+                out.println(X364.RESET.sequence());
+                out.print(X364.FOREGROUND_RED.sequence());
+            } else {
+                out.println();
+            }
+            for (final String warning : warnings) {
+                out.println(warning);
+            }
+            if (colors) {
+                out.print(X364.FOREGROUND_DEFAULT.sequence());
+            }
+        }
         out.flush();
         return 0;
     }

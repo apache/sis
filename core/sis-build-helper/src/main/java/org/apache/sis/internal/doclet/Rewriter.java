@@ -205,6 +205,9 @@ process:    while (i < stopAt) {
                      * At this point, we are right after a Java identifier. If the character is a dot
                      * followed immediately by another Java identifier, allow line break before the dot.
                      * We may need to skip the "()" in method names.
+                     *
+                     * NOTE: this code does not handle the <code><a.../a>.<a.../a></code> case.
+                     *       We may revisit this issue when porting the doclet to JDK 9.
                      */
                     if (c == '(') c = content.codePointAt(++i);
                     if (c == ')') c = content.codePointAt(++i);

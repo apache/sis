@@ -501,6 +501,11 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final short Vertical = 68;
 
         /**
+         * Warnings
+         */
+        public static final short Warnings = 90;
+
+        /**
          * World
          */
         public static final short World = 64;
