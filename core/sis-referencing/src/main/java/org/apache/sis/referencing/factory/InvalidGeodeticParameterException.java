@@ -20,27 +20,30 @@ import org.opengis.util.FactoryException;
 
 
 /**
- * Thrown when a factory can not be created because an optional resource is missing.
- * The most common case is when the {@link org.apache.sis.referencing.factory.epsg.EPSGFactory}
- * has no connection to an EPSG database.
+ * Thrown when a factory {@code createFoo(…)} method is given invalid parameters.
+ * This exception may be thrown by factories that create an object from geodetic parameters
+ * like semi-major or semi-minor axis length, latitude of natural origin, <i>etc</i>.
+ * The cause may be a parameter having an illegal value, or a mandatory parameter which has not been specified.
  *
- * @author  Martin Desruisseaux (IRD)
+ * <div class="note"><b>Note:</b>
+ * this exception is not for invalid authority codes. For such cases, see
+ * {@link org.opengis.referencing.NoSuchAuthorityCodeException} instead.</div>
+ *
+ * @author  Martin Desruisseaux (Geomatys)
  * @since   0.7
  * @version 0.7
  * @module
- *
- * @see ConcurrentAuthorityFactory#createBackingStore()
  */
-public class UnavailableFactoryException extends FactoryException {
+public class InvalidGeodeticParameterException extends FactoryException {
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = -661925454228937249L;
+    private static final long serialVersionUID = -546427967147139788L;
 
     /**
      * Construct an exception with no detail message.
      */
-    public UnavailableFactoryException() {
+    public InvalidGeodeticParameterException() {
     }
 
     /**
@@ -49,21 +52,32 @@ public class UnavailableFactoryException extends FactoryException {
      * @param  message The detail message. The detail message is saved
      *         for later retrieval by the {@link #getMessage()} method.
      */
-    public UnavailableFactoryException(String message) {
+    public InvalidGeodeticParameterException(String message) {
         super(message);
     }
 
     /**
+     * Construct an exception with the specified cause.
+     *
+     * <p>This constructor is not public because its behavior is slightly different than the default JDK behavior:
+     * the message is set to the throwable message instead than to {@code throwable.toString()}.</p>
+     *
+     * @param  cause The cause for this exception. The cause is saved
+     *         for later retrieval by the {@link #getCause()} method.
+     */
+    InvalidGeodeticParameterException(Throwable cause) {
+        super(cause.getLocalizedMessage(), cause);
+    }
+
+    /**
      * Construct an exception with the specified detail message and cause.
-     * The cause is the exception thrown in the underlying database
-     * (e.g. {@link java.io.IOException} or {@link java.sql.SQLException}).
      *
      * @param  message The detail message. The detail message is saved
      *         for later retrieval by the {@link #getMessage()} method.
      * @param  cause The cause for this exception. The cause is saved
      *         for later retrieval by the {@link #getCause()} method.
      */
-    public UnavailableFactoryException(String message, Throwable cause) {
+    public InvalidGeodeticParameterException(String message, Throwable cause) {
         super(message, cause);
     }
 }

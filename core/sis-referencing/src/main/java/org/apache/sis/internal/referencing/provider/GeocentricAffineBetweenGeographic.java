@@ -156,7 +156,7 @@ public abstract class GeocentricAffineBetweenGeographic extends GeocentricAffine
         try {
             toGeographic = toGeographic.inverse();
         } catch (NoninvertibleTransformException e) {
-            throw new FactoryException(e);  // Should never happen with SIS implementation.
+            throw new FactoryException(e);                  // Should never happen with SIS implementation.
         }
         /*
          * The  Geocentric → Affine → Geographic  chain.

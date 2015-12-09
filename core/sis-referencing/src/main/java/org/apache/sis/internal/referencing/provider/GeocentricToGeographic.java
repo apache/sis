@@ -103,7 +103,7 @@ public final class GeocentricToGeographic extends AbstractProvider {
         try {
             tr = tr.inverse();
         } catch (NoninvertibleTransformException e) {
-            throw new FactoryException(e);
+            throw new FactoryException(e);                  // Should never happen with SIS implementation.
         }
         return tr;
     }
