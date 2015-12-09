@@ -31,7 +31,6 @@ import org.opengis.util.ScopedName;
 import org.opengis.util.GenericName;
 import org.opengis.util.NameFactory;
 import org.opengis.util.FactoryException;
-import org.opengis.util.InternationalString;
 import org.apache.sis.internal.util.Citations;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.util.iso.AbstractFactory;
@@ -85,25 +84,31 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * This method may return {@code null} if it can not obtain this information, for example because
      * the connection to a database is not available.
      *
+     * <div class="note"><b>Example</b>
+     * A factory that create coordinate reference system objects from EPSG codes could return
+     * a citation like below:
+     *
+     * {@preformat text
+     *   Citation
+     *    ├─ Title ……………………………………………………… EPSG Geodetic Parameter Dataset
+     *    ├─ Identifier ………………………………………… EPSG
+     *    ├─ Online resource (1 of 2)
+     *    │   ├─ Linkage ……………………………………… http://epsg-registry.org/
+     *    │   └─ Function …………………………………… Browse
+     *    └─ Online resource (2 of 2)
+     *        ├─ Linkage ……………………………………… jdbc:derby:/my/path/to/SIS_DATA/Metadata
+     *        ├─ Description …………………………… EPSG dataset version 8.8 on “Apache Derby Embedded JDBC Driver” version 10.12.
+     *        └─ Function …………………………………… Connection
+     * }
+     *
+     * The online resource description with a “Connection” function is a SIS extension.</div>
+     *
      * @return The organization responsible for definition of the database, or {@code null} if unknown.
      *
      * @see #getVendor()
      */
     @Override
     public abstract Citation getAuthority();
-
-    /**
-     * Returns a description of the underlying backing store, or {@code null} if unknown.
-     * This is for example the database software used for storing the data.
-     *
-     * <p>The default implementation returns always {@code null}.</p>
-     *
-     * @return A description of the underlying backing store, or {@code null} if none.
-     * @throws FactoryException if a failure occurred while fetching the backing store description.
-     */
-    public InternationalString getBackingStoreDescription() throws FactoryException {
-        return null;
-    }
 
     /**
      * Returns an arbitrary object from a code. The returned object will typically be an instance of {@link Datum},
