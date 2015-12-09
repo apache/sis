@@ -29,7 +29,7 @@ import org.opengis.util.FactoryException;
  * @version 0.7
  * @module
  *
- * @see CachingAuthorityFactory#createBackingStore()
+ * @see ConcurrentAuthorityFactory#createBackingStore()
  */
 public class UnavailableFactoryException extends FactoryException {
     /**
