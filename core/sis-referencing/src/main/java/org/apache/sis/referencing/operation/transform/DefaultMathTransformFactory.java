@@ -60,6 +60,7 @@ import org.apache.sis.internal.referencing.provider.VerticalOffset;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.cs.CoordinateSystems;
+import org.apache.sis.referencing.factory.InvalidGeodeticParameterException;
 import org.apache.sis.referencing.operation.DefaultOperationMethod;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.util.ArgumentChecks;
@@ -826,7 +827,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
             try {
                 transform = ((MathTransformProvider) method).createMathTransform(this, parameters);
             } catch (IllegalArgumentException | IllegalStateException exception) {
-                throw new FactoryException(exception);
+                throw new InvalidGeodeticParameterException(exception.getLocalizedMessage(), exception);
             }
             /*
              * Cache the transform that we just created and make sure that the number of dimensions
@@ -897,7 +898,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
             swap1 = (sourceCS != null) ? CoordinateSystems.swapAndScaleAxes(sourceCS, CoordinateSystems.replaceAxes(sourceCS, AxesConvention.NORMALIZED)) : null;
             swap3 = (targetCS != null) ? CoordinateSystems.swapAndScaleAxes(CoordinateSystems.replaceAxes(targetCS, AxesConvention.NORMALIZED), targetCS) : null;
         } catch (IllegalArgumentException | ConversionException cause) {
-            throw new FactoryException(cause);
+            throw new InvalidGeodeticParameterException(cause.getLocalizedMessage(), cause);
         }
         /*
          * Prepares the concatenation of the matrices computed above and the projection.
@@ -1059,7 +1060,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
         try {
             tr = ConcatenatedTransform.create(tr1, tr2, this);
         } catch (IllegalArgumentException exception) {
-            throw new FactoryException(exception);
+            throw new InvalidGeodeticParameterException(exception.getLocalizedMessage(), exception);
         }
         assert MathTransforms.isValid(MathTransforms.getSteps(tr)) : tr;
         return unique(tr);
@@ -1099,7 +1100,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
         try {
             tr = PassThroughTransform.create(firstAffectedOrdinate, subTransform, numTrailingOrdinates);
         } catch (IllegalArgumentException exception) {
-            throw new FactoryException(exception);
+            throw new InvalidGeodeticParameterException(exception.getLocalizedMessage(), exception);
         }
         return unique(tr);
     }

@@ -320,7 +320,7 @@ public final class FranceGeocentricInterpolation extends AbstractProvider {
         try {
             tr = tr.inverse();
         } catch (NoninvertibleTransformException e) {
-            throw new FactoryException(e);  // Should never happen.
+            throw new FactoryException(e);                  // Should never happen.
         }
         return tr;
     }

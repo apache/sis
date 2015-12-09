@@ -114,7 +114,7 @@ public final class VerticalOffset extends GeographicOffsets {
         if (after.getElement(0,0) < 0) try {
             parameterized = parameterized.inverse();
         } catch (NoninvertibleTransformException e) {
-            throw new FactoryException(e);
+            throw new FactoryException(e);                  // Should never happe since matrix element is not zero.
         }
         return parameterized;
     }
