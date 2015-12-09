@@ -303,6 +303,10 @@ public class EllipsoidToCentricTransform extends AbstractMathTransform implement
 
     /**
      * Restores transient fields after deserialization.
+     *
+     * @param  in The input stream from which to deserialize the transform.
+     * @throws IOException if an I/O error occurred while reading or if the stream contains invalid data.
+     * @throws ClassNotFoundException if the class serialized on the stream is not on the classpath.
      */
     private void readObject(final ObjectInputStream in) throws IOException, ClassNotFoundException {
         in.defaultReadObject();

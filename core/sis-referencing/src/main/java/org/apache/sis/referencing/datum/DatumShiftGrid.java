@@ -547,8 +547,8 @@ public abstract class DatumShiftGrid<C extends Quantity, T extends Quantity> imp
      *
      * @param dim    The dimension of the translation vector component to get,
      *               from 0 inclusive to {@link #getTranslationDimensions()} exclusive.
-     * @param gridX  The grid index on the <var>x</var> axis, from 0 inclusive to {@link #nx} exclusive.
-     * @param gridY  The grid index on the <var>y</var> axis, from 0 inclusive to {@link #ny} exclusive.
+     * @param gridX  The grid index on the <var>x</var> axis, from 0 inclusive to {@code gridSize[0]} exclusive.
+     * @param gridY  The grid index on the <var>y</var> axis, from 0 inclusive to {@code gridSize[1]} exclusive.
      * @return The translation for the given dimension in the grid cell at the given index.
      */
     public abstract double getCellValue(int dim, int gridX, int gridY);
@@ -653,6 +653,10 @@ public abstract class DatumShiftGrid<C extends Quantity, T extends Quantity> imp
 
     /**
      * Invoked after deserialization. This method computes the transient fields.
+     *
+     * @param  in The input stream from which to deserialize the datum shift grid.
+     * @throws IOException if an I/O error occurred while reading or if the stream contains invalid data.
+     * @throws ClassNotFoundException if the class serialized on the stream is not on the classpath.
      */
     private void readObject(final ObjectInputStream in) throws IOException, ClassNotFoundException {
         in.defaultReadObject();

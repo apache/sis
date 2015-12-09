@@ -1072,7 +1072,6 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * @param  axis1 The second axis.
      * @throws FactoryException if the object creation failed.
      *
-     * @see GeodeticAuthorityFactory#createAffineCS(String)
      * @see DefaultAffineCS#DefaultAffineCS(Map, CoordinateSystemAxis, CoordinateSystemAxis)
      */
     @Override
@@ -1167,7 +1166,6 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * @param  axis2 The third  axis.
      * @throws FactoryException if the object creation failed.
      *
-     * @see GeodeticAuthorityFactory#createAffineCS(String)
      * @see DefaultAffineCS#DefaultAffineCS(Map, CoordinateSystemAxis, CoordinateSystemAxis)
      */
     @Override
