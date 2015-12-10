@@ -304,20 +304,18 @@ public class IdentifiedObjectFinder {
     final IdentifiedObject createFromIdentifiers(final IdentifiedObject object) throws FactoryException {
         final Citation authority = getAuthority();
         for (final Identifier id : object.getIdentifiers()) {
-            if (!Citations.identifierMatches(authority, id.getAuthority())) {
-                // The identifier is not for this authority. Looks the other ones.
-                continue;
-            }
-            final String code = IdentifiedObjects.toString(id);
-            final IdentifiedObject candidate;
-            try {
-                candidate = create(code);
-            } catch (NoSuchAuthorityCodeException e) {
-                // The identifier was not recognized. No problem, let's go on.
-                continue;
-            }
-            if (Utilities.deepEquals(candidate, object, COMPARISON_MODE)) {
-                return candidate;
+            if (Citations.identifierMatches(authority, id.getAuthority())) {
+                final String code = IdentifiedObjects.toString(id);
+                final IdentifiedObject candidate;
+                try {
+                    candidate = create(code);
+                } catch (NoSuchAuthorityCodeException e) {
+                    // The identifier was not recognized. No problem, let's go on.
+                    continue;
+                }
+                if (Utilities.deepEquals(candidate, object, COMPARISON_MODE)) {
+                    return candidate;
+                }
             }
         }
         return null;

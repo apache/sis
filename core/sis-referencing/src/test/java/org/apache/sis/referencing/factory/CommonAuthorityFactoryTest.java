@@ -27,6 +27,7 @@ import org.apache.sis.io.wkt.Convention;
 
 // Test imports
 import org.apache.sis.test.DependsOnMethod;
+import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -41,6 +42,7 @@ import static org.apache.sis.test.MetadataAssert.*;
  * @version 0.7
  * @module
  */
+@DependsOn(org.apache.sis.referencing.CommonCRSTest.class)
 public final strictfp class CommonAuthorityFactoryTest extends TestCase {
     /**
      * The factory to test.

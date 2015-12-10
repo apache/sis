@@ -83,9 +83,10 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
     private static final String PREFIX = "CRS";
 
     /**
-     * Authority codes known to this factory, in the order they are declared in the WMS 1.3 specification.
+     * Authority codes known to this factory.
+     * We are better to declare first the codes that are most likely to be requested.
      */
-    private static final String[] CODES = {"1", "84", "83", "27", "88"};
+    private static final String[] CODES = {"84", "83", "27", "88", "1"};
 
     /**
      * The set of codes known to this factory. Created when first needed.
