@@ -31,8 +31,10 @@ import org.opengis.util.ScopedName;
 import org.opengis.util.GenericName;
 import org.opengis.util.NameFactory;
 import org.opengis.util.FactoryException;
+import org.opengis.util.InternationalString;
 import org.apache.sis.internal.util.Citations;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
+import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.util.iso.AbstractFactory;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.resources.Errors;
@@ -90,15 +92,15 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      *
      * {@preformat text
      *   Citation
-     *    ├─ Title ……………………………………………………… EPSG Geodetic Parameter Dataset
-     *    ├─ Identifier ………………………………………… EPSG
-     *    ├─ Online resource (1 of 2)
-     *    │   ├─ Linkage ……………………………………… http://epsg-registry.org/
-     *    │   └─ Function …………………………………… Browse
-     *    └─ Online resource (2 of 2)
-     *        ├─ Linkage ……………………………………… jdbc:derby:/my/path/to/SIS_DATA/Metadata
-     *        ├─ Description …………………………… EPSG dataset version 8.8 on “Apache Derby Embedded JDBC Driver” version 10.12.
-     *        └─ Function …………………………………… Connection
+     *   ├─ Title ……………………………………………………… EPSG Geodetic Parameter Dataset
+     *   ├─ Identifier ………………………………………… EPSG
+     *   ├─ Online resource (1 of 2)
+     *   │  ├─ Linkage ………………………………………… http://epsg-registry.org/
+     *   │  └─ Function ……………………………………… Browse
+     *   └─ Online resource (2 of 2)
+     *      ├─ Linkage ………………………………………… jdbc:derby:/my/path/to/SIS_DATA/Metadata
+     *      ├─ Description ……………………………… EPSG dataset version 8.8 on “Apache Derby Embedded JDBC Driver” version 10.12.
+     *      └─ Function ……………………………………… Connection
      * }
      *
      * The online resource description with a “Connection” function is a SIS extension.</div>
@@ -111,6 +113,22 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
     public abstract Citation getAuthority();
 
     /**
+     * Returns a description of the object corresponding to a code.
+     *
+     * <div class="section">Default implementation</div>
+     * The default implementation invokes {@link #createObject(String)} for the given code
+     * and returns the object {@linkplain AbstractIdentifiedObject#getName() name}.
+     * This may be costly since it involves a full object creation.
+     * Subclasses are encouraged to provide a more efficient implementation if they can.
+     *
+     * @throws FactoryException if an error occurred while fetching the description.
+     */
+    @Override
+    public InternationalString getDescriptionText(final String code) throws FactoryException {
+        return new SimpleInternationalString(createObject(code).getName().getCode());
+    }
+
+    /**
      * Returns an arbitrary object from a code. The returned object will typically be an instance of {@link Datum},
      * {@link CoordinateSystem}, {@link CoordinateReferenceSystem} or {@link CoordinateOperation}.
      *
@@ -118,8 +136,9 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * ultimately delegate to this {@code createObject(String)} method. However subclasses are encouraged
      * to override more specific methods for efficiency.</p>
      *
-     * <p>The default implementation always throw an exception. Subclasses should override this method
-     * if they are capable to automatically detect the object type from its code.</p>
+     * <div class="section">Default implementation</div>
+     * The default implementation always throw an exception. Subclasses should override this method
+     * if they are capable to automatically detect the object type from its code.
      *
      * @param  code Value allocated by authority.
      * @return The object for the given code.
@@ -144,8 +163,9 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * <code>createCoordinateReferenceSystem(code)</code> if the caller know he is asking for a
      * {@linkplain org.apache.sis.referencing.crs.DefaultGeographicCRS geographic coordinate reference system}).
      *
-     * <p>The default implementation delegates to {@link #createObject(String)} and casts the result.
-     * If the result can not be casted, then a {@link NoSuchAuthorityCodeException} is thrown.</p>
+     * <div class="section">Default implementation</div>
+     * The default implementation delegates to {@link #createObject(String)} and casts the result.
+     * If the result can not be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
      *
      * @param  code Value allocated by authority.
      * @return The coordinate reference system for the given code.
@@ -165,6 +185,8 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
 
     /**
      * Creates a geographic coordinate reference system from a code.
+     *
+     * <div class="section">Default implementation</div>
      * The default implementation delegates to {@link #createCoordinateReferenceSystem(String)} and casts the result.
      * If the result can not be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
      *
@@ -183,6 +205,8 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
 
     /**
      * Creates a geocentric coordinate reference system from a code.
+     *
+     * <div class="section">Default implementation</div>
      * The default implementation delegates to {@link #createCoordinateReferenceSystem(String)} and casts the result.
      * If the result can not be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
      *
@@ -202,6 +226,8 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
 
     /**
      * Creates a projected coordinate reference system from a code.
+     *
+     * <div class="section">Default implementation</div>
      * The default implementation delegates to {@link #createCoordinateReferenceSystem(String)} and casts the result.
      * If the result can not be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
      *
@@ -220,6 +246,8 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
 
     /**
      * Creates a vertical coordinate reference system from a code.
+     *
+     * <div class="section">Default implementation</div>
      * The default implementation delegates to {@link #createCoordinateReferenceSystem(String)} and casts the result.
      * If the result can not be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
      *
@@ -238,6 +266,8 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
 
     /**
      * Creates a temporal coordinate reference system from a code.
+     *
+     * <div class="section">Default implementation</div>
      * The default implementation delegates to {@link #createCoordinateReferenceSystem(String)} and casts the result.
      * If the result can not be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
      *
@@ -256,6 +286,8 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
 
     /**
      * Creates a 3D or 4D coordinate reference system from a code.
+     *
+     * <div class="section">Default implementation</div>
      * The default implementation delegates to {@link #createCoordinateReferenceSystem(String)} and casts the result.
      * If the result can not be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
      *
@@ -274,6 +306,8 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
 
     /**
      * Creates a derived coordinate reference system from a code.
+     *
+     * <div class="section">Default implementation</div>
      * The default implementation delegates to {@link #createCoordinateReferenceSystem(String)} and casts the result.
      * If the result can not be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
      *
@@ -290,6 +324,8 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
 
     /**
      * Creates an engineering coordinate reference system from a code.
+     *
+     * <div class="section">Default implementation</div>
      * The default implementation delegates to {@link #createCoordinateReferenceSystem(String)} and casts the result.
      * If the result can not be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
      *
@@ -307,6 +343,8 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
 
     /**
      * Creates an image coordinate reference system from a code.
+     *
+     * <div class="section">Default implementation</div>
      * The default implementation delegates to {@link #createCoordinateReferenceSystem(String)} and casts the result.
      * If the result can not be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
      *
@@ -324,6 +362,8 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
 
     /**
      * Returns an arbitrary datum from a code.
+     *
+     * <div class="section">Default implementation</div>
      * The default implementation delegates to {@link #createObject(String)} and casts the result.
      * If the result can not be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
      *
@@ -342,6 +382,8 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
 
     /**
      * Creates a geodetic datum from a code.
+     *
+     * <div class="section">Default implementation</div>
      * The default implementation delegates to {@link #createDatum(String)} and casts the result.
      * If the result can not be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
      *
@@ -362,6 +404,8 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
 
     /**
      * Creates a vertical datum from a code.
+     *
+     * <div class="section">Default implementation</div>
      * The default implementation delegates to {@link #createDatum(String)} and casts the result.
      * If the result can not be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
      *
@@ -379,6 +423,8 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
 
     /**
      * Creates a temporal datum from a code.
+     *
+     * <div class="section">Default implementation</div>
      * The default implementation delegates to {@link #createDatum(String)} and casts the result.
      * If the result can not be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
      *
@@ -396,6 +442,8 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
 
     /**
      * Creates a engineering datum from a code.
+     *
+     * <div class="section">Default implementation</div>
      * The default implementation delegates to {@link #createDatum(String)} and casts the result.
      * If the result can not be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
      *
@@ -413,6 +461,8 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
 
     /**
      * Creates a image datum from a code.
+     *
+     * <div class="section">Default implementation</div>
      * The default implementation delegates to {@link #createDatum(String)} and casts the result.
      * If the result can not be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
      *
@@ -430,6 +480,8 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
 
     /**
      * Creates an ellipsoid from a code.
+     *
+     * <div class="section">Default implementation</div>
      * The default implementation delegates to {@link #createObject(String)} and casts the result.
      * If the result can not be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
      *
@@ -448,6 +500,8 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
 
     /**
      * Creates a prime meridian from a code.
+     *
+     * <div class="section">Default implementation</div>
      * The default implementation delegates to {@link #createObject(String)} and casts the result.
      * If the result can not be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
      *
@@ -465,6 +519,8 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
 
     /**
      * Creates an extent (usually an domain of validity) from a code.
+     *
+     * <div class="section">Default implementation</div>
      * The default implementation delegates to {@link #createObject(String)} and casts the result.
      * If the result can not be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
      *
@@ -483,6 +539,8 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
 
     /**
      * Creates an arbitrary coordinate system from a code.
+     *
+     * <div class="section">Default implementation</div>
      * The default implementation delegates to {@link #createObject(String)} and casts the result.
      * If the result can not be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
      *
@@ -501,6 +559,8 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
 
     /**
      * Creates an ellipsoidal coordinate system from a code.
+     *
+     * <div class="section">Default implementation</div>
      * The default implementation delegates to {@link #createCoordinateSystem(String)} and casts the result.
      * If the result can not be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
      *
@@ -520,6 +580,8 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
 
     /**
      * Creates a vertical coordinate system from a code.
+     *
+     * <div class="section">Default implementation</div>
      * The default implementation delegates to {@link #createCoordinateSystem(String)} and casts the result.
      * If the result can not be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
      *
@@ -538,6 +600,8 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
 
     /**
      * Creates a temporal coordinate system from a code.
+     *
+     * <div class="section">Default implementation</div>
      * The default implementation delegates to {@link #createCoordinateSystem(String)} and casts the result.
      * If the result can not be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
      *
@@ -556,6 +620,8 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
 
     /**
      * Creates a Cartesian coordinate system from a code.
+     *
+     * <div class="section">Default implementation</div>
      * The default implementation delegates to {@link #createCoordinateSystem(String)} and casts the result.
      * If the result can not be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
      *
@@ -574,6 +640,8 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
 
     /**
      * Creates a spherical coordinate system from a code.
+     *
+     * <div class="section">Default implementation</div>
      * The default implementation delegates to {@link #createCoordinateSystem(String)} and casts the result.
      * If the result can not be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
      *
@@ -591,6 +659,8 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
 
     /**
      * Creates a cylindrical coordinate system from a code.
+     *
+     * <div class="section">Default implementation</div>
      * The default implementation delegates to {@link #createCoordinateSystem(String)} and casts the result.
      * If the result can not be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
      *
@@ -607,6 +677,8 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
 
     /**
      * Creates a polar coordinate system from a code.
+     *
+     * <div class="section">Default implementation</div>
      * The default implementation delegates to {@link #createCoordinateSystem(String)} and casts the result.
      * If the result can not be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
      *
@@ -623,6 +695,8 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
 
     /**
      * Creates a coordinate system axis from a code.
+     *
+     * <div class="section">Default implementation</div>
      * The default implementation delegates to {@link #createObject(String)} and casts the result.
      * If the result can not be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
      *
@@ -642,6 +716,8 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
 
     /**
      * Creates an unit of measurement from a code.
+     *
+     * <div class="section">Default implementation</div>
      * The default implementation delegates to {@link #createObject(String)} and casts the result.
      * If the result can not be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
      *
@@ -656,6 +732,8 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
 
     /**
      * Creates a parameter descriptor from a code.
+     *
+     * <div class="section">Default implementation</div>
      * The default implementation delegates to {@link #createObject(String)} and casts the result.
      * If the result can not be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
      *
@@ -674,6 +752,8 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
 
     /**
      * Creates an operation method from a code.
+     *
+     * <div class="section">Default implementation</div>
      * The default implementation delegates to {@link #createObject(String)} and casts the result.
      * If the result can not be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
      *
@@ -690,6 +770,8 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
 
     /**
      * Creates an operation from a code.
+     *
+     * <div class="section">Default implementation</div>
      * The default implementation delegates to {@link #createObject(String)} and casts the result.
      * If the result can not be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
      *
@@ -711,7 +793,8 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * This method should only extract the information explicitely declared in a database like EPSG.
      * This method should not attempt to infer by itself operations that are not explicitely recorded in the database.
      *
-     * <p>The default implementation returns an empty set.</p>
+     * <div class="section">Default implementation</div>
+     * The default implementation returns an empty set.
      *
      * @param  sourceCRS  Coded value of source coordinate reference system.
      * @param  targetCRS  Coded value of target coordinate reference system.
@@ -760,7 +843,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
          * If implementation below is modified, it is probably worth to revisit the overridden method as well.
          */
         code = code.trim();
-        final GenericName name  = nameFactory.parseGenericName(null, code);
+        final GenericName name = nameFactory.parseGenericName(null, code);
         if (name instanceof ScopedName) {
             final GenericName scope = ((ScopedName) name).path();
             if (Citations.identifierMatches(getAuthority(), null, scope.toString())) {

@@ -63,7 +63,7 @@ import static org.apache.sis.internal.metadata.ReferencingServices.AUTHALIC_RADI
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.4
+ * @version 0.7
  * @module
  */
 final class StandardDefinitions {
@@ -96,6 +96,17 @@ final class StandardDefinitions {
             map.put(DOMAIN_OF_VALIDITY_KEY, Extents.WORLD);
         }
         return map;
+    }
+
+    /**
+     * Adds to the given properties an additional identifier in the {@code "CRS"} namespace.
+     * This method presume that the only identifier that existed before this method call was the EPSG one.
+     */
+    private static void addWMS(final Map<String,Object> properties, final String code) {
+        properties.put(IDENTIFIERS_KEY, new NamedIdentifier[] {
+            (NamedIdentifier) properties.get(IDENTIFIERS_KEY),
+            new NamedIdentifier(Citations.OGC, code)
+        });
     }
 
     /**
@@ -197,15 +208,32 @@ final class StandardDefinitions {
      * @return The vertical CRS for the given code.
      */
     static VerticalCRS createVerticalCRS(final short code, final VerticalDatum datum) {
-        final String name, alias, cs;
-        final short c, axis;
+        String cs   = "Vertical CS. Axis: height (H).";   // Default coordinate system
+        short  c    = 6499;                               // EPSG code of above coordinate system.
+        short  axis = 114;                                // Axis of above coordinate system.
+        String wms  = null;
+        final  String name, alias;
         switch (code) {
-            case 5714: name = "MSL height"; alias = "mean sea level height"; cs = "Vertical CS. Axis: height (H)."; c = 6499; axis = 114; break;
-            case 5715: name = "MSL depth";  alias = "mean sea level depth";  cs = "Vertical CS. Axis: depth (D).";  c = 6498; axis = 113; break;
+            case 5703: wms   = "88";
+                       name  = "NAVD88 height";
+                       alias = "North American Vertical Datum of 1988 height (m)";
+                       break;
+            case 5714: name  = "MSL height";
+                       alias = "mean sea level height";
+                       break;
+            case 5715: name  = "MSL depth";
+                       alias = "mean sea level depth";
+                       cs    = "Vertical CS. Axis: depth (D).";
+                       c     = 6498;
+                       axis  = 113;
+                       break;
             default:   throw new AssertionError(code);
         }
-        return new DefaultVerticalCRS(properties(code, name, alias, true), datum,
-                new DefaultVerticalCS(properties(c, cs, null, false), createAxis(axis)));
+        final Map<String,Object> properties = properties(code, name, alias, true);
+        if (wms != null) {
+            addWMS(properties, wms);
+        }
+        return new DefaultVerticalCRS(properties, datum, new DefaultVerticalCS(properties(c, cs, null, false), createAxis(axis)));
     }
 
     /**
@@ -218,7 +246,8 @@ final class StandardDefinitions {
         final String name;
         final String alias;
         switch (code) {
-            case 5100: name = "Mean Sea Level"; alias = "MSL"; break;
+            case 5100: name = "Mean Sea Level";                     alias = "MSL";    break;
+            case 5103: name = "North American Vertical Datum 1988"; alias = "NAVD88"; break;
             default:   throw new AssertionError(code);
         }
         return new DefaultVerticalDatum(properties(code, name, alias, true), VerticalDatumType.GEOIDAL);

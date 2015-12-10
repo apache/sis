@@ -117,6 +117,8 @@ import static org.apache.sis.internal.util.Constants.CRS84;
  * @since   0.4
  * @version 0.5
  * @module
+ *
+ * @see org.apache.sis.referencing.factory.CommonAuthorityFactory
  */
 @SuppressWarnings("DoubleCheckedLocking")
 public enum CommonCRS {
@@ -789,13 +791,15 @@ public enum CommonCRS {
      *
      * <blockquote><table class="sis">
      *   <caption>Geodetic objects accessible by enumeration constants</caption>
-     *   <tr><th>Name or alias</th>             <th>Object type</th> <th>Enumeration value</th></tr>
-     *   <tr><td>Barometric altitude</td>       <td>CRS, Datum</td>  <td>{@link #BAROMETRIC}</td></tr>
-     *   <!-- <s>Ellipsoidal height</s> intentionally omitted        <td><s>{@link #ELLIPSOIDAL}</s></td> -->
-     *   <tr><td>Mean Sea Level</td>            <td>Datum</td>       <td>{@link #MEAN_SEA_LEVEL}</td></tr>
-     *   <tr><td>Mean Sea Level depth</td>      <td>CRS</td>         <td>{@link #DEPTH}</td></tr>
-     *   <tr><td>Mean Sea Level height</td>     <td>CRS</td>         <td>{@link #MEAN_SEA_LEVEL}</td></tr>
-     *   <tr><td>Other surface</td>             <td>CRS, Datum</td>  <td>{@link #OTHER_SURFACE}</td></tr>
+     *   <tr><th>Name or alias</th>                      <th>Object type</th> <th>Enumeration value</th></tr>
+     *   <tr><td>Barometric altitude</td>                <td>CRS, Datum</td>  <td>{@link #BAROMETRIC}</td></tr>
+     *   <!-- <s>Ellipsoidal height</s> intentionally omitted                 <td><s>{@link #ELLIPSOIDAL}</s></td> -->
+     *   <tr><td>Mean Sea Level</td>                     <td>Datum</td>       <td>{@link #MEAN_SEA_LEVEL}</td></tr>
+     *   <tr><td>Mean Sea Level depth</td>               <td>CRS</td>         <td>{@link #DEPTH}</td></tr>
+     *   <tr><td>Mean Sea Level height</td>              <td>CRS</td>         <td>{@link #MEAN_SEA_LEVEL}</td></tr>
+     *   <tr><td>NAVD88 height</td>                      <td>CRS</td>         <td>{@link #NAVD88}</td></tr>
+     *   <tr><td>North American Vertical Datum 1988</td> <td>Datum</td>       <td>{@link #NAVD88}</td></tr>
+     *   <tr><td>Other surface</td>                      <td>CRS, Datum</td>  <td>{@link #OTHER_SURFACE}</td></tr>
      * </table></blockquote>
      *
      * <div class="note"><b>Note:</b>
@@ -805,8 +809,10 @@ public enum CommonCRS {
      *
      * @author  Martin Desruisseaux (Geomatys)
      * @since   0.4
-     * @version 0.4
+     * @version 0.7
      * @module
+     *
+     * @see org.apache.sis.referencing.factory.CommonAuthorityFactory
      */
     public static enum Vertical {
         /**
@@ -848,6 +854,24 @@ public enum CommonCRS {
          * @see VerticalDatumType#GEOIDAL
          */
         DEPTH(true, (short) 5715, (short) 5100),
+
+        /**
+         * North American Vertical Datum 1988 height.
+         *
+         * <blockquote><table class="compact" summary="Mean Sea Level properties.">
+         *   <tr><th>WMS identifier:</th>           <td>CRS:88</td></tr>
+         *   <tr><th>EPSG identifiers:</th>         <td>5703 &nbsp;(<i>datum:</i> 5103)</td></tr>
+         *   <tr><th>Primary names:</th>            <td>"NAVD88 height" &nbsp;(<i>datum:</i> "North American Vertical Datum 1988")</td></tr>
+         *   <tr><th>Abbreviations or aliases:</th> <td>" North American Vertical Datum of 1988 height (m)" &nbsp;(<i>datum:</i> "NAVD88")</td></tr>
+         *   <tr><th>Direction:</th>                <td>{@link AxisDirection#UP}</td></tr>
+         *   <tr><th>Unit:</th>                     <td>{@link SI#METRE}</td></tr>
+         * </table></blockquote>
+         *
+         * @see CommonCRS#NAD83
+         *
+         * @since 0.7
+         */
+        NAVD88(true, (short) 5703, (short) 5103),
 
         /**
          * Height measured along the normal to the ellipsoid used in the definition of horizontal datum.

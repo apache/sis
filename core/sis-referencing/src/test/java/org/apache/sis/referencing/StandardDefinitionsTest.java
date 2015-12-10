@@ -17,11 +17,14 @@
 package org.apache.sis.referencing;
 
 import org.opengis.referencing.crs.GeographicCRS;
+import org.opengis.referencing.crs.VerticalCRS;
+import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.datum.PrimeMeridian;
 import org.opengis.referencing.datum.GeodeticDatum;
+import org.opengis.referencing.datum.VerticalDatum;
 import org.apache.sis.test.mock.GeodeticDatumMock;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
@@ -30,6 +33,7 @@ import org.opengis.test.Validators;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.referencing.cs.HardCodedAxes;
 import org.apache.sis.referencing.datum.HardCodedDatum;
+import org.apache.sis.metadata.iso.citation.Citations;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -40,7 +44,7 @@ import static org.junit.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.4
+ * @version 0.7
  * @module
  */
 @DependsOn({
@@ -64,7 +68,7 @@ public final strictfp class StandardDefinitionsTest extends TestCase {
      */
     @Test
     @DependsOnMethod("testCreateAxis")
-    public void testCreateGographicCRS() {
+    public void testCreateGeographicCRS() {
         final PrimeMeridian pm = StandardDefinitions.primeMeridian();
         final EllipsoidalCS cs = (EllipsoidalCS) StandardDefinitions.createCoordinateSystem((short) 6422);
         for (final CommonCRS e : CommonCRS.values()) {
@@ -148,5 +152,38 @@ public final strictfp class StandardDefinitionsTest extends TestCase {
         assertEquals("minimumValue", expected.getMinimumValue(),   actual.getMinimumValue(), STRICT);
         assertEquals("maximumValue", expected.getMaximumValue(),   actual.getMaximumValue(), STRICT);
         assertEquals("rangeMeaning", expected.getRangeMeaning(),   actual.getRangeMeaning());
+    }
+
+    /**
+     * Tests the creation of vertical CRS.
+     *
+     * @since 0.7
+     */
+    @Test
+    @DependsOnMethod("testCreateAxis")
+    public void testCreateVerticalCRS() {
+        VerticalDatum datum;
+        VerticalCRS crs;
+
+        datum = StandardDefinitions.createVerticalDatum(CommonCRS.Vertical.NAVD88.datum);
+        crs = StandardDefinitions.createVerticalCRS(CommonCRS.Vertical.NAVD88.crs, datum);
+        assertEquals("name", "NAVD88 height", crs.getName().getCode());
+        assertEquals("identifier", "5703", IdentifiedObjects.getIdentifier(crs, Citations.EPSG).getCode());
+        assertEquals("identifier",   "88", IdentifiedObjects.getIdentifier(crs, Citations.OGC ).getCode());
+        assertEquals("direction", AxisDirection.UP, crs.getCoordinateSystem().getAxis(0).getDirection());
+
+        datum = StandardDefinitions.createVerticalDatum(CommonCRS.Vertical.MEAN_SEA_LEVEL.datum);
+        crs = StandardDefinitions.createVerticalCRS(CommonCRS.Vertical.MEAN_SEA_LEVEL.crs, datum);
+        assertEquals("name", "MSL height", crs.getName().getCode());
+        assertEquals("identifier", "5714", IdentifiedObjects.getIdentifier(crs, Citations.EPSG).getCode());
+        assertNull  ("identifier", IdentifiedObjects.getIdentifier(crs, Citations.OGC));
+        assertEquals("direction", AxisDirection.UP, crs.getCoordinateSystem().getAxis(0).getDirection());
+
+        datum = StandardDefinitions.createVerticalDatum(CommonCRS.Vertical.DEPTH.datum);
+        crs = StandardDefinitions.createVerticalCRS(CommonCRS.Vertical.DEPTH.crs, datum);
+        assertEquals("name", "MSL depth", crs.getName().getCode());
+        assertEquals("identifier", "5715", IdentifiedObjects.getIdentifier(crs, Citations.EPSG).getCode());
+        assertNull  ("identifier", IdentifiedObjects.getIdentifier(crs, Citations.OGC));
+        assertEquals("direction", AxisDirection.DOWN, crs.getCoordinateSystem().getAxis(0).getDirection());
     }
 }

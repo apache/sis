@@ -143,11 +143,12 @@ public final strictfp class CommonCRSTest extends TestCase {
             final VerticalDatumType datumType;
             final String axisName, datumName;
             switch (e) {
-                case BAROMETRIC:     axisName = "Barometric altitude";            datumName = "Constant pressure surface"; datumType = VerticalDatumType. BAROMETRIC;    break;
-                case MEAN_SEA_LEVEL: axisName = AxisNames.GRAVITY_RELATED_HEIGHT; datumName = "Mean Sea Level";            datumType = VerticalDatumType. GEOIDAL;       break;
-                case DEPTH:          axisName = AxisNames.DEPTH;                  datumName = "Mean Sea Level";            datumType = VerticalDatumType. GEOIDAL;       break;
-                case ELLIPSOIDAL:    axisName = AxisNames.ELLIPSOIDAL_HEIGHT;     datumName = "Ellipsoid";                 datumType = VerticalDatumTypes.ELLIPSOIDAL;   break;
-                case OTHER_SURFACE:  axisName = "Height";                         datumName = "Other surface";             datumType = VerticalDatumType. OTHER_SURFACE; break;
+                case NAVD88:         axisName = AxisNames.GRAVITY_RELATED_HEIGHT; datumName = "North American Vertical Datum 1988"; datumType = VerticalDatumType. GEOIDAL;       break;
+                case BAROMETRIC:     axisName = "Barometric altitude";            datumName = "Constant pressure surface";          datumType = VerticalDatumType. BAROMETRIC;    break;
+                case MEAN_SEA_LEVEL: axisName = AxisNames.GRAVITY_RELATED_HEIGHT; datumName = "Mean Sea Level";                     datumType = VerticalDatumType. GEOIDAL;       break;
+                case DEPTH:          axisName = AxisNames.DEPTH;                  datumName = "Mean Sea Level";                     datumType = VerticalDatumType. GEOIDAL;       break;
+                case ELLIPSOIDAL:    axisName = AxisNames.ELLIPSOIDAL_HEIGHT;     datumName = "Ellipsoid";                          datumType = VerticalDatumTypes.ELLIPSOIDAL;   break;
+                case OTHER_SURFACE:  axisName = "Height";                         datumName = "Other surface";                      datumType = VerticalDatumType. OTHER_SURFACE; break;
                 default: throw new AssertionError(e);
             }
             final String        name  = e.name();

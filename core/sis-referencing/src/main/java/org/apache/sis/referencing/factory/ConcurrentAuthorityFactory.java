@@ -221,7 +221,7 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      * by strong references. Note that those default values may change in any future SIS versions based
      * on experience gained.
      *
-     * @param nameFactory The factory to use for parsing authority code as {@link GenericName} instances.
+     * @param nameFactory The factory to use for parsing authority code as {@link org.opengis.util.GenericName} instances.
      */
     protected ConcurrentAuthorityFactory(final NameFactory nameFactory) {
         this(nameFactory, 100, 8);
@@ -236,7 +236,7 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      * If a number of object greater than {@code maxStrongReferences} are created, then the strong references
      * for the eldest ones will be replaced by weak references.
      *
-     * @param nameFactory The factory to use for parsing authority code as {@link GenericName} instances.
+     * @param nameFactory The factory to use for parsing authority code as {@link org.opengis.util.GenericName} instances.
      * @param maxStrongReferences The maximum number of objects to keep by strong reference.
      * @param maxConcurrentQueries The maximal amount of backing stores to use concurrently.
      *        If more than this amount of threads are querying this {@code ConcurrentAuthorityFactory} concurrently,
