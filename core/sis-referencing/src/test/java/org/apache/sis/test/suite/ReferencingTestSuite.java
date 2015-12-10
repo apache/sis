@@ -170,6 +170,7 @@ import org.junit.BeforeClass;
     org.apache.sis.referencing.factory.GIGS3004.class,
     org.apache.sis.referencing.factory.GIGS3005.class,
     org.apache.sis.referencing.factory.GeodeticObjectFactoryTest.class,
+    org.apache.sis.referencing.factory.CommonAuthorityFactoryTest.class,
     org.apache.sis.referencing.StandardDefinitionsTest.class,
     org.apache.sis.referencing.CommonCRSTest.class,
     org.apache.sis.referencing.CRSTest.class,
