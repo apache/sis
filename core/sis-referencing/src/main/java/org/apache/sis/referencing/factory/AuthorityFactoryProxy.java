@@ -520,7 +520,7 @@ abstract class AuthorityFactoryProxy<T> {
 
     /**
      * The types of proxies. The most specific types must appear first in this list.
-     * This field must be declared after all the above constants.
+     * This field can be declared only after all the above constants.
      */
     static final AuthorityFactoryProxy<?>[] PROXIES = new AuthorityFactoryProxy<?>[] {
         OPERATION,
