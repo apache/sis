@@ -71,7 +71,7 @@ public final strictfp class CommonAuthorityFactoryTest extends TestCase {
     /**
      * Tests the CRS:84 code.
      *
-     * @throws FactoryException Should never happen.
+     * @throws FactoryException if an error occurred while creating a CRS.
      */
     @Test
     @DependsOnMethod("testAuthority")
@@ -89,7 +89,7 @@ public final strictfp class CommonAuthorityFactoryTest extends TestCase {
     /**
      * Tests the CRS:83 code.
      *
-     * @throws FactoryException Should never happen.
+     * @throws FactoryException if an error occurred while creating a CRS.
      */
     @Test
     @DependsOnMethod("testAuthority")
@@ -106,7 +106,7 @@ public final strictfp class CommonAuthorityFactoryTest extends TestCase {
      * Tests the WKT formatting. The main purpose of this test is to ensure that
      * the authority name is "CRS" and not "Web Map Service CRS".
      *
-     * @throws FactoryException Should never happen.
+     * @throws FactoryException if an error occurred while creating the CRS.
      */
     @Test
     @DependsOnMethod("testCRS84")
