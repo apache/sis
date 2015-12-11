@@ -19,7 +19,7 @@ package org.apache.sis.referencing.factory;
 import java.util.Map;
 import java.util.Set;
 import java.util.HashMap;
-import java.util.LinkedHashSet;
+import java.util.LinkedHashMap;
 import java.util.Collections;
 import java.util.Arrays;
 import java.util.Locale;
@@ -30,32 +30,77 @@ import org.opengis.metadata.citation.Citation;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.crs.CRSFactory;
 import org.opengis.referencing.crs.CRSAuthorityFactory;
+import org.opengis.referencing.crs.EngineeringCRS;
+import org.opengis.referencing.crs.GeographicCRS;
+import org.opengis.referencing.crs.VerticalCRS;
+import org.opengis.referencing.crs.SingleCRS;
+import org.opengis.referencing.cs.CSFactory;
+import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.referencing.cs.AxisDirection;
-import org.opengis.referencing.cs.CoordinateSystemAxis;
+import org.opengis.referencing.datum.DatumFactory;
+import org.opengis.referencing.datum.EngineeringDatum;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.internal.simple.SimpleIdentifier;
+import org.apache.sis.internal.system.DefaultFactories;
+import org.apache.sis.internal.util.Constants;
 import org.apache.sis.referencing.CommonCRS;
-import org.apache.sis.referencing.datum.DefaultEngineeringDatum;
-import org.apache.sis.referencing.crs.DefaultEngineeringCRS;
-import org.apache.sis.referencing.cs.DefaultCartesianCS;
-import org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis;
+import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.CharSequences;
 
 
 /**
- * The factory for coordinate reference systems in the "{@code OGC}" or "{@code CRS}" namespace.
+ * Creates coordinate reference systems in the "{@code OGC}" or "{@code CRS}" namespace.
  * All namespaces recognized by this factory are defined by the Open Geospatial Consortium (OGC).
  * Most codes map to one of the constants in the {@link CommonCRS} enumeration.
  *
  * <table class="sis">
- *   <caption>Codes recognized by <code>CommonAuthorityFactory</code></caption>
- *   <tr><th>Code</th> <th>Name</th>             <th>Datum type</th>  <th>CS type</th>     <th>Axis direction</th></tr>
- *   <tr><td>   1</td> <td>Computer display</td> <td>Engineering</td> <td>Cartesian</td>   <td>East, South</td></tr>
- *   <tr><td>  27</td> <td>NAD27</td>            <td>Geodetic</td>    <td>Ellipsoidal</td> <td>East, South</td></tr>
- *   <tr><td>  83</td> <td>NAD83</td>            <td>Geodetic</td>    <td>Ellipsoidal</td> <td>East, South</td></tr>
- *   <tr><td>  84</td> <td>WGS84</td>            <td>Geodetic</td>    <td>Ellipsoidal</td> <td>East, South</td></tr>
- *   <tr><td>  88</td> <td>NAVD88</td>           <td>Vertical</td>    <td>Vertical</td>    <td>Up</td></tr>
+ *   <caption>Recognized Coordinate Reference System codes</caption>
+ *   <tr>
+ *     <th>Code</th>
+ *     <th>Name</th>
+ *     <th>Datum type</th>
+ *     <th>CS type</th>
+ *     <th>Axis direction</th>
+ *     <th>Units</th>
+ *   </tr><tr>
+ *     <td>1</td>
+ *     <td>Computer display</td>
+ *     <td>{@linkplain org.apache.sis.referencing.crs.DefaultEngineeringCRS Engineering}</td>
+ *     <td>{@linkplain org.apache.sis.referencing.cs.DefaultCartesianCS Cartesian}</td>
+ *     <td>(east, south)</td>
+ *     <td>pixels</td>
+ *   </tr><tr>
+ *     <td>27</td>
+ *     <td>NAD27</td>
+ *     <td>{@linkplain org.apache.sis.referencing.crs.DefaultGeographicCRS Geographic}</td>
+ *     <td>{@linkplain org.apache.sis.referencing.cs.DefaultEllipsoidalCS Ellipsoidal}</td>
+ *     <td>(east, north)</td>
+ *     <td>degrees</td>
+ *   </tr><tr>
+ *     <td>83</td>
+ *     <td>NAD83</td>
+ *     <td>{@linkplain org.apache.sis.referencing.crs.DefaultGeographicCRS Geographic}</td>
+ *     <td>{@linkplain org.apache.sis.referencing.cs.DefaultEllipsoidalCS Ellipsoidal}</td>
+ *     <td>(east, north)</td>
+ *     <td>degrees</td>
+ *   </tr><tr>
+ *     <td>84</td>
+ *     <td>WGS84</td>
+ *     <td>{@linkplain org.apache.sis.referencing.crs.DefaultGeographicCRS Geographic}</td>
+ *     <td>{@linkplain org.apache.sis.referencing.cs.DefaultEllipsoidalCS Ellipsoidal}</td>
+ *     <td>(east, north)</td>
+ *     <td>degrees</td>
+ *   </tr><tr>
+ *     <td>88</td>
+ *     <td>NAVD88</td>
+ *     <td>{@linkplain org.apache.sis.referencing.crs.DefaultVerticalCRS Vertical}</td>
+ *     <td>{@linkplain org.apache.sis.referencing.cs.DefaultVerticalCS Vertical}</td>
+ *     <td>up</td>
+ *     <td>metres</td>
+ *   </tr>
  * </table>
  *
  * <div class="section">Note on codes in CRS namespace</div>
@@ -76,22 +121,10 @@ import org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis;
  */
 public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements CRSAuthorityFactory {
     /**
-     * An optional prefix put in front of code. For example a code may be {@code "CRS84"} instead of a plain {@code "84"}.
-     * This is useful in order to understand URN syntax like {@code "urn:ogc:def:crs:OGC:1.3:CRS84"}.
-     * Must be uppercase for this implementation, but parsing will be case-insensitive.
+     * The codes known to this factory, associated with their CRS type. This is set to an empty map
+     * at {@code CommonAuthorityFactory} construction time, but filled only when first needed.
      */
-    private static final String PREFIX = "CRS";
-
-    /**
-     * Authority codes known to this factory.
-     * We are better to declare first the codes that are most likely to be requested.
-     */
-    private static final String[] CODES = {"84", "83", "27", "88", "1"};
-
-    /**
-     * The set of codes known to this factory. Created when first needed.
-     */
-    private Set<String> codes;
+    private final Map<String,Class<?>> codes;
 
     /**
      * The authority for this factory.
@@ -114,11 +147,12 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
         super(nameFactory);
         final DefaultCitation c = new DefaultCitation(Citations.OGC);
         c.setIdentifiers(Arrays.asList(
-                new SimpleIdentifier(null, "OGC", false),
-                new SimpleIdentifier(null, "CRS", false)
+                new SimpleIdentifier(null, Constants.OGC, false),
+                new SimpleIdentifier(null, Constants.CRS, false)
         ));
         c.freeze();
         authority = c;
+        codes = new LinkedHashMap<>();
     }
 
     /**
@@ -136,14 +170,37 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
      * Provides a complete set of the known codes provided by this authority.
      * The returned set contains only numeric identifiers like {@code "84"}, {@code "27"}, <i>etc</i>.
      * The authority name ({@code "CRS"}) is not included in the character strings.
+     *
+     * @param  type The spatial reference objects type.
+     * @return The set of authority codes for spatial reference objects of the given type.
+     * @throws FactoryException if this method failed to provide the set of codes.
      */
     @Override
-    @SuppressWarnings("ReturnOfCollectionOrArrayField")     // Because the returned set is unmodifiable.
-    public synchronized Set<String> getAuthorityCodes(final Class<? extends IdentifiedObject> type) {
-        if (codes == null) {
-            codes = Collections.unmodifiableSet(new LinkedHashSet<>(Arrays.asList(CODES)));
+    public Set<String> getAuthorityCodes(final Class<? extends IdentifiedObject> type) throws FactoryException {
+        ArgumentChecks.ensureNonNull("type", type);
+        final boolean all = type.isAssignableFrom(SingleCRS.class);
+        if (!all && !SingleCRS.class.isAssignableFrom(type)) {
+            return Collections.emptySet();
         }
-        return codes;
+        synchronized (codes) {
+            if (codes.isEmpty()) {
+                add(Constants.CRS84, GeographicCRS.class);   // Put first the codes that are most likely to be requested.
+                add(Constants.CRS83, GeographicCRS.class);
+                add(Constants.CRS27, GeographicCRS.class);
+                add(Constants.CRS88, VerticalCRS.class);
+                add(Constants.CRS1,  EngineeringCRS.class);
+            }
+        }
+        return all ? Collections.unmodifiableSet(codes.keySet()) : new FilteredCodes(codes, type).keySet();
+    }
+
+    /**
+     * Adds an element in the {@link #codes} map, witch check against duplicated values.
+     */
+    private void add(final byte code, final Class<? extends SingleCRS> type) throws FactoryException {
+        if (codes.put(String.valueOf(code).intern(), type) != null) {
+            throw new FactoryException();    // Should never happen, but we are paranoiac.
+        }
     }
 
     /**
@@ -165,12 +222,12 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
     @Override
     public CoordinateReferenceSystem createCoordinateReferenceSystem(final String code) throws FactoryException {
         String c = trimAuthority(code).toUpperCase(Locale.US);
-        if (c.startsWith(PREFIX)) {
+        if (c.startsWith(Constants.CRS)) {
             /*
              * "trimAuthority" removed "CRS" when it was separated from the code, as in "CRS:84".
              * This block removes "CRS" when it is concatenated with the code, as in "CRS84".
              */
-            c = c.substring(PREFIX.length());
+            c = CharSequences.trimWhitespaces(c.substring(Constants.CRS.length()));
         }
         final int n;
         try {
@@ -183,11 +240,11 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
         }
         final CommonCRS crs;
         switch (n) {
-            case  1: return displayCRS();
-            case 84: crs = CommonCRS.WGS84; break;
-            case 83: crs = CommonCRS.NAD83; break;
-            case 27: crs = CommonCRS.NAD27; break;
-            case 88: return CommonCRS.Vertical.NAVD88.crs();
+            case Constants.CRS1:  return displayCRS();
+            case Constants.CRS84: crs = CommonCRS.WGS84; break;
+            case Constants.CRS83: crs = CommonCRS.NAD83; break;
+            case Constants.CRS27: crs = CommonCRS.NAD27; break;
+            case Constants.CRS88: return CommonCRS.Vertical.NAVD88.crs();
             default: throw noSuchAuthorityCode(CoordinateReferenceSystem.class, code);
         }
         return crs.normalizedGeographic();
@@ -196,26 +253,20 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
     /**
      * Returns the "Computer display" reference system (CRS:1). This is rarely used.
      */
-    private synchronized CoordinateReferenceSystem displayCRS() {
+    private synchronized CoordinateReferenceSystem displayCRS() throws FactoryException {
         if (displayCRS == null) {
-            final DefaultCartesianCS cs = new DefaultCartesianCS(
-                    Collections.singletonMap(DefaultCartesianCS.NAME_KEY, "Computer display"),
-                    createDisplayAxis("i", AxisDirection.EAST),
-                    createDisplayAxis("j", AxisDirection.SOUTH));
+            final CSFactory csFactory = DefaultFactories.forBuildin(CSFactory.class);
+            final CartesianCS cs = csFactory.createCartesianCS(
+                    Collections.singletonMap(CartesianCS.NAME_KEY, "Computer display"),
+                    csFactory.createCoordinateSystemAxis(Collections.singletonMap(CartesianCS.NAME_KEY, "i"), "i", AxisDirection.EAST, NonSI.PIXEL),
+                    csFactory.createCoordinateSystemAxis(Collections.singletonMap(CartesianCS.NAME_KEY, "j"), "j", AxisDirection.SOUTH, NonSI.PIXEL));
 
             final Map<String,Object> properties = new HashMap<>(4);
-            properties.put(DefaultEngineeringDatum.NAME_KEY, cs.getName());
-            properties.put(DefaultEngineeringDatum.ANCHOR_POINT_KEY, "Origin is in upper left.");
-            displayCRS = new DefaultEngineeringCRS(properties, new DefaultEngineeringDatum(properties), cs);
+            properties.put(EngineeringDatum.NAME_KEY, cs.getName());
+            properties.put(EngineeringDatum.ANCHOR_POINT_KEY, "Origin is in upper left.");
+            displayCRS = DefaultFactories.forBuildin(CRSFactory.class).createEngineeringCRS(properties,
+                         DefaultFactories.forBuildin(DatumFactory.class).createEngineeringDatum(properties), cs);
         }
         return displayCRS;
-    }
-
-    /**
-     * Creates a coordinate axis for "Computer display" (CRS:1).
-     */
-    private static CoordinateSystemAxis createDisplayAxis(final String abbreviation, final AxisDirection direction) {
-        return new DefaultCoordinateSystemAxis(Collections.singletonMap(DefaultCoordinateSystemAxis.NAME_KEY, abbreviation),
-                abbreviation, direction, NonSI.PIXEL);
     }
 }

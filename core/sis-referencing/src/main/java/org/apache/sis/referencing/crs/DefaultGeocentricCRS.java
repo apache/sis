@@ -48,7 +48,7 @@ import org.apache.sis.referencing.AbstractReferenceSystem;
  *   <li>Create a {@code GeocentricCRS} from one of the static convenience shortcuts listed in
  *       {@link org.apache.sis.referencing.CommonCRS#geocentric()}.</li>
  *   <li>Create a {@code GeocentricCRS} from an identifier in a database by invoking
- *       {@link org.opengis.referencing.crs.CRSAuthorityFactory#createGeocentricCRS(String)}.</li>
+ *       {@link org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createGeocentricCRS(String)}.</li>
  *   <li>Create a {@code GeocentricCRS} by invoking the {@code CRSFactory.createGeocentricCRS(…)} method
  *       (implemented for example by {@link org.apache.sis.referencing.factory.GeodeticObjectFactory}).</li>
  *   <li>Create a {@code GeocentricCRS} by invoking the

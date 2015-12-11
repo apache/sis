@@ -16,10 +16,16 @@
  */
 package org.apache.sis.referencing.factory;
 
+import java.util.Arrays;
 import org.opengis.util.NameFactory;
 import org.opengis.util.FactoryException;
 import org.opengis.metadata.citation.Citation;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.crs.EngineeringCRS;
 import org.opengis.referencing.crs.GeographicCRS;
+import org.opengis.referencing.crs.VerticalCRS;
+import org.opengis.referencing.cs.AxisDirection;
+import org.opengis.referencing.datum.Datum;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.referencing.CommonCRS;
@@ -57,7 +63,26 @@ public final strictfp class CommonAuthorityFactoryTest extends TestCase {
     }
 
     /**
-     * Checks the authority names.
+     * Tests {@link CommonAuthorityFactory#getAuthorityCodes(Class)}.
+     *
+     * @throws FactoryException if an error occurred while fetching the set of codes.
+     */
+    @Test
+    public void testGetAuthorityCodes() throws FactoryException {
+        assertTrue("getAuthorityCodes(Datum.class)",
+                factory.getAuthorityCodes(Datum.class).isEmpty());
+        assertSetEquals(Arrays.asList("1", "27", "83", "84", "88"),
+                factory.getAuthorityCodes(CoordinateReferenceSystem.class));
+        assertSetEquals(Arrays.asList("27", "83", "84"),
+                factory.getAuthorityCodes(GeographicCRS.class));
+        assertSetEquals(Arrays.asList("88"),
+                factory.getAuthorityCodes(VerticalCRS.class));
+        assertSetEquals(Arrays.asList("1"),
+                factory.getAuthorityCodes(EngineeringCRS.class));
+    }
+
+    /**
+     * Checks the value returned by {@link CommonAuthorityFactory#getAuthority()}.
      */
     @Test
     public void testAuthority() {
@@ -71,7 +96,7 @@ public final strictfp class CommonAuthorityFactoryTest extends TestCase {
     }
 
     /**
-     * Tests the CRS:84 code.
+     * Tests {@link CommonAuthorityFactory#createGeographicCRS(String)} with the {@code "CRS:84"} code.
      *
      * @throws FactoryException if an error occurred while creating a CRS.
      */
@@ -86,10 +111,11 @@ public final strictfp class CommonAuthorityFactoryTest extends TestCase {
         assertSame   (crs,  factory.createGeographicCRS("OGC:84"));         // Not in real use as far as I know.
         assertSame   (crs,  factory.createGeographicCRS("OGC:CRS84"));
         assertNotSame(crs,  factory.createGeographicCRS("CRS:83"));
+        assertAxisDirectionsEqual("CS", crs.getCoordinateSystem(), AxisDirection.EAST, AxisDirection.NORTH);
     }
 
     /**
-     * Tests the CRS:83 code.
+     * Tests {@link CommonAuthorityFactory#createGeographicCRS(String)} with the {@code "CRS:83"} code.
      *
      * @throws FactoryException if an error occurred while creating a CRS.
      */
@@ -102,6 +128,37 @@ public final strictfp class CommonAuthorityFactoryTest extends TestCase {
         assertSame   (crs,  factory.createGeographicCRS("CRS:CRS83"));
         assertNotSame(crs,  factory.createGeographicCRS("CRS:84"));
         assertNotDeepEquals(CommonCRS.WGS84.normalizedGeographic(), crs);
+        assertAxisDirectionsEqual("CS", crs.getCoordinateSystem(), AxisDirection.EAST, AxisDirection.NORTH);
+    }
+
+    /**
+     * Tests {@link CommonAuthorityFactory#createVerticalCRS(String)} with the {@code "CRS:88"} code.
+     *
+     * @throws FactoryException if an error occurred while creating a CRS.
+     */
+    @Test
+    @DependsOnMethod("testAuthority")
+    public void testCRS88() throws FactoryException {
+        VerticalCRS crs = factory.createVerticalCRS("CRS:88");
+        assertSame (crs,  factory.createVerticalCRS("88"));
+        assertSame (crs,  factory.createVerticalCRS("CRS88"));
+        assertSame (crs,  factory.createVerticalCRS("CRS:CRS 88"));
+        assertAxisDirectionsEqual("CS", crs.getCoordinateSystem(), AxisDirection.UP);
+    }
+
+    /**
+     * Tests {@link CommonAuthorityFactory#createEngineeringCRS(String)} with the {@code "CRS:1"} code.
+     *
+     * @throws FactoryException if an error occurred while creating a CRS.
+     */
+    @Test
+    @DependsOnMethod("testAuthority")
+    public void testCRS1() throws FactoryException {
+        EngineeringCRS crs = factory.createEngineeringCRS("CRS:1");
+        assertSame (crs,  factory.createEngineeringCRS("1"));
+        assertSame (crs,  factory.createEngineeringCRS("CRS1"));
+        assertSame (crs,  factory.createEngineeringCRS("CRS:CRS 1"));
+        assertAxisDirectionsEqual("CS", crs.getCoordinateSystem(), AxisDirection.EAST, AxisDirection.SOUTH);
     }
 
     /**
