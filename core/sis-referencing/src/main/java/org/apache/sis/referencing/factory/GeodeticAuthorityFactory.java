@@ -114,10 +114,11 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
 
     /**
      * Returns a description of the object corresponding to a code.
+     * The description can be used for example in a combo box in a graphical user interface.
      *
      * <div class="section">Default implementation</div>
      * The default implementation invokes {@link #createObject(String)} for the given code
-     * and returns the object {@linkplain AbstractIdentifiedObject#getName() name}.
+     * and returns the {@linkplain AbstractIdentifiedObject#getName() object name}.
      * This may be costly since it involves a full object creation.
      * Subclasses are encouraged to provide a more efficient implementation if they can.
      *
@@ -131,14 +132,15 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
     /**
      * Returns an arbitrary object from a code. The returned object will typically be an instance of {@link Datum},
      * {@link CoordinateSystem}, {@link CoordinateReferenceSystem} or {@link CoordinateOperation}.
+     * This method may be used when the type of the object to create is unknown.
+     * But it is recommended to invoke the most specific {@code createFoo(String)} method when the type is known,
+     * both for performance reason and for avoiding ambiguity.
      *
-     * <p>In default {@code GeodeticAuthorityFactory} implementation, all {@code createFoo(String)} methods
-     * ultimately delegate to this {@code createObject(String)} method. However subclasses are encouraged
-     * to override more specific methods for efficiency.</p>
-     *
-     * <div class="section">Default implementation</div>
-     * The default implementation always throw an exception. Subclasses should override this method
-     * if they are capable to automatically detect the object type from its code.
+     * <div class="section">Note for subclasses</div>
+     * In default {@code GeodeticAuthorityFactory} implementation, all {@code createFoo(String)} methods ultimately
+     * delegate to this {@code createObject(String)} method and verify if the created object is of the desired type.
+     * Overriding this method is sufficient for supporting the more specific {@code createFoo(String)} methods,
+     * but subclasses are encouraged to override the later for efficiency.
      *
      * @param  code Value allocated by authority.
      * @return The object for the given code.
@@ -150,13 +152,12 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * @see #createCoordinateSystem(String)
      */
     @Override
-    public IdentifiedObject createObject(final String code) throws NoSuchAuthorityCodeException, FactoryException {
-        ArgumentChecks.ensureNonNull("code", code);
-        throw noSuchAuthorityCode(IdentifiedObject.class, code);
-    }
+    public abstract IdentifiedObject createObject(String code) throws NoSuchAuthorityCodeException, FactoryException;
 
     /**
      * Creates an arbitrary coordinate reference system from a code.
+     * The returned object will typically be an instance of {@link GeographicCRS}, {@link ProjectedCRS},
+     * {@link VerticalCRS} or {@link CompoundCRS}.
      * If the coordinate reference system type is known at compile time,
      * it is recommended to invoke the most precise method instead of this one (for example
      * {@link #createGeographicCRS createGeographicCRS(String)} instead of
@@ -184,7 +185,9 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
     }
 
     /**
-     * Creates a geographic coordinate reference system from a code.
+     * Creates a 2- or 3-dimensional coordinate reference system based on an ellipsoidal approximation of the geoid.
+     * This provides an accurate representation of the geometry of geographic features
+     * for a large portion of the earth's surface.
      *
      * <div class="section">Default implementation</div>
      * The default implementation delegates to {@link #createCoordinateReferenceSystem(String)} and casts the result.
@@ -204,7 +207,9 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
     }
 
     /**
-     * Creates a geocentric coordinate reference system from a code.
+     * Creates a 3-dimensional coordinate reference system with the origin at the approximate centre of mass of the earth.
+     * A geocentric CRS deals with the earth's curvature by taking a 3-dimensional spatial view, which obviates
+     * the need to model the earth's curvature.
      *
      * <div class="section">Default implementation</div>
      * The default implementation delegates to {@link #createCoordinateReferenceSystem(String)} and casts the result.
@@ -225,7 +230,10 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
     }
 
     /**
-     * Creates a projected coordinate reference system from a code.
+     * Creates a 2-dimensional coordinate reference system used to approximate the shape of the earth on a planar surface.
+     * It is done in such a way that the distortion that is inherent to the approximation is carefully controlled and known.
+     * Distortion correction is commonly applied to calculated bearings and distances to produce values
+     * that are a close match to actual field values.
      *
      * <div class="section">Default implementation</div>
      * The default implementation delegates to {@link #createCoordinateReferenceSystem(String)} and casts the result.
@@ -245,7 +253,9 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
     }
 
     /**
-     * Creates a vertical coordinate reference system from a code.
+     * Creates a 1-dimensional coordinate reference system used for recording heights or depths.
+     * Vertical CRSs make use of the direction of gravity to define the concept of height or depth,
+     * but the relationship with gravity may not be straightforward.
      *
      * <div class="section">Default implementation</div>
      * The default implementation delegates to {@link #createCoordinateReferenceSystem(String)} and casts the result.
@@ -265,7 +275,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
     }
 
     /**
-     * Creates a temporal coordinate reference system from a code.
+     * Creates a 1-dimensional coordinate reference system used for the recording of time.
      *
      * <div class="section">Default implementation</div>
      * The default implementation delegates to {@link #createCoordinateReferenceSystem(String)} and casts the result.
@@ -285,7 +295,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
     }
 
     /**
-     * Creates a 3D or 4D coordinate reference system from a code.
+     * Creates a CRS describing the position of points through two or more independent coordinate reference systems.
      *
      * <div class="section">Default implementation</div>
      * The default implementation delegates to {@link #createCoordinateReferenceSystem(String)} and casts the result.
@@ -305,7 +315,8 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
     }
 
     /**
-     * Creates a derived coordinate reference system from a code.
+     * Creates a CRS that is defined by its coordinate conversion from another CRS (not by a datum).
+     * {@code DerivedCRS} can not be {@code ProjectedCRS} themselves, but may be derived from a projected CRS.
      *
      * <div class="section">Default implementation</div>
      * The default implementation delegates to {@link #createCoordinateReferenceSystem(String)} and casts the result.
@@ -323,7 +334,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
     }
 
     /**
-     * Creates an engineering coordinate reference system from a code.
+     * Creates a 1-, 2- or 3-dimensional contextually local coordinate reference system.
      *
      * <div class="section">Default implementation</div>
      * The default implementation delegates to {@link #createCoordinateReferenceSystem(String)} and casts the result.
@@ -342,7 +353,9 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
     }
 
     /**
-     * Creates an image coordinate reference system from a code.
+     * Creates a 2-dimensional engineering coordinate reference system applied to locations in images.
+     * Image coordinate reference systems are treated as a separate sub-type because a separate
+     * user community exists for images with its own terms of reference.
      *
      * <div class="section">Default implementation</div>
      * The default implementation delegates to {@link #createCoordinateReferenceSystem(String)} and casts the result.
@@ -361,7 +374,9 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
     }
 
     /**
-     * Returns an arbitrary datum from a code.
+     * Creates an arbitrary datum from a code. The returned object will typically be an
+     * instance of {@link GeodeticDatum}, {@link VerticalDatum} or {@link TemporalDatum}.
+     * If the datum is known at compile time, it is recommended to invoke the most precise method instead of this one.
      *
      * <div class="section">Default implementation</div>
      * The default implementation delegates to {@link #createObject(String)} and casts the result.
@@ -381,7 +396,9 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
     }
 
     /**
-     * Creates a geodetic datum from a code.
+     * Creates a datum defining the location and orientation of an ellipsoid that approximates the shape of the earth.
+     * Geodetic datum are used together with ellipsoidal coordinate system, and also with Cartesian coordinate system
+     * centered in the ellipsoid (or sphere).
      *
      * <div class="section">Default implementation</div>
      * The default implementation delegates to {@link #createDatum(String)} and casts the result.
@@ -403,7 +420,9 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
     }
 
     /**
-     * Creates a vertical datum from a code.
+     * Creates a datum identifying a particular reference level surface used as a zero-height surface.
+     * There are several types of vertical datums, and each may place constraints on the axis with which
+     * it is combined to create a vertical CRS.
      *
      * <div class="section">Default implementation</div>
      * The default implementation delegates to {@link #createDatum(String)} and casts the result.
@@ -422,7 +441,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
     }
 
     /**
-     * Creates a temporal datum from a code.
+     * Creates a datum defining the origin of a temporal coordinate reference system.
      *
      * <div class="section">Default implementation</div>
      * The default implementation delegates to {@link #createDatum(String)} and casts the result.
@@ -441,7 +460,9 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
     }
 
     /**
-     * Creates a engineering datum from a code.
+     * Creates a datum defining the origin of an engineering coordinate reference system.
+     * An engineering datum is used in a region around that origin.
+     * This origin can be fixed with respect to the earth or be a defined point on a moving vehicle.
      *
      * <div class="section">Default implementation</div>
      * The default implementation delegates to {@link #createDatum(String)} and casts the result.
@@ -460,7 +481,9 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
     }
 
     /**
-     * Creates a image datum from a code.
+     * Creates a datum defining the origin of an image coordinate reference system.
+     * An image datum is used in a local context only.
+     * For an image datum, the anchor point is usually either the centre of the image or the corner of the image.
      *
      * <div class="section">Default implementation</div>
      * The default implementation delegates to {@link #createDatum(String)} and casts the result.
@@ -479,7 +502,8 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
     }
 
     /**
-     * Creates an ellipsoid from a code.
+     * Creates a geometric figure that can be used to describe the approximate shape of the earth.
+     * In mathematical terms, it is a surface formed by the rotation of an ellipse about its minor axis.
      *
      * <div class="section">Default implementation</div>
      * The default implementation delegates to {@link #createObject(String)} and casts the result.
@@ -499,7 +523,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
     }
 
     /**
-     * Creates a prime meridian from a code.
+     * Creates a prime meridian defining the origin from which longitude values are determined.
      *
      * <div class="section">Default implementation</div>
      * The default implementation delegates to {@link #createObject(String)} and casts the result.
@@ -518,7 +542,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
     }
 
     /**
-     * Creates an extent (usually an domain of validity) from a code.
+     * Creates information about spatial, vertical, and temporal extent (usually a domain of validity) from a code.
      *
      * <div class="section">Default implementation</div>
      * The default implementation delegates to {@link #createObject(String)} and casts the result.
@@ -538,7 +562,10 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
     }
 
     /**
-     * Creates an arbitrary coordinate system from a code.
+     * Creates an arbitrary coordinate system from a code. The returned object will typically be an
+     * instance of {@link EllipsoidalCS}, {@link CartesianCS}, {@link VerticalCS} or {@link TimeCS}.
+     * If the coordinate system is known at compile time, it is recommended to invoke the most precise
+     * method instead of this one.
      *
      * <div class="section">Default implementation</div>
      * The default implementation delegates to {@link #createObject(String)} and casts the result.
@@ -558,7 +585,8 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
     }
 
     /**
-     * Creates an ellipsoidal coordinate system from a code.
+     * Creates 2- or 3-dimensional coordinate system for geodetic latitude and longitude,
+     * sometime with ellipsoidal height.
      *
      * <div class="section">Default implementation</div>
      * The default implementation delegates to {@link #createCoordinateSystem(String)} and casts the result.
@@ -579,7 +607,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
     }
 
     /**
-     * Creates a vertical coordinate system from a code.
+     * Creates a 1-dimensional coordinate system for heights or depths of points.
      *
      * <div class="section">Default implementation</div>
      * The default implementation delegates to {@link #createCoordinateSystem(String)} and casts the result.
@@ -599,7 +627,8 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
     }
 
     /**
-     * Creates a temporal coordinate system from a code.
+     * Creates a 1-dimensional coordinate system for time elapsed in the specified time units
+     * from a specified time origin.
      *
      * <div class="section">Default implementation</div>
      * The default implementation delegates to {@link #createCoordinateSystem(String)} and casts the result.
@@ -619,7 +648,8 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
     }
 
     /**
-     * Creates a Cartesian coordinate system from a code.
+     * Creates a 2- or 3-dimensional Cartesian coordinate system made of straight orthogonal axes.
+     * All axes shall have the same linear unit of measure.
      *
      * <div class="section">Default implementation</div>
      * The default implementation delegates to {@link #createCoordinateSystem(String)} and casts the result.
@@ -639,7 +669,8 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
     }
 
     /**
-     * Creates a spherical coordinate system from a code.
+     * Creates a 3-dimensional coordinate system with one distance measured from the origin and two angular coordinates.
+     * Not to be confused with an ellipsoidal coordinate system based on an ellipsoid "degenerated" into a sphere.
      *
      * <div class="section">Default implementation</div>
      * The default implementation delegates to {@link #createCoordinateSystem(String)} and casts the result.
@@ -658,7 +689,8 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
     }
 
     /**
-     * Creates a cylindrical coordinate system from a code.
+     * Creates a 3-dimensional coordinate system made of a polar coordinate system
+     * extended by a straight perpendicular axis.
      *
      * <div class="section">Default implementation</div>
      * The default implementation delegates to {@link #createCoordinateSystem(String)} and casts the result.
@@ -676,7 +708,8 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
     }
 
     /**
-     * Creates a polar coordinate system from a code.
+     * Creates a 2-dimensional coordinate system for coordinates represented by a distance from the origin
+     * and an angle from a fixed direction.
      *
      * <div class="section">Default implementation</div>
      * The default implementation delegates to {@link #createCoordinateSystem(String)} and casts the result.
@@ -694,7 +727,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
     }
 
     /**
-     * Creates a coordinate system axis from a code.
+     * Creates a coordinate system axis with name, direction, unit and range of values.
      *
      * <div class="section">Default implementation</div>
      * The default implementation delegates to {@link #createObject(String)} and casts the result.
@@ -731,7 +764,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
     }
 
     /**
-     * Creates a parameter descriptor from a code.
+     * Creates a definition of a single parameter used by an operation method.
      *
      * <div class="section">Default implementation</div>
      * The default implementation delegates to {@link #createObject(String)} and casts the result.
@@ -751,7 +784,9 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
     }
 
     /**
-     * Creates an operation method from a code.
+     * Creates  description of the algorithm and parameters used to perform a coordinate operation.
+     * An {@code OperationMethod} is a kind of metadata: it does not perform any coordinate operation
+     * (e.g. map projection) by itself, but tells us what is needed in order to perform such operation.
      *
      * <div class="section">Default implementation</div>
      * The default implementation delegates to {@link #createObject(String)} and casts the result.
@@ -769,7 +804,9 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
     }
 
     /**
-     * Creates an operation from a code.
+     * Creates an operation for transforming coordinates in the source CRS to coordinates in the target CRS.
+     * Coordinate operations contain a {@linkplain org.apache.sis.referencing.operation.transform.AbstractMathTransform
+     * math transform}, which does the actual work of transforming coordinates.
      *
      * <div class="section">Default implementation</div>
      * The default implementation delegates to {@link #createObject(String)} and casts the result.

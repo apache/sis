@@ -62,7 +62,7 @@ import static org.apache.sis.internal.util.Constants.CRS84;
  *       {@link org.apache.sis.referencing.CommonCRS#geographic()} or
  *       {@link org.apache.sis.referencing.CommonCRS#geographic3D()}.</li>
  *   <li>Create a {@code GeographicCRS} from an identifier in a database by invoking
- *       {@link org.opengis.referencing.crs.CRSAuthorityFactory#createGeographicCRS(String)}.</li>
+ *       {@link org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createGeographicCRS(String)}.</li>
  *   <li>Create a {@code GeographicCRS} by invoking the {@code CRSFactory.createGeographicCRS(…)} method
  *       (implemented for example by {@link org.apache.sis.referencing.factory.GeodeticObjectFactory}).</li>
  *   <li>Create a {@code GeographicCRS} by invoking the

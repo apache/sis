@@ -38,7 +38,7 @@ import org.apache.sis.util.resources.Errors;
 
 
 /**
- * Search in an authority factory for objects approximatively equal to a given object.
+ * Searches in an authority factory for objects approximatively equal to a given object.
  * This class can be used for fetching a fully {@linkplain AbstractIdentifiedObject identified object}
  * from an incomplete one, for example from an object without "{@code ID[…]}" or "{@code AUTHORITY[…]}"
  * element in <cite>Well Known Text</cite>.

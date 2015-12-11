@@ -34,7 +34,7 @@ import org.apache.sis.util.resources.Errors;
  * It is possible to use the generic {@link AuthorityFactory#createObject(String)} method instead of this class,
  * but some factories are more efficient when we use the most specific {@code create} method.
  * For example when using a {@linkplain org.apache.sis.referencing.factory.epsg.EPSGFactory},
- * invoking {@link CRSAuthorityFactory#createProjectedCRS(String)} instead of
+ * invoking {@link GeodeticAuthorityFactory#createProjectedCRS(String)} instead of
  * {@code AuthorityFactory.createObject(String)} method reduce the amount of tables to be queried.
  *
  * <p>This class is useful when the same {@code create} method need to be invoked often, but is unknown at compile time.
@@ -43,7 +43,7 @@ import org.apache.sis.util.resources.Errors;
  *
  * <div class="note"><b>Example:</b>
  * the following code creates a proxy which will delegates its work to the
- * {@link CRSAuthorityFactory#createGeographicCRS createGeographicCRS} method.
+ * {@link GeodeticAuthorityFactory#createGeographicCRS createGeographicCRS} method.
  *
  * {@preformat java
  *     String code = ...;
