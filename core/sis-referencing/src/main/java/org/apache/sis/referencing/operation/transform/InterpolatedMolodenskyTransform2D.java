@@ -28,23 +28,23 @@ import org.apache.sis.referencing.datum.DatumShiftGrid;
 
 
 /**
- * An interpolated geocentric transform for two-dimensional input and output coordinates.
+ * An interpolated Molodensky transform for two-dimensional input and output coordinates.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.7
  * @version 0.7
  * @module
  */
-final class InterpolatedGeocentricTransform2D extends InterpolatedGeocentricTransform implements MathTransform2D {
+final class InterpolatedMolodenskyTransform2D extends InterpolatedMolodenskyTransform implements MathTransform2D {
     /**
      * Serial number for compatibility with different versions.
      */
-    private static final long serialVersionUID = 7182170631400046124L;
+    private static final long serialVersionUID = 3050077982181110135L;
 
     /**
      * Constructs a 2D transform.
      */
-    InterpolatedGeocentricTransform2D(final Ellipsoid source, final Ellipsoid target, final DatumShiftGrid<Angle,Length> grid) {
+    InterpolatedMolodenskyTransform2D(final Ellipsoid source, final Ellipsoid target, final DatumShiftGrid<Angle,Length> grid) {
         super(source, false, target, false, grid);
     }
 
@@ -81,27 +81,27 @@ final class InterpolatedGeocentricTransform2D extends InterpolatedGeocentricTran
     }
 
     /**
-     * The inverse of the enclosing {@link InterpolatedGeocentricTransform2D}.
+     * The inverse of the enclosing {@link InterpolatedMolodenskyTransform2D}.
      *
      * @author  Martin Desruisseaux (Geomatys)
      * @since   0.7
      * @version 0.7
      * @module
      */
-    static final class Inverse extends InterpolatedGeocentricTransform.Inverse implements MathTransform2D {
+    static final class Inverse extends InterpolatedMolodenskyTransform.Inverse implements MathTransform2D {
         /**
          * Serial number for inter-operability with different versions.
          */
-        private static final long serialVersionUID = 1172500439043982455L;
+        private static final long serialVersionUID = 3175846640786132902L;
 
         /**
-         * Constructs the inverse of an interpolated geocentric transform.
+         * Constructs the inverse of an interpolated Molodensky transform.
          *
          * @param inverse The transform for which to create the inverse.
          * @param source  The source ellipsoid of the given {@code inverse} transform.
          * @param target  The target ellipsoid of the given {@code inverse} transform.
          */
-        Inverse(final InterpolatedGeocentricTransform inverse, final Ellipsoid source, final Ellipsoid target) {
+        Inverse(final InterpolatedMolodenskyTransform inverse, final Ellipsoid source, final Ellipsoid target) {
            super(inverse, source, target);
         }
 

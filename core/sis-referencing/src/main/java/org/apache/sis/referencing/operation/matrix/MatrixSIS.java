@@ -102,11 +102,11 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
     }
 
     /**
-     * Ensures that the number of rows of the given matrix matches the given value.
+     * Ensures that the number of rows of a given matrix matches the given value.
      * This is a convenience method for {@link #multiply(Matrix)} implementations.
      *
      * @param expected The expected number of rows.
-     * @param matrix   The matrix to verify.
+     * @param actual   The actual number of rows in the matrix to verify.
      * @param numCol   The number of columns to report in case of errors. This is an arbitrary
      *                 value and have no incidence on the verification performed by this method.
      */

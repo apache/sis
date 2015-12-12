@@ -373,6 +373,30 @@ public abstract class DatumShiftGrid<C extends Quantity, T extends Quantity> imp
     }
 
     /**
+     * Converts the given normalized <var>x</var> ordinate to grid index.
+     * "Normalized coordinates" are coordinates in the unit of measurement given by {@link Unit#toSI()}.
+     * For angular coordinates, this is radians. For linear coordinates, this is metres.
+     *
+     * @param x The "real world" ordinate (often longitude in radians) of the point for which to get the translation.
+     * @return The grid index for the given ordinate. May be out of bounds.
+     */
+    public final double normalizedToGridX(final double x) {
+        return x * scaleX + x0;
+    }
+
+    /**
+     * Converts the given normalized <var>x</var> ordinate to grid index.
+     * "Normalized coordinates" are coordinates in the unit of measurement given by {@link Unit#toSI()}.
+     * For angular coordinates, this is radians. For linear coordinates, this is metres.
+     *
+     * @param y The "real world" ordinate (often latitude in radians) of the point for which to get the translation.
+     * @return The grid index for the given ordinate. May be out of bounds.
+     */
+    public final double normalizedToGridY(final double y) {
+        return y * scaleY + y0;
+    }
+
+    /**
      * Returns the number of dimensions of the translation vectors interpolated by this datum shift grid.
      * This number of dimensions is not necessarily equals to the number of source or target dimensions
      * of the "{@linkplain #getCoordinateToGrid() coordinate to grid}" transform.
@@ -435,23 +459,6 @@ public abstract class DatumShiftGrid<C extends Quantity, T extends Quantity> imp
             vector = Arrays.copyOf(vector, dim);
         }
         return vector;
-    }
-
-    /**
-     * Interpolates the translation to apply for the given two-dimensional normalized coordinates.
-     * "Normalized coordinates" are coordinates in the unit of measurement given by {@link Unit#toSI()}.
-     * For angular coordinates, this is radians. For linear coordinates, this is metres.
-     *
-     * <p>The result is stored in the given {@code vector} array, which shall have a length of at least
-     * {@link #getTranslationDimensions()}. The output unit of measurement is the same than the one
-     * documented in {@link #getCellValue}.</p>
-     *
-     * @param x First "real world" ordinate (often longitude in radians) of the point for which to get the translation.
-     * @param y Second "real world" ordinate (often latitude in radians) of the point for which to get the translation.
-     * @param vector A pre-allocated array where to write the translation vector.
-     */
-    public final void interpolateAtNormalized(final double x, final double y, final double[] vector) {
-        interpolateInCell(x * scaleX + x0, y * scaleY + y0, vector);
     }
 
     /**

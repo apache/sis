@@ -16,30 +16,28 @@
  */
 package org.apache.sis.referencing.operation.transform;
 
-import java.util.Arrays;
 import javax.measure.unit.Unit;
 import javax.measure.quantity.Angle;
 import javax.measure.quantity.Length;
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
-import org.opengis.geometry.MismatchedDimensionException;
 import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
+import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.internal.referencing.provider.DatumShiftGridFile;
 import org.apache.sis.internal.referencing.provider.FranceGeocentricInterpolation;
 import org.apache.sis.internal.referencing.provider.Molodensky;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.metadata.iso.citation.Citations;
-import org.apache.sis.parameter.Parameters;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.referencing.datum.DatumShiftGrid;
-import org.apache.sis.util.resources.Errors;
+import org.apache.sis.referencing.operation.matrix.Matrices;
+import org.apache.sis.referencing.operation.matrix.Matrix3;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.Debug;
 
 
 /**
@@ -76,23 +74,23 @@ import org.apache.sis.util.Debug;
  * because the {@code DatumShiftGrid} inputs are geographic coordinates even if the interpolated
  * grid values are in geocentric space.</p></div>
  *
- * <div class="section">Implementation</div>
- * While this transformation is conceptually defined as a translation in geocentric coordinates, the current
- * Apache SIS implementation rather uses the {@linkplain MolodenskyTransform Molodensy} (non-abridged) approximation
- * for performance reasons. Errors are less than 3 centimetres for the France geocentric interpolation.
- * By comparison, the finest accuracy reported in the grid file for France is 5 centimetres.
+ * <div class="section">Performance consideration</div>
+ * {@link InterpolatedMolodenskyTransform} performs the same calculation more efficiently at the cost of
+ * a few centimetres error. Both classes are instantiated in the same way and expect the same inputs.
  *
  * @author  Simon Reynard (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.7
  * @version 0.7
  * @module
+ *
+ * @see InterpolatedMolodenskyTransform
  */
-public class InterpolatedGeocentricTransform extends MolodenskyFormula {
+public class InterpolatedGeocentricTransform extends DatumShiftTransform {
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = -5691721806681489940L;
+    private static final long serialVersionUID = 5503722845441653093L;
 
     /**
      * Parameter descriptor to use with the contextual parameters for the forward transformation.
@@ -128,6 +126,26 @@ public class InterpolatedGeocentricTransform extends MolodenskyFormula {
     }
 
     /**
+     * Semi-major axis length (<var>a</var>) of the source ellipsoid.
+     */
+    final double semiMajor;
+
+    /**
+     * Semi-major axis length of the source ellipsoid divided by semi-major axis length of the target ellipsoid.
+     * Used for converting normalized coordinates between the two geocentric coordinate reference systems.
+     *
+     * <p>This is a dimensionless quantity: the ellipsoid axis lengths must have been converted to the same unit
+     * before to compute this ratio.</p>
+     */
+    final double scale;
+
+    /**
+     * The transform to apply before and after the geocentric translation. Shall be instance of
+     * {@link EllipsoidToCentricTransform} and {@code EllipsoidToCentricTransform.Inverse} respectively.
+     */
+    final AbstractMathTransform ellipsoidToCentric, centricToEllipsoid;
+
+    /**
      * The inverse of this interpolated geocentric transform.
      *
      * @see #inverse()
@@ -142,8 +160,9 @@ public class InterpolatedGeocentricTransform extends MolodenskyFormula {
      * @param target  The target ellipsoid of the given {@code inverse} transform.
      */
     InterpolatedGeocentricTransform(final InterpolatedGeocentricTransform inverse, Ellipsoid source, Ellipsoid target) {
-        super(inverse, source, target, INVERSE);
-        this.inverse = inverse;
+        this(target, inverse.getTargetDimensions() > 2,
+             source, inverse.getSourceDimensions() > 2,
+             inverse.grid, inverse);
     }
 
     /**
@@ -187,26 +206,93 @@ public class InterpolatedGeocentricTransform extends MolodenskyFormula {
                                               final Ellipsoid target, final boolean isTarget3D,
                                               final DatumShiftGrid<Angle,Length> grid)
     {
-        super(source, isSource3D,
-              target, isTarget3D,
-              grid.getCellMean(0),
-              grid.getCellMean(1),
-              grid.getCellMean(2),
-              grid, false, DESCRIPTOR);
+        this(source, isSource3D, target, isTarget3D, grid, null);
+    }
 
-        final int dim = grid.getTranslationDimensions();
-        if (dim != 3) {
-            throw new MismatchedDimensionException(Errors.format(Errors.Keys.MismatchedDimension_3, "grid", 3, dim));
+    /**
+     * Constructor for the forward and inverse transformations.
+     * If {@code inverse} is {@code null}, then this constructor creates the forward transformation.
+     * Otherwise this constructor creates the inverse of the given {@code inverse} transformation.
+     */
+    private InterpolatedGeocentricTransform(final Ellipsoid source, final boolean isSource3D,
+                                            final Ellipsoid target, final boolean isTarget3D,
+                                            final DatumShiftGrid<?,?> grid,
+                                            InterpolatedGeocentricTransform inverse)
+    {
+        super((inverse != null) ? INVERSE : DESCRIPTOR, isSource3D ? 4 : 3, isTarget3D ? 4 : 3, grid);
+        ArgumentChecks.ensureNonNull("source", source);
+        ArgumentChecks.ensureNonNull("target", target);
+        final Unit<Length> unit = source.getAxisUnit();
+        ensureGeocentricTranslation(grid, unit);
+        /*
+         * Store the source and target axis lengths in the contextual parameters.
+         * We do not need to store all those information directly in the field of this class,
+         * but we need to have them in ContextualParameters for Well Known Text formatting.
+         */
+        final double semiMinor;
+        semiMajor = source.getSemiMajorAxis();
+        semiMinor = source.getSemiMinorAxis();
+        setContextParameters(semiMajor, semiMinor, unit, target);
+        context.getOrCreate(Molodensky.DIMENSION).setValue(isSource3D ? 3 : 2);
+        if (grid instanceof DatumShiftGridFile<?,?>) {
+            ((DatumShiftGridFile<?,?>) grid).setFileParameters(context);
         }
-        Object unit = "ratio";
-        if (grid.isCellValueRatio() || (unit = grid.getTranslationUnit()) != source.getAxisUnit()) {
-            throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalUnitFor_2, "translation", unit));
+        /*
+         * The above setContextParameters(…) method converted the axis lengths of target ellipsoid in the same units
+         * than source ellipsoid. Opportunistically fetch that value, so we don't have to convert the values ourselves.
+         */
+        scale = semiMajor / context.doubleValue(Molodensky.TGT_SEMI_MAJOR);
+        /*
+         * Creates the Geographic ↔ Geocentric conversions. Note that the target ellipsoid keeps the unit specified
+         * by the user; we do not convert target axis length. This is okay since our work will be already finished
+         * when the conversion to target units will apply.
+         */
+        if (inverse == null) {
+            ellipsoidToCentric = new EllipsoidToCentricTransform(semiMajor, semiMinor, unit, isSource3D,
+                    EllipsoidToCentricTransform.TargetType.CARTESIAN);
+
+            centricToEllipsoid = (AbstractMathTransform) new EllipsoidToCentricTransform(
+                    target.getSemiMajorAxis(),
+                    target.getSemiMinorAxis(),
+                    target.getAxisUnit(), isTarget3D,
+                    EllipsoidToCentricTransform.TargetType.CARTESIAN).inverse();
+        } else try {
+            ellipsoidToCentric = (AbstractMathTransform) inverse.centricToEllipsoid.inverse();
+            centricToEllipsoid = (AbstractMathTransform) inverse.ellipsoidToCentric.inverse();
+        } catch (NoninvertibleTransformException e) {
+            throw new IllegalArgumentException(e);      // Should never happen.
         }
-        if (isSource3D || isTarget3D) {
-            inverse = new Inverse(this, source, target);
-        } else {
-            inverse = new InterpolatedGeocentricTransform2D.Inverse(this, source, target);
+        /*
+         * Usually, this is where we would initialize the normalization and denormalization matrices
+         * to degrees ↔ radians conversions. But in for this class we will rather copy the work done
+         * by EllipsoidToCentricTransform. Especially since the later performs its own adjustment on
+         * height values.
+         */
+        context.getMatrix(ContextualParameters.MatrixRole.NORMALIZATION).setMatrix(
+                ellipsoidToCentric.getContextualParameters().getMatrix(ContextualParameters.MatrixRole.NORMALIZATION));
+        context.getMatrix(ContextualParameters.MatrixRole.DENORMALIZATION).setMatrix(
+                centricToEllipsoid.getContextualParameters().getMatrix(ContextualParameters.MatrixRole.DENORMALIZATION));
+        /*
+         * Inverse transformation must be created only after everything else has been initialized.
+         */
+        if (inverse == null) {
+            if (isSource3D || isTarget3D) {
+                inverse = new Inverse(this, source, target);
+            } else {
+                inverse = new InterpolatedGeocentricTransform2D.Inverse(this, source, target);
+            }
         }
+        this.inverse = inverse;
+    }
+
+    /**
+     * Delegates to {@link ContextualParameters#completeTransform(MathTransformFactory, MathTransform)}
+     * for this transformation and for its dependencies as well.
+     */
+    private MathTransform completeTransform(final MathTransformFactory factory, final boolean create) throws FactoryException {
+        ellipsoidToCentric.getContextualParameters().completeTransform(factory, null);
+        centricToEllipsoid.getContextualParameters().completeTransform(factory, null);
+        return context.completeTransform(factory, create ? this : null);
     }
 
     /**
@@ -247,29 +333,28 @@ public class InterpolatedGeocentricTransform extends MolodenskyFormula {
         } else {
             tr = new InterpolatedGeocentricTransform2D(source, target, grid);
         }
-        tr.inverse.context.completeTransform(factory, null);
-        return tr.context.completeTransform(factory, tr);
+        tr.inverse.completeTransform(factory, false);
+        return tr.completeTransform(factory, true);
     }
 
     /**
-     * Invoked by constructor and by {@link #getParameterValues()} for setting all parameters other than axis lengths.
+     * Gets the dimension of input points.
      *
-     * @param pg         Where to set the parameters.
-     * @param semiMinor  The semi minor axis length, in unit of {@code unit}.
-     * @param unit       The unit of measurement to declare.
-     * @param Δf         Ignored.
+     * @return The input dimension, which is 2 or 3.
      */
     @Override
-    final void completeParameters(final Parameters pg, final double semiMinor, final Unit<?> unit, double Δf) {
-        super.completeParameters(pg, semiMinor, unit, Δf);
-        if (pg != context) {
-            Δf = Δfmod / semiMinor;
-            pg.getOrCreate(Molodensky.AXIS_LENGTH_DIFFERENCE).setValue(Δa, unit);
-            pg.getOrCreate(Molodensky.FLATTENING_DIFFERENCE) .setValue(Δf, Unit.ONE);
-        }
-        if (grid instanceof DatumShiftGridFile<?,?>) {
-            ((DatumShiftGridFile<?,?>) grid).setFileParameters(pg);
-        }
+    public int getSourceDimensions() {
+        return ellipsoidToCentric.getSourceDimensions();
+    }
+
+    /**
+     * Gets the dimension of output points.
+     *
+     * @return The output dimension, which is 2 or 3.
+     */
+    @Override
+    public int getTargetDimensions() {
+        return centricToEllipsoid.getTargetDimensions();
     }
 
     /**
@@ -285,74 +370,50 @@ public class InterpolatedGeocentricTransform extends MolodenskyFormula {
                             final double[] dstPts, final int dstOff,
                             final boolean derivate) throws TransformException
     {
+        /*
+         * Interpolate the geocentric translation (ΔX,ΔY,ΔZ) for the source coordinate (λ,φ).
+         * The translation that we got is in metres, which we convert into normalized units.
+         */
         final double[] vector = new double[3];
-        final double λ = srcPts[srcOff];
-        final double φ = srcPts[srcOff+1];
-        grid.interpolateAtNormalized(λ, φ, vector);
-        return transform(λ, φ, isSource3D ? srcPts[srcOff+2] : 0,
-                dstPts, dstOff, vector[0], vector[1], vector[2], null, derivate);
+        grid.interpolateInCell(grid.normalizedToGridX(srcPts[srcOff]),              // In radians
+                               grid.normalizedToGridY(srcPts[srcOff+1]), vector);
+        final double tX = vector[0] / semiMajor;
+        final double tY = vector[1] / semiMajor;
+        final double tZ = vector[2] / semiMajor;
+        /*
+         * Geographic → Geocentric conversion. Result stored in a temporary array
+         * because we do not check if the target points are two or three dimensional.
+         */
+        final Matrix m1 = ellipsoidToCentric.transform(srcPts, srcOff, vector, 0, derivate);
+        /*
+         * Apply the geocentric translation on the geocentric coordinates. If the coordinates were in metres,
+         * we would have only additions. But since we use normalized units, we also need to convert from the
+         * normalization relative to the source ellipsoid to normalization relative to the target ellipsoid.
+         * This is the purpose of the scale factor.
+         */
+        vector[0] = (vector[0] + tX) * scale;
+        vector[1] = (vector[1] + tY) * scale;
+        vector[2] = (vector[2] + tZ) * scale;
+        /*
+         * Final Geocentric → Geographic conversion, and compute the derivative matrix if the user asked for it.
+         */
+        final Matrix m2 = centricToEllipsoid.transform(vector, 0, dstPts, dstOff, derivate);
+        if (m1 == null || m2 == null) {
+            return null;
+        }
+        /*
+         * We could improve a little bit the precision by computing the derivative in the interpolation grid:
+         *
+         *     grid.derivativeInCell(grid.normalizedToGridX(λ), grid.normalizedToGridY(φ));
+         *
+         * But this is a little bit complicated (need to convert to normalized units and divide by the grid
+         * cell size) for a very small difference. For now we neglect that part.
+         */
+        final Matrix3 t = new Matrix3();
+        t.m00 = scale;
+        t.m11 = scale;
+        return Matrices.multiply(m2, Matrices.multiply(t, m1));
     }
-
-    /**
-     * Transforms the (λ,φ) or (λ,φ,<var>h</var>) coordinates between two geographic CRS.
-     * This method performs the same work than the above
-     * {@link #transform(double[], int, double[], int, boolean) transform(…)} method,
-     * but on an arbitrary amount of coordinates and without computing derivative.
-     *
-     * @throws TransformException if a point can not be transformed.
-     */
-    @Override
-    public void transform(double[] srcPts, int srcOff, double[] dstPts, int dstOff, int numPts) throws TransformException {
-        int srcInc = isSource3D ? 3 : 2;
-        int dstInc = isTarget3D ? 3 : 2;
-        int offFinal = 0;
-        double[] dstFinal  = null;
-        if (srcPts == dstPts) {
-            switch (IterationStrategy.suggest(srcOff, srcInc, dstOff, dstInc, numPts)) {
-                case ASCENDING: {
-                    break;
-                }
-                case DESCENDING: {
-                    srcOff += (numPts-1) * srcInc;  srcInc = -srcInc;
-                    dstOff += (numPts-1) * dstInc;  dstInc = -dstInc;
-                    break;
-                }
-                default: {  // BUFFER_SOURCE, but also a reasonable default for any case.
-                    srcPts = Arrays.copyOfRange(srcPts, srcOff, srcOff + numPts*srcInc);
-                    srcOff = 0;
-                    break;
-                }
-                case BUFFER_TARGET: {
-                    dstFinal = dstPts;
-                    offFinal = dstOff;
-                    dstPts = new double[numPts * dstInc];
-                    dstOff = 0;
-                    break;
-                }
-            }
-        }
-        final double[] offset = new double[3];
-        while (--numPts >= 0) {
-            final double λ = srcPts[srcOff  ];
-            final double φ = srcPts[srcOff+1];
-            grid.interpolateAtNormalized(λ, φ, offset);
-            transform(λ, φ, isSource3D ? srcPts[srcOff+2] : 0,
-                      dstPts, dstOff, offset[0], offset[1], offset[2], null, false);
-            srcOff += srcInc;
-            dstOff += dstInc;
-        }
-        if (dstFinal != null) {
-            System.arraycopy(dstPts, 0, dstFinal, offFinal, dstPts.length);
-        }
-    }
-
-    /*
-     * NOTE: we do not bother to override the methods expecting a 'float' array because those methods should
-     *       be rarely invoked. Since there is usually LinearTransforms before and after this transform, the
-     *       conversion between float and double will be handle by those LinearTransforms.   If nevertheless
-     *       this MolodenskyTransform is at the beginning or the end of a transformation chain,  the methods
-     *       inherited from the subclass will work (but may be slightly slower).
-     */
 
     /**
      * Returns the inverse of this interpolated geocentric transform.
@@ -389,7 +450,12 @@ public class InterpolatedGeocentricTransform extends MolodenskyFormula {
         /**
          * Serial number for inter-operability with different versions.
          */
-        private static final long serialVersionUID = -3520896803296425651L;
+        private static final long serialVersionUID = -3481207454803064521L;
+
+        /**
+         * Initial translation values to use before to improve the accuracy with the interpolation.
+         */
+        private final double tX, tY, tZ;
 
         /**
          * Constructs the inverse of an interpolated geocentric transform.
@@ -400,6 +466,9 @@ public class InterpolatedGeocentricTransform extends MolodenskyFormula {
          */
         Inverse(final InterpolatedGeocentricTransform inverse, final Ellipsoid source, final Ellipsoid target) {
            super(inverse, source, target);
+           tX = grid.getCellMean(0) / semiMajor;
+           tY = grid.getCellMean(1) / semiMajor;
+           tZ = grid.getCellMean(2) / semiMajor;
         }
 
         /**
@@ -415,87 +484,45 @@ public class InterpolatedGeocentricTransform extends MolodenskyFormula {
                                 final double[] dstPts, final int dstOff,
                                 final boolean derivate) throws TransformException
         {
-            return transform(srcPts[srcOff], srcPts[srcOff+1], isSource3D ? srcPts[srcOff+2] : 0,
-                             dstPts, dstOff, tX, tY, tZ, new double[3], derivate);
+            /*
+             * Geographic → Geocentric conversion. Result stored in a temporary array
+             * because we do not check if the target points are two or three dimensional.
+             */
+            final double[] vector = new double[3];
+            final Matrix m1 = ellipsoidToCentric.transform(srcPts, srcOff, vector, 0, derivate);
+            final double x = vector[0];
+            final double y = vector[1];
+            final double z = vector[2];
+            /*
+             * First approximation of geocentric translation, by using average values or values
+             * specified by the authority (e.g. as in the "France Geocentric Interpolation" method).
+             */
+            vector[0] = x - tX;
+            vector[1] = y - tY;
+            vector[2] = z - tZ;
+            centricToEllipsoid.transform(vector, 0, vector, 0, derivate);
+            /*
+             * We got a (λ,φ) using an approximative geocentric translation. Now interpolate the "real"
+             * geocentric interpolation at that location and get the (λ,φ) again. In theory, we just
+             * iterate until we got the desired precision. But in practice a single interation is enough.
+             */
+            grid.interpolateInCell(grid.normalizedToGridX(vector[0]),
+                                   grid.normalizedToGridY(vector[1]), vector);
+            vector[0] = (x - vector[0] / semiMajor) * scale;
+            vector[1] = (y - vector[1] / semiMajor) * scale;
+            vector[2] = (z - vector[2] / semiMajor) * scale;
+            /*
+             * Final Geocentric → Geographic conversion, and compute the derivative matrix if the user asked for it.
+             * We neglect the derivative provided by grid.derivativeInCell(…).
+             */
+            final Matrix m2 = centricToEllipsoid.transform(vector, 0, dstPts, dstOff, derivate);
+            if (m1 == null || m2 == null) {
+                return null;
+            }
+            final Matrix3 t = new Matrix3();
+            t.m00 = scale;
+            t.m11 = scale;
+            return Matrices.multiply(m2, Matrices.multiply(t, m1));
         }
-
-        /**
-         * Transforms the (λ,φ) or (λ,φ,<var>h</var>) coordinates between two geographic CRS.
-         * This method performs the same work than the above
-         * {@link #transform(double[], int, double[], int, boolean) transform(…)} method,
-         * but on an arbitrary amount of coordinates and without computing derivative.
-         *
-         * @throws TransformException if a point can not be transformed.
-         */
-        @Override
-        public void transform(double[] srcPts, int srcOff, double[] dstPts, int dstOff, int numPts) throws TransformException {
-            int srcInc = isSource3D ? 3 : 2;
-            int dstInc = isTarget3D ? 3 : 2;
-            int offFinal = 0;
-            double[] dstFinal  = null;
-            if (srcPts == dstPts) {
-                switch (IterationStrategy.suggest(srcOff, srcInc, dstOff, dstInc, numPts)) {
-                    case ASCENDING: {
-                        break;
-                    }
-                    case DESCENDING: {
-                        srcOff += (numPts-1) * srcInc;  srcInc = -srcInc;
-                        dstOff += (numPts-1) * dstInc;  dstInc = -dstInc;
-                        break;
-                    }
-                    default: {  // BUFFER_SOURCE, but also a reasonable default for any case.
-                        srcPts = Arrays.copyOfRange(srcPts, srcOff, srcOff + numPts*srcInc);
-                        srcOff = 0;
-                        break;
-                    }
-                    case BUFFER_TARGET: {
-                        dstFinal = dstPts;
-                        offFinal = dstOff;
-                        dstPts = new double[numPts * dstInc];
-                        dstOff = 0;
-                        break;
-                    }
-                }
-            }
-            final double[] offset = new double[3];
-            while (--numPts >= 0) {
-                transform(srcPts[srcOff], srcPts[srcOff+1], isSource3D ? srcPts[srcOff+2] : 0,
-                          dstPts, dstOff, tX, tY, tZ, offset, false);
-                srcOff += srcInc;
-                dstOff += dstInc;
-            }
-            if (dstFinal != null) {
-                System.arraycopy(dstPts, 0, dstFinal, offFinal, dstPts.length);
-            }
-        }
-    }
-
-    /**
-     * Returns a description of the internal parameters of this {@code InterpolatedGeocentricTransform} transform.
-     * The returned group contains parameters for the source ellipsoid semi-axis lengths and the differences between
-     * source and target ellipsoid parameters.
-     *
-     * <div class="note"><b>Note:</b>
-     * this method is mostly for {@linkplain org.apache.sis.io.wkt.Convention#INTERNAL debugging purposes}
-     * since the isolation of non-linear parameters in this class is highly implementation dependent.
-     * Most GIS applications will instead be interested in the {@linkplain #getContextualParameters()
-     * contextual parameters}.</div>
-     *
-     * @return A description of the internal parameters.
-     */
-    @Debug
-    @Override
-    public ParameterDescriptorGroup getParameterDescriptors() {
-        final ParameterDescriptor<?>[] param = new ParameterDescriptor<?>[] {
-                Molodensky.DIMENSION,
-                Molodensky.SRC_SEMI_MAJOR,
-                Molodensky.SRC_SEMI_MINOR,
-                Molodensky.AXIS_LENGTH_DIFFERENCE,
-                Molodensky.FLATTENING_DIFFERENCE,
-                FranceGeocentricInterpolation.FILE
-        };
-        return new ParameterBuilder().setRequired(true)
-                .setCodeSpace(Citations.SIS, Constants.SIS)
-                .addName(context.getDescriptor().getName()).createGroup(param);
     }
 }

@@ -92,7 +92,7 @@ import java.nio.file.Files;
  * @module
  */
 @XmlTransient
-public final class FranceGeocentricInterpolation extends AbstractProvider {
+public class FranceGeocentricInterpolation extends AbstractProvider {
     /**
      * Serial number for inter-operability with different versions.
      */
@@ -177,33 +177,37 @@ public final class FranceGeocentricInterpolation extends AbstractProvider {
      *   <li>Bit 1: dimension of source coordinates (0 for 2D, 1 for 3D).</li>
      *   <li>Bit 0: dimension of target coordinates (0 for 2D, 1 for 3D).</li>
      * </ul>
+     *
+     * This array is initialized at construction time and shall not be modified after.
      */
-    private final FranceGeocentricInterpolation[] redimensioned;
+    final FranceGeocentricInterpolation[] redimensioned;
 
     /**
      * Constructs a provider.
      */
     @SuppressWarnings("ThisEscapedInObjectConstruction")
     public FranceGeocentricInterpolation() {
-        super(2, 2, PARAMETERS);
-        redimensioned = new FranceGeocentricInterpolation[4];
+        this(2, 2, PARAMETERS, new FranceGeocentricInterpolation[4]);
         redimensioned[0] = this;
-        redimensioned[1] = new FranceGeocentricInterpolation(2, 3, redimensioned);
-        redimensioned[2] = new FranceGeocentricInterpolation(3, 2, redimensioned);
-        redimensioned[3] = new FranceGeocentricInterpolation(3, 3, redimensioned);
+        redimensioned[1] = new FranceGeocentricInterpolation(2, 3, PARAMETERS, redimensioned);
+        redimensioned[2] = new FranceGeocentricInterpolation(3, 2, PARAMETERS, redimensioned);
+        redimensioned[3] = new FranceGeocentricInterpolation(3, 3, PARAMETERS, redimensioned);
     }
 
     /**
-     * Constructs a provider for the given dimensions.
+     * Constructs a provider for the given number of dimensions.
      *
      * @param sourceDimensions Number of dimensions in the source CRS of this operation method.
      * @param targetDimensions Number of dimensions in the target CRS of this operation method.
+     * @param parameters       The set of parameters (never {@code null}).
      * @param redimensioned    Providers for all combinations between 2D and 3D cases.
      */
-    private FranceGeocentricInterpolation(final int sourceDimensions, final int targetDimensions,
-            final FranceGeocentricInterpolation[] redimensioned)
+    FranceGeocentricInterpolation(final int sourceDimensions,
+                                  final int targetDimensions,
+                                  final ParameterDescriptorGroup parameters,
+                                  final FranceGeocentricInterpolation[] redimensioned)
     {
-        super(sourceDimensions, targetDimensions, PARAMETERS);
+        super(sourceDimensions, targetDimensions, parameters);
         this.redimensioned = redimensioned;
     }
 
@@ -307,22 +311,37 @@ public final class FranceGeocentricInterpolation extends AbstractProvider {
         if (dim != null) switch (dim) {
             case 2:  break;
             case 3:  withHeights = true; break;
-            default: throw new InvalidParameterValueException(Errors.format(Errors.Keys.IllegalArgumentValue_2, "dim", dim), "dim", dim);
+            default: throw new InvalidParameterValueException(Errors.format(
+                            Errors.Keys.IllegalArgumentValue_2, "dim", dim), "dim", dim);
         }
         final Path file = pg.getMandatoryValue(FILE);
-        final DatumShiftGridFile<Angle,Length> grid = getOrLoad(file, !isRecognized(file) ? null : new double[] {TX, TY, TZ}, PRECISION);
-        MathTransform tr = InterpolatedGeocentricTransform.createGeodeticTransformation(factory,
+        final DatumShiftGridFile<Angle,Length> grid = getOrLoad(file,
+                isRecognized(file) ? new double[] {TX, TY, TZ} : null, PRECISION);
+        MathTransform tr = createGeodeticTransformation(factory,
                 createEllipsoid(pg, Molodensky.TGT_SEMI_MAJOR,
-                                    Molodensky.TGT_SEMI_MINOR, CommonCRS.ETRS89.ellipsoid()), withHeights, // GRS 1980 ellipsoid
+                                    Molodensky.TGT_SEMI_MINOR, CommonCRS.ETRS89.ellipsoid()),   // GRS 1980 ellipsoid
                 createEllipsoid(pg, Molodensky.SRC_SEMI_MAJOR,
-                                    Molodensky.SRC_SEMI_MINOR, null), withHeights,  // Clarke 1880 (IGN) ellipsoid
-                grid);
+                                    Molodensky.SRC_SEMI_MINOR, null),                           // Clarke 1880 (IGN) ellipsoid
+                withHeights, grid);
         try {
             tr = tr.inverse();
         } catch (NoninvertibleTransformException e) {
             throw new FactoryException(e);                  // Should never happen.
         }
         return tr;
+    }
+
+    /**
+     * Creates the actual math transform. The default implementation delegates to the static method defined in
+     * {@link InterpolatedGeocentricTransform}, but the {@link MolodenskyInterpolation} subclass will rather
+     * delegate to {@link org.apache.sis.referencing.operation.transform.InterpolatedMolodenskyTransform}.
+     */
+    MathTransform createGeodeticTransformation(final MathTransformFactory factory,
+            final Ellipsoid source, final Ellipsoid target, final boolean withHeights,
+            final DatumShiftGridFile<Angle,Length> grid) throws FactoryException
+    {
+        return InterpolatedGeocentricTransform.createGeodeticTransformation(
+                factory, source, withHeights, target, withHeights, grid);
     }
 
     /**

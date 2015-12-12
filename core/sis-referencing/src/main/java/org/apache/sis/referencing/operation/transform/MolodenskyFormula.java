@@ -16,10 +16,8 @@
  */
 package org.apache.sis.referencing.operation.transform;
 
-import java.io.Serializable;
 import javax.measure.unit.Unit;
 import javax.measure.quantity.Length;
-import javax.measure.converter.UnitConverter;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.referencing.datum.Ellipsoid;
@@ -37,16 +35,13 @@ import org.apache.sis.util.Debug;
 
 import static java.lang.Math.*;
 
-// Branch-specific imports
-import java.util.Objects;
-
 
 /**
- * Implementation of Molodensky formulas. This class is used by
+ * Implementation of Molodensky formulas. This class is used by:
  *
  * <ul>
  *   <li>The "real" {@link MolodenskyTransform} (see that class for documentation about Molodensky transform).</li>
- *   <li>{@link InterpolatedGeocentricTransform}, which conceptually works on geocentric coordinates but
+ *   <li>{@link InterpolatedMolodenskyTransform}, which conceptually works on geocentric coordinates but
  *       is implemented in Apache SIS using Molodensky (never abridged) formulas for performance reasons.
  *       However this implementation choice should be hidden to users (except by mention in javadoc).</li>
  * </ul>
@@ -56,7 +51,7 @@ import java.util.Objects;
  * @version 0.7
  * @module
  */
-abstract class MolodenskyFormula extends AbstractMathTransform implements Serializable {
+abstract class MolodenskyFormula extends DatumShiftTransform {
     /**
      * Serial number for inter-operability with different versions.
      */
@@ -143,20 +138,6 @@ abstract class MolodenskyFormula extends AbstractMathTransform implements Serial
     protected final double eccentricitySquared;
 
     /**
-     * The parameters used for creating this conversion.
-     * They are used for formatting <cite>Well Known Text</cite> (WKT) and error messages.
-     *
-     * @see #getContextualParameters()
-     */
-    final ContextualParameters context;
-
-    /**
-     * The grid of datum shifts from source datum to target datum.
-     * This can be non-null only for {@link InterpolatedGeocentricTransform}.
-     */
-    final DatumShiftGrid<?,?> grid;
-
-    /**
      * Constructs the inverse of a Molodensky transform.
      *
      * @param inverse     The transform for which to create the inverse.
@@ -194,6 +175,7 @@ abstract class MolodenskyFormula extends AbstractMathTransform implements Serial
                       final DatumShiftGrid<?,?> grid, final boolean isAbridged,
                       final ParameterDescriptorGroup descriptor)
     {
+        super(descriptor, isSource3D ? 4 : 3, isTarget3D ? 4 : 3, grid);
         ArgumentChecks.ensureNonNull("source", source);
         ArgumentChecks.ensureNonNull("target", target);
         final DefaultEllipsoid src = DefaultEllipsoid.castOrCopy(source);
@@ -205,7 +187,6 @@ abstract class MolodenskyFormula extends AbstractMathTransform implements Serial
         this.tX         = tX;
         this.tY         = tY;
         this.tZ         = tZ;
-        this.grid       = grid;
 
         final double semiMinor = src.getSemiMinorAxis();
         final double Δf = src.flatteningDifference(target);
@@ -217,12 +198,7 @@ abstract class MolodenskyFormula extends AbstractMathTransform implements Serial
          * by MolodenskyTransform, but we need to store them in case the user asks for them.
          */
         final Unit<Length> unit = src.getAxisUnit();
-        final UnitConverter c = target.getAxisUnit().getConverterTo(unit);
-        context = new ContextualParameters(descriptor, isSource3D ? 4 : 3, isTarget3D ? 4 : 3);
-        context.getOrCreate(Molodensky.SRC_SEMI_MAJOR).setValue(semiMajor, unit);
-        context.getOrCreate(Molodensky.SRC_SEMI_MINOR).setValue(semiMinor, unit);
-        context.getOrCreate(Molodensky.TGT_SEMI_MAJOR).setValue(c.convert(target.getSemiMajorAxis()), unit);
-        context.getOrCreate(Molodensky.TGT_SEMI_MINOR).setValue(c.convert(target.getSemiMinorAxis()), unit);
+        setContextParameters(semiMajor, semiMinor, unit, target);
         completeParameters(context, semiMinor, unit, Δf);
         /*
          * Prepare two affine transforms to be executed before and after the MolodenskyTransform:
@@ -300,20 +276,6 @@ abstract class MolodenskyFormula extends AbstractMathTransform implements Serial
     }
 
     /**
-     * Returns the parameters used for creating the complete transformation. Those parameters describe a sequence
-     * of <cite>normalize</cite> → {@code this} → <cite>denormalize</cite> transforms, <strong>not</strong>
-     * including {@linkplain org.apache.sis.referencing.cs.CoordinateSystems#swapAndScaleAxes axis swapping}.
-     * Those parameters are used for formatting <cite>Well Known Text</cite> (WKT) and error messages.
-     *
-     * @return The parameters values for the sequence of
-     *         <cite>normalize</cite> → {@code this} → <cite>denormalize</cite> transforms.
-     */
-    @Override
-    protected ContextualParameters getContextualParameters() {
-        return context;
-    }
-
-    /**
      * Gets the dimension of input points.
      *
      * @return The input dimension, which is 2 or 3.
@@ -341,7 +303,7 @@ abstract class MolodenskyFormula extends AbstractMathTransform implements Serial
      * <ul>
      *   <li>{@code tX}, {@code tY} and {@code tZ} parameters always have the values of {@link #tX}, {@link #tY}
      *       and {@link #tZ} fields when this method is invoked by {@link MolodenskyTransform}. But those values
-     *       may be slightly different when this method is invoked by {@link InterpolatedGeocentricTransform}.</li>
+     *       may be slightly different when this method is invoked by {@link InterpolatedMolodenskyTransform}.</li>
      * </ul>
      *
      * @param λ           Longitude (radians).
@@ -403,8 +365,8 @@ abstract class MolodenskyFormula extends AbstractMathTransform implements Serial
             φt = φ + (cmsφ * scaleY);
             if (offset == null) break;
 
-            // Following is executed only in InterpolatedGeocentricTransform case.
-            grid.interpolateAtNormalized(λt, φt, offset);
+            // Following is executed only in InterpolatedMolodenskyTransform case.
+            grid.interpolateInCell(grid.normalizedToGridX(λt), grid.normalizedToGridY(φt), offset);
             tX = -offset[0];
             tY = -offset[1];
             tZ = -offset[2];
@@ -497,7 +459,7 @@ abstract class MolodenskyFormula extends AbstractMathTransform implements Serial
                 + 31 * (Double.doubleToLongBits(tY)
                 + 31 * (Double.doubleToLongBits(tZ)))));
         if (isAbridged) code = ~code;
-        return code + Objects.hashCode(grid);
+        return code;
     }
 
     /**
@@ -522,8 +484,7 @@ abstract class MolodenskyFormula extends AbstractMathTransform implements Serial
                 && Numerics.epsilonEqual(Δa,                  that.Δa,                  mode)
                 && Numerics.epsilonEqual(Δfmod,               that.Δfmod,               mode)
                 && Numerics.epsilonEqual(semiMajor,           that.semiMajor,           mode)
-                && Numerics.epsilonEqual(eccentricitySquared, that.eccentricitySquared, mode)
-                && Objects .equals(grid, that.grid);
+                && Numerics.epsilonEqual(eccentricitySquared, that.eccentricitySquared, mode);
                 // No need to compare the contextual parameters since this is done by super-class.
         }
         return false;
