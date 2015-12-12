@@ -142,12 +142,30 @@ public final strictfp class InterpolatedTransformTest extends MathTransformTestC
      */
     @Test
     @DependsOnMethod("testForwardTransform")
-    public void testDerivative() throws FactoryException, TransformException {
+    public void testForwardDerivative() throws FactoryException, TransformException {
         createRGF93();
         final double delta = 0.2;
         derivativeDeltas = new double[] {delta, delta};
         tolerance = 5E-6;   // Empirical value.
         verifyDerivative(FranceGeocentricInterpolationTest.samplePoint(1));
+    }
+
+    /**
+     * Tests the derivatives at the sample point. This method compares the derivatives computed by
+     * the transform with an estimation of derivatives computed by the finite differences method.
+     *
+     * @throws FactoryException if an error occurred while loading the grid.
+     * @throws TransformException if an error occurred while transforming the coordinate.
+     */
+    @Test
+    @DependsOnMethod("testInverseTransform")
+    public void testInverseDerivative() throws FactoryException, TransformException {
+        createRGF93();
+        transform = transform.inverse();
+        final double delta = 0.2;
+        derivativeDeltas = new double[] {delta, delta};
+        tolerance = 5E-6;   // Empirical value.
+        verifyDerivative(FranceGeocentricInterpolationTest.samplePoint(3));
     }
 
     /**

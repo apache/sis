@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.io.Serializable;
 import java.awt.geom.AffineTransform;   // For javadoc
 import org.opengis.referencing.operation.Matrix;
+import org.apache.sis.internal.referencing.ExtendedPrecisionMatrix;
 import org.apache.sis.internal.util.DoubleDouble;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.util.ArgumentChecks;
@@ -261,8 +262,30 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
         final int numRow = getNumRow();
         final int numCol = getNumCol();
         ensureSizeMatch(numRow, numCol, matrix);
-        final double[] elements = new double[numRow * numCol];
-        getElements(matrix, numRow, numCol, elements);
+        final int count = numRow * numCol;
+        final double[] elements;
+        /*
+         * If both matrices use extended precision, the elements array will have twice the expected length
+         * with the matrix values in the first half and the error terms in the second half.  If we want to
+         * preserve the extended precision, we have to transfer the values between the two matrices with a
+         * DoubleDouble object.
+         */
+        if (isExtendedPrecision() && matrix instanceof ExtendedPrecisionMatrix) {
+            elements = ((ExtendedPrecisionMatrix) matrix).getExtendedElements();
+            if (elements.length > count) {
+                final DoubleDouble t = new DoubleDouble();
+                for (int i=0; i<count; i++) {
+                    t.value = elements[i];
+                    t.error = elements[i + count];
+                    set(i / numCol, i % numCol, t);
+                }
+                return;
+            }
+        } else {
+            // Fallback for matrices that do not use extended precision.
+            elements = new double[count];
+            getElements(matrix, numRow, numCol, elements);
+        }
         setElements(elements);
     }
 

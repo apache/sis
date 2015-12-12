@@ -175,7 +175,7 @@ abstract class MolodenskyFormula extends DatumShiftTransform {
                       final DatumShiftGrid<?,?> grid, final boolean isAbridged,
                       final ParameterDescriptorGroup descriptor)
     {
-        super(descriptor, isSource3D ? 4 : 3, isTarget3D ? 4 : 3, grid);
+        super(descriptor, isSource3D, isTarget3D, grid);
         ArgumentChecks.ensureNonNull("source", source);
         ArgumentChecks.ensureNonNull("target", target);
         final DefaultEllipsoid src = DefaultEllipsoid.castOrCopy(source);

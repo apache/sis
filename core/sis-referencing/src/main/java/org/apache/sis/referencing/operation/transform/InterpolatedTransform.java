@@ -17,14 +17,12 @@
 package org.apache.sis.referencing.operation.transform;
 
 import java.util.Arrays;
-import java.io.Serializable;
 import javax.measure.unit.Unit;
 import javax.measure.unit.NonSI;
 import javax.measure.quantity.Quantity;
 import javax.measure.converter.UnitConverter;
 import javax.measure.converter.LinearConverter;
 import org.opengis.util.FactoryException;
-import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
@@ -79,7 +77,7 @@ import java.util.Objects;
  * @version 0.7
  * @module
  */
-public class InterpolatedTransform extends AbstractMathTransform implements Serializable {
+public class InterpolatedTransform extends DatumShiftTransform {
     /**
      * Serial number for inter-operability with different versions.
      */
@@ -93,22 +91,9 @@ public class InterpolatedTransform extends AbstractMathTransform implements Seri
     private static final int GRID_DIMENSION = 2;
 
     /**
-     * The grid of datum shifts from source datum to target datum.
-     */
-    protected final DatumShiftGrid<?,?> grid;
-
-    /**
      * The value of {@link DatumShiftGrid#getTranslationDimensions()}, stored for efficiency.
      */
     private final int dimension;
-
-    /**
-     * The parameters used for creating this conversion.
-     * They are used for formatting <cite>Well Known Text</cite> (WKT) and error messages.
-     *
-     * @see #getContextualParameters()
-     */
-    private final ContextualParameters context;
 
     /**
      * The inverse of this interpolated transform.
@@ -149,7 +134,11 @@ public class InterpolatedTransform extends AbstractMathTransform implements Seri
     protected <T extends Quantity> InterpolatedTransform(final DatumShiftGrid<T,T> grid)
             throws NoninvertibleMatrixException
     {
-        ArgumentChecks.ensureNonNull("grid", grid);
+        /*
+         * Create the contextual parameters using the descriptor of the provider that created the datum shift grid.
+         * If that provider is unknown, default (for now) to NTv2. This default may change in any future SIS version.
+         */
+        super((grid instanceof DatumShiftGridFile<?,?>) ? ((DatumShiftGridFile<?,?>) grid).descriptor : NTv2.PARAMETERS, grid);
         if (!grid.isCellValueRatio()) {
             throw new IllegalArgumentException(Errors.format(
                     Errors.Keys.IllegalParameterValue_2, "isCellValueRatio", Boolean.FALSE));
@@ -158,14 +147,7 @@ public class InterpolatedTransform extends AbstractMathTransform implements Seri
         if (unit != grid.getCoordinateUnit()) {
             throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalUnitFor_2, "translation", unit));
         }
-        this.grid = grid;
         dimension = grid.getTranslationDimensions();
-        /*
-         * Create the contextual parameters using the descriptor of the provider that created the datum shift grid.
-         * If that provider is unknown, default (for now) to NTv2. This default may change in any future SIS version.
-         */
-        context = new ContextualParameters((grid instanceof DatumShiftGridFile<?,?>)
-                ? ((DatumShiftGridFile<?,?>) grid).descriptor : NTv2.PARAMETERS, dimension + 1, dimension + 1);
         if (grid instanceof DatumShiftGridFile<?,?>) {
             ((DatumShiftGridFile<?,?>) grid).setFileParameters(context);
         }
@@ -266,30 +248,6 @@ public class InterpolatedTransform extends AbstractMathTransform implements Seri
     @Override
     public final int getTargetDimensions() {
         return dimension;
-    }
-
-    /**
-     * Returns the parameter values of this transform.
-     *
-     * @return The parameter values for this transform.
-     */
-    @Override
-    public ParameterValueGroup getParameterValues() {
-        return context;
-    }
-
-    /**
-     * Returns the parameters used for creating the complete transformation. Those parameters describe a sequence
-     * of <cite>normalize</cite> → {@code this} → <cite>denormalize</cite> transforms, <strong>not</strong>
-     * including {@linkplain org.apache.sis.referencing.cs.CoordinateSystems#swapAndScaleAxes axis swapping}.
-     * Those parameters are used for formatting <cite>Well Known Text</cite> (WKT) and error messages.
-     *
-     * @return The parameters values for the sequence of
-     *         <cite>normalize</cite> → {@code this} → <cite>denormalize</cite> transforms.
-     */
-    @Override
-    protected ContextualParameters getContextualParameters() {
-        return context;
     }
 
     /**

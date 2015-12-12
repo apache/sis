@@ -108,12 +108,12 @@ import java.util.Objects;
  * following method signatures:
  *
  * <ul>
- *   <li>{@link #interpolateAtNormalized(double, double, double[])}
- *       where the two first {@code double} values are (<var>x</var>,<var>y</var>) normalized ordinates.</li>
  *   <li>{@link #interpolateInCell(double, double, double[])}
  *       where the two first {@code double} values are (<var>x</var>,<var>y</var>) grid indices.</li>
  *   <li>{@link #getCellValue(int, int, int)}
  *       where the two last {@code int} values are (<var>x</var>,<var>y</var>) grid indices.</li>
+ *   <li>{@link #derivativeInCell(double, double)}
+ *       where the values are (<var>x</var>,<var>y</var>) grid indices.</li>
  * </ul>
  *
  * Note that the above restriction does not prevent {@code DatumShiftGrid} to interpolate translation vectors
@@ -134,6 +134,8 @@ import java.util.Objects;
  * @since   0.7
  * @version 0.7
  * @module
+ *
+ * @see org.apache.sis.referencing.operation.transform.DatumShiftTransform
  */
 public abstract class DatumShiftGrid<C extends Quantity, T extends Quantity> implements Serializable {
     /**

@@ -36,7 +36,6 @@ import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.referencing.datum.DatumShiftGrid;
 import org.apache.sis.referencing.operation.matrix.Matrices;
-import org.apache.sis.referencing.operation.matrix.Matrix3;
 import org.apache.sis.util.ArgumentChecks;
 
 
@@ -99,7 +98,7 @@ public class InterpolatedGeocentricTransform extends DatumShiftTransform {
      * The {@code DESCRIPTOR} defined here is non-standard, but allows this class to be used
      * for other geographic areas than France.
      */
-    private static final ParameterDescriptorGroup DESCRIPTOR;
+    static final ParameterDescriptorGroup DESCRIPTOR;
 
     /**
      * Parameter descriptor to use with the contextual parameters for the inverse transformation.
@@ -219,9 +218,10 @@ public class InterpolatedGeocentricTransform extends DatumShiftTransform {
                                             final DatumShiftGrid<?,?> grid,
                                             InterpolatedGeocentricTransform inverse)
     {
-        super((inverse != null) ? INVERSE : DESCRIPTOR, isSource3D ? 4 : 3, isTarget3D ? 4 : 3, grid);
+        super((inverse != null) ? INVERSE : DESCRIPTOR, isSource3D, isTarget3D, grid);
         ArgumentChecks.ensureNonNull("source", source);
         ArgumentChecks.ensureNonNull("target", target);
+        ArgumentChecks.ensureNonNull("grid",   grid);
         final Unit<Length> unit = source.getAxisUnit();
         ensureGeocentricTranslation(grid, unit);
         /*
@@ -326,7 +326,6 @@ public class InterpolatedGeocentricTransform extends DatumShiftTransform {
             final Ellipsoid target, final boolean isTarget3D,
             final DatumShiftGrid<Angle,Length> grid) throws FactoryException
     {
-        ArgumentChecks.ensureNonNull("grid", grid);
         final InterpolatedGeocentricTransform tr;
         if (isSource3D || isTarget3D) {
             tr = new InterpolatedGeocentricTransform(source, isSource3D, target, isTarget3D, grid);
@@ -401,18 +400,34 @@ public class InterpolatedGeocentricTransform extends DatumShiftTransform {
         if (m1 == null || m2 == null) {
             return null;
         }
-        /*
-         * We could improve a little bit the precision by computing the derivative in the interpolation grid:
-         *
-         *     grid.derivativeInCell(grid.normalizedToGridX(λ), grid.normalizedToGridY(φ));
-         *
-         * But this is a little bit complicated (need to convert to normalized units and divide by the grid
-         * cell size) for a very small difference. For now we neglect that part.
-         */
-        final Matrix3 t = new Matrix3();
-        t.m00 = scale;
-        t.m11 = scale;
-        return Matrices.multiply(m2, Matrices.multiply(t, m1));
+        return concatenate(m1, m2);
+    }
+
+    /**
+     * Computes the derivative by concatenating the "geographic to geocentric" and "geocentric to geographic" matrix,
+     * with the {@linkplain #scale} factor between them.
+     *
+     * <div class="note"><b>Note:</b>
+     * we could improve a little bit the precision by computing the derivative in the interpolation grid:
+     *
+     * {@preformat java
+     *     grid.derivativeInCell(grid.normalizedToGridX(λ), grid.normalizedToGridY(φ));
+     * }
+     *
+     * But this is a little bit complicated (need to convert to normalized units and divide by the grid
+     * cell size) for a very small difference. For now we neglect that part.</div>
+     *
+     * @param m1 The derivative computed by the "geographic to geocentric" conversion.
+     * @param m2 The derivative computed by the "geocentric to geographic" conversion.
+     * @return The derivative for the "interpolated geocentric" transformation.
+     */
+    final Matrix concatenate(final Matrix m1, final Matrix m2) {
+        for (int i = m1.getNumCol(); --i >= 0;) {   // Number of columns can be 2 or 3.
+            for (int j = 3; --j >= 0;) {            // Number of rows can not be anything else than 3.
+                m1.setElement(j, i, m1.getElement(j, i) * scale);
+            }
+        }
+        return Matrices.multiply(m2, m1);
     }
 
     /**
@@ -519,10 +534,7 @@ public class InterpolatedGeocentricTransform extends DatumShiftTransform {
             if (m1 == null || m2 == null) {
                 return null;
             }
-            final Matrix3 t = new Matrix3();
-            t.m00 = scale;
-            t.m11 = scale;
-            return Matrices.multiply(m2, Matrices.multiply(t, m1));
+            return concatenate(m1, m2);
         }
     }
 }
