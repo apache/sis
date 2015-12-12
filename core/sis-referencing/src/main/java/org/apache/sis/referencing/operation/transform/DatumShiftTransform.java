@@ -35,13 +35,45 @@ import java.util.Objects;
 
 
 /**
- * Base class of transforms performing datum shifts.
- * Some implementations are backed by a {@link DatumShiftGrid}.
+ * Transforms between two CRS (usually geographic) based on different datum. A datum shift may be needed when two CRS
+ * use different {@linkplain org.apache.sis.referencing.datum.DefaultEllipsoid ellipsoids} as approximation of the
+ * shape of the Earth. Sometime two CRS use the same ellipsoid but with different anchor point (i.e. their coordinate
+ * systems have their origin in different locations).
+ *
+ * <p>There is many different datum shift methods, ranging from transformations as simple as adding a constant offset
+ * to geographic coordinates, to more complex transformations involving conversions to geocentric coordinates and/or
+ * interpolations in a {@linkplain DatumShiftGrid datum shift grid}. The simple cases like adding a constant offset
+ * are handled by other {@code MathTransform} implementations like {@link LinearTransform}.
+ * This {@code DatumShiftTransform} base class is only for transformation methods that can not be represented
+ * by a concatenation of other {@code MathTransform} implementations.</p>
+ *
+ * <div class="section">Datum shift methods overview</div>
+ * The two CRS's ellipsoids have slightly different scale and rotation in space, and their center are located in
+ * a slightly different position. Consequently geodetic datum shifts are often approximated by a constant scale,
+ * rotation and translation applied on geocentric coordinates. Those approximations are handled in SIS
+ * by concatenations of {@link EllipsoidToCentricTransform} with {@link LinearTransform} instead than a specific
+ * {@code DatumShiftTransform} subclass.
+ *
+ * <p>If the geodetic datum shifts is approximated only by a geocentric translation without any scale or rotation,
+ * and if an error of a few centimetres it acceptable, then the {@link MolodenskyTransform} subclass can be used
+ * as an approximation of the above method. The Molodensky method requires less floating point operations since
+ * it applies directly on geographic coordinates, without conversions to geocentric coordinates.</p>
+ *
+ * <p>Some countries go one step further and allow the above geocentric translations to be non-constant.
+ * Instead, a different geocentric translation is interpolated for each geographic input coordinates.
+ * This case is handled by the {@link InterpolatedGeocentricTransform} subclass, or its
+ * {@link InterpolatedMolodenskyTransform} variant if a few centimetres accuracy lost can be afforded.</p>
+ *
+ * <p>A simpler alternative to the above is to interpolate translations to apply directly on geographic coordinates.
+ * This is the approach taken by NADCON and NTv2 grids.
+ * SIS handles those datum shifts with the {@link InterpolatedTransform} subclass.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.7
  * @version 0.7
  * @module
+ *
+ * @see DatumShiftGrid
  */
 public abstract class DatumShiftTransform extends AbstractMathTransform implements Serializable {
     /**
@@ -50,8 +82,9 @@ public abstract class DatumShiftTransform extends AbstractMathTransform implemen
     private static final long serialVersionUID = -4492222496475405226L;
 
     /**
-     * The parameters used for creating this transformation.
-     * They are used for formatting <cite>Well Known Text</cite> (WKT) and error messages.
+     * The parameters used for creating this datum shift. They are used for formatting <cite>Well Known Text</cite> (WKT)
+     * and error messages. Subclasses shall not use the values defined in this object for computation purpose, except at
+     * construction time.
      *
      * @see #getContextualParameters()
      */
@@ -63,13 +96,31 @@ public abstract class DatumShiftTransform extends AbstractMathTransform implemen
     final DatumShiftGrid<?,?> grid;
 
     /**
-     * Creates a datum shift transform. It is caller responsibility to initialize the {@link #context} parameters.
+     * Creates a datum shift transform for direct interpolations in a grid.
+     * It is caller responsibility to initialize the {@link #context} parameters.
+     *
+     * @param descriptor  The contextual parameter descriptor.
+     * @param grid        Interpolation grid.
+     */
+    DatumShiftTransform(ParameterDescriptorGroup descriptor, final DatumShiftGrid<?,?> grid) {
+        final int size = grid.getTranslationDimensions() + 1;
+        context = new ContextualParameters(descriptor, size, size);
+        this.grid = grid;
+    }
+
+    /**
+     * Creates a datum shift transform for interpolations in geocentric domain.
+     * It is caller responsibility to initialize the {@link #context} parameters.
      *
      * @param descriptor  The contextual parameter descriptor.
      * @param grid        Interpolation grid in geocentric coordinates, or {@code null} if none.
+     * @param isSource3D  {@code true} if the source coordinates have a height.
+     * @param isTarget3D  {@code true} if the target coordinates have a height.
      */
-    DatumShiftTransform(ParameterDescriptorGroup descriptor, int srcSize, int tgtSize, final DatumShiftGrid<?,?> grid) {
-        context = new ContextualParameters(descriptor, srcSize, tgtSize);
+    DatumShiftTransform(final ParameterDescriptorGroup descriptor,
+            final boolean isSource3D, final boolean isTarget3D, final DatumShiftGrid<?,?> grid)
+    {
+        context = new ContextualParameters(descriptor, isSource3D ? 4 : 3, isTarget3D ? 4 : 3);
         this.grid = grid;
     }
 
@@ -115,11 +166,37 @@ public abstract class DatumShiftTransform extends AbstractMathTransform implemen
     }
 
     /**
-     * Returns the internal parameter values of this transform.
-     * This method is mostly for {@linkplain org.apache.sis.io.wkt.Convention#INTERNAL debugging purposes}
-     * since the isolation of non-linear parameters in this class is highly implementation dependent.
-     * Most GIS applications will instead be interested in the {@linkplain #getContextualParameters()
-     * contextual parameters}.
+     * Returns the internal parameter values of this {@code DatumShiftTransform} instance (ignoring context).
+     * The parameters returned by this method do not necessarily describe the whole datum shift process,
+     * because {@code DatumShiftTransform} instances are often preceeded and followed by linear conversions.
+     * It may be conversions between degrees and radians units, or conversions from geodetic coordinates to grid indices.
+     *
+     * <div class="note"><b>Example:</b>
+     * The chain of transforms of an {@link InterpolatedGeocentricTransform} is:
+     * <center>
+     *   <table class="compact" style="td {vertical-align: middle}" summary="Decomposition of a datum shift">
+     *     <tr style="text-align: center">
+     *       <th>Degrees to radians</th><th></th>
+     *       <th>{@code DatumShiftTransform} work</th><th></th>
+     *       <th>Radians to degrees</th>
+     *     </tr><tr>
+     *       <td>{@include formulas.html#NormalizeGeographic}</td>
+     *       <td>→</td>
+     *       <td style="vertical-align: top"><ol style="padding-left: 15px">
+     *         <li>Geographic to geocentric conversion</li>
+     *         <li>Geocentric interpolation</li>
+     *         <li>Geocentric to geographic conversion</li>
+     *       </ol></td>
+     *       <td>→</td>
+     *       <td>{@include formulas.html#DenormalizeGeographic}</td>
+     *     </tr>
+     *   </table>
+     * </center></div>
+     *
+     * This method returns the parameters for the part in the middle of above example.
+     * The content of this part is highly implementation-dependent and used mostly for
+     * {@linkplain org.apache.sis.io.wkt.Convention#INTERNAL debugging purposes}.
+     * The parameters that describe the process as a whole are rather given by {@link #getContextualParameters()}.
      *
      * @return The internal parameter values for this transform.
      */

@@ -82,16 +82,10 @@ public class InterpolatedMolodenskyTransform extends MolodenskyFormula {
     static {
         final ParameterBuilder builder = new ParameterBuilder()
                 .setRequired(true).setCodeSpace(Citations.SIS, Constants.SIS);
-        final ParameterDescriptor<?>[] param = new ParameterDescriptor<?>[] {
-                Molodensky.DIMENSION,
-                Molodensky.SRC_SEMI_MAJOR,
-                Molodensky.SRC_SEMI_MINOR,
-                Molodensky.TGT_SEMI_MAJOR,
-                Molodensky.TGT_SEMI_MINOR,
-                FranceGeocentricInterpolation.FILE
-        };
-        DESCRIPTOR = builder.addName("Molodensky interpolation").createGroup(param);
-        INVERSE = builder.addName("Molodensky inverse interpolation").createGroup(param);
+        DESCRIPTOR = builder.addName("Molodensky interpolation")
+                .createGroupWithSameParameters(InterpolatedGeocentricTransform.DESCRIPTOR);
+        INVERSE = builder.addName("Molodensky inverse interpolation")
+                .createGroupWithSameParameters(InterpolatedGeocentricTransform.DESCRIPTOR);
     }
 
     /**
