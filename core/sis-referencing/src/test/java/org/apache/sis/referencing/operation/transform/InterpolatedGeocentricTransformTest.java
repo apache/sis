@@ -23,7 +23,6 @@ import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.internal.referencing.provider.FranceGeocentricInterpolation;
-import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.referencing.CommonCRS;
 
@@ -39,13 +38,7 @@ import static org.opengis.test.Assert.*;
 
 
 /**
- * Tests {@link InterpolatedGeocentricTransform}. The accuracy of using the Molodensky approximation
- * instead than the real geocentric translation is verified by the following tests:
- *
- * <ul>
- *   <li>{@link GeocentricTranslationTest#testFranceGeocentricInterpolationPoint()}</li>
- *   <li>{@link MolodenskyTransformTest#testFranceGeocentricInterpolationPoint()}</li>
- * </ul>
+ * Tests {@link InterpolatedGeocentricTransform}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.7
@@ -53,23 +46,28 @@ import static org.opengis.test.Assert.*;
  * @module
  */
 @DependsOn({
-    MolodenskyTransformTest.class,
     GeocentricTranslationTest.class,
     FranceGeocentricInterpolationTest.class
 })
-public final strictfp class InterpolatedGeocentricTransformTest extends MathTransformTestCase {
+public strictfp class InterpolatedGeocentricTransformTest extends MathTransformTestCase {
     /**
      * Creates the <cite>"France geocentric interpolation"</cite> transform,
      * including the normalization and denormalization parts.
      *
      * @throws FactoryException if an error occurred while loading the grid.
      */
-    private void createGeodeticTransformation() throws FactoryException {
+    void createGeodeticTransformation() throws FactoryException {
+        createGeodeticTransformation(new FranceGeocentricInterpolation());
+    }
+
+    /**
+     * Creates the transform using the given provider.
+     */
+    final void createGeodeticTransformation(final FranceGeocentricInterpolation provider) throws FactoryException {
         final URL file = FranceGeocentricInterpolationTest.class.getResource(FranceGeocentricInterpolationTest.TEST_FILE);
         assertNotNull("Test file \"" + FranceGeocentricInterpolationTest.TEST_FILE + "\" not found.", file);
         final Ellipsoid source = HardCodedDatum.NTF.getEllipsoid();     // Clarke 1880 (IGN)
         final Ellipsoid target = CommonCRS.ETRS89.ellipsoid();          // GRS 1980 ellipsoid
-        final FranceGeocentricInterpolation provider = new FranceGeocentricInterpolation();
         final ParameterValueGroup values = provider.getParameters().createValue();
         values.parameter("src_semi_major").setValue(source.getSemiMajorAxis());
         values.parameter("src_semi_minor").setValue(source.getSemiMinorAxis());
@@ -77,7 +75,7 @@ public final strictfp class InterpolatedGeocentricTransformTest extends MathTran
         values.parameter("tgt_semi_minor").setValue(target.getSemiMinorAxis());
         values.parameter("Geocentric translations file").setValue(file);    // Automatic conversion from URL to Path.
         transform = provider.createMathTransform(DefaultFactories.forBuildin(MathTransformFactory.class), values);
-        tolerance = Formulas.ANGULAR_TOLERANCE;
+        tolerance = FranceGeocentricInterpolationTest.ANGULAR_TOLERANCE;
     }
 
     /**
@@ -99,7 +97,8 @@ public final strictfp class InterpolatedGeocentricTransformTest extends MathTran
         /*
          * Input:     2.424971108333333    48.84444583888889
          * Expected:  2.425671861111111    48.84451225
-         * Actual:    2.4256718922236735   48.84451219111167
+         * Actual:    2.425671863799633    48.844512255374376   (interpolated geocentric transform)
+         * Actual:    2.4256718922236735   48.84451219111167    (interpolated Molodensky transform)
          */
     }
 
@@ -187,13 +186,13 @@ public final strictfp class InterpolatedGeocentricTransformTest extends MathTran
                 "    Parameter[“A0”, 0.017453292519943295, Id[“EPSG”, 8623]],\n" +   // Degrees to radians conversion
                 "    Parameter[“B1”, 0.017453292519943295, Id[“EPSG”, 8640]]],\n" +
                 "  Param_MT[“Geocentric inverse interpolation”,\n" +
+                "    Parameter[“dim”, 2],\n" +
                 "    Parameter[“src_semi_major”, 6378249.2],\n" +
                 "    Parameter[“src_semi_minor”, 6356515.0],\n" +
-                "    Parameter[“Semi-major axis length difference”, -112.2],\n" +
-                "    Parameter[“Flattening difference”, -5.4738838833299144E-5],\n" +
+                "    Parameter[“tgt_semi_major”, 6378137.0],\n" +
+                "    Parameter[“tgt_semi_minor”, 6356752.314140356],\n" +
                 "    ParameterFile[“Geocentric translations file”, “\\E.*\\W\\Q" +
-                                   FranceGeocentricInterpolationTest.TEST_FILE + "”, Id[“EPSG”, 8727]],\n" +
-                "    Parameter[“dim”, 2]],\n" +
+                                   FranceGeocentricInterpolationTest.TEST_FILE + "”, Id[“EPSG”, 8727]]],\n" +
                 "  Param_MT[“Affine parametric transformation”,\n" +
                 "    Parameter[“A0”, 57.29577951308232, Id[“EPSG”, 8623]],\n" +      // Radians to degrees conversion
                 "    Parameter[“B1”, 57.29577951308232, Id[“EPSG”, 8640]]]]\\E");
