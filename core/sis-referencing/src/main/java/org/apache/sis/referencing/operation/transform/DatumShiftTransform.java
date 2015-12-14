@@ -44,8 +44,8 @@ import java.util.Objects;
  * to geographic coordinates, to more complex transformations involving conversions to geocentric coordinates and/or
  * interpolations in a {@linkplain DatumShiftGrid datum shift grid}. The simple cases like adding a constant offset
  * are handled by other {@code MathTransform} implementations like {@link LinearTransform}.
- * This {@code DatumShiftTransform} base class is only for transformation methods that can not be represented
- * by a concatenation of other {@code MathTransform} implementations.</p>
+ * More complex methods are subclasses of this {@code DatumShiftTransform} base class, but users should not assume
+ * that this is the case of every transforms performing a datum shift.</p>
  *
  * <div class="section">Datum shift methods overview</div>
  * The two CRS's ellipsoids have slightly different scale and rotation in space, and their center are located in
