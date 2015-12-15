@@ -61,6 +61,12 @@ public final class Messages extends IndexedResourceBundle {
         public static final short AlreadyRegistered_2 = 0;
 
         /**
+         * Ambiguity between inverse flattening and semi minor axis length for “{0}”. Using inverse
+         * flattening.
+         */
+        public static final short AmbiguousEllipsoid_1 = 30;
+
+        /**
          * Changed the container capacity from {0} to {1} elements.
          */
         public static final short ChangedContainerCapacity_2 = 1;

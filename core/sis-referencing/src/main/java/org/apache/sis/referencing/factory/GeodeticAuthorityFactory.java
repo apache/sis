@@ -133,8 +133,8 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * Returns an arbitrary object from a code. The returned object will typically be an instance of {@link Datum},
      * {@link CoordinateSystem}, {@link CoordinateReferenceSystem} or {@link CoordinateOperation}.
      * This method may be used when the type of the object to create is unknown.
-     * But it is recommended to invoke the most specific {@code createFoo(String)} method when the type is known,
-     * both for performance reason and for avoiding ambiguity.
+     * But it is recommended to invoke the most specific {@code createFoo(String)} method when
+     * the desired type is known, both for performance reason and for avoiding ambiguity.
      *
      * <div class="section">Note for subclasses</div>
      * In default {@code GeodeticAuthorityFactory} implementation, all {@code createFoo(String)} methods ultimately
