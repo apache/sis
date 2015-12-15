@@ -16,6 +16,13 @@
  */
 package org.apache.sis.referencing.factory.sql;
 
+import javax.measure.unit.Unit;
+import org.opengis.referencing.cs.*;
+import org.opengis.referencing.crs.*;
+import org.opengis.referencing.datum.*;
+import org.opengis.referencing.operation.*;
+import org.opengis.parameter.ParameterDescriptor;
+
 
 /**
  * Information about a specific table. The MS-Access dialect of SQL is assumed;
@@ -27,6 +34,87 @@ package org.apache.sis.referencing.factory.sql;
  * @module
  */
 final class TableInfo {
+    /**
+     * List of tables and columns to test for codes values.
+     * Those tables are used by the {@link EPSGFactory#createObject(String)} method
+     * in order to detect which of the following methods should be invoked for a given code:
+     *
+     * {@link EPSGFactory#createCoordinateReferenceSystem(String)}
+     * {@link EPSGFactory#createCoordinateSystem(String)}
+     * {@link EPSGFactory#createDatum(String)}
+     * {@link EPSGFactory#createEllipsoid(String)}
+     * {@link EPSGFactory#createUnit(String)}
+     *
+     * The order is significant: it is the key for a {@code switch} statement.
+     */
+    static final TableInfo[] EPSG = {
+        new TableInfo(CoordinateReferenceSystem.class,
+                "[Coordinate Reference System]",
+                "COORD_REF_SYS_CODE",
+                "COORD_REF_SYS_NAME",
+                "COORD_REF_SYS_KIND",
+                new Class<?>[] { ProjectedCRS.class, GeographicCRS.class, GeocentricCRS.class,
+                                 VerticalCRS.class,  CompoundCRS.class,   EngineeringCRS.class},
+                new String[]   {"projected",        "geographic",        "geocentric",
+                                "vertical",         "compound",          "engineering"}),
+
+        new TableInfo(CoordinateSystem.class,
+                "[Coordinate System]",
+                "COORD_SYS_CODE",
+                "COORD_SYS_NAME",
+                "COORD_SYS_TYPE",
+                new Class<?>[] { CartesianCS.class, EllipsoidalCS.class, SphericalCS.class, VerticalCS.class},
+                new String[]   {"Cartesian",       "ellipsoidal",       "spherical",       "vertical"}),
+                               //Really upper-case C.
+        new TableInfo(CoordinateSystemAxis.class,
+                "[Coordinate Axis] AS CA INNER JOIN [Coordinate Axis Name] AS CAN" +
+                                 " ON CA.COORD_AXIS_NAME_CODE=CAN.COORD_AXIS_NAME_CODE",
+                "COORD_AXIS_CODE",
+                "COORD_AXIS_NAME"),
+
+        new TableInfo(Datum.class,
+                "[Datum]",
+                "DATUM_CODE",
+                "DATUM_NAME",
+                "DATUM_TYPE",
+                new Class<?>[] { GeodeticDatum.class, VerticalDatum.class, EngineeringDatum.class},
+                new String[]   {"geodetic",          "vertical",          "engineering"}),
+
+        new TableInfo(Ellipsoid.class,
+                "[Ellipsoid]",
+                "ELLIPSOID_CODE",
+                "ELLIPSOID_NAME"),
+
+        new TableInfo(PrimeMeridian.class,
+                "[Prime Meridian]",
+                "PRIME_MERIDIAN_CODE",
+                "PRIME_MERIDIAN_NAME"),
+
+        new TableInfo(CoordinateOperation.class,
+                "[Coordinate_Operation]",
+                "COORD_OP_CODE",
+                "COORD_OP_NAME",
+                "COORD_OP_TYPE",
+                new Class<?>[] { Projection.class, Conversion.class, Transformation.class},
+                new String[]   {"conversion",     "conversion",     "transformation"}),
+                // Note: Projection is handled in a special way.
+
+        new TableInfo(OperationMethod.class,
+                "[Coordinate_Operation Method]",
+                "COORD_OP_METHOD_CODE",
+                "COORD_OP_METHOD_NAME"),
+
+        new TableInfo(ParameterDescriptor.class,
+                "[Coordinate_Operation Parameter]",
+                "PARAMETER_CODE",
+                "PARAMETER_NAME"),
+
+        new TableInfo(Unit.class,
+                "[Unit of Measure]",
+                "UOM_CODE",
+                "UNIT_OF_MEAS_NAME")
+    };
+
     /**
      * The class of object to be created.
      */
@@ -65,8 +153,8 @@ final class TableInfo {
     /**
      * Stores information about a specific table.
      */
-    TableInfo(final Class<?> type, final String table,
-              final String codeColumn, final String nameColumn)
+    private TableInfo(final Class<?> type, final String table,
+                      final String codeColumn, final String nameColumn)
     {
         this(type, table, codeColumn, nameColumn, null, null, null);
     }
@@ -74,9 +162,9 @@ final class TableInfo {
     /**
      * Stores information about a specific table.
      */
-    TableInfo(final Class<?> type,
-              final String table, final String codeColumn, final String nameColumn,
-              final String typeColumn, final Class<?>[] subTypes, final String[] typeNames)
+    private TableInfo(final Class<?> type,
+                      final String table, final String codeColumn, final String nameColumn,
+                      final String typeColumn, final Class<?>[] subTypes, final String[] typeNames)
     {
         this.type       = type;
         this.table      = table;

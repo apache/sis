@@ -129,6 +129,11 @@ public final class Messages extends IndexedResourceBundle {
         public static final short DataDirectory_2 = 24;
 
         /**
+         * Code “{0}” is deprecated and replaced by code {1}. Reason is: {2}
+         */
+        public static final short DeprecatedCode_3 = 29;
+
+        /**
          * Property “{0}” has been discarded in favor of “{1}”, because those two properties are
          * mutually exclusive.
          */
