@@ -31,6 +31,7 @@ import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.Statement;
 import java.sql.SQLException;
 import java.lang.ref.Reference;
@@ -58,10 +59,12 @@ import org.opengis.metadata.citation.OnLineFunction;
 import org.opengis.metadata.quality.PositionalAccuracy;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.apache.sis.internal.system.Loggers;
+import org.apache.sis.internal.util.Constants;
 import org.apache.sis.metadata.iso.DefaultIdentifier;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.citation.DefaultOnlineResource;
 import org.apache.sis.referencing.datum.BursaWolfParameters;
+import org.apache.sis.referencing.factory.FactoryDataException;
 import org.apache.sis.referencing.factory.GeodeticAuthorityFactory;
 import org.apache.sis.referencing.factory.ConcurrentAuthorityFactory;
 import org.apache.sis.util.iso.SimpleInternationalString;
@@ -70,6 +73,7 @@ import org.apache.sis.util.resources.Messages;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Disposable;
 import org.apache.sis.util.Version;
 import org.apache.sis.measure.Units;
@@ -80,20 +84,28 @@ import org.apache.sis.measure.Units;
  * The EPSG database is freely available at <a href="http://www.epsg.org">http://www.epsg.org</a>.
  * Current version of this class requires EPSG database version 6.6 or above.
  *
- * <p>This factory accepts names as well as numerical identifiers.
- * For example <cite>"NTF (Paris) / France I"</cite> and {@code "27581"} both fetch the same object.
+ * <p>EPSG codes are numerical identifiers. For example code 3395 stands for <cite>"WGS 84 / World Mercator"</cite>.
+ * Coordinate Reference Objects are normally created from their numerical codes, but this factory accepts also names.
+ * For example {@code createProjectedCRS("3395")} and {@code createProjectedCRS("WGS 84 / World Mercator")} both fetch
+ * the same object.
  * However, names may be ambiguous since the same name may be used for more than one object.
  * This is the case of <cite>"WGS 84"</cite> for instance.
  * If such an ambiguity is found, an exception will be thrown.
  * This behavior can be changed by overriding the {@link #isPrimaryKey(String)} method.</p>
  *
- * <p>This factory does not cache the result of {@code createFoo(String)} methods.
- * Asking for the same object twice will cause the EPSG database to be queried again.
- * For caching, this factory should be wrapped in {@link ConcurrentAuthorityFactory}.</p>
+ * <div class="section">Life cycle and caching</div>
+ * {@code EPSGFactory} instances should be short-lived since they may hold a significant amount of JDBC resources.
+ * It is recommended to have those instances created on the fly by {@link ConcurrentAuthorityFactory} and disposed
+ * after a relatively short {@linkplain ConcurrentAuthorityFactory#getTimeout timeout}.
+ * In addition {@code ConcurrentAuthorityFactory} caches the most recently created objects, which reduce greatly
+ * the amount of {@code EPSGFactory} instantiations (and consequently the amount of database accesses)
+ * in the common case where only a few EPSG codes are used by an application.
+ * {@code EPSGFactory.createFoo(String)} methods do not cache by themselves and query the database on every invocation.
  *
- * <p>Because the primary distribution format for the EPSG database is MS-Access, this class uses
+ * <div class="section">SQL dialects</div>
+ * Because the primary distribution format for the EPSG database is MS-Access, this class uses
  * SQL statements formatted for the MS-Access syntax. For usage with an other database software,
- * a dialect-specific subclass must be used.</p>
+ * a dialect-specific subclass must be used.
  *
  * @author  Yann Cézard (IRD)
  * @author  Martin Desruisseaux (IRD, Geomatys)
@@ -139,7 +151,7 @@ public abstract class EPSGFactory extends GeodeticAuthorityFactory implements CR
         if (target != unit) try {
             value = unit.getConverterToAny(target).convert(value);
         } catch (ConversionException e) {
-            throw new FactoryException(Errors.format(Errors.Keys.IncompatibleUnit_1, unit), e);
+            throw new FactoryDataException(Errors.format(Errors.Keys.IncompatibleUnit_1, unit), e);
         }
         switch (code) {
             case 8605: parameters.tX = value; break;
@@ -149,7 +161,7 @@ public abstract class EPSGFactory extends GeodeticAuthorityFactory implements CR
             case 8609: parameters.rY = value; break;
             case 8610: parameters.rZ = value; break;
             case 8611: parameters.dS = value; break;
-            default: throw new FactoryException(Errors.format(Errors.Keys.UnexpectedParameter_1, code));
+            default: throw new FactoryDataException(Errors.format(Errors.Keys.UnexpectedParameter_1, code));
         }
     }
     // Datum shift operation methods
@@ -416,7 +428,7 @@ public abstract class EPSGFactory extends GeodeticAuthorityFactory implements CR
     public synchronized Citation getAuthority() {
         if (authority == null) {
             final DefaultCitation c = new DefaultCitation("EPSG Geodetic Parameter Dataset");
-            c.setIdentifiers(Collections.singleton(new DefaultIdentifier("EPSG")));
+            c.setIdentifiers(Collections.singleton(new DefaultIdentifier(Constants.EPSG)));
             try {
                 /*
                  * Get the most recent version number from the history table. We get the date in local timezone
@@ -458,8 +470,8 @@ addURIs:        for (int i=0; ; i++) {
                         case 2: {
                             url = metadata.getURL();
                             function = OnLineFunction.valueOf("CONNECTION");
-                            description = Messages.formatInternational(Messages.Keys.DataBase_4, "EPSG", version,
-                                    metadata.getDatabaseProductName(),
+                            description = Messages.formatInternational(Messages.Keys.DataBase_4,
+                                    Constants.EPSG, version, metadata.getDatabaseProductName(),
                                     Version.valueOf(metadata.getDatabaseMajorVersion(),
                                                     metadata.getDatabaseMinorVersion()));
                             break;
@@ -569,11 +581,6 @@ addURIs:        for (int i=0; ; i++) {
                         result = new LinkedHashMap<>(result);
                     }
                     result.putAll(codes);
-                    try {
-                        codes.close();
-                    } catch (SQLException e) {  // Not a fatal exception for this method since we got the data.
-                        unexpectedException("getAuthorityCodes", e);
-                    }
                 }
             }
         }
@@ -582,10 +589,10 @@ addURIs:        for (int i=0; ; i++) {
 
     /**
      * Gets a description of the object corresponding to a code.
+     * This method returns the object name in a lightweight manner, without creating the full {@link IdentifiedObject}.
      *
      * @param  code Value allocated by authority.
-     * @return A description of the object, or {@code null} if the object corresponding to the specified {@code code}
-     *         has no description.
+     * @return The object name, or {@code null} if the object corresponding to the specified {@code code} has no name.
      * @throws NoSuchAuthorityCodeException if the specified {@code code} was not found.
      * @throws FactoryException if the query failed for some other reason.
      */
@@ -599,6 +606,174 @@ addURIs:        for (int i=0; ; i++) {
             }
         }
         throw noSuchAuthorityCode(IdentifiedObject.class, code);
+    }
+
+    /**
+     * Returns a prepared statement for the specified name. Most {@link PreparedStatement} creations are performed
+     * through this method, except {@link #toPrimaryKey} and {@link #createObject(String)}.
+     *
+     * @param  key  A key uniquely identifying the caller (e.g. {@code "Ellipsoid"} for {@link #createEllipsoid(String)}).
+     * @param  sql  The SQL statement to use if for creating the {@link PreparedStatement} object.
+     *              Will be used only if no prepared statement was already created for the specified key.
+     * @return The prepared statement.
+     * @throws SQLException if the prepared statement can not be created.
+     */
+    private PreparedStatement prepareStatement(final String key, final String sql) throws SQLException {
+        assert Thread.holdsLock(this);
+        PreparedStatement stmt = statements.get(key);
+        if (stmt == null) {
+            stmt = connection.prepareStatement(adaptSQL(sql));
+            statements.put(key, stmt);
+        }
+        // Partial check that the statement is for the right SQL query.
+        assert stmt.getParameterMetaData().getParameterCount() == CharSequences.count(sql, '?');
+        return stmt;
+    }
+
+    /**
+     * Makes sure that the last result was non-null.
+     * Used for {@code getString(…)}, {@code getDouble(…)} and {@code getInt(…)} methods only.
+     */
+    private static void ensureNonNull(final ResultSet result, final int columnIndex, final Object code)
+            throws SQLException, FactoryDataException
+    {
+        if (result.wasNull()) {
+            final ResultSetMetaData metadata = result.getMetaData();
+            final String column = metadata.getColumnName(columnIndex);
+            final String table  = metadata.getTableName (columnIndex);
+            result.close();
+            throw new FactoryDataException(Errors.format(Errors.Keys.NullValueInTable_3, table, column, code));
+        }
+    }
+
+    /**
+     * Same as {@link #getString(ResultSet, int, Object)},
+     * but reports the fault on an alternative column if the value is null.
+     */
+    private static String getString(final ResultSet result, final int columnIndex,
+                                    final String    code,   final int columnFault)
+            throws SQLException, FactoryDataException
+    {
+        final String str = result.getString(columnIndex);
+        if (result.wasNull()) {
+            final ResultSetMetaData metadata = result.getMetaData();
+            final String column = metadata.getColumnName(columnFault);
+            final String table  = metadata.getTableName (columnFault);
+            result.close();
+            throw new FactoryDataException(Errors.format(Errors.Keys.NullValueInTable_3, table, column, code));
+        }
+        return str.trim();
+    }
+
+    /**
+     * Gets the string from the specified {@link ResultSet}.
+     * The string is required to be non-null. A null string will throw an exception.
+     *
+     * @param  result       The result set to fetch value from.
+     * @param  columnIndex  The column index (1-based).
+     * @param  code         The identifier of the record where the string was found.
+     * @return The string at the specified column.
+     * @throws SQLException if an error occurred while querying the database.
+     * @throws FactoryDataException if a null value was found.
+     */
+    private static String getString(final ResultSet result, final int columnIndex, final Object code)
+            throws SQLException, FactoryDataException
+    {
+        final String value = result.getString(columnIndex);
+        ensureNonNull(result, columnIndex, code);
+        return value.trim();
+    }
+
+    /**
+     * Gets the value from the specified {@link ResultSet}.
+     * The value is required to be non-null. A null value (i.e. blank) will throw an exception.
+     *
+     * @param  result       The result set to fetch value from.
+     * @param  columnIndex  The column index (1-based).
+     * @param  code         The identifier of the record where the string was found.
+     * @return The double at the specified column.
+     * @throws SQLException if an error occurred while querying the database.
+     * @throws FactoryDataException if a null value was found.
+     */
+    private static double getDouble(final ResultSet result, final int columnIndex, final Object code)
+            throws SQLException, FactoryDataException
+    {
+        final double value = result.getDouble(columnIndex);
+        ensureNonNull(result, columnIndex, code);
+        return value;
+    }
+
+    /**
+     * Gets the value from the specified {@link ResultSet}.
+     * The value is required to be non-null. A null value (i.e. blank) will throw an exception.
+     *
+     * @param  result       The result set to fetch value from.
+     * @param  columnIndex  The column index (1-based).
+     * @param  code         The identifier of the record where the string was found.
+     * @return The integer at the specified column.
+     * @throws SQLException if an error occurred while querying the database.
+     * @throws FactoryDataException if a null value was found.
+     */
+    private static int getInt(final ResultSet result, final int columnIndex, final Object code)
+            throws SQLException, FactoryDataException
+    {
+        final int value = result.getInt(columnIndex);
+        ensureNonNull(result, columnIndex, code);
+        return value;
+    }
+
+    /**
+     * Sets the value of the primary key to search for, and executes the given prepared statement.
+     * The primary key should be the value returned by {@link #toPrimaryKey}.
+     * Its values is assigned to the parameter #1.
+     *
+     * @param  stmt  The prepared statement in which to set the primary key.
+     * @param  primaryKey  The primary key.
+     * @throws NoSuchIdentifierException if the primary key has not been found.
+     * @throws SQLException if an error occurred while querying the database.
+     */
+    private static ResultSet executeQuery(final PreparedStatement stmt, final String primaryKey)
+            throws NoSuchIdentifierException, SQLException
+    {
+        final int n;
+        try {
+            n = Integer.parseInt(primaryKey);
+        } catch (NumberFormatException e) {
+            final NoSuchIdentifierException ne = new NoSuchIdentifierException(Errors.format(
+                    Errors.Keys.IllegalIdentifierForCodespace_2, Constants.EPSG, primaryKey), primaryKey);
+            ne.initCause(e);
+            throw ne;
+        }
+        stmt.setInt(1, n);
+        return stmt.executeQuery();
+    }
+
+    /**
+     * Sets the value of the primary keys to search for, and executes the given prepared statement.
+     * The primary keys should be the values returned by {@link #toPrimaryKey}.
+     * Their values are assigned to parameters #1 and 2.
+     *
+     * @param  stmt The prepared statement in which to set the primary key.
+     * @param  primaryKey The primary key.
+     * @throws SQLException If an error occurred.
+     */
+    private static ResultSet executeQuery(final PreparedStatement stmt, final String pk1, final String pk2)
+            throws NoSuchIdentifierException, SQLException
+    {
+        final int n1, n2;
+        String key = pk1;
+        try {
+            n1 = Integer.parseInt(      pk1);
+            n2 = Integer.parseInt(key = pk2);
+        } catch (NumberFormatException e) {
+            final NoSuchIdentifierException ne = new NoSuchIdentifierException(Errors.format(
+                    Errors.Keys.IllegalIdentifierForCodespace_2, Constants.EPSG, key), key);
+            ne.initCause(e);
+            throw ne;
+        }
+        stmt.setInt(1, n1);
+        stmt.setInt(2, n2);
+        return stmt.executeQuery();
     }
 
     final boolean isProjection(final int code) throws NoSuchIdentifierException, SQLException {

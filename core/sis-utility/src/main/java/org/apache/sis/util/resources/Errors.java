@@ -373,6 +373,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final short IllegalFormatPatternForClass_2 = 35;
 
         /**
+         * “{1}” is not a valid identifier for the “{0}” code space.
+         */
+        public static final short IllegalIdentifierForCodespace_2 = 208;
+
+        /**
          * The “{0}” language is not recognized.
          */
         public static final short IllegalLanguageCode_1 = 36;
@@ -824,6 +829,11 @@ public final class Errors extends IndexedResourceBundle {
          * Null values are not allowed in this dictionary.
          */
         public static final short NullMapValue = 97;
+
+        /**
+         * Unexpected null value in record “{2}” for the column “{1}” in table “{0}”.
+         */
+        public static final short NullValueInTable_3 = 207;
 
         /**
          * Array length is {0}, while we expected an even length.
