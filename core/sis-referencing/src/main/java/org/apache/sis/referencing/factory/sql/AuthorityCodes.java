@@ -41,12 +41,20 @@ import org.apache.sis.util.logging.Logging;
  * <p>Serialization of this class stores a copy of all authority codes.
  * The serialization does not preserve any connection to the database.</p>
  *
+ * <p>This method does not implement {@link AutoCloseable} because the same instance may be shared by many users,
+ * since {@link EPSGFactory#getAuthorityCodes(Class)} caches {@code AuthorityCodes} instances. Furthermore we can
+ * not rely on the users closing {@code AuthorityCodes} themselves because this is not part of the usual contract
+ * for Java collection classes (we could document that recommendation in method Javadoc, but not every developers
+ * read Javadoc). Relying on the garbage collector for disposing this resource is far from ideal, but alternatives
+ * are not very convincing either (load the same codes many time, have the risk that users do not dispose resources,
+ * have the risk to return to user an already closed {@code AuthorityCodes} instance).</p>
+ *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.7
  * @version 0.7
  * @module
  */
-final class AuthorityCodes extends AbstractMap<String,String> implements Serializable, AutoCloseable {
+final class AuthorityCodes extends AbstractMap<String,String> implements Serializable {
     /**
      * For compatibility with different versions.
      */
@@ -176,7 +184,8 @@ final class AuthorityCodes extends AbstractMap<String,String> implements Seriali
 
     /**
      * Creates a weak reference to this map. That reference will also be in charge of closing the JDBC statements
-     * if they were not closed.
+     * when the garbage collector determined that this {@code AuthorityCodes} instance is no longer in use.
+     * See class Javadoc for more information.
      */
     final Reference<AuthorityCodes> createReference() {
         return new CloseableReference<>(this, factory, statements);
@@ -272,7 +281,9 @@ final class AuthorityCodes extends AbstractMap<String,String> implements Seriali
     }
 
     /**
-     * Returns the description associated to the given authority code, or {@code null} if none.
+     * Returns the object name associated to the given authority code, or {@code null} if none.
+     * If there is no name for the {@linkplain #type} of object being queried, then this method
+     * returns the code itself.
      *
      * @param  code  The code for which to get the description. May be a string or an integer.
      * @return The description for the given code, or {@code null} if none.
@@ -343,7 +354,7 @@ final class AuthorityCodes extends AbstractMap<String,String> implements Seriali
 
             /**
              * Returns pseudo-value at the current iterator position. We do not query the real value because it
-             * is costly and useless in the context where this method is used. This is because the users should
+             * is costly and useless in the context where this method is used. It should be okay since the users
              * never see the map directly, but only the key set.
              */
             @Override protected String getValue() {
@@ -367,25 +378,7 @@ final class AuthorityCodes extends AbstractMap<String,String> implements Seriali
         return new LinkedHashMap<>(this);
     }
 
-    /**
-     * Closes the JDBC statement used by the {@code AuthorityCodes}. Note that if this method is never invoked,
-     * {@link CloseableReference} will perform the same work after the garbage collector detected that this map
-     * is not referenced anymore.
+    /*
+     * No close() or finalize() method - see class Javadoc for an explanation why.
      */
-    @Override
-    public void close() throws SQLException {
-        SQLException exception = null;
-        synchronized (factory) {
-            if (results != null) try {
-                results.close();
-            } catch (SQLException e) {
-                exception = e;
-            }
-            results = null;
-            exception = CloseableReference.close(statements, exception);
-        }
-        if (exception != null) {
-            throw exception;
-        }
-    }
 }

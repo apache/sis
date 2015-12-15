@@ -61,9 +61,21 @@ final class CloseableReference<T> extends WeakReference<T> implements Disposable
      */
     @Override
     public void dispose() {
-        SQLException exception;
+        SQLException exception = null;
         synchronized (factory) {
-            exception = close(statements, null);
+            for (int i=statements.length; --i >= 0;) {
+                final Statement s = statements[i];
+                statements[i] = null;
+                if (s != null) try {
+                    s.close();
+                } catch (SQLException e) {
+                    if (exception == null) {
+                        exception = e;
+                    } else {
+                        exception.addSuppressed(e);
+                    }
+                }
+            }
         }
         if (exception != null) {
             /*
@@ -74,26 +86,5 @@ final class CloseableReference<T> extends WeakReference<T> implements Disposable
              */
             Logging.unexpectedException(Logging.getLogger(Loggers.CRS_FACTORY), AuthorityCodes.class, "close", exception);
         }
-    }
-
-    /**
-     * Implementation of {@link #dispose()} as a static method for sharing with {@link AuthorityCodes#close()}.
-     * It is caller's responsibility to invoke this method from a synchronization lock on the factory.
-     */
-    static SQLException close(final Statement[] statements, SQLException exception) {
-        for (int i=statements.length; --i >= 0;) {
-            final Statement s = statements[i];
-            statements[i] = null;
-            if (s != null) try {
-                s.close();
-            } catch (SQLException e) {
-                if (exception == null) {
-                    exception = e;
-                } else {
-                    exception.addSuppressed(e);
-                }
-            }
-        }
-        return exception;
     }
 }
