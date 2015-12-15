@@ -221,7 +221,7 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      * by strong references. Note that those default values may change in any future SIS versions based
      * on experience gained.
      *
-     * @param nameFactory The factory to use for parsing authority code as {@link org.opengis.util.GenericName} instances.
+     * @param nameFactory The factory to use for parsing authority codes as {@link org.opengis.util.GenericName} instances.
      */
     protected ConcurrentAuthorityFactory(final NameFactory nameFactory) {
         this(nameFactory, 100, 8);

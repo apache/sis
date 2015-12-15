@@ -18,10 +18,11 @@ package org.apache.sis.referencing.factory.sql;
 
 import java.util.Set;
 import java.util.Map;
+import java.util.List;
 import java.util.HashSet;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.IdentityHashMap;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Calendar;
 import java.util.Date;
@@ -45,6 +46,7 @@ import javax.measure.converter.ConversionException;
 
 import org.opengis.util.NameSpace;
 import org.opengis.util.NameFactory;
+import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.opengis.util.FactoryException;
 import org.opengis.util.NoSuchIdentifierException;
@@ -58,11 +60,13 @@ import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.OnLineFunction;
 import org.opengis.metadata.quality.PositionalAccuracy;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
+import org.apache.sis.internal.referencing.DeprecatedCode;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.util.Constants;
-import org.apache.sis.metadata.iso.DefaultIdentifier;
+import org.apache.sis.metadata.iso.ImmutableIdentifier;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.citation.DefaultOnlineResource;
+import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.referencing.datum.BursaWolfParameters;
 import org.apache.sis.referencing.factory.FactoryDataException;
 import org.apache.sis.referencing.factory.GeodeticAuthorityFactory;
@@ -122,6 +126,15 @@ import org.apache.sis.measure.Units;
 public abstract class EPSGFactory extends GeodeticAuthorityFactory implements CRSAuthorityFactory,
         CSAuthorityFactory, DatumAuthorityFactory, CoordinateOperationAuthorityFactory, Disposable
 {
+    /**
+     * The prefix in table names. The SQL scripts are provided by EPSG with this prefix in front of all table names.
+     * SIS rather uses a modified version of those SQL scripts which creates the tables in an "EPSG" database schema.
+     * But we still need to check for existence of this prefix in case someone used the original SQL scripts.
+     */
+    private static final String TABLE_PREFIX = "epsg_";
+
+
+
     //////////////////////////////////////////////////////////////////////////////////////////////
     //////                                                                                 ///////
     //////   HARD CODED VALUES (other than SQL statements) RELATIVE TO THE EPSG DATABASE   ///////
@@ -278,6 +291,13 @@ public abstract class EPSGFactory extends GeodeticAuthorityFactory implements CR
     private Citation authority;
 
     /**
+     * The namespace of EPSG names and codes. This namespace is needed by all {@code createFoo(String)} methods.
+     * The {@code EPSGFactory} constructor relies on the {@link #nameFactory} caching mechanism for giving us
+     * the same {@code NameSpace} instance than the one used by previous {@code EPSGFactory} instances, if any.
+     */
+    private final NameSpace namespace;
+
+    /**
      * Last object type returned by {@link #createObject(String)}, or -1 if none.
      * This type is an index in the {@link #TABLES_INFO} array and is strictly for {@link #createObject} internal use.
      */
@@ -307,17 +327,13 @@ public abstract class EPSGFactory extends GeodeticAuthorityFactory implements CR
     /**
      * A pool of prepared statements. Keys are {@link String} objects related to their originating method
      * (for example "Ellipsoid" for {@link #createEllipsoid(String)}).
-     *
-     * <div class="note"><b>Note:</b>
-     * it is okay to use {@link IdentityHashMap} instead of {@link HashMap} because the keys will always be
-     * the exact same object, namely the hard-coded argument given to calls to {@link #prepareStatement} in
-     * this class.</div>
      */
-    private final Map<String,PreparedStatement> statements = new IdentityHashMap<>();
+    private final Map<String,PreparedStatement> statements = new HashMap<>();
 
     /**
      * The set of authority codes for different types. This map is used by the {@link #getAuthorityCodes(Class)}
-     * method as a cache for returning the set created in a previous call.
+     * method as a cache for returning the set created in a previous call. We do not want this map to exist for
+     * a long time anyway.
      *
      * <p>Note that this {@code EPSGFactory} instance can not be disposed as long as this map is not empty, since
      * {@link AuthorityCodes} caches some SQL statements and consequently require the {@linkplain #connection} to
@@ -368,7 +384,7 @@ public abstract class EPSGFactory extends GeodeticAuthorityFactory implements CR
      *
      * @see #createProperties(String, String, String, String, boolean)
      */
-    private final Map<Integer,NameSpace> scopes = new HashMap<>();
+    private final Map<String,NameSpace> scopes = new HashMap<>();
 
     /**
      * The properties to be given the objects to construct.
@@ -399,12 +415,14 @@ public abstract class EPSGFactory extends GeodeticAuthorityFactory implements CR
      * Creates a factory using the given connection. The connection will be {@linkplain Connection#close() closed}
      * when this factory will be {@linkplain #dispose() disposed}.
      *
-     * @param connection The connection to the underlying EPSG database.
+     * @param connection   The connection to the underlying EPSG database.
+     * @param nameFactory  The factory to use for creating authority codes as {@link GenericName} instances.
      */
     public EPSGFactory(final Connection connection, final NameFactory nameFactory) {
         super(nameFactory);
-        this.connection = connection;
         ArgumentChecks.ensureNonNull("connection", connection);
+        this.connection = connection;
+        this.namespace  = nameFactory.createNameSpace(nameFactory.createLocalName(null, Constants.EPSG), null);
     }
 
     /**
@@ -428,7 +446,7 @@ public abstract class EPSGFactory extends GeodeticAuthorityFactory implements CR
     public synchronized Citation getAuthority() {
         if (authority == null) {
             final DefaultCitation c = new DefaultCitation("EPSG Geodetic Parameter Dataset");
-            c.setIdentifiers(Collections.singleton(new DefaultIdentifier(Constants.EPSG)));
+            c.setIdentifiers(Collections.singleton(new ImmutableIdentifier(null, null, Constants.EPSG)));
             try {
                 /*
                  * Get the most recent version number from the history table. We get the date in local timezone
@@ -776,6 +794,184 @@ addURIs:        for (int i=0; ; i++) {
         return stmt.executeQuery();
     }
 
+    /**
+     * Converts a code from an arbitrary name to the numerical identifier (the primary key).
+     * If the supplied code is already a numerical value, then it is returned unchanged.
+     * If the code is not found in the name column, it is returned unchanged as well
+     * so that the caller will produce an appropriate "Code not found" error message.
+     * If the code is found more than once, then an exception is thrown.
+     *
+     * <p>Note that this method includes a call to {@link #trimAuthority(String)},
+     * so there is no need to call it before or after this method.</p>
+     *
+     * @param  type        The type of object to create.
+     * @param  code        The code to check.
+     * @param  table       The table where the code should appears.
+     * @param  codeColumn  The column name for the code.
+     * @param  nameColumn  The column name for the name.
+     * @return The numerical identifier (i.e. the table primary key value).
+     * @throws SQLException if an error occurred while reading the database.
+     */
+    private String toPrimaryKey(final Class<?> type, final String code, final String table,
+            final String codeColumn, final String nameColumn) throws SQLException, FactoryException
+    {
+        assert Thread.holdsLock(this);
+        String identifier = trimAuthority(code);
+        if (!isPrimaryKey(identifier)) {
+            /*
+             * The given string is not a numerical code. Search the value in the database.
+             * If a prepared statement is already available, reuse it providing that it was
+             * created for the current table. Otherwise we will create a new statement.
+             */
+            final String KEY = "NumericalIdentifier";
+            PreparedStatement statement = statements.get(KEY);
+            if (statement != null) {
+                if (!table.equals(lastTableForName)) {
+                    statements.remove(KEY);
+                    statement.close();
+                    statement        = null;
+                    lastTableForName = null;
+                }
+            }
+            if (statement == null) {
+                final String query = "SELECT " + codeColumn + " FROM " + table +
+                                     " WHERE " + nameColumn + " = ?";
+                statement = connection.prepareStatement(adaptSQL(query));
+                statements.put(KEY, statement);
+            }
+            // Do not use executeQuery(statement, primaryKey) because "identifier" is a name here.
+            statement.setString(1, identifier);
+            identifier = null;
+            try (ResultSet result = statement.executeQuery()) {
+                while (result.next()) {
+                    identifier = ensureSingleton(result.getString(1), identifier, code);
+                }
+            }
+            if (identifier == null) {
+                throw noSuchAuthorityCode(type, code);
+            }
+        }
+        return identifier;
+    }
+
+    /**
+     * Makes sure that an object constructed from the database is not incoherent.
+     * If the code supplied to a {@code createFoo(String)} method exists in the database,
+     * then we should find only one record. However we will do a paranoiac check and verify if there is
+     * more records, using a {@code while (results.next())} loop instead of {@code if (results.next())}.
+     * This method is invoked in the loop for making sure that, if there is more than one record
+     * (which should never happen), at least they have identical content.
+     *
+     * @param  newValue  The newly constructed object.
+     * @param  oldValue  The object previously constructed, or {@code null} if none.
+     * @param  code The EPSG code (for formatting error message).
+     * @throws FactoryDataException if a duplication has been detected.
+     */
+    private static <T> T ensureSingleton(final T newValue, final T oldValue, final String code) throws FactoryDataException {
+        if (oldValue == null) {
+            return newValue;
+        }
+        if (oldValue.equals(newValue)) {
+            return oldValue;
+        }
+        throw new FactoryDataException(Errors.format(Errors.Keys.DuplicatedIdentifier_1, code));
+    }
+
+    /**
+     * Returns the name and aliases for the {@link IdentifiedObject} to construct.
+     *
+     * @param  table       The table on which a query has been executed.
+     * @param  name        The name for the {@link IndentifiedObject} to construct.
+     * @param  code        The EPSG code of the object to construct.
+     * @param  remarks     Remarks, or {@code null} if none.
+     * @param  deprecated  {@code true} if the object to create is deprecated.
+     * @return The name together with a set of properties.
+     */
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
+    private Map<String,Object> createProperties(final String table, final String name, String code,
+            String remarks, final boolean deprecated) throws SQLException, FactoryException
+    {
+        properties.clear();
+        GenericName gn = null;
+        final Citation authority = getAuthority();
+        final InternationalString edition = authority.getEdition();
+        final String version = (edition != null) ? edition.toString() : null;
+        if (name != null) {
+            properties.put("name", gn = nameFactory.createLocalName(namespace, name.trim()));
+            properties.put(NamedIdentifier.AUTHORITY_KEY, authority);
+            properties.put(NamedIdentifier.CODE_KEY,      name.trim());
+            properties.put(NamedIdentifier.VERSION_KEY,   version);
+            final NamedIdentifier id = new NamedIdentifier(properties);
+            properties.clear();
+            properties.put(IdentifiedObject.NAME_KEY, id);
+        }
+        if (code != null) {
+            code = code.trim();
+            final ImmutableIdentifier identifier;
+            if (deprecated) {
+                identifier = new DeprecatedCode(authority, Constants.EPSG, code, version, null);
+            } else {
+                identifier = new ImmutableIdentifier(authority, Constants.EPSG, code, version,
+                                    (gn != null) ? gn.toInternationalString() : null);
+            }
+            properties.put(IdentifiedObject.IDENTIFIERS_KEY, identifier);
+        }
+        if (remarks != null && !(remarks = remarks.trim()).isEmpty()) {
+            properties.put(IdentifiedObject.REMARKS_KEY, remarks);
+        }
+        /*
+         * Search for aliases.
+         */
+        List<GenericName> alias = null;
+        final PreparedStatement stmt;
+        stmt = prepareStatement(
+                "[Alias]", "SELECT NAMING_SYSTEM_NAME, ALIAS, OBJECT_TABLE_NAME" +
+                " FROM [Alias] INNER JOIN [Naming System]" +
+                  " ON [Alias].NAMING_SYSTEM_CODE =" +
+                " [Naming System].NAMING_SYSTEM_CODE" +
+                " WHERE OBJECT_CODE = ?");
+        try (ResultSet result = executeQuery(stmt, code)) {
+            while (result.next()) {
+                String owner = result.getString(3);
+                if (owner != null) {
+                    /*
+                     * We have found an alias for a object having the ID we are looking for, but we need to check if
+                     * it is really from the same table since a few different tables have objects with the same ID.
+                     */
+                    if (owner.startsWith(TABLE_PREFIX)) {
+                        owner = owner.substring(TABLE_PREFIX.length());
+                    }
+                    if (!CharSequences.isAcronymForWords(owner, table)) {
+                        continue;
+                    }
+                }
+                final String scope = result.getString(1);
+                final String local = getString(result, 2, code);
+                final GenericName generic;
+                if (scope == null) {
+                    generic = nameFactory.createLocalName(null, local);
+                } else {
+                    NameSpace cached = scopes.get(scope);
+                    if (cached == null) {
+                        cached = nameFactory.createNameSpace(
+                                 nameFactory.createLocalName(null, scope),
+                                 Collections.singletonMap("separator", ":"));
+                        scopes.put(scope, cached);
+                    }
+                    generic = nameFactory.createLocalName(cached, local);
+                }
+                if (alias == null) {
+                    alias = new ArrayList<>();
+                }
+                alias.add(generic);
+            }
+        }
+        if (alias != null) {
+            properties.put(IdentifiedObject.ALIAS_KEY, alias.toArray(new GenericName[alias.size()]));
+        }
+        return properties;
+    }
+
     final boolean isProjection(final int code) throws NoSuchIdentifierException, SQLException {
         return false;
     }
@@ -798,6 +994,40 @@ addURIs:        for (int i=0; ; i++) {
      */
     protected String adaptSQL(final String statement) {
         return statement;
+    }
+
+    /**
+     * Returns {@code true} if the specified code may be a primary key in some table.
+     * This method does not need to check any entry in the database.
+     * It should just check from the syntax if the code looks like a valid EPSG identifier.
+     *
+     * <p>When this method returns {@code false}, {@code createFoo(String)} methods
+     * may look for the code in the name column instead than the primary key column.
+     * This allows to accept the <cite>"WGS 84 / World Mercator"</cite> string (for example)
+     * in addition to the {@code "3395"} primary key. Both string values should fetch the same object.</p>
+     *
+     * <p>If this method returns {@code true}, then this factory does not search for matching names.
+     * In such case, an appropriate exception will be thrown in {@code createFoo(String)} methods
+     * if the code is not found in the primary key column.</p>
+     *
+     * <div class="section">Default implementation</div>
+     * The default implementation returns {@code true} if all non-space characters
+     * are {@linkplain Character#isDigit(int) digits}.
+     *
+     * @param  code  The code the inspect.
+     * @return {@code true} if the code is probably a primary key.
+     * @throws FactoryException if an unexpected error occurred while inspecting the code.
+     */
+    protected boolean isPrimaryKey(final String code) throws FactoryException {
+        final int length = code.length();
+        for (int i=0; i<length;) {
+            final int c = code.codePointAt(i);
+            if (!Character.isDigit(c) && !Character.isSpaceChar(c)) {
+                return false;
+            }
+            i += Character.charCount(c);
+        }
+        return true;
     }
 
     /**

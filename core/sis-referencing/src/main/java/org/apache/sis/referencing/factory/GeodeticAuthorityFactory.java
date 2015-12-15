@@ -74,7 +74,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
     /**
      * Creates a new authority factory for geodetic objects.
      *
-     * @param nameFactory The factory to use for parsing authority code as {@link GenericName} instances.
+     * @param nameFactory The factory to use for parsing authority codes as {@link GenericName} instances.
      */
     protected GeodeticAuthorityFactory(final NameFactory nameFactory) {
         ArgumentChecks.ensureNonNull("nameFactory", nameFactory);
