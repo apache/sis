@@ -44,6 +44,8 @@ import java.net.URISyntaxException;
 import javax.measure.unit.Unit;
 import javax.measure.unit.SI;
 import javax.measure.unit.NonSI;
+import javax.measure.quantity.Angle;
+import javax.measure.quantity.Length;
 import javax.measure.converter.ConversionException;
 
 import org.opengis.util.NameSpace;
@@ -60,6 +62,7 @@ import org.opengis.referencing.IdentifiedObject;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.OnLineFunction;
 import org.opengis.metadata.quality.PositionalAccuracy;
+import org.opengis.metadata.extent.Extent;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.apache.sis.internal.referencing.DeprecatedCode;
 import org.apache.sis.internal.system.Loggers;
@@ -67,6 +70,8 @@ import org.apache.sis.internal.util.Constants;
 import org.apache.sis.metadata.iso.ImmutableIdentifier;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.citation.DefaultOnlineResource;
+import org.apache.sis.metadata.iso.extent.DefaultExtent;
+import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.referencing.datum.BursaWolfParameters;
@@ -309,6 +314,21 @@ public abstract class EPSGFactory extends GeodeticAuthorityFactory implements CR
     protected final Connection connection;
 
     /**
+     * The factory to use for creating {@link CoordinateReferenceSystem} instances from the properties read in the database.
+     */
+    protected final CRSFactory crsFactory;
+
+    /**
+     * The factory to use for creating {@link CoordinateSystem} instances from the properties read in the database.
+     */
+    protected final CSFactory csFactory;
+
+    /**
+     * The factory to use for creating {@link Datum} instances from the properties read in the database.
+     */
+    protected final DatumFactory datumFactory;
+
+    /**
      * The locale for producing error messages. This is usually the default locale.
      *
      * @see #getLocale()
@@ -319,15 +339,29 @@ public abstract class EPSGFactory extends GeodeticAuthorityFactory implements CR
      * Creates a factory using the given connection. The connection will be {@linkplain Connection#close() closed}
      * when this factory will be {@linkplain #dispose() disposed}.
      *
-     * @param connection   The connection to the underlying EPSG database.
-     * @param nameFactory  The factory to use for creating authority codes as {@link GenericName} instances.
+     * @param connection    The connection to the underlying EPSG database.
+     * @param crsFactory    The factory to use for creating {@link CoordinateReferenceSystem} instances.
+     * @param csFactory     The factory to use for creating {@link CoordinateSystem} instances.
+     * @param datumFactory  The factory to use for creating {@link Datum} instances.
+     * @param nameFactory   The factory to use for creating authority codes as {@link GenericName} instances.
      */
-    public EPSGFactory(final Connection connection, final NameFactory nameFactory) {
+    public EPSGFactory(final Connection   connection,
+                       final CRSFactory   crsFactory,
+                       final CSFactory    csFactory,
+                       final DatumFactory datumFactory,
+                       final NameFactory  nameFactory)
+    {
         super(nameFactory);
-        ArgumentChecks.ensureNonNull("connection", connection);
-        this.connection = connection;
-        this.namespace  = nameFactory.createNameSpace(nameFactory.createLocalName(null, Constants.EPSG), null);
-        this.locale     = Locale.getDefault(Locale.Category.DISPLAY);
+        ArgumentChecks.ensureNonNull("connection",   connection);
+        ArgumentChecks.ensureNonNull("crsFactory",   crsFactory);
+        ArgumentChecks.ensureNonNull("csFactory",    csFactory);
+        ArgumentChecks.ensureNonNull("datumFactory", datumFactory);
+        this.connection   = connection;
+        this.crsFactory   = crsFactory;
+        this.csFactory    = csFactory;
+        this.datumFactory = datumFactory;
+        this.namespace    = nameFactory.createNameSpace(nameFactory.createLocalName(null, Constants.EPSG), null);
+        this.locale       = Locale.getDefault(Locale.Category.DISPLAY);
     }
 
     /**
@@ -958,6 +992,431 @@ addURIs:    for (int i=0; ; i++) {
         return properties;
     }
 
+    /**
+     * Returns the name, aliases and domain of validity for the {@link IdentifiedObject} to construct.
+     *
+     * @param  table      The table on which a query has been executed.
+     * @param  name       The name for the {@link IndentifiedObject} to construct.
+     * @param  code       The EPSG code of the object to construct.
+     * @param  domainCode The code for the domain of validity, or {@code null} if none.
+     * @param  scope      The scope, or {@code null} if none.
+     * @param  remarks    Remarks, or {@code null} if none.
+     * @param  deprecated {@code true} if the object to create is deprecated.
+     * @return The name together with a set of properties.
+     */
+    private Map<String,Object> createProperties(final String table, final String name, final String code,
+            String domainCode, String scope, String remarks, final boolean deprecated) throws SQLException, FactoryException
+    {
+        final Map<String,Object> properties = createProperties(table, name, code, remarks, deprecated);
+        if (domainCode != null  &&  !(domainCode = domainCode.trim()).isEmpty()) {
+            final Extent extent = buffered.createExtent(domainCode);
+            properties.put(Datum.DOMAIN_OF_VALIDITY_KEY, extent);
+        }
+        if (scope != null &&  !(scope = scope.trim()).isEmpty()) {
+            properties.put(Datum.SCOPE_KEY, scope);
+        }
+        return properties;
+    }
+
+    /**
+     * Returns an arbitrary object from a code. The default implementation delegates to more specific methods,
+     * for example {@link #createCoordinateReferenceSystem(String)}, {@link #createDatum(String)}, <i>etc.</i>
+     * until a successful one is found.
+     *
+     * <p><strong>Note that this method may be ambiguous</strong> since the same EPSG code can be used for different
+     * kind of objects. This method may throw an exception if it detects an ambiguity, but this is not guaranteed.
+     * It is recommended to invoke the most specific {@code createFoo(String)} method when the desired type is known,
+     * both for performance reason and for avoiding ambiguity.</p>
+     *
+     * @param  code Value allocated by EPSG.
+     * @return The object for the given code.
+     * @throws NoSuchAuthorityCodeException if the specified {@code code} was not found.
+     * @throws FactoryException if the object creation failed for some other reason.
+     *
+     * @see #createCoordinateReferenceSystem(String)
+     * @see #createDatum(String)
+     * @see #createCoordinateSystem(String)
+     */
+    @Override
+    public synchronized IdentifiedObject createObject(final String code)
+            throws NoSuchAuthorityCodeException, FactoryException
+    {
+        ArgumentChecks.ensureNonNull("code", code);
+        final String      KEY   = "IdentifiedObject";
+        PreparedStatement stmt  = statements.get(KEY);  // Null allowed.
+        StringBuilder     query = null;                 // Will be created only if the last statement does not suit.
+        /*
+         * Iterates through all tables listed in TableInfo.EPSG, starting with the table used during the last call to
+         * this method. This approach assumes that two consecutive calls will often return the same type of object.
+         * If the object type changed, then this method will have to discard the old prepared statement and prepare
+         * a new one, which may be a costly operation. Only the last successful prepared statement is cached,
+         * in order to keep the amount of statements low. Unsuccessful statements are immediately disposed.
+         */
+        final String  epsg         = trimAuthority(code);
+        final boolean isPrimaryKey = isPrimaryKey(epsg);
+        final int     tupleToSkip  = isPrimaryKey ? lastObjectType : -1;
+        int index = -1;
+        for (int i = -1; i < TableInfo.EPSG.length; i++) {
+            if (i == tupleToSkip) {
+                // Avoid to test the same table twice. Avoid also a NullPointerException
+                // if 'stmt' is null, since 'lastObjectType' should be -1 in this case.
+                continue;
+            }
+            try {
+                if (i >= 0) {
+                    final TableInfo table = TableInfo.EPSG[i];
+                    final String column = isPrimaryKey ? table.codeColumn : table.nameColumn;
+                    if (column == null) {
+                        continue;
+                    }
+                    if (query == null) {
+                        query = new StringBuilder("SELECT ");
+                    }
+                    query.setLength(7);   // 7 is the length of "SELECT " in the above line.
+                    query.append(table.codeColumn).append(" FROM ").append(table.table)
+                         .append(" WHERE ").append(column).append(" = ?");
+                    if (isPrimaryKey) {
+                        assert !statements.containsKey(KEY) : table;
+                        stmt = prepareStatement(KEY, query.toString());
+                    } else {
+                        // Do not cache the statement for names.
+                        stmt = connection.prepareStatement(adaptSQL(query.toString()));
+                    }
+                }
+                /*
+                 * Checks if at least one record is found for the code. If the code is the primary key, then we
+                 * will stop at the first table found since the EPSG database contains few duplicate identifiers
+                 * (actually it still have some, but we assume that the risk of collision is low).
+                 * If the code is a name, then we need to search in all tables since duplicate names exist.
+                 */
+                final ResultSet result;
+                if (isPrimaryKey) {
+                    result = executeQuery(stmt, epsg);
+                } else {
+                    stmt.setString(1, epsg);
+                    result = stmt.executeQuery();
+                }
+                final boolean present;
+                try {
+                    present = result.next();
+                } finally {
+                    result.close();
+                }
+                if (present) {
+                    if (index >= 0) {
+                        throw new FactoryDataException(error().getString(Errors.Keys.DuplicatedIdentifier_1, code));
+                    }
+                    index = (i < 0) ? lastObjectType : i;
+                    if (isPrimaryKey) {
+                        // Do not scan other tables, since EPSG code are more likely to be unique.
+                        // Note that names are more at risk to be duplicated, so we do not stop for names.
+                        break;
+                    }
+                }
+                if (isPrimaryKey) {
+                    if (statements.remove(KEY) == null) {
+                        throw new AssertionError(code);         // Should never happen.
+                    }
+                }
+                stmt.close();
+            } catch (SQLException exception) {
+                throw databaseFailure(IdentifiedObject.class, code, exception);
+            }
+        }
+        /*
+         * If a record has been found in one table, then delegates to the appropriate method.
+         */
+        if (isPrimaryKey) {
+            lastObjectType = index;
+        }
+        if (index >= 0) {
+            switch (index) {
+                case 0:  return createCoordinateReferenceSystem(code);
+                case 1:  return createCoordinateSystem         (code);
+                case 2:  return createCoordinateSystemAxis     (code);
+                case 3:  return createDatum                    (code);
+                case 4:  return createEllipsoid                (code);
+                case 5:  return createPrimeMeridian            (code);
+                case 6:  return createCoordinateOperation      (code);
+                case 7:  return createOperationMethod          (code);
+                case 8:  return createParameterDescriptor      (code);
+                case 9:  break; // Can not cast Unit to IdentifiedObject
+                default: throw new AssertionError(index);                   // Should not happen
+            }
+        }
+        throw noSuchAuthorityCode(IdentifiedObject.class, code);
+    }
+
+    /**
+     * Creates a geometric figure that can be used to describe the approximate shape of the earth.
+     * In mathematical terms, it is a surface formed by the rotation of an ellipse about its minor axis.
+     *
+     * @param  code Value allocated by EPSG.
+     * @return The ellipsoid for the given code.
+     * @throws NoSuchAuthorityCodeException if the specified {@code code} was not found.
+     * @throws FactoryException if the object creation failed for some other reason.
+     *
+     * @see #createGeodeticDatum(String)
+     * @see #createEllipsoidalCS(String)
+     * @see org.apache.sis.referencing.datum.DefaultEllipsoid
+     */
+    @Override
+    public synchronized Ellipsoid createEllipsoid(final String code)
+            throws NoSuchAuthorityCodeException, FactoryException
+    {
+        ArgumentChecks.ensureNonNull("code", code);
+        Ellipsoid returnValue = null;
+        try {
+            final String primaryKey = toPrimaryKey(Ellipsoid.class, code,
+                    "[Ellipsoid]", "ELLIPSOID_CODE", "ELLIPSOID_NAME");
+            final PreparedStatement stmt = prepareStatement("[Ellipsoid]",
+                    "SELECT ELLIPSOID_CODE," +
+                          " ELLIPSOID_NAME," +
+                          " SEMI_MAJOR_AXIS," +
+                          " INV_FLATTENING," +
+                          " SEMI_MINOR_AXIS," +
+                          " UOM_CODE," +
+                          " REMARKS," +
+                          " DEPRECATED" +
+                    " FROM [Ellipsoid]" +
+                    " WHERE ELLIPSOID_CODE = ?");
+            try (ResultSet result = executeQuery(stmt, primaryKey)) {
+                while (result.next()) {
+                    /*
+                     * One of 'semiMinorAxis' and 'inverseFlattening' values can be NULL in the database.
+                     * Consequently, we don't use 'getString(ResultSet, int)' for those parameters because
+                     * we do not want to thrown an exception if a NULL value is found.
+                     */
+                    final String  epsg              = getString(result, 1, code);
+                    final String  name              = getString(result, 2, code);
+                    final double  semiMajorAxis     = getDouble(result, 3, code);
+                    final double  inverseFlattening = result.getDouble( 4);
+                    final double  semiMinorAxis     = result.getDouble( 5);
+                    final String  unitCode          = getString(result, 6, code);
+                    final String  remarks           = result.getString( 7);
+                    final boolean deprecated        = result.getInt   ( 8) != 0;
+                    final Unit<Length> unit         = buffered.createUnit(unitCode).asType(Length.class);
+                    final Map<String,Object> properties = createProperties("[Ellipsoid]", name, epsg, remarks, deprecated);
+                    final Ellipsoid ellipsoid;
+                    if (inverseFlattening == 0) {
+                        if (semiMinorAxis == 0) {
+                            // Both are null, which is not allowed.
+                            final String column = result.getMetaData().getColumnName(3);
+                            throw new FactoryDataException(error().getString(Errors.Keys.NullValueInTable_3, code, column));
+                        } else {
+                            // We only have semiMinorAxis defined. It is OK
+                            ellipsoid = datumFactory.createEllipsoid(properties, semiMajorAxis, semiMinorAxis, unit);
+                        }
+                    } else {
+                        if (semiMinorAxis != 0) {
+                            // Both 'inverseFlattening' and 'semiMinorAxis' are defined.
+                            // Log a warning and create the ellipsoid using the inverse flattening.
+                            final LogRecord record = Messages.getResources(locale).getLogRecord(Level.WARNING,
+                                    Messages.Keys.AmbiguousEllipsoid_1, Constants.EPSG + DefaultNameSpace.DEFAULT_SEPARATOR + code);
+                            record.setLoggerName(Loggers.CRS_FACTORY);
+                            Logging.log(EPSGFactory.class, "createEllipsoid", record);
+                        }
+                        ellipsoid = datumFactory.createFlattenedSphere(properties, semiMajorAxis, inverseFlattening, unit);
+                    }
+                    returnValue = ensureSingleton(ellipsoid, returnValue, code);
+                }
+            }
+        } catch (SQLException exception) {
+            throw databaseFailure(Ellipsoid.class, code, exception);
+        }
+        if (returnValue == null) {
+             throw noSuchAuthorityCode(Ellipsoid.class, code);
+        }
+        return returnValue;
+    }
+
+    /**
+     * Creates a prime meridian defining the origin from which longitude values are determined.
+     *
+     * @param  code Value allocated by EPSG.
+     * @return The prime meridian for the given code.
+     * @throws NoSuchAuthorityCodeException if the specified {@code code} was not found.
+     * @throws FactoryException if the object creation failed for some other reason.
+     *
+     * @see #createGeodeticDatum(String)
+     * @see org.apache.sis.referencing.datum.DefaultPrimeMeridian
+     */
+    @Override
+    public synchronized PrimeMeridian createPrimeMeridian(final String code)
+            throws NoSuchAuthorityCodeException, FactoryException
+    {
+        ArgumentChecks.ensureNonNull("code", code);
+        PrimeMeridian returnValue = null;
+        try {
+            final String primaryKey = toPrimaryKey(PrimeMeridian.class, code,
+                    "[Prime Meridian]", "PRIME_MERIDIAN_CODE", "PRIME_MERIDIAN_NAME");
+            final PreparedStatement stmt = prepareStatement("[Prime Meridian]",
+                    "SELECT PRIME_MERIDIAN_CODE," +
+                          " PRIME_MERIDIAN_NAME," +
+                          " GREENWICH_LONGITUDE," +
+                          " UOM_CODE," +
+                          " REMARKS," +
+                          " DEPRECATED" +
+                    " FROM [Prime Meridian]" +
+                    " WHERE PRIME_MERIDIAN_CODE = ?");
+            try (ResultSet result = executeQuery(stmt, primaryKey)) {
+                while (result.next()) {
+                    final String  epsg       = getString(result, 1, code);
+                    final String  name       = getString(result, 2, code);
+                    final double  longitude  = getDouble(result, 3, code);
+                    final String  unitCode   = getString(result, 4, code);
+                    final String  remarks    = result.getString( 5);
+                    final boolean deprecated = result.getInt   ( 6) != 0;
+                    final Unit<Angle> unit = buffered.createUnit(unitCode).asType(Angle.class);
+                    Map<String,Object> properties = createProperties("[Prime Meridian]", name, epsg, remarks, deprecated);
+                    PrimeMeridian primeMeridian = datumFactory.createPrimeMeridian(properties, longitude, unit);
+                    returnValue = ensureSingleton(primeMeridian, returnValue, code);
+                }
+            }
+        } catch (SQLException exception) {
+            throw databaseFailure(PrimeMeridian.class, code, exception);
+        }
+        if (returnValue == null) {
+            throw noSuchAuthorityCode(PrimeMeridian.class, code);
+        }
+        return returnValue;
+    }
+
+    /**
+     * Creates information about spatial, vertical, and temporal extent (usually a domain of validity) from a code.
+     *
+     * @param  code Value allocated by EPSG.
+     * @return The extent for the given code.
+     * @throws NoSuchAuthorityCodeException if the specified {@code code} was not found.
+     * @throws FactoryException if the object creation failed for some other reason.
+     *
+     * @see #createCoordinateReferenceSystem(String)
+     * @see #createDatum(String)
+     * @see org.apache.sis.metadata.iso.extent.DefaultExtent
+     */
+    @Override
+    public synchronized Extent createExtent(final String code)
+            throws NoSuchAuthorityCodeException, FactoryException
+    {
+        ArgumentChecks.ensureNonNull("code", code);
+        Extent returnValue = null;
+        try {
+            final String primaryKey = toPrimaryKey(Extent.class, code,
+                    "[Area]", "AREA_CODE", "AREA_NAME");
+            final PreparedStatement stmt = prepareStatement("[Area]",
+                    "SELECT AREA_OF_USE," +
+                          " AREA_SOUTH_BOUND_LAT," +
+                          " AREA_NORTH_BOUND_LAT," +
+                          " AREA_WEST_BOUND_LON," +
+                          " AREA_EAST_BOUND_LON" +
+                    " FROM [Area]" +
+                    " WHERE AREA_CODE = ?");
+            try (ResultSet result = executeQuery(stmt, primaryKey)) {
+                while (result.next()) {
+                    String description = result.getString(1);
+                    if (description != null && (description = description.trim()).isEmpty()) {
+                        description = null;
+                    }
+                    DefaultGeographicBoundingBox bbox = null;
+                    double ymin = result.getDouble(2); if (result.wasNull()) ymin = Double.NaN;
+                    double ymax = result.getDouble(3); if (result.wasNull()) ymax = Double.NaN;
+                    double xmin = result.getDouble(4); if (result.wasNull()) xmin = Double.NaN;
+                    double xmax = result.getDouble(5); if (result.wasNull()) xmax = Double.NaN;
+                    if (!Double.isNaN(ymin) || !Double.isNaN(ymax) || !Double.isNaN(xmin) || !Double.isNaN(xmax)) {
+                        /*
+                         * Fix an error found in EPSG:3790 New Zealand - South Island - Mount Pleasant mc
+                         * for older database (this error is fixed in EPSG database 8.2).
+                         *
+                         * Do NOT apply anything similar for the x axis, because xmin > xmax is not error:
+                         * it describes a bounding box spanning the anti-meridian (±180° of longitude).
+                         */
+                        if (ymin > ymax) {
+                            final double t = ymin;
+                            ymin = ymax;
+                            ymax = t;
+                        }
+                        bbox = new DefaultGeographicBoundingBox(xmin, xmax, ymin, ymax);
+                    }
+                    if (description != null || bbox != null) {
+                        DefaultExtent extent = new DefaultExtent(description, bbox, null, null);
+                        extent.freeze();
+                        returnValue = ensureSingleton(extent, returnValue, code);
+                    }
+                }
+            }
+        } catch (SQLException exception) {
+            throw databaseFailure(Extent.class, code, exception);
+        }
+        if (returnValue == null) {
+            throw noSuchAuthorityCode(Extent.class, code);
+        }
+        return returnValue;
+    }
+
+    /**
+     * Creates an unit of measurement from a code.
+     *
+     * @param  code Value allocated by EPSG.
+     * @return The unit of measurement for the given code.
+     * @throws NoSuchAuthorityCodeException if the specified {@code code} was not found.
+     * @throws FactoryException if the object creation failed for some other reason.
+     */
+    @Override
+    public synchronized Unit<?> createUnit(final String code) throws NoSuchAuthorityCodeException, FactoryException {
+        ArgumentChecks.ensureNonNull("code", code);
+        Unit<?> returnValue = null;
+        try {
+            final String primaryKey = toPrimaryKey(Unit.class, code,
+                    "[Unit of Measure]", "UOM_CODE", "UNIT_OF_MEAS_NAME");
+            final PreparedStatement stmt;
+            stmt = prepareStatement("[Unit of Measure]",
+                    "SELECT UOM_CODE," +
+                          " FACTOR_B," +
+                          " FACTOR_C," +
+                          " TARGET_UOM_CODE," +
+                          " UNIT_OF_MEAS_NAME" +
+                    " FROM [Unit of Measure]" +
+                    " WHERE UOM_CODE = ?");
+            try (ResultSet result = executeQuery(stmt, primaryKey)) {
+                while (result.next()) {
+                    final int source = getInt(result,   1, code);
+                    final double   b = result.getDouble(2);
+                    final double   c = result.getDouble(3);
+                    final int target = getInt(result,   4, code);
+                    if (source == target) {
+                        /*
+                         * The unit is a base unit. Verify its consistency:
+                         * conversion from 'source' to itself shall be the identity function.
+                         */
+                        final boolean pb = (b != 1);
+                        if (pb || c != 1) {
+                            throw new FactoryDataException(error().getString(Errors.Keys.InconsistentAttribute_2,
+                                        pb ? "FACTOR_B" : "FACTOR_C", pb ? b : c));
+                        }
+                    }
+                    Unit<?> unit = Units.valueOfEPSG(source);           // Check in our list of hard-coded unit codes.
+                    if (unit == null) {
+                        final Unit<?> base = Units.valueOfEPSG(target);
+                        if (base != null && b != 0 && c != 0) {         // May be 0 if the conversion is non-linear.
+                            unit = Units.multiply(base, b/c);
+                        } else try {
+                            unit = Units.valueOf(result.getString(5));  // Try parsing the unit symbol as a fallback.
+                        } catch (IllegalArgumentException e) {
+                            throw new FactoryDataException(error().getString(Errors.Keys.UnknownUnit_1, code), e);
+                        }
+                    }
+                    returnValue = ensureSingleton(unit, returnValue, code);
+                }
+            }
+        } catch (SQLException exception) {
+            throw databaseFailure(Unit.class, code, exception);
+        }
+        if (returnValue == null) {
+            throw noSuchAuthorityCode(Unit.class, code);
+        }
+        return returnValue;
+    }
+
     final boolean isProjection(final int code) throws NoSuchIdentifierException, SQLException {
         return false;
     }
@@ -1045,6 +1504,20 @@ addURIs:    for (int i=0; ; i++) {
     protected NoSuchAuthorityCodeException noSuchAuthorityCode(final Class<?> type, final String code) {
         return new NoSuchAuthorityCodeException(error().getString(Errors.Keys.NoSuchAuthorityCode_3,
                 Constants.EPSG, type, code), Constants.EPSG, trimAuthority(code), code);
+    }
+
+    /**
+     * Constructs an exception for recursive calls.
+     */
+    private FactoryException recursiveCall(final Class<?> type, final String code) {
+        return new FactoryException(error().getString(Errors.Keys.RecursiveCreateCallForCode_2, type, code));
+    }
+
+    /**
+     * Constructs an exception for a database failure.
+     */
+    private FactoryException databaseFailure(Class<?> type, String code, SQLException cause) {
+        return new FactoryException(error().getString(Errors.Keys.DatabaseError_2, type, code), cause);
     }
 
     /**

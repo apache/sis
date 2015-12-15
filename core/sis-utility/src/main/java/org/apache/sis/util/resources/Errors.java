@@ -191,6 +191,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final short ColinearAxisDirections_2 = 14;
 
         /**
+         * Database error while creating a ‘{0}’ object for code “{1}”.
+         */
+        public static final short DatabaseError_2 = 209;
+
+        /**
          * Thread “{0}” is dead.
          */
         public static final short DeadThread_1 = 15;
@@ -861,6 +866,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final short RecordAlreadyDefined_2 = 161;
 
         /**
+         * Recursive call while creating an object of type ‘{0}’ for code “{1}”.
+         */
+        public static final short RecursiveCreateCallForCode_2 = 210;
+
+        /**
          * Recursive call while creating an object for the “{0}” key.
          */
         public static final short RecursiveCreateCallForKey_1 = 99;
@@ -1009,6 +1019,11 @@ public final class Errors extends IndexedResourceBundle {
          * Type ‘{0}’ is unknown in this context.
          */
         public static final short UnknownType_1 = 118;
+
+        /**
+         * Unit “{0}” is not recognized.
+         */
+        public static final short UnknownUnit_1 = 211;
 
         /**
          * This affine transform is unmodifiable.
