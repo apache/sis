@@ -177,6 +177,7 @@ import org.junit.BeforeClass;
     org.apache.sis.referencing.factory.CommonAuthorityFactoryTest.class,
     org.apache.sis.referencing.factory.AuthorityFactoryProxyTest.class,
     org.apache.sis.referencing.factory.IdentifiedObjectFinderTest.class,
+    org.apache.sis.referencing.factory.sql.EPSGFactoryTest.class,
 
     org.apache.sis.io.wkt.MathTransformParserTest.class,
     org.apache.sis.io.wkt.GeodeticObjectParserTest.class,

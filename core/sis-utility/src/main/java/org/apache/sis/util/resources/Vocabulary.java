@@ -311,6 +311,11 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final short Name = 37;
 
         /**
+         * None
+         */
+        public static final short None = 91;
+
+        /**
          * Number of ‘NaN’
          */
         public static final short NumberOfNaN = 38;
