@@ -941,6 +941,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final short UnexpectedCharactersAfter_2 = 198;
 
         /**
+         * Unexpected dimension for a coordinate system of type ‘{0}’.
+         */
+        public static final short UnexpectedDimensionForCS_1 = 212;
+
+        /**
          * Unexpected end of file while reading “{0}”.
          */
         public static final short UnexpectedEndOfFile_1 = 109;

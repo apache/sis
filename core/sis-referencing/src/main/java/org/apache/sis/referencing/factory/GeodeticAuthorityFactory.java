@@ -24,6 +24,7 @@ import org.opengis.referencing.cs.*;
 import org.opengis.referencing.crs.*;
 import org.opengis.referencing.datum.*;
 import org.opengis.referencing.operation.*;
+import org.opengis.metadata.Identifier;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.parameter.ParameterDescriptor;
@@ -66,8 +67,6 @@ import org.apache.sis.util.ArgumentChecks;
 public abstract class GeodeticAuthorityFactory extends AbstractFactory implements AuthorityFactory {
     /**
      * The factory to use for parsing authority code as {@link GenericName} instances.
-     *
-     * @see #trimAuthority(String)
      */
     protected final NameFactory nameFactory;
 
@@ -874,16 +873,24 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * @param  code The code to trim.
      * @return The code without the authority scope.
      */
-    protected String trimAuthority(String code) {
-        /*
-         * IMPLEMENTATION NOTE: This method is overridden in PropertyAuthorityFactory.
-         * If implementation below is modified, it is probably worth to revisit the overridden method as well.
-         */
+    final String trimAuthority(String code) {
+        return trimAuthority(code, null);
+    }
+
+    /**
+     * Implementation of {@link #trimAuthority(String)}, but with an authority which may be already known.
+     * If the given {@code authority} is null, then it will be fetched by a call to {@link #getAuthority()}
+     * if needed.
+     */
+    private String trimAuthority(String code, Citation authority) {
         code = code.trim();
         final GenericName name = nameFactory.parseGenericName(null, code);
         if (name instanceof ScopedName) {
             final GenericName scope = ((ScopedName) name).path();
-            if (Citations.identifierMatches(getAuthority(), null, scope.toString())) {
+            if (authority == null) {
+                authority = getAuthority();     // Costly operation for EPSGFactory.
+            }
+            if (Citations.identifierMatches(authority, null, scope.toString())) {
                 return name.tip().toString().trim();
             }
         }
@@ -892,17 +899,18 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
 
     /**
      * Creates an exception for an unknown authority code.
-     * This convenience method is provided for implementation of {@code createFoo(String)} methods.
+     * This convenience method is provided for implementation of {@code createFoo(String)} methods in subclasses.
      *
      * @param  type  The GeoAPI interface that was to be created (e.g. {@code CoordinateReferenceSystem.class}).
      * @param  code  The unknown authority code.
      * @return An exception initialized with an error message built from the specified informations.
      */
-    protected NoSuchAuthorityCodeException noSuchAuthorityCode(final Class<?> type, final String code) {
-        final String authority = Citations.getIdentifier(getAuthority(), false);
+    final NoSuchAuthorityCodeException noSuchAuthorityCode(final Class<?> type, final String code) {
+        final Citation authority = getAuthority();
+        final String name = Citations.getIdentifier(authority, false);
         return new NoSuchAuthorityCodeException(Errors.format(Errors.Keys.NoSuchAuthorityCode_3,
-                   (authority != null) ? authority : Vocabulary.formatInternational(Vocabulary.Keys.Untitled),
-                   type, code), authority, trimAuthority(code), code);
+                   (name != null) ? name : Vocabulary.formatInternational(Vocabulary.Keys.Untitled),
+                   type, code), name, trimAuthority(code, authority), code);
     }
 
     /**
@@ -922,13 +930,31 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
         if (type.isInstance(object)) {
             return (T) object;
         }
+        /*
+         * Get the actual type of the object. Returns the GeoAPI type if possible,
+         * or fallback on the implementation class otherwise.
+         */
         final Class<?> actual;
         if (object instanceof AbstractIdentifiedObject) {
             actual = ((AbstractIdentifiedObject) object).getInterface();
         } else {
             actual = object.getClass();
         }
+        /*
+         * Get the authority from the object if possible, in order to avoid a call
+         * to the potentially costly (for EPSGFactory) getAuthority() method.
+         */
+        Citation authority = null;
+        if (object instanceof IdentifiedObject) {
+            final Identifier id = ((IdentifiedObject) object).getName();
+            if (id != null) {
+                authority = id.getAuthority();
+            }
+        }
+        if (authority == null) {
+            authority = getAuthority();
+        }
         throw new NoSuchAuthorityCodeException(Errors.format(Errors.Keys.UnexpectedTypeForReference_3, code, type, actual),
-                Citations.getIdentifier(getAuthority(), false), trimAuthority(code), code);
+                Citations.getIdentifier(authority, false), trimAuthority(code, authority), code);
     }
 }
