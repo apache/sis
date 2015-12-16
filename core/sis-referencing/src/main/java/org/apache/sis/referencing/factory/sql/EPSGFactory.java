@@ -103,8 +103,7 @@ import org.apache.sis.measure.Units;
  * the same object.
  * However, names may be ambiguous since the same name may be used for more than one object.
  * This is the case of <cite>"WGS 84"</cite> for instance.
- * If such an ambiguity is found, an exception will be thrown.
- * This behavior can be changed by overriding the {@link #isPrimaryKey(String)} method.</p>
+ * If such an ambiguity is found, an exception will be thrown.</p>
  *
  * <div class="section">Life cycle and caching</div>
  * {@code EPSGFactory} instances should be short-lived since they may hold a significant amount of JDBC resources.
@@ -367,6 +366,26 @@ public abstract class EPSGFactory extends GeodeticAuthorityFactory implements CR
     }
 
     /**
+     * Invoked when a new {@link PreparedStatement} is about to be created from a SQL string.
+     * Since the <a href="http://www.epsg.org">EPSG database</a> is available primarily in MS-Access format,
+     * SQL statements are formatted using a syntax specific to this particular database software
+     * (for example "{@code SELECT * FROM [Coordinate Reference System]}").
+     * When a subclass targets another database vendor, it must overrides this method in order to adapt the SQL syntax.
+     *
+     * <div class="note"><b>Example</b>
+     * a subclass connecting to a <cite>PostgreSQL</cite> database would replace the watching braces
+     * ({@code '['} and {@code ']'}) by the quote character ({@code '"'}).</div>
+     *
+     * The default implementation returns the given statement unchanged.
+     *
+     * @param  statement The statement in MS-Access syntax.
+     * @return The SQL statement adapted to the syntax of the target database.
+     */
+    protected String adaptSQL(final String statement) {
+        return statement;
+    }
+
+    /**
      * Returns the locale used by this factory for producing error messages.
      * This locale does not change the way data are read from the EPSG database.
      *
@@ -506,7 +525,7 @@ addURIs:    for (int i=0; ; i++) {
     /**
      * Returns a map of EPSG authority codes as keys and object names as values.
      */
-    private synchronized Map<String,String> getCodeMap(final Class<?> type) throws FactoryException {
+    private synchronized Map<String,String> getCodeMap(final Class<?> type) {
         CloseableReference<AuthorityCodes> reference = authorityCodes.get(type);
         if (reference != null) {
             AuthorityCodes existing = reference.get();
@@ -592,6 +611,56 @@ addURIs:    for (int i=0; ; i++) {
     }
 
     /**
+     * Removes the {@code "EPSG:"} prefix from the given string, if present.
+     * This method is preferred to the more generic implementation provided by the parent class for efficiency reason.
+     * In particular, this method avoid to call the potentially costly {@link #getAuthority()} method.
+     *
+     * @param  code The code to trim.
+     * @return The code without the {@code "EPSG:"} prefix.
+     */
+    private String trimAuthority(String code) {
+        int s = code.indexOf(DefaultNameSpace.DEFAULT_SEPARATOR);
+        if (s >= 0 && Constants.EPSG.equals(code.substring(0, s).trim())) {
+            code = code.substring(s+1).trim();
+        }
+        return code;
+    }
+
+    /**
+     * Returns {@code true} if the specified code may be a primary key in some table.
+     * This method does not need to check any entry in the database.
+     * It should just check from the syntax if the code looks like a valid EPSG identifier.
+     *
+     * <p>When this method returns {@code false}, {@code createFoo(String)} methods
+     * may look for the code in the name column instead than the primary key column.
+     * This allows to accept the <cite>"WGS 84 / World Mercator"</cite> string (for example)
+     * in addition to the {@code "3395"} primary key. Both string values should fetch the same object.</p>
+     *
+     * <p>If this method returns {@code true}, then this factory does not search for matching names.
+     * In such case, an appropriate exception will be thrown in {@code createFoo(String)} methods
+     * if the code is not found in the primary key column.</p>
+     *
+     * <div class="section">Default implementation</div>
+     * The default implementation returns {@code true} if all non-space characters
+     * are {@linkplain Character#isDigit(int) digits}.
+     *
+     * @param  code  The code the inspect.
+     * @return {@code true} if the code is probably a primary key.
+     * @throws FactoryException if an unexpected error occurred while inspecting the code.
+     */
+    private boolean isPrimaryKey(final String code) throws FactoryException {
+        final int length = code.length();
+        for (int i=0; i<length;) {
+            final int c = code.codePointAt(i);
+            if (!Character.isDigit(c) && !Character.isSpaceChar(c)) {
+                return false;
+            }
+            i += Character.charCount(c);
+        }
+        return true;
+    }
+
+    /**
      * Converts a code from an arbitrary name to the numerical identifier (the primary key).
      * If the supplied code is already a numerical value, then it is returned unchanged.
      * If the code is not found in the name column, it is returned unchanged as well
@@ -652,6 +721,16 @@ addURIs:    for (int i=0; ; i++) {
             }
         }
         return identifier;
+    }
+
+    /**
+     * Returns the primary key for a coordinate reference system name.
+     * This method is used by {@link #createCoordinateReferenceSystem(String)}
+     * and {@link #createFromCoordinateReferenceSystemCodes(String)}
+     */
+    private String toPrimaryKeyForCRS(final String code) throws SQLException, FactoryException {
+        return toPrimaryKey(CoordinateReferenceSystem.class, code,
+                "[Coordinate Reference System]", "COORD_REF_SYS_CODE", "COORD_REF_SYS_NAME");
     }
 
     /**
@@ -889,14 +968,13 @@ addURIs:    for (int i=0; ; i++) {
      * @param  code   The deprecated code.
      * @return A message proposing a replacement, or {@code null} if none.
      */
-    private InternationalString getDeprecation(final String table, final int code)
-            throws SQLException, NoSuchIdentifierException
-    {
+    private InternationalString getDeprecation(final String table, final int code) throws SQLException {
+        String reason = null;
+        Object replacedBy = null;
         final PreparedStatement stmt = prepareStatement("[Deprecation]",
                 "SELECT OBJECT_TABLE_NAME, DEPRECATION_REASON, REPLACED_BY" +
                 " FROM [Deprecation] WHERE OBJECT_CODE = ?");
-        String reason = null;
-        Object replacedBy = null;
+
         try (ResultSet result = executeQuery(stmt, code)) {
             while (result.next()) {
                 if (tableMatches(table, result.getString(1))) {
@@ -943,7 +1021,7 @@ addURIs:    for (int i=0; ; i++) {
      */
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
     private Map<String,Object> createProperties(final String table, String name, final int code,
-            String remarks, final boolean deprecated) throws SQLException, FactoryException
+            String remarks, final boolean deprecated) throws SQLException, FactoryDataException
     {
         properties.clear();
         GenericName gn = null;
@@ -985,6 +1063,7 @@ addURIs:    for (int i=0; ; i++) {
                   " ON [Alias].NAMING_SYSTEM_CODE =" +
                 " [Naming System].NAMING_SYSTEM_CODE" +
                 " WHERE OBJECT_CODE = ?");
+
         try (ResultSet result = executeQuery(stmt, code)) {
             while (result.next()) {
                 if (tableMatches(table, result.getString(1))) {
@@ -1187,6 +1266,7 @@ addURIs:    for (int i=0; ; i++) {
         try {
             final String primaryKey = toPrimaryKey(Ellipsoid.class, code,
                     "[Ellipsoid]", "ELLIPSOID_CODE", "ELLIPSOID_NAME");
+
             final PreparedStatement stmt = prepareStatement("[Ellipsoid]",
                     "SELECT ELLIPSOID_CODE," +
                           " ELLIPSOID_NAME," +
@@ -1198,6 +1278,7 @@ addURIs:    for (int i=0; ; i++) {
                           " DEPRECATED" +
                     " FROM [Ellipsoid]" +
                     " WHERE ELLIPSOID_CODE = ?");
+
             try (ResultSet result = executeQuery(stmt, primaryKey)) {
                 while (result.next()) {
                     /*
@@ -1268,6 +1349,7 @@ addURIs:    for (int i=0; ; i++) {
         try {
             final String primaryKey = toPrimaryKey(PrimeMeridian.class, code,
                     "[Prime Meridian]", "PRIME_MERIDIAN_CODE", "PRIME_MERIDIAN_NAME");
+
             final PreparedStatement stmt = prepareStatement("[Prime Meridian]",
                     "SELECT PRIME_MERIDIAN_CODE," +
                           " PRIME_MERIDIAN_NAME," +
@@ -1277,6 +1359,7 @@ addURIs:    for (int i=0; ; i++) {
                           " DEPRECATED" +
                     " FROM [Prime Meridian]" +
                     " WHERE PRIME_MERIDIAN_CODE = ?");
+
             try (ResultSet result = executeQuery(stmt, primaryKey)) {
                 while (result.next()) {
                     final int     epsg       = getInt   (result, 1, code);
@@ -1321,6 +1404,7 @@ addURIs:    for (int i=0; ; i++) {
         try {
             final String primaryKey = toPrimaryKey(Extent.class, code,
                     "[Area]", "AREA_CODE", "AREA_NAME");
+
             final PreparedStatement stmt = prepareStatement("[Area]",
                     "SELECT AREA_OF_USE," +
                           " AREA_SOUTH_BOUND_LAT," +
@@ -1329,6 +1413,7 @@ addURIs:    for (int i=0; ; i++) {
                           " AREA_EAST_BOUND_LON" +
                     " FROM [Area]" +
                     " WHERE AREA_CODE = ?");
+
             try (ResultSet result = executeQuery(stmt, primaryKey)) {
                 while (result.next()) {
                     String description = result.getString(1);
@@ -1389,6 +1474,7 @@ addURIs:    for (int i=0; ; i++) {
         try {
             final String primaryKey = toPrimaryKey(CoordinateSystem.class, code,
                     "[Coordinate System]", "COORD_SYS_CODE", "COORD_SYS_NAME");
+
             final PreparedStatement stmt = prepareStatement("[Coordinate System]",
                     "SELECT COORD_SYS_CODE," +
                           " COORD_SYS_NAME," +
@@ -1398,6 +1484,7 @@ addURIs:    for (int i=0; ; i++) {
                           " DEPRECATED" +
                     " FROM [Coordinate System]" +
                     " WHERE COORD_SYS_CODE = ?");
+
             try (ResultSet result = executeQuery(stmt, primaryKey)) {
                 while (result.next()) {
                     final int     epsg       = getInt   (result, 1, code);
@@ -1406,67 +1493,67 @@ addURIs:    for (int i=0; ; i++) {
                     final int     dimension  = getInt   (result, 4, code);
                     final String  remarks    = result.getString( 5);
                     final boolean deprecated = result.getInt   ( 6) != 0;
-                    final CoordinateSystemAxis[] axis = createCoordinateSystemAxes(primaryKey, dimension);
+                    final CoordinateSystemAxis[] axes = createCoordinateSystemAxes(epsg, dimension);
                     final Map<String,Object> properties = createProperties("[Coordinate System]",
                             name, epsg, remarks, deprecated); // Must be after axis
                     CoordinateSystem cs = null;
                     switch (type.toLowerCase(Locale.US)) {
                         case "ellipsoidal": {
                             switch (dimension) {
-                                case 2: cs = csFactory.createEllipsoidalCS(properties, axis[0], axis[1]); break;
-                                case 3: cs = csFactory.createEllipsoidalCS(properties, axis[0], axis[1], axis[2]); break;
+                                case 2: cs = csFactory.createEllipsoidalCS(properties, axes[0], axes[1]); break;
+                                case 3: cs = csFactory.createEllipsoidalCS(properties, axes[0], axes[1], axes[2]); break;
                             }
                             break;
                         }
                         case "cartesian": {
                             switch (dimension) {
-                                case 2: cs = csFactory.createCartesianCS(properties, axis[0], axis[1]); break;
-                                case 3: cs = csFactory.createCartesianCS(properties, axis[0], axis[1], axis[2]); break;
+                                case 2: cs = csFactory.createCartesianCS(properties, axes[0], axes[1]); break;
+                                case 3: cs = csFactory.createCartesianCS(properties, axes[0], axes[1], axes[2]); break;
                             }
                             break;
                         }
                         case "spherical": {
                             switch (dimension) {
-                                case 3: cs = csFactory.createSphericalCS(properties, axis[0], axis[1], axis[2]); break;
+                                case 3: cs = csFactory.createSphericalCS(properties, axes[0], axes[1], axes[2]); break;
                             }
                             break;
                         }
                         case "vertical":
                         case "gravity-related": {
                             switch (dimension) {
-                                case 1: cs = csFactory.createVerticalCS(properties, axis[0]); break;
+                                case 1: cs = csFactory.createVerticalCS(properties, axes[0]); break;
                             }
                             break;
                         }
                         case "time":            // Was used in older ISO-19111 versions.
                         case "temporal": {
                             switch (dimension) {
-                                case 1: cs = csFactory.createTimeCS(properties, axis[0]); break;
+                                case 1: cs = csFactory.createTimeCS(properties, axes[0]); break;
                             }
                             break;
                         }
                         case "linear": {
                             switch (dimension) {
-                                case 1: cs = csFactory.createLinearCS(properties, axis[0]); break;
+                                case 1: cs = csFactory.createLinearCS(properties, axes[0]); break;
                             }
                             break;
                         }
                         case "polar": {
                             switch (dimension) {
-                                case 2: cs = csFactory.createPolarCS(properties, axis[0], axis[1]); break;
+                                case 2: cs = csFactory.createPolarCS(properties, axes[0], axes[1]); break;
                             }
                             break;
                         }
                         case "cylindrical": {
                             switch (dimension) {
-                                case 3: cs = csFactory.createCylindricalCS(properties, axis[0], axis[1], axis[2]); break;
+                                case 3: cs = csFactory.createCylindricalCS(properties, axes[0], axes[1], axes[2]); break;
                             }
                             break;
                         }
                         case "affine": {
                             switch (dimension) {
-                                case 2: cs = csFactory.createAffineCS(properties, axis[0], axis[1]); break;
-                                case 3: cs = csFactory.createAffineCS(properties, axis[0], axis[1], axis[2]); break;
+                                case 2: cs = csFactory.createAffineCS(properties, axes[0], axes[1]); break;
+                                case 3: cs = csFactory.createAffineCS(properties, axes[0], axes[1], axes[2]); break;
                             }
                             break;
                         }
@@ -1490,43 +1577,70 @@ addURIs:    for (int i=0; ; i++) {
     }
 
     /**
+     * Returns the number of dimension for the specified Coordinate System, or {@code null} if not found.
+     *
+     * @param  cs the EPSG code for the coordinate system.
+     * @return The number of dimensions, or {@code null} if not found.
+     *
+     * @see #getDimensionsForMethod(int)
+     */
+    private Integer getDimensionForCS(final int cs) throws SQLException {
+        Integer dimension = csDimensions.get(cs);
+        if (dimension == null) {
+            final PreparedStatement stmt = prepareStatement("Dimension",
+                    " SELECT COUNT(COORD_AXIS_CODE)" +
+                     " FROM [Coordinate Axis]" +
+                     " WHERE COORD_SYS_CODE = ?");
+
+            try (ResultSet result = executeQuery(stmt, cs)) {
+                dimension = result.next() ? result.getInt(1) : 0;
+                csDimensions.put(cs, dimension);
+            }
+        }
+        return (dimension != 0) ? dimension : null;
+    }
+
+    /**
      * Returns the coordinate system axis from an EPSG code for a {@link CoordinateSystem}.
      *
      * <p><strong>WARNING:</strong> The EPSG database uses "{@code ORDER}" as a column name.
      * This is tolerated by Access, but MySQL does not accept that name.</p>
      *
-     * @param  code the EPSG code for coordinate system owner.
+     * @param  cs the EPSG code for the coordinate system.
      * @param  dimension of the coordinate system, which is also the size of the returned array.
      * @return An array of coordinate system axis.
      * @throws SQLException if an error occurred during database access.
      * @throws FactoryException if the code has not been found.
      */
-    private CoordinateSystemAxis[] createCoordinateSystemAxes(final String code, final int dimension)
+    private CoordinateSystemAxis[] createCoordinateSystemAxes(final int cs, final int dimension)
             throws SQLException, FactoryException
     {
         assert Thread.holdsLock(this);
-        final CoordinateSystemAxis[] axis = new CoordinateSystemAxis[dimension];
+        final CoordinateSystemAxis[] axes = new CoordinateSystemAxis[dimension];
         final PreparedStatement stmt = prepareStatement("AxisOrder",
                 "SELECT COORD_AXIS_CODE" +
                 " FROM [Coordinate Axis]" +
                 " WHERE COORD_SYS_CODE = ?" +
                 " ORDER BY [ORDER]");
+
         int i = 0;
-        try (ResultSet result = executeQuery(stmt, code)) {
+        try (ResultSet result = executeQuery(stmt, cs)) {
             while (result.next()) {
-                final String axisCode = getString(result, 1, code);
-                if (i < axis.length) {
-                    // If 'i' is out of bounds, an exception will be thrown after the loop.
-                    // We do not want to thrown an ArrayIndexOutOfBoundsException here.
-                    axis[i] = buffered.createCoordinateSystemAxis(axisCode);
+                final String axis = getString(result, 1, cs);
+                if (i < axes.length) {
+                    /*
+                     * If 'i' is out of bounds, an exception will be thrown after the loop.
+                     * We do not want to thrown an ArrayIndexOutOfBoundsException here.
+                     */
+                    axes[i] = buffered.createCoordinateSystemAxis(axis);
                 }
                 ++i;
             }
         }
-        if (i != axis.length) {
-            throw new FactoryDataException(error().getString(Errors.Keys.MismatchedDimension_2, axis.length, i));
+        if (i != axes.length) {
+            throw new FactoryDataException(error().getString(Errors.Keys.MismatchedDimension_2, axes.length, i));
         }
-        return axis;
+        return axes;
     }
 
     /**
@@ -1556,6 +1670,7 @@ addURIs:    for (int i=0; ; i++) {
                           " UOM_CODE" +
                     " FROM [Coordinate Axis]" +
                    " WHERE COORD_AXIS_CODE = ?");
+
             try (ResultSet result = executeQuery(stmt, primaryKey)) {
                 while (result.next()) {
                     final int    epsg         = getInt   (result, 1, code);
@@ -1593,11 +1708,11 @@ addURIs:    for (int i=0; ; i++) {
         assert Thread.holdsLock(this);
         AxisName returnValue = axisNames.get(code);
         if (returnValue == null) try {
-            final PreparedStatement stmt;
-            stmt = prepareStatement("[Coordinate Axis Name]",
+            final PreparedStatement stmt = prepareStatement("[Coordinate Axis Name]",
                     "SELECT COORD_AXIS_NAME, DESCRIPTION, REMARKS" +
                     " FROM [Coordinate Axis Name]" +
                     " WHERE COORD_AXIS_NAME_CODE = ?");
+
             try (ResultSet result = executeQuery(stmt, code)) {
                 while (result.next()) {
                     final String name  = getString(result, 1, code);
@@ -1637,8 +1752,8 @@ addURIs:    for (int i=0; ; i++) {
         try {
             final String primaryKey = toPrimaryKey(Unit.class, code,
                     "[Unit of Measure]", "UOM_CODE", "UNIT_OF_MEAS_NAME");
-            final PreparedStatement stmt;
-            stmt = prepareStatement("[Unit of Measure]",
+
+            final PreparedStatement stmt = prepareStatement("[Unit of Measure]",
                     "SELECT UOM_CODE," +
                           " FACTOR_B," +
                           " FACTOR_C," +
@@ -1646,6 +1761,7 @@ addURIs:    for (int i=0; ; i++) {
                           " UNIT_OF_MEAS_NAME" +
                     " FROM [Unit of Measure]" +
                     " WHERE UOM_CODE = ?");
+
             try (ResultSet result = executeQuery(stmt, primaryKey)) {
                 while (result.next()) {
                     final int source = getInt(result,   1, code);
@@ -1693,7 +1809,7 @@ addURIs:    for (int i=0; ; i++) {
      * @throws NoSuchIdentifierException if the given code has not been found.
      * @throws SQLException If an error occurred while querying the database.
      */
-    final boolean isProjection(final int code) throws NoSuchIdentifierException, SQLException {
+    final boolean isProjection(final int code) throws SQLException {
         Boolean projection = isProjection.get(code);
         if (projection == null) {
             final PreparedStatement stmt = prepareStatement("isProjection",
@@ -1710,73 +1826,73 @@ addURIs:    for (int i=0; ; i++) {
     }
 
     /**
-     * Invoked when a new {@link PreparedStatement} is about to be created from a SQL string.
-     * Since the <a href="http://www.epsg.org">EPSG database</a> is available primarily in MS-Access format,
-     * SQL statements are formatted using a syntax specific to this particular database software
-     * (for example "{@code SELECT * FROM [Coordinate Reference System]}").
-     * When a subclass targets another database vendor, it must overrides this method in order to adapt the SQL syntax.
+     * Returns the source and target dimensions for the specified method, provided that they are the same
+     * for all operations using that method. The returned array has a length of 2 and is never null,
+     * but some elements in that array may be null.
      *
-     * <div class="note"><b>Example</b>
-     * a subclass connecting to a <cite>PostgreSQL</cite> database would replace the watching braces
-     * ({@code '['} and {@code ']'}) by the quote character ({@code '"'}).</div>
+     * @param  method  The EPSG code of the operation method for which to get the dimensions.
+     * @return The dimensions in an array of length 2.
      *
-     * The default implementation returns the given statement unchanged.
-     *
-     * @param  statement The statement in MS-Access syntax.
-     * @return The SQL statement adapted to the syntax of the target database.
+     * @see #getDimensionForCS(int)
      */
-    protected String adaptSQL(final String statement) {
-        return statement;
-    }
-
-    /**
-     * Returns {@code true} if the specified code may be a primary key in some table.
-     * This method does not need to check any entry in the database.
-     * It should just check from the syntax if the code looks like a valid EPSG identifier.
-     *
-     * <p>When this method returns {@code false}, {@code createFoo(String)} methods
-     * may look for the code in the name column instead than the primary key column.
-     * This allows to accept the <cite>"WGS 84 / World Mercator"</cite> string (for example)
-     * in addition to the {@code "3395"} primary key. Both string values should fetch the same object.</p>
-     *
-     * <p>If this method returns {@code true}, then this factory does not search for matching names.
-     * In such case, an appropriate exception will be thrown in {@code createFoo(String)} methods
-     * if the code is not found in the primary key column.</p>
-     *
-     * <div class="section">Default implementation</div>
-     * The default implementation returns {@code true} if all non-space characters
-     * are {@linkplain Character#isDigit(int) digits}.
-     *
-     * @param  code  The code the inspect.
-     * @return {@code true} if the code is probably a primary key.
-     * @throws FactoryException if an unexpected error occurred while inspecting the code.
-     */
-    protected boolean isPrimaryKey(final String code) throws FactoryException {
-        final int length = code.length();
-        for (int i=0; i<length;) {
-            final int c = code.codePointAt(i);
-            if (!Character.isDigit(c) && !Character.isSpaceChar(c)) {
-                return false;
+    private Integer[] getDimensionsForMethod(final int method) throws SQLException {
+        final Integer[] dimensions = new Integer[2];
+        final boolean[] differents = new boolean[2];
+        int numDifferences = 0;
+        boolean projections = false;
+        do {
+            /*
+             * This loop is executed twice. On the first execution, we look for the source and
+             * target CRS declared directly in the "Coordinate Operations" table. This applies
+             * mostly to coordinate transformations, since those fields are typically empty in
+             * the case of projected CRS.
+             *
+             * In the second execution, we will look for the base geographic CRS and
+             * the resulting projected CRS that use the given operation method. This
+             * allows us to handle the case of projected CRS (typically 2 dimensional).
+             */
+            final String key, sql;
+            if (!projections) {
+                key = "MethodDimensions";
+                sql = "SELECT DISTINCT SRC.COORD_SYS_CODE," +
+                                     " TGT.COORD_SYS_CODE" +
+                      " FROM [Coordinate_Operation] AS CO" +
+                " INNER JOIN [Coordinate Reference System] AS SRC ON SRC.COORD_REF_SYS_CODE = CO.SOURCE_CRS_CODE" +
+                " INNER JOIN [Coordinate Reference System] AS TGT ON TGT.COORD_REF_SYS_CODE = CO.TARGET_CRS_CODE" +
+                      " WHERE CO.DEPRECATED = 0 AND COORD_OP_METHOD_CODE = ?";
+            } else {
+                key = "DerivedDimensions";
+                sql = "SELECT DISTINCT SRC.COORD_SYS_CODE," +
+                                     " TGT.COORD_SYS_CODE" +
+                      " FROM [Coordinate Reference System] AS TGT" +
+                " INNER JOIN [Coordinate Reference System] AS SRC ON TGT.SOURCE_GEOGCRS_CODE = SRC.COORD_REF_SYS_CODE" +
+                " INNER JOIN [Coordinate_Operation] AS CO ON TGT.PROJECTION_CONV_CODE = CO.COORD_OP_CODE" +
+                      " WHERE CO.DEPRECATED = 0 AND COORD_OP_METHOD_CODE = ?";
             }
-            i += Character.charCount(c);
-        }
-        return true;
-    }
-
-    /**
-     * Removes the {@code "EPSG:"} prefix from the given string, if present.
-     * This method is preferred to the more generic implementation provided by the parent class for efficiency reason.
-     * In particular, this method avoid to call the potentially costly {@link #getAuthority()} method.
-     *
-     * @param  code The code to trim.
-     * @return The code without the {@code "EPSG:"} prefix.
-     */
-    private String trimAuthority(String code) {
-        int s = code.indexOf(DefaultNameSpace.DEFAULT_SEPARATOR);
-        if (s >= 0 && Constants.EPSG.equals(code.substring(0, s).trim())) {
-            code = code.substring(s+1).trim();
-        }
-        return code;
+            final PreparedStatement stmt = prepareStatement(key, sql);
+            try (ResultSet result = executeQuery(stmt, method)) {
+                while (result.next()) {
+                    for (int i=0; i<dimensions.length; i++) {
+                        if (!differents[i]) {   // Not worth to test heterogenous dimensions.
+                            final Integer dim = getDimensionForCS(result.getInt(i + 1));
+                            if (dim != null) {
+                                if (dimensions[i] == null) {
+                                    dimensions[i] = dim;
+                                } else if (!dim.equals(dimensions[i])) {
+                                    dimensions[i] = null;
+                                    differents[i] = true;
+                                    if (++numDifferences == differents.length) {
+                                        // All dimensions have been set to null.
+                                        return dimensions;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        } while ((projections = !projections) == true);
+        return dimensions;
     }
 
     /**
