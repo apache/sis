@@ -25,12 +25,9 @@ import java.sql.SQLException;
 import java.sql.PreparedStatement;
 import java.sql.Statement;
 import org.opengis.referencing.operation.Projection;
-import org.opengis.util.NoSuchIdentifierException;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.internal.util.AbstractMap;
-import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.util.collection.IntegerList;
-import org.apache.sis.util.logging.Logging;
 
 
 /**
@@ -195,21 +192,7 @@ final class AuthorityCodes extends AbstractMap<String,String> implements Seriali
      */
     private boolean filter(final int code) throws SQLException {
         assert Thread.holdsLock(factory);
-        if (!isProjection) {
-            return true;
-        }
-        try {
-            return factory.isProjection(code);
-        } catch (NoSuchIdentifierException e) {
-            /*
-             * This is not a fatal error since we can consider that the CRS is not a projection if we did not found it.
-             * However since this exception should never happen, there is probably a problem with the database content.
-             * Logs a warning pretending to come from the EPSGFactory.getAuthorityCodes() method since the later is the
-             * public facade by which the user can iterate over the entries in this AuthorityCodes map.
-             */
-            Logging.unexpectedException(Logging.getLogger(Loggers.CRS_FACTORY), EPSGFactory.class, "getAuthorityCodes", e);
-            return false;
-        }
+        return !isProjection || factory.isProjection(code);
     }
 
     /**
