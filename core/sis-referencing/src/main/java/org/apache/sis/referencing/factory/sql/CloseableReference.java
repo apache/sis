@@ -57,10 +57,11 @@ final class CloseableReference<T> extends WeakReference<T> implements Disposable
     }
 
     /**
-     * Invoked indirectly by the garbage collector.
+     * Closes the statements. If an exception occurred, it will be thrown only after all statements have been closed.
+     *
+     * @throws SQLException if an error occurred while closing the statements.
      */
-    @Override
-    public void dispose() {
+    final void close() throws SQLException {
         SQLException exception = null;
         synchronized (factory) {
             for (int i=statements.length; --i >= 0;) {
@@ -78,6 +79,18 @@ final class CloseableReference<T> extends WeakReference<T> implements Disposable
             }
         }
         if (exception != null) {
+            throw exception;
+        }
+    }
+
+    /**
+     * Invoked indirectly by the garbage collector.
+     */
+    @Override
+    public void dispose() {
+        try {
+            close();
+        } catch (SQLException exception) {
             /*
              * There is nothing we can do here. It is not even worth to throw an unchecked exception because
              * this method is invoked from a background thread, so the exception would not reach user's code.

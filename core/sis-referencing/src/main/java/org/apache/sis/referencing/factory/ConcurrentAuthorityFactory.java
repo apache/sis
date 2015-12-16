@@ -22,8 +22,10 @@ import java.util.Deque;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.WeakHashMap;
+import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import java.lang.ref.WeakReference;
+import java.lang.ref.PhantomReference;
 import java.io.PrintWriter;
 import javax.measure.unit.Unit;
 import org.opengis.referencing.cs.*;
@@ -45,10 +47,13 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.collection.Cache;
 import org.apache.sis.internal.referencing.NilReferencingObject;
+import org.apache.sis.internal.system.ReferenceQueueConsumer;
 import org.apache.sis.internal.system.DelayedExecutor;
 import org.apache.sis.internal.system.DelayedRunnable;
+import org.apache.sis.internal.system.Shutdown;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.ArraysExt;
 
 
 /**
@@ -58,8 +63,8 @@ import org.apache.sis.util.resources.Errors;
  * by {@link #createBackingStore()} and the result is cached in this factory.
  *
  * <p>{@code ConcurrentAuthorityFactory} delays the call to {@code createBackingStore()} until first needed,
- * and {@linkplain Disposable#dispose() dispose} it after some timeout. This approach allows to establish
- * a connection to a database (for example) and keep it only for a relatively short amount of time.</p>
+ * and {@linkplain AutoCloseable#close() closes} the backing store after some timeout. This approach allows
+ * to establish a connection to a database (for example) and keep it only for a relatively short amount of time.</p>
  *
  * <div class="section">Caching strategy</div>
  * Objects are cached by strong references, up to the amount of objects specified at construction time.
@@ -85,7 +90,7 @@ import org.apache.sis.util.resources.Errors;
  * @version 0.7
  * @module
  */
-public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactory implements Disposable {
+public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactory implements AutoCloseable {
     /**
      * The authority, cached after first requested.
      */
@@ -117,7 +122,7 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      * {@link ConcurrentAuthorityFactory}. This assumes that factory implementations are reentrant.</p>
      *
      * <p>If the backing store has been released, then {@code BackingStore} keep the release timestamp.
-     * This information is used for prioritize the backing stores to dispose.</p>
+     * This information is used for prioritize the backing stores to close.</p>
      */
     private static final class BackingStore {
         /**
@@ -183,7 +188,7 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
     private int remainingBackingStores;
 
     /**
-     * {@code true} if the call to {@link #disposeExpired()} is scheduled for future execution in the background
+     * {@code true} if the call to {@link #closeExpired()} is scheduled for future execution in the background
      * cleaner thread.  A value of {@code true} implies that this factory contains at least one active backing store.
      * However the reciprocal is not true: this field may be set to {@code false} while a worker factory is currently
      * in use because this field is set to {@code true} only when a worker factory is {@linkplain #release() released}.
@@ -196,11 +201,11 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
     private boolean isActive;
 
     /**
-     * {@code true} if {@link #dispose()} has been invoked.
+     * {@code true} if {@link #close()} has been invoked.
      *
      * <p>Every access to this field must be performed in a block synchronized on {@link #availableStores}.</p>
      */
-    private boolean isDisposed;
+    private boolean isClosed;
 
     /**
      * The delay of inactivity (in nanoseconds) before to close a backing store.
@@ -250,13 +255,23 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
         ArgumentChecks.ensureStrictlyPositive("maxConcurrentQueries", maxConcurrentQueries);
         remainingBackingStores = maxConcurrentQueries;
         cache = new Cache<>(20, maxStrongReferences, false);
-        cache.setKeyCollisionAllowed(true);
         /*
          * Key collision is usually an error. But in this case we allow them in order to enable recursivity.
          * If during the creation of an object the program asks to this ConcurrentAuthorityFactory for the same
          * object (using the same key), then the default Cache implementation considers that situation as an
          * error unless the above property has been set to 'true'.
          */
+        cache.setKeyCollisionAllowed(true);
+        /*
+         * The shutdown hook serves two purposes:
+         *
+         *   1) Closes the backing stores when the garbage collector determined
+         *      that this ConcurrentAuthorityFactory is no longer in use.
+         *
+         *   2) Closes the backing stores at JVM shutdown time if the application is standalone,
+         *      or when the bundle is uninstalled if running inside an OSGi or Servlet container.
+         */
+        Shutdown.register(new ShutdownHook(this));
     }
 
     /**
@@ -273,7 +288,7 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
     /**
      * Creates a new backing store authority factory. This method is invoked the first time a {@code createFoo(String)}
      * method is invoked. It may also be invoked again if additional factories are needed in different threads,
-     * or if all factories have been disposed after the timeout.
+     * or if all factories have been closed after the timeout.
      *
      * <div class="section">Multi-threading</div>
      * This method (but not necessarily the returned factory) needs to be thread-safe;
@@ -304,7 +319,7 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
         BackingStore usage = currentStore.get();
         if (usage == null) {
             synchronized (availableStores) {
-                if (isDisposed) {
+                if (isClosed) {
                     throw new UnavailableFactoryException(Errors.format(Errors.Keys.DisposedFactory));
                 }
                 /**
@@ -374,17 +389,25 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
         final BackingStore usage = currentStore.get();     // A null value here would be an error in our algorithm.
         if (--usage.depth == 0) {
             synchronized (availableStores) {
-                if (isDisposed) return;
+                if (isClosed) {
+                    final GeodeticAuthorityFactory factory = usage.factory;
+                    if (factory instanceof AutoCloseable) try {
+                        ((AutoCloseable) factory).close();
+                    } catch (Exception exception) {
+                        unexpectedException("release", exception);
+                    }
+                    return;
+                }
                 remainingBackingStores++;       // Must be done first in case an exception happen after this point.
                 usage.timestamp = System.nanoTime();
                 availableStores.addLast(usage);
                 /*
                  * If the backing store we just released is the first one, awake the
-                 * disposer thread which was waiting for an indefinite amount of time.
+                 * cleaner thread which was waiting for an indefinite amount of time.
                  */
                 if (!isActive) {
                     isActive = true;
-                    DelayedExecutor.schedule(new DisposeTask(usage.timestamp + timeout));
+                    DelayedExecutor.schedule(new CloseTask(usage.timestamp + timeout));
                 }
                 availableStores.notify();    // We released only one backing store, so awake only one thread - not all of them.
             }
@@ -393,42 +416,42 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
     }
 
     /**
-     * A task for invoking {@link ConcurrentAuthorityFactory#disposeExpired()} after a delay.
+     * A task for invoking {@link ConcurrentAuthorityFactory#closeExpired()} after a delay.
      */
-    private final class DisposeTask extends DelayedRunnable {
+    private final class CloseTask extends DelayedRunnable {
         /**
          * Creates a new task to be executed at the given time,
          * in nanoseconds relative to {@link System#nanoTime()}.
          */
-        DisposeTask(final long timestamp) {
+        CloseTask(final long timestamp) {
             super(timestamp);
         }
 
         /** Invoked when the delay expired. */
         @Override public void run() {
-            disposeExpired();
+            closeExpired();
         }
     }
 
     /**
-     * Disposes the expired backing stores. This method should be invoked from a background task only.
-     * This method may reschedule the task again for an other execution if it appears that at least one
-     * backing store was not ready for disposal.
+     * Closes the expired backing stores. This method should be invoked from a background task only.
+     * This method may reschedule the task again for an other execution if it appears that at least
+     * one backing store was not ready for disposal.
      *
-     * @see #dispose()
+     * @see #close()
      */
-    final void disposeExpired() {
+    final void closeExpired() {
         int count = 0;
-        final Disposable[] toDispose;
+        final AutoCloseable[] factories;
         synchronized (availableStores) {
-            toDispose = new Disposable[availableStores.size()];
+            factories = new AutoCloseable[availableStores.size()];
             final Iterator<BackingStore> it = availableStores.iterator();
             final long nanoTime = System.nanoTime();
             while (it.hasNext()) {
                 final BackingStore store = it.next();
                 /*
-                 * Computes how much time we need to wait again before we can dispose the factory.
-                 * If this time is greater than some arbitrary amount, do not dispose the factory
+                 * Computes how much time we need to wait again before we can close the factory.
+                 * If this time is greater than some arbitrary amount, do not close the factory
                  * and wait again.
                  */
                 final long nextTime = store.timestamp + timeout;
@@ -437,20 +460,20 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
                      * Found a factory which is not expired. Stop the search,
                      * since the iteration is expected to be ordered.
                      */
-                    DelayedExecutor.schedule(new DisposeTask(nextTime));
+                    DelayedExecutor.schedule(new CloseTask(nextTime));
                     break;
                 }
                 /*
                  * Found an expired factory. Adds it to the list of
-                 * factories to dispose and search for other factories.
+                 * factories to close and search for other factories.
                  */
                 it.remove();
-                if (store.factory instanceof Disposable) {
-                    toDispose[count++] = (Disposable) store.factory;
+                if (store.factory instanceof AutoCloseable) {
+                    factories[count++] = (AutoCloseable) store.factory;
                 }
             }
             /*
-             * The stores list is empty if all worker factories in the queue have been disposed.
+             * The stores list is empty if all worker factories in the queue have been closed.
              * Note that some worker factories may still be active outside the queue, because the
              * workers are added to the queue only after completion of their work.
              * In the later case, release() will reschedule a new task.
@@ -458,15 +481,31 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
             isActive = !availableStores.isEmpty();
         }
         /*
-         * We must dispose the factories from outside the synchronized block.
+         * We must close the factories from outside the synchronized block.
          */
-        while (--count >= 0) {
-            toDispose[count].dispose();
+        try {
+            close(factories, count);
+        } catch (Exception exception) {
+            unexpectedException("closeExpired", exception);
         }
     }
 
     /**
-     * Returns the amount of time that {@code ConcurrentAuthorityFactory} will wait before to dispose a backing store.
+     * Invoked when an exception occurred while closing a factory and we can not propagate the exception to the user.
+     * This situation happen when the factories are closed in a background thread. There is not much we can do except
+     * logging the problem. {@code ConcurrentAuthorityFactory} should be able to continue its work normally since the
+     * factory that we failed to close will not be used anymore.
+     *
+     * @param method     The name of the method to report as the source of the problem.
+     * @param exception  The exception that occurred while closing a backing store factory.
+     */
+    static void unexpectedException(final String method, final Exception exception) {
+        Logging.unexpectedException(Logging.getLogger(Loggers.CRS_FACTORY),
+                ConcurrentAuthorityFactory.class, method, exception);
+    }
+
+    /**
+     * Returns the amount of time that {@code ConcurrentAuthorityFactory} will wait before to close a backing store.
      * This delay is measured from the last time the backing store has been used by a {@code createFoo(String)} method.
      *
      * @param unit The desired unit of measurement for the timeout.
@@ -479,7 +518,7 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
     }
 
     /**
-     * Sets a timer for disposing the backing store after the specified amount of time of inactivity.
+     * Sets a timer for closing the backing store after the specified amount of time of inactivity.
      * If a new backing store is needed after the disposal of the last one, then the {@link #createBackingStore()}
      * method will be invoked again.
      *
@@ -490,7 +529,7 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
         ArgumentChecks.ensureStrictlyPositive("delay", delay);
         delay = unit.toNanos(delay);
         synchronized (availableStores) {
-            timeout = delay;                // Will be taken in account after the next factory to dispose.
+            timeout = delay;                // Will be taken in account after the next factory to close.
         }
     }
 
@@ -1595,38 +1634,143 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
     }
 
     /**
-     * Releases resources immediately instead of waiting for the garbage collector.
-     * Once a factory has been disposed, further {@code createFoo(String)} method invocations
-     * may throw a {@link FactoryException}. Disposing a previously-disposed factory, however, has no effect.
+     * A hook to be executed either when the {@link ConcurrentAuthorityFactory} is collected by the garbage collector,
+     * when the Java Virtual Machine is shutdown, or when the module is uninstalled by the OSGi or Servlet container.
+     *
+     * <p><strong>Do not keep reference to the enclosing factory</strong> - in particular,
+     * this class must not be static - otherwise the factory would never been garbage collected.</p>
+     */
+    private static final class ShutdownHook extends PhantomReference<ConcurrentAuthorityFactory>    // MUST be static!
+            implements Disposable, Callable<Object>
+    {
+        /**
+         * The {@link ConcurrentAuthorityFactory#availableStores} queue.
+         */
+        private final Deque<BackingStore> availableStores;
+
+        /**
+         * Creates a new shutdown hook for the given factory.
+         */
+        ShutdownHook(final ConcurrentAuthorityFactory factory) {
+            super(factory, ReferenceQueueConsumer.QUEUE);
+            availableStores = factory.availableStores;
+        }
+
+        /**
+         * Invoked indirectly by the garbage collector when the {@link ConcurrentAuthorityFactory} is disposed.
+         */
+        @Override
+        public void dispose() {
+            Shutdown.unregister(this);
+            try {
+                call();
+            } catch (Exception exception) {
+                /*
+                 * Pretend that the exception is logged by ConcurrentAuthorityFactory.finalize().
+                 * This is not true, but carries the idea that the error occurred while cleaning
+                 * ConcurrentAuthorityFactory after garbage collection.
+                 */
+                unexpectedException("finalize", exception);
+            }
+        }
+
+        /**
+         * Invoked at JVM shutdown time, or when the container (OSGi or Servlet) uninstall the bundle containing SIS.
+         */
+        @Override
+        public Object call() throws Exception {
+            final AutoCloseable[] factories;
+            synchronized (availableStores) {
+                factories = getCloseables(availableStores);
+            }
+            close(factories, factories.length);
+            return null;
+        }
+    }
+
+    /**
+     * Returns all factories implementing the {@link AutoCloseable} interfaces in the given queue.
+     * The given queue shall be the {@link ConcurrentAuthorityFactory#availableStores} queue.
+     *
+     * @param availableStores The queue of factories to close.
+     */
+    static AutoCloseable[] getCloseables(final Deque<BackingStore> availableStores) {
+        assert Thread.holdsLock(availableStores);
+        int count = 0;
+        final AutoCloseable[] factories = new AutoCloseable[availableStores.size()];
+        BackingStore store;
+        while ((store = availableStores.pollFirst()) != null) {
+            if (store.factory instanceof AutoCloseable) {
+                factories[count++] = (AutoCloseable) store.factory;
+            }
+        }
+        return ArraysExt.resize(factories, count);
+    }
+
+    /**
+     * Invokes {@link AutoCloseable#close()} on all the given factories.
+     * Exceptions will be collected and rethrown only after all factories have been closed.
+     *
+     * @param  factories The factories to close.
+     * @param  count Number of valid elements in the {@code factories} array.
+     * @throws Exception the exception thrown by the first factory that failed to close.
+     */
+    static void close(final AutoCloseable[] factories, int count) throws Exception {
+        Exception exception = null;
+        while (--count >= 0) try {
+            factories[count].close();
+        } catch (Exception e) {
+            if (exception == null) {
+                exception = e;
+            } else {
+                exception.addSuppressed(e);
+            }
+        }
+        if (exception != null) {
+            throw exception;
+        }
+    }
+
+    /**
+     * Releases resources immediately instead of waiting for the garbage collector. Once a factory has been closed,
+     * further {@code createFoo(String)} method invocations will throw a {@link FactoryException}.
+     * Closing a previously-closed factory, however, has no effect.
+     *
+     * <p>If this method is not invoked, backing stores will be closed when this {@code ConcurrentAuthorityFactory}
+     * will be garbage collected or at JVM shutdown time, depending which event happen first.</p>
+     *
+     * @throws FactoryException if an error occurred while closing the backing stores.
      */
     @Override
-    public void dispose() {
+    public void close() throws FactoryException {
+        Exception exception = null;
         try {
-            int count = 0;
-            final Disposable[] factories;
+            final AutoCloseable[] factories;
             synchronized (availableStores) {
-                isDisposed = true;
+                isClosed = true;
                 remainingBackingStores = 0;
-                factories = new Disposable[availableStores.size()];
-                BackingStore store;
-                while ((store = availableStores.pollFirst()) != null) {
-                    if (store.factory instanceof Disposable) {
-                        factories[count++] = (Disposable) store.factory;
-                    }
-                }
+                factories = getCloseables(availableStores);
             }
             /*
              * Factory disposal must be done outside the synchronized block.
+             * If an exception occurs, it will be thrown only after we finished closing all factories.
              */
-            while (--count >= 0) {
-                factories[count].dispose();
-            }
+            close(factories, factories.length);
+        } catch (Exception e) {
+            exception = e;
         } finally {
             synchronized (findPool) {
                 findPool.clear();
             }
             cache.clear();
             authority = null;
+        }
+        if (exception != null) {
+            if (exception instanceof FactoryException) {
+                throw (FactoryException) exception;
+            } else {
+                throw new FactoryException(exception);
+            }
         }
     }
 }

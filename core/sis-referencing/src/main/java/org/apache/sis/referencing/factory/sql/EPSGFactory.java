@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
@@ -37,7 +38,6 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.Statement;
 import java.sql.SQLException;
-import java.lang.ref.Reference;
 import java.text.DateFormat;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -86,7 +86,6 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.CharSequences;
-import org.apache.sis.util.Disposable;
 import org.apache.sis.util.Localized;
 import org.apache.sis.util.Version;
 import org.apache.sis.measure.Units;
@@ -108,7 +107,7 @@ import org.apache.sis.measure.Units;
  *
  * <div class="section">Life cycle and caching</div>
  * {@code EPSGFactory} instances should be short-lived since they may hold a significant amount of JDBC resources.
- * It is recommended to have those instances created on the fly by {@link ConcurrentAuthorityFactory} and disposed
+ * It is recommended to have those instances created on the fly by {@link ConcurrentAuthorityFactory} and closed
  * after a relatively short {@linkplain ConcurrentAuthorityFactory#getTimeout timeout}.
  * In addition {@code ConcurrentAuthorityFactory} caches the most recently created objects, which reduce greatly
  * the amount of {@code EPSGFactory} instantiations (and consequently the amount of database accesses)
@@ -133,7 +132,7 @@ import org.apache.sis.measure.Units;
  * @see <a href="http://sis.apache.org/book/tables/CoordinateReferenceSystems.html">List of authority codes</a>
  */
 public abstract class EPSGFactory extends GeodeticAuthorityFactory implements CRSAuthorityFactory,
-        CSAuthorityFactory, DatumAuthorityFactory, CoordinateOperationAuthorityFactory, Localized, Disposable
+        CSAuthorityFactory, DatumAuthorityFactory, CoordinateOperationAuthorityFactory, Localized, AutoCloseable
 {
     /**
      * The prefix in table names. The SQL scripts are provided by EPSG with this prefix in front of all table names.
@@ -236,18 +235,18 @@ public abstract class EPSGFactory extends GeodeticAuthorityFactory implements CR
      * method as a cache for returning the set created in a previous call. We do not want this map to exist for
      * a long time anyway.
      *
-     * <p>Note that this {@code EPSGFactory} instance can not be disposed as long as this map is not empty, since
-     * {@link AuthorityCodes} caches some SQL statements and consequently require the {@linkplain #connection} to
-     * be open. This is why we use weak references rather than hard ones, in order to know when no
+     * <p>Note that this {@code EPSGFactory} instance can not be closed as long as this map is not empty, since
+     * {@link AuthorityCodes} caches some SQL statements and consequently require the {@linkplain #connection}
+     * to be open. This is why we use weak references rather than hard ones, in order to know when no
      * {@link AuthorityCodes} are still in use.</p>
      *
      * <p>The {@link CloseableReference#dispose()} method takes care of closing the statements used by the map.
      * The {@link AuthorityCodes} reference in this map is then cleared by the garbage collector.
-     * The {@link #canDispose()} method checks if there is any remaining live reference in this map,
-     * and returns {@code false} if some are found (thus blocking the call to {@link #dispose()}
+     * The {@link #canClose()} method checks if there is any remaining live reference in this map,
+     * and returns {@code false} if some are found (thus blocking the call to {@link #close()}
      * by the {@link ConcurrentAuthorityFactory} timer).</p>
      */
-    private final Map<Class<?>, Reference<AuthorityCodes>> authorityCodes = new HashMap<>();
+    private final Map<Class<?>, CloseableReference<AuthorityCodes>> authorityCodes = new HashMap<>();
 
     /**
      * Cache for axis names. This service is not provided by {@link CachingAuthorityFactory}
@@ -309,7 +308,9 @@ public abstract class EPSGFactory extends GeodeticAuthorityFactory implements CR
 
     /**
      * The connection to the EPSG database. This connection is specified at {@linkplain #EPSGFactory construction time}
-     * and closed by the {@link #dispose()} method, or when this {@code EPSGFactory} instance is garbage collected.
+     * and closed by the {@link #close()} method.
+     *
+     * @see #close()
      */
     protected final Connection connection;
 
@@ -337,7 +338,7 @@ public abstract class EPSGFactory extends GeodeticAuthorityFactory implements CR
 
     /**
      * Creates a factory using the given connection. The connection will be {@linkplain Connection#close() closed}
-     * when this factory will be {@linkplain #dispose() disposed}.
+     * when this factory will be {@linkplain #close() closed}.
      *
      * @param connection    The connection to the underlying EPSG database.
      * @param crsFactory    The factory to use for creating {@link CoordinateReferenceSystem} instances.
@@ -505,7 +506,7 @@ addURIs:    for (int i=0; ; i++) {
      * Returns a map of EPSG authority codes as keys and object names as values.
      */
     private synchronized Map<String,String> getCodeMap(final Class<?> type) throws FactoryException {
-        Reference<AuthorityCodes> reference = authorityCodes.get(type);
+        CloseableReference<AuthorityCodes> reference = authorityCodes.get(type);
         if (reference != null) {
             AuthorityCodes existing = reference.get();
             if (existing != null) {
@@ -1050,7 +1051,7 @@ addURIs:    for (int i=0; ; i++) {
          * this method. This approach assumes that two consecutive calls will often return the same type of object.
          * If the object type changed, then this method will have to discard the old prepared statement and prepare
          * a new one, which may be a costly operation. Only the last successful prepared statement is cached,
-         * in order to keep the amount of statements low. Unsuccessful statements are immediately disposed.
+         * in order to keep the amount of statements low. Unsuccessful statements are immediately closed.
          */
         final String  epsg         = trimAuthority(code);
         final boolean isPrimaryKey = isPrimaryKey(epsg);
@@ -1535,5 +1536,83 @@ addURIs:    for (int i=0; ; i++) {
      */
     private static void unexpectedException(final String method, final Exception exception) {
         Logging.unexpectedException(Logging.getLogger(Loggers.CRS_FACTORY), EPSGFactory.class, method, exception);
+    }
+
+    /**
+     * Returns {@code true} if it is safe to close this factory. This method is invoked indirectly
+     * by {@link ConcurrentAuthorityFactory} after some timeout in order to release resources.
+     * This method will block the disposal if some {@link AuthorityCodes} are still in use.
+     */
+    final synchronized boolean canClose() {
+        boolean can = true;
+        if (authorityCodes != null) {
+            System.gc();                // For cleaning as much weak references as we can before we check them.
+            final Iterator<CloseableReference<AuthorityCodes>> it = authorityCodes.values().iterator();
+            while (it.hasNext()) {
+                final AuthorityCodes codes = it.next().get();
+                if (codes == null) {
+                    it.remove();
+                } else {
+                    /*
+                     * A set of authority codes is still in use. We can not close this factory.
+                     * But we continue the iteration anyway in order to cleanup weak references.
+                     */
+                    can = false;
+                }
+            }
+        }
+        return can;
+    }
+
+    /**
+     * Closes the JDBC connection used by this factory.
+     * If this {@code EPSGFactory} is used by a {@link ConcurrentAuthorityFactory}, then this method
+     * will be automatically invoked after some {@linkplain ConcurrentAuthorityFactory#getTimeout timeout}.
+     *
+     * @throws FactoryException if an error occurred while closing the connection.
+     *
+     * @see #connection
+     */
+    @Override
+    public synchronized void close() throws FactoryException {
+        SQLException exception = null;
+        final Iterator<PreparedStatement> ip = statements.values().iterator();
+        while (ip.hasNext()) {
+            try {
+                ip.next().close();
+            } catch (SQLException e) {
+                if (exception == null) {
+                    exception = e;
+                } else {
+                    exception.addSuppressed(e);
+                }
+            }
+            ip.remove();
+        }
+        final Iterator<CloseableReference<AuthorityCodes>> it = authorityCodes.values().iterator();
+        while (it.hasNext()) {
+            try {
+                it.next().close();
+            } catch (SQLException e) {
+                if (exception == null) {
+                    exception = e;
+                } else {
+                    exception.addSuppressed(e);
+                }
+            }
+            it.remove();
+        }
+        try {
+            connection.close();
+        } catch (SQLException e) {
+            if (exception == null) {
+                exception = e;
+            } else {
+                e.addSuppressed(exception);     // Keep the connection thrown be Connection as the main one to report.
+            }
+        }
+        if (exception != null) {
+            throw new FactoryException(exception);
+        }
     }
 }
