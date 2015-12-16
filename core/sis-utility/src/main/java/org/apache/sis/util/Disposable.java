@@ -22,6 +22,11 @@ package org.apache.sis.util;
  * Invoking the {@link #dispose()} method allows any resources held by this object to be released.
  * The result of calling any other method subsequent to a call to this method is undefined.
  *
+ * <p>Data integrity shall not depend on {@code dispose()} method invocation.
+ * If some data may need to be {@linkplain java.io.OutputStream#flush() flushed to a stream}
+ * or {@linkplain java.sql.Connection#commit() committed to a database},
+ * then a {@code close()} method should be used instead.</p>
+ *
  * <div class="section">Relationship with {@code Closeable}</div>
  * Some classes may implement both the {@code Disposeable} and {@link java.io.Closeable} interfaces.
  * While very similar, those two interfaces serve slightly different purposes. The {@code Closeable}
@@ -30,7 +35,14 @@ package org.apache.sis.util;
  *
  * <div class="note"><b>Example:</b>
  * {@link javax.imageio.ImageReader} and {@link javax.imageio.ImageWriter} allow to reuse the same instance
- * many time for reading or writing different image streams of the same format.</div>
+ * many times for reading or writing different images in the same format. New streams can be created, given
+ * to the {@code ImageReader} or {@code ImageWriter} and closed many times as long as {@code dispose()} has
+ * not been invoked.</div>
+ *
+ * Another difference is that {@link #dispose()} does not throw any checked exception.
+ * That method may be invoked in a background thread performing cleanup tasks,
+ * which would not know what to do in case of failure.
+ * Error during {@code dispose()} execution should not result in any lost of data.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
