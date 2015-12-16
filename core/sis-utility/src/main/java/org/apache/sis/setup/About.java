@@ -49,6 +49,7 @@ import org.apache.sis.util.collection.TreeTables;
 import org.apache.sis.util.collection.DefaultTreeTable;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.system.Modules;
+import org.apache.sis.internal.system.Shutdown;
 import org.apache.sis.internal.system.DataDirectory;
 
 import static java.lang.System.getProperty;
@@ -224,6 +225,13 @@ fill:   for (int i=0; ; i++) {
                     break;
                 }
                 case 3: {
+                    if (sections.contains(VERSIONS)) {
+                        nameKey = Vocabulary.Keys.Container;
+                        value = Shutdown.getContainer();        // Sometime contains version information.
+                    }
+                    break;
+                }
+                case 4: {
                     newSection = LOCALIZATION;
                     if (sections.contains(LOCALIZATION)) {
                         final Locale current = Locale.getDefault();
@@ -238,7 +246,7 @@ fill:   for (int i=0; ; i++) {
                     }
                     break;
                 }
-                case 4: {
+                case 5: {
                     if (sections.contains(LOCALIZATION)) {
                         final TimeZone current = TimeZone.getDefault();
                         if (current != null) {
@@ -259,7 +267,7 @@ fill:   for (int i=0; ; i++) {
                     }
                     break;
                 }
-                case 5: {
+                case 6: {
                     if (sections.contains(LOCALIZATION)) {
                         nameKey = Vocabulary.Keys.CurrentDateTime;
                         final DateFormat df = DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.LONG, formatLocale);
@@ -270,7 +278,7 @@ fill:   for (int i=0; ; i++) {
                     }
                     break;
                 }
-                case 6: {
+                case 7: {
                     if (sections.contains(LOCALIZATION)) {
                         final Charset current = Charset.defaultCharset();
                         if (current != null) {
@@ -290,7 +298,7 @@ fill:   for (int i=0; ; i++) {
                     }
                     break;
                 }
-                case 7: {
+                case 8: {
                     newSection = LOGGING;
                     if (sections.contains(LOGGING)) {
                         nameKey = Vocabulary.Keys.Implementation;
@@ -299,7 +307,7 @@ fill:   for (int i=0; ; i++) {
                     }
                     break;
                 }
-                case 8: {
+                case 9: {
                     newSection = PATHS;
                     if (sections.contains(PATHS)) {
                         nameKey = Vocabulary.Keys.UserHome;
@@ -307,14 +315,14 @@ fill:   for (int i=0; ; i++) {
                     }
                     break;
                 }
-                case 9: {
+                case 10: {
                     if (sections.contains(PATHS)) {
                         nameKey = Vocabulary.Keys.CurrentDirectory;
                         value = getProperty("user.dir");
                     }
                     break;
                 }
-                case 10: {
+                case 11: {
                     if (sections.contains(PATHS)) {
                         nameKey = Vocabulary.Keys.DataDirectory;
                         value = System.getenv(DataDirectory.ENV);
@@ -331,21 +339,21 @@ fill:   for (int i=0; ; i++) {
                     }
                     break;
                 }
-                case 11: {
+                case 12: {
                     if (sections.contains(PATHS)) {
                         nameKey = Vocabulary.Keys.TemporaryFiles;
                         value = getProperty("java.io.tmpdir");
                     }
                     break;
                 }
-                case 12: {
+                case 13: {
                     if (sections.contains(PATHS)) {
                         nameKey = Vocabulary.Keys.JavaHome;
                         value = javaHome = getProperty("java.home");
                     }
                     break;
                 }
-                case 13: {
+                case 14: {
                     newSection = LIBRARIES;
                     if (sections.contains(LIBRARIES)) {
                         nameKey = Vocabulary.Keys.JavaExtensions;
@@ -353,7 +361,7 @@ fill:   for (int i=0; ; i++) {
                     }
                     break;
                 }
-                case 14: {
+                case 15: {
                     if (sections.contains(LIBRARIES)) {
                         nameKey = Vocabulary.Keys.Classpath;
                         value = classpath(getProperty("java.class.path"), false);

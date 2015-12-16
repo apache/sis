@@ -16,7 +16,6 @@
  */
 package org.apache.sis.internal.system;
 
-import javax.management.JMException;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.servlet.annotation.WebListener;
@@ -28,7 +27,7 @@ import javax.servlet.annotation.WebListener;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.3
+ * @version 0.7
  * @module
  *
  * @see OSGiActivator
@@ -42,6 +41,8 @@ public final class ServletListener implements ServletContextListener {
      */
     @Override
     public void contextInitialized(final ServletContextEvent event) {
+        final String env = event.getServletContext().getServerInfo();
+        Shutdown.setContainer(env != null ? env : "Servlet");
     }
 
     /**
@@ -53,7 +54,7 @@ public final class ServletListener implements ServletContextListener {
     public void contextDestroyed(final ServletContextEvent event) {
         try {
             Shutdown.stop(getClass());
-        } catch (JMException e) {
+        } catch (Exception e) {
             event.getServletContext().log(e.toString(), e);
         }
     }

@@ -24,7 +24,6 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.PreparedStatement;
 import java.sql.Statement;
-import java.lang.ref.Reference;
 import org.opengis.referencing.operation.Projection;
 import org.opengis.util.NoSuchIdentifierException;
 import org.apache.sis.util.collection.BackingStoreException;
@@ -187,7 +186,7 @@ final class AuthorityCodes extends AbstractMap<String,String> implements Seriali
      * when the garbage collector determined that this {@code AuthorityCodes} instance is no longer in use.
      * See class Javadoc for more information.
      */
-    final Reference<AuthorityCodes> createReference() {
+    final CloseableReference<AuthorityCodes> createReference() {
         return new CloseableReference<>(this, factory, statements);
     }
 
