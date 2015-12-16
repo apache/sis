@@ -72,6 +72,11 @@ public final class Messages extends IndexedResourceBundle {
         public static final short ChangedContainerCapacity_2 = 1;
 
         /**
+         * Configuration of “{0}” received on {1} in {2} seconds.
+         */
+        public static final short ConfigurationOf_3 = 31;
+
+        /**
          * This result indicates if a datum shift method has been applied.
          */
         public static final short ConformanceMeansDatumShift = 8;

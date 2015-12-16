@@ -30,6 +30,7 @@ import java.util.MissingResourceException;
 import java.util.jar.Attributes;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
+import java.util.logging.Level;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
@@ -197,10 +198,10 @@ public enum About {
         TreeTable.Node section = null;
         About newSection = VERSIONS;
 fill:   for (int i=0; ; i++) {
-            short    nameKey  = 0;    // The Vocabulary.Key for 'name', used only if name is null.
-            String   name     = null; // The value to put in the 'Name' column of the table.
-            Object   value    = null; // The value to put in the 'Value' column of the table.
-            String[] children = null; // Optional children to write below the node.
+            short    nameKey  = 0;          // The Vocabulary.Key for 'name', used only if name is null.
+            String   name     = null;       // The value to put in the 'Name' column of the table.
+            Object   value    = null;       // The value to put in the 'Value' column of the table.
+            String[] children = null;       // Optional children to write below the node.
             switch (i) {
                 case 0: {
                     if (sections.contains(VERSIONS)) {
@@ -308,6 +309,23 @@ fill:   for (int i=0; ; i++) {
                     break;
                 }
                 case 9: {
+                    if (sections.contains(LOGGING)) {
+                        nameKey = Vocabulary.Keys.Level;
+                        final Level level = Logging.getLogger("").getLevel();   // Root logger level.
+                        value = level.getLocalizedName();
+                        final Map<String,Level> levels = Loggers.getEffectiveLevels();
+                        if (levels.size() != 1 || !level.equals(levels.get(Loggers.ROOT))) {
+                            int j = 0;
+                            children = new String[levels.size() * 2];
+                            for (final Map.Entry<String,Level> entry : levels.entrySet()) {
+                                children[j++] = entry.getKey();
+                                children[j++] = entry.getValue().getLocalizedName();
+                            }
+                        }
+                    }
+                    break;
+                }
+                case 10: {
                     newSection = PATHS;
                     if (sections.contains(PATHS)) {
                         nameKey = Vocabulary.Keys.UserHome;
@@ -315,14 +333,14 @@ fill:   for (int i=0; ; i++) {
                     }
                     break;
                 }
-                case 10: {
+                case 11: {
                     if (sections.contains(PATHS)) {
                         nameKey = Vocabulary.Keys.CurrentDirectory;
                         value = getProperty("user.dir");
                     }
                     break;
                 }
-                case 11: {
+                case 12: {
                     if (sections.contains(PATHS)) {
                         nameKey = Vocabulary.Keys.DataDirectory;
                         value = System.getenv(DataDirectory.ENV);
@@ -339,21 +357,21 @@ fill:   for (int i=0; ; i++) {
                     }
                     break;
                 }
-                case 12: {
+                case 13: {
                     if (sections.contains(PATHS)) {
                         nameKey = Vocabulary.Keys.TemporaryFiles;
                         value = getProperty("java.io.tmpdir");
                     }
                     break;
                 }
-                case 13: {
+                case 14: {
                     if (sections.contains(PATHS)) {
                         nameKey = Vocabulary.Keys.JavaHome;
                         value = javaHome = getProperty("java.home");
                     }
                     break;
                 }
-                case 14: {
+                case 15: {
                     newSection = LIBRARIES;
                     if (sections.contains(LIBRARIES)) {
                         nameKey = Vocabulary.Keys.JavaExtensions;
@@ -361,7 +379,7 @@ fill:   for (int i=0; ; i++) {
                     }
                     break;
                 }
-                case 15: {
+                case 16: {
                     if (sections.contains(LIBRARIES)) {
                         nameKey = Vocabulary.Keys.Classpath;
                         value = classpath(getProperty("java.class.path"), false);

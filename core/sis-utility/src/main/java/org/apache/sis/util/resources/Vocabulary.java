@@ -256,6 +256,11 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final short Latitude = 26;
 
         /**
+         * Level
+         */
+        public static final short Level = 94;
+
+        /**
          * Libraries
          */
         public static final short Libraries = 27;
@@ -379,6 +384,11 @@ public final class Vocabulary extends IndexedResourceBundle {
          * “{0}”
          */
         public static final short Quoted_1 = 86;
+
+        /**
+         * Remote configuration
+         */
+        public static final short RemoteConfiguration = 93;
 
         /**
          * Root
