@@ -49,6 +49,20 @@ final class BursaWolfInfo {
     // See org.apache.sis.measure.Units.valueOfEPSG(int) for hard-coded units from EPSG codes.
     // See TableInfo.EPSG for hard-coded table names, column names and GeoAPI types.
 
+    /**
+     * The target CRS for which to collect Bursa-Wolf parameters. Apache SIS accepts an arbitrary amount of targets,
+     * but the {@code TOWGS84} element only needs the parameters toward the EPSG:4326 coordinate reference system.
+     * For now we fix the number of target CRS to only 1, but we can increase that amount in a future SIS version
+     * if needed. However it is better to restrict the target CRS to those that use a world-wide datum only.
+     */
+    static final int TARGET_CRS = 4326;
+
+    /**
+     * The datum of {@link #TARGET_CRS}.
+     */
+    static final int TARGET_DATUM = 6326;
+
+
     /** First Bursa-Wolf method. */ static final int MIN_METHOD_CODE = 9603;
     /** Last Bursa-Wolf method.  */ static final int MAX_METHOD_CODE = 9607;
     /** Rotation frame method.   */ private static final int ROTATION_FRAME_CODE = 9607;
@@ -104,27 +118,31 @@ final class BursaWolfInfo {
     }
 
     /**
-     * The value of {@code CO.COORD_OP_CODE}.
+     * The value of {@code COORD_OP_CODE}.
      */
     final int operation;
 
     /**
-     * The value of {@code CO.COORD_OP_METHOD_CODE}.
+     * The value of {@code COORD_OP_METHOD_CODE}.
      */
     final int method;
 
     /**
-     * The value of {@code CRS1.DATUM_CODE}.
+     * The target datum inferred from value of {@code TARGET_CRS_CODE}.
      */
-    final String target;
+    final int target;
 
     /**
      * Fills a structure with the specified values.
      */
-    BursaWolfInfo(final int operation, final int method, final String target) {
+    BursaWolfInfo(final int operation, final int method, final int targetCRS) {
         this.operation = operation;
         this.method    = method;
-        this.target    = target;
+        switch (targetCRS) {
+            case TARGET_CRS: target = TARGET_DATUM; break;
+            // More codes may be added in future SIS version.
+            default: throw new IllegalArgumentException(String.valueOf(targetCRS));
+        }
     }
 
     /**

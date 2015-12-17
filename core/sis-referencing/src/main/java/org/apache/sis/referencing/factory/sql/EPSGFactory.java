@@ -39,6 +39,8 @@ import java.sql.ResultSetMetaData;
 import java.sql.Statement;
 import java.sql.SQLException;
 import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.text.ParseException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import javax.measure.unit.Unit;
@@ -73,6 +75,7 @@ import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.referencing.datum.BursaWolfParameters;
+import org.apache.sis.referencing.datum.DefaultGeodeticDatum;
 import org.apache.sis.referencing.factory.FactoryDataException;
 import org.apache.sis.referencing.factory.GeodeticAuthorityFactory;
 import org.apache.sis.referencing.factory.ConcurrentAuthorityFactory;
@@ -249,10 +252,10 @@ public abstract class EPSGFactory extends GeodeticAuthorityFactory implements CR
 
     /**
      * A safety guard for preventing never-ending loops in recursive calls to {@link #createDatum(String)}.
-     * This is used by {@link #createBursaWolfParameters(String, ResultSet)}, which need to create a target datum.
+     * This is used by {@link #createBursaWolfParameters(Integer)}, which need to create a target datum.
      * The target datum could have its own Bursa-Wolf parameters, with one of them pointing again to the source datum.
      */
-    private final Set<Integer> safetyGuard = new HashSet<>();
+    private boolean isCreatingBWP;
 
     /**
      * The {@link ConcurrentAuthorityFactory} that supply caching for all {@code createFoo(String)} methods,
@@ -381,6 +384,7 @@ public abstract class EPSGFactory extends GeodeticAuthorityFactory implements CR
             calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"), Locale.CANADA);
             // Canada locale is closer to ISO than US.
         }
+        calendar.clear();
         return calendar;
     }
 
@@ -1219,6 +1223,136 @@ addURIs:    for (int i=0; ; i++) {
     }
 
     /**
+     * Creates an arbitrary datum from a code. The returned object will typically be an
+     * instance of {@link GeodeticDatum}, {@link VerticalDatum} or {@link TemporalDatum}.
+     *
+     * @param  code Value allocated by EPSG.
+     * @return The datum for the given code.
+     * @throws NoSuchAuthorityCodeException if the specified {@code code} was not found.
+     * @throws FactoryException if the object creation failed for some other reason.
+     *
+     * @todo Current implementation maps all "vertical" datum to {@link VerticalDatumType#GEOIDAL}.
+     *       We do not know yet how to maps the exact vertical datum type from the EPSG database.
+     */
+    @Override
+    public synchronized Datum createDatum(final String code) throws NoSuchAuthorityCodeException, FactoryException {
+        ArgumentChecks.ensureNonNull("code", code);
+        Datum returnValue = null;
+        try {
+            final String primaryKey = toPrimaryKey(Datum.class, code,
+                    "[Datum]", "DATUM_CODE", "DATUM_NAME");
+
+            final PreparedStatement stmt = prepareStatement("[Datum]",
+                    "SELECT DATUM_CODE," +
+                          " DATUM_NAME," +
+                          " DATUM_TYPE," +
+                          " ORIGIN_DESCRIPTION," +
+                          " REALIZATION_EPOCH," +
+                          " AREA_OF_USE_CODE," +
+                          " DATUM_SCOPE," +
+                          " REMARKS," +
+                          " DEPRECATED," +
+                          " ELLIPSOID_CODE," +          // Only for geodetic type
+                          " PRIME_MERIDIAN_CODE" +      // Only for geodetic type
+                    " FROM [Datum]" +
+                    " WHERE DATUM_CODE = ?");
+            try (ResultSet result = executeQuery(stmt, primaryKey)) {
+                while (result.next()) {
+                    final int     epsg       = getInt   (result, 1, code);
+                    final String  name       = getString(result, 2, code);
+                    final String  type       = getString(result, 3, code).trim();
+                    final String  anchor     = result.getString( 4);
+                    final String  epoch      = result.getString( 5);
+                    final String  area       = result.getString( 6);
+                    final String  scope      = result.getString( 7);
+                    final String  remarks    = result.getString( 8);
+                    final boolean deprecated = result.getInt   ( 9) != 0;
+                    Map<String,Object> properties = createProperties("[Datum]",
+                            name, epsg, area, scope, remarks, deprecated);
+                    if (anchor != null) {
+                        properties.put(Datum.ANCHOR_POINT_KEY, anchor);
+                    }
+                    if (epoch != null && !epoch.isEmpty()) try {
+                        final int year = Integer.parseInt(epoch);
+                        final Calendar calendar = getCalendar();
+                        calendar.set(year, 0, 1);
+                        properties.put(Datum.REALIZATION_EPOCH_KEY, calendar.getTime());
+                    } catch (NumberFormatException exception) {
+                        unexpectedException("createDatum", exception);          // Not a fatal error.
+                    }
+                    final Datum datum;
+                    switch (type.toLowerCase(Locale.US)) {
+                        /*
+                         * The "geodetic" case invokes createProperties(…) indirectly through calls to
+                         * createEllipsoid(String) and createPrimeMeridian(String), so we must protect
+                         * the properties map from changes.
+                         */
+                        case "geodetic": {
+                            properties = new HashMap<>(properties);         // Protect from changes
+                            final Ellipsoid ellipsoid    = buffered.createEllipsoid    (getString(result, 10, code));
+                            final PrimeMeridian meridian = buffered.createPrimeMeridian(getString(result, 11, code));
+                            final BursaWolfParameters[] param = createBursaWolfParameters(epsg);
+                            if (param != null) {
+                                properties.put(DefaultGeodeticDatum.BURSA_WOLF_KEY, param);
+                            }
+                            datum = datumFactory.createGeodeticDatum(properties, ellipsoid, meridian);
+                            break;
+                        }
+                        /*
+                         * Vertical datum type is hard-coded to geoidal for now. See @todo in method javadoc.
+                         */
+                        case "vertical": {
+                            datum = datumFactory.createVerticalDatum(properties, VerticalDatumType.GEOIDAL);
+                            break;
+                        }
+                        /*
+                         * Origin date is stored in ORIGIN_DESCRIPTION field. A column of SQL type
+                         * "date" type would have been better, but we do not modify the EPSG model.
+                         */
+                        case "temporal": {
+                            final Date originDate;
+                            if (anchor == null || anchor.isEmpty()) {
+                                throw new FactoryDataException(error().getString(Errors.Keys.DatumOriginShallBeDate));
+                            }
+                            if (dateFormat == null) {
+                                dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.CANADA);
+                                dateFormat.setCalendar(getCalendar());          // Use UTC timezone.
+                            }
+                            try {
+                                originDate = dateFormat.parse(anchor);
+                            } catch (ParseException e) {
+                                throw new FactoryDataException(error().getString(Errors.Keys.DatumOriginShallBeDate), e);
+                            }
+                            datum = datumFactory.createTemporalDatum(properties, originDate);
+                            break;
+                        }
+                        /*
+                         * Straightforward case.
+                         */
+                        case "engineering": {
+                            datum = datumFactory.createEngineeringDatum(properties);
+                            break;
+                        }
+                        default: {
+                            throw new FactoryDataException(error().getString(Errors.Keys.UnknownType_1, type));
+                        }
+                    }
+                    returnValue = ensureSingleton(datum, returnValue, code);
+                    if (result.isClosed()) {
+                        return returnValue;
+                    }
+                }
+            }
+        } catch (SQLException exception) {
+            throw databaseFailure(Datum.class, code, exception);
+        }
+        if (returnValue == null) {
+            throw noSuchAuthorityCode(Datum.class, code);
+        }
+        return returnValue;
+    }
+
+    /**
      * Returns Bursa-Wolf parameters for a geodetic datum. If the specified datum has no conversion informations,
      * then this method returns {@code null}.
      *
@@ -1227,66 +1361,59 @@ addURIs:    for (int i=0; ; i++) {
      * Note that {@code TOWGS84} is a deprecated element as of WKT 2 (ISO 19162).</p>
      *
      * @param  code The EPSG code of the {@link GeodeticDatum}.
-     * @param  toClose The result set to close if this method is going to invokes {@link #createDatum(String)} recursively.
-     *         This hack is necessary because many JDBC drivers do not support multiple result sets for the same statement.
-     *         The result set is closed if an only if this method returns a non-null value.
-     * @return an array of Bursa-Wolf parameters (in which case {@code toClose} has been closed),
-     *         or {@code null} (in which case {@code toClose} has <strong>not</strong> been closed).
+     * @return an array of Bursa-Wolf parameters, or {@code null}.
      */
-    private BursaWolfParameters[] createBursaWolfParameters(final Integer code, final ResultSet toClose)
-            throws SQLException, FactoryException
-    {
-        if (safetyGuard.contains(code)) {
-            /*
-             * Do not try to create Bursa-Wolf parameters if the datum is already in process of being created.
-             * This check avoid never-ending loops in recursive call to 'createDatum'.
-             */
+    private BursaWolfParameters[] createBursaWolfParameters(final Integer code) throws SQLException, FactoryException {
+        /*
+         * We do not provide TOWGS84 information for WGS84 itself or for any other datum on our list of target datum,
+         * in order to avoid infinite recursivity. The 'isCreatingBWP' boolean is an extra safety check which should
+         * never fail, unless TARGET_CRS and TARGET_DATUM values do not agree with database content.
+         */
+        if (code == BursaWolfInfo.TARGET_DATUM) {
             return null;
         }
-        PreparedStatement stmt = prepareStatement("BursaWolfParametersSet",
-                "SELECT CO.COORD_OP_CODE," +
-                      " CO.COORD_OP_METHOD_CODE," +
-                      " CRS2.DATUM_CODE" +
-                " FROM [Coordinate_Operation] AS CO" +
-          " INNER JOIN [Coordinate Reference System] AS CRS2" +
-                  " ON CO.TARGET_CRS_CODE = CRS2.COORD_REF_SYS_CODE" +
-               " WHERE CO.COORD_OP_METHOD_CODE >= " + BursaWolfInfo.MIN_METHOD_CODE +
-                 " AND CO.COORD_OP_METHOD_CODE <= " + BursaWolfInfo.MAX_METHOD_CODE +
-                 " AND CO.SOURCE_CRS_CODE IN (" +
-               "SELECT CRS1.COORD_REF_SYS_CODE " +
-                " FROM [Coordinate Reference System] AS CRS1 " +
-               " WHERE CRS1.DATUM_CODE = ?)" +
-            " ORDER BY CRS2.DATUM_CODE," +
-                     " ABS(CO.DEPRECATED), CO.COORD_OP_ACCURACY, CO.COORD_OP_CODE DESC");
+        if (isCreatingBWP) {
+            throw recursiveCall(BursaWolfParameters.class, String.valueOf(code));       // See above comment.
+        }
 
-        List<Object> bwInfos = null;
+        PreparedStatement stmt = prepareStatement("BursaWolfParametersSet",
+                "SELECT COORD_OP_CODE," +
+                      " COORD_OP_METHOD_CODE," +
+                      " TARGET_CRS_CODE" +
+                " FROM [Coordinate_Operation]" +
+               " WHERE TARGET_CRS_CODE = "       + BursaWolfInfo.TARGET_CRS +
+                 " AND COORD_OP_METHOD_CODE >= " + BursaWolfInfo.MIN_METHOD_CODE +
+                 " AND COORD_OP_METHOD_CODE <= " + BursaWolfInfo.MAX_METHOD_CODE +
+                 " AND SOURCE_CRS_CODE IN " +
+               "(SELECT COORD_REF_SYS_CODE FROM [Coordinate Reference System] WHERE DATUM_CODE = ?)" +
+            " ORDER BY TARGET_CRS_CODE, ABS(DEPRECATED), COORD_OP_ACCURACY, COORD_OP_CODE DESC");
+
+        final List<BursaWolfInfo> bwInfos = new ArrayList<>();
         try (ResultSet result = executeQuery(stmt, code)) {
             while (result.next()) {
-                final int    operation = getInt   (result, 1, code);
-                final int    method    = getInt   (result, 2, code);
-                final String datum     = getString(result, 3, code);
-                if (bwInfos == null) {
-                    bwInfos = new ArrayList<>();
+                final BursaWolfInfo info = new BursaWolfInfo(
+                        getInt(result, 1, code),                // Operation
+                        getInt(result, 2, code),                // Method
+                        getInt(result, 3, code));               // Target datum
+                if (info.target != code) {                      // Paranoiac check.
+                    bwInfos.add(info);
                 }
-                bwInfos.add(new BursaWolfInfo(operation, method, datum));
             }
         }
-        if (bwInfos == null) {
-            // Do not close the ResultSet here.
+        int size = bwInfos.size();
+        if (size == 0) {
             return null;
         }
-        toClose.close();
         /*
-         * Sorts the infos in preference order. The "ORDER BY" clause above was not enough;
-         * we also need to take the "supersession" table in account. Once the sorting is done,
+         * Sort the infos in preference order. The "ORDER BY" clause above was not enough;
+         * we also need to take the "Supersession" table in account. Once the sorting is done,
          * keep only one Bursa-Wolf parameters for each datum.
          */
-        int size = bwInfos.size();
         if (size > 1) {
             final BursaWolfInfo[] codes = bwInfos.toArray(new BursaWolfInfo[size]);
             sort(codes);
             bwInfos.clear();
-            final Set<String> added = new HashSet<>();
+            final Set<Integer> added = new HashSet<>();
             for (BursaWolfInfo candidate : codes) {
                 if (added.add(candidate.target)) {
                     bwInfos.add(candidate);
@@ -1295,10 +1422,7 @@ addURIs:    for (int i=0; ; i++) {
             size = bwInfos.size();
         }
         /*
-         * We got all the needed informations before to built Bursa-Wolf parameters because the
-         * 'createDatum(...)' call below may invokes 'createBursaWolfParameters(...)' recursively,
-         * and not all JDBC drivers supported multi-result set for the same statement. Now, iterate
-         * throw the results and fetch the parameter values for each BursaWolfParameters object.
+         * Now, iterate over the results and fetch the parameter values for each BursaWolfParameters object.
          */
         stmt = prepareStatement("BursaWolfParameters",
                 "SELECT PARAMETER_CODE," +
@@ -1308,21 +1432,22 @@ addURIs:    for (int i=0; ; i++) {
                 " WHERE COORD_OP_CODE = ?" +
                   " AND COORD_OP_METHOD_CODE = ?");
 
+        final BursaWolfParameters[] parameters = new BursaWolfParameters[size];
         for (int i=0; i<size; i++) {
-            final BursaWolfInfo info = (BursaWolfInfo) bwInfos.get(i);
+            final BursaWolfInfo info = bwInfos.get(i);
             final GeodeticDatum datum;
             try {
-                safetyGuard.add(code);
-                datum = buffered.createGeodeticDatum(info.target);
+                isCreatingBWP = true;
+                datum = buffered.createGeodeticDatum(String.valueOf(info.target));
             } finally {
-                safetyGuard.remove(code);
+                isCreatingBWP = false;
             }
-            final BursaWolfParameters parameters = new BursaWolfParameters(datum, null);
+            final BursaWolfParameters bwp = new BursaWolfParameters(datum, null);
             stmt.setInt(1, info.operation);
             stmt.setInt(2, info.method);
             try (ResultSet result = stmt.executeQuery()) {
                 while (result.next()) {
-                    BursaWolfInfo.setBursaWolfParameter(parameters,
+                    BursaWolfInfo.setBursaWolfParameter(bwp,
                             getInt   (result, 1, info.operation),
                             getDouble(result, 2, info.operation),
                             buffered.createUnit(getString(result, 3, info.operation)), locale);
@@ -1331,11 +1456,11 @@ addURIs:    for (int i=0; ; i++) {
             if (info.isFrameRotation()) {
                 // Coordinate frame rotation (9607): same as 9606,
                 // except for the sign of rotation parameters.
-                parameters.reverseRotation();
+                bwp.reverseRotation();
             }
-            bwInfos.set(i, parameters);
+            parameters[i] = bwp;
         }
-        return bwInfos.toArray(new BursaWolfParameters[size]);
+        return parameters;
     }
 
     /**
@@ -2052,7 +2177,7 @@ addURIs:    for (int i=0; ; i++) {
     }
 
     /**
-     * Constructs an exception for recursive calls.
+     * Constructs an exception for recursive method calls.
      */
     private FactoryException recursiveCall(final Class<?> type, final String code) {
         return new FactoryException(error().getString(Errors.Keys.RecursiveCreateCallForCode_2, type, code));
