@@ -924,7 +924,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * @throws NoSuchAuthorityCodeException if the given object is not an instance of the given type.
      */
     @SuppressWarnings("unchecked")
-    private <B, T extends B> T cast(final Class<T> type, final B object, final String code)
+    private <T> T cast(final Class<T> type, final IdentifiedObject object, final String code)
             throws NoSuchAuthorityCodeException
     {
         if (type.isInstance(object)) {
@@ -944,16 +944,8 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
          * Get the authority from the object if possible, in order to avoid a call
          * to the potentially costly (for EPSGFactory) getAuthority() method.
          */
-        Citation authority = null;
-        if (object instanceof IdentifiedObject) {
-            final Identifier id = ((IdentifiedObject) object).getName();
-            if (id != null) {
-                authority = id.getAuthority();
-            }
-        }
-        if (authority == null) {
-            authority = getAuthority();
-        }
+        final Identifier id = object.getName();
+        final Citation authority = (id != null) ? id.getAuthority() : getAuthority();
         throw new NoSuchAuthorityCodeException(Errors.format(Errors.Keys.UnexpectedTypeForReference_3, code, type, actual),
                 Citations.getIdentifier(authority, false), trimAuthority(code, authority), code);
     }

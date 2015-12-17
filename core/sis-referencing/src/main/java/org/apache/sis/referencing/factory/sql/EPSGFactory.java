@@ -42,11 +42,8 @@ import java.text.DateFormat;
 import java.net.URI;
 import java.net.URISyntaxException;
 import javax.measure.unit.Unit;
-import javax.measure.unit.SI;
-import javax.measure.unit.NonSI;
 import javax.measure.quantity.Angle;
 import javax.measure.quantity.Length;
-import javax.measure.converter.ConversionException;
 
 import org.opengis.util.NameSpace;
 import org.opengis.util.NameFactory;
@@ -140,49 +137,6 @@ public abstract class EPSGFactory extends GeodeticAuthorityFactory implements CR
      * But we still need to check for existence of this prefix in case someone used the original SQL scripts.
      */
     private static final String TABLE_PREFIX = "epsg_";
-
-    // See org.apache.sis.measure.Units.valueOfEPSG(int) for hard-coded units from EPSG codes.
-    // See TableInfo.EPSG for hard-coded table names, column names and GeoAPI types.
-
-    // Hard-coded values for datum shift operation methods
-    /** First Bursa-Wolf method. */ private static final int BURSA_WOLF_MIN_CODE = 9603;
-    /** Last Bursa-Wolf method.  */ private static final int BURSA_WOLF_MAX_CODE = 9607;
-    /** Rotation frame method.   */ private static final int ROTATION_FRAME_CODE = 9607;
-
-    /**
-     * Sets a Bursa-Wolf parameter from an EPSG parameter.
-     *
-     * @param  parameters The Bursa-Wolf parameters to modify.
-     * @param  code       The EPSG code for a parameter from the [PARAMETER_CODE] column.
-     * @param  value      The value of the parameter from the [PARAMETER_VALUE] column.
-     * @param  unit       The unit of the parameter value from the [UOM_CODE] column.
-     * @throws FactoryException if the code is unrecognized.
-     */
-    private void setBursaWolfParameter(final BursaWolfParameters parameters,
-            final int code, double value, final Unit<?> unit) throws FactoryException
-    {
-        Unit<?> target = unit;
-        if (code >= 8605) {
-            if      (code <= 8607) target = SI   .METRE;
-            else if (code <= 8710) target = NonSI.SECOND_ANGLE;
-            else if (code == 8611) target = Units.PPM;
-        }
-        if (target != unit) try {
-            value = unit.getConverterToAny(target).convert(value);
-        } catch (ConversionException e) {
-            throw new FactoryDataException(error().getString(Errors.Keys.IncompatibleUnit_1, unit), e);
-        }
-        switch (code) {
-            case 8605: parameters.tX = value; break;
-            case 8606: parameters.tY = value; break;
-            case 8607: parameters.tZ = value; break;
-            case 8608: parameters.rX = value; break;
-            case 8609: parameters.rY = value; break;
-            case 8610: parameters.rZ = value; break;
-            case 8611: parameters.dS = value; break;
-            default: throw new FactoryDataException(error().getString(Errors.Keys.UnexpectedParameter_1, code));
-        }
-    }
 
     /**
      * The name for the transformation accuracy metadata.
@@ -315,9 +269,9 @@ public abstract class EPSGFactory extends GeodeticAuthorityFactory implements CR
     protected final Connection connection;
 
     /**
-     * The factory to use for creating {@link CoordinateReferenceSystem} instances from the properties read in the database.
+     * The factory to use for creating {@link Datum} instances from the properties read in the database.
      */
-    protected final CRSFactory crsFactory;
+    protected final DatumFactory datumFactory;
 
     /**
      * The factory to use for creating {@link CoordinateSystem} instances from the properties read in the database.
@@ -325,9 +279,14 @@ public abstract class EPSGFactory extends GeodeticAuthorityFactory implements CR
     protected final CSFactory csFactory;
 
     /**
-     * The factory to use for creating {@link Datum} instances from the properties read in the database.
+     * The factory to use for creating {@link CoordinateReferenceSystem} instances from the properties read in the database.
      */
-    protected final DatumFactory datumFactory;
+    protected final CRSFactory crsFactory;
+
+    /**
+     * The factory to use for creating {@link CoordinateOperation} instances from the properties read in the database.
+     */
+    protected final CoordinateOperationFactory copFactory;
 
     /**
      * The locale for producing error messages. This is usually the default locale.
@@ -341,26 +300,30 @@ public abstract class EPSGFactory extends GeodeticAuthorityFactory implements CR
      * when this factory will be {@linkplain #close() closed}.
      *
      * @param connection    The connection to the underlying EPSG database.
-     * @param crsFactory    The factory to use for creating {@link CoordinateReferenceSystem} instances.
-     * @param csFactory     The factory to use for creating {@link CoordinateSystem} instances.
-     * @param datumFactory  The factory to use for creating {@link Datum} instances.
      * @param nameFactory   The factory to use for creating authority codes as {@link GenericName} instances.
+     * @param datumFactory  The factory to use for creating {@link Datum} instances.
+     * @param csFactory     The factory to use for creating {@link CoordinateSystem} instances.
+     * @param crsFactory    The factory to use for creating {@link CoordinateReferenceSystem} instances.
+     * @param copFactory    The factory to use for creating {@link CoordinateOperation} instances.
      */
-    public EPSGFactory(final Connection   connection,
-                       final CRSFactory   crsFactory,
-                       final CSFactory    csFactory,
-                       final DatumFactory datumFactory,
-                       final NameFactory  nameFactory)
+    protected EPSGFactory(final Connection                 connection,
+                          final NameFactory                nameFactory,
+                          final DatumFactory               datumFactory,
+                          final CSFactory                  csFactory,
+                          final CRSFactory                 crsFactory,
+                          final CoordinateOperationFactory copFactory)
     {
         super(nameFactory);
         ArgumentChecks.ensureNonNull("connection",   connection);
-        ArgumentChecks.ensureNonNull("crsFactory",   crsFactory);
-        ArgumentChecks.ensureNonNull("csFactory",    csFactory);
         ArgumentChecks.ensureNonNull("datumFactory", datumFactory);
+        ArgumentChecks.ensureNonNull("csFactory",    csFactory);
+        ArgumentChecks.ensureNonNull("crsFactory",   crsFactory);
+        ArgumentChecks.ensureNonNull("copFactory",   copFactory);
         this.connection   = connection;
-        this.crsFactory   = crsFactory;
-        this.csFactory    = csFactory;
         this.datumFactory = datumFactory;
+        this.csFactory    = csFactory;
+        this.crsFactory   = crsFactory;
+        this.copFactory   = copFactory;
         this.namespace    = nameFactory.createNameSpace(nameFactory.createLocalName(null, Constants.EPSG), null);
         this.locale       = Locale.getDefault(Locale.Category.DISPLAY);
     }
@@ -380,8 +343,9 @@ public abstract class EPSGFactory extends GeodeticAuthorityFactory implements CR
      *
      * @param  statement The statement in MS-Access syntax.
      * @return The SQL statement adapted to the syntax of the target database.
+     * @throws SQLException if an error occurred while adapting the SQL statement.
      */
-    protected String adaptSQL(final String statement) {
+    protected String adaptSQL(final String statement) throws SQLException {
         return statement;
     }
 
@@ -519,13 +483,17 @@ addURIs:    for (int i=0; ; i++) {
      */
     @Override
     public Set<String> getAuthorityCodes(final Class<? extends IdentifiedObject> type) throws FactoryException {
-        return getCodeMap(type).keySet();
+        try {
+            return getCodeMap(type).keySet();
+        } catch (SQLException exception) {
+            throw new FactoryException(exception.getLocalizedMessage(), exception);
+        }
     }
 
     /**
      * Returns a map of EPSG authority codes as keys and object names as values.
      */
-    private synchronized Map<String,String> getCodeMap(final Class<?> type) {
+    private synchronized Map<String,String> getCodeMap(final Class<?> type) throws SQLException {
         CloseableReference<AuthorityCodes> reference = authorityCodes.get(type);
         if (reference != null) {
             AuthorityCodes existing = reference.get();
@@ -601,11 +569,15 @@ addURIs:    for (int i=0; ; i++) {
     @Override
     public InternationalString getDescriptionText(final String code) throws NoSuchAuthorityCodeException, FactoryException {
         final String primaryKey = trimAuthority(code);
-        for (final TableInfo table : TableInfo.EPSG) {
-            final String text = getCodeMap(table.type).get(primaryKey);
-            if (text != null) {
-                return (table.nameColumn != null) ? new SimpleInternationalString(text) : null;
+        try {
+            for (final TableInfo table : TableInfo.EPSG) {
+                final String text = getCodeMap(table.type).get(primaryKey);
+                if (text != null) {
+                    return (table.nameColumn != null) ? new SimpleInternationalString(text) : null;
+                }
             }
+        } catch (SQLException exception) {
+            throw new FactoryException(exception.getLocalizedMessage(), exception);
         }
         throw noSuchAuthorityCode(IdentifiedObject.class, code);
     }
@@ -768,7 +740,7 @@ addURIs:    for (int i=0; ; i++) {
      * @param  primaryKey  The primary key.
      * @throws SQLException if an error occurred while querying the database.
      */
-    private static ResultSet executeQuery(final PreparedStatement stmt, final int primaryKey) throws SQLException {
+    private static ResultSet executeQuery(final PreparedStatement stmt, final Integer primaryKey) throws SQLException {
         stmt.setInt(1, primaryKey);
         return stmt.executeQuery();
     }
@@ -968,7 +940,7 @@ addURIs:    for (int i=0; ; i++) {
      * @param  code   The deprecated code.
      * @return A message proposing a replacement, or {@code null} if none.
      */
-    private InternationalString getDeprecation(final String table, final int code) throws SQLException {
+    private InternationalString getDeprecation(final String table, final Integer code) throws SQLException {
         String reason = null;
         Object replacedBy = null;
         final PreparedStatement stmt = prepareStatement("[Deprecation]",
@@ -1020,7 +992,7 @@ addURIs:    for (int i=0; ; i++) {
      * @return The name together with a set of properties.
      */
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
-    private Map<String,Object> createProperties(final String table, String name, final int code,
+    private Map<String,Object> createProperties(final String table, String name, final Integer code,
             String remarks, final boolean deprecated) throws SQLException, FactoryDataException
     {
         properties.clear();
@@ -1040,15 +1012,17 @@ addURIs:    for (int i=0; ; i++) {
             properties.clear();
             properties.put(IdentifiedObject.NAME_KEY, id);
         }
-        final String codeString = String.valueOf(code);
-        final ImmutableIdentifier identifier;
-        if (deprecated) {
-            identifier = new DeprecatedCode(authority, Constants.EPSG, codeString, version, getDeprecation(table, code));
-        } else {
-            identifier = new ImmutableIdentifier(authority, Constants.EPSG, codeString, version,
-                                (gn != null) ? gn.toInternationalString() : null);
+        if (code != null) {
+            final String codeString = code.toString();
+            final ImmutableIdentifier identifier;
+            if (deprecated) {
+                identifier = new DeprecatedCode(authority, Constants.EPSG, codeString, version, getDeprecation(table, code));
+            } else {
+                identifier = new ImmutableIdentifier(authority, Constants.EPSG, codeString, version,
+                                    (gn != null) ? gn.toInternationalString() : null);
+            }
+            properties.put(IdentifiedObject.IDENTIFIERS_KEY, identifier);
         }
-        properties.put(IdentifiedObject.IDENTIFIERS_KEY, identifier);
         if (remarks != null && !(remarks = remarks.trim()).isEmpty()) {
             properties.put(IdentifiedObject.REMARKS_KEY, remarks);
         }
@@ -1068,7 +1042,7 @@ addURIs:    for (int i=0; ; i++) {
             while (result.next()) {
                 if (tableMatches(table, result.getString(1))) {
                     String naming = result.getString(2);
-                    String alias = getString(result, 3, codeString);
+                    String alias = getString(result, 3, code);
                     NameSpace ns = null;
                     if (naming != null) {
                         naming = naming.trim();
@@ -1242,6 +1216,126 @@ addURIs:    for (int i=0; ; i++) {
             }
         }
         throw noSuchAuthorityCode(IdentifiedObject.class, code);
+    }
+
+    /**
+     * Returns Bursa-Wolf parameters for a geodetic datum. If the specified datum has no conversion informations,
+     * then this method returns {@code null}.
+     *
+     * <p>This method is for compatibility with <cite>Well Known Text</cite> (WKT) version 1 formatting.
+     * That legacy format had a {@code TOWGS84} element which needs the information provided by this method.
+     * Note that {@code TOWGS84} is a deprecated element as of WKT 2 (ISO 19162).</p>
+     *
+     * @param  code The EPSG code of the {@link GeodeticDatum}.
+     * @param  toClose The result set to close if this method is going to invokes {@link #createDatum(String)} recursively.
+     *         This hack is necessary because many JDBC drivers do not support multiple result sets for the same statement.
+     *         The result set is closed if an only if this method returns a non-null value.
+     * @return an array of Bursa-Wolf parameters (in which case {@code toClose} has been closed),
+     *         or {@code null} (in which case {@code toClose} has <strong>not</strong> been closed).
+     */
+    private BursaWolfParameters[] createBursaWolfParameters(final Integer code, final ResultSet toClose)
+            throws SQLException, FactoryException
+    {
+        if (safetyGuard.contains(code)) {
+            /*
+             * Do not try to create Bursa-Wolf parameters if the datum is already in process of being created.
+             * This check avoid never-ending loops in recursive call to 'createDatum'.
+             */
+            return null;
+        }
+        PreparedStatement stmt = prepareStatement("BursaWolfParametersSet",
+                "SELECT CO.COORD_OP_CODE," +
+                      " CO.COORD_OP_METHOD_CODE," +
+                      " CRS2.DATUM_CODE" +
+                " FROM [Coordinate_Operation] AS CO" +
+          " INNER JOIN [Coordinate Reference System] AS CRS2" +
+                  " ON CO.TARGET_CRS_CODE = CRS2.COORD_REF_SYS_CODE" +
+               " WHERE CO.COORD_OP_METHOD_CODE >= " + BursaWolfInfo.MIN_METHOD_CODE +
+                 " AND CO.COORD_OP_METHOD_CODE <= " + BursaWolfInfo.MAX_METHOD_CODE +
+                 " AND CO.SOURCE_CRS_CODE IN (" +
+               "SELECT CRS1.COORD_REF_SYS_CODE " +
+                " FROM [Coordinate Reference System] AS CRS1 " +
+               " WHERE CRS1.DATUM_CODE = ?)" +
+            " ORDER BY CRS2.DATUM_CODE," +
+                     " ABS(CO.DEPRECATED), CO.COORD_OP_ACCURACY, CO.COORD_OP_CODE DESC");
+
+        List<Object> bwInfos = null;
+        try (ResultSet result = executeQuery(stmt, code)) {
+            while (result.next()) {
+                final int    operation = getInt   (result, 1, code);
+                final int    method    = getInt   (result, 2, code);
+                final String datum     = getString(result, 3, code);
+                if (bwInfos == null) {
+                    bwInfos = new ArrayList<>();
+                }
+                bwInfos.add(new BursaWolfInfo(operation, method, datum));
+            }
+        }
+        if (bwInfos == null) {
+            // Do not close the ResultSet here.
+            return null;
+        }
+        toClose.close();
+        /*
+         * Sorts the infos in preference order. The "ORDER BY" clause above was not enough;
+         * we also need to take the "supersession" table in account. Once the sorting is done,
+         * keep only one Bursa-Wolf parameters for each datum.
+         */
+        int size = bwInfos.size();
+        if (size > 1) {
+            final BursaWolfInfo[] codes = bwInfos.toArray(new BursaWolfInfo[size]);
+            sort(codes);
+            bwInfos.clear();
+            final Set<String> added = new HashSet<>();
+            for (BursaWolfInfo candidate : codes) {
+                if (added.add(candidate.target)) {
+                    bwInfos.add(candidate);
+                }
+            }
+            size = bwInfos.size();
+        }
+        /*
+         * We got all the needed informations before to built Bursa-Wolf parameters because the
+         * 'createDatum(...)' call below may invokes 'createBursaWolfParameters(...)' recursively,
+         * and not all JDBC drivers supported multi-result set for the same statement. Now, iterate
+         * throw the results and fetch the parameter values for each BursaWolfParameters object.
+         */
+        stmt = prepareStatement("BursaWolfParameters",
+                "SELECT PARAMETER_CODE," +
+                      " PARAMETER_VALUE," +
+                      " UOM_CODE" +
+                " FROM [Coordinate_Operation Parameter Value]" +
+                " WHERE COORD_OP_CODE = ?" +
+                  " AND COORD_OP_METHOD_CODE = ?");
+
+        for (int i=0; i<size; i++) {
+            final BursaWolfInfo info = (BursaWolfInfo) bwInfos.get(i);
+            final GeodeticDatum datum;
+            try {
+                safetyGuard.add(code);
+                datum = buffered.createGeodeticDatum(info.target);
+            } finally {
+                safetyGuard.remove(code);
+            }
+            final BursaWolfParameters parameters = new BursaWolfParameters(datum, null);
+            stmt.setInt(1, info.operation);
+            stmt.setInt(2, info.method);
+            try (ResultSet result = stmt.executeQuery()) {
+                while (result.next()) {
+                    BursaWolfInfo.setBursaWolfParameter(parameters,
+                            getInt   (result, 1, info.operation),
+                            getDouble(result, 2, info.operation),
+                            buffered.createUnit(getString(result, 3, info.operation)), locale);
+                }
+            }
+            if (info.isFrameRotation()) {
+                // Coordinate frame rotation (9607): same as 9606,
+                // except for the sign of rotation parameters.
+                parameters.reverseRotation();
+            }
+            bwInfos.set(i, parameters);
+        }
+        return bwInfos.toArray(new BursaWolfParameters[size]);
     }
 
     /**
@@ -1584,7 +1678,7 @@ addURIs:    for (int i=0; ; i++) {
      *
      * @see #getDimensionsForMethod(int)
      */
-    private Integer getDimensionForCS(final int cs) throws SQLException {
+    private Integer getDimensionForCS(final Integer cs) throws SQLException {
         Integer dimension = csDimensions.get(cs);
         if (dimension == null) {
             final PreparedStatement stmt = prepareStatement("Dimension",
@@ -1612,7 +1706,7 @@ addURIs:    for (int i=0; ; i++) {
      * @throws SQLException if an error occurred during database access.
      * @throws FactoryException if the code has not been found.
      */
-    private CoordinateSystemAxis[] createCoordinateSystemAxes(final int cs, final int dimension)
+    private CoordinateSystemAxis[] createCoordinateSystemAxes(final Integer cs, final int dimension)
             throws SQLException, FactoryException
     {
         assert Thread.holdsLock(this);
@@ -1704,7 +1798,7 @@ addURIs:    for (int i=0; ; i++) {
      * Returns the name and description for the specified {@link CoordinateSystemAxis} code.
      * Many axes share the same name and description, so it is worth to cache them.
      */
-    private AxisName getAxisName(final int code) throws FactoryException {
+    private AxisName getAxisName(final Integer code) throws FactoryException {
         assert Thread.holdsLock(this);
         AxisName returnValue = axisNames.get(code);
         if (returnValue == null) try {
@@ -1809,7 +1903,7 @@ addURIs:    for (int i=0; ; i++) {
      * @throws NoSuchIdentifierException if the given code has not been found.
      * @throws SQLException If an error occurred while querying the database.
      */
-    final boolean isProjection(final int code) throws SQLException {
+    final boolean isProjection(final Integer code) throws SQLException {
         Boolean projection = isProjection.get(code);
         if (projection == null) {
             final PreparedStatement stmt = prepareStatement("isProjection",
@@ -1835,7 +1929,7 @@ addURIs:    for (int i=0; ; i++) {
      *
      * @see #getDimensionForCS(int)
      */
-    private Integer[] getDimensionsForMethod(final int method) throws SQLException {
+    private Integer[] getDimensionsForMethod(final Integer method) throws SQLException {
         final Integer[] dimensions = new Integer[2];
         final boolean[] differents = new boolean[2];
         int numDifferences = 0;
@@ -1893,6 +1987,55 @@ addURIs:    for (int i=0; ; i++) {
             }
         } while ((projections = !projections) == true);
         return dimensions;
+    }
+
+    /**
+     * Sorts an array of codes in preference order. This method orders pairwise the codes according the information
+     * provided in the supersession table. If the same object is superseded by more than one object, then the most
+     * recent one is inserted first. Except for the codes moved as a result of pairwise ordering, this method tries
+     * to preserve the old ordering of the supplied codes (since deprecated operations should already be last).
+     * The ordering is performed in place.
+     *
+     * @param codes The codes, usually as an array of {@link String}. If the array do not contains string objects,
+     *              then the {@link Object#toString()} method must returns the code for each element.
+     */
+    private void sort(final Object[] codes) throws SQLException, FactoryException {
+        if (codes.length <= 1) {
+            return; // Nothing to sort.
+        }
+        final PreparedStatement stmt = prepareStatement("[Supersession]",
+                "SELECT SUPERSEDED_BY" +
+                " FROM [Supersession]" +
+                " WHERE OBJECT_CODE = ?" +
+                " ORDER BY SUPERSESSION_YEAR DESC");
+
+        int maxIterations = 15;         // For avoiding never-ending loop.
+        do {
+            boolean changed = false;
+            for (int i=0; i<codes.length; i++) {
+                final String code = codes[i].toString();
+                try (ResultSet result = executeQuery(stmt, code)) {
+                    while (result.next()) {
+                        final String replacement = getString(result, 1, code);
+                        for (int j=i+1; j<codes.length; j++) {
+                            final Object candidate = codes[j];
+                            if (replacement.equals(candidate.toString())) {
+                                /*
+                                 * Found a code to move in front of the superceded one.
+                                 */
+                                System.arraycopy(codes, i, codes, i+1, j-i);
+                                codes[i++] = candidate;
+                                changed = true;
+                            }
+                        }
+                    }
+                }
+            }
+            if (!changed) {
+                return;
+            }
+        }
+        while (--maxIterations != 0);
     }
 
     /**

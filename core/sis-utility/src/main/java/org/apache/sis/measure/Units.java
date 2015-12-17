@@ -47,7 +47,7 @@ import static org.apache.sis.util.CharSequences.trimWhitespaces;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.3
- * @version 0.4
+ * @version 0.7
  * @module
  */
 public final class Units extends Static {
@@ -68,6 +68,11 @@ public final class Units extends Static {
      * Unit for milliseconds. Useful for conversion from and to {@link java.util.Date} objects.
      */
     public static final Unit<Duration> MILLISECOND = SI.MetricPrefix.MILLI(SI.SECOND);
+
+    /**
+     * The EPSG:1029 definition of year.
+     */
+    private static final Unit<Duration> YEAR = SI.SECOND.divide(31556925.445);
 
     /**
      * Parts per million.
@@ -528,6 +533,11 @@ public final class Units extends Static {
      *       <tr><td>9111</td><td>sexagesimal degree-minute</td></tr>
      *       <tr><td>9122</td><td>decimal degree</td></tr>
      *     </table></td>
+     *     <td class="sep"><table class="compact" summary="Time units">
+     *       <tr><td style="width: 40px"><b>Code</b></td><td><b>Unit</b></td></tr>
+     *       <tr><td>1029</td><td>year</td></tr>
+     *       <tr><td>1040</td><td>second</td></tr>
+     *     </table></td>
      *     <td class="sep"><table class="compact" summary="Scale units">
      *       <tr><td style="width: 40px"><b>Code</b></td><td><b>Unit</b></td></tr>
      *       <tr><td>9201</td><td>one</td></tr>
@@ -547,6 +557,8 @@ public final class Units extends Static {
      */
     public static Unit<?> valueOfEPSG(final int code) {
         switch (code) {
+            case 1029: return       YEAR;
+            case 1040: return SI   .SECOND;
             case 9001: return SI   .METRE;
             case 9002: return NonSI.FOOT;
             case 9030: return NonSI.NAUTICAL_MILE;
