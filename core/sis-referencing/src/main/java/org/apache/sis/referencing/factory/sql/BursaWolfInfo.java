@@ -62,14 +62,16 @@ final class BursaWolfInfo {
      */
     static final int TARGET_DATUM = 6326;
 
-
     /** First Bursa-Wolf method. */ static final int MIN_METHOD_CODE = 9603;
     /** Last Bursa-Wolf method.  */ static final int MAX_METHOD_CODE = 9607;
     /** Rotation frame method.   */ private static final int ROTATION_FRAME_CODE = 9607;
-    /** Rotation frame method.   */ private static final int ROTATION_TMDEP_CODE = 1056;
+    //* Time-dependent rotation. */ private static final int ROTATION_TMDEP_CODE = 1056;
 
     /**
      * Sets a Bursa-Wolf parameter from an EPSG parameter.
+     * This method recognizes only the parameters that do not depend on time (EPSG:8605 to 8611).
+     * This method does not recognize the time-dependent parameters (EPSG:1040 to 1046) because
+     * they are not used in WKT 1 {@code TOWGS84} elements.
      *
      * @param  parameters The Bursa-Wolf parameters to modify.
      * @param  code       The EPSG code for a parameter from the [PARAMETER_CODE] column.
@@ -86,11 +88,6 @@ final class BursaWolfInfo {
             if      (code <= 8607) target = SI   .METRE;
             else if (code <= 8610) target = NonSI.SECOND_ANGLE;
             else if (code == 8611) target = Units.PPM;
-        } else if (code >= 1040) {
-            final Unit<?> year = Units.valueOfEPSG(1029);
-            if      (code <= 1042) target = SI   .METRE        .divide(year);
-            else if (code <= 1045) target = NonSI.SECOND_ANGLE .divide(year);
-            else if (code == 1046) target = Units.PPM          .divide(year);
         }
         if (target != unit) try {
             value = unit.getConverterToAny(target).convert(value);
@@ -105,13 +102,6 @@ final class BursaWolfInfo {
             case 8609: parameters.rY = value; break;
             case 8610: parameters.rZ = value; break;
             case 8611: parameters.dS = value; break;
-            case 1040: ((TimeDependentBWP) parameters).dtX = value; break;
-            case 1041: ((TimeDependentBWP) parameters).dtY = value; break;
-            case 1042: ((TimeDependentBWP) parameters).dtZ = value; break;
-            case 1043: ((TimeDependentBWP) parameters).drX = value; break;
-            case 1044: ((TimeDependentBWP) parameters).drY = value; break;
-            case 1045: ((TimeDependentBWP) parameters).drZ = value; break;
-            case 1046: ((TimeDependentBWP) parameters).ddS = value; break;
             default: throw new FactoryDataException(Errors.getResources(locale)
                                 .getString(Errors.Keys.UnexpectedParameter_1, code));
         }
@@ -147,9 +137,15 @@ final class BursaWolfInfo {
 
     /**
      * Returns {@code true} if this operation is a frame rotation.
+     * Frame rotations methods are:
+     *
+     * <ul>
+     *   <li>EPSG:9607 for the operation that does not depend on time.</li>
+     *   <li>EPSG:1056 for the time-dependent operation (not handled by this class).</li>
+     * </ul>
      */
     boolean isFrameRotation() {
-        return method == ROTATION_FRAME_CODE || method == ROTATION_TMDEP_CODE;
+        return method == ROTATION_FRAME_CODE;
     }
 
     /**
