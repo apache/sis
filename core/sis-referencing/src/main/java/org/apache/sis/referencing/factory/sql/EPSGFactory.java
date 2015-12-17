@@ -53,15 +53,16 @@ import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.opengis.util.FactoryException;
 import org.opengis.util.NoSuchIdentifierException;
+import org.opengis.metadata.extent.Extent;
+import org.opengis.metadata.citation.Citation;
+import org.opengis.metadata.citation.OnLineFunction;
+import org.opengis.metadata.quality.PositionalAccuracy;
+import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.referencing.cs.*;
 import org.opengis.referencing.crs.*;
 import org.opengis.referencing.datum.*;
 import org.opengis.referencing.operation.*;
 import org.opengis.referencing.IdentifiedObject;
-import org.opengis.metadata.citation.Citation;
-import org.opengis.metadata.citation.OnLineFunction;
-import org.opengis.metadata.quality.PositionalAccuracy;
-import org.opengis.metadata.extent.Extent;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.apache.sis.internal.referencing.DeprecatedCode;
 import org.apache.sis.internal.system.Loggers;
@@ -71,6 +72,7 @@ import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.citation.DefaultOnlineResource;
 import org.apache.sis.metadata.iso.extent.DefaultExtent;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
+import org.apache.sis.parameter.DefaultParameterDescriptor;
 import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.referencing.cs.CoordinateSystems;
@@ -90,6 +92,7 @@ import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Localized;
 import org.apache.sis.util.Version;
 import org.apache.sis.measure.Units;
+import org.apache.sis.measure.MeasurementRange;
 
 
 /**
@@ -256,6 +259,11 @@ public abstract class EPSGFactory extends GeodeticAuthorityFactory implements CR
      * The target datum could have its own Bursa-Wolf parameters, with one of them pointing again to the source datum.
      */
     private boolean isCreatingBWP;
+
+    /**
+     * A safety guard for preventing never-ending loops in recursive calls to {@link #createCoordinateSystem(String)}.
+     */
+    private boolean isCreatingGeographicCRS, isCreatingProjectedCRS, isCreatingCompoundCRS;
 
     /**
      * The {@link ConcurrentAuthorityFactory} that supply caching for all {@code createFoo(String)} methods,
@@ -1223,6 +1231,211 @@ addURIs:    for (int i=0; ; i++) {
     }
 
     /**
+     * Creates an arbitrary coordinate reference system from a code.
+     * The returned object will typically be an instance of {@link GeographicCRS}, {@link ProjectedCRS},
+     * {@link VerticalCRS} or {@link CompoundCRS}.
+     *
+     * @param  code Value allocated by EPSG.
+     * @return The coordinate reference system for the given code.
+     * @throws NoSuchAuthorityCodeException if the specified {@code code} was not found.
+     * @throws FactoryException if the object creation failed for some other reason.
+     */
+    @Override
+    public synchronized CoordinateReferenceSystem createCoordinateReferenceSystem(final String code)
+            throws NoSuchAuthorityCodeException, FactoryException
+    {
+        ArgumentChecks.ensureNonNull("code", code);
+        CoordinateReferenceSystem returnValue = null;
+        try {
+            final String primaryKey = toPrimaryKeyForCRS(code);
+            final PreparedStatement stmt = prepareStatement("[Coordinate Reference System]",
+                    "SELECT COORD_REF_SYS_CODE,"          +     // [ 1]
+                          " COORD_REF_SYS_NAME,"          +     // [ 2]
+                          " AREA_OF_USE_CODE,"            +     // [ 3]
+                          " CRS_SCOPE,"                   +     // [ 4]
+                          " REMARKS,"                     +     // [ 5]
+                          " DEPRECATED,"                  +     // [ 6]
+                          " COORD_REF_SYS_KIND,"          +     // [ 7]
+                          " COORD_SYS_CODE,"              +     // [ 8] Null for CompoundCRS
+                          " DATUM_CODE,"                  +     // [ 9] Null for ProjectedCRS
+                          " SOURCE_GEOGCRS_CODE,"         +     // [10] For ProjectedCRS
+                          " PROJECTION_CONV_CODE,"        +     // [11] For ProjectedCRS
+                          " CMPD_HORIZCRS_CODE,"          +     // [12] For CompoundCRS only
+                          " CMPD_VERTCRS_CODE"            +     // [13] For CompoundCRS only
+                    " FROM [Coordinate Reference System]" +
+                    " WHERE COORD_REF_SYS_CODE = ?");
+            try (ResultSet result = executeQuery(stmt, primaryKey)) {
+                while (result.next()) {
+                    final int     epsg       = getInt   (result, 1, code);
+                    final String  name       = getString(result, 2, code);
+                    final String  area       = result.getString( 3);
+                    final String  scope      = result.getString( 4);
+                    final String  remarks    = result.getString( 5);
+                    final boolean deprecated = result.getInt   ( 6) != 0;
+                    final String  type       = getString(result, 7, code);
+                    /*
+                     * Note: Do not invoke 'createProperties' now, even if we have all required informations,
+                     *       because the 'properties' map is going to overwritten by calls to 'createDatum', etc.
+                     */
+                    final CoordinateReferenceSystem crs;
+                    switch (type.toLowerCase(Locale.US)) {
+                        /* ----------------------------------------------------------------------
+                         *   GEOGRAPHIC CRS
+                         *
+                         *   NOTE: 'createProperties' MUST be invoked after any call to an other
+                         *         'createFoo' method. Consequently, do not factor out.
+                         * ---------------------------------------------------------------------- */
+                        case "geographic 2d":
+                        case "geographic 3d": {
+                            final EllipsoidalCS cs = buffered.createEllipsoidalCS(getString(result, 8, code));
+                            final String datumCode = result.getString(9);
+                            final GeodeticDatum datum;
+                            if (datumCode != null) {
+                                datum = buffered.createGeodeticDatum(datumCode);
+                            } else if (isCreatingGeographicCRS) {
+                                throw recursiveCall(GeographicCRS.class, code);
+                            } else try {
+                                isCreatingGeographicCRS = true;
+                                final String geoCode = getString(result, 10, code, 9);
+                                result.close();     // Must be close before call to createGeographicCRS(String)
+                                final GeographicCRS baseCRS = buffered.createGeographicCRS(geoCode);
+                                datum = baseCRS.getDatum();
+                            } finally {
+                                isCreatingGeographicCRS = false;
+                            }
+                            crs = crsFactory.createGeographicCRS(createProperties("[Coordinate Reference System]",
+                                    name, epsg, area, scope, remarks, deprecated), datum, cs);
+                            break;
+                        }
+                        /* ----------------------------------------------------------------------
+                         *   PROJECTED CRS
+                         *
+                         *   NOTE: This method invokes itself indirectly, through createGeographicCRS.
+                         *         Consequently we can not use 'result' anymore after this block.
+                         * ---------------------------------------------------------------------- */
+                        case "projected": {
+                            final String csCode  = getString(result,  8, code);
+                            final String geoCode = getString(result, 10, code);
+                            final String opCode  = getString(result, 11, code);
+                            result.close();      // Must be close before call to createFoo(String)
+                            if (isCreatingProjectedCRS) {
+                                throw recursiveCall(ProjectedCRS.class, code);
+                            } else try {
+                                isCreatingProjectedCRS = true;
+                                final CartesianCS   cs       = buffered.createCartesianCS(csCode);
+                                final GeographicCRS baseCRS  = buffered.createGeographicCRS(geoCode);
+                                final CoordinateOperation op = buffered.createCoordinateOperation(opCode);
+                                if (op instanceof Conversion) {
+                                    crs = crsFactory.createProjectedCRS(createProperties("[Coordinate Reference System]",
+                                            name, epsg, area, scope, remarks, deprecated), baseCRS, (Conversion) op, cs);
+                                } else {
+                                    throw noSuchAuthorityCode(Projection.class, opCode);
+                                }
+                            } finally {
+                                isCreatingProjectedCRS = false;
+                            }
+                            break;
+                        }
+                        /* ----------------------------------------------------------------------
+                         *   VERTICAL CRS
+                         * ---------------------------------------------------------------------- */
+                        case "vertical": {
+                            final VerticalCS    cs    = buffered.createVerticalCS   (getString(result, 8, code));
+                            final VerticalDatum datum = buffered.createVerticalDatum(getString(result, 9, code));
+                            crs = crsFactory.createVerticalCRS(createProperties("[Coordinate Reference System]",
+                                    name, epsg, area, scope, remarks, deprecated), datum, cs);
+                            break;
+                        }
+                        /* ----------------------------------------------------------------------
+                         *   TEMPORAL CRS
+                         *
+                         *   NOTE : The original EPSG database does not define any temporal CRS.
+                         *          This block is a SIS-specific extension.
+                         * ---------------------------------------------------------------------- */
+                        case "time":
+                        case "temporal": {
+                            final TimeCS        cs    = buffered.createTimeCS       (getString(result, 8, code));
+                            final TemporalDatum datum = buffered.createTemporalDatum(getString(result, 9, code));
+                            crs = crsFactory.createTemporalCRS(createProperties("[Coordinate Reference System]",
+                                    name, epsg, area, scope, remarks, deprecated), datum, cs);
+                            break;
+                        }
+                        /* ----------------------------------------------------------------------
+                         *   COMPOUND CRS
+                         *
+                         *   NOTE: This method invokes itself recursively.
+                         *         Consequently, we can not use 'result' anymore.
+                         * ---------------------------------------------------------------------- */
+                        case "compound": {
+                            final String code1 = getString(result, 12, code);
+                            final String code2 = getString(result, 13, code);
+                            result.close();
+                            final CoordinateReferenceSystem crs1, crs2;
+                            if (isCreatingCompoundCRS) {
+                                throw recursiveCall(CompoundCRS.class, code);
+                            } else try {
+                                isCreatingCompoundCRS = true;
+                                crs1 = buffered.createCoordinateReferenceSystem(code1);
+                                crs2 = buffered.createCoordinateReferenceSystem(code2);
+                            } finally {
+                                isCreatingCompoundCRS = false;
+                            }
+                            // Note: Do not invoke 'createProperties' sooner.
+                            crs  = crsFactory.createCompoundCRS(createProperties("[Coordinate Reference System]",
+                                    name, epsg, area, scope, remarks, deprecated), crs1, crs2);
+                            break;
+                        }
+                        /* ----------------------------------------------------------------------
+                         *   GEOCENTRIC CRS
+                         * ---------------------------------------------------------------------- */
+                        case "geocentric": {
+                            final CoordinateSystem cs = buffered.createCoordinateSystem(getString(result, 8, code));
+                            final GeodeticDatum datum = buffered.createGeodeticDatum   (getString(result, 9, code));
+                            final Map<String,Object> properties = createProperties("[Coordinate Reference System]",
+                                    name, epsg, area, scope, remarks, deprecated);
+                            if (cs instanceof CartesianCS) {
+                                crs = crsFactory.createGeocentricCRS(properties, datum, (CartesianCS) cs);
+                            } else if (cs instanceof SphericalCS) {
+                                crs = crsFactory.createGeocentricCRS(properties, datum, (SphericalCS) cs);
+                            } else {
+                                throw new FactoryDataException(error().getString(
+                                        Errors.Keys.IllegalCoordinateSystem_1, cs.getName()));
+                            }
+                            break;
+                        }
+                        /* ----------------------------------------------------------------------
+                         *   ENGINEERING CRS
+                         * ---------------------------------------------------------------------- */
+                        case "engineering": {
+                            final CoordinateSystem cs    = buffered.createCoordinateSystem(getString(result, 8, code));
+                            final EngineeringDatum datum = buffered.createEngineeringDatum(getString(result, 9, code));
+                            crs = crsFactory.createEngineeringCRS(createProperties("[Coordinate Reference System]",
+                                    name, epsg, area, scope, remarks, deprecated), datum, cs);
+                            break;
+                        }
+                        /* ----------------------------------------------------------------------
+                         *   UNKNOWN CRS
+                         * ---------------------------------------------------------------------- */
+                        default: {
+                            throw new FactoryDataException(error().getString(Errors.Keys.UnknownType_1, type));
+                        }
+                    }
+                    returnValue = ensureSingleton(crs, returnValue, code);
+                    if (result.isClosed()) {
+                        return returnValue;
+                    }
+                }
+            }
+        } catch (SQLException exception) {
+            throw databaseFailure(CoordinateReferenceSystem.class, code, exception);
+        }
+        if (returnValue == null) {
+             throw noSuchAuthorityCode(CoordinateReferenceSystem.class, code);
+        }
+        return returnValue;
+    }
+
+    /**
      * Creates an arbitrary datum from a code. The returned object will typically be an
      * instance of {@link GeodeticDatum}, {@link VerticalDatum} or {@link TemporalDatum}.
      *
@@ -1338,9 +1551,6 @@ addURIs:    for (int i=0; ; i++) {
                         }
                     }
                     returnValue = ensureSingleton(datum, returnValue, code);
-                    if (result.isClosed()) {
-                        return returnValue;
-                    }
                 }
             }
         } catch (SQLException exception) {
@@ -2019,6 +2229,111 @@ addURIs:    for (int i=0; ; i++) {
             throw noSuchAuthorityCode(Unit.class, code);
         }
         return returnValue;
+    }
+
+    /**
+     * Creates a definition of a single parameter used by an operation method.
+     *
+     * @param  code Value allocated by EPSG.
+     * @return The parameter descriptor for the given code.
+     * @throws NoSuchAuthorityCodeException if the specified {@code code} was not found.
+     * @throws FactoryException if the object creation failed for some other reason.
+     *
+     * @see org.apache.sis.parameter.DefaultParameterDescriptor
+     */
+    @Override
+    public synchronized ParameterDescriptor<?> createParameterDescriptor(final String code)
+            throws NoSuchAuthorityCodeException, FactoryException
+    {
+        ArgumentChecks.ensureNonNull("code", code);
+        ParameterDescriptor<?> returnValue = null;
+        try {
+            final String primaryKey = toPrimaryKey(ParameterDescriptor.class, code,
+                    "[Coordinate_Operation Parameter]", "PARAMETER_CODE", "PARAMETER_NAME");
+
+            final PreparedStatement stmt = prepareStatement("[Coordinate_Operation Parameter]",
+                    "SELECT PARAMETER_CODE," +
+                          " PARAMETER_NAME," +
+                          " DESCRIPTION," +
+                          " DEPRECATED" +
+                    " FROM [Coordinate_Operation Parameter]" +
+                    " WHERE PARAMETER_CODE = ?");
+
+            try (ResultSet result = executeQuery(stmt, primaryKey)) {
+                while (result.next()) {
+                    final int     epsg       = getInt   (result, 1, code);
+                    final String  name       = getString(result, 2, code);
+                    final String  remarks    = result.getString( 3);
+                    final boolean deprecated = result.getInt   ( 4) != 0;
+                    MeasurementRange<?> valueDomain = null;
+                    final Class<?> type;
+                    /*
+                     * Search for units. We will choose the most commonly used one in parameter values.
+                     * If the parameter appears to have at least one non-null value in the "Parameter File Name" column,
+                     * then the type is assumed to be URI as a string. Otherwise, the type is a floating point number.
+                     */
+                    final PreparedStatement units = prepareStatement("ParameterUnit",
+                            "SELECT MIN(UOM_CODE) AS UOM," +
+                                  " MIN(PARAM_VALUE_FILE_REF) AS PARAM_FILE" +
+                                " FROM [Coordinate_Operation Parameter Value]" +
+                            " WHERE (PARAMETER_CODE = ?)" +
+                            " GROUP BY UOM_CODE" +
+                            " ORDER BY COUNT(UOM_CODE) DESC");
+                    try (ResultSet resultUnits = executeQuery(units, epsg)) {
+                        if (resultUnits.next()) {
+                            String element = resultUnits.getString(2);
+                            type = (element != null && !element.trim().isEmpty()) ? String.class : Double.class;
+                            element = resultUnits.getString(1);
+                            if (element != null) {
+                                valueDomain = MeasurementRange.create(
+                                        Double.NEGATIVE_INFINITY, false,
+                                        Double.POSITIVE_INFINITY, false,
+                                        buffered.createUnit(element));
+                            }
+                        } else {
+                            type = Double.class;
+                        }
+                    }
+                    /*
+                     * Now creates the parameter descriptor.
+                     */
+                    final Map<String,Object> properties = createProperties(
+                            "[Coordinate_Operation Parameter]", name, epsg, remarks, deprecated);
+                    final ParameterDescriptor<?> descriptor = new DefaultParameterDescriptor<>(
+                            properties, 1, 1, type, valueDomain, null, null);
+                    returnValue = ensureSingleton(descriptor, returnValue, code);
+                }
+            }
+        } catch (SQLException exception) {
+            throw databaseFailure(OperationMethod.class, code, exception);
+        }
+        if (returnValue == null) {
+             throw noSuchAuthorityCode(OperationMethod.class, code);
+        }
+        return returnValue;
+    }
+
+    /**
+     * Returns all parameter descriptors for the specified method.
+     *
+     * @param  method The operation method code.
+     * @return The parameter descriptors.
+     * @throws SQLException if a SQL statement failed.
+     */
+    private ParameterDescriptor<?>[] createParameterDescriptors(final Integer method) throws FactoryException, SQLException {
+        final PreparedStatement stmt = prepareStatement("[Coordinate_Operation Parameter Usage]",
+                "SELECT PARAMETER_CODE" +
+                " FROM [Coordinate_Operation Parameter Usage]" +
+                " WHERE COORD_OP_METHOD_CODE = ?" +
+             " ORDER BY SORT_ORDER");
+
+        final List<ParameterDescriptor<?>> descriptors = new ArrayList<>();
+        try (ResultSet result = executeQuery(stmt, method)) {
+            while (result.next()) {
+                descriptors.add(buffered.createParameterDescriptor(getString(result, 1, method)));
+            }
+        }
+        return descriptors.toArray(new ParameterDescriptor<?>[descriptors.size()]);
     }
 
     /**
