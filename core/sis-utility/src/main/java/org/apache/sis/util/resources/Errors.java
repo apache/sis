@@ -196,6 +196,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final short DatabaseError_2 = 209;
 
         /**
+         * Origin of temporal datum shall be a date.
+         */
+        public static final short DatumOriginShallBeDate = 213;
+
+        /**
          * Thread “{0}” is dead.
          */
         public static final short DeadThread_1 = 15;
