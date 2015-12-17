@@ -128,7 +128,9 @@ final class AuthorityCodes extends AbstractMap<String,String> implements Seriali
      * @param  type       The type to query.
      * @param  factory    The factory originator.
      */
-    AuthorityCodes(final Connection connection, final TableInfo table, final Class<?> type, final EPSGFactory factory) {
+    AuthorityCodes(final Connection connection, final TableInfo table, final Class<?> type, final EPSGFactory factory)
+            throws SQLException
+    {
         this.factory = factory;
         /*
          * Build the SQL query for fetching the codes of all object. It is of the form:
