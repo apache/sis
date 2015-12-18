@@ -328,11 +328,18 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * An {@linkplain #createGeocentricCRS(Map, GeodeticDatum, SphericalCS) alternate method} allows creation of the
      * same kind of CRS with spherical coordinate system instead than a Cartesian one.
      *
-     * <p>The components needed by this method can be created by the following methods:</p>
-     * <ul>
-     *   <li>{@link #createGeodeticDatum(Map, Ellipsoid, PrimeMeridian)}</li>
+     * <div class="note"><b>Dependencies:</b>
+     * the components needed by this method can be created by the following methods:
+     * <ol>
+     *   <li>{@link #createCoordinateSystemAxis(Map, String, AxisDirection, Unit)}</li>
      *   <li>{@link #createCartesianCS(Map, CoordinateSystemAxis, CoordinateSystemAxis, CoordinateSystemAxis)}</li>
-     * </ul>
+     *   <li>One of:<ul>
+     *     <li>{@link #createEllipsoid(Map, double, double, Unit)}</li>
+     *     <li>{@link #createFlattenedSphere(Map, double, double, Unit)}</li>
+     *   </ul></li>
+     *   <li>{@link #createPrimeMeridian(Map, double, Unit)}</li>
+     *   <li>{@link #createGeodeticDatum(Map, Ellipsoid, PrimeMeridian)}</li>
+     * </ol></div>
      *
      * The default implementation creates a {@link DefaultGeocentricCRS} instance.
      *
@@ -361,10 +368,11 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * Creates a three-dimensional Cartesian coordinate system from the given set of axis.
      * This coordinate system can be used with geocentric, engineering and derived CRS.
      *
-     * <p>The components needed by this method can be created by the following method:</p>
-     * <ul>
+     * <div class="note"><b>Dependencies:</b>
+     * the components needed by this method can be created by the following methods:
+     * <ol>
      *   <li>{@link #createCoordinateSystemAxis(Map, String, AxisDirection, Unit)}</li>
-     * </ul>
+     * </ol></div>
      *
      * The default implementation creates a {@link DefaultCartesianCS} instance.
      *
@@ -374,8 +382,8 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * @param  axis2 The third  axis (e.g. “Geocentric Z”).
      * @throws FactoryException if the object creation failed.
      *
-     * @see GeodeticAuthorityFactory#createCartesianCS(String)
      * @see DefaultCartesianCS#DefaultCartesianCS(Map, CoordinateSystemAxis, CoordinateSystemAxis, CoordinateSystemAxis)
+     * @see GeodeticAuthorityFactory#createCartesianCS(String)
      */
     @Override
     public CartesianCS createCartesianCS(final Map<String,?> properties,
@@ -398,11 +406,18 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * An {@linkplain #createGeocentricCRS(Map, GeodeticDatum, CartesianCS) alternate method} allows creation of the
      * same kind of CRS with Cartesian coordinate system instead than a spherical one.
      *
-     * <p>The components needed by this method can be created by the following methods:</p>
-     * <ul>
-     *   <li>{@link #createGeodeticDatum(Map, Ellipsoid, PrimeMeridian)}</li>
+     * <div class="note"><b>Dependencies:</b>
+     * the components needed by this method can be created by the following methods:
+     * <ol>
+     *   <li>{@link #createCoordinateSystemAxis(Map, String, AxisDirection, Unit)}</li>
      *   <li>{@link #createSphericalCS(Map, CoordinateSystemAxis, CoordinateSystemAxis, CoordinateSystemAxis)}</li>
-     * </ul>
+     *   <li>One of:<ul>
+     *     <li>{@link #createEllipsoid(Map, double, double, Unit)}</li>
+     *     <li>{@link #createFlattenedSphere(Map, double, double, Unit)}</li>
+     *   </ul></li>
+     *   <li>{@link #createPrimeMeridian(Map, double, Unit)}</li>
+     *   <li>{@link #createGeodeticDatum(Map, Ellipsoid, PrimeMeridian)}</li>
+     * </ol></div>
      *
      * The default implementation creates a {@link DefaultGeocentricCRS} instance.
      *
@@ -411,8 +426,8 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * @param  cs         The spherical coordinate system for the created CRS.
      * @throws FactoryException if the object creation failed.
      *
-     * @see GeodeticAuthorityFactory#createGeocentricCRS(String)
      * @see DefaultGeocentricCRS#DefaultGeocentricCRS(Map, GeodeticDatum, SphericalCS)
+     * @see GeodeticAuthorityFactory#createGeocentricCRS(String)
      */
     @Override
     public GeocentricCRS createGeocentricCRS(final Map<String,?> properties,
@@ -431,10 +446,11 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * Creates a spherical coordinate system from the given set of axis.
      * This coordinate system can be used with geocentric, engineering and derived CRS.
      *
-     * <p>The components needed by this method can be created by the following method:</p>
-     * <ul>
+     * <div class="note"><b>Dependencies:</b>
+     * the components needed by this method can be created by the following methods:
+     * <ol>
      *   <li>{@link #createCoordinateSystemAxis(Map, String, AxisDirection, Unit)}</li>
-     * </ul>
+     * </ol></div>
      *
      * The default implementation creates a {@link DefaultSphericalCS} instance.
      *
@@ -444,8 +460,8 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * @param  axis2 The third  axis (e.g. “Geocentric radius”).
      * @throws FactoryException if the object creation failed.
      *
-     * @see GeodeticAuthorityFactory#createSphericalCS(String)
      * @see DefaultSphericalCS#DefaultSphericalCS(Map, CoordinateSystemAxis, CoordinateSystemAxis, CoordinateSystemAxis)
+     * @see GeodeticAuthorityFactory#createSphericalCS(String)
      */
     @Override
     public SphericalCS createSphericalCS(final Map<String,?> properties,
@@ -466,11 +482,21 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * Creates a geographic coordinate reference system. It can be (<var>latitude</var>, <var>longitude</var>)
      * or (<var>longitude</var>, <var>latitude</var>), optionally with an ellipsoidal height.
      *
-     * <p>The components needed by this method can be created by the following methods:</p>
-     * <ul>
+     * <div class="note"><b>Dependencies:</b>
+     * the components needed by this method can be created by the following methods:
+     * <ol>
+     *   <li>{@link #createCoordinateSystemAxis(Map, String, AxisDirection, Unit)}</li>
+     *   <li>One of:<ul>
+     *     <li>{@link #createEllipsoidalCS(Map, CoordinateSystemAxis, CoordinateSystemAxis)}</li>
+     *     <li>{@link #createEllipsoidalCS(Map, CoordinateSystemAxis, CoordinateSystemAxis, CoordinateSystemAxis)}</li>
+     *   </ul></li>
+     *   <li>One of:<ul>
+     *     <li>{@link #createEllipsoid(Map, double, double, Unit)}</li>
+     *     <li>{@link #createFlattenedSphere(Map, double, double, Unit)}</li>
+     *   </ul></li>
+     *   <li>{@link #createPrimeMeridian(Map, double, Unit)}</li>
      *   <li>{@link #createGeodeticDatum(Map, Ellipsoid, PrimeMeridian)}</li>
-     *   <li>{@link #createEllipsoidalCS(Map, CoordinateSystemAxis, CoordinateSystemAxis)}</li>
-     * </ul>
+     * </ol></div>
      *
      * The default implementation creates a {@link DefaultGeographicCRS} instance.
      *
@@ -479,8 +505,8 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * @param  cs         The two- or three-dimensional ellipsoidal coordinate system for the created CRS.
      * @throws FactoryException if the object creation failed.
      *
-     * @see GeodeticAuthorityFactory#createGeographicCRS(String)
      * @see DefaultGeographicCRS#DefaultGeographicCRS(Map, GeodeticDatum, EllipsoidalCS)
+     * @see GeodeticAuthorityFactory#createGeographicCRS(String)
      */
     @Override
     public GeographicCRS createGeographicCRS(final Map<String,?> properties,
@@ -500,11 +526,15 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * Geodetic datum defines the location and orientation of an ellipsoid that approximates the shape of the earth.
      * This datum can be used with geographic, geocentric and engineering CRS.
      *
-     * <p>The components needed by this method can be created by the following methods:</p>
-     * <ul>
-     *   <li>{@link #createEllipsoid(Map, double, double, Unit)} or {@link #createFlattenedSphere(Map, double, double, Unit)}</li>
+     * <div class="note"><b>Dependencies:</b>
+     * the components needed by this method can be created by the following methods:
+     * <ol>
+     *   <li>One of:<ul>
+     *     <li>{@link #createEllipsoid(Map, double, double, Unit)}</li>
+     *     <li>{@link #createFlattenedSphere(Map, double, double, Unit)}</li>
+     *   </ul></li>
      *   <li>{@link #createPrimeMeridian(Map, double, Unit)}</li>
-     * </ul>
+     * </ol></div>
      *
      * The default implementation creates a {@link DefaultGeodeticDatum} instance.
      *
@@ -513,8 +543,8 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * @param  primeMeridian The prime meridian to use in new geodetic datum.
      * @throws FactoryException if the object creation failed.
      *
-     * @see GeodeticAuthorityFactory#createGeodeticDatum(String)
      * @see DefaultGeodeticDatum#DefaultGeodeticDatum(Map, Ellipsoid, PrimeMeridian)
+     * @see GeodeticAuthorityFactory#createGeodeticDatum(String)
      */
     @Override
     public GeodeticDatum createGeodeticDatum(final Map<String,?> properties,
@@ -540,8 +570,8 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * @param  angularUnit The angular units of longitude.
      * @throws FactoryException if the object creation failed.
      *
-     * @see GeodeticAuthorityFactory#createPrimeMeridian(String)
      * @see DefaultPrimeMeridian#DefaultPrimeMeridian(Map, double, Unit)
+     * @see GeodeticAuthorityFactory#createPrimeMeridian(String)
      */
     @Override
     public PrimeMeridian createPrimeMeridian(final Map<String,?> properties,
@@ -560,10 +590,11 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * Creates an ellipsoidal coordinate system without ellipsoidal height.
      * It can be (<var>latitude</var>, <var>longitude</var>) or (<var>longitude</var>, <var>latitude</var>).
      *
-     * <p>The components needed by this method can be created by the following method:</p>
-     * <ul>
+     * <div class="note"><b>Dependencies:</b>
+     * the components needed by this method can be created by the following methods:
+     * <ol>
      *   <li>{@link #createCoordinateSystemAxis(Map, String, AxisDirection, Unit)}</li>
-     * </ul>
+     * </ol></div>
      *
      * The default implementation creates a {@link DefaultEllipsoidalCS} instance.
      *
@@ -572,8 +603,8 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * @param  axis1 The second axis (e.g. “Geodetic longitude”).
      * @throws FactoryException if the object creation failed.
      *
-     * @see GeodeticAuthorityFactory#createEllipsoidalCS(String)
      * @see DefaultEllipsoidalCS#DefaultEllipsoidalCS(Map, CoordinateSystemAxis, CoordinateSystemAxis)
+     * @see GeodeticAuthorityFactory#createEllipsoidalCS(String)
      */
     @Override
     public EllipsoidalCS createEllipsoidalCS(final Map<String,?> properties,
@@ -594,10 +625,11 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * It can be (<var>latitude</var>, <var>longitude</var>, <var>height</var>)
      * or (<var>longitude</var>, <var>latitude</var>, <var>height</var>).
      *
-     * <p>The components needed by this method can be created by the following method:</p>
-     * <ul>
+     * <div class="note"><b>Dependencies:</b>
+     * the components needed by this method can be created by the following methods:
+     * <ol>
      *   <li>{@link #createCoordinateSystemAxis(Map, String, AxisDirection, Unit)}</li>
-     * </ul>
+     * </ol></div>
      *
      * The default implementation creates a {@link DefaultEllipsoidalCS} instance.
      *
@@ -607,8 +639,8 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * @param  axis2 The third  axis (e.g. “Ellipsoidal height”).
      * @throws FactoryException if the object creation failed.
      *
-     * @see GeodeticAuthorityFactory#createEllipsoidalCS(String)
      * @see DefaultEllipsoidalCS#DefaultEllipsoidalCS(Map, CoordinateSystemAxis, CoordinateSystemAxis, CoordinateSystemAxis)
+     * @see GeodeticAuthorityFactory#createEllipsoidalCS(String)
      */
     @Override
     public EllipsoidalCS createEllipsoidalCS(final Map<String,?> properties,
@@ -635,8 +667,8 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * @param  unit          The linear units of ellipsoid axes.
      * @throws FactoryException if the object creation failed.
      *
-     * @see GeodeticAuthorityFactory#createEllipsoid(String)
      * @see DefaultEllipsoid#createEllipsoid(Map, double, double, Unit)
+     * @see GeodeticAuthorityFactory#createEllipsoid(String)
      */
     @Override
     public Ellipsoid createEllipsoid(final Map<String,?> properties,
@@ -662,8 +694,8 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * @param  unit              The linear units of major axis.
      * @throws FactoryException if the object creation failed.
      *
-     * @see GeodeticAuthorityFactory#createEllipsoid(String)
      * @see DefaultEllipsoid#createFlattenedSphere(Map, double, double, Unit)
+     * @see GeodeticAuthorityFactory#createEllipsoid(String)
      */
     @Override
     public Ellipsoid createFlattenedSphere(final Map<String,?> properties,
@@ -684,12 +716,21 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * Projected CRS are used to approximate the shape of the earth on a planar surface in such a way
      * that the distortion that is inherent to the approximation is controlled and known.
      *
-     * <p>The components needed by this method can be created by the following methods:</p>
-     * <ul>
+     * <div class="note"><b>Dependencies:</b>
+     * the components needed by this method can be created by the following methods:
+     * <ol>
+     *   <li>{@link #createCoordinateSystemAxis(Map, String, AxisDirection, Unit)}</li>
+     *   <li>{@link #createCartesianCS(Map, CoordinateSystemAxis, CoordinateSystemAxis)}</li>
+     *   <li>{@link #createEllipsoidalCS(Map, CoordinateSystemAxis, CoordinateSystemAxis)}</li>
+     *   <li>One of:<ul>
+     *     <li>{@link #createEllipsoid(Map, double, double, Unit)}</li>
+     *     <li>{@link #createFlattenedSphere(Map, double, double, Unit)}</li>
+     *   </ul></li>
+     *   <li>{@link #createPrimeMeridian(Map, double, Unit)}</li>
+     *   <li>{@link #createGeodeticDatum(Map, Ellipsoid, PrimeMeridian)}</li>
      *   <li>{@link #createGeographicCRS(Map, GeodeticDatum, EllipsoidalCS)}</li>
      *   <li>{@link org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory#createDefiningConversion(Map, OperationMethod, ParameterValueGroup)}</li>
-     *   <li>{@link #createCartesianCS(Map, CoordinateSystemAxis, CoordinateSystemAxis)}</li>
-     * </ul>
+     * </ol></div>
      *
      * The supplied {@code conversion} argument shall <strong>not</strong> includes the operation steps
      * for performing {@linkplain org.apache.sis.referencing.cs.CoordinateSystems#swapAndScaleAxes unit
@@ -704,8 +745,8 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * @param  derivedCS  The coordinate system for the projected CRS.
      * @throws FactoryException if the object creation failed.
      *
-     * @see GeodeticAuthorityFactory#createProjectedCRS(String)
      * @see DefaultProjectedCRS#DefaultProjectedCRS(Map, GeographicCRS, Conversion, CartesianCS)
+     * @see GeodeticAuthorityFactory#createProjectedCRS(String)
      */
     @Override
     public ProjectedCRS createProjectedCRS(final Map<String,?> properties,
@@ -725,10 +766,11 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * Creates a two-dimensional Cartesian coordinate system from the given pair of axis.
      * This coordinate system can be used with projected, engineering and derived CRS.
      *
-     * <p>The components needed by this method can be created by the following method:</p>
-     * <ul>
+     * <div class="note"><b>Dependencies:</b>
+     * the components needed by this method can be created by the following methods:
+     * <ol>
      *   <li>{@link #createCoordinateSystemAxis(Map, String, AxisDirection, Unit)}</li>
-     * </ul>
+     * </ol></div>
      *
      * The default implementation creates a {@link DefaultCartesianCS} instance.
      *
@@ -737,8 +779,8 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * @param  axis1 The second axis (e.g. “Northing”).
      * @throws FactoryException if the object creation failed.
      *
-     * @see GeodeticAuthorityFactory#createCartesianCS(String)
      * @see DefaultCartesianCS#DefaultCartesianCS(Map, CoordinateSystemAxis, CoordinateSystemAxis)
+     * @see GeodeticAuthorityFactory#createCartesianCS(String)
      */
     @Override
     public CartesianCS createCartesianCS(final Map<String,?> properties,
@@ -760,12 +802,14 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * {@link TemporalCRS} or {@link EngineeringCRS} interface depending on the type of the base CRS and the
      * coordinate system.
      *
-     * <p>The components needed by this method can be created by the following methods:</p>
-     * <ul>
+     * <div class="note"><b>Dependencies:</b>
+     * the components needed by this method can be created by the following methods:
+     * <ol>
+     *   <li>{@link #createCoordinateSystemAxis(Map, String, AxisDirection, Unit)}</li>
+     *   <li>A {@code createFooCS(…)} method for Cartesian, spherical, ellipsoidal, vertical, temporal, linear, affine, polar, cylindrical or user-defined CS.</li>
      *   <li>An other {@code createFooCRS(…)} method for geocentric, geographic, vertical, temporal or engineering CRS.</li>
      *   <li>{@link org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory#createDefiningConversion(Map, OperationMethod, ParameterValueGroup)}</li>
-     *   <li>A {@code createFooCS(…)} method for Cartesian, spherical, ellipsoidal, vertical, temporal, linear, affine, polar, cylindrical or user-defined CS.</li>
-     * </ul>
+     * </ol></div>
      *
      * The supplied {@code conversion} argument shall <strong>not</strong> includes the operation steps
      * for performing {@linkplain org.apache.sis.referencing.cs.CoordinateSystems#swapAndScaleAxes unit
@@ -780,8 +824,8 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * @param  derivedCS  The coordinate system for the derived CRS.
      * @throws FactoryException if the object creation failed.
      *
-     * @see GeodeticAuthorityFactory#createDerivedCRS(String)
      * @see DefaultDerivedCRS#create(Map, SingleCRS, Conversion, CoordinateSystem)
+     * @see GeodeticAuthorityFactory#createDerivedCRS(String)
      */
     @Override
     public DerivedCRS createDerivedCRS(final Map<String,?> properties,
@@ -803,11 +847,13 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * Vertical CRSs make use of the direction of gravity to define the concept of height or depth,
      * but the relationship with gravity may not be straightforward.
      *
-     * <p>The components needed by this method can be created by the following methods:</p>
-     * <ul>
-     *   <li>{@link #createVerticalDatum(Map, VerticalDatumType)}</li>
+     * <div class="note"><b>Dependencies:</b>
+     * the components needed by this method can be created by the following methods:
+     * <ol>
+     *   <li>{@link #createCoordinateSystemAxis(Map, String, AxisDirection, Unit)}</li>
      *   <li>{@link #createVerticalCS(Map, CoordinateSystemAxis)}</li>
-     * </ul>
+     *   <li>{@link #createVerticalDatum(Map, VerticalDatumType)}</li>
+     * </ol></div>
      *
      * The default implementation creates a {@link DefaultVerticalCRS} instance.
      *
@@ -816,8 +862,8 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * @param  cs         The vertical coordinate system for the created CRS.
      * @throws FactoryException if the object creation failed.
      *
-     * @see GeodeticAuthorityFactory#createVerticalCRS(String)
      * @see DefaultVerticalCRS#DefaultVerticalCRS(Map, VerticalDatum, VerticalCS)
+     * @see GeodeticAuthorityFactory#createVerticalCRS(String)
      */
     @Override
     public VerticalCRS createVerticalCRS(final Map<String,?> properties,
@@ -840,8 +886,8 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * @param  type       The type of this vertical datum (often geoidal).
      * @throws FactoryException if the object creation failed.
      *
-     * @see GeodeticAuthorityFactory#createVerticalDatum(String)
      * @see DefaultVerticalDatum#DefaultVerticalDatum(Map, VerticalDatumType)
+     * @see GeodeticAuthorityFactory#createVerticalDatum(String)
      */
     @Override
     public VerticalDatum createVerticalDatum(final Map<String,?> properties,
@@ -860,10 +906,11 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * Creates a vertical coordinate system.
      * This coordinate system can be used with vertical and derived CRS.
      *
-     * <p>The components needed by this method can be created by the following method:</p>
-     * <ul>
+     * <div class="note"><b>Dependencies:</b>
+     * the components needed by this method can be created by the following methods:
+     * <ol>
      *   <li>{@link #createCoordinateSystemAxis(Map, String, AxisDirection, Unit)}</li>
-     * </ul>
+     * </ol></div>
      *
      * The default implementation creates a {@link DefaultVerticalCS} instance.
      *
@@ -871,8 +918,8 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * @param  axis The single axis (e.g. “height” or “depth”).
      * @throws FactoryException if the object creation failed.
      *
-     * @see GeodeticAuthorityFactory#createVerticalCS(String)
      * @see DefaultVerticalCS#DefaultVerticalCS(Map, CoordinateSystemAxis)
+     * @see GeodeticAuthorityFactory#createVerticalCS(String)
      */
     @Override
     public VerticalCS createVerticalCS(final Map<String,?> properties,
@@ -890,11 +937,13 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
     /**
      * Creates a temporal coordinate reference system.
      *
-     * <p>The components needed by this method can be created by the following methods:</p>
-     * <ul>
-     *   <li>{@link #createTemporalDatum(Map, Date)}</li>
+     * <div class="note"><b>Dependencies:</b>
+     * the components needed by this method can be created by the following methods:
+     * <ol>
+     *   <li>{@link #createCoordinateSystemAxis(Map, String, AxisDirection, Unit)}</li>
      *   <li>{@link #createTimeCS(Map, CoordinateSystemAxis)}</li>
-     * </ul>
+     *   <li>{@link #createTemporalDatum(Map, Date)}</li>
+     * </ol></div>
      *
      * The default implementation creates a {@link DefaultTemporalCRS} instance.
      *
@@ -903,8 +952,8 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * @param  cs         The temporal coordinate system for the created CRS.
      * @throws FactoryException if the object creation failed.
      *
-     * @see GeodeticAuthorityFactory#createTemporalCRS(String)
      * @see DefaultTemporalCRS#DefaultTemporalCRS(Map, TemporalDatum, TimeCS)
+     * @see GeodeticAuthorityFactory#createTemporalCRS(String)
      */
     @Override
     public TemporalCRS createTemporalCRS(final Map<String,?> properties,
@@ -927,8 +976,8 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * @param  origin     The date and time origin of this temporal datum.
      * @throws FactoryException if the object creation failed.
      *
-     * @see GeodeticAuthorityFactory#createTemporalDatum(String)
      * @see DefaultTemporalDatum#DefaultTemporalDatum(Map, Date)
+     * @see GeodeticAuthorityFactory#createTemporalDatum(String)
      */
     @Override
     public TemporalDatum createTemporalDatum(final Map<String,?> properties,
@@ -947,10 +996,11 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * Creates a temporal coordinate system.
      * This coordinate system can be used with temporal and derived CRS.
      *
-     * <p>The components needed by this method can be created by the following methods:</p>
-     * <ul>
+     * <div class="note"><b>Dependencies:</b>
+     * the components needed by this method can be created by the following methods:
+     * <ol>
      *   <li>{@link #createCoordinateSystemAxis(Map, String, AxisDirection, Unit)}</li>
-     * </ul>
+     * </ol></div>
      *
      * The default implementation creates a {@link DefaultTimeCS} instance.
      *
@@ -958,8 +1008,8 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * @param  axis The single axis.
      * @throws FactoryException if the object creation failed.
      *
-     * @see GeodeticAuthorityFactory#createTimeCS(String)
      * @see DefaultTimeCS#DefaultTimeCS(Map, CoordinateSystemAxis)
+     * @see GeodeticAuthorityFactory#createTimeCS(String)
      */
     @Override
     public TimeCS createTimeCS(final Map<String,?> properties,
@@ -979,11 +1029,11 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * Apache SIS puts no restriction on the components that can be used in a compound CRS.
      * However for better inter-operability, users are encouraged to follow the order mandated by ISO 19162:
      *
-     * <ul>
+     * <ol>
      *   <li>A mandatory horizontal CRS (only one of two-dimensional {@code GeographicCRS} or {@code ProjectedCRS} or {@code EngineeringCRS}).</li>
      *   <li>Optionally followed by a {@code VerticalCRS} or a {@code ParametricCRS} (but not both).</li>
      *   <li>Optionally followed by a {@code TemporalCRS}.</li>
-     * </ul>
+     * </ol>
      *
      * The default implementation creates a {@link DefaultCompoundCRS} instance.
      *
@@ -991,8 +1041,8 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * @param  elements   Ordered array of {@code CoordinateReferenceSystem} objects.
      * @throws FactoryException if the object creation failed.
      *
-     * @see GeodeticAuthorityFactory#createCompoundCRS(String)
      * @see DefaultCompoundCRS#DefaultCompoundCRS(Map, CoordinateReferenceSystem...)
+     * @see GeodeticAuthorityFactory#createCompoundCRS(String)
      */
     @Override
     public CompoundCRS createCompoundCRS(final Map<String,?> properties,
@@ -1016,8 +1066,8 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * @param  cs         The Cartesian or oblique Cartesian coordinate system for the created CRS.
      * @throws FactoryException if the object creation failed.
      *
-     * @see GeodeticAuthorityFactory#createImageCRS(String)
      * @see DefaultImageCRS#DefaultImageCRS(Map, ImageDatum, AffineCS)
+     * @see GeodeticAuthorityFactory#createImageCRS(String)
      */
     @Override
     public ImageCRS createImageCRS(final Map<String,?> properties,
@@ -1040,8 +1090,8 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * @param  pixelInCell Specification of the way the image grid is associated with the image data attributes.
      * @throws FactoryException if the object creation failed.
      *
-     * @see GeodeticAuthorityFactory#createImageDatum(String)
      * @see DefaultImageDatum#DefaultImageDatum(Map, PixelInCell)
+     * @see GeodeticAuthorityFactory#createImageDatum(String)
      */
     @Override
     public ImageDatum createImageDatum(final Map<String,?> properties,
@@ -1060,10 +1110,11 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * Creates a two-dimensional affine coordinate system from the given pair of axis.
      * This coordinate system can be used with image and engineering CRS.
      *
-     * <p>The components needed by this method can be created by the following methods:</p>
-     * <ul>
+     * <div class="note"><b>Dependencies:</b>
+     * the components needed by this method can be created by the following methods:
+     * <ol>
      *   <li>{@link #createCoordinateSystemAxis(Map, String, AxisDirection, Unit)}</li>
-     * </ul>
+     * </ol></div>
      *
      * The default implementation creates a {@link DefaultAffineCS} instance.
      *
@@ -1097,11 +1148,13 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      *   <li>CRSs on moving platforms such as road vehicles, vessels, aircraft, or spacecraft.</li>
      * </ul>
      *
-     * <p>The components needed by this method can be created by the following methods:</p>
-     * <ul>
-     *   <li>{@link #createEngineeringDatum(Map)}</li>
+     * <div class="note"><b>Dependencies:</b>
+     * the components needed by this method can be created by the following methods:
+     * <ol>
+     *   <li>{@link #createCoordinateSystemAxis(Map, String, AxisDirection, Unit)}</li>
      *   <li>A {@code createFooCS(…)} method for Cartesian, spherical, linear, affine, polar, cylindrical or user-defined CS.</li>
-     * </ul>
+     *   <li>{@link #createEngineeringDatum(Map)}</li>
+     * </ol></div>
      *
      * The default implementation creates a {@link DefaultEngineeringCRS} instance.
      *
@@ -1110,8 +1163,8 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * @param  cs         The coordinate system for the created CRS.
      * @throws FactoryException if the object creation failed.
      *
-     * @see GeodeticAuthorityFactory#createEngineeringCRS(String)
      * @see DefaultEngineeringCRS#DefaultEngineeringCRS(Map, EngineeringDatum, CoordinateSystem)
+     * @see GeodeticAuthorityFactory#createEngineeringCRS(String)
      */
     @Override
     public EngineeringCRS createEngineeringCRS(final Map<String,?> properties,
@@ -1133,8 +1186,8 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * @param  properties Name and other properties to give to the new object.
      * @throws FactoryException if the object creation failed.
      *
-     * @see GeodeticAuthorityFactory#createEngineeringDatum(String)
      * @see DefaultEngineeringDatum#DefaultEngineeringDatum(Map)
+     * @see GeodeticAuthorityFactory#createEngineeringDatum(String)
      */
     @Override
     public EngineeringDatum createEngineeringDatum(final Map<String,?> properties)
@@ -1153,10 +1206,11 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * Creates a three-dimensional affine coordinate system from the given set of axis.
      * This coordinate system can be used with engineering CRS.
      *
-     * <p>The components needed by this method can be created by the following methods:</p>
-     * <ul>
+     * <div class="note"><b>Dependencies:</b>
+     * the components needed by this method can be created by the following methods:
+     * <ol>
      *   <li>{@link #createCoordinateSystemAxis(Map, String, AxisDirection, Unit)}</li>
-     * </ul>
+     * </ol></div>
      *
      * The default implementation creates a {@link DefaultAffineCS} instance.
      *
@@ -1187,10 +1241,11 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * Creates a cylindrical coordinate system from the given set of axis.
      * This coordinate system can be used with engineering CRS.
      *
-     * <p>The components needed by this method can be created by the following methods:</p>
-     * <ul>
+     * <div class="note"><b>Dependencies:</b>
+     * the components needed by this method can be created by the following methods:
+     * <ol>
      *   <li>{@link #createCoordinateSystemAxis(Map, String, AxisDirection, Unit)}</li>
-     * </ul>
+     * </ol></div>
      *
      * The default implementation creates a {@link DefaultCylindricalCS} instance.
      *
@@ -1200,8 +1255,8 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * @param  axis2 The third  axis.
      * @throws FactoryException if the object creation failed.
      *
-     * @see GeodeticAuthorityFactory#createCylindricalCS(String)
      * @see DefaultCylindricalCS#DefaultCylindricalCS(Map, CoordinateSystemAxis, CoordinateSystemAxis, CoordinateSystemAxis)
+     * @see GeodeticAuthorityFactory#createCylindricalCS(String)
      */
     @Override
     public CylindricalCS createCylindricalCS(final Map<String,?> properties,
@@ -1222,10 +1277,11 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * Creates a polar coordinate system from the given pair of axis.
      * This coordinate system can be used with engineering CRS.
      *
-     * <p>The components needed by this method can be created by the following methods:</p>
-     * <ul>
+     * <div class="note"><b>Dependencies:</b>
+     * the components needed by this method can be created by the following methods:
+     * <ol>
      *   <li>{@link #createCoordinateSystemAxis(Map, String, AxisDirection, Unit)}</li>
-     * </ul>
+     * </ol></div>
      *
      * The default implementation creates a {@link DefaultPolarCS} instance.
      *
@@ -1234,8 +1290,8 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * @param  axis1 The second axis.
      * @throws FactoryException if the object creation failed.
      *
-     * @see GeodeticAuthorityFactory#createPolarCS(String)
      * @see DefaultPolarCS#DefaultPolarCS(Map, CoordinateSystemAxis, CoordinateSystemAxis)
+     * @see GeodeticAuthorityFactory#createPolarCS(String)
      */
     @Override
     public PolarCS createPolarCS(final Map<String,?> properties,
@@ -1255,10 +1311,11 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * Creates a linear coordinate system.
      * This coordinate system can be used with engineering CRS.
      *
-     * <p>The components needed by this method can be created by the following methods:</p>
-     * <ul>
+     * <div class="note"><b>Dependencies:</b>
+     * the components needed by this method can be created by the following methods:
+     * <ol>
      *   <li>{@link #createCoordinateSystemAxis(Map, String, AxisDirection, Unit)}</li>
-     * </ul>
+     * </ol></div>
      *
      * The default implementation creates a {@link DefaultLinearCS} instance.
      *
@@ -1285,10 +1342,11 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * Creates a two-dimensional user defined coordinate system from the given pair of axis.
      * This coordinate system can be used with engineering CRS.
      *
-     * <p>The components needed by this method can be created by the following methods:</p>
-     * <ul>
+     * <div class="note"><b>Dependencies:</b>
+     * the components needed by this method can be created by the following methods:
+     * <ol>
      *   <li>{@link #createCoordinateSystemAxis(Map, String, AxisDirection, Unit)}</li>
-     * </ul>
+     * </ol></div>
      *
      * The default implementation creates a {@link DefaultUserDefinedCS} instance.
      *
@@ -1317,10 +1375,11 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * Creates a three-dimensional user defined coordinate system from the given set of axis.
      * This coordinate system can be used with engineering CRS.
      *
-     * <p>The components needed by this method can be created by the following methods:</p>
-     * <ul>
+     * <div class="note"><b>Dependencies:</b>
+     * the components needed by this method can be created by the following methods:
+     * <ol>
      *   <li>{@link #createCoordinateSystemAxis(Map, String, AxisDirection, Unit)}</li>
-     * </ul>
+     * </ol></div>
      *
      * The default implementation creates a {@link DefaultUserDefinedCS} instance.
      *
@@ -1360,8 +1419,8 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * @param  unit         The coordinate axis unit.
      * @throws FactoryException if the object creation failed.
      *
-     * @see GeodeticAuthorityFactory#createCoordinateSystemAxis(String)
      * @see DefaultCoordinateSystemAxis#DefaultCoordinateSystemAxis(Map, String, AxisDirection, Unit)
+     * @see GeodeticAuthorityFactory#createCoordinateSystemAxis(String)
      */
     @Override
     public CoordinateSystemAxis createCoordinateSystemAxis(final Map<String,?> properties,
