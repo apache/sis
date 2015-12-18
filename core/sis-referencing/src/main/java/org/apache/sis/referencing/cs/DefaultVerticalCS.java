@@ -120,6 +120,8 @@ public class DefaultVerticalCS extends AbstractCS implements VerticalCS {
      *
      * @param properties The properties to be given to the identified object.
      * @param axis       The single axis (e.g. “height” or “depth”).
+     *
+     * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createVerticalCS(Map, CoordinateSystemAxis)
      */
     public DefaultVerticalCS(final Map<String,?> properties, final CoordinateSystemAxis axis) {
         super(properties, axis);

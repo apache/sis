@@ -153,6 +153,8 @@ public class DefaultGeographicCRS extends DefaultGeodeticCRS implements Geograph
      * @param properties The properties to be given to the coordinate reference system.
      * @param datum The datum.
      * @param cs The two- or three-dimensional coordinate system.
+     *
+     * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createGeographicCRS(Map, GeodeticDatum, EllipsoidalCS)
      */
     public DefaultGeographicCRS(final Map<String,?> properties,
                                 final GeodeticDatum datum,

@@ -102,6 +102,8 @@ public class DefaultUserDefinedCS extends AbstractCS implements UserDefinedCS {
      * @param properties The properties to be given to the identified object.
      * @param axis0 The first axis.
      * @param axis1 The second axis.
+     *
+     * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createUserDefinedCS(Map, CoordinateSystemAxis, CoordinateSystemAxis)
      */
     public DefaultUserDefinedCS(final Map<String,?>   properties,
                                 final CoordinateSystemAxis axis0,
@@ -119,6 +121,8 @@ public class DefaultUserDefinedCS extends AbstractCS implements UserDefinedCS {
      * @param axis0 The first axis.
      * @param axis1 The second axis.
      * @param axis2 The third axis.
+     *
+     * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createUserDefinedCS(Map, CoordinateSystemAxis, CoordinateSystemAxis, CoordinateSystemAxis)
      */
     public DefaultUserDefinedCS(final Map<String,?>   properties,
                                 final CoordinateSystemAxis axis0,

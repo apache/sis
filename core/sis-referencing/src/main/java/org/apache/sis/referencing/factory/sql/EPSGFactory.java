@@ -595,12 +595,12 @@ addURIs:    for (int i=0; ; i++) {
     }
 
     /**
-     * Removes the {@code "EPSG:"} prefix from the given string, if present.
+     * Removes the {@code "EPSG::"} prefix from the given string, if present.
      * This method is preferred to the more generic implementation provided by the parent class for efficiency reason.
      * In particular, this method avoid to call the potentially costly {@link #getAuthority()} method.
      *
      * @param  code The code to trim.
-     * @return The code without the {@code "EPSG:"} prefix.
+     * @return The code without the {@code "EPSG::"} prefix.
      */
     private String trimAuthority(String code) {
         int s = code.indexOf(DefaultNameSpace.DEFAULT_SEPARATOR);
@@ -1243,18 +1243,10 @@ addURIs:    for (int i=0; ; i++) {
      *   <tr><td>4326</td> <td>Geographic</td>    <td>World Geodetic System 1984</td></tr>
      *   <tr><td>4979</td> <td>Geographic 3D</td> <td>World Geodetic System 1984</td></tr>
      *   <tr><td>4978</td> <td>Geocentric</td>    <td>World Geodetic System 1984</td></tr>
-     *   <tr><td>4322</td> <td>Geographic</td>    <td>World Geodetic System 1972</td></tr>
-     *   <tr><td>4985</td> <td>Geographic 3D</td> <td>World Geodetic System 1972</td></tr>
-     *   <tr><td>4984</td> <td>Geocentric</td>    <td>World Geodetic System 1972</td></tr>
-     *   <tr><td>4269</td> <td>Geographic</td>    <td>North American Datum 1983</td></tr>
-     *   <tr><td>4267</td> <td>Geographic</td>    <td>North American Datum 1927</td></tr>
-     *   <tr><td>4258</td> <td>Geographic</td>    <td>European Terrestrial Reference Frame 1989</td></tr>
-     *   <tr><td>4937</td> <td>Geographic 3D</td> <td>European Terrestrial Reference Frame 1989</td></tr>
-     *   <tr><td>4936</td> <td>Geocentric</td>    <td>European Terrestrial Reference Frame 1989</td></tr>
-     *   <tr><td>4230</td> <td>Geographic</td>    <td>European Datum 1950</td></tr>
-     *   <tr><td>4047</td> <td>Geographic</td>    <td>GRS 1980 Authalic Sphere</td></tr>
+     *   <tr><td>3395</td> <td>Projected</td>     <td>WGS 84 / World Mercator</td></tr>
      *   <tr><td>5714</td> <td>Vertical</td>      <td>Mean Sea Level height</td></tr>
-     *   <tr><td>5715</td> <td>Vertical</td>      <td>Mean Sea Level depth</td></tr>
+     *   <tr><td>6349</td> <td>Compound</td>      <td>NAD83(2011) + NAVD88 height</td></tr>
+     *   <tr><td>5800</td> <td>Engineering</td>   <td>Astra Minas Grid</td></tr>
      * </table></div>
      *
      * @param  code Value allocated by EPSG.
@@ -1468,14 +1460,9 @@ addURIs:    for (int i=0; ; i++) {
      *   <tr><th>Code</th> <th>Type</th>        <th>Description</th></tr>
      *   <tr><td>6326</td> <td>Geodetic</td>    <td>World Geodetic System 1984</td></tr>
      *   <tr><td>6322</td> <td>Geodetic</td>    <td>World Geodetic System 1972</td></tr>
-     *   <tr><td>6269</td> <td>Geodetic</td>    <td>North American Datum 1983</td></tr>
-     *   <tr><td>6258</td> <td>Geodetic</td>    <td>European Terrestrial Reference System 1989</td></tr>
-     *   <tr><td>5215</td> <td>Vertical</td>    <td>European Vertical Reference Frame 2007</td></tr>
-     *   <tr><td>1131</td> <td>Vertical</td>    <td>Japanese Geodetic Datum 2011 (vertical)</td></tr>
      *   <tr><td>1027</td> <td>Vertical</td>    <td>EGM2008 geoid</td></tr>
      *   <tr><td>5100</td> <td>Vertical</td>    <td>Mean Sea Level</td></tr>
      *   <tr><td>9315</td> <td>Engineering</td> <td>Seismic bin grid datum</td></tr>
-     *   <tr><td>9300</td> <td>Engineering</td> <td>Astra Minas</td></tr>
      * </table></div>
      *
      * @param  code Value allocated by EPSG.
@@ -1814,6 +1801,7 @@ addURIs:    for (int i=0; ; i++) {
      * some EPSG codes for prime meridians are:
      *
      * <table class="sis" summary="EPSG codes examples">
+     *   <tr><th>Code</th> <th>Description</th></tr>
      *   <tr><td>8901</td> <td>Greenwich</td></tr>
      *   <tr><td>8903</td> <td>Paris</td></tr>
      *   <tr><td>8904</td> <td>Bogota</td></tr>
@@ -1875,6 +1863,15 @@ addURIs:    for (int i=0; ; i++) {
     /**
      * Creates information about spatial, vertical, and temporal extent (usually a domain of validity) from a code.
      *
+     * <div class="note"><b>Example:</b>
+     * some EPSG codes for extents are:
+     *
+     * <table class="sis" summary="EPSG codes examples">
+     *   <tr><th>Code</th> <th>Description</th></tr>
+     *   <tr><td>1262</td> <td>World</td></tr>
+     *   <tr><td>3391</td> <td>World - between 80°S and 84°N</td></tr>
+     * </table></div>
+     *
      * @param  code Value allocated by EPSG.
      * @return The extent for the given code.
      * @throws NoSuchAuthorityCodeException if the specified {@code code} was not found.
@@ -1916,7 +1913,7 @@ addURIs:    for (int i=0; ; i++) {
                     double xmax = result.getDouble(5); if (result.wasNull()) xmax = Double.NaN;
                     if (!Double.isNaN(ymin) || !Double.isNaN(ymax) || !Double.isNaN(xmin) || !Double.isNaN(xmax)) {
                         /*
-                         * Fix an error found in EPSG:3790 New Zealand - South Island - Mount Pleasant mc
+                         * Fix an error found in EPSG::3790 New Zealand - South Island - Mount Pleasant mc
                          * for older database (this error is fixed in EPSG database 8.2).
                          *
                          * Do NOT apply anything similar for the x axis, because xmin > xmax is not error:
@@ -2153,6 +2150,17 @@ addURIs:    for (int i=0; ; i++) {
     /**
      * Creates a coordinate system axis with name, direction, unit and range of values.
      *
+     * <div class="note"><b>Example:</b>
+     * some EPSG codes for axes are:
+     *
+     * <table class="sis" summary="EPSG codes examples">
+     *   <tr><th>Code</th> <th>Description</th>   <th>Unit</th></tr>
+     *   <tr><td>106</td>  <td>Latitude (φ)</td>  <td>degree</td></tr>
+     *   <tr><td>107</td>  <td>Longitude (λ)</td> <td>degree</td></tr>
+     *   <tr><td>1</td>    <td>Easting (E)</td>   <td>metre</td></tr>
+     *   <tr><td>2</td>    <td>Northing (N)</td>  <td>metre</td></tr>
+     * </table></div>
+     *
      * @param  code Value allocated by EPSG.
      * @return The axis for the given code.
      * @throws NoSuchAuthorityCodeException if the specified {@code code} was not found.
@@ -2246,6 +2254,16 @@ addURIs:    for (int i=0; ; i++) {
 
     /**
      * Creates an unit of measurement from a code.
+     *
+     * <div class="note"><b>Example:</b>
+     * some EPSG codes for units are:
+     *
+     * <table class="sis" summary="EPSG codes examples">
+     *   <tr><th>Code</th> <th>Description</th></tr>
+     *   <tr><td>9002</td> <td>decimal degree</td></tr>
+     *   <tr><td>9001</td> <td>metre</td></tr>
+     *   <tr><td>1040</td> <td>second</td></tr>
+     * </table></div>
      *
      * @param  code Value allocated by EPSG.
      * @return The unit of measurement for the given code.

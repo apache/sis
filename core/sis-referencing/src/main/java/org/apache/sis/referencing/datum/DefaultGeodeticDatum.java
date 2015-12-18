@@ -244,6 +244,8 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
      * @param properties    The properties to be given to the identified object.
      * @param ellipsoid     The ellipsoid.
      * @param primeMeridian The prime meridian.
+     *
+     * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createGeodeticDatum(Map, Ellipsoid, PrimeMeridian)
      */
     public DefaultGeodeticDatum(final Map<String,?> properties,
                                 final Ellipsoid     ellipsoid,

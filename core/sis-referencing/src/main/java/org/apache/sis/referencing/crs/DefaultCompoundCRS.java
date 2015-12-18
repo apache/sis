@@ -185,6 +185,8 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
      *
      * @param properties The properties to be given to the coordinate reference system.
      * @param components The sequence of coordinate reference systems making this compound CRS.
+     *
+     * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createCompoundCRS(Map, CoordinateReferenceSystem...)
      */
     public DefaultCompoundCRS(final Map<String,?> properties, final CoordinateReferenceSystem... components) {
         super(properties, createCoordinateSystem(properties, components));

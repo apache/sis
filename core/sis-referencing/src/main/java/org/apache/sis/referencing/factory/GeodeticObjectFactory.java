@@ -1220,7 +1220,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * @param  axis2 The third  axis.
      * @throws FactoryException if the object creation failed.
      *
-     * @see DefaultAffineCS#DefaultAffineCS(Map, CoordinateSystemAxis, CoordinateSystemAxis)
+     * @see DefaultAffineCS#DefaultAffineCS(Map, CoordinateSystemAxis, CoordinateSystemAxis, CoordinateSystemAxis)
      */
     @Override
     public AffineCS createAffineCS(final Map<String,?> properties,
@@ -1445,6 +1445,8 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      *
      * @param  xml Coordinate reference system encoded in XML format.
      * @throws FactoryException if the object creation failed.
+     *
+     * @see XML#unmarshal(String)
      */
     @Override
     public CoordinateReferenceSystem createFromXML(final String xml) throws FactoryException {

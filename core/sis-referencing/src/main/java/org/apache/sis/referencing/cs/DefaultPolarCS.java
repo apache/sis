@@ -110,6 +110,8 @@ public class DefaultPolarCS extends AbstractCS implements PolarCS {
      * @param properties The properties to be given to the identified object.
      * @param axis0 The first axis.
      * @param axis1 The second axis.
+     *
+     * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createPolarCS(Map, CoordinateSystemAxis, CoordinateSystemAxis)
      */
     public DefaultPolarCS(final Map<String,?>   properties,
                           final CoordinateSystemAxis axis0,

@@ -127,6 +127,8 @@ public class DefaultImageCRS extends AbstractCRS implements ImageCRS {
      * @param properties The properties to be given to the coordinate reference system.
      * @param datum The datum.
      * @param cs The coordinate system.
+     *
+     * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createImageCRS(Map, ImageDatum, AffineCS)
      */
     public DefaultImageCRS(final Map<String,?> properties,
                            final ImageDatum    datum,
