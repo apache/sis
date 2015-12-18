@@ -110,6 +110,8 @@ public class DefaultTimeCS extends AbstractCS implements TimeCS {
      *
      * @param properties The properties to be given to the identified object.
      * @param axis       The axis.
+     *
+     * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createTimeCS(Map, CoordinateSystemAxis)
      */
     public DefaultTimeCS(final Map<String,?> properties, final CoordinateSystemAxis axis) {
         super(properties, axis);

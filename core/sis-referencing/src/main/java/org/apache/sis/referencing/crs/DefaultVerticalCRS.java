@@ -125,6 +125,8 @@ public class DefaultVerticalCRS extends AbstractCRS implements VerticalCRS {
      * @param properties The properties to be given to the coordinate reference system.
      * @param datum The datum.
      * @param cs The coordinate system.
+     *
+     * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createVerticalCRS(Map, VerticalDatum, VerticalCS)
      */
     public DefaultVerticalCRS(final Map<String,?> properties,
                               final VerticalDatum datum,

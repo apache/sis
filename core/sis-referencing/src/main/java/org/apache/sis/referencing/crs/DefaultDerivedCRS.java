@@ -277,6 +277,7 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
      *         do not match the dimensions of {@code base} and {@code derivedCS} respectively.
      *
      * @see #DefaultDerivedCRS(Map, SingleCRS, Conversion, CoordinateSystem)
+     * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createDerivedCRS(Map, CoordinateReferenceSystem, Conversion, CoordinateSystem)
      */
     public static DefaultDerivedCRS create(final Map<String,?>    properties,
                                            final SingleCRS        baseCRS,

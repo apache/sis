@@ -139,6 +139,8 @@ public class DefaultGeocentricCRS extends DefaultGeodeticCRS implements Geocentr
      * @param properties The properties to be given to the coordinate reference system.
      * @param datum The datum.
      * @param cs The coordinate system, which must be three-dimensional.
+     *
+     * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createGeocentricCRS(Map, GeodeticDatum, CartesianCS)
      */
     public DefaultGeocentricCRS(final Map<String,?> properties,
                                 final GeodeticDatum datum,
@@ -155,6 +157,8 @@ public class DefaultGeocentricCRS extends DefaultGeodeticCRS implements Geocentr
      * @param properties The properties to be given to the coordinate reference system.
      * @param datum The datum.
      * @param cs The coordinate system.
+     *
+     * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createGeocentricCRS(Map, GeodeticDatum, SphericalCS)
      */
     public DefaultGeocentricCRS(final Map<String,?> properties,
                                 final GeodeticDatum datum,
