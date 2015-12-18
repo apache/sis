@@ -122,7 +122,7 @@ public final class CRS extends Static {
      *   <tr><td>EPSG:4979</td> <td>{@link CommonCRS#WGS84  WGS84}</td>  <td>Geographic 3D</td> <td>World Geodetic System 1984</td></tr>
      *   <tr><td>EPSG:4984</td> <td>{@link CommonCRS#WGS72  WGS72}</td>  <td>Geocentric</td>    <td>World Geodetic System 1972</td></tr>
      *   <tr><td>EPSG:4985</td> <td>{@link CommonCRS#WGS72  WGS72}</td>  <td>Geographic 3D</td> <td>World Geodetic System 1972</td></tr>
-     *   <tr><td>EPSG:5715</td> <td>{@link CommonCRS.Vertical#DEPTH  DEPTH}</td> <td>Vertical</td> <td>Mean Sea Level depth</td></tr>
+     *   <tr><td>EPSG:5715</td> <td>{@link CommonCRS.Vertical#DEPTH DEPTH}</td> <td>Vertical</td> <td>Mean Sea Level depth</td></tr>
      *   <tr><td>EPSG:5714</td> <td>{@link CommonCRS.Vertical#MEAN_SEA_LEVEL MEAN_SEA_LEVEL}</td> <td>Vertical</td> <td>Mean Sea Level height</td></tr>
      * </table></blockquote>
      *
@@ -137,6 +137,8 @@ public final class CRS extends Static {
      * @return The Coordinate Reference System for the given authority code.
      * @throws NoSuchAuthorityCodeException If there is no known CRS associated to the given code.
      * @throws FactoryException if the CRS creation failed for an other reason.
+     *
+     * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory
      *
      * @category factory
      */

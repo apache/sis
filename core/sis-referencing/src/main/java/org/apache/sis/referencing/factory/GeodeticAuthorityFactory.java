@@ -146,9 +146,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * @throws NoSuchAuthorityCodeException if the specified {@code code} was not found.
      * @throws FactoryException if the object creation failed for some other reason.
      *
-     * @see #createCoordinateReferenceSystem(String)
-     * @see #createDatum(String)
-     * @see #createCoordinateSystem(String)
+     * @see org.apache.sis.referencing.AbstractIdentifiedObject
      */
     @Override
     public abstract IdentifiedObject createObject(String code) throws NoSuchAuthorityCodeException, FactoryException;
@@ -163,6 +161,20 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * <code>createCoordinateReferenceSystem(code)</code> if the caller know he is asking for a
      * {@linkplain org.apache.sis.referencing.crs.DefaultGeographicCRS geographic coordinate reference system}).
      *
+     * <div class="note"><b>Example:</b>
+     * the {@linkplain #getAuthorityCodes(java.lang.Class) set of available codes} depends on the defining
+     * {@linkplain #getAuthority() authority} and the {@code GeodeticAuthorityFactory} subclass in use.
+     * Two frequently used authorities are "CRS" and "EPSG", which include the following codes:
+     *
+     * <table class="sis" summary="Authority codes examples">
+     *   <tr><th>Code</th>      <th>Type</th>          <th>Description</th></tr>
+     *   <tr><td>CRS:84</td>    <td>Geographic</td>    <td>Like EPSG:4326 except for (<var>longitude</var>, <var>latitude</var>) axis order</td></tr>
+     *   <tr><td>EPSG:4326</td> <td>Geographic</td>    <td>World Geodetic System 1984</td></tr>
+     *   <tr><td>EPSG:4979</td> <td>Geographic 3D</td> <td>World Geodetic System 1984</td></tr>
+     *   <tr><td>EPSG:4978</td> <td>Geocentric</td>    <td>World Geodetic System 1984</td></tr>
+     *   <tr><td>EPSG:5714</td> <td>Vertical</td>      <td>Mean Sea Level height</td></tr>
+     * </table></div>
+     *
      * <div class="section">Default implementation</div>
      * The default implementation delegates to {@link #createObject(String)} and casts the result.
      * If the result can not be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
@@ -172,10 +184,8 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * @throws NoSuchAuthorityCodeException if the specified {@code code} was not found.
      * @throws FactoryException if the object creation failed for some other reason.
      *
-     * @see #createGeographicCRS(String)
-     * @see #createProjectedCRS(String)
-     * @see #createVerticalCRS(String)
-     * @see #createTemporalCRS(String)
+     * @see org.apache.sis.referencing.crs.AbstractCRS
+     * @see org.apache.sis.referencing.CRS#forCode(String)
      */
     public CoordinateReferenceSystem createCoordinateReferenceSystem(final String code)
             throws NoSuchAuthorityCodeException, FactoryException
@@ -188,6 +198,28 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * This provides an accurate representation of the geometry of geographic features
      * for a large portion of the earth's surface.
      *
+     * <div class="note"><b>Example:</b>
+     * the {@linkplain #getAuthorityCodes(java.lang.Class) set of available codes} depends on the defining
+     * {@linkplain #getAuthority() authority} and the {@code GeodeticAuthorityFactory} subclass in use.
+     * Two frequently used authorities are "CRS" and "EPSG", which include the following codes:
+     *
+     * <table class="sis" summary="Authority codes examples">
+     *   <tr><th>Code</th>      <th>Type</th>          <th>Description</th></tr>
+     *   <tr><td>CRS:27</td>    <td>Geographic</td>    <td>Like EPSG:4267 except for (<var>longitude</var>, <var>latitude</var>) axis order</td></tr>
+     *   <tr><td>CRS:83</td>    <td>Geographic</td>    <td>Like EPSG:4269 except for (<var>longitude</var>, <var>latitude</var>) axis order</td></tr>
+     *   <tr><td>CRS:84</td>    <td>Geographic</td>    <td>Like EPSG:4326 except for (<var>longitude</var>, <var>latitude</var>) axis order</td></tr>
+     *   <tr><td>EPSG:4322</td> <td>Geographic</td>    <td>World Geodetic System 1972</td></tr>
+     *   <tr><td>EPSG:4985</td> <td>Geographic 3D</td> <td>World Geodetic System 1972</td></tr>
+     *   <tr><td>EPSG:4326</td> <td>Geographic</td>    <td>World Geodetic System 1984</td></tr>
+     *   <tr><td>EPSG:4979</td> <td>Geographic 3D</td> <td>World Geodetic System 1984</td></tr>
+     *   <tr><td>EPSG:4267</td> <td>Geographic</td>    <td>North American Datum 1927</td></tr>
+     *   <tr><td>EPSG:4269</td> <td>Geographic</td>    <td>North American Datum 1983</td></tr>
+     *   <tr><td>EPSG:4230</td> <td>Geographic</td>    <td>European Datum 1950</td></tr>
+     *   <tr><td>EPSG:4258</td> <td>Geographic</td>    <td>European Terrestrial Reference Frame 1989</td></tr>
+     *   <tr><td>EPSG:4937</td> <td>Geographic 3D</td> <td>European Terrestrial Reference Frame 1989</td></tr>
+     *   <tr><td>EPSG:4047</td> <td>Geographic</td>    <td>GRS 1980 Authalic Sphere</td></tr>
+     * </table></div>
+     *
      * <div class="section">Default implementation</div>
      * The default implementation delegates to {@link #createCoordinateReferenceSystem(String)} and casts the result.
      * If the result can not be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
@@ -197,9 +229,9 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * @throws NoSuchAuthorityCodeException if the specified {@code code} was not found.
      * @throws FactoryException if the object creation failed for some other reason.
      *
-     * @see #createGeodeticDatum(String)
-     * @see #createEllipsoidalCS(String)
      * @see org.apache.sis.referencing.crs.DefaultGeographicCRS
+     * @see org.apache.sis.referencing.CommonCRS#geographic()
+     * @see org.apache.sis.referencing.CommonCRS#geographic3D()
      */
     public GeographicCRS createGeographicCRS(final String code) throws NoSuchAuthorityCodeException, FactoryException {
         return cast(GeographicCRS.class, createCoordinateReferenceSystem(code), code);
@@ -210,6 +242,18 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * A geocentric CRS deals with the earth's curvature by taking a 3-dimensional spatial view, which obviates
      * the need to model the earth's curvature.
      *
+     * <div class="note"><b>Example:</b>
+     * the {@linkplain #getAuthorityCodes(java.lang.Class) set of available codes} depends on the defining
+     * {@linkplain #getAuthority() authority} and the {@code GeodeticAuthorityFactory} subclass in use.
+     * A frequently used authority is "EPSG", which includes the following codes:
+     *
+     * <table class="sis" summary="Authority codes examples">
+     *   <tr><th>Code</th>      <th>Description</th></tr>
+     *   <tr><td>EPSG:4936</td> <td>European Terrestrial Reference Frame 1989</td></tr>
+     *   <tr><td>EPSG:4978</td> <td>World Geodetic System 1984</td></tr>
+     *   <tr><td>EPSG:4984</td> <td>World Geodetic System 1972</td></tr>
+     * </table></div>
+     *
      * <div class="section">Default implementation</div>
      * The default implementation delegates to {@link #createCoordinateReferenceSystem(String)} and casts the result.
      * If the result can not be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
@@ -219,10 +263,8 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * @throws NoSuchAuthorityCodeException if the specified {@code code} was not found.
      * @throws FactoryException if the object creation failed.
      *
-     * @see #createGeodeticDatum(String)
-     * @see #createCartesianCS(String)
-     * @see #createSphericalCS(String)
      * @see org.apache.sis.referencing.crs.DefaultGeocentricCRS
+     * @see org.apache.sis.referencing.CommonCRS#geocentric()
      */
     public GeocentricCRS createGeocentricCRS(final String code) throws NoSuchAuthorityCodeException, FactoryException {
         return cast(GeocentricCRS.class, createCoordinateReferenceSystem(code), code);
@@ -234,6 +276,19 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * Distortion correction is commonly applied to calculated bearings and distances to produce values
      * that are a close match to actual field values.
      *
+     * <div class="note"><b>Example:</b>
+     * the {@linkplain #getAuthorityCodes(java.lang.Class) set of available codes} depends on the defining
+     * {@linkplain #getAuthority() authority} and the {@code GeodeticAuthorityFactory} subclass in use.
+     * A frequently used authority is "EPSG", which contains more than 4000 codes for projected CRS.
+     * Some of them are:
+     *
+     * <table class="sis" summary="Authority codes examples">
+     *   <tr><th>Code</th>      <th>Description</th></tr>
+     *   <tr><td>EPSG:3034</td> <td>ETRS89 / Lambert Conic Conformal Europe</td></tr>
+     *   <tr><td>EPSG:3395</td> <td>WGS 84 / World Mercator</td></tr>
+     *   <tr><td>EPSG:6350</td> <td>NAD83(2011) / Conus Albers Equal Area</td></tr>
+     * </table></div>
+     *
      * <div class="section">Default implementation</div>
      * The default implementation delegates to {@link #createCoordinateReferenceSystem(String)} and casts the result.
      * If the result can not be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
@@ -243,8 +298,6 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * @throws NoSuchAuthorityCodeException if the specified {@code code} was not found.
      * @throws FactoryException if the object creation failed for some other reason.
      *
-     * @see #createGeographicCRS(String)
-     * @see #createCartesianCS(String)
      * @see org.apache.sis.referencing.crs.DefaultProjectedCRS
      */
     public ProjectedCRS createProjectedCRS(final String code) throws NoSuchAuthorityCodeException, FactoryException {
@@ -256,6 +309,17 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * Vertical CRSs make use of the direction of gravity to define the concept of height or depth,
      * but the relationship with gravity may not be straightforward.
      *
+     * <div class="note"><b>Example:</b>
+     * the {@linkplain #getAuthorityCodes(java.lang.Class) set of available codes} depends on the defining
+     * {@linkplain #getAuthority() authority} and the {@code GeodeticAuthorityFactory} subclass in use.
+     * A frequently used authority is "EPSG", which includes the following codes:
+     *
+     * <table class="sis" summary="Authority codes examples">
+     *   <tr><th>Code</th>      <th>Description</th></tr>
+     *   <tr><td>EPSG:5715</td> <td>Mean Sea Level depth</td></tr>
+     *   <tr><td>EPSG:5714</td> <td>Mean Sea Level height</td></tr>
+     * </table></div>
+     *
      * <div class="section">Default implementation</div>
      * The default implementation delegates to {@link #createCoordinateReferenceSystem(String)} and casts the result.
      * If the result can not be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
@@ -265,9 +329,8 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * @throws NoSuchAuthorityCodeException if the specified {@code code} was not found.
      * @throws FactoryException if the object creation failed for some other reason.
      *
-     * @see #createVerticalDatum(String)
-     * @see #createVerticalCS(String)
      * @see org.apache.sis.referencing.crs.DefaultVerticalCRS
+     * @see org.apache.sis.referencing.CommonCRS.Vertical#crs()
      */
     public VerticalCRS createVerticalCRS(final String code) throws NoSuchAuthorityCodeException, FactoryException {
         return cast(VerticalCRS.class, createCoordinateReferenceSystem(code), code);
@@ -285,9 +348,8 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * @throws NoSuchAuthorityCodeException if the specified {@code code} was not found.
      * @throws FactoryException if the object creation failed for some other reason.
      *
-     * @see #createTemporalDatum(String)
-     * @see #createTimeCS(String)
      * @see org.apache.sis.referencing.crs.DefaultTemporalCRS
+     * @see org.apache.sis.referencing.CommonCRS.Temporal#crs()
      */
     public TemporalCRS createTemporalCRS(final String code) throws NoSuchAuthorityCodeException, FactoryException {
         return cast(TemporalCRS.class, createCoordinateReferenceSystem(code), code);
@@ -295,6 +357,17 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
 
     /**
      * Creates a CRS describing the position of points through two or more independent coordinate reference systems.
+     *
+     * <div class="note"><b>Example:</b>
+     * the {@linkplain #getAuthorityCodes(java.lang.Class) set of available codes} depends on the defining
+     * {@linkplain #getAuthority() authority} and the {@code GeodeticAuthorityFactory} subclass in use.
+     * A frequently used authority is "EPSG", which includes the following codes:
+     *
+     * <table class="sis" summary="Authority codes examples">
+     *   <tr><th>Code</th>      <th>Description</th></tr>
+     *   <tr><td>EPSG:6349</td> <td>NAD83(2011) + NAVD88 height</td></tr>
+     *   <tr><td>EPSG:7423</td> <td>ETRS89 + EVRF2007 height</td></tr>
+     * </table></div>
      *
      * <div class="section">Default implementation</div>
      * The default implementation delegates to {@link #createCoordinateReferenceSystem(String)} and casts the result.
@@ -305,8 +378,6 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * @throws NoSuchAuthorityCodeException if the specified {@code code} was not found.
      * @throws FactoryException if the object creation failed for some other reason.
      *
-     * @see #createVerticalCRS(String)
-     * @see #createTemporalCRS(String)
      * @see org.apache.sis.referencing.crs.DefaultCompoundCRS
      */
     public CompoundCRS createCompoundCRS(final String code) throws NoSuchAuthorityCodeException, FactoryException {
@@ -335,6 +406,16 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
     /**
      * Creates a 1-, 2- or 3-dimensional contextually local coordinate reference system.
      *
+     * <div class="note"><b>Example:</b>
+     * the {@linkplain #getAuthorityCodes(java.lang.Class) set of available codes} depends on the defining
+     * {@linkplain #getAuthority() authority} and the {@code GeodeticAuthorityFactory} subclass in use.
+     * A frequently used authority is "EPSG", which includes the following codes:
+     *
+     * <table class="sis" summary="Authority codes examples">
+     *   <tr><th>Code</th>      <th>Description</th></tr>
+     *   <tr><td>EPSG:5800</td> <td>Astra Minas Grid</td></tr>
+     * </table></div>
+     *
      * <div class="section">Default implementation</div>
      * The default implementation delegates to {@link #createCoordinateReferenceSystem(String)} and casts the result.
      * If the result can not be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
@@ -344,7 +425,6 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * @throws NoSuchAuthorityCodeException if the specified {@code code} was not found.
      * @throws FactoryException if the object creation failed for some other reason.
      *
-     * @see #createEngineeringDatum(String)
      * @see org.apache.sis.referencing.crs.DefaultEngineeringCRS
      */
     public EngineeringCRS createEngineeringCRS(final String code) throws NoSuchAuthorityCodeException, FactoryException {
@@ -365,7 +445,6 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * @throws NoSuchAuthorityCodeException if the specified {@code code} was not found.
      * @throws FactoryException if the object creation failed for some other reason.
      *
-     * @see #createImageDatum(String)
      * @see org.apache.sis.referencing.crs.DefaultImageCRS
      */
     public ImageCRS createImageCRS(final String code) throws NoSuchAuthorityCodeException, FactoryException {
@@ -377,6 +456,19 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * instance of {@link GeodeticDatum}, {@link VerticalDatum} or {@link TemporalDatum}.
      * If the datum is known at compile time, it is recommended to invoke the most precise method instead of this one.
      *
+     * <div class="note"><b>Example:</b>
+     * the {@linkplain #getAuthorityCodes(java.lang.Class) set of available codes} depends on the defining
+     * {@linkplain #getAuthority() authority} and the {@code GeodeticAuthorityFactory} subclass in use.
+     * A frequently used authority is "EPSG", which contains hundred of datum. Some of them are:
+     *
+     * <table class="sis" summary="Authority codes examples">
+     *   <tr><th>Code</th>      <th>Type</th>     <th>Description</th></tr>
+     *   <tr><td>EPSG:6326</td> <td>Geodetic</td> <td>World Geodetic System 1984</td></tr>
+     *   <tr><td>EPSG:6322</td> <td>Geodetic</td> <td>World Geodetic System 1972</td></tr>
+     *   <tr><td>EPSG:1027</td> <td>Vertical</td> <td>EGM2008 geoid</td></tr>
+     *   <tr><td>EPSG:5100</td> <td>Vertical</td> <td>Mean Sea Level</td></tr>
+     * </table></div>
+     *
      * <div class="section">Default implementation</div>
      * The default implementation delegates to {@link #createObject(String)} and casts the result.
      * If the result can not be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
@@ -386,9 +478,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * @throws NoSuchAuthorityCodeException if the specified {@code code} was not found.
      * @throws FactoryException if the object creation failed for some other reason.
      *
-     * @see #createGeodeticDatum(String)
-     * @see #createVerticalDatum(String)
-     * @see #createTemporalDatum(String)
+     * @see org.apache.sis.referencing.datum.AbstractDatum
      */
     public Datum createDatum(final String code) throws NoSuchAuthorityCodeException, FactoryException {
         return cast(Datum.class, createObject(code), code);
@@ -399,6 +489,19 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * Geodetic datum are used together with ellipsoidal coordinate system, and also with Cartesian coordinate system
      * centered in the ellipsoid (or sphere).
      *
+     * <div class="note"><b>Example:</b>
+     * the {@linkplain #getAuthorityCodes(java.lang.Class) set of available codes} depends on the defining
+     * {@linkplain #getAuthority() authority} and the {@code GeodeticAuthorityFactory} subclass in use.
+     * A frequently used authority is "EPSG", which contains hundred of datum. Some of them are:
+     *
+     * <table class="sis" summary="Authority codes examples">
+     *   <tr><th>Code</th>      <th>Description</th></tr>
+     *   <tr><td>EPSG:6326</td> <td>World Geodetic System 1984</td></tr>
+     *   <tr><td>EPSG:6322</td> <td>World Geodetic System 1972</td></tr>
+     *   <tr><td>EPSG:6269</td> <td>North American Datum 1983</td></tr>
+     *   <tr><td>EPSG:6258</td> <td>European Terrestrial Reference System 1989</td></tr>
+     * </table></div>
+     *
      * <div class="section">Default implementation</div>
      * The default implementation delegates to {@link #createDatum(String)} and casts the result.
      * If the result can not be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
@@ -408,11 +511,8 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * @throws NoSuchAuthorityCodeException if the specified {@code code} was not found.
      * @throws FactoryException if the object creation failed for some other reason.
      *
-     * @see #createEllipsoid(String)
-     * @see #createPrimeMeridian(String)
-     * @see #createGeographicCRS(String)
-     * @see #createGeocentricCRS(String)
      * @see org.apache.sis.referencing.datum.DefaultGeodeticDatum
+     * @see org.apache.sis.referencing.CommonCRS#datum()
      */
     public GeodeticDatum createGeodeticDatum(final String code) throws NoSuchAuthorityCodeException, FactoryException {
         return cast(GeodeticDatum.class, createDatum(code), code);
@@ -423,6 +523,19 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * There are several types of vertical datums, and each may place constraints on the axis with which
      * it is combined to create a vertical CRS.
      *
+     * <div class="note"><b>Example:</b>
+     * the {@linkplain #getAuthorityCodes(java.lang.Class) set of available codes} depends on the defining
+     * {@linkplain #getAuthority() authority} and the {@code GeodeticAuthorityFactory} subclass in use.
+     * A frequently used authority is "EPSG", which includes the following codes:
+     *
+     * <table class="sis" summary="Authority codes examples">
+     *   <tr><th>Code</th>      <th>Description</th></tr>
+     *   <tr><td>EPSG:5100</td> <td>Mean Sea Level</td></tr>
+     *   <tr><td>EPSG:1027</td> <td>EGM2008 geoid</td></tr>
+     *   <tr><td>EPSG:1131</td> <td>Japanese Geodetic Datum 2011 (vertical)</td></tr>
+     *   <tr><td>EPSG:5215</td> <td>European Vertical Reference Frame 2007</td></tr>
+     * </table></div>
+     *
      * <div class="section">Default implementation</div>
      * The default implementation delegates to {@link #createDatum(String)} and casts the result.
      * If the result can not be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
@@ -432,8 +545,8 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * @throws NoSuchAuthorityCodeException if the specified {@code code} was not found.
      * @throws FactoryException if the object creation failed for some other reason.
      *
-     * @see #createVerticalCRS(String)
      * @see org.apache.sis.referencing.datum.DefaultVerticalDatum
+     * @see org.apache.sis.referencing.CommonCRS.Vertical#datum()
      */
     public VerticalDatum createVerticalDatum(final String code) throws NoSuchAuthorityCodeException, FactoryException {
         return cast(VerticalDatum.class, createDatum(code), code);
@@ -451,8 +564,8 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * @throws NoSuchAuthorityCodeException if the specified {@code code} was not found.
      * @throws FactoryException if the object creation failed for some other reason.
      *
-     * @see #createTemporalCRS(String)
      * @see org.apache.sis.referencing.datum.DefaultTemporalDatum
+     * @see org.apache.sis.referencing.CommonCRS.Temporal#datum()
      */
     public TemporalDatum createTemporalDatum(final String code) throws NoSuchAuthorityCodeException, FactoryException {
         return cast(TemporalDatum.class, createDatum(code), code);
@@ -463,6 +576,17 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * An engineering datum is used in a region around that origin.
      * This origin can be fixed with respect to the earth or be a defined point on a moving vehicle.
      *
+     * <div class="note"><b>Example:</b>
+     * the {@linkplain #getAuthorityCodes(java.lang.Class) set of available codes} depends on the defining
+     * {@linkplain #getAuthority() authority} and the {@code GeodeticAuthorityFactory} subclass in use.
+     * A frequently used authority is "EPSG", which includes the following codes:
+     *
+     * <table class="sis" summary="Authority codes examples">
+     *   <tr><th>Code</th>      <th>Description</th></tr>
+     *   <tr><td>EPSG:9315</td> <td>Seismic bin grid datum</td></tr>
+     *   <tr><td>EPSG:9300</td> <td>Astra Minas</td></tr>
+     * </table></div>
+     *
      * <div class="section">Default implementation</div>
      * The default implementation delegates to {@link #createDatum(String)} and casts the result.
      * If the result can not be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
@@ -472,7 +596,6 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * @throws NoSuchAuthorityCodeException if the specified {@code code} was not found.
      * @throws FactoryException if the object creation failed for some other reason.
      *
-     * @see #createEngineeringCRS(String)
      * @see org.apache.sis.referencing.datum.DefaultEngineeringDatum
      */
     public EngineeringDatum createEngineeringDatum(final String code) throws NoSuchAuthorityCodeException, FactoryException {
@@ -493,7 +616,6 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * @throws NoSuchAuthorityCodeException if the specified {@code code} was not found.
      * @throws FactoryException if the object creation failed for some other reason.
      *
-     * @see #createImageCRS(String)
      * @see org.apache.sis.referencing.datum.DefaultImageDatum
      */
     public ImageDatum createImageDatum(final String code) throws NoSuchAuthorityCodeException, FactoryException {
@@ -504,6 +626,18 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * Creates a geometric figure that can be used to describe the approximate shape of the earth.
      * In mathematical terms, it is a surface formed by the rotation of an ellipse about its minor axis.
      *
+     * <div class="note"><b>Example:</b>
+     * the {@linkplain #getAuthorityCodes(java.lang.Class) set of available codes} depends on the defining
+     * {@linkplain #getAuthority() authority} and the {@code GeodeticAuthorityFactory} subclass in use.
+     * A frequently used authority is "EPSG", which includes the following codes:
+     *
+     * <table class="sis" summary="Authority codes examples">
+     *   <tr><th>Code</th>      <th>Description</th></tr>
+     *   <tr><td>EPSG:7030</td> <td>WGS 84</td></tr>
+     *   <tr><td>EPSG:7034</td> <td>Clarke 1880</td></tr>
+     *   <tr><td>EPSG:7048</td> <td>GRS 1980 Authalic Sphere</td></tr>
+     * </table></div>
+     *
      * <div class="section">Default implementation</div>
      * The default implementation delegates to {@link #createObject(String)} and casts the result.
      * If the result can not be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
@@ -513,9 +647,8 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * @throws NoSuchAuthorityCodeException if the specified {@code code} was not found.
      * @throws FactoryException if the object creation failed for some other reason.
      *
-     * @see #createGeodeticDatum(String)
-     * @see #createEllipsoidalCS(String)
      * @see org.apache.sis.referencing.datum.DefaultEllipsoid
+     * @see org.apache.sis.referencing.CommonCRS#ellipsoid()
      */
     public Ellipsoid createEllipsoid(final String code) throws NoSuchAuthorityCodeException, FactoryException {
         return cast(Ellipsoid.class, createObject(code), code);
@@ -523,6 +656,20 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
 
     /**
      * Creates a prime meridian defining the origin from which longitude values are determined.
+     *
+     * <div class="note"><b>Example:</b>
+     * the {@linkplain #getAuthorityCodes(java.lang.Class) set of available codes} depends on the defining
+     * {@linkplain #getAuthority() authority} and the {@code GeodeticAuthorityFactory} subclass in use.
+     * A frequently used authority is "EPSG", which includes the following codes:
+     *
+     * <table class="sis" summary="Authority codes examples">
+     *   <tr><th>Code</th>      <th>Description</th></tr>
+     *   <tr><td>EPSG:8901</td> <td>Greenwich</td></tr>
+     *   <tr><td>EPSG:8903</td> <td>Paris</td></tr>
+     *   <tr><td>EPSG:8904</td> <td>Bogota</td></tr>
+     *   <tr><td>EPSG:8905</td> <td>Madrid</td></tr>
+     *   <tr><td>EPSG:8906</td> <td>Rome</td></tr>
+     * </table></div>
      *
      * <div class="section">Default implementation</div>
      * The default implementation delegates to {@link #createObject(String)} and casts the result.
@@ -533,8 +680,8 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * @throws NoSuchAuthorityCodeException if the specified {@code code} was not found.
      * @throws FactoryException if the object creation failed for some other reason.
      *
-     * @see #createGeodeticDatum(String)
      * @see org.apache.sis.referencing.datum.DefaultPrimeMeridian
+     * @see org.apache.sis.referencing.CommonCRS#primeMeridian()
      */
     public PrimeMeridian createPrimeMeridian(final String code) throws NoSuchAuthorityCodeException, FactoryException {
         return cast(PrimeMeridian.class, createObject(code), code);
@@ -552,8 +699,6 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * @throws NoSuchAuthorityCodeException if the specified {@code code} was not found.
      * @throws FactoryException if the object creation failed for some other reason.
      *
-     * @see #createCoordinateReferenceSystem(String)
-     * @see #createDatum(String)
      * @see org.apache.sis.metadata.iso.extent.DefaultExtent
      */
     public Extent createExtent(final String code) throws NoSuchAuthorityCodeException, FactoryException {
@@ -566,6 +711,20 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * If the coordinate system is known at compile time, it is recommended to invoke the most precise
      * method instead of this one.
      *
+     * <div class="note"><b>Example:</b>
+     * the {@linkplain #getAuthorityCodes(java.lang.Class) set of available codes} depends on the defining
+     * {@linkplain #getAuthority() authority} and the {@code GeodeticAuthorityFactory} subclass in use.
+     * A frequently used authority is "EPSG", which includes the following codes:
+     *
+     * <table class="sis" summary="Authority codes examples">
+     *   <tr><th>Code</th>      <th>Type</th>              <th>Axes</th>                                    <th>Orientations</th>    <th>Unit</th></tr>
+     *   <tr><td>EPSG:4496</td> <td>Cartesian 2D CS</td>   <td>easting, northing (E,N)</td>                 <td>east, north</td>     <td>metre</td></tr>
+     *   <tr><td>EPSG:6422</td> <td>Ellipsoidal 2D CS</td> <td>latitude, longitude</td>                     <td>north, east</td>     <td>degree</td></tr>
+     *   <tr><td>EPSG:6423</td> <td>Ellipsoidal 3D CS</td> <td>latitude, longitude, ellipsoidal height</td> <td>north, east, up</td> <td>degree, degree, metre</td></tr>
+     *   <tr><td>EPSG:6404</td> <td>Spherical 3D CS</td>   <td>latitude, longitude, radius</td>             <td>north, east, up</td> <td>degree, degree, metre</td></tr>
+     *   <tr><td>EPSG:6499</td> <td>Vertical CS</td>       <td>height (H)</td>                              <td>up</td>              <td>metre</td></tr>
+     * </table></div>
+     *
      * <div class="section">Default implementation</div>
      * The default implementation delegates to {@link #createObject(String)} and casts the result.
      * If the result can not be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
@@ -575,9 +734,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * @throws NoSuchAuthorityCodeException if the specified {@code code} was not found.
      * @throws FactoryException if the object creation failed for some other reason.
      *
-     * @see #createCoordinateSystemAxis(String)
-     * @see #createEllipsoidalCS(String)
-     * @see #createCartesianCS(String)
+     * @see org.apache.sis.referencing.cs.AbstractCS
      */
     public CoordinateSystem createCoordinateSystem(final String code) throws NoSuchAuthorityCodeException, FactoryException {
         return cast(CoordinateSystem.class, createObject(code), code);
@@ -587,6 +744,19 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * Creates 2- or 3-dimensional coordinate system for geodetic latitude and longitude,
      * sometime with ellipsoidal height.
      *
+     * <div class="note"><b>Example:</b>
+     * the {@linkplain #getAuthorityCodes(java.lang.Class) set of available codes} depends on the defining
+     * {@linkplain #getAuthority() authority} and the {@code GeodeticAuthorityFactory} subclass in use.
+     * A frequently used authority is "EPSG", which includes the following codes:
+     *
+     * <table class="sis" summary="Authority codes examples">
+     *   <tr><th>Code</th>      <th>Axes</th>                                    <th>Orientations</th>    <th>Unit</th></tr>
+     *   <tr><td>EPSG:6422</td> <td>latitude, longitude</td>                     <td>north, east</td>     <td>degree</td></tr>
+     *   <tr><td>EPSG:6424</td> <td>longitude, latitude</td>                     <td>east, north</td>     <td>degree</td></tr>
+     *   <tr><td>EPSG:6429</td> <td>longitude, latitude</td>                     <td>east, north</td>     <td>radian</td></tr>
+     *   <tr><td>EPSG:6423</td> <td>latitude, longitude, ellipsoidal height</td> <td>north, east, up</td> <td>degree, degree, metre</td></tr>
+     * </table></div>
+     *
      * <div class="section">Default implementation</div>
      * The default implementation delegates to {@link #createCoordinateSystem(String)} and casts the result.
      * If the result can not be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
@@ -596,9 +766,6 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * @throws NoSuchAuthorityCodeException if the specified {@code code} was not found.
      * @throws FactoryException if the object creation failed for some other reason.
      *
-     * @see #createEllipsoid(String)
-     * @see #createGeodeticDatum(String)
-     * @see #createGeographicCRS(String)
      * @see org.apache.sis.referencing.cs.DefaultEllipsoidalCS
      */
     public EllipsoidalCS createEllipsoidalCS(final String code) throws NoSuchAuthorityCodeException, FactoryException {
@@ -608,6 +775,17 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
     /**
      * Creates a 1-dimensional coordinate system for heights or depths of points.
      *
+     * <div class="note"><b>Example:</b>
+     * the {@linkplain #getAuthorityCodes(java.lang.Class) set of available codes} depends on the defining
+     * {@linkplain #getAuthority() authority} and the {@code GeodeticAuthorityFactory} subclass in use.
+     * A frequently used authority is "EPSG", which includes the following codes:
+     *
+     * <table class="sis" summary="Authority codes examples">
+     *   <tr><th>Code</th>      <th>Axes</th>       <th>Orientations</th> <th>Unit</th></tr>
+     *   <tr><td>EPSG:6498</td> <td>depth (D)</td>  <td>down</td>         <td>metre</td></tr>
+     *   <tr><td>EPSG:6499</td> <td>height (H)</td> <td>up</td>           <td>metre</td></tr>
+     * </table></div>
+     *
      * <div class="section">Default implementation</div>
      * The default implementation delegates to {@link #createCoordinateSystem(String)} and casts the result.
      * If the result can not be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
@@ -617,8 +795,6 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * @throws NoSuchAuthorityCodeException if the specified {@code code} was not found.
      * @throws FactoryException if the object creation failed for some other reason.
      *
-     * @see #createVerticalDatum(String)
-     * @see #createVerticalCRS(String)
      * @see org.apache.sis.referencing.cs.DefaultVerticalCS
      */
     public VerticalCS createVerticalCS(final String code) throws NoSuchAuthorityCodeException, FactoryException {
@@ -638,8 +814,6 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * @throws NoSuchAuthorityCodeException if the specified {@code code} was not found.
      * @throws FactoryException if the object creation failed for some other reason.
      *
-     * @see #createTemporalDatum(String)
-     * @see #createTemporalCRS(String)
      * @see org.apache.sis.referencing.cs.DefaultTimeCS
      */
     public TimeCS createTimeCS(final String code) throws NoSuchAuthorityCodeException, FactoryException {
@@ -650,6 +824,19 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * Creates a 2- or 3-dimensional Cartesian coordinate system made of straight orthogonal axes.
      * All axes shall have the same linear unit of measure.
      *
+     * <div class="note"><b>Example:</b>
+     * the {@linkplain #getAuthorityCodes(java.lang.Class) set of available codes} depends on the defining
+     * {@linkplain #getAuthority() authority} and the {@code GeodeticAuthorityFactory} subclass in use.
+     * A frequently used authority is "EPSG", which includes the following codes:
+     *
+     * <table class="sis" summary="Authority codes examples">
+     *   <tr><th>Code</th>      <th>Axes</th>                    <th>Orientations</th> <th>Unit</th></tr>
+     *   <tr><td>EPSG:4406</td> <td>easting, northing (E,N)</td> <td>east, north</td>  <td>kilometre</td></tr>
+     *   <tr><td>EPSG:4496</td> <td>easting, northing (E,N)</td> <td>east, north</td>  <td>metre</td></tr>
+     *   <tr><td>EPSG:4500</td> <td>northing, easting (N,E)</td> <td>north, east</td>  <td>metre</td></tr>
+     *   <tr><td>EPSG:4491</td> <td>westing, northing (W,N)</td> <td>west, north</td>  <td>metre</td></tr>
+     * </table></div>
+     *
      * <div class="section">Default implementation</div>
      * The default implementation delegates to {@link #createCoordinateSystem(String)} and casts the result.
      * If the result can not be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
@@ -659,8 +846,6 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * @throws NoSuchAuthorityCodeException if the specified {@code code} was not found.
      * @throws FactoryException if the object creation failed for some other reason.
      *
-     * @see #createProjectedCRS(String)
-     * @see #createGeocentricCRS(String)
      * @see org.apache.sis.referencing.cs.DefaultCartesianCS
      */
     public CartesianCS createCartesianCS(final String code) throws NoSuchAuthorityCodeException, FactoryException {
@@ -671,6 +856,16 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * Creates a 3-dimensional coordinate system with one distance measured from the origin and two angular coordinates.
      * Not to be confused with an ellipsoidal coordinate system based on an ellipsoid "degenerated" into a sphere.
      *
+     * <div class="note"><b>Example:</b>
+     * the {@linkplain #getAuthorityCodes(java.lang.Class) set of available codes} depends on the defining
+     * {@linkplain #getAuthority() authority} and the {@code GeodeticAuthorityFactory} subclass in use.
+     * A frequently used authority is "EPSG", which includes the following codes:
+     *
+     * <table class="sis" summary="Authority codes examples">
+     *   <tr><th>Code</th>      <th>Axes</th>                        <th>Orientations</th>    <th>Unit</th></tr>
+     *   <tr><td>EPSG:6404</td> <td>latitude, longitude, radius</td> <td>north, east, up</td> <td>degree, degree, metre</td></tr>
+     * </table></div>
+     *
      * <div class="section">Default implementation</div>
      * The default implementation delegates to {@link #createCoordinateSystem(String)} and casts the result.
      * If the result can not be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
@@ -680,7 +875,6 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * @throws NoSuchAuthorityCodeException if the specified {@code code} was not found.
      * @throws FactoryException if the object creation failed for some other reason.
      *
-     * @see #createGeocentricCRS(String)
      * @see org.apache.sis.referencing.cs.DefaultSphericalCS
      */
     public SphericalCS createSphericalCS(final String code) throws NoSuchAuthorityCodeException, FactoryException {
@@ -737,7 +931,6 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * @throws NoSuchAuthorityCodeException if the specified {@code code} was not found.
      * @throws FactoryException if the object creation failed for some other reason.
      *
-     * @see #createCoordinateSystem(String)
      * @see org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis
      */
     public CoordinateSystemAxis createCoordinateSystemAxis(final String code)

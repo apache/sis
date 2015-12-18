@@ -645,10 +645,6 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      *
      * @return The object for the given code.
      * @throws FactoryException if the object creation failed.
-     *
-     * @see #createCoordinateReferenceSystem(String)
-     * @see #createDatum(String)
-     * @see #createCoordinateSystem(String)
      */
     @Override
     public IdentifiedObject createObject(final String code) throws FactoryException {
@@ -666,11 +662,6 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      *
      * @return The coordinate reference system for the given code.
      * @throws FactoryException if the object creation failed.
-     *
-     * @see #createGeographicCRS(String)
-     * @see #createProjectedCRS(String)
-     * @see #createVerticalCRS(String)
-     * @see #createTemporalCRS(String)
      */
     @Override
     public CoordinateReferenceSystem createCoordinateReferenceSystem(final String code) throws FactoryException {
@@ -688,10 +679,6 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      *
      * @return The coordinate reference system for the given code.
      * @throws FactoryException if the object creation failed.
-     *
-     * @see #createGeodeticDatum(String)
-     * @see #createEllipsoidalCS(String)
-     * @see org.apache.sis.referencing.crs.DefaultGeographicCRS
      */
     @Override
     public GeographicCRS createGeographicCRS(final String code) throws FactoryException {
@@ -709,11 +696,6 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      *
      * @return The coordinate reference system for the given code.
      * @throws FactoryException if the object creation failed.
-     *
-     * @see #createGeodeticDatum(String)
-     * @see #createCartesianCS(String)
-     * @see #createSphericalCS(String)
-     * @see org.apache.sis.referencing.crs.DefaultGeocentricCRS
      */
     @Override
     public GeocentricCRS createGeocentricCRS(final String code) throws FactoryException {
@@ -731,10 +713,6 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      *
      * @return The coordinate reference system for the given code.
      * @throws FactoryException if the object creation failed.
-     *
-     * @see #createGeographicCRS(String)
-     * @see #createCartesianCS(String)
-     * @see org.apache.sis.referencing.crs.DefaultProjectedCRS
      */
     @Override
     public ProjectedCRS createProjectedCRS(final String code) throws FactoryException {
@@ -752,10 +730,6 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      *
      * @return The coordinate reference system for the given code.
      * @throws FactoryException if the object creation failed.
-     *
-     * @see #createVerticalDatum(String)
-     * @see #createVerticalCS(String)
-     * @see org.apache.sis.referencing.crs.DefaultVerticalCRS
      */
     @Override
     public VerticalCRS createVerticalCRS(final String code) throws FactoryException {
@@ -773,10 +747,6 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      *
      * @return The coordinate reference system for the given code.
      * @throws FactoryException if the object creation failed.
-     *
-     * @see #createTemporalDatum(String)
-     * @see #createTimeCS(String)
-     * @see org.apache.sis.referencing.crs.DefaultTemporalCRS
      */
     @Override
     public TemporalCRS createTemporalCRS(final String code) throws FactoryException {
@@ -794,10 +764,6 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      *
      * @return The coordinate reference system for the given code.
      * @throws FactoryException if the object creation failed.
-     *
-     * @see #createVerticalCRS(String)
-     * @see #createTemporalCRS(String)
-     * @see org.apache.sis.referencing.crs.DefaultCompoundCRS
      */
     @Override
     public CompoundCRS createCompoundCRS(final String code) throws FactoryException {
@@ -815,8 +781,6 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      *
      * @return The coordinate reference system for the given code.
      * @throws FactoryException if the object creation failed.
-     *
-     * @see org.apache.sis.referencing.crs.DefaultDerivedCRS
      */
     @Override
     public DerivedCRS createDerivedCRS(final String code) throws FactoryException {
@@ -834,9 +798,6 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      *
      * @return The coordinate reference system for the given code.
      * @throws FactoryException if the object creation failed.
-     *
-     * @see #createEngineeringDatum(String)
-     * @see org.apache.sis.referencing.crs.DefaultEngineeringCRS
      */
     @Override
     public EngineeringCRS createEngineeringCRS(final String code) throws FactoryException {
@@ -854,9 +815,6 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      *
      * @return The coordinate reference system for the given code.
      * @throws FactoryException if the object creation failed.
-     *
-     * @see #createImageDatum(String)
-     * @see org.apache.sis.referencing.crs.DefaultImageCRS
      */
     @Override
     public ImageCRS createImageCRS(final String code) throws FactoryException {
@@ -874,10 +832,6 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      *
      * @return The datum for the given code.
      * @throws FactoryException if the object creation failed.
-     *
-     * @see #createGeodeticDatum(String)
-     * @see #createVerticalDatum(String)
-     * @see #createTemporalDatum(String)
      */
     @Override
     public Datum createDatum(final String code) throws FactoryException {
@@ -895,12 +849,6 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      *
      * @return The datum for the given code.
      * @throws FactoryException if the object creation failed.
-     *
-     * @see #createEllipsoid(String)
-     * @see #createPrimeMeridian(String)
-     * @see #createGeographicCRS(String)
-     * @see #createGeocentricCRS(String)
-     * @see org.apache.sis.referencing.datum.DefaultGeodeticDatum
      */
     @Override
     public GeodeticDatum createGeodeticDatum(final String code) throws FactoryException {
@@ -918,9 +866,6 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      *
      * @return The datum for the given code.
      * @throws FactoryException if the object creation failed.
-     *
-     * @see #createVerticalCRS(String)
-     * @see org.apache.sis.referencing.datum.DefaultVerticalDatum
      */
     @Override
     public VerticalDatum createVerticalDatum(final String code) throws FactoryException {
@@ -938,9 +883,6 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      *
      * @return The datum for the given code.
      * @throws FactoryException if the object creation failed.
-     *
-     * @see #createTemporalCRS(String)
-     * @see org.apache.sis.referencing.datum.DefaultTemporalDatum
      */
     @Override
     public TemporalDatum createTemporalDatum(final String code) throws FactoryException {
@@ -958,9 +900,6 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      *
      * @return The datum for the given code.
      * @throws FactoryException if the object creation failed.
-     *
-     * @see #createEngineeringCRS(String)
-     * @see org.apache.sis.referencing.datum.DefaultEngineeringDatum
      */
     @Override
     public EngineeringDatum createEngineeringDatum(final String code) throws FactoryException {
@@ -978,9 +917,6 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      *
      * @return The datum for the given code.
      * @throws FactoryException if the object creation failed.
-     *
-     * @see #createImageCRS(String)
-     * @see org.apache.sis.referencing.datum.DefaultImageDatum
      */
     @Override
     public ImageDatum createImageDatum(final String code) throws FactoryException {
@@ -998,10 +934,6 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      *
      * @return The ellipsoid for the given code.
      * @throws FactoryException if the object creation failed.
-     *
-     * @see #createGeodeticDatum(String)
-     * @see #createEllipsoidalCS(String)
-     * @see org.apache.sis.referencing.datum.DefaultEllipsoid
      */
     @Override
     public Ellipsoid createEllipsoid(final String code) throws FactoryException {
@@ -1019,9 +951,6 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      *
      * @return The prime meridian for the given code.
      * @throws FactoryException if the object creation failed.
-     *
-     * @see #createGeodeticDatum(String)
-     * @see org.apache.sis.referencing.datum.DefaultPrimeMeridian
      */
     @Override
     public PrimeMeridian createPrimeMeridian(final String code) throws FactoryException {
@@ -1039,10 +968,6 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      *
      * @return The extent for the given code.
      * @throws FactoryException if the object creation failed.
-     *
-     * @see #createCoordinateReferenceSystem(String)
-     * @see #createDatum(String)
-     * @see org.apache.sis.metadata.iso.extent.DefaultExtent
      */
     @Override
     public Extent createExtent(final String code) throws FactoryException {
@@ -1060,10 +985,6 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      *
      * @return The coordinate system for the given code.
      * @throws FactoryException if the object creation failed.
-     *
-     * @see #createCoordinateSystemAxis(String)
-     * @see #createEllipsoidalCS(String)
-     * @see #createCartesianCS(String)
      */
     @Override
     public CoordinateSystem createCoordinateSystem(final String code) throws FactoryException {
@@ -1081,11 +1002,6 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      *
      * @return The coordinate system for the given code.
      * @throws FactoryException if the object creation failed.
-     *
-     * @see #createEllipsoid(String)
-     * @see #createGeodeticDatum(String)
-     * @see #createGeographicCRS(String)
-     * @see org.apache.sis.referencing.cs.DefaultEllipsoidalCS
      */
     @Override
     public EllipsoidalCS createEllipsoidalCS(final String code) throws FactoryException {
@@ -1103,10 +1019,6 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      *
      * @return The coordinate system for the given code.
      * @throws FactoryException if the object creation failed.
-     *
-     * @see #createVerticalDatum(String)
-     * @see #createVerticalCRS(String)
-     * @see org.apache.sis.referencing.cs.DefaultVerticalCS
      */
     @Override
     public VerticalCS createVerticalCS(final String code) throws FactoryException {
@@ -1124,10 +1036,6 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      *
      * @return The coordinate system for the given code.
      * @throws FactoryException if the object creation failed.
-     *
-     * @see #createTemporalDatum(String)
-     * @see #createTemporalCRS(String)
-     * @see org.apache.sis.referencing.cs.DefaultTimeCS
      */
     @Override
     public TimeCS createTimeCS(final String code) throws FactoryException {
@@ -1145,10 +1053,6 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      *
      * @return The coordinate system for the given code.
      * @throws FactoryException if the object creation failed.
-     *
-     * @see #createProjectedCRS(String)
-     * @see #createGeocentricCRS(String)
-     * @see org.apache.sis.referencing.cs.DefaultCartesianCS
      */
     @Override
     public CartesianCS createCartesianCS(final String code) throws FactoryException {
@@ -1166,9 +1070,6 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      *
      * @return The coordinate system for the given code.
      * @throws FactoryException if the object creation failed.
-     *
-     * @see #createGeocentricCRS(String)
-     * @see org.apache.sis.referencing.cs.DefaultSphericalCS
      */
     @Override
     public SphericalCS createSphericalCS(final String code) throws FactoryException {
@@ -1186,8 +1087,6 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      *
      * @return The coordinate system for the given code.
      * @throws FactoryException if the object creation failed.
-     *
-     * @see org.apache.sis.referencing.cs.DefaultCylindricalCS
      */
     @Override
     public CylindricalCS createCylindricalCS(final String code) throws FactoryException {
@@ -1205,8 +1104,6 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      *
      * @return The coordinate system for the given code.
      * @throws FactoryException if the object creation failed.
-     *
-     * @see org.apache.sis.referencing.cs.DefaultPolarCS
      */
     @Override
     public PolarCS createPolarCS(final String code) throws FactoryException {
@@ -1224,9 +1121,6 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      *
      * @return The axis for the given code.
      * @throws FactoryException if the object creation failed.
-     *
-     * @see #createCoordinateSystem(String)
-     * @see org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis
      */
     @Override
     public CoordinateSystemAxis createCoordinateSystemAxis(final String code) throws FactoryException {
@@ -1261,8 +1155,6 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      *
      * @return The parameter descriptor for the given code.
      * @throws FactoryException if the object creation failed.
-     *
-     * @see org.apache.sis.parameter.DefaultParameterDescriptor
      */
     @Override
     public ParameterDescriptor<?> createParameterDescriptor(final String code) throws FactoryException {
@@ -1280,8 +1172,6 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      *
      * @return The operation method for the given code.
      * @throws FactoryException if the object creation failed.
-     *
-     * @see org.apache.sis.referencing.operation.DefaultOperationMethod
      */
     @Override
     public OperationMethod createOperationMethod(final String code) throws FactoryException {
@@ -1299,8 +1189,6 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      *
      * @return The operation for the given code.
      * @throws FactoryException if the object creation failed.
-     *
-     * @see org.apache.sis.referencing.operation.AbstractCoordinateOperation
      */
     @Override
     public CoordinateOperation createCoordinateOperation(final String code) throws FactoryException {

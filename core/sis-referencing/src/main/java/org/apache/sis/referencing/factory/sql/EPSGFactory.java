@@ -1235,6 +1235,28 @@ addURIs:    for (int i=0; ; i++) {
      * The returned object will typically be an instance of {@link GeographicCRS}, {@link ProjectedCRS},
      * {@link VerticalCRS} or {@link CompoundCRS}.
      *
+     * <div class="note"><b>Example:</b>
+     * some EPSG codes for coordinate reference systems are:
+     *
+     * <table class="sis" summary="EPSG codes examples">
+     *   <tr><th>Code</th> <th>Type</th>          <th>Description</th></tr>
+     *   <tr><td>4326</td> <td>Geographic</td>    <td>World Geodetic System 1984</td></tr>
+     *   <tr><td>4979</td> <td>Geographic 3D</td> <td>World Geodetic System 1984</td></tr>
+     *   <tr><td>4978</td> <td>Geocentric</td>    <td>World Geodetic System 1984</td></tr>
+     *   <tr><td>4322</td> <td>Geographic</td>    <td>World Geodetic System 1972</td></tr>
+     *   <tr><td>4985</td> <td>Geographic 3D</td> <td>World Geodetic System 1972</td></tr>
+     *   <tr><td>4984</td> <td>Geocentric</td>    <td>World Geodetic System 1972</td></tr>
+     *   <tr><td>4269</td> <td>Geographic</td>    <td>North American Datum 1983</td></tr>
+     *   <tr><td>4267</td> <td>Geographic</td>    <td>North American Datum 1927</td></tr>
+     *   <tr><td>4258</td> <td>Geographic</td>    <td>European Terrestrial Reference Frame 1989</td></tr>
+     *   <tr><td>4937</td> <td>Geographic 3D</td> <td>European Terrestrial Reference Frame 1989</td></tr>
+     *   <tr><td>4936</td> <td>Geocentric</td>    <td>European Terrestrial Reference Frame 1989</td></tr>
+     *   <tr><td>4230</td> <td>Geographic</td>    <td>European Datum 1950</td></tr>
+     *   <tr><td>4047</td> <td>Geographic</td>    <td>GRS 1980 Authalic Sphere</td></tr>
+     *   <tr><td>5714</td> <td>Vertical</td>      <td>Mean Sea Level height</td></tr>
+     *   <tr><td>5715</td> <td>Vertical</td>      <td>Mean Sea Level depth</td></tr>
+     * </table></div>
+     *
      * @param  code Value allocated by EPSG.
      * @return The coordinate reference system for the given code.
      * @throws NoSuchAuthorityCodeException if the specified {@code code} was not found.
@@ -1438,6 +1460,23 @@ addURIs:    for (int i=0; ; i++) {
     /**
      * Creates an arbitrary datum from a code. The returned object will typically be an
      * instance of {@link GeodeticDatum}, {@link VerticalDatum} or {@link TemporalDatum}.
+     *
+     * <div class="note"><b>Example:</b>
+     * some EPSG codes for datums are:
+     *
+     * <table class="sis" summary="EPSG codes examples">
+     *   <tr><th>Code</th> <th>Type</th>        <th>Description</th></tr>
+     *   <tr><td>6326</td> <td>Geodetic</td>    <td>World Geodetic System 1984</td></tr>
+     *   <tr><td>6322</td> <td>Geodetic</td>    <td>World Geodetic System 1972</td></tr>
+     *   <tr><td>6269</td> <td>Geodetic</td>    <td>North American Datum 1983</td></tr>
+     *   <tr><td>6258</td> <td>Geodetic</td>    <td>European Terrestrial Reference System 1989</td></tr>
+     *   <tr><td>5215</td> <td>Vertical</td>    <td>European Vertical Reference Frame 2007</td></tr>
+     *   <tr><td>1131</td> <td>Vertical</td>    <td>Japanese Geodetic Datum 2011 (vertical)</td></tr>
+     *   <tr><td>1027</td> <td>Vertical</td>    <td>EGM2008 geoid</td></tr>
+     *   <tr><td>5100</td> <td>Vertical</td>    <td>Mean Sea Level</td></tr>
+     *   <tr><td>9315</td> <td>Engineering</td> <td>Seismic bin grid datum</td></tr>
+     *   <tr><td>9300</td> <td>Engineering</td> <td>Astra Minas</td></tr>
+     * </table></div>
      *
      * @param  code Value allocated by EPSG.
      * @return The datum for the given code.
@@ -1677,6 +1716,16 @@ addURIs:    for (int i=0; ; i++) {
      * Creates a geometric figure that can be used to describe the approximate shape of the earth.
      * In mathematical terms, it is a surface formed by the rotation of an ellipse about its minor axis.
      *
+     * <div class="note"><b>Example:</b>
+     * some EPSG codes for ellipsoids are:
+     *
+     * <table class="sis" summary="EPSG codes examples">
+     *   <tr><th>Code</th> <th>Description</th></tr>
+     *   <tr><td>7030</td> <td>WGS 84</td></tr>
+     *   <tr><td>7034</td> <td>Clarke 1880</td></tr>
+     *   <tr><td>7048</td> <td>GRS 1980 Authalic Sphere</td></tr>
+     * </table></div>
+     *
      * @param  code Value allocated by EPSG.
      * @return The ellipsoid for the given code.
      * @throws NoSuchAuthorityCodeException if the specified {@code code} was not found.
@@ -1760,6 +1809,17 @@ addURIs:    for (int i=0; ; i++) {
 
     /**
      * Creates a prime meridian defining the origin from which longitude values are determined.
+     *
+     * <div class="note"><b>Example:</b>
+     * some EPSG codes for prime meridians are:
+     *
+     * <table class="sis" summary="EPSG codes examples">
+     *   <tr><td>8901</td> <td>Greenwich</td></tr>
+     *   <tr><td>8903</td> <td>Paris</td></tr>
+     *   <tr><td>8904</td> <td>Bogota</td></tr>
+     *   <tr><td>8905</td> <td>Madrid</td></tr>
+     *   <tr><td>8906</td> <td>Rome</td></tr>
+     * </table></div>
      *
      * @param  code Value allocated by EPSG.
      * @return The prime meridian for the given code.
@@ -1888,6 +1948,24 @@ addURIs:    for (int i=0; ; i++) {
     /**
      * Creates an arbitrary coordinate system from a code. The returned object will typically be an
      * instance of {@link EllipsoidalCS}, {@link CartesianCS} or {@link VerticalCS}.
+     *
+     * <div class="note"><b>Example:</b>
+     * some EPSG codes for coordinate systems are:
+     *
+     * <table class="sis" summary="EPSG codes examples">
+     *   <tr><th>Code</th> <th>Type</th>              <th>Axes</th>                                    <th>Orientations</th> <th>Unit</th></tr>
+     *   <tr><td>4406</td> <td>Cartesian 2D CS</td>   <td>easting, northing (E,N)</td>                 <td>east, north</td>     <td>kilometre</td></tr>
+     *   <tr><td>4496</td> <td>Cartesian 2D CS</td>   <td>easting, northing (E,N)</td>                 <td>east, north</td>     <td>metre</td></tr>
+     *   <tr><td>4500</td> <td>Cartesian 2D CS</td>   <td>northing, easting (N,E)</td>                 <td>north, east</td>     <td>metre</td></tr>
+     *   <tr><td>4491</td> <td>Cartesian 2D CS</td>   <td>westing, northing (W,N)</td>                 <td>west, north</td>     <td>metre</td></tr>
+     *   <tr><td>6422</td> <td>Ellipsoidal 2D CS</td> <td>latitude, longitude</td>                     <td>north, east</td>     <td>degree</td></tr>
+     *   <tr><td>6424</td> <td>Ellipsoidal 2D CS</td> <td>longitude, latitude</td>                     <td>east, north</td>     <td>degree</td></tr>
+     *   <tr><td>6429</td> <td>Ellipsoidal 2D CS</td> <td>longitude, latitude</td>                     <td>east, north</td>     <td>radian</td></tr>
+     *   <tr><td>6423</td> <td>Ellipsoidal 3D CS</td> <td>latitude, longitude, ellipsoidal height</td> <td>north, east, up</td> <td>degree, degree, metre</td></tr>
+     *   <tr><td>6404</td> <td>Spherical 3D CS</td>   <td>latitude, longitude, radius</td>             <td>north, east, up</td> <td>degree, degree, metre</td></tr>
+     *   <tr><td>6498</td> <td>Vertical CS</td>       <td>depth (D)</td>                               <td>down</td>            <td>metre</td></tr>
+     *   <tr><td>6499</td> <td>Vertical CS</td>       <td>height (H)</td>                              <td>up</td>              <td>metre</td></tr>
+     * </table></div>
      *
      * @param  code Value allocated by EPSG.
      * @return The coordinate system for the given code.
