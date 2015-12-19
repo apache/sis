@@ -57,27 +57,38 @@ import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.OnLineFunction;
 import org.opengis.metadata.quality.PositionalAccuracy;
+import org.opengis.parameter.ParameterValue;
+import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptor;
+import org.opengis.parameter.ParameterNotFoundException;
 import org.opengis.referencing.cs.*;
 import org.opengis.referencing.crs.*;
 import org.opengis.referencing.datum.*;
 import org.opengis.referencing.operation.*;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
+import org.apache.sis.internal.metadata.ReferencingServices;
+import org.apache.sis.internal.metadata.TransformationAccuracy;
 import org.apache.sis.internal.referencing.DeprecatedCode;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.metadata.iso.ImmutableIdentifier;
+import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.citation.DefaultOnlineResource;
 import org.apache.sis.metadata.iso.extent.DefaultExtent;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.parameter.DefaultParameterDescriptor;
+import org.apache.sis.parameter.DefaultParameterDescriptorGroup;
 import org.apache.sis.referencing.NamedIdentifier;
+import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.referencing.datum.BursaWolfParameters;
 import org.apache.sis.referencing.datum.DefaultGeodeticDatum;
+import org.apache.sis.referencing.operation.DefaultOperationMethod;
+import org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory;
+import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
 import org.apache.sis.referencing.factory.FactoryDataException;
 import org.apache.sis.referencing.factory.GeodeticAuthorityFactory;
 import org.apache.sis.referencing.factory.ConcurrentAuthorityFactory;
@@ -145,12 +156,6 @@ public abstract class EPSGFactory extends GeodeticAuthorityFactory implements CR
     private static final String TABLE_PREFIX = "epsg_";
 
     /**
-     * The name for the transformation accuracy metadata.
-     */
-    private static final InternationalString TRANSFORMATION_ACCURACY =
-            Vocabulary.formatInternational(Vocabulary.Keys.TransformationAccuracy);
-
-    /**
      * The namespace of EPSG names and codes. This namespace is needed by all {@code createFoo(String)} methods.
      * The {@code EPSGFactory} constructor relies on the {@link #nameFactory} caching mechanism for giving us
      * the same {@code NameSpace} instance than the one used by previous {@code EPSGFactory} instances, if any.
@@ -209,7 +214,7 @@ public abstract class EPSGFactory extends GeodeticAuthorityFactory implements CR
     private final Map<Class<?>, CloseableReference<AuthorityCodes>> authorityCodes = new HashMap<>();
 
     /**
-     * Cache for axis names. This service is not provided by {@link CachingAuthorityFactory}
+     * Cache for axis names. This service is not provided by {@link ConcurrentAuthorityFactory}
      * since {@link AxisName} objects are particular to the EPSG database.
      *
      * @see #getAxisName(int)
@@ -218,14 +223,14 @@ public abstract class EPSGFactory extends GeodeticAuthorityFactory implements CR
 
     /**
      * Cache for the number of dimensions of coordinate systems. This service is not provided by
-     * {@link CachingAuthorityFactory} since the number of dimension is used internally in this class.
+     * {@link ConcurrentAuthorityFactory} since the number of dimension is used internally in this class.
      *
      * @see #getDimensionForCS(int)
      */
     private final Map<Integer,Integer> csDimensions = new HashMap<>();
 
     /**
-     * Cache for whether conversions are projections. This service is not provided by {@link CachingAuthorityFactory}
+     * Cache for whether conversions are projections. This service is not provided by {@link ConcurrentAuthorityFactory}
      * since the check for conversion type is used internally in this class.
      *
      * @see #isProjection(int)
@@ -300,6 +305,12 @@ public abstract class EPSGFactory extends GeodeticAuthorityFactory implements CR
     protected final CoordinateOperationFactory copFactory;
 
     /**
+     * The factory to use for creating {@link MathTransform} instances.
+     * The math transform as created as part of {@link CoordinateOperation} creation process.
+     */
+    protected final MathTransformFactory mtFactory;
+
+    /**
      * The locale for producing error messages. This is usually the default locale.
      *
      * @see #getLocale()
@@ -316,13 +327,15 @@ public abstract class EPSGFactory extends GeodeticAuthorityFactory implements CR
      * @param csFactory     The factory to use for creating {@link CoordinateSystem} instances.
      * @param crsFactory    The factory to use for creating {@link CoordinateReferenceSystem} instances.
      * @param copFactory    The factory to use for creating {@link CoordinateOperation} instances.
+     * @param mtFactory     The factory to use for creating {@link MathTransform} instances.
      */
     protected EPSGFactory(final Connection                 connection,
                           final NameFactory                nameFactory,
                           final DatumFactory               datumFactory,
                           final CSFactory                  csFactory,
                           final CRSFactory                 crsFactory,
-                          final CoordinateOperationFactory copFactory)
+                          final CoordinateOperationFactory copFactory,
+                          final MathTransformFactory       mtFactory)
     {
         super(nameFactory);
         ArgumentChecks.ensureNonNull("connection",   connection);
@@ -330,11 +343,13 @@ public abstract class EPSGFactory extends GeodeticAuthorityFactory implements CR
         ArgumentChecks.ensureNonNull("csFactory",    csFactory);
         ArgumentChecks.ensureNonNull("crsFactory",   crsFactory);
         ArgumentChecks.ensureNonNull("copFactory",   copFactory);
+        ArgumentChecks.ensureNonNull("mtFactory",    mtFactory);
         this.connection   = connection;
         this.datumFactory = datumFactory;
         this.csFactory    = csFactory;
         this.crsFactory   = crsFactory;
         this.copFactory   = copFactory;
+        this.mtFactory    = mtFactory;
         this.namespace    = nameFactory.createNameSpace(nameFactory.createLocalName(null, Constants.EPSG), null);
         this.locale       = Locale.getDefault(Locale.Category.DISPLAY);
     }
@@ -422,7 +437,7 @@ public abstract class EPSGFactory extends GeodeticAuthorityFactory implements CR
                  ResultSet result = statement.executeQuery(query))
             {
                 while (result.next()) {
-                    version = result.getString(1);
+                    version = getOptionalString(result, 1);
                     final Date date = result.getDate(2);                            // Local timezone.
                     if (version != null && date != null) {                          // Paranoiac check.
                         c.setEdition(new SimpleInternationalString(version));
@@ -812,59 +827,121 @@ addURIs:    for (int i=0; ; i++) {
     }
 
     /**
-     * Same as {@link #getString(ResultSet, int, Object)},
+     * Gets the value from the specified {@link ResultSet}, or {@code null} if none.
+     *
+     * @param  result       The result set to fetch value from.
+     * @param  columnIndex  The column index (1-based).
+     * @return The string at the specified column, or {@code null}.
+     * @throws SQLException if an error occurred while querying the database.
+     */
+    private static String getOptionalString(final ResultSet result, final int columnIndex) throws SQLException {
+        String value = result.getString(columnIndex);
+        return (value != null) && !(value = value.trim()).isEmpty() && !result.wasNull() ? value : null;
+    }
+
+    /**
+     * Gets the value from the specified {@link ResultSet}, or {@code NaN} if none.
+     *
+     * @param  result       The result set to fetch value from.
+     * @param  columnIndex  The column index (1-based).
+     * @return The number at the specified column, or {@code NaN}.
+     * @throws SQLException if an error occurred while querying the database.
+     */
+    private static double getOptionalDouble(final ResultSet result, final int columnIndex) throws SQLException {
+        final double value = result.getDouble(columnIndex);
+        return result.wasNull() ? Double.NaN : value;
+    }
+
+    /**
+     * Gets the value from the specified {@link ResultSet}, or {@code null} if none.
+     *
+     * @param  result       The result set to fetch value from.
+     * @param  columnIndex  The column index (1-based).
+     * @return The integer at the specified column, or {@code null}.
+     * @throws SQLException if an error occurred while querying the database.
+     */
+    private static Integer getOptionalInteger(final ResultSet result, final int columnIndex) throws SQLException {
+        final int value = result.getInt(columnIndex);
+        return result.wasNull() ? null : value;
+    }
+
+    /**
+     * Gets the value from the specified {@link ResultSet}, or {@code false} if none.
+     * The EPSG database stores boolean values as integers instead than using the SQL type.
+     *
+     * @param  result       The result set to fetch value from.
+     * @param  columnIndex  The column index (1-based).
+     * @return The boolean at the specified column, or {@code null}.
+     * @throws SQLException if an error occurred while querying the database.
+     */
+    private static boolean getOptionalBoolean(final ResultSet result, final int columnIndex) throws SQLException {
+        return result.getInt(columnIndex) != 0;
+    }
+
+    /**
+     * Formats an error message for an unexpected null value.
+     */
+    private String nullValue(final ResultSet result, final int columnIndex, final Comparable<?> code) throws SQLException {
+        final ResultSetMetaData metadata = result.getMetaData();
+        final String column = metadata.getColumnName(columnIndex);
+        final String table  = metadata.getTableName (columnIndex);
+        result.close();
+        return error().getString(Errors.Keys.NullValueInTable_3, table, column, code);
+    }
+
+    /**
+     * Same as {@link #getString(Comparable, ResultSet, int)},
      * but reports the fault on an alternative column if the value is null.
      */
-    private String getString(final ResultSet result, final int columnIndex,
-                             final String    code,   final int columnFault)
+    private String getString(final String code, final ResultSet result, final int columnIndex, final int columnFault)
             throws SQLException, FactoryDataException
     {
-        final String str = result.getString(columnIndex);
-        if (result.wasNull()) {
-            final ResultSetMetaData metadata = result.getMetaData();
-            final String column = metadata.getColumnName(columnFault);
-            final String table  = metadata.getTableName (columnFault);
-            result.close();
-            throw new FactoryDataException(error().getString(Errors.Keys.NullValueInTable_3, table, column, code));
+        String value = result.getString(columnIndex);
+        if (value == null || (value = value.trim()).isEmpty() || result.wasNull()) {
+            throw new FactoryDataException(nullValue(result, columnFault, code));
         }
-        return str.trim();
+        return value;
     }
 
     /**
      * Gets the string from the specified {@link ResultSet}.
      * The string is required to be non-null. A null string will throw an exception.
      *
+     * @param  code         The identifier of the record where the string was found.
      * @param  result       The result set to fetch value from.
      * @param  columnIndex  The column index (1-based).
-     * @param  code         The identifier of the record where the string was found.
      * @return The string at the specified column.
      * @throws SQLException if an error occurred while querying the database.
      * @throws FactoryDataException if a null value was found.
      */
-    private String getString(final ResultSet result, final int columnIndex, final Comparable<?> code)
+    private String getString(final Comparable<?> code, final ResultSet result, final int columnIndex)
             throws SQLException, FactoryDataException
     {
-        final String value = result.getString(columnIndex);
-        ensureNonNull(result, columnIndex, code);
-        return value.trim();
+        String value = result.getString(columnIndex);
+        if (value == null || (value = value.trim()).isEmpty() || result.wasNull()) {
+            throw new FactoryDataException(nullValue(result, columnIndex, code));
+        }
+        return value;
     }
 
     /**
      * Gets the value from the specified {@link ResultSet}.
      * The value is required to be non-null. A null value (i.e. blank) will throw an exception.
      *
+     * @param  code         The identifier of the record where the double was found.
      * @param  result       The result set to fetch value from.
      * @param  columnIndex  The column index (1-based).
-     * @param  code         The identifier of the record where the double was found.
      * @return The double at the specified column.
      * @throws SQLException if an error occurred while querying the database.
      * @throws FactoryDataException if a null value was found.
      */
-    private double getDouble(final ResultSet result, final int columnIndex, final Comparable<?> code)
+    private double getDouble(final Comparable<?> code, final ResultSet result, final int columnIndex)
             throws SQLException, FactoryDataException
     {
         final double value = result.getDouble(columnIndex);
-        ensureNonNull(result, columnIndex, code);
+        if (Double.isNaN(value) || result.wasNull()) {
+            throw new FactoryDataException(nullValue(result, columnIndex, code));
+        }
         return value;
     }
 
@@ -872,35 +949,24 @@ addURIs:    for (int i=0; ; i++) {
      * Gets the value from the specified {@link ResultSet}.
      * The value is required to be non-null. A null value (i.e. blank) will throw an exception.
      *
+     * <p>We return the value as the {@code Integer} wrapper instead than the {@code int} primitive type
+     * because the caller will often need that value as an object (for use as key in {@link HashMap}, etc.).</p>
+     *
+     * @param  code         The identifier of the record where the integer was found.
      * @param  result       The result set to fetch value from.
      * @param  columnIndex  The column index (1-based).
-     * @param  code         The identifier of the record where the integer was found.
      * @return The integer at the specified column.
      * @throws SQLException if an error occurred while querying the database.
      * @throws FactoryDataException if a null value was found.
      */
-    private int getInt(final ResultSet result, final int columnIndex, final Comparable<?> code)
+    private Integer getInteger(final Comparable<?> code, final ResultSet result, final int columnIndex)
             throws SQLException, FactoryDataException
     {
         final int value = result.getInt(columnIndex);
-        ensureNonNull(result, columnIndex, code);
-        return value;
-    }
-
-    /**
-     * Makes sure that the last result was non-null.
-     * Used for {@code getString(…)}, {@code getDouble(…)} and {@code getInt(…)} methods only.
-     */
-    private void ensureNonNull(final ResultSet result, final int columnIndex, final Comparable<?> code)
-            throws SQLException, FactoryDataException
-    {
         if (result.wasNull()) {
-            final ResultSetMetaData metadata = result.getMetaData();
-            final String column = metadata.getColumnName(columnIndex);
-            final String table  = metadata.getTableName (columnIndex);
-            result.close();
-            throw new FactoryDataException(error().getString(Errors.Keys.NullValueInTable_3, table, column, code));
+            throw new FactoryDataException(nullValue(result, columnIndex, code));
         }
+        return value;
     }
 
     /**
@@ -962,11 +1028,8 @@ addURIs:    for (int i=0; ; i++) {
         try (ResultSet result = executeQuery(stmt, code)) {
             while (result.next()) {
                 if (tableMatches(table, result.getString(1))) {
-                    reason = result.getString(2);
-                    replacedBy = result.getInt(3);
-                    if (result.wasNull()) {
-                        replacedBy = null;
-                    }
+                    reason     = getOptionalString (result, 2);
+                    replacedBy = getOptionalInteger(result, 3);
                     break;
                 }
             }
@@ -1004,7 +1067,7 @@ addURIs:    for (int i=0; ; i++) {
      * @return The name together with a set of properties.
      */
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
-    private Map<String,Object> createProperties(final String table, String name, final Integer code,
+    private Map<String,Object> createProperties(final String table, final String name, final Integer code,
             String remarks, final boolean deprecated) throws SQLException, FactoryDataException
     {
         properties.clear();
@@ -1013,7 +1076,6 @@ addURIs:    for (int i=0; ; i++) {
         final InternationalString edition = authority.getEdition();
         final String version = (edition != null) ? edition.toString() : null;
         if (name != null) {
-            name = name.trim();
             gn = nameFactory.createLocalName(namespace, name);
             properties.put("name", gn);
             properties.put(NamedIdentifier.CODE_KEY,      name);
@@ -1035,9 +1097,7 @@ addURIs:    for (int i=0; ; i++) {
             }
             properties.put(IdentifiedObject.IDENTIFIERS_KEY, identifier);
         }
-        if (remarks != null && !(remarks = remarks.trim()).isEmpty()) {
-            properties.put(IdentifiedObject.REMARKS_KEY, remarks);
-        }
+        properties.put(IdentifiedObject.REMARKS_KEY, remarks);
         /*
          * Search for aliases. Note that searching for the object code is not sufficient. We also need to check if the
          * record is really from the table we are looking for since different tables may have objects with the same ID.
@@ -1053,11 +1113,10 @@ addURIs:    for (int i=0; ; i++) {
         try (ResultSet result = executeQuery(stmt, code)) {
             while (result.next()) {
                 if (tableMatches(table, result.getString(1))) {
-                    String naming = result.getString(2);
-                    String alias = getString(result, 3, code);
+                    final String naming = getOptionalString(result, 2);
+                    final String alias  = getString(code,   result, 3);
                     NameSpace ns = null;
                     if (naming != null) {
-                        naming = naming.trim();
                         ns = namingSystems.get(naming);
                         if (ns == null) {
                             ns = nameFactory.createNameSpace(nameFactory.createLocalName(null, naming), null);
@@ -1087,17 +1146,14 @@ addURIs:    for (int i=0; ; i++) {
      * @param  deprecated {@code true} if the object to create is deprecated.
      * @return The name together with a set of properties.
      */
-    private Map<String,Object> createProperties(final String table, final String name, final int code,
-            String domainCode, String scope, String remarks, final boolean deprecated) throws SQLException, FactoryException
+    private Map<String,Object> createProperties(final String table, final String name, final Integer code,
+            final String domainCode, String scope, String remarks, final boolean deprecated) throws SQLException, FactoryException
     {
         final Map<String,Object> properties = createProperties(table, name, code, remarks, deprecated);
-        if (domainCode != null  &&  !(domainCode = domainCode.trim()).isEmpty()) {
-            final Extent extent = buffered.createExtent(domainCode);
-            properties.put(Datum.DOMAIN_OF_VALIDITY_KEY, extent);
+        if (domainCode != null) {
+            properties.put(Datum.DOMAIN_OF_VALIDITY_KEY, buffered.createExtent(domainCode));
         }
-        if (scope != null &&  !(scope = scope.trim()).isEmpty()) {
-            properties.put(Datum.SCOPE_KEY, scope);
-        }
+        properties.put(Datum.SCOPE_KEY, scope);
         return properties;
     }
 
@@ -1280,13 +1336,13 @@ addURIs:    for (int i=0; ; i++) {
                     " WHERE COORD_REF_SYS_CODE = ?");
             try (ResultSet result = executeQuery(stmt, primaryKey)) {
                 while (result.next()) {
-                    final int     epsg       = getInt   (result, 1, code);
-                    final String  name       = getString(result, 2, code);
-                    final String  area       = result.getString( 3);
-                    final String  scope      = result.getString( 4);
-                    final String  remarks    = result.getString( 5);
-                    final boolean deprecated = result.getInt   ( 6) != 0;
-                    final String  type       = getString(result, 7, code);
+                    final Integer epsg       = getInteger  (code, result, 1);
+                    final String  name       = getString   (code, result, 2);
+                    final String  area       = getOptionalString (result, 3);
+                    final String  scope      = getOptionalString (result, 4);
+                    final String  remarks    = getOptionalString (result, 5);
+                    final boolean deprecated = getOptionalBoolean(result, 6);
+                    final String  type       = getString   (code, result, 7);
                     /*
                      * Note: Do not invoke 'createProperties' now, even if we have all required informations,
                      *       because the 'properties' map is going to overwritten by calls to 'createDatum', etc.
@@ -1301,8 +1357,8 @@ addURIs:    for (int i=0; ; i++) {
                          * ---------------------------------------------------------------------- */
                         case "geographic 2d":
                         case "geographic 3d": {
-                            final EllipsoidalCS cs = buffered.createEllipsoidalCS(getString(result, 8, code));
-                            final String datumCode = result.getString(9);
+                            final EllipsoidalCS cs = buffered.createEllipsoidalCS(getString(code, result, 8));
+                            final String datumCode = getOptionalString(result, 9);
                             final GeodeticDatum datum;
                             if (datumCode != null) {
                                 datum = buffered.createGeodeticDatum(datumCode);
@@ -1310,7 +1366,7 @@ addURIs:    for (int i=0; ; i++) {
                                 throw recursiveCall(GeographicCRS.class, code);
                             } else try {
                                 isCreatingGeographicCRS = true;
-                                final String geoCode = getString(result, 10, code, 9);
+                                final String geoCode = getString(code, result, 10, 9);
                                 result.close();     // Must be close before call to createGeographicCRS(String)
                                 final GeographicCRS baseCRS = buffered.createGeographicCRS(geoCode);
                                 datum = baseCRS.getDatum();
@@ -1328,9 +1384,9 @@ addURIs:    for (int i=0; ; i++) {
                          *         Consequently we can not use 'result' anymore after this block.
                          * ---------------------------------------------------------------------- */
                         case "projected": {
-                            final String csCode  = getString(result,  8, code);
-                            final String geoCode = getString(result, 10, code);
-                            final String opCode  = getString(result, 11, code);
+                            final String csCode  = getString(code, result,  8);
+                            final String geoCode = getString(code, result, 10);
+                            final String opCode  = getString(code, result, 11);
                             result.close();      // Must be close before call to createFoo(String)
                             if (isCreatingProjectedCRS) {
                                 throw recursiveCall(ProjectedCRS.class, code);
@@ -1354,8 +1410,8 @@ addURIs:    for (int i=0; ; i++) {
                          *   VERTICAL CRS
                          * ---------------------------------------------------------------------- */
                         case "vertical": {
-                            final VerticalCS    cs    = buffered.createVerticalCS   (getString(result, 8, code));
-                            final VerticalDatum datum = buffered.createVerticalDatum(getString(result, 9, code));
+                            final VerticalCS    cs    = buffered.createVerticalCS   (getString(code, result, 8));
+                            final VerticalDatum datum = buffered.createVerticalDatum(getString(code, result, 9));
                             crs = crsFactory.createVerticalCRS(createProperties("[Coordinate Reference System]",
                                     name, epsg, area, scope, remarks, deprecated), datum, cs);
                             break;
@@ -1368,8 +1424,8 @@ addURIs:    for (int i=0; ; i++) {
                          * ---------------------------------------------------------------------- */
                         case "time":
                         case "temporal": {
-                            final TimeCS        cs    = buffered.createTimeCS       (getString(result, 8, code));
-                            final TemporalDatum datum = buffered.createTemporalDatum(getString(result, 9, code));
+                            final TimeCS        cs    = buffered.createTimeCS       (getString(code, result, 8));
+                            final TemporalDatum datum = buffered.createTemporalDatum(getString(code, result, 9));
                             crs = crsFactory.createTemporalCRS(createProperties("[Coordinate Reference System]",
                                     name, epsg, area, scope, remarks, deprecated), datum, cs);
                             break;
@@ -1381,8 +1437,8 @@ addURIs:    for (int i=0; ; i++) {
                          *         Consequently, we can not use 'result' anymore.
                          * ---------------------------------------------------------------------- */
                         case "compound": {
-                            final String code1 = getString(result, 12, code);
-                            final String code2 = getString(result, 13, code);
+                            final String code1 = getString(code, result, 12);
+                            final String code2 = getString(code, result, 13);
                             result.close();
                             final CoordinateReferenceSystem crs1, crs2;
                             if (isCreatingCompoundCRS) {
@@ -1403,8 +1459,8 @@ addURIs:    for (int i=0; ; i++) {
                          *   GEOCENTRIC CRS
                          * ---------------------------------------------------------------------- */
                         case "geocentric": {
-                            final CoordinateSystem cs = buffered.createCoordinateSystem(getString(result, 8, code));
-                            final GeodeticDatum datum = buffered.createGeodeticDatum   (getString(result, 9, code));
+                            final CoordinateSystem cs = buffered.createCoordinateSystem(getString(code, result, 8));
+                            final GeodeticDatum datum = buffered.createGeodeticDatum   (getString(code, result, 9));
                             final Map<String,Object> properties = createProperties("[Coordinate Reference System]",
                                     name, epsg, area, scope, remarks, deprecated);
                             if (cs instanceof CartesianCS) {
@@ -1421,8 +1477,8 @@ addURIs:    for (int i=0; ; i++) {
                          *   ENGINEERING CRS
                          * ---------------------------------------------------------------------- */
                         case "engineering": {
-                            final CoordinateSystem cs    = buffered.createCoordinateSystem(getString(result, 8, code));
-                            final EngineeringDatum datum = buffered.createEngineeringDatum(getString(result, 9, code));
+                            final CoordinateSystem cs    = buffered.createCoordinateSystem(getString(code, result, 8));
+                            final EngineeringDatum datum = buffered.createEngineeringDatum(getString(code, result, 9));
                             crs = crsFactory.createEngineeringCRS(createProperties("[Coordinate Reference System]",
                                     name, epsg, area, scope, remarks, deprecated), datum, cs);
                             break;
@@ -1497,15 +1553,15 @@ addURIs:    for (int i=0; ; i++) {
                     " WHERE DATUM_CODE = ?");
             try (ResultSet result = executeQuery(stmt, primaryKey)) {
                 while (result.next()) {
-                    final int     epsg       = getInt   (result, 1, code);
-                    final String  name       = getString(result, 2, code);
-                    final String  type       = getString(result, 3, code).trim();
-                    final String  anchor     = result.getString( 4);
-                    final String  epoch      = result.getString( 5);
-                    final String  area       = result.getString( 6);
-                    final String  scope      = result.getString( 7);
-                    final String  remarks    = result.getString( 8);
-                    final boolean deprecated = result.getInt   ( 9) != 0;
+                    final Integer epsg       = getInteger  (code, result, 1);
+                    final String  name       = getString   (code, result, 2);
+                    final String  type       = getString   (code, result, 3);
+                    final String  anchor     = getOptionalString (result, 4);
+                    final String  epoch      = getOptionalString (result, 5);
+                    final String  area       = getOptionalString (result, 6);
+                    final String  scope      = getOptionalString (result, 7);
+                    final String  remarks    = getOptionalString (result, 8);
+                    final boolean deprecated = getOptionalBoolean(result, 9);
                     Map<String,Object> properties = createProperties("[Datum]",
                             name, epsg, area, scope, remarks, deprecated);
                     if (anchor != null) {
@@ -1528,8 +1584,8 @@ addURIs:    for (int i=0; ; i++) {
                          */
                         case "geodetic": {
                             properties = new HashMap<>(properties);         // Protect from changes
-                            final Ellipsoid ellipsoid    = buffered.createEllipsoid    (getString(result, 10, code));
-                            final PrimeMeridian meridian = buffered.createPrimeMeridian(getString(result, 11, code));
+                            final Ellipsoid ellipsoid    = buffered.createEllipsoid    (getString(code, result, 10));
+                            final PrimeMeridian meridian = buffered.createPrimeMeridian(getString(code, result, 11));
                             final BursaWolfParameters[] param = createBursaWolfParameters(epsg);
                             if (param != null) {
                                 properties.put(DefaultGeodeticDatum.BURSA_WOLF_KEY, param);
@@ -1628,10 +1684,10 @@ addURIs:    for (int i=0; ; i++) {
         try (ResultSet result = executeQuery(stmt, code)) {
             while (result.next()) {
                 final BursaWolfInfo info = new BursaWolfInfo(
-                        getInt(result, 1, code),                // Operation
-                        getInt(result, 2, code),                // Method
-                        getInt(result, 3, code));               // Target datum
-                if (info.target != code) {                      // Paranoiac check.
+                        getInteger(code, result, 1),                // Operation
+                        getInteger(code, result, 2),                // Method
+                        getInteger(code, result, 3));               // Target datum
+                if (info.target != code) {                          // Paranoiac check.
                     bwInfos.add(info);
                 }
             }
@@ -1684,9 +1740,9 @@ addURIs:    for (int i=0; ; i++) {
             try (ResultSet result = stmt.executeQuery()) {
                 while (result.next()) {
                     BursaWolfInfo.setBursaWolfParameter(bwp,
-                            getInt   (result, 1, info.operation),
-                            getDouble(result, 2, info.operation),
-                            buffered.createUnit(getString(result, 3, info.operation)), locale);
+                            getInteger(info.operation, result, 1),
+                            getDouble (info.operation, result, 2),
+                            buffered.createUnit(getString(info.operation, result, 3)), locale);
                 }
             }
             if (info.isFrameRotation()) {
@@ -1751,19 +1807,19 @@ addURIs:    for (int i=0; ; i++) {
                      * Consequently, we don't use 'getString(ResultSet, int)' for those parameters because
                      * we do not want to thrown an exception if a NULL value is found.
                      */
-                    final int     epsg              = getInt   (result, 1, code);
-                    final String  name              = getString(result, 2, code);
-                    final double  semiMajorAxis     = getDouble(result, 3, code);
-                    final double  inverseFlattening = result.getDouble( 4);
-                    final double  semiMinorAxis     = result.getDouble( 5);
-                    final String  unitCode          = getString(result, 6, code);
-                    final String  remarks           = result.getString( 7);
-                    final boolean deprecated        = result.getInt   ( 8) != 0;
+                    final Integer epsg              = getInteger  (code, result, 1);
+                    final String  name              = getString   (code, result, 2);
+                    final double  semiMajorAxis     = getDouble   (code, result, 3);
+                    final double  inverseFlattening = getOptionalDouble (result, 4);
+                    final double  semiMinorAxis     = getOptionalDouble (result, 5);
+                    final String  unitCode          = getString   (code, result, 6);
+                    final String  remarks           = getOptionalString (result, 7);
+                    final boolean deprecated        = getOptionalBoolean(result, 8);
                     final Unit<Length> unit         = buffered.createUnit(unitCode).asType(Length.class);
                     final Map<String,Object> properties = createProperties("[Ellipsoid]", name, epsg, remarks, deprecated);
                     final Ellipsoid ellipsoid;
-                    if (inverseFlattening == 0) {
-                        if (semiMinorAxis == 0) {
+                    if (Double.isNaN(inverseFlattening)) {
+                        if (Double.isNaN(semiMinorAxis)) {
                             // Both are null, which is not allowed.
                             final String column = result.getMetaData().getColumnName(3);
                             throw new FactoryDataException(error().getString(Errors.Keys.NullValueInTable_3, code, column));
@@ -1772,7 +1828,7 @@ addURIs:    for (int i=0; ; i++) {
                             ellipsoid = datumFactory.createEllipsoid(properties, semiMajorAxis, semiMinorAxis, unit);
                         }
                     } else {
-                        if (semiMinorAxis != 0) {
+                        if (!Double.isNaN(semiMinorAxis)) {
                             // Both 'inverseFlattening' and 'semiMinorAxis' are defined.
                             // Log a warning and create the ellipsoid using the inverse flattening.
                             final LogRecord record = Messages.getResources(locale).getLogRecord(Level.WARNING,
@@ -1839,15 +1895,15 @@ addURIs:    for (int i=0; ; i++) {
 
             try (ResultSet result = executeQuery(stmt, primaryKey)) {
                 while (result.next()) {
-                    final int     epsg       = getInt   (result, 1, code);
-                    final String  name       = getString(result, 2, code);
-                    final double  longitude  = getDouble(result, 3, code);
-                    final String  unitCode   = getString(result, 4, code);
-                    final String  remarks    = result.getString( 5);
-                    final boolean deprecated = result.getInt   ( 6) != 0;
+                    final Integer epsg       = getInteger  (code, result, 1);
+                    final String  name       = getString   (code, result, 2);
+                    final double  longitude  = getDouble   (code, result, 3);
+                    final String  unitCode   = getString   (code, result, 4);
+                    final String  remarks    = getOptionalString (result, 5);
+                    final boolean deprecated = getOptionalBoolean(result, 6);
                     final Unit<Angle> unit = buffered.createUnit(unitCode).asType(Angle.class);
-                    Map<String,Object> properties = createProperties("[Prime Meridian]", name, epsg, remarks, deprecated);
-                    PrimeMeridian primeMeridian = datumFactory.createPrimeMeridian(properties, longitude, unit);
+                    final PrimeMeridian primeMeridian = datumFactory.createPrimeMeridian(
+                            createProperties("[Prime Meridian]", name, epsg, remarks, deprecated), longitude, unit);
                     returnValue = ensureSingleton(primeMeridian, returnValue, code);
                 }
             }
@@ -1902,15 +1958,12 @@ addURIs:    for (int i=0; ; i++) {
 
             try (ResultSet result = executeQuery(stmt, primaryKey)) {
                 while (result.next()) {
-                    String description = result.getString(1);
-                    if (description != null && (description = description.trim()).isEmpty()) {
-                        description = null;
-                    }
+                    final String description = getOptionalString(result, 1);
+                    double ymin = getOptionalDouble(result, 2);
+                    double ymax = getOptionalDouble(result, 3);
+                    double xmin = getOptionalDouble(result, 4);
+                    double xmax = getOptionalDouble(result, 5);
                     DefaultGeographicBoundingBox bbox = null;
-                    double ymin = result.getDouble(2); if (result.wasNull()) ymin = Double.NaN;
-                    double ymax = result.getDouble(3); if (result.wasNull()) ymax = Double.NaN;
-                    double xmin = result.getDouble(4); if (result.wasNull()) xmin = Double.NaN;
-                    double xmax = result.getDouble(5); if (result.wasNull()) xmax = Double.NaN;
                     if (!Double.isNaN(ymin) || !Double.isNaN(ymax) || !Double.isNaN(xmin) || !Double.isNaN(xmax)) {
                         /*
                          * Fix an error found in EPSG::3790 New Zealand - South Island - Mount Pleasant mc
@@ -1991,15 +2044,15 @@ addURIs:    for (int i=0; ; i++) {
 
             try (ResultSet result = executeQuery(stmt, primaryKey)) {
                 while (result.next()) {
-                    final int     epsg       = getInt   (result, 1, code);
-                    final String  name       = getString(result, 2, code);
-                    final String  type       = getString(result, 3, code).trim();
-                    final int     dimension  = getInt   (result, 4, code);
-                    final String  remarks    = result.getString( 5);
-                    final boolean deprecated = result.getInt   ( 6) != 0;
+                    final Integer epsg       = getInteger  (code, result, 1);
+                    final String  name       = getString   (code, result, 2);
+                    final String  type       = getString   (code, result, 3);
+                    final int     dimension  = getInteger  (code, result, 4);
+                    final String  remarks    = getOptionalString (result, 5);
+                    final boolean deprecated = getOptionalBoolean(result, 6);
                     final CoordinateSystemAxis[] axes = createCoordinateSystemAxes(epsg, dimension);
-                    final Map<String,Object> properties = createProperties("[Coordinate System]",
-                            name, epsg, remarks, deprecated); // Must be after axis
+                    final Map<String,Object> properties = createProperties("[Coordinate System]",    // Must be after axes.
+                                                                name, epsg, remarks, deprecated);
                     CoordinateSystem cs = null;
                     switch (type.toLowerCase(Locale.US)) {
                         case "ellipsoidal": {
@@ -2130,7 +2183,7 @@ addURIs:    for (int i=0; ; i++) {
         int i = 0;
         try (ResultSet result = executeQuery(stmt, cs)) {
             while (result.next()) {
-                final String axis = getString(result, 1, cs);
+                final String axis = getString(cs, result, 1);
                 if (i < axes.length) {
                     /*
                      * If 'i' is out of bounds, an exception will be thrown after the loop.
@@ -2188,21 +2241,21 @@ addURIs:    for (int i=0; ; i++) {
 
             try (ResultSet result = executeQuery(stmt, primaryKey)) {
                 while (result.next()) {
-                    final int    epsg         = getInt   (result, 1, code);
-                    final int    nameCode     = getInt   (result, 2, code);
-                    final String orientation  = getString(result, 3, code);
-                    final String abbreviation = getString(result, 4, code);
-                    final String unit         = getString(result, 5, code);
-                    AxisDirection direction;
+                    final Integer epsg         = getInteger(code, result, 1);
+                    final Integer nameCode     = getInteger(code, result, 2);
+                    final String  orientation  = getString (code, result, 3);
+                    final String  abbreviation = getString (code, result, 4);
+                    final String  unit         = getString (code, result, 5);
+                    final AxisDirection direction;
                     try {
                         direction = CoordinateSystems.parseAxisDirection(orientation);
                     } catch (IllegalArgumentException exception) {
                         throw new FactoryDataException(exception.getLocalizedMessage(), exception);
                     }
                     final AxisName an = getAxisName(nameCode);
-                    final Map<String,Object> properties = createProperties("[Coordinate Axis]", an.name, epsg, an.description, false);
                     final CoordinateSystemAxis axis = csFactory.createCoordinateSystemAxis(
-                            properties, abbreviation, direction, buffered.createUnit(unit));
+                            createProperties("[Coordinate Axis]", an.name, epsg, an.description, false),
+                            abbreviation, direction, buffered.createUnit(unit));
                     returnValue = ensureSingleton(axis, returnValue, code);
                 }
             }
@@ -2230,9 +2283,9 @@ addURIs:    for (int i=0; ; i++) {
 
             try (ResultSet result = executeQuery(stmt, code)) {
                 while (result.next()) {
-                    final String name  = getString(result, 1, code);
-                    String description = result.getString (2);
-                    String remarks     = result.getString (3);
+                    final String name  = getString(code,   result, 1);
+                    String description = getOptionalString(result, 2);
+                    String remarks     = getOptionalString(result, 3);
                     if (description == null) {
                         description = remarks;
                     } else if (remarks != null) {
@@ -2254,6 +2307,10 @@ addURIs:    for (int i=0; ; i++) {
 
     /**
      * Creates an unit of measurement from a code.
+     * Current implementation first checks if {@link Units#valueOfEPSG(int)} can provide a hard-coded unit
+     * for the given code before to try to parse the information found in the database. This is done that
+     * way for better support of non-straightforward units like <cite>sexagesimal degrees</cite>
+     * (EPSG::9110 and 9111).
      *
      * <div class="note"><b>Example:</b>
      * some EPSG codes for units are:
@@ -2262,7 +2319,9 @@ addURIs:    for (int i=0; ; i++) {
      *   <tr><th>Code</th> <th>Description</th></tr>
      *   <tr><td>9002</td> <td>decimal degree</td></tr>
      *   <tr><td>9001</td> <td>metre</td></tr>
+     *   <tr><td>9030</td> <td>kilometre</td></tr>
      *   <tr><td>1040</td> <td>second</td></tr>
+     *   <tr><td>1029</td> <td>year</td></tr>
      * </table></div>
      *
      * @param  code Value allocated by EPSG.
@@ -2289,10 +2348,10 @@ addURIs:    for (int i=0; ; i++) {
 
             try (ResultSet result = executeQuery(stmt, primaryKey)) {
                 while (result.next()) {
-                    final int source = getInt(result,   1, code);
-                    final double   b = result.getDouble(2);
-                    final double   c = result.getDouble(3);
-                    final int target = getInt(result,   4, code);
+                    final int source = getInteger(code,  result, 1);
+                    final double   b = getOptionalDouble(result, 2);
+                    final double   c = getOptionalDouble(result, 3);
+                    final int target = getInteger(code,  result, 4);
                     if (source == target) {
                         /*
                          * The unit is a base unit. Verify its consistency:
@@ -2304,13 +2363,13 @@ addURIs:    for (int i=0; ; i++) {
                                         pb ? "FACTOR_B" : "FACTOR_C", pb ? b : c));
                         }
                     }
-                    Unit<?> unit = Units.valueOfEPSG(source);           // Check in our list of hard-coded unit codes.
+                    Unit<?> unit = Units.valueOfEPSG(source);                           // Check in our list of hard-coded unit codes.
                     if (unit == null) {
                         final Unit<?> base = Units.valueOfEPSG(target);
-                        if (base != null && b != 0 && c != 0) {         // May be 0 if the conversion is non-linear.
+                        if (base != null && !Double.isNaN(b) && !Double.isNaN(c)) {     // May be NaN if the conversion is non-linear.
                             unit = Units.multiply(base, b/c);
                         } else try {
-                            unit = Units.valueOf(result.getString(5));  // Try parsing the unit symbol as a fallback.
+                            unit = Units.valueOf(getString(code, result, 5));           // Try parsing the unit symbol as a fallback.
                         } catch (IllegalArgumentException e) {
                             throw new FactoryDataException(error().getString(Errors.Keys.UnknownUnit_1, code), e);
                         }
@@ -2357,10 +2416,10 @@ addURIs:    for (int i=0; ; i++) {
 
             try (ResultSet result = executeQuery(stmt, primaryKey)) {
                 while (result.next()) {
-                    final int     epsg       = getInt   (result, 1, code);
-                    final String  name       = getString(result, 2, code);
-                    final String  remarks    = result.getString( 3);
-                    final boolean deprecated = result.getInt   ( 4) != 0;
+                    final Integer epsg       = getInteger  (code, result, 1);
+                    final String  name       = getString   (code, result, 2);
+                    final String  remarks    = getOptionalString (result, 3);
+                    final boolean deprecated = getOptionalBoolean(result, 4);
                     MeasurementRange<?> valueDomain = null;
                     final Class<?> type;
                     /*
@@ -2375,11 +2434,12 @@ addURIs:    for (int i=0; ; i++) {
                             " WHERE (PARAMETER_CODE = ?)" +
                             " GROUP BY UOM_CODE" +
                             " ORDER BY COUNT(UOM_CODE) DESC");
+
                     try (ResultSet resultUnits = executeQuery(units, epsg)) {
                         if (resultUnits.next()) {
-                            String element = resultUnits.getString(2);
-                            type = (element != null && !element.trim().isEmpty()) ? String.class : Double.class;
-                            element = resultUnits.getString(1);
+                            String element = getOptionalString(resultUnits, 2);
+                            type = (element != null) ? String.class : Double.class;
+                            element = getOptionalString(resultUnits, 1);
                             if (element != null) {
                                 valueDomain = MeasurementRange.create(
                                         Double.NEGATIVE_INFINITY, false,
@@ -2393,10 +2453,9 @@ addURIs:    for (int i=0; ; i++) {
                     /*
                      * Now creates the parameter descriptor.
                      */
-                    final Map<String,Object> properties = createProperties(
-                            "[Coordinate_Operation Parameter]", name, epsg, remarks, deprecated);
                     final ParameterDescriptor<?> descriptor = new DefaultParameterDescriptor<>(
-                            properties, 1, 1, type, valueDomain, null, null);
+                            createProperties("[Coordinate_Operation Parameter]", name, epsg, remarks, deprecated),
+                            1, 1, type, valueDomain, null, null);
                     returnValue = ensureSingleton(descriptor, returnValue, code);
                 }
             }
@@ -2426,10 +2485,395 @@ addURIs:    for (int i=0; ; i++) {
         final List<ParameterDescriptor<?>> descriptors = new ArrayList<>();
         try (ResultSet result = executeQuery(stmt, method)) {
             while (result.next()) {
-                descriptors.add(buffered.createParameterDescriptor(getString(result, 1, method)));
+                descriptors.add(buffered.createParameterDescriptor(getString(method, result, 1)));
             }
         }
         return descriptors.toArray(new ParameterDescriptor<?>[descriptors.size()]);
+    }
+
+    /**
+     * Sets the values of all parameters in the given group.
+     *
+     * @param  method    The EPSG code for the operation method.
+     * @param  operation The EPSG code for the operation (conversion or transformation).
+     * @param  value     The parameter values to fill.
+     * @throws SQLException if a SQL statement failed.
+     */
+    private void fillParameterValues(final Integer method, final Integer operation, final ParameterValueGroup parameters)
+            throws FactoryException, SQLException
+    {
+        final PreparedStatement stmt = prepareStatement("[Coordinate_Operation Parameter Value]",
+                "SELECT CP.PARAMETER_NAME," +
+                      " CV.PARAMETER_VALUE," +
+                      " CV.PARAM_VALUE_FILE_REF," +
+                      " CV.UOM_CODE" +
+               " FROM ([Coordinate_Operation Parameter Value] AS CV" +
+          " INNER JOIN [Coordinate_Operation Parameter] AS CP" +
+                   " ON CV.PARAMETER_CODE = CP.PARAMETER_CODE)" +
+          " INNER JOIN [Coordinate_Operation Parameter Usage] AS CU" +
+                  " ON (CP.PARAMETER_CODE = CU.PARAMETER_CODE)" +
+                 " AND (CV.COORD_OP_METHOD_CODE = CU.COORD_OP_METHOD_CODE)" +
+                " WHERE CV.COORD_OP_METHOD_CODE = ?" +
+                  " AND CV.COORD_OP_CODE = ?" +
+             " ORDER BY CU.SORT_ORDER");
+
+        stmt.setInt(1, method);
+        stmt.setInt(2, operation);
+        try (ResultSet result = stmt.executeQuery()) {
+            while (result.next()) {
+                final String name  = getString(operation, result, 1);
+                final double value = getOptionalDouble(result, 2);
+                final Unit<?> unit;
+                Object reference;
+                if (Double.isNaN(value)) {
+                    /*
+                     * If no numeric values were provided in the database, then the values should be
+                     * in some external file. It may be a file in the $SIS_DATA/DatumChanges directory.
+                     */
+                    reference = getString(operation, result, 3);
+                    unit = null;
+                } else {
+                    reference = null;
+                    final String unitCode = getOptionalString(result, 4);
+                    unit = (unitCode != null) ? buffered.createUnit(unitCode) : null;
+                }
+                final ParameterValue<?> param;
+                try {
+                    param = parameters.parameter(name);
+                } catch (ParameterNotFoundException exception) {
+                    /*
+                     * Wraps the unchecked ParameterNotFoundException into the checked NoSuchIdentifierException,
+                     * which is a FactoryException subclass.  Note that in principle, NoSuchIdentifierException is for
+                     * MathTransforms rather than parameters. However we are close in spirit here since we are setting
+                     * up MathTransform's parameters. Using NoSuchIdentifierException allows CoordinateOperationSet to
+                     * know that the failure is probably caused by a MathTransform not yet supported in Apache SIS (or
+                     * only partially supported) rather than some more serious failure in the database side. Callers
+                     * can use this information in order to determine if they should try the next coordinate operation
+                     * or propagate the exception.
+                     */
+                    final NoSuchIdentifierException e = new NoSuchIdentifierException(error()
+                            .getString(Errors.Keys.CanNotSetParameterValue_1, name), name);
+                    e.initCause(exception);
+                    throw e;
+                }
+                try {
+                    if (reference != null) {
+                        param.setValue(reference);
+                    } else if (unit != null) {
+                        param.setValue(value, unit);
+                    } else {
+                        param.setValue(value);
+                    }
+                } catch (RuntimeException exception) {  // Catch InvalidParameterValueException, ArithmeticException and others.
+                    throw new FactoryDataException(error().getString(Errors.Keys.CanNotSetParameterValue_1, name), exception);
+                }
+            }
+        }
+    }
+
+    /**
+     * Creates description of the algorithm and parameters used to perform a coordinate operation.
+     * An {@code OperationMethod} is a kind of metadata: it does not perform any coordinate operation
+     * (e.g. map projection) by itself, but tells us what is needed in order to perform such operation.
+     *
+     * <div class="note"><b>Example:</b>
+     * some EPSG codes for operation methods are:
+     *
+     * <table class="sis" summary="EPSG codes examples">
+     *   <tr><th>Code</th> <th>Description</th></tr>
+     *   <tr><td>9804</td> <td>Mercator (variant A)</td></tr>
+     *   <tr><td>9802</td> <td>Lambert Conic Conformal (2SP)</td></tr>
+     *   <tr><td>9810</td> <td>Polar Stereographic (variant A)</td></tr>
+     *   <tr><td>9624</td> <td>Affine parametric transformation</td></tr>
+     * </table></div>
+     *
+     * @param  code Value allocated by EPSG.
+     * @return The operation method for the given code.
+     * @throws NoSuchAuthorityCodeException if the specified {@code code} was not found.
+     * @throws FactoryException if the object creation failed for some other reason.
+     */
+    @Override
+    public synchronized OperationMethod createOperationMethod(final String code)
+            throws NoSuchAuthorityCodeException, FactoryException
+    {
+        ArgumentChecks.ensureNonNull("code", code);
+        OperationMethod returnValue = null;
+        try {
+            final String primaryKey = toPrimaryKey(OperationMethod.class, code,
+                    "[Coordinate_Operation Method]", "COORD_OP_METHOD_CODE", "COORD_OP_METHOD_NAME");
+
+            final PreparedStatement stmt = prepareStatement("[Coordinate_Operation Method]",
+                    "SELECT COORD_OP_METHOD_CODE," +
+                          " COORD_OP_METHOD_NAME," +
+                          " FORMULA," +
+                          " REMARKS," +
+                          " DEPRECATED" +
+                     " FROM [Coordinate_Operation Method]" +
+                    " WHERE COORD_OP_METHOD_CODE = ?");
+
+            try (ResultSet result = executeQuery(stmt, primaryKey)) {
+                while (result.next()) {
+                    final Integer epsg       = getInteger  (code, result, 1);
+                    final String  name       = getString   (code, result, 2);
+                    final String  formula    = getOptionalString (result, 3);
+                    final String  remarks    = getOptionalString (result, 4);
+                    final boolean deprecated = getOptionalBoolean(result, 5);
+                    final Integer[] dim = getDimensionsForMethod(epsg);
+                    final ParameterDescriptor<?>[] descriptors = createParameterDescriptors(epsg);
+                    Map<String,Object> properties = createProperties("[Coordinate_Operation Method]", name, epsg, remarks, deprecated);
+                    properties.put(OperationMethod.FORMULA_KEY, formula);
+                    final OperationMethod method = new DefaultOperationMethod(properties, dim[0], dim[1],
+                                new DefaultParameterDescriptorGroup(properties, 1, 1, descriptors));
+                    returnValue = ensureSingleton(method, returnValue, code);
+                }
+            }
+        } catch (SQLException exception) {
+            throw databaseFailure(OperationMethod.class, code, exception);
+        }
+        if (returnValue == null) {
+             throw noSuchAuthorityCode(OperationMethod.class, code);
+        }
+        return returnValue;
+    }
+
+    /**
+     * Creates an operation for transforming coordinates in the source CRS to coordinates in the target CRS.
+     * The returned object will either be a {@link Conversion} or a {@link Transformation}, depending on the code.
+     *
+     * @param  code Value allocated by EPSG.
+     * @return The operation for the given code.
+     * @throws NoSuchAuthorityCodeException if the specified {@code code} was not found.
+     * @throws FactoryException if the object creation failed for some other reason.
+     */
+    @Override
+    public synchronized CoordinateOperation createCoordinateOperation(final String code)
+            throws NoSuchAuthorityCodeException, FactoryException
+    {
+        ArgumentChecks.ensureNonNull("code", code);
+        CoordinateOperation returnValue = null;
+        try {
+            final String primaryKey = toPrimaryKey(CoordinateOperation.class, code,
+                    "[Coordinate_Operation]", "COORD_OP_CODE", "COORD_OP_NAME");
+
+            final PreparedStatement stmt = prepareStatement("[Coordinate_Operation]",
+                    "SELECT COORD_OP_CODE," +
+                          " COORD_OP_NAME," +
+                          " COORD_OP_TYPE," +
+                          " SOURCE_CRS_CODE," +
+                          " TARGET_CRS_CODE," +
+                          " COORD_OP_METHOD_CODE," +
+                          " COORD_TFM_VERSION," +
+                          " COORD_OP_ACCURACY," +
+                          " AREA_OF_USE_CODE," +
+                          " COORD_OP_SCOPE," +
+                          " REMARKS," +
+                          " DEPRECATED" +
+                    " FROM [Coordinate_Operation]" +
+                    " WHERE COORD_OP_CODE = ?");
+
+            try (ResultSet result = executeQuery(stmt, primaryKey)) {
+                while (result.next()) {
+                    final Integer epsg = getInteger(code, result, 1);
+                    final String  name = getString (code, result, 2);
+                    final String  type = getString (code, result, 3).toLowerCase(Locale.US);
+                    final boolean isTransformation = type.equals("transformation");
+                    final boolean isConversion     = type.equals("conversion");
+                    final boolean isConcatenated   = type.equals("concatenated operation");
+                    final String sourceCode, targetCode;
+                    final Integer methodCode;
+                    if (isConversion) {
+                        sourceCode = getOptionalString(result, 4);      // Optional for conversions, mandatory for all others.
+                        targetCode = getOptionalString(result, 5);
+                    } else {
+                        sourceCode = getString(code, result, 4);
+                        targetCode = getString(code, result, 5);
+                    }
+                    if (isConcatenated) {
+                        methodCode = getOptionalInteger(result, 6);     // Not applicable to concatenated operation, mandatory for all others.
+                    } else {
+                        methodCode = getInteger(code, result, 6);
+                    }
+                    final String  version    = getOptionalString (result,  7);
+                    final double  accuracy   = getOptionalDouble (result,  8);
+                    final String  area       = getOptionalString (result,  9);
+                    final String  scope      = getOptionalString (result, 10);
+                    final String  remarks    = getOptionalString (result, 11);
+                    final boolean deprecated = getOptionalBoolean(result, 12);
+                    /*
+                     * Create the source and target CRS for the codes fetched above.  Those CRS are optional only for
+                     * conversions (the above calls to getString(code, result, …) verified that those CRS are defined
+                     * for other kinds of operation). Conversions in EPSG database are usually "defining conversions"
+                     * without source and target CRS.
+                     *
+                     * In EPSG database 6.7, all defining conversions are projections and their dimensions are always 2.
+                     * However, this default number of dimensions is not generalizable to other kind of operation methods.
+                     * For example the "Geocentric translation" operation method has 3-dimensional source and target CRS.
+                     */
+                    final int sourceDimensions, targetDimensions;
+                    final CoordinateReferenceSystem sourceCRS, targetCRS;
+                    if (sourceCode != null) {
+                        sourceCRS = buffered.createCoordinateReferenceSystem(sourceCode);
+                        sourceDimensions = sourceCRS.getCoordinateSystem().getDimension();
+                    } else {
+                        sourceCRS = null;
+                        sourceDimensions = 2;       // Acceptable default for projections only.
+                    }
+                    if (targetCode != null) {
+                        targetCRS = buffered.createCoordinateReferenceSystem(targetCode);
+                        targetDimensions = targetCRS.getCoordinateSystem().getDimension();
+                    } else {
+                        targetCRS = null;
+                        targetDimensions = 2;       // Acceptable default for projections only.
+                    }
+                    /*
+                     * Get the operation method. This is mandatory for conversions and transformations
+                     * (it was checked by getInteger(code, result, …) above in this method) but optional
+                     * for concatenated operations. Fetching parameter values is part of this block.
+                     *
+                     * We will create the ParameterValueGroup from the MathTransformFactory (which means that
+                     * we will use the parameter descriptors that are hard-coded in Apache SIS) instead than
+                     * from the OperationMethod created from the EPSG database. The reasons are:
+                     *
+                     *   1) For detecting now if the EPSG database defines a parameter not recognized by SIS.
+                     *   2) Because SIS implementation sometime needs additional parameters not explicitly given in
+                     *      EPSG database because considered implicit (e.g. length of semi-major and semi-minor axes).
+                     *      By letting MathTransformFactory create the ParameterValueGroup itself, we give it a chance
+                     *      to include such implicit parameter values in the group.
+                     */
+                    OperationMethod method;
+                    ParameterValueGroup parameters;
+                    if (methodCode == null) {
+                        method      = null;
+                        parameters  = null;
+                    } else {
+                        method = buffered.createOperationMethod(methodCode.toString());
+                        method = DefaultOperationMethod.redimension(method, sourceDimensions, targetDimensions);
+                        final String methodName = method.getName().getCode();
+                        String methodIdentifier = IdentifiedObjects.toString(IdentifiedObjects.getIdentifier(method, Citations.EPSG));
+                        if (methodIdentifier == null) {
+                            methodIdentifier = methodName;
+                        }
+                        try {
+                            parameters = mtFactory.getDefaultParameters(methodIdentifier);
+                        } catch (NoSuchIdentifierException exception) {
+                            /*
+                             * We gave priority to EPSG identifier because operation method names are sometime ambiguous
+                             * (e.g. "Lambert Azimuthal Equal Area (Spherical)"). If we failed to find the method by its
+                             * EPSG code, try searching by operation name. As a side effect, this second attempt will
+                             * produce a better error message if the operation is really not found.
+                             */
+                            if (methodIdentifier.equals(methodName)) throw exception;
+                            parameters = mtFactory.getDefaultParameters(methodName);
+                            Logging.recoverableException(Logging.getLogger(Loggers.CRS_FACTORY),
+                                    EPSGFactory.class, "createCoordinateOperation", exception);
+                        }
+                        fillParameterValues(methodCode, epsg, parameters);
+                    }
+                    /*
+                     * Creates common properties. The 'version' and 'accuracy' are usually defined
+                     * for transformations only. However, we check them for all kind of operations
+                     * (including conversions) and copy the information unconditionally if present.
+                     *
+                     * NOTE: This block must be executed last before object creations below, because
+                     *       methods like createCoordinateReferenceSystem and createOperationMethod
+                     *       overwrite the properties map.
+                     */
+                    Map<String,Object> opProperties = createProperties("[Coordinate_Operation]",
+                            name, epsg, area, scope, remarks, deprecated);
+                    opProperties.put(CoordinateOperation.OPERATION_VERSION_KEY, version);
+                    if (!Double.isNaN(accuracy)) {
+                        PositionalAccuracy element = accuracies.get(accuracy);
+                        if (element == null) {
+                            element = TransformationAccuracy.create(accuracy);
+                            accuracies.put(accuracy, element);
+                        }
+                        opProperties.put(CoordinateOperation.COORDINATE_OPERATION_ACCURACY_KEY, element);
+                    }
+                    /*
+                     * Creates the operation. Conversions should be the only operations allowed to have
+                     * null source and target CRS. In such case, the operation is a defining conversion
+                     * (usually to be used later as part of a ProjectedCRS creation).
+                     */
+                    final CoordinateOperation operation;
+                    if (isConversion && (sourceCRS == null || targetCRS == null)) {
+                        operation = copFactory.createDefiningConversion(opProperties, method, parameters);
+                    } else if (isConcatenated) {
+                        /*
+                         * Concatenated operation: we need to close the current result set, because
+                         * we are going to invoke this method recursively in the following lines.
+                         */
+                        result.close();
+                        opProperties = new HashMap<>(opProperties);     // Because this class uses a shared map.
+                        final PreparedStatement cstmt = prepareStatement("[Coordinate_Operation Path]",
+                                "SELECT SINGLE_OPERATION_CODE" +
+                                 " FROM [Coordinate_Operation Path]" +
+                                " WHERE (CONCAT_OPERATION_CODE = ?)" +
+                              " ORDER BY OP_PATH_STEP");
+                        final List<String> codes = new ArrayList<>();
+                        try (ResultSet cr = executeQuery(cstmt, epsg)) {
+                            while (cr.next()) {
+                                codes.add(getString(code, cr, 1));
+                            }
+                        }
+                        final CoordinateOperation[] operations = new CoordinateOperation[codes.size()];
+                        for (int i=0; i<operations.length; i++) {
+                            operations[i] = buffered.createCoordinateOperation(codes.get(i));
+                        }
+                        return copFactory.createConcatenatedOperation(opProperties, operations);
+                    } else {
+                        /*
+                         * At this stage, the parameters are ready for use. Create the math transform and wrap it in the
+                         * final operation (a Conversion or a Transformation). We need to give to MathTransformFactory
+                         * some information about the context (source and target CRS) for allowing the factory to set
+                         * the values of above-mentioned implicit parameters (semi-major and semi-minor axis lengths).
+                         */
+                        final Class<? extends SingleOperation> expected;
+                        if (isTransformation) {
+                            expected = Transformation.class;
+                        } else if (isConversion) {
+                            expected = Conversion.class;
+                        } else {
+                            throw new FactoryDataException(error().getString(Errors.Keys.UnknownType_1, type));
+                        }
+                        /*
+                         * Following special case may be removed in a future SIS version if the missing method is added
+                         * to GeoAPI. Actually GeoAPI has a method doing part of the job, but incomplete (e.g. the pure
+                         * GeoAPI method can not handle Molodensky transform because it does not give the target datum).
+                         */
+                        final MathTransform mt;
+                        if (mtFactory instanceof DefaultMathTransformFactory) {
+                            DefaultMathTransformFactory.Context context = new DefaultMathTransformFactory.Context();
+                            context.setSource(sourceCRS);
+                            context.setTarget(targetCRS);
+                            mt = ((DefaultMathTransformFactory) mtFactory).createParameterizedTransform(parameters, context);
+                        } else {
+                            // Fallback for non-SIS implementations. Work for map projections but not for Molodensky.
+                            mt = mtFactory.createBaseToDerived(sourceCRS, parameters, targetCRS.getCoordinateSystem());
+                        }
+                        opProperties.put(ReferencingServices.OPERATION_TYPE_KEY, expected);
+                        /*
+                         * Following restriction will be removed in a future SIS version if the method is added to GeoAPI.
+                         */
+                        if (!(copFactory instanceof DefaultCoordinateOperationFactory)) {
+                            throw new UnsupportedOperationException(error().getString(
+                                    Errors.Keys.UnsupportedImplementation_1, copFactory.getClass()));
+                        }
+                        operation = ((DefaultCoordinateOperationFactory) copFactory)
+                                .createSingleOperation(opProperties, sourceCRS, targetCRS, null, method, mt);
+                    }
+                    returnValue = ensureSingleton(operation, returnValue, code);
+                    if (result.isClosed()) {
+                        return returnValue;
+                    }
+                }
+            }
+        } catch (SQLException exception) {
+            throw databaseFailure(CoordinateOperation.class, code, exception);
+        }
+        if (returnValue == null) {
+             throw noSuchAuthorityCode(CoordinateOperation.class, code);
+        }
+        return returnValue;
     }
 
     /**
@@ -2552,7 +2996,7 @@ addURIs:    for (int i=0; ; i++) {
                 final String code = codes[i].toString();
                 try (ResultSet result = executeQuery(stmt, code)) {
                     while (result.next()) {
-                        final String replacement = getString(result, 1, code);
+                        final String replacement = getString(code, result, 1);
                         for (int j=i+1; j<codes.length; j++) {
                             final Object candidate = codes[j];
                             if (replacement.equals(candidate.toString())) {

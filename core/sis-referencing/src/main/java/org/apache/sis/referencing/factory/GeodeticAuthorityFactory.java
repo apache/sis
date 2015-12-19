@@ -162,7 +162,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * {@linkplain org.apache.sis.referencing.crs.DefaultGeographicCRS geographic coordinate reference system}).
      *
      * <div class="note"><b>Example:</b>
-     * the {@linkplain #getAuthorityCodes(java.lang.Class) set of available codes} depends on the defining
+     * the {@linkplain #getAuthorityCodes(Class) set of available codes} depends on the defining
      * {@linkplain #getAuthority() authority} and the {@code GeodeticAuthorityFactory} subclass in use.
      * Two frequently used authorities are "CRS" and "EPSG", which include the following codes:
      *
@@ -202,7 +202,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * for a large portion of the earth's surface.
      *
      * <div class="note"><b>Example:</b>
-     * the {@linkplain #getAuthorityCodes(java.lang.Class) set of available codes} depends on the defining
+     * the {@linkplain #getAuthorityCodes(Class) set of available codes} depends on the defining
      * {@linkplain #getAuthority() authority} and the {@code GeodeticAuthorityFactory} subclass in use.
      * Two frequently used authorities are "CRS" and "EPSG", which include the following codes:
      *
@@ -246,7 +246,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * the need to model the earth's curvature.
      *
      * <div class="note"><b>Example:</b>
-     * the {@linkplain #getAuthorityCodes(java.lang.Class) set of available codes} depends on the defining
+     * the {@linkplain #getAuthorityCodes(Class) set of available codes} depends on the defining
      * {@linkplain #getAuthority() authority} and the {@code GeodeticAuthorityFactory} subclass in use.
      * A frequently used authority is "EPSG", which includes the following codes:
      *
@@ -280,7 +280,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * that are a close match to actual field values.
      *
      * <div class="note"><b>Example:</b>
-     * the {@linkplain #getAuthorityCodes(java.lang.Class) set of available codes} depends on the defining
+     * the {@linkplain #getAuthorityCodes(Class) set of available codes} depends on the defining
      * {@linkplain #getAuthority() authority} and the {@code GeodeticAuthorityFactory} subclass in use.
      * A frequently used authority is "EPSG", which contains more than 4000 codes for projected CRS.
      * Some of them are:
@@ -313,7 +313,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * but the relationship with gravity may not be straightforward.
      *
      * <div class="note"><b>Example:</b>
-     * the {@linkplain #getAuthorityCodes(java.lang.Class) set of available codes} depends on the defining
+     * the {@linkplain #getAuthorityCodes(Class) set of available codes} depends on the defining
      * {@linkplain #getAuthority() authority} and the {@code GeodeticAuthorityFactory} subclass in use.
      * A frequently used authority is "EPSG", which includes the following codes:
      *
@@ -362,7 +362,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * Creates a CRS describing the position of points through two or more independent coordinate reference systems.
      *
      * <div class="note"><b>Example:</b>
-     * the {@linkplain #getAuthorityCodes(java.lang.Class) set of available codes} depends on the defining
+     * the {@linkplain #getAuthorityCodes(Class) set of available codes} depends on the defining
      * {@linkplain #getAuthority() authority} and the {@code GeodeticAuthorityFactory} subclass in use.
      * A frequently used authority is "EPSG", which includes the following codes:
      *
@@ -410,7 +410,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * Creates a 1-, 2- or 3-dimensional contextually local coordinate reference system.
      *
      * <div class="note"><b>Example:</b>
-     * the {@linkplain #getAuthorityCodes(java.lang.Class) set of available codes} depends on the defining
+     * the {@linkplain #getAuthorityCodes(Class) set of available codes} depends on the defining
      * {@linkplain #getAuthority() authority} and the {@code GeodeticAuthorityFactory} subclass in use.
      * A frequently used authority is "EPSG", which includes the following codes:
      *
@@ -460,7 +460,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * If the datum is known at compile time, it is recommended to invoke the most precise method instead of this one.
      *
      * <div class="note"><b>Example:</b>
-     * the {@linkplain #getAuthorityCodes(java.lang.Class) set of available codes} depends on the defining
+     * the {@linkplain #getAuthorityCodes(Class) set of available codes} depends on the defining
      * {@linkplain #getAuthority() authority} and the {@code GeodeticAuthorityFactory} subclass in use.
      * A frequently used authority is "EPSG", which contains hundred of datum. Some of them are:
      *
@@ -494,7 +494,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * centered in the ellipsoid (or sphere).
      *
      * <div class="note"><b>Example:</b>
-     * the {@linkplain #getAuthorityCodes(java.lang.Class) set of available codes} depends on the defining
+     * the {@linkplain #getAuthorityCodes(Class) set of available codes} depends on the defining
      * {@linkplain #getAuthority() authority} and the {@code GeodeticAuthorityFactory} subclass in use.
      * A frequently used authority is "EPSG", which contains hundred of datum. Some of them are:
      *
@@ -528,7 +528,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * it is combined to create a vertical CRS.
      *
      * <div class="note"><b>Example:</b>
-     * the {@linkplain #getAuthorityCodes(java.lang.Class) set of available codes} depends on the defining
+     * the {@linkplain #getAuthorityCodes(Class) set of available codes} depends on the defining
      * {@linkplain #getAuthority() authority} and the {@code GeodeticAuthorityFactory} subclass in use.
      * A frequently used authority is "EPSG", which includes the following codes:
      *
@@ -581,7 +581,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * This origin can be fixed with respect to the earth or be a defined point on a moving vehicle.
      *
      * <div class="note"><b>Example:</b>
-     * the {@linkplain #getAuthorityCodes(java.lang.Class) set of available codes} depends on the defining
+     * the {@linkplain #getAuthorityCodes(Class) set of available codes} depends on the defining
      * {@linkplain #getAuthority() authority} and the {@code GeodeticAuthorityFactory} subclass in use.
      * A frequently used authority is "EPSG", which includes the following codes:
      *
@@ -631,7 +631,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * In mathematical terms, it is a surface formed by the rotation of an ellipse about its minor axis.
      *
      * <div class="note"><b>Example:</b>
-     * the {@linkplain #getAuthorityCodes(java.lang.Class) set of available codes} depends on the defining
+     * the {@linkplain #getAuthorityCodes(Class) set of available codes} depends on the defining
      * {@linkplain #getAuthority() authority} and the {@code GeodeticAuthorityFactory} subclass in use.
      * A frequently used authority is "EPSG", which includes the following codes:
      *
@@ -662,7 +662,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * Creates a prime meridian defining the origin from which longitude values are determined.
      *
      * <div class="note"><b>Example:</b>
-     * the {@linkplain #getAuthorityCodes(java.lang.Class) set of available codes} depends on the defining
+     * the {@linkplain #getAuthorityCodes(Class) set of available codes} depends on the defining
      * {@linkplain #getAuthority() authority} and the {@code GeodeticAuthorityFactory} subclass in use.
      * A frequently used authority is "EPSG", which includes the following codes:
      *
@@ -695,7 +695,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * Creates information about spatial, vertical, and temporal extent (usually a domain of validity) from a code.
      *
      * <div class="note"><b>Example:</b>
-     * the {@linkplain #getAuthorityCodes(java.lang.Class) set of available codes} depends on the defining
+     * the {@linkplain #getAuthorityCodes(Class) set of available codes} depends on the defining
      * {@linkplain #getAuthority() authority} and the {@code GeodeticAuthorityFactory} subclass in use.
      * A frequently used authority is "EPSG", which includes the following codes:
      *
@@ -727,7 +727,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * method instead of this one.
      *
      * <div class="note"><b>Example:</b>
-     * the {@linkplain #getAuthorityCodes(java.lang.Class) set of available codes} depends on the defining
+     * the {@linkplain #getAuthorityCodes(Class) set of available codes} depends on the defining
      * {@linkplain #getAuthority() authority} and the {@code GeodeticAuthorityFactory} subclass in use.
      * A frequently used authority is "EPSG", which includes the following codes:
      *
@@ -760,7 +760,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * sometime with ellipsoidal height.
      *
      * <div class="note"><b>Example:</b>
-     * the {@linkplain #getAuthorityCodes(java.lang.Class) set of available codes} depends on the defining
+     * the {@linkplain #getAuthorityCodes(Class) set of available codes} depends on the defining
      * {@linkplain #getAuthority() authority} and the {@code GeodeticAuthorityFactory} subclass in use.
      * A frequently used authority is "EPSG", which includes the following codes:
      *
@@ -791,7 +791,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * Creates a 1-dimensional coordinate system for heights or depths of points.
      *
      * <div class="note"><b>Example:</b>
-     * the {@linkplain #getAuthorityCodes(java.lang.Class) set of available codes} depends on the defining
+     * the {@linkplain #getAuthorityCodes(Class) set of available codes} depends on the defining
      * {@linkplain #getAuthority() authority} and the {@code GeodeticAuthorityFactory} subclass in use.
      * A frequently used authority is "EPSG", which includes the following codes:
      *
@@ -840,7 +840,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * All axes shall have the same linear unit of measure.
      *
      * <div class="note"><b>Example:</b>
-     * the {@linkplain #getAuthorityCodes(java.lang.Class) set of available codes} depends on the defining
+     * the {@linkplain #getAuthorityCodes(Class) set of available codes} depends on the defining
      * {@linkplain #getAuthority() authority} and the {@code GeodeticAuthorityFactory} subclass in use.
      * A frequently used authority is "EPSG", which includes the following codes:
      *
@@ -872,7 +872,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * Not to be confused with an ellipsoidal coordinate system based on an ellipsoid "degenerated" into a sphere.
      *
      * <div class="note"><b>Example:</b>
-     * the {@linkplain #getAuthorityCodes(java.lang.Class) set of available codes} depends on the defining
+     * the {@linkplain #getAuthorityCodes(Class) set of available codes} depends on the defining
      * {@linkplain #getAuthority() authority} and the {@code GeodeticAuthorityFactory} subclass in use.
      * A frequently used authority is "EPSG", which includes the following codes:
      *
@@ -938,7 +938,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * Creates a coordinate system axis with name, direction, unit and range of values.
      *
      * <div class="note"><b>Example:</b>
-     * the {@linkplain #getAuthorityCodes(java.lang.Class) set of available codes} depends on the defining
+     * the {@linkplain #getAuthorityCodes(Class) set of available codes} depends on the defining
      * {@linkplain #getAuthority() authority} and the {@code GeodeticAuthorityFactory} subclass in use.
      * A frequently used authority is "EPSG", which includes the following codes:
      *
@@ -971,7 +971,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * Creates an unit of measurement from a code.
      *
      * <div class="note"><b>Example:</b>
-     * the {@linkplain #getAuthorityCodes(java.lang.Class) set of available codes} depends on the defining
+     * the {@linkplain #getAuthorityCodes(Class) set of available codes} depends on the defining
      * {@linkplain #getAuthority() authority} and the {@code GeodeticAuthorityFactory} subclass in use.
      * A frequently used authority is "EPSG", which includes the following codes:
      *
@@ -979,8 +979,12 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      *   <tr><th>Code</th>       <th>Description</th></tr>
      *   <tr><td>EPSG::9002</td> <td>decimal degree</td></tr>
      *   <tr><td>EPSG::9001</td> <td>metre</td></tr>
+     *   <tr><td>EPSG::9030</td> <td>kilometre</td></tr>
      *   <tr><td>EPSG::1040</td> <td>second</td></tr>
-     * </table></div>
+     *   <tr><td>EPSG::1029</td> <td>year</td></tr>
+     * </table>
+     *
+     * See {@link org.apache.sis.measure.Units#valueOfEPSG(int)} for a more complete list of codes.</div>
      *
      * <div class="section">Default implementation</div>
      * The default implementation delegates to {@link #createObject(String)} and casts the result.
@@ -1018,9 +1022,14 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
     }
 
     /**
-     * Creates  description of the algorithm and parameters used to perform a coordinate operation.
+     * Creates description of the algorithm and parameters used to perform a coordinate operation.
      * An {@code OperationMethod} is a kind of metadata: it does not perform any coordinate operation
      * (e.g. map projection) by itself, but tells us what is needed in order to perform such operation.
+     *
+     * <p>Available methods depend both on the {@linkplain #getAuthorityCodes(Class) set declared by the authority} and on the
+     * <a href="http://sis.apache.org/book/tables/CoordinateOperationMethods.html">list of methods implemented in Apache SIS</a>.
+     * In order to be supported, an operation method must have its formulas coded in the Java programming language.
+     * See {@link org.apache.sis.referencing.operation.transform.MathTransformProvider} for more information.</p>
      *
      * <div class="section">Default implementation</div>
      * The default implementation delegates to {@link #createObject(String)} and casts the result.
@@ -1032,6 +1041,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * @throws FactoryException if the object creation failed for some other reason.
      *
      * @see org.apache.sis.referencing.operation.DefaultOperationMethod
+     * @see <a href="http://sis.apache.org/book/tables/CoordinateOperationMethods.html">List of supported methods</a>
      */
     public OperationMethod createOperationMethod(final String code) throws NoSuchAuthorityCodeException, FactoryException {
         return cast(OperationMethod.class, createObject(code), code);
