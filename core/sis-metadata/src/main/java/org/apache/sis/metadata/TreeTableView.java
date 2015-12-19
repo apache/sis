@@ -108,8 +108,9 @@ final class TreeTableView implements TreeTable, Serializable {
      * Returns the columns included in this tree table.
      */
     @Override
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
     public List<TableColumn<?>> getColumns() {
-        return COLUMNS;
+        return COLUMNS;     // Unmodifiable
     }
 
     /**

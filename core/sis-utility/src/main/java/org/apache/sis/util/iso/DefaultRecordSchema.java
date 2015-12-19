@@ -29,6 +29,7 @@ import org.opengis.util.NameFactory;
 import org.opengis.util.NameSpace;
 import org.opengis.util.RecordSchema;
 import org.opengis.util.RecordType;
+import org.opengis.feature.AttributeType;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ObjectConverter;
@@ -184,10 +185,10 @@ public class DefaultRecordSchema implements RecordSchema {
             final Map.Entry<CharSequence,Class<?>> e1 = it1.next();
             final Map.Entry<MemberName,Type> e2 = it2.next();
             if (!e2.getKey().tip().toString().equals(e1.toString())) {
-                break; // Member names differ.
+                break;      // Member names differ.
             }
-            if (!((SimpleAttributeType) e2.getValue()).getValueClass().equals(e1.getValue())) {
-                break; // Value classes differ.
+            if (!((AttributeType) e2.getValue()).getValueClass().equals(e1.getValue())) {
+                break;      // Value classes differ.
             }
         }
         throw new IllegalArgumentException(Errors.format(Errors.Keys.RecordAlreadyDefined_2, getSchemaName(), typeName));
@@ -218,7 +219,7 @@ public class DefaultRecordSchema implements RecordSchema {
             }
             type = new SimpleAttributeType<>(name, valueClass);
             final Type old = attributeTypes.putIfAbsent(valueClass, type);
-            if (old != null) { // May happen if the type has been computed concurrently.
+            if (old != null) {      // May happen if the type has been computed concurrently.
                 return old;
             }
         }

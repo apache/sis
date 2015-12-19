@@ -156,6 +156,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final short CanNotSeparateTargetDimension_1 = 175;
 
         /**
+         * Can not set a value for parameter “{0}”.
+         */
+        public static final short CanNotSetParameterValue_1 = 214;
+
+        /**
          * Can not set a value for property “{0}”.
          */
         public static final short CanNotSetPropertyValue_1 = 11;
