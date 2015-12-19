@@ -121,6 +121,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final short CanNotConvertValue_2 = 4;
 
         /**
+         * Can not instantiate the object of type ‘{0}’ identified by “{1}”.
+         */
+        public static final short CanNotInstantiateForIdentifier_2 = 215;
+
+        /**
          * Can not instantiate an object of type ‘{0}’.
          */
         public static final short CanNotInstantiate_1 = 5;
