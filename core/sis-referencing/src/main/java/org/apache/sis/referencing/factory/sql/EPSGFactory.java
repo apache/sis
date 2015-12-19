@@ -259,16 +259,18 @@ public abstract class EPSGFactory extends GeodeticAuthorityFactory implements CR
     private final Map<String,Object> properties = new HashMap<>();
 
     /**
-     * A safety guard for preventing never-ending loops in recursive calls to {@link #createDatum(String)}.
-     * This is used by {@link #createBursaWolfParameters(Integer)}, which need to create a target datum.
+     * A safety guard for preventing never-ending loops in recursive calls to some {@code createFoo(String)} methods.
+     * Recursivity may happen while creating Bursa-Wolf parameters, projected CRS if the database has erroneous data,
+     * compound CRS if there is cycles, or coordinate operations.
+     *
+     * <div class="note"><b>Example:</b>
+     * {@link #createDatum(String)} invokes {@link #createBursaWolfParameters(Integer)}, which creates a target datum.
      * The target datum could have its own Bursa-Wolf parameters, with one of them pointing again to the source datum.
+     * </div>
+     *
+     * Keys are EPSG codes and values are the type of object being constructed (but those values are not yet used).
      */
-    private boolean isCreatingBWP;
-
-    /**
-     * A safety guard for preventing never-ending loops in recursive calls to {@link #createCoordinateSystem(String)}.
-     */
-    private boolean isCreatingGeographicCRS, isCreatingProjectedCRS, isCreatingCompoundCRS;
+    private final Map<Integer,Class<?>> safetyGuard = new HashMap<>();
 
     /**
      * The {@link ConcurrentAuthorityFactory} that supply caching for all {@code createFoo(String)} methods,
@@ -993,6 +995,34 @@ addURIs:    for (int i=0; ; i++) {
     }
 
     /**
+     * Ensures that this factory is not already building an object of the given code.
+     * This method shall be followed by a {@code try ... finally} block like below:
+     *
+     * {@preformat java
+     *     ensureNoCycle(type, code);
+     *     try {
+     *         ...
+     *     } finally {
+     *         endOfRecursive(type, code);
+     *     }
+     * }
+     */
+    private void ensureNoCycle(final Class<?> type, final Integer code) throws FactoryException {
+        if (safetyGuard.putIfAbsent(code, type) != null) {
+            throw new FactoryException(error().getString(Errors.Keys.RecursiveCreateCallForCode_2, type, code));
+        }
+    }
+
+    /**
+     * Invoked after the block protected against infinite recursivity.
+     */
+    private void endOfRecursivity(final Class<?> type, final Integer code) throws FactoryException {
+        if (safetyGuard.remove(code) != type) {
+            throw new FactoryException(String.valueOf(code));   // Would be an EPSGFactory bug if it happen.
+        }
+    }
+
+    /**
      * Returns {@code true} if the given table {@code name} matches the {@code expected} name.
      * The given {@code name} may be prefixed by {@code "epsg_"} and may contain abbreviations of the full name.
      * For example {@code "epsg_coordoperation"} is considered as a match for {@code "Coordinate_Operation"}.
@@ -1362,16 +1392,15 @@ addURIs:    for (int i=0; ; i++) {
                             final GeodeticDatum datum;
                             if (datumCode != null) {
                                 datum = buffered.createGeodeticDatum(datumCode);
-                            } else if (isCreatingGeographicCRS) {
-                                throw recursiveCall(GeographicCRS.class, code);
-                            } else try {
-                                isCreatingGeographicCRS = true;
+                            } else {
                                 final String geoCode = getString(code, result, 10, 9);
-                                result.close();     // Must be close before call to createGeographicCRS(String)
-                                final GeographicCRS baseCRS = buffered.createGeographicCRS(geoCode);
-                                datum = baseCRS.getDatum();
-                            } finally {
-                                isCreatingGeographicCRS = false;
+                                result.close();     // Must be closed before call to createGeographicCRS(String)
+                                ensureNoCycle(GeographicCRS.class, epsg);
+                                try {
+                                    datum = buffered.createGeographicCRS(geoCode).getDatum();
+                                } finally {
+                                    endOfRecursivity(GeographicCRS.class, epsg);
+                                }
                             }
                             crs = crsFactory.createGeographicCRS(createProperties("[Coordinate Reference System]",
                                     name, epsg, area, scope, remarks, deprecated), datum, cs);
@@ -1387,11 +1416,9 @@ addURIs:    for (int i=0; ; i++) {
                             final String csCode  = getString(code, result,  8);
                             final String geoCode = getString(code, result, 10);
                             final String opCode  = getString(code, result, 11);
-                            result.close();      // Must be close before call to createFoo(String)
-                            if (isCreatingProjectedCRS) {
-                                throw recursiveCall(ProjectedCRS.class, code);
-                            } else try {
-                                isCreatingProjectedCRS = true;
+                            result.close();      // Must be closed before call to createFoo(String)
+                            ensureNoCycle(ProjectedCRS.class, epsg);
+                            try {
                                 final CartesianCS   cs       = buffered.createCartesianCS(csCode);
                                 final GeographicCRS baseCRS  = buffered.createGeographicCRS(geoCode);
                                 final CoordinateOperation op = buffered.createCoordinateOperation(opCode);
@@ -1402,7 +1429,7 @@ addURIs:    for (int i=0; ; i++) {
                                     throw noSuchAuthorityCode(Projection.class, opCode);
                                 }
                             } finally {
-                                isCreatingProjectedCRS = false;
+                                endOfRecursivity(ProjectedCRS.class, epsg);
                             }
                             break;
                         }
@@ -1441,14 +1468,12 @@ addURIs:    for (int i=0; ; i++) {
                             final String code2 = getString(code, result, 13);
                             result.close();
                             final CoordinateReferenceSystem crs1, crs2;
-                            if (isCreatingCompoundCRS) {
-                                throw recursiveCall(CompoundCRS.class, code);
-                            } else try {
-                                isCreatingCompoundCRS = true;
+                            ensureNoCycle(CompoundCRS.class, epsg);
+                            try {
                                 crs1 = buffered.createCoordinateReferenceSystem(code1);
                                 crs2 = buffered.createCoordinateReferenceSystem(code2);
                             } finally {
-                                isCreatingCompoundCRS = false;
+                                endOfRecursivity(CompoundCRS.class, epsg);
                             }
                             // Note: Do not invoke 'createProperties' sooner.
                             crs  = crsFactory.createCompoundCRS(createProperties("[Coordinate Reference System]",
@@ -1658,16 +1683,12 @@ addURIs:    for (int i=0; ; i++) {
     private BursaWolfParameters[] createBursaWolfParameters(final Integer code) throws SQLException, FactoryException {
         /*
          * We do not provide TOWGS84 information for WGS84 itself or for any other datum on our list of target datum,
-         * in order to avoid infinite recursivity. The 'isCreatingBWP' boolean is an extra safety check which should
+         * in order to avoid infinite recursivity. The 'ensureNonRecursive' call is an extra safety check which should
          * never fail, unless TARGET_CRS and TARGET_DATUM values do not agree with database content.
          */
         if (code == BursaWolfInfo.TARGET_DATUM) {
             return null;
         }
-        if (isCreatingBWP) {
-            throw recursiveCall(BursaWolfParameters.class, String.valueOf(code));       // See above comment.
-        }
-
         PreparedStatement stmt = prepareStatement("BursaWolfParametersSet",
                 "SELECT COORD_OP_CODE," +
                       " COORD_OP_METHOD_CODE," +
@@ -1728,11 +1749,11 @@ addURIs:    for (int i=0; ; i++) {
         for (int i=0; i<size; i++) {
             final BursaWolfInfo info = bwInfos.get(i);
             final GeodeticDatum datum;
+            ensureNoCycle(BursaWolfParameters.class, code);    // See comment at the begining of this method.
             try {
-                isCreatingBWP = true;
                 datum = buffered.createGeodeticDatum(String.valueOf(info.target));
             } finally {
-                isCreatingBWP = false;
+                endOfRecursivity(BursaWolfParameters.class, code);
             }
             final BursaWolfParameters bwp = new BursaWolfParameters(datum, null);
             stmt.setInt(1, info.operation);
@@ -2816,8 +2837,13 @@ addURIs:    for (int i=0; ; i++) {
                             }
                         }
                         final CoordinateOperation[] operations = new CoordinateOperation[codes.size()];
-                        for (int i=0; i<operations.length; i++) {
-                            operations[i] = buffered.createCoordinateOperation(codes.get(i));
+                        ensureNoCycle(CoordinateOperation.class, epsg);
+                        try {
+                            for (int i=0; i<operations.length; i++) {
+                                operations[i] = buffered.createCoordinateOperation(codes.get(i));
+                            }
+                        } finally {
+                            endOfRecursivity(CoordinateOperation.class, epsg);
                         }
                         return copFactory.createConcatenatedOperation(opProperties, operations);
                     } else {
@@ -2874,6 +2900,91 @@ addURIs:    for (int i=0; ; i++) {
              throw noSuchAuthorityCode(CoordinateOperation.class, code);
         }
         return returnValue;
+    }
+
+    /**
+     * Creates operations from source and target coordinate reference system codes.
+     * This method only extract the information explicitely declared in the EPSG database;
+     * it does not attempt to infer by itself operations that are not explicitely recorded in the database.
+     *
+     * <p>The returned set is ordered with the most accurate operations first.</p>
+     *
+     * @param  sourceCRS  Coded value of source coordinate reference system.
+     * @param  targetCRS  Coded value of target coordinate reference system.
+     * @return The operations from {@code sourceCRS} to {@code targetCRS}.
+     * @throws NoSuchAuthorityCodeException if a specified code was not found.
+     * @throws FactoryException if the object creation failed for some other reason.
+     *
+     * @todo The ordering is not consistent among all database software, because the "accuracy" column may contain null
+     *       values. When used in an "ORDER BY" clause, PostgreSQL put null values last, while Access and HSQL put them
+     *       first. The PostgreSQL's behavior is better for what we want (put operations with unknown accuracy last).
+     */
+    @Override
+    public synchronized Set<CoordinateOperation> createFromCoordinateReferenceSystemCodes(
+            final String sourceCRS, final String targetCRS) throws FactoryException
+    {
+        ArgumentChecks.ensureNonNull("sourceCRS", sourceCRS);
+        ArgumentChecks.ensureNonNull("targetCRS", targetCRS);
+        final String pair = sourceCRS + " ⇨ " + targetCRS;
+        final CoordinateOperationSet set = new CoordinateOperationSet(buffered);
+        try {
+            final String sourceKey = toPrimaryKeyForCRS(sourceCRS);
+            final String targetKey = toPrimaryKeyForCRS(targetCRS);
+            boolean searchTransformations = false;
+            do {
+                /*
+                 * This 'do' loop is executed twice: the first time for searching defining conversions, and the second
+                 * time for searching all other kind of operations. Defining conversions are searched first because
+                 * they are, by definition, the most accurate operations.
+                 *
+                 * TODO: Remove the "area" and "accuracy" ordering since they should be replaced by Java code
+                 *       (because we need to compute intersections while supporting anti-meridian spanning).
+                 *       Also need to resolve ordering problem (see method javadoc)
+                 */
+                final String key, sql;
+                if (searchTransformations) {
+                    key = "TransformationFromCRS";
+                    sql = "SELECT COORD_OP_CODE" +
+                          " FROM [Coordinate_Operation] AS CO" +
+                          " JOIN [Area] ON AREA_OF_USE_CODE = AREA_CODE" +
+                          " WHERE SOURCE_CRS_CODE = ?" +
+                            " AND TARGET_CRS_CODE = ?" +
+                       " ORDER BY ABS(CO.DEPRECATED), COORD_OP_ACCURACY, " +
+                       " ABS((AREA_EAST_BOUND_LON - AREA_WEST_BOUND_LON) *" +
+                          " (AREA_NORTH_BOUND_LAT - AREA_SOUTH_BOUND_LAT) * COS(0.5*RADIANS" +
+                           "(AREA_NORTH_BOUND_LAT + AREA_SOUTH_BOUND_LAT))) DESC";
+                } else {
+                    key = "ConversionFromCRS";
+                    sql = "SELECT PROJECTION_CONV_CODE" +
+                          " FROM [Coordinate Reference System]" +
+                          " WHERE SOURCE_GEOGCRS_CODE = ?" +
+                            " AND COORD_REF_SYS_CODE = ?";
+                }
+                final PreparedStatement stmt = prepareStatement(key, sql);
+                try (ResultSet result = executeQuery(stmt, sourceKey, targetKey)) {
+                    while (result.next()) {
+                        final String code = getString(pair, result, 1);
+                        set.addAuthorityCode(code, searchTransformations ? null : targetKey);
+                    }
+                }
+            } while ((searchTransformations = !searchTransformations) == true);
+            /*
+             * Search finished. We may have a lot of coordinate operations
+             * (e.g. about 40 for "ED50" (EPSG::4230) to "WGS 84" (EPSG::4326)).
+             * Alter the ordering using the information supplied in the supersession table.
+             */
+            final String[] codes = set.getAuthorityCodes();
+            sort(codes);
+            set.setAuthorityCodes(codes);
+        } catch (SQLException exception) {
+            throw databaseFailure(CoordinateOperation.class, pair, exception);
+        }
+        /*
+         * Before to return the set, tests the creation of 1 object in order to report early (i.e. now)
+         * any problems with SQL statements. Remaining operations will be created only when first needed.
+         */
+        set.resolve(1);
+        return set;
     }
 
     /**
@@ -3029,13 +3140,6 @@ addURIs:    for (int i=0; ; i++) {
     private NoSuchAuthorityCodeException noSuchAuthorityCode(final Class<?> type, final String code) {
         return new NoSuchAuthorityCodeException(error().getString(Errors.Keys.NoSuchAuthorityCode_3,
                 Constants.EPSG, type, code), Constants.EPSG, trimAuthority(code), code);
-    }
-
-    /**
-     * Constructs an exception for recursive method calls.
-     */
-    private FactoryException recursiveCall(final Class<?> type, final String code) {
-        return new FactoryException(error().getString(Errors.Keys.RecursiveCreateCallForCode_2, type, code));
     }
 
     /**
