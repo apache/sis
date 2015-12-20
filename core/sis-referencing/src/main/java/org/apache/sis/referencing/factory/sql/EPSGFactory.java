@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.List;
 import java.util.HashSet;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.LinkedHashMap;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -53,6 +54,7 @@ import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.opengis.util.FactoryException;
 import org.opengis.util.NoSuchIdentifierException;
+import org.opengis.metadata.Identifier;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.OnLineFunction;
@@ -70,6 +72,7 @@ import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.internal.metadata.TransformationAccuracy;
 import org.apache.sis.internal.referencing.DeprecatedCode;
+import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.metadata.iso.ImmutableIdentifier;
@@ -92,6 +95,7 @@ import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactor
 import org.apache.sis.referencing.factory.FactoryDataException;
 import org.apache.sis.referencing.factory.GeodeticAuthorityFactory;
 import org.apache.sis.referencing.factory.ConcurrentAuthorityFactory;
+import org.apache.sis.referencing.factory.IdentifiedObjectFinder;
 import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.util.iso.DefaultNameSpace;
 import org.apache.sis.util.resources.Vocabulary;
@@ -2410,6 +2414,18 @@ addURIs:    for (int i=0; ; i++) {
     /**
      * Creates a definition of a single parameter used by an operation method.
      *
+     * <div class="note"><b>Example:</b>
+     * some EPSG codes for parameters are:
+     *
+     * <table class="sis" summary="EPSG codes examples">
+     *   <tr><th>Code</th> <th>Description</th></tr>
+     *   <tr><td>8801</td> <td>Latitude of natural origin</td></tr>
+     *   <tr><td>8802</td> <td>Longitude of natural origin</td></tr>
+     *   <tr><td>8805</td> <td>Scale factor at natural origin</td></tr>
+     *   <tr><td>8806</td> <td>False easting</td></tr>
+     *   <tr><td>8807</td> <td>False northing</td></tr>
+     * </table></div>
+     *
      * @param  code Value allocated by EPSG.
      * @return The parameter descriptor for the given code.
      * @throws NoSuchAuthorityCodeException if the specified {@code code} was not found.
@@ -2660,6 +2676,17 @@ addURIs:    for (int i=0; ; i++) {
     /**
      * Creates an operation for transforming coordinates in the source CRS to coordinates in the target CRS.
      * The returned object will either be a {@link Conversion} or a {@link Transformation}, depending on the code.
+     *
+     * <div class="note"><b>Example:</b>
+     * some EPSG codes for coordinate transformations are:
+     *
+     * <table class="sis" summary="EPSG codes examples">
+     *   <tr><th>Code</th> <th>Description</th></tr>
+     *   <tr><td>1133</td> <td>ED50 to WGS 84 (1)</td></tr>
+     *   <tr><td>1241</td> <td>NAD27 to NAD83 (1)</td></tr>
+     *   <tr><td>1173</td> <td>NAD27 to WGS 84 (4)</td></tr>
+     *   <tr><td>6326</td> <td>NAD83(2011) to NAVD88 height (1)</td></tr>
+     * </table></div>
      *
      * @param  code Value allocated by EPSG.
      * @return The operation for the given code.
@@ -2985,6 +3012,147 @@ addURIs:    for (int i=0; ; i++) {
          */
         set.resolve(1);
         return set;
+    }
+
+    /**
+     * Returns a finder which can be used for looking up unidentified objects.
+     * The finder tries to fetch a fully {@linkplain AbstractIdentifiedObject identified object} from an incomplete one,
+     * for example from an object without "{@code ID[…]}" or "{@code AUTHORITY[…]}" element in <cite>Well Known Text</cite>.
+     *
+     * <p>The {@code type} argument is a hint for optimizing the searches.
+     * If the type is unknown, one can use {@code IdentifiedObject.class}.
+     * However a more accurate type help to speed up the search since it reduces the amount of tables to scan.</p>
+     *
+     * @param  type The type of objects to look for.
+     * @return A finder to use for looking up unidentified objects.
+     * @throws FactoryException if the finder can not be created.
+     */
+    @Override
+    public IdentifiedObjectFinder createIdentifiedObjectFinder(final Class<? extends IdentifiedObject> type)
+            throws FactoryException
+    {
+        return new Finder(type);
+    }
+
+    /**
+     * An implementation of {@link IdentifiedObjectFinder} which scans over a smaller set of authority codes.
+     */
+    private final class Finder extends IdentifiedObjectFinder {
+        /**
+         * Creates a new finder.
+         */
+        Finder(final Class<? extends IdentifiedObject> type) {
+            super(buffered, type);
+        }
+
+        /**
+         * Returns the authority of the codes to search.
+         * Overridden for efficiency.
+         */
+        @Override
+        public Citation getAuthority() {
+            return Citations.EPSG;
+        }
+
+        /**
+         * Returns a set of authority codes that <strong>may</strong> identify the same object than the specified one.
+         * This implementation tries to get a smaller set than what {@link EPSGFactory#getAuthorityCodes()} would produce.
+         * Deprecated objects must be last in iteration order.
+         */
+        @Override
+        protected Set<String> getCodeCandidates(final IdentifiedObject object) throws FactoryException {
+            String select = "COORD_REF_SYS_CODE";
+            String from   = "[Coordinate Reference System]";
+            final String where;
+            final Comparable<?> code;
+            if (object instanceof Ellipsoid) {
+                select = "ELLIPSOID_CODE";
+                from   = "[Ellipsoid]";
+                where  = "SEMI_MAJOR_AXIS";
+                code   = ((Ellipsoid) object).getSemiMajorAxis();
+            } else {
+                IdentifiedObject dependency;
+                if (object instanceof GeneralDerivedCRS) {
+                    dependency = ((GeneralDerivedCRS) object).getBaseCRS();
+                    where      = "SOURCE_GEOGCRS_CODE";
+                } else if (object instanceof SingleCRS) {
+                    dependency = ((SingleCRS) object).getDatum();
+                    where      = "DATUM_CODE";
+                } else if (object instanceof GeodeticDatum) {
+                    dependency = ((GeodeticDatum) object).getEllipsoid();
+                    select     = "DATUM_CODE";
+                    from       = "[Datum]";
+                    where      = "ELLIPSOID_CODE";
+                } else {
+                    // Not a supported type. Returns all codes.
+                    return super.getCodeCandidates(object);
+                }
+                /*
+                 * Search for the dependency.  The super.find(…) method performs a check (not documented in public API)
+                 * for detecting when it is invoked recursively, which is the case here. Consequently the super.find(…)
+                 * behavior below is slightly different than usual:
+                 *
+                 * 1) Since invoked recursively, super.find(…) accepts an argument of different type than the type
+                 *    given at construction time.
+                 *
+                 * 2) Since invoked recursively, super.find(…) checks the cache of the ConcurrentAuthorityFactory
+                 *    wrapper (if any). If found, the dependency will also be stored in the cache. This is desirable
+                 *    since this method may be invoked (indirectly) in a loop for many CRS objects sharing the same
+                 *    CoordinateSystem or Datum dependencies.
+                 */
+                dependency = find(dependency);
+                if (dependency == null) {
+                    // Dependency not found.
+                    return Collections.emptySet();
+                }
+                Identifier id = IdentifiedObjects.getIdentifier(dependency, Citations.EPSG);
+                if (id == null || (code = id.getCode()) == null) {
+                    // Identifier not found (malformed CRS object?).
+                    // Conservatively scans all objects.
+                    return super.getCodeCandidates(object);
+                }
+            }
+            /*
+             * Build the SQL statement. The code can be any of the following type:
+             *
+             * - A String, which represent a foreigner key as an integer value.
+             *   The search will require an exact match.
+             *
+             * - A floating point number, in which case the search will be performed
+             *   with a tolerance threshold of 1 cm for a planet of the size of Earth.
+             */
+            final StringBuilder buffer = new StringBuilder(60);
+            buffer.append("SELECT ").append(select).append(" FROM ").append(from).append(" WHERE ").append(where);
+            if (code instanceof Number) {
+                final double value = ((Number) code).doubleValue();
+                final double tolerance = Math.abs(value * (Formulas.LINEAR_TOLERANCE / ReferencingServices.AUTHALIC_RADIUS));
+                buffer.append(">=").append(value - tolerance).append(" AND ").append(where)
+                      .append("<=").append(value + tolerance);
+            } else {
+                buffer.append('=').append(code);
+            }
+            buffer.append(" ORDER BY ABS(DEPRECATED), ");
+            if (code instanceof Number) {
+                buffer.append("ABS(").append(select).append('-').append(code).append(')');
+            } else {
+                buffer.append(select);          // Only for making order determinist.
+            }
+            final Set<String> result = new LinkedHashSet<>();
+            try {
+                final String sql = adaptSQL(buffer.toString());
+                try (Statement s = connection.createStatement();
+                     ResultSet r = s.executeQuery(sql))
+                {
+                    while (r.next()) {
+                        result.add(r.getString(1));
+                    }
+                }
+            } catch (SQLException exception) {
+                throw databaseFailure(Identifier.class, String.valueOf(code), exception);
+            }
+            result.remove(null);    // Should not have null element, but let be safe.
+            return result;
+        }
     }
 
     /**

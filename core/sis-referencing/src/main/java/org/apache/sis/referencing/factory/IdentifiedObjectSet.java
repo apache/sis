@@ -73,9 +73,9 @@ import java.util.Objects;
  * the {@link #isRecoverableFailure(FactoryException)} method.
  *
  * <div class="section">Thread safety</div>
- * This class is thread-safe for allowing caching by {@link ConcurrentAuthorityFactory}. However, implementors
- * are encouraged to wrap in {@linkplain java.util.Collections#unmodifiableSet unmodifiable set} if they intend
- * to cache {@code IdentifiedObjectSet} instances.
+ * This class is thread-safe is the underlying {@linkplain #factory} is also thread-safe.
+ * However, implementors are encouraged to wrap in {@linkplain java.util.Collections#unmodifiableSet unmodifiable set}
+ * if they intend to cache {@code IdentifiedObjectSet} instances.
  *
  * @param <T> The type of objects to be included in this set.
  *
@@ -177,12 +177,20 @@ public class IdentifiedObjectSet<T extends IdentifiedObject> extends AbstractSet
      * @return The authority codes in iteration order.
      */
     public String[] getAuthorityCodes() {
+        return codes.clone();
+    }
+
+    /**
+     * Returns the {@code codes} array, creating it if needed. This method does not clone the array.
+     */
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
+    final String[] codes() {
         synchronized (objects) {
             if (codes == null) {
                 final Set<String> keys = objects.keySet();
                 codes = keys.toArray(new String[keys.size()]);
             }
-            return codes.clone();
+            return codes;
         }
     }
 
@@ -377,6 +385,9 @@ public class IdentifiedObjectSet<T extends IdentifiedObject> extends AbstractSet
      * {@link FactoryException} other than {@link NoSuchIdentifierException}, then the exception
      * will be re-thrown as an unchecked {@link BackingStoreException}.
      *
+     * <p>This iterator is <strong>not</strong> thread safe – iteration should be done in a single thread.
+     * However the iterator is robust to concurrent changes in {@code IdentifiedObjectSet} during iteration.</p>
+     *
      * @return An iterator over all {@code IdentifiedObject} instances in this set, in insertion order.
      * @throws BackingStoreException if an error occurred while creating the iterator.
      */
@@ -388,7 +399,7 @@ public class IdentifiedObjectSet<T extends IdentifiedObject> extends AbstractSet
              * We need to take a snapshot because the underlying {@link IdentifiedObjectSet#objects} map may be
              * modified concurrently in other threads.
              */
-            private final String[] keys = getAuthorityCodes();
+            private final String[] keys = codes();
 
             /**
              * Index of the next element to obtain by a call to {@link IdentifiedObjectSet#get(String)}.
@@ -514,7 +525,7 @@ public class IdentifiedObjectSet<T extends IdentifiedObject> extends AbstractSet
      * at {@link Level#WARNING}. If this method returns {@code false}, then the exception will be re-thrown
      * as a {@link BackingStoreException}.
      *
-     * <p>The default implementation returns applies the following rules:</p>
+     * <p>The default implementation applies the following rules:</p>
      * <ul>
      *   <li>If {@link NoSuchAuthorityCodeException}, returns {@code false} since failure to find a code declared
      *       in the collection would be an inconsistency. Note that this exception is a subtype of

@@ -1004,6 +1004,20 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
     /**
      * Creates a definition of a single parameter used by an operation method.
      *
+     * <div class="note"><b>Example:</b>
+     * the {@linkplain #getAuthorityCodes(Class) set of available codes} depends on the defining
+     * {@linkplain #getAuthority() authority} and the {@code GeodeticAuthorityFactory} subclass in use.
+     * A frequently used authority is "EPSG", which includes the following codes:
+     *
+     * <table class="sis" summary="EPSG codes examples">
+     *   <tr><th>Code</th>       <th>Description</th></tr>
+     *   <tr><td>EPSG::8801</td> <td>Latitude of natural origin</td></tr>
+     *   <tr><td>EPSG::8802</td> <td>Longitude of natural origin</td></tr>
+     *   <tr><td>EPSG::8805</td> <td>Scale factor at natural origin</td></tr>
+     *   <tr><td>EPSG::8806</td> <td>False easting</td></tr>
+     *   <tr><td>EPSG::8807</td> <td>False northing</td></tr>
+     * </table></div>
+     *
      * <div class="section">Default implementation</div>
      * The default implementation delegates to {@link #createObject(String)} and casts the result.
      * If the result can not be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
@@ -1014,6 +1028,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * @throws FactoryException if the object creation failed for some other reason.
      *
      * @see org.apache.sis.parameter.DefaultParameterDescriptor
+     * @see <a href="http://sis.apache.org/book/tables/CoordinateOperationMethods.html">Apache SIS™ Coordinate Operation Methods</a>
      */
     public ParameterDescriptor<?> createParameterDescriptor(final String code)
             throws NoSuchAuthorityCodeException, FactoryException
@@ -1041,7 +1056,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * @throws FactoryException if the object creation failed for some other reason.
      *
      * @see org.apache.sis.referencing.operation.DefaultOperationMethod
-     * @see <a href="http://sis.apache.org/book/tables/CoordinateOperationMethods.html">List of supported methods</a>
+     * @see <a href="http://sis.apache.org/book/tables/CoordinateOperationMethods.html">Apache SIS™ Coordinate Operation Methods</a>
      */
     public OperationMethod createOperationMethod(final String code) throws NoSuchAuthorityCodeException, FactoryException {
         return cast(OperationMethod.class, createObject(code), code);
@@ -1051,6 +1066,19 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * Creates an operation for transforming coordinates in the source CRS to coordinates in the target CRS.
      * Coordinate operations contain a {@linkplain org.apache.sis.referencing.operation.transform.AbstractMathTransform
      * math transform}, which does the actual work of transforming coordinates.
+     *
+     * <div class="note"><b>Example:</b>
+     * the {@linkplain #getAuthorityCodes(Class) set of available codes} depends on the defining
+     * {@linkplain #getAuthority() authority} and the {@code GeodeticAuthorityFactory} subclass in use.
+     * A frequently used authority is "EPSG", which includes the following codes:
+     *
+     * <table class="sis" summary="EPSG codes examples">
+     *   <tr><th>Code</th>       <th>Description</th></tr>
+     *   <tr><td>EPSG::1133</td> <td>ED50 to WGS 84 (1)</td></tr>
+     *   <tr><td>EPSG::1241</td> <td>NAD27 to NAD83 (1)</td></tr>
+     *   <tr><td>EPSG::1173</td> <td>NAD27 to WGS 84 (4)</td></tr>
+     *   <tr><td>EPSG::6326</td> <td>NAD83(2011) to NAVD88 height (1)</td></tr>
+     * </table></div>
      *
      * <div class="section">Default implementation</div>
      * The default implementation delegates to {@link #createObject(String)} and casts the result.
