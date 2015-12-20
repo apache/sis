@@ -75,7 +75,7 @@ public class IdentifiedObjectFinder {
     /**
      * The factory to use for creating objects. This is the factory specified at construction time.
      */
-    final AuthorityFactory factory;
+    protected final AuthorityFactory factory;
 
     /**
      * The proxy for objects creation. This is usually set at construction time.
