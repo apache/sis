@@ -39,10 +39,10 @@ import java.nio.file.InvalidPathException;
  */
 public enum DataDirectory {
     /**
-     * The {@code "Metadata"} directory.
+     * The {@code "Databases"} directory.
      * This directory is used for storing EPSG database and other metadata.
      */
-    METADATA,
+    DATABASES,
 
     /**
      * The {@code "DatumChanges"} directory.
@@ -136,8 +136,9 @@ public enum DataDirectory {
     }
 
     /**
-     * Returns the sub-directory identified by this enum, or {@code null} if the parent {@code SIS_DATA}
-     * directory was not specified.
+     * Returns the sub-directory identified by this enum, or {@code null} if the parent {@code $SIS_DATA}
+     * directory was not specified. If the {@code $SIS_DATA} directory exists but not the sub-directory,
+     * then this method creates the sub-directory.
      *
      * @return The sub-directory, or {@code null} if unspecified.
      */

@@ -298,7 +298,7 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      * In addition, implementations should not invoke other {@code ConcurrentAuthorityFactory}
      * methods during this method execution in order to avoid never-ending loop.
      *
-     * @return The backing store to uses in {@code createFoo(String)} methods.
+     * @return The backing store to use in {@code createFoo(String)} methods.
      * @throws UnavailableFactoryException if the backing store is unavailable because an optional resource is missing.
      * @throws FactoryException if the creation of backing store failed for another reason.
      */
