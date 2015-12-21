@@ -111,7 +111,7 @@ import org.apache.sis.measure.MeasurementRange;
 
 
 /**
- * A geodetic object factory backed by the EPSG database tables.
+ * A geodetic object factory fetching definitions with a JDBC connection to an EPSG database.
  * The EPSG database is freely available at <a href="http://www.epsg.org">http://www.epsg.org</a>.
  * Current version of this class requires EPSG database version 6.6 or above.
  *
@@ -149,7 +149,7 @@ import org.apache.sis.measure.MeasurementRange;
  *
  * @see <a href="http://sis.apache.org/book/tables/CoordinateReferenceSystems.html">List of authority codes</a>
  */
-public abstract class EPSGFactory extends GeodeticAuthorityFactory implements CRSAuthorityFactory,
+public class EPSGFactory extends GeodeticAuthorityFactory implements CRSAuthorityFactory,
         CSAuthorityFactory, DatumAuthorityFactory, CoordinateOperationAuthorityFactory, Localized, AutoCloseable
 {
     /**
@@ -312,7 +312,7 @@ public abstract class EPSGFactory extends GeodeticAuthorityFactory implements CR
 
     /**
      * The factory to use for creating {@link MathTransform} instances.
-     * The math transform as created as part of {@link CoordinateOperation} creation process.
+     * The math transforms are created as part of {@link CoordinateOperation} creation process.
      */
     protected final MathTransformFactory mtFactory;
 
@@ -326,6 +326,11 @@ public abstract class EPSGFactory extends GeodeticAuthorityFactory implements CR
     /**
      * Creates a factory using the given connection. The connection will be {@linkplain Connection#close() closed}
      * when this factory will be {@linkplain #close() closed}.
+     *
+     * <div class="note"><b>Design note:</b>
+     * this constructor is protected because {@code EPSGFactory} instances should not be created as standalone factories.
+     * This constructor is invoked either by {@link EPSGDataset#createBackingStore(Connection)}, or by the constructor
+     * of an {@code EPSGFactory} subclass which is itself invoked by a corresponding {@code EPSGDataset} subclass.</div>
      *
      * @param connection    The connection to the underlying EPSG database.
      * @param nameFactory   The factory to use for creating authority codes as {@link GenericName} instances.
@@ -456,7 +461,7 @@ public abstract class EPSGFactory extends GeodeticAuthorityFactory implements CR
              * Add some hard-coded links to EPSG resources, and finally add the JDBC driver name and version number.
              * The list last OnlineResource looks like:
              *
-             *    Linkage:      jdbc:derby:/my/path/to/SIS_DATA/Metadata
+             *    Linkage:      jdbc:derby:/my/path/to/SIS_DATA/Databases/SpatialMetadata
              *    Function:     Connection
              *    Description:  EPSG dataset version 8.8 on “Apache Derby Embedded JDBC Driver” version 10.12.
              */
