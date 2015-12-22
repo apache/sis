@@ -42,7 +42,7 @@ final class CoordinateOperationSet extends IdentifiedObjectSet<CoordinateOperati
     /**
      * The codes of {@link ProjectedCRS} objects for the specified {@link Conversion} codes.
      */
-    private final Map<String,String> projections;
+    private final Map<String,Integer> projections;
 
     /**
      * Creates a new instance of this lazy set.
@@ -58,7 +58,7 @@ final class CoordinateOperationSet extends IdentifiedObjectSet<CoordinateOperati
      * @param code The code for the {@link CoordinateOperation} to add.
      * @param crs  The code for the CRS to create instead of the operation, or {@code null} if none.
      */
-    final void addAuthorityCode(final String code, final String crs) {
+    final void addAuthorityCode(final String code, final Integer crs) {
         if (crs != null) {
             projections.put(code, crs);
         }
@@ -80,9 +80,9 @@ final class CoordinateOperationSet extends IdentifiedObjectSet<CoordinateOperati
      */
     @Override
     protected CoordinateOperation createObject(final String code) throws FactoryException {
-        final String crs = projections.get(code);
+        final Integer crs = projections.get(code);
         if (crs != null) {
-            return ((CRSAuthorityFactory) factory).createProjectedCRS(crs).getConversionFromBase();
+            return ((CRSAuthorityFactory) factory).createProjectedCRS(String.valueOf(crs)).getConversionFromBase();
         } else {
             return ((CoordinateOperationAuthorityFactory) factory).createCoordinateOperation(code);
         }
