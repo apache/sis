@@ -81,6 +81,16 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
     }
 
     /**
+     * Creates a new authority factory with the same configuration than the given factory.
+     *
+     * @param parent The factory from which to copy the configuration.
+     */
+    protected GeodeticAuthorityFactory(final GeodeticAuthorityFactory parent) {
+        ArgumentChecks.ensureNonNull("parent", parent);
+        nameFactory = parent.nameFactory;
+    }
+
+    /**
      * Returns the organization or party responsible for definition and maintenance of the database.
      * This method may return {@code null} if it can not obtain this information, for example because
      * the connection to a database is not available.

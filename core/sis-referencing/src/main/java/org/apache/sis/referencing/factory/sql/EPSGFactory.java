@@ -35,6 +35,7 @@ import org.apache.sis.internal.metadata.sql.Initializer;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.referencing.factory.GeodeticAuthorityFactory;
 import org.apache.sis.referencing.factory.ConcurrentAuthorityFactory;
+import org.apache.sis.referencing.factory.UnavailableFactoryException;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Localized;
 
@@ -192,8 +193,6 @@ public class EPSGFactory extends ConcurrentAuthorityFactory implements CRSAuthor
         try {
             c = dataSource.getConnection();
             final EPSGDataAccess factory = createBackingStore(c);
-            factory.buffered = this;
-            factory.setLocale(locale);
             return factory;
         } catch (Exception e) {
             if (c != null) try {
@@ -201,7 +200,7 @@ public class EPSGFactory extends ConcurrentAuthorityFactory implements CRSAuthor
             } catch (SQLException e2) {
                 e.addSuppressed(e2);
             }
-            throw new FactoryException(e.getLocalizedMessage(), e);
+            throw new UnavailableFactoryException(e.getLocalizedMessage(), e);
         }
     }
 
@@ -218,6 +217,6 @@ public class EPSGFactory extends ConcurrentAuthorityFactory implements CRSAuthor
      * @return The backing store to use in {@code createFoo(String)} methods.
      */
     protected EPSGDataAccess createBackingStore(final Connection connection) throws SQLException {
-        return new EPSGDataAccess(connection, nameFactory, datumFactory, csFactory, crsFactory, copFactory, mtFactory);
+        return new EPSGDataAccess(this, connection);
     }
 }
