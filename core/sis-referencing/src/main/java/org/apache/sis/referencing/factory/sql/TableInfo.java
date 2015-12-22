@@ -26,7 +26,7 @@ import org.opengis.parameter.ParameterDescriptor;
 
 /**
  * Information about a specific table. The MS-Access dialect of SQL is assumed;
- * it will be translated into ANSI SQL later by {@link EPSGFactory#adaptSQL(String)} if needed.
+ * it will be translated into ANSI SQL later by {@link EPSGDataAccess#adaptSQL(String)} if needed.
  *
  * @author  Martin Desruisseaux (IRD)
  * @since   0.7
@@ -36,14 +36,14 @@ import org.opengis.parameter.ParameterDescriptor;
 final class TableInfo {
     /**
      * List of tables and columns to test for codes values.
-     * Those tables are used by the {@link EPSGFactory#createObject(String)} method
+     * Those tables are used by the {@link EPSGDataAccess#createObject(String)} method
      * in order to detect which of the following methods should be invoked for a given code:
      *
-     * {@link EPSGFactory#createCoordinateReferenceSystem(String)}
-     * {@link EPSGFactory#createCoordinateSystem(String)}
-     * {@link EPSGFactory#createDatum(String)}
-     * {@link EPSGFactory#createEllipsoid(String)}
-     * {@link EPSGFactory#createUnit(String)}
+     * {@link EPSGDataAccess#createCoordinateReferenceSystem(String)}
+     * {@link EPSGDataAccess#createCoordinateSystem(String)}
+     * {@link EPSGDataAccess#createDatum(String)}
+     * {@link EPSGDataAccess#createEllipsoid(String)}
+     * {@link EPSGDataAccess#createUnit(String)}
      *
      * The order is significant: it is the key for a {@code switch} statement.
      */

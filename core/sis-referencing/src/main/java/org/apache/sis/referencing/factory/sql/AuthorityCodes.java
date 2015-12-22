@@ -38,7 +38,7 @@ import org.apache.sis.util.collection.IntegerList;
  * The serialization does not preserve any connection to the database.</p>
  *
  * <p>This method does not implement {@link AutoCloseable} because the same instance may be shared by many users,
- * since {@link EPSGFactory#getAuthorityCodes(Class)} caches {@code AuthorityCodes} instances. Furthermore we can
+ * since {@link EPSGDataAccess#getAuthorityCodes(Class)} caches {@code AuthorityCodes} instances. Furthermore we can
  * not rely on the users closing {@code AuthorityCodes} themselves because this is not part of the usual contract
  * for Java collection classes (we could document that recommendation in method Javadoc, but not every developers
  * read Javadoc). Relying on the garbage collector for disposing this resource is far from ideal, but alternatives
@@ -69,10 +69,10 @@ final class AuthorityCodes extends AbstractMap<String,String> implements Seriali
 
     /**
      * The factory which is the owner of this map. One purpose of this field is to prevent garbage collection
-     * of that factory as long as this map is in use. This is required because {@link EPSGFactory#finalize()}
+     * of that factory as long as this map is in use. This is required because {@link EPSGDataAccess#finalize()}
      * closes the JDBC connections.
      */
-    private final transient EPSGFactory factory;
+    private final transient EPSGDataAccess factory;
 
     /**
      * The interface of referencing objects for which this map contains the code.
@@ -128,7 +128,7 @@ final class AuthorityCodes extends AbstractMap<String,String> implements Seriali
      * @param  type       The type to query.
      * @param  factory    The factory originator.
      */
-    AuthorityCodes(final Connection connection, final TableInfo table, final Class<?> type, final EPSGFactory factory)
+    AuthorityCodes(final Connection connection, final TableInfo table, final Class<?> type, final EPSGDataAccess factory)
             throws SQLException
     {
         this.factory = factory;

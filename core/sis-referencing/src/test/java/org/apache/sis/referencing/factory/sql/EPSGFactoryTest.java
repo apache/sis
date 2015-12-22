@@ -32,11 +32,11 @@ import static org.junit.Assert.*;
  */
 public final strictfp class EPSGFactoryTest extends TestCase {
     /**
-     * Tests {@link EPSGFactory#tableMatches(String, String)}.
+     * Tests {@link EPSGDataAccess#tableMatches(String, String)}.
      */
     @Test
     public void testTableMatches() {
-        assertTrue(EPSGFactory.tableMatches("Coordinate_Operation",          "epsg_coordoperation"));
-        assertTrue(EPSGFactory.tableMatches("[Coordinate Reference System]", "epsg_coordinatereferencesystem"));
+        assertTrue(EPSGDataAccess.tableMatches("Coordinate_Operation",          "epsg_coordoperation"));
+        assertTrue(EPSGDataAccess.tableMatches("[Coordinate Reference System]", "epsg_coordinatereferencesystem"));
     }
 }
