@@ -27,7 +27,7 @@ import org.apache.sis.util.logging.Logging;
 
 /**
  * Closes JDBC resources when {@link AuthorityCodes} is garbage collected.
- * Those weak references are stored in the {@link EPSGFactory#authorityCodes} map.
+ * Those weak references are stored in the {@link EPSGDataAccess#authorityCodes} map.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.7
@@ -38,7 +38,7 @@ final class CloseableReference<T> extends WeakReference<T> implements Disposable
     /**
      * The EPSG factory, used for synchronization lock.
      */
-    private final EPSGFactory factory;
+    private final EPSGDataAccess factory;
 
     /**
      * The statements to close. Statements will be closed in reverse order, with null elements ignored.
@@ -50,7 +50,7 @@ final class CloseableReference<T> extends WeakReference<T> implements Disposable
      * Creates a new phantom reference which will close the given statements
      * when the given referenced object will be garbage collected.
      */
-    CloseableReference(final T ref, final EPSGFactory factory, final Statement[] statements) {
+    CloseableReference(final T ref, final EPSGDataAccess factory, final Statement[] statements) {
         super(ref, ReferenceQueueConsumer.QUEUE);
         this.statements = statements;
         this.factory = factory;
@@ -95,7 +95,7 @@ final class CloseableReference<T> extends WeakReference<T> implements Disposable
              * There is nothing we can do here. It is not even worth to throw an unchecked exception because
              * this method is invoked from a background thread, so the exception would not reach user's code.
              * Pretend that the logging come from AuthorityCodes because it is closer to a public API (or at
-             * least, easier to guess that it is related to the EPSGFactory.getAuthorityCodes() method).
+             * least, easier to guess that it is related to the EPSGDataAccess.getAuthorityCodes() method).
              */
             Logging.unexpectedException(Logging.getLogger(Loggers.CRS_FACTORY), AuthorityCodes.class, "close", exception);
         }

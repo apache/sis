@@ -498,7 +498,7 @@ public final class Units extends Static {
      * and some frequently-used units. The list of recognized units may be updated in any future
      * version of SIS.</p>
      *
-     * <p>The {@link org.apache.sis.referencing.factory.sql.EPSGFactory} uses this method
+     * <p>The {@link org.apache.sis.referencing.factory.sql.EPSGDataAccess} class uses this method
      * for fetching the base units, and derives automatically other units from the information
      * found in the EPSG database. This method is also used by other classes not directly related
      * to the EPSG database, like {@link org.apache.sis.referencing.factory.CommonAuthorityFactory}

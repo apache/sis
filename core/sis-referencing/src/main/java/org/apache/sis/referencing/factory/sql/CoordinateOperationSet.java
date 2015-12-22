@@ -31,7 +31,7 @@ import org.apache.sis.referencing.factory.IdentifiedObjectSet;
 
 /**
  * A lazy set of {@link CoordinateOperation} objects to be returned by the
- * {@link EPSGFactory#createFromCoordinateReferenceSystemCodes(String, String)} method.
+ * {@link EPSGDataAccess#createFromCoordinateReferenceSystemCodes(String, String)} method.
  *
  * @author  Martin Desruisseaux (IRD)
  * @since   0.7
@@ -67,7 +67,7 @@ final class CoordinateOperationSet extends IdentifiedObjectSet<CoordinateOperati
 
     /**
      * Same as the default implementation in parent class,
-     * but avoid to call the costly {@link EPSGFactory#getAuthority()} method.
+     * but avoid to call the costly {@link EPSGDataAccess#getAuthority()} method.
      */
     @Override
     protected String getAuthorityCode(final CoordinateOperation object) {

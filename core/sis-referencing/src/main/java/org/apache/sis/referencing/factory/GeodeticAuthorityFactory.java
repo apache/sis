@@ -1161,7 +1161,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
         if (name instanceof ScopedName) {
             final GenericName scope = ((ScopedName) name).path();
             if (authority == null) {
-                authority = getAuthority();     // Costly operation for EPSGFactory.
+                authority = getAuthority();     // Costly operation for EPSGDataAccess.
             }
             if (Citations.identifierMatches(authority, null, scope.toString())) {
                 return name.tip().toString().trim();
@@ -1215,7 +1215,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
         }
         /*
          * Get the authority from the object if possible, in order to avoid a call
-         * to the potentially costly (for EPSGFactory) getAuthority() method.
+         * to the potentially costly (for EPSGDataAccess) getAuthority() method.
          */
         final Identifier id = object.getName();
         final Citation authority = (id != null) ? id.getAuthority() : getAuthority();
