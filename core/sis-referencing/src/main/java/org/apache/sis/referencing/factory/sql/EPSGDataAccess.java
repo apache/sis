@@ -130,11 +130,6 @@ import org.apache.sis.measure.MeasurementRange;
  * in the common case where only a few EPSG codes are used by an application.
  * {@code EPSGDataAccess.createFoo(String)} methods do not cache by themselves and query the database on every invocation.
  *
- * <div class="section">SQL dialects</div>
- * Because the primary distribution format for the EPSG database is MS-Access, this class uses
- * SQL statements formatted for the MS-Access syntax. For usage with an other database software,
- * a dialect-specific subclass must be used.
- *
  * @author  Yann Cézard (IRD)
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Rueben Schulz (UBC)
@@ -275,10 +270,10 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
     protected final Connection connection;
 
     /**
-     * The adapter from the SQL statements using MS-Access syntax
-     * to SQL statements using the syntax of the actual database.
+     * The translator from the SQL statements using MS-Access dialect
+     * to SQL statements using the dialect of the actual database.
      */
-    protected final SQLAdapter adapter;
+    protected final SQLTranslator translator;
 
     /**
      * Creates a factory using the given connection. The connection will be {@linkplain Connection#close() closed}
@@ -291,16 +286,16 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
      *
      * @param parent      The {@code EPSGFactory} which is creating this Data Access Object (DAO).
      * @param connection  The connection to the underlying EPSG database.
-     * @param adapter     The adapter from the SQL statements using MS-Access syntax
-     *                    to SQL statements using the syntax of the actual database.
+     * @param translator  The translator from the SQL statements using MS-Access dialect
+     *                    to SQL statements using the dialect of the actual database.
      */
-    protected EPSGDataAccess(final EPSGFactory parent, final Connection connection, final SQLAdapter adapter) {
+    protected EPSGDataAccess(final EPSGFactory parent, final Connection connection, final SQLTranslator translator) {
         super(parent);
         ArgumentChecks.ensureNonNull("connection", connection);
-        ArgumentChecks.ensureNonNull("adapter", adapter);
+        ArgumentChecks.ensureNonNull("translator", translator);
         this.parent     = parent;
         this.connection = connection;
-        this.adapter    = adapter;
+        this.translator = translator;
         this.namespace  = nameFactory.createNameSpace(nameFactory.createLocalName(null, Constants.EPSG), null);
     }
 
@@ -346,8 +341,8 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
              * instead then UTC because the date is for information purpose only, and the local timezone is
              * more likely to be shown nicely (without artificial hours) to the user.
              */
-            final String query = adapter.adaptSQL("SELECT VERSION_NUMBER, VERSION_DATE FROM [Version History]" +
-                                                 " ORDER BY VERSION_DATE DESC, VERSION_HISTORY_CODE DESC");
+            final String query = translator.apply("SELECT VERSION_NUMBER, VERSION_DATE FROM [Version History]" +
+                                                  " ORDER BY VERSION_DATE DESC, VERSION_HISTORY_CODE DESC");
             String version = null;
             try (Statement statement = connection.createStatement();
                  ResultSet result = statement.executeQuery(query))
@@ -525,24 +520,6 @@ addURIs:    for (int i=0; ; i++) {
     }
 
     /**
-     * Removes the {@code "EPSG::"} prefix from the given string, if present.
-     * This method is preferred to the more generic implementation provided by the parent class for efficiency reason.
-     * In particular, this method avoid to call the potentially costly {@link #getAuthority()} method.
-     *
-     * @param  code The code to trim.
-     * @return The code without the {@code "EPSG::"} prefix.
-     */
-    private String trimAuthority(String code) {
-        int s = code.indexOf(DefaultNameSpace.DEFAULT_SEPARATOR);
-        if (s >= 0 && Constants.EPSG.equalsIgnoreCase(code.substring(0, s).trim())) {
-            final int next = code.indexOf(':', ++s);
-            if (next >= 0) s = next;
-            code = code.substring(s).trim();
-        }
-        return code;
-    }
-
-    /**
      * Returns {@code true} if the specified code may be a primary key in some table.
      * This method does not need to check any entry in the database.
      * It should just check from the syntax if the code looks like a valid EPSG identifier.
@@ -615,7 +592,7 @@ addURIs:    for (int i=0; ; i++) {
                 if (statement == null) {
                     final String query = "SELECT " + codeColumn + " FROM " + table +
                                          " WHERE " + nameColumn + " = ?";
-                    statement = connection.prepareStatement(adapter.adaptSQL(query));
+                    statement = connection.prepareStatement(translator.apply(query));
                     statements.put(KEY, statement);
                 }
                 statement.setString(1, code);
@@ -686,7 +663,7 @@ addURIs:    for (int i=0; ; i++) {
         assert Thread.holdsLock(this);
         PreparedStatement stmt = statements.get(table);
         if (stmt == null) {
-            stmt = connection.prepareStatement(adapter.adaptSQL(sql));
+            stmt = connection.prepareStatement(translator.apply(sql));
             statements.put(table, stmt);
         }
         // Partial check that the statement is for the right SQL query.
@@ -904,8 +881,8 @@ addURIs:    for (int i=0; ; i++) {
         if (name == null) {
             return false;
         }
-        if (name.startsWith(SQLAdapter.TABLE_PREFIX)) {
-            name = name.substring(SQLAdapter.TABLE_PREFIX.length());
+        if (name.startsWith(SQLTranslator.TABLE_PREFIX)) {
+            name = name.substring(SQLTranslator.TABLE_PREFIX.length());
         }
         return CharSequences.isAcronymForWords(name, expected);
     }
@@ -1097,7 +1074,7 @@ addURIs:    for (int i=0; ; i++) {
                 query.setLength(queryStart);
                 query.append(table.codeColumn).append(" FROM ").append(table.table)
                         .append(" WHERE ").append(column).append(" = ?");
-                try (PreparedStatement stmt = connection.prepareStatement(adapter.adaptSQL(query.toString()))) {
+                try (PreparedStatement stmt = connection.prepareStatement(translator.apply(query.toString()))) {
                     /*
                      * Check if at least one record is found for the code or the name.
                      * Ensure that there is not two values for the same code or name.
@@ -2896,7 +2873,7 @@ addURIs:    for (int i=0; ; i++) {
             }
             final Set<String> result = new LinkedHashSet<>();
             try {
-                final String sql = adapter.adaptSQL(buffer.toString());
+                final String sql = translator.apply(buffer.toString());
                 try (Statement s = connection.createStatement();
                      ResultSet r = s.executeQuery(sql))
                 {

@@ -29,14 +29,17 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.util.Constants;
 
+// Branch-dependent imports
+import java.util.function.Function;
+
 
 /**
- * Converts the SQL statements from MS-Access dialect to standard SQL. The {@link #adaptSQL(String)} method
+ * Converts the SQL statements from MS-Access dialect to standard SQL. The {@link #apply(String)} method
  * is invoked when a new {@link java.sql.PreparedStatement} is about to be created from a SQL string.
  * Since the <a href="http://www.epsg.org">EPSG dataset</a> is available primarily in MS-Access format,
- * the original SQL statements are formatted using a syntax specific to that particular database software.
+ * the original SQL statements are formatted using a dialect specific to that particular database software.
  * If the actual EPSG dataset to query is hosted on another database product, then the SQL query needs to be
- * adapted to the target database syntax before to be executed.
+ * adapted to the target database dialect before to be executed.
  *
  * <div class="note"><b>Example</b>
  * SQL statements for an EPSG dataset hosted on the <cite>PostgreSQL</cite> database need to have their brackets
@@ -90,7 +93,7 @@ import org.apache.sis.internal.util.Constants;
  * Consequently it is legal to use the MS-Access table names, which are more readable, in a PostgreSQL database.
  *
  * <div class="section">Thread safety</div>
- * All {@code SQLAdapter} instances given to the {@link EPSGFactory} constructor
+ * All {@code SQLTranslator} instances given to the {@link EPSGFactory} constructor
  * <strong>shall</strong> be immutable and thread-safe.
  *
  * @author  Rueben Schulz (UBC)
@@ -100,23 +103,21 @@ import org.apache.sis.internal.util.Constants;
  * @since   0.7
  * @version 0.7
  * @module
- *
- * @see EPSGDataAccess#adaptSQL(String)
  */
-public class SQLAdapter {
+public class SQLTranslator implements Function<String,String> {
     /**
      * Table names used as "sentinel value" for detecting the presence of an EPSG database.
      * This array lists different possible names for the same table. The first entry must be
      * the MS-Access name. Other names may be in any order. They will be tried in reverse order.
      */
-    private static final String[] SENTINAL = {
+    private static final String[] SENTINEL = {
         "Coordinate Reference System",
         "coordinatereferencesystem",
         "epsg_coordinatereferencesystem"
     };
 
     /**
-     * Index of the {@link #SENTINAL} element which is in mixed case. No other element should be in mixed case.
+     * Index of the {@link #SENTINEL} element which is in mixed case. No other element should be in mixed case.
      */
     private static final int MIXED_CASE = 0;
 
@@ -168,13 +169,13 @@ public class SQLAdapter {
      * </ul>
      *
      * <div class="note"><b>API design note:</b>
-     * this constructor is for sub-classing only. Otherwise, instances of {@code SQLAdapter} should not need to be
+     * this constructor is for sub-classing only. Otherwise, instances of {@code SQLTranslator} should not need to be
      * created explicitely since instantiations are performed automatically by {@link EPSGFactory} when first needed.</div>
      *
      * @param  md Information about the database.
      * @throws SQLException if an error occurred while querying the database metadata.
      */
-    protected SQLAdapter(final DatabaseMetaData md) throws SQLException {
+    protected SQLTranslator(final DatabaseMetaData md) throws SQLException {
         ArgumentChecks.ensureNonNull("md", md);
         quote = md.getIdentifierQuoteString();
         schema = findSchema(md);
@@ -204,8 +205,8 @@ public class SQLAdapter {
      */
     private String findSchema(final DatabaseMetaData md) throws SQLException {
         final boolean toUpperCase = md.storesUpperCaseIdentifiers();
-        for (int i = SENTINAL.length; --i >= 0;) {
-            String table = SENTINAL[i];
+        for (int i = SENTINEL.length; --i >= 0;) {
+            String table = SENTINEL[i];
             if (toUpperCase && i != MIXED_CASE) {
                 table = table.toUpperCase(Locale.US);
             }
@@ -224,18 +225,18 @@ public class SQLAdapter {
                 }
             }
         }
-        throw new SQLDataException(Errors.format(Errors.Keys.TableNotFound_1, SENTINAL[MIXED_CASE]));
+        throw new SQLDataException(Errors.format(Errors.Keys.TableNotFound_1, SENTINEL[MIXED_CASE]));
     }
 
     /**
-     * Adapts the given SQL statement from the original MS-Access syntax to the syntax of the target database.
+     * Adapts the given SQL statement from the original MS-Access dialect to the dialect of the target database.
      * Table and column names may also be replaced.
      *
-     * @param  sql The statement in MS-Access syntax.
-     * @return The SQL statement adapted to the syntax of the target database.
-     * @throws SQLException if an error occurred while adapting the SQL statement.
+     * @param  sql The statement in MS-Access dialect.
+     * @return The SQL statement adapted to the dialect of the target database.
      */
-    public String adaptSQL(final String sql) throws SQLException {
+    @Override
+    public String apply(final String sql) {
         if (schema == null && accessToAnsi.isEmpty() && quote.trim().isEmpty()) {
             return sql;
         }

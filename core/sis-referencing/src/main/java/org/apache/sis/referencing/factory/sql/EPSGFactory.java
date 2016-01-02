@@ -94,10 +94,10 @@ public class EPSGFactory extends ConcurrentAuthorityFactory implements CRSAuthor
     protected final MathTransformFactory mtFactory;
 
     /**
-     * The adapter from the SQL statements using MS-Access syntax to SQL statements using the syntax
+     * The translator from the SQL statements using MS-Access dialect to SQL statements using the dialect
      * of the actual database. If null, will be created when first needed.
      */
-    private volatile SQLAdapter adapter;
+    private volatile SQLTranslator translator;
 
     /**
      * The locale for producing error messages. This is usually the default locale.
@@ -107,27 +107,21 @@ public class EPSGFactory extends ConcurrentAuthorityFactory implements CRSAuthor
     private volatile Locale locale;
 
     /**
-     * Creates a factory using the default data source.
+     * Creates a factory using the default data source and object factories.
+     * Invoking this constructor is equivalent to invoking the constructor below with a all arguments set to null.
      *
      * @throws FactoryException if the data source can not be obtained.
      */
     public EPSGFactory() throws FactoryException {
-        super(DefaultFactories.forBuildin(NameFactory.class));
-        try {
-            dataSource = Initializer.getDataSource();
-        } catch (Exception e) {
-            throw new FactoryException(e.getLocalizedMessage(), e);
-        }
-        datumFactory = DefaultFactories.forBuildin(DatumFactory.class);
-        csFactory    = DefaultFactories.forBuildin(CSFactory.class);
-        crsFactory   = DefaultFactories.forBuildin(CRSFactory.class);
-        copFactory   = DefaultFactories.forBuildin(CoordinateOperationFactory.class);
-        mtFactory    = DefaultFactories.forBuildin(MathTransformFactory.class);
-        locale       = Locale.getDefault(Locale.Category.DISPLAY);
+        this(null, null, null, null, null, null, null, null);
     }
 
     /**
-     * Creates a factory using the given data source.
+     * Creates a factory using the given data source and object factories.
+     *
+     * <div class="section">Default argument values</div>
+     * Any or all arguments given to this constructor can be {@code null}, in which case default values are used.
+     * Those default values are implementation-specific and may change in any future SIS version.
      *
      * @param dataSource    The factory to use for creating {@link Connection}s to the EPSG database.
      * @param nameFactory   The factory to use for creating authority codes as {@link GenericName} instances.
@@ -136,8 +130,9 @@ public class EPSGFactory extends ConcurrentAuthorityFactory implements CRSAuthor
      * @param crsFactory    The factory to use for creating {@link CoordinateReferenceSystem} instances.
      * @param copFactory    The factory to use for creating {@link CoordinateOperation} instances.
      * @param mtFactory     The factory to use for creating {@link MathTransform} instances.
-     * @param adapter       The adapter from the SQL statements using MS-Access syntax to SQL statements
-     *                      using the syntax of the actual database, or {@code null} for the default adapter.
+     * @param translator    The adapter from the SQL statements using MS-Access dialect to SQL statements
+     *                      using the dialect of the actual database.
+     * @throws FactoryException if an error occurred while creating the EPSG factory.
      */
     public EPSGFactory(final DataSource                 dataSource,
                        final NameFactory                nameFactory,
@@ -146,23 +141,34 @@ public class EPSGFactory extends ConcurrentAuthorityFactory implements CRSAuthor
                        final CRSFactory                 crsFactory,
                        final CoordinateOperationFactory copFactory,
                        final MathTransformFactory       mtFactory,
-                       final SQLAdapter                 adapter)
+                       final SQLTranslator              translator)
+            throws FactoryException
     {
-        super(nameFactory);
-        ArgumentChecks.ensureNonNull("dataSource",   dataSource);
-        ArgumentChecks.ensureNonNull("datumFactory", datumFactory);
-        ArgumentChecks.ensureNonNull("csFactory",    csFactory);
-        ArgumentChecks.ensureNonNull("crsFactory",   crsFactory);
-        ArgumentChecks.ensureNonNull("copFactory",   copFactory);
-        ArgumentChecks.ensureNonNull("mtFactory",    mtFactory);
-        this.dataSource   = dataSource;
-        this.datumFactory = datumFactory;
-        this.csFactory    = csFactory;
-        this.crsFactory   = crsFactory;
-        this.copFactory   = copFactory;
-        this.mtFactory    = mtFactory;
-        this.adapter      = adapter;
+        super(factory(NameFactory.class, nameFactory));
+        if (dataSource != null) {
+            this.dataSource = dataSource;
+        } else try {
+            this.dataSource = Initializer.getDataSource();
+        } catch (Exception e) {
+            throw new UnavailableFactoryException(e.getLocalizedMessage(), e);
+        }
+        this.datumFactory = factory(DatumFactory.class, datumFactory);
+        this.csFactory    = factory(CSFactory.class, csFactory);
+        this.crsFactory   = factory(CRSFactory.class, crsFactory);
+        this.copFactory   = factory(CoordinateOperationFactory.class, copFactory);
+        this.mtFactory    = factory(MathTransformFactory.class, mtFactory);
+        this.translator   = translator;
         this.locale       = Locale.getDefault(Locale.Category.DISPLAY);
+    }
+
+    /**
+     * Returns the given factory if non-null, or the default factory instance otherwise.
+     */
+    private static <F> F factory(final Class<F> type, F factory) {
+        if (factory == null) {
+            factory = DefaultFactories.forBuildin(type);
+        }
+        return factory;
     }
 
     /**
@@ -203,22 +209,22 @@ public class EPSGFactory extends ConcurrentAuthorityFactory implements CRSAuthor
      */
     @Override
     protected GeodeticAuthorityFactory createBackingStore() throws FactoryException {
-        Connection c = null;
+        Connection connection = null;
         try {
-            c = dataSource.getConnection();
-            SQLAdapter a = adapter;
-            if (a == null) {
+            connection = dataSource.getConnection();
+            SQLTranslator tr = translator;
+            if (tr == null) {
                 synchronized (this) {
-                    a = adapter;
-                    if (a == null) {
-                        adapter = a = new SQLAdapter(c.getMetaData());
+                    tr = translator;
+                    if (tr == null) {
+                        translator = tr = new SQLTranslator(connection.getMetaData());
                     }
                 }
             }
-            return new EPSGDataAccess(this, c, a);
+            return new EPSGDataAccess(this, connection, tr);
         } catch (Exception e) {
-            if (c != null) try {
-                c.close();
+            if (connection != null) try {
+                connection.close();
             } catch (SQLException e2) {
                 e.addSuppressed(e2);
             }

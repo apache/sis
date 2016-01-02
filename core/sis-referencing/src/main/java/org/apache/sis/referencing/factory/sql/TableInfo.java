@@ -26,7 +26,7 @@ import org.opengis.parameter.ParameterDescriptor;
 
 /**
  * Information about a specific table. The MS-Access dialect of SQL is assumed;
- * it will be translated into ANSI SQL later by {@link EPSGDataAccess#adaptSQL(String)} if needed.
+ * it will be translated into ANSI SQL later by {@link SQLTranslator#apply(String)} if needed.
  *
  * @author  Martin Desruisseaux (IRD)
  * @since   0.7
