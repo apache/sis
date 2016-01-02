@@ -46,9 +46,9 @@ import org.apache.sis.util.Localized;
  * for reuse and the idle connections are closed after a timeout.
  *
  * <div class="section">Note for subclasses</div>
- * If there is no cached object for a given code, then {@code EPSGFactory} creates an {@link EPSGDataAccess} instance for
- * performing the actual creation work. Developers who need to customize the geodetic object creation can override the
- * {@link #createBackingStore(Connection)} method in order to return their own {@link EPSGDataAccess} subclass.
+ * If there is no cached object for a given code, then {@code EPSGFactory} creates an {@link EPSGDataAccess} instance
+ * for performing the actual creation work. Developers who need to customize the geodetic object creation can override
+ * the {@link #createBackingStore()} method in order to return their own {@link EPSGDataAccess} subclass.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.7
