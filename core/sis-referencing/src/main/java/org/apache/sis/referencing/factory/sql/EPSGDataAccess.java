@@ -151,13 +151,6 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
         CSAuthorityFactory, DatumAuthorityFactory, CoordinateOperationAuthorityFactory, Localized, AutoCloseable
 {
     /**
-     * The prefix in table names. The SQL scripts are provided by EPSG with this prefix in front of all table names.
-     * SIS rather uses a modified version of those SQL scripts which creates the tables in an "EPSG" database schema.
-     * But we still need to check for existence of this prefix in case someone used the original SQL scripts.
-     */
-    private static final String TABLE_PREFIX = "epsg_";
-
-    /**
      * The namespace of EPSG names and codes. This namespace is needed by all {@code createFoo(String)} methods.
      * The {@code EPSGDataAccess} constructor relies on the {@link #nameFactory} caching mechanism for giving us
      * the same {@code NameSpace} instance than the one used by previous {@code EPSGDataAccess} instances, if any.
@@ -282,6 +275,12 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
     protected final Connection connection;
 
     /**
+     * The adapter from the SQL statements using MS-Access syntax
+     * to SQL statements using the syntax of the actual database.
+     */
+    protected final SQLAdapter adapter;
+
+    /**
      * Creates a factory using the given connection. The connection will be {@linkplain Connection#close() closed}
      * when this factory will be {@linkplain #close() closed}.
      *
@@ -292,34 +291,17 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
      *
      * @param parent      The {@code EPSGFactory} which is creating this Data Access Object (DAO).
      * @param connection  The connection to the underlying EPSG database.
+     * @param adapter     The adapter from the SQL statements using MS-Access syntax
+     *                    to SQL statements using the syntax of the actual database.
      */
-    protected EPSGDataAccess(final EPSGFactory parent, final Connection connection) {
+    protected EPSGDataAccess(final EPSGFactory parent, final Connection connection, final SQLAdapter adapter) {
         super(parent);
         ArgumentChecks.ensureNonNull("connection", connection);
+        ArgumentChecks.ensureNonNull("adapter", adapter);
         this.parent     = parent;
         this.connection = connection;
+        this.adapter    = adapter;
         this.namespace  = nameFactory.createNameSpace(nameFactory.createLocalName(null, Constants.EPSG), null);
-    }
-
-    /**
-     * Invoked when a new {@link PreparedStatement} is about to be created from a SQL string.
-     * Since the <a href="http://www.epsg.org">EPSG database</a> is available primarily in MS-Access format,
-     * SQL statements are formatted using a syntax specific to this particular database software
-     * (for example "{@code SELECT * FROM [Coordinate Reference System]}").
-     * When a subclass targets another database vendor, it must overrides this method in order to adapt the SQL syntax.
-     *
-     * <div class="note"><b>Example</b>
-     * a subclass connecting to a <cite>PostgreSQL</cite> database would replace the watching braces
-     * ({@code '['} and {@code ']'}) by the quote character ({@code '"'}).</div>
-     *
-     * The default implementation returns the given statement unchanged.
-     *
-     * @param  statement The statement in MS-Access syntax.
-     * @return The SQL statement adapted to the syntax of the target database.
-     * @throws SQLException if an error occurred while adapting the SQL statement.
-     */
-    protected String adaptSQL(final String statement) throws SQLException {
-        return statement;
     }
 
     /**
@@ -354,8 +336,7 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
     @Override
     public synchronized Citation getAuthority() {
         /*
-         * We do not cache this citation because the caching service is already provided by ConcurrentAuthorityFactory
-         * and we overridden the trimAuthority(…) and noSuchAuthorityCode(…) methods that invoked this getAuthority().
+         * We do not cache this citation because the caching service is already provided by ConcurrentAuthorityFactory.
          */
         final DefaultCitation c = new DefaultCitation("EPSG Geodetic Parameter Dataset");
         c.setIdentifiers(Collections.singleton(new ImmutableIdentifier(null, null, Constants.EPSG)));
@@ -365,8 +346,8 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
              * instead then UTC because the date is for information purpose only, and the local timezone is
              * more likely to be shown nicely (without artificial hours) to the user.
              */
-            final String query = adaptSQL("SELECT VERSION_NUMBER, VERSION_DATE FROM [Version History]" +
-                                          " ORDER BY VERSION_DATE DESC, VERSION_HISTORY_CODE DESC");
+            final String query = adapter.adaptSQL("SELECT VERSION_NUMBER, VERSION_DATE FROM [Version History]" +
+                                                 " ORDER BY VERSION_DATE DESC, VERSION_HISTORY_CODE DESC");
             String version = null;
             try (Statement statement = connection.createStatement();
                  ResultSet result = statement.executeQuery(query))
@@ -530,10 +511,9 @@ addURIs:    for (int i=0; ; i++) {
      */
     @Override
     public InternationalString getDescriptionText(final String code) throws NoSuchAuthorityCodeException, FactoryException {
-        final String primaryKey = trimAuthority(code);
         try {
             for (final TableInfo table : TableInfo.EPSG) {
-                final String text = getCodeMap(table.type).get(primaryKey);
+                final String text = getCodeMap(table.type).get(code);
                 if (text != null) {
                     return (table.nameColumn != null) ? new SimpleInternationalString(text) : null;
                 }
@@ -600,9 +580,6 @@ addURIs:    for (int i=0; ; i++) {
     /**
      * Converts EPSG codes or EPSG names to the numerical identifiers (the primary keys).
      *
-     * <p>Note that this method includes a call to {@link #trimAuthority(String)},
-     * so there is no need to call it before or after this method.</p>
-     *
      * <div class="note"><b>Note:</b>
      * this method could be seen as the converse of above {@link #getDescriptionText(String)} method.</div>
      *
@@ -619,8 +596,7 @@ addURIs:    for (int i=0; ; i++) {
         final int[] primaryKeys = new int[codes.length];
         for (int i=0; i<codes.length; i++) {
             final String code = codes[i];
-            final String identifier = trimAuthority(code);
-            if (codeColumn != null && nameColumn != null && !isPrimaryKey(identifier)) {
+            if (codeColumn != null && nameColumn != null && !isPrimaryKey(code)) {
                 /*
                  * The given string is not a numerical code. Search the value in the database.
                  * If a prepared statement is already available, reuse it providing that it was
@@ -639,10 +615,10 @@ addURIs:    for (int i=0; ; i++) {
                 if (statement == null) {
                     final String query = "SELECT " + codeColumn + " FROM " + table +
                                          " WHERE " + nameColumn + " = ?";
-                    statement = connection.prepareStatement(adaptSQL(query));
+                    statement = connection.prepareStatement(adapter.adaptSQL(query));
                     statements.put(KEY, statement);
                 }
-                statement.setString(1, identifier);
+                statement.setString(1, code);
                 Integer resolved = null;
                 try (ResultSet result = statement.executeQuery()) {
                     while (result.next()) {
@@ -659,10 +635,10 @@ addURIs:    for (int i=0; ; i++) {
              * if we the above code did not found a match in the name column.
              */
             try {
-                primaryKeys[i] = Integer.parseInt(identifier);
+                primaryKeys[i] = Integer.parseInt(code);
             } catch (NumberFormatException e) {
                 final NoSuchIdentifierException ne = new NoSuchIdentifierException(error().getString(
-                        Errors.Keys.IllegalIdentifierForCodespace_2, Constants.EPSG, identifier), code);
+                        Errors.Keys.IllegalIdentifierForCodespace_2, Constants.EPSG, code), code);
                 ne.initCause(e);
                 throw ne;
             }
@@ -675,9 +651,6 @@ addURIs:    for (int i=0; ; i++) {
      * the second code value (if any) is assigned to parameter #2, <i>etc</i>. If a given code is not a
      * {@linkplain #isPrimaryKey primary key}, then this method assumes that the code is the object name
      * and will search for its primary key value.
-     *
-     * <p>Note that this method includes a call to {@link #trimAuthority(String)},
-     * so there is no need to call it before or after this method.</p>
      *
      * @param  table       The table where the code should appears.
      * @param  codeColumn  The column name for the codes, or {@code null} if none.
@@ -713,7 +686,7 @@ addURIs:    for (int i=0; ; i++) {
         assert Thread.holdsLock(this);
         PreparedStatement stmt = statements.get(table);
         if (stmt == null) {
-            stmt = connection.prepareStatement(adaptSQL(sql));
+            stmt = connection.prepareStatement(adapter.adaptSQL(sql));
             statements.put(table, stmt);
         }
         // Partial check that the statement is for the right SQL query.
@@ -931,8 +904,8 @@ addURIs:    for (int i=0; ; i++) {
         if (name == null) {
             return false;
         }
-        if (name.startsWith(TABLE_PREFIX)) {
-            name = name.substring(TABLE_PREFIX.length());
+        if (name.startsWith(SQLAdapter.TABLE_PREFIX)) {
+            name = name.substring(SQLAdapter.TABLE_PREFIX.length());
         }
         return CharSequences.isAcronymForWords(name, expected);
     }
@@ -1109,13 +1082,12 @@ addURIs:    for (int i=0; ; i++) {
             throws NoSuchAuthorityCodeException, FactoryException
     {
         ArgumentChecks.ensureNonNull("code", code);
-        final String  epsg         = trimAuthority(code);
-        final boolean isPrimaryKey = isPrimaryKey(epsg);
+        final boolean isPrimaryKey = isPrimaryKey(code);
         final StringBuilder query  = new StringBuilder("SELECT ");
         final int queryStart       = query.length();
         int found = -1;
         try {
-            final int pk = isPrimaryKey ? toPrimaryKeys(null, null, null, epsg)[0] : 0;
+            final int pk = isPrimaryKey ? toPrimaryKeys(null, null, null, code)[0] : 0;
             for (int i = 0; i < TableInfo.EPSG.length; i++) {
                 final TableInfo table = TableInfo.EPSG[i];
                 final String column = isPrimaryKey ? table.codeColumn : table.nameColumn;
@@ -1125,7 +1097,7 @@ addURIs:    for (int i=0; ; i++) {
                 query.setLength(queryStart);
                 query.append(table.codeColumn).append(" FROM ").append(table.table)
                         .append(" WHERE ").append(column).append(" = ?");
-                try (PreparedStatement stmt = connection.prepareStatement(adaptSQL(query.toString()))) {
+                try (PreparedStatement stmt = connection.prepareStatement(adapter.adaptSQL(query.toString()))) {
                     /*
                      * Check if at least one record is found for the code or the name.
                      * Ensure that there is not two values for the same code or name.
@@ -1133,7 +1105,7 @@ addURIs:    for (int i=0; ; i++) {
                     if (isPrimaryKey) {
                         stmt.setInt(1, pk);
                     } else {
-                        stmt.setString(1, epsg);
+                        stmt.setString(1, code);
                     }
                     Integer present = null;
                     try (ResultSet result = stmt.executeQuery()) {
@@ -2924,7 +2896,7 @@ addURIs:    for (int i=0; ; i++) {
             }
             final Set<String> result = new LinkedHashSet<>();
             try {
-                final String sql = adaptSQL(buffer.toString());
+                final String sql = adapter.adaptSQL(buffer.toString());
                 try (Statement s = connection.createStatement();
                      ResultSet r = s.executeQuery(sql))
                 {
@@ -3087,7 +3059,7 @@ addURIs:    for (int i=0; ; i++) {
      */
     private NoSuchAuthorityCodeException noSuchAuthorityCode(final Class<?> type, final String code) {
         return new NoSuchAuthorityCodeException(error().getString(Errors.Keys.NoSuchAuthorityCode_3,
-                Constants.EPSG, type, code), Constants.EPSG, trimAuthority(code), code);
+                Constants.EPSG, type, code), Constants.EPSG, code, code);
     }
 
     /**
