@@ -113,13 +113,14 @@ import org.apache.sis.measure.MeasurementRange;
  * The EPSG database is freely available at <a href="http://www.epsg.org">http://www.epsg.org</a>.
  * Current version of this class requires EPSG database version 6.6 or above.
  *
- * <p>EPSG codes are numerical identifiers. For example code 3395 stands for <cite>"WGS 84 / World Mercator"</cite>.
+ * <div class="section">Object identifier (code or name)</div>
+ * EPSG codes are numerical identifiers. For example code 3395 stands for <cite>"WGS 84 / World Mercator"</cite>.
  * Coordinate Reference Objects are normally created from their numerical codes, but this factory accepts also names.
  * For example {@code createProjectedCRS("3395")} and {@code createProjectedCRS("WGS 84 / World Mercator")} both fetch
  * the same object.
  * However, names may be ambiguous since the same name may be used for more than one object.
  * This is the case of <cite>"WGS 84"</cite> for instance.
- * If such an ambiguity is found, an exception will be thrown.</p>
+ * If such an ambiguity is found, an exception will be thrown.
  *
  * <div class="section">Life cycle and caching</div>
  * {@code EPSGDataAccess} instances should be short-lived since they may hold a significant amount of JDBC resources.
@@ -129,6 +130,11 @@ import org.apache.sis.measure.MeasurementRange;
  * the amount of {@code EPSGDataAccess} instantiations (and consequently the amount of database accesses)
  * in the common case where only a few EPSG codes are used by an application.
  * {@code EPSGDataAccess.createFoo(String)} methods do not cache by themselves and query the database on every invocation.
+ *
+ * <div class="section">SQL dialects</div>
+ * Because the primary distribution format for the EPSG dataset is MS-Access, this class uses SQL statements formatted
+ * for the MS-Access dialect. For usage with other database softwares like PostgreSQL or Derby, a {@link SQLTranslator}
+ * instance is provided to the constructor.
  *
  * @author  Yann Cézard (IRD)
  * @author  Martin Desruisseaux (IRD, Geomatys)
@@ -279,10 +285,10 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
      * Creates a factory using the given connection. The connection will be {@linkplain Connection#close() closed}
      * when this factory will be {@linkplain #close() closed}.
      *
-     * <div class="note"><b>Design note:</b>
+     * <div class="note"><b>API design note:</b>
      * this constructor is protected because {@code EPSGDataAccess} instances should not be created as standalone factories.
-     * This constructor is invoked either by {@link EPSGFactory#createBackingStore(Connection)}, or by the constructor
-     * of an {@code EPSGDataAccess} subclass which is itself invoked by a corresponding {@code EPSGFactory} subclass.</div>
+     * This constructor is invoked either by {@link EPSGFactory#createBackingStore()}, or by the constructor of an
+     * {@code EPSGDataAccess} subclass which is itself invoked by a corresponding {@code EPSGFactory} subclass.</div>
      *
      * @param parent      The {@code EPSGFactory} which is creating this Data Access Object (DAO).
      * @param connection  The connection to the underlying EPSG database.
