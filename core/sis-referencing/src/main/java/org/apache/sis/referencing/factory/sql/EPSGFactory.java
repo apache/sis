@@ -94,6 +94,12 @@ public class EPSGFactory extends ConcurrentAuthorityFactory implements CRSAuthor
     protected final MathTransformFactory mtFactory;
 
     /**
+     * The adapter from the SQL statements using MS-Access syntax to SQL statements using the syntax
+     * of the actual database. If null, will be created when first needed.
+     */
+    private volatile SQLAdapter adapter;
+
+    /**
      * The locale for producing error messages. This is usually the default locale.
      *
      * @see #getLocale()
@@ -130,6 +136,8 @@ public class EPSGFactory extends ConcurrentAuthorityFactory implements CRSAuthor
      * @param crsFactory    The factory to use for creating {@link CoordinateReferenceSystem} instances.
      * @param copFactory    The factory to use for creating {@link CoordinateOperation} instances.
      * @param mtFactory     The factory to use for creating {@link MathTransform} instances.
+     * @param adapter       The adapter from the SQL statements using MS-Access syntax to SQL statements
+     *                      using the syntax of the actual database, or {@code null} for the default adapter.
      */
     public EPSGFactory(final DataSource                 dataSource,
                        final NameFactory                nameFactory,
@@ -137,7 +145,8 @@ public class EPSGFactory extends ConcurrentAuthorityFactory implements CRSAuthor
                        final CSFactory                  csFactory,
                        final CRSFactory                 crsFactory,
                        final CoordinateOperationFactory copFactory,
-                       final MathTransformFactory       mtFactory)
+                       final MathTransformFactory       mtFactory,
+                       final SQLAdapter                 adapter)
     {
         super(nameFactory);
         ArgumentChecks.ensureNonNull("dataSource",   dataSource);
@@ -152,6 +161,7 @@ public class EPSGFactory extends ConcurrentAuthorityFactory implements CRSAuthor
         this.crsFactory   = crsFactory;
         this.copFactory   = copFactory;
         this.mtFactory    = mtFactory;
+        this.adapter      = adapter;
         this.locale       = Locale.getDefault(Locale.Category.DISPLAY);
     }
 
@@ -179,21 +189,33 @@ public class EPSGFactory extends ConcurrentAuthorityFactory implements CRSAuthor
     }
 
     /**
-     * Invoked by {@code ConcurrentAuthorityFactory} when a new worker is required.
-     * This method gets a new connection from the {@link #dataSource} and delegates
-     * the worker creation to {@link #createBackingStore(Connection)}.
+     * Creates the factory which will perform the actual geodetic object creation work.
+     * This method is invoked automatically when a new worker is required, either because the previous
+     * one has been disposed after its timeout or because a new one is required for concurrency.
+     *
+     * <p>The default implementation gets a new connection from the {@link #dataSource}
+     * and creates a new {@link EPSGDataAccess} instance.
+     * Subclasses can override this method if they want to return a custom instance.</p>
      *
      * @return The backing store to use in {@code createFoo(String)} methods.
      * @throws FactoryException if the constructor failed to connect to the EPSG database.
      *         This exception usually has a {@link SQLException} as its cause.
      */
     @Override
-    protected final GeodeticAuthorityFactory createBackingStore() throws FactoryException {
+    protected GeodeticAuthorityFactory createBackingStore() throws FactoryException {
         Connection c = null;
         try {
             c = dataSource.getConnection();
-            final EPSGDataAccess factory = createBackingStore(c);
-            return factory;
+            SQLAdapter a = adapter;
+            if (a == null) {
+                synchronized (this) {
+                    a = adapter;
+                    if (a == null) {
+                        adapter = a = new SQLAdapter(c.getMetaData());
+                    }
+                }
+            }
+            return new EPSGDataAccess(this, c, a);
         } catch (Exception e) {
             if (c != null) try {
                 c.close();
@@ -202,21 +224,5 @@ public class EPSGFactory extends ConcurrentAuthorityFactory implements CRSAuthor
             }
             throw new UnavailableFactoryException(e.getLocalizedMessage(), e);
         }
-    }
-
-    /**
-     * Creates the factory which will perform the actual geodetic object creation work.
-     * This method is invoked automatically when a new worker is required, either because the previous
-     * one has been disposed after its timeout or because a new one is required for concurrency.
-     *
-     * <p>The default implementation creates a new {@link EPSGDataAccess} instance.
-     * Subclasses can override this method if they want to return a custom instance.</p>
-     *
-     * @param  connection A connection to the EPSG database.
-     * @throws SQLException if {@code EPSGDataAccess} detected a problem with the database.
-     * @return The backing store to use in {@code createFoo(String)} methods.
-     */
-    protected EPSGDataAccess createBackingStore(final Connection connection) throws SQLException {
-        return new EPSGDataAccess(this, connection);
     }
 }

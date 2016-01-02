@@ -160,7 +160,7 @@ final class AuthorityCodes extends AbstractMap<String,String> implements Seriali
         }
         final int conditionStart = buffer.length();
         buffer.append(" ORDER BY ").append(table.codeColumn);
-        sql[ALL] = factory.adaptSQL(buffer.toString());
+        sql[ALL] = factory.adapter.adaptSQL(buffer.toString());
         /*
          * Build the SQL query for fetching the name of a single object for a given code.
          * This query will also be used for testing object existence. It is of the form:
@@ -172,7 +172,7 @@ final class AuthorityCodes extends AbstractMap<String,String> implements Seriali
             buffer.replace(columnNameStart, columnNameEnd, table.nameColumn);
         }
         buffer.append(hasWhere ? " AND " : " WHERE ").append(table.codeColumn).append(" = ?");
-        sql[ONE] = factory.adaptSQL(buffer.toString());
+        sql[ONE] = factory.adapter.adaptSQL(buffer.toString());
         /*
          * Other information opportunistically computed from above search.
          */

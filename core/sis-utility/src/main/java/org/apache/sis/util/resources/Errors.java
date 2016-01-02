@@ -911,6 +911,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final short StreamIsForwardOnly_1 = 103;
 
         /**
+         * Table “{0}” has not been found.
+         */
+        public static final short TableNotFound_1 = 216;
+
+        /**
          * Expected at least {0} argument{0,choice,1#|2#s}, but got {1}.
          */
         public static final short TooFewArguments_2 = 104;
