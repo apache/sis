@@ -163,7 +163,7 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
                 value = depth;
             } else {
                 text = "%s made available %d seconds ago";
-                value = (System.nanoTime() - timestamp) / 1E+9;   // Convert nanoseconds to seconds.
+                value = Math.round((System.nanoTime() - timestamp) / 1E+9);   // Convert nanoseconds to seconds.
             }
             return String.format(text, Classes.getShortClassName(factory), value);
         }
@@ -348,7 +348,6 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
                                 Errors.Keys.FactoryNotFound_1, GeodeticAuthorityFactory.class));
                     }
                     usage = new DataAccess(factory);
-                    currentDAO.set(usage);
                 }
                 assert usage.depth == 0 : usage;
             } finally {
@@ -364,6 +363,7 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
                     }
                 }
             }
+            currentDAO.set(usage);
         }
         /*
          * Increment below is safe even if outside the synchronized block,
@@ -380,6 +380,7 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
     private void release() {
         final DataAccess usage = currentDAO.get();     // A null value here would be an error in our algorithm.
         if (--usage.depth == 0) {
+            currentDAO.remove();
             synchronized (availableDAOs) {
                 remainingDAOs++;       // Must be done first in case an exception happen after this point.
                 usage.timestamp = System.nanoTime();

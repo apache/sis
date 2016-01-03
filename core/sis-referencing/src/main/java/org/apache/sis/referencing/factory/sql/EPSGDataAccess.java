@@ -1468,6 +1468,9 @@ addURIs:    for (int i=0; ; i++) {
                     }
                 }
                 returnValue = ensureSingleton(datum, returnValue, code);
+                if (result.isClosed()) {
+                    break;                  // Because of the recursive call done by createBursaWolfParameters(…).
+                }
             }
         } catch (SQLException exception) {
             throw databaseFailure(Datum.class, code, exception);
