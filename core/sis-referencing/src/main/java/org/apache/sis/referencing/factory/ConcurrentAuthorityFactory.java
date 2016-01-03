@@ -60,9 +60,9 @@ import org.apache.sis.util.ArraysExt;
  * A concurrent authority factory that caches all objects created by another factory.
  * All {@code createFoo(String)} methods first check if a previously created object exists for the given code.
  * If such object exists, it is returned. Otherwise, the object creation is delegated to another factory given
- * by {@link #createBackingStore()} and the result is cached in this factory.
+ * by {@link #newDataAccess()} and the result is cached in this factory.
  *
- * <p>{@code ConcurrentAuthorityFactory} delays the call to {@code createBackingStore()} until first needed,
+ * <p>{@code ConcurrentAuthorityFactory} delays the call to {@code newDataAccess()} until first needed,
  * and {@linkplain AutoCloseable#close() closes} the backing store after some timeout. This approach allows
  * to establish a connection to a database (for example) and keep it only for a relatively short amount of time.</p>
  *
@@ -131,7 +131,7 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
         final GeodeticAuthorityFactory factory;
 
         /**
-         * Incremented on every call to {@link ConcurrentAuthorityFactory#getBackingStore()} and decremented on every call
+         * Incremented on every call to {@link ConcurrentAuthorityFactory#getDataAccess()} and decremented on every call
          * to {@link ConcurrentAuthorityFactory#release()}. When this value reach zero, the factory is really released.
          */
         int depth;
@@ -286,8 +286,9 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
     }
 
     /**
-     * Creates a new backing store authority factory. This method is invoked the first time a {@code createFoo(String)}
-     * method is invoked. It may also be invoked again if additional factories are needed in different threads,
+     * Creates a factory which will perform the actual geodetic object creation work.
+     * This method is invoked the first time a {@code createFoo(String)} method is invoked.
+     * It may also be invoked again if additional factories are needed in different threads,
      * or if all factories have been closed after the timeout.
      *
      * <div class="section">Multi-threading</div>
@@ -302,7 +303,7 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      * @throws UnavailableFactoryException if the backing store is unavailable because an optional resource is missing.
      * @throws FactoryException if the creation of backing store failed for another reason.
      */
-    protected abstract GeodeticAuthorityFactory createBackingStore() throws UnavailableFactoryException, FactoryException;
+    protected abstract GeodeticAuthorityFactory newDataAccess() throws UnavailableFactoryException, FactoryException;
 
     /**
      * Returns a backing store authority factory. This method <strong>must</strong>
@@ -311,7 +312,7 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      * @return The backing store to use in {@code createXXX(…)} methods.
      * @throws FactoryException if the backing store creation failed.
      */
-    private GeodeticAuthorityFactory getBackingStore() throws FactoryException {
+    private GeodeticAuthorityFactory getDataAccess() throws FactoryException {
         /*
          * First checks if the current thread is already using a factory. If yes, we will
          * avoid creating new factories on the assumption that factories are reentrant.
@@ -346,11 +347,11 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
             /*
              * If there is a need to create a new factory, do that outside the synchronized block because this
              * creation may involve a lot of client code. This is better for reducing the dead-lock risk.
-             * Subclasses are responsible of synchronizing their createBackingStore() method if necessary.
+             * Subclasses are responsible of synchronizing their newDataAccess() method if necessary.
              */
             try {
                 if (usage == null) {
-                    final GeodeticAuthorityFactory factory = createBackingStore();
+                    final GeodeticAuthorityFactory factory = newDataAccess();
                     if (factory == null) {
                         throw new UnavailableFactoryException(Errors.format(
                                 Errors.Keys.FactoryNotFound_1, GeodeticAuthorityFactory.class));
@@ -382,7 +383,7 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
     }
 
     /**
-     * Releases the backing store previously obtained with {@link #getBackingStore()}.
+     * Releases the backing store previously obtained with {@link #getDataAccess()}.
      * This method marks the factory as available for reuse by other threads.
      */
     private void release() {
@@ -519,7 +520,7 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
 
     /**
      * Sets a timer for closing the backing store after the specified amount of time of inactivity.
-     * If a new backing store is needed after the disposal of the last one, then the {@link #createBackingStore()}
+     * If a new backing store is needed after the disposal of the last one, then the {@link #newDataAccess()}
      * method will be invoked again.
      *
      * @param delay The delay of inactivity before to close a backing store.
@@ -557,7 +558,7 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
     public Citation getAuthority() {
         Citation c = authority;
         if (c == null) try {
-            final GeodeticAuthorityFactory factory = getBackingStore();
+            final GeodeticAuthorityFactory factory = getDataAccess();
             try {
                 // Cache only in case of success. If we failed, we
                 // will try again next time this method is invoked.
@@ -588,7 +589,7 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      */
     @Override
     public Set<String> getAuthorityCodes(final Class<? extends IdentifiedObject> type) throws FactoryException {
-        final GeodeticAuthorityFactory factory = getBackingStore();
+        final GeodeticAuthorityFactory factory = getDataAccess();
         try {
             return factory.getAuthorityCodes(type);
             /*
@@ -620,7 +621,7 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
     public InternationalString getDescriptionText(final String code)
             throws NoSuchAuthorityCodeException, FactoryException
     {
-        final GeodeticAuthorityFactory factory = getBackingStore();
+        final GeodeticAuthorityFactory factory = getDataAccess();
         try {
             return factory.getDescriptionText(code);
         } finally {
@@ -1259,7 +1260,7 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
     /**
      * Returns an object from a code using the given proxy. This method first checks in the cache.
      * If no object exists in the cache for the given code, then a lock is created and the object
-     * creation is delegated to the {@linkplain #getBackingStore() backing store}.
+     * creation is delegated to the {@linkplain #getDataAccess() backing store}.
      * The result is then stored in the cache and returned.
      *
      * @param  <T>   The type of the object to be returned.
@@ -1279,7 +1280,7 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
                 value = handler.peek();
                 if (!type.isInstance(value)) {
                     final T result;
-                    final GeodeticAuthorityFactory factory = getBackingStore();
+                    final GeodeticAuthorityFactory factory = getDataAccess();
                     try {
                         result = proxy.create(factory, code);
                     } finally {
@@ -1328,7 +1329,7 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
             try {
                 value = handler.peek();
                 if (!(value instanceof Set<?>)) {
-                    final GeodeticAuthorityFactory factory = getBackingStore();
+                    final GeodeticAuthorityFactory factory = getDataAccess();
                     try {
                         value = factory.createFromCoordinateReferenceSystemCodes(sourceCRS, targetCRS);
                     } finally {
@@ -1414,10 +1415,10 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
             assert Thread.holdsLock(this);
             assert (acquireCount == 0) == (finder == null) : acquireCount;
             if (acquireCount == 0) {
-                final GeodeticAuthorityFactory delegate = ((ConcurrentAuthorityFactory) factory).getBackingStore();
+                final GeodeticAuthorityFactory delegate = ((ConcurrentAuthorityFactory) factory).getDataAccess();
                 /*
                  * Set 'acquireCount' only after we succeed in fetching the factory, and before any operation on it.
-                 * The intend is to get ConcurrentAuthorityFactory.release() invoked if and only if the getBackingStore()
+                 * The intend is to get ConcurrentAuthorityFactory.release() invoked if and only if the getDataAccess()
                  * method succeed, no matter what happen after this point.
                  */
                 acquireCount = 1;
@@ -1434,7 +1435,7 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
         private void release() {
             assert Thread.holdsLock(this);
             if (acquireCount == 0) {
-                // May happen only if a failure occurred during getBackingStore() execution.
+                // May happen only if a failure occurred during getDataAccess() execution.
                 return;
             }
             if (--acquireCount == 0) {

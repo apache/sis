@@ -48,7 +48,8 @@ import org.apache.sis.util.Localized;
  * <div class="section">Note for subclasses</div>
  * If there is no cached object for a given code, then {@code EPSGFactory} creates an {@link EPSGDataAccess} instance
  * for performing the actual creation work. Developers who need to customize the geodetic object creation can override
- * the {@link #createBackingStore()} method in order to return their own {@link EPSGDataAccess} subclass.
+ * the {@link #newDataAccess(Connection, SQLTranslator)} method in order to return their own {@link EPSGDataAccess}
+ * subclass.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.7
@@ -130,7 +131,7 @@ public class EPSGFactory extends ConcurrentAuthorityFactory implements CRSAuthor
      * @param crsFactory    The factory to use for creating {@link CoordinateReferenceSystem} instances.
      * @param copFactory    The factory to use for creating {@link CoordinateOperation} instances.
      * @param mtFactory     The factory to use for creating {@link MathTransform} instances.
-     * @param translator    The adapter from the SQL statements using MS-Access dialect to SQL statements
+     * @param translator    The translator from the SQL statements using MS-Access dialect to SQL statements
      *                      using the dialect of the actual database.
      * @throws FactoryException if an error occurred while creating the EPSG factory.
      */
@@ -199,16 +200,16 @@ public class EPSGFactory extends ConcurrentAuthorityFactory implements CRSAuthor
      * This method is invoked automatically when a new worker is required, either because the previous
      * one has been disposed after its timeout or because a new one is required for concurrency.
      *
-     * <p>The default implementation gets a new connection from the {@link #dataSource}
-     * and creates a new {@link EPSGDataAccess} instance.
-     * Subclasses can override this method if they want to return a custom instance.</p>
+     * <p>The default implementation gets a new connection from the {@link #dataSource} and delegates to
+     * {@link #newDataAccess(Connection, SQLTranslator)}, which provides an easier overriding point
+     * for subclasses wanting to return a custom {@link EPSGDataAccess} instance.</p>
      *
      * @return The backing store to use in {@code createFoo(String)} methods.
      * @throws FactoryException if the constructor failed to connect to the EPSG database.
      *         This exception usually has a {@link SQLException} as its cause.
      */
     @Override
-    protected GeodeticAuthorityFactory createBackingStore() throws FactoryException {
+    protected GeodeticAuthorityFactory newDataAccess() throws FactoryException {
         Connection connection = null;
         try {
             connection = dataSource.getConnection();
@@ -221,7 +222,7 @@ public class EPSGFactory extends ConcurrentAuthorityFactory implements CRSAuthor
                     }
                 }
             }
-            return new EPSGDataAccess(this, connection, tr);
+            return newDataAccess(connection, tr);
         } catch (Exception e) {
             if (connection != null) try {
                 connection.close();
@@ -230,5 +231,28 @@ public class EPSGFactory extends ConcurrentAuthorityFactory implements CRSAuthor
             }
             throw new UnavailableFactoryException(e.getLocalizedMessage(), e);
         }
+    }
+
+    /**
+     * Creates the factory which will perform the actual geodetic object creation from a given connection.
+     * This method is a convenience hook easier to override than {@link #newDataAccess()} for subclasses
+     * wanting to return instances of their own {@link EPSGDataAccess} subclass.
+     * The default implementation is simply:
+     *
+     * {@preformat java
+     *     return new EPSGDataAccess(this, connection, translator);
+     * }
+     *
+     * Subclasses can override this method with a similar code but with {@code new EPSGDataAccess(…)} replaced
+     * by {@code new MyDataAccessSubclass(…)}.
+     *
+     * @param  connection A connection to the EPSG database.
+     * @param  translator The translator from the SQL statements using MS-Access dialect to SQL statements
+     *                    using the dialect of the actual database.
+     * @throws SQLException if {@code EPSGDataAccess} detected a problem with the database.
+     * @return The backing store to use in {@code createFoo(String)} methods.
+     */
+    protected EPSGDataAccess newDataAccess(Connection connection, SQLTranslator translator) throws SQLException {
+        return new EPSGDataAccess(this, connection, translator);
     }
 }

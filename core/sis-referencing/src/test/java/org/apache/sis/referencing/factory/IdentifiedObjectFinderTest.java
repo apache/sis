@@ -121,7 +121,7 @@ public final strictfp class IdentifiedObjectFinderTest extends TestCase {
         }
 
         @Override
-        protected GeodeticAuthorityFactory createBackingStore() {
+        protected GeodeticAuthorityFactory newDataAccess() {
             return factory;
         }
     }
