@@ -287,14 +287,16 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
      *
      * <div class="note"><b>API design note:</b>
      * this constructor is protected because {@code EPSGDataAccess} instances should not be created as standalone factories.
-     * This constructor is invoked either by {@link EPSGFactory#newDataAccess(Connection, SQLTranslator)},
-     * or by the constructor of an {@code EPSGDataAccess} subclass which is itself invoked by a corresponding
+     * This constructor is for allowing definition of custom {@code EPSGDataAccess} subclasses, which are then instantiated
+     * by the {@link EPSGFactory#newDataAccess(Connection, SQLTranslator)} method of a corresponding custom
      * {@code EPSGFactory} subclass.</div>
      *
      * @param parent      The {@code EPSGFactory} which is creating this Data Access Object (DAO).
      * @param connection  The connection to the underlying EPSG database.
      * @param translator  The translator from the SQL statements using MS-Access dialect
      *                    to SQL statements using the dialect of the actual database.
+     *
+     * @see EPSGFactory#newDataAccess(Connection, SQLTranslator)
      */
     protected EPSGDataAccess(final EPSGFactory parent, final Connection connection, final SQLTranslator translator) {
         super(parent);
