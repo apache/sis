@@ -63,8 +63,9 @@ import org.apache.sis.util.ArraysExt;
  * by {@link #newDataAccess()} and the result is cached in this factory.
  *
  * <p>{@code ConcurrentAuthorityFactory} delays the call to {@code newDataAccess()} until first needed,
- * and {@linkplain AutoCloseable#close() closes} the backing store after some timeout. This approach allows
- * to establish a connection to a database (for example) and keep it only for a relatively short amount of time.</p>
+ * and {@linkplain AutoCloseable#close() closes} the factory used as a <cite>Data Access Object</cite>
+ * (DAO) after some timeout. This approach allows to establish a connection to a database (for example)
+ * and keep it only for a relatively short amount of time.</p>
  *
  * <div class="section">Caching strategy</div>
  * Objects are cached by strong references, up to the amount of objects specified at construction time.
@@ -74,10 +75,10 @@ import org.apache.sis.util.ArraysExt;
  * else in the Java virtual machine, but will be discarded (and recreated on the fly if needed) otherwise.
  *
  * <div class="section">Multi-threading</div>
- * The cache managed by this class is concurrent. However the backing stores are assumed non-concurrent.
- * If two or more threads are accessing this factory in same time, then two or more backing store instances
+ * The cache managed by this class is concurrent. However the Data Access Objects (DAO) are assumed non-concurrent.
+ * If two or more threads are accessing this factory in same time, then two or more Data Access Object instances
  * may be created. The maximal amount of instances to create is specified at {@code ConcurrentAuthorityFactory}
- * construction time. If more backing store instances are needed, some of the threads will block until an
+ * construction time. If more Data Access Object instances are needed, some of the threads will block until an
  * instance become available.
  *
  * <div class="section">Note for subclasses</div>
@@ -110,23 +111,23 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
     private final Map<IdentifiedObject, IdentifiedObject> findPool = new WeakHashMap<>();
 
     /**
-     * Holds the reference to a backing store used by {@link ConcurrentAuthorityFactory} together with information
-     * about its usage. In a mono-thread application, there is typically only one {@code BackingStore} instance
-     * at a given time. However if more than one than one thread are requesting new objects concurrently, then
-     * many instances may exist for the same {@code ConcurrentAuthorityFactory}.
+     * Holds the reference to a Data Access Object used by {@link ConcurrentAuthorityFactory}, together with
+     * information about its usage. In a mono-thread application, there is typically only one {@code DataAccess}
+     * instance at a given time. However if more than one than one thread are requesting new objects concurrently,
+     * then many instances may exist for the same {@code ConcurrentAuthorityFactory}.
      *
-     * <p>If the backing store is currently in use, then {@code BackingStore} counts how many recursive invocations
-     * of a {@link #factory} {@code createFoo(String)} method is under way in the current thread.
+     * <p>If the Data Access Object is currently in use, then {@code DataAccess} counts how many recursive
+     * invocations of a {@link #factory} {@code createFoo(String)} method is under way in the current thread.
      * This information is used in order to reuse the same factory instead than creating new instances
      * when a {@code GeodeticAuthorityFactory} implementation invokes itself indirectly through the
      * {@link ConcurrentAuthorityFactory}. This assumes that factory implementations are reentrant.</p>
      *
-     * <p>If the backing store has been released, then {@code BackingStore} keep the release timestamp.
-     * This information is used for prioritize the backing stores to close.</p>
+     * <p>If the Data Access Object has been released, then {@code DataAccess} keep the release timestamp.
+     * This information is used for prioritize the Data Access Objects to close.</p>
      */
-    private static final class BackingStore {
+    private static final class DataAccess {
         /**
-         * The factory used as a backing store.
+         * The factory used for data access.
          */
         final GeodeticAuthorityFactory factory;
 
@@ -137,16 +138,15 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
         int depth;
 
         /**
-         * The timestamp (<strong>not</strong> relative to epoch) at the time the backing store factory has been
-         * released. This timestamp shall be obtained by a call to {@link System#nanoTime()} for consistency with
-         * {@link DelayedRunnable}.
+         * The timestamp (<strong>not</strong> relative to epoch) at the time the Data Access Object has been released.
+         * This timestamp shall be obtained by {@link System#nanoTime()} for consistency with {@link DelayedRunnable}.
          */
         long timestamp;
 
         /**
-         * Creates new backing store information for the given factory.
+         * Creates new Data Access Object information for the given factory.
          */
-        BackingStore(final GeodeticAuthorityFactory factory) {
+        DataAccess(final GeodeticAuthorityFactory factory) {
             this.factory = factory;
         }
 
@@ -170,46 +170,40 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
     }
 
     /**
-     * The backing store in use by the current thread.
+     * The Data Access Object in use by the current thread.
      */
-    private final ThreadLocal<BackingStore> currentStore = new ThreadLocal<>();
+    private final ThreadLocal<DataAccess> currentDAO = new ThreadLocal<>();
 
     /**
-     * The backing store instances previously created and released for future reuse.
+     * The Data Access Object instances previously created and released for future reuse.
      * Last used factories must be {@linkplain Deque#addLast(Object) added last}.
      * This is used as a LIFO stack.
      */
-    private final Deque<BackingStore> availableStores = new LinkedList<>();
+    private final Deque<DataAccess> availableDAOs = new LinkedList<>();
 
     /**
-     * The amount of backing stores that can still be created. This number is decremented in a block synchronized
-     * on {@link #availableStores} every time a backing store is in use, and incremented once released.
+     * The amount of Data Access Objects that can still be created. This number is decremented in a block
+     * synchronized on {@link #availableDAOs} every time a Data Access Object is in use, and incremented
+     * once released.
      */
-    private int remainingBackingStores;
+    private int remainingDAOs;
 
     /**
      * {@code true} if the call to {@link #closeExpired()} is scheduled for future execution in the background
-     * cleaner thread.  A value of {@code true} implies that this factory contains at least one active backing store.
+     * cleaner thread. A value of {@code true} implies that this factory contains at least one active data access.
      * However the reciprocal is not true: this field may be set to {@code false} while a worker factory is currently
      * in use because this field is set to {@code true} only when a worker factory is {@linkplain #release() released}.
      *
-     * <p>Note that we can not use {@code !stores.isEmpty()} as a replacement of {@code isActive}
-     * because the queue is empty if all backing stores are currently in use.</p>
+     * <p>Note that we can not use {@code !availableDAOs.isEmpty()} as a replacement of {@code isActive}
+     * because the queue is empty if all Data Access Objects are currently in use.</p>
      *
-     * <p>Every access to this field must be performed in a block synchronized on {@link #availableStores}.</p>
+     * <p>Every access to this field must be performed in a block synchronized on {@link #availableDAOs}.</p>
      */
     private boolean isActive;
 
     /**
-     * {@code true} if {@link #close()} has been invoked.
-     *
-     * <p>Every access to this field must be performed in a block synchronized on {@link #availableStores}.</p>
-     */
-    private boolean isClosed;
-
-    /**
-     * The delay of inactivity (in nanoseconds) before to close a backing store.
-     * Every access to this field must be performed in a block synchronized on {@link #availableStores}.
+     * The delay of inactivity (in nanoseconds) before to close a Data Access Object.
+     * Every access to this field must be performed in a block synchronized on {@link #availableDAOs}.
      *
      * @see #getTimeout(TimeUnit)
      */
@@ -231,7 +225,7 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
     protected ConcurrentAuthorityFactory(final NameFactory nameFactory) {
         this(nameFactory, 100, 8);
         /*
-         * NOTE: if the default maximum number of backing stores (currently 8) is augmented,
+         * NOTE: if the default maximum number of Data Access Objects (currently 8) is augmented,
          * make sure to augment the number of runner threads in the "StressTest" class to a greater amount.
          */
     }
@@ -243,9 +237,9 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      *
      * @param nameFactory The factory to use for parsing authority code as {@link org.opengis.util.GenericName} instances.
      * @param maxStrongReferences The maximum number of objects to keep by strong reference.
-     * @param maxConcurrentQueries The maximal amount of backing stores to use concurrently.
+     * @param maxConcurrentQueries The maximal amount of Data Access Objects to use concurrently.
      *        If more than this amount of threads are querying this {@code ConcurrentAuthorityFactory} concurrently,
-     *        additional threads will be blocked until a backing store become available.
+     *        additional threads will be blocked until a Data Access Object become available.
      */
     protected ConcurrentAuthorityFactory(final NameFactory nameFactory,
             final int maxStrongReferences, final int maxConcurrentQueries)
@@ -253,7 +247,7 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
         super(nameFactory);
         ArgumentChecks.ensurePositive("maxStrongReferences", maxStrongReferences);
         ArgumentChecks.ensureStrictlyPositive("maxConcurrentQueries", maxConcurrentQueries);
-        remainingBackingStores = maxConcurrentQueries;
+        remainingDAOs = maxConcurrentQueries;
         cache = new Cache<>(20, maxStrongReferences, false);
         /*
          * Key collision is usually an error. But in this case we allow them in order to enable recursivity.
@@ -265,23 +259,23 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
         /*
          * The shutdown hook serves two purposes:
          *
-         *   1) Closes the backing stores when the garbage collector determined
+         *   1) Closes the Data Access Objects when the garbage collector determined
          *      that this ConcurrentAuthorityFactory is no longer in use.
          *
-         *   2) Closes the backing stores at JVM shutdown time if the application is standalone,
+         *   2) Closes the Data Access Objects at JVM shutdown time if the application is standalone,
          *      or when the bundle is uninstalled if running inside an OSGi or Servlet container.
          */
         Shutdown.register(new ShutdownHook(this));
     }
 
     /**
-     * Returns the number of backing stores. This count does not include the backing stores
-     * that are currently under execution. This method is used only for testing purpose.
+     * Returns the number of Data Access Objects available for reuse. This count does not include the
+     * Data Access Objects that are currently in use. This method is used only for testing purpose.
      */
     @Debug
-    final int countBackingStores() {
-        synchronized (availableStores) {
-            return availableStores.size();
+    final int countAvailableDataAccess() {
+        synchronized (availableDAOs) {
+            return availableDAOs.size();
         }
     }
 
@@ -299,39 +293,36 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      * In addition, implementations should not invoke other {@code ConcurrentAuthorityFactory}
      * methods during this method execution in order to avoid never-ending loop.
      *
-     * @return The backing store to use in {@code createFoo(String)} methods.
-     * @throws UnavailableFactoryException if the backing store is unavailable because an optional resource is missing.
-     * @throws FactoryException if the creation of backing store failed for another reason.
+     * @return Data Access Object (DAO) to use in {@code createFoo(String)} methods.
+     * @throws UnavailableFactoryException if the Data Access Object is unavailable because an optional resource is missing.
+     * @throws FactoryException if the creation of Data Access Object failed for another reason.
      */
     protected abstract GeodeticAuthorityFactory newDataAccess() throws UnavailableFactoryException, FactoryException;
 
     /**
-     * Returns a backing store authority factory. This method <strong>must</strong>
+     * Returns a Data Access Object. This method <strong>must</strong>
      * be used together with {@link #release()} in a {@code try ... finally} block.
      *
-     * @return The backing store to use in {@code createXXX(…)} methods.
-     * @throws FactoryException if the backing store creation failed.
+     * @return Data Access Object (DAO) to use in {@code createFoo(String)} methods.
+     * @throws FactoryException if the Data Access Object creation failed.
      */
     private GeodeticAuthorityFactory getDataAccess() throws FactoryException {
         /*
          * First checks if the current thread is already using a factory. If yes, we will
          * avoid creating new factories on the assumption that factories are reentrant.
          */
-        BackingStore usage = currentStore.get();
+        DataAccess usage = currentDAO.get();
         if (usage == null) {
-            synchronized (availableStores) {
-                if (isClosed) {
-                    throw new UnavailableFactoryException(Errors.format(Errors.Keys.DisposedFactory));
-                }
-                /**
-                 * If we have reached the maximal amount of backing stores allowed, wait for a backing store
+            synchronized (availableDAOs) {
+                /*
+                 * If we have reached the maximal amount of Data Access Objects allowed, wait for an instance
                  * to become available. In theory the 0.2 second timeout is not necessary, but we put it as a
                  * safety in case we fail to invoke a notify() matching this wait(), for example someone else
                  * is waiting on this monitor or because the release(…) method threw an exception.
                  */
-                while (remainingBackingStores == 0) {
+                while (remainingDAOs == 0) {
                     try {
-                        availableStores.wait(TIMEOUT_RESOLUTION);
+                        availableDAOs.wait(TIMEOUT_RESOLUTION);
                     } catch (InterruptedException e) {
                         // Someone does not want to let us sleep.
                         throw new FactoryException(e.getLocalizedMessage(), e);
@@ -341,8 +332,8 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
                  * Reuse the most recently used factory, if available. If there is no factory available for reuse,
                  * creates a new one. We do not add it to the queue now; it will be done by the release(…) method.
                  */
-                usage = availableStores.pollLast();
-                remainingBackingStores--;       // Should be done last when we are sure to not fail.
+                usage = availableDAOs.pollLast();
+                remainingDAOs--;       // Should be done last when we are sure to not fail.
             }
             /*
              * If there is a need to create a new factory, do that outside the synchronized block because this
@@ -356,61 +347,52 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
                         throw new UnavailableFactoryException(Errors.format(
                                 Errors.Keys.FactoryNotFound_1, GeodeticAuthorityFactory.class));
                     }
-                    usage = new BackingStore(factory);
-                    currentStore.set(usage);
+                    usage = new DataAccess(factory);
+                    currentDAO.set(usage);
                 }
                 assert usage.depth == 0 : usage;
             } finally {
                 /*
-                 * If any kind of error occurred, restore the 'remainingBackingStores' field as if no code were executed.
-                 * This code would not have been needed if we were allowed to decrement 'remainingBackingStores' only as
-                 * the very last step (when we know that everything else succeed). But it needed to be decremented inside
-                 * the synchronized block.
+                 * If any kind of error occurred, restore the 'remainingDAO' field as if no code were executed.
+                 * This code would not have been needed if we were allowed to decrement 'remainingDAO' only as
+                 * the very last step (when we know that everything else succeed).
+                 * But it needed to be decremented inside the synchronized block.
                  */
                 if (usage == null) {
-                    synchronized (availableStores) {
-                        remainingBackingStores++;
+                    synchronized (availableDAOs) {
+                        remainingDAOs++;
                     }
                 }
             }
         }
         /*
          * Increment below is safe even if outside the synchronized block,
-         * because each thread own exclusively its BackingStore instance
+         * because each thread own exclusively its DataAccess instance
          */
         usage.depth++;
         return usage.factory;
     }
 
     /**
-     * Releases the backing store previously obtained with {@link #getDataAccess()}.
+     * Releases the Data Access Object previously obtained with {@link #getDataAccess()}.
      * This method marks the factory as available for reuse by other threads.
      */
     private void release() {
-        final BackingStore usage = currentStore.get();     // A null value here would be an error in our algorithm.
+        final DataAccess usage = currentDAO.get();     // A null value here would be an error in our algorithm.
         if (--usage.depth == 0) {
-            synchronized (availableStores) {
-                if (isClosed) {
-                    final GeodeticAuthorityFactory factory = usage.factory;
-                    if (factory instanceof AutoCloseable) try {
-                        ((AutoCloseable) factory).close();
-                    } catch (Exception exception) {
-                        unexpectedException("release", exception);
-                    }
-                    return;
-                }
-                remainingBackingStores++;       // Must be done first in case an exception happen after this point.
+            synchronized (availableDAOs) {
+                remainingDAOs++;       // Must be done first in case an exception happen after this point.
                 usage.timestamp = System.nanoTime();
-                availableStores.addLast(usage);
+                availableDAOs.addLast(usage);
                 /*
-                 * If the backing store we just released is the first one, awake the
+                 * If the Data Access Object we just released is the first one, awake the
                  * cleaner thread which was waiting for an indefinite amount of time.
                  */
                 if (!isActive) {
                     isActive = true;
                     DelayedExecutor.schedule(new CloseTask(usage.timestamp + timeout));
                 }
-                availableStores.notify();    // We released only one backing store, so awake only one thread - not all of them.
+                availableDAOs.notify();    // We released only one data access, so awake only one thread - not all of them.
             }
         }
         assert usage.depth >= 0 : usage;
@@ -435,27 +417,27 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
     }
 
     /**
-     * Closes the expired backing stores. This method should be invoked from a background task only.
-     * This method may reschedule the task again for an other execution if it appears that at least
-     * one backing store was not ready for disposal.
+     * Closes the expired Data Access Objects. This method should be invoked from a background task only.
+     * This method may reschedule the task again for an other execution if it appears that at least one
+     * Data Access Object was not ready for disposal.
      *
      * @see #close()
      */
     final void closeExpired() {
         int count = 0;
         final AutoCloseable[] factories;
-        synchronized (availableStores) {
-            factories = new AutoCloseable[availableStores.size()];
-            final Iterator<BackingStore> it = availableStores.iterator();
+        synchronized (availableDAOs) {
+            factories = new AutoCloseable[availableDAOs.size()];
+            final Iterator<DataAccess> it = availableDAOs.iterator();
             final long nanoTime = System.nanoTime();
             while (it.hasNext()) {
-                final BackingStore store = it.next();
+                final DataAccess dao = it.next();
                 /*
                  * Computes how much time we need to wait again before we can close the factory.
                  * If this time is greater than some arbitrary amount, do not close the factory
                  * and wait again.
                  */
-                final long nextTime = store.timestamp + timeout;
+                final long nextTime = dao.timestamp + timeout;
                 if (nextTime - nanoTime > TIMEOUT_RESOLUTION) {
                     /*
                      * Found a factory which is not expired. Stop the search,
@@ -469,17 +451,17 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
                  * factories to close and search for other factories.
                  */
                 it.remove();
-                if (store.factory instanceof AutoCloseable) {
-                    factories[count++] = (AutoCloseable) store.factory;
+                if (dao.factory instanceof AutoCloseable) {
+                    factories[count++] = (AutoCloseable) dao.factory;
                 }
             }
             /*
-             * The stores list is empty if all worker factories in the queue have been closed.
+             * The DAOs list is empty if all worker factories in the queue have been closed.
              * Note that some worker factories may still be active outside the queue, because the
              * workers are added to the queue only after completion of their work.
              * In the later case, release() will reschedule a new task.
              */
-            isActive = !availableStores.isEmpty();
+            isActive = !availableDAOs.isEmpty();
         }
         /*
          * We must close the factories from outside the synchronized block.
@@ -498,7 +480,7 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      * factory that we failed to close will not be used anymore.
      *
      * @param method     The name of the method to report as the source of the problem.
-     * @param exception  The exception that occurred while closing a backing store factory.
+     * @param exception  The exception that occurred while closing a Data Access Object.
      */
     static void unexpectedException(final String method, final Exception exception) {
         Logging.unexpectedException(Logging.getLogger(Loggers.CRS_FACTORY),
@@ -506,30 +488,30 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
     }
 
     /**
-     * Returns the amount of time that {@code ConcurrentAuthorityFactory} will wait before to close a backing store.
-     * This delay is measured from the last time the backing store has been used by a {@code createFoo(String)} method.
+     * Returns the amount of time that {@code ConcurrentAuthorityFactory} will wait before to close a Data Access Object.
+     * This delay is measured from the last time the Data Access Object has been used by a {@code createFoo(String)} method.
      *
      * @param unit The desired unit of measurement for the timeout.
      * @return The current timeout in the given unit of measurement.
      */
     public long getTimeout(final TimeUnit unit) {
-        synchronized (availableStores) {
+        synchronized (availableDAOs) {
             return unit.convert(timeout, TimeUnit.NANOSECONDS);
         }
     }
 
     /**
-     * Sets a timer for closing the backing store after the specified amount of time of inactivity.
-     * If a new backing store is needed after the disposal of the last one, then the {@link #newDataAccess()}
+     * Sets a timer for closing the Data Access Object after the specified amount of time of inactivity.
+     * If a new Data Access Object is needed after the disposal of the last one, then the {@link #newDataAccess()}
      * method will be invoked again.
      *
-     * @param delay The delay of inactivity before to close a backing store.
+     * @param delay The delay of inactivity before to close a Data Access Object.
      * @param unit  The unit of measurement of the given delay.
      */
     public void setTimeout(long delay, final TimeUnit unit) {
         ArgumentChecks.ensureStrictlyPositive("delay", delay);
         delay = unit.toNanos(delay);
-        synchronized (availableStores) {
+        synchronized (availableDAOs) {
             timeout = delay;                // Will be taken in account after the next factory to close.
         }
     }
@@ -541,15 +523,15 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      *   <li>Returns the cached value if it exists.</li>
      *   <li>Otherwise:
      *     <ol>
-     *       <li>get an instance of the backing store,</li>
+     *       <li>get an instance of the Data Access Object,</li>
      *       <li>delegate to its {@link GeodeticAuthorityFactory#getAuthority()} method,</li>
-     *       <li>release the backing store,</li>
+     *       <li>release the Data Access Object,</li>
      *       <li>cache the result.</li>
      *     </ol>
      *   </li>
      * </ul>
      *
-     * If this method can not get a backing store factory (for example because no database connection is available),
+     * If this method can not get a Data Access Object (for example because no database connection is available),
      * then this method returns {@code null}.
      *
      * @return The organization responsible for definition of the database, or {@code null} if unavailable.
@@ -577,9 +559,9 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      * Returns the set of authority codes for objects of the given type.
      * The default implementation performs the following steps:
      * <ol>
-     *   <li>get an instance of the backing store,</li>
+     *   <li>get an instance of the Data Access Object,</li>
      *   <li>delegate to its {@link GeodeticAuthorityFactory#getAuthorityCodes(Class)} method,</li>
-     *   <li>release the backing store.</li>
+     *   <li>release the Data Access Object.</li>
      * </ol>
      *
      * @param  type The spatial reference objects type (e.g. {@code ProjectedCRS.class}).
@@ -606,9 +588,9 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      * Gets a description of the object corresponding to a code.
      * The default implementation performs the following steps:
      * <ol>
-     *   <li>get an instance of the backing store,</li>
+     *   <li>get an instance of the Data Access Object,</li>
      *   <li>delegate to its {@link GeodeticAuthorityFactory#getDescriptionText(String)} method,</li>
-     *   <li>release the backing store.</li>
+     *   <li>release the Data Access Object.</li>
      * </ol>
      *
      * @param  code Value allocated by authority.
@@ -636,9 +618,9 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      *   <li>Returns the cached instance for the given code if such instance already exists.</li>
      *   <li>Otherwise:
      *     <ol>
-     *       <li>get an instance of the backing store,</li>
+     *       <li>get an instance of the Data Access Object,</li>
      *       <li>delegate to its {@link GeodeticAuthorityFactory#createObject(String)} method,</li>
-     *       <li>release the backing store,</li>
+     *       <li>release the Data Access Object,</li>
      *       <li>cache the result.</li>
      *     </ol>
      *   </li>
@@ -658,7 +640,7 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      * <ul>
      *   <li>Returns the cached instance for the given code if such instance already exists.</li>
      *   <li>Otherwise delegate to the {@link GeodeticAuthorityFactory#createCoordinateReferenceSystem(String)}
-     *       method of a backing store and cache the result for future use.</li>
+     *       method of a Data Access Object and cache the result for future use.</li>
      * </ul>
      *
      * @return The coordinate reference system for the given code.
@@ -675,7 +657,7 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      * <ul>
      *   <li>Returns the cached instance for the given code if such instance already exists.</li>
      *   <li>Otherwise delegate to the {@link GeodeticAuthorityFactory#createGeographicCRS(String)}
-     *       method of a backing store and cache the result for future use.</li>
+     *       method of a Data Access Object and cache the result for future use.</li>
      * </ul>
      *
      * @return The coordinate reference system for the given code.
@@ -692,7 +674,7 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      * <ul>
      *   <li>Returns the cached instance for the given code if such instance already exists.</li>
      *   <li>Otherwise delegate to the {@link GeodeticAuthorityFactory#createGeocentricCRS(String)}
-     *       method of a backing store and cache the result for future use.</li>
+     *       method of a Data Access Object and cache the result for future use.</li>
      * </ul>
      *
      * @return The coordinate reference system for the given code.
@@ -709,7 +691,7 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      * <ul>
      *   <li>Returns the cached instance for the given code if such instance already exists.</li>
      *   <li>Otherwise delegate to the {@link GeodeticAuthorityFactory#createProjectedCRS(String)}
-     *       method of a backing store and cache the result for future use.</li>
+     *       method of a Data Access Object and cache the result for future use.</li>
      * </ul>
      *
      * @return The coordinate reference system for the given code.
@@ -726,7 +708,7 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      * <ul>
      *   <li>Returns the cached instance for the given code if such instance already exists.</li>
      *   <li>Otherwise delegate to the {@link GeodeticAuthorityFactory#createVerticalCRS(String)}
-     *       method of a backing store and cache the result for future use.</li>
+     *       method of a Data Access Object and cache the result for future use.</li>
      * </ul>
      *
      * @return The coordinate reference system for the given code.
@@ -743,7 +725,7 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      * <ul>
      *   <li>Returns the cached instance for the given code if such instance already exists.</li>
      *   <li>Otherwise delegate to the {@link GeodeticAuthorityFactory#createTemporalCRS(String)}
-     *       method of a backing store and cache the result for future use.</li>
+     *       method of a Data Access Object and cache the result for future use.</li>
      * </ul>
      *
      * @return The coordinate reference system for the given code.
@@ -760,7 +742,7 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      * <ul>
      *   <li>Returns the cached instance for the given code if such instance already exists.</li>
      *   <li>Otherwise delegate to the {@link GeodeticAuthorityFactory#createCompoundCRS(String)}
-     *       method of a backing store and cache the result for future use.</li>
+     *       method of a Data Access Object and cache the result for future use.</li>
      * </ul>
      *
      * @return The coordinate reference system for the given code.
@@ -777,7 +759,7 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      * <ul>
      *   <li>Returns the cached instance for the given code if such instance already exists.</li>
      *   <li>Otherwise delegate to the {@link GeodeticAuthorityFactory#createDerivedCRS(String)}
-     *       method of a backing store and cache the result for future use.</li>
+     *       method of a Data Access Object and cache the result for future use.</li>
      * </ul>
      *
      * @return The coordinate reference system for the given code.
@@ -794,7 +776,7 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      * <ul>
      *   <li>Returns the cached instance for the given code if such instance already exists.</li>
      *   <li>Otherwise delegate to the {@link GeodeticAuthorityFactory#createEngineeringCRS(String)}
-     *       method of a backing store and cache the result for future use.</li>
+     *       method of a Data Access Object and cache the result for future use.</li>
      * </ul>
      *
      * @return The coordinate reference system for the given code.
@@ -811,7 +793,7 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      * <ul>
      *   <li>Returns the cached instance for the given code if such instance already exists.</li>
      *   <li>Otherwise delegate to the {@link GeodeticAuthorityFactory#createImageCRS(String)}
-     *       method of a backing store and cache the result for future use.</li>
+     *       method of a Data Access Object and cache the result for future use.</li>
      * </ul>
      *
      * @return The coordinate reference system for the given code.
@@ -828,7 +810,7 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      * <ul>
      *   <li>Returns the cached instance for the given code if such instance already exists.</li>
      *   <li>Otherwise delegate to the {@link GeodeticAuthorityFactory#createDatum(String)}
-     *       method of a backing store and cache the result for future use.</li>
+     *       method of a Data Access Object and cache the result for future use.</li>
      * </ul>
      *
      * @return The datum for the given code.
@@ -845,7 +827,7 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      * <ul>
      *   <li>Returns the cached instance for the given code if such instance already exists.</li>
      *   <li>Otherwise delegate to the {@link GeodeticAuthorityFactory#createGeodeticDatum(String)}
-     *       method of a backing store and cache the result for future use.</li>
+     *       method of a Data Access Object and cache the result for future use.</li>
      * </ul>
      *
      * @return The datum for the given code.
@@ -862,7 +844,7 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      * <ul>
      *   <li>Returns the cached instance for the given code if such instance already exists.</li>
      *   <li>Otherwise delegate to the {@link GeodeticAuthorityFactory#createVerticalDatum(String)}
-     *       method of a backing store and cache the result for future use.</li>
+     *       method of a Data Access Object and cache the result for future use.</li>
      * </ul>
      *
      * @return The datum for the given code.
@@ -879,7 +861,7 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      * <ul>
      *   <li>Returns the cached instance for the given code if such instance already exists.</li>
      *   <li>Otherwise delegate to the {@link GeodeticAuthorityFactory#createTemporalDatum(String)}
-     *       method of a backing store and cache the result for future use.</li>
+     *       method of a Data Access Object and cache the result for future use.</li>
      * </ul>
      *
      * @return The datum for the given code.
@@ -896,7 +878,7 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      * <ul>
      *   <li>Returns the cached instance for the given code if such instance already exists.</li>
      *   <li>Otherwise delegate to the {@link GeodeticAuthorityFactory#createEngineeringDatum(String)}
-     *       method of a backing store and cache the result for future use.</li>
+     *       method of a Data Access Object and cache the result for future use.</li>
      * </ul>
      *
      * @return The datum for the given code.
@@ -913,7 +895,7 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      * <ul>
      *   <li>Returns the cached instance for the given code if such instance already exists.</li>
      *   <li>Otherwise delegate to the {@link GeodeticAuthorityFactory#createImageDatum(String)}
-     *       method of a backing store and cache the result for future use.</li>
+     *       method of a Data Access Object and cache the result for future use.</li>
      * </ul>
      *
      * @return The datum for the given code.
@@ -930,7 +912,7 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      * <ul>
      *   <li>Returns the cached instance for the given code if such instance already exists.</li>
      *   <li>Otherwise delegate to the {@link GeodeticAuthorityFactory#createEllipsoid(String)}
-     *       method of a backing store and cache the result for future use.</li>
+     *       method of a Data Access Object and cache the result for future use.</li>
      * </ul>
      *
      * @return The ellipsoid for the given code.
@@ -947,7 +929,7 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      * <ul>
      *   <li>Returns the cached instance for the given code if such instance already exists.</li>
      *   <li>Otherwise delegate to the {@link GeodeticAuthorityFactory#createPrimeMeridian(String)}
-     *       method of a backing store and cache the result for future use.</li>
+     *       method of a Data Access Object and cache the result for future use.</li>
      * </ul>
      *
      * @return The prime meridian for the given code.
@@ -964,7 +946,7 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      * <ul>
      *   <li>Returns the cached instance for the given code if such instance already exists.</li>
      *   <li>Otherwise delegate to the {@link GeodeticAuthorityFactory#createExtent(String)}
-     *       method of a backing store and cache the result for future use.</li>
+     *       method of a Data Access Object and cache the result for future use.</li>
      * </ul>
      *
      * @return The extent for the given code.
@@ -981,7 +963,7 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      * <ul>
      *   <li>Returns the cached instance for the given code if such instance already exists.</li>
      *   <li>Otherwise delegate to the {@link GeodeticAuthorityFactory#createCoordinateSystem(String)}
-     *       method of a backing store and cache the result for future use.</li>
+     *       method of a Data Access Object and cache the result for future use.</li>
      * </ul>
      *
      * @return The coordinate system for the given code.
@@ -998,7 +980,7 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      * <ul>
      *   <li>Returns the cached instance for the given code if such instance already exists.</li>
      *   <li>Otherwise delegate to the {@link GeodeticAuthorityFactory#createEllipsoidalCS(String)}
-     *       method of a backing store and cache the result for future use.</li>
+     *       method of a Data Access Object and cache the result for future use.</li>
      * </ul>
      *
      * @return The coordinate system for the given code.
@@ -1015,7 +997,7 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      * <ul>
      *   <li>Returns the cached instance for the given code if such instance already exists.</li>
      *   <li>Otherwise delegate to the {@link GeodeticAuthorityFactory#createVerticalCS(String)}
-     *       method of a backing store and cache the result for future use.</li>
+     *       method of a Data Access Object and cache the result for future use.</li>
      * </ul>
      *
      * @return The coordinate system for the given code.
@@ -1032,7 +1014,7 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      * <ul>
      *   <li>Returns the cached instance for the given code if such instance already exists.</li>
      *   <li>Otherwise delegate to the {@link GeodeticAuthorityFactory#createTimeCS(String)}
-     *       method of a backing store and cache the result for future use.</li>
+     *       method of a Data Access Object and cache the result for future use.</li>
      * </ul>
      *
      * @return The coordinate system for the given code.
@@ -1049,7 +1031,7 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      * <ul>
      *   <li>Returns the cached instance for the given code if such instance already exists.</li>
      *   <li>Otherwise delegate to the {@link GeodeticAuthorityFactory#createCartesianCS(String)}
-     *       method of a backing store and cache the result for future use.</li>
+     *       method of a Data Access Object and cache the result for future use.</li>
      * </ul>
      *
      * @return The coordinate system for the given code.
@@ -1066,7 +1048,7 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      * <ul>
      *   <li>Returns the cached instance for the given code if such instance already exists.</li>
      *   <li>Otherwise delegate to the {@link GeodeticAuthorityFactory#createSphericalCS(String)}
-     *       method of a backing store and cache the result for future use.</li>
+     *       method of a Data Access Object and cache the result for future use.</li>
      * </ul>
      *
      * @return The coordinate system for the given code.
@@ -1083,7 +1065,7 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      * <ul>
      *   <li>Returns the cached instance for the given code if such instance already exists.</li>
      *   <li>Otherwise delegate to the {@link GeodeticAuthorityFactory#createCylindricalCS(String)}
-     *       method of a backing store and cache the result for future use.</li>
+     *       method of a Data Access Object and cache the result for future use.</li>
      * </ul>
      *
      * @return The coordinate system for the given code.
@@ -1100,7 +1082,7 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      * <ul>
      *   <li>Returns the cached instance for the given code if such instance already exists.</li>
      *   <li>Otherwise delegate to the {@link GeodeticAuthorityFactory#createPolarCS(String)}
-     *       method of a backing store and cache the result for future use.</li>
+     *       method of a Data Access Object and cache the result for future use.</li>
      * </ul>
      *
      * @return The coordinate system for the given code.
@@ -1117,7 +1099,7 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      * <ul>
      *   <li>Returns the cached instance for the given code if such instance already exists.</li>
      *   <li>Otherwise delegate to the {@link GeodeticAuthorityFactory#createCoordinateSystemAxis(String)}
-     *       method of a backing store and cache the result for future use.</li>
+     *       method of a Data Access Object and cache the result for future use.</li>
      * </ul>
      *
      * @return The axis for the given code.
@@ -1134,7 +1116,7 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      * <ul>
      *   <li>Returns the cached instance for the given code if such instance already exists.</li>
      *   <li>Otherwise delegate to the {@link GeodeticAuthorityFactory#createUnit(String)}
-     *       method of a backing store and cache the result for future use.</li>
+     *       method of a Data Access Object and cache the result for future use.</li>
      * </ul>
      *
      * @return The unit of measurement for the given code.
@@ -1151,7 +1133,7 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      * <ul>
      *   <li>Returns the cached instance for the given code if such instance already exists.</li>
      *   <li>Otherwise delegate to the {@link GeodeticAuthorityFactory#createParameterDescriptor(String)}
-     *       method of a backing store and cache the result for future use.</li>
+     *       method of a Data Access Object and cache the result for future use.</li>
      * </ul>
      *
      * @return The parameter descriptor for the given code.
@@ -1168,7 +1150,7 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      * <ul>
      *   <li>Returns the cached instance for the given code if such instance already exists.</li>
      *   <li>Otherwise delegate to the {@link GeodeticAuthorityFactory#createOperationMethod(String)}
-     *       method of a backing store and cache the result for future use.</li>
+     *       method of a Data Access Object and cache the result for future use.</li>
      * </ul>
      *
      * @return The operation method for the given code.
@@ -1185,7 +1167,7 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      * <ul>
      *   <li>Returns the cached instance for the given code if such instance already exists.</li>
      *   <li>Otherwise delegate to the {@link GeodeticAuthorityFactory#createCoordinateOperation(String)}
-     *       method of a backing store and cache the result for future use.</li>
+     *       method of a Data Access Object and cache the result for future use.</li>
      * </ul>
      *
      * @return The operation for the given code.
@@ -1260,7 +1242,7 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
     /**
      * Returns an object from a code using the given proxy. This method first checks in the cache.
      * If no object exists in the cache for the given code, then a lock is created and the object
-     * creation is delegated to the {@linkplain #getDataAccess() backing store}.
+     * creation is delegated to the {@linkplain #getDataAccess() Data Access Object}.
      * The result is then stored in the cache and returned.
      *
      * @param  <T>   The type of the object to be returned.
@@ -1303,10 +1285,10 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      *   <li>Returns the cached collection for the given pair of codes if such collection already exists.</li>
      *   <li>Otherwise:
      *     <ol>
-     *       <li>get an instance of the backing store,</li>
+     *       <li>get an instance of the Data Access Object,</li>
      *       <li>delegate to its {@link GeodeticAuthorityFactory#createFromCoordinateReferenceSystemCodes(String, String)} method,</li>
-     *       <li>release the backing store — <em>this step assumes that the collection obtained at step 2
-     *           is still valid after the backing store has been released</em>,</li>
+     *       <li>release the Data Access Object — <em>this step assumes that the collection obtained at step 2
+     *           is still valid after the Data Access Object has been released</em>,</li>
      *       <li>cache the result — <em>this step assumes that the collection obtained at step 2 is immutable</em>.</li>
      *     </ol>
      *   </li>
@@ -1345,7 +1327,7 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
 
     /**
      * Returns a finder which can be used for looking up unidentified objects.
-     * The default implementation delegates lookup to the underlying backing store and caches the result.
+     * The default implementation delegates lookup to the underlying Data Access Object and caches the result.
      *
      * @return A finder to use for looking up unidentified objects.
      * @throws FactoryException if the finder can not be created.
@@ -1359,10 +1341,10 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
 
     /**
      * An implementation of {@link IdentifiedObjectFinder} which delegates
-     * the work to the underlying backing store and caches the result.
+     * the work to the underlying Data Access Object and caches the result.
      *
      * <div class="section">Implementation note</div>
-     * we will create objects using directly the underlying backing store, not using the cache.
+     * we will create objects using directly the underlying Data Access Object, not using the cache.
      * This is because hundred of objects may be created during a scan while only one will be typically retained.
      * We do not want to flood the cache with every false candidates that we encounter during the scan.
      *
@@ -1459,7 +1441,7 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
 
         /**
          * Returns a set of authority codes that <strong>may</strong> identify the same
-         * object than the specified one. This method delegates to the backing finder.
+         * object than the specified one. This method delegates to the data access object.
          */
         @Override
         protected synchronized Set<String> getCodeCandidates(final IdentifiedObject object) throws FactoryException {
@@ -1473,7 +1455,7 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
 
         /**
          * Looks up an object from this authority factory which is approximatively equal to the specified object.
-         * The default implementation performs the same lookup than the backing store and caches the result.
+         * The default implementation performs the same lookup than the Data Access Object and caches the result.
          */
         @Override
         public IdentifiedObject find(final IdentifiedObject object) throws FactoryException {
@@ -1485,7 +1467,7 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
                 }
             }
             /*
-             * Nothing has been found in the cache. Delegates the search to the backing store.
+             * Nothing has been found in the cache. Delegates the search to the Data Access Object.
              * We must delegate to 'finder' (not to 'super') in order to take advantage of overridden methods.
              */
             final IdentifiedObject candidate;
@@ -1533,16 +1515,16 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
             implements Disposable, Callable<Object>
     {
         /**
-         * The {@link ConcurrentAuthorityFactory#availableStores} queue.
+         * The {@link ConcurrentAuthorityFactory#availableDAOs} queue.
          */
-        private final Deque<BackingStore> availableStores;
+        private final Deque<DataAccess> availableDAOs;
 
         /**
          * Creates a new shutdown hook for the given factory.
          */
         ShutdownHook(final ConcurrentAuthorityFactory factory) {
             super(factory, ReferenceQueueConsumer.QUEUE);
-            availableStores = factory.availableStores;
+            availableDAOs = factory.availableDAOs;
         }
 
         /**
@@ -1569,8 +1551,8 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
         @Override
         public Object call() throws Exception {
             final AutoCloseable[] factories;
-            synchronized (availableStores) {
-                factories = getCloseables(availableStores);
+            synchronized (availableDAOs) {
+                factories = getCloseables(availableDAOs);
             }
             close(factories, factories.length);
             return null;
@@ -1579,18 +1561,18 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
 
     /**
      * Returns all factories implementing the {@link AutoCloseable} interfaces in the given queue.
-     * The given queue shall be the {@link ConcurrentAuthorityFactory#availableStores} queue.
+     * The given queue shall be the {@link ConcurrentAuthorityFactory#availableDAOs} queue.
      *
-     * @param availableStores The queue of factories to close.
+     * @param availableDAOs The queue of factories to close.
      */
-    static AutoCloseable[] getCloseables(final Deque<BackingStore> availableStores) {
-        assert Thread.holdsLock(availableStores);
+    static AutoCloseable[] getCloseables(final Deque<DataAccess> availableDAOs) {
+        assert Thread.holdsLock(availableDAOs);
         int count = 0;
-        final AutoCloseable[] factories = new AutoCloseable[availableStores.size()];
-        BackingStore store;
-        while ((store = availableStores.pollFirst()) != null) {
-            if (store.factory instanceof AutoCloseable) {
-                factories[count++] = (AutoCloseable) store.factory;
+        final AutoCloseable[] factories = new AutoCloseable[availableDAOs.size()];
+        DataAccess dao;
+        while ((dao = availableDAOs.pollFirst()) != null) {
+            if (dao.factory instanceof AutoCloseable) {
+                factories[count++] = (AutoCloseable) dao.factory;
             }
         }
         return ArraysExt.resize(factories, count);
@@ -1621,44 +1603,33 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
     }
 
     /**
-     * Releases resources immediately instead of waiting for the garbage collector. Once a factory has been closed,
-     * further {@code createFoo(String)} method invocations will throw a {@link FactoryException}.
-     * Closing a previously-closed factory, however, has no effect.
+     * Immediately closes all Data Access Objects that are closeable.
+     * This method does not clear the cache and does not disallow further usage of this factory:
+     * this {@code ConcurrentAuthorityFactory} can still be used as usual after it has been "closed".
+     * {@linkplain #newDataAccess() New Data Access Objects} will be created if needed for replacing
+     * the ones closed by this method.
      *
-     * <p>If this method is not invoked, backing stores will be closed when this {@code ConcurrentAuthorityFactory}
-     * will be garbage collected or at JVM shutdown time, depending which event happen first.</p>
+     * <p>The main purpose of this method is to force immediate release of JDBC connections or other kind of resources
+     * that Data Access Objects may hold. If this method is not invoked, Data Access Objects will be closed
+     * when this {@code ConcurrentAuthorityFactory} will be garbage collected or at JVM shutdown time,
+     * depending which event happen first.</p>
      *
-     * @throws FactoryException if an error occurred while closing the backing stores.
+     * @throws FactoryException if an error occurred while closing the Data Access Objects.
      */
     @Override
     public void close() throws FactoryException {
-        Exception exception = null;
         try {
             final AutoCloseable[] factories;
-            synchronized (availableStores) {
-                isClosed = true;
-                remainingBackingStores = 0;
-                factories = getCloseables(availableStores);
+            synchronized (availableDAOs) {
+                factories = getCloseables(availableDAOs);
+                availableDAOs.clear();
             }
-            /*
-             * Factory disposal must be done outside the synchronized block.
-             * If an exception occurs, it will be thrown only after we finished closing all factories.
-             */
-            close(factories, factories.length);
+            close(factories, factories.length);         // Must be invoked outside the synchronized block.
         } catch (Exception e) {
-            exception = e;
-        } finally {
-            synchronized (findPool) {
-                findPool.clear();
-            }
-            cache.clear();
-            authority = null;
-        }
-        if (exception != null) {
-            if (exception instanceof FactoryException) {
-                throw (FactoryException) exception;
+            if (e instanceof FactoryException) {
+                throw (FactoryException) e;
             } else {
-                throw new FactoryException(exception);
+                throw new FactoryException(e);
             }
         }
     }

@@ -204,7 +204,7 @@ public class EPSGFactory extends ConcurrentAuthorityFactory implements CRSAuthor
      * {@link #newDataAccess(Connection, SQLTranslator)}, which provides an easier overriding point
      * for subclasses wanting to return a custom {@link EPSGDataAccess} instance.</p>
      *
-     * @return The backing store to use in {@code createFoo(String)} methods.
+     * @return Data Access Object (DAO) to use in {@code createFoo(String)} methods.
      * @throws FactoryException if the constructor failed to connect to the EPSG database.
      *         This exception usually has a {@link SQLException} as its cause.
      */
@@ -249,8 +249,10 @@ public class EPSGFactory extends ConcurrentAuthorityFactory implements CRSAuthor
      * @param  connection A connection to the EPSG database.
      * @param  translator The translator from the SQL statements using MS-Access dialect to SQL statements
      *                    using the dialect of the actual database.
-     * @throws SQLException if {@code EPSGDataAccess} detected a problem with the database.
-     * @return The backing store to use in {@code createFoo(String)} methods.
+     * @return Data Access Object (DAO) to use in {@code createFoo(String)} methods.
+     * @throws SQLException if a problem with the database has been detected.
+     *
+     * @see EPSGDataAccess#EPSGDataAccess(EPSGFactory, Connection, SQLTranslator)
      */
     protected EPSGDataAccess newDataAccess(Connection connection, SQLTranslator translator) throws SQLException {
         return new EPSGDataAccess(this, connection, translator);

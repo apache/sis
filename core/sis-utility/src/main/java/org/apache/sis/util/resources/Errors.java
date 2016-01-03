@@ -221,11 +221,6 @@ public final class Errors extends IndexedResourceBundle {
         public static final short DirectoryNotExpected_1 = 165;
 
         /**
-         * The factory has been disposed.
-         */
-        public static final short DisposedFactory = 206;
-
-        /**
          * Element “{0}” is duplicated.
          */
         public static final short DuplicatedElement_1 = 16;
@@ -913,7 +908,7 @@ public final class Errors extends IndexedResourceBundle {
         /**
          * Table “{0}” has not been found.
          */
-        public static final short TableNotFound_1 = 216;
+        public static final short TableNotFound_1 = 206;
 
         /**
          * Expected at least {0} argument{0,choice,1#|2#s}, but got {1}.
