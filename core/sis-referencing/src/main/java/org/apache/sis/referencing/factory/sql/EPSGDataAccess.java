@@ -287,8 +287,9 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
      *
      * <div class="note"><b>API design note:</b>
      * this constructor is protected because {@code EPSGDataAccess} instances should not be created as standalone factories.
-     * This constructor is invoked either by {@link EPSGFactory#createBackingStore()}, or by the constructor of an
-     * {@code EPSGDataAccess} subclass which is itself invoked by a corresponding {@code EPSGFactory} subclass.</div>
+     * This constructor is invoked either by {@link EPSGFactory#newDataAccess(Connection, SQLTranslator)},
+     * or by the constructor of an {@code EPSGDataAccess} subclass which is itself invoked by a corresponding
+     * {@code EPSGFactory} subclass.</div>
      *
      * @param parent      The {@code EPSGFactory} which is creating this Data Access Object (DAO).
      * @param connection  The connection to the underlying EPSG database.
@@ -3097,7 +3098,7 @@ addURIs:    for (int i=0; ; i++) {
 
     /**
      * Closes the JDBC connection used by this factory.
-     * If this {@code EPSGDataAccess} is used by a {@link EPSGFactory}, then this method
+     * If this {@code EPSGDataAccess} is used by an {@link EPSGFactory}, then this method
      * will be automatically invoked after some {@linkplain EPSGFactory#getTimeout timeout}.
      *
      * @throws FactoryException if an error occurred while closing the connection.
