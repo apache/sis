@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.metadata.sql;
 
+import java.util.Locale;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ServiceLoader;
@@ -32,6 +33,7 @@ import javax.naming.NameNotFoundException;
 import org.apache.sis.internal.system.DataDirectory;
 import org.apache.sis.internal.system.Shutdown;
 import org.apache.sis.internal.system.Loggers;
+import org.apache.sis.util.resources.Messages;
 import org.apache.sis.util.logging.Logging;
 
 // Branch-dependent imports
@@ -99,9 +101,10 @@ public abstract class Initializer {
      *       creation since we are in the directory managed by SIS.</li>
      *   <li>If the {@code derby.system.home} property is defined, the data source for {@code jdbc:derby:SpatialMetadata}.
      *       This database will <strong>not</strong> be created if it does not exist.</li>
+     *   <li>Otherwise (no JNDI, no environment variable, no Derby property set), {@code null}.</li>
      * </ol>
      *
-     * @return The data source for the {@code $SIS_DATA/Databases/SpatialMetadata} or equivalent database.
+     * @return The data source for the {@code $SIS_DATA/Databases/SpatialMetadata} or equivalent database, or {@code null} if none.
      * @throws javax.naming.NamingException     if an error occurred while fetching the data source from a JNDI context.
      * @throws java.net.MalformedURLException   if an error occurred while converting the {@code derby.jar} file to URL.
      * @throws java.lang.ClassNotFoundException if {@code derby.jar} has not been found on the JDK installation directory.
@@ -128,6 +131,26 @@ public abstract class Initializer {
             }
         }
         return source;
+    }
+
+    /**
+     * Returns a message for unspecified data source. The message will depend on whether a JNDI context exists or not.
+     * This message can be used for constructing an exception when {@link #getDataSource()} returned {@code null}.
+     *
+     * @param locale The locale for the message to produce, or {@code null} for the default one.
+     * @return Message for unspecified data source.
+     */
+    public static String unspecified(final Locale locale) {
+        final short key;
+        final String value;
+        if (NamingManager.hasInitialContextFactoryBuilder()) {
+            key = Messages.Keys.JNDINotSpecified_1;
+            value = "jdbc/" + DATABASE;
+        } else {
+            key = Messages.Keys.DataDirectoryNotSpecified_1;
+            value = DataDirectory.ENV;
+        }
+        return Messages.getResources(locale).getString(key, value);
     }
 
     /**

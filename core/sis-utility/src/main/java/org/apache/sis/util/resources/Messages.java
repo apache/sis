@@ -166,6 +166,11 @@ public final class Messages extends IndexedResourceBundle {
         public static final short IncompleteParsing_1 = 14;
 
         /**
+         * No object associated to the “{0}” JNDI name.
+         */
+        public static final short JNDINotSpecified_1 = 32;
+
+        /**
          * Loading datum shift file “{0}”.
          */
         public static final short LoadingDatumShiftFile_1 = 27;
