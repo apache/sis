@@ -32,10 +32,10 @@ import org.junit.runners.JUnit4;
  * @version 0.6
  * @module
  */
-@RunWith(JUnit4.class)
 @DependsOn({
     org.apache.sis.referencing.operation.DefaultConversionTest.class
 })
+@RunWith(JUnit4.class)
 public final strictfp class GIGS3005 extends org.opengis.test.referencing.gigs.GIGS3005 {
     /**
      * Creates a new test suite using the singleton factory instance.

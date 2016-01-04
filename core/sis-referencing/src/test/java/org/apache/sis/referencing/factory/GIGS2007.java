@@ -23,6 +23,7 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+import org.apache.sis.test.DependsOn;
 
 
 /**
@@ -39,6 +40,9 @@ import org.junit.runners.JUnit4;
  * @version 0.7
  * @module
  */
+@DependsOn({
+    GIGS2006.class      // Projected CRSs created from EPSG codes
+})
 @RunWith(JUnit4.class)
 public final strictfp class GIGS2007 extends org.opengis.test.referencing.gigs.GIGS2007 {
     /**

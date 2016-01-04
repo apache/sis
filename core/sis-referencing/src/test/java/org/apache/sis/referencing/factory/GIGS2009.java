@@ -23,6 +23,7 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+import org.apache.sis.test.DependsOn;
 
 
 /**
@@ -39,6 +40,9 @@ import org.junit.runners.JUnit4;
  * @version 0.7
  * @module
  */
+@DependsOn({
+    GIGS2008.class      // Vertical CRSs created from EPSG codes
+})
 @RunWith(JUnit4.class)
 public final strictfp class GIGS2009 extends org.opengis.test.referencing.gigs.GIGS2009 {
     /**
@@ -66,5 +70,6 @@ public final strictfp class GIGS2009 extends org.opengis.test.referencing.gigs.G
     @AfterClass
     public static void close() throws FactoryException {
         GIGS2001.close();
+        GIGS2001.INSTANCE = null;       // Since this is the last test of the 2000 series, we can let GC do its work.
     }
 }

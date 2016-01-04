@@ -1020,6 +1020,7 @@ addURIs:    for (int i=0; ; i++) {
             properties.put(IdentifiedObject.ALIAS_KEY, aliases.toArray(new GenericName[aliases.size()]));
         }
         properties.put(AbstractIdentifiedObject.LOCALE_KEY, locale);
+        properties.put(ReferencingServices.MT_FACTORY, parent.mtFactory);
         return properties;
     }
 
@@ -2525,16 +2526,6 @@ addURIs:    for (int i=0; ; i++) {
                      * Get the operation method. This is mandatory for conversions and transformations
                      * (it was checked by getInteger(code, result, …) above in this method) but optional
                      * for concatenated operations. Fetching parameter values is part of this block.
-                     *
-                     * We will create the ParameterValueGroup from the MathTransformFactory (which means that
-                     * we will use the parameter descriptors that are hard-coded in Apache SIS) instead than
-                     * from the OperationMethod created from the EPSG database. The reasons are:
-                     *
-                     *   1) For detecting now if the EPSG database defines a parameter not recognized by SIS.
-                     *   2) Because SIS implementation sometime needs additional parameters not explicitly given in
-                     *      EPSG database because considered implicit (e.g. length of semi-major and semi-minor axes).
-                     *      By letting MathTransformFactory create the ParameterValueGroup itself, we give it a chance
-                     *      to include such implicit parameter values in the group.
                      */
                     OperationMethod method;
                     ParameterValueGroup parameters;
@@ -2544,25 +2535,7 @@ addURIs:    for (int i=0; ; i++) {
                     } else {
                         method = parent.createOperationMethod(methodCode.toString());
                         method = DefaultOperationMethod.redimension(method, sourceDimensions, targetDimensions);
-                        final String methodName = method.getName().getCode();
-                        String methodIdentifier = IdentifiedObjects.toString(IdentifiedObjects.getIdentifier(method, Citations.EPSG));
-                        if (methodIdentifier == null) {
-                            methodIdentifier = methodName;
-                        }
-                        try {
-                            parameters = parent.mtFactory.getDefaultParameters(methodIdentifier);
-                        } catch (NoSuchIdentifierException exception) {
-                            /*
-                             * We gave priority to EPSG identifier because operation method names are sometime ambiguous
-                             * (e.g. "Lambert Azimuthal Equal Area (Spherical)"). If we failed to find the method by its
-                             * EPSG code, try searching by operation name. As a side effect, this second attempt will
-                             * produce a better error message if the operation is really not found.
-                             */
-                            if (methodIdentifier.equals(methodName)) throw exception;
-                            parameters = parent.mtFactory.getDefaultParameters(methodName);
-                            Logging.recoverableException(Logging.getLogger(Loggers.CRS_FACTORY),
-                                    EPSGDataAccess.class, "createCoordinateOperation", exception);
-                        }
+                        parameters = method.getParameters().createValue();
                         fillParameterValues(methodCode, epsg, parameters);
                     }
                     /*

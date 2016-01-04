@@ -58,6 +58,10 @@ import org.apache.sis.internal.referencing.j2d.ParameterizedAffine;
 import org.apache.sis.internal.referencing.provider.AbstractProvider;
 import org.apache.sis.internal.referencing.provider.VerticalOffset;
 import org.apache.sis.internal.system.Loggers;
+import org.apache.sis.metadata.iso.citation.Citations;
+import org.apache.sis.parameter.DefaultParameterValueGroup;
+import org.apache.sis.parameter.Parameters;
+import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.referencing.factory.InvalidGeodeticParameterException;
@@ -481,6 +485,13 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
         OperationMethod provider;
 
         /**
+         * The parameters actually used.
+         *
+         * @see #getCompletedParameters()
+         */
+        ParameterValueGroup parameters;
+
+        /**
          * Creates a new context with all properties initialized to {@code null}.
          */
         public Context() {
@@ -571,6 +582,40 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
         }
 
         /**
+         * Returns the parameter values used for the math transform creation, including the parameters completed
+         * by the factory.
+         *
+         * @return The parameter values used by the factory.
+         * @throws IllegalStateException if {@link DefaultMathTransformFactory#createParameterizedTransform(ParameterValueGroup, Context)}
+         *         has not yet been invoked.
+         */
+        public ParameterValueGroup getCompletedParameters() {
+            if (parameters != null) {
+                return parameters;
+            }
+            throw new IllegalStateException(Errors.format(Errors.Keys.UnspecifiedParameterValues));
+        }
+
+        /**
+         * If the parameters given by the user were not created by {@code getDefaultParameters(String)}
+         * or something equivalent, copies those parameters into the structure expected by the provider.
+         * The intend is to make sure that we have room for the parameters that {@code setEllipsoids(…)}
+         * may write.
+         */
+        private void ensureCompatibleParameters() {
+            final ParameterDescriptorGroup expected = provider.getParameters();
+            if (parameters.getDescriptor() != expected || !(parameters instanceof DefaultParameterValueGroup)) {
+                /*
+                 * The above check for DefaultParameterValueGroup is for replacing ImmutableParameterValueGroup
+                 * by a writable instance.
+                 */
+                final ParameterValueGroup copy = expected.createValue();
+                Parameters.copy(parameters, copy);
+                parameters = copy;
+            }
+        }
+
+        /**
          * Returns the value of the given parameter in the given unit, or {@code NaN} if the parameter is not set.
          *
          * <p><b>NOTE:</b> Do not merge this function with {@code ensureSet(…)}. We keep those two methods
@@ -610,11 +655,10 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
         }
 
         /**
-         * Completes the given parameter group with information about source or target ellipsoid axis lengths,
+         * Completes the parameter group with information about source or target ellipsoid axis lengths,
          * if available. This method writes semi-major and semi-minor parameter values only if they do not
          * already exists in the given parameters.
          *
-         * @param  parameters The parameter values for the transform.
          * @param  ellipsoid  The ellipsoid from which to get axis lengths of flattening factor, or {@code null}.
          * @param  semiMajor  {@code "semi_major}, {@code "src_semi_major} or {@code "tgt_semi_major} parameter name.
          * @param  semiMinor  {@code "semi_minor}, {@code "src_semi_minor} or {@code "tgt_semi_minor} parameter name.
@@ -623,8 +667,8 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
          *         because the caller may succeed in creating the transform anyway, or otherwise may produce a more
          *         informative exception.
          */
-        private static RuntimeException setEllipsoid(final ParameterValueGroup parameters, final Ellipsoid ellipsoid,
-                final String semiMajor, final String semiMinor, final boolean inverseFlattening, RuntimeException failure)
+        private RuntimeException setEllipsoid(final Ellipsoid ellipsoid, final String semiMajor, final String semiMinor,
+                final boolean inverseFlattening, RuntimeException failure)
         {
             /*
              * Note: we could also consider to set the "dim" parameter here based on the number of dimensions
@@ -634,6 +678,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
              * projections, which is not allowed.
              */
             if (ellipsoid != null) {
+                ensureCompatibleParameters();
                 ParameterValue<?> mismatchedParam = null;
                 double mismatchedValue = 0;
                 try {
@@ -703,17 +748,16 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
         }
 
         /**
-         * Completes the given parameter group with information about source and target ellipsoid axis lengths,
+         * Completes the parameter group with information about source and target ellipsoid axis lengths,
          * if available. This method writes semi-major and semi-minor parameter values only if they do not
          * already exists in the given parameters.
          *
          * @param  method Description of the transform to be created, or {@code null} if unknown.
-         * @param  parameters The parameter values for the transform.
          * @return The exception if the operation failed, or {@code null} if none. This exception is not thrown now
          *         because the caller may succeed in creating the transform anyway, or otherwise may produce a more
          *         informative exception.
          */
-        final RuntimeException setEllipsoids(final OperationMethod method, final ParameterValueGroup parameters) {
+        final RuntimeException setEllipsoids(final OperationMethod method) {
             int n;
             if (method instanceof AbstractProvider) {
                 n = ((AbstractProvider) method).getEllipsoidsMask();
@@ -726,11 +770,12 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
             }
             switch (n) {
                 case 0: return null;
-                case 1: return setEllipsoid(parameters, getSourceEllipsoid(), Constants.SEMI_MAJOR, Constants.SEMI_MINOR, true, null);
-                case 2: return setEllipsoid(parameters, getTargetEllipsoid(), Constants.SEMI_MAJOR, Constants.SEMI_MINOR, true, null);
+                case 1: return setEllipsoid(getSourceEllipsoid(), Constants.SEMI_MAJOR, Constants.SEMI_MINOR, true, null);
+                case 2: return setEllipsoid(getTargetEllipsoid(), Constants.SEMI_MAJOR, Constants.SEMI_MINOR, true, null);
                 case 3: {
                     RuntimeException failure = null;
                     if (sourceCS != null) try {
+                        ensureCompatibleParameters();
                         final ParameterValue<?> p = parameters.parameter("dim");
                         if (p.getValue() == null) {
                             p.setValue(sourceCS.getDimension());
@@ -738,8 +783,8 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
                     } catch (IllegalArgumentException | IllegalStateException e) {
                         failure = e;
                     }
-                    failure = setEllipsoid(parameters, getSourceEllipsoid(), "src_semi_major", "src_semi_minor", false, failure);
-                    failure = setEllipsoid(parameters, getTargetEllipsoid(), "tgt_semi_major", "tgt_semi_minor", false, failure);
+                    failure = setEllipsoid(getSourceEllipsoid(), "src_semi_major", "src_semi_minor", false, failure);
+                    failure = setEllipsoid(getTargetEllipsoid(), "tgt_semi_major", "tgt_semi_minor", false, failure);
                     return failure;
                 }
                 default: throw new AssertionError(n);
@@ -776,10 +821,10 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      *       with any other transforms required for performing units changes and ordinates swapping.</li>
      * </ol>
      *
-     * If this method needs to set the values of {@code "semi_major"}, {@code "semi_minor"} or similar parameters,
-     * then it sets those values directly on the given {@code parameters} instance – not on a clone – for allowing
-     * the caller to get back the complete parameter values.
-     * However this method only fills missing values, it never modify existing values.
+     * The complete group of parameters, including {@code "semi_major"}, {@code "semi_minor"} or other calculated values,
+     * can be obtained by a call to {@link Context#getCompletedParameters()} after {@code createParameterizedTransform(…)}
+     * returned. Note that the completed parameters may only have additional parameters compared to the given parameter
+     * group; existing parameter values are never modified.
      *
      * <p>The {@code OperationMethod} instance used by this constructor can be obtained by a call to
      * {@link #getLastMethodUsed()}.</p>
@@ -798,18 +843,39 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      * @see #getLastMethodUsed()
      * @see org.apache.sis.parameter.ParameterBuilder#createGroupForMapProjection(ParameterDescriptor...)
      */
-    public MathTransform createParameterizedTransform(final ParameterValueGroup parameters,
+    public MathTransform createParameterizedTransform(ParameterValueGroup parameters,
             final Context context) throws NoSuchIdentifierException, FactoryException
     {
-        ArgumentChecks.ensureNonNull("parameters", parameters);
-        final String methodName  = parameters.getDescriptor().getName().getCode();
         OperationMethod  method  = null;
         RuntimeException failure = null;
         MathTransform transform;
         try {
-            method = getOperationMethod(methodName);
+            ArgumentChecks.ensureNonNull("parameters", parameters);
+            final ParameterDescriptorGroup descriptor = parameters.getDescriptor();
+            final String methodName = descriptor.getName().getCode();
+            String methodIdentifier = IdentifiedObjects.toString(IdentifiedObjects.getIdentifier(descriptor, Citations.EPSG));
+            if (methodIdentifier == null) {
+                methodIdentifier = methodName;
+            }
+            /*
+             * Get the MathTransformProvider of the same name or identifier than the given parameter group.
+             * We give precedence to EPSG identifier because operation method names are sometime ambiguous
+             * (e.g. "Lambert Azimuthal Equal Area (Spherical)"). If we fail to find the method by its EPSG code,
+             * we will try searching by method name. As a side effect, this second attempt will produce a better
+             * error message if the method is really not found.
+             */
+            try {
+                method = getOperationMethod(methodIdentifier);
+            } catch (NoSuchIdentifierException exception) {
+                if (methodIdentifier.equals(methodName)) {
+                    throw exception;
+                }
+                method = getOperationMethod(methodName);
+                Logging.recoverableException(Logging.getLogger(Loggers.COORDINATE_OPERATION),
+                        DefaultMathTransformFactory.class, "createParameterizedTransform", exception);
+            }
             if (!(method instanceof MathTransformProvider)) {
-                throw new NoSuchIdentifierException(Errors.format( // For now, handle like an unknown operation.
+                throw new NoSuchIdentifierException(Errors.format(          // For now, handle like an unknown operation.
                         Errors.Keys.UnsupportedImplementation_1, Classes.getClass(method)), methodName);
             }
             /*
@@ -818,7 +884,10 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
              * since the standard place where to provide this information is in the ellipsoid object.
              */
             if (context != null) {
-                failure = context.setEllipsoids(method, parameters);
+                context.provider   = method;
+                context.parameters = parameters;
+                failure = context.setEllipsoids(method);
+                parameters = context.parameters;
             }
             /*
              * Catch only exceptions which may be the result of improper parameter usage (e.g. a value out of range).
@@ -837,13 +906,8 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
             transform = unique(transform);
             method = DefaultOperationMethod.redimension(method, transform.getSourceDimensions(),
                                                                 transform.getTargetDimensions());
-            if (context != null) try {
-                context.provider = method;
+            if (context != null) {
                 transform = swapAndScaleAxes(transform, context);
-            } finally {
-                context.provider = null;
-                // For now we conservatively reset the provider information to null. But if we choose to make
-                // that information public in a future SIS version, then we would remove this 'finally' block.
             }
         } catch (FactoryException e) {
             if (failure != null) {
@@ -852,6 +916,11 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
             throw e;
         } finally {
             lastMethod.set(method);     // May be null in case of failure, which is intended.
+            if (context != null) {
+                context.provider = null;
+                // For now we conservatively reset the provider information to null. But if we choose to make
+                // that information public in a future SIS version, then we would remove this code.
+            }
         }
         return transform;
     }

@@ -35,11 +35,12 @@ import org.junit.runners.JUnit4;
  * @version 0.6
  * @module
  */
-@RunWith(JUnit4.class)
 @DependsOn({
-    GIGS3002.class, GIGS3003.class,
+    GIGS3002.class,     // Ellipsoids created from properties
+    GIGS3003.class,     // Prime meridians created from properties
     org.apache.sis.referencing.datum.DefaultGeodeticDatumTest.class
 })
+@RunWith(JUnit4.class)
 public final strictfp class GIGS3004 extends org.opengis.test.referencing.gigs.GIGS3004 {
     /**
      * Creates a new test suite using the singleton factory instance.

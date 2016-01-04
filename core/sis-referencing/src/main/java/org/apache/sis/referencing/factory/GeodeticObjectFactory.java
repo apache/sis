@@ -757,6 +757,10 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
         try {
             crs = new DefaultProjectedCRS(complete(properties), baseCRS, conversion, derivedCS);
         } catch (IllegalArgumentException exception) {
+            final Throwable cause = exception.getCause();
+            if (cause instanceof FactoryException) {
+                throw (FactoryException) cause;         // Must be propagated for allowing caller to catch NoSuchIdentifierException.
+            }
             throw new InvalidGeodeticParameterException(exception);
         }
         return unique("createProjectedCRS", crs);
@@ -837,6 +841,10 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
         try {
             crs = DefaultDerivedCRS.create(complete(properties), (SingleCRS) baseCRS, conversion, derivedCS);
         } catch (IllegalArgumentException exception) {
+            final Throwable cause = exception.getCause();
+            if (cause instanceof FactoryException) {
+                throw (FactoryException) cause;         // Must be propagated for allowing caller to catch NoSuchIdentifierException.
+            }
             throw new InvalidGeodeticParameterException(exception);
         }
         return unique("createDerivedCRS", crs);

@@ -19,6 +19,7 @@ package org.apache.sis.parameter;
 import java.util.List;
 import java.util.Arrays;
 import java.util.ArrayList;
+import java.util.Collections;
 import org.opengis.parameter.GeneralParameterDescriptor;
 import org.opengis.parameter.GeneralParameterValue;
 import org.opengis.parameter.ParameterDescriptor;
@@ -27,6 +28,7 @@ import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.InvalidParameterNameException;
 import org.opengis.parameter.InvalidParameterCardinalityException;
+import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -43,7 +45,7 @@ import static org.opengis.referencing.IdentifiedObject.NAME_KEY;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4
- * @version 0.6
+ * @version 0.7
  * @module
  */
 @DependsOn({
@@ -410,6 +412,26 @@ public final strictfp class DefaultParameterValueGroupTest extends TestCase {
         assertFalse ("equals", g1.equals(g2));
         assertTrue  ("equals", g1.equals(g3));
         assertEquals("hashCode", g1.hashCode(), g3.hashCode());
+    }
+
+    /**
+     * Tests {@link #equals(Object, ComparisonMode)}.
+     *
+     * @since 0.7
+     */
+    @Test
+    @DependsOnMethod("testEqualsAndHashCode")
+    public void testEqualsIgnoreMetadata() {
+        final DefaultParameterValueGroup g1 = createGroup(10);
+        final DefaultParameterValueGroup g2 = new DefaultParameterValueGroup(g1.getDescriptor());
+        final List<GeneralParameterValue> values = new ArrayList<>(g1.values());
+        Collections.swap(values, 2, 3);
+        g2.values().addAll(values);
+
+        assertFalse("STRICT",          g1.equals(g2, ComparisonMode.STRICT));
+        assertFalse("BY_CONTRACT",     g1.equals(g2, ComparisonMode.BY_CONTRACT));
+        assertTrue ("IGNORE_METADATA", g1.equals(g2, ComparisonMode.IGNORE_METADATA));
+        assertTrue ("APPROXIMATIVE",   g1.equals(g2, ComparisonMode.APPROXIMATIVE));
     }
 
     /**
