@@ -52,7 +52,7 @@ import org.junit.BeforeClass;
     org.apache.sis.referencing.operation.matrix.Matrix2Test.class,
     org.apache.sis.referencing.operation.matrix.Matrix3Test.class,
     org.apache.sis.referencing.operation.matrix.Matrix4Test.class,
-    org.apache.sis.referencing.operation.matrix.NonSquareMatrixTest.class, // Expected to be last MatrixTestCase - see javadoc.
+    org.apache.sis.referencing.operation.matrix.NonSquareMatrixTest.class,          // Expected to be last MatrixTestCase - see javadoc.
     org.apache.sis.referencing.operation.matrix.MatricesTest.class,
     org.apache.sis.referencing.operation.matrix.AffineTransforms2DTest.class,
 
@@ -62,6 +62,7 @@ import org.junit.BeforeClass;
     org.apache.sis.parameter.DefaultParameterValueTest.class,
     org.apache.sis.parameter.DefaultParameterValueGroupTest.class,
     org.apache.sis.parameter.UnmodifiableParameterValueTest.class,
+    org.apache.sis.parameter.UnmodifiableParameterValueGroupTest.class,
     org.apache.sis.parameter.ParametersTest.class,
     org.apache.sis.parameter.ParameterBuilderTest.class,
     org.apache.sis.parameter.ParameterFormatTest.class,

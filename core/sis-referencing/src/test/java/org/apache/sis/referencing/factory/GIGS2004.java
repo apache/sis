@@ -23,11 +23,12 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+import org.apache.sis.test.DependsOn;
 
 
 /**
  * Tests {@link org.apache.sis.referencing.factory.sql.EPSGDataAccess#createCoordinateReferenceSystem(String)}
- * for geodetic CRS.
+ * for geodetic (geographic or geocentric) CRS.
  * This is part of <cite>Geospatial Integrity of Geoscience Software</cite> (GIGS) tests implemented in GeoAPI.
  *
  * <div class="note"><b>Note:</b>
@@ -39,6 +40,11 @@ import org.junit.runners.JUnit4;
  * @version 0.7
  * @module
  */
+@DependsOn({
+    GIGS2002.class,     // Ellipsoids created from EPSG codes
+    GIGS2003.class,     // Prime meridians created from EPSG codes
+    GIGS3004.class      // Geodetic datums created from properties
+})
 @RunWith(JUnit4.class)
 public final strictfp class GIGS2004 extends org.opengis.test.referencing.gigs.GIGS2004 {
     /**

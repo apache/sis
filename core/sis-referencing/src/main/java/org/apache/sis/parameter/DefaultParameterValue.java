@@ -852,6 +852,8 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      * @return An unmodifiable implementation of the given parameter, or {@code null} if the given parameter was null.
      *
      * @since 0.6
+     *
+     * @see DefaultParameterValueGroup#unmodifiable(ParameterValueGroup)
      */
     public static <T> DefaultParameterValue<T> unmodifiable(final ParameterValue<T> parameter) {
         return UnmodifiableParameterValue.create(parameter);
@@ -918,9 +920,9 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
         WKTUtilities.appendName(descriptor, formatter, ElementKind.PARAMETER);
         final Convention convention = formatter.getConvention();
         final boolean isWKT1 = convention.majorVersion() == 1;
-        Unit<?> unit = getUnit();   // Gives to users a chance to override this property.
+        Unit<?> unit = getUnit();                                   // Gives to users a chance to override this property.
         if (unit == null) {
-            final T value = getValue();   // Gives to users a chance to override this property.
+            final T value = getValue();                             // Gives to users a chance to override this property.
             if (!isWKT1 && isFile(value)) {
                 formatter.append(value.toString(), null);
                 return WKTKeywords.ParameterFile;

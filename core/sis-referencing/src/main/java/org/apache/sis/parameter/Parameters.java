@@ -121,6 +121,24 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable {
     }
 
     /**
+     * Returns the given parameter value group as an unmodifiable {@code Parameters} instance.
+     * If the given parameters is already an unmodifiable instance of {@code Parameters},
+     * then it is returned as-is. Otherwise this method copies all parameter values in a new,
+     * unmodifiable, parameter group instance.
+     *
+     * @param  parameters The parameters to make unmodifiable, or {@code null}.
+     * @return An unmodifiable group with the same parameters than the given group,
+     *         or {@code null} if the given argument was null.
+     *
+     * @since 0.7
+     *
+     * @see DefaultParameterValue#unmodifiable(ParameterValue)
+     */
+    public static Parameters unmodifiable(final ParameterValueGroup parameters) {
+        return UnmodifiableParameterValueGroup.create(parameters);
+    }
+
+    /**
      * Returns the given parameter value group as a {@code Parameters} instance.
      * If the given parameters is already an instance of {@code Parameters}, then it is returned as-is.
      * Otherwise this method returns a wrapper which delegate all method invocations to the given instance.
@@ -349,15 +367,32 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable {
      * The {@link DefaultParameterValueGroup} subclass will override this method with a more efficient
      * implementation which avoid creating some deferred parameters.
      */
+    @SuppressWarnings("null")
     ParameterValue<?> parameterIfExist(final String name) throws ParameterNotFoundException {
+        ParameterValue<?> fallback  = null;
+        ParameterValue<?> ambiguity = null;
         for (final GeneralParameterValue value : values()) {
             if (value instanceof ParameterValue<?>) {
-                if (isHeuristicMatchForName(value.getDescriptor(), name)) {
-                    return (ParameterValue<?>) value;
+                final ParameterValue<?> param = (ParameterValue<?>) value;
+                final ParameterDescriptor<?> descriptor = param.getDescriptor();
+                if (name.equals(descriptor.getName().toString())) {
+                    return param;
+                }
+                if (isHeuristicMatchForName(descriptor, name)) {
+                    if (fallback == null) {
+                        fallback = param;
+                    } else {
+                        ambiguity = param;
+                    }
                 }
             }
         }
-        return null;
+        if (ambiguity != null) {
+            throw new ParameterNotFoundException(Errors.format(Errors.Keys.AmbiguousName_3,
+                    IdentifiedObjects.toString(fallback .getDescriptor().getName()),
+                    IdentifiedObjects.toString(ambiguity.getDescriptor().getName()), name), name);
+        }
+        return fallback;
     }
 
     /**
@@ -742,7 +777,7 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable {
                     target.setValue(((Number) v).doubleValue(), unit);
                 } else if (v instanceof double[]) {
                     target.setValue((double[]) v, unit);
-                } else {
+                } else if (v != target.getValue()) {    // Accept null value if the target value is already null.
                     throw new InvalidParameterValueException(Errors.format(
                             Errors.Keys.IllegalArgumentValue_2, name, v), name, v);
                 }
