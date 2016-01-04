@@ -150,6 +150,9 @@ public class EPSGFactory extends ConcurrentAuthorityFactory implements CRSAuthor
             this.dataSource = dataSource;
         } else try {
             this.dataSource = Initializer.getDataSource();
+            if (this.dataSource == null) {
+                throw new UnavailableFactoryException(Initializer.unspecified(null));
+            }
         } catch (Exception e) {
             throw new UnavailableFactoryException(e.getLocalizedMessage(), e);
         }

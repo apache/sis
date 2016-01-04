@@ -923,6 +923,8 @@ addURIs:    for (int i=0; ; i++) {
         }
         if (replacedBy == null) {
             replacedBy = '(' + Vocabulary.getResources(locale).getString(Vocabulary.Keys.None).toLowerCase(locale) + ')';
+        } else {
+            replacedBy = replacedBy.toString();
         }
         /*
          * Try to infer the method name from the table name. For example if the deprecated code was found in
