@@ -21,8 +21,10 @@ import org.opengis.util.FactoryException;
 // Test imports
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.FixMethodOrder;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+import org.junit.runners.MethodSorters;
 import org.apache.sis.test.DependsOn;
 
 
@@ -44,6 +46,7 @@ import org.apache.sis.test.DependsOn;
     GIGS3003.class      // Prime meridians created from properties
 })
 @RunWith(JUnit4.class)
+@FixMethodOrder(MethodSorters.JVM)      // Intentionally want some randomness
 public final strictfp class GIGS2003 extends org.opengis.test.referencing.gigs.GIGS2003 {
     /**
      * Creates a new test using the default authority factory.

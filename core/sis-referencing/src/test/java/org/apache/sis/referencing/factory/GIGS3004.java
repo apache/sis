@@ -21,8 +21,10 @@ import org.opengis.referencing.crs.CRSFactory;
 import org.opengis.referencing.datum.DatumFactory;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.test.DependsOn;
+import org.junit.FixMethodOrder;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+import org.junit.runners.MethodSorters;
 
 
 /**
@@ -41,6 +43,7 @@ import org.junit.runners.JUnit4;
     org.apache.sis.referencing.datum.DefaultGeodeticDatumTest.class
 })
 @RunWith(JUnit4.class)
+@FixMethodOrder(MethodSorters.JVM)      // Intentionally want some randomness
 public final strictfp class GIGS3004 extends org.opengis.test.referencing.gigs.GIGS3004 {
     /**
      * Creates a new test suite using the singleton factory instance.

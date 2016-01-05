@@ -601,14 +601,16 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
          * or something equivalent, copies those parameters into the structure expected by the provider.
          * The intend is to make sure that we have room for the parameters that {@code setEllipsoids(…)}
          * may write.
+         *
+         * @param writable {@code true} if this method should also check that the parameters group is not
+         *        an instance of {@link UnmodifiableParameterValueGroup}. Current implementation assumes
+         *        that modifiable parameters are instances of {@link DefaultParameterValueGroup}.
          */
-        private void ensureCompatibleParameters() {
+        private void ensureCompatibleParameters(final boolean writable) {
             final ParameterDescriptorGroup expected = provider.getParameters();
-            if (parameters.getDescriptor() != expected || !(parameters instanceof DefaultParameterValueGroup)) {
-                /*
-                 * The above check for DefaultParameterValueGroup is for replacing ImmutableParameterValueGroup
-                 * by a writable instance.
-                 */
+            if (parameters.getDescriptor() != expected ||
+                    (writable && !(parameters instanceof DefaultParameterValueGroup)))
+            {
                 final ParameterValueGroup copy = expected.createValue();
                 Parameters.copy(parameters, copy);
                 parameters = copy;
@@ -678,7 +680,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
              * projections, which is not allowed.
              */
             if (ellipsoid != null) {
-                ensureCompatibleParameters();
+                ensureCompatibleParameters(true);
                 ParameterValue<?> mismatchedParam = null;
                 double mismatchedValue = 0;
                 try {
@@ -758,6 +760,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
          *         informative exception.
          */
         final RuntimeException setEllipsoids(final OperationMethod method) {
+            ensureCompatibleParameters(false);
             int n;
             if (method instanceof AbstractProvider) {
                 n = ((AbstractProvider) method).getEllipsoidsMask();
@@ -775,7 +778,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
                 case 3: {
                     RuntimeException failure = null;
                     if (sourceCS != null) try {
-                        ensureCompatibleParameters();
+                        ensureCompatibleParameters(true);
                         final ParameterValue<?> p = parameters.parameter("dim");
                         if (p.getValue() == null) {
                             p.setValue(sourceCS.getDimension());
@@ -824,7 +827,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      * The complete group of parameters, including {@code "semi_major"}, {@code "semi_minor"} or other calculated values,
      * can be obtained by a call to {@link Context#getCompletedParameters()} after {@code createParameterizedTransform(…)}
      * returned. Note that the completed parameters may only have additional parameters compared to the given parameter
-     * group; existing parameter values are never modified.
+     * group; existing parameter values should not be modified.
      *
      * <p>The {@code OperationMethod} instance used by this constructor can be obtained by a call to
      * {@link #getLastMethodUsed()}.</p>

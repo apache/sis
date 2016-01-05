@@ -116,7 +116,7 @@ public final strictfp class IdentifiedObjectFinderTest extends TestCase {
         private final GeodeticAuthorityFactory factory;
 
         public Cached(final GeodeticAuthorityFactory factory) {
-            super(factory.nameFactory);
+            super(GeodeticAuthorityFactory.class, factory.nameFactory);
             this.factory = factory;
         }
 

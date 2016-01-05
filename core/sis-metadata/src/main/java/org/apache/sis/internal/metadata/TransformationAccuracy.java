@@ -25,10 +25,11 @@ import org.opengis.metadata.quality.EvaluationMethodType;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.metadata.iso.quality.DefaultQuantitativeResult;
 import org.apache.sis.metadata.iso.quality.DefaultAbsoluteExternalPositionalAccuracy;
+import org.apache.sis.util.collection.WeakValueHashMap;
 import org.apache.sis.util.iso.DefaultRecordSchema;
+import org.apache.sis.util.iso.DefaultRecord;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.Static;
-import org.apache.sis.util.iso.DefaultRecord;
 
 
 /**
@@ -57,6 +58,11 @@ public final class TransformationAccuracy extends Static {
     }
 
     /**
+     * Cache the positional accuracies. Most coordinate operation use a small set of accuracy values.
+     */
+    private static final WeakValueHashMap<Double,PositionalAccuracy> CACHE = new WeakValueHashMap<>(Double.class);
+
+    /**
      * Do not allow instantiation of this class.
      */
     private TransformationAccuracy() {
@@ -64,24 +70,33 @@ public final class TransformationAccuracy extends Static {
 
     /**
      * Creates a positional accuracy for the given value, in metres.
+     * This method may return a cached value.
      *
      * @param accuracy The accuracy in metres.
      * @return A positional accuracy with the given value.
      */
     public static PositionalAccuracy create(final Double accuracy) {
-        final DefaultRecord record = new DefaultRecord(TYPE);
-        record.setAll(accuracy);
+        PositionalAccuracy p = CACHE.get(accuracy);
+        if (p == null) {
+            final DefaultRecord record = new DefaultRecord(TYPE);
+            record.setAll(accuracy);
 
-        final DefaultQuantitativeResult result = new DefaultQuantitativeResult();
-        result.setValues(Collections.singletonList(record));
-        result.setValueUnit(SI.METRE);              // In metres by definition in the EPSG database.
-        result.setValueType(TYPE);
+            final DefaultQuantitativeResult result = new DefaultQuantitativeResult();
+            result.setValues(Collections.singletonList(record));
+            result.setValueUnit(SI.METRE);              // In metres by definition in the EPSG database.
+            result.setValueType(TYPE);
 
-        final DefaultAbsoluteExternalPositionalAccuracy element =
-                new DefaultAbsoluteExternalPositionalAccuracy(result);
-        element.setNamesOfMeasure(Collections.singleton(TRANSFORMATION_ACCURACY));
-        element.setEvaluationMethodType(EvaluationMethodType.DIRECT_EXTERNAL);
-        element.freeze();
-        return element;
+            final DefaultAbsoluteExternalPositionalAccuracy element =
+                    new DefaultAbsoluteExternalPositionalAccuracy(result);
+            element.setNamesOfMeasure(Collections.singleton(TRANSFORMATION_ACCURACY));
+            element.setEvaluationMethodType(EvaluationMethodType.DIRECT_EXTERNAL);
+            element.freeze();
+
+            p = CACHE.putIfAbsent(accuracy, element);
+            if (p == null) {
+                p = element;
+            }
+        }
+        return p;
     }
 }

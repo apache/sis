@@ -141,7 +141,7 @@ public abstract strictfp class TestCase {
             for (Logger logger=LOGGER; logger!=null; logger=logger.getParent()) {
                 for (final Handler handler : logger.getHandlers()) {
                     if (handler instanceof ConsoleHandler) {
-                        ((ConsoleHandler) handler).setEncoding(encoding);
+                        handler.setEncoding(encoding);
                     }
                 }
                 if (!logger.getUseParentHandlers()) {

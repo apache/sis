@@ -1156,7 +1156,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * @param  code The code to trim.
      * @return The code without the authority scope.
      */
-    final String trimAuthority(String code) {
+    protected String trimAuthority(String code) {
         return trimAuthority(code, null);
     }
 
@@ -1173,7 +1173,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
             if (authority == null) {
                 authority = getAuthority();     // Costly operation for EPSGDataAccess.
             }
-            if (Citations.identifierMatches(authority, null, scope.toString())) {
+            if (Citations.identifierMatches(authority, null, scope.toString().trim())) {
                 return name.tip().toString().trim();
             }
         }

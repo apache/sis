@@ -145,7 +145,7 @@ public class EPSGFactory extends ConcurrentAuthorityFactory implements CRSAuthor
                        final SQLTranslator              translator)
             throws FactoryException
     {
-        super(factory(NameFactory.class, nameFactory));
+        super(EPSGDataAccess.class, factory(NameFactory.class, nameFactory));
         if (dataSource != null) {
             this.dataSource = dataSource;
         } else try {

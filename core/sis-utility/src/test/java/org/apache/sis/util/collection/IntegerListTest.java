@@ -162,9 +162,6 @@ public final strictfp class IntegerListTest extends TestCase {
         testReadWrite(100);
         assertEquals(400, list.size());
         final int old100 = list.getInt(100);
-        final int old101 = list.getInt(101);
-        assertFalse(0 == old100);
-        assertFalse(0 == old101);
         list.resize(101);
         assertEquals(old100, list.getInt(100));
         list.resize(200);
