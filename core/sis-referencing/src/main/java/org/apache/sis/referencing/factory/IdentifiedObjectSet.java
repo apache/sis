@@ -177,7 +177,7 @@ public class IdentifiedObjectSet<T extends IdentifiedObject> extends AbstractSet
      * @return The authority codes in iteration order.
      */
     public String[] getAuthorityCodes() {
-        return codes.clone();
+        return codes().clone();
     }
 
     /**
@@ -533,6 +533,8 @@ public class IdentifiedObjectSet<T extends IdentifiedObject> extends AbstractSet
      *   <li>If {@link NoSuchIdentifierException}, returns {@code true} since this exception is caused by an attempt to
      *       {@linkplain org.opengis.referencing.operation.MathTransformFactory#createParameterizedTransform
      *       create a parameterized transform} for an unimplemented operation.</li>
+     *   <li>If {@link MissingFactoryResourceException}, returns {@code true}.</li>
+     *   <li>Otherwise returns {@code false}.</li>
      * </ul>
      *
      * @param  exception The exception that occurred while creating an object.
@@ -540,6 +542,9 @@ public class IdentifiedObjectSet<T extends IdentifiedObject> extends AbstractSet
      *         or {@code false} if it should be considered fatal.
      */
     protected boolean isRecoverableFailure(final FactoryException exception) {
-        return (exception instanceof NoSuchIdentifierException) && !(exception instanceof NoSuchAuthorityCodeException);
+        if (exception instanceof NoSuchIdentifierException) {
+            return !(exception instanceof NoSuchAuthorityCodeException);
+        }
+        return (exception instanceof MissingFactoryResourceException);
     }
 }

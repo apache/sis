@@ -34,6 +34,8 @@ import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.Transformation;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
+import org.apache.sis.referencing.factory.MissingFactoryResourceException;
+import org.apache.sis.referencing.factory.FactoryDataException;
 import org.apache.sis.referencing.operation.transform.InterpolatedTransform;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.parameter.Parameters;
@@ -46,6 +48,7 @@ import org.apache.sis.internal.system.DataDirectory;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 
 
 /**
@@ -145,6 +148,7 @@ public final class NADCON extends AbstractProvider {
      * @param latitudeShifts   Name of the grid file for latitude shifts.
      * @param longitudeShifts  Name of the grid file for longitude shifts.
      */
+    @SuppressWarnings("null")
     static DatumShiftGridFile<Angle,Angle> getOrLoad(final Path latitudeShifts, final Path longitudeShifts)
             throws FactoryException
     {
@@ -175,7 +179,12 @@ public final class NADCON extends AbstractProvider {
                             new Loader(in, buffer, file).readGrid(fb, loader, null);
                         }
                     } catch (IOException | NoninvertibleTransformException | RuntimeException e) {
-                        throw new FactoryException(Errors.format(Errors.Keys.CanNotParseFile_2, "NADCON", file), e);
+                        final String message = Errors.format(Errors.Keys.CanNotParseFile_2, "NADCON", file);
+                        if (e instanceof NoSuchFileException) {
+                            throw new MissingFactoryResourceException(message, e);
+                        } else {
+                            throw new FactoryDataException(message, e);
+                        }
                     }
                     grid = DatumShiftGridCompressed.compress(loader.grid, null, loader.grid.accuracy);
                     grid = grid.useSharedData();

@@ -40,6 +40,8 @@ import org.apache.sis.util.iso.AbstractFactory;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.Classes;
+import org.apache.sis.util.Debug;
 
 
 /**
@@ -1231,5 +1233,26 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
         final Citation authority = (id != null) ? id.getAuthority() : getAuthority();
         throw new NoSuchAuthorityCodeException(Errors.format(Errors.Keys.UnexpectedTypeForReference_3, code, type, actual),
                 Citations.getIdentifier(authority, false), trimAuthority(code, authority), code);
+    }
+
+    /**
+     * Returns a string representation of this factory for debugging purpose only.
+     * The string returned by this method may change in any future SIS version.
+     *
+     * @return A string representation for debugging purpose.
+     */
+    @Debug
+    @Override
+    public String toString() {
+        final StringBuilder buffer = new StringBuilder(Classes.getShortClassName(this))
+                .append("[“").append(Citations.getIdentifier(getAuthority(), false)).append('”');
+        toString(buffer);
+        return buffer.append(']').toString();
+    }
+
+    /**
+     * Hook for subclasses.
+     */
+    void toString(final StringBuilder buffer) {
     }
 }

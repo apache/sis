@@ -18,8 +18,10 @@ package org.apache.sis.referencing.factory;
 
 import java.util.Set;
 import java.util.Map;
+import java.util.List;
 import java.util.Deque;
 import java.util.Iterator;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.WeakHashMap;
 import java.util.IdentityHashMap;
@@ -55,7 +57,6 @@ import org.apache.sis.internal.system.DelayedRunnable;
 import org.apache.sis.internal.system.Shutdown;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.ArraysExt;
 
 
 /**
@@ -88,12 +89,16 @@ import org.apache.sis.util.ArraysExt;
  * {@link CRSAuthorityFactory} and {@link CoordinateOperationAuthorityFactory} interfaces.
  * Subclasses should select the interfaces that they choose to implement.
  *
+ * @param <DAO> the type of factory used as Data Access Object (DAO)
+ *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.7
  * @version 0.7
  * @module
  */
-public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactory implements AutoCloseable {
+public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFactory>
+        extends GeodeticAuthorityFactory implements AutoCloseable
+{
     /**
      * The authority, cached after first requested.
      */
@@ -113,7 +118,7 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
     private final Cache<Key,Object> cache;
 
     /**
-     * The pool of objects identified by {@link Finder#find(IdentifiedObject)} for each comparison modes.
+     * The pool of objects identified by {@link Finder#find(IdentifiedObject)}.
      * Values may be {@link NilReferencingObject} if an object has been searched but has not been found.
      *
      * <p>Every access to this pool must be synchronized on {@code findPool}.</p>
@@ -122,24 +127,24 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
 
     /**
      * Holds the reference to a Data Access Object used by {@link ConcurrentAuthorityFactory}, together with
-     * information about its usage. In a mono-thread application, there is typically only one {@code DataAccess}
+     * information about its usage. In a mono-thread application, there is typically only one {@code DataAccessRef}
      * instance at a given time. However if more than one than one thread are requesting new objects concurrently,
      * then many instances may exist for the same {@code ConcurrentAuthorityFactory}.
      *
-     * <p>If the Data Access Object is currently in use, then {@code DataAccess} counts how many recursive
+     * <p>If the Data Access Object is currently in use, then {@code DataAccessRef} counts how many recursive
      * invocations of a {@link #factory} {@code createFoo(String)} method is under way in the current thread.
      * This information is used in order to reuse the same factory instead than creating new instances
      * when a {@code GeodeticAuthorityFactory} implementation invokes itself indirectly through the
      * {@link ConcurrentAuthorityFactory}. This assumes that factory implementations are reentrant.</p>
      *
-     * <p>If the Data Access Object has been released, then {@code DataAccess} keep the release timestamp.
+     * <p>If the Data Access Object has been released, then {@code DataAccessRef} keep the release timestamp.
      * This information is used for prioritize the Data Access Objects to close.</p>
      */
-    private static final class DataAccess {
+    private static final class DataAccessRef<DAO extends GeodeticAuthorityFactory> {
         /**
          * The factory used for data access.
          */
-        final GeodeticAuthorityFactory factory;
+        final DAO factory;
 
         /**
          * Incremented on every call to {@link ConcurrentAuthorityFactory#getDataAccess()} and decremented on every call
@@ -156,7 +161,7 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
         /**
          * Creates new Data Access Object information for the given factory.
          */
-        DataAccess(final GeodeticAuthorityFactory factory) {
+        DataAccessRef(final DAO factory) {
             this.factory = factory;
         }
 
@@ -169,7 +174,7 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
             final String text;
             final Number value;
             if (depth != 0) {
-                text = "%s in use with at depth %d";
+                text = "%s in use at depth %d";
                 value = depth;
             } else {
                 text = "%s made available %d seconds ago";
@@ -182,14 +187,14 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
     /**
      * The Data Access Object in use by the current thread.
      */
-    private final ThreadLocal<DataAccess> currentDAO = new ThreadLocal<>();
+    private final ThreadLocal<DataAccessRef<DAO>> currentDAO = new ThreadLocal<>();
 
     /**
      * The Data Access Object instances previously created and released for future reuse.
      * Last used factories must be {@linkplain Deque#addLast(Object) added last}.
      * This is used as a LIFO stack.
      */
-    private final Deque<DataAccess> availableDAOs = new LinkedList<>();
+    private final Deque<DataAccessRef<DAO>> availableDAOs = new LinkedList<>();
 
     /**
      * The amount of Data Access Objects that can still be created. This number is decremented in a block
@@ -204,12 +209,12 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      * However the reciprocal is not true: this field may be set to {@code false} while a worker factory is currently
      * in use because this field is set to {@code true} only when a worker factory is {@linkplain #release() released}.
      *
-     * <p>Note that we can not use {@code !availableDAOs.isEmpty()} as a replacement of {@code isActive}
+     * <p>Note that we can not use {@code !availableDAOs.isEmpty()} as a replacement of {@code isCleanScheduled}
      * because the queue is empty if all Data Access Objects are currently in use.</p>
      *
      * <p>Every access to this field must be performed in a block synchronized on {@link #availableDAOs}.</p>
      */
-    private boolean isActive;
+    private boolean isCleanScheduled;
 
     /**
      * The delay of inactivity (in nanoseconds) before to close a Data Access Object.
@@ -233,7 +238,7 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      * @param dataAccessClass The class of Data Access Object (DAO) created by {@link #newDataAccess()}.
      * @param nameFactory The factory to use for parsing authority codes as {@link org.opengis.util.GenericName} instances.
      */
-    protected ConcurrentAuthorityFactory(Class<? extends GeodeticAuthorityFactory> dataAccessClass, NameFactory nameFactory) {
+    protected ConcurrentAuthorityFactory(Class<DAO> dataAccessClass, NameFactory nameFactory) {
         this(dataAccessClass, nameFactory, 100, 8);
         /*
          * NOTE: if the default maximum number of Data Access Objects (currently 8) is augmented,
@@ -253,7 +258,7 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      *        If more than this amount of threads are querying this {@code ConcurrentAuthorityFactory} concurrently,
      *        additional threads will be blocked until a Data Access Object become available.
      */
-    protected ConcurrentAuthorityFactory(final Class<? extends GeodeticAuthorityFactory> dataAccessClass,
+    protected ConcurrentAuthorityFactory(final Class<DAO> dataAccessClass,
             final NameFactory nameFactory, final int maxStrongReferences, final int maxConcurrentQueries)
     {
         super(nameFactory);
@@ -290,7 +295,7 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
          *   2) Closes the Data Access Objects at JVM shutdown time if the application is standalone,
          *      or when the bundle is uninstalled if running inside an OSGi or Servlet container.
          */
-        Shutdown.register(new ShutdownHook(this));
+        Shutdown.register(new ShutdownHook<>(this));
     }
 
     /**
@@ -322,7 +327,7 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      * @throws UnavailableFactoryException if the Data Access Object is unavailable because an optional resource is missing.
      * @throws FactoryException if the creation of Data Access Object failed for another reason.
      */
-    protected abstract GeodeticAuthorityFactory newDataAccess() throws UnavailableFactoryException, FactoryException;
+    protected abstract DAO newDataAccess() throws UnavailableFactoryException, FactoryException;
 
     /**
      * Returns a Data Access Object. This method <strong>must</strong>
@@ -331,12 +336,13 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      * @return Data Access Object (DAO) to use in {@code createFoo(String)} methods.
      * @throws FactoryException if the Data Access Object creation failed.
      */
-    private GeodeticAuthorityFactory getDataAccess() throws FactoryException {
+    @SuppressWarnings("null")
+    private DAO getDataAccess() throws FactoryException {
         /*
          * First checks if the current thread is already using a factory. If yes, we will
          * avoid creating new factories on the assumption that factories are reentrant.
          */
-        DataAccess usage = currentDAO.get();
+        DataAccessRef<DAO> usage = currentDAO.get();
         if (usage == null) {
             synchronized (availableDAOs) {
                 /*
@@ -367,12 +373,12 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
              */
             try {
                 if (usage == null) {
-                    final GeodeticAuthorityFactory factory = newDataAccess();
+                    final DAO factory = newDataAccess();
                     if (factory == null) {
                         throw new UnavailableFactoryException(Errors.format(
                                 Errors.Keys.FactoryNotFound_1, GeodeticAuthorityFactory.class));
                     }
-                    usage = new DataAccess(factory);
+                    usage = new DataAccessRef<>(factory);
                 }
                 assert usage.depth == 0 : usage;
             } finally {
@@ -392,7 +398,7 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
         }
         /*
          * Increment below is safe even if outside the synchronized block,
-         * because each thread own exclusively its DataAccess instance
+         * because each thread own exclusively its DataAccessRef instance.
          */
         usage.depth++;
         return usage.factory;
@@ -403,25 +409,56 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      * This method marks the factory as available for reuse by other threads.
      */
     private void release() {
-        final DataAccess usage = currentDAO.get();     // A null value here would be an error in our algorithm.
+        final DataAccessRef<DAO> usage = currentDAO.get();  // A null value here would be an error in our algorithm.
         if (--usage.depth == 0) {
             currentDAO.remove();
             synchronized (availableDAOs) {
-                remainingDAOs++;       // Must be done first in case an exception happen after this point.
-                usage.timestamp = System.nanoTime();
-                availableDAOs.addLast(usage);
-                /*
-                 * If the Data Access Object we just released is the first one, awake the
-                 * cleaner thread which was waiting for an indefinite amount of time.
-                 */
-                if (!isActive) {
-                    isActive = true;
-                    DelayedExecutor.schedule(new CloseTask(usage.timestamp + timeout));
-                }
-                availableDAOs.notify();    // We released only one data access, so awake only one thread - not all of them.
+                remainingDAOs++;            // Must be done first in case an exception happen after this point.
+                recycle(usage);
+                availableDAOs.notify();     // We released only one data access, so awake only one thread - not all of them.
             }
         }
         assert usage.depth >= 0 : usage;
+    }
+
+    /**
+     * Pushes the given DAO in the list of objects available for reuse.
+     */
+    private void recycle(final DataAccessRef<DAO> usage) {
+        usage.timestamp = System.nanoTime();
+        availableDAOs.addLast(usage);
+        /*
+         * If the Data Access Object we just released is the first one, awake the
+         * cleaner thread which was waiting for an indefinite amount of time.
+         */
+        if (!isCleanScheduled) {
+            isCleanScheduled = true;
+            DelayedExecutor.schedule(new CloseTask(usage.timestamp + timeout));
+        }
+    }
+
+    /**
+     * Confirms that the given factories can be closed. If any factory is still in use,
+     * it will be removed from that {@cod factories} list and re-injected in the {@link #availableDAOs} queue.
+     */
+    private void confirmClose(final List<DAO> factories) {
+        assert !Thread.holdsLock(availableDAOs);
+        for (final Iterator<DAO> it = factories.iterator(); it.hasNext();) {
+            final DAO factory = it.next();
+            try {
+                if (canClose(factory)) {
+                    continue;
+                }
+            } catch (Exception e) {
+                unexpectedException("canClose", e);
+                continue;                               // Keep the factory on the list of factories to close.
+            }
+            // Cancel closing for that factory.
+            it.remove();
+            synchronized (availableDAOs) {
+                recycle(new DataAccessRef<>(factory));
+            }
+        }
     }
 
     /**
@@ -450,14 +487,13 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      * @see #close()
      */
     final void closeExpired() {
-        int count = 0;
-        final AutoCloseable[] factories;
+        final List<DAO> factories;
         synchronized (availableDAOs) {
-            factories = new AutoCloseable[availableDAOs.size()];
-            final Iterator<DataAccess> it = availableDAOs.iterator();
+            factories = new ArrayList<>(availableDAOs.size());
+            final Iterator<DataAccessRef<DAO>> it = availableDAOs.iterator();
             final long nanoTime = System.nanoTime();
             while (it.hasNext()) {
-                final DataAccess dao = it.next();
+                final DataAccessRef<DAO> dao = it.next();
                 /*
                  * Computes how much time we need to wait again before we can close the factory.
                  * If this time is greater than some arbitrary amount, do not close the factory
@@ -476,24 +512,23 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
                  * Found an expired factory. Adds it to the list of
                  * factories to close and search for other factories.
                  */
+                factories.add(dao.factory);
                 it.remove();
-                if (dao.factory instanceof AutoCloseable) {
-                    factories[count++] = (AutoCloseable) dao.factory;
-                }
             }
             /*
-             * The DAOs list is empty if all worker factories in the queue have been closed.
-             * Note that some worker factories may still be active outside the queue, because the
-             * workers are added to the queue only after completion of their work.
+             * The DAOs list is empty if all Data Access Objects in the queue have been closed.
+             * Note that some DAOs may still be in use outside the queue, because the DAOs are
+             * added to the queue only after completion of their work.
              * In the later case, release() will reschedule a new task.
              */
-            isActive = !availableDAOs.isEmpty();
+            isCleanScheduled = !availableDAOs.isEmpty();
         }
         /*
          * We must close the factories from outside the synchronized block.
          */
+        confirmClose(factories);
         try {
-            close(factories, count);
+            close(factories);
         } catch (Exception exception) {
             unexpectedException("closeExpired", exception);
         }
@@ -511,6 +546,21 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
     static void unexpectedException(final String method, final Exception exception) {
         Logging.unexpectedException(Logging.getLogger(Loggers.CRS_FACTORY),
                 ConcurrentAuthorityFactory.class, method, exception);
+    }
+
+    /**
+     * Returns {@code true} if the given Data Access Object (DAO) can be closed. This method is invoked automatically
+     * after the {@linkplain #getTimeout timeout} if the given DAO has been idle during all that time.
+     * Subclasses can override this method and return {@code false} if they want to prevent the DAO disposal
+     * under some circumstances.
+     *
+     * <p>The default implementation always returns {@code true}.</p>
+     *
+     * @param factory The Data Access Object which is about to be closed.
+     * @return {@code true} if the given Data Access Object can be closed.
+     */
+    protected boolean canClose(DAO factory) {
+        return true;
     }
 
     /**
@@ -566,7 +616,7 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
     public Citation getAuthority() {
         Citation c = authority;
         if (c == null) try {
-            final GeodeticAuthorityFactory factory = getDataAccess();
+            final DAO factory = getDataAccess();
             try {
                 // Cache only in case of success. If we failed, we
                 // will try again next time this method is invoked.
@@ -597,7 +647,7 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      */
     @Override
     public Set<String> getAuthorityCodes(final Class<? extends IdentifiedObject> type) throws FactoryException {
-        final GeodeticAuthorityFactory factory = getDataAccess();
+        final DAO factory = getDataAccess();
         try {
             return factory.getAuthorityCodes(type);
             /*
@@ -629,7 +679,7 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
     public InternationalString getDescriptionText(final String code)
             throws NoSuchAuthorityCodeException, FactoryException
     {
-        final GeodeticAuthorityFactory factory = getDataAccess();
+        final DAO factory = getDataAccess();
         try {
             return factory.getDescriptionText(code);
         } finally {
@@ -1489,7 +1539,7 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
                 value = handler.peek();
                 if (!type.isInstance(value)) {
                     final T result;
-                    final GeodeticAuthorityFactory factory = getDataAccess();
+                    final DAO factory = getDataAccess();
                     try {
                         result = proxy.create(factory, key.code);
                     } finally {
@@ -1538,7 +1588,7 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
             try {
                 value = handler.peek();
                 if (!(value instanceof Set<?>)) {
-                    final GeodeticAuthorityFactory factory = getDataAccess();
+                    final DAO factory = getDataAccess();
                     try {
                         value = factory.createFromCoordinateReferenceSystemCodes(sourceCRS, targetCRS);
                     } finally {
@@ -1602,7 +1652,7 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
         /**
          * Creates a finder for the given type of objects.
          */
-        Finder(final ConcurrentAuthorityFactory factory, final Class<? extends IdentifiedObject> type) {
+        Finder(final ConcurrentAuthorityFactory<?> factory, final Class<? extends IdentifiedObject> type) {
             super(factory, type);
         }
 
@@ -1624,7 +1674,7 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
             assert Thread.holdsLock(this);
             assert (acquireCount == 0) == (finder == null) : acquireCount;
             if (acquireCount == 0) {
-                final GeodeticAuthorityFactory delegate = ((ConcurrentAuthorityFactory) factory).getDataAccess();
+                final GeodeticAuthorityFactory delegate = ((ConcurrentAuthorityFactory<?>) factory).getDataAccess();
                 /*
                  * Set 'acquireCount' only after we succeed in fetching the factory, and before any operation on it.
                  * The intend is to get ConcurrentAuthorityFactory.release() invoked if and only if the getDataAccess()
@@ -1649,7 +1699,7 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
             }
             if (--acquireCount == 0) {
                 finder = null;
-                ((ConcurrentAuthorityFactory) factory).release();
+                ((ConcurrentAuthorityFactory<?>) factory).release();
             }
         }
 
@@ -1686,7 +1736,7 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
          */
         @Override
         public IdentifiedObject find(final IdentifiedObject object) throws FactoryException {
-            final Map<IdentifiedObject, IdentifiedObject> findPool = ((ConcurrentAuthorityFactory) factory).findPool;
+            final Map<IdentifiedObject, IdentifiedObject> findPool = ((ConcurrentAuthorityFactory<?>) factory).findPool;
             synchronized (findPool) {
                 final IdentifiedObject candidate = findPool.get(object);
                 if (candidate != null) {
@@ -1738,18 +1788,18 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      * <p><strong>Do not keep reference to the enclosing factory</strong> - in particular,
      * this class must not be static - otherwise the factory would never been garbage collected.</p>
      */
-    private static final class ShutdownHook extends PhantomReference<ConcurrentAuthorityFactory>    // MUST be static!
-            implements Disposable, Callable<Object>
+    private static final class ShutdownHook<DAO extends GeodeticAuthorityFactory>           // MUST be static!
+            extends PhantomReference<ConcurrentAuthorityFactory<DAO>> implements Disposable, Callable<Object>
     {
         /**
          * The {@link ConcurrentAuthorityFactory#availableDAOs} queue.
          */
-        private final Deque<DataAccess> availableDAOs;
+        private final Deque<DataAccessRef<DAO>> availableDAOs;
 
         /**
          * Creates a new shutdown hook for the given factory.
          */
-        ShutdownHook(final ConcurrentAuthorityFactory factory) {
+        ShutdownHook(final ConcurrentAuthorityFactory<DAO> factory) {
             super(factory, ReferenceQueueConsumer.QUEUE);
             availableDAOs = factory.availableDAOs;
         }
@@ -1777,32 +1827,30 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
          */
         @Override
         public Object call() throws Exception {
-            final AutoCloseable[] factories;
+            final List<DAO> factories;
             synchronized (availableDAOs) {
-                factories = getCloseables(availableDAOs);
+                factories = ConcurrentAuthorityFactory.clear(availableDAOs);
             }
-            close(factories, factories.length);
+            // No call to confirmClose(List<DAO>) as we want to force close.
+            close(factories);
             return null;
         }
     }
 
     /**
-     * Returns all factories implementing the {@link AutoCloseable} interfaces in the given queue.
+     * Clears the given queue and returns all DAO instances that it contained.
      * The given queue shall be the {@link ConcurrentAuthorityFactory#availableDAOs} queue.
      *
      * @param availableDAOs The queue of factories to close.
      */
-    static AutoCloseable[] getCloseables(final Deque<DataAccess> availableDAOs) {
+    static <DAO extends GeodeticAuthorityFactory> List<DAO> clear(final Deque<DataAccessRef<DAO>> availableDAOs) {
         assert Thread.holdsLock(availableDAOs);
-        int count = 0;
-        final AutoCloseable[] factories = new AutoCloseable[availableDAOs.size()];
-        DataAccess dao;
+        final List<DAO> factories = new ArrayList<>(availableDAOs.size());
+        DataAccessRef<DAO> dao;
         while ((dao = availableDAOs.pollFirst()) != null) {
-            if (dao.factory instanceof AutoCloseable) {
-                factories[count++] = (AutoCloseable) dao.factory;
-            }
+            factories.add(dao.factory);
         }
-        return ArraysExt.resize(factories, count);
+        return factories;
     }
 
     /**
@@ -1813,15 +1861,18 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      * @param  count Number of valid elements in the {@code factories} array.
      * @throws Exception the exception thrown by the first factory that failed to close.
      */
-    static void close(final AutoCloseable[] factories, int count) throws Exception {
+    static <DAO extends GeodeticAuthorityFactory> void close(final List<DAO> factories) throws Exception {
         Exception exception = null;
-        while (--count >= 0) try {
-            factories[count].close();
-        } catch (Exception e) {
-            if (exception == null) {
-                exception = e;
-            } else {
-                exception.addSuppressed(e);
+        for (int i=factories.size(); --i>=0;) {
+            final DAO factory = factories.get(i);
+            if (factory instanceof AutoCloseable) try {
+                ((AutoCloseable) factory).close();
+            } catch (Exception e) {
+                if (exception == null) {
+                    exception = e;
+                } else {
+                    exception.addSuppressed(e);
+                }
             }
         }
         if (exception != null) {
@@ -1846,17 +1897,55 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
     @Override
     public void close() throws FactoryException {
         try {
-            final AutoCloseable[] factories;
+            final List<DAO> factories;
             synchronized (availableDAOs) {
-                factories = getCloseables(availableDAOs);
-                availableDAOs.clear();
+                factories = clear(availableDAOs);
             }
-            close(factories, factories.length);         // Must be invoked outside the synchronized block.
+            confirmClose(factories);
+            close(factories);                       // Must be invoked outside the synchronized block.
         } catch (Exception e) {
             if (e instanceof FactoryException) {
                 throw (FactoryException) e;
             } else {
                 throw new FactoryException(e);
+            }
+        }
+    }
+
+    /**
+     * Returns a string representation of this factory for debugging purpose only.
+     * The string returned by this method may change in any future SIS version.
+     *
+     * @return A string representation for debugging purpose.
+     */
+    @Debug
+    @Override
+    public String toString() {
+        final String s = super.toString();
+        DataAccessRef<DAO> usage = currentDAO.get();
+        if (usage == null) {
+            synchronized (availableDAOs) {
+                usage = availableDAOs.peekLast();
+            }
+            if (usage == null) {
+                return s;
+            }
+        }
+        return s + System.lineSeparator() + usage;
+    }
+
+    /**
+     * Completes the string representation of this factory for debugging purpose only.
+     * The string formatted by this method may change in any future SIS version.
+     */
+    @Debug
+    @Override
+    final void toString(final StringBuilder buffer) {
+        buffer.append(", cache=").append(cache.size()).append(", DAO=");
+        synchronized (availableDAOs) {
+            buffer.append(availableDAOs.size());
+            if (remainingDAOs <= 0) {
+                buffer.append(" (limit reached)");
             }
         }
     }

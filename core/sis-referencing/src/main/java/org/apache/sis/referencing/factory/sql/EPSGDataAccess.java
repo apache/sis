@@ -615,8 +615,8 @@ addURIs:    for (int i=0; ; i++) {
             try {
                 primaryKeys[i] = Integer.parseInt(code);
             } catch (NumberFormatException e) {
-                final NoSuchIdentifierException ne = new NoSuchIdentifierException(error().getString(
-                        Errors.Keys.IllegalIdentifierForCodespace_2, Constants.EPSG, code), code);
+                final NoSuchAuthorityCodeException ne = new NoSuchAuthorityCodeException(error().getString(
+                        Errors.Keys.IllegalIdentifierForCodespace_2, Constants.EPSG, code), Constants.EPSG, code);
                 ne.initCause(e);
                 throw ne;
             }
@@ -2388,7 +2388,6 @@ addURIs:    for (int i=0; ; i++) {
         try (ResultSet result = executeQuery("Coordinate_Operation Method", "COORD_OP_METHOD_CODE", "COORD_OP_METHOD_NAME",
                 "SELECT COORD_OP_METHOD_CODE," +
                       " COORD_OP_METHOD_NAME," +
-                      " FORMULA," +
                       " REMARKS," +
                       " DEPRECATED" +
                  " FROM [Coordinate_Operation Method]" +
@@ -2397,13 +2396,12 @@ addURIs:    for (int i=0; ; i++) {
             while (result.next()) {
                 final Integer epsg       = getInteger  (code, result, 1);
                 final String  name       = getString   (code, result, 2);
-                final String  formula    = getOptionalString (result, 3);
-                final String  remarks    = getOptionalString (result, 4);
-                final boolean deprecated = getOptionalBoolean(result, 5);
+                final String  remarks    = getOptionalString (result, 3);
+                final boolean deprecated = getOptionalBoolean(result, 4);
                 final Integer[] dim = getDimensionsForMethod(epsg);
                 final ParameterDescriptor<?>[] descriptors = createParameterDescriptors(epsg);
                 Map<String,Object> properties = createProperties("Coordinate_Operation Method", name, epsg, remarks, deprecated);
-                properties.put(OperationMethod.FORMULA_KEY, formula);
+                // We do not store the formula at this time, because the text is very verbose and rarely used.
                 final OperationMethod method = new DefaultOperationMethod(properties, dim[0], dim[1],
                             new DefaultParameterDescriptorGroup(properties, 1, 1, descriptors));
                 returnValue = ensureSingleton(method, returnValue, code);
@@ -2438,6 +2436,7 @@ addURIs:    for (int i=0; ; i++) {
      * @throws FactoryException if the object creation failed for some other reason.
      */
     @Override
+    @SuppressWarnings("null")
     public synchronized CoordinateOperation createCoordinateOperation(final String code)
             throws NoSuchAuthorityCodeException, FactoryException
     {
@@ -2709,8 +2708,10 @@ addURIs:    for (int i=0; ; i++) {
              * Alter the ordering using the information supplied in the supersession table.
              */
             final String[] codes = set.getAuthorityCodes();
-            sort(codes);
-            set.setAuthorityCodes(codes);
+            if (codes.length > 1) {
+                sort(codes);
+                set.setAuthorityCodes(codes);
+            }
         } catch (SQLException exception) {
             throw databaseFailure(CoordinateOperation.class, label, exception);
         }
@@ -2867,7 +2868,6 @@ addURIs:    for (int i=0; ; i++) {
      * Returns {@code true} if the {@link CoordinateOperation} for the specified code is a {@link Projection}.
      * The caller must have verified that the designed operation is a {@link Conversion} before to invoke this method.
      *
-     * @throws NoSuchIdentifierException if the given code has not been found.
      * @throws SQLException If an error occurred while querying the database.
      */
     final boolean isProjection(final Integer code) throws SQLException {
@@ -3044,7 +3044,7 @@ addURIs:    for (int i=0; ; i++) {
      */
     final synchronized boolean canClose() {
         boolean can = true;
-        if (authorityCodes != null) {
+        if (!authorityCodes.isEmpty()) {
             System.gc();                // For cleaning as much weak references as we can before we check them.
             final Iterator<CloseableReference<AuthorityCodes>> it = authorityCodes.values().iterator();
             while (it.hasNext()) {
