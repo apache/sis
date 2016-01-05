@@ -57,7 +57,6 @@ import org.opengis.metadata.Identifier;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.OnLineFunction;
-import org.opengis.metadata.quality.PositionalAccuracy;
 import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptor;
@@ -226,13 +225,6 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
      * @see #isProjection(int)
      */
     private final Map<Integer,Boolean> isProjection = new HashMap<>();
-
-    /**
-     * Cache the positional accuracies. Most coordinate operation use a small set of accuracy values.
-     *
-     * @see #getAccuracy(double)
-     */
-    private final Map<Double,PositionalAccuracy> accuracies = new HashMap<>();
 
     /**
      * Cache of naming systems other than EPSG. There is usually few of them (at most 15).
@@ -599,10 +591,10 @@ addURIs:    for (int i=0; ; i++) {
                     }
                 }
                 if (statement == null) {
-                    final String query = "SELECT " + codeColumn + " FROM " + table +
-                                         " WHERE " + nameColumn + " = ?";
+                    final String query = "SELECT " + codeColumn + " FROM [" + table + "] WHERE " + nameColumn + " = ?";
                     statement = connection.prepareStatement(translator.apply(query));
                     statements.put(KEY, statement);
+                    lastTableForName = table;
                 }
                 statement.setString(1, code);
                 Integer resolved = null;
@@ -651,9 +643,9 @@ addURIs:    for (int i=0; ; i++) {
             final String sql, final String... codes) throws SQLException, FactoryException
     {
         assert Thread.holdsLock(this);
-        assert sql.contains(table) : table;
-        assert (codeColumn == null) || sql.contains(codeColumn) || table.equals("[Area]") : codeColumn;
-        assert (nameColumn == null) || sql.contains(nameColumn) || table.equals("[Area]") : nameColumn;
+        assert sql.contains('[' + table + ']') : table;
+        assert (codeColumn == null) || sql.contains(codeColumn) || table.equals("Area") : codeColumn;
+        assert (nameColumn == null) || sql.contains(nameColumn) || table.equals("Area") : nameColumn;
         return executeQuery(table, sql, toPrimaryKeys(table, codeColumn, nameColumn, codes));
     }
 
@@ -904,12 +896,12 @@ addURIs:    for (int i=0; ; i++) {
      * @param  locale The locale for logging messages.
      * @return A message proposing a replacement, or {@code null} if none.
      */
-    private InternationalString getDeprecation(final String table, final Integer code, final Locale locale)
+    private InternationalString getSupersession(final String table, final Integer code, final Locale locale)
             throws SQLException
     {
         String reason = null;
         Object replacedBy = null;
-        try (ResultSet result = executeQuery("[Deprecation]",
+        try (ResultSet result = executeQuery("Deprecation",
                 "SELECT OBJECT_TABLE_NAME, DEPRECATION_REASON, REPLACED_BY" +
                 " FROM [Deprecation] WHERE OBJECT_CODE = ?", code))
         {
@@ -980,7 +972,7 @@ addURIs:    for (int i=0; ; i++) {
             final String codeString = code.toString();
             final ImmutableIdentifier identifier;
             if (deprecated) {
-                identifier = new DeprecatedCode(authority, Constants.EPSG, codeString, version, getDeprecation(table, code, locale));
+                identifier = new DeprecatedCode(authority, Constants.EPSG, codeString, version, getSupersession(table, code, locale));
             } else {
                 identifier = new ImmutableIdentifier(authority, Constants.EPSG, codeString, version,
                                     (gn != null) ? gn.toInternationalString() : null);
@@ -993,7 +985,7 @@ addURIs:    for (int i=0; ; i++) {
          * record is really from the table we are looking for since different tables may have objects with the same ID.
          */
         final List<GenericName> aliases = new ArrayList<>();
-        try (ResultSet result = executeQuery("[Alias]",
+        try (ResultSet result = executeQuery("Alias",
                 "SELECT OBJECT_TABLE_NAME, NAMING_SYSTEM_NAME, ALIAS" +
                 " FROM [Alias] INNER JOIN [Naming System]" +
                   " ON [Alias].NAMING_SYSTEM_CODE =" +
@@ -1164,7 +1156,7 @@ addURIs:    for (int i=0; ; i++) {
     {
         ArgumentChecks.ensureNonNull("code", code);
         CoordinateReferenceSystem returnValue = null;
-        try (ResultSet result = executeQuery("[Coordinate Reference System]", "COORD_REF_SYS_CODE", "COORD_REF_SYS_NAME",
+        try (ResultSet result = executeQuery("Coordinate Reference System", "COORD_REF_SYS_CODE", "COORD_REF_SYS_NAME",
                 "SELECT COORD_REF_SYS_CODE,"          +     // [ 1]
                       " COORD_REF_SYS_NAME,"          +     // [ 2]
                       " AREA_OF_USE_CODE,"            +     // [ 3]
@@ -1219,7 +1211,7 @@ addURIs:    for (int i=0; ; i++) {
                                 endOfRecursivity(GeographicCRS.class, epsg);
                             }
                         }
-                        crs = crsFactory.createGeographicCRS(createProperties("[Coordinate Reference System]",
+                        crs = crsFactory.createGeographicCRS(createProperties("Coordinate Reference System",
                                 name, epsg, area, scope, remarks, deprecated), datum, cs);
                         break;
                     }
@@ -1240,7 +1232,7 @@ addURIs:    for (int i=0; ; i++) {
                             final GeographicCRS baseCRS  = parent.createGeographicCRS(geoCode);
                             final CoordinateOperation op = parent.createCoordinateOperation(opCode);
                             if (op instanceof Conversion) {
-                                crs = crsFactory.createProjectedCRS(createProperties("[Coordinate Reference System]",
+                                crs = crsFactory.createProjectedCRS(createProperties("Coordinate Reference System",
                                         name, epsg, area, scope, remarks, deprecated), baseCRS, (Conversion) op, cs);
                             } else {
                                 throw noSuchAuthorityCode(Projection.class, opCode);
@@ -1256,7 +1248,7 @@ addURIs:    for (int i=0; ; i++) {
                     case "vertical": {
                         final VerticalCS    cs    = parent.createVerticalCS   (getString(code, result, 8));
                         final VerticalDatum datum = parent.createVerticalDatum(getString(code, result, 9));
-                        crs = crsFactory.createVerticalCRS(createProperties("[Coordinate Reference System]",
+                        crs = crsFactory.createVerticalCRS(createProperties("Coordinate Reference System",
                                 name, epsg, area, scope, remarks, deprecated), datum, cs);
                         break;
                     }
@@ -1270,7 +1262,7 @@ addURIs:    for (int i=0; ; i++) {
                     case "temporal": {
                         final TimeCS        cs    = parent.createTimeCS       (getString(code, result, 8));
                         final TemporalDatum datum = parent.createTemporalDatum(getString(code, result, 9));
-                        crs = crsFactory.createTemporalCRS(createProperties("[Coordinate Reference System]",
+                        crs = crsFactory.createTemporalCRS(createProperties("Coordinate Reference System",
                                 name, epsg, area, scope, remarks, deprecated), datum, cs);
                         break;
                     }
@@ -1293,7 +1285,7 @@ addURIs:    for (int i=0; ; i++) {
                             endOfRecursivity(CompoundCRS.class, epsg);
                         }
                         // Note: Do not invoke 'createProperties' sooner.
-                        crs  = crsFactory.createCompoundCRS(createProperties("[Coordinate Reference System]",
+                        crs  = crsFactory.createCompoundCRS(createProperties("Coordinate Reference System",
                                 name, epsg, area, scope, remarks, deprecated), crs1, crs2);
                         break;
                     }
@@ -1303,7 +1295,7 @@ addURIs:    for (int i=0; ; i++) {
                     case "geocentric": {
                         final CoordinateSystem cs = parent.createCoordinateSystem(getString(code, result, 8));
                         final GeodeticDatum datum = parent.createGeodeticDatum   (getString(code, result, 9));
-                        final Map<String,Object> properties = createProperties("[Coordinate Reference System]",
+                        final Map<String,Object> properties = createProperties("Coordinate Reference System",
                                 name, epsg, area, scope, remarks, deprecated);
                         if (cs instanceof CartesianCS) {
                             crs = crsFactory.createGeocentricCRS(properties, datum, (CartesianCS) cs);
@@ -1321,7 +1313,7 @@ addURIs:    for (int i=0; ; i++) {
                     case "engineering": {
                         final CoordinateSystem cs    = parent.createCoordinateSystem(getString(code, result, 8));
                         final EngineeringDatum datum = parent.createEngineeringDatum(getString(code, result, 9));
-                        crs = crsFactory.createEngineeringCRS(createProperties("[Coordinate Reference System]",
+                        crs = crsFactory.createEngineeringCRS(createProperties("Coordinate Reference System",
                                 name, epsg, area, scope, remarks, deprecated), datum, cs);
                         break;
                     }
@@ -1374,7 +1366,7 @@ addURIs:    for (int i=0; ; i++) {
     public synchronized Datum createDatum(final String code) throws NoSuchAuthorityCodeException, FactoryException {
         ArgumentChecks.ensureNonNull("code", code);
         Datum returnValue = null;
-        try (ResultSet result = executeQuery("[Datum]", "DATUM_CODE", "DATUM_NAME",
+        try (ResultSet result = executeQuery("Datum", "DATUM_CODE", "DATUM_NAME",
                 "SELECT DATUM_CODE," +
                       " DATUM_NAME," +
                       " DATUM_TYPE," +
@@ -1399,7 +1391,7 @@ addURIs:    for (int i=0; ; i++) {
                 final String  scope      = getOptionalString (result, 7);
                 final String  remarks    = getOptionalString (result, 8);
                 final boolean deprecated = getOptionalBoolean(result, 9);
-                Map<String,Object> properties = createProperties("[Datum]",
+                Map<String,Object> properties = createProperties("Datum",
                         name, epsg, area, scope, remarks, deprecated);
                 if (anchor != null) {
                     properties.put(Datum.ANCHOR_POINT_KEY, anchor);
@@ -1617,7 +1609,7 @@ addURIs:    for (int i=0; ; i++) {
     {
         ArgumentChecks.ensureNonNull("code", code);
         Ellipsoid returnValue = null;
-        try (ResultSet result = executeQuery("[Ellipsoid]", "ELLIPSOID_CODE", "ELLIPSOID_NAME",
+        try (ResultSet result = executeQuery("Ellipsoid", "ELLIPSOID_CODE", "ELLIPSOID_NAME",
                 "SELECT ELLIPSOID_CODE," +
                       " ELLIPSOID_NAME," +
                       " SEMI_MAJOR_AXIS," +
@@ -1644,7 +1636,7 @@ addURIs:    for (int i=0; ; i++) {
                 final String  remarks           = getOptionalString (result, 7);
                 final boolean deprecated        = getOptionalBoolean(result, 8);
                 final Unit<Length> unit         = parent.createUnit(unitCode).asType(Length.class);
-                final Map<String,Object> properties = createProperties("[Ellipsoid]", name, epsg, remarks, deprecated);
+                final Map<String,Object> properties = createProperties("Ellipsoid", name, epsg, remarks, deprecated);
                 final Ellipsoid ellipsoid;
                 if (Double.isNaN(inverseFlattening)) {
                     if (Double.isNaN(semiMinorAxis)) {
@@ -1706,7 +1698,7 @@ addURIs:    for (int i=0; ; i++) {
     {
         ArgumentChecks.ensureNonNull("code", code);
         PrimeMeridian returnValue = null;
-        try (ResultSet result = executeQuery("[Prime Meridian]", "PRIME_MERIDIAN_CODE", "PRIME_MERIDIAN_NAME",
+        try (ResultSet result = executeQuery("Prime Meridian", "PRIME_MERIDIAN_CODE", "PRIME_MERIDIAN_NAME",
                 "SELECT PRIME_MERIDIAN_CODE," +
                       " PRIME_MERIDIAN_NAME," +
                       " GREENWICH_LONGITUDE," +
@@ -1725,7 +1717,7 @@ addURIs:    for (int i=0; ; i++) {
                 final boolean deprecated = getOptionalBoolean(result, 6);
                 final Unit<Angle> unit = parent.createUnit(unitCode).asType(Angle.class);
                 final PrimeMeridian primeMeridian = parent.datumFactory.createPrimeMeridian(
-                        createProperties("[Prime Meridian]", name, epsg, remarks, deprecated), longitude, unit);
+                        createProperties("Prime Meridian", name, epsg, remarks, deprecated), longitude, unit);
                 returnValue = ensureSingleton(primeMeridian, returnValue, code);
             }
         } catch (SQLException exception) {
@@ -1764,7 +1756,7 @@ addURIs:    for (int i=0; ; i++) {
     {
         ArgumentChecks.ensureNonNull("code", code);
         Extent returnValue = null;
-        try (ResultSet result = executeQuery("[Area]", "AREA_CODE", "AREA_NAME",
+        try (ResultSet result = executeQuery("Area", "AREA_CODE", "AREA_NAME",
                 "SELECT AREA_OF_USE," +
                       " AREA_SOUTH_BOUND_LAT," +
                       " AREA_NORTH_BOUND_LAT," +
@@ -1843,7 +1835,7 @@ addURIs:    for (int i=0; ; i++) {
     {
         ArgumentChecks.ensureNonNull("code", code);
         CoordinateSystem returnValue = null;
-        try (ResultSet result = executeQuery("[Coordinate System]", "COORD_SYS_CODE", "COORD_SYS_NAME",
+        try (ResultSet result = executeQuery("Coordinate System", "COORD_SYS_CODE", "COORD_SYS_NAME",
                 "SELECT COORD_SYS_CODE," +
                       " COORD_SYS_NAME," +
                       " COORD_SYS_TYPE," +
@@ -1861,8 +1853,7 @@ addURIs:    for (int i=0; ; i++) {
                 final String  remarks    = getOptionalString (result, 5);
                 final boolean deprecated = getOptionalBoolean(result, 6);
                 final CoordinateSystemAxis[] axes = createCoordinateSystemAxes(epsg, dimension);
-                final Map<String,Object> properties = createProperties("[Coordinate System]",    // Must be after axes.
-                                                            name, epsg, remarks, deprecated);
+                final Map<String,Object> properties = createProperties("Coordinate System", name, epsg, remarks, deprecated);   // Must be after axes.
                 final CSFactory csFactory = parent.csFactory;
                 CoordinateSystem cs = null;
                 switch (type.toLowerCase(Locale.US)) {
@@ -2035,7 +2026,7 @@ addURIs:    for (int i=0; ; i++) {
     {
         ArgumentChecks.ensureNonNull("code", code);
         CoordinateSystemAxis returnValue = null;
-        try (ResultSet result = executeQuery("[Coordinate Axis]", "COORD_AXIS_CODE", null,
+        try (ResultSet result = executeQuery("Coordinate Axis", "COORD_AXIS_CODE", null,
                 "SELECT COORD_AXIS_CODE," +
                       " COORD_AXIS_NAME_CODE," +
                       " COORD_AXIS_ORIENTATION," +
@@ -2058,7 +2049,7 @@ addURIs:    for (int i=0; ; i++) {
                 }
                 final AxisName an = getAxisName(nameCode);
                 final CoordinateSystemAxis axis = parent.csFactory.createCoordinateSystemAxis(
-                        createProperties("[Coordinate Axis]", an.name, epsg, an.description, false),
+                        createProperties("Coordinate Axis", an.name, epsg, an.description, false),
                         abbreviation, direction, parent.createUnit(unit));
                 returnValue = ensureSingleton(axis, returnValue, code);
             }
@@ -2079,7 +2070,7 @@ addURIs:    for (int i=0; ; i++) {
         assert Thread.holdsLock(this);
         AxisName returnValue = axisNames.get(code);
         if (returnValue == null) {
-            try (ResultSet result = executeQuery("[Coordinate Axis Name]",
+            try (ResultSet result = executeQuery("Coordinate Axis Name",
                     "SELECT COORD_AXIS_NAME, DESCRIPTION, REMARKS" +
                     " FROM [Coordinate Axis Name]" +
                     " WHERE COORD_AXIS_NAME_CODE = ?", code))
@@ -2135,7 +2126,7 @@ addURIs:    for (int i=0; ; i++) {
     public synchronized Unit<?> createUnit(final String code) throws NoSuchAuthorityCodeException, FactoryException {
         ArgumentChecks.ensureNonNull("code", code);
         Unit<?> returnValue = null;
-        try (ResultSet result = executeQuery("[Unit of Measure]", "UOM_CODE", "UNIT_OF_MEAS_NAME",
+        try (ResultSet result = executeQuery("Unit of Measure", "UOM_CODE", "UNIT_OF_MEAS_NAME",
                 "SELECT UOM_CODE," +
                       " FACTOR_B," +
                       " FACTOR_C," +
@@ -2210,7 +2201,7 @@ addURIs:    for (int i=0; ; i++) {
     {
         ArgumentChecks.ensureNonNull("code", code);
         ParameterDescriptor<?> returnValue = null;
-        try (ResultSet result = executeQuery("[Coordinate_Operation Parameter]", "PARAMETER_CODE", "PARAMETER_NAME",
+        try (ResultSet result = executeQuery("Coordinate_Operation Parameter", "PARAMETER_CODE", "PARAMETER_NAME",
                 "SELECT PARAMETER_CODE," +
                       " PARAMETER_NAME," +
                       " DESCRIPTION," +
@@ -2255,7 +2246,7 @@ addURIs:    for (int i=0; ; i++) {
                  * Now creates the parameter descriptor.
                  */
                 final ParameterDescriptor<?> descriptor = new DefaultParameterDescriptor<>(
-                        createProperties("[Coordinate_Operation Parameter]", name, epsg, remarks, deprecated),
+                        createProperties("Coordinate_Operation Parameter", name, epsg, remarks, deprecated),
                         1, 1, type, valueDomain, null, null);
                 returnValue = ensureSingleton(descriptor, returnValue, code);
             }
@@ -2277,7 +2268,7 @@ addURIs:    for (int i=0; ; i++) {
      */
     private ParameterDescriptor<?>[] createParameterDescriptors(final Integer method) throws FactoryException, SQLException {
         final List<ParameterDescriptor<?>> descriptors = new ArrayList<>();
-        try (ResultSet result = executeQuery("[Coordinate_Operation Parameter Usage]",
+        try (ResultSet result = executeQuery("Coordinate_Operation Parameter Usage",
                 "SELECT PARAMETER_CODE" +
                 " FROM [Coordinate_Operation Parameter Usage]" +
                 " WHERE COORD_OP_METHOD_CODE = ?" +
@@ -2301,7 +2292,7 @@ addURIs:    for (int i=0; ; i++) {
     private void fillParameterValues(final Integer method, final Integer operation, final ParameterValueGroup parameters)
             throws FactoryException, SQLException
     {
-        try (ResultSet result = executeQuery("[Coordinate_Operation Parameter Value]",
+        try (ResultSet result = executeQuery("Coordinate_Operation Parameter Value",
                 "SELECT CP.PARAMETER_NAME," +
                       " CV.PARAMETER_VALUE," +
                       " CV.PARAM_VALUE_FILE_REF," +
@@ -2394,7 +2385,7 @@ addURIs:    for (int i=0; ; i++) {
     {
         ArgumentChecks.ensureNonNull("code", code);
         OperationMethod returnValue = null;
-        try (ResultSet result = executeQuery("[Coordinate_Operation Method]", "COORD_OP_METHOD_CODE", "COORD_OP_METHOD_NAME",
+        try (ResultSet result = executeQuery("Coordinate_Operation Method", "COORD_OP_METHOD_CODE", "COORD_OP_METHOD_NAME",
                 "SELECT COORD_OP_METHOD_CODE," +
                       " COORD_OP_METHOD_NAME," +
                       " FORMULA," +
@@ -2411,7 +2402,7 @@ addURIs:    for (int i=0; ; i++) {
                 final boolean deprecated = getOptionalBoolean(result, 5);
                 final Integer[] dim = getDimensionsForMethod(epsg);
                 final ParameterDescriptor<?>[] descriptors = createParameterDescriptors(epsg);
-                Map<String,Object> properties = createProperties("[Coordinate_Operation Method]", name, epsg, remarks, deprecated);
+                Map<String,Object> properties = createProperties("Coordinate_Operation Method", name, epsg, remarks, deprecated);
                 properties.put(OperationMethod.FORMULA_KEY, formula);
                 final OperationMethod method = new DefaultOperationMethod(properties, dim[0], dim[1],
                             new DefaultParameterDescriptorGroup(properties, 1, 1, descriptors));
@@ -2453,7 +2444,7 @@ addURIs:    for (int i=0; ; i++) {
         ArgumentChecks.ensureNonNull("code", code);
         CoordinateOperation returnValue = null;
         try {
-            try (ResultSet result = executeQuery("[Coordinate_Operation]", "COORD_OP_CODE", "COORD_OP_NAME",
+            try (ResultSet result = executeQuery("Coordinate_Operation", "COORD_OP_CODE", "COORD_OP_NAME",
                     "SELECT COORD_OP_CODE," +
                           " COORD_OP_NAME," +
                           " COORD_OP_TYPE," +
@@ -2547,16 +2538,12 @@ addURIs:    for (int i=0; ; i++) {
                      *       methods like createCoordinateReferenceSystem and createOperationMethod
                      *       overwrite the properties map.
                      */
-                    Map<String,Object> opProperties = createProperties("[Coordinate_Operation]",
+                    Map<String,Object> opProperties = createProperties("Coordinate_Operation",
                             name, epsg, area, scope, remarks, deprecated);
                     opProperties.put(CoordinateOperation.OPERATION_VERSION_KEY, version);
                     if (!Double.isNaN(accuracy)) {
-                        PositionalAccuracy element = accuracies.get(accuracy);
-                        if (element == null) {
-                            element = TransformationAccuracy.create(accuracy);
-                            accuracies.put(accuracy, element);
-                        }
-                        opProperties.put(CoordinateOperation.COORDINATE_OPERATION_ACCURACY_KEY, element);
+                        opProperties.put(CoordinateOperation.COORDINATE_OPERATION_ACCURACY_KEY,
+                                TransformationAccuracy.create(accuracy));
                     }
                     /*
                      * Creates the operation. Conversions should be the only operations allowed to have
@@ -2575,7 +2562,7 @@ addURIs:    for (int i=0; ; i++) {
                         result.close();
                         opProperties = new HashMap<>(opProperties);     // Because this class uses a shared map.
                         final List<String> codes = new ArrayList<>();
-                        try (ResultSet cr = executeQuery("[Coordinate_Operation Path]",
+                        try (ResultSet cr = executeQuery("Coordinate_Operation Path",
                                 "SELECT SINGLE_OPERATION_CODE" +
                                  " FROM [Coordinate_Operation Path]" +
                                 " WHERE (CONCAT_OPERATION_CODE = ?)" +
@@ -2783,12 +2770,12 @@ addURIs:    for (int i=0; ; i++) {
         @Override
         protected Set<String> getCodeCandidates(final IdentifiedObject object) throws FactoryException {
             String select = "COORD_REF_SYS_CODE";
-            String from   = "[Coordinate Reference System]";
+            String from   = "Coordinate Reference System";
             final String where;
             final Comparable<?> code;
             if (object instanceof Ellipsoid) {
                 select = "ELLIPSOID_CODE";
-                from   = "[Ellipsoid]";
+                from   = "Ellipsoid";
                 where  = "SEMI_MAJOR_AXIS";
                 code   = ((Ellipsoid) object).getSemiMajorAxis();
             } else {
@@ -2802,7 +2789,7 @@ addURIs:    for (int i=0; ; i++) {
                 } else if (object instanceof GeodeticDatum) {
                     dependency = ((GeodeticDatum) object).getEllipsoid();
                     select     = "DATUM_CODE";
-                    from       = "[Datum]";
+                    from       = "Datum";
                     where      = "ELLIPSOID_CODE";
                 } else {
                     // Not a supported type. Returns all codes.
@@ -2843,7 +2830,7 @@ addURIs:    for (int i=0; ; i++) {
              *   with a tolerance threshold of 1 cm for a planet of the size of Earth.
              */
             final StringBuilder buffer = new StringBuilder(60);
-            buffer.append("SELECT ").append(select).append(" FROM ").append(from).append(" WHERE ").append(where);
+            buffer.append("SELECT ").append(select).append(" FROM [").append(from).append("] WHERE ").append(where);
             if (code instanceof Number) {
                 final double value = ((Number) code).doubleValue();
                 final double tolerance = Math.abs(value * (Formulas.LINEAR_TOLERANCE / ReferencingServices.AUTHALIC_RADIUS));
@@ -2984,7 +2971,7 @@ addURIs:    for (int i=0; ; i++) {
             boolean changed = false;
             for (int i=0; i<codes.length; i++) {
                 final String code = codes[i].toString();
-                try (ResultSet result = executeQuery("[Supersession]", null, null,
+                try (ResultSet result = executeQuery("Supersession", null, null,
                         "SELECT SUPERSEDED_BY" +
                         " FROM [Supersession]" +
                         " WHERE OBJECT_CODE = ?" +

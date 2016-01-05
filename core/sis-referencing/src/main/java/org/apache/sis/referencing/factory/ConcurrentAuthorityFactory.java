@@ -22,11 +22,13 @@ import java.util.Deque;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.WeakHashMap;
+import java.util.IdentityHashMap;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import java.lang.ref.WeakReference;
 import java.lang.ref.PhantomReference;
 import java.io.PrintWriter;
+import java.lang.reflect.Method;
 import javax.measure.unit.Unit;
 import org.opengis.referencing.cs.*;
 import org.opengis.referencing.crs.*;
@@ -96,6 +98,14 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      * The authority, cached after first requested.
      */
     private transient volatile Citation authority;
+
+    /**
+     * The {@code createFoo(String)} methods that are <strong>not</strong> overridden in the Data Access Object (DAO).
+     * This map is created at construction time and should not be modified after construction.
+     *
+     * @see #isDefault(Class)
+     */
+    private final Map<Class<?>,Boolean> inherited = new IdentityHashMap<>();
 
     /**
      * The pool of cached objects.
@@ -207,7 +217,7 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      *
      * @see #getTimeout(TimeUnit)
      */
-    private long timeout = 60_000_000_000L;     // One minute
+    private long timeout = 10_000_000_000L;     // 10 seconds
 
     /**
      * The maximal difference between the scheduled time and the actual time in order to perform the factory disposal,
@@ -220,10 +230,11 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      * by strong references. Note that those default values may change in any future SIS versions based
      * on experience gained.
      *
+     * @param dataAccessClass The class of Data Access Object (DAO) created by {@link #newDataAccess()}.
      * @param nameFactory The factory to use for parsing authority codes as {@link org.opengis.util.GenericName} instances.
      */
-    protected ConcurrentAuthorityFactory(final NameFactory nameFactory) {
-        this(nameFactory, 100, 8);
+    protected ConcurrentAuthorityFactory(Class<? extends GeodeticAuthorityFactory> dataAccessClass, NameFactory nameFactory) {
+        this(dataAccessClass, nameFactory, 100, 8);
         /*
          * NOTE: if the default maximum number of Data Access Objects (currently 8) is augmented,
          * make sure to augment the number of runner threads in the "StressTest" class to a greater amount.
@@ -235,26 +246,40 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      * If a number of object greater than {@code maxStrongReferences} are created, then the strong references
      * for the eldest ones will be replaced by weak references.
      *
+     * @param dataAccessClass The class of Data Access Object (DAO) created by {@link #newDataAccess()}.
      * @param nameFactory The factory to use for parsing authority code as {@link org.opengis.util.GenericName} instances.
      * @param maxStrongReferences The maximum number of objects to keep by strong reference.
      * @param maxConcurrentQueries The maximal amount of Data Access Objects to use concurrently.
      *        If more than this amount of threads are querying this {@code ConcurrentAuthorityFactory} concurrently,
      *        additional threads will be blocked until a Data Access Object become available.
      */
-    protected ConcurrentAuthorityFactory(final NameFactory nameFactory,
-            final int maxStrongReferences, final int maxConcurrentQueries)
+    protected ConcurrentAuthorityFactory(final Class<? extends GeodeticAuthorityFactory> dataAccessClass,
+            final NameFactory nameFactory, final int maxStrongReferences, final int maxConcurrentQueries)
     {
         super(nameFactory);
+        ArgumentChecks.ensureNonNull("dataAccessClass", dataAccessClass);
         ArgumentChecks.ensurePositive("maxStrongReferences", maxStrongReferences);
         ArgumentChecks.ensureStrictlyPositive("maxConcurrentQueries", maxConcurrentQueries);
-        remainingDAOs = maxConcurrentQueries;
-        cache = new Cache<>(20, maxStrongReferences, false);
         /*
+         * Detect which methods in the DAO have been overridden.
+         */
+        for (final Method method : dataAccessClass.getMethods()) {
+            if (method.getDeclaringClass() == GeodeticAuthorityFactory.class && method.getName().startsWith("create")) {
+                final Class<?>[] p = method.getParameterTypes();
+                if (p.length == 1 && p[0] == String.class) {
+                    inherited.put(method.getReturnType(), Boolean.TRUE);
+                }
+            }
+        }
+        /*
+         * Create a cache allowing key collisions.
          * Key collision is usually an error. But in this case we allow them in order to enable recursivity.
          * If during the creation of an object the program asks to this ConcurrentAuthorityFactory for the same
          * object (using the same key), then the default Cache implementation considers that situation as an
          * error unless the above property has been set to 'true'.
          */
+        remainingDAOs = maxConcurrentQueries;
+        cache = new Cache<>(20, maxStrongReferences, false);
         cache.setKeyCollisionAllowed(true);
         /*
          * The shutdown hook serves two purposes:
@@ -613,6 +638,17 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
     }
 
     /**
+     * Returns {@code true} if the Data Access Object (DAO) does not provide a {@code create} method for the
+     * given type of object. The intend is to decide if the caller should delegate to the DAO or delegate to
+     * a more generic method of this class (e.g. {@code createCoordinateReferenceSystem(String)} instead of
+     * {@code createGeographicCRS(String)}) in order to give to {@code ConcurrentAuthorityFactory} a chance
+     * to reuse a value presents in the cache.
+     */
+    private boolean isDefault(final Class<?> type) {
+        return inherited.containsKey(type);
+    }
+
+    /**
      * Returns an arbitrary object from a code.
      * The default implementation performs the following steps:
      * <ul>
@@ -639,9 +675,12 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      * Returns an arbitrary coordinate reference system from a code.
      * The default implementation performs the following steps:
      * <ul>
-     *   <li>Returns the cached instance for the given code if such instance already exists.</li>
+     *   <li>Return the cached instance for the given code if such instance already exists.</li>
+     *   <li>Otherwise if the Data Access Object (DAO) overrides the {@code createCoordinateReferenceSystem(String)}
+     *       method, invoke that method and cache the result for future use.</li>
      *   <li>Otherwise delegate to the {@link GeodeticAuthorityFactory#createCoordinateReferenceSystem(String)}
-     *       method of a Data Access Object and cache the result for future use.</li>
+     *       method in the parent class. This allows to check if the more generic
+     *       {@link #createObject(String)} method cached a value before to try that method.</li>
      * </ul>
      *
      * @return The coordinate reference system for the given code.
@@ -649,6 +688,9 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      */
     @Override
     public CoordinateReferenceSystem createCoordinateReferenceSystem(final String code) throws FactoryException {
+        if (isDefault(CoordinateReferenceSystem.class)) {
+            return super.createCoordinateReferenceSystem(code);
+        }
         return create(AuthorityFactoryProxy.CRS, code);
     }
 
@@ -656,9 +698,12 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      * Returns a geographic coordinate reference system from a code.
      * The default implementation performs the following steps:
      * <ul>
-     *   <li>Returns the cached instance for the given code if such instance already exists.</li>
+     *   <li>Return the cached instance for the given code if such instance already exists.</li>
+     *   <li>Otherwise if the Data Access Object (DAO) overrides the {@code createGeographicCRS(String)}
+     *       method, invoke that method and cache the result for future use.</li>
      *   <li>Otherwise delegate to the {@link GeodeticAuthorityFactory#createGeographicCRS(String)}
-     *       method of a Data Access Object and cache the result for future use.</li>
+     *       method in the parent class. This allows to check if the more generic
+     *       {@link #createCoordinateReferenceSystem(String)} method cached a value before to try that method.</li>
      * </ul>
      *
      * @return The coordinate reference system for the given code.
@@ -666,6 +711,9 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      */
     @Override
     public GeographicCRS createGeographicCRS(final String code) throws FactoryException {
+        if (isDefault(GeographicCRS.class)) {
+            return super.createGeographicCRS(code);
+        }
         return create(AuthorityFactoryProxy.GEOGRAPHIC_CRS, code);
     }
 
@@ -673,9 +721,12 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      * Returns a geocentric coordinate reference system from a code.
      * The default implementation performs the following steps:
      * <ul>
-     *   <li>Returns the cached instance for the given code if such instance already exists.</li>
+     *   <li>Return the cached instance for the given code if such instance already exists.</li>
+     *   <li>Otherwise if the Data Access Object (DAO) overrides the {@code createGeocentricCRS(String)}
+     *       method, invoke that method and cache the result for future use.</li>
      *   <li>Otherwise delegate to the {@link GeodeticAuthorityFactory#createGeocentricCRS(String)}
-     *       method of a Data Access Object and cache the result for future use.</li>
+     *       method in the parent class. This allows to check if the more generic
+     *       {@link #createCoordinateReferenceSystem(String)} method cached a value before to try that method.</li>
      * </ul>
      *
      * @return The coordinate reference system for the given code.
@@ -683,6 +734,9 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      */
     @Override
     public GeocentricCRS createGeocentricCRS(final String code) throws FactoryException {
+        if (isDefault(GeocentricCRS.class)) {
+            return super.createGeocentricCRS(code);
+        }
         return create(AuthorityFactoryProxy.GEOCENTRIC_CRS, code);
     }
 
@@ -690,9 +744,12 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      * Returns a projected coordinate reference system from a code.
      * The default implementation performs the following steps:
      * <ul>
-     *   <li>Returns the cached instance for the given code if such instance already exists.</li>
+     *   <li>Return the cached instance for the given code if such instance already exists.</li>
+     *   <li>Otherwise if the Data Access Object (DAO) overrides the {@code createProjectedCRS(String)}
+     *       method, invoke that method and cache the result for future use.</li>
      *   <li>Otherwise delegate to the {@link GeodeticAuthorityFactory#createProjectedCRS(String)}
-     *       method of a Data Access Object and cache the result for future use.</li>
+     *       method in the parent class. This allows to check if the more generic
+     *       {@link #createCoordinateReferenceSystem(String)} method cached a value before to try that method.</li>
      * </ul>
      *
      * @return The coordinate reference system for the given code.
@@ -700,6 +757,9 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      */
     @Override
     public ProjectedCRS createProjectedCRS(final String code) throws FactoryException {
+        if (isDefault(ProjectedCRS.class)) {
+            return super.createProjectedCRS(code);
+        }
         return create(AuthorityFactoryProxy.PROJECTED_CRS, code);
     }
 
@@ -707,9 +767,12 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      * Returns a vertical coordinate reference system from a code.
      * The default implementation performs the following steps:
      * <ul>
-     *   <li>Returns the cached instance for the given code if such instance already exists.</li>
+     *   <li>Return the cached instance for the given code if such instance already exists.</li>
+     *   <li>Otherwise if the Data Access Object (DAO) overrides the {@code createVerticalCRS(String)}
+     *       method, invoke that method and cache the result for future use.</li>
      *   <li>Otherwise delegate to the {@link GeodeticAuthorityFactory#createVerticalCRS(String)}
-     *       method of a Data Access Object and cache the result for future use.</li>
+     *       method in the parent class. This allows to check if the more generic
+     *       {@link #createCoordinateReferenceSystem(String)} method cached a value before to try that method.</li>
      * </ul>
      *
      * @return The coordinate reference system for the given code.
@@ -717,6 +780,9 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      */
     @Override
     public VerticalCRS createVerticalCRS(final String code) throws FactoryException {
+        if (isDefault(VerticalCRS.class)) {
+            return super.createVerticalCRS(code);
+        }
         return create(AuthorityFactoryProxy.VERTICAL_CRS, code);
     }
 
@@ -724,9 +790,12 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      * Returns a temporal coordinate reference system from a code.
      * The default implementation performs the following steps:
      * <ul>
-     *   <li>Returns the cached instance for the given code if such instance already exists.</li>
+     *   <li>Return the cached instance for the given code if such instance already exists.</li>
+     *   <li>Otherwise if the Data Access Object (DAO) overrides the {@code createTemporalCRS(String)}
+     *       method, invoke that method and cache the result for future use.</li>
      *   <li>Otherwise delegate to the {@link GeodeticAuthorityFactory#createTemporalCRS(String)}
-     *       method of a Data Access Object and cache the result for future use.</li>
+     *       method in the parent class. This allows to check if the more generic
+     *       {@link #createCoordinateReferenceSystem(String)} method cached a value before to try that method.</li>
      * </ul>
      *
      * @return The coordinate reference system for the given code.
@@ -734,6 +803,9 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      */
     @Override
     public TemporalCRS createTemporalCRS(final String code) throws FactoryException {
+        if (isDefault(TemporalCRS.class)) {
+            return super.createTemporalCRS(code);
+        }
         return create(AuthorityFactoryProxy.TEMPORAL_CRS, code);
     }
 
@@ -741,9 +813,12 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      * Returns a 3D or 4D coordinate reference system from a code.
      * The default implementation performs the following steps:
      * <ul>
-     *   <li>Returns the cached instance for the given code if such instance already exists.</li>
+     *   <li>Return the cached instance for the given code if such instance already exists.</li>
+     *   <li>Otherwise if the Data Access Object (DAO) overrides the {@code createCompoundCRS(String)}
+     *       method, invoke that method and cache the result for future use.</li>
      *   <li>Otherwise delegate to the {@link GeodeticAuthorityFactory#createCompoundCRS(String)}
-     *       method of a Data Access Object and cache the result for future use.</li>
+     *       method in the parent class. This allows to check if the more generic
+     *       {@link #createCoordinateReferenceSystem(String)} method cached a value before to try that method.</li>
      * </ul>
      *
      * @return The coordinate reference system for the given code.
@@ -751,6 +826,9 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      */
     @Override
     public CompoundCRS createCompoundCRS(final String code) throws FactoryException {
+        if (isDefault(CompoundCRS.class)) {
+            return super.createCompoundCRS(code);
+        }
         return create(AuthorityFactoryProxy.COMPOUND_CRS, code);
     }
 
@@ -758,9 +836,12 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      * Returns a derived coordinate reference system from a code.
      * The default implementation performs the following steps:
      * <ul>
-     *   <li>Returns the cached instance for the given code if such instance already exists.</li>
+     *   <li>Return the cached instance for the given code if such instance already exists.</li>
+     *   <li>Otherwise if the Data Access Object (DAO) overrides the {@code createDerivedCRS(String)}
+     *       method, invoke that method and cache the result for future use.</li>
      *   <li>Otherwise delegate to the {@link GeodeticAuthorityFactory#createDerivedCRS(String)}
-     *       method of a Data Access Object and cache the result for future use.</li>
+     *       method in the parent class. This allows to check if the more generic
+     *       {@link #createCoordinateReferenceSystem(String)} method cached a value before to try that method.</li>
      * </ul>
      *
      * @return The coordinate reference system for the given code.
@@ -768,6 +849,9 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      */
     @Override
     public DerivedCRS createDerivedCRS(final String code) throws FactoryException {
+        if (isDefault(DerivedCRS.class)) {
+            return super.createDerivedCRS(code);
+        }
         return create(AuthorityFactoryProxy.DERIVED_CRS, code);
     }
 
@@ -775,9 +859,12 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      * Returns an engineering coordinate reference system from a code.
      * The default implementation performs the following steps:
      * <ul>
-     *   <li>Returns the cached instance for the given code if such instance already exists.</li>
+     *   <li>Return the cached instance for the given code if such instance already exists.</li>
+     *   <li>Otherwise if the Data Access Object (DAO) overrides the {@code createEngineeringCRS(String)}
+     *       method, invoke that method and cache the result for future use.</li>
      *   <li>Otherwise delegate to the {@link GeodeticAuthorityFactory#createEngineeringCRS(String)}
-     *       method of a Data Access Object and cache the result for future use.</li>
+     *       method in the parent class. This allows to check if the more generic
+     *       {@link #createCoordinateReferenceSystem(String)} method cached a value before to try that method.</li>
      * </ul>
      *
      * @return The coordinate reference system for the given code.
@@ -785,6 +872,9 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      */
     @Override
     public EngineeringCRS createEngineeringCRS(final String code) throws FactoryException {
+        if (isDefault(EngineeringCRS.class)) {
+            return super.createEngineeringCRS(code);
+        }
         return create(AuthorityFactoryProxy.ENGINEERING_CRS, code);
     }
 
@@ -792,9 +882,12 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      * Returns an image coordinate reference system from a code.
      * The default implementation performs the following steps:
      * <ul>
-     *   <li>Returns the cached instance for the given code if such instance already exists.</li>
+     *   <li>Return the cached instance for the given code if such instance already exists.</li>
+     *   <li>Otherwise if the Data Access Object (DAO) overrides the {@code createImageCRS(String)}
+     *       method, invoke that method and cache the result for future use.</li>
      *   <li>Otherwise delegate to the {@link GeodeticAuthorityFactory#createImageCRS(String)}
-     *       method of a Data Access Object and cache the result for future use.</li>
+     *       method in the parent class. This allows to check if the more generic
+     *       {@link #createCoordinateReferenceSystem(String)} method cached a value before to try that method.</li>
      * </ul>
      *
      * @return The coordinate reference system for the given code.
@@ -802,6 +895,9 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      */
     @Override
     public ImageCRS createImageCRS(final String code) throws FactoryException {
+        if (isDefault(ImageCRS.class)) {
+            return super.createImageCRS(code);
+        }
         return create(AuthorityFactoryProxy.IMAGE_CRS, code);
     }
 
@@ -809,9 +905,12 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      * Returns an arbitrary datum from a code.
      * The default implementation performs the following steps:
      * <ul>
-     *   <li>Returns the cached instance for the given code if such instance already exists.</li>
+     *   <li>Return the cached instance for the given code if such instance already exists.</li>
+     *   <li>Otherwise if the Data Access Object (DAO) overrides the {@code createDatum(String)}
+     *       method, invoke that method and cache the result for future use.</li>
      *   <li>Otherwise delegate to the {@link GeodeticAuthorityFactory#createDatum(String)}
-     *       method of a Data Access Object and cache the result for future use.</li>
+     *       method in the parent class. This allows to check if the more generic
+     *       {@link #createObject(String)} method cached a value before to try that method.</li>
      * </ul>
      *
      * @return The datum for the given code.
@@ -819,6 +918,9 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      */
     @Override
     public Datum createDatum(final String code) throws FactoryException {
+        if (isDefault(Datum.class)) {
+            return super.createDatum(code);
+        }
         return create(AuthorityFactoryProxy.DATUM, code);
     }
 
@@ -826,9 +928,12 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      * Returns a geodetic datum from a code.
      * The default implementation performs the following steps:
      * <ul>
-     *   <li>Returns the cached instance for the given code if such instance already exists.</li>
+     *   <li>Return the cached instance for the given code if such instance already exists.</li>
+     *   <li>Otherwise if the Data Access Object (DAO) overrides the {@code createGeodeticDatum(String)}
+     *       method, invoke that method and cache the result for future use.</li>
      *   <li>Otherwise delegate to the {@link GeodeticAuthorityFactory#createGeodeticDatum(String)}
-     *       method of a Data Access Object and cache the result for future use.</li>
+     *       method in the parent class. This allows to check if the more generic
+     *       {@link #createDatum(String)} method cached a value before to try that method.</li>
      * </ul>
      *
      * @return The datum for the given code.
@@ -836,6 +941,9 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      */
     @Override
     public GeodeticDatum createGeodeticDatum(final String code) throws FactoryException {
+        if (isDefault(GeodeticDatum.class)) {
+            return super.createGeodeticDatum(code);
+        }
         return create(AuthorityFactoryProxy.GEODETIC_DATUM, code);
     }
 
@@ -843,9 +951,12 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      * Returns a vertical datum from a code.
      * The default implementation performs the following steps:
      * <ul>
-     *   <li>Returns the cached instance for the given code if such instance already exists.</li>
+     *   <li>Return the cached instance for the given code if such instance already exists.</li>
+     *   <li>Otherwise if the Data Access Object (DAO) overrides the {@code createVerticalDatum(String)}
+     *       method, invoke that method and cache the result for future use.</li>
      *   <li>Otherwise delegate to the {@link GeodeticAuthorityFactory#createVerticalDatum(String)}
-     *       method of a Data Access Object and cache the result for future use.</li>
+     *       method in the parent class. This allows to check if the more generic
+     *       {@link #createDatum(String)} method cached a value before to try that method.</li>
      * </ul>
      *
      * @return The datum for the given code.
@@ -853,6 +964,9 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      */
     @Override
     public VerticalDatum createVerticalDatum(final String code) throws FactoryException {
+        if (isDefault(VerticalDatum.class)) {
+            return super.createVerticalDatum(code);
+        }
         return create(AuthorityFactoryProxy.VERTICAL_DATUM, code);
     }
 
@@ -860,9 +974,12 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      * Returns a temporal datum from a code.
      * The default implementation performs the following steps:
      * <ul>
-     *   <li>Returns the cached instance for the given code if such instance already exists.</li>
+     *   <li>Return the cached instance for the given code if such instance already exists.</li>
+     *   <li>Otherwise if the Data Access Object (DAO) overrides the {@code createTemporalDatum(String)}
+     *       method, invoke that method and cache the result for future use.</li>
      *   <li>Otherwise delegate to the {@link GeodeticAuthorityFactory#createTemporalDatum(String)}
-     *       method of a Data Access Object and cache the result for future use.</li>
+     *       method in the parent class. This allows to check if the more generic
+     *       {@link #createDatum(String)} method cached a value before to try that method.</li>
      * </ul>
      *
      * @return The datum for the given code.
@@ -870,6 +987,9 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      */
     @Override
     public TemporalDatum createTemporalDatum(final String code) throws FactoryException {
+        if (isDefault(TemporalDatum.class)) {
+            return super.createTemporalDatum(code);
+        }
         return create(AuthorityFactoryProxy.TEMPORAL_DATUM, code);
     }
 
@@ -877,9 +997,12 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      * Returns an engineering datum from a code.
      * The default implementation performs the following steps:
      * <ul>
-     *   <li>Returns the cached instance for the given code if such instance already exists.</li>
+     *   <li>Return the cached instance for the given code if such instance already exists.</li>
+     *   <li>Otherwise if the Data Access Object (DAO) overrides the {@code createEngineeringDatum(String)}
+     *       method, invoke that method and cache the result for future use.</li>
      *   <li>Otherwise delegate to the {@link GeodeticAuthorityFactory#createEngineeringDatum(String)}
-     *       method of a Data Access Object and cache the result for future use.</li>
+     *       method in the parent class. This allows to check if the more generic
+     *       {@link #createDatum(String)} method cached a value before to try that method.</li>
      * </ul>
      *
      * @return The datum for the given code.
@@ -887,6 +1010,9 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      */
     @Override
     public EngineeringDatum createEngineeringDatum(final String code) throws FactoryException {
+        if (isDefault(EngineeringDatum.class)) {
+            return super.createEngineeringDatum(code);
+        }
         return create(AuthorityFactoryProxy.ENGINEERING_DATUM, code);
     }
 
@@ -894,9 +1020,12 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      * Returns an image datum from a code.
      * The default implementation performs the following steps:
      * <ul>
-     *   <li>Returns the cached instance for the given code if such instance already exists.</li>
+     *   <li>Return the cached instance for the given code if such instance already exists.</li>
+     *   <li>Otherwise if the Data Access Object (DAO) overrides the {@code createImageDatum(String)}
+     *       method, invoke that method and cache the result for future use.</li>
      *   <li>Otherwise delegate to the {@link GeodeticAuthorityFactory#createImageDatum(String)}
-     *       method of a Data Access Object and cache the result for future use.</li>
+     *       method in the parent class. This allows to check if the more generic
+     *       {@link #createDatum(String)} method cached a value before to try that method.</li>
      * </ul>
      *
      * @return The datum for the given code.
@@ -904,6 +1033,9 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      */
     @Override
     public ImageDatum createImageDatum(final String code) throws FactoryException {
+        if (isDefault(ImageDatum.class)) {
+            return super.createImageDatum(code);
+        }
         return create(AuthorityFactoryProxy.IMAGE_DATUM, code);
     }
 
@@ -911,9 +1043,12 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      * Returns an ellipsoid from a code.
      * The default implementation performs the following steps:
      * <ul>
-     *   <li>Returns the cached instance for the given code if such instance already exists.</li>
+     *   <li>Return the cached instance for the given code if such instance already exists.</li>
+     *   <li>Otherwise if the Data Access Object (DAO) overrides the {@code createEllipsoid(String)}
+     *       method, invoke that method and cache the result for future use.</li>
      *   <li>Otherwise delegate to the {@link GeodeticAuthorityFactory#createEllipsoid(String)}
-     *       method of a Data Access Object and cache the result for future use.</li>
+     *       method in the parent class. This allows to check if the more generic
+     *       {@link #createObject(String)} method cached a value before to try that method.</li>
      * </ul>
      *
      * @return The ellipsoid for the given code.
@@ -921,6 +1056,9 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      */
     @Override
     public Ellipsoid createEllipsoid(final String code) throws FactoryException {
+        if (isDefault(Ellipsoid.class)) {
+            return super.createEllipsoid(code);
+        }
         return create(AuthorityFactoryProxy.ELLIPSOID, code);
     }
 
@@ -928,9 +1066,12 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      * Returns a prime meridian from a code.
      * The default implementation performs the following steps:
      * <ul>
-     *   <li>Returns the cached instance for the given code if such instance already exists.</li>
+     *   <li>Return the cached instance for the given code if such instance already exists.</li>
+     *   <li>Otherwise if the Data Access Object (DAO) overrides the {@code createPrimeMeridian(String)}
+     *       method, invoke that method and cache the result for future use.</li>
      *   <li>Otherwise delegate to the {@link GeodeticAuthorityFactory#createPrimeMeridian(String)}
-     *       method of a Data Access Object and cache the result for future use.</li>
+     *       method in the parent class. This allows to check if the more generic
+     *       {@link #createObject(String)} method cached a value before to try that method.</li>
      * </ul>
      *
      * @return The prime meridian for the given code.
@@ -938,6 +1079,9 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      */
     @Override
     public PrimeMeridian createPrimeMeridian(final String code) throws FactoryException {
+        if (isDefault(PrimeMeridian.class)) {
+            return super.createPrimeMeridian(code);
+        }
         return create(AuthorityFactoryProxy.PRIME_MERIDIAN, code);
     }
 
@@ -945,9 +1089,11 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      * Returns an extent (usually a domain of validity) from a code.
      * The default implementation performs the following steps:
      * <ul>
-     *   <li>Returns the cached instance for the given code if such instance already exists.</li>
+     *   <li>Return the cached instance for the given code if such instance already exists.</li>
+     *   <li>Otherwise if the Data Access Object (DAO) overrides the {@code createExtent(String)}
+     *       method, invoke that method and cache the result for future use.</li>
      *   <li>Otherwise delegate to the {@link GeodeticAuthorityFactory#createExtent(String)}
-     *       method of a Data Access Object and cache the result for future use.</li>
+     *       method in the parent class.</li>
      * </ul>
      *
      * @return The extent for the given code.
@@ -955,6 +1101,9 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      */
     @Override
     public Extent createExtent(final String code) throws FactoryException {
+        if (isDefault(Extent.class)) {
+            return super.createExtent(code);
+        }
         return create(AuthorityFactoryProxy.EXTENT, code);
     }
 
@@ -962,9 +1111,12 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      * Returns an arbitrary coordinate system from a code.
      * The default implementation performs the following steps:
      * <ul>
-     *   <li>Returns the cached instance for the given code if such instance already exists.</li>
+     *   <li>Return the cached instance for the given code if such instance already exists.</li>
+     *   <li>Otherwise if the Data Access Object (DAO) overrides the {@code createCoordinateSystem(String)}
+     *       method, invoke that method and cache the result for future use.</li>
      *   <li>Otherwise delegate to the {@link GeodeticAuthorityFactory#createCoordinateSystem(String)}
-     *       method of a Data Access Object and cache the result for future use.</li>
+     *       method in the parent class. This allows to check if the more generic
+     *       {@link #createObject(String)} method cached a value before to try that method.</li>
      * </ul>
      *
      * @return The coordinate system for the given code.
@@ -972,6 +1124,9 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      */
     @Override
     public CoordinateSystem createCoordinateSystem(final String code) throws FactoryException {
+        if (isDefault(CoordinateSystem.class)) {
+            return super.createCoordinateSystem(code);
+        }
         return create(AuthorityFactoryProxy.COORDINATE_SYSTEM, code);
     }
 
@@ -979,9 +1134,12 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      * Returns an ellipsoidal coordinate system from a code.
      * The default implementation performs the following steps:
      * <ul>
-     *   <li>Returns the cached instance for the given code if such instance already exists.</li>
+     *   <li>Return the cached instance for the given code if such instance already exists.</li>
+     *   <li>Otherwise if the Data Access Object (DAO) overrides the {@code createEllipsoidalCS(String)}
+     *       method, invoke that method and cache the result for future use.</li>
      *   <li>Otherwise delegate to the {@link GeodeticAuthorityFactory#createEllipsoidalCS(String)}
-     *       method of a Data Access Object and cache the result for future use.</li>
+     *       method in the parent class. This allows to check if the more generic
+     *       {@link #createCoordinateSystem(String)} method cached a value before to try that method.</li>
      * </ul>
      *
      * @return The coordinate system for the given code.
@@ -989,6 +1147,9 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      */
     @Override
     public EllipsoidalCS createEllipsoidalCS(final String code) throws FactoryException {
+        if (isDefault(EllipsoidalCS.class)) {
+            return super.createEllipsoidalCS(code);
+        }
         return create(AuthorityFactoryProxy.ELLIPSOIDAL_CS, code);
     }
 
@@ -996,9 +1157,12 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      * Returns a vertical coordinate system from a code.
      * The default implementation performs the following steps:
      * <ul>
-     *   <li>Returns the cached instance for the given code if such instance already exists.</li>
+     *   <li>Return the cached instance for the given code if such instance already exists.</li>
+     *   <li>Otherwise if the Data Access Object (DAO) overrides the {@code createVerticalCS(String)}
+     *       method, invoke that method and cache the result for future use.</li>
      *   <li>Otherwise delegate to the {@link GeodeticAuthorityFactory#createVerticalCS(String)}
-     *       method of a Data Access Object and cache the result for future use.</li>
+     *       method in the parent class. This allows to check if the more generic
+     *       {@link #createCoordinateSystem(String)} method cached a value before to try that method.</li>
      * </ul>
      *
      * @return The coordinate system for the given code.
@@ -1006,6 +1170,9 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      */
     @Override
     public VerticalCS createVerticalCS(final String code) throws FactoryException {
+        if (isDefault(VerticalCS.class)) {
+            return super.createVerticalCS(code);
+        }
         return create(AuthorityFactoryProxy.VERTICAL_CS, code);
     }
 
@@ -1013,9 +1180,12 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      * Returns a temporal coordinate system from a code.
      * The default implementation performs the following steps:
      * <ul>
-     *   <li>Returns the cached instance for the given code if such instance already exists.</li>
+     *   <li>Return the cached instance for the given code if such instance already exists.</li>
+     *   <li>Otherwise if the Data Access Object (DAO) overrides the {@code createTimeCS(String)}
+     *       method, invoke that method and cache the result for future use.</li>
      *   <li>Otherwise delegate to the {@link GeodeticAuthorityFactory#createTimeCS(String)}
-     *       method of a Data Access Object and cache the result for future use.</li>
+     *       method in the parent class. This allows to check if the more generic
+     *       {@link #createCoordinateSystem(String)} method cached a value before to try that method.</li>
      * </ul>
      *
      * @return The coordinate system for the given code.
@@ -1023,6 +1193,9 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      */
     @Override
     public TimeCS createTimeCS(final String code) throws FactoryException {
+        if (isDefault(TimeCS.class)) {
+            return super.createTimeCS(code);
+        }
         return create(AuthorityFactoryProxy.TIME_CS, code);
     }
 
@@ -1030,9 +1203,12 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      * Returns a Cartesian coordinate system from a code.
      * The default implementation performs the following steps:
      * <ul>
-     *   <li>Returns the cached instance for the given code if such instance already exists.</li>
+     *   <li>Return the cached instance for the given code if such instance already exists.</li>
+     *   <li>Otherwise if the Data Access Object (DAO) overrides the {@code createCartesianCS(String)}
+     *       method, invoke that method and cache the result for future use.</li>
      *   <li>Otherwise delegate to the {@link GeodeticAuthorityFactory#createCartesianCS(String)}
-     *       method of a Data Access Object and cache the result for future use.</li>
+     *       method in the parent class. This allows to check if the more generic
+     *       {@link #createCoordinateSystem(String)} method cached a value before to try that method.</li>
      * </ul>
      *
      * @return The coordinate system for the given code.
@@ -1040,6 +1216,9 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      */
     @Override
     public CartesianCS createCartesianCS(final String code) throws FactoryException {
+        if (isDefault(CartesianCS.class)) {
+            return super.createCartesianCS(code);
+        }
         return create(AuthorityFactoryProxy.CARTESIAN_CS, code);
     }
 
@@ -1047,9 +1226,12 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      * Returns a spherical coordinate system from a code.
      * The default implementation performs the following steps:
      * <ul>
-     *   <li>Returns the cached instance for the given code if such instance already exists.</li>
+     *   <li>Return the cached instance for the given code if such instance already exists.</li>
+     *   <li>Otherwise if the Data Access Object (DAO) overrides the {@code createSphericalCS(String)}
+     *       method, invoke that method and cache the result for future use.</li>
      *   <li>Otherwise delegate to the {@link GeodeticAuthorityFactory#createSphericalCS(String)}
-     *       method of a Data Access Object and cache the result for future use.</li>
+     *       method in the parent class. This allows to check if the more generic
+     *       {@link #createCoordinateSystem(String)} method cached a value before to try that method.</li>
      * </ul>
      *
      * @return The coordinate system for the given code.
@@ -1057,6 +1239,9 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      */
     @Override
     public SphericalCS createSphericalCS(final String code) throws FactoryException {
+        if (isDefault(SphericalCS.class)) {
+            return super.createSphericalCS(code);
+        }
         return create(AuthorityFactoryProxy.SPHERICAL_CS, code);
     }
 
@@ -1064,9 +1249,12 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      * Returns a cylindrical coordinate system from a code.
      * The default implementation performs the following steps:
      * <ul>
-     *   <li>Returns the cached instance for the given code if such instance already exists.</li>
+     *   <li>Return the cached instance for the given code if such instance already exists.</li>
+     *   <li>Otherwise if the Data Access Object (DAO) overrides the {@code createCylindricalCS(String)}
+     *       method, invoke that method and cache the result for future use.</li>
      *   <li>Otherwise delegate to the {@link GeodeticAuthorityFactory#createCylindricalCS(String)}
-     *       method of a Data Access Object and cache the result for future use.</li>
+     *       method in the parent class. This allows to check if the more generic
+     *       {@link #createCoordinateSystem(String)} method cached a value before to try that method.</li>
      * </ul>
      *
      * @return The coordinate system for the given code.
@@ -1074,6 +1262,9 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      */
     @Override
     public CylindricalCS createCylindricalCS(final String code) throws FactoryException {
+        if (isDefault(CylindricalCS.class)) {
+            return super.createCylindricalCS(code);
+        }
         return create(AuthorityFactoryProxy.CYLINDRICAL_CS, code);
     }
 
@@ -1081,9 +1272,12 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      * Returns a polar coordinate system from a code.
      * The default implementation performs the following steps:
      * <ul>
-     *   <li>Returns the cached instance for the given code if such instance already exists.</li>
+     *   <li>Return the cached instance for the given code if such instance already exists.</li>
+     *   <li>Otherwise if the Data Access Object (DAO) overrides the {@code createPolarCS(String)}
+     *       method, invoke that method and cache the result for future use.</li>
      *   <li>Otherwise delegate to the {@link GeodeticAuthorityFactory#createPolarCS(String)}
-     *       method of a Data Access Object and cache the result for future use.</li>
+     *       method in the parent class. This allows to check if the more generic
+     *       {@link #createCoordinateSystem(String)} method cached a value before to try that method.</li>
      * </ul>
      *
      * @return The coordinate system for the given code.
@@ -1091,6 +1285,9 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      */
     @Override
     public PolarCS createPolarCS(final String code) throws FactoryException {
+        if (isDefault(PolarCS.class)) {
+            return super.createPolarCS(code);
+        }
         return create(AuthorityFactoryProxy.POLAR_CS, code);
     }
 
@@ -1098,9 +1295,12 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      * Returns a coordinate system axis from a code.
      * The default implementation performs the following steps:
      * <ul>
-     *   <li>Returns the cached instance for the given code if such instance already exists.</li>
+     *   <li>Return the cached instance for the given code if such instance already exists.</li>
+     *   <li>Otherwise if the Data Access Object (DAO) overrides the {@code createCoordinateSystemAxis(String)}
+     *       method, invoke that method and cache the result for future use.</li>
      *   <li>Otherwise delegate to the {@link GeodeticAuthorityFactory#createCoordinateSystemAxis(String)}
-     *       method of a Data Access Object and cache the result for future use.</li>
+     *       method in the parent class. This allows to check if the more generic
+     *       {@link #createObject(String)} method cached a value before to try that method.</li>
      * </ul>
      *
      * @return The axis for the given code.
@@ -1108,6 +1308,9 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      */
     @Override
     public CoordinateSystemAxis createCoordinateSystemAxis(final String code) throws FactoryException {
+        if (isDefault(CoordinateSystemAxis.class)) {
+            return super.createCoordinateSystemAxis(code);
+        }
         return create(AuthorityFactoryProxy.AXIS, code);
     }
 
@@ -1115,9 +1318,11 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      * Returns an unit of measurement from a code.
      * The default implementation performs the following steps:
      * <ul>
-     *   <li>Returns the cached instance for the given code if such instance already exists.</li>
+     *   <li>Return the cached instance for the given code if such instance already exists.</li>
+     *   <li>Otherwise if the Data Access Object (DAO) overrides the {@code createUnit(String)}
+     *       method, invoke that method and cache the result for future use.</li>
      *   <li>Otherwise delegate to the {@link GeodeticAuthorityFactory#createUnit(String)}
-     *       method of a Data Access Object and cache the result for future use.</li>
+     *       method in the parent class.</li>
      * </ul>
      *
      * @return The unit of measurement for the given code.
@@ -1125,6 +1330,9 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      */
     @Override
     public Unit<?> createUnit(final String code) throws FactoryException {
+        if (isDefault(Unit.class)) {
+            return super.createUnit(code);
+        }
         return create(AuthorityFactoryProxy.UNIT, code);
     }
 
@@ -1132,9 +1340,12 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      * Returns a parameter descriptor from a code.
      * The default implementation performs the following steps:
      * <ul>
-     *   <li>Returns the cached instance for the given code if such instance already exists.</li>
+     *   <li>Return the cached instance for the given code if such instance already exists.</li>
+     *   <li>Otherwise if the Data Access Object (DAO) overrides the {@code createParameterDescriptor(String)}
+     *       method, invoke that method and cache the result for future use.</li>
      *   <li>Otherwise delegate to the {@link GeodeticAuthorityFactory#createParameterDescriptor(String)}
-     *       method of a Data Access Object and cache the result for future use.</li>
+     *       method in the parent class. This allows to check if the more generic
+     *       {@link #createObject(String)} method cached a value before to try that method.</li>
      * </ul>
      *
      * @return The parameter descriptor for the given code.
@@ -1142,6 +1353,9 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      */
     @Override
     public ParameterDescriptor<?> createParameterDescriptor(final String code) throws FactoryException {
+        if (isDefault(ParameterDescriptor.class)) {
+            return super.createParameterDescriptor(code);
+        }
         return create(AuthorityFactoryProxy.PARAMETER, code);
     }
 
@@ -1149,9 +1363,12 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      * Returns an operation method from a code.
      * The default implementation performs the following steps:
      * <ul>
-     *   <li>Returns the cached instance for the given code if such instance already exists.</li>
+     *   <li>Return the cached instance for the given code if such instance already exists.</li>
+     *   <li>Otherwise if the Data Access Object (DAO) overrides the {@code createOperationMethod(String)}
+     *       method, invoke that method and cache the result for future use.</li>
      *   <li>Otherwise delegate to the {@link GeodeticAuthorityFactory#createOperationMethod(String)}
-     *       method of a Data Access Object and cache the result for future use.</li>
+     *       method in the parent class. This allows to check if the more generic
+     *       {@link #createObject(String)} method cached a value before to try that method.</li>
      * </ul>
      *
      * @return The operation method for the given code.
@@ -1159,6 +1376,9 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      */
     @Override
     public OperationMethod createOperationMethod(final String code) throws FactoryException {
+        if (isDefault(OperationMethod.class)) {
+            return super.createOperationMethod(code);
+        }
         return create(AuthorityFactoryProxy.METHOD, code);
     }
 
@@ -1166,9 +1386,12 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      * Returns an operation from a code.
      * The default implementation performs the following steps:
      * <ul>
-     *   <li>Returns the cached instance for the given code if such instance already exists.</li>
+     *   <li>Return the cached instance for the given code if such instance already exists.</li>
+     *   <li>Otherwise if the Data Access Object (DAO) overrides the {@code createCoordinateOperation(String)}
+     *       method, invoke that method and cache the result for future use.</li>
      *   <li>Otherwise delegate to the {@link GeodeticAuthorityFactory#createCoordinateOperation(String)}
-     *       method of a Data Access Object and cache the result for future use.</li>
+     *       method in the parent class. This allows to check if the more generic
+     *       {@link #createObject(String)} method cached a value before to try that method.</li>
      * </ul>
      *
      * @return The operation for the given code.
@@ -1176,6 +1399,9 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
      */
     @Override
     public CoordinateOperation createCoordinateOperation(final String code) throws FactoryException {
+        if (isDefault(CoordinateOperation.class)) {
+            return super.createCoordinateOperation(code);
+        }
         return create(AuthorityFactoryProxy.OPERATION, code);
     }
 
@@ -1265,7 +1491,7 @@ public abstract class ConcurrentAuthorityFactory extends GeodeticAuthorityFactor
                     final T result;
                     final GeodeticAuthorityFactory factory = getDataAccess();
                     try {
-                        result = proxy.create(factory, code);
+                        result = proxy.create(factory, key.code);
                     } finally {
                         release();
                     }

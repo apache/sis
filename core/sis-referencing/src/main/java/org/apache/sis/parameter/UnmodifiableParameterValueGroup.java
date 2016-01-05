@@ -182,6 +182,17 @@ final class UnmodifiableParameterValueGroup extends Parameters implements Lenien
     }
 
     /**
+     * Returns a modifiable copy of this parameter value group.
+     */
+    @Override
+    @SuppressWarnings("CloneDoesntCallSuperClone")
+    public Parameters clone() {
+        final DefaultParameterValueGroup copy = new DefaultParameterValueGroup(descriptor);
+        Parameters.copy(this, copy);
+        return copy;
+    }
+
+    /**
      * Compares the specified object with this parameter for equality.
      * The strictness level is controlled by the second argument:
      *

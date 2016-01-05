@@ -23,8 +23,10 @@ import org.apache.sis.internal.system.Loggers;
 // Test imports
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.FixMethodOrder;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+import org.junit.runners.MethodSorters;
 import org.apache.sis.referencing.factory.sql.EPSGFactory;
 
 import static org.opengis.test.Assert.*;
@@ -44,6 +46,7 @@ import static org.opengis.test.Assert.*;
  * @module
  */
 @RunWith(JUnit4.class)
+@FixMethodOrder(MethodSorters.JVM)      // Intentionally want some randomness
 public final strictfp class GIGS2001 extends org.opengis.test.referencing.gigs.GIGS2001 {
     /**
      * The factory instance to use for the tests, or {@code null} if not available.

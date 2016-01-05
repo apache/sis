@@ -19,8 +19,10 @@ package org.apache.sis.referencing.factory;
 import org.opengis.referencing.operation.CoordinateOperationFactory;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.test.DependsOn;
+import org.junit.FixMethodOrder;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+import org.junit.runners.MethodSorters;
 
 
 /**
@@ -36,6 +38,7 @@ import org.junit.runners.JUnit4;
     org.apache.sis.referencing.operation.DefaultConversionTest.class
 })
 @RunWith(JUnit4.class)
+@FixMethodOrder(MethodSorters.JVM)      // Intentionally want some randomness
 public final strictfp class GIGS3005 extends org.opengis.test.referencing.gigs.GIGS3005 {
     /**
      * Creates a new test suite using the singleton factory instance.
