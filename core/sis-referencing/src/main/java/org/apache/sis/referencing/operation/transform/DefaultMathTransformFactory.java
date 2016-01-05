@@ -86,8 +86,8 @@ import org.apache.sis.util.resources.Messages;
  *
  *
  * <div class="section">Standard parameters</div>
- * {@code MathTransform} instances are created from {@linkplain org.apache.sis.parameter.DefaultParameterValueGroup
- * parameter values}. The parameters expected by each operation available in a default Apache SIS installation is
+ * {@code MathTransform} instances are created from {@linkplain DefaultParameterValueGroup parameter values}.
+ * The parameters expected by each operation available in a default Apache SIS installation is
  * <a href="http://sis.apache.org/book/tables/CoordinateOperationMethods.html">listed here</a>.
  * The set of parameters varies for each operation or projection, but the following can be considered typical:
  *
@@ -106,7 +106,7 @@ import org.apache.sis.util.resources.Messages;
  * <div class="section">Dynamic parameters</div>
  * A few non-standard parameters are defined for compatibility reasons,
  * but delegates their work to standard parameters. Those dynamic parameters are not listed in the
- * {@linkplain org.apache.sis.parameter.DefaultParameterValueGroup#values() parameter values}.
+ * {@linkplain DefaultParameterValueGroup#values() parameter values}.
  * Dynamic parameters are:
  *
  * <ul>
@@ -609,7 +609,8 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
         private void ensureCompatibleParameters(final boolean writable) {
             final ParameterDescriptorGroup expected = provider.getParameters();
             if (parameters.getDescriptor() != expected ||
-                    (writable && !(parameters instanceof DefaultParameterValueGroup)))
+                    (writable &&  (parameters instanceof Parameters)
+                              && !(parameters instanceof DefaultParameterValueGroup)))
             {
                 final ParameterValueGroup copy = expected.createValue();
                 Parameters.copy(parameters, copy);

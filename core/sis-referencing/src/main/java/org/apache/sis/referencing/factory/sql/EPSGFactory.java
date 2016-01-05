@@ -33,7 +33,6 @@ import org.opengis.referencing.operation.CoordinateOperationAuthorityFactory;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.apache.sis.internal.metadata.sql.Initializer;
 import org.apache.sis.internal.system.DefaultFactories;
-import org.apache.sis.referencing.factory.GeodeticAuthorityFactory;
 import org.apache.sis.referencing.factory.ConcurrentAuthorityFactory;
 import org.apache.sis.referencing.factory.UnavailableFactoryException;
 import org.apache.sis.util.ArgumentChecks;
@@ -56,7 +55,7 @@ import org.apache.sis.util.Localized;
  * @version 0.7
  * @module
  */
-public class EPSGFactory extends ConcurrentAuthorityFactory implements CRSAuthorityFactory,
+public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> implements CRSAuthorityFactory,
         CSAuthorityFactory, DatumAuthorityFactory, CoordinateOperationAuthorityFactory, Localized
 {
     /**
@@ -212,7 +211,7 @@ public class EPSGFactory extends ConcurrentAuthorityFactory implements CRSAuthor
      *         This exception usually has a {@link SQLException} as its cause.
      */
     @Override
-    protected GeodeticAuthorityFactory newDataAccess() throws FactoryException {
+    protected EPSGDataAccess newDataAccess() throws FactoryException {
         Connection connection = null;
         try {
             connection = dataSource.getConnection();
@@ -259,5 +258,19 @@ public class EPSGFactory extends ConcurrentAuthorityFactory implements CRSAuthor
      */
     protected EPSGDataAccess newDataAccess(Connection connection, SQLTranslator translator) throws SQLException {
         return new EPSGDataAccess(this, connection, translator);
+    }
+
+    /**
+     * Returns {@code true} if the given Data Access Object (DAO) can be closed. This method is invoked automatically
+     * after the {@linkplain #getTimeout timeout} if the given DAO has been idle during all that time. The default
+     * implementation always returns {@code false} if a set returned by {@link EPSGDataAccess#getAuthorityCodes(Class)}
+     * is still in use.
+     *
+     * @param factory The Data Access Object which is about to be closed.
+     * @return {@code true} if the given Data Access Object can be closed.
+     */
+    @Override
+    protected boolean canClose(final EPSGDataAccess factory) {
+        return factory.canClose();
     }
 }

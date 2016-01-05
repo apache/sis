@@ -16,34 +16,39 @@
  */
 package org.apache.sis.referencing.factory;
 
+import org.opengis.util.FactoryException;
+
 
 /**
- * Thrown when a factory can not be created because a resource is missing.
- * The most common case is when the {@link org.apache.sis.referencing.factory.epsg.EPSGFactory}
- * has no connection to an EPSG database.
+ * Thrown when an object can not be created because a resource is missing.
+ * The most common case is a NADCON or NTv2 datum shift operation requested while the
+ * datum shift grids was not found in the {@code $SIS_DATA/DatumChanges} directory.
  *
  * <div class="section">Relationship with other exceptions</div>
- * This exception means that the whole factory is unusable.
- * By contrast, {@link MissingFactoryResourceException} means that at least one particular object
- * can not be created, but other objects may be okay.
+ * This exception means that the factory failed to create a particular object.
+ * However the factory may succeed in creating other objects.
+ * By contrast, {@link UnavailableFactoryException} means that the whole factory can not be used at all.
  *
- * @author  Martin Desruisseaux (IRD)
+ * <p>This exception is <strong>not</strong> for unimplemented operations (for example map projections not yet supported).
+ * For unimplemented operation methods, use {@link org.opengis.util.NoSuchIdentifierException} instead.</p>
+ *
+ * @author  Martin Desruisseaux (Geomatys)
  * @since   0.7
  * @version 0.7
  * @module
  *
  * @see ConcurrentAuthorityFactory#newDataAccess()
  */
-public class UnavailableFactoryException extends MissingFactoryResourceException {
+public class MissingFactoryResourceException extends FactoryException {
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = -661925454228937249L;
+    private static final long serialVersionUID = -6726760720630526886L;
 
     /**
      * Construct an exception with no detail message.
      */
-    public UnavailableFactoryException() {
+    public MissingFactoryResourceException() {
     }
 
     /**
@@ -52,7 +57,7 @@ public class UnavailableFactoryException extends MissingFactoryResourceException
      * @param  message The detail message. The detail message is saved
      *         for later retrieval by the {@link #getMessage()} method.
      */
-    public UnavailableFactoryException(String message) {
+    public MissingFactoryResourceException(String message) {
         super(message);
     }
 
@@ -66,7 +71,7 @@ public class UnavailableFactoryException extends MissingFactoryResourceException
      * @param  cause The cause for this exception. The cause is saved
      *         for later retrieval by the {@link #getCause()} method.
      */
-    public UnavailableFactoryException(String message, Throwable cause) {
+    public MissingFactoryResourceException(String message, Throwable cause) {
         super(message, cause);
     }
 }

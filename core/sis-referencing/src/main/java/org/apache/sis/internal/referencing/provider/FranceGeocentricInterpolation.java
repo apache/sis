@@ -41,6 +41,8 @@ import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.Transformation;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
+import org.apache.sis.referencing.factory.MissingFactoryResourceException;
+import org.apache.sis.referencing.factory.FactoryDataException;
 import org.opengis.util.FactoryException;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.system.DataDirectory;
@@ -62,6 +64,7 @@ import static java.lang.Float.parseFloat;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 
 
 /**
@@ -352,6 +355,7 @@ public class FranceGeocentricInterpolation extends AbstractProvider {
      * @param  averages  An "average" value for the offset in each dimension, or {@code null} if unknown.
      * @param  scale     The factor by which to multiply each compressed value before to add to the average value.
      */
+    @SuppressWarnings("null")
     static DatumShiftGridFile<Angle,Length> getOrLoad(final Path file, final double[] averages, final double scale)
             throws FactoryException
     {
@@ -368,7 +372,12 @@ public class FranceGeocentricInterpolation extends AbstractProvider {
                         grid = DatumShiftGridCompressed.compress(g, averages, scale);
                     } catch (IOException | NoninvertibleTransformException | RuntimeException e) {
                         // NumberFormatException, ArithmeticException, NoSuchElementException, possibly other.
-                        throw new FactoryException(Errors.format(Errors.Keys.CanNotParseFile_2, HEADER, file), e);
+                        final String message = Errors.format(Errors.Keys.CanNotParseFile_2, HEADER, file);
+                        if (e instanceof NoSuchFileException) {
+                            throw new MissingFactoryResourceException(message, e);
+                        } else {
+                            throw new FactoryDataException(message, e);
+                        }
                     }
                     grid = grid.useSharedData();
                 }
