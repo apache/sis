@@ -17,8 +17,9 @@
 package org.apache.sis.referencing.factory;
 
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.Iterator;
+import java.util.Collections;
+import java.util.LinkedHashSet;
 import org.opengis.util.GenericName;
 import org.opengis.util.FactoryException;
 import org.opengis.metadata.Identifier;
@@ -29,11 +30,10 @@ import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.internal.util.Citations;
-import org.apache.sis.internal.system.Loggers;
+import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Utilities;
-import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 
 
@@ -46,10 +46,9 @@ import org.apache.sis.util.resources.Errors;
  * <p>The steps for using {@code IdentifiedObjectFinder} are:</p>
  * <ol>
  *   <li>Get a new instance by calling
- *       {@link GeodeticAuthorityFactory#createIdentifiedObjectFinder(Class)}.</li>
+ *       {@link GeodeticAuthorityFactory#newIdentifiedObjectFinder()}.</li>
  *   <li>Optionally configure that instance by calling its setter methods.</li>
- *   <li>Perform a search by invoking the {@link #find(IdentifiedObject)} or
- *       {@link #findIdentifier(IdentifiedObject)} methods.</li>
+ *   <li>Perform a search by invoking the {@link #find(IdentifiedObject)} method.</li>
  *   <li>The same {@code IdentifiedObjectFinder} instance can be reused for consecutive searches.</li>
  * </ol>
  *
@@ -62,7 +61,7 @@ import org.apache.sis.util.resources.Errors;
  * @version 0.7
  * @module
  *
- * @see GeodeticAuthorityFactory#createIdentifiedObjectFinder(Class)
+ * @see GeodeticAuthorityFactory#newIdentifiedObjectFinder()
  * @see IdentifiedObjects#lookupIdentifier(IdentifiedObject, boolean)
  */
 public class IdentifiedObjectFinder {
@@ -78,9 +77,9 @@ public class IdentifiedObjectFinder {
     protected final AuthorityFactory factory;
 
     /**
-     * The proxy for objects creation. This is usually set at construction time.
+     * The proxy for objects creation. This is updated before every object to search.
      */
-    private AuthorityFactoryProxy<?> proxy;
+    private transient AuthorityFactoryProxy<?> proxy;
 
     /**
      * The cache or the adapter which is wrapping this finder, or {@code null} if none.
@@ -97,25 +96,47 @@ public class IdentifiedObjectFinder {
     private transient IdentifiedObject searching;
 
     /**
+     * {@code true} if the {@link #find(IdentifiedObject)} method is invoked from the {@link #wrapper}.
+     * This is used for controlling the interactions with {@link #wrapper} during recursive calls.
+     * Example with {@code EPSGDataAccess}:
+     *
+     * <ol>
+     *   <li>When searching for a {@code ProjectedCRS}, first search for its base {@code GeodeticCRS}
+     *       in order to restrict the search scope.</li>
+     *   <li>The search for {@code GeodeticCRS} will in turn searches for {@code GeodeticDatum} in order
+     *       to restrict the search scope.</li>
+     *   <li>The search for {@code GeodeticDatum} will in turn searches for {@code Ellipsoid} in order
+     *       to restrict the search scope.</li>
+     * </ol>
+     *
+     * As seen from the above examples, there is usually no more than 4 recursive calls.
+     */
+    private transient boolean isInvokedFromWrapper;
+
+    /**
      * {@code true} for performing full scans, or {@code false} otherwise.
      */
     private boolean fullScan = true;
+
+    /**
+     * {@code true} if the search should include deprecated objects.
+     */
+    private boolean includeDeprecated;
 
     /**
      * Creates a finder using the specified factory.
      *
      * <div class="note"><b>Design note:</b>
      * this constructor is protected because instances of this class should not be created directly.
-     * Use {@link GeodeticAuthorityFactory#createIdentifiedObjectFinder(Class)} instead.</div>
+     * Use {@link GeodeticAuthorityFactory#newIdentifiedObjectFinder()} instead.</div>
      *
      * @param factory The factory to scan for the identified objects.
-     * @param type    The type of objects to lookup.
      *
-     * @see GeodeticAuthorityFactory#createIdentifiedObjectFinder(Class)
+     * @see GeodeticAuthorityFactory#newIdentifiedObjectFinder()
      */
-    protected IdentifiedObjectFinder(final AuthorityFactory factory, final Class<? extends IdentifiedObject> type) {
+    protected IdentifiedObjectFinder(final AuthorityFactory factory) {
+        ArgumentChecks.ensureNonNull("factory", factory);
         this.factory = factory;
-        proxy = AuthorityFactoryProxy.getInstance(type);
     }
 
     /**
@@ -126,25 +147,12 @@ public class IdentifiedObjectFinder {
      * <p>This method also copies the configuration of the given finder, thus providing a central place
      * where to add calls to setters methods if such methods are added in a future SIS version.</p>
      *
-     * <div class="section">Maintenance note</div>
-     * Adding properties to this method is not sufficient. See also the classes that override
-     * {@link #setFullScanAllowed(boolean)} — some of them may be defined in other packages.
-     *
      * @param other The cache or the adapter wrapping this finder.
      */
     final void setWrapper(final IdentifiedObjectFinder other) {
         wrapper = other;
         setFullScanAllowed(other.isFullScanAllowed());
-    }
-
-    /**
-     * Returns the type of the objects to be created by the proxy instance.
-     * This method needs to be overridden by the sub-classes that do not define a proxy.
-     *
-     * @return The type of object to be created, as a GeoAPI interface.
-     */
-    Class<? extends IdentifiedObject> getObjectType() {
-        return proxy.type.asSubclass(IdentifiedObject.class);
+        setIncludeDeprecated(other.getIncludeDeprecated());
     }
 
     /**
@@ -170,18 +178,38 @@ public class IdentifiedObjectFinder {
     }
 
     /**
-     * Sets whatever an exhaustive scan against all registered objects is allowed.
+     * Sets whether an exhaustive scan against all registered objects is allowed.
      * The default value is {@code true}.
      *
-     * @param fullScan {@code true} for allowing exhaustive scans,
+     * @param allowed {@code true} for allowing exhaustive scans,
      *        or {@code false} for faster but less complete searches.
      */
-    public void setFullScanAllowed(final boolean fullScan) {
-        this.fullScan = fullScan;
+    public void setFullScanAllowed(final boolean allowed) {
+        fullScan = allowed;
     }
 
     /**
-     * Lookups an object which is approximatively equal to the specified object.
+     * If {@code true} and full scans are allowed, then the search will include deprecated objects.
+     * The default value is {@code false}.
+     *
+     * @return {@code true} if the search should include deprecated objects.
+     */
+    public boolean getIncludeDeprecated() {
+        return includeDeprecated;
+    }
+
+    /**
+     * Sets whether the search should include deprecated objects.
+     * The default value is {@code false}.
+     *
+     * @param include {@code true} for including deprecated objects in the search.
+     */
+    public void setIncludeDeprecated(final boolean include) {
+        includeDeprecated = include;
+    }
+
+    /**
+     * Lookups objects which are approximatively equal to the specified object.
      * The default implementation tries to instantiate some {@linkplain AbstractIdentifiedObject identified objects}
      * from the authority factory specified at construction time, in the following order:
      *
@@ -193,98 +221,104 @@ public class IdentifiedObjectFinder {
      *       in addition of identifiers, then the name and {@linkplain AbstractIdentifiedObject#getAlias() aliases} are
      *       used for creating objects to be tested.</li>
      *   <li>If {@linkplain #isFullScanAllowed() full scan is allowed}, then full {@linkplain #getCodeCandidates
-     *       set of authority codes} are used for creating objects to be tested.</li>
+     *       set of candidate codes} is used for creating objects to be tested.</li>
      * </ul>
      *
-     * The first of the above created objects which is equal to the specified object in the
-     * the sense of {@link ComparisonMode#APPROXIMATIVE} is returned.
+     * The created objects which are equal to the specified object in the
+     * the sense of {@link ComparisonMode#APPROXIMATIVE} are returned.
      *
      * @param  object The object looked up.
-     * @return The identified object, or {@code null} if not found.
+     * @return The identified objects, or an empty set if not found.
      * @throws FactoryException if an error occurred while creating an object.
      */
-    public IdentifiedObject find(final IdentifiedObject object) throws FactoryException {
+    public Set<IdentifiedObject> find(final IdentifiedObject object) throws FactoryException {
         ArgumentChecks.ensureNonNull("object", object);
         final IdentifiedObject state = searching;
-        try {
-            searching = object;
-            if (state == null) {
-                /*
-                 * First check if one of the identifiers can be used to find directly an identified object.
-                 * Verify that the object that we found is actually equal to given one; we do not blindly
-                 * trust the identifiers in the user object.
-                 */
-                IdentifiedObject candidate = createFromIdentifiers(object);
-                if (candidate != null) {
-                    return candidate;
-                }
-                /*
-                 * We are unable to find the object from its identifiers. Try a quick name lookup.
-                 * Some implementations like the one backed by the EPSG database are capable to find
-                 * an object from its name.
-                 */
-                candidate = createFromNames(object);
-                if (candidate != null) {
-                    return candidate;
-                }
-                /*
-                 * Here we exhausted the quick paths. Perform a full scan (costly) if we are allowed to,
-                 * otherwise abandon.
-                 */
-                return fullScan ? createFromCodes(object) : null;
-            } else if (state != object) {
-                /*
-                 * This 'find' method may be invoked recursively by some implementations that need to resolve
-                 * the dependencies of the given object. For example if the given object is a geodetic CRS,
-                 * the finder backed by the EPSG database will first search for a matching ellipsoid in order
-                 * to reduce the scope of the search. Note that since dependencies can be of any type, we
-                 * have to temporarily change the proxy.
-                 *
-                 * When invoked recursively, we delegate to the wrapper if it exists. The wrapper is typically
-                 * a ConcurrentAuthorityFactory.Finder, in which case we want to leverage its cache capability.
-                 */
-                IdentifiedObjectFinder finder = wrapper;
-                if (finder == null) {
-                    finder = this;
-                }
-                final AuthorityFactoryProxy<?> old = finder.proxy;
-                finder.proxy = AuthorityFactoryProxy.getInstance(object.getClass());
-                try {
-                    return finder.find(object);
-                } finally {
-                    finder.proxy = old;
-                }
-            } else {
-                throw new IllegalArgumentException(Errors.format(Errors.Keys.RecursiveCreateCallForKey_1, object.getName()));
+        if (state == object) {
+            throw new IllegalArgumentException(Errors.format(Errors.Keys.RecursiveCreateCallForKey_1, object.getName()));
+        }
+        if (state != null) {
+            /*
+             * This 'find' method may be invoked recursively by some implementations that need to resolve
+             * the dependencies of the given object. For example if the given object is a geodetic CRS,
+             * then the finder backed by the EPSG database will first search for a matching ellipsoid in
+             * order to reduce the scope of the search.
+             *
+             * When invoked recursively, we delegate to the wrapper if it exists. The wrapper is typically
+             * a ConcurrentAuthorityFactory.Finder, in which case we want to leverage its cache capability.
+             */
+            if (wrapper != null && !isInvokedFromWrapper) try {
+                isInvokedFromWrapper = true;
+                return wrapper.find(object);
+            } finally {
+                isInvokedFromWrapper = false;
             }
+        }
+        final boolean ivf = isInvokedFromWrapper;
+        final AuthorityFactoryProxy<?> p = proxy;
+        proxy = AuthorityFactoryProxy.getInstance(object.getClass());
+        isInvokedFromWrapper = false;
+        searching = object;
+        try {
+            /*
+             * First check if one of the identifiers can be used to find directly an identified object.
+             * Verify that the object that we found is actually equal to given one; we do not blindly
+             * trust the identifiers in the user object.
+             */
+            IdentifiedObject candidate = createFromIdentifiers(object);
+            if (candidate != null) {
+                return Collections.singleton(candidate);
+            }
+            /*
+             * We are unable to find the object from its identifiers. Try a quick name lookup.
+             * Some implementations like the one backed by the EPSG database are capable to find
+             * an object from its name.
+             */
+            candidate = createFromNames(object);
+            if (candidate != null) {
+                return Collections.singleton(candidate);
+            }
+            /*
+             * Here we exhausted the quick paths. Perform a full scan (costly) if we are allowed to,
+             * otherwise abandon.
+             */
+            return fullScan ? createFromCodes(object) : Collections.emptySet();
         } finally {
+            isInvokedFromWrapper = ivf;
             searching = state;
+            proxy = p;
         }
     }
 
     /**
-     * Returns the identifier of the specified object, or {@code null} if none.
-     * On some implementations, invoking this method is more efficient than invoking
-     * {@link #find(IdentifiedObject)} when the full object is not needed.
+     * Lookups only one object which is approximatively equal to the specified object.
+     * If the set returned by {@link #find(IdentifiedObject)} contains exactly one element,
+     * then that element is returned. Otherwise this method returns {@code null}.
      *
-     * <p>The default implementation invokes <code>{@linkplain #find find}(object)</code> and extracts
-     * the identifier code from the returned {@linkplain AbstractIdentifiedObject identified object}.</p>
+     * <p>Note that this method returns {@code null} even if there is more than one element,
+     * because in such case we consider that there is an ambiguity.</p>
      *
      * @param  object The object looked up.
-     * @return The identifier of the given object, or {@code null} if none were found.
+     * @return The identified object, or {@code null} if none or ambiguous.
      * @throws FactoryException if an error occurred while creating an object.
      */
-    public String findIdentifier(final IdentifiedObject object) throws FactoryException {
-        final IdentifiedObject candidate = find(object);
-        if (candidate == null) {
-            return null;
+    public IdentifiedObject findSingleton(final IdentifiedObject object) throws FactoryException {
+        /*
+         * Do not invoke Set.size() because it may be a costly operation if the subclass
+         * implements a mechanism that create IdentifiedObject instances only on demand.
+         */
+        try {
+            final Iterator<IdentifiedObject> it = find(object).iterator();
+            if (it.hasNext()) {
+                final IdentifiedObject candidate = it.next();
+                if (!it.hasNext()) {
+                    return candidate;
+                }
+            }
+        } catch (BackingStoreException e) {
+            throw e.unwrapOrRethrow(FactoryException.class);
         }
-        final Citation authority = getAuthority();
-        Identifier identifier = IdentifiedObjects.getIdentifier(candidate, authority);
-        if (identifier == null) {
-            identifier = candidate.getName();
-        }
-        return IdentifiedObjects.toString(identifier);
+        return null;
     }
 
     /**
@@ -301,7 +335,7 @@ public class IdentifiedObjectFinder {
      * @see #createFromCodes(IdentifiedObject)
      * @see #createFromNames(IdentifiedObject)
      */
-    final IdentifiedObject createFromIdentifiers(final IdentifiedObject object) throws FactoryException {
+    private IdentifiedObject createFromIdentifiers(final IdentifiedObject object) throws FactoryException {
         final Citation authority = getAuthority();
         for (final Identifier id : object.getIdentifiers()) {
             if (Citations.identifierMatches(authority, id.getAuthority())) {
@@ -337,7 +371,7 @@ public class IdentifiedObjectFinder {
      * @see #createFromCodes(IdentifiedObject)
      * @see #createFromIdentifiers(IdentifiedObject)
      */
-    final IdentifiedObject createFromNames(final IdentifiedObject object) throws FactoryException {
+    private IdentifiedObject createFromNames(final IdentifiedObject object) throws FactoryException {
         String code = object.getName().getCode();
         IdentifiedObject candidate;
         try {
@@ -390,32 +424,34 @@ public class IdentifiedObjectFinder {
      * @see #createFromIdentifiers(IdentifiedObject)
      * @see #createFromNames(IdentifiedObject)
      */
-    final IdentifiedObject createFromCodes(final IdentifiedObject object) throws FactoryException {
-        final Set<String> codes = getCodeCandidates(object);
-        if (!codes.isEmpty()) {
-            for (final String code : codes) {
-                final IdentifiedObject candidate;
-                try {
-                    candidate = create(code);
-                } catch (FactoryException e) {
-                    continue;
-                }
-                if (Utilities.deepEquals(candidate, object, COMPARISON_MODE)) {
-                    return candidate;
-                }
+    private Set<IdentifiedObject> createFromCodes(final IdentifiedObject object) throws FactoryException {
+        boolean strict = false;
+        final Set<IdentifiedObject> result = new LinkedHashSet<>();     // We need to preserve order.
+        for (final String code : getCodeCandidates(object)) {
+            final IdentifiedObject candidate;
+            try {
+                candidate = create(code);
+            } catch (FactoryException e) {
+                continue;
             }
-            final Logger logger = Logging.getLogger(Loggers.CRS_FACTORY);
-            logger.log(Level.FINEST, "No match found for “{0}” among {1}",
-                    new Object[] {object.getName(), codes});
+            if (Utilities.deepEquals(candidate, object, strict ? ComparisonMode.IGNORE_METADATA : COMPARISON_MODE)) {
+                if (!strict && Utilities.deepEquals(candidate, object, ComparisonMode.IGNORE_METADATA)) {
+                    /*
+                     * If we find at least one object without rounding error, do not accept rounding error for anyone.
+                     */
+                    result.clear();
+                    strict = true;
+                }
+                result.add(candidate);
+            }
         }
-        return null;
+        return result;
     }
 
     /**
-     * Creates an object for the given code. This method is invoked by the default implementation of
-     * {@link #find(IdentifiedObject)} and {@link #findIdentifier(IdentifiedObject)} methods for each
-     * code returned by the {@link #getCodeCandidates(IdentifiedObject)} method, in iteration order,
-     * until an object approximatively equals to the requested object is found.
+     * Creates an object for the given code. This method is invoked by the default {@link #find(IdentifiedObject)}
+     * method implementation of for each code returned by the {@link #getCodeCandidates(IdentifiedObject)} method,
+     * in iteration order.
      *
      * @param  code The authority code for which to create an object.
      * @return The identified object for the given code, or {@code null} to stop attempts.
@@ -448,6 +484,11 @@ public class IdentifiedObjectFinder {
      * @throws FactoryException if an error occurred while fetching the set of code candidates.
      */
     protected Set<String> getCodeCandidates(final IdentifiedObject object) throws FactoryException {
-        return factory.getAuthorityCodes(getObjectType());
+        AuthorityFactoryProxy<?> p = proxy;
+        if (object != searching) {
+            // Should not happen, unless the user invokes this method with unusual objects.
+            p = AuthorityFactoryProxy.getInstance(object.getClass());
+        }
+        return factory.getAuthorityCodes(p.type.asSubclass(IdentifiedObject.class));
     }
 }

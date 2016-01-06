@@ -2730,19 +2730,12 @@ addURIs:    for (int i=0; ; i++) {
      * The finder tries to fetch a fully {@linkplain AbstractIdentifiedObject identified object} from an incomplete one,
      * for example from an object without "{@code ID[…]}" or "{@code AUTHORITY[…]}" element in <cite>Well Known Text</cite>.
      *
-     * <p>The {@code type} argument is a hint for optimizing the searches.
-     * If the type is unknown, one can use {@code IdentifiedObject.class}.
-     * However a more accurate type help to speed up the search since it reduces the amount of tables to scan.</p>
-     *
-     * @param  type The type of objects to look for.
      * @return A finder to use for looking up unidentified objects.
      * @throws FactoryException if the finder can not be created.
      */
     @Override
-    public IdentifiedObjectFinder createIdentifiedObjectFinder(final Class<? extends IdentifiedObject> type)
-            throws FactoryException
-    {
-        return new Finder(type);
+    public IdentifiedObjectFinder newIdentifiedObjectFinder() throws FactoryException {
+        return new Finder();
     }
 
     /**
@@ -2752,17 +2745,8 @@ addURIs:    for (int i=0; ; i++) {
         /**
          * Creates a new finder.
          */
-        Finder(final Class<? extends IdentifiedObject> type) {
-            super(parent, type);
-        }
-
-        /**
-         * Returns the authority of the codes to search.
-         * Overridden for efficiency.
-         */
-        @Override
-        public Citation getAuthority() {
-            return Citations.EPSG;
+        Finder() {
+            super(parent);
         }
 
         /**
@@ -2775,14 +2759,14 @@ addURIs:    for (int i=0; ; i++) {
             String select = "COORD_REF_SYS_CODE";
             String from   = "Coordinate Reference System";
             final String where;
-            final Comparable<?> code;
+            final Set<Comparable<?>> codes;
             if (object instanceof Ellipsoid) {
                 select = "ELLIPSOID_CODE";
                 from   = "Ellipsoid";
                 where  = "SEMI_MAJOR_AXIS";
-                code   = ((Ellipsoid) object).getSemiMajorAxis();
+                codes  = Collections.singleton(((Ellipsoid) object).getSemiMajorAxis());
             } else {
-                IdentifiedObject dependency;
+                final IdentifiedObject dependency;
                 if (object instanceof GeneralDerivedCRS) {
                     dependency = ((GeneralDerivedCRS) object).getBaseCRS();
                     where      = "SOURCE_GEOGCRS_CODE";
@@ -2801,30 +2785,26 @@ addURIs:    for (int i=0; ; i++) {
                 /*
                  * Search for the dependency.  The super.find(…) method performs a check (not documented in public API)
                  * for detecting when it is invoked recursively, which is the case here. Consequently the super.find(…)
-                 * behavior below is slightly different than usual:
-                 *
-                 * 1) Since invoked recursively, super.find(…) accepts an argument of different type than the type
-                 *    given at construction time.
-                 *
-                 * 2) Since invoked recursively, super.find(…) checks the cache of the ConcurrentAuthorityFactory
-                 *    wrapper (if any). If found, the dependency will also be stored in the cache. This is desirable
-                 *    since this method may be invoked (indirectly) in a loop for many CRS objects sharing the same
-                 *    CoordinateSystem or Datum dependencies.
+                 * behavior below is slightly different than usual: since invoked recursively, super.find(…) checks the
+                 * cache of the ConcurrentAuthorityFactory wrapper. If found, the dependency will also be stored in the
+                 * cache. This is desirable since this method may be invoked (indirectly) in a loop for many CRS objects
+                 * sharing the same CoordinateSystem or Datum dependencies.
                  */
-                dependency = find(dependency);
-                if (dependency == null) {
+                codes = new LinkedHashSet<>();
+                for (final IdentifiedObject dep : find(dependency)) {
+                    Identifier id = IdentifiedObjects.getIdentifier(dep, Citations.EPSG);
+                    if (id != null) {               // Should never be null, but let be safe.
+                        codes.add(id.getCode());
+                    }
+                }
+                codes.remove(null);                 // Paranoiac safety.
+                if (codes.isEmpty()) {
                     // Dependency not found.
                     return Collections.emptySet();
                 }
-                Identifier id = IdentifiedObjects.getIdentifier(dependency, Citations.EPSG);
-                if (id == null || (code = id.getCode()) == null) {
-                    // Identifier not found (malformed CRS object?).
-                    // Conservatively scans all objects.
-                    return super.getCodeCandidates(object);
-                }
             }
             /*
-             * Build the SQL statement. The code can be any of the following type:
+             * Build the SQL statement. The code can be any of the following types:
              *
              * - A String, which represent a foreigner key as an integer value.
              *   The search will require an exact match.
@@ -2832,36 +2812,43 @@ addURIs:    for (int i=0; ; i++) {
              * - A floating point number, in which case the search will be performed
              *   with a tolerance threshold of 1 cm for a planet of the size of Earth.
              */
+            final Set<String> result = new LinkedHashSet<>();       // We need to preserve order in this set.
             final StringBuilder buffer = new StringBuilder(60);
             buffer.append("SELECT ").append(select).append(" FROM [").append(from).append("] WHERE ").append(where);
-            if (code instanceof Number) {
-                final double value = ((Number) code).doubleValue();
-                final double tolerance = Math.abs(value * (Formulas.LINEAR_TOLERANCE / ReferencingServices.AUTHALIC_RADIUS));
-                buffer.append(">=").append(value - tolerance).append(" AND ").append(where)
-                      .append("<=").append(value + tolerance);
-            } else {
-                buffer.append('=').append(code);
-            }
-            buffer.append(" ORDER BY ABS(DEPRECATED), ");
-            if (code instanceof Number) {
-                buffer.append("ABS(").append(select).append('-').append(code).append(')');
-            } else {
-                buffer.append(select);          // Only for making order determinist.
-            }
-            final Set<String> result = new LinkedHashSet<>();
-            try {
-                final String sql = translator.apply(buffer.toString());
-                try (Statement s = connection.createStatement();
-                     ResultSet r = s.executeQuery(sql))
-                {
-                    while (r.next()) {
-                        result.add(r.getString(1));
-                    }
+            final int start = buffer.length();
+            for (final Comparable<?> code : codes) {
+                buffer.setLength(start);
+                if (code instanceof Number) {
+                    final double value = ((Number) code).doubleValue();
+                    final double tolerance = Math.abs(value * (Formulas.LINEAR_TOLERANCE / ReferencingServices.AUTHALIC_RADIUS));
+                    buffer.append(">=").append(value - tolerance).append(" AND ").append(where)
+                          .append("<=").append(value + tolerance);
+                } else {
+                    buffer.append('=').append(code);
                 }
-            } catch (SQLException exception) {
-                throw databaseFailure(Identifier.class, String.valueOf(code), exception);
+                if (!getIncludeDeprecated()) {
+                    buffer.append(" AND DEPRECATED=0");
+                }
+                buffer.append(" ORDER BY ABS(DEPRECATED), ");
+                if (code instanceof Number) {
+                    buffer.append("ABS(").append(select).append('-').append(code).append(')');
+                } else {
+                    buffer.append(select);          // Only for making order determinist.
+                }
+                try {
+                    final String sql = translator.apply(buffer.toString());
+                    try (Statement s = connection.createStatement();
+                         ResultSet r = s.executeQuery(sql))
+                    {
+                        while (r.next()) {
+                            result.add(r.getString(1));
+                        }
+                    }
+                } catch (SQLException exception) {
+                    throw databaseFailure(Identifier.class, String.valueOf(code), exception);
+                }
+                result.remove(null);    // Should not have null element, but let be safe.
             }
-            result.remove(null);    // Should not have null element, but let be safe.
             return result;
         }
     }

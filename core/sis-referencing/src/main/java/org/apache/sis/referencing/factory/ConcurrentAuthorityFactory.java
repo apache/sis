@@ -51,12 +51,12 @@ import org.apache.sis.util.Disposable;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.collection.Cache;
-import org.apache.sis.internal.referencing.NilReferencingObject;
 import org.apache.sis.internal.system.ReferenceQueueConsumer;
 import org.apache.sis.internal.system.DelayedExecutor;
 import org.apache.sis.internal.system.DelayedRunnable;
 import org.apache.sis.internal.system.Shutdown;
 import org.apache.sis.internal.system.Loggers;
+import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.util.logging.PerformanceLevel;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Messages;
@@ -129,11 +129,11 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
 
     /**
      * The pool of objects identified by {@link Finder#find(IdentifiedObject)}.
-     * Values may be {@link NilReferencingObject} if an object has been searched but has not been found.
+     * Values may be an empty set if an object has been searched but has not been found.
      *
      * <p>Every access to this pool must be synchronized on {@code findPool}.</p>
      */
-    private final Map<IdentifiedObject, IdentifiedObject> findPool = new WeakHashMap<>();
+    private final Map<IdentifiedObject, Set<IdentifiedObject>> findPool = new WeakHashMap<>();
 
     /**
      * Holds the reference to a Data Access Object used by {@link ConcurrentAuthorityFactory}, together with
@@ -1673,20 +1673,13 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
      * @throws FactoryException if the finder can not be created.
      */
     @Override
-    public IdentifiedObjectFinder createIdentifiedObjectFinder(final Class<? extends IdentifiedObject> type)
-            throws FactoryException
-    {
-        return new Finder(this, type);
+    public IdentifiedObjectFinder newIdentifiedObjectFinder() throws FactoryException {
+        return new Finder(this);
     }
 
     /**
      * An implementation of {@link IdentifiedObjectFinder} which delegates
      * the work to the underlying Data Access Object and caches the result.
-     *
-     * <div class="section">Implementation note</div>
-     * we will create objects using directly the underlying Data Access Object, not using the cache.
-     * This is because hundred of objects may be created during a scan while only one will be typically retained.
-     * We do not want to flood the cache with every false candidates that we encounter during the scan.
      *
      * <div class="section">Synchronization note</div>
      * our public API claims that {@link IdentifiedObjectFinder}s are not thread-safe.
@@ -1715,8 +1708,8 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
         /**
          * Creates a finder for the given type of objects.
          */
-        Finder(final ConcurrentAuthorityFactory<?> factory, final Class<? extends IdentifiedObject> type) {
-            super(factory, type);
+        Finder(final ConcurrentAuthorityFactory<?> factory) {
+            super(factory);
         }
 
         /**
@@ -1744,7 +1737,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
                  * method succeed, no matter what happen after this point.
                  */
                 acquireCount = 1;
-                finder = delegate.createIdentifiedObjectFinder(getObjectType());
+                finder = delegate.newIdentifiedObjectFinder();
                 finder.setWrapper(this);
             } else {
                 acquireCount++;
@@ -1798,19 +1791,19 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
          * The default implementation performs the same lookup than the Data Access Object and caches the result.
          */
         @Override
-        public IdentifiedObject find(final IdentifiedObject object) throws FactoryException {
-            final Map<IdentifiedObject, IdentifiedObject> findPool = ((ConcurrentAuthorityFactory<?>) factory).findPool;
+        public Set<IdentifiedObject> find(final IdentifiedObject object) throws FactoryException {
+            final Map<IdentifiedObject, Set<IdentifiedObject>> findPool = ((ConcurrentAuthorityFactory<?>) factory).findPool;
+            Set<IdentifiedObject> candidate;
             synchronized (findPool) {
-                final IdentifiedObject candidate = findPool.get(object);
-                if (candidate != null) {
-                    return (candidate == NilReferencingObject.INSTANCE) ? null : candidate;
-                }
+                candidate = findPool.get(object);
+            }
+            if (candidate != null) {
+                return candidate;
             }
             /*
              * Nothing has been found in the cache. Delegates the search to the Data Access Object.
              * We must delegate to 'finder' (not to 'super') in order to take advantage of overridden methods.
              */
-            final IdentifiedObject candidate;
             synchronized (this) {
                 try {
                     acquire();
@@ -1820,12 +1813,17 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
                 }
             }
             /*
-             * If the full scan was allowed, then stores the result even if null so
+             * If the full scan was allowed, then stores the result even if empty so
              * we can remember that no object has been found for the given argument.
              */
-            if (candidate != null || isFullScanAllowed()) {
+            if (isFullScanAllowed()) {
+                candidate = CollectionsExt.unmodifiableOrCopy(candidate);
+                Set<IdentifiedObject> concurrent;
                 synchronized (findPool) {
-                    findPool.put(object, (candidate == null) ? NilReferencingObject.INSTANCE : candidate);
+                    concurrent = findPool.putIfAbsent(object, candidate);
+                }
+                if (concurrent != null) {
+                    return concurrent;      // May happen if the same set has been computed in another thread.
                 }
             }
             return candidate;
