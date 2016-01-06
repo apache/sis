@@ -1815,8 +1815,10 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
             /*
              * If the full scan was allowed, then stores the result even if empty so
              * we can remember that no object has been found for the given argument.
+             * Note that we need to distinguish whether deprecated objects are included or not.
+             * Since the need to include deprecated objects should be rare, we do not cache them.
              */
-            if (isFullScanAllowed()) {
+            if (isFullScanAllowed() && !getIncludeDeprecated()) {
                 candidate = CollectionsExt.unmodifiableOrCopy(candidate);
                 Set<IdentifiedObject> concurrent;
                 synchronized (findPool) {
