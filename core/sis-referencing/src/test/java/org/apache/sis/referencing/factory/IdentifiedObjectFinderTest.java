@@ -59,23 +59,23 @@ public final strictfp class IdentifiedObjectFinderTest extends TestCase {
     }
 
     /**
-     * Tests the {@link IdentifiedObjectFinder#find(IdentifiedObject)} method.
+     * Tests the {@link IdentifiedObjectFinder#findSingleton(IdentifiedObject)} method.
      *
      * @throws FactoryException if the creation of a CRS failed.
      */
     @Test
-    public void testFind() throws FactoryException {
+    public void testFindSingleton() throws FactoryException {
         final GeographicCRS CRS84 = factory.createGeographicCRS("CRS:84");
-        final IdentifiedObjectFinder finder = factory.createIdentifiedObjectFinder(CoordinateReferenceSystem.class);
+        final IdentifiedObjectFinder finder = factory.newIdentifiedObjectFinder();
         assertTrue("Newly created finder should default to full scan.", finder.isFullScanAllowed());
 
         finder.setFullScanAllowed(false);
         assertSame("Should find without the need for scan, since we can use the CRS:84 identifier.",
-                   CRS84, finder.find(CRS84));
+                   CRS84, finder.findSingleton(CRS84));
 
         finder.setFullScanAllowed(true);
         assertSame("Allowing scanning should not make any difference for this CRS84 instance.",
-                   CRS84, finder.find(CRS84));
+                   CRS84, finder.findSingleton(CRS84));
         /*
          * Same test than above, using a CRS without identifier.
          * The intend is to force a full scan.
@@ -87,26 +87,24 @@ public final strictfp class IdentifiedObjectFinderTest extends TestCase {
 
         finder.setFullScanAllowed(false);
         assertNull("Should not find WGS84 without a full scan, since it does not contains the CRS:84 identifier.",
-                   finder.find(search));
+                   finder.findSingleton(search));
 
         finder.setFullScanAllowed(true);
         assertSame("A full scan should allow us to find WGS84, since it is equals ignoring metadata to CRS:84.",
-                   CRS84, finder.find(search));
-
-        assertEquals("CRS:84", finder.findIdentifier(search));
+                   CRS84, finder.findSingleton(search));
     }
 
     /**
-     * Tests the {@link IdentifiedObjectFinder#find(IdentifiedObject)} method through the finder provided by
-     * {@link ConcurrentAuthorityFactory}. The objects found are expected to be cached.
+     * Tests the {@link IdentifiedObjectFinder#findSingleton(IdentifiedObject)} method through the finder
+     * provided by {@link ConcurrentAuthorityFactory}. The objects found are expected to be cached.
      *
      * @throws FactoryException if the creation of a CRS failed.
      */
     @Test
-    @DependsOnMethod("testFind")
-    public void testFindOnCachedInstance() throws FactoryException {
+    @DependsOnMethod("testFindSingleton")
+    public void testFindOnCachingInstance() throws FactoryException {
         factory = new Cached(factory);
-        testFind();
+        testFindSingleton();
     }
 
     /**

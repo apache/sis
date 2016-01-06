@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Locale;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.parameter.ParameterValueGroup;
+import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.opengis.referencing.crs.*;
 import org.opengis.referencing.cs.AxisDirection;
@@ -34,11 +35,14 @@ import org.opengis.referencing.operation.MathTransform;
 import org.opengis.util.FactoryException;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.internal.system.Loggers;
+import org.apache.sis.referencing.CRS;
+import org.apache.sis.referencing.cs.AxesConvention;
+import org.apache.sis.referencing.crs.DefaultGeographicCRS;
 import org.apache.sis.referencing.datum.BursaWolfParameters;
 import org.apache.sis.referencing.datum.DefaultGeodeticDatum;
 import org.apache.sis.referencing.operation.AbstractCoordinateOperation;
+import org.apache.sis.referencing.factory.IdentifiedObjectFinder;
 import org.apache.sis.referencing.factory.UnavailableFactoryException;
-import org.apache.sis.referencing.CRS;
 
 // Test imports
 import org.junit.Rule;
@@ -715,5 +719,51 @@ public final strictfp class EPSGFactoryTest extends TestCase {
             count++;
         }
         assertEquals(count, all.size());        // Size may have been modified after above loop.
+    }
+
+    /**
+     * Tests {@link EPSGFactory#newIdentifiedObjectFinder()} method with a geographic CRS.
+     *
+     * @throws FactoryException if an error occurred while querying the factory.
+     */
+    @Test
+    @DependsOnMethod("testWGS84")
+    public void testFindGeographic() throws FactoryException {
+        assumeNotNull(factory);
+        final IdentifiedObjectFinder finder = factory.newIdentifiedObjectFinder();
+        final DefaultGeographicCRS crs = (DefaultGeographicCRS) CRS.fromWKT(
+                "GEOGCS[“WGS 84”,\n" +
+                "  DATUM[“WGS 84”,\n" +     // Use the alias instead than primary name for forcing a deeper search.
+                "    SPHEROID[“WGS 1984”, 6378137.0, 298.257223563]],\n" +  // Different name for forcing a deeper search.
+                "  PRIMEM[“Greenwich”, 0.0],\n" +
+                "  UNIT[“degree”, 0.017453292519943295],\n" +
+                "  AXIS[“Geodetic latitude”, NORTH],\n" +
+                "  AXIS[“Geodetic longitude”, EAST]]");
+        /*
+         * First, search for a CRS with axis order that does not match the ones in the EPSG database.
+         * IdentifiedObjectFinder should not accept EPSG::4326 as a match for the given CRS.
+         */
+        assertTrue("Full scan should be enabled by default.", finder.isFullScanAllowed());
+        assertTrue("Should not find WGS84 because the axis order is not the same.",
+                   finder.find(crs.forConvention(AxesConvention.NORMALIZED)).isEmpty());
+        /*
+         * Ensure that the cache is empty.
+         */
+        finder.setFullScanAllowed(false);
+        assertTrue("Should not find without a full scan, because the WKT contains no identifier " +
+                   "and the CRS name is ambiguous (more than one EPSG object have this name).",
+                   finder.find(crs).isEmpty());
+        /*
+         * Scan the database for searching the CRS.
+         */
+        finder.setFullScanAllowed(true);
+        final IdentifiedObject found = finder.findSingleton(crs);
+        assertNotNull("With full scan allowed, the CRS should be found.", found);
+        assertEpsgNameAndIdentifierEqual("WGS 84", 4326, found);
+        /*
+         * Should find the CRS without the need of a full scan, because of the cache.
+         */
+        finder.setFullScanAllowed(false);
+        assertSame("The CRS should still in the cache.", found, finder.findSingleton(crs));
     }
 }

@@ -27,7 +27,6 @@ import org.apache.sis.referencing.datum.DefaultGeodeticDatum;
 import org.apache.sis.referencing.crs.DefaultGeographicCRS;
 import org.apache.sis.referencing.crs.DefaultProjectedCRS;
 import org.apache.sis.referencing.crs.DefaultDerivedCRS;
-import org.apache.sis.referencing.CommonCRS;
 
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -71,30 +70,6 @@ public final strictfp class AuthorityFactoryProxyTest extends TestCase {
         assertEquals(GeographicCRS.class, AuthorityFactoryProxy.getInstance(DefaultGeographicCRS.class).type);
         assertEquals(DerivedCRS.class,    AuthorityFactoryProxy.getInstance(DefaultDerivedCRS.class)   .type);
         assertEquals(GeodeticDatum.class, AuthorityFactoryProxy.getInstance(DefaultGeodeticDatum.class).type);
-    }
-
-    /**
-     * Tests {@link IdentifiedObjectFinder#createFromCodes(IdentifiedObject)}.
-     * We use the {@link CommonAuthorityFactory} for testing purpose.
-     *
-     * @throws FactoryException if an error occurred while creating a CRS.
-     */
-    @Test
-    public void testCreateFromCodes() throws FactoryException {
-        final CRSAuthorityFactory factory = new CommonAuthorityFactory(DefaultFactories.forBuildin(NameFactory.class));
-        final IdentifiedObjectFinder proxy = new IdentifiedObjectFinder(factory, GeographicCRS.class);
-        CoordinateReferenceSystem expected = factory.createCoordinateReferenceSystem("84");
-        assertSame(expected, CommonCRS.WGS84.normalizedGeographic());
-        assertSame   (expected, proxy.createFromCodes      (expected));
-        assertSame   (expected, proxy.createFromIdentifiers(expected));
-        assertNull   (          proxy.createFromNames      (expected));
-        assertSame   (expected, proxy.createFromCodes      (CommonCRS.WGS84.normalizedGeographic()));
-        assertNull   (          proxy.createFromNames      (CommonCRS.WGS84.normalizedGeographic()));
-
-        expected = factory.createCoordinateReferenceSystem("83");
-        assertSame   (expected, proxy.createFromCodes      (expected));
-        assertSame   (expected, proxy.createFromIdentifiers(expected));
-        assertNull   (          proxy.createFromNames      (expected));
     }
 
     /**

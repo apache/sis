@@ -1136,19 +1136,11 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * from an incomplete one, for example from an object without "{@code ID[…]}" or
      * "{@code AUTHORITY[…]}" element in <cite>Well Known Text</cite>.
      *
-     * <p>The {@code type} argument is a hint for optimizing the searches.
-     * The specified type should be a GeoAPI interface like {@code GeographicCRS.class},
-     * but this method accepts also implementation classes.
-     * If the type is unknown, one can use {@code IdentifiedObject.class}.
-     * However a more accurate type may help to speed up the search since it reduces the amount
-     * of tables to scan in some implementations (for example the factories backed by EPSG databases).</p>
-     *
-     * @param  type The type of objects to look for.
      * @return A finder to use for looking up unidentified objects.
      * @throws FactoryException if the finder can not be created.
      */
-    public IdentifiedObjectFinder createIdentifiedObjectFinder(Class<? extends IdentifiedObject> type) throws FactoryException {
-        return new IdentifiedObjectFinder(this, type);
+    public IdentifiedObjectFinder newIdentifiedObjectFinder() throws FactoryException {
+        return new IdentifiedObjectFinder(this);
     }
 
     /**
