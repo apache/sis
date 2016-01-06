@@ -40,6 +40,7 @@ import org.apache.sis.util.iso.AbstractFactory;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Debug;
 
@@ -1158,16 +1159,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * @param  code The code to trim.
      * @return The code without the authority scope.
      */
-    protected String trimAuthority(String code) {
-        return trimAuthority(code, null);
-    }
-
-    /**
-     * Implementation of {@link #trimAuthority(String)}, but with an authority which may be already known.
-     * If the given {@code authority} is null, then it will be fetched by a call to {@link #getAuthority()}
-     * if needed.
-     */
-    private String trimAuthority(String code, Citation authority) {
+    final String trimAuthority(String code, Citation authority) {
         code = code.trim();
         final GenericName name = nameFactory.parseGenericName(null, code);
         if (name instanceof ScopedName) {
@@ -1176,7 +1168,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
                 authority = getAuthority();     // Costly operation for EPSGDataAccess.
             }
             if (Citations.identifierMatches(authority, null, scope.toString().trim())) {
-                return name.tip().toString().trim();
+                return CharSequences.trimWhitespaces(name.tip().toString().trim());
             }
         }
         return code;

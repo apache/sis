@@ -17,11 +17,10 @@
 package org.apache.sis.referencing.factory.sql;
 
 import java.util.Set;
+import java.util.List;
 import java.util.Locale;
-import org.opengis.metadata.Identifier;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.parameter.ParameterValueGroup;
-import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.opengis.referencing.crs.*;
 import org.opengis.referencing.cs.AxisDirection;
@@ -35,6 +34,8 @@ import org.opengis.referencing.operation.MathTransform;
 import org.opengis.util.FactoryException;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.internal.system.Loggers;
+import org.apache.sis.referencing.datum.BursaWolfParameters;
+import org.apache.sis.referencing.datum.DefaultGeodeticDatum;
 import org.apache.sis.referencing.operation.AbstractCoordinateOperation;
 import org.apache.sis.referencing.factory.UnavailableFactoryException;
 import org.apache.sis.referencing.CRS;
@@ -50,8 +51,8 @@ import org.apache.sis.test.LoggingWatcher;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 
-import static org.apache.sis.test.Assert.*;
 import static org.junit.Assume.assumeNotNull;
+import static org.apache.sis.test.ReferencingAssert.*;
 
 
 /**
@@ -83,7 +84,7 @@ public final strictfp class EPSGFactoryTest extends TestCase {
      */
     @BeforeClass
     public static void createFactory() throws FactoryException {
-        if (factory == null) try {
+        try {
             factory = new EPSGFactory();
         } catch (UnavailableFactoryException e) {
             Logging.getLogger(Loggers.CRS_FACTORY).warning(e.toString());
@@ -139,110 +140,109 @@ public final strictfp class EPSGFactoryTest extends TestCase {
     }
 
     /**
-     * Returns the first identifier for the specified object.
-     *
-     * @param object The object for which to get the identifier.
-     * @return The first identifier of the given object.
-     */
-    private static String getIdentifier(final IdentifiedObject object) {
-        return object.getIdentifiers().iterator().next().getCode();
-    }
-
-    /**
-     * Returns the EPSG code of the operation method for the given projected CRS.
-     */
-    private static String getOperationMethod(final ProjectedCRS crs) {
-        final Identifier id = crs.getConversionFromBase().getMethod().getIdentifiers().iterator().next();
-        return id.getCodeSpace() + ':' + id.getCode();
-    }
-
-    /**
-     * Tests a geographic CRS.
+     * Tests the "WGS 84" geographic CRS (EPSG::4326).
      *
      * @throws FactoryException if an error occurred while querying the factory.
      */
     @Test
-    public void testGeographic2D_4274() throws FactoryException {
+    public void testWGS84() throws FactoryException {
+        assumeNotNull(factory);
+        final GeographicCRS crs = factory.createGeographicCRS("EPSG:4326");
+        assertEpsgNameAndIdentifierEqual("WGS 84", 4326, crs);
+        assertEpsgNameAndIdentifierEqual("World Geodetic System 1984", 6326, crs.getDatum());
+        assertAxisDirectionsEqual("EPSG::6422", crs.getCoordinateSystem(), AxisDirection.NORTH, AxisDirection.EAST);
+
+        final BursaWolfParameters[] bwp = ((DefaultGeodeticDatum) crs.getDatum()).getBursaWolfParameters();
+        assertEquals("Expected no Bursa-Wolf parameters.", 0, bwp.length);
+
+        assertSame("CRS shall be cached", crs, factory.createCoordinateReferenceSystem("4326"));
+    }
+
+    /**
+     * Tests the "Datum 73" geographic CRS (EPSG::4274), which has a datum different than the WGS84 one.
+     *
+     * @throws FactoryException if an error occurred while querying the factory.
+     */
+    @Test
+    @DependsOnMethod("testWGS84")
+    public void testGeographic2D() throws FactoryException {
         assumeNotNull(factory);
         final GeographicCRS crs = factory.createGeographicCRS("4274");
-        assertEquals("identifier", "4274", getIdentifier(crs));
+        assertEpsgNameAndIdentifierEqual("Datum 73", 4274, crs);
+        assertEpsgNameAndIdentifierEqual("Datum 73", 6274, crs.getDatum());
+        assertAxisDirectionsEqual("EPSG::6422", crs.getCoordinateSystem(), AxisDirection.NORTH, AxisDirection.EAST);
+
+        final BursaWolfParameters[] bwp = ((DefaultGeodeticDatum) crs.getDatum()).getBursaWolfParameters();
+        assertTrue("Expected a transformation to WGS84.", bwp.length >= 1);
+
         assertSame("CRS shall be cached", crs, factory.createCoordinateReferenceSystem("4274"));
-        assertAxisDirectionsEqual("axes", crs.getCoordinateSystem(), AxisDirection.NORTH, AxisDirection.EAST);
     }
 
     /**
-     * Tests a geographic CRS.
+     * Tests the "Lao 1997" geographic CRS (EPSG::4993) with an ellipsoidal height.
      *
      * @throws FactoryException if an error occurred while querying the factory.
      */
     @Test
-    public void testGeographic2D_4617() throws FactoryException {
+    @DependsOnMethod("testGeographic2D")
+    public void testGeographic3D() throws FactoryException {
         assumeNotNull(factory);
-        final GeographicCRS crs = factory.createGeographicCRS("EPSG:4617");
-        assertEquals("identifier", "4617", getIdentifier(crs));
-        assertSame("CRS shall be cached", crs, factory.createCoordinateReferenceSystem("4617"));
-        assertAxisDirectionsEqual("axes", crs.getCoordinateSystem(), AxisDirection.NORTH, AxisDirection.EAST);
-    }
-
-    /**
-     * Tests a three-dimensional geographic CRS.
-     *
-     * @throws FactoryException if an error occurred while querying the factory.
-     */
-    @Test
-    public void testGeographic3D_4993() throws FactoryException {
-        assumeNotNull(factory);
-        final GeographicCRS crs = factory.createGeographicCRS("EPSG:4993");
-        assertEquals("identifier", "4993", getIdentifier(crs));
-        assertSame("CRS shall be cached", crs, factory.createCoordinateReferenceSystem("4993"));
-        assertAxisDirectionsEqual("axes", crs.getCoordinateSystem(),
+        final GeographicCRS crs = factory.createGeographicCRS("EPSG::4993");
+        assertEpsgNameAndIdentifierEqual("Lao 1997", 4993, crs);
+        assertEpsgNameAndIdentifierEqual("Lao National Datum 1997", 6678, crs.getDatum());
+        assertAxisDirectionsEqual("EPSG::6423", crs.getCoordinateSystem(),
                 AxisDirection.NORTH, AxisDirection.EAST, AxisDirection.UP);
+
+        assertSame("CRS shall be cached", crs, factory.createCoordinateReferenceSystem("4993"));
     }
 
     /**
-     * Tests a geocentric CRS.
+     * Tests the "ITRF93" geocentric CRS (EPSG::4915).
      *
      * @throws FactoryException if an error occurred while querying the factory.
      */
     @Test
-    public void testGeocentric_4915() throws FactoryException {
+    public void testGeocentric() throws FactoryException {
         assumeNotNull(factory);
-        final GeocentricCRS crs = factory.createGeocentricCRS("EPSG:4915");
-        assertEquals("identifier", "4915", getIdentifier(crs));
-        assertSame("CRS shall be cached", crs, factory.createCoordinateReferenceSystem("4915"));
-        assertAxisDirectionsEqual("axes", crs.getCoordinateSystem(),
+        final GeocentricCRS crs = factory.createGeocentricCRS("epsg:4915");
+        assertEpsgNameAndIdentifierEqual("ITRF93", 4915, crs);
+        assertEpsgNameAndIdentifierEqual("International Terrestrial Reference Frame 1993", 6652, crs.getDatum());
+        assertAxisDirectionsEqual("EPSG::6500", crs.getCoordinateSystem(),
                 AxisDirection.GEOCENTRIC_X, AxisDirection.GEOCENTRIC_Y, AxisDirection.GEOCENTRIC_Z);
+
+        assertSame("CRS shall be cached", crs, factory.createCoordinateReferenceSystem("4915"));
     }
 
     /**
-     * Tests a vertical CRS.
+     * Tests the "NAD27(76) / UTM zone 15N" projected CRS (EPSG::2027).
      *
      * @throws FactoryException if an error occurred while querying the factory.
      */
     @Test
-    public void testVertical_5735() throws FactoryException {
-        assumeNotNull(factory);
-        final VerticalCRS crs = factory.createVerticalCRS("EPSG:5735");
-        assertEquals("identifier", "5735", getIdentifier(crs));
-        assertSame("CRS shall be cached", crs, factory.createCoordinateReferenceSystem("5735"));
-        assertAxisDirectionsEqual("axes", crs.getCoordinateSystem(), AxisDirection.UP);
-    }
-
-    /**
-     * Tests a projected CRS using Transverse Mercator projection.
-     *
-     * @throws FactoryException if an error occurred while querying the factory.
-     */
-    @Test
-    public void testProjected_2027() throws FactoryException {
+    @DependsOnMethod("testGeographic2D")
+    public void testProjected() throws FactoryException {
         assumeNotNull(factory);
         final ProjectedCRS crs = factory.createProjectedCRS("2027");
-        assertEquals("identifier", "2027", getIdentifier(crs));
-        assertSame("CRS shall be cached", crs, factory.createCoordinateReferenceSystem("2027"));
-        assertAxisDirectionsEqual("axes", crs.getCoordinateSystem(), AxisDirection.EAST, AxisDirection.NORTH);
+        assertEpsgNameAndIdentifierEqual("NAD27(76) / UTM zone 15N", 2027, crs);
+        assertEpsgNameAndIdentifierEqual("NAD27(76)", 4608, crs.getBaseCRS());
+        assertEpsgNameAndIdentifierEqual("North American Datum 1927 (1976)", 6608, crs.getDatum());
+        assertEpsgNameAndIdentifierEqual("Transverse Mercator", 9807, crs.getConversionFromBase().getMethod());
+        assertEpsgNameAndIdentifierEqual("UTM zone 15N", 16015, crs.getConversionFromBase());
+        assertAxisDirectionsEqual("EPSG::4400", crs.getCoordinateSystem(), AxisDirection.EAST, AxisDirection.NORTH);
+        verifyTransverseMercatorParmeters(crs.getConversionFromBase().getParameterValues(), -93);
 
-        final ParameterValueGroup parameters = crs.getConversionFromBase().getParameterValues();
-        assertEquals("central_meridian",     -93, parameters.parameter("central_meridian"  ).doubleValue(), STRICT);
+        assertSame("CRS shall be cached", crs, factory.createCoordinateReferenceSystem("2027"));
+    }
+
+    /**
+     * Verifies the parameter values of the given Universal Transverse Mercator projection.
+     *
+     * @param parameters The parameter value to verify.
+     * @param cm The expected central meridian value.
+     */
+    private static void verifyTransverseMercatorParmeters(final ParameterValueGroup parameters, final double cm) {
+        assertEquals("Transverse Mercator",       parameters.getDescriptor().getName().getCode());
+        assertEquals("central_meridian",      cm, parameters.parameter("central_meridian"  ).doubleValue(), STRICT);
         assertEquals("latitude_of_origin",     0, parameters.parameter("latitude_of_origin").doubleValue(), STRICT);
         assertEquals("scale_factor",      0.9996, parameters.parameter("scale_factor"      ).doubleValue(), STRICT);
         assertEquals("false_easting",     500000, parameters.parameter("false_easting"     ).doubleValue(), STRICT);
@@ -250,44 +250,67 @@ public final strictfp class EPSGFactoryTest extends TestCase {
     }
 
     /**
-     * Tests a projected CRS using Transverse Mercator projection.
+     * Tests the "Beijing 1954 / 3-degree Gauss-Kruger CM 135E" projected CRS (EPSG::2442).
+     * This projected CRS has (North, East) axis orientations instead of (East, North).
      *
      * @throws FactoryException if an error occurred while querying the factory.
      */
     @Test
-    public void testProjected_2442() throws FactoryException {
+    @DependsOnMethod("testProjected")
+    public void testProjectedNorthEast() throws FactoryException {
         assumeNotNull(factory);
         final ProjectedCRS crs = factory.createProjectedCRS(" EPSG : 2442 ");
-        assertEquals("identifier", "2442", getIdentifier(crs));
-        assertSame("CRS shall be cached", crs, factory.createCoordinateReferenceSystem("2442"));
-        assertAxisDirectionsEqual("axes", crs.getCoordinateSystem(), AxisDirection.NORTH, AxisDirection.EAST);
+        assertEpsgNameAndIdentifierEqual("Beijing 1954 / 3-degree Gauss-Kruger CM 135E", 2442, crs);
+        assertAliasTipEquals            ("Beijing 1954 / 3GK 135E", crs);
+        assertEpsgNameAndIdentifierEqual("Beijing 1954", 4214, crs.getBaseCRS());
+        assertEpsgNameAndIdentifierEqual("Beijing 1954", 6214, crs.getDatum());
+        assertEpsgNameAndIdentifierEqual("Transverse Mercator", 9807, crs.getConversionFromBase().getMethod());
+        assertEpsgNameAndIdentifierEqual("Gauss-Kruger CM 135E", 16323, crs.getConversionFromBase());
+        assertAxisDirectionsEqual("EPSG::4530", crs.getCoordinateSystem(), AxisDirection.NORTH, AxisDirection.EAST);
 
         final ParameterValueGroup parameters = crs.getConversionFromBase().getParameterValues();
+        assertEquals("Transverse Mercator",       parameters.getDescriptor().getName().getCode());
         assertEquals("central_meridian",     135, parameters.parameter("central_meridian"  ).doubleValue(), STRICT);
         assertEquals("latitude_of_origin",     0, parameters.parameter("latitude_of_origin").doubleValue(), STRICT);
         assertEquals("scale_factor",           1, parameters.parameter("scale_factor"      ).doubleValue(), STRICT);
         assertEquals("false_easting",     500000, parameters.parameter("false_easting"     ).doubleValue(), STRICT);
         assertEquals("false_northing",         0, parameters.parameter("false_northing"    ).doubleValue(), STRICT);
+
+        assertSame("CRS shall be cached", crs, factory.createCoordinateReferenceSystem("2442"));
     }
 
     /**
      * Tests the "WGS 72 / UTM zone 10N" projection and ensures
      * that it is not confused with "WGS 72BE / UTM zone 10N".
+     * In the EPSG database, those two projected CRS uses the same conversion.
+     * However in Apache SIS the conversions must differ because the datum are not the same.
      *
      * @throws FactoryException if an error occurred while querying the factory.
      */
     @Test
-    public void testProjected_32210() throws FactoryException {
+    @DependsOnMethod("testProjected")
+    public void testProjectedWithSharedConversion() throws FactoryException {
         assumeNotNull(factory);
         final ProjectedCRS crs = factory.createProjectedCRS("32210");
-        assertEquals("name", "WGS 72 / UTM zone 10N", crs.getName().getCode());
-        assertEquals("Conversion name", "UTM zone 10N", crs.getConversionFromBase().getName().getCode());
+        assertEpsgNameAndIdentifierEqual("WGS 72 / UTM zone 10N", 32210, crs);
+        assertEpsgNameAndIdentifierEqual("WGS 72", 4322, crs.getBaseCRS());
+        assertEpsgNameAndIdentifierEqual("World Geodetic System 1972", 6322, crs.getDatum());
+        assertEpsgNameAndIdentifierEqual("Transverse Mercator", 9807, crs.getConversionFromBase().getMethod());
+        assertEpsgNameAndIdentifierEqual("UTM zone 10N", 16010, crs.getConversionFromBase());
+        assertAxisDirectionsEqual("EPSG::4400", crs.getCoordinateSystem(), AxisDirection.EAST, AxisDirection.NORTH);
+        verifyTransverseMercatorParmeters(crs.getConversionFromBase().getParameterValues(), -123);
 
         final ProjectedCRS variant = factory.createProjectedCRS("32410");
-        assertEquals("name", "WGS 72BE / UTM zone 10N", variant.getName().getCode());
-        assertEquals("Conversion name", "UTM zone 10N", variant.getConversionFromBase().getName().getCode());
+        assertEpsgNameAndIdentifierEqual("WGS 72BE / UTM zone 10N", 32410, variant);
+        assertEpsgNameAndIdentifierEqual("WGS 72BE", 4324, variant.getBaseCRS());
+        assertEpsgNameAndIdentifierEqual("WGS 72 Transit Broadcast Ephemeris", 6324, variant.getDatum());
+        assertEpsgNameAndIdentifierEqual("Transverse Mercator", 9807, variant.getConversionFromBase().getMethod());
+        assertEpsgNameAndIdentifierEqual("UTM zone 10N", 16010, variant.getConversionFromBase());
+        verifyTransverseMercatorParmeters(crs.getConversionFromBase().getParameterValues(), -123);
         assertSame("Operation method", crs.getConversionFromBase().getMethod(),
                                    variant.getConversionFromBase().getMethod());
+        assertSame("Coordinate system", crs.getCoordinateSystem(),
+                                    variant.getCoordinateSystem());
 
         assertNotDeepEquals(crs.getConversionFromBase(), variant.getConversionFromBase());
         assertNotDeepEquals(crs, variant);
@@ -303,11 +326,14 @@ public final strictfp class EPSGFactoryTest extends TestCase {
      */
     @Test
     @DependsOnMethod("testCreateByName")
-    public void testProjected_27571() throws FactoryException {
+    public void testProjectedByName() throws FactoryException {
         assumeNotNull(factory);
         final ProjectedCRS crs = factory.createProjectedCRS("NTF (Paris) / Lambert zone I");
-        assertAxisDirectionsEqual("axes", crs.getCoordinateSystem(), AxisDirection.EAST, AxisDirection.NORTH);
-        assertEquals("27571", getIdentifier(crs));
+        assertEpsgNameAndIdentifierEqual("NTF (Paris) / Lambert zone I", 27571, crs);
+        assertEpsgNameAndIdentifierEqual("NTF (Paris)", 4807, crs.getBaseCRS());
+        assertEpsgNameAndIdentifierEqual("Lambert Conic Conformal (1SP)", 9801, crs.getConversionFromBase().getMethod());
+        assertEpsgNameAndIdentifierEqual("Lambert zone I", 18081, crs.getConversionFromBase());
+        assertAxisDirectionsEqual("EPSG::4499", crs.getCoordinateSystem(), AxisDirection.EAST, AxisDirection.NORTH);
         assertSame(crs, factory.createProjectedCRS("27571"));
         /*
          * Gets the CRS using 'createObject'. It will require more SQL
@@ -318,63 +344,93 @@ public final strictfp class EPSGFactoryTest extends TestCase {
     }
 
     /**
-     * Tests a projected CRS using Lambert Azimuthal Equal Area (Spherical) projection.
+     * Tests a projected CRS located on the North pole.
+     * Axis directions are "South along 90°E" and "South along 180°E".
      *
      * @throws FactoryException if an error occurred while querying the factory.
      */
     @Test
     @Ignore("“Lambert Azimuthal Equal Area (Spherical)” projection is not yet implemented.")
-    public void testProjected_3408() throws FactoryException {
+    public void testProjectedOnPole() throws FactoryException {
         assumeNotNull(factory);
         final ProjectedCRS crs = factory.createProjectedCRS("3408");
-        assertEquals("identifier", "3408", getIdentifier(crs));
-        assertEquals("name", "NSIDC EASE-Grid North", crs.getName().getCode());
-        assertEquals("method", "EPSG:1027", getOperationMethod(crs));
-        assertAxisDirectionsEqual("axes", crs.getCoordinateSystem(), AxisDirection.EAST, AxisDirection.NORTH);
+        assertEpsgNameAndIdentifierEqual("NSIDC EASE-Grid North", 3408, crs);
+        assertEpsgNameAndIdentifierEqual("Unspecified datum based upon the International 1924 Authalic Sphere", 4053, crs.getBaseCRS());
+        assertEpsgNameAndIdentifierEqual("Lambert Azimuthal Equal Area (Spherical)", 1027, crs.getConversionFromBase().getMethod());
+        assertEpsgNameAndIdentifierEqual("US NSIDC Equal Area north projection", 3897, crs.getConversionFromBase());
+
+        // TODO: test axis directions.
+
         assertSame("CRS shall be cached", crs, factory.createCoordinateReferenceSystem("3408"));
     }
 
     /**
-     * Tests the Google projection.
+     * Tests the Google projected CRS.
      *
      * @throws FactoryException if an error occurred while querying the factory.
      */
     @Test
-    public void testProjected_3857() throws FactoryException {
+    public void testGoogleProjection() throws FactoryException {
         assumeNotNull(factory);
         final ProjectedCRS crs = factory.createProjectedCRS("3857");
-        assertEquals("identifier", "3857", getIdentifier(crs));
-        assertEquals("name", "WGS 84 / Pseudo-Mercator", crs.getName().getCode());
-        assertEquals("method", "EPSG:1024", getOperationMethod(crs));
-        assertAxisDirectionsEqual("axes", crs.getCoordinateSystem(), AxisDirection.EAST, AxisDirection.NORTH);
+        assertEpsgNameAndIdentifierEqual("WGS 84 / Pseudo-Mercator", 3857, crs);
+        assertEpsgNameAndIdentifierEqual("WGS 84", 4326, crs.getBaseCRS());
+        assertEpsgNameAndIdentifierEqual("Popular Visualisation Pseudo Mercator", 1024, crs.getConversionFromBase().getMethod());
+        assertEpsgNameAndIdentifierEqual("Popular Visualisation Pseudo-Mercator", 3856, crs.getConversionFromBase());
+        assertAxisDirectionsEqual("EPSG::4499", crs.getCoordinateSystem(), AxisDirection.EAST, AxisDirection.NORTH);
+
         assertSame("CRS shall be cached", crs, factory.createCoordinateReferenceSystem("3857"));
     }
 
     /**
-     * Tests an engineering CRS.
+     * Tests the "Barcelona Grid B1" engineering CRS (EPSG::5801).
      *
      * @throws FactoryException if an error occurred while querying the factory.
      */
     @Test
-    public void testEngineering_5801() throws FactoryException {
+    public void testEngineering() throws FactoryException {
         assumeNotNull(factory);
         final EngineeringCRS crs = factory.createEngineeringCRS("EPSG:5801");
-        assertEquals("identifier", "5801", getIdentifier(crs));
-        assertAxisDirectionsEqual("axes", crs.getCoordinateSystem(), AxisDirection.NORTH, AxisDirection.EAST);
+        assertEpsgNameAndIdentifierEqual("Barcelona Grid B1", 5801, crs);
+        assertEpsgNameAndIdentifierEqual("Barcelona", 9301, crs.getDatum());
+        assertAxisDirectionsEqual("EPSG::4500", crs.getCoordinateSystem(), AxisDirection.NORTH, AxisDirection.EAST);
         assertSame("CRS shall be cached", crs, factory.createCoordinateReferenceSystem("5801"));
     }
 
     /**
-     * Tests a compound CRS and its domain of validity.
+     * Tests the "Black Sea height" vertical CRS (EPSG:5735).
      *
      * @throws FactoryException if an error occurred while querying the factory.
      */
     @Test
-    public void testCompound_7400() throws FactoryException {
+    public void testVertical() throws FactoryException {
+        assumeNotNull(factory);
+        final VerticalCRS crs = factory.createVerticalCRS("EPSG:5735");
+        assertEpsgNameAndIdentifierEqual("Black Sea height", 5735, crs);
+        assertEpsgNameAndIdentifierEqual("Black Sea", 5134, crs.getDatum());
+        assertSame("CRS shall be cached", crs, factory.createCoordinateReferenceSystem("5735"));
+        assertAxisDirectionsEqual("EPSG::6499", crs.getCoordinateSystem(), AxisDirection.UP);
+    }
+
+    /**
+     * Tests the "NTF (Paris) + NGF IGN69 height" compound CRS (EPSG:7400).
+     * This method tests also the domain of validity.
+     *
+     * @throws FactoryException if an error occurred while querying the factory.
+     */
+    @Test
+    @DependsOnMethod({"testGeographic2D", "testVertical"})
+    public void testCompound() throws FactoryException {
         assumeNotNull(factory);
         final CompoundCRS crs = factory.createCompoundCRS("EPSG:7400");
-        assertEquals("identifier", "7400", getIdentifier(crs));
-        assertAxisDirectionsEqual("axes", crs.getCoordinateSystem(),
+        assertEpsgNameAndIdentifierEqual("NTF (Paris) + NGF IGN69 height", 7400, crs);
+
+        final List<CoordinateReferenceSystem> components = crs.getComponents();
+        assertEquals("components.size()", 2, components.size());
+        assertEpsgNameAndIdentifierEqual("NTF (Paris)",      4807, components.get(0));
+        assertEpsgNameAndIdentifierEqual("NGF IGN69 height", 5720, components.get(1));
+
+        assertAxisDirectionsEqual("(no EPSG code)", crs.getCoordinateSystem(),
                 AxisDirection.NORTH, AxisDirection.EAST, AxisDirection.UP);
 
         final GeographicBoundingBox bbox = CRS.getGeographicBoundingBox(crs);
@@ -389,11 +445,13 @@ public final strictfp class EPSGFactoryTest extends TestCase {
 
     /**
      * Tests a legacy geographic CRS (no longer supported by EPSG).
+     * This test verifies that the expected warnings are logged.
      *
      * @throws FactoryException if an error occurred while querying the factory.
      */
     @Test
-    public void testDeprecatedGeographic_63266405() throws FactoryException {
+    @DependsOnMethod("testGeographic2D")
+    public void testDeprecatedGeographic() throws FactoryException {
         assumeNotNull(factory);
 
         listener.maximumLogCount = 2;
@@ -403,19 +461,21 @@ public final strictfp class EPSGFactoryTest extends TestCase {
         };
 
         final GeographicCRS crs = factory.createGeographicCRS("63266405");
-        assertEquals("identifier", "63266405", getIdentifier(crs));
-        assertEquals("name", "WGS 84 (deg)", crs.getName().getCode());
-        assertAxisDirectionsEqual("axes", crs.getCoordinateSystem(), AxisDirection.NORTH, AxisDirection.EAST);
+        assertEpsgNameAndIdentifierEqual("WGS 84 (deg)", 63266405, crs);
+        assertAxisDirectionsEqual(null, crs.getCoordinateSystem(), AxisDirection.NORTH, AxisDirection.EAST);
+
         assertSame("CRS shall be cached", crs, factory.createCoordinateReferenceSystem("63266405"));
     }
 
     /**
      * Tests a deprecated projected CRS.
+     * This test verifies that the expected warnings are logged.
      *
      * @throws FactoryException if an error occurred while querying the factory.
      */
     @Test
-    public void testDeprecatedProjected_3786() throws FactoryException {
+    @DependsOnMethod("testDeprecatedGeographic")
+    public void testDeprecatedProjected() throws FactoryException {
         assumeNotNull(factory);
 
         listener.maximumLogCount = 3;
@@ -426,27 +486,20 @@ public final strictfp class EPSGFactoryTest extends TestCase {
         };
 
         final ProjectedCRS crs = factory.createProjectedCRS("3786");
-        assertEquals("identifier", "3786", getIdentifier(crs));
-        assertEquals("name", "World Equidistant Cylindrical (Sphere)", crs.getName().getCode());
-        assertEquals("method", "EPSG:9823", getOperationMethod(crs));
-        assertAxisDirectionsEqual("axes", crs.getCoordinateSystem(), AxisDirection.EAST, AxisDirection.NORTH);
-        assertSame("CRS shall be cached", crs, factory.createCoordinateReferenceSystem("3786"));
-    }
+        assertEpsgNameAndIdentifierEqual("World Equidistant Cylindrical (Sphere)", 3786, crs);
+        assertEpsgNameAndIdentifierEqual("Equidistant Cylindrical (Spherical)", 9823, crs.getConversionFromBase().getMethod());
+        assertAxisDirectionsEqual("EPSG::4499", crs.getCoordinateSystem(), AxisDirection.EAST, AxisDirection.NORTH);
+        assertEquals("All warnings should have been logged at this point.", 0, listener.maximumLogCount);
 
-    /**
-     * Tests the replacement of the deprecated EPSG::3786 projected CRS.
-     *
-     * @throws FactoryException if an error occurred while querying the factory.
-     */
-    @Test
-    public void testProjected_4088() throws FactoryException {
-        assumeNotNull(factory);
-        final ProjectedCRS crs = factory.createProjectedCRS("4088");
-        assertEquals("identifier", "4088", getIdentifier(crs));
-        assertEquals("name", "World Equidistant Cylindrical (Sphere)", crs.getName().getCode());
-        assertEquals("method", "EPSG:1029", getOperationMethod(crs));
-        assertAxisDirectionsEqual("axes", crs.getCoordinateSystem(), AxisDirection.EAST, AxisDirection.NORTH);
-        assertSame("CRS shall be cached", crs, factory.createCoordinateReferenceSystem("4088"));
+        final ProjectedCRS replacement = factory.createProjectedCRS("4088");
+        assertEpsgNameAndIdentifierEqual("World Equidistant Cylindrical (Sphere)", 4088, replacement);
+        assertEpsgNameAndIdentifierEqual("Equidistant Cylindrical (Spherical)", 1029, replacement.getConversionFromBase().getMethod());
+
+        assertSame("Base CRS", crs.getBaseCRS(), replacement.getBaseCRS());
+        assertSame("Coordinate system", crs.getCoordinateSystem(), replacement.getCoordinateSystem());
+
+        assertSame("CRS shall be cached", crs, factory.createCoordinateReferenceSystem("3786"));
+        assertSame("CRS shall be cached", replacement, factory.createCoordinateReferenceSystem("4088"));
     }
 
     /**
@@ -454,17 +507,20 @@ public final strictfp class EPSGFactoryTest extends TestCase {
      *
      * @throws FactoryException if an error occurred while querying the factory.
      *
-     * @see #testProjected_27571()
+     * @see #testProjectedByName()
      */
     @Test
-    public final void testCreateByName() throws FactoryException {
+    public void testCreateByName() throws FactoryException {
         assumeNotNull(factory);
         assertSame   (factory.createUnit("9002"), factory.createUnit("foot"));
         assertNotSame(factory.createUnit("9001"), factory.createUnit("foot"));
-
+        /*
+         * Test a name with colons.
+         */
         final CoordinateSystem cs = factory.createCoordinateSystem(
                 "Ellipsoidal 2D CS. Axes: latitude, longitude. Orientations: north, east. UoM: degree");
-        assertEquals("6422", getIdentifier(cs));
+        assertEpsgNameAndIdentifierEqual(
+                "Ellipsoidal 2D CS. Axes: latitude, longitude. Orientations: north, east. UoM: degree", 6422, cs);
         /*
          * Tests with a unknown name. The exception should be NoSuchAuthorityCodeException
          * (some previous version wrongly threw a SQLException when using HSQL database).
@@ -495,21 +551,20 @@ public final strictfp class EPSGFactoryTest extends TestCase {
     }
 
     /**
-     * Tests the creation of a {@link Conversion} object.
+     * Tests the "UTM zone 10N" conversion (EPSG::16010).
      *
      * @throws FactoryException if an error occurred while querying the factory.
      */
     @Test
-    @DependsOnMethod("testProjected_32210")
-    public void testCreateConversion() throws FactoryException {
+    @DependsOnMethod("testProjectedWithSharedConversion")
+    public void testConversion() throws FactoryException {
         assumeNotNull(factory);
         /*
          * Fetch directly the "UTM zone 10N" operation. Because this operation was not obtained in
          * the context of a projected CRS, the source and target CRS shall be unspecified (i.e. null).
          */
         final CoordinateOperation operation = factory.createCoordinateOperation("16010");
-        assertEquals("Conversion name", "UTM zone 10N", operation.getName().getCode());
-        assertEquals("Defining conversion identifier", "16010", getIdentifier(operation));
+        assertEpsgNameAndIdentifierEqual("UTM zone 10N", 16010, operation);
         assertInstanceOf("EPSG::16010", Conversion.class, operation);
         assertNull("sourceCRS", operation.getSourceCRS());
         assertNull("targetCRS", operation.getTargetCRS());
@@ -520,22 +575,22 @@ public final strictfp class EPSGFactoryTest extends TestCase {
          */
         final ProjectedCRS crs = factory.createProjectedCRS("32210");
         final CoordinateOperation projection = crs.getConversionFromBase();
-        assertEquals("Projected CRS identifier", "32210", getIdentifier(crs));
-        assertEquals("Conversion identifier",    "16010", getIdentifier(projection));
+        assertEpsgNameAndIdentifierEqual("WGS 72 / UTM zone 10N", 32210, crs);
+        assertEpsgNameAndIdentifierEqual("UTM zone 10N", 16010, projection);
+        assertNotSame("The defining conversion and the actual conversion should differ since the "
+                + "actual conversion should have semi-axis length values.", projection, operation);
         assertInstanceOf("EPSG::16010", Projection.class, projection);
         assertNotNull("sourceCRS", projection.getSourceCRS());
         assertNotNull("targetCRS", projection.getTargetCRS());
         assertNotNull("transform", projection.getMathTransform());
-        assertNotSame("The defining conversion and the actual conversion should differ since the "
-                + "actual conversion should have semi-axis length values.", projection, operation);
         /*
          * Compare the conversion obtained directly with the conversion obtained
          * indirectly through a projected CRS. Both should use the same method.
          */
         final OperationMethod copMethod = ((Conversion) operation) .getMethod();
         final OperationMethod crsMethod = ((Conversion) projection).getMethod();
-        assertEquals("Defining conversion method",      "9807", getIdentifier(copMethod));
-        assertEquals("Projected CRS conversion method", "9807", getIdentifier(crsMethod));
+        assertEpsgNameAndIdentifierEqual("Transverse Mercator", 9807, copMethod);
+        assertEpsgNameAndIdentifierEqual("Transverse Mercator", 9807, crsMethod);
         try {
             assertSame("Conversion method", copMethod, crsMethod);
             assertSame("Conversion method", copMethod, factory.createOperationMethod("9807"));
@@ -552,39 +607,46 @@ public final strictfp class EPSGFactoryTest extends TestCase {
     }
 
     /**
-     * Tests longitude rotation. This is a very simple case for checking
+     * Tests longitude rotation (EPSG::1764). This is a very simple case for checking
      * that this part is okay before to try more complex transformations.
      *
      * @throws FactoryException if an error occurred while querying the factory.
      */
     @Test
-    public void testTransformation_1764() throws FactoryException {
+    public void testSimpleTransformation() throws FactoryException {
         assumeNotNull(factory);
-        assertInstanceOf("EPSG::1764", Transformation.class, factory.createCoordinateOperation("1764"));
+        final CoordinateOperation operation = factory.createCoordinateOperation("1764");
+        assertEpsgNameAndIdentifierEqual("NTF (Paris) to NTF (2)", 1764, operation);
+        assertInstanceOf("EPSG::1764", Transformation.class, operation);
+        assertSame("Operation shall be cached", operation, factory.createCoordinateOperation("1764"));
     }
 
     /**
-     * Tests "BD72 to WGS 84 (1)" (EPSG:1609) creation. This one has an unusual unit for the
-     * "Scale difference" parameter (EPSG:8611). The value is 0.999999 and the unit is "unity"
-     * (EPSG:9201) instead of the usual "parts per million" (EPSG:9202).
+     * Tests "BD72 to WGS 84 (1)" (EPSG::1609) transformation. This one has an unusual unit for the
+     * "Scale difference" parameter (EPSG::8611). The value is 0.999999 and the unit is "unity" (EPSG::9201)
+     * instead of the usual "parts per million" (EPSG:9202).
      *
      * @throws FactoryException if an error occurred while querying the factory.
      */
     @Test
-    @DependsOnMethod("testTransformation_1764")
-    public void testTransformation_1609() throws FactoryException {
+    @DependsOnMethod("testSimpleTransformation")
+    public void testTransformation() throws FactoryException {
         assumeNotNull(factory);
-        assertEquals(1.0, AbstractCoordinateOperation.castOrCopy(factory.createCoordinateOperation("1609")).getLinearAccuracy(), STRICT);
+        final CoordinateOperation operation = factory.createCoordinateOperation("1609");
+        assertEpsgNameAndIdentifierEqual("BD72 to WGS 84 (1)", 1609, operation);
+        assertEquals(1.0, ((AbstractCoordinateOperation) operation).getLinearAccuracy(), STRICT);
+        assertSame("Operation shall be cached", operation, factory.createCoordinateOperation("1609"));
     }
 
     /**
-     * Tests the creation of 3 {@link Transformation} objects between the same source and target CRS.
+     * Tests {@link EPSGDataAccess#createFromCoordinateReferenceSystemCodes(String, String)}.
+     * This method verifies the presence of 3 {@link Transformation} instances between the same source and target CRS.
      *
      * @throws FactoryException if an error occurred while querying the factory.
      */
     @Test
-    @DependsOnMethod("testTransformation_1764")
-    public void testTransformations() throws FactoryException {
+    @DependsOnMethod("testTransformation")
+    public void testCreateFromCoordinateReferenceSystemCodes() throws FactoryException {
         assumeNotNull(factory);
         /*
          * ED50 (4230)  to  WGS 84 (4326)  using
@@ -596,9 +658,9 @@ public final strictfp class EPSGFactoryTest extends TestCase {
         final CoordinateReferenceSystem targetCRS = operation1.getTargetCRS();
         final MathTransform             transform = operation1.getMathTransform();
         assertInstanceOf("EPSG::1087", Transformation.class, operation1);
-        assertEquals("ED50 to WGS84", "1087", getIdentifier(operation1));
-        assertEquals("ED50",          "4230", getIdentifier(sourceCRS));
-        assertEquals(        "WGS84", "4326", getIdentifier(targetCRS));
+        assertEpsgNameAndIdentifierEqual("ED50 to WGS 84 (37)", 1087, operation1);
+        assertEpsgNameAndIdentifierEqual("ED50",                4230, sourceCRS);
+        assertEpsgNameAndIdentifierEqual("WGS 84",              4326, targetCRS);
         assertFalse("transform.isIdentity()", operation1.getMathTransform().isIdentity());
         assertEquals(2.5, AbstractCoordinateOperation.castOrCopy(operation1).getLinearAccuracy(), STRICT);
         /*
@@ -607,7 +669,7 @@ public final strictfp class EPSGFactoryTest extends TestCase {
          * Accuracy = 1.5
          */
         final CoordinateOperation operation2 = factory.createCoordinateOperation("1631");
-        assertEquals("ED50 to WGS84", "1631", getIdentifier(operation2));
+        assertEpsgNameAndIdentifierEqual("ED50 to WGS 84 (27)", 1631, operation2);
         assertInstanceOf("EPSG::1631", Transformation.class, operation2);
         assertSame ("sourceCRS", sourceCRS, operation2.getSourceCRS());
         assertSame ("targetCRS", targetCRS, operation2.getTargetCRS());
@@ -621,7 +683,7 @@ public final strictfp class EPSGFactoryTest extends TestCase {
          */
         final CoordinateOperation operation3 = factory.createCoordinateOperation("1989");
         assertInstanceOf("EPSG::1989", Transformation.class, operation3);
-        assertEquals("ED50 to WGS84", "1989", getIdentifier(operation3));
+        assertEpsgNameAndIdentifierEqual("ED50 to WGS 84 (34)", 1989, operation3);
         assertSame ("sourceCRS", sourceCRS, operation3.getSourceCRS());
         assertSame ("targetCRS", targetCRS, operation3.getTargetCRS());
         assertFalse("transform.isIdentity()", operation3.getMathTransform().isIdentity());
@@ -647,28 +709,11 @@ public final strictfp class EPSGFactoryTest extends TestCase {
         for (final CoordinateOperation tr : all) {
             assertSame("sourceCRS", sourceCRS, tr.getSourceCRS());
             assertSame("targetCRS", targetCRS, tr.getTargetCRS());
-            if (count == 0) {
-                assertEquals("Preferred transformation", "1612", getIdentifier(tr));         // see comment above.
+            if (count == 0) {   // Preferred transformation (see above comment).
+                assertEpsgNameAndIdentifierEqual("ED50 to WGS 84 (23)", 1612, tr);
             }
             count++;
         }
         assertEquals(count, all.size());        // Size may have been modified after above loop.
-    }
-
-    /**
-     * Tests {@link EPSGDataAccess#createFromCoordinateReferenceSystemCodes(String, String)}.
-     *
-     * @throws FactoryException if an error occurred while querying the factory.
-     */
-    @Test
-    @DependsOnMethod("testProjected_32210")
-    public void testCreateFromCoordinateReferenceSystemCodes() throws FactoryException {
-        assumeNotNull(factory);
-        final ProjectedCRS crs = factory.createProjectedCRS("32210");
-        assertEquals("baseCRS", "4322", getIdentifier(crs.getBaseCRS()));
-        final Set<CoordinateOperation> all = factory.createFromCoordinateReferenceSystemCodes("4322", "32210");
-        assertEquals("Number of operation from 4322 to 32210:", 1, all.size());
-        assertTrue("Operation from 4322 to 32210 should be the map projection.",
-                all.contains(crs.getConversionFromBase()));
     }
 }

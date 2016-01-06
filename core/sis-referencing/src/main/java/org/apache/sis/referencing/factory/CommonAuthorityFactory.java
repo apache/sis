@@ -221,7 +221,7 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
      */
     @Override
     public CoordinateReferenceSystem createCoordinateReferenceSystem(final String code) throws FactoryException {
-        String c = trimAuthority(code).toUpperCase(Locale.US);
+        String c = trimAuthority(code, authority).toUpperCase(Locale.US);
         if (c.startsWith(Constants.CRS)) {
             /*
              * "trimAuthority" removed "CRS" when it was separated from the code, as in "CRS:84".
