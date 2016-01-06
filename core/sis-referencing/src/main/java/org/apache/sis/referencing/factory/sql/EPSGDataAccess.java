@@ -299,7 +299,7 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
         this.parent     = parent;
         this.connection = connection;
         this.translator = translator;
-        this.namespace  = nameFactory.createNameSpace(nameFactory.createLocalName(null, Constants.EPSG), null);
+        this.namespace  = nameFactory.createNameSpace(nameFactory.createLocalName(null, Constants.IOGP), null);
     }
 
     /**
@@ -960,7 +960,7 @@ addURIs:    for (int i=0; ; i++) {
         final InternationalString edition = authority.getEdition();
         final String version = (edition != null) ? edition.toString() : null;
         if (name != null) {
-            gn = nameFactory.createLocalName(namespace, name);
+            gn = nameFactory.createGenericName(namespace, Constants.EPSG, name);
             properties.put("name", gn);
             properties.put(NamedIdentifier.CODE_KEY,      name);
             properties.put(NamedIdentifier.VERSION_KEY,   version);

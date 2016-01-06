@@ -88,7 +88,17 @@ public final class Messages extends IndexedResourceBundle {
         public static final short ConstantProjParameterValue_1 = 11;
 
         /**
-         * Created an instance of ‘{0}’ named “{1}” with “{2}” identifier.
+         * Created an instance of ‘{0}’ from the “{1}” identifier in {2} seconds.
+         */
+        public static final short CreateDurationFromIdentifier_3 = 33;
+
+        /**
+         * Created an instance of ‘{0}’ in {1} seconds.
+         */
+        public static final short CreateDuration_2 = 34;
+
+        /**
+         * Created an instance of ‘{0}’ named “{1}” with the “{2}” identifier.
          */
         public static final short CreatedIdentifiedObject_3 = 17;
 

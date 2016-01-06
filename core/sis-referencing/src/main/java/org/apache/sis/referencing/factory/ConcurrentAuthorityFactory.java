@@ -27,6 +27,7 @@ import java.util.WeakHashMap;
 import java.util.IdentityHashMap;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.LogRecord;
 import java.lang.ref.WeakReference;
 import java.lang.ref.PhantomReference;
 import java.io.PrintWriter;
@@ -56,7 +57,9 @@ import org.apache.sis.internal.system.DelayedExecutor;
 import org.apache.sis.internal.system.DelayedRunnable;
 import org.apache.sis.internal.system.Shutdown;
 import org.apache.sis.internal.system.Loggers;
+import org.apache.sis.util.logging.PerformanceLevel;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.resources.Messages;
 
 
 /**
@@ -99,6 +102,13 @@ import org.apache.sis.util.resources.Errors;
 public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFactory>
         extends GeodeticAuthorityFactory implements AutoCloseable
 {
+    /**
+     * Duration of data access operations that should be logged, in nanoseconds.
+     * Any operation that take longer than this amount of time to execute will have a message logged.
+     * The log level depends on the execution duration as specified in {@link PerformanceLevel}.
+     */
+    private static final long DURATION_FOR_LOGGING = 10_000_000L;       // 10 milliseconds.
+
     /**
      * The authority, cached after first requested.
      */
@@ -331,7 +341,8 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
 
     /**
      * Returns a Data Access Object. This method <strong>must</strong>
-     * be used together with {@link #release()} in a {@code try ... finally} block.
+     * be used together with {@link #release(String, Class, String)}
+     * in a {@code try ... finally} block.
      *
      * @return Data Access Object (DAO) to use in {@code createFoo(String)} methods.
      * @throws FactoryException if the Data Access Object creation failed.
@@ -381,18 +392,18 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
                     usage = new DataAccessRef<>(factory);
                 }
                 assert usage.depth == 0 : usage;
-            } finally {
+                usage.timestamp = System.nanoTime();
+            } catch (Throwable e) {
                 /*
                  * If any kind of error occurred, restore the 'remainingDAO' field as if no code were executed.
                  * This code would not have been needed if we were allowed to decrement 'remainingDAO' only as
                  * the very last step (when we know that everything else succeed).
                  * But it needed to be decremented inside the synchronized block.
                  */
-                if (usage == null) {
-                    synchronized (availableDAOs) {
-                        remainingDAOs++;
-                    }
+                synchronized (availableDAOs) {
+                    remainingDAOs++;
                 }
+                throw e;
             }
             currentDAO.set(usage);
         }
@@ -407,15 +418,42 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
     /**
      * Releases the Data Access Object previously obtained with {@link #getDataAccess()}.
      * This method marks the factory as available for reuse by other threads.
+     *
+     * <p>All arguments given to this method are for logging purpose only.</p>
+     *
+     * @param caller The caller method, or {@code null} for {@code "create" + type.getSimpleName()}.
+     * @param type   The type of the created object, or {@code null} for performing no logging.
+     * @param code   The code of the created object, or {@code null} if none.
      */
-    private void release() {
+    private void release(String caller, final Class<?> type, final String code) {
         final DataAccessRef<DAO> usage = currentDAO.get();  // A null value here would be an error in our algorithm.
         if (--usage.depth == 0) {
             currentDAO.remove();
+            long time = usage.timestamp;
             synchronized (availableDAOs) {
                 remainingDAOs++;            // Must be done first in case an exception happen after this point.
                 recycle(usage);
                 availableDAOs.notify();     // We released only one data access, so awake only one thread - not all of them.
+                time = usage.timestamp - time;
+            }
+            /*
+             * Log only events that take longer than the threshold (e.g. 10 milliseconds).
+             */
+            if (time >= DURATION_FOR_LOGGING && type != null) {
+                if (caller == null) {
+                    caller = "create".concat(type.getSimpleName());
+                }
+                final Double duration = time / 1E+9;
+                final PerformanceLevel level = PerformanceLevel.forDuration(time, TimeUnit.NANOSECONDS);
+                final Messages resources = Messages.getResources(null);
+                final LogRecord record;
+                if (code != null) {
+                    record = resources.getLogRecord(level, Messages.Keys.CreateDurationFromIdentifier_3, type, code, duration);
+                } else {
+                    record = resources.getLogRecord(level, Messages.Keys.CreateDuration_2, type, duration);
+                }
+                record.setLoggerName(Loggers.CRS_FACTORY);
+                Logging.log(getClass(), caller, record);
             }
         }
         assert usage.depth >= 0 : usage;
@@ -622,7 +660,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
                 // will try again next time this method is invoked.
                 authority = c = factory.getAuthority();
             } finally {
-                release();
+                release("getAuthority", Citation.class, null);
             }
         } catch (FactoryException e) {
             Logging.unexpectedException(Logging.getLogger(Loggers.CRS_FACTORY),
@@ -656,7 +694,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
              * the connection only when the iteration is over or the iterator has been garbage-collected.
              */
         } finally {
-            release();
+            release("getAuthorityCodes", Set.class, null);
         }
     }
 
@@ -683,7 +721,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
         try {
             return factory.getDescriptionText(code);
         } finally {
-            release();
+            release("getDescriptionText", InternationalString.class, code);
         }
     }
 
@@ -696,6 +734,31 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
      */
     private boolean isDefault(final Class<?> type) {
         return inherited.containsKey(type);
+    }
+
+    /**
+     * Returns a code equivalent to the given code but with unnecessary elements eliminated.
+     * The normalized code is used as the key in the cache, and is also the code which will
+     * be passed to the {@linkplain #newDataAccess() Data Access Object} (DAO).
+     *
+     * <p>The default implementation performs the following steps:</p>
+     * <ol>
+     *   <li>Removes the authority scope if presents. For example if the {@linkplain #getAuthority() authority}
+     *       is EPSG and the given code starts with the {@code "EPSG:"} prefix, then that prefix is removed.
+     *       Otherwise, the scope is unchanged.</li>
+     *   <li>Removes leading and trailing spaces.</li>
+     * </ol>
+     *
+     * Subclasses can override this method for performing a different normalization work.
+     * It is okay to return internal codes completely different than the given codes,
+     * provided that the Data Access Objects will understand those internal codes.
+     *
+     * @param  code The code to normalize.
+     * @return The normalized code.
+     * @throws FactoryException if an error occurred while normalizing the given code.
+     */
+    protected String normalizeCode(String code) throws FactoryException {
+        return trimAuthority(code, null);
     }
 
     /**
@@ -1531,7 +1594,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
     private <T> T create(final AuthorityFactoryProxy<T> proxy, final String code) throws FactoryException {
         ArgumentChecks.ensureNonNull("code", code);
         final Class<T> type = proxy.type;
-        final Key key = new Key(type, trimAuthority(code));
+        final Key key = new Key(type, normalizeCode(code));
         Object value = cache.peek(key);
         if (!type.isInstance(value)) {
             final Cache.Handler<Object> handler = cache.lock(key);
@@ -1543,7 +1606,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
                     try {
                         result = proxy.create(factory, key.code);
                     } finally {
-                        release();
+                        release(null, type, code);
                     }
                     value = result;     // For the finally block below.
                     return result;
@@ -1581,7 +1644,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
     {
         ArgumentChecks.ensureNonNull("sourceCRS", sourceCRS);
         ArgumentChecks.ensureNonNull("targetCRS", targetCRS);
-        final Key key = new Key(trimAuthority(sourceCRS), trimAuthority(targetCRS));
+        final Key key = new Key(normalizeCode(sourceCRS), normalizeCode(targetCRS));
         Object value = cache.peek(key);
         if (!(value instanceof Set<?>)) {
             final Cache.Handler<Object> handler = cache.lock(key);
@@ -1592,7 +1655,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
                     try {
                         value = factory.createFromCoordinateReferenceSystemCodes(sourceCRS, targetCRS);
                     } finally {
-                        release();
+                        release("createFromCoordinateReferenceSystemCodes", CoordinateOperation.class, null);
                     }
                 }
             } finally {
@@ -1699,7 +1762,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
             }
             if (--acquireCount == 0) {
                 finder = null;
-                ((ConcurrentAuthorityFactory<?>) factory).release();
+                ((ConcurrentAuthorityFactory<?>) factory).release(null, null, null);
             }
         }
 
