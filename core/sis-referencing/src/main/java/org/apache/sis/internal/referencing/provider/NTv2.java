@@ -40,8 +40,6 @@ import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.Transformation;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
-import org.apache.sis.referencing.factory.MissingFactoryResourceException;
-import org.apache.sis.referencing.factory.FactoryDataException;
 import org.apache.sis.referencing.operation.transform.InterpolatedTransform;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.system.DataDirectory;
@@ -55,7 +53,6 @@ import org.apache.sis.util.resources.Messages;
 // Branch-dependent imports
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.NoSuchFileException;
 import java.nio.charset.StandardCharsets;
 
 
@@ -153,12 +150,7 @@ public final class NTv2 extends AbstractProvider {
                         grid = loader.readGrid();
                         loader.reportWarnings();
                     } catch (IOException | NoninvertibleTransformException | RuntimeException e) {
-                        final String message = Errors.format(Errors.Keys.CanNotParseFile_2, "NTv2", file);
-                        if (e instanceof NoSuchFileException) {
-                            throw new MissingFactoryResourceException(message, e);
-                        } else {
-                            throw new FactoryDataException(message, e);
-                        }
+                        throw DatumShiftGridLoader.canNotLoad("NTv2", file, e);
                     }
                     grid = grid.useSharedData();
                 }

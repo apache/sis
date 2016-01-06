@@ -106,6 +106,8 @@ import org.apache.sis.util.Version;
 import org.apache.sis.measure.Units;
 import org.apache.sis.measure.MeasurementRange;
 
+// Branch-dependent imports
+
 
 /**
  * <cite>Data Access Object</cite> (DAO) creating geodetic objects from a JDBC connection to an EPSG database.
@@ -2311,7 +2313,7 @@ addURIs:    for (int i=0; ; i++) {
                 final String name  = getString(operation, result, 1);
                 final double value = getOptionalDouble(result, 2);
                 final Unit<?> unit;
-                Object reference;
+                String reference;
                 if (Double.isNaN(value)) {
                     /*
                      * If no numeric values were provided in the database, then the values should be
