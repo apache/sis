@@ -36,7 +36,7 @@ import org.apache.sis.referencing.AbstractIdentifiedObject;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.6
- * @version 0.6
+ * @version 0.7
  * @module
  */
 final class SubTypes {
@@ -126,7 +126,7 @@ final class SubTypes {
      *         the defining {@linkplain DefaultConversion#getInterface() conversion type} and
      *         the {@linkplain DefaultOperationMethod#getOperationType() method operation type}.
      */
-    static <T extends Conversion> T create(final Class<T> baseType, final Conversion definition,
+    static <T extends Conversion> T create(final Class<T> baseType, Conversion definition,
             final CoordinateReferenceSystem sourceCRS, final CoordinateReferenceSystem targetCRS,
             final MathTransformFactory factory) throws FactoryException
     {
@@ -144,23 +144,44 @@ final class SubTypes {
                 type = c.asSubclass(type);
             }
         }
-        final Conversion conversion;
+        Conversion conversion;
         if (type.isInstance(definition)
                 && definition.getSourceCRS() == sourceCRS
                 && definition.getTargetCRS() == targetCRS
                 && definition.getMathTransform() != null)
         {
             conversion = definition;
-        } else if (CylindricalProjection.class.isAssignableFrom(type)) {
-            conversion = new DefaultCylindricalProjection(definition, sourceCRS, targetCRS, factory);
-        } else if (ConicProjection.class.isAssignableFrom(type)) {
-            conversion = new DefaultConicProjection(definition, sourceCRS, targetCRS, factory);
-        } else if (PlanarProjection.class.isAssignableFrom(type)) {
-            conversion = new DefaultPlanarProjection(definition, sourceCRS, targetCRS, factory);
-        } else if (Projection.class.isAssignableFrom(type)) {
-            conversion = new DefaultProjection(definition, sourceCRS, targetCRS, factory);
         } else {
-            conversion = new DefaultConversion(definition, sourceCRS, targetCRS, factory);
+            final OperationMethod[] actual = new OperationMethod[1];
+            boolean tryAgain;
+            do {
+                tryAgain = false;
+                if (CylindricalProjection.class.isAssignableFrom(type)) {
+                    conversion = new DefaultCylindricalProjection(definition, sourceCRS, targetCRS, factory, actual);
+                } else if (ConicProjection.class.isAssignableFrom(type)) {
+                    conversion = new DefaultConicProjection(definition, sourceCRS, targetCRS, factory, actual);
+                } else if (PlanarProjection.class.isAssignableFrom(type)) {
+                    conversion = new DefaultPlanarProjection(definition, sourceCRS, targetCRS, factory, actual);
+                } else if (Projection.class.isAssignableFrom(type)) {
+                    conversion = new DefaultProjection(definition, sourceCRS, targetCRS, factory, actual);
+                } else {
+                    conversion = new DefaultConversion(definition, sourceCRS, targetCRS, factory, actual);
+                }
+                /*
+                 * The DefaultConversion constructor may have used by MathTransformFactory for creating the actual
+                 * MathTransform object. In such case, we can use the knownledge that the factory has about the
+                 * coordinate operation for refining again the type of the object to be returned.
+                 */
+                final OperationMethod m = actual[0];
+                if (m instanceof DefaultOperationMethod) {
+                    final Class<?> t = ((DefaultOperationMethod) m).getOperationType();
+                    if (t != null && t != type && type.isAssignableFrom(t)) {
+                        type = t.asSubclass(type);
+                        definition = conversion;
+                        tryAgain = true;
+                    }
+                }
+            } while (tryAgain);
         }
         return type.cast(conversion);
     }

@@ -2589,17 +2589,8 @@ addURIs:    for (int i=0; ; i++) {
                          * final operation (a Conversion or a Transformation). We need to give to MathTransformFactory
                          * some information about the context (source and target CRS) for allowing the factory to set
                          * the values of above-mentioned implicit parameters (semi-major and semi-minor axis lengths).
-                         */
-                        final Class<? extends SingleOperation> expected;
-                        if (isTransformation) {
-                            expected = Transformation.class;
-                        } else if (isConversion) {
-                            expected = Conversion.class;
-                        } else {
-                            throw new FactoryDataException(error().getString(Errors.Keys.UnknownType_1, type));
-                        }
-                        /*
-                         * Following special case may be removed in a future SIS version if the missing method is added
+                         *
+                         * The first special case may be removed in a future SIS version if the missing method is added
                          * to GeoAPI. Actually GeoAPI has a method doing part of the job, but incomplete (e.g. the pure
                          * GeoAPI method can not handle Molodensky transform because it does not give the target datum).
                          */
@@ -2614,7 +2605,28 @@ addURIs:    for (int i=0; ; i++) {
                             // Fallback for non-SIS implementations. Work for map projections but not for Molodensky.
                             mt = mtFactory.createBaseToDerived(sourceCRS, parameters, targetCRS.getCoordinateSystem());
                         }
-                        opProperties.put(ReferencingServices.OPERATION_TYPE_KEY, expected);
+                        /*
+                         * Give a hint to the factory about the type of the coordinate operation. ISO 19111 defines
+                         * Conversion and Transformation, but SIS also have more specific sub-types.  We begin with
+                         * what we can infer from the EPSG database.  Next, if the SIS MathTransform providers give
+                         * more information, then we refine the type.
+                         */
+                        Class<? extends SingleOperation> opType;
+                        if (isTransformation) {
+                            opType = Transformation.class;
+                        } else if (isConversion) {
+                            opType = Conversion.class;
+                        } else {
+                            opType = SingleOperation.class;
+                        }
+                        final OperationMethod provider = mtFactory.getLastMethodUsed();
+                        if (provider instanceof DefaultOperationMethod) {                 // SIS-specific
+                            final Class<?> s = ((DefaultOperationMethod) provider).getOperationType();
+                            if (s != null && opType.isAssignableFrom(s)) {
+                                opType = s.asSubclass(SingleOperation.class);
+                            }
+                        }
+                        opProperties.put(ReferencingServices.OPERATION_TYPE_KEY, opType);
                         /*
                          * Following restriction will be removed in a future SIS version if the method is added to GeoAPI.
                          */

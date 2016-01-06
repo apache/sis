@@ -227,11 +227,13 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
      * @param source     The new source CRS.
      * @param target     The new target CRS.
      * @param factory    The factory to use for creating a transform from the parameters or for performing axis changes.
+     * @param actual     An array of length 1 where to store the actual operation method used by the math transform factory.
      */
     DefaultConversion(final Conversion definition,
                       final CoordinateReferenceSystem source,
                       final CoordinateReferenceSystem target,
-                      final MathTransformFactory factory) throws FactoryException
+                      final MathTransformFactory factory,
+                      final OperationMethod[] actual) throws FactoryException
     {
         super(definition);
         int interpDim = ReferencingUtilities.getDimension(super.getInterpolationCRS());
@@ -265,6 +267,7 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
                  */
                 transform = factory.createBaseToDerived(source, parameters, target.getCoordinateSystem());
             }
+            actual[0] = factory.getLastMethodUsed();
         } else {
             /*
              * If the user specified explicitely a MathTransform, we may still need to swap or scale axes.

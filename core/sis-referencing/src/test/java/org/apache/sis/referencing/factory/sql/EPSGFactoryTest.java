@@ -19,6 +19,7 @@ package org.apache.sis.referencing.factory.sql;
 import java.util.Set;
 import java.util.List;
 import java.util.Locale;
+import java.util.Iterator;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.IdentifiedObject;
@@ -27,9 +28,9 @@ import org.opengis.referencing.crs.*;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.operation.Conversion;
-import org.opengis.referencing.operation.Projection;
 import org.opengis.referencing.operation.Transformation;
 import org.opengis.referencing.operation.CoordinateOperation;
+import org.opengis.referencing.operation.CylindricalProjection;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.util.FactoryException;
@@ -583,7 +584,7 @@ public final strictfp class EPSGFactoryTest extends TestCase {
         assertEpsgNameAndIdentifierEqual("UTM zone 10N", 16010, projection);
         assertNotSame("The defining conversion and the actual conversion should differ since the "
                 + "actual conversion should have semi-axis length values.", projection, operation);
-        assertInstanceOf("EPSG::16010", Projection.class, projection);
+        assertInstanceOf("EPSG::16010", CylindricalProjection.class, projection);
         assertNotNull("sourceCRS", projection.getSourceCRS());
         assertNotNull("targetCRS", projection.getTargetCRS());
         assertNotNull("transform", projection.getMathTransform());
@@ -765,5 +766,59 @@ public final strictfp class EPSGFactoryTest extends TestCase {
          */
         finder.setFullScanAllowed(false);
         assertSame("The CRS should still in the cache.", found, finder.findSingleton(crs));
+    }
+
+    /**
+     * Tests {@link EPSGFactory#newIdentifiedObjectFinder()} method with a projected CRS.
+     *
+     * @throws FactoryException if an error occurred while querying the factory.
+     */
+    @Test
+    @DependsOnMethod("testFindGeographic")
+    public void testFindProjected() throws FactoryException {
+        assumeNotNull(factory);
+        final IdentifiedObjectFinder finder = factory.newIdentifiedObjectFinder();
+        /*
+         * The PROJCS below intentionally uses a name different from the one found in the
+         * EPSG database, in order to force a full scan (otherwise the EPSG database would
+         * find it by name, but we want to test the scan).
+         */
+        final CoordinateReferenceSystem crs = CRS.fromWKT(
+                "PROJCS[“Beijing 1954 (modified)”,\n" +
+                "   GEOGCS[“Beijing 1954 (modified)”,\n" +
+                "     DATUM[“Beijing 1954”,\n" +                                                // Datum name matter.
+                "       SPHEROID[“Krassowsky 1940”, 6378245.00000006, 298.299999999998]],\n" +  // Intentional rounding error.
+                "     PRIMEM[“Greenwich”, 0.0],\n" +
+                "     UNIT[“degree”, 0.017453292519943295],\n" +
+                "     AXIS[“Geodetic latitude”, NORTH],\n" +
+                "     AXIS[“Geodetic longitude”, EAST]],\n" +
+                "   PROJECTION[“Transverse Mercator”],\n" +
+                "   PARAMETER[“central_meridian”, 135.0000000000013],\n" +      // Intentional rounding error.
+                "   PARAMETER[“latitude_of_origin”, 0.0],\n" +
+                "   PARAMETER[“scale_factor”, 1.0],\n" +
+                "   PARAMETER[“false_easting”, 500000.000000004],\n" +          // Intentional rounding error.
+                "   PARAMETER[“false_northing”, 0.0],\n" +
+                "   UNIT[“m”, 1.0],\n" +
+                "   AXIS[“Northing”, NORTH],\n" +
+                "   AXIS[“Easting”, EAST]]");
+
+        finder.setFullScanAllowed(false);
+        assertTrue("Should not find the CRS without a full scan.", finder.find(crs).isEmpty());
+
+        finder.setFullScanAllowed(true);
+        final Set<IdentifiedObject> find = finder.find(crs);
+        assertFalse("With full scan allowed, the CRS should be found.", find.isEmpty());
+        /*
+         * Both EPSG:2442 and EPSG:21463 defines the same projection with the same parameters
+         * and the same base GeographicCRS (EPSG:4214). The only difference I found was the
+         * area of validity...
+         *
+         * Note that there is also a EPSG:21483 code, but that one is deprecated and should
+         * not be selected in this test.
+         */
+        final Iterator<IdentifiedObject> it = find.iterator();
+        assertEpsgNameAndIdentifierEqual("Beijing 1954 / 3-degree Gauss-Kruger CM 135E",  2442, it.next());
+        assertEpsgNameAndIdentifierEqual("Beijing 1954 / Gauss-Kruger CM 135E", 21463, it.next());
+        assertFalse("Expected no more element.", it.hasNext());
     }
 }

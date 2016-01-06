@@ -438,6 +438,7 @@ public class IdentifiedObjectFinder {
                 if (!strict && Utilities.deepEquals(candidate, object, ComparisonMode.IGNORE_METADATA)) {
                     /*
                      * If we find at least one object without rounding error, do not accept rounding error for anyone.
+                     * The most typical case is when comparing ellipsoids.
                      */
                     result.clear();
                     strict = true;
