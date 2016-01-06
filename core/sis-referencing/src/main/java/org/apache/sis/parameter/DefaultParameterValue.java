@@ -514,7 +514,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      * Same as {@link #isFile(Object)}, but accepts also a {@link String} if the type specified
      * in the parameter descriptor is one of the types documented in {@link #valueFile()}.
      */
-    private boolean isFileOrString(final Object value) {
+    private boolean isOrNeedFile(final Object value) {
         if (value instanceof String) {
             final Class<?> type = descriptor.getValueClass();
             return (type == URI.class) || (type == URL.class)
@@ -567,7 +567,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
          * to allow too many conversions for reducing the risk of unexpected behavior.  If we fail to convert, try
          * to set the value anyway since the user may have redefined the setValue(Object, Unit) method.
          */
-        if (isFileOrString(value)) try {
+        if (isOrNeedFile(value)) try {
             value = ObjectConverters.convert(value, descriptor.getValueClass());
         } catch (UnconvertibleObjectException e) {
             // Level.FINE (not WARNING) because this log duplicates the exception

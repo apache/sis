@@ -22,13 +22,17 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.ReadableByteChannel;
+import org.opengis.util.FactoryException;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Messages;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.internal.system.Loggers;
+import org.apache.sis.referencing.factory.FactoryDataException;
+import org.apache.sis.referencing.factory.MissingFactoryResourceException;
 
 // Branch-dependent imports
 import java.nio.file.Path;
+import java.nio.file.NoSuchFileException;
 
 
 /**
@@ -145,5 +149,21 @@ class DatumShiftGridLoader {
         final LogRecord record = Messages.getResources(null).getLogRecord(Level.FINE, Messages.Keys.LoadingDatumShiftFile_1, file);
         record.setLoggerName(Loggers.COORDINATE_OPERATION);
         Logging.log(caller, "createMathTransform", record);
+    }
+
+    /**
+     * Creates the exception to thrown when the provider failed to load the grid file.
+     *
+     * @param format   The format name (e.g. "NTv2" or "NADCON").
+     * @param file     The grid file that the subclass tried to load.
+     * @param cause    The cause of the failure to load the grid file.
+     */
+    static FactoryException canNotLoad(final String format, final Path file, final Exception cause) {
+        final String message = Errors.format(Errors.Keys.CanNotParseFile_2, format, file);
+        if (cause instanceof NoSuchFileException) {
+            return new MissingFactoryResourceException(message, cause);
+        } else {
+            return new FactoryDataException(message, cause);
+        }
     }
 }

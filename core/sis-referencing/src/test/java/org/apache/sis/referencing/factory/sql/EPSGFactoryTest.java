@@ -663,6 +663,7 @@ public final strictfp class EPSGFactoryTest extends TestCase {
     @Test
     @DependsOnMethod("testProjected_32210")
     public void testCreateFromCoordinateReferenceSystemCodes() throws FactoryException {
+        assumeNotNull(factory);
         final ProjectedCRS crs = factory.createProjectedCRS("32210");
         assertEquals("baseCRS", "4322", getIdentifier(crs.getBaseCRS()));
         final Set<CoordinateOperation> all = factory.createFromCoordinateReferenceSystemCodes("4322", "32210");
