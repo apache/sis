@@ -1534,7 +1534,7 @@ addURIs:    for (int i=0; ; i++) {
          */
         if (size > 1) {
             final BursaWolfInfo[] codes = bwInfos.toArray(new BursaWolfInfo[size]);
-            sort(codes);
+            sort("Coordinate_Operation", codes);
             bwInfos.clear();
             final Set<Integer> added = new HashSet<>();
             for (BursaWolfInfo candidate : codes) {
@@ -2724,8 +2724,7 @@ addURIs:    for (int i=0; ; i++) {
              * Alter the ordering using the information supplied in the supersession table.
              */
             final String[] codes = set.getAuthorityCodes();
-            if (codes.length > 1) {
-                sort(codes);
+            if (codes.length > 1 && sort("Coordinate_Operation", codes)) {
                 set.setAuthorityCodes(codes);
             }
         } catch (SQLException exception) {
@@ -2860,27 +2859,41 @@ addURIs:    for (int i=0; ; i++) {
              *   with a tolerance threshold of 1 cm for a planet of the size of Earth.
              */
             final Set<String> result = new LinkedHashSet<>();       // We need to preserve order in this set.
-            try (PreparedStatement s = connection.prepareStatement(translator.apply(buffer.toString()))) {
-                for (final Number code : codes) {
-                    if (isFloat) {
-                        final double value = code.doubleValue();
-                        final double tolerance = Math.abs(value * (Formulas.LINEAR_TOLERANCE / ReferencingServices.AUTHALIC_RADIUS));
-                        s.setDouble(1, value - tolerance);
-                        s.setDouble(2, value + tolerance);
-                        s.setDouble(3, value);
-                    } else {
-                        s.setInt(1, code.intValue());
+            try {
+                try (PreparedStatement s = connection.prepareStatement(translator.apply(buffer.toString()))) {
+                    for (final Number code : codes) {
+                        if (isFloat) {
+                            final double value = code.doubleValue();
+                            final double tolerance = Math.abs(value * (Formulas.LINEAR_TOLERANCE / ReferencingServices.AUTHALIC_RADIUS));
+                            s.setDouble(1, value - tolerance);
+                            s.setDouble(2, value + tolerance);
+                            s.setDouble(3, value);
+                        } else {
+                            s.setInt(1, code.intValue());
+                        }
+                        try (ResultSet r = s.executeQuery()) {
+                            while (r.next()) {
+                                result.add(r.getString(1));
+                            }
+                        }
                     }
-                    try (ResultSet r = s.executeQuery()) {
-                        while (r.next()) {
-                            result.add(r.getString(1));
+                }
+                result.remove(null);    // Should not have null element, but let be safe.
+                /*
+                 * Sort the result by taking in account the supersession table.
+                 */
+                if (result.size() > 1) {
+                    final Object[] id = result.toArray();
+                    if (sort(select, id)) {
+                        result.clear();
+                        for (final Object c : id) {
+                            result.add((String) c);
                         }
                     }
                 }
             } catch (SQLException exception) {
                 throw databaseFailure(Identifier.class, String.valueOf(CollectionsExt.first(codes)), exception);
             }
-            result.remove(null);    // Should not have null element, but let be safe.
             return result;
         }
     }
@@ -2983,42 +2996,49 @@ addURIs:    for (int i=0; ; i++) {
      * to preserve the old ordering of the supplied codes (since deprecated operations should already be last).
      * The ordering is performed in place.
      *
+     * @param table The table of the objects for which to check for supersession.
      * @param codes The codes, usually as an array of {@link String}. If the array do not contains string objects,
-     *              then the {@link Object#toString()} method must returns the code for each element.
+     *              then the {@link Object#toString()} method must return the code for each element.
+     * @return {@code true} if the array changed as a result of this method call.
      */
-    private void sort(final Object[] codes) throws SQLException, FactoryException {
-        int maxIterations = 15;         // For avoiding never-ending loop.
+    final synchronized boolean sort(final String table, final Object[] codes) throws SQLException, FactoryException {
+        int iteration = 0;
         do {
             boolean changed = false;
             for (int i=0; i<codes.length; i++) {
                 final String code = codes[i].toString();
                 try (ResultSet result = executeQuery("Supersession", null, null,
-                        "SELECT SUPERSEDED_BY" +
+                        "SELECT OBJECT_TABLE_NAME, SUPERSEDED_BY" +
                         " FROM [Supersession]" +
                         " WHERE OBJECT_CODE = ?" +
                         " ORDER BY SUPERSESSION_YEAR DESC", code))
                 {
                     while (result.next()) {
-                        final String replacement = getString(code, result, 1);
-                        for (int j=i+1; j<codes.length; j++) {
-                            final Object candidate = codes[j];
-                            if (replacement.equals(candidate.toString())) {
-                                /*
-                                 * Found a code to move in front of the superceded one.
-                                 */
-                                System.arraycopy(codes, i, codes, i+1, j-i);
-                                codes[i++] = candidate;
-                                changed = true;
+                        if (tableMatches(table, result.getString(1))) {
+                            final String replacement = result.getString(2);
+                            if (replacement != null) {
+                                for (int j=i+1; j<codes.length; j++) {
+                                    final Object candidate = codes[j];
+                                    if (replacement.equals(candidate.toString())) {
+                                        /*
+                                         * Found a code to move in front of the superceded one.
+                                         */
+                                        System.arraycopy(codes, i, codes, i+1, j-i);
+                                        codes[i++] = candidate;
+                                        changed = true;
+                                    }
+                                }
                             }
                         }
                     }
                 }
             }
             if (!changed) {
-                return;
+                return iteration != 0;
             }
         }
-        while (--maxIterations != 0);
+        while (++iteration < 15);      // Arbitrary limit for avoiding never-ending loop.
+        return true;
     }
 
     /**
