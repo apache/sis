@@ -644,6 +644,8 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      *           <cite>When object name matter</cite> below.</td></tr>
      *   <tr><td>{@link ComparisonMode#APPROXIMATIVE APPROXIMATIVE}:</td>
      *       <td>Same as {@code IGNORE_METADATA}, with some tolerance threshold on numerical values.</td></tr>
+     *   <tr><td>{@link ComparisonMode#ALLOW_VARIANT ALLOW_VARIANT}:</td>
+     *       <td>Same as {@code APPROXIMATIVE}, but ignores coordinate system axes.</td></tr>
      *   <tr><td>{@link ComparisonMode#DEBUG DEBUG}:</td>
      *        <td>Special mode for figuring out why two objects expected to be equal are not.</td></tr>
      * </table>
@@ -718,6 +720,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
             }
             case IGNORE_METADATA:
             case APPROXIMATIVE:
+            case ALLOW_VARIANT:
             case DEBUG: {
                 return implementsSameInterface(object);
             }

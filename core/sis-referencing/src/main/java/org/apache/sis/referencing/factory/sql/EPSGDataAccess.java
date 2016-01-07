@@ -73,6 +73,7 @@ import org.apache.sis.internal.referencing.DeprecatedCode;
 import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.util.Constants;
+import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.metadata.iso.ImmutableIdentifier;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
@@ -103,8 +104,9 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Localized;
 import org.apache.sis.util.Version;
-import org.apache.sis.measure.Units;
+import org.apache.sis.util.collection.Containers;
 import org.apache.sis.measure.MeasurementRange;
+import org.apache.sis.measure.Units;
 
 // Branch-dependent imports
 
@@ -2771,12 +2773,14 @@ addURIs:    for (int i=0; ; i++) {
             String select = "COORD_REF_SYS_CODE";
             String from   = "Coordinate Reference System";
             final String where;
-            final Set<Comparable<?>> codes;
+            final Set<Number> codes;
+            boolean isFloat = false;
             if (object instanceof Ellipsoid) {
-                select = "ELLIPSOID_CODE";
-                from   = "Ellipsoid";
-                where  = "SEMI_MAJOR_AXIS";
-                codes  = Collections.singleton(((Ellipsoid) object).getSemiMajorAxis());
+                select  = "ELLIPSOID_CODE";
+                from    = "Ellipsoid";
+                where   = "SEMI_MAJOR_AXIS";
+                codes   = Collections.singleton(((Ellipsoid) object).getSemiMajorAxis());
+                isFloat = true;
             } else {
                 final IdentifiedObject dependency;
                 if (object instanceof GeneralDerivedCRS) {
@@ -2802,11 +2806,21 @@ addURIs:    for (int i=0; ; i++) {
                  * cache. This is desirable since this method may be invoked (indirectly) in a loop for many CRS objects
                  * sharing the same CoordinateSystem or Datum dependencies.
                  */
-                codes = new LinkedHashSet<>();
-                for (final IdentifiedObject dep : find(dependency)) {
+                final boolean previous = isIgnoringAxes();
+                final Set<IdentifiedObject> find;
+                try {
+                    setIgnoringAxes(true);
+                    find = find(dependency);
+                } finally {
+                    setIgnoringAxes(previous);
+                }
+                codes = new LinkedHashSet<>(Containers.hashMapCapacity(find.size()));
+                for (final IdentifiedObject dep : find) {
                     Identifier id = IdentifiedObjects.getIdentifier(dep, Citations.EPSG);
-                    if (id != null) {               // Should never be null, but let be safe.
-                        codes.add(id.getCode());
+                    if (id != null) try {           // Should never be null, but let be safe.
+                        codes.add(Integer.parseInt(id.getCode()));
+                    } catch (NumberFormatException e) {
+                        Logging.recoverableException(Logging.getLogger(Loggers.CRS_FACTORY), Finder.class, "getCodeCandidates", e);
                     }
                 }
                 codes.remove(null);                 // Paranoiac safety.
@@ -2816,7 +2830,28 @@ addURIs:    for (int i=0; ; i++) {
                 }
             }
             /*
-             * Build the SQL statement. The code can be any of the following types:
+             * Build the SQL statement. The parameters depend on whether the search criterion is an EPSG code
+             * or a numeric value.
+             *
+             * - If EPSG code, there is only one parameter which is the code to search.
+             * - If numeric, there is 3 parameters: lower value, upper value, exact value to search.
+             */
+            final StringBuilder buffer = new StringBuilder(60);
+            buffer.append("SELECT ").append(select).append(" FROM [").append(from).append("] WHERE ").append(where);
+            if (isFloat) {
+                buffer.append(">=? AND ").append(where).append("<=?");
+            } else {
+                buffer.append("=?");
+            }
+            buffer.append(getSearchDomain() == Domain.ALL_DATASET
+                          ? " ORDER BY ABS(DEPRECATED), "
+                          : " AND DEPRECATED=0 ORDER BY ");
+            if (isFloat) {
+                buffer.append("ABS(").append(select).append("-?), ");
+            }
+            buffer.append(select);          // Only for making order determinist.
+            /*
+             * Run the SQL statement. The parameter can be any of the following types:
              *
              * - A String, which represent a foreigner key as an integer value.
              *   The search will require an exact match.
@@ -2825,42 +2860,27 @@ addURIs:    for (int i=0; ; i++) {
              *   with a tolerance threshold of 1 cm for a planet of the size of Earth.
              */
             final Set<String> result = new LinkedHashSet<>();       // We need to preserve order in this set.
-            final StringBuilder buffer = new StringBuilder(60);
-            buffer.append("SELECT ").append(select).append(" FROM [").append(from).append("] WHERE ").append(where);
-            final int start = buffer.length();
-            for (final Comparable<?> code : codes) {
-                buffer.setLength(start);
-                if (code instanceof Number) {
-                    final double value = ((Number) code).doubleValue();
-                    final double tolerance = Math.abs(value * (Formulas.LINEAR_TOLERANCE / ReferencingServices.AUTHALIC_RADIUS));
-                    buffer.append(">=").append(value - tolerance).append(" AND ").append(where)
-                          .append("<=").append(value + tolerance);
-                } else {
-                    buffer.append('=').append(code);
-                }
-                if (!getIncludeDeprecated()) {
-                    buffer.append(" AND DEPRECATED=0");
-                }
-                buffer.append(" ORDER BY ABS(DEPRECATED), ");
-                if (code instanceof Number) {
-                    buffer.append("ABS(").append(select).append('-').append(code).append(')');
-                } else {
-                    buffer.append(select);          // Only for making order determinist.
-                }
-                try {
-                    final String sql = translator.apply(buffer.toString());
-                    try (Statement s = connection.createStatement();
-                         ResultSet r = s.executeQuery(sql))
-                    {
+            try (PreparedStatement s = connection.prepareStatement(translator.apply(buffer.toString()))) {
+                for (final Number code : codes) {
+                    if (isFloat) {
+                        final double value = code.doubleValue();
+                        final double tolerance = Math.abs(value * (Formulas.LINEAR_TOLERANCE / ReferencingServices.AUTHALIC_RADIUS));
+                        s.setDouble(1, value - tolerance);
+                        s.setDouble(2, value + tolerance);
+                        s.setDouble(3, value);
+                    } else {
+                        s.setInt(1, code.intValue());
+                    }
+                    try (ResultSet r = s.executeQuery()) {
                         while (r.next()) {
                             result.add(r.getString(1));
                         }
                     }
-                } catch (SQLException exception) {
-                    throw databaseFailure(Identifier.class, String.valueOf(code), exception);
                 }
-                result.remove(null);    // Should not have null element, but let be safe.
+            } catch (SQLException exception) {
+                throw databaseFailure(Identifier.class, String.valueOf(CollectionsExt.first(codes)), exception);
             }
+            result.remove(null);    // Should not have null element, but let be safe.
             return result;
         }
     }
@@ -3017,7 +3037,7 @@ addURIs:    for (int i=0; ; i++) {
     /**
      * Constructs an exception for a database failure.
      */
-    private FactoryException databaseFailure(Class<?> type, Comparable<?> code, SQLException cause) {
+    final FactoryException databaseFailure(Class<?> type, Comparable<?> code, SQLException cause) {
         return new FactoryException(error().getString(Errors.Keys.DatabaseError_2, type, code), cause);
     }
 

@@ -30,16 +30,17 @@ import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.internal.util.Citations;
+import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.util.collection.BackingStoreException;
+import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Utilities;
-import org.apache.sis.util.resources.Errors;
 
 
 /**
  * Searches in an authority factory for objects approximatively equal to a given object.
- * This class can be used for fetching a fully {@linkplain AbstractIdentifiedObject identified object}
+ * This class can be used for fetching a fully defined {@linkplain AbstractIdentifiedObject identified object}
  * from an incomplete one, for example from an object without "{@code ID[…]}" or "{@code AUTHORITY[…]}"
  * element in <cite>Well Known Text</cite>.
  *
@@ -48,7 +49,7 @@ import org.apache.sis.util.resources.Errors;
  *   <li>Get a new instance by calling
  *       {@link GeodeticAuthorityFactory#newIdentifiedObjectFinder()}.</li>
  *   <li>Optionally configure that instance by calling its setter methods.</li>
- *   <li>Perform a search by invoking the {@link #find(IdentifiedObject)} method.</li>
+ *   <li>Perform a search by invoking the {@link #find(IdentifiedObject)} or {@link #findSingleton(IdentifiedObject)} method.</li>
  *   <li>The same {@code IdentifiedObjectFinder} instance can be reused for consecutive searches.</li>
  * </ol>
  *
@@ -66,10 +67,59 @@ import org.apache.sis.util.resources.Errors;
  */
 public class IdentifiedObjectFinder {
     /**
+     * The domain of the search (for example whether to include deprecated objects in the search).
+     *
+     * @author  Martin Desruisseaux (Geomatys)
+     * @since   0.7
+     * @version 0.7
+     * @module
+     */
+    public static enum Domain {
+        /**
+         * Fast lookup based only on embedded identifiers and names. If those identification information
+         * does not allow to locate an object in the factory, then the search will return an empty set.
+         *
+         * <div class="note"><b>Example:</b>
+         * if {@link IdentifiedObjectFinder#find(IdentifiedObject)} is invoked with an object having the {@code "4326"}
+         * {@linkplain AbstractIdentifiedObject#getIdentifiers() identifier}, then the {@code find(…)} method will invoke
+         * <code>factory.{@linkplain GeodeticAuthorityFactory#createGeographicCRS(String) createGeographicCRS}("4326")</code>
+         * and compare the object from the factory with the object to search.
+         * If the objects do not match, then another attempt will be done using the
+         * {@linkplain AbstractIdentifiedObject#getName() object name}. If using name does not work neither,
+         * then {@code find(…)} method makes no other attempt and returns an empty set.
+         * </div>
+         */
+        DECLARATION,
+
+        /**
+         * Lookup based on valid (non-deprecated) objects known to the factory.
+         * First, a fast lookup is performed based on {@link #DECLARATION}.
+         * If the fast lookup gave no result, then a more extensive search is performed by scanning the content
+         * of the dataset.
+         *
+         * <div class="note"><b>Example:</b>
+         * if {@link IdentifiedObjectFinder#find(IdentifiedObject)} is invoked with an object equivalent to the
+         * {@linkplain org.apache.sis.referencing.CommonCRS#WGS84 WGS84} geographic CRS but does not declare the
+         * {@code "4326"} identifier and does not have the <cite>"WGS 84"</cite> name, then the search based on
+         * {@link #DECLARATION} will give no result. The {@code find(…)} method will then scan the dataset for
+         * geographic CRS using equivalent datum and coordinate system. This may be a costly operation.
+         * </div>
+         */
+        VALID_DATASET,
+
+        /**
+         * Lookup based on all objects (both valid and deprecated) known to the factory.
+         * This is the same search than {@link #VALID_DATASET} except that deprecated objects
+         * are included in the search.
+         */
+        ALL_DATASET
+    }
+
+    /**
      * The criterion for determining if a candidate found by {@code IdentifiedObjectFinder}
      * should be considered equals to the requested object.
      */
-    private static final ComparisonMode COMPARISON_MODE = ComparisonMode.APPROXIMATIVE;
+    static final ComparisonMode COMPARISON_MODE = ComparisonMode.APPROXIMATIVE;
 
     /**
      * The factory to use for creating objects. This is the factory specified at construction time.
@@ -90,38 +140,18 @@ public class IdentifiedObjectFinder {
     private IdentifiedObjectFinder wrapper;
 
     /**
-     * The object in process of being searched, or {@code null} if none.
-     * This is used by {@link #find(IdentifiedObject)} for detecting recursivity.
-     */
-    private transient IdentifiedObject searching;
-
-    /**
-     * {@code true} if the {@link #find(IdentifiedObject)} method is invoked from the {@link #wrapper}.
-     * This is used for controlling the interactions with {@link #wrapper} during recursive calls.
-     * Example with {@code EPSGDataAccess}:
+     * The domain of the search (for example whether to include deprecated objects in the search).
      *
-     * <ol>
-     *   <li>When searching for a {@code ProjectedCRS}, first search for its base {@code GeodeticCRS}
-     *       in order to restrict the search scope.</li>
-     *   <li>The search for {@code GeodeticCRS} will in turn searches for {@code GeodeticDatum} in order
-     *       to restrict the search scope.</li>
-     *   <li>The search for {@code GeodeticDatum} will in turn searches for {@code Ellipsoid} in order
-     *       to restrict the search scope.</li>
-     * </ol>
+     * @see #getSearchDomain()
+     */
+    private Domain domain = Domain.VALID_DATASET;
+
+    /**
+     * {@code true} if the search should ignore coordinate system axes.
      *
-     * As seen from the above examples, there is usually no more than 4 recursive calls.
+     * @see #isIgnoringAxes()
      */
-    private transient boolean isInvokedFromWrapper;
-
-    /**
-     * {@code true} for performing full scans, or {@code false} otherwise.
-     */
-    private boolean fullScan = true;
-
-    /**
-     * {@code true} if the search should include deprecated objects.
-     */
-    private boolean includeDeprecated;
+    private boolean ignoreAxes;
 
     /**
      * Creates a finder using the specified factory.
@@ -151,8 +181,8 @@ public class IdentifiedObjectFinder {
      */
     final void setWrapper(final IdentifiedObjectFinder other) {
         wrapper = other;
-        setFullScanAllowed(other.isFullScanAllowed());
-        setIncludeDeprecated(other.getIncludeDeprecated());
+        setSearchDomain(other.domain);
+        setIgnoringAxes(other.ignoreAxes);
     }
 
     /**
@@ -167,45 +197,82 @@ public class IdentifiedObjectFinder {
     }
 
     /**
-     * If {@code true}, an exhaustive full scan against all registered objects will be performed (may be slow).
-     * Otherwise only a fast lookup based on embedded identifiers and names will be performed.
-     * The default value is {@code true}.
+     * Returns the domain of the search (for example whether to include deprecated objects in the search).
+     * If {@code DECLARATION}, only a fast lookup based on embedded identifiers and names will be performed.
+     * Otherwise an exhaustive full scan against all registered objects will be performed (may be slow).
      *
-     * @return {@code true} if exhaustive scans are allowed, or {@code false} for faster but less complete searches.
+     * <p>The default value is {@link Domain#VALID_DATASET}.</p>
+     *
+     * @return The domain of the search.
      */
-    public boolean isFullScanAllowed() {
-        return fullScan;
+    public Domain getSearchDomain() {
+        return domain;
     }
 
     /**
-     * Sets whether an exhaustive scan against all registered objects is allowed.
-     * The default value is {@code true}.
+     * Sets the domain of the search (for example whether to include deprecated objects in the search).
+     * If this method is never invoked, then the default value is {@link Domain#VALID_DATASET}.
      *
-     * @param allowed {@code true} for allowing exhaustive scans,
-     *        or {@code false} for faster but less complete searches.
+     * @param domain The domain of the search.
      */
-    public void setFullScanAllowed(final boolean allowed) {
-        fullScan = allowed;
+    public void setSearchDomain(final Domain domain) {
+        ArgumentChecks.ensureNonNull("domain", domain);
+        this.domain = domain;
     }
 
     /**
-     * If {@code true} and full scans are allowed, then the search will include deprecated objects.
+     * Returns {@code true} if the search should ignore coordinate system axes.
      * The default value is {@code false}.
      *
-     * @return {@code true} if the search should include deprecated objects.
+     * @return {@code true} if the search should ignore coordinate system axes.
      */
-    public boolean getIncludeDeprecated() {
-        return includeDeprecated;
+    public boolean isIgnoringAxes() {
+        return ignoreAxes;
     }
 
     /**
-     * Sets whether the search should include deprecated objects.
-     * The default value is {@code false}.
+     * Sets whether the search should ignore coordinate system axes.
+     * If this property is set to {@code true}, then the search will compare only the coordinate system type
+     * and dimension. The axis names, orientation and units will be ignored. For example the {@code find(…)}
+     * method may return a Coordinate Reference System object with (<var>latitude</var>, <var>longitude</var>)
+     * axes even if the given object had (<var>longitude</var>, <var>latitude</var>) axes.
      *
-     * @param include {@code true} for including deprecated objects in the search.
+     * @param ignore {@code true} if the search should ignore coordinate system axes.
      */
-    public void setIncludeDeprecated(final boolean include) {
-        includeDeprecated = include;
+    public void setIgnoringAxes(final boolean ignore) {
+        ignoreAxes = ignore;
+    }
+
+    /**
+     * Returns {@code true} if a candidate found by {@code IdentifiedObjectFinder} should be considered equals to the
+     * requested object. This method invokes the {@code equals(…)} method on the {@code candidate} argument instead
+     * than on the user-specified {@code object} on the assumption that implementations coming from the factory are
+     * more reliable than user-specified objects.
+     */
+    private boolean match(final IdentifiedObject candidate, final IdentifiedObject object) {
+        return Utilities.deepEquals(candidate, object, ignoreAxes ? ComparisonMode.ALLOW_VARIANT : COMPARISON_MODE);
+    }
+
+    /**
+     * Returns the cached value for the given object, or {@code null} if none.
+     */
+    Set<IdentifiedObject> getFromCache(final IdentifiedObject object) {
+        return (wrapper != null) ? wrapper.getFromCache(object) : null;
+    }
+
+    /**
+     * Stores the given result in the cache, if any.
+     * This method will be invoked by {@link #find(IdentifiedObject)}
+     * only if {@link #getSearchDomain()} is not {@link Domain#DECLARATION}.
+     *
+     * @return The given {@code result}, or another set equal to the result if it has been computed
+     *         concurrently in another thread.
+     */
+    Set<IdentifiedObject> cache(final IdentifiedObject object, Set<IdentifiedObject> result) {
+        if (wrapper != null) {
+            result = wrapper.cache(object, result);
+        }
+        return result;
     }
 
     /**
@@ -220,8 +287,8 @@ public class IdentifiedObjectFinder {
      *   <li>If the authority factory can create objects from their {@linkplain AbstractIdentifiedObject#getName() name}
      *       in addition of identifiers, then the name and {@linkplain AbstractIdentifiedObject#getAlias() aliases} are
      *       used for creating objects to be tested.</li>
-     *   <li>If {@linkplain #isFullScanAllowed() full scan is allowed}, then full {@linkplain #getCodeCandidates
-     *       set of candidate codes} is used for creating objects to be tested.</li>
+     *   <li>If a full scan of the dataset is allowed, then full {@linkplain #getCodeCandidates set of candidate codes}
+     *       is used for creating objects to be tested.</li>
      * </ul>
      *
      * The created objects which are equal to the specified object in the
@@ -233,61 +300,43 @@ public class IdentifiedObjectFinder {
      */
     public Set<IdentifiedObject> find(final IdentifiedObject object) throws FactoryException {
         ArgumentChecks.ensureNonNull("object", object);
-        final IdentifiedObject state = searching;
-        if (state == object) {
-            throw new IllegalArgumentException(Errors.format(Errors.Keys.RecursiveCreateCallForKey_1, object.getName()));
-        }
-        if (state != null) {
-            /*
-             * This 'find' method may be invoked recursively by some implementations that need to resolve
-             * the dependencies of the given object. For example if the given object is a geodetic CRS,
-             * then the finder backed by the EPSG database will first search for a matching ellipsoid in
-             * order to reduce the scope of the search.
-             *
-             * When invoked recursively, we delegate to the wrapper if it exists. The wrapper is typically
-             * a ConcurrentAuthorityFactory.Finder, in which case we want to leverage its cache capability.
-             */
-            if (wrapper != null && !isInvokedFromWrapper) try {
-                isInvokedFromWrapper = true;
-                return wrapper.find(object);
+        Set<IdentifiedObject> result = getFromCache(object);
+        if (result == null) {
+            final AuthorityFactoryProxy<?> previous = proxy;
+            proxy = AuthorityFactoryProxy.getInstance(object.getClass());
+            try {
+                /*
+                 * First check if one of the identifiers can be used to find directly an identified object.
+                 * Verify that the object that we found is actually equal to given one; we do not blindly
+                 * trust the identifiers in the user object.
+                 */
+                IdentifiedObject candidate = createFromIdentifiers(object);
+                if (candidate != null) {
+                    return Collections.singleton(candidate);    // Not worth to cache.
+                }
+                /*
+                 * We are unable to find the object from its identifiers. Try a quick name lookup.
+                 * Some implementations like the one backed by the EPSG database are capable to find
+                 * an object from its name.
+                 */
+                candidate = createFromNames(object);
+                if (candidate != null) {
+                    return Collections.singleton(candidate);    // Not worth to cache.
+                }
+                /*
+                 * Here we exhausted the quick paths.
+                 * Perform a full scan (costly) if we are allowed to, otherwise abandon.
+                 */
+                if (domain == Domain.DECLARATION) {
+                    return Collections.emptySet();              // Do NOT cache.
+                }
+                result = createFromCodes(object);
             } finally {
-                isInvokedFromWrapper = false;
+                proxy = previous;
             }
+            result = cache(object, result);     // Costly operation (even if the result is empty) worth to cache.
         }
-        final boolean ivf = isInvokedFromWrapper;
-        final AuthorityFactoryProxy<?> p = proxy;
-        proxy = AuthorityFactoryProxy.getInstance(object.getClass());
-        isInvokedFromWrapper = false;
-        searching = object;
-        try {
-            /*
-             * First check if one of the identifiers can be used to find directly an identified object.
-             * Verify that the object that we found is actually equal to given one; we do not blindly
-             * trust the identifiers in the user object.
-             */
-            IdentifiedObject candidate = createFromIdentifiers(object);
-            if (candidate != null) {
-                return Collections.singleton(candidate);
-            }
-            /*
-             * We are unable to find the object from its identifiers. Try a quick name lookup.
-             * Some implementations like the one backed by the EPSG database are capable to find
-             * an object from its name.
-             */
-            candidate = createFromNames(object);
-            if (candidate != null) {
-                return Collections.singleton(candidate);
-            }
-            /*
-             * Here we exhausted the quick paths. Perform a full scan (costly) if we are allowed to,
-             * otherwise abandon.
-             */
-            return fullScan ? createFromCodes(object) : Collections.emptySet();
-        } finally {
-            isInvokedFromWrapper = ivf;
-            searching = state;
-            proxy = p;
-        }
+        return result;
     }
 
     /**
@@ -345,9 +394,10 @@ public class IdentifiedObjectFinder {
                     candidate = create(code);
                 } catch (NoSuchAuthorityCodeException e) {
                     // The identifier was not recognized. No problem, let's go on.
+                    exceptionOccurred(e);
                     continue;
                 }
-                if (Utilities.deepEquals(candidate, object, COMPARISON_MODE)) {
+                if (match(candidate, object)) {
                     return candidate;
                 }
             }
@@ -383,9 +433,10 @@ public class IdentifiedObjectFinder {
              *       this attempt may fail for various reasons (character string not supported
              *       by the underlying database for primary key, duplicated name found, etc.).
              */
+            exceptionOccurred(e);
             candidate = null;
         }
-        if (Utilities.deepEquals(candidate, object, COMPARISON_MODE)) {
+        if (match(candidate, object)) {
             return candidate;
         }
         for (final GenericName id : object.getAlias()) {
@@ -394,9 +445,10 @@ public class IdentifiedObjectFinder {
                 candidate = create(code);
             } catch (FactoryException e) {
                 // The name was not recognized. No problem, let's go on.
+                exceptionOccurred(e);
                 continue;
             }
-            if (Utilities.deepEquals(candidate, object, COMPARISON_MODE)) {
+            if (match(candidate, object)) {
                 return candidate;
             }
         }
@@ -425,24 +477,16 @@ public class IdentifiedObjectFinder {
      * @see #createFromNames(IdentifiedObject)
      */
     private Set<IdentifiedObject> createFromCodes(final IdentifiedObject object) throws FactoryException {
-        boolean strict = false;
         final Set<IdentifiedObject> result = new LinkedHashSet<>();     // We need to preserve order.
         for (final String code : getCodeCandidates(object)) {
             final IdentifiedObject candidate;
             try {
                 candidate = create(code);
             } catch (FactoryException e) {
+                exceptionOccurred(e);
                 continue;
             }
-            if (Utilities.deepEquals(candidate, object, strict ? ComparisonMode.IGNORE_METADATA : COMPARISON_MODE)) {
-                if (!strict && Utilities.deepEquals(candidate, object, ComparisonMode.IGNORE_METADATA)) {
-                    /*
-                     * If we find at least one object without rounding error, do not accept rounding error for anyone.
-                     * The most typical case is when comparing ellipsoids.
-                     */
-                    result.clear();
-                    strict = true;
-                }
+            if (match(candidate, object)) {
                 result.add(candidate);
             }
         }
@@ -485,11 +529,13 @@ public class IdentifiedObjectFinder {
      * @throws FactoryException if an error occurred while fetching the set of code candidates.
      */
     protected Set<String> getCodeCandidates(final IdentifiedObject object) throws FactoryException {
-        AuthorityFactoryProxy<?> p = proxy;
-        if (object != searching) {
-            // Should not happen, unless the user invokes this method with unusual objects.
-            p = AuthorityFactoryProxy.getInstance(object.getClass());
-        }
-        return factory.getAuthorityCodes(p.type.asSubclass(IdentifiedObject.class));
+        return factory.getAuthorityCodes(proxy.type.asSubclass(IdentifiedObject.class));
+    }
+
+    /**
+     * Invoked when an exception occurred during the creation of a candidate from a code.
+     */
+    private static void exceptionOccurred(final FactoryException exception) {
+        Logging.recoverableException(Logging.getLogger(Loggers.CRS_FACTORY), IdentifiedObjectFinder.class, "fine", exception);
     }
 }
