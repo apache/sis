@@ -24,7 +24,6 @@ import java.util.Collection;
 import java.util.AbstractSet;
 import java.util.LinkedHashMap;
 import java.util.NoSuchElementException;
-import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import org.opengis.util.FactoryException;
@@ -36,10 +35,11 @@ import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.util.logging.Logging;
-import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.resources.Messages;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.collection.CheckedContainer;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.Classes;
 
 // Branch-dependent imports
 import java.util.Objects;
@@ -286,9 +286,8 @@ public class IdentifiedObjectSet<T extends IdentifiedObject> extends AbstractSet
                 if (!isRecoverableFailure(exception)) {
                     throw new BackingStoreException(exception);
                 }
-                LogRecord record = Errors.getResources((Locale) null).getLogRecord(
-                        Level.WARNING, Errors.Keys.CanNotInstantiateForIdentifier_2, type, code);
-                record.setThrown(exception);
+                final LogRecord record = Messages.getResources(null).getLogRecord(Level.WARNING,
+                        Messages.Keys.CanNotInstantiateForIdentifier_3, type, code, getCause(exception));
                 record.setLoggerName(Loggers.CRS_FACTORY);
                 Logging.log(IdentifiedObjectSet.class, "createObject", record);
             }
@@ -546,5 +545,22 @@ public class IdentifiedObjectSet<T extends IdentifiedObject> extends AbstractSet
             return !(exception instanceof NoSuchAuthorityCodeException);
         }
         return (exception instanceof MissingFactoryResourceException);
+    }
+
+    /**
+     * Returns the message to format below the logging for giving the cause of an error.
+     */
+    private static String getCause(Throwable cause) {
+        final String lineSeparator = System.lineSeparator();
+        final StringBuilder trace = new StringBuilder(180);
+        while (cause != null) {
+            trace.append(lineSeparator).append("  • ").append(Classes.getShortClassName(cause));
+            final String message = cause.getLocalizedMessage();
+            if (message != null) {
+                trace.append(": ").append(message);
+            }
+            cause = cause.getCause();
+        }
+        return trace.toString();
     }
 }
