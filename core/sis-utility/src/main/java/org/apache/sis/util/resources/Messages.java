@@ -67,6 +67,11 @@ public final class Messages extends IndexedResourceBundle {
         public static final short AmbiguousEllipsoid_1 = 30;
 
         /**
+         * Can not instantiate the object of type ‘{0}’ identified by “{1}”. Reason is:{2}
+         */
+        public static final short CanNotInstantiateForIdentifier_3 = 35;
+
+        /**
          * Changed the container capacity from {0} to {1} elements.
          */
         public static final short ChangedContainerCapacity_2 = 1;
