@@ -1001,12 +1001,12 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
                                " • The text contains unknown elements:\n" +
                                "    ‣ “Intruder” in PRIMEM, GEOGCS.\n" +
                                "    ‣ “Ext1” in SPHEROID.\n" +
-                               "    ‣ “Ext2” in SPHEROID.\n", warnings.toString(Locale.US));
+                               "    ‣ “Ext2” in SPHEROID.", warnings.toString(Locale.US));
 
         assertMultilinesEquals("La lecture de « WGS 84 » a été faite, mais en ignorant certains éléments.\n" +
                                " • Le texte contient des éléments inconnus :\n" +
                                "    ‣ « Intruder » dans PRIMEM, GEOGCS.\n" +
                                "    ‣ « Ext1 » dans SPHEROID.\n" +
-                               "    ‣ « Ext2 » dans SPHEROID.\n", warnings.toString(Locale.FRANCE));
+                               "    ‣ « Ext2 » dans SPHEROID.", warnings.toString(Locale.FRANCE));
     }
 }

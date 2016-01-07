@@ -349,7 +349,7 @@ public final class Warnings implements Localized, Serializable {
         final String lineSeparator = System.lineSeparator();
         final Messages resources   = Messages.getResources(locale);
         buffer.append(resources.getString(isParsing ? Messages.Keys.IncompleteParsing_1
-                : Messages.Keys.NonConformFormatting_1, root)).append(lineSeparator);
+                                                    : Messages.Keys.NonConformFormatting_1, root));
         if (messages != null) {
             for (final Iterator<?> it = messages.iterator(); it.hasNext();) {
                 final InternationalString i18n = (InternationalString) it.next();
@@ -370,13 +370,13 @@ public final class Warnings implements Localized, Serializable {
                         cause = null;
                     }
                 }
-                buffer.append(" • ").append(message).append(lineSeparator);
+                buffer.append(lineSeparator).append(" • ").append(message);
                 if (cause != null) {
                     String details = Exceptions.getLocalizedMessage(cause, locale);
                     if (details == null) {
                         details = cause.toString();
                     }
-                    buffer.append("   ").append(details).append(lineSeparator);
+                    buffer.append(lineSeparator).append("   ").append(details);
                 }
             }
         }
@@ -385,17 +385,22 @@ public final class Warnings implements Localized, Serializable {
          */
         if (!ignoredElements.isEmpty()) {
             final Vocabulary vocabulary = Vocabulary.getResources(locale);
-            buffer.append(" • ").append(resources.getString(Messages.Keys.UnknownElementsInText)).append(lineSeparator);
+            buffer.append(lineSeparator).append(" • ").append(resources.getString(Messages.Keys.UnknownElementsInText));
             for (final Map.Entry<String, List<String>> entry : ignoredElements.entrySet()) {
-                buffer.append("    ‣ ").append(vocabulary.getString(Vocabulary.Keys.Quoted_1, entry.getKey()));
+                buffer.append(lineSeparator).append("    ‣ ").append(vocabulary.getString(Vocabulary.Keys.Quoted_1, entry.getKey()));
                 String separator = vocabulary.getString(Vocabulary.Keys.InBetweenWords);
                 for (final String p : entry.getValue()) {
                     buffer.append(separator).append(p);
                     separator = ", ";
                 }
-                buffer.append('.').append(lineSeparator);
+                buffer.append('.');
             }
         }
+        /*
+         * There is intentionally line separator at the end of the last line, because the string returned by
+         * this method is typically written or logged by a call to System.out.println(…) or something equivalent.
+         * A trailing line separator cause a visual disruption in log records for instance.
+         */
         return buffer.toString();
     }
 }
