@@ -279,7 +279,7 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
      * @param unit          The units of the semi-major and semi-minor axis values.
      * @return An ellipsoid with the given axis length.
      *
-     * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createEllipsoide(Map, double, double, Unit)
+     * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createEllipsoid(Map, double, double, Unit)
      */
     public static DefaultEllipsoid createEllipsoid(final Map<String,?> properties,
                                                    final double semiMajorAxis,

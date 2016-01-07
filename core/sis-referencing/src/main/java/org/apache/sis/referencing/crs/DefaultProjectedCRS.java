@@ -288,6 +288,12 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS<Projection> implemen
 
     /**
      * Compares this coordinate reference system with the specified object for equality.
+     * In addition to the metadata documented in the
+     * {@linkplain org.apache.sis.referencing.AbstractIdentifiedObject#equals(Object, ComparisonMode) parent class},
+     * this method considers coordinate system axes of the {@linkplain #getBaseCRS() base CRS} as metadata.
+     * This means that if the given {@code ComparisonMode} is {@code IGNORE_METADATA} or {@code APPROXIMATIVE},
+     * then axis order of the base geographic CRS are ignored
+     * (but <strong>not</strong> axis order of <strong>this</strong> projected CRS).
      *
      * @param  object The object to compare to {@code this}.
      * @param  mode {@link ComparisonMode#STRICT STRICT} for performing a strict comparison, or
@@ -297,7 +303,7 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS<Projection> implemen
      */
     @Override
     public boolean equals(final Object object, final ComparisonMode mode) {
-        return (object == this) || super.equals(object, mode);
+        return super.equals(object, mode);
     }
 
     /**

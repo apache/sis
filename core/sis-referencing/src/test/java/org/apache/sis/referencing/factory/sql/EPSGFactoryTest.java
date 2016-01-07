@@ -31,6 +31,7 @@ import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.Transformation;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.CylindricalProjection;
+import org.opengis.referencing.operation.SingleOperation;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.util.FactoryException;
@@ -592,8 +593,8 @@ public final strictfp class EPSGFactoryTest extends TestCase {
          * Compare the conversion obtained directly with the conversion obtained
          * indirectly through a projected CRS. Both should use the same method.
          */
-        final OperationMethod copMethod = ((Conversion) operation) .getMethod();
-        final OperationMethod crsMethod = ((Conversion) projection).getMethod();
+        final OperationMethod copMethod = ((SingleOperation) operation) .getMethod();
+        final OperationMethod crsMethod = ((SingleOperation) projection).getMethod();
         assertEpsgNameAndIdentifierEqual("Transverse Mercator", 9807, copMethod);
         assertEpsgNameAndIdentifierEqual("Transverse Mercator", 9807, crsMethod);
         try {
@@ -744,27 +745,28 @@ public final strictfp class EPSGFactoryTest extends TestCase {
          * First, search for a CRS with axis order that does not match the ones in the EPSG database.
          * IdentifiedObjectFinder should not accept EPSG::4326 as a match for the given CRS.
          */
-        assertTrue("Full scan should be enabled by default.", finder.isFullScanAllowed());
+        assertEquals("Full scan should be enabled by default.",
+                IdentifiedObjectFinder.Domain.VALID_DATASET, finder.getSearchDomain());
         assertTrue("Should not find WGS84 because the axis order is not the same.",
-                   finder.find(crs.forConvention(AxesConvention.NORMALIZED)).isEmpty());
+                finder.find(crs.forConvention(AxesConvention.NORMALIZED)).isEmpty());
         /*
          * Ensure that the cache is empty.
          */
-        finder.setFullScanAllowed(false);
+        finder.setSearchDomain(IdentifiedObjectFinder.Domain.DECLARATION);
         assertTrue("Should not find without a full scan, because the WKT contains no identifier " +
                    "and the CRS name is ambiguous (more than one EPSG object have this name).",
                    finder.find(crs).isEmpty());
         /*
          * Scan the database for searching the CRS.
          */
-        finder.setFullScanAllowed(true);
+        finder.setSearchDomain(IdentifiedObjectFinder.Domain.VALID_DATASET);
         final IdentifiedObject found = finder.findSingleton(crs);
         assertNotNull("With full scan allowed, the CRS should be found.", found);
         assertEpsgNameAndIdentifierEqual("WGS 84", 4326, found);
         /*
          * Should find the CRS without the need of a full scan, because of the cache.
          */
-        finder.setFullScanAllowed(false);
+        finder.setSearchDomain(IdentifiedObjectFinder.Domain.DECLARATION);
         assertSame("The CRS should still in the cache.", found, finder.findSingleton(crs));
     }
 
@@ -790,8 +792,8 @@ public final strictfp class EPSGFactoryTest extends TestCase {
                 "       SPHEROID[“Krassowsky 1940”, 6378245.00000006, 298.299999999998]],\n" +  // Intentional rounding error.
                 "     PRIMEM[“Greenwich”, 0.0],\n" +
                 "     UNIT[“degree”, 0.017453292519943295],\n" +
-                "     AXIS[“Geodetic latitude”, NORTH],\n" +
-                "     AXIS[“Geodetic longitude”, EAST]],\n" +
+                "     AXIS[“Geodetic longitude”, EAST],\n" +
+                "     AXIS[“Geodetic latitude”, NORTH]],\n" +                   // Wrong axis order, but should not block.
                 "   PROJECTION[“Transverse Mercator”],\n" +
                 "   PARAMETER[“central_meridian”, 135.0000000000013],\n" +      // Intentional rounding error.
                 "   PARAMETER[“latitude_of_origin”, 0.0],\n" +
@@ -802,10 +804,10 @@ public final strictfp class EPSGFactoryTest extends TestCase {
                 "   AXIS[“Northing”, NORTH],\n" +
                 "   AXIS[“Easting”, EAST]]");
 
-        finder.setFullScanAllowed(false);
+        finder.setSearchDomain(IdentifiedObjectFinder.Domain.DECLARATION);
         assertTrue("Should not find the CRS without a full scan.", finder.find(crs).isEmpty());
 
-        finder.setFullScanAllowed(true);
+        finder.setSearchDomain(IdentifiedObjectFinder.Domain.VALID_DATASET);
         final Set<IdentifiedObject> find = finder.find(crs);
         assertFalse("With full scan allowed, the CRS should be found.", find.isEmpty());
         /*

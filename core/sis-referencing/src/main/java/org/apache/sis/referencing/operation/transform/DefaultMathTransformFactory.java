@@ -498,6 +498,17 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
         }
 
         /**
+         * Sets the source ellipsoid to the given value.
+         * The source coordinate system is unconditionally set to {@code null}.
+         *
+         * @param ellipsoid The ellipsoid to set as the source (can be {@code null}).
+         */
+        public void setSource(final Ellipsoid ellipsoid) {
+            sourceEllipsoid = ellipsoid;
+            sourceCS = null;
+        }
+
+        /**
          * Sets the source coordinate system to the given value.
          * The source ellipsoid is unconditionally set to {@code null}.
          *
@@ -518,6 +529,17 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
             sourceCS = (crs != null) ? crs.getCoordinateSystem() : null;
             sourceEllipsoid = ReferencingUtilities.getEllipsoidOfGeographicCRS(crs);
             // Ellipsoid is intentionally null for GeocentricCRS.
+        }
+
+        /**
+         * Sets the target ellipsoid to the given value.
+         * The target coordinate system is unconditionally set to {@code null}.
+         *
+         * @param ellipsoid The ellipsoid to set as the target (can be {@code null}).
+         */
+        public void setTarget(final Ellipsoid ellipsoid) {
+            targetEllipsoid = ellipsoid;
+            targetCS = null;
         }
 
         /**

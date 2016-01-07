@@ -133,7 +133,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
      *
      * <p>Every access to this pool must be synchronized on {@code findPool}.</p>
      */
-    private final Map<IdentifiedObject, Set<IdentifiedObject>> findPool = new WeakHashMap<>();
+    private final Map<IdentifiedObject,FindEntry> findPool = new WeakHashMap<>();
 
     /**
      * Holds the reference to a Data Access Object used by {@link ConcurrentAuthorityFactory}, together with
@@ -232,7 +232,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
      *
      * @see #getTimeout(TimeUnit)
      */
-    private long timeout = 10_000_000_000L;     // 10 seconds
+    private long timeout = 60_000_000_000L;     // 1 minute
 
     /**
      * The maximal difference between the scheduled time and the actual time in order to perform the factory disposal,
@@ -526,6 +526,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
      */
     final void closeExpired() {
         final List<DAO> factories;
+        final boolean isEmpty;
         synchronized (availableDAOs) {
             factories = new ArrayList<>(availableDAOs.size());
             final Iterator<DataAccessRef<DAO>> it = availableDAOs.iterator();
@@ -559,7 +560,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
              * added to the queue only after completion of their work.
              * In the later case, release() will reschedule a new task.
              */
-            isCleanScheduled = !availableDAOs.isEmpty();
+            isCleanScheduled = !(isEmpty = availableDAOs.isEmpty());
         }
         /*
          * We must close the factories from outside the synchronized block.
@@ -569,6 +570,28 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
             close(factories);
         } catch (Exception exception) {
             unexpectedException("closeExpired", exception);
+        }
+        /*
+         * If the queue of Data Access Objects (DAO) become empty, this means that this ConcurrentAuthorityFactory
+         * has not created new object for a while (at least the amount of time given by the timeout), ignoring any
+         * request which may be under execution in another thread right now. Reduce the amount of objects retained
+         * in the cache of IdentifiedObjectFinder.find(…) results by removing all results containing more than one
+         * element, except for results of CoordinateReferenceSystem and CoordinateOperation lookups. The reason is
+         * that IdentifiedObjectFinder is almost always used for resolving CoordinateReferenceSystem objects, and
+         * all other kind of elements in the cache were dependencies searched as a side effect of the CRS search.
+         * Since we have the result of the CRS search, we often do not need anymore the result of dependency search.
+         *
+         * Touching 'findPool' also has the desired side-effect of letting WeakHashMap expunges stale entries.
+         */
+        if (isEmpty) {
+            synchronized (findPool) {
+                final Iterator<FindEntry> it = findPool.values().iterator();
+                while (it.hasNext()) {
+                    if (it.next().cleanup()) {
+                        it.remove();
+                    }
+                }
+            }
         }
     }
 
@@ -1706,6 +1729,11 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
         private transient int acquireCount;
 
         /**
+         * The object in process of being searched, for information purpose only.
+         */
+        private transient IdentifiedObject searching;
+
+        /**
          * Creates a finder for the given type of objects.
          */
         Finder(final ConcurrentAuthorityFactory<?> factory) {
@@ -1787,48 +1815,111 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
         }
 
         /**
+         * Returns the cached value for the given object, or {@code null} if none.
+         */
+        @Override
+        final Set<IdentifiedObject> getFromCache(final IdentifiedObject object) {
+            final Map<IdentifiedObject,FindEntry> findPool = ((ConcurrentAuthorityFactory<?>) factory).findPool;
+            synchronized (findPool) {
+                final FindEntry entry = findPool.get(object);
+                if (entry != null) {
+                    // 'finder' may be null if this method is invoked directly by this Finder.
+                    return entry.get((finder != null ? finder : this).isIgnoringAxes());
+                }
+            }
+            return null;
+        }
+
+        /**
+         * Stores the given result in the cache.
+         * This method shall be invoked only when {@link #getSearchDomain()} is not {@link Domain#DECLARATION}.
+         */
+        @Override
+        final Set<IdentifiedObject> cache(final IdentifiedObject object, Set<IdentifiedObject> result) {
+            final Map<IdentifiedObject,FindEntry> findPool = ((ConcurrentAuthorityFactory<?>) factory).findPool;
+            result = CollectionsExt.unmodifiableOrCopy(result);
+            FindEntry entry = new FindEntry();
+            synchronized (findPool) {
+                final FindEntry c = findPool.putIfAbsent(object, entry);
+                if (c != null) {
+                    entry = c;      // May happen if the same set has been computed in another thread.
+                }
+                // 'finder' should never be null since this method is not invoked directly by this Finder.
+                result = entry.set(finder.isIgnoringAxes(), result, object == searching);
+            }
+            return result;
+        }
+
+        /**
          * Looks up an object from this authority factory which is approximatively equal to the specified object.
          * The default implementation performs the same lookup than the Data Access Object and caches the result.
          */
         @Override
         public Set<IdentifiedObject> find(final IdentifiedObject object) throws FactoryException {
-            final Map<IdentifiedObject, Set<IdentifiedObject>> findPool = ((ConcurrentAuthorityFactory<?>) factory).findPool;
-            Set<IdentifiedObject> candidate;
-            synchronized (findPool) {
-                candidate = findPool.get(object);
-            }
-            if (candidate != null) {
-                return candidate;
-            }
-            /*
-             * Nothing has been found in the cache. Delegates the search to the Data Access Object.
-             * We must delegate to 'finder' (not to 'super') in order to take advantage of overridden methods.
-             */
-            synchronized (this) {
-                try {
-                    acquire();
-                    candidate = finder.find(object);
-                } finally {
-                    release();
-                }
-            }
-            /*
-             * If the full scan was allowed, then stores the result even if empty so
-             * we can remember that no object has been found for the given argument.
-             * Note that we need to distinguish whether deprecated objects are included or not.
-             * Since the need to include deprecated objects should be rare, we do not cache them.
-             */
-            if (isFullScanAllowed() && !getIncludeDeprecated()) {
-                candidate = CollectionsExt.unmodifiableOrCopy(candidate);
-                Set<IdentifiedObject> concurrent;
-                synchronized (findPool) {
-                    concurrent = findPool.putIfAbsent(object, candidate);
-                }
-                if (concurrent != null) {
-                    return concurrent;      // May happen if the same set has been computed in another thread.
+            Set<IdentifiedObject> candidate = getFromCache(object);
+            if (candidate == null) {
+                /*
+                 * Nothing has been found in the cache. Delegates the search to the Data Access Object.
+                 * Note that the Data Access Object will itself callbacks our 'cache(…)' method, so there
+                 * is no need that we cache the result here.
+                 */
+                synchronized (this) {
+                    try {
+                        acquire();
+                        searching = object;
+                        candidate = finder.find(object);
+                    } finally {
+                        searching = null;
+                        release();
+                    }
                 }
             }
             return candidate;
+        }
+    }
+
+    /**
+     * Cache for the result of {@link IdentifiedObjectFinder#find(IdentifiedObject)} operations.
+     * All access to this object must be done in a block synchronized on {@link #findPool}.
+     */
+    private static final class FindEntry {
+        /** Result of the search with our without ignoring axes. */
+        private Set<IdentifiedObject> strict, lenient;
+
+        /** Whether the cache is the result of an explicit request instead than a dependency search. */
+        private boolean explicitStrict, explicitLenient;
+
+        /** Returns the cached instance. */
+        Set<IdentifiedObject> get(final boolean ignoreAxes) {
+            return ignoreAxes ? lenient : strict;
+        }
+
+        /** Cache an instance, or return previous instance if computed concurrently. */
+        @SuppressWarnings({"AssignmentToCollectionOrArrayFieldFromParameter", "ReturnOfCollectionOrArrayField"})
+        Set<IdentifiedObject> set(final boolean ignoreAxes, Set<IdentifiedObject> result, final boolean explicit) {
+            if (ignoreAxes) {
+                if (lenient != null) {
+                    result = lenient;
+                } else {
+                    lenient = result;
+                }
+                explicitLenient |= explicit;
+            } else {
+                if (strict != null) {
+                    result = strict;
+                } else {
+                    strict = result;
+                }
+                explicitStrict |= explicit;
+            }
+            return result;
+        }
+
+        /** Forgets the set that were not explicitely requested. */
+        boolean cleanup() {
+            if (!explicitStrict)  strict  = null;
+            if (!explicitLenient) lenient = null;
+            return (strict == null) && (lenient == null);
         }
     }
 

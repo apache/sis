@@ -17,12 +17,14 @@
 package org.apache.sis.referencing;
 
 import javax.measure.unit.Unit;
+import javax.measure.quantity.Length;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterNotFoundException;
 import org.opengis.parameter.InvalidParameterValueException;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.cs.CartesianCS;
+import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
@@ -31,6 +33,8 @@ import org.opengis.util.FactoryException;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.referencing.crs.DefaultProjectedCRS;
 import org.apache.sis.referencing.operation.DefaultConversion;
+import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
+import org.apache.sis.internal.util.Constants;
 import org.apache.sis.util.resources.Errors;
 
 
@@ -43,7 +47,7 @@ import org.apache.sis.util.resources.Errors;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.6
- * @version 0.6
+ * @version 0.7
  * @module
  */
 public strictfp class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> {
@@ -177,8 +181,21 @@ public strictfp class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilde
      */
     public ProjectedCRS createProjectedCRS(final GeographicCRS baseCRS, final CartesianCS derivedCS) throws FactoryException {
         ensureConversionMethodSet();
+        final Ellipsoid ellipsoid = baseCRS.getDatum().getEllipsoid();
         final MathTransformFactory mtFactory = getMathTransformFactory();
-        final MathTransform mt = mtFactory.createBaseToDerived(baseCRS, parameters, derivedCS);
+        final MathTransform mt;
+        if (mtFactory instanceof DefaultMathTransformFactory) {
+            // The Apache SIS implementation avoid to override any value explicitely set by the user.
+            final DefaultMathTransformFactory.Context context = new DefaultMathTransformFactory.Context();
+            context.setSource(ellipsoid);
+            mt = ((DefaultMathTransformFactory) mtFactory).createParameterizedTransform(parameters, context);
+        } else {
+            // Fallback for non-SIS implementations.
+            final Unit<Length> unit = ellipsoid.getAxisUnit();
+            parameters.parameter(Constants.SEMI_MAJOR).setValue(ellipsoid.getSemiMajorAxis(), unit);
+            parameters.parameter(Constants.SEMI_MINOR).setValue(ellipsoid.getSemiMinorAxis(), unit);
+            mt = mtFactory.createParameterizedTransform(parameters);
+        }
         onCreate(false);
         try {
             /*
