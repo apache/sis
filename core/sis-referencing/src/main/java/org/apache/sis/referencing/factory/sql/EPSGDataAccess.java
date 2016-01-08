@@ -69,6 +69,7 @@ import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.internal.metadata.TransformationAccuracy;
+import org.apache.sis.internal.metadata.sql.SQLUtilities;
 import org.apache.sis.internal.referencing.DeprecatedCode;
 import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.internal.system.Loggers;
@@ -107,8 +108,6 @@ import org.apache.sis.util.Version;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.measure.Units;
-
-// Branch-dependent imports
 
 
 /**
@@ -595,16 +594,19 @@ addURIs:    for (int i=0; ; i++) {
                     }
                 }
                 if (statement == null) {
-                    final String query = "SELECT " + codeColumn + " FROM [" + table + "] WHERE " + nameColumn + " = ?";
-                    statement = connection.prepareStatement(translator.apply(query));
+                    statement = connection.prepareStatement(translator.apply(
+                            "SELECT " + codeColumn + ", " + nameColumn +
+                            " FROM [" + table + "] WHERE " + nameColumn + " LIKE ?"));
                     statements.put(KEY, statement);
                     lastTableForName = table;
                 }
-                statement.setString(1, code);
+                statement.setString(1, SQLUtilities.toLikePattern(code));
                 Integer resolved = null;
                 try (ResultSet result = statement.executeQuery()) {
                     while (result.next()) {
-                        resolved = ensureSingleton(getOptionalInteger(result, 1), resolved, code);
+                        if (SQLUtilities.filterFalsePositive(code, result.getString(2))) {
+                            resolved = ensureSingleton(getOptionalInteger(result, 1), resolved, code);
+                        }
                     }
                 }
                 if (resolved != null) {
@@ -1080,8 +1082,12 @@ addURIs:    for (int i=0; ; i++) {
                     continue;
                 }
                 query.setLength(queryStart);
-                query.append(table.codeColumn).append(" FROM ").append(table.table)
-                        .append(" WHERE ").append(column).append(" = ?");
+                query.append(table.codeColumn);
+                if (!isPrimaryKey) {
+                    query.append(", ").append(column);      // Only for filterFalsePositive(…).
+                }
+                query.append(" FROM ").append(table.table)
+                     .append(" WHERE ").append(column).append(isPrimaryKey ? " = ?" : " LIKE ?");
                 try (PreparedStatement stmt = connection.prepareStatement(translator.apply(query.toString()))) {
                     /*
                      * Check if at least one record is found for the code or the name.
@@ -1090,12 +1096,14 @@ addURIs:    for (int i=0; ; i++) {
                     if (isPrimaryKey) {
                         stmt.setInt(1, pk);
                     } else {
-                        stmt.setString(1, code);
+                        stmt.setString(1, SQLUtilities.toLikePattern(code));
                     }
                     Integer present = null;
                     try (ResultSet result = stmt.executeQuery()) {
                         while (result.next()) {
-                            present = ensureSingleton(getOptionalInteger(result, 1), present, code);
+                            if (isPrimaryKey || SQLUtilities.filterFalsePositive(code, result.getString(2))) {
+                                present = ensureSingleton(getOptionalInteger(result, 1), present, code);
+                            }
                         }
                     }
                     if (present != null) {

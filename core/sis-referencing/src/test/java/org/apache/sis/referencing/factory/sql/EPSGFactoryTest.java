@@ -347,6 +347,8 @@ public final strictfp class EPSGFactoryTest extends TestCase {
          */
         assertSame(crs, factory.createObject("27571"));
         assertSame(crs, factory.createObject("NTF (Paris) / Lambert zone I"));
+        assertSame(crs, factory.createProjectedCRS("NTF Paris Lambert zone I"));
+        assertSame(crs, factory.createObject("NTF Paris Lambert zone I"));
     }
 
     /**
