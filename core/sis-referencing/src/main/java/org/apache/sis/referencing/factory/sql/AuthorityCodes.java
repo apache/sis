@@ -28,6 +28,7 @@ import org.opengis.referencing.operation.Projection;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.internal.util.AbstractMap;
 import org.apache.sis.util.collection.IntegerList;
+import org.apache.sis.util.Debug;
 
 
 /**
@@ -159,7 +160,7 @@ final class AuthorityCodes extends AbstractMap<String,String> implements Seriali
             }
         }
         final int conditionStart = buffer.length();
-        buffer.append(" ORDER BY ").append(table.codeColumn);
+        buffer.append(" ORDER BY ABS(DEPRECATED), ").append(table.codeColumn);
         sql[ALL] = factory.translator.apply(buffer.toString());
         /*
          * Build the SQL query for fetching the name of a single object for a given code.
@@ -245,7 +246,7 @@ final class AuthorityCodes extends AbstractMap<String,String> implements Seriali
     @Override
     public boolean isEmpty() {
         try {
-            return getCodeAt(0) >= 0;
+            return getCodeAt(0) < 0;
         } catch (SQLException exception) {
             throw factoryFailure(exception);
         }
@@ -345,6 +346,22 @@ final class AuthorityCodes extends AbstractMap<String,String> implements Seriali
                 return "";
             }
         };
+    }
+
+    /**
+     * Returns a string representation of this map for debugging purpose.
+     * This method does not let the default implementation format all entry, since it would be a costly operation.
+     */
+    @Debug
+    @Override
+    public String toString() {
+        final StringBuilder buffer = new StringBuilder("AuthorityCodes[").append(type.getSimpleName());
+        synchronized (factory) {
+            if (codes != null) {
+                buffer.append(", size ").append(results != null ? ">= " : "= ").append(codes.size());
+            }
+        }
+        return buffer.append(']').toString();
     }
 
     /**

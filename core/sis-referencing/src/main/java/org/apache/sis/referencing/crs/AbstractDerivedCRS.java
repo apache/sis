@@ -233,14 +233,14 @@ abstract class AbstractDerivedCRS<C extends Conversion> extends AbstractCRS impl
              * instances to compare.  The AbstractCoordinateOperation.equals(…) method implementation handles those
              * cases.
              */
-            if (Semaphores.queryAndSet(Semaphores.COMPARING)) {
+            if (Semaphores.queryAndSet(Semaphores.CONVERSION_AND_CRS)) {
                 return true;
             } else try {
                 return deepEquals(strict ? conversionFromBase : getConversionFromBase(),
                                   strict ? ((AbstractDerivedCRS) object).conversionFromBase
                                          :  ((GeneralDerivedCRS) object).getConversionFromBase(), mode);
             } finally {
-                Semaphores.clear(Semaphores.COMPARING);
+                Semaphores.clear(Semaphores.CONVERSION_AND_CRS);
             }
         }
         return false;

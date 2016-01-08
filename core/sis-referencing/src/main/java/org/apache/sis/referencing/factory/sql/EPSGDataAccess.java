@@ -2674,10 +2674,6 @@ addURIs:    for (int i=0; ; i++) {
      * @return The operations from {@code sourceCRS} to {@code targetCRS}.
      * @throws NoSuchAuthorityCodeException if a specified code was not found.
      * @throws FactoryException if the object creation failed for some other reason.
-     *
-     * @todo The ordering is not consistent among all database software, because the "accuracy" column may contain null
-     *       values. When used in an "ORDER BY" clause, PostgreSQL put null values last, while Access and HSQL put them
-     *       first. The PostgreSQL's behavior is better for what we want (put operations with unknown accuracy last).
      */
     @Override
     public synchronized Set<CoordinateOperation> createFromCoordinateReferenceSystemCodes(
@@ -2695,10 +2691,6 @@ addURIs:    for (int i=0; ; i++) {
                  * This 'do' loop is executed twice: the first time for searching defining conversions, and the second
                  * time for searching all other kind of operations. Defining conversions are searched first because
                  * they are, by definition, the most accurate operations.
-                 *
-                 * TODO: Remove the "area" and "accuracy" ordering since they should be replaced by Java code
-                 *       (because we need to compute intersections while supporting anti-meridian spanning).
-                 *       Also need to resolve ordering problem (see method javadoc)
                  */
                 final String key, sql;
                 if (searchTransformations) {
@@ -2708,10 +2700,10 @@ addURIs:    for (int i=0; ; i++) {
                           " JOIN [Area] ON AREA_OF_USE_CODE = AREA_CODE" +
                           " WHERE SOURCE_CRS_CODE = ?" +
                             " AND TARGET_CRS_CODE = ?" +
-                       " ORDER BY ABS(CO.DEPRECATED), COORD_OP_ACCURACY, " +
-                       " ABS((AREA_EAST_BOUND_LON - AREA_WEST_BOUND_LON) *" +
-                          " (AREA_NORTH_BOUND_LAT - AREA_SOUTH_BOUND_LAT) * COS(0.5*RADIANS" +
-                           "(AREA_NORTH_BOUND_LAT + AREA_SOUTH_BOUND_LAT))) DESC";
+                          " ORDER BY ABS(CO.DEPRECATED), COORD_OP_ACCURACY ASC NULLS LAST, " +
+                            " (AREA_EAST_BOUND_LON - AREA_WEST_BOUND_LON + CASE WHEN AREA_EAST_BOUND_LON < AREA_WEST_BOUND_LON THEN 360 ELSE 0 END)" +
+                          " * (AREA_NORTH_BOUND_LAT - AREA_SOUTH_BOUND_LAT)" +
+                          " * COS(RADIANS(AREA_NORTH_BOUND_LAT + AREA_SOUTH_BOUND_LAT)/2) DESC";
                 } else {
                     key = "ConversionFromCRS";
                     sql = "SELECT PROJECTION_CONV_CODE" +

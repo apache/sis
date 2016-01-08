@@ -735,12 +735,12 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
                     Objects.equals(coordinateOperationAccuracy, that.coordinateOperationAccuracy))
                 {
                     // Check against never-ending recursivity with DerivedCRS.
-                    if (Semaphores.queryAndSet(Semaphores.COMPARING)) {
+                    if (Semaphores.queryAndSet(Semaphores.CONVERSION_AND_CRS)) {
                         return true;
                     } else try {
                         return Objects.equals(targetCRS, that.targetCRS);
                     } finally {
-                        Semaphores.clear(Semaphores.COMPARING);
+                        Semaphores.clear(Semaphores.CONVERSION_AND_CRS);
                     }
                 }
             } else {
@@ -773,7 +773,7 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
                      * this.sourceCRS == AbstractDerivedCRS.baseCRS. Consequently we can relax the check
                      * sourceCRS axis order if the mode is ComparisonMode.IGNORE_METADATA.
                      */
-                    if (Semaphores.queryAndSet(Semaphores.COMPARING)) {
+                    if (Semaphores.queryAndSet(Semaphores.CONVERSION_AND_CRS)) {
                         if (mode.isIgnoringMetadata()) {
                             mode = ComparisonMode.ALLOW_VARIANT;
                         }
@@ -782,7 +782,7 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
                             return false;
                         }
                     } finally {
-                        Semaphores.clear(Semaphores.COMPARING);
+                        Semaphores.clear(Semaphores.CONVERSION_AND_CRS);
                     }
                     /*
                      * Now compare the sourceCRS, potentially with a relaxed ComparisonMode (see above comment).
