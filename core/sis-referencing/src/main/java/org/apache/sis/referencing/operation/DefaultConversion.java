@@ -256,7 +256,11 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
                  */
                 final DefaultMathTransformFactory.Context context = new DefaultMathTransformFactory.Context();
                 context.setSource(source);
-                context.setTarget(target.getCoordinateSystem());
+                if (target instanceof GeneralDerivedCRS) {
+                    context.setTarget(target.getCoordinateSystem());    // Using 'target' would be unsafe here.
+                } else {
+                    context.setTarget(target);
+                }
                 transform = ((DefaultMathTransformFactory) factory).createParameterizedTransform(parameters, context);
                 parameters = Parameters.unmodifiable(context.getCompletedParameters());
             } else {
@@ -275,12 +279,10 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
              * ProjectedCRS), then DefaultMathTransformFactory has a specialized createBaseToDerived(…)
              * method for this job.
              */
-            final CoordinateReferenceSystem sourceCRS = super.getSourceCRS();
-            final CoordinateReferenceSystem targetCRS = super.getTargetCRS();
             if (sourceCRS == null && targetCRS == null && factory instanceof DefaultMathTransformFactory) {
                 final DefaultMathTransformFactory.Context context = new DefaultMathTransformFactory.Context();
-                context.setSource(source);
-                context.setTarget(target);
+                context.setSource(source.getCoordinateSystem());
+                context.setTarget(target.getCoordinateSystem());    // See comment on the other setTarget(…) call.
                 transform = ((DefaultMathTransformFactory) factory).swapAndScaleAxes(transform, context);
             } else {
                 /*
