@@ -109,6 +109,8 @@ public class DefaultAffineCS extends AbstractCS implements AffineCS {
      * @param properties The properties to be given to the identified object.
      * @param axis0 The first axis.
      * @param axis1 The second axis.
+     *
+     * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createAffineCS(Map, CoordinateSystemAxis, CoordinateSystemAxis)
      */
     public DefaultAffineCS(final Map<String,?>   properties,
                            final CoordinateSystemAxis axis0,
@@ -125,6 +127,8 @@ public class DefaultAffineCS extends AbstractCS implements AffineCS {
      * @param axis0 The first axis.
      * @param axis1 The second axis.
      * @param axis2 The third axis.
+     *
+     * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createAffineCS(Map, CoordinateSystemAxis, CoordinateSystemAxis, CoordinateSystemAxis)
      */
     public DefaultAffineCS(final Map<String,?>   properties,
                            final CoordinateSystemAxis axis0,

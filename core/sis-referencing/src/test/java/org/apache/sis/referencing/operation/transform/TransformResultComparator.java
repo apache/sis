@@ -48,16 +48,17 @@ final strictfp class TransformResultComparator implements MathTransform {
     final MathTransform tested;
 
     /**
-     * The tolerance threshold, which is zero by default.
+     * The tolerance threshold.
      */
-    double tolerance;
+    private final double tolerance;
 
     /**
      * Creates a transform which will compare the results of the two given transforms.
      */
-    TransformResultComparator(final MathTransform reference, final MathTransform tested) {
+    TransformResultComparator(final MathTransform reference, final MathTransform tested, final double tolerance) {
         this.reference = reference;
         this.tested    = tested;
+        this.tolerance = tolerance;
     }
 
     /**
@@ -173,7 +174,7 @@ final strictfp class TransformResultComparator implements MathTransform {
      */
     @Override
     public MathTransform inverse() throws NoninvertibleTransformException {
-        return new TransformResultComparator(reference.inverse(), tested.inverse());
+        return new TransformResultComparator(reference.inverse(), tested.inverse(), tolerance);
     }
 
     /**

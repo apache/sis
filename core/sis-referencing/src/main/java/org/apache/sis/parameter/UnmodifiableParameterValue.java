@@ -17,6 +17,7 @@
 package org.apache.sis.parameter;
 
 import javax.measure.unit.Unit;
+import javax.xml.bind.annotation.XmlTransient;
 import org.opengis.parameter.ParameterValue;
 import org.apache.sis.internal.util.Cloner;
 import org.apache.sis.util.collection.WeakHashSet;
@@ -54,6 +55,7 @@ import org.apache.sis.util.resources.Errors;
  * @version 0.6
  * @module
  */
+@XmlTransient
 final class UnmodifiableParameterValue<T> extends DefaultParameterValue<T> {
     /**
      * For cross-version compatibility.
@@ -117,6 +119,7 @@ final class UnmodifiableParameterValue<T> extends DefaultParameterValue<T> {
      * Returns a modifiable copy of this parameter.
      */
     @Override
+    @SuppressWarnings("CloneDoesntCallSuperClone")
     public DefaultParameterValue<T> clone() {
         return new DefaultParameterValue<>(this);
     }

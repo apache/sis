@@ -56,8 +56,8 @@ public abstract class DBFResultSet extends AbstractResultSet {
     public DBFResultSet(final DBFStatement stmt, String sqlQuery) {
         Objects.requireNonNull(stmt, "the statement referred by the ResultSet cannot be null.");
 
-        statement = stmt;
-        sql = sqlQuery;
+        this.statement = stmt;
+        this.sql = sqlQuery;
     }
 
     /**
@@ -73,10 +73,10 @@ public abstract class DBFResultSet extends AbstractResultSet {
      * @throws SQLConnectionClosedException if one of them is closed.
      */
     protected void assertNotClosed() throws SQLConnectionClosedException {
-        statement.assertNotClosed();
+        this.statement.assertNotClosed();
 
-        if (isClosed) {
-            throw new SQLConnectionClosedException(format(Level.WARNING, "excp.closed_resultset", sql, getFile().getName()), sql, getFile());
+        if (this.isClosed) {
+            throw new SQLConnectionClosedException(format(Level.WARNING, "excp.closed_resultset", this.sql, getFile().getName()), this.sql, getFile());
         }
     }
 
@@ -96,8 +96,8 @@ public abstract class DBFResultSet extends AbstractResultSet {
         if (isClosed())
             return;
 
-        statement.notifyCloseResultSet(this);
-        isClosed = true;
+        this.statement.notifyCloseResultSet(this);
+        this.isClosed = true;
     }
 
     /**
@@ -111,7 +111,7 @@ public abstract class DBFResultSet extends AbstractResultSet {
     @Override
     @SuppressWarnings("resource") // The connection is only used to get the column index.
     public int findColumn(String columnLabel) throws SQLNoSuchFieldException, SQLConnectionClosedException {
-        DBFConnection cnt = (DBFConnection)statement.getConnection();
+        DBFConnection cnt = (DBFConnection)this.statement.getConnection();
         return cnt.findColumn(columnLabel, getSQL());
     }
 
@@ -231,7 +231,7 @@ public abstract class DBFResultSet extends AbstractResultSet {
      */
     @SuppressWarnings("resource") // Only use the current connection to get the field name.
     public String getFieldName(int columnIndex, String sqlStatement) throws SQLIllegalColumnIndexException, SQLConnectionClosedException {
-        DBFConnection cnt = (DBFConnection)statement.getConnection();
+        DBFConnection cnt = (DBFConnection)this.statement.getConnection();
         return cnt.getFieldName(columnIndex, sqlStatement);
     }
 
@@ -241,7 +241,7 @@ public abstract class DBFResultSet extends AbstractResultSet {
      */
     @Override
     public File getFile() {
-        return statement.getFile();
+        return this.statement.getFile();
     }
 
     /**
@@ -391,7 +391,7 @@ public abstract class DBFResultSet extends AbstractResultSet {
      * @return SQL query.
      */
     public String getSQL() {
-        return sql;
+        return this.sql;
     }
 
     /**
@@ -410,7 +410,7 @@ public abstract class DBFResultSet extends AbstractResultSet {
     @Override
     public Statement getStatement() throws SQLConnectionClosedException {
         assertNotClosed();
-        return statement;
+        return this.statement;
     }
 
     /**
@@ -445,7 +445,7 @@ public abstract class DBFResultSet extends AbstractResultSet {
      */
     @Override
     public boolean isClosed() {
-        return isClosed || statement.isClosed();
+        return this.isClosed || this.statement.isClosed();
     }
 
     /**
@@ -928,7 +928,7 @@ public abstract class DBFResultSet extends AbstractResultSet {
      */
     @Override
     public boolean wasNull() {
-        return wasNull;
+        return this.wasNull;
     }
 
     /**
@@ -960,6 +960,6 @@ public abstract class DBFResultSet extends AbstractResultSet {
      */
     @Override
     public String toString() {
-        return format("toString", statement != null ? statement.toString() : null, sql, isClosed() == false);
+        return format("toString", this.statement != null ? this.statement.toString() : null, this.sql, isClosed() == false);
     }
 }

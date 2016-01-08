@@ -43,6 +43,7 @@ import static org.apache.sis.math.DecimalFunctions.fractionDigitsForDelta;
 
 // Branch-dependent imports
 import java.util.Objects;
+import org.apache.sis.internal.jdk8.JDK8;
 
 
 /**
@@ -1044,12 +1045,12 @@ public class AngleFormat extends Format implements Localized {
                 }
                 final Number userObject;
                 if (hasMore) {
-                    userObject = Integer.valueOf((int) Math.round(value));
+                    userObject = JDK8.toIntExact(Math.round(value));
                 } else {
                     // Use Float instead of Double because we don't want to give a false impression of accuracy
                     // (when formatting the seconds field, at least the 10 last bits of the 'double' value are
                     // non-significant).
-                    userObject = Float.valueOf((float) value);
+                    userObject = (float) value;
                 }
                 it.addFieldLimit(Field.forCode(field), userObject, startPosition);
             } else {

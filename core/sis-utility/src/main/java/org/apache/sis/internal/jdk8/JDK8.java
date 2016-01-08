@@ -26,7 +26,16 @@ import java.util.Locale;
 import java.util.TimeZone;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicReference;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import javax.xml.bind.DatatypeConverter;
+
+// Branch-dependent imports
+import java.util.Objects;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 
 /**
@@ -35,7 +44,7 @@ import javax.xml.bind.DatatypeConverter;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.6
+ * @version 0.7
  * @module
  */
 public final class JDK8 {
@@ -50,6 +59,74 @@ public final class JDK8 {
      * Do not allow instantiation of this class.
      */
     private JDK8() {
+    }
+
+    /**
+     * Compares two numbers as unsigned.
+     *
+     * @param  x First unsigned value.
+     * @param  y Second unsigned value.
+     * @return Comparison result.
+     *
+     * @since 0.7
+     */
+    public static int compareUnsigned(final int x, final int y) {
+        return Integer.compare(x + Integer.MIN_VALUE, y + Integer.MIN_VALUE);
+    }
+
+    /**
+     * Returns the given byte as an unsigned integer.
+     *
+     * @param x The byte to return as an unsigned integer.
+     * @return The unsigned value of the given byte.
+     *
+     * @since 0.7
+     */
+    public static int toUnsignedInt(final byte x) {
+        return x & 0xFF;
+    }
+
+    /**
+     * Returns the given short as an unsigned integer.
+     *
+     * @param x The short to return as an unsigned integer.
+     * @return The unsigned value of the given short.
+     *
+     * @since 0.7
+     */
+    public static int toUnsignedInt(final short x) {
+        return x & 0xFFFF;
+    }
+
+    /**
+     * Safe cast of the given long to integer.
+     *
+     * @param value The value to cast.
+     * @return The casted value.
+     * @throws ArithmeticException if the value overflows.
+     *
+     * @since 0.7
+     */
+    public static int toIntExact(final long value) {
+        final int vi = (int) value;
+        if (vi != value) {
+            throw new ArithmeticException();
+        }
+        return vi;
+    }
+
+    /**
+     * Safe product of the arguments.
+     *
+     * @param x The first value.
+     * @param y The second value.
+     * @return The product.
+     * @throws ArithmeticException if the value overflows.
+     *
+     * @since 0.7
+     */
+    public static int multiplyExact(final int x, final int y) {
+        return toIntExact(x * (long) y);
     }
 
     /**
@@ -99,6 +176,27 @@ public final class JDK8 {
             map.put(key, previous);
         }
         return previous;
+    }
+
+    /**
+     * Removes the entry for the given key, provided that it is currently mapped to the given value.
+     *
+     * @param  <K>   The type of keys.
+     * @param  <V>   The type of values.
+     * @param  map   The map from where to remove the value.
+     * @param  key   The key for the value to remove.
+     * @param  value The value that must exist for allowing removal.
+     * @return {@code true} if the entry has been removed.
+     *
+     * @since 0.7
+     */
+    public static <K,V> boolean remove(final Map<K,V> map, final Object key, final Object value) {
+        final Object current = map.get(key);
+        final boolean c = Objects.equals(current, value) && (current != null || map.containsKey(key));
+        if (c) {
+            map.remove(key);
+        }
+        return c;
     }
 
     /**
@@ -193,7 +291,33 @@ public final class JDK8 {
         }
         calendar.setTime(date);
         final String text = DatatypeConverter.printDateTime(calendar);
-        CALENDAR.set(calendar); // Recycle for future usage.
+        CALENDAR.set(calendar);                                                 // Recycle for future usage.
         return text;
+    }
+
+    /**
+     * Creates a buffered reader using UTF-8 encoding.
+     *
+     * @param path The file to open.
+     * @return The reader.
+     * @throws IOException if an error occurred while opening the reader.
+     *
+     * @since 0.7
+     */
+    public static BufferedReader newBufferedReader(final Path path) throws IOException {
+        return Files.newBufferedReader(path, StandardCharsets.UTF_8);
+    }
+
+    /**
+     * Creates a buffered writer using UTF-8 encoding.
+     *
+     * @param path The file to open.
+     * @return The writer.
+     * @throws IOException if an error occurred while opening the writer.
+     *
+     * @since 0.7
+     */
+    public static BufferedWriter newBufferedWriter(final Path path) throws IOException {
+        return Files.newBufferedWriter(path, StandardCharsets.UTF_8);
     }
 }

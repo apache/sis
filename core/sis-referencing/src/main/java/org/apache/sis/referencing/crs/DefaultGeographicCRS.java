@@ -62,7 +62,7 @@ import static org.apache.sis.internal.util.Constants.CRS84;
  *       {@link org.apache.sis.referencing.CommonCRS#geographic()} or
  *       {@link org.apache.sis.referencing.CommonCRS#geographic3D()}.</li>
  *   <li>Create a {@code GeographicCRS} from an identifier in a database by invoking
- *       {@link org.opengis.referencing.crs.CRSAuthorityFactory#createGeographicCRS(String)}.</li>
+ *       {@link org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createGeographicCRS(String)}.</li>
  *   <li>Create a {@code GeographicCRS} by invoking the {@code CRSFactory.createGeographicCRS(…)} method
  *       (implemented for example by {@link org.apache.sis.referencing.factory.GeodeticObjectFactory}).</li>
  *   <li>Create a {@code GeographicCRS} by invoking the
@@ -85,6 +85,8 @@ import static org.apache.sis.internal.util.Constants.CRS84;
  * @since   0.4
  * @version 0.6
  * @module
+ *
+ * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createGeographicCRS(String)
  */
 @XmlTransient
 public class DefaultGeographicCRS extends DefaultGeodeticCRS implements GeographicCRS {
@@ -151,6 +153,8 @@ public class DefaultGeographicCRS extends DefaultGeodeticCRS implements Geograph
      * @param properties The properties to be given to the coordinate reference system.
      * @param datum The datum.
      * @param cs The two- or three-dimensional coordinate system.
+     *
+     * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createGeographicCRS(Map, GeodeticDatum, EllipsoidalCS)
      */
     public DefaultGeographicCRS(final Map<String,?> properties,
                                 final GeodeticDatum datum,

@@ -49,9 +49,9 @@ public abstract class ClauseResolver extends AutoChecker {
      * @param op The operator to apply.
      */
     public ClauseResolver(Object cmp1, Object cmp2, String op) {
-        comparand1 = cmp1;
-        comparand2 = cmp2;
-        operator = op;
+        this.comparand1 = cmp1;
+        this.comparand2 = cmp2;
+        this.operator = op;
     }
 
     /**
@@ -59,7 +59,7 @@ public abstract class ClauseResolver extends AutoChecker {
      * @return First comparand.
      */
     public Object getComparand1() {
-        return comparand1;
+        return this.comparand1;
     }
 
     /**
@@ -67,7 +67,7 @@ public abstract class ClauseResolver extends AutoChecker {
      * @return Second comparand.
      */
     public Object getComparand2() {
-        return comparand2;
+        return this.comparand2;
     }
 
     /**
@@ -75,7 +75,7 @@ public abstract class ClauseResolver extends AutoChecker {
      * @return Operator.
      */
     public String getOperator() {
-        return operator;
+        return this.operator;
     }
 
     /**
@@ -83,7 +83,7 @@ public abstract class ClauseResolver extends AutoChecker {
      * @param comparand First comparand.
      */
     public void setComparand1(Object comparand) {
-        comparand1 = comparand;
+        this.comparand1 = comparand;
     }
 
     /**
@@ -91,7 +91,7 @@ public abstract class ClauseResolver extends AutoChecker {
      * @param comparand Second comparand.
      */
     public void setComparand2(Object comparand) {
-        comparand2 = comparand;
+        this.comparand2 = comparand;
     }
 
     /**
@@ -99,7 +99,7 @@ public abstract class ClauseResolver extends AutoChecker {
      * @param op Operator.
      */
     public void setOperator(String op) {
-        operator = op;
+        this.operator = op;
     }
 
     /**

@@ -52,7 +52,7 @@ import org.junit.BeforeClass;
     org.apache.sis.referencing.operation.matrix.Matrix2Test.class,
     org.apache.sis.referencing.operation.matrix.Matrix3Test.class,
     org.apache.sis.referencing.operation.matrix.Matrix4Test.class,
-    org.apache.sis.referencing.operation.matrix.NonSquareMatrixTest.class, // Expected to be last MatrixTestCase - see javadoc.
+    org.apache.sis.referencing.operation.matrix.NonSquareMatrixTest.class,          // Expected to be last MatrixTestCase - see javadoc.
     org.apache.sis.referencing.operation.matrix.MatricesTest.class,
     org.apache.sis.referencing.operation.matrix.AffineTransforms2DTest.class,
 
@@ -62,6 +62,7 @@ import org.junit.BeforeClass;
     org.apache.sis.parameter.DefaultParameterValueTest.class,
     org.apache.sis.parameter.DefaultParameterValueGroupTest.class,
     org.apache.sis.parameter.UnmodifiableParameterValueTest.class,
+    org.apache.sis.parameter.UnmodifiableParameterValueGroupTest.class,
     org.apache.sis.parameter.ParametersTest.class,
     org.apache.sis.parameter.ParameterBuilderTest.class,
     org.apache.sis.parameter.ParameterFormatTest.class,
@@ -113,6 +114,7 @@ import org.junit.BeforeClass;
     org.apache.sis.referencing.operation.transform.CopyTransformTest.class,
     org.apache.sis.referencing.operation.transform.PassThroughTransformTest.class,
     org.apache.sis.referencing.operation.transform.ConcatenatedTransformTest.class,
+    org.apache.sis.referencing.operation.transform.TransformSeparatorTest.class,
     org.apache.sis.referencing.operation.transform.TransferFunctionTest.class,
     org.apache.sis.referencing.operation.transform.MathTransformsTest.class,
     org.apache.sis.referencing.operation.transform.ContextualParametersTest.class,
@@ -131,8 +133,15 @@ import org.junit.BeforeClass;
     org.apache.sis.internal.referencing.provider.GeocentricTranslationTest.class,
     org.apache.sis.internal.referencing.provider.PositionVector7ParamTest.class,
     org.apache.sis.internal.referencing.provider.CoordinateFrameRotationTest.class,
+    org.apache.sis.internal.referencing.provider.MolodenskyTest.class,
+    org.apache.sis.internal.referencing.provider.FranceGeocentricInterpolationTest.class,
+    org.apache.sis.internal.referencing.provider.NTv2Test.class,
+    org.apache.sis.internal.referencing.provider.NADCONTest.class,
     org.apache.sis.internal.referencing.provider.MapProjectionTest.class,
     org.apache.sis.internal.referencing.provider.AllProvidersTest.class,
+    org.apache.sis.referencing.operation.transform.InterpolatedTransformTest.class,
+    org.apache.sis.referencing.operation.transform.InterpolatedGeocentricTransformTest.class,
+    org.apache.sis.referencing.operation.transform.InterpolatedMolodenskyTransformTest.class,
     org.apache.sis.referencing.operation.transform.DefaultMathTransformFactoryTest.class,
 
     // Test map projections. Those tests need the providers tested above.
@@ -158,14 +167,27 @@ import org.junit.BeforeClass;
     org.apache.sis.referencing.crs.DefaultCompoundCRSTest.class,
     org.apache.sis.referencing.crs.HardCodedCRSTest.class,
 
+    org.apache.sis.referencing.StandardDefinitionsTest.class,
+    org.apache.sis.referencing.CommonCRSTest.class,
+    org.apache.sis.referencing.CRSTest.class,
     org.apache.sis.referencing.factory.GIGS3002.class,
     org.apache.sis.referencing.factory.GIGS3003.class,
     org.apache.sis.referencing.factory.GIGS3004.class,
     org.apache.sis.referencing.factory.GIGS3005.class,
     org.apache.sis.referencing.factory.GeodeticObjectFactoryTest.class,
-    org.apache.sis.referencing.StandardDefinitionsTest.class,
-    org.apache.sis.referencing.CommonCRSTest.class,
-    org.apache.sis.referencing.CRSTest.class,
+    org.apache.sis.referencing.factory.CommonAuthorityFactoryTest.class,
+    org.apache.sis.referencing.factory.AuthorityFactoryProxyTest.class,
+    org.apache.sis.referencing.factory.IdentifiedObjectFinderTest.class,
+    org.apache.sis.referencing.factory.GIGS2001.class,
+    org.apache.sis.referencing.factory.GIGS2002.class,
+    org.apache.sis.referencing.factory.GIGS2003.class,
+    org.apache.sis.referencing.factory.GIGS2004.class,
+    org.apache.sis.referencing.factory.GIGS2005.class,
+    org.apache.sis.referencing.factory.GIGS2006.class,
+    org.apache.sis.referencing.factory.GIGS2007.class,
+    org.apache.sis.referencing.factory.GIGS2008.class,
+    org.apache.sis.referencing.factory.GIGS2009.class,
+    org.apache.sis.referencing.factory.sql.EPSGFactoryTest.class,
 
     org.apache.sis.io.wkt.MathTransformParserTest.class,
     org.apache.sis.io.wkt.GeodeticObjectParserTest.class,
@@ -188,6 +210,7 @@ import org.junit.BeforeClass;
 
     org.apache.sis.referencing.operation.builder.LinearTransformBuilderTest.class,
     org.apache.sis.internal.referencing.ServicesForMetadataTest.class,
+    org.apache.sis.test.integration.DatumShiftTest.class,
     org.apache.sis.test.integration.ReferencingInMetadataTest.class,
     org.apache.sis.test.integration.DefaultMetadataTest.class
 })

@@ -110,7 +110,7 @@ public final strictfp class TestUtilities extends Static {
      * @param title The title to write.
      */
     public static void printSeparator(final String title) {
-        if (TestCase.verbose) {
+        if (TestCase.VERBOSE) {
             final PrintWriter out = TestCase.out;
             final boolean isAnsiSupported = X364.isAnsiSupported();
             if (isAnsiSupported) {

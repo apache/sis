@@ -49,6 +49,12 @@ public class DBFRecordBasedResultSet extends DBFResultSet {
     /** Condition of where clause (currently, only one is handled). */
     private ConditionalClauseResolver singleConditionOfWhereClause;
 
+    /** Indicates that the last result set record matching conditions has already been returned, and a further call of next() shall throw a "no more record" exception. */
+    private boolean lastResultSetRecordAlreadyReturned;
+    
+    /** The record number of this record. */
+    private int recordNumber;
+    
     /**
      * Constructs a result set.
      * @param stmt Parent statement.
@@ -57,7 +63,7 @@ public class DBFRecordBasedResultSet extends DBFResultSet {
      */
     public DBFRecordBasedResultSet(final DBFStatement stmt, String sqlQuery) throws SQLInvalidStatementException {
         super(stmt, sqlQuery);
-        singleConditionOfWhereClause = new CrudeSQLParser(this).parse();
+        this.singleConditionOfWhereClause = new CrudeSQLParser(this).parse();
     }
 
     /**
@@ -79,11 +85,11 @@ public class DBFRecordBasedResultSet extends DBFResultSet {
 
             if (doubleValue != null) {
                 BigDecimal number = new BigDecimal(doubleValue, mc);
-                wasNull = false;
+                this.wasNull = false;
                 return number;
             }
             else {
-                wasNull = true;
+                this.wasNull = true;
                 return null;
             }
         }
@@ -99,7 +105,7 @@ public class DBFRecordBasedResultSet extends DBFResultSet {
     @Override
     public BigDecimal getBigDecimal(int columnIndex) throws SQLConnectionClosedException, SQLNoSuchFieldException, SQLNotNumericException, SQLIllegalColumnIndexException {
         logStep("getBigDecimal", columnIndex);
-        return getBigDecimal(getFieldName(columnIndex, sql));
+        return getBigDecimal(getFieldName(columnIndex, this.sql));
     }
 
     /**
@@ -120,11 +126,11 @@ public class DBFRecordBasedResultSet extends DBFResultSet {
 
         if (doubleValue != null) {
             BigDecimal number = new BigDecimal(getDouble(columnLabel), mc);
-            wasNull = false;
+            this.wasNull = false;
             return number;
         }
         else {
-            wasNull = true;
+            this.wasNull = true;
             return null;
         }
     }
@@ -143,18 +149,18 @@ public class DBFRecordBasedResultSet extends DBFResultSet {
         String value = getString(columnLabel);
 
         if (value == null || value.equals("00000000")) { // "00000000" is stored in Database to represent a null value too.
-            wasNull = true;
+            this.wasNull = true;
             return null; // The ResultSet:getDate() contract is to return null when a null date is encountered.
         }
         else {
-            wasNull = false;
+            this.wasNull = false;
         }
 
         // The DBase 3 date format is "YYYYMMDD".
         // if the length of the string isn't eight characters, the field format is incorrect.
         if (value.length() != 8) {
-            String message = format(Level.WARNING, "excp.field_is_not_a_date", columnLabel, sql, value);
-            throw new SQLNotDateException(message, sql, getFile(), columnLabel, value);
+            String message = format(Level.WARNING, "excp.field_is_not_a_date", columnLabel, this.sql, value);
+            throw new SQLNotDateException(message, this.sql, getFile(), columnLabel, value);
         }
 
         // Extract the date parts.
@@ -166,8 +172,8 @@ public class DBFRecordBasedResultSet extends DBFResultSet {
             dayOfMonth = Integer.parseInt(value.substring(7));
         }
         catch(NumberFormatException e) {
-            String message = format(Level.WARNING, "excp.field_is_not_a_date", columnLabel, sql, value);
-            throw new SQLNotDateException(message, sql, getFile(), columnLabel, value);
+            String message = format(Level.WARNING, "excp.field_is_not_a_date", columnLabel, this.sql, value);
+            throw new SQLNotDateException(message, this.sql, getFile(), columnLabel, value);
         }
 
         // Create a date.
@@ -186,7 +192,7 @@ public class DBFRecordBasedResultSet extends DBFResultSet {
     @Override
     public Date getDate(int columnIndex) throws SQLConnectionClosedException, SQLNoSuchFieldException, SQLNotDateException, SQLIllegalColumnIndexException {
         logStep("getDate", columnIndex);
-        return getDate(getFieldName(columnIndex, sql));
+        return getDate(getFieldName(columnIndex, this.sql));
     }
 
     /**
@@ -204,7 +210,7 @@ public class DBFRecordBasedResultSet extends DBFResultSet {
                 return Double.parseDouble(value);
             }
         });
-        wasNull = (value == null);
+        this.wasNull = (value == null);
         return value != null ? value : 0.0; // The ResultSet contract for numbers is to return 0 when a null value is encountered.
     }
 
@@ -218,7 +224,7 @@ public class DBFRecordBasedResultSet extends DBFResultSet {
     @Override
     public double getDouble(int columnIndex) throws SQLConnectionClosedException, SQLNoSuchFieldException, SQLNotNumericException, SQLIllegalColumnIndexException {
         logStep("getDouble", columnIndex);
-        return getDouble(getFieldName(columnIndex, sql));
+        return getDouble(getFieldName(columnIndex, this.sql));
     }
 
     /**
@@ -236,7 +242,7 @@ public class DBFRecordBasedResultSet extends DBFResultSet {
                 return Float.parseFloat(value);
             }
         });
-        wasNull = (value == null);
+        this.wasNull = (value == null);
         return value != null ? value : 0; // The ResultSet contract for numbers is to return 0 when a null value is encountered.
     }
 
@@ -250,7 +256,7 @@ public class DBFRecordBasedResultSet extends DBFResultSet {
     @Override
     public float getFloat(int columnIndex) throws SQLConnectionClosedException, SQLNoSuchFieldException, SQLNotNumericException, SQLIllegalColumnIndexException {
         logStep("getFloat", columnIndex);
-        return getFloat(getFieldName(columnIndex, sql));
+        return getFloat(getFieldName(columnIndex, this.sql));
     }
 
     /**
@@ -268,7 +274,7 @@ public class DBFRecordBasedResultSet extends DBFResultSet {
                 return Integer.parseInt(value);
             }
         });
-        wasNull = (value == null);
+        this.wasNull = (value == null);
         return value != null ? value : 0; // The ResultSet contract for numbers is to return 0 when a null value is encountered.
     }
 
@@ -282,7 +288,7 @@ public class DBFRecordBasedResultSet extends DBFResultSet {
     @Override
     public int getInt(int columnIndex) throws SQLConnectionClosedException, SQLNoSuchFieldException, SQLNotNumericException, SQLIllegalColumnIndexException {
         logStep("getInt", columnIndex);
-        return getInt(getFieldName(columnIndex, sql));
+        return getInt(getFieldName(columnIndex, this.sql));
     }
 
     /**
@@ -300,7 +306,7 @@ public class DBFRecordBasedResultSet extends DBFResultSet {
                 return Long.parseLong(value);
             }
         });
-        wasNull = (value == null);
+        this.wasNull = (value == null);
         return value != null ? value : 0; // The ResultSet contract for numbers is to return 0 when a null value is encountered.
     }
 
@@ -313,7 +319,7 @@ public class DBFRecordBasedResultSet extends DBFResultSet {
      */
     @Override public long getLong(int columnIndex) throws SQLConnectionClosedException, SQLNoSuchFieldException, SQLNotNumericException, SQLIllegalColumnIndexException {
         logStep("getLong", columnIndex);
-        return getLong(getFieldName(columnIndex, sql));
+        return getLong(getFieldName(columnIndex, this.sql));
     }
 
     /**
@@ -332,7 +338,7 @@ public class DBFRecordBasedResultSet extends DBFResultSet {
      */
     @Override
     public Object getObject(int column) throws SQLConnectionClosedException, SQLIllegalColumnIndexException, SQLFeatureNotSupportedException, SQLNoSuchFieldException, SQLNotNumericException, SQLNotDateException {
-        try(DBFBuiltInMemoryResultSetForColumnsListing field = (DBFBuiltInMemoryResultSetForColumnsListing)getFieldDesc(column, sql)) {
+        try(DBFBuiltInMemoryResultSetForColumnsListing field = (DBFBuiltInMemoryResultSetForColumnsListing)getFieldDesc(column, this.sql)) {
             String fieldType;
 
             try {
@@ -421,6 +427,14 @@ public class DBFRecordBasedResultSet extends DBFResultSet {
     }
 
     /**
+     * Return the record number of this record.
+     * @return Record number of this record.
+     */
+    public int getRowNum()  {
+        return this.recordNumber;
+    }
+    
+    /**
      * @see java.sql.ResultSet#getShort(java.lang.String)
      * @throws SQLConnectionClosedException if the connection is closed.
      * @throws SQLNoSuchFieldException if the field looked for doesn't exist.
@@ -435,7 +449,7 @@ public class DBFRecordBasedResultSet extends DBFResultSet {
                 return Short.parseShort(value);
             }
         });
-        wasNull = (value == null);
+        this.wasNull = (value == null);
         return value != null ? value : 0; // The ResultSet contract for numbers is to return 0 when a null value is encountered.
     }
 
@@ -449,7 +463,7 @@ public class DBFRecordBasedResultSet extends DBFResultSet {
     @Override
     public short getShort(int columnIndex) throws SQLConnectionClosedException, SQLNoSuchFieldException, SQLNotNumericException, SQLIllegalColumnIndexException {
         logStep("getShort", columnIndex);
-        return getShort(getFieldName(columnIndex, sql));
+        return getShort(getFieldName(columnIndex, this.sql));
     }
 
     /**
@@ -464,15 +478,15 @@ public class DBFRecordBasedResultSet extends DBFResultSet {
         logStep("getString", columnLabel);
         assertNotClosed();
 
-        getFieldDesc(columnLabel, sql); // Ensure that the field queried exists, else a null value here can be interpreted as "not existing" or "has a null value".
-        byte[] bytes = record.get(columnLabel);
+        getFieldDesc(columnLabel, this.sql); // Ensure that the field queried exists, else a null value here can be interpreted as "not existing" or "has a null value".
+        byte[] bytes = this.record.get(columnLabel);
 
         if (bytes == null) {
-            wasNull = true;
+            this.wasNull = true;
             return null;
         }
         else {
-            wasNull = false;
+            this.wasNull = false;
         }
 
         // If a non null value has been readed, convert it to the wished Charset (provided one has been given).
@@ -498,7 +512,7 @@ public class DBFRecordBasedResultSet extends DBFResultSet {
     @Override
     public String getString(int columnIndex) throws SQLConnectionClosedException, SQLNoSuchFieldException, SQLIllegalColumnIndexException {
         logStep("getString", columnIndex);
-        return(getString(getFieldName(columnIndex, sql)));
+        return(getString(getFieldName(columnIndex, this.sql)));
     }
 
     /**
@@ -521,7 +535,13 @@ public class DBFRecordBasedResultSet extends DBFResultSet {
 
         // Check that we aren't at the end of the Database file.
         if (cnt.nextRowAvailable() == false) {
-            throw new SQLNoResultException(format(Level.WARNING, "excp.no_more_results", sql, getFile().getName()), sql, getFile());
+            if (this.lastResultSetRecordAlreadyReturned) {
+                throw new SQLNoResultException(format(Level.WARNING, "excp.no_more_results", this.sql, getFile().getName()), this.sql, getFile());
+            }
+            else {
+                this.lastResultSetRecordAlreadyReturned = true;
+                return false;
+            }
         }
 
         return nextRecordMatchingConditions();
@@ -544,11 +564,12 @@ public class DBFRecordBasedResultSet extends DBFResultSet {
         DBFConnection cnt = (DBFConnection)((DBFStatement)getStatement()).getConnection();
 
         while(cnt.nextRowAvailable() && recordMatchesConditions == false) {
-            record = cnt.readNextRowAsObjects();
-            recordMatchesConditions = singleConditionOfWhereClause == null || singleConditionOfWhereClause.isVerified(this);
+            this.record = cnt.readNextRowAsObjects();
+            this.recordNumber = cnt.getRowNum();
+            recordMatchesConditions = this.singleConditionOfWhereClause == null || this.singleConditionOfWhereClause.isVerified(this);
         }
 
-        return recordMatchesConditions && cnt.nextRowAvailable(); // Beware of the end of database !
+        return recordMatchesConditions;
     }
 
     /**
@@ -566,7 +587,7 @@ public class DBFRecordBasedResultSet extends DBFResultSet {
     @Override
     public boolean wasNull() {
         logStep("wasNull");
-        return wasNull;
+        return this.wasNull;
     }
 
     /**
@@ -582,7 +603,7 @@ public class DBFRecordBasedResultSet extends DBFResultSet {
     private <T extends Number> T getNumeric(String columnLabel, Function<String, T> parse) throws SQLConnectionClosedException, SQLNoSuchFieldException, SQLNotNumericException {
         assertNotClosed();
 
-        try(DBFBuiltInMemoryResultSetForColumnsListing rs = (DBFBuiltInMemoryResultSetForColumnsListing)getFieldDesc(columnLabel, sql)) {
+        try(DBFBuiltInMemoryResultSetForColumnsListing rs = (DBFBuiltInMemoryResultSetForColumnsListing)getFieldDesc(columnLabel, this.sql)) {
             String textValue = getString(columnLabel);
             
             if (textValue == null) {
@@ -595,8 +616,8 @@ public class DBFRecordBasedResultSet extends DBFResultSet {
                 return(value);
             }
             catch(NumberFormatException e) {
-                String message = format(Level.WARNING, "excp.field_is_not_numeric", columnLabel, rs.getString("TYPE_NAME"), sql, textValue);
-                throw new SQLNotNumericException(message, sql, getFile(), columnLabel, textValue);
+                String message = format(Level.WARNING, "excp.field_is_not_numeric", columnLabel, rs.getString("TYPE_NAME"), this.sql, textValue);
+                throw new SQLNotNumericException(message, this.sql, getFile(), columnLabel, textValue);
             }
         }
     }
@@ -606,6 +627,6 @@ public class DBFRecordBasedResultSet extends DBFResultSet {
      */
     @Override
     public String toString() {
-        return format("toString", statement != null ? statement.toString() : null, sql, isClosed() == false);
+        return format("toString", this.statement != null ? this.statement.toString() : null, this.sql, isClosed() == false);
     }
 }

@@ -209,9 +209,7 @@ public class DefaultNameSpace implements NameSpace, Serializable {
      *          parsed names} of any name in that namespace.
      * @return A namespace having the given name, or {@code null} if name was null.
      */
-    static DefaultNameSpace forName(final GenericName name,
-            final String headSeparator, final String separator)
-    {
+    static DefaultNameSpace forName(final GenericName name, final String headSeparator, final String separator) {
         if (name == null) {
             return null;
         }
@@ -251,7 +249,7 @@ public class DefaultNameSpace implements NameSpace, Serializable {
      */
     @Override
     public boolean isGlobal() {
-        return false; // To be overridden by GlobalNameSpace.
+        return false;               // To be overridden by GlobalNameSpace.
     }
 
     /**
@@ -388,7 +386,7 @@ public class DefaultNameSpace implements NameSpace, Serializable {
         if (name == null) {
             name = key;
         }
-        final WeakValueHashMap<String,Object> childs = this.childs; // Paranoiac protection against accidental changes.
+        final WeakValueHashMap<String,Object> childs = this.childs;     // Paranoiac protection against accidental changes.
         DefaultNameSpace child;
         synchronized (childs) {
             final Object existing = childs.get(key);
@@ -396,7 +394,7 @@ public class DefaultNameSpace implements NameSpace, Serializable {
                 child = (DefaultNameSpace) existing;
                 if (!child.separator    .equals(separator) ||
                     !child.headSeparator.equals(headSeparator) ||
-                    !child.name         .equals(name)) // Same test than equalsIgnoreParent.
+                    !child.name         .equals(name))                  // Same test than equalsIgnoreParent.
                 {
                     child = new DefaultNameSpace(this, name, headSeparator, separator);
                     /*
@@ -408,7 +406,7 @@ public class DefaultNameSpace implements NameSpace, Serializable {
             } else {
                 child = new DefaultNameSpace(this, name, headSeparator, separator);
                 if (childs.put(key, child) != existing) {
-                    throw new AssertionError(); // Paranoiac check.
+                    throw new AssertionError();                         // Paranoiac check.
                 }
             }
         }
@@ -429,7 +427,7 @@ public class DefaultNameSpace implements NameSpace, Serializable {
     final DefaultLocalName local(final CharSequence name, final DefaultLocalName candidate) {
         ensureNonNull("name", name);
         final String key = name.toString();
-        final WeakValueHashMap<String,Object> childs = this.childs; // Paranoiac protection against accidental changes.
+        final WeakValueHashMap<String,Object> childs = this.childs;     // Paranoiac protection against accidental changes.
         DefaultLocalName child;
         synchronized (childs) {
             final Object existing = childs.get(key);
@@ -448,7 +446,7 @@ public class DefaultNameSpace implements NameSpace, Serializable {
             // Cache only if the slot is not already occupied by a NameSpace.
             if (!(existing instanceof DefaultNameSpace)) {
                 if (childs.put(key, child) != existing) {
-                    throw new AssertionError(); // Paranoiac check.
+                    throw new AssertionError();                         // Paranoiac check.
                 }
             }
         }
@@ -510,7 +508,7 @@ public class DefaultNameSpace implements NameSpace, Serializable {
     private boolean equalsIgnoreParent(final DefaultNameSpace that) {
         return Objects.equals(this.headSeparator, that.headSeparator) &&
                Objects.equals(this.separator,     that.separator) &&
-               Objects.equals(this.name,          that.name); // Most expensive test last.
+               Objects.equals(this.name,          that.name);               // Most expensive test last.
     }
 
     /**
@@ -546,7 +544,7 @@ public class DefaultNameSpace implements NameSpace, Serializable {
             } else {
                 init();
                 if (pool.put(key, this) != existing) {
-                    throw new AssertionError(); // Paranoiac check.
+                    throw new AssertionError();             // Paranoiac check.
                 }
                 return this;
             }

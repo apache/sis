@@ -117,7 +117,10 @@ import static org.apache.sis.internal.util.Constants.CRS84;
  * @since   0.4
  * @version 0.5
  * @module
+ *
+ * @see org.apache.sis.referencing.factory.CommonAuthorityFactory
  */
+@SuppressWarnings("DoubleCheckedLocking")
 public enum CommonCRS {
     /**
      * World Geodetic System 1984.
@@ -152,29 +155,6 @@ public enum CommonCRS {
      * </table></blockquote>
      */
     WGS72((short) 4322, (short) 4985, (short) 4984, (short) 6322, (short) 7043),
-
-    /**
-     * European Terrestrial Reference System 1989.
-     * The ellipsoid is <cite>"GRS 1980"</cite>, also known as <cite>"International 1979"</cite>.
-     * This ellipsoid is very close, but not identical, to the {@linkplain #WGS84} one.
-     *
-     * <blockquote><table class="compact" summary="ETRS89 properties.">
-     *   <tr><th>EPSG identifiers:</th>        <td>4258 &nbsp;(<i>datum:</i> 6258, &nbsp;<i>ellipsoid:</i> 7019)</td></tr>
-     *   <tr><th>Primary names:</th>           <td>"ETRS89" &nbsp;(<i>datum:</i> "European Terrestrial Reference System 1989", &nbsp;<i>ellipsoid:</i> "GRS 1980")</td></tr>
-     *   <tr><th>Abbreviations or aliases:</th><td>"ETRF89", "EUREF89", "ETRS89-GRS80" &nbsp;(<i>ellipsoid:</i> "International 1979")</td></tr>
-     *   <tr><th>Prime meridian:</th>          <td>Greenwich</td></tr>
-     *   <tr><th>Semi-major axis length:</th>  <td>6378137</td></tr>
-     *   <tr><th>Semi-minor axis length:</th>  <td>6356752 <i>(approximative)</i></td></tr>
-     *   <tr><th>Inverse flattening:</th>      <td>298.257222101 <i>(definitive)</i></td></tr>
-     *   <tr><th>Ellipsoid axes unit:</th>     <td>{@link SI#METRE}</td></tr>
-     * </table></blockquote>
-     *
-     * <div class="note"><b>Note:</b>
-     * {@link #NAD83} uses the same ellipsoid for a different datum.
-     * The <cite>Web Map Server</cite> {@code "CRS:83"} authority code uses the NAD83 datum,
-     * while the {@code "IGNF:MILLER"} authority code uses the GRS80 datum.</div>
-     */
-    ETRS89((short) 4258, (short) 4937, (short) 4936, (short) 6258, (short) 7019),
 
     /**
      * North American Datum 1983.
@@ -215,6 +195,29 @@ public enum CommonCRS {
      * </table></blockquote>
      */
     NAD27((short) 4267, (short) 0, (short) 0, (short) 6267, (short) 7008),
+
+    /**
+     * European Terrestrial Reference System 1989.
+     * The ellipsoid is <cite>"GRS 1980"</cite>, also known as <cite>"International 1979"</cite>.
+     * This ellipsoid is very close, but not identical, to the {@linkplain #WGS84} one.
+     *
+     * <blockquote><table class="compact" summary="ETRS89 properties.">
+     *   <tr><th>EPSG identifiers:</th>        <td>4258 &nbsp;(<i>datum:</i> 6258, &nbsp;<i>ellipsoid:</i> 7019)</td></tr>
+     *   <tr><th>Primary names:</th>           <td>"ETRS89" &nbsp;(<i>datum:</i> "European Terrestrial Reference System 1989", &nbsp;<i>ellipsoid:</i> "GRS 1980")</td></tr>
+     *   <tr><th>Abbreviations or aliases:</th><td>"ETRF89", "EUREF89", "ETRS89-GRS80" &nbsp;(<i>ellipsoid:</i> "International 1979")</td></tr>
+     *   <tr><th>Prime meridian:</th>          <td>Greenwich</td></tr>
+     *   <tr><th>Semi-major axis length:</th>  <td>6378137</td></tr>
+     *   <tr><th>Semi-minor axis length:</th>  <td>6356752 <i>(approximative)</i></td></tr>
+     *   <tr><th>Inverse flattening:</th>      <td>298.257222101 <i>(definitive)</i></td></tr>
+     *   <tr><th>Ellipsoid axes unit:</th>     <td>{@link SI#METRE}</td></tr>
+     * </table></blockquote>
+     *
+     * <div class="note"><b>Note:</b>
+     * {@link #NAD83} uses the same ellipsoid for a different datum.
+     * The <cite>Web Map Server</cite> {@code "CRS:83"} authority code uses the NAD83 datum,
+     * while the {@code "IGNF:MILLER"} authority code uses the GRS80 datum.</div>
+     */
+    ETRS89((short) 4258, (short) 4937, (short) 4936, (short) 6258, (short) 7019),
 
     /**
      * European Datum 1950.
@@ -460,7 +463,7 @@ public enum CommonCRS {
                         failure(this, "geographic", e);
                     }
                     /*
-                     * All constants defined in this enumeration use the same coordinate system, EPSG:6422.
+                     * All constants defined in this enumeration use the same coordinate system, EPSG::6422.
                      * We will arbitrarily create this CS only for the most frequently created CRS,
                      * and share that CS instance for all other constants.
                      */
@@ -517,7 +520,7 @@ public enum CommonCRS {
                         }
                     }
                     /*
-                     * All constants defined in this enumeration use the same coordinate system, EPSG:6423.
+                     * All constants defined in this enumeration use the same coordinate system, EPSG::6423.
                      * We will arbitrarily create this CS only for the most frequently created CRS,
                      * and share that CS instance for all other constants.
                      */
@@ -575,7 +578,7 @@ public enum CommonCRS {
                         }
                     }
                     /*
-                     * All constants defined in this enumeration use the same coordinate system, EPSG:6500.
+                     * All constants defined in this enumeration use the same coordinate system, EPSG::6500.
                      * We will arbitrarily create this CS only for the most frequently created CRS,
                      * and share that CS instance for all other constants.
                      */
@@ -788,13 +791,15 @@ public enum CommonCRS {
      *
      * <blockquote><table class="sis">
      *   <caption>Geodetic objects accessible by enumeration constants</caption>
-     *   <tr><th>Name or alias</th>             <th>Object type</th> <th>Enumeration value</th></tr>
-     *   <tr><td>Barometric altitude</td>       <td>CRS, Datum</td>  <td>{@link #BAROMETRIC}</td></tr>
-     *   <!-- <s>Ellipsoidal height</s> intentionally omitted        <td><s>{@link #ELLIPSOIDAL}</s></td> -->
-     *   <tr><td>Mean Sea Level</td>            <td>Datum</td>       <td>{@link #MEAN_SEA_LEVEL}</td></tr>
-     *   <tr><td>Mean Sea Level depth</td>      <td>CRS</td>         <td>{@link #DEPTH}</td></tr>
-     *   <tr><td>Mean Sea Level height</td>     <td>CRS</td>         <td>{@link #MEAN_SEA_LEVEL}</td></tr>
-     *   <tr><td>Other surface</td>             <td>CRS, Datum</td>  <td>{@link #OTHER_SURFACE}</td></tr>
+     *   <tr><th>Name or alias</th>                      <th>Object type</th> <th>Enumeration value</th></tr>
+     *   <tr><td>Barometric altitude</td>                <td>CRS, Datum</td>  <td>{@link #BAROMETRIC}</td></tr>
+     *   <!-- <s>Ellipsoidal height</s> intentionally omitted                 <td><s>{@link #ELLIPSOIDAL}</s></td> -->
+     *   <tr><td>Mean Sea Level</td>                     <td>Datum</td>       <td>{@link #MEAN_SEA_LEVEL}</td></tr>
+     *   <tr><td>Mean Sea Level depth</td>               <td>CRS</td>         <td>{@link #DEPTH}</td></tr>
+     *   <tr><td>Mean Sea Level height</td>              <td>CRS</td>         <td>{@link #MEAN_SEA_LEVEL}</td></tr>
+     *   <tr><td>NAVD88 height</td>                      <td>CRS</td>         <td>{@link #NAVD88}</td></tr>
+     *   <tr><td>North American Vertical Datum 1988</td> <td>Datum</td>       <td>{@link #NAVD88}</td></tr>
+     *   <tr><td>Other surface</td>                      <td>CRS, Datum</td>  <td>{@link #OTHER_SURFACE}</td></tr>
      * </table></blockquote>
      *
      * <div class="note"><b>Note:</b>
@@ -804,8 +809,10 @@ public enum CommonCRS {
      *
      * @author  Martin Desruisseaux (Geomatys)
      * @since   0.4
-     * @version 0.4
+     * @version 0.7
      * @module
+     *
+     * @see org.apache.sis.referencing.factory.CommonAuthorityFactory
      */
     public static enum Vertical {
         /**
@@ -847,6 +854,24 @@ public enum CommonCRS {
          * @see VerticalDatumType#GEOIDAL
          */
         DEPTH(true, (short) 5715, (short) 5100),
+
+        /**
+         * North American Vertical Datum 1988 height.
+         *
+         * <blockquote><table class="compact" summary="Mean Sea Level properties.">
+         *   <tr><th>WMS identifier:</th>           <td>CRS:88</td></tr>
+         *   <tr><th>EPSG identifiers:</th>         <td>5703 &nbsp;(<i>datum:</i> 5103)</td></tr>
+         *   <tr><th>Primary names:</th>            <td>"NAVD88 height" &nbsp;(<i>datum:</i> "North American Vertical Datum 1988")</td></tr>
+         *   <tr><th>Abbreviations or aliases:</th> <td>" North American Vertical Datum of 1988 height (m)" &nbsp;(<i>datum:</i> "NAVD88")</td></tr>
+         *   <tr><th>Direction:</th>                <td>{@link AxisDirection#UP}</td></tr>
+         *   <tr><th>Unit:</th>                     <td>{@link SI#METRE}</td></tr>
+         * </table></blockquote>
+         *
+         * @see CommonCRS#NAD83
+         *
+         * @since 0.7
+         */
+        NAVD88(true, (short) 5703, (short) 5103),
 
         /**
          * Height measured along the normal to the ellipsoid used in the definition of horizontal datum.

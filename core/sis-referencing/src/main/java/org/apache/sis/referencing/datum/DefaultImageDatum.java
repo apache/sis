@@ -51,6 +51,9 @@ import java.util.Objects;
  * @since   0.4
  * @version 0.7
  * @module
+ *
+ * @see org.apache.sis.referencing.crs.DefaultImageCRS
+ * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createImageDatum(String)
  */
 @XmlType(name = "ImageDatumType")
 @XmlRootElement(name = "ImageDatum")
@@ -126,6 +129,8 @@ public class DefaultImageDatum extends AbstractDatum implements ImageDatum {
      *
      * @param properties  The properties to be given to the identified object.
      * @param pixelInCell The way the image grid is associated with the image data attributes.
+     *
+     * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createImageDatum(Map, PixelInCell)
      */
     public DefaultImageDatum(final Map<String,?> properties, final PixelInCell pixelInCell) {
         super(properties);
