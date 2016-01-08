@@ -77,7 +77,7 @@ public strictfp class ProjectiveTransformTest extends AffineTransformTest {
                      * Opportunistically tests ScaledTransform together with ProjectiveTransform.
                      * We takes ScaledTransform as a reference implementation since it is simpler.
                      */
-                    tr = new TransformResultComparator(tr, pt);
+                    tr = new TransformResultComparator(tr, pt, 0);
                 }
                 return tr;
             }

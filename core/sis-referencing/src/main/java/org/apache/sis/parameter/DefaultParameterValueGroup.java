@@ -18,8 +18,10 @@ package org.apache.sis.parameter;
 
 import java.util.List;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.Map;
 import java.util.IdentityHashMap;
+import java.util.Iterator;
 import java.io.Serializable;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
@@ -38,9 +40,7 @@ import org.apache.sis.util.LenientComparable;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
-
-import static org.apache.sis.util.Utilities.deepEquals;
-import static org.apache.sis.referencing.IdentifiedObjects.isHeuristicMatchForName;
+import org.apache.sis.util.Utilities;
 
 // Branch-dependent imports
 import java.util.Objects;
@@ -103,7 +103,7 @@ import java.util.Objects;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4
- * @version 0.6
+ * @version 0.7
  * @module
  *
  * @see DefaultParameterDescriptorGroup
@@ -206,7 +206,7 @@ public class DefaultParameterValueGroup extends Parameters implements LenientCom
     @Override
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
     public List<GeneralParameterValue> values() {
-        return values;  // Intentionally modifiable.
+        return values;                                          // Intentionally modifiable.
     }
 
     /**
@@ -305,7 +305,7 @@ public class DefaultParameterValueGroup extends Parameters implements LenientCom
         for (int i=0; i<size; i++) {
             final GeneralParameterDescriptor descriptor = values.descriptor(i);
             if (descriptor instanceof ParameterDescriptor<?>) {
-                if (isHeuristicMatchForName(descriptor, name)) {
+                if (IdentifiedObjects.isHeuristicMatchForName(descriptor, name)) {
                     if (fallback < 0) {
                         fallback = i;
                     } else {
@@ -334,7 +334,7 @@ public class DefaultParameterValueGroup extends Parameters implements LenientCom
      *
      * @param  name The name of the parameter to search for.
      * @return The set of all parameter group for the given name.
-     * @throws ParameterNotFoundException If no descriptor was found for the given name.
+     * @throws ParameterNotFoundException if no descriptor was found for the given name.
      */
     @Override
     public List<ParameterValueGroup> groups(final String name) throws ParameterNotFoundException {
@@ -345,7 +345,7 @@ public class DefaultParameterValueGroup extends Parameters implements LenientCom
         for (int i=0; i<size; i++) {
             final GeneralParameterDescriptor descriptor = values.descriptor(i);
             if (descriptor instanceof ParameterDescriptorGroup) {
-                if (isHeuristicMatchForName(descriptor, name)) {
+                if (IdentifiedObjects.isHeuristicMatchForName(descriptor, name)) {
                     groups.add((ParameterValueGroup) values.get(i));
                 }
             }
@@ -358,8 +358,8 @@ public class DefaultParameterValueGroup extends Parameters implements LenientCom
         if (groups.isEmpty()) {
             final ParameterDescriptorGroup descriptor = values.descriptor;
             if (!(descriptor.descriptor(name) instanceof ParameterDescriptorGroup)) {
-                throw new ParameterNotFoundException(Errors.format(
-                        Errors.Keys.ParameterNotFound_2, descriptor.getName(), name), name);
+                throw new ParameterNotFoundException(Errors.format(Errors.Keys.ParameterNotFound_2,
+                        Verifier.getDisplayName(descriptor), name), name);
             }
         }
         return groups;
@@ -377,8 +377,8 @@ public class DefaultParameterValueGroup extends Parameters implements LenientCom
      *
      * @param  name The name of the parameter group to create.
      * @return A newly created parameter group for the given name.
-     * @throws ParameterNotFoundException If no descriptor was found for the given name.
-     * @throws InvalidParameterCardinalityException If this parameter group already contains the
+     * @throws ParameterNotFoundException if no descriptor was found for the given name.
+     * @throws InvalidParameterCardinalityException if this parameter group already contains the
      *         {@linkplain ParameterDescriptorGroup#getMaximumOccurs() maximum number of occurrences}
      *         of subgroups of the given name.
      */
@@ -400,7 +400,14 @@ public class DefaultParameterValueGroup extends Parameters implements LenientCom
 
     /**
      * Compares the specified object with this parameter for equality.
-     * The strictness level is controlled by the second argument.
+     * The strictness level is controlled by the second argument:
+     *
+     * <ul>
+     *   <li>{@link ComparisonMode#STRICT} and {@link ComparisonMode#BY_CONTRACT BY_CONTRACT}
+     *       take in account the parameter order.</li>
+     *   <li>{@link ComparisonMode#IGNORE_METADATA} and {@link ComparisonMode#APPROXIMATIVE APPROXIMATIVE}
+     *       ignore the order of parameter values (but not necessarily the order of parameter descriptors).</li>
+     * </ul>
      *
      * @param  object The object to compare to {@code this}.
      * @param  mode The strictness level of the comparison.
@@ -420,12 +427,34 @@ public class DefaultParameterValueGroup extends Parameters implements LenientCom
                            Objects.equals(values, that.values);
                 }
             } else if (object instanceof ParameterValueGroup) {
-                final ParameterValueGroup that = (ParameterValueGroup) object;
-                return deepEquals(getDescriptor(), that.getDescriptor(), mode) &&
-                       deepEquals(values(), that.values(), mode);
+                return equals(this, (ParameterValueGroup) object, mode);
             }
         }
         return false;
+    }
+
+    /**
+     * Compares the given objects for equality, ignoring parameter order in "ignore metadata" mode.
+     */
+    static boolean equals(final Parameters expected, final ParameterValueGroup actual, final ComparisonMode mode) {
+        if (!Utilities.deepEquals(expected.getDescriptor(), actual.getDescriptor(), mode)) {
+            return false;
+        }
+        if (!mode.isIgnoringMetadata()) {
+            return Utilities.deepEquals(expected.values(), actual.values(), mode);
+        }
+        final List<GeneralParameterValue> values = new LinkedList<>(expected.values());
+scan:   for (final GeneralParameterValue param : actual.values()) {
+            final Iterator<GeneralParameterValue> it = values.iterator();
+            while (it.hasNext()) {
+                if (Utilities.deepEquals(it.next(), param, mode)) {
+                    it.remove();
+                    continue scan;
+                }
+            }
+            return false;   // A parameter from 'actual' has not been found in 'expected'.
+        }
+        return values.isEmpty();
     }
 
     /**
@@ -449,7 +478,7 @@ public class DefaultParameterValueGroup extends Parameters implements LenientCom
     /**
      * Returns a hash value for this parameter.
      *
-     * @return The hash code value. This value doesn't need to be the same
+     * @return The hash code value. This value does not need to be the same
      *         in past or future versions of this class.
      */
     @Override

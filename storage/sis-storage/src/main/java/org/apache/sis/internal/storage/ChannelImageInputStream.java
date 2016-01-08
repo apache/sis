@@ -289,7 +289,7 @@ loop:   while ((c = read()) >= 0) {
      */
     @Override
     public final long skipBytes(final long n) throws IOException {
-        return skipBytes(Math.min((int) n, Integer.MAX_VALUE));
+        return skipBytes((int) Math.min(n, Integer.MAX_VALUE));
     }
 
     /**

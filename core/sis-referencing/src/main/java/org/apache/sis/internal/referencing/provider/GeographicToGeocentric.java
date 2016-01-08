@@ -84,6 +84,17 @@ public final class GeographicToGeocentric extends AbstractProvider {
     }
 
     /**
+     * Notifies {@code DefaultMathTransformFactory} that Geographic/geocentric conversions
+     * require values for the {@code "semi_major"} and {@code "semi_minor"} parameters.
+     *
+     * @return 1, meaning that the operation requires a source ellipsoid.
+     */
+    @Override
+    public int getEllipsoidsMask() {
+        return 1;
+    }
+
+    /**
      * Creates a transform from the specified group of parameter values.
      *
      * @param  factory The factory to use for creating the transform.

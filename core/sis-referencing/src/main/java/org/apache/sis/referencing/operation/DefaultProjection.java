@@ -87,13 +87,15 @@ class DefaultProjection extends DefaultConversion implements Projection {
      * @param sourceCRS  The source CRS.
      * @param targetCRS  The target CRS.
      * @param factory    The factory to use for creating a transform from the parameters or for performing axis changes.
+     * @param actual     An array of length 1 where to store the actual operation method used by the math transform factory.
      */
     DefaultProjection(final Conversion definition,
                       final CoordinateReferenceSystem sourceCRS,
                       final CoordinateReferenceSystem targetCRS,
-                      final MathTransformFactory factory) throws FactoryException
+                      final MathTransformFactory factory,
+                      final OperationMethod[] actual) throws FactoryException
     {
-        super(definition, sourceCRS, targetCRS, factory);
+        super(definition, sourceCRS, targetCRS, factory, actual);
         ArgumentChecks.ensureCanCast("sourceCRS", GeographicCRS.class, sourceCRS);
         ArgumentChecks.ensureCanCast("targetCRS", ProjectedCRS .class, targetCRS);
     }

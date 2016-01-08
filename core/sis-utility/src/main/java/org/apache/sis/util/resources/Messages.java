@@ -61,9 +61,25 @@ public final class Messages extends IndexedResourceBundle {
         public static final short AlreadyRegistered_2 = 0;
 
         /**
+         * Ambiguity between inverse flattening and semi minor axis length for “{0}”. Using inverse
+         * flattening.
+         */
+        public static final short AmbiguousEllipsoid_1 = 30;
+
+        /**
+         * Can not instantiate the object of type ‘{0}’ identified by “{1}”. Reason is:{2}
+         */
+        public static final short CanNotInstantiateForIdentifier_3 = 35;
+
+        /**
          * Changed the container capacity from {0} to {1} elements.
          */
         public static final short ChangedContainerCapacity_2 = 1;
+
+        /**
+         * Configuration of “{0}” received on {1} in {2} seconds.
+         */
+        public static final short ConfigurationOf_3 = 31;
 
         /**
          * This result indicates if a datum shift method has been applied.
@@ -77,7 +93,17 @@ public final class Messages extends IndexedResourceBundle {
         public static final short ConstantProjParameterValue_1 = 11;
 
         /**
-         * Created an instance of ‘{0}’ named “{1}” with “{2}” identifier.
+         * Created an instance of ‘{0}’ from the “{1}” identifier in {2} seconds.
+         */
+        public static final short CreateDurationFromIdentifier_3 = 33;
+
+        /**
+         * Created an instance of ‘{0}’ in {1} seconds.
+         */
+        public static final short CreateDuration_2 = 34;
+
+        /**
+         * Created an instance of ‘{0}’ named “{1}” with the “{2}” identifier.
          */
         public static final short CreatedIdentifiedObject_3 = 17;
 
@@ -85,6 +111,53 @@ public final class Messages extends IndexedResourceBundle {
          * Created an instance of ‘{0}’ named “{1}”.
          */
         public static final short CreatedNamedObject_2 = 16;
+
+        /**
+         * {0} dataset version {1} on “{2}” version {3}.
+         */
+        public static final short DataBase_4 = 28;
+
+        /**
+         * The {0} environment variable is defined, but the given “{1}” value is not an existing
+         * directory.
+         */
+        public static final short DataDirectoryDoesNotExist_2 = 20;
+
+        /**
+         * Apache SIS is not authorized to access the “{1}” sub-directory in the directory given by the
+         * {0} environment variable.
+         */
+        public static final short DataDirectoryNotAccessible_2 = 26;
+
+        /**
+         * Apache SIS is not authorized to read information given by the “{0}” environment variable.
+         */
+        public static final short DataDirectoryNotAuthorized_1 = 25;
+
+        /**
+         * The “{1}” directory specified by the {0} environment variable exists but is not readable.
+         */
+        public static final short DataDirectoryNotReadable_2 = 21;
+
+        /**
+         * The “{0}” environment variable is not set.
+         */
+        public static final short DataDirectoryNotSpecified_1 = 22;
+
+        /**
+         * Apache SIS can not write in the “{1}” directory given by the {0} environment variable.
+         */
+        public static final short DataDirectoryNotWritable_2 = 23;
+
+        /**
+         * Environment variable {0} specifies the “{1}” data directory.
+         */
+        public static final short DataDirectory_2 = 24;
+
+        /**
+         * Code “{0}” is deprecated and replaced by code {1}. Reason is: {2}
+         */
+        public static final short DeprecatedCode_3 = 29;
 
         /**
          * Property “{0}” has been discarded in favor of “{1}”, because those two properties are
@@ -106,6 +179,16 @@ public final class Messages extends IndexedResourceBundle {
          * Parsing of “{0}” done, but some elements were ignored.
          */
         public static final short IncompleteParsing_1 = 14;
+
+        /**
+         * No object associated to the “{0}” JNDI name.
+         */
+        public static final short JNDINotSpecified_1 = 32;
+
+        /**
+         * Loading datum shift file “{0}”.
+         */
+        public static final short LoadingDatumShiftFile_1 = 27;
 
         /**
          * Text were discarded for some locales.
@@ -148,6 +231,11 @@ public final class Messages extends IndexedResourceBundle {
          * The text contains unknown elements:
          */
         public static final short UnknownElementsInText = 13;
+
+        /**
+         * Loading of “{0}” done, but some records were ignored because of unrecognized keywords: {1}
+         */
+        public static final short UnknownKeywordInRecord_2 = 19;
 
         /**
          * Can not parse “{1}” as an instance of ‘{0}’. The value is stored as plain text instead, but

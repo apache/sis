@@ -16,6 +16,10 @@
  */
 package org.apache.sis.internal.system;
 
+import java.util.EnumSet;
+import java.util.Locale;
+import java.util.TimeZone;
+import org.apache.sis.setup.About;
 import org.apache.sis.util.collection.TreeTable;
 
 
@@ -24,7 +28,7 @@ import org.apache.sis.util.collection.TreeTable;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.3
+ * @version 0.7
  * @module
  */
 public interface SupervisorMBean {
@@ -35,15 +39,19 @@ public interface SupervisorMBean {
      * Apache SIS version, Java version and operation system version; a "Classpath"
      * section containing bootstrap, extension and user classpath, <i>etc</i>.
      *
+     * @param  sections The section for which information are desired.
+     * @param  locale   The locale to use for formatting the texts in the tree, or {@code null} for the default.
+     * @param  timezone The timezone to use for formatting the dates, or {@code null} for the default.
      * @return Configuration information, as a tree for grouping some configuration by sections.
      */
-    TreeTable configuration();
+    TreeTable configuration(EnumSet<About> sections, Locale locale, TimeZone timezone);
 
     /**
      * If there is something wrong with the current Apache SIS status,
      * returns descriptions of the problems. Otherwise returns {@code null}.
      *
+     * @param  locale The locale to use for reporting messages, or {@code null} for the default.
      * @return A description of a problems in the library, or {@code null} if none.
      */
-    String[] warnings();
+    String[] warnings(Locale locale);
 }

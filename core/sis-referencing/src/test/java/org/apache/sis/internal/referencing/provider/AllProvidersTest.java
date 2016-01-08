@@ -53,7 +53,8 @@ public final strictfp class AllProvidersTest extends TestCase {
         return new Class<?>[] {
             Affine.class,
             GeographicOffsets.class,
-            GeographicOffsets3D.class,
+            GeographicOffsets2D.class,
+            VerticalOffset.class,
             LongitudeRotation.class,
             CoordinateFrameRotation.class,
             CoordinateFrameRotation2D.class,
@@ -88,7 +89,10 @@ public final strictfp class AllProvidersTest extends TestCase {
             PolarStereographicC.class,
             PolarStereographicNorth.class,
             PolarStereographicSouth.class,
-            ObliqueStereographic.class
+            ObliqueStereographic.class,
+            NTv2.class,
+            NADCON.class,
+            FranceGeocentricInterpolation.class
         };
     }
 

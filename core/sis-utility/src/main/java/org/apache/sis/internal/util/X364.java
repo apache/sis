@@ -120,6 +120,7 @@ public enum X364 {
      * @param code  The X.364 numerical code.
      * @param color The color name, or {@code null} if none.
      */
+    @SuppressWarnings("ThisEscapedInObjectConstruction")
     private X364(final byte code, final String color) {
         this.code  = code;
         this.color = color;
@@ -132,6 +133,7 @@ public enum X364 {
      *
      * @param foreground The X.364 code for a foreground color.
      */
+    @SuppressWarnings("ThisEscapedInObjectConstruction")
     private X364(final X364 foreground) {
         this((byte) (foreground.code + 10), foreground.color);
         this.foreground = foreground;

@@ -33,6 +33,7 @@ import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.util.Utilities;
+import org.apache.sis.referencing.factory.InvalidGeodeticParameterException;
 import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
 import org.apache.sis.util.collection.WeakHashSet;
 import org.apache.sis.util.collection.Containers;
@@ -246,7 +247,7 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
         try {
             method = new DefaultOperationMethod(properties, sourceDimensions, targetDimensions, parameters);
         } catch (IllegalArgumentException exception) {
-            throw new FactoryException(exception);
+            throw new InvalidGeodeticParameterException(exception.getLocalizedMessage(), exception);
         }
         return pool.unique(method);
     }
@@ -306,7 +307,7 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
         try {
             conversion = new DefaultConversion(properties, method, null, parameters);
         } catch (IllegalArgumentException exception) {
-            throw new FactoryException(exception);
+            throw new InvalidGeodeticParameterException(exception.getLocalizedMessage(), exception);
         }
         // We do no invoke unique(conversion) because defining conversions are usually short-lived objects.
         return conversion;
@@ -521,7 +522,7 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
         try {
             op = new DefaultConcatenatedOperation(properties, operations, getMathTransformFactory());
         } catch (IllegalArgumentException exception) {
-            throw new FactoryException(exception);
+            throw new InvalidGeodeticParameterException(exception.getLocalizedMessage(), exception);
         }
         return pool.unique(op);
     }

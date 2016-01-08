@@ -97,6 +97,12 @@ public final class Doclet extends HtmlDoclet {
             final File customCSS = customCSS(output);
             copyStylesheet(customCSS, output);
             copyResources(customCSS.getParentFile(), output);
+            final Rewriter r = new Rewriter();
+            for (final File file : output.listFiles()) {
+                if (file.isDirectory()) {  // Do not process files in the root directory, only in sub-directories.
+                    r.processDirectory(file);
+                }
+            }
         } catch (IOException e) {
             final StringWriter buffer = new StringWriter();
             final PrintWriter p = new PrintWriter(buffer);

@@ -30,6 +30,7 @@ import java.util.MissingResourceException;
 import java.util.jar.Attributes;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
+import java.util.logging.Level;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
@@ -42,16 +43,22 @@ import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Version;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.logging.LoggerFactory;
+import org.apache.sis.util.resources.Messages;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.collection.TreeTables;
 import org.apache.sis.util.collection.DefaultTreeTable;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.system.Modules;
+import org.apache.sis.internal.system.Shutdown;
+import org.apache.sis.internal.system.DataDirectory;
 
 import static java.lang.System.getProperty;
 import static org.apache.sis.util.collection.TableColumn.NAME;
 import static org.apache.sis.util.collection.TableColumn.VALUE_AS_TEXT;
+
+// Branch-dependent imports
+import java.nio.file.Path;
 
 
 /**
@@ -71,7 +78,7 @@ import static org.apache.sis.util.collection.TableColumn.VALUE_AS_TEXT;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.3
+ * @version 0.7
  * @module
  */
 public enum About {
@@ -112,6 +119,8 @@ public enum About {
      * <ul>
      *   <li>User directory</li>
      *   <li>Default directory</li>
+     *   <li>SIS data directory</li>
+     *   <li>Temporary directory</li>
      *   <li>Java home directory</li>
      * </ul>
      */
@@ -189,10 +198,10 @@ public enum About {
         TreeTable.Node section = null;
         About newSection = VERSIONS;
 fill:   for (int i=0; ; i++) {
-            short    nameKey  = 0;    // The Vocabulary.Key for 'name', used only if name is null.
-            String   name     = null; // The value to put in the 'Name' column of the table.
-            Object   value    = null; // The value to put in the 'Value' column of the table.
-            String[] children = null; // Optional children to write below the node.
+            short    nameKey  = 0;          // The Vocabulary.Key for 'name', used only if name is null.
+            String   name     = null;       // The value to put in the 'Name' column of the table.
+            Object   value    = null;       // The value to put in the 'Value' column of the table.
+            String[] children = null;       // Optional children to write below the node.
             switch (i) {
                 case 0: {
                     if (sections.contains(VERSIONS)) {
@@ -217,6 +226,13 @@ fill:   for (int i=0; ; i++) {
                     break;
                 }
                 case 3: {
+                    if (sections.contains(VERSIONS)) {
+                        nameKey = Vocabulary.Keys.Container;
+                        value = Shutdown.getContainer();        // Sometime contains version information.
+                    }
+                    break;
+                }
+                case 4: {
                     newSection = LOCALIZATION;
                     if (sections.contains(LOCALIZATION)) {
                         final Locale current = Locale.getDefault();
@@ -231,7 +247,7 @@ fill:   for (int i=0; ; i++) {
                     }
                     break;
                 }
-                case 4: {
+                case 5: {
                     if (sections.contains(LOCALIZATION)) {
                         final TimeZone current = TimeZone.getDefault();
                         if (current != null) {
@@ -252,7 +268,7 @@ fill:   for (int i=0; ; i++) {
                     }
                     break;
                 }
-                case 5: {
+                case 6: {
                     if (sections.contains(LOCALIZATION)) {
                         nameKey = Vocabulary.Keys.CurrentDateTime;
                         final DateFormat df = DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.LONG, formatLocale);
@@ -263,7 +279,7 @@ fill:   for (int i=0; ; i++) {
                     }
                     break;
                 }
-                case 6: {
+                case 7: {
                     if (sections.contains(LOCALIZATION)) {
                         final Charset current = Charset.defaultCharset();
                         if (current != null) {
@@ -283,7 +299,7 @@ fill:   for (int i=0; ; i++) {
                     }
                     break;
                 }
-                case 7: {
+                case 8: {
                     newSection = LOGGING;
                     if (sections.contains(LOGGING)) {
                         nameKey = Vocabulary.Keys.Implementation;
@@ -292,7 +308,24 @@ fill:   for (int i=0; ; i++) {
                     }
                     break;
                 }
-                case 8: {
+                case 9: {
+                    if (sections.contains(LOGGING)) {
+                        nameKey = Vocabulary.Keys.Level;
+                        final Level level = Logging.getLogger("").getLevel();   // Root logger level.
+                        value = level.getLocalizedName();
+                        final Map<String,Level> levels = Loggers.getEffectiveLevels();
+                        if (levels.size() != 1 || !level.equals(levels.get(Loggers.ROOT))) {
+                            int j = 0;
+                            children = new String[levels.size() * 2];
+                            for (final Map.Entry<String,Level> entry : levels.entrySet()) {
+                                children[j++] = entry.getKey();
+                                children[j++] = entry.getValue().getLocalizedName();
+                            }
+                        }
+                    }
+                    break;
+                }
+                case 10: {
                     newSection = PATHS;
                     if (sections.contains(PATHS)) {
                         nameKey = Vocabulary.Keys.UserHome;
@@ -300,28 +333,45 @@ fill:   for (int i=0; ; i++) {
                     }
                     break;
                 }
-                case 9: {
+                case 11: {
                     if (sections.contains(PATHS)) {
                         nameKey = Vocabulary.Keys.CurrentDirectory;
                         value = getProperty("user.dir");
                     }
                     break;
                 }
-                case 10: {
+                case 12: {
+                    if (sections.contains(PATHS)) {
+                        nameKey = Vocabulary.Keys.DataDirectory;
+                        value = System.getenv(DataDirectory.ENV);
+                        if (value == null) {
+                            value = Messages.getResources(locale).getString(Messages.Keys.DataDirectoryNotSpecified_1, DataDirectory.ENV);
+                        } else {
+                            final Path path = DataDirectory.getRootDirectory();
+                            if (path != null) {
+                                value = path.toString();
+                            } else {
+                                value = value + " (" + resources.getString(Vocabulary.Keys.Invalid) + ')';
+                            }
+                        }
+                    }
+                    break;
+                }
+                case 13: {
                     if (sections.contains(PATHS)) {
                         nameKey = Vocabulary.Keys.TemporaryFiles;
                         value = getProperty("java.io.tmpdir");
                     }
                     break;
                 }
-                case 11: {
+                case 14: {
                     if (sections.contains(PATHS)) {
                         nameKey = Vocabulary.Keys.JavaHome;
                         value = javaHome = getProperty("java.home");
                     }
                     break;
                 }
-                case 12: {
+                case 15: {
                     newSection = LIBRARIES;
                     if (sections.contains(LIBRARIES)) {
                         nameKey = Vocabulary.Keys.JavaExtensions;
@@ -329,7 +379,7 @@ fill:   for (int i=0; ; i++) {
                     }
                     break;
                 }
-                case 13: {
+                case 16: {
                     if (sections.contains(LIBRARIES)) {
                         nameKey = Vocabulary.Keys.Classpath;
                         value = classpath(getProperty("java.class.path"), false);

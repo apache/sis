@@ -100,7 +100,7 @@ public abstract strictfp class MatrixTestCase extends TestCase {
      *
      * @see NonSquareMatrixTest#printStatistics()
      */
-    static final Statistics statistics = verbose ? new Statistics("|SIS - JAMA|") : null;
+    static final Statistics statistics = VERBOSE ? new Statistics("|SIS - JAMA|") : null;
 
     /**
      * Random number generator, created by {@link #initialize(long)} as the first operation of

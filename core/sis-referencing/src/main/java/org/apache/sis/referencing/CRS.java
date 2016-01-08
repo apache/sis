@@ -122,7 +122,7 @@ public final class CRS extends Static {
      *   <tr><td>EPSG:4979</td> <td>{@link CommonCRS#WGS84  WGS84}</td>  <td>Geographic 3D</td> <td>World Geodetic System 1984</td></tr>
      *   <tr><td>EPSG:4984</td> <td>{@link CommonCRS#WGS72  WGS72}</td>  <td>Geocentric</td>    <td>World Geodetic System 1972</td></tr>
      *   <tr><td>EPSG:4985</td> <td>{@link CommonCRS#WGS72  WGS72}</td>  <td>Geographic 3D</td> <td>World Geodetic System 1972</td></tr>
-     *   <tr><td>EPSG:5715</td> <td>{@link CommonCRS.Vertical#DEPTH  DEPTH}</td> <td>Vertical</td> <td>Mean Sea Level depth</td></tr>
+     *   <tr><td>EPSG:5715</td> <td>{@link CommonCRS.Vertical#DEPTH DEPTH}</td> <td>Vertical</td> <td>Mean Sea Level depth</td></tr>
      *   <tr><td>EPSG:5714</td> <td>{@link CommonCRS.Vertical#MEAN_SEA_LEVEL MEAN_SEA_LEVEL}</td> <td>Vertical</td> <td>Mean Sea Level height</td></tr>
      * </table></blockquote>
      *
@@ -137,6 +137,8 @@ public final class CRS extends Static {
      * @return The Coordinate Reference System for the given authority code.
      * @throws NoSuchAuthorityCodeException If there is no known CRS associated to the given code.
      * @throws FactoryException if the CRS creation failed for an other reason.
+     *
+     * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory
      *
      * @category factory
      */
@@ -260,7 +262,7 @@ public final class CRS extends Static {
      * CRS as horizontal if it is two-dimensional and comply with one of the following conditions:
      *
      * <ul>
-     *   <li>is an instance of {@link GeographicCRS}, or</li>
+     *   <li>is an instance of {@link GeographicCRS} (or an equivalent {@link GeodeticCRS}), or</li>
      *   <li>is an instance of {@link ProjectedCRS}, or</li>
      *   <li>is an instance of {@link EngineeringCRS} (following
      *     <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#111">ISO 19162 §16.1</a>
@@ -282,8 +284,17 @@ public final class CRS extends Static {
      * @category information
      */
     public static boolean isHorizontalCRS(final CoordinateReferenceSystem crs) {
-        if (crs instanceof GeographicCRS || crs instanceof ProjectedCRS || crs instanceof EngineeringCRS) {
-            return crs.getCoordinateSystem().getDimension() == 2;
+        /*
+         * In order to determine if the CRS is geographic, checking the CoordinateSystem type is more reliable
+         * then checking if the CRS implements the GeographicCRS interface.  This is because the GeographicCRS
+         * interface is GeoAPI-specific, so a CRS may be OGC-compliant without implementing that interface.
+         */
+        final boolean isGeodetic = (crs instanceof GeodeticCRS);
+        if (isGeodetic || crs instanceof ProjectedCRS || crs instanceof EngineeringCRS) {
+            final CoordinateSystem cs = crs.getCoordinateSystem();
+            if (cs.getDimension() == 2) {
+                return !isGeodetic || (cs instanceof EllipsoidalCS);
+            }
         }
         return false;
     }
@@ -307,21 +318,24 @@ public final class CRS extends Static {
         if (isHorizontalCRS(crs)) {
             return (SingleCRS) crs;
         }
-        if (crs instanceof GeographicCRS) {
-            EllipsoidalCS cs = ((GeographicCRS) crs).getCoordinateSystem();
-            final int i = AxisDirections.indexOfColinear(cs, AxisDirection.UP);
-            if (i >= 0) {
-                final CoordinateSystemAxis xAxis = cs.getAxis(i > 0 ? 0 : 1);
-                final CoordinateSystemAxis yAxis = cs.getAxis(i > 1 ? 1 : 2);
-                cs = CommonCRS.DEFAULT.geographic().getCoordinateSystem();
-                if (!Utilities.equalsIgnoreMetadata(cs.getAxis(0), xAxis) ||
-                    !Utilities.equalsIgnoreMetadata(cs.getAxis(1), yAxis))
-                {
-                    // We can not reuse the name of the existing CS, because it typically
-                    // contains text about axes including the axis that we just dropped.
-                    cs = new DefaultEllipsoidalCS(singletonMap(EllipsoidalCS.NAME_KEY, "Ellipsoidal 2D"), xAxis, yAxis);
+        if (crs instanceof GeodeticCRS) {
+            CoordinateSystem cs = crs.getCoordinateSystem();
+            if (cs instanceof EllipsoidalCS) {  // See comment in isHorizontalCRS(…) method.
+                final int i = AxisDirections.indexOfColinear(cs, AxisDirection.UP);
+                if (i >= 0) {
+                    final CoordinateSystemAxis xAxis = cs.getAxis(i > 0 ? 0 : 1);
+                    final CoordinateSystemAxis yAxis = cs.getAxis(i > 1 ? 1 : 2);
+                    cs = CommonCRS.DEFAULT.geographic().getCoordinateSystem();
+                    if (!Utilities.equalsIgnoreMetadata(cs.getAxis(0), xAxis) ||
+                        !Utilities.equalsIgnoreMetadata(cs.getAxis(1), yAxis))
+                    {
+                        // We can not reuse the name of the existing CS, because it typically
+                        // contains text about axes including the axis that we just dropped.
+                        cs = new DefaultEllipsoidalCS(singletonMap(EllipsoidalCS.NAME_KEY, "Ellipsoidal 2D"), xAxis, yAxis);
+                    }
+                    return new DefaultGeographicCRS(IdentifiedObjects.getProperties(crs),
+                            ((GeodeticCRS) crs).getDatum(), (EllipsoidalCS) cs);
                 }
-                return new DefaultGeographicCRS(IdentifiedObjects.getProperties(crs), ((GeographicCRS) crs).getDatum(), cs);
             }
         }
         if (crs instanceof CompoundCRS) {
@@ -384,17 +398,19 @@ public final class CRS extends Static {
                 }
             } while ((a = !a) == allowCreateEllipsoidal);
         }
-        if (allowCreateEllipsoidal && crs instanceof GeographicCRS) {
+        if (allowCreateEllipsoidal && crs instanceof GeodeticCRS) {
             final CoordinateSystem cs = crs.getCoordinateSystem();
-            final int i = AxisDirections.indexOfColinear(cs, AxisDirection.UP);
-            if (i >= 0) {
-                final CoordinateSystemAxis axis = cs.getAxis(i);
-                VerticalCRS c = CommonCRS.Vertical.ELLIPSOIDAL.crs();
-                if (!c.getCoordinateSystem().getAxis(0).equals(axis)) {
-                    final Map<String,?> properties = IdentifiedObjects.getProperties(c);
-                    c = new DefaultVerticalCRS(properties, c.getDatum(), new DefaultVerticalCS(properties, axis));
+            if (cs instanceof EllipsoidalCS) {  // See comment in isHorizontalCRS(…) method.
+                final int i = AxisDirections.indexOfColinear(cs, AxisDirection.UP);
+                if (i >= 0) {
+                    final CoordinateSystemAxis axis = cs.getAxis(i);
+                    VerticalCRS c = CommonCRS.Vertical.ELLIPSOIDAL.crs();
+                    if (!c.getCoordinateSystem().getAxis(0).equals(axis)) {
+                        final Map<String,?> properties = IdentifiedObjects.getProperties(c);
+                        c = new DefaultVerticalCRS(properties, c.getDatum(), new DefaultVerticalCS(properties, axis));
+                    }
+                    return c;
                 }
-                return c;
             }
         }
         return null;

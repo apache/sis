@@ -107,6 +107,8 @@ public class DefaultLinearCS extends AbstractCS implements LinearCS {
      *
      * @param properties The properties to be given to the identified object.
      * @param axis       The axis.
+     *
+     * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createLinearCS(Map, CoordinateSystemAxis)
      */
     public DefaultLinearCS(final Map<String,?> properties, final CoordinateSystemAxis axis) {
         super(properties, axis);

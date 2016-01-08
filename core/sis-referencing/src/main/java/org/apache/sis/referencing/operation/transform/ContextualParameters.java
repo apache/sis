@@ -158,7 +158,7 @@ public class ContextualParameters extends Parameters implements Serializable {
          * Inverse of the {@link #NORMALIZATION} matrix.
          * For example in a map projection, this matrix is typically (but not necessarily) as below:
          *
-         * <center>{@include formulas.html#DeormalizeGeographic}</center>
+         * <center>{@include formulas.html#DenormalizeGeographic}</center>
          */
         INVERSE_NORMALIZATION,
 
@@ -475,7 +475,7 @@ public class ContextualParameters extends Parameters implements Serializable {
      * the denormalization matrix with the following matrix. This will have the effect of applying the conversion
      * described above after the non-linear kernel operation:</p>
      *
-     * <center>{@include formulas.html#DeormalizeGeographic}</center>
+     * <center>{@include formulas.html#DenormalizeGeographic}</center>
      *
      * @param  λ0 Longitude of the central meridian, in degrees.
      * @return The denormalization affine transform as a matrix.
@@ -512,7 +512,6 @@ public class ContextualParameters extends Parameters implements Serializable {
      *
      * @see org.apache.sis.referencing.operation.projection.NormalizedProjection#createMapProjection(MathTransformFactory)
      */
-    @SuppressWarnings("AssignmentToForLoopParameter")
     public synchronized MathTransform completeTransform(final MathTransformFactory factory, final MathTransform kernel)
             throws FactoryException
     {
@@ -528,6 +527,9 @@ public class ContextualParameters extends Parameters implements Serializable {
         Matrix m;
         if ((m = MathTransforms.getMatrix(n)) != null)   normalize = m;
         if ((m = MathTransforms.getMatrix(d)) != null) denormalize = m;
+        if (kernel == null) {   // Undocumented feature useful for MolodenskyTransform constructor.
+            return null;
+        }
         return factory.createConcatenatedTransform(factory.createConcatenatedTransform(n, kernel), d);
     }
 

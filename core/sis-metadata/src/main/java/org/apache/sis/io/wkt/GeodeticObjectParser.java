@@ -67,6 +67,7 @@ import org.apache.sis.internal.metadata.AxisNames;
 import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.internal.metadata.VerticalDatumTypes;
 import org.apache.sis.internal.metadata.ReferencingServices;
+import org.apache.sis.internal.metadata.TransformationAccuracy;
 import org.apache.sis.internal.util.LocalizedParseException;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.util.CharSequences;
@@ -86,7 +87,7 @@ import static java.util.Collections.singletonMap;
  * @author  Rémi Eve (IRD)
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.6
- * @version 0.6
+ * @version 0.7
  * @module
  */
 final class GeodeticObjectParser extends MathTransformParser implements Comparator<CoordinateSystemAxis> {
@@ -2103,7 +2104,8 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
         parseParameters(element, parameters, null, null);
         properties.put(ReferencingServices.PARAMETERS_KEY, parameters);
         if (accuracy != null) {
-            accuracy.pullDouble("accuracy");    // TODO: share the code from EPSG factory.
+            properties.put(CoordinateOperation.COORDINATE_OPERATION_ACCURACY_KEY,
+                    TransformationAccuracy.create(accuracy.pullDouble("accuracy")));
             accuracy.close(ignoredElements);
         }
         try {

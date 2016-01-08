@@ -28,6 +28,9 @@ import org.apache.sis.internal.shapefile.jdbc.resultset.SQLIllegalColumnIndexExc
 import org.apache.sis.internal.shapefile.jdbc.resultset.SQLNoSuchFieldException;
 import org.opengis.feature.Feature;
 
+// Branch-dependent imports
+import org.apache.sis.internal.jdk8.JDK8;
+
 
 /**
  * Reader of a Database Binary content by the way of a {@link java.nio.MappedByteBuffer}
@@ -43,7 +46,7 @@ public class MappedByteReader extends AbstractDbase3ByteReader implements AutoCl
 
     /** Connection properties. */
     private Properties info;
-    
+
     /**
      * Construct a mapped byte reader on a file.
      * @param dbase3File File.
@@ -54,18 +57,18 @@ public class MappedByteReader extends AbstractDbase3ByteReader implements AutoCl
     public MappedByteReader(File dbase3File, Properties connectionInfos) throws SQLInvalidDbaseFileFormatException, SQLDbaseFileNotFoundException {
         super(dbase3File);
         this.info = connectionInfos;
-        
+
         // React to special features asked.
-        if (info != null) {
+        if (this.info != null) {
             // Sometimes, DBF files have a wrong charset, or more often : none, and you have to specify it.
-            String recordCharset = (String)info.get("record_charset");
-            
+            String recordCharset = (String)this.info.get("record_charset");
+
             if (recordCharset != null) {
                 Charset cs = Charset.forName(recordCharset);
                 setCharset(cs);
             }
         }
-        
+
         loadDescriptor();
     }
 
@@ -78,20 +81,18 @@ public class MappedByteReader extends AbstractDbase3ByteReader implements AutoCl
         getByteBuffer().get(); // denotes whether deleted or current
         // read first part of record
 
-        for (DBase3FieldDescriptor fd : fieldsDescriptors) {
+        for (DBase3FieldDescriptor fd : this.fieldsDescriptors) {
             byte[] data = new byte[fd.getLength()];
             getByteBuffer().get(data);
 
             int length = data.length;
-            while (length != 0 && data[length - 1] <= ' ') {
+            while (length != 0 && JDK8.toUnsignedInt(data[length - 1]) <= ' ') {
                 length--;
             }
 
             String value = new String(data, 0, length);
             feature.setPropertyValue(fd.getName(), value);
         }
-
-        rowNum ++;
     }
 
     /**
@@ -104,13 +105,13 @@ public class MappedByteReader extends AbstractDbase3ByteReader implements AutoCl
         if (getByteBuffer().hasRemaining() == false) {
             return false;
         }
-        
+
         // 2) Check that the immediate next byte read isn't the EOF signal.
         byte eofCheck = getByteBuffer().get();
-        
+
         boolean isEOF = (eofCheck == 0x1A);
-        this.log(Level.FINER, "log.delete_status", rowNum, eofCheck, isEOF ? "EOF" : "Active");
-        
+        this.log(Level.FINER, "log.delete_status", getRowNum(), eofCheck, isEOF ? "EOF" : "Active");
+
         if (eofCheck == 0x1A) {
             return false;
         }
@@ -123,6 +124,16 @@ public class MappedByteReader extends AbstractDbase3ByteReader implements AutoCl
     }
 
     /**
+     * Returns the record number of the last record red.
+     * @return The record number.
+     */
+    @Override public int getRowNum() {
+        int position = getByteBuffer().position();
+        int recordNumber = (position - JDK8.toUnsignedInt(this.firstRecordPosition)) / JDK8.toUnsignedInt(this.recordLength);
+        return recordNumber;
+    }
+
+    /**
      * Read the next row as a set of objects.
      * @return Map of field name / object value.
      */
@@ -130,28 +141,28 @@ public class MappedByteReader extends AbstractDbase3ByteReader implements AutoCl
     public Map<String, byte[]> readNextRowAsObjects() {
         // TODO: ignore deleted records
         /* byte isDeleted = */ getByteBuffer().get(); // denotes whether deleted or current
-        
+
         // read first part of record
         HashMap<String, byte[]> fieldsValues = new HashMap<>();
 
-        for (DBase3FieldDescriptor fd : fieldsDescriptors) {
+        for (DBase3FieldDescriptor fd : this.fieldsDescriptors) {
             byte[] data = new byte[fd.getLength()];
             getByteBuffer().get(data);
 
             // Trim the bytes right.
             int length = data.length;
-            
-            while (length != 0 && data[length - 1] <= ' ') {
+
+            while (length != 0 && JDK8.toUnsignedInt(data[length - 1]) <= ' ') {
                 length--;
             }
-            
+
             if (length != data.length) {
                 byte[] dataTrimmed = new byte[length];
-                
+
                 for(int index=0; index < length; index ++) {
                     dataTrimmed[index] = data[index];
                 }
-                
+
                 fieldsValues.put(fd.getName(), dataTrimmed);
             }
             else {
@@ -159,7 +170,6 @@ public class MappedByteReader extends AbstractDbase3ByteReader implements AutoCl
             }
         }
 
-        rowNum ++;
         return fieldsValues;
     }
 
@@ -174,36 +184,36 @@ public class MappedByteReader extends AbstractDbase3ByteReader implements AutoCl
 
             getByteBuffer().order(ByteOrder.LITTLE_ENDIAN);
             this.rowCount = getByteBuffer().getInt();
-            this.dbaseHeaderBytes = getByteBuffer().getShort();
-            this.dbaseRecordBytes = getByteBuffer().getShort();
+            this.firstRecordPosition = getByteBuffer().getShort();
+            this.recordLength = getByteBuffer().getShort();
             getByteBuffer().order(ByteOrder.BIG_ENDIAN);
 
-            getByteBuffer().get(reservedFiller1);
+            getByteBuffer().get(this.reservedFiller1);
             this.reservedIncompleteTransaction = getByteBuffer().get();
             this.reservedEncryptionFlag = getByteBuffer().get();
-            getByteBuffer().get(reservedFreeRecordThread);
-            getByteBuffer().get(reservedMultiUser);
-            reservedMDXFlag = getByteBuffer().get();
+            getByteBuffer().get(this.reservedFreeRecordThread);
+            getByteBuffer().get(this.reservedMultiUser);
+            this.reservedMDXFlag = getByteBuffer().get();
 
             // Translate code page value to a known charset.
             this.codePage = getByteBuffer().get();
-            
+
             if (this.charset == null) {
                 try {
                     this.charset = toCharset(this.codePage);
                 }
                 catch(UnsupportedCharsetException e) {
                     // Warn the caller that he will have to perform is own conversions.
-                    format(Level.WARNING, "log.no_valid_charset", getFile().getAbsolutePath(), e.getMessage());
+                    log(Level.WARNING, "log.no_valid_charset", getFile().getAbsolutePath(), e.getMessage());
                 }
             }
             else {
-                format(Level.INFO, "log.record_charset", this.charset.name());
+                log(Level.INFO, "log.record_charset", this.charset.name());
             }
 
-            getByteBuffer().get(reservedFiller2);
+            getByteBuffer().get(this.reservedFiller2);
 
-            while(getByteBuffer().position() < this.dbaseHeaderBytes - 1) {
+            while(getByteBuffer().position() < this.firstRecordPosition - 1) {
                 DBase3FieldDescriptor fd = new DBase3FieldDescriptor(getByteBuffer());
                 this.fieldsDescriptors.add(fd);
                 // loop until you hit the 0Dh field terminator
@@ -212,7 +222,7 @@ public class MappedByteReader extends AbstractDbase3ByteReader implements AutoCl
             this.descriptorTerminator = getByteBuffer().get();
 
             // If the last character read after the field descriptor isn't 0x0D, the expected mark has not been found and the DBF is corrupted.
-            if (descriptorTerminator != 0x0D) {
+            if (this.descriptorTerminator != 0x0D) {
                 String message = format(Level.WARNING, "excp.filedescriptor_problem", getFile().getAbsolutePath(), "Character marking the end of the fields descriptors (0x0D) has not been found.");
                 throw new SQLInvalidDbaseFileFormatException(message);
             }
@@ -233,7 +243,7 @@ public class MappedByteReader extends AbstractDbase3ByteReader implements AutoCl
      */
     @Override
     public List<DBase3FieldDescriptor> getFieldsDescriptors() {
-        return fieldsDescriptors;
+        return this.fieldsDescriptors;
     }
 
     /**
@@ -253,7 +263,7 @@ public class MappedByteReader extends AbstractDbase3ByteReader implements AutoCl
      */
     @Override
     public int getColumnCount() {
-        return fieldsDescriptors.size();
+        return this.fieldsDescriptors.size();
     }
 
     /**
@@ -273,8 +283,8 @@ public class MappedByteReader extends AbstractDbase3ByteReader implements AutoCl
         }
 
         // Search the field among the fields descriptors.
-        for(int index=0; index < fieldsDescriptors.size(); index ++) {
-            if (fieldsDescriptors.get(index).getName().equals(columnLabel)) {
+        for(int index=0; index < this.fieldsDescriptors.size(); index ++) {
+            if (this.fieldsDescriptors.get(index).getName().equals(columnLabel)) {
                 return index + 1;
             }
         }
@@ -297,6 +307,6 @@ public class MappedByteReader extends AbstractDbase3ByteReader implements AutoCl
             throw new SQLIllegalColumnIndexException(message, sql, getFile(), columnIndex);
         }
 
-        return fieldsDescriptors.get(columnIndex-1);
+        return this.fieldsDescriptors.get(columnIndex-1);
     }
 }

@@ -30,6 +30,7 @@ import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
+import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
@@ -302,6 +303,10 @@ public class EllipsoidToCentricTransform extends AbstractMathTransform implement
 
     /**
      * Restores transient fields after deserialization.
+     *
+     * @param  in The input stream from which to deserialize the transform.
+     * @throws IOException if an I/O error occurred while reading or if the stream contains invalid data.
+     * @throws ClassNotFoundException if the class serialized on the stream is not on the classpath.
      */
     private void readObject(final ObjectInputStream in) throws IOException, ClassNotFoundException {
         in.defaultReadObject();
@@ -344,6 +349,34 @@ public class EllipsoidToCentricTransform extends AbstractMathTransform implement
     {
         EllipsoidToCentricTransform tr = new EllipsoidToCentricTransform(semiMajor, semiMinor, unit, withHeight, target);
         return tr.context.completeTransform(factory, tr);
+    }
+
+    /**
+     * Creates a transform from geographic to Cartesian geocentric coordinates (convenience method).
+     * Invoking this method is equivalent to the following:
+     *
+     * {@preformat java
+     *     createGeodeticConversion(factory,
+     *             ellipsoid.getSemiMajorAxis(),
+     *             ellipsoid.getSemiMinorAxis(),
+     *             ellipsoid.getAxisUnit(),
+     *             withHeight, TargetType.CARTESIAN);
+     * }
+     *
+     * The target type is assumed Cartesian because this is the most frequently used target.
+     *
+     * @param factory    The factory to use for creating and concatenating the affine transforms.
+     * @param ellipsoid  The semi-major and semi-minor axis lengths with their unit of measurement.
+     * @param withHeight {@code true} if source geographic coordinates include an ellipsoidal height
+     *                   (i.e. are 3-D), or {@code false} if they are only 2-D.
+     * @return The conversion from geographic to Cartesian geocentric coordinates.
+     * @throws FactoryException if an error occurred while creating a transform.
+     */
+    public static MathTransform createGeodeticConversion(final MathTransformFactory factory,
+            final Ellipsoid ellipsoid, final boolean withHeight) throws FactoryException
+    {
+        return createGeodeticConversion(factory, ellipsoid.getSemiMajorAxis(), ellipsoid.getSemiMinorAxis(),
+                ellipsoid.getAxisUnit(), withHeight, TargetType.CARTESIAN);
     }
 
     /**
@@ -435,6 +468,11 @@ public class EllipsoidToCentricTransform extends AbstractMathTransform implement
      * Computes the derivative at the given location.
      * This method relaxes a little bit the {@code MathTransform} contract by accepting two- or three-dimensional
      * points even if the number of dimensions does not match the {@link #getSourceDimensions()} value.
+     *
+     * <div class="note"><b>Rational:</b>
+     * that flexibility on the number of dimensions is required for calculation of {@linkplain #inverse() inverse}
+     * transform derivative, because that calculation needs to inverse a square matrix with all terms in it before
+     * to drop the last row in the two-dimensional case.</div>
      *
      * @param  point The coordinate point where to evaluate the derivative.
      * @return The derivative at the specified point (never {@code null}).
@@ -695,7 +733,9 @@ next:   while (--numPts >= 0) {
      */
     @Override
     protected int computeHashCode() {
-        return super.computeHashCode() + Numerics.hashCode(Double.doubleToLongBits(axisRatio));
+        int code = super.computeHashCode() + Numerics.hashCode(Double.doubleToLongBits(axisRatio));
+        if (withHeight) code += 37;
+        return code;
     }
 
     /**
@@ -712,6 +752,7 @@ next:   while (--numPts >= 0) {
         if (super.equals(object, mode)) {
             final EllipsoidToCentricTransform that = (EllipsoidToCentricTransform) object;
             return (withHeight == that.withHeight) && Numerics.equals(axisRatio, that.axisRatio);
+            // No need to compare the contextual parameters since this is done by super-class.
         }
         return false;
     }

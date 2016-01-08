@@ -163,20 +163,34 @@ public final class ReferencingUtilities extends Static {
      * the two first dimensions use an instance of {@link GeographicCRS}. Otherwise (i.e. if the
      * two first dimensions are not geographic), returns {@code null}.
      *
+     * <p>This method excludes geocentric CRS on intend. Some callers needs this exclusion as a way to identify
+     * which CRS in a Geographic/Geocentric conversion is the geographic one. An other point of view is to said
+     * that if this method returns a non-null value, then the coordinates are expected to be either two-dimensional
+     * or three-dimensional with an ellipsoidal height.</p>
+     *
      * @param  crs The coordinate reference system for which to get the ellipsoid.
      * @return The ellipsoid in the given CRS, or {@code null} if none.
      *
      * @since 0.6
      */
     public static Ellipsoid getEllipsoidOfGeographicCRS(CoordinateReferenceSystem crs) {
-        while (!(crs instanceof GeographicCRS)) {
+        while (!(crs instanceof GeodeticCRS)) {
             if (crs instanceof CompoundCRS) {
                 crs = ((CompoundCRS) crs).getComponents().get(0);
             } else {
                 return null;
             }
         }
-        return ((GeographicCRS) crs).getDatum().getEllipsoid();
+        /*
+         * In order to determine if the CRS is geographic, checking the CoordinateSystem type is more reliable
+         * then checking if the CRS implements the GeographicCRS interface.  This is because the GeographicCRS
+         * interface is GeoAPI-specific, so a CRS may be OGC-compliant without implementing that interface.
+         */
+        if (crs.getCoordinateSystem() instanceof EllipsoidalCS) {
+            return ((GeodeticCRS) crs).getDatum().getEllipsoid();
+        } else {
+            return null;    // Geocentric CRS.
+        }
     }
 
     /**

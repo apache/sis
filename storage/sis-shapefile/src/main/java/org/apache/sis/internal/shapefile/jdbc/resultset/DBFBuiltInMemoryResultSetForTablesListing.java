@@ -46,12 +46,12 @@ public class DBFBuiltInMemoryResultSetForTablesListing extends BuiltInMemoryResu
             case "TABLE_NAME":                // String => table name.
             {
                 String tableName = getTableName();
-                wasNull = (tableName == null);
+                this.wasNull = (tableName == null);
                 return tableName;
             }
 
             case "TABLE_TYPE":                // String => table type. Typical types are "TABLE", "VIEW", "SYSTEM TABLE", "GLOBAL TEMPORARY", "LOCAL TEMPORARY", "ALIAS", "SYNONYM".
-                wasNull = false;
+                this.wasNull = false;
                 return "TABLE";
 
             case "TYPE_NAME":                 // String => type name (may be null)
@@ -62,11 +62,11 @@ public class DBFBuiltInMemoryResultSetForTablesListing extends BuiltInMemoryResu
             case "TYPE_SCHEM":                // String => the types schema (may be null)
             case "SELF_REFERENCING_COL_NAME": // String => name of the designated "identifier" column of a typed table (may be null)
             case "REF_GENERATION":            // String => specifies how values in SELF_REFERENCING_COL_NAME are created. Values are "SYSTEM", "USER", "DERIVED". (may be null)
-                wasNull = true;
+                this.wasNull = true;
                 return null;
 
             default:
-                wasNull = true;
+                this.wasNull = true;
                 return null;
         }
     }
@@ -78,11 +78,11 @@ public class DBFBuiltInMemoryResultSetForTablesListing extends BuiltInMemoryResu
     {
         logStep("next");
 
-        if (index > 1) {
+        if (this.index > 1) {
             throw new SQLNoResultException(format(Level.WARNING, "excp.only_one_table_per_dbf"), "Driver manager asks for table listing", getFile());
         }
 
-        index ++;
-        return (index == 1) ? true : false;
+        this.index ++;
+        return (this.index == 1) ? true : false;
     }
 }

@@ -42,6 +42,9 @@ import org.apache.sis.io.wkt.Formatter;
  * @since   0.4
  * @version 0.4
  * @module
+ *
+ * @see org.apache.sis.referencing.crs.DefaultEngineeringCRS
+ * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createEngineeringDatum(String)
  */
 @XmlType(name = "EngineeringDatumType")
 @XmlRootElement(name = "EngineeringDatum")
@@ -106,6 +109,8 @@ public class DefaultEngineeringDatum extends AbstractDatum implements Engineerin
      * </table>
      *
      * @param properties The properties to be given to the identified object.
+     *
+     * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createEngineeringDatum(Map)
      */
     public DefaultEngineeringDatum(final Map<String,?> properties) {
         super(properties);

@@ -126,6 +126,11 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final short ConstantPressureSurface = 19;
 
         /**
+         * Container
+         */
+        public static final short Container = 92;
+
+        /**
          * Correlation
          */
         public static final short Correlation = 83;
@@ -144,6 +149,11 @@ public final class Vocabulary extends IndexedResourceBundle {
          * Cycle omitted
          */
         public static final short CycleOmitted = 12;
+
+        /**
+         * Data directory
+         */
+        public static final short DataDirectory = 88;
 
         /**
          * Daylight time
@@ -221,6 +231,11 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final short Index = 22;
 
         /**
+         * Invalid
+         */
+        public static final short Invalid = 89;
+
+        /**
          * Java extensions
          */
         public static final short JavaExtensions = 23;
@@ -239,6 +254,11 @@ public final class Vocabulary extends IndexedResourceBundle {
          * Latitude
          */
         public static final short Latitude = 26;
+
+        /**
+         * Level
+         */
+        public static final short Level = 94;
 
         /**
          * Libraries
@@ -301,6 +321,11 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final short Name = 37;
 
         /**
+         * None
+         */
+        public static final short None = 91;
+
+        /**
          * Number of ‘NaN’
          */
         public static final short NumberOfNaN = 38;
@@ -359,6 +384,11 @@ public final class Vocabulary extends IndexedResourceBundle {
          * “{0}”
          */
         public static final short Quoted_1 = 86;
+
+        /**
+         * Remote configuration
+         */
+        public static final short RemoteConfiguration = 93;
 
         /**
          * Root
@@ -489,6 +519,11 @@ public final class Vocabulary extends IndexedResourceBundle {
          * Vertical
          */
         public static final short Vertical = 68;
+
+        /**
+         * Warnings
+         */
+        public static final short Warnings = 90;
 
         /**
          * World

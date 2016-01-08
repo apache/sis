@@ -32,7 +32,7 @@ import org.apache.sis.util.Static;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5
- * @version 0.6
+ * @version 0.7
  * @module
  */
 public final class Constants extends Static {
@@ -76,6 +76,16 @@ public final class Constants extends Static {
      * The {@code CRS:84} identifier for a coordinate reference system.
      */
     public static final byte CRS84 = 84;
+
+    /**
+     * The {@code CRS:88} identifier for a coordinate reference system.
+     */
+    public static final byte CRS88 = 88;
+
+    /**
+     * The {@code CRS:1} identifier for a coordinate reference system.
+     */
+    public static final byte CRS1 = 1;
 
     /**
      * The NetCDF parameter name for the Earth radius.

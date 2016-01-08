@@ -25,6 +25,9 @@ import org.apache.sis.util.ComparisonMode;
 import static java.lang.Math.max;
 import static java.lang.Math.abs;
 
+// Branch-dependent imports
+import org.apache.sis.internal.jdk8.JDK8;
+
 
 /**
  * Miscellaneous utilities methods working on floating point numbers.
@@ -180,7 +183,7 @@ public final class Numerics extends Static {
         if (data == null) return null;
         final int[] result = new int[data.length];
         for (int i=0; i<data.length; i++) {
-            result[i] = (int) Math.round(data[i]);
+            result[i] = JDK8.toIntExact(Math.round(data[i]));
         }
         return result;
     }
