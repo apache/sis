@@ -159,9 +159,9 @@ public final class ReferencingUtilities extends Static {
     }
 
     /**
-     * Returns the ellipsoid used by the specified coordinate reference system, providing that
-     * the two first dimensions use an instance of {@link GeographicCRS}. Otherwise (i.e. if the
-     * two first dimensions are not geographic), returns {@code null}.
+     * Returns the ellipsoid used by the specified coordinate reference system, provided that the two first dimensions
+     * use an instance of {@link GeographicCRS}. Otherwise (i.e. if the two first dimensions are not geographic),
+     * returns {@code null}.
      *
      * <p>This method excludes geocentric CRS on intend. Some callers needs this exclusion as a way to identify
      * which CRS in a Geographic/Geocentric conversion is the geographic one. An other point of view is to said
