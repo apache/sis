@@ -20,6 +20,8 @@ import java.util.Set;
 import java.util.List;
 import java.util.Locale;
 import java.util.Iterator;
+import java.util.Collections;
+import javax.measure.unit.Unit;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.IdentifiedObject;
@@ -27,6 +29,9 @@ import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.opengis.referencing.crs.*;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystem;
+import org.opengis.referencing.datum.Datum;
+import org.opengis.referencing.datum.GeodeticDatum;
+import org.opengis.referencing.datum.VerticalDatum;
 import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.Transformation;
 import org.opengis.referencing.operation.CoordinateOperation;
@@ -34,6 +39,7 @@ import org.opengis.referencing.operation.CylindricalProjection;
 import org.opengis.referencing.operation.SingleOperation;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.MathTransform;
+import org.opengis.referencing.operation.Projection;
 import org.opengis.util.FactoryException;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.internal.system.Loggers;
@@ -543,6 +549,142 @@ public final strictfp class EPSGFactoryTest extends TestCase {
     }
 
     /**
+     * Tests {@link EPSGDataAccess#getAuthorityCodes(Class)} method.
+     * Some parts of this test are very slow. The slow parts are disabled by default.
+     *
+     * @throws FactoryException if an error occurred while querying the factory.
+     */
+    @Test
+    public void testAuthorityCodes() throws FactoryException {
+        assumeNotNull(factory);
+        /*
+         * DATUM - The amount of datum is not too large (612 in EPSG 7.9), so execution time should be reasonable
+         *         for most tests even if a method call causes scanning of the whole Datum table. We nevertheless
+         *         limit such tests to the VerticalDatum (unless EXTENSIVE is true), which is a smaller set.
+         */
+        final Set<String> datum = factory.getAuthorityCodes(Datum.class);
+        assertFalse("Datum not found.",      datum.isEmpty());
+        assertTrue ("Shall contain WGS84.",  datum.contains("6326"));
+        assertTrue ("Shall contain MSL.",    datum.contains("5100"));
+
+        final Set<String> geodeticDatum = factory.getAuthorityCodes(GeodeticDatum.class);
+        assertFalse("Geodetic datum not found.",                    geodeticDatum.isEmpty());
+        assertTrue ("Shall contain WGS84.",                         geodeticDatum.contains("6326"));
+        assertFalse("Shall not contain vertical datum.",            geodeticDatum.contains("5100"));
+        assertFalse("Geodetic datum should be a subset of datum.",  geodeticDatum.containsAll(datum));  // Iteration should stop at the first mismatch.
+
+        final Set<String> verticalDatum = factory.getAuthorityCodes(VerticalDatum.class);
+        assertFalse("Vertical datum not found.",                    verticalDatum.isEmpty());
+        assertTrue ("Check size() consistency.",                    verticalDatum.size() > 0);          // Cause a scanning of the full table.
+        assertFalse("Shall not contain WGS84.",                     verticalDatum.contains("6326"));
+        assertTrue ("Shall contain Mean Sea Level (MSL).",          verticalDatum.contains("5100"));
+        assertFalse("Vertical datum should be a subset of datum.",  verticalDatum.containsAll(datum));  // Iteration should stop at the first mismatch.
+        assertTrue ("Vertical datum should be a subset of datum.",  datum.containsAll(verticalDatum));  // Iteration should over a small set (vertical datum).
+
+        if (RUN_EXTENSIVE_TESTS) {
+            assertTrue ("Check size() consistency.",                    geodeticDatum.size() > 0);
+            assertTrue ("Geodetic datum should be a subset of datum.",  datum.size() > geodeticDatum.size());
+            assertTrue ("Vertical datum should be a subset of datum.",  datum.size() > verticalDatum.size());
+            assertTrue ("Geodetic datum should be a subset of datum.",  datum.containsAll(geodeticDatum));
+        }
+
+        /*
+         * COORDINATE REFERENCE SYSTEMS - There is thousands of CRS, so we avoid all tests that may require
+         *                                an iteration over the full table unless EXTENSIVE is true.
+         */
+        final Set<String> crs = factory.getAuthorityCodes(CoordinateReferenceSystem.class);
+        assertFalse ("CRS not found.",                 crs.isEmpty());
+        assertTrue  ("Shall contain WGS84.",           crs.contains("4326"));
+        assertTrue  ("Shall contain World Mercator.",  crs.contains("3395"));
+        if (RUN_EXTENSIVE_TESTS) {
+            assertTrue  ("Check size() consistency.",  crs.size() > 0);         // Cause a scanning of the full table.
+            assertEquals("Check size() consistency.",  crs.size(), crs.size());
+        }
+
+        final Set<String> geographicCRS = factory.getAuthorityCodes(GeographicCRS.class);
+        assertFalse("GeographicCRS not found.",          geographicCRS.isEmpty());
+        assertTrue ("Shall contain WGS84.",              geographicCRS.contains("4326"));
+        assertFalse("Shall not contain projected CRS.",  geographicCRS.contains("3395"));
+        if (RUN_EXTENSIVE_TESTS) {
+            assertTrue ("Check size() consistency.",                  geographicCRS.size() > 0);
+            assertTrue ("Geographic CRS should be a subset of CRS.",  geographicCRS.size() < crs.size());
+            assertFalse("Geographic CRS should be a subset of CRS.",  geographicCRS.containsAll(crs));
+            assertTrue ("Geographic CRS should be a subset of CRS.",  crs.containsAll(geographicCRS));
+        }
+
+        final Set<String> projectedCRS = factory.getAuthorityCodes(ProjectedCRS.class);
+        assertFalse("ProjectedCRS not found.",            projectedCRS.isEmpty());
+        assertFalse("Shall not contain geographic CRS.",  projectedCRS.contains("4326"));
+        assertTrue ("Shall contain World Mercator.",      projectedCRS.contains("3395"));
+        if (RUN_EXTENSIVE_TESTS) {
+            assertTrue ("Check size() consistency.",                 projectedCRS.size() > 0);
+            assertTrue ("Projected CRS should be a subset of CRS.",  projectedCRS.size() < crs.size());
+            assertFalse("Projected CRS should be a subset of CRS.",  projectedCRS.containsAll(crs));
+            assertTrue ("Projected CRS should be a subset of CRS.",  crs.containsAll(projectedCRS));
+            assertTrue ("Projected CRS can not be Geographic CRS.",  Collections.disjoint(geographicCRS, projectedCRS));
+        }
+
+        /*
+         * COORDINATE OPERATIONS - There is thousands of operations, so we avoid all tests that may require
+         *                         an iteration over the full table unless EXTENSIVE is true.
+         */
+        final Set<String> operations      = factory.getAuthorityCodes(SingleOperation.class);
+        final Set<String> conversions     = factory.getAuthorityCodes(Conversion     .class);
+        final Set<String> projections     = factory.getAuthorityCodes(Projection     .class);
+        final Set<String> transformations = factory.getAuthorityCodes(Transformation .class);
+
+        assertFalse("Operations not found.",       operations     .isEmpty());
+        assertFalse("Conversions not found.",      conversions    .isEmpty());
+        assertFalse("Projections not found.",      projections    .isEmpty());
+        assertFalse("Transformations not found.",  transformations.isEmpty());
+
+        assertTrue ("Shall contain “ED50 to WGS 84 (1)”",           operations.contains("1133"));
+        assertFalse("Shall not contain “ED50 to WGS 84 (1)”",      conversions.contains("1133"));
+        assertFalse("Shall not contain “ED50 to WGS 84 (1)”",      projections.contains("1133"));
+        assertTrue ("Shall contain “ED50 to WGS 84 (1)”",      transformations.contains("1133"));
+
+        assertTrue ("Shall contain “UTM zone 1N”",           operations.contains("16001"));
+        assertTrue ("Shall contain “UTM zone 1N”",          conversions.contains("16001"));
+        assertTrue ("Shall contain “UTM zone 1N”",          projections.contains("16001"));
+        assertFalse("Shall not contain “UTM zone 1N”",  transformations.contains("16001"));
+
+        if (RUN_EXTENSIVE_TESTS) {
+            assertTrue ("Conversions shall be a subset of operations.",      conversions    .size() < operations .size());
+            assertTrue ("Projections shall be a subset of operations.",      projections    .size() < operations .size());
+            assertTrue ("Projections shall be a subset of conversions.",     projections    .size() < conversions.size());
+            assertTrue ("Transformations shall be a subset of operations.",  transformations.size() < operations .size());
+
+            assertFalse("Projections shall be a subset of conversions.",     projections.containsAll(conversions));
+            assertTrue ("Projections shall be a subset of conversions.",     conversions.containsAll(projections));
+            assertTrue ("Conversion shall be a subset of operations.",       operations .containsAll(conversions));
+            assertTrue ("Transformations shall be a subset of operations.",  operations .containsAll(transformations));
+
+            assertTrue ("Conversions can not be transformations.",  Collections.disjoint(conversions, transformations));
+        }
+
+        // We are cheating here since we are breaking generic type check.
+        // However in the particular case of our EPSG factory, it works.
+        @SuppressWarnings({"unchecked","rawtypes"})
+        final Set<?> units = factory.getAuthorityCodes((Class) Unit.class);
+        assertFalse(units.isEmpty());
+        assertTrue (units.size() > 0);
+
+        // Tests the fusion of all types
+        if (RUN_EXTENSIVE_TESTS) {
+            final Set<String> all = factory.getAuthorityCodes(IdentifiedObject.class);
+            assertTrue (all.containsAll(crs));
+            assertTrue (all.containsAll(datum));
+            assertTrue (all.containsAll(operations));
+            assertFalse(all.containsAll(units));                // They are not IdentifiedObjects.
+        }
+
+        // Try a dummy type.
+        @SuppressWarnings({"unchecked","rawtypes"})
+        final Class<? extends IdentifiedObject> wrong = (Class) String.class;
+        assertTrue("Dummy type", factory.getAuthorityCodes(wrong).isEmpty());
+    }
+
+    /**
      * Tests the {@link EPSGDataAccess#getDescriptionText(String)} method.
      *
      * @throws FactoryException if an error occurred while querying the factory.
@@ -700,11 +842,6 @@ public final strictfp class EPSGFactoryTest extends TestCase {
         /*
          * Creates from CRS codes. There is 40 such operations in EPSG version 6.7.
          * The preferred one (according the "supersession" table) is EPSG:1612.
-         *
-         * Note: PostgreSQL because its "ORDER BY" clause put null values last, while Access and HSQL put them first.
-         * The PostgreSQL behavior is better for what we want (operations with unknown accuracy last). Unfortunately,
-         * I do not know yet how to instructs Access to put null values last using standard SQL
-         * ("IIF" is not standard, and Access does not seem to understand "CASE ... THEN" clauses).
          */
         final Set<CoordinateOperation> all = factory.createFromCoordinateReferenceSystemCodes("4230", "4326");
         assertTrue("Number of coordinate operations.", all.size() >= 3);

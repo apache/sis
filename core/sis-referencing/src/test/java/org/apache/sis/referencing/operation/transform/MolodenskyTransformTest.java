@@ -122,7 +122,7 @@ public final strictfp class MolodenskyTransformTest extends MathTransformTestCas
         final double[] expected = new double[srcPts.length];
         transform.transform(srcPts, 0, actual,   0, srcPts.length / 3);
         reference.transform(srcPts, 0, expected, 0, srcPts.length / 3);
-        if (TestCase.verbose) {
+        if (TestCase.VERBOSE) {
             final Statistics[] stats = {
                 new Statistics("|Δλ| (~cm)"),
                 new Statistics("|Δφ| (~cm)"),

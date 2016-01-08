@@ -106,7 +106,7 @@ public final class TestRunner extends BlockJUnit4ClassRunner {
          */
         @Override
         public void testStarted(final Description description) {
-            if (!TestCase.verbose) {
+            if (!TestCase.VERBOSE) {
                 TestCase.clearBuffer();
             }
             LogRecordCollector.INSTANCE.setCurrentTest(description);
@@ -119,7 +119,7 @@ public final class TestRunner extends BlockJUnit4ClassRunner {
          */
         @Override
         public void testFinished(final Description description) {
-            if (TestCase.verbose) {
+            if (TestCase.VERBOSE) {
                 TestCase.flushOutput();
             }
             TestCase.randomSeed = 0;
@@ -147,7 +147,7 @@ public final class TestRunner extends BlockJUnit4ClassRunner {
                 out.println('.');
                 // Seed we be cleared by testFinished(…).
             }
-            if (!TestCase.verbose) {
+            if (!TestCase.VERBOSE) {
                 TestCase.flushOutput();
             }
             // In verbose mode, the flush will be done by testFinished(…).
