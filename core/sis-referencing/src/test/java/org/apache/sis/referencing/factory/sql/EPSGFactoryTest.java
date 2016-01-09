@@ -23,14 +23,18 @@ import java.util.Iterator;
 import java.util.Collections;
 import javax.measure.unit.Unit;
 import org.opengis.metadata.extent.GeographicBoundingBox;
+import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.opengis.referencing.crs.*;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystem;
+import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.datum.Datum;
+import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.datum.GeodeticDatum;
+import org.opengis.referencing.datum.PrimeMeridian;
 import org.opengis.referencing.datum.VerticalDatum;
 import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.Transformation;
@@ -558,6 +562,30 @@ public final strictfp class EPSGFactoryTest extends TestCase {
     public void testAuthorityCodes() throws FactoryException {
         assumeNotNull(factory);
         /*
+         * Most basic objects.
+         * Note: the numbers in 'size() >= x' checks were determined from the content of EPSG dataset version 7.9.
+         */
+        final Set<String> axes = factory.getAuthorityCodes(CoordinateSystemAxis.class);
+        assertFalse("Axes not found.",              axes.isEmpty());
+        assertTrue ("Shall contain Geocentric X.",  axes.contains("115"));
+
+        final Set<String> coordinateSystems = factory.getAuthorityCodes(CoordinateSystem.class);
+        assertFalse("Coordinate systems not found.",  coordinateSystems.isEmpty());
+        assertTrue ("Shall contain ellipsoidal CS.",  coordinateSystems.contains("6422"));
+
+        final Set<String> primeMeridians = factory.getAuthorityCodes(PrimeMeridian.class);
+        assertFalse("Prime meridian not found.",  primeMeridians.isEmpty());
+        assertTrue ("Check size() consistency.",  primeMeridians.size() >= 14);
+        assertTrue ("Shall contain Greenwich.",   primeMeridians.contains("8901"));
+        assertTrue ("Shall contain Paris.",       primeMeridians.contains("8903"));
+
+        final Set<String> ellipsoids = factory.getAuthorityCodes(Ellipsoid.class);
+        assertFalse("Ellipsoid not found.",       ellipsoids.isEmpty());
+        assertTrue ("Check size() consistency.",  ellipsoids.size() >= 49);
+        assertTrue ("Shall contain WGS84.",       ellipsoids.contains("7030"));
+        assertTrue ("Shall contain GRS 1980.",    ellipsoids.contains("7019"));
+
+        /*
          * DATUM - The amount of datum is not too large (612 in EPSG 7.9), so execution time should be reasonable
          *         for most tests even if a method call causes scanning of the whole Datum table. We nevertheless
          *         limit such tests to the VerticalDatum (unless EXTENSIVE is true), which is a smaller set.
@@ -575,14 +603,14 @@ public final strictfp class EPSGFactoryTest extends TestCase {
 
         final Set<String> verticalDatum = factory.getAuthorityCodes(VerticalDatum.class);
         assertFalse("Vertical datum not found.",                    verticalDatum.isEmpty());
-        assertTrue ("Check size() consistency.",                    verticalDatum.size() > 0);          // Cause a scanning of the full table.
+        assertTrue ("Check size() consistency.",                    verticalDatum.size() >= 124);       // Cause a scanning of the full table.
         assertFalse("Shall not contain WGS84.",                     verticalDatum.contains("6326"));
         assertTrue ("Shall contain Mean Sea Level (MSL).",          verticalDatum.contains("5100"));
         assertFalse("Vertical datum should be a subset of datum.",  verticalDatum.containsAll(datum));  // Iteration should stop at the first mismatch.
         assertTrue ("Vertical datum should be a subset of datum.",  datum.containsAll(verticalDatum));  // Iteration should over a small set (vertical datum).
 
         if (RUN_EXTENSIVE_TESTS) {
-            assertTrue ("Check size() consistency.",                    geodeticDatum.size() > 0);
+            assertTrue ("Check size() consistency.",                    geodeticDatum.size() >= 445);
             assertTrue ("Geodetic datum should be a subset of datum.",  datum.size() > geodeticDatum.size());
             assertTrue ("Vertical datum should be a subset of datum.",  datum.size() > verticalDatum.size());
             assertTrue ("Geodetic datum should be a subset of datum.",  datum.containsAll(geodeticDatum));
@@ -597,7 +625,7 @@ public final strictfp class EPSGFactoryTest extends TestCase {
         assertTrue  ("Shall contain WGS84.",           crs.contains("4326"));
         assertTrue  ("Shall contain World Mercator.",  crs.contains("3395"));
         if (RUN_EXTENSIVE_TESTS) {
-            assertTrue  ("Check size() consistency.",  crs.size() > 0);         // Cause a scanning of the full table.
+            assertTrue  ("Check size() consistency.",  crs.size() >= 4175);      // Cause a scanning of the full table.
             assertEquals("Check size() consistency.",  crs.size(), crs.size());
         }
 
@@ -606,7 +634,7 @@ public final strictfp class EPSGFactoryTest extends TestCase {
         assertTrue ("Shall contain WGS84.",              geographicCRS.contains("4326"));
         assertFalse("Shall not contain projected CRS.",  geographicCRS.contains("3395"));
         if (RUN_EXTENSIVE_TESTS) {
-            assertTrue ("Check size() consistency.",                  geographicCRS.size() > 0);
+            assertTrue ("Check size() consistency.",                  geographicCRS.size() >= 468);
             assertTrue ("Geographic CRS should be a subset of CRS.",  geographicCRS.size() < crs.size());
             assertFalse("Geographic CRS should be a subset of CRS.",  geographicCRS.containsAll(crs));
             assertTrue ("Geographic CRS should be a subset of CRS.",  crs.containsAll(geographicCRS));
@@ -617,7 +645,7 @@ public final strictfp class EPSGFactoryTest extends TestCase {
         assertFalse("Shall not contain geographic CRS.",  projectedCRS.contains("4326"));
         assertTrue ("Shall contain World Mercator.",      projectedCRS.contains("3395"));
         if (RUN_EXTENSIVE_TESTS) {
-            assertTrue ("Check size() consistency.",                 projectedCRS.size() > 0);
+            assertTrue ("Check size() consistency.",                 projectedCRS.size() >= 3441);
             assertTrue ("Projected CRS should be a subset of CRS.",  projectedCRS.size() < crs.size());
             assertFalse("Projected CRS should be a subset of CRS.",  projectedCRS.containsAll(crs));
             assertTrue ("Projected CRS should be a subset of CRS.",  crs.containsAll(projectedCRS));
@@ -628,16 +656,22 @@ public final strictfp class EPSGFactoryTest extends TestCase {
          * COORDINATE OPERATIONS - There is thousands of operations, so we avoid all tests that may require
          *                         an iteration over the full table unless EXTENSIVE is true.
          */
-        final Set<String> operations      = factory.getAuthorityCodes(SingleOperation.class);
-        final Set<String> conversions     = factory.getAuthorityCodes(Conversion     .class);
-        final Set<String> projections     = factory.getAuthorityCodes(Projection     .class);
-        final Set<String> transformations = factory.getAuthorityCodes(Transformation .class);
+        final Set<String> methods         = factory.getAuthorityCodes(OperationMethod    .class);
+        final Set<String> parameters      = factory.getAuthorityCodes(ParameterDescriptor.class);
+        final Set<String> operations      = factory.getAuthorityCodes(SingleOperation    .class);
+        final Set<String> conversions     = factory.getAuthorityCodes(Conversion         .class);
+        final Set<String> projections     = factory.getAuthorityCodes(Projection         .class);
+        final Set<String> transformations = factory.getAuthorityCodes(Transformation     .class);
 
+        assertFalse("Methods not found.",          methods        .isEmpty());
+        assertFalse("Parameters not found.",       parameters     .isEmpty());
         assertFalse("Operations not found.",       operations     .isEmpty());
         assertFalse("Conversions not found.",      conversions    .isEmpty());
         assertFalse("Projections not found.",      projections    .isEmpty());
         assertFalse("Transformations not found.",  transformations.isEmpty());
 
+        assertTrue ("Shall contain “Mercator 1SP”",                    methods.contains("9804"));
+        assertTrue ("Shall contain “Scale factor”",                 parameters.contains("8805"));
         assertTrue ("Shall contain “ED50 to WGS 84 (1)”",           operations.contains("1133"));
         assertFalse("Shall not contain “ED50 to WGS 84 (1)”",      conversions.contains("1133"));
         assertFalse("Shall not contain “ED50 to WGS 84 (1)”",      projections.contains("1133"));
@@ -898,7 +932,7 @@ public final strictfp class EPSGFactoryTest extends TestCase {
         /*
          * Scan the database for searching the CRS.
          */
-        finder.setSearchDomain(IdentifiedObjectFinder.Domain.VALID_DATASET);
+        finder.setSearchDomain(IdentifiedObjectFinder.Domain.ALL_DATASET);
         final IdentifiedObject found = finder.findSingleton(crs);
         assertNotNull("With full scan allowed, the CRS should be found.", found);
         assertEpsgNameAndIdentifierEqual("WGS 84", 4326, found);
