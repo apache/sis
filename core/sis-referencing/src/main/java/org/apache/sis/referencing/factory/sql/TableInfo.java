@@ -56,7 +56,8 @@ final class TableInfo {
                 new Class<?>[] { ProjectedCRS.class, GeographicCRS.class, GeocentricCRS.class,
                                  VerticalCRS.class,  CompoundCRS.class,   EngineeringCRS.class},
                 new String[]   {"projected",        "geographic",        "geocentric",
-                                "vertical",         "compound",          "engineering"}),
+                                "vertical",         "compound",          "engineering"},
+                "SHOW_CRS"),
 
         new TableInfo(CoordinateSystem.class,
                 "[Coordinate System]",
@@ -64,13 +65,15 @@ final class TableInfo {
                 "COORD_SYS_NAME",
                 "COORD_SYS_TYPE",
                 new Class<?>[] { CartesianCS.class, EllipsoidalCS.class, SphericalCS.class, VerticalCS.class},
-                new String[]   {"Cartesian",       "ellipsoidal",       "spherical",       "vertical"}),
-                               //Really upper-case C.
+                new String[]   {"Cartesian",       "ellipsoidal",       "spherical",       "vertical"},    //Really upper-case C.
+                null),
+
         new TableInfo(CoordinateSystemAxis.class,
                 "[Coordinate Axis] AS CA INNER JOIN [Coordinate Axis Name] AS CAN" +
                                  " ON CA.COORD_AXIS_NAME_CODE=CAN.COORD_AXIS_NAME_CODE",
                 "COORD_AXIS_CODE",
-                "COORD_AXIS_NAME"),
+                "COORD_AXIS_NAME",
+                null, null, null, null),
 
         new TableInfo(Datum.class,
                 "[Datum]",
@@ -78,17 +81,20 @@ final class TableInfo {
                 "DATUM_NAME",
                 "DATUM_TYPE",
                 new Class<?>[] { GeodeticDatum.class, VerticalDatum.class, EngineeringDatum.class},
-                new String[]   {"geodetic",          "vertical",          "engineering"}),
+                new String[]   {"geodetic",          "vertical",          "engineering"},
+                null),
 
         new TableInfo(Ellipsoid.class,
                 "[Ellipsoid]",
                 "ELLIPSOID_CODE",
-                "ELLIPSOID_NAME"),
+                "ELLIPSOID_NAME",
+                null, null, null, null),
 
         new TableInfo(PrimeMeridian.class,
                 "[Prime Meridian]",
                 "PRIME_MERIDIAN_CODE",
-                "PRIME_MERIDIAN_NAME"),
+                "PRIME_MERIDIAN_NAME",
+                null, null, null, null),
 
         new TableInfo(CoordinateOperation.class,
                 "[Coordinate_Operation]",
@@ -96,23 +102,27 @@ final class TableInfo {
                 "COORD_OP_NAME",
                 "COORD_OP_TYPE",
                 new Class<?>[] { Projection.class, Conversion.class, Transformation.class},
-                new String[]   {"conversion",     "conversion",     "transformation"}),
+                new String[]   {"conversion",     "conversion",     "transformation"},
+                "SHOW_OPERATION"),
                 // Note: Projection is handled in a special way.
 
         new TableInfo(OperationMethod.class,
                 "[Coordinate_Operation Method]",
                 "COORD_OP_METHOD_CODE",
-                "COORD_OP_METHOD_NAME"),
+                "COORD_OP_METHOD_NAME",
+                null, null, null, null),
 
         new TableInfo(ParameterDescriptor.class,
                 "[Coordinate_Operation Parameter]",
                 "PARAMETER_CODE",
-                "PARAMETER_NAME"),
+                "PARAMETER_NAME",
+                null, null, null, null),
 
         new TableInfo(Unit.class,
                 "[Unit of Measure]",
                 "UOM_CODE",
-                "UNIT_OF_MEAS_NAME")
+                "UNIT_OF_MEAS_NAME",
+                null, null, null, null),
     };
 
     /**
@@ -151,20 +161,17 @@ final class TableInfo {
     final String[] typeNames;
 
     /**
-     * Stores information about a specific table.
+     * The column that specify if the object should be shown, or {@code null} if none.
      */
-    private TableInfo(final Class<?> type, final String table,
-                      final String codeColumn, final String nameColumn)
-    {
-        this(type, table, codeColumn, nameColumn, null, null, null);
-    }
+    final String showColumn;
 
     /**
      * Stores information about a specific table.
      */
     private TableInfo(final Class<?> type,
                       final String table, final String codeColumn, final String nameColumn,
-                      final String typeColumn, final Class<?>[] subTypes, final String[] typeNames)
+                      final String typeColumn, final Class<?>[] subTypes, final String[] typeNames,
+                      final String showColumn)
     {
         this.type       = type;
         this.table      = table;
@@ -173,5 +180,6 @@ final class TableInfo {
         this.typeColumn = typeColumn;
         this.subTypes   = subTypes;
         this.typeNames  = typeNames;
+        this.showColumn = showColumn;
     }
 }
