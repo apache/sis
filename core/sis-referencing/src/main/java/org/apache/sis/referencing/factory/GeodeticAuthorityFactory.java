@@ -69,14 +69,33 @@ import org.apache.sis.util.Debug;
  */
 public abstract class GeodeticAuthorityFactory extends AbstractFactory implements AuthorityFactory {
     /**
-     * The factory to use for parsing authority code as {@link GenericName} instances.
+     * The factory to use for parsing authority codes as {@link GenericName} instances.
+     *
+     * <div class="note"><b>Example:</b>
+     * This factory can be used as below:
+     *
+     * {@preformat java
+     *     public Foo createFoo(String code) {
+     *         GenericName name = nameFactory.parseGenericName(null, code);
+     *         if (name instanceof ScopedName) {
+     *             GenericName scope = ((ScopedName) name).path();
+     *             if (!MY_AUTHORITY.equals(scope.toString())) {
+     *                 throw new NoSuchAuthorityCodeException("Not a code managed by MyAuthority.", "MyAuthority", code);
+     *             }
+     *         }
+     *         code = name.tip().toString();
+     *         // From this point, the code is local to this factory namespace.
+     *     }
+     * }</div>
+     *
+     * Subclasses may also use this factory for creating {@linkplain AbstractIdentifiedObject#getAlias() aliases}.
      */
     protected final NameFactory nameFactory;
 
     /**
      * Creates a new authority factory for geodetic objects.
      *
-     * @param nameFactory The factory to use for parsing authority codes as {@link GenericName} instances.
+     * @param nameFactory The factory to use for {@linkplain NameFactory#parseGenericName parsing} authority codes.
      */
     protected GeodeticAuthorityFactory(final NameFactory nameFactory) {
         ArgumentChecks.ensureNonNull("nameFactory", nameFactory);
@@ -134,6 +153,10 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * This may be costly since it involves a full object creation.
      * Subclasses are encouraged to provide a more efficient implementation if they can.
      *
+     * @param  code Value allocated by authority.
+     * @return A description of the object, or {@code null} if the object
+     *         corresponding to the specified {@code code} has no description.
+     * @throws NoSuchAuthorityCodeException if the specified {@code code} was not found.
      * @throws FactoryException if an error occurred while fetching the description.
      */
     @Override
@@ -1152,25 +1175,24 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * @return The code without the authority scope.
      */
     final String trimAuthority(String code, Citation authority) {
-        code = code.trim();
         final GenericName name = nameFactory.parseGenericName(null, code);
         if (name instanceof ScopedName) {
             final GenericName scope = ((ScopedName) name).path();
             if (authority == null) {
                 authority = getAuthority();     // Costly operation for EPSGDataAccess.
             }
-            if (Citations.identifierMatches(authority, null, scope.toString().trim())) {
-                return CharSequences.trimWhitespaces(name.tip().toString().trim());
+            if (Citations.identifierMatches(authority, null, scope.toString())) {    // Comparison ignores spaces.
+                code = name.tip().toString();
             }
         }
-        return code;
+        return CharSequences.trimWhitespaces(code);
     }
 
     /**
      * Creates an exception for an unknown authority code.
      * This convenience method is provided for implementation of {@code createFoo(String)} methods in subclasses.
      *
-     * @param  type  The GeoAPI interface that was to be created (e.g. {@code CoordinateReferenceSystem.class}).
+     * @param  type  The GeoAPI interface of the requested object (e.g. {@code CoordinateReferenceSystem.class}).
      * @param  code  The unknown authority code.
      * @return An exception initialized with an error message built from the specified informations.
      */

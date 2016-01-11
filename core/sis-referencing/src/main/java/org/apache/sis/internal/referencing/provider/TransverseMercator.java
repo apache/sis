@@ -16,13 +16,19 @@
  */
 package org.apache.sis.internal.referencing.provider;
 
+import javax.measure.unit.Unit;
+import javax.measure.unit.SI;
+import javax.measure.unit.NonSI;
 import javax.xml.bind.annotation.XmlTransient;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
+import org.opengis.parameter.ParameterValueGroup;
+import org.apache.sis.measure.Longitude;
+import org.apache.sis.parameter.Parameters;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.metadata.iso.citation.Citations;
-import org.apache.sis.parameter.Parameters;
 import org.apache.sis.referencing.operation.projection.NormalizedProjection;
+import org.apache.sis.internal.util.Constants;
 
 
 /**
@@ -31,7 +37,7 @@ import org.apache.sis.referencing.operation.projection.NormalizedProjection;
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
  * @author  Rueben Schulz (UBC)
  * @since   0.6
- * @version 0.6
+ * @version 0.7
  * @module
  *
  * @see <a href="http://www.remotesensing.org/geotiff/proj_list/transverse_mercator.html">Transverse Mercator on RemoteSensing.org</a>
@@ -42,6 +48,14 @@ public final class TransverseMercator extends AbstractMercator {
      * For cross-version compatibility.
      */
     private static final long serialVersionUID = -3386587506686432398L;
+
+    /**
+     * Width of a Universal Transverse Mercator (UTM) zone, in degrees.
+     *
+     * @see #zone(double)
+     * @see #centralMeridian(int)
+     */
+    private static final double ZONE_WIDTH = 6;
 
     /**
      * The operation parameter descriptor for the <cite>Latitude of natural origin</cite> (φ₀) parameter value.
@@ -118,5 +132,80 @@ public final class TransverseMercator extends AbstractMercator {
     @Override
     protected NormalizedProjection createProjection(final Parameters parameters) {
         return new org.apache.sis.referencing.operation.projection.TransverseMercator(this, parameters);
+    }
+
+    /**
+     * Sets the parameter values for a Transverse Mercator projection and returns a suggested conversion name.
+     *
+     * <blockquote><table class="sis">
+     *   <caption>Transverse Mercator parameters</caption>
+     *   <tr><th>Parameter name</th>                 <th>Value</th></tr>
+     *   <tr><td>Latitude of natural origin</td>     <td>0°</td></tr>
+     *   <tr><td>Longitude of natural origin</td>    <td>Central meridian, optionally snapped to a UTM zone</td></tr>
+     *   <tr><td>Scale factor at natural origin</td> <td>0.9996</td></tr>
+     *   <tr><td>False easting</td>                  <td>500000 metres</td></tr>
+     *   <tr><td>False northing</td>                 <td>0 (North hemisphere) or 10000000 (South hemisphere) metres</td></tr>
+     * </table></blockquote>
+     *
+     * @param  group            The parameters for which to set the values.
+     * @param  centralMeridian  The longitude in the center of the desired projection.
+     * @param  isUTM            If {@code true}, the given central meridian will be snapped to the central meridian of a UTM zone.
+     * @param  isSouth          {@code false} for a projection in the North hemisphere, or {@code true} for the South hemisphere.
+     * @return A name like <cite>"Transverse Mercator"</cite> or <cite>"UTM zone 10N"</cite>,
+     *         depending on the arguments given to this method.
+     *
+     * @since 0.7
+     */
+    public static String setParameters(final ParameterValueGroup group,
+            double centralMeridian, final boolean isUTM, final boolean isSouth)
+    {
+        int zone = zone(centralMeridian);
+        if (isUTM) {
+            centralMeridian = centralMeridian(zone);
+        } else if (centralMeridian != centralMeridian(zone)) {
+            zone = 0;
+        }
+        String name = "Transverse Mercator";
+        if (zone != 0) {
+            name = "UTM zone " + zone + (isSouth ? 'S' : 'N');
+        }
+        group.parameter("latitude_of_origin")       .setValue(0, NonSI.DEGREE_ANGLE);
+        group.parameter(Constants.CENTRAL_MERIDIAN) .setValue(centralMeridian, NonSI.DEGREE_ANGLE);
+        group.parameter(Constants.SCALE_FACTOR)     .setValue(0.9996, Unit.ONE);
+        group.parameter(Constants.FALSE_EASTING)    .setValue(500000, SI.METRE);
+        group.parameter(Constants.FALSE_NORTHING)   .setValue(isSouth ? 10000000 : 0, SI.METRE);
+        return name;
+    }
+
+    /**
+     * Computes the UTM zone from a meridian in the zone.
+     *
+     * @param  centralMeridian A meridian inside the desired zone, in degrees relative to Greenwich.
+     *         Positive longitudes are toward east, and negative longitudes toward west.
+     * @return The UTM zone number numbered from 1 to 60 inclusive, or 0 if the given central meridian was NaN.
+     *
+     * @since 0.7
+     */
+    public static int zone(double centralMeridian) {
+        /*
+         * Casts to int are equivalent to Math.floor(double) for positive values, which is guaranteed
+         * to be the case here since we normalize the central meridian to the [MIN_VALUE … MAX_VALUE] range.
+         */
+        double z = (centralMeridian - Longitude.MIN_VALUE) / ZONE_WIDTH;                    // Zone number with fractional part.
+        z -= Math.floor(z / ((Longitude.MAX_VALUE - Longitude.MIN_VALUE) / ZONE_WIDTH))     // Roll in the [0 … 60) range.
+                          * ((Longitude.MAX_VALUE - Longitude.MIN_VALUE) / ZONE_WIDTH);
+        return (int) (z + 1);   // Cast only after addition in order to handle NaN as documented.
+    }
+
+    /**
+     * Computes the central meridian of a given UTM zone.
+     *
+     * @param zone The UTM zone as a number in the [1 … 60] range.
+     * @return The central meridian of the given UTM zone.
+     *
+     * @since 0.7
+     */
+    public static double centralMeridian(final int zone) {
+        return (zone - 0.5) * ZONE_WIDTH + Longitude.MIN_VALUE;
     }
 }

@@ -23,6 +23,7 @@ import org.opengis.metadata.citation.Citation;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.EngineeringCRS;
 import org.opengis.referencing.crs.GeographicCRS;
+import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.crs.VerticalCRS;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.datum.Datum;
@@ -71,13 +72,16 @@ public final strictfp class CommonAuthorityFactoryTest extends TestCase {
     public void testGetAuthorityCodes() throws FactoryException {
         assertTrue("getAuthorityCodes(Datum.class)",
                 factory.getAuthorityCodes(Datum.class).isEmpty());
-        assertSetEquals(Arrays.asList("1", "27", "83", "84", "88"),
+        assertSetEquals(Arrays.asList("CRS:1", "CRS:27", "CRS:83", "CRS:84", "CRS:88",
+                                      "AUTO2:42001", "AUTO2:42002", "AUTO2:42003", "AUTO2:42004", "AUTO2:42005"),
                 factory.getAuthorityCodes(CoordinateReferenceSystem.class));
-        assertSetEquals(Arrays.asList("27", "83", "84"),
+        assertSetEquals(Arrays.asList("AUTO2:42001", "AUTO2:42002", "AUTO2:42003", "AUTO2:42004", "AUTO2:42005"),
+                factory.getAuthorityCodes(ProjectedCRS.class));
+        assertSetEquals(Arrays.asList("CRS:27", "CRS:83", "CRS:84"),
                 factory.getAuthorityCodes(GeographicCRS.class));
-        assertSetEquals(Arrays.asList("88"),
+        assertSetEquals(Arrays.asList("CRS:88"),
                 factory.getAuthorityCodes(VerticalCRS.class));
-        assertSetEquals(Arrays.asList("1"),
+        assertSetEquals(Arrays.asList("CRS:1"),
                 factory.getAuthorityCodes(EngineeringCRS.class));
     }
 

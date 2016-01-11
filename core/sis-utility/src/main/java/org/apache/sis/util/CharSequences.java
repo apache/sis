@@ -576,7 +576,7 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
      *
      * <p>Special cases:</p>
      * <ul>
-     *   <li>If {@code toIndex} is lower than {@code toIndex},
+     *   <li>If {@code fromIndex} is lower than {@code toIndex},
      *       then this method unconditionally returns {@code toIndex}.</li>
      *   <li>If the given range contains only space characters and the character at {@code fromIndex}
      *       is the low surrogate of a valid supplementary code point, then this method returns
