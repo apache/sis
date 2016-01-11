@@ -246,7 +246,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
      * on experience gained.
      *
      * @param dataAccessClass The class of Data Access Object (DAO) created by {@link #newDataAccess()}.
-     * @param nameFactory The factory to use for parsing authority codes as {@link org.opengis.util.GenericName} instances.
+     * @param nameFactory The factory to use for {@linkplain NameFactory#parseGenericName parsing} authority codes.
      */
     protected ConcurrentAuthorityFactory(Class<DAO> dataAccessClass, NameFactory nameFactory) {
         this(dataAccessClass, nameFactory, 100, 8);
@@ -262,7 +262,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
      * for the eldest ones will be replaced by weak references.
      *
      * @param dataAccessClass The class of Data Access Object (DAO) created by {@link #newDataAccess()}.
-     * @param nameFactory The factory to use for parsing authority code as {@link org.opengis.util.GenericName} instances.
+     * @param nameFactory The factory to use for {@linkplain NameFactory#parseGenericName parsing} authority codes.
      * @param maxStrongReferences The maximum number of objects to keep by strong reference.
      * @param maxConcurrentQueries The maximal amount of Data Access Objects to use concurrently.
      *        If more than this amount of threads are querying this {@code ConcurrentAuthorityFactory} concurrently,

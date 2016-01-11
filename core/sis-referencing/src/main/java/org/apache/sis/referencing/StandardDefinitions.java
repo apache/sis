@@ -32,9 +32,17 @@ import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.cs.EllipsoidalCS;
+import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.referencing.crs.GeographicCRS;
+import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.crs.VerticalCRS;
+import org.opengis.referencing.operation.OperationMethod;
+import org.opengis.referencing.operation.MathTransformFactory;
+import org.opengis.parameter.ParameterValueGroup;
+import org.opengis.util.NoSuchIdentifierException;
+import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.metadata.AxisNames;
+import org.apache.sis.internal.referencing.provider.TransverseMercator;
 import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.referencing.datum.DefaultEllipsoid;
@@ -47,6 +55,9 @@ import org.apache.sis.referencing.cs.DefaultEllipsoidalCS;
 import org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis;
 import org.apache.sis.referencing.crs.DefaultGeographicCRS;
 import org.apache.sis.referencing.crs.DefaultVerticalCRS;
+import org.apache.sis.referencing.crs.DefaultProjectedCRS;
+import org.apache.sis.referencing.operation.DefaultConversion;
+import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
 import org.apache.sis.measure.Longitude;
 import org.apache.sis.measure.Latitude;
 
@@ -81,15 +92,17 @@ final class StandardDefinitions {
     /**
      * Returns a map of properties for the given EPSG code, name and alias.
      *
-     * @param  code  The EPSG code.
+     * @param  code  The EPSG code, or 0 if none.
      * @param  name  The object name.
      * @param  alias The alias, or {@code null} if none.
      * @param  world {@code true} if the properties shall have an entry for the domain of validity.
      * @return The map of properties to give to constructors or factory methods.
      */
-    private static Map<String,Object> properties(final short code, final String name, final String alias, final boolean world) {
+    private static Map<String,Object> properties(final int code, final String name, final String alias, final boolean world) {
         final Map<String,Object> map = new HashMap<>(8);
-        map.put(IDENTIFIERS_KEY, new NamedIdentifier(Citations.EPSG, String.valueOf(code)));
+        if (code != 0) {
+            map.put(IDENTIFIERS_KEY, new NamedIdentifier(Citations.EPSG, String.valueOf(code)));
+        }
         map.put(NAME_KEY, new NamedIdentifier(Citations.EPSG, name));
         map.put(ALIAS_KEY, alias); // May be null, which is okay.
         if (world) {
@@ -107,6 +120,34 @@ final class StandardDefinitions {
             (NamedIdentifier) properties.get(IDENTIFIERS_KEY),
             new NamedIdentifier(Citations.OGC, code)
         });
+    }
+
+    /**
+     * Returns the operation method for Transverse Mercator projection using the SIS factory implementation.
+     * This method restricts the factory to SIS implementation instead than arbitrary factory in order to meet
+     * the contract saying that {@link CommonCRS} methods should never fail.
+     *
+     * @param code             The EPSG code, or 0 if none.
+     * @param baseCRS          The geographic CRS on which the projected CRS is based.
+     * @param centralMeridian  The longitude in the center of the desired projection.
+     * @param isSouth          {@code false} for a projection in the North hemisphere, or {@code true} for the South hemisphere.
+     * @param derivedCS        The projected coordinate system.
+     */
+    static ProjectedCRS createUTM(final int code, final GeographicCRS baseCRS,
+            final double centralMeridian, final boolean isSouth, final CartesianCS derivedCS)
+    {
+        final OperationMethod method;
+        try {
+            method = DefaultFactories.forBuildin(MathTransformFactory.class, DefaultMathTransformFactory.class).getOperationMethod("Transverse Mercator");
+        } catch (NoSuchIdentifierException e) {
+            throw new IllegalStateException(e);     // Should not happen with SIS implementation.
+        }
+        final ParameterValueGroup parameters = method.getParameters().createValue();
+        String name = TransverseMercator.setParameters(parameters, centralMeridian, true, isSouth);
+        final DefaultConversion conversion = new DefaultConversion(properties(0, name, null, false), method, null, parameters);
+
+        name = baseCRS.getName().getCode() + " / " + name;
+        return new DefaultProjectedCRS(properties(code, name, null, false), baseCRS, conversion, derivedCS);
     }
 
     /**
@@ -271,6 +312,7 @@ final class StandardDefinitions {
             case 6422: name = "Ellipsoidal 2D"; dim = 2; axisCode = 108; break;
             case 6423: name = "Ellipsoidal 3D"; dim = 3; axisCode = 111; break;
             case 6500: name = "Earth centred";  dim = 3; axisCode = 118; isCartesian = true; break;
+            case 4400: name = "Cartesian 2D";   dim = 2; axisCode =   3; isCartesian = true; break;
             default:   throw new AssertionError(code);
         }
         final Map<String,?> properties = properties(code, name, null, false);
@@ -283,12 +325,17 @@ final class StandardDefinitions {
             case 0:  break;
         }
         if (isCartesian) {
-            return new DefaultCartesianCS(properties, xAxis, yAxis, zAxis);
-        }
-        if (zAxis != null) {
-            return new DefaultEllipsoidalCS(properties, xAxis, yAxis, zAxis);
+            if (zAxis != null) {
+                return new DefaultCartesianCS(properties, xAxis, yAxis, zAxis);
+            } else {
+                return new DefaultCartesianCS(properties, xAxis, yAxis);
+            }
         } else {
-            return new DefaultEllipsoidalCS(properties, xAxis, yAxis);
+            if (zAxis != null) {
+                return new DefaultEllipsoidalCS(properties, xAxis, yAxis, zAxis);
+            } else {
+                return new DefaultEllipsoidalCS(properties, xAxis, yAxis);
+            }
         }
     }
 
