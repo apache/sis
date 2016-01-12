@@ -19,6 +19,7 @@ package org.apache.sis.referencing;
 import java.util.Map;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import javax.measure.unit.SI;
 import javax.measure.unit.NonSI;
 import javax.measure.unit.Unit;
@@ -59,12 +60,16 @@ import org.apache.sis.referencing.crs.DefaultVerticalCRS;
 import org.apache.sis.referencing.crs.DefaultGeographicCRS;
 import org.apache.sis.referencing.crs.DefaultGeocentricCRS;
 import org.apache.sis.internal.referencing.provider.TransverseMercator;
+import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.internal.system.SystemListener;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.logging.Logging;
+import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.math.MathFunctions;
+import org.apache.sis.measure.Latitude;
 import org.apache.sis.measure.Units;
 
 import static java.util.Collections.singletonMap;
@@ -339,7 +344,7 @@ public enum CommonCRS {
      * The Universal Transverse Mercator projections, created when first needed.
      * All accesses to this map shall be synchronized on {@code cachedUTM}.
      *
-     * @see #UTM(double, boolean)
+     * @see #UTM(double, double)
      */
     private final Map<Integer,ProjectedCRS> cachedUTM;
 
@@ -805,18 +810,45 @@ public enum CommonCRS {
     }
 
     /**
-     * Returns a Universal Transverse Mercator projection for the zone containing the given meridian.
-     * If the given central meridian is not between -180° and 180°, then it will be rolled into that range.
-     * If the given central meridian is not in the center of a UTM zone, then it will be snapped to the center.
+     * Returns a Universal Transverse Mercator (UTM) projection for the zone containing the given point.
+     * There is a total of 120 UTM zones, with 60 zones in the North hemisphere and 60 zones in the South hemisphere.
+     * The projection zone is determined from the arguments as below:
      *
-     * @param  centralMeridian  The longitude in the center of the desired projection.
-     * @param  isSouth          {@code false} for a projection in the North hemisphere, or {@code true} for the South hemisphere.
-     * @return A Universal Transverse Mercator projection for the zone containing the given meridian.
+     * <ul>
+     *   <li>The sign of the <var>latitude</var> argument determines the hemisphere:
+     *       North for positive latitudes (including positive zero) or
+     *       South for negative latitudes (including negative zero).
+     *       The latitude magnitude is ignored, except for ensuring that the latitude is inside the [-90 … 90]° range.</li>
+     *   <li>The value of the <var>longitude</var> argument determines the 6°-width zone,
+     *       numbered from 1 for the zone starting at 180°W up to 60 for the zone finishing at 180°E.
+     *       Longitudes outside the [-180 … 180]° range will be rolled as needed before to compute the zone.</li>
+     * </ul>
+     *
+     * The map projection uses the following parameters:
+     *
+     * <blockquote><table class="sis">
+     *   <caption>Transverse Mercator parameters</caption>
+     *   <tr><th>Parameter name</th>                 <th>Value</th></tr>
+     *   <tr><td>Latitude of natural origin</td>     <td>0°</td></tr>
+     *   <tr><td>Longitude of natural origin</td>    <td>Central meridian of the UTM zone containing the given longitude</td></tr>
+     *   <tr><td>Scale factor at natural origin</td> <td>0.9996</td></tr>
+     *   <tr><td>False easting</td>                  <td>500000 metres</td></tr>
+     *   <tr><td>False northing</td>                 <td>0 (North hemisphere) or 10000000 (South hemisphere) metres</td></tr>
+     * </table></blockquote>
+     *
+     * The coordinate system axes are (Easting, Northing) in metres.
+     *
+     * @param  latitude  A latitude in the desired UTM projection zone.
+     * @param  longitude A longitude in the desired UTM projection zone.
+     * @return A Universal Transverse Mercator projection for the zone containing the given point.
      *
      * @since 0.7
      */
-    public ProjectedCRS UTM(final double centralMeridian, final boolean isSouth) {
-        final int zone = TransverseMercator.zone(centralMeridian);
+    public ProjectedCRS UTM(final double latitude, final double longitude) {
+        ArgumentChecks.ensureBetween("latitude",   Latitude.MIN_VALUE,     Latitude.MAX_VALUE,     latitude);
+        ArgumentChecks.ensureBetween("longitude", -Formulas.LONGITUDE_MAX, Formulas.LONGITUDE_MAX, longitude);
+        final boolean isSouth = MathFunctions.isNegative(latitude);
+        final int zone = TransverseMercator.zone(longitude);
         final Integer key = isSouth ? -zone : zone;
         ProjectedCRS crs;
         synchronized (cachedUTM) {
@@ -841,13 +873,21 @@ public enum CommonCRS {
              * We will arbitrarily create this CS only for a frequently created CRS, and share that
              * CS instance for all other constants.
              */
-            final CartesianCS cs;
-            if (this == DEFAULT && zone == 31 && !isSouth) {    // MUST be the zone of 3°
-                cs = (CartesianCS) StandardDefinitions.createCoordinateSystem((short) 4400);
-            } else {
-                cs = DEFAULT.UTM(3, false).getCoordinateSystem();
+            CartesianCS cs = null;
+            synchronized (DEFAULT.cachedUTM) {
+                final Iterator<ProjectedCRS> it = DEFAULT.cachedUTM.values().iterator();
+                if (it.hasNext()) {
+                    cs = it.next().getCoordinateSystem();
+                }
             }
-            crs = StandardDefinitions.createUTM(code, geographic(), centralMeridian, isSouth, cs);
+            if (cs == null) {
+                if (this != DEFAULT) {
+                    cs = DEFAULT.UTM(latitude, longitude).getCoordinateSystem();
+                } else {
+                    cs = (CartesianCS) StandardDefinitions.createCoordinateSystem((short) 4400);
+                }
+            }
+            crs = StandardDefinitions.createUTM(code, geographic(), longitude, isSouth, cs);
             final ProjectedCRS other;
             synchronized (cachedUTM) {
                 other = cachedUTM.putIfAbsent(key, crs);
@@ -857,6 +897,26 @@ public enum CommonCRS {
             }
         }
         return crs;
+    }
+
+    /**
+     * Returns the CRS for the given EPSG code, or {@code null} if none.
+     * This is a helper method for {@link #forCode(String, String, FactoryException)} only.
+     */
+    private CoordinateReferenceSystem forCode(final int code) {
+        if (code == geographic) return geographic();
+        if (code == geocentric) return geocentric();
+        if (code == geo3D)      return geographic3D();
+        final double latitude;
+        int zone;
+        if (northUTM != 0 && (zone = code - northUTM) >= firstZone && zone <= lastZone) {
+            latitude = +1;
+        } else if (southUTM != 0 && (zone = code - southUTM) >= firstZone && zone <= lastZone) {
+            latitude = -1;
+        } else {
+            return null;
+        }
+        return UTM(latitude, TransverseMercator.centralMeridian(zone));
     }
 
 
@@ -1494,9 +1554,10 @@ public enum CommonCRS {
                 final int n = Integer.parseInt(code);
                 if (n != 0) { // CommonCRS uses 0 as a sentinel value for "no EPSG code".
                     for (final CommonCRS candidate : CommonCRS.values()) {
-                        if (candidate.geographic == n) return candidate.geographic();
-                        if (candidate.geocentric == n) return candidate.geocentric();
-                        if (candidate.geo3D      == n) return candidate.geographic3D();
+                        final CoordinateReferenceSystem crs = candidate.forCode(n);
+                        if (crs != null) {
+                            return crs;
+                        }
                     }
                     for (final CommonCRS.Vertical candidate : CommonCRS.Vertical.values()) {
                         if (candidate.isEPSG && candidate.crs == n) {

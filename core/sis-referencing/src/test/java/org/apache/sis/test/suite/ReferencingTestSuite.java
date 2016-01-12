@@ -138,6 +138,7 @@ import org.junit.BeforeClass;
     org.apache.sis.internal.referencing.provider.NTv2Test.class,
     org.apache.sis.internal.referencing.provider.NADCONTest.class,
     org.apache.sis.internal.referencing.provider.MapProjectionTest.class,
+    org.apache.sis.internal.referencing.provider.TransverseMercatorTest.class,
     org.apache.sis.internal.referencing.provider.AllProvidersTest.class,
     org.apache.sis.referencing.operation.transform.InterpolatedTransformTest.class,
     org.apache.sis.referencing.operation.transform.InterpolatedGeocentricTransformTest.class,

@@ -168,7 +168,7 @@ public final class Equirectangular extends AbstractProvider {
         LATITUDE_OF_ORIGIN = createZeroConstant(builder     // Was used by EPSG:9823 (also EPSG:9842).
                 .addIdentifier("8801")
                 .addName("Latitude of natural origin")
-                .addName(Citations.OGC,     "latitude_of_origin")
+                .addName(Citations.OGC,     Constants.LATITUDE_OF_ORIGIN)
                 .addName(Citations.ESRI,    "Latitude_Of_Origin")
                 .addName(Citations.NETCDF,  "latitude_of_projection_origin")
                 .addName(Citations.GEOTIFF, "ProjCenterLat")
