@@ -110,6 +110,8 @@ public final class Longitude extends Angle {
      *   <li>±0 are returned unchanged (i.e. the sign of negative and positive zero is preserved)</li>
      * </ul>
      *
+     * Note that the given value should not be greater than 4×10⁸ degrees if a centimetric precision is desired.
+     *
      * @param  λ The longitude value in decimal degrees.
      * @return The given value normalized to the [-180 … 180)° range, or NaN if the given value was NaN of infinite.
      *

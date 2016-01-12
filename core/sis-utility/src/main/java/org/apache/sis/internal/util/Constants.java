@@ -111,6 +111,11 @@ public final class Constants extends Static {
     public static final String CENTRAL_MERIDIAN = "central_meridian";
 
     /**
+     * The OGC parameter name for the latitude of origin.
+     */
+    public static final String LATITUDE_OF_ORIGIN = "latitude_of_origin";
+
+    /**
      * The NetCDF parameter name for the standard parallels.
      */
     public static final String STANDARD_PARALLEL = "standard_parallel";

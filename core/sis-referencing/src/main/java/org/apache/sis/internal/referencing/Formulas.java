@@ -18,6 +18,7 @@ package org.apache.sis.internal.referencing;
 
 import org.apache.sis.util.Static;
 import org.apache.sis.measure.Latitude;
+import org.apache.sis.internal.util.Numerics;
 
 import static java.lang.Math.*;
 import static org.apache.sis.math.MathFunctions.atanh;
@@ -31,7 +32,7 @@ import static org.apache.sis.internal.metadata.ReferencingServices.NAUTICAL_MILE
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.6
+ * @version 0.7
  * @module
  */
 public final class Formulas extends Static {
@@ -56,6 +57,14 @@ public final class Formulas extends Static {
      * @see org.apache.sis.internal.util.Numerics#COMPARISON_THRESHOLD
      */
     public static final double ANGULAR_TOLERANCE = LINEAR_TOLERANCE / (NAUTICAL_MILE * 60);
+
+    /**
+     * The maximal longitude value before normalization if a centimetric precision is desired.
+     * This is about 4×10⁸ degrees.
+     *
+     * @see org.apache.sis.measure.Longitude#normalize(double)
+     */
+    public static final double LONGITUDE_MAX = (1L << Numerics.SIGNIFICAND_SIZE) * ANGULAR_TOLERANCE;
 
     /**
      * The length of a <cite>Julian year</cite> in milliseconds.

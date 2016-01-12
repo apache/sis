@@ -127,23 +127,25 @@ final class StandardDefinitions {
      * This method restricts the factory to SIS implementation instead than arbitrary factory in order to meet
      * the contract saying that {@link CommonCRS} methods should never fail.
      *
-     * @param code             The EPSG code, or 0 if none.
-     * @param baseCRS          The geographic CRS on which the projected CRS is based.
-     * @param centralMeridian  The longitude in the center of the desired projection.
-     * @param isSouth          {@code false} for a projection in the North hemisphere, or {@code true} for the South hemisphere.
-     * @param derivedCS        The projected coordinate system.
+     * @param code       The EPSG code, or 0 if none.
+     * @param baseCRS    The geographic CRS on which the projected CRS is based.
+     * @param longitude  A longitude in the zone of the desired projection, to be snapped to UTM central meridian.
+     * @param isSouth    {@code false} for a projection in the North hemisphere, or {@code true} for the South hemisphere.
+     * @param derivedCS  The projected coordinate system.
      */
     static ProjectedCRS createUTM(final int code, final GeographicCRS baseCRS,
-            final double centralMeridian, final boolean isSouth, final CartesianCS derivedCS)
+            final double longitude, final boolean isSouth, final CartesianCS derivedCS)
     {
         final OperationMethod method;
         try {
-            method = DefaultFactories.forBuildin(MathTransformFactory.class, DefaultMathTransformFactory.class).getOperationMethod("Transverse Mercator");
+            method = DefaultFactories.forBuildin(MathTransformFactory.class,
+                                          DefaultMathTransformFactory.class)
+                    .getOperationMethod(TransverseMercator.NAME);
         } catch (NoSuchIdentifierException e) {
             throw new IllegalStateException(e);     // Should not happen with SIS implementation.
         }
         final ParameterValueGroup parameters = method.getParameters().createValue();
-        String name = TransverseMercator.setParameters(parameters, centralMeridian, true, isSouth);
+        String name = TransverseMercator.setParameters(parameters, longitude, true, isSouth);
         final DefaultConversion conversion = new DefaultConversion(properties(0, name, null, false), method, null, parameters);
 
         name = baseCRS.getName().getCode() + " / " + name;
@@ -353,6 +355,16 @@ final class StandardDefinitions {
         RangeMeaning rm = null;
         final AxisDirection dir;
         switch (code) {
+            case 1:    name = "Easting";
+                       abrv = "E";
+                       unit = SI.METRE;
+                       dir  = AxisDirection.EAST;
+                       break;
+            case 2:    name = "Northing";
+                       abrv = "N";
+                       unit = SI.METRE;
+                       dir  = AxisDirection.NORTH;
+                       break;
             case 108:  // Used in Ellipsoidal 3D.
             case 106:  name = AxisNames.GEODETIC_LATITUDE;
                        abrv = "φ";
