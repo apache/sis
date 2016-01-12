@@ -824,10 +824,15 @@ public enum CommonCRS {
      *       Longitudes outside the [-180 … 180]° range will be rolled as needed before to compute the zone.</li>
      * </ul>
      *
+     * <div class="note"><b>Warning:</b>
+     * be aware of parameter order! For this method, latitude is first.
+     * This order is for consistency with the non-normalized {@linkplain #geographic() geographic} CRS
+     * of all items in this {@code CommonCRS} enumeration.</div>
+     *
      * The map projection uses the following parameters:
      *
      * <blockquote><table class="sis">
-     *   <caption>Transverse Mercator parameters</caption>
+     *   <caption>Universal Transverse Mercator (UTM) parameters</caption>
      *   <tr><th>Parameter name</th>                 <th>Value</th></tr>
      *   <tr><td>Latitude of natural origin</td>     <td>0°</td></tr>
      *   <tr><td>Longitude of natural origin</td>    <td>Central meridian of the UTM zone containing the given longitude</td></tr>
@@ -887,7 +892,7 @@ public enum CommonCRS {
                     cs = (CartesianCS) StandardDefinitions.createCoordinateSystem((short) 4400);
                 }
             }
-            crs = StandardDefinitions.createUTM(code, geographic(), longitude, isSouth, cs);
+            crs = StandardDefinitions.createUTM(code, geographic(), latitude, longitude, cs);
             final ProjectedCRS other;
             synchronized (cachedUTM) {
                 other = cachedUTM.putIfAbsent(key, crs);

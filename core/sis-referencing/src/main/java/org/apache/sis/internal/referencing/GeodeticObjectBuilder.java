@@ -28,9 +28,11 @@ import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.referencing.operation.CoordinateOperationFactory;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.Conversion;
+import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.referencing.provider.TransverseMercator;
+import org.apache.sis.measure.Latitude;
 import org.apache.sis.referencing.Builder;
 
 
@@ -185,24 +187,26 @@ public class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> {
      * <blockquote><table class="sis">
      *   <caption>Transverse Mercator parameters</caption>
      *   <tr><th>Parameter name</th>                 <th>Value</th></tr>
-     *   <tr><td>Latitude of natural origin</td>     <td>0°</td></tr>
-     *   <tr><td>Longitude of natural origin</td>    <td>Central meridian, optionally snapped to a UTM zone</td></tr>
+     *   <tr><td>Latitude of natural origin</td>     <td>Given latitude, snapped to 0° in the UTM case</td></tr>
+     *   <tr><td>Longitude of natural origin</td>    <td>Given longitude, optionally snapped to a UTM zone</td></tr>
      *   <tr><td>Scale factor at natural origin</td> <td>0.9996</td></tr>
      *   <tr><td>False easting</td>                  <td>500000 metres</td></tr>
      *   <tr><td>False northing</td>                 <td>0 (North hemisphere) or 10000000 (South hemisphere) metres</td></tr>
      * </table></blockquote>
      *
-     * @param  centralMeridian  The longitude in the center of the desired projection.
-     * @param  isUTM            If {@code true}, the given central meridian will be snapped to the central meridian of a UTM zone.
-     * @param  isSouth          {@code false} for a projection in the North hemisphere, or {@code true} for the South hemisphere.
+     * @param  isUTM      If {@code true}, the given central meridian will be snapped to the central meridian of a UTM zone.
+     * @param  latitude   The latitude in the center of the desired projection.
+     * @param  longitude  The longitude in the center of the desired projection.
      * @return {@code this}, for method call chaining.
      * @throws FactoryException if the operation method for the Transverse Mercator projection can not be obtained.
      */
-    public GeodeticObjectBuilder setTransverseMercator(double centralMeridian, boolean isUTM, final boolean isSouth)
+    public GeodeticObjectBuilder setTransverseMercator(boolean isUTM, double latitude, double longitude)
             throws FactoryException
     {
-        setConversionMethod("Transverse_Mercator");
-        setConversionName(TransverseMercator.setParameters(parameters, centralMeridian, isUTM, isSouth));
+        ArgumentChecks.ensureBetween("latitude",   Latitude.MIN_VALUE,     Latitude.MAX_VALUE,     latitude);
+        ArgumentChecks.ensureBetween("longitude", -Formulas.LONGITUDE_MAX, Formulas.LONGITUDE_MAX, longitude);
+        setConversionMethod(TransverseMercator.NAME);
+        setConversionName(TransverseMercator.setParameters(parameters, isUTM, latitude, longitude));
         return this;
     }
 

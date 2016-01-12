@@ -129,12 +129,12 @@ final class StandardDefinitions {
      *
      * @param code       The EPSG code, or 0 if none.
      * @param baseCRS    The geographic CRS on which the projected CRS is based.
+     * @param latitude   A latitude in the zone of the desired projection, to be snapped to 0°.
      * @param longitude  A longitude in the zone of the desired projection, to be snapped to UTM central meridian.
-     * @param isSouth    {@code false} for a projection in the North hemisphere, or {@code true} for the South hemisphere.
      * @param derivedCS  The projected coordinate system.
      */
     static ProjectedCRS createUTM(final int code, final GeographicCRS baseCRS,
-            final double longitude, final boolean isSouth, final CartesianCS derivedCS)
+            final double latitude, final double longitude, final CartesianCS derivedCS)
     {
         final OperationMethod method;
         try {
@@ -145,7 +145,7 @@ final class StandardDefinitions {
             throw new IllegalStateException(e);     // Should not happen with SIS implementation.
         }
         final ParameterValueGroup parameters = method.getParameters().createValue();
-        String name = TransverseMercator.setParameters(parameters, longitude, true, isSouth);
+        String name = TransverseMercator.setParameters(parameters, true, latitude, longitude);
         final DefaultConversion conversion = new DefaultConversion(properties(0, name, null, false), method, null, parameters);
 
         name = baseCRS.getName().getCode() + " / " + name;

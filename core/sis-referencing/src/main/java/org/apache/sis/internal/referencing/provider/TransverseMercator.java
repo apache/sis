@@ -29,6 +29,7 @@ import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.referencing.operation.projection.NormalizedProjection;
 import org.apache.sis.internal.util.Constants;
+import org.apache.sis.math.MathFunctions;
 
 
 /**
@@ -145,7 +146,7 @@ public final class TransverseMercator extends AbstractMercator {
      * <blockquote><table class="sis">
      *   <caption>Transverse Mercator parameters</caption>
      *   <tr><th>Parameter name</th>                 <th>Value</th></tr>
-     *   <tr><td>Latitude of natural origin</td>     <td>0°</td></tr>
+     *   <tr><td>Latitude of natural origin</td>     <td>Given latitude, or 0° if UTM projection</td></tr>
      *   <tr><td>Longitude of natural origin</td>    <td>Given longitude, optionally snapped to a UTM central meridian</td></tr>
      *   <tr><td>Scale factor at natural origin</td> <td>0.9996</td></tr>
      *   <tr><td>False easting</td>                  <td>500000 metres</td></tr>
@@ -153,19 +154,21 @@ public final class TransverseMercator extends AbstractMercator {
      * </table></blockquote>
      *
      * @param  group      The parameters for which to set the values.
+     * @param  isUTM      {@code true} for Universal Transverse Mercator (UTM) projection.
+     * @param  latitude   The latitude in the center of the desired projection.
      * @param  longitude  The longitude in the center of the desired projection.
-     * @param  isUTM      If {@code true}, the given longitude will be snapped to the central meridian of a UTM zone.
-     * @param  isSouth    {@code false} for a projection in the North hemisphere, or {@code true} for the South hemisphere.
      * @return A name like <cite>"Transverse Mercator"</cite> or <cite>"UTM zone 10N"</cite>,
      *         depending on the arguments given to this method.
      *
      * @since 0.7
      */
     public static String setParameters(final ParameterValueGroup group,
-            double longitude, final boolean isUTM, final boolean isSouth)
+            final boolean isUTM, double latitude, double longitude)
     {
+        final boolean isSouth = MathFunctions.isNegative(latitude);
         int zone = zone(longitude);
         if (isUTM) {
+            latitude = 0;
             longitude = centralMeridian(zone);
         } else if (longitude != centralMeridian(zone)) {
             zone = 0;
@@ -174,7 +177,7 @@ public final class TransverseMercator extends AbstractMercator {
         if (zone != 0) {
             name = "UTM zone " + zone + (isSouth ? 'S' : 'N');
         }
-        group.parameter(Constants.LATITUDE_OF_ORIGIN).setValue(0, NonSI.DEGREE_ANGLE);
+        group.parameter(Constants.LATITUDE_OF_ORIGIN).setValue(latitude,  NonSI.DEGREE_ANGLE);
         group.parameter(Constants.CENTRAL_MERIDIAN)  .setValue(longitude, NonSI.DEGREE_ANGLE);
         group.parameter(Constants.SCALE_FACTOR)      .setValue(0.9996, Unit.ONE);
         group.parameter(Constants.FALSE_EASTING)     .setValue(500000, SI.METRE);

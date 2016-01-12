@@ -531,6 +531,7 @@ public final class Units extends Static {
      *       <tr><td style="width: 40px"><b>Code</b></td><td><b>Unit</b></td></tr>
      *       <tr><td>9001</td><td>metre</td></tr>
      *       <tr><td>9002</td><td>foot</td></tr>
+     *       <tr><td>9003</td><td>US survey foot</td></tr>
      *       <tr><td>9030</td><td>nautical mile</td></tr>
      *       <tr><td>9036</td><td>kilometre</td></tr>
      *     </table></td>
@@ -564,6 +565,7 @@ public final class Units extends Static {
             case 1040: return SI   .SECOND;
             case 9001: return SI   .METRE;
             case 9002: return NonSI.FOOT;
+            case 9003: return NonSI.FOOT_SURVEY_US;
             case 9030: return NonSI.NAUTICAL_MILE;
             case 9036: return SI   .KILOMETRE;
             case 9101: return SI   .RADIAN;

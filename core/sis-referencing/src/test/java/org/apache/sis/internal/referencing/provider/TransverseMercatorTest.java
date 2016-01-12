@@ -27,6 +27,8 @@ import static org.junit.Assert.*;
 
 /**
  * Tests {@link TransverseMercator} static methods.
+ * This class is about projection parameters only. For test about the Transverse Mercator calculation,
+ * see {@link org.apache.sis.referencing.operation.projection.TransverseMercatorTest} instead.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.7
@@ -64,15 +66,15 @@ public final strictfp class TransverseMercatorTest extends TestCase {
     })
     public void testCreate() {
         final ParameterValueGroup p = TransverseMercator.PARAMETERS.createValue();
-        assertEquals("UTM zone 10N", TransverseMercator.setParameters(p, -122, true, false));
+        assertEquals("UTM zone 10N", TransverseMercator.setParameters(p, true, 0, -122));
         assertEquals(Constants.CENTRAL_MERIDIAN, -123, p.parameter(Constants.CENTRAL_MERIDIAN).doubleValue(), STRICT);
         assertEquals(Constants.FALSE_NORTHING, 0, p.parameter(Constants.FALSE_NORTHING).doubleValue(), STRICT);
 
-        assertEquals("Transverse Mercator", TransverseMercator.setParameters(p, -122, false, false));
+        assertEquals("Transverse Mercator", TransverseMercator.setParameters(p, false, 0, -122));
         assertEquals(Constants.CENTRAL_MERIDIAN, -122, p.parameter(Constants.CENTRAL_MERIDIAN).doubleValue(), STRICT);
         assertEquals(Constants.FALSE_NORTHING, 0, p.parameter(Constants.FALSE_NORTHING).doubleValue(), STRICT);
 
-        assertEquals("UTM zone 10S", TransverseMercator.setParameters(p, -123, false, true));
+        assertEquals("UTM zone 10S", TransverseMercator.setParameters(p, false, -0.0, -123));
         assertEquals(Constants.CENTRAL_MERIDIAN, -123, p.parameter(Constants.CENTRAL_MERIDIAN).doubleValue(), STRICT);
         assertEquals(Constants.FALSE_NORTHING, 10000000, p.parameter(Constants.FALSE_NORTHING).doubleValue(), STRICT);
     }
