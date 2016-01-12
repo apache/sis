@@ -21,8 +21,10 @@ import java.util.Set;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Collections;
-import java.util.Arrays;
+import javax.measure.unit.SI;
 import javax.measure.unit.NonSI;
+import javax.measure.unit.Unit;
+import javax.measure.quantity.Length;
 import org.opengis.util.NameFactory;
 import org.opengis.util.FactoryException;
 import org.opengis.util.InternationalString;
@@ -45,20 +47,22 @@ import org.opengis.referencing.datum.EngineeringDatum;
 import org.opengis.util.GenericName;
 import org.opengis.util.ScopedName;
 import org.apache.sis.internal.referencing.GeodeticObjectBuilder;
-import org.apache.sis.internal.referencing.provider.TransverseMercator;
 import org.apache.sis.metadata.iso.citation.Citations;
-import org.apache.sis.metadata.iso.citation.DefaultCitation;
-import org.apache.sis.internal.simple.SimpleIdentifier;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.util.Constants;
-import org.apache.sis.math.MathFunctions;
+import org.apache.sis.measure.Units;
 import org.apache.sis.referencing.CommonCRS;
+import org.apache.sis.referencing.cs.AxisFilter;
+import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.iso.DefaultNameSpace;
 import org.apache.sis.util.iso.SimpleInternationalString;
+
+import static org.apache.sis.internal.referencing.provider.TransverseMercator.zone;
+import static org.apache.sis.internal.referencing.provider.TransverseMercator.centralMeridian;
 
 
 /**
@@ -174,10 +178,15 @@ import org.apache.sis.util.iso.SimpleInternationalString;
  * is the longitude and latitude of a point in the projection centre.
  *
  * <div class="note"><b>Examples:</b>
- * {@code "AUTO2:42003,1,-100,45"}.</div>
+ * {@code "AUTO2:42001,1,-100,45"} identifies a Universal Transverse Mercator (UTM) projection
+ * for a zone containing the point at (45°N, 100°W).</div>
  *
- * Codes in the {@code "AUTO"} namespace are the same than codes in the {@code "AUTO2"} namespace,
- * but with the unit factor omitted.
+ * Codes in the {@code "AUTO"} namespace are the same than codes in the {@code "AUTO2"} namespace, except that
+ * the {@linkplain org.apache.sis.measure.Units#valueOfEPSG(int) EPSG code} of the desired unit of measurement
+ * was used instead than the unit factor.
+ * The {@code "AUTO"} namespace was defined in the <cite>Web Map Service</cite> (WMS) 1.1.1 specification
+ * while the {@code "AUTO2"} namespace is defined in WMS 1.3.0.
+ * In Apache SIS implementation, the unit parameter (either as factor or as EPSG code) is optional and default to metres.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.7
@@ -185,7 +194,6 @@ import org.apache.sis.util.iso.SimpleInternationalString;
  * @module
  *
  * @see CommonCRS
- * @see Citations#OGC
  */
 public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements CRSAuthorityFactory {
     /**
@@ -226,16 +234,16 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
     private final Map<String,Class<?>> codes;
 
     /**
-     * The authority for this factory, created when first needed.
-     */
-    private Citation authority;
-
-    /**
      * The "Computer display" reference system (CRS:1). Created when first needed.
      *
      * @see #displayCRS()
      */
     private CoordinateReferenceSystem displayCRS;
+
+    /**
+     * The coordinate system for map projection in metres, created when first needed.
+     */
+    private volatile CartesianCS projectedCS;
 
     /**
      * Constructs a default factory for the {@code CRS} authority.
@@ -252,25 +260,18 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
      * The authority for this factory is the <cite>Open Geospatial Consortium</cite>.
      *
      * @return The OGC authority.
+     *
+     * @see Citations#OGC
      */
     @Override
-    public synchronized Citation getAuthority() {
-        if (authority == null) {
-            final DefaultCitation c = new DefaultCitation(Citations.OGC);
-            c.setIdentifiers(Arrays.asList(
-                    new SimpleIdentifier(null, Constants.OGC, false),
-                    new SimpleIdentifier(null, Constants.CRS, false)
-            ));
-            c.freeze();
-            authority = c;
-        }
-        return authority;
+    public Citation getAuthority() {
+        return Citations.OGC;
     }
 
     /**
      * Returns {@code true} if the given string if one of the namespaces recognized by this factory.
      */
-    private static boolean isAuthority(final String namespace) {
+    private static boolean isCodeSpace(final String namespace) {
         if (!namespace.equalsIgnoreCase(Constants.CRS) && !namespace.equalsIgnoreCase(Constants.OGC)) {
             final int s = AUTO2.length() - 1;
             if (!namespace.regionMatches(true, 0, AUTO2, 0, s)) {
@@ -295,7 +296,7 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
         final GenericName name = nameFactory.parseGenericName(null, code);
         if (name instanceof ScopedName) {
             final GenericName scope = ((ScopedName) name).path();
-            if (!isAuthority(CharSequences.trimWhitespaces(scope.toString()))) {
+            if (!isCodeSpace(CharSequences.trimWhitespaces(scope.toString()))) {
                 throw new NoSuchAuthorityCodeException(Errors.format(Errors.Keys.UnknownAuthority_1, scope), Constants.OGC, code);
             }
             code = name.tip().toString();
@@ -392,7 +393,7 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
             try {
                 codeValue = Integer.parseInt(localCode);
             } catch (NumberFormatException exception) {
-                throw noSuchAuthorityCode(false, localCode, code, exception);
+                throw noSuchAuthorityCode(localCode, code, exception);
             }
             final int i = codeValue - FIRST_PROJECTION_CODE;
             if (i >= 0 && i < PROJECTION_NAMES.length) {
@@ -437,8 +438,8 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
         String complement = null;
         final int startOfParameters = localCode.indexOf(SEPARATOR);
         if (startOfParameters >= 0) {
-            localCode = code.substring(0, CharSequences.skipTrailingWhitespaces(code, 0, startOfParameters));
-            complement = code.substring(startOfParameters + 1);
+            complement = localCode.substring(startOfParameters + 1);
+            localCode = localCode.substring(0, CharSequences.skipTrailingWhitespaces(localCode, 0, startOfParameters));
         }
         int codeValue = 0;
         double[] parameters = ArraysExt.EMPTY_DOUBLE;
@@ -448,7 +449,7 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
                 parameters = CharSequences.parseDoubles(complement, SEPARATOR);
             }
         } catch (NumberFormatException exception) {
-            throw noSuchAuthorityCode(codeValue >= FIRST_PROJECTION_CODE, localCode, code, exception);
+            throw noSuchAuthorityCode(localCode, code, exception);
         }
         /*
          * At this point we have isolated the code value from the parameters (if any). Verify the number of arguments.
@@ -482,7 +483,7 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
             case Constants.CRS83: crs = CommonCRS.NAD83; break;
             case Constants.CRS27: crs = CommonCRS.NAD27; break;
             case Constants.CRS88: return CommonCRS.Vertical.NAVD88.crs();
-            default: throw noSuchAuthorityCode(false, localCode, code, null);
+            default: throw noSuchAuthorityCode(localCode, code, null);
         }
         return crs.normalizedGeographic();
     }
@@ -497,37 +498,90 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
      * @param  latitude    A latitude in the desired projection zone.
      * @return The projected CRS for the given projection and parameters.
      */
-    @SuppressWarnings("fallthrough")
-    private static ProjectedCRS createAuto(final String code, final int projection,
+    @SuppressWarnings("null")
+    private ProjectedCRS createAuto(final String code, final int projection,
             final double factor, final double longitude, final double latitude) throws FactoryException
     {
-        IllegalArgumentException failure = null;
+        Boolean isUTM = null;
+        String method = null;
+        String param  = null;
+        switch (projection) {
+            /*
+             * 42001: Universal Transverse Mercator   —   central meridian must be in the center of a UTM zone.
+             * 42002: Transverse Mercator             —   like 42001 except that central meridian can be anywhere.
+             * 42003: WGS 84 / Auto Orthographic      —   defined by "Central_Meridian" and "Latitude_of_Origin".
+             * 42004: WGS 84 / Auto Equirectangular   —   defined by "Central_Meridian" and "Standard_Parallel_1".
+             * 42005: WGS 84 / Auto Mollweide         —   defined by "Central_Meridian" only.
+             */
+            case 42001: isUTM  = true; break;
+            case 42002: isUTM  = (latitude == 0) && (centralMeridian(zone(longitude)) == longitude); break;
+            case 42003: method = "Orthographic";       param = Constants.LATITUDE_OF_ORIGIN;         break;
+            case 42004: method = "Equirectangular";    param = Constants.STANDARD_PARALLEL_1;        break;
+            case 42005: method = "Mollweide";                                                        break;
+            default: throw noSuchAuthorityCode(String.valueOf(projection), code, null);
+        }
+        /*
+         * For the (Universal) Transverse Mercator case (AUTO:42001 and 42002), we delegate to the CommonCRS
+         * enumeration if possible because CommonCRS will itself delegate to the EPSG factory if possible.
+         */
+        final CommonCRS datum = CommonCRS.WGS84;
+        final GeographicCRS baseCRS;
+        final ProjectedCRS crs;
+        CartesianCS cs;
         try {
-            boolean isUTM = false;
-            switch (projection) {
-                /*
-                 * 42001: Universal Transverse Mercator   —   central meridian must be in the center of a UTM zone.
-                 * 42002: Transverse Mercator             —   like 42001 except that central meridian can be anywhere.
-                 */
-                case 42001: isUTM = true;   // Fall through
-                case 42002: {
-                    ProjectedCRS crs = CommonCRS.WGS84.UTM(latitude, longitude);
-                    if (factor != 1 || (!isUTM && TransverseMercator.centralMeridian(TransverseMercator.zone(longitude)) != longitude)) {
-                        CartesianCS cs = crs.getCoordinateSystem();       // In metres
-                        if (factor != 1) {
-                            // TODO
-                        }
-                        crs = new GeodeticObjectBuilder()
-                                .setTransverseMercator(longitude, isUTM, MathFunctions.isNegative(latitude))
-                                .createProjectedCRS(crs.getBaseCRS(), cs);
-                    }
+            if (isUTM != null && isUTM) {
+                crs = datum.UTM(latitude, longitude);
+                if (factor == 1) {
                     return crs;
                 }
+                baseCRS = crs.getBaseCRS();
+                cs = crs.getCoordinateSystem();
+            } else {
+                cs = projectedCS;
+                if (cs == null) {
+                    crs = datum.UTM(latitude, longitude);
+                    projectedCS = cs = crs.getCoordinateSystem();
+                    baseCRS = crs.getBaseCRS();
+                } else {
+                    crs = null;
+                    baseCRS = datum.geographic();
+                }
             }
+            /*
+             * At this point we got a coordinate system with axes in metres.
+             * If the user asked for another unit of measurement, change the axes now.
+             */
+            if (factor != 1) {
+                final Unit<Length> unit = Units.multiply(SI.METRE, factor);
+                cs = (CartesianCS) CoordinateSystems.replaceAxes(cs, new AxisFilter() {
+                    @Override public Unit<?> getUnitReplacement(Unit<?> ignored) {
+                        assert SI.METRE.equals(ignored) : ignored;
+                        return unit;
+                    }
+                });
+            }
+            /*
+             * Set the projection name, operation method and parameters. The parameters for the Transverse Mercator
+             * projection are a little bit more tedious to set, so we use a convenience method for that.
+             */
+            final GeodeticObjectBuilder builder = new GeodeticObjectBuilder();
+            if (isUTM != null) {
+                if (isUTM) {
+                    builder.addName(crs.getName());
+                } // else default to the conversion name, which is "Transverse Mercator".
+                builder.setTransverseMercator(isUTM, latitude, longitude);
+            } else {
+                builder.setConversionMethod(method)
+                       .addName(PROJECTION_NAMES[projection - FIRST_PROJECTION_CODE])
+                       .setParameter(Constants.CENTRAL_MERIDIAN, longitude, NonSI.DEGREE_ANGLE);
+                if (param != null) {
+                    builder.setParameter(param, latitude, NonSI.DEGREE_ANGLE);
+                }
+            }
+            return builder.createProjectedCRS(baseCRS, cs);
         } catch (IllegalArgumentException e) {
-            failure = e;
+            throw noSuchAuthorityCode(String.valueOf(projection), code, e);
         }
-        throw noSuchAuthorityCode(true, String.valueOf(projection), code, failure);
     }
 
     /**
@@ -558,13 +612,9 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
      * @param  cause      The failure cause, or {@code null} if none.
      * @return An exception initialized with an error message built from the specified informations.
      */
-    private static NoSuchAuthorityCodeException noSuchAuthorityCode(final boolean isAuto,
-            final String localCode, final String code, final Exception cause)
-    {
-        NoSuchAuthorityCodeException e = new NoSuchAuthorityCodeException(Errors.format(Errors.Keys.NoSuchAuthorityCode_3,
-                Constants.OGC, isAuto ? ProjectedCRS.class : CoordinateReferenceSystem.class, localCode),
-                Constants.OGC, localCode, code);
-        e.initCause(cause);
-        return e;
+    private static NoSuchAuthorityCodeException noSuchAuthorityCode(String localCode, String code, Exception cause) {
+        return (NoSuchAuthorityCodeException) new NoSuchAuthorityCodeException(Errors.format(Errors.Keys.NoSuchAuthorityCode_3,
+                Constants.OGC, CoordinateReferenceSystem.class, localCode),
+                Constants.OGC, localCode, code).initCause(cause);
     }
 }

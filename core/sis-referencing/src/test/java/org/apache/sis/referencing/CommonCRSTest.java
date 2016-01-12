@@ -219,6 +219,8 @@ public final strictfp class CommonCRSTest extends TestCase {
         final ParameterValueGroup pg = crs.getConversionFromBase().getParameterValues();
         assertEquals(Constants.LATITUDE_OF_ORIGIN, -123, pg.parameter(Constants.CENTRAL_MERIDIAN).doubleValue(), STRICT);
         assertEquals(Constants.FALSE_NORTHING, 10000000, pg.parameter(Constants.FALSE_NORTHING).doubleValue(),   STRICT);
+        assertSame("Expected a cached instance.", crs, CommonCRS.WGS72.UTM(-45, -122));
+        assertNotSame("Expected a new instance.", crs, CommonCRS.WGS72.UTM(+45, -122));
     }
 
     /**
