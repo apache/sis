@@ -184,6 +184,21 @@ public final class Constants extends Static {
     public static final short EPSG_B0 = 8639;
 
     /**
+     * The EPSG code for metres.
+     */
+    public static final short EPSG_METRE = 9001;
+
+    /**
+     * The EPSG code for degrees when used in parameters.
+     */
+    public static final short EPSG_PARAM_DEGREES = 9102;
+
+    /**
+     * The EPSG code for degrees when used in axes.
+     */
+    public static final short EPSG_AXIS_DEGREES = 9122;
+
+    /**
      * Do not allow instantiation of this class.
      */
     private Constants() {
