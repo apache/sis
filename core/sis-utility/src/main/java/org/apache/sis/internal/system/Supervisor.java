@@ -37,7 +37,6 @@ import javax.management.InstanceAlreadyExistsException;
 import java.lang.management.ManagementFactory;
 
 import org.apache.sis.setup.About;
-import org.apache.sis.util.Localized;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Messages;
@@ -52,10 +51,10 @@ import org.apache.sis.util.collection.TreeTable;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.4
+ * @version 0.7
  * @module
  */
-public final class Supervisor extends StandardMBean implements SupervisorMBean, Localized {
+public final class Supervisor extends StandardMBean implements SupervisorMBean {
     /**
      * Whatever JMX agent is enabled. Setting this variable to {@code false} allows the
      * Java compiler to omit any dependency to this {@code Supervisor} class.
@@ -82,13 +81,13 @@ public final class Supervisor extends StandardMBean implements SupervisorMBean, 
      * and the MBean will not be registered. This method does not propagate the exception
      * because the MBean is not a mandatory part of SIS library.</p>
      */
-    static synchronized void register() {
+    public static synchronized void register() {
         if (name == null) {
             name = ObjectName.WILDCARD; // In case of failure.
             final MBeanServer server = ManagementFactory.getPlatformMBeanServer();
             try {
                 final ObjectName n = new ObjectName(NAME);
-                server.registerMBean(new Supervisor(null, null), n);
+                server.registerMBean(new Supervisor(), n);
                 name = n; // Store only on success.
             } catch (InstanceAlreadyExistsException e) {
                 final LogRecord record = Messages.getResources(null)
@@ -119,34 +118,12 @@ public final class Supervisor extends StandardMBean implements SupervisorMBean, 
     }
 
     /**
-     * The locale for producing the messages, or {@code null} for the default.
-     */
-    private final Locale locale;
-
-    /**
-     * The timezone for formatting the dates, or {@code null} for the default.
-     */
-    private final TimeZone timezone;
-
-    /**
-     * Creates a new {@code Supervisor} which will report messages in the given locale.
+     * Creates a new {@code Supervisor}.
      *
-     * @param  locale The locale to use for reporting messages, or {@code null} for the default.
-     * @param  timezone The timezone for formatting the dates, or {@code null} for the default.
      * @throws NotCompliantMBeanException Should never happen.
      */
-    public Supervisor(final Locale locale, final TimeZone timezone) throws NotCompliantMBeanException {
+    public Supervisor() throws NotCompliantMBeanException {
         super(SupervisorMBean.class);
-        this.locale   = locale;
-        this.timezone = timezone;
-    }
-
-    /**
-     * Returns the supervisor locale, or {@code null} for the default locale.
-     */
-    @Override
-    public Locale getLocale() {
-        return locale;
     }
 
     /**
@@ -210,7 +187,7 @@ public final class Supervisor extends StandardMBean implements SupervisorMBean, 
      */
     private String getDescription(final String resourceKey) {
         return ResourceBundle.getBundle("org.apache.sis.internal.system.Descriptions",
-                (locale != null) ? locale : Locale.getDefault(),
+                Locale.getDefault(),
                 Supervisor.class.getClassLoader()).getString(resourceKey);
     }
 
@@ -222,15 +199,15 @@ public final class Supervisor extends StandardMBean implements SupervisorMBean, 
      * {@inheritDoc}
      */
     @Override
-    public TreeTable configuration() {
-        return About.configuration(EnumSet.allOf(About.class), locale, timezone);
+    public TreeTable configuration(final EnumSet<About> sections, final Locale locale, final TimeZone timezone) {
+        return About.configuration(sections, locale, timezone);
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public String[] warnings() {
+    public String[] warnings(final Locale locale) {
         final DaemonThread lastCreatedDaemon;
         synchronized (Threads.class) {
             lastCreatedDaemon = Threads.lastCreatedDaemon;

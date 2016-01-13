@@ -32,9 +32,8 @@ import org.apache.sis.util.Disposable;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.system.DelayedRunnable;
+import org.apache.sis.internal.system.DelayedExecutor;
 import org.apache.sis.internal.system.ReferenceQueueConsumer;
-
-import static org.apache.sis.internal.system.DelayedExecutor.executeDaemonTask;
 
 // Branch-dependent imports
 import org.apache.sis.internal.jdk8.Supplier;
@@ -306,7 +305,7 @@ public class Cache<K,V> extends AbstractMap<K,V> {
         final Object previous;
         if (value != null) {
             previous = map.put(key, value);
-            executeDaemonTask(new Strong(key, value));
+            DelayedExecutor.schedule(new Strong(key, value));
         } else {
             previous = map.remove(key);
         }
@@ -385,8 +384,8 @@ public class Cache<K,V> extends AbstractMap<K,V> {
             final Reference<V> ref = (Reference<V>) value;
             final V result = ref.get();
             if (result != null && map.replace(key, ref, result)) {
-                ref.clear(); // Prevents the reference from being enqueued.
-                executeDaemonTask(new Strong(key, result));
+                ref.clear();                        // Prevents the reference from being enqueued.
+                DelayedExecutor.schedule(new Strong(key, result));
             }
             return result;
         }
@@ -478,8 +477,8 @@ public class Cache<K,V> extends AbstractMap<K,V> {
                      * would be useless.
                      */
                     if (map.replace(key, ref, result)) {
-                        ref.clear(); // Prevents the reference from being enqueued.
-                        executeDaemonTask(new Strong(key, result));
+                        ref.clear();                        // Prevents the reference from being enqueued.
+                        DelayedExecutor.schedule(new Strong(key, result));
                     }
                     return new Simple<V>(result);
                 }
@@ -712,7 +711,7 @@ public class Cache<K,V> extends AbstractMap<K,V> {
                 lock.unlock();
             }
             if (done) {
-                executeDaemonTask(this);
+                DelayedExecutor.schedule(this);
             }
         }
 

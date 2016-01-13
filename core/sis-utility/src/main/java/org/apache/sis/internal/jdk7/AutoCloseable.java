@@ -16,22 +16,24 @@
  */
 package org.apache.sis.internal.jdk7;
 
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
 
 /**
  * Placeholder for the {@link java.lang.AutoCloseable} interface.
+ * Class annotated by this annotation must have a public {@code close()} method.
  * {@code instanceof} checks and calls to {@code ((AutoCloseable) object).close()} need to be replaced
  * by calls to {@link JDK7#isAutoCloseable(Object)} and {@link JDK7#close(Object)} respectively.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.3
+ * @version 0.7
  * @module
  */
-public interface AutoCloseable {
-    /**
-     * See {@link java.lang.AutoCloseable#close()}.
-     *
-     * @throws Exception If an error occurred while closing the resource.
-     */
-    void close() throws Exception;
+@Target(ElementType.TYPE)
+@Retention(RetentionPolicy.RUNTIME)
+public @interface AutoCloseable {
 }

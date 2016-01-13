@@ -103,11 +103,11 @@ public final class Geographic3Dto2D extends AbstractProvider {
     {
         if (transform == null) try {
             final MatrixSIS m = Matrices.createDiagonal(4, 3);
-            m.setElement(2, 2, 0);  // Here is the height value that we want.
+            m.setElement(2, 2, 0);                                  // Here is the height value that we want.
             m.setElement(3, 2, 1);
             transform = MathTransforms.linear(m).inverse();
         } catch (NoninvertibleTransformException e) {
-            throw new FactoryException(e);  // Should never happen.
+            throw new FactoryException(e);                          // Should never happen.
         }
         return transform;
     }

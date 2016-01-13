@@ -35,7 +35,7 @@ import static java.lang.Math.ulp;
  *
  * <blockquote>
  *   <var>{@linkplain #z(double, double) z}</var>(<var>x</var>,<var>y</var>) =
- *   <var>sx</var>⋅<var>x</var> + <var>sy</var>⋅<var>y</var> + <var>z</var>₀
+ *   <var>sx</var>⋅<var>x</var> + <var>sy</var>⋅<var>y</var> + <var>z₀</var>
  * </blockquote>
  *
  * Those coefficients can be set directly, or computed by a linear regression of this plane
@@ -83,19 +83,19 @@ public class Plane implements Cloneable, Serializable {
 
     /**
      * The slope along the <var>x</var> values. This coefficient appears in the plane equation
-     * <var><b><u>sx</u></b></var>⋅<var>x</var> + <var>sy</var>⋅<var>y</var> + <var>z</var>₀.
+     * <var><b><u>sx</u></b></var>⋅<var>x</var> + <var>sy</var>⋅<var>y</var> + <var>z₀</var>.
      */
     private double sx;
 
     /**
      * The slope along the <var>y</var> values. This coefficient appears in the plane equation
-     * <var>sx</var>⋅<var>x</var> + <var><b><u>sy</u></b></var>⋅<var>y</var> + <var>z</var>₀.
+     * <var>sx</var>⋅<var>x</var> + <var><b><u>sy</u></b></var>⋅<var>y</var> + <var>z₀</var>.
      */
     private double sy;
 
     /**
      * The <var>z</var> value at (<var>x</var>,<var>y</var>) = (0,0). This coefficient appears in the plane equation
-     * <var>sx</var>⋅<var>x</var> + <var>sy</var>⋅<var>y</var> + <b><u><var>z</var>₀</u></b>.
+     * <var>sx</var>⋅<var>x</var> + <var>sy</var>⋅<var>y</var> + <b><u><var>z₀</var></u></b>.
      */
     private double z0;
 
@@ -123,7 +123,7 @@ public class Plane implements Cloneable, Serializable {
 
     /**
      * Returns the slope along the <var>x</var> values. This coefficient appears in the plane equation
-     * <var><b><u>sx</u></b></var>⋅<var>x</var> + <var>sy</var>⋅<var>y</var> + <var>z</var>₀.
+     * <var><b><u>sx</u></b></var>⋅<var>x</var> + <var>sy</var>⋅<var>y</var> + <var>z₀</var>.
      *
      * @return The <var>sx</var> term.
      */
@@ -133,7 +133,7 @@ public class Plane implements Cloneable, Serializable {
 
     /**
      * Returns the slope along the <var>y</var> values. This coefficient appears in the plane equation
-     * <var>sx</var>⋅<var>x</var> + <var><b><u>sy</u></b></var>⋅<var>y</var> + <var>z</var>₀.
+     * <var>sx</var>⋅<var>x</var> + <var><b><u>sy</u></b></var>⋅<var>y</var> + <var>z₀</var>.
      *
      * @return The <var>sy</var> term.
      */
@@ -143,9 +143,9 @@ public class Plane implements Cloneable, Serializable {
 
     /**
      * Returns the <var>z</var> value at (<var>x</var>,<var>y</var>) = (0,0). This coefficient appears in the
-     * plane equation <var>sx</var>⋅<var>x</var> + <var>sy</var>⋅<var>y</var> + <b><var>z</var>₀</b>.
+     * plane equation <var>sx</var>⋅<var>x</var> + <var>sy</var>⋅<var>y</var> + <b><var>z₀</var></b>.
      *
-     * @return The <var>z</var>₀ term.
+     * @return The <var>z₀</var> term.
      *
      * @see #z(double, double)
      */

@@ -72,7 +72,7 @@ import org.opengis.referencing.ReferenceIdentifier;
  *
  *   <li>On output, the {@link #transform(double[],int,double[],int,boolean) transform(…)} method returns
  *   (<var>x</var>, <var>y</var>) values on a sphere or ellipse having a semi-major axis length (<var>a</var>) of 1.
- *   The multiplication by the scale factor (<var>k</var>₀) and the translation by false easting (FE) and false
+ *   The multiplication by the scale factor (<var>k₀</var>) and the translation by false easting (FE) and false
  *   northing (FN) are applied by the {@linkplain ContextualParameters#getMatrix denormalization} affine transform.</li>
  * </ul>
  *
@@ -98,9 +98,8 @@ import org.opengis.referencing.ReferenceIdentifier;
  * The first matrix on the left side is for {@linkplain org.apache.sis.referencing.cs.CoordinateSystems#swapAndScaleAxes
  * swapping axes} from (<var>latitude</var>, <var>longitude</var>) to (<var>longitude</var>, <var>latitude</var>) order.
  * This matrix is shown here for completeness, but is not managed by this projection package. Axes swapping is managed
- * at a {@linkplain org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory#createBaseToDerived(
- * org.opengis.referencing.cs.CoordinateSystem, org.opengis.referencing.operation.MathTransform,
- * org.opengis.referencing.cs.CoordinateSystem) higher level}.</div>
+ * at a {@linkplain org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory#createParameterizedTransform
+ * higher level}.</div>
  *
  * {@code NormalizedProjection} does not store the above cited parameters (central meridian, scale factor, <i>etc.</i>)
  * on intend (except indirectly), in order to make clear that those parameters are not used by subclasses.
@@ -131,7 +130,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = 1969740225939106310L;
+    private static final long serialVersionUID = -4010883312927645853L;
 
     /**
      * Maximum difference allowed when comparing longitudes or latitudes in radians.
@@ -281,7 +280,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
         CENTRAL_MERIDIAN,
 
         /**
-         * Maps the <cite>scale factor</cite> parameter (symbol: <var>k</var>₀).
+         * Maps the <cite>scale factor</cite> parameter (symbol: <var>k₀</var>).
          * This is a multiplication factor for the (<var>x</var>,<var>y</var>) values obtained after map projections.
          *
          * <p>Some common names for this parameter are:</p>

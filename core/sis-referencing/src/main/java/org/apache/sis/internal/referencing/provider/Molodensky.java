@@ -96,27 +96,24 @@ public final class Molodensky extends GeocentricAffineBetweenGeographic {
         final ParameterBuilder builder = builder();
         AXIS_LENGTH_DIFFERENCE = builder.addName("Semi-major axis length difference").create(Double.NaN, SI.METRE);
         FLATTENING_DIFFERENCE  = builder.addName("Flattening difference").createBounded(-1, +1, Double.NaN, Unit.ONE);
-        builder.setRequired(false);
-        ParameterDescriptor<Double> a = builder.addName(TGT_SEMI_MAJOR.getName()).createStrictlyPositive(Double.NaN, SI.METRE);
-        ParameterDescriptor<Double> b = builder.addName(TGT_SEMI_MINOR.getName()).createStrictlyPositive(Double.NaN, SI.METRE);
         PARAMETERS = builder.setRequired(true)
                 .addIdentifier("9604")
                 .addName("Molodensky")
                 .addName(Citations.OGC, "Molodenski")
                 .createGroup(DIMENSION,                         // OGC only
+                             SRC_SEMI_MAJOR, SRC_SEMI_MINOR,    // OGC only
+                             TGT_SEMI_MAJOR, TGT_SEMI_MINOR,    // OGC only - redundant with differences
                              TX,                                // OGC and EPSG
                              TY,                                // OGC and EPSG
                              TZ,                                // OGC and EPSG
                              AXIS_LENGTH_DIFFERENCE,            // EPSG only
-                             FLATTENING_DIFFERENCE,             // EPSG only
-                             SRC_SEMI_MAJOR, SRC_SEMI_MINOR,    // OGC only
-                             a, b);                             // OGC only
+                             FLATTENING_DIFFERENCE);            // EPSG only
     }
 
     /**
      * Creates a descriptor for the internal parameters of {@link MolodenskyTransform}.
-     * This is identical to the standard parameters except that the last 3 OGC parameters
-     * are replaced by the eccentricity.
+     * This is similar to the standard parameters except that the redundant target axes
+     * lengths are omitted.
      *
      * @return Internal parameter descriptor.
      */
@@ -126,19 +123,19 @@ public final class Molodensky extends GeocentricAffineBetweenGeographic {
         ParameterDescriptor<Boolean> abridged = builder.addName("abridged").create(Boolean.class, null);
         return builder.addName("Molodensky")
                 .createGroup(DIMENSION,
+                             SRC_SEMI_MAJOR,
+                             SRC_SEMI_MINOR,
+                             AXIS_LENGTH_DIFFERENCE,
+                             FLATTENING_DIFFERENCE,
                              TX,
                              TY,
                              TZ,
-                             AXIS_LENGTH_DIFFERENCE,
-                             FLATTENING_DIFFERENCE,
-                             SRC_SEMI_MAJOR,
-                             MapProjection.ECCENTRICITY,
                              abridged);
     }
 
     /**
      * The providers for all combinations between 2D and 3D cases.
-     * Array length is 4. Index is build with following rule:
+     * Array length is 4. Index is built with following rule:
      * <ul>
      *   <li>Bit 1: dimension of source coordinates (0 for 2D, 1 for 3D).</li>
      *   <li>Bit 0: dimension of target coordinates (0 for 2D, 1 for 3D).</li>

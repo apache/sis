@@ -33,10 +33,10 @@ import org.opengis.referencing.operation.TransformException;
  * @author  Jan Jezek (UWB)
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5
- * @version 0.5
+ * @version 0.7
  * @module
  */
-final class ProjectiveTransform2D extends ProjectiveTransform implements MathTransform2D {
+final class ProjectiveTransform2D extends ProjectiveTransform implements MathTransform2D, LinearTransform {
     /**
      * For cross-version compatibility.
      */
@@ -87,9 +87,15 @@ final class ProjectiveTransform2D extends ProjectiveTransform implements MathTra
 
     /**
      * Creates the inverse transform of this object.
+     * The inverse shall be linear and two-dimensional.
      */
     @Override
-    public MathTransform2D inverse() throws NoninvertibleTransformException {
-        return (MathTransform2D) super.inverse();
+    public ProjectiveTransform2D inverse() throws NoninvertibleTransformException {
+        final LinearTransform inv = super.inverse();
+        if (inv instanceof ProjectiveTransform2D) {
+            return (ProjectiveTransform2D) inv;
+        } else {
+            return new ProjectiveTransform2D(inv.getMatrix());
+        }
     }
 }

@@ -110,7 +110,7 @@ public final strictfp class LambertConicConformalTest extends MapProjectionTestC
         assertWktEqualsRegex("(?m)\\Q" +
                 "PARAM_MT[“Lambert conic conformal”,\n" +
                 "  PARAMETER[“eccentricity”, 0.0818191908426215],\n" +
-                "  PARAMETER[“n”, 0.64278760968653\\E\\d*\\]\\]");  // 0.6427876096865393 in the original test.
+                "  PARAMETER[“n”, 0.64278760968653\\E\\d*\\Q]]\\E");  // 0.6427876096865393 in the original test.
     }
 
     /**

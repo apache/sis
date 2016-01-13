@@ -26,7 +26,6 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.net.URISyntaxException;
-import javax.management.JMException;
 import org.apache.sis.internal.system.Shutdown;
 import org.apache.sis.internal.system.SystemListener;
 import org.apache.sis.util.Classes;
@@ -42,7 +41,7 @@ import static org.junit.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.5
+ * @version 0.7
  * @module
  */
 @RunWith(Suite.class)
@@ -247,10 +246,11 @@ public abstract strictfp class TestSuite {
      * <p>Since this method stops SIS daemon threads, the SIS library shall not be used anymore after
      * this method execution.</p>
      *
-     * @throws JMException If an error occurred during unregistration of the supervisor MBean.
+     * @throws Exception If an error occurred during unregistration of the supervisor MBean or resource disposal.
      */
     @AfterClass
-    public static void shutdown() throws JMException {
+    @SuppressWarnings("UseOfSystemOutOrSystemErr")
+    public static void shutdown() throws Exception {
         if (!skipShutdown) {
             skipShutdown = true;
             TestCase.LOGGER.removeHandler(LogRecordCollector.INSTANCE);

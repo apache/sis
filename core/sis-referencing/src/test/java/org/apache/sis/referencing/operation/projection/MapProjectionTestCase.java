@@ -96,7 +96,7 @@ strictfp class MapProjectionTestCase extends MathTransformTestCase {
     {
         final Parameters parameters = parameters(provider, ellipse);
         if (centralMeridian  != 0) parameters.parameter(Constants.CENTRAL_MERIDIAN)   .setValue(centralMeridian, NonSI.DEGREE_ANGLE);
-        if (latitudeOfOrigin != 0) parameters.parameter("latitude_of_origin")         .setValue(latitudeOfOrigin);
+        if (latitudeOfOrigin != 0) parameters.parameter(Constants.LATITUDE_OF_ORIGIN) .setValue(latitudeOfOrigin);
         if (standardParallel != 0) parameters.parameter(Constants.STANDARD_PARALLEL_1).setValue(standardParallel);
         if (scaleFactor      != 1) parameters.parameter(Constants.SCALE_FACTOR)       .setValue(scaleFactor);
         if (falseEasting     != 0) parameters.parameter(Constants.FALSE_EASTING)      .setValue(falseEasting);

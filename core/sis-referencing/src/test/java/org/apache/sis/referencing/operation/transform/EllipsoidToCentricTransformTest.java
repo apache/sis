@@ -59,11 +59,7 @@ public final strictfp class EllipsoidToCentricTransformTest extends MathTransfor
      */
     private void createGeodeticConversion(final Ellipsoid ellipsoid, boolean is3D) throws FactoryException {
         transform = EllipsoidToCentricTransform.createGeodeticConversion(
-                DefaultFactories.forBuildin(MathTransformFactory.class),
-                ellipsoid.getSemiMajorAxis(),
-                ellipsoid.getSemiMinorAxis(),
-                ellipsoid.getAxisUnit(), is3D,
-                EllipsoidToCentricTransform.TargetType.CARTESIAN);
+                DefaultFactories.forBuildin(MathTransformFactory.class), ellipsoid, is3D);
     }
 
     /**

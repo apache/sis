@@ -224,7 +224,7 @@ public final class Matrices extends Static {
      * Argument validity shall be verified by the caller.
      *
      * @param useEnvelopes {@code true} if source and destination envelopes shall be taken in account.
-     *        If {@code false}, then source and destination envelopes will be ignored and may be null.
+     *        If {@code false}, then source and destination envelopes will be ignored and can be null.
      */
     @SuppressWarnings("null")
     private static MatrixSIS createTransform(final Envelope srcEnvelope, final AxisDirection[] srcAxes,
@@ -537,7 +537,7 @@ public final class Matrices extends Static {
      * @throws IllegalArgumentException if a value of {@code selectedDimensions} is lower than 0
      *         or not smaller than {@code sourceDimensions}.
      *
-     * @see org.apache.sis.referencing.operation.transform.MathTransforms#dimensionFilter(int, int[])
+     * @see org.apache.sis.referencing.operation.transform.TransformSeparator
      */
     public static MatrixSIS createDimensionSelect(final int sourceDimensions, final int[] selectedDimensions) {
         final int numTargetDim = selectedDimensions.length;
@@ -714,7 +714,7 @@ public final class Matrices extends Static {
      */
     public static MatrixSIS unmodifiable(final Matrix matrix) {
         if (matrix == null || matrix instanceof UnmodifiableMatrix) {
-            return (UnmodifiableMatrix) matrix;
+            return (MatrixSIS) matrix;
         } else {
             return new UnmodifiableMatrix(matrix);
         }
@@ -915,6 +915,7 @@ public final class Matrices extends Static {
             case BY_CONTRACT:     // Fall through
             case IGNORE_METADATA: return equals(m1, m2, 0, false);
             case DEBUG:           // Fall through
+            case ALLOW_VARIANT:   // Fall through
             case APPROXIMATIVE:   return equals(m1, m2, Numerics.COMPARISON_THRESHOLD, true);
             default: throw new IllegalArgumentException(Errors.format(
                     Errors.Keys.UnknownEnumValue_2, ComparisonMode.class, mode));

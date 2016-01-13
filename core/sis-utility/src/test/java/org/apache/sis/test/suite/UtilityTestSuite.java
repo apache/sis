@@ -26,7 +26,7 @@ import org.junit.BeforeClass;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.6
+ * @version 0.7
  * @module
  */
 @Suite.SuiteClasses({
@@ -68,6 +68,7 @@ import org.junit.BeforeClass;
     // Collections.
     org.apache.sis.internal.util.CheckedArrayListTest.class,
     org.apache.sis.internal.system.ReferenceQueueConsumerTest.class,
+    org.apache.sis.util.collection.IntegerListTest.class,
     org.apache.sis.util.collection.WeakHashSetTest.class,
     org.apache.sis.util.collection.WeakValueHashMapTest.class,
     org.apache.sis.util.collection.CacheTest.class,

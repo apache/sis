@@ -108,6 +108,7 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
      *
      * @see #ensureLoaded(String)
      */
+    @SuppressWarnings("VolatileArrayField")     // Okay because we set this field only after the array has been fully constructed.
     private volatile String[] values;
 
     /**
@@ -456,15 +457,22 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
     }
 
     /**
-     * Gets a string for the given key and appends ": " to it.
-     * This method is typically used for creating labels.
+     * Gets a string for the given key and appends ":" to it.
+     * A space may or may not be added before ":", depending on the locale.
+     * No space is added after the string; it is up to the caller to add such space if needed.
      *
      * @param  key The key for the desired string.
      * @return The string for the given key.
      * @throws MissingResourceException If no object for the given key can be found.
      */
     public final String getLabel(final short key) throws MissingResourceException {
-        return getString(key) + ": ";
+        String label = getString(key);
+        if (Locale.FRENCH.getLanguage().equals(getLocale().getLanguage())) {
+            label += "\u00A0:";
+        } else {
+            label += ':';
+        }
+        return label;
     }
 
     /**

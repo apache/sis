@@ -33,6 +33,8 @@ import org.opengis.referencing.IdentifiedObject;
 import org.apache.sis.metadata.iso.ImmutableIdentifier;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.util.Citations;
+import org.apache.sis.internal.referencing.DeprecatedCode;
+import org.apache.sis.internal.referencing.DeprecatedName;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.Deprecable;
 import org.apache.sis.util.resources.Errors;

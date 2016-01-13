@@ -287,10 +287,10 @@ public final class CoordinateSystems extends Static {
         if (!Classes.implementSameInterfaces(sourceCS.getClass(), targetCS.getClass(), CoordinateSystem.class)) {
             throw new IllegalArgumentException(Errors.format(Errors.Keys.IncompatibleCoordinateSystemTypes));
         }
-        final AxisDirection[] sourceAxis = getAxisDirections(sourceCS);
-        final AxisDirection[] targetAxis = getAxisDirections(targetCS);
-        final MatrixSIS matrix = Matrices.createTransform(sourceAxis, targetAxis);
-        assert Arrays.equals(sourceAxis, targetAxis) == matrix.isIdentity() : matrix;
+        final AxisDirection[] srcAxes = getAxisDirections(sourceCS);
+        final AxisDirection[] dstAxes = getAxisDirections(targetCS);
+        final MatrixSIS matrix = Matrices.createTransform(srcAxes, dstAxes);
+        assert Arrays.equals(srcAxes, dstAxes) == matrix.isIdentity() : matrix;
         /*
          * The previous code computed a matrix for swapping axes. Usually, this
          * matrix contains only 0 and 1 values with only one "1" value by row.

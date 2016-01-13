@@ -89,7 +89,7 @@ import org.apache.sis.internal.jdk7.Objects;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4
- * @version 0.6
+ * @version 0.7
  * @module
  */
 public class NamedIdentifier extends ImmutableIdentifier implements GenericName {
@@ -143,7 +143,59 @@ public class NamedIdentifier extends ImmutableIdentifier implements GenericName 
 
     /**
      * Constructs an identifier from the given properties. The content of the properties map is used as
-     * described in the {@linkplain ImmutableIdentifier#ImmutableIdentifier(Map) super-class constructor}.
+     * described in the {@linkplain ImmutableIdentifier#ImmutableIdentifier(Map) super-class constructor},
+     * with the addition of an optional {@code "name"} property.
+     *
+     * <table class="sis">
+     *   <caption>Recognized properties</caption>
+     *   <tr>
+     *     <th>Property name</th>
+     *     <th>Value type</th>
+     *     <th>Returned by</th>
+     *   </tr>
+     *   <tr>
+     *     <td>{@code "name"}</td>
+     *     <td>{@link GenericName}</td>
+     *     <td>(none)</td>
+     *   </tr>
+     *   <tr>
+     *     <th colspan="3" class="hsep">Defined in parent class (reminder)</th>
+     *   </tr>
+     *   <tr>
+     *     <td>{@value org.opengis.metadata.Identifier#CODE_KEY}</td>
+     *     <td>{@link String}</td>
+     *     <td>{@link #getCode()}</td>
+     *   </tr>
+     *   <tr>
+     *     <td>{@value org.opengis.metadata.Identifier#CODESPACE_KEY}</td>
+     *     <td>{@link String}</td>
+     *     <td>{@link #getCodeSpace()}</td>
+     *   </tr>
+     *   <tr>
+     *     <td>{@value org.opengis.metadata.Identifier#AUTHORITY_KEY}</td>
+     *     <td>{@link String} or {@link Citation}</td>
+     *     <td>{@link #getAuthority()}</td>
+     *   </tr>
+     *   <tr>
+     *     <td>{@value org.opengis.metadata.Identifier#VERSION_KEY}</td>
+     *     <td>{@link String}</td>
+     *     <td>{@link #getVersion()}</td>
+     *   </tr>
+     *   <tr>
+     *     <td>{@value org.opengis.metadata.Identifier#DESCRIPTION_KEY}</td>
+     *     <td>{@link String} or {@link InternationalString}</td>
+     *     <td>{@link #getDescription()}</td>
+     *   </tr>
+     *   <tr>
+     *     <td>{@value org.apache.sis.referencing.AbstractIdentifiedObject#LOCALE_KEY}</td>
+     *     <td>{@link Locale}</td>
+     *     <td>(none)</td>
+     *   </tr>
+     * </table>
+     *
+     * The {@value org.opengis.metadata.Identifier#CODE_KEY} property is mandatory and all other properties
+     * are optional. If a {@code "name"} property is provided, then calls to name-related methods like
+     * {@link #tip()}, {@link #head()} and {@link #scope()} will delegate to the given name.
      *
      * @param  properties The properties to be given to this identifier.
      * @throws InvalidParameterValueException if a property has an invalid value.
@@ -151,6 +203,8 @@ public class NamedIdentifier extends ImmutableIdentifier implements GenericName 
      */
     public NamedIdentifier(final Map<String,?> properties) throws IllegalArgumentException {
         super(properties);
+        name = (GenericName) properties.get("name");
+        isNameSupplied = (name != null);
     }
 
     /**
@@ -172,7 +226,7 @@ public class NamedIdentifier extends ImmutableIdentifier implements GenericName 
         super(authority, Citations.getCodeSpace(authority), toString(code));
         if (code instanceof InternationalString) {
             name = createName(authority, super.getCodeSpace(), code);
-            isNameSupplied = true; // Because 'code' is an international string.
+            isNameSupplied = true;      // Because 'code' is an international string.
         }
     }
 
@@ -205,7 +259,7 @@ public class NamedIdentifier extends ImmutableIdentifier implements GenericName 
         super(authority, codeSpace, toString(code), version, description);
         if (code instanceof InternationalString) {
             name = createName(authority, codeSpace, code);
-            isNameSupplied = true; // Because 'code' is an international string.
+            isNameSupplied = true;      // Because 'code' is an international string.
         }
     }
 
@@ -233,7 +287,7 @@ public class NamedIdentifier extends ImmutableIdentifier implements GenericName 
     /**
      * Returns the generic name of this identifier.
      * The name will be constructed automatically the first time it will be needed.
-     * The name's scope is inferred from the shortest alternative title (if any).
+     * The name's head is inferred from the shortest alternative title (if any).
      * This heuristic rule is compatible to the ISO 19115 remark saying that the
      * {@linkplain Citation#getAlternateTitles() alternate titles} often contains abbreviation
      * (for example "DCW" as an alternative title for "Digital Chart of the World").
@@ -261,7 +315,7 @@ public class NamedIdentifier extends ImmutableIdentifier implements GenericName 
      */
     private static GenericName createName(final Citation authority, String codeSpace, final CharSequence code) {
         if (codeSpace == null) {
-            codeSpace = Citations.getCodeSpace(authority);   // Whitespaces trimed by Citations.
+            codeSpace = Citations.getCodeSpace(authority);          // Whitespaces trimed by Citations.
         }
         final NameFactory factory = DefaultFactories.forBuildin(NameFactory.class);
         if (codeSpace != null) {
@@ -411,7 +465,7 @@ public class NamedIdentifier extends ImmutableIdentifier implements GenericName 
         }
         if (super.equals(object)) {
             if (!isNameSupplied) {
-                return true; // No need to compare names if they are computed from the same values.
+                return true;            // No need to compare names if they are computed from the same values.
             }
             final NamedIdentifier that = (NamedIdentifier) object;
             return Objects.equals(this.getName(), that.getName());

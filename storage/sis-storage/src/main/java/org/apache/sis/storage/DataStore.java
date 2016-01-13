@@ -44,7 +44,8 @@ import org.apache.sis.internal.jdk7.AutoCloseable;
  *
  * @see DataStores#open(Object)
  */
-public abstract class DataStore implements Localized, AutoCloseable {
+@AutoCloseable
+public abstract class DataStore implements Localized {
     /**
      * The locale to use for formatting warnings.
      *
@@ -146,6 +147,5 @@ public abstract class DataStore implements Localized, AutoCloseable {
      *
      * @throws DataStoreException If an error occurred while closing this data store.
      */
-    @Override
     public abstract void close() throws DataStoreException;
 }

@@ -51,6 +51,8 @@ import org.apache.sis.measure.Units;
  * @since   0.4
  * @version 0.4
  * @module
+ *
+ * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createEllipsoidalCS(String)
  */
 @XmlType(name = "EllipsoidalCSType")
 @XmlRootElement(name = "EllipsoidalCS")
@@ -108,6 +110,8 @@ public class DefaultEllipsoidalCS extends AbstractCS implements EllipsoidalCS {
      * @param properties The properties to be given to the identified object.
      * @param axis0 The first  axis (e.g. “Geodetic latitude”).
      * @param axis1 The second axis (e.g. “Geodetic longitude”).
+     *
+     * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createEllipsoidalCS(Map, CoordinateSystemAxis, CoordinateSystemAxis)
      */
     public DefaultEllipsoidalCS(final Map<String,?>   properties,
                                 final CoordinateSystemAxis axis0,
@@ -126,6 +130,8 @@ public class DefaultEllipsoidalCS extends AbstractCS implements EllipsoidalCS {
      * @param axis0 The first  axis (e.g. “Geodetic latitude”).
      * @param axis1 The second axis (e.g. “Geodetic longitude”).
      * @param axis2 The third  axis (e.g. “Ellipsoidal height”).
+     *
+     * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createEllipsoidalCS(Map, CoordinateSystemAxis, CoordinateSystemAxis, CoordinateSystemAxis)
      */
     public DefaultEllipsoidalCS(final Map<String,?>   properties,
                                 final CoordinateSystemAxis axis0,

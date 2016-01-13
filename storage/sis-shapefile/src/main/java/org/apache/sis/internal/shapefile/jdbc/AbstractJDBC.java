@@ -105,7 +105,7 @@ public abstract class AbstractJDBC extends AutoChecker implements Wrapper {
      * @param methodName The call the caller attempted.
      */
     public void logStep(final String methodName) {
-        format(Level.FINER, "log.step", methodName, getClass().getSimpleName());
+        log(Level.FINER, "log.step", methodName, getClass().getSimpleName());
     }
 
     /**
@@ -114,7 +114,9 @@ public abstract class AbstractJDBC extends AutoChecker implements Wrapper {
      * @param args Arguments that where sent to the unimplemented function.
      */
     public void logStep(final String methodName, Object... args) {
-        format(Level.FINER, "log.step_with_arguments", methodName, getClass().getSimpleName(), arguments(args));
+        if (isLoggable(Level.FINER)) { // Avoid resolution of arguments(...) if not needed.
+            log(Level.FINER, "log.step_with_arguments", methodName, getClass().getSimpleName(), arguments(args));
+        }
     }
 
     /**
@@ -122,7 +124,7 @@ public abstract class AbstractJDBC extends AutoChecker implements Wrapper {
      * @param methodName The call the caller attempted.
      */
     public void logUnsupportedOperation(final String methodName) {
-        format(Level.WARNING, "excp.unsupportedDriverFeature", getInterface(), methodName, getClass().getSimpleName());
+        log(Level.WARNING, "excp.unsupportedDriverFeature", getInterface(), methodName, getClass().getSimpleName());
     }
 
     /**
@@ -131,7 +133,7 @@ public abstract class AbstractJDBC extends AutoChecker implements Wrapper {
      * @param args Arguments that where sent to the unimplemented function.
      */
     public void logUnsupportedOperation(final String methodName, Object... args) {
-        format(Level.WARNING, "excp.unsupportedDriverFeature_with_arguments", getInterface(), methodName, getClass().getSimpleName(), arguments(args));
+        log(Level.WARNING, "excp.unsupportedDriverFeature_with_arguments", getInterface(), methodName, getClass().getSimpleName(), arguments(args));
     }
 
     /**

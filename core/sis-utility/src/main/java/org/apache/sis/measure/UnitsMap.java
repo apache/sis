@@ -24,6 +24,7 @@ import javax.measure.unit.SI;
 import javax.measure.unit.NonSI;
 import javax.measure.unit.Unit;
 import javax.measure.quantity.Quantity;
+import org.apache.sis.internal.util.Constants;
 import org.apache.sis.util.Static;
 
 import static org.apache.sis.measure.Units.*;
@@ -49,7 +50,7 @@ final class UnitsMap extends Static {
      * The 9122 integer, used as an alternative code for the degrees unit.
      * See {@link Units#getEpsgCode(Unit, boolean)} for more information.
      */
-    static final Integer I9122 = 9122;
+    static final Integer EPSG_AXIS_DEGREES = (int) Constants.EPSG_AXIS_DEGREES;
 
     /**
      * EPSG codes of some units. This map is the reverse of {@link Units#valueOfEPSG(int)}.

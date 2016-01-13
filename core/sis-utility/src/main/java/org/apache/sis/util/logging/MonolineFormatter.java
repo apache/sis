@@ -54,7 +54,7 @@ import org.apache.sis.internal.jdk7.JDK7;
  * <tr><td><code>00:01</code></td><td style="background:blue"><code>CONFIG</code></td>
  *     <td><code><b>[MyApplication]</b> Read configuration from “my-application/setup.xml”.</code></td></tr>
  * <tr><td><code>00:03</code></td><td style="background:green"><code>INFO</code></td>
- *     <td><code><b>[DirectEpsgFactory]</b> Connected to the EPSG database version 6.9 on JavaDB 10.8.</code></td></tr>
+ *     <td><code><b>[EPSGFactory]</b> Connected to the EPSG database version 6.9 on JavaDB 10.8.</code></td></tr>
  * <tr><td><code>00:12</code></td><td style="background:goldenrod"><code>WARNING</code></td>
  *     <td><code><b>[DefaultTemporalExtent]</b> This operation requires the “sis-temporal” module.</code></td></tr>
  * </table></blockquote>

@@ -16,6 +16,7 @@
  */
 package org.apache.sis.storage.shapefile;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 import java.io.File;
@@ -25,8 +26,10 @@ import java.util.logging.Logger;
 
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.test.TestCase;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.apache.sis.feature.AbstractFeature;
+import org.apache.sis.feature.AbstractAttribute;
 
 
 /**
@@ -82,30 +85,118 @@ public final strictfp class ShapeFileTest extends TestCase {
      }
 
      /**
-      * Test loading of shapefile descriptors. 
+      * Test loading of shapefile descriptors.
       * @throws URISyntaxException if the resource name is incorrect.
       * @throws DataStoreException if a general file reading trouble occurs.
       */
      @Test
      public void testDescriptors() throws URISyntaxException, DataStoreException {
          Logger log = org.apache.sis.util.logging.Logging.getLogger(ShapeFileTest.class.getName());
-         
+
          ShapeFile shp = new ShapeFile(path("ABRALicenseePt_4326_clipped.shp"));
          shp.loadDescriptors();
-         
+
          assertNotNull("The features type of the shapefile should have been set.", shp.getFeaturesType());
          log.info(MessageFormat.format("ABRALicenseePt_4326_clipped.shp features type : {0}", shp.getFeaturesType()));
-         
+
          assertNotNull("The shapefile descriptor of the shapefile should have been set.", shp.getShapefileDescriptor());
          log.info(MessageFormat.format("ABRALicenseePt_4326_clipped.shp shapefile descriptor : {0}", shp.getShapefileDescriptor()));
 
          assertNotNull("The DBase III fields descriptors of the shapefile should have been set.", shp.getDatabaseFieldsDescriptors());
          log.info(MessageFormat.format("ABRALicenseePt_4326_clipped.shp DBase fields descriptors : {0}", shp.getDatabaseFieldsDescriptors()));
-         
+
          // Loading of the descriptor shall not prevent the shapefile from being red again.
          readAll(shp);
      }
-     
+
+     /**
+      * Checks that the reader is able to detect EoF signs in the DBase file.
+      * @throws URISyntaxException if the resource name is incorrect.
+      * @throws DataStoreException if a general file reading trouble occurs.
+      */
+     @Test @Ignore // TODO Adapt with another shapefile.
+     public void testHandleEofNotification() throws URISyntaxException, DataStoreException {
+         ShapeFile shp = new ShapeFile(path("DEPARTEMENT.SHP"));
+         AbstractFeature first = null, last = null;
+
+         Logger log = org.apache.sis.util.logging.Logging.getLogger(ShapeFileTest.class.getName());
+
+         InputFeatureStream is = shp.findAll();
+         try {
+             AbstractFeature feature = is.readFeature();
+
+             // Read and retain the first and the last feature.
+             while(feature != null) {
+                 if (first == null) {
+                     first = feature;
+                 }
+
+                 // Advice : To debug just before the last record, put a conditional breakpoint on department name "MEURTHE-ET-MOSELLE".
+                 String deptName = (String)((AbstractAttribute) feature.getProperty("NOM_DEPT")).getValue();
+                 log.info(deptName);
+
+                 last = feature;
+                 feature = is.readFeature();
+             }
+         } finally {
+             is.close();
+         }
+
+         assertNotNull("No record has been found in the DBase file or Shapefile.", first);
+         assertNotNull("This test is not working well : last feature should always be set if any feature has been found.", last);
+         assertEquals("The first record red must be JURA department.", "JURA", ((AbstractAttribute) first.getProperty("NOM_DEPT")).getValue());
+         assertEquals("The last record red must be DEUX-SEVRES department.", "DEUX-SEVRES", ((AbstractAttribute) last.getProperty("NOM_DEPT")).getValue());
+     }
+
+     /**
+      * Testing direct access in the shapefile.
+      * @throws URISyntaxException if the resource name is incorrect.
+      * @throws DataStoreException if a general file reading trouble occurs.
+      */
+     @Test
+     public void testDirectAcces() throws DataStoreException, URISyntaxException {
+         ShapeFile shp = new ShapeFile(path("ABRALicenseePt_4326_clipped.shp"));
+
+         // 1) Find the third record, sequentially.
+         AbstractFeature thirdFeature;
+
+         InputFeatureStream isSequential = shp.findAll();
+         try {
+             isSequential.readFeature();
+             isSequential.readFeature();
+             thirdFeature = isSequential.readFeature();
+         } finally {
+             isSequential.close();
+         }
+
+         // Take one of its key fields and another field for reference, and its geometry.
+         Double sequentialAddressId = Double.valueOf((String)(((AbstractAttribute) thirdFeature.getProperty("ADDRID"))).getValue());
+         String sequentialAddress = (String)(((AbstractAttribute) thirdFeature.getProperty("ADDRESS"))).getValue();
+         Object sequentialGeometry = thirdFeature.getPropertyValue("geometry");
+
+         // 2) Now attempt a direct access to this feature.
+         AbstractFeature directFeature;
+         String sql = MessageFormat.format("SELECT * FROM ABRALicenseePt_4326_clipped WHERE ADDRID = {0,number,#0}", sequentialAddressId);
+
+         InputFeatureStream isDirect = shp.find(sql);
+         try {
+             directFeature = isDirect.readFeature();
+             assertNotNull("The direct access feature returned should not be null", directFeature);
+         } finally {
+             isDirect.close();
+         }
+
+         assertNotNull("The field ADDRID in the direct access feature has not been found again.", directFeature.getProperty("ADDRID"));
+
+         Double directAddressId = Double.valueOf((String)(((AbstractAttribute) directFeature.getProperty("ADDRID"))).getValue());
+         String directAddress = (String)(((AbstractAttribute) directFeature.getProperty("ADDRESS"))).getValue();
+         Object directGeometry = directFeature.getPropertyValue("geometry");
+
+         assertEquals("DBase part : direct access didn't returned the same address id than sequential access.", sequentialAddressId, directAddressId);
+         assertEquals("DBase part : direct access didn't returned the same address than sequential access.", sequentialAddress, directAddress);
+         assertEquals("Shapefile part : direct access didn't returned the same geometry than sequential access.", sequentialGeometry, directGeometry);
+     }
+
     /**
      * Read all the shapefile content.
      * @param shp Shapefile to read.
