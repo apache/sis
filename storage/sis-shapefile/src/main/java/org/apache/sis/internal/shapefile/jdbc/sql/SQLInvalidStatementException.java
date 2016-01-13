@@ -41,8 +41,8 @@ public class SQLInvalidStatementException extends SQLException {
      */
     public SQLInvalidStatementException(String message, String sqlStatement, File dbf) {
         super(message);
-        sql = sqlStatement;
-        database = dbf;
+        this.sql = sqlStatement;
+        this.database = dbf;
     }
 
     /**
@@ -50,7 +50,7 @@ public class SQLInvalidStatementException extends SQLException {
      * @return SQL statement or null.
      */
     public String getSQL() {
-        return sql;
+        return this.sql;
     }
 
     /**
@@ -58,6 +58,6 @@ public class SQLInvalidStatementException extends SQLException {
      * @return Database file.
      */
     public File getDatabase() {
-        return database;
+        return this.database;
     }
 }

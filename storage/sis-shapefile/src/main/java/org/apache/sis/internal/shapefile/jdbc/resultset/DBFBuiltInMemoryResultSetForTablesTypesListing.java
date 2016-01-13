@@ -42,16 +42,22 @@ public class DBFBuiltInMemoryResultSetForTablesTypesListing extends BuiltInMemor
     @Override public String getString(String columnLabel) {
         logStep("getString", columnLabel);
 
-        if (columnLabel.equals("OBJECTID")) {         // FIXME Documentation of ObjectId for geTabletTypes() has not been found. What are the rules about this field ?
-            wasNull = false;
-            return "1";
+        {   // On the JDK7 branch, this is a switch on strings.
+            if (columnLabel.equals("OBJECTID")) {    // FIXME Documentation of ObjectId for geTabletTypes() has not been found. What are the rules about this field ?
+                this.wasNull = false;
+                return "1";
+            }
+
+            else if (columnLabel.equals("TABLE_TYPE")) {         // String => table type. Typical types are "TABLE", "VIEW", "SYSTEM TABLE", "GLOBAL TEMPORARY", "LOCAL TEMPORARY", "ALIAS", "SYNONYM".
+                this.wasNull = false;
+                return "TABLE";               // and DBase 3 only knows tables.
+            }
+
+            else {
+                this.wasNull = true;
+                return null;
+            }
         }
-        if (columnLabel.equals("TABLE_TYPE")) {       // String => table type. Typical types are "TABLE", "VIEW", "SYSTEM TABLE", "GLOBAL TEMPORARY", "LOCAL TEMPORARY", "ALIAS", "SYNONYM".
-            wasNull = false;
-            return "TABLE";               // and DBase 3 only knows tables.
-        }
-        wasNull = true;
-        return null;
     }
 
     /**
@@ -61,11 +67,11 @@ public class DBFBuiltInMemoryResultSetForTablesTypesListing extends BuiltInMemor
     {
         logStep("next");
 
-        if (index > 1) {
+        if (this.index > 1) {
             throw new SQLNoResultException(format(Level.WARNING, "excp.only_one_table_type_handled"), "Driver manager asks for table types listing", getFile());
         }
 
-        index ++;
-        return (index == 1) ? true : false;
+        this.index ++;
+        return (this.index == 1) ? true : false;
     }
 }

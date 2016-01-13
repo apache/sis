@@ -30,12 +30,12 @@ import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.crs.GeneralDerivedCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.datum.Datum;
 import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
+import org.apache.sis.parameter.Parameters;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Utilities;
@@ -63,9 +63,8 @@ import org.apache.sis.util.Utilities;
  * MathTransform, ParameterValueGroup) constructor} for such defining conversions.
  *
  * <p>After the source and target CRS become known, we can invoke the {@link #specialize specialize(…)} method for
- * {@linkplain DefaultMathTransformFactory#createBaseToDerived(CoordinateReferenceSystem, ParameterValueGroup,
- * CoordinateSystem) creating a math transform from the parameters}, instantiate a new {@code Conversion} of a
- * more specific type
+ * {@linkplain DefaultMathTransformFactory#createParameterizedTransform creating a math transform from the parameters},
+ * instantiate a new {@code Conversion} of a more specific type
  * ({@link org.opengis.referencing.operation.ConicProjection},
  *  {@link org.opengis.referencing.operation.CylindricalProjection} or
  *  {@link org.opengis.referencing.operation.PlanarProjection}) if possible,
@@ -198,7 +197,7 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
      * @param transform  Transform from positions in the source CRS to positions in the target CRS, or {@code null}.
      * @param parameters The {@code transform} parameter values, or {@code null}.
      *
-     * @see DefaultMathTransformFactory#createBaseToDerived(CoordinateSystem, MathTransform, CoordinateSystem)
+     * @see DefaultMathTransformFactory#swapAndScaleAxes(MathTransform, DefaultMathTransformFactory.Context)
      */
     public DefaultConversion(final Map<String,?>       properties,
                              final OperationMethod     method,
@@ -214,7 +213,7 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
                     .getString(Errors.Keys.UnspecifiedParameterValues));
         }
         if (parameters != null) {
-            this.parameters = parameters.clone();
+            this.parameters = Parameters.unmodifiable(parameters);
         }
         checkDimensions(properties);
     }
@@ -228,27 +227,51 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
      * @param source     The new source CRS.
      * @param target     The new target CRS.
      * @param factory    The factory to use for creating a transform from the parameters or for performing axis changes.
+     * @param actual     An array of length 1 where to store the actual operation method used by the math transform factory.
      */
     DefaultConversion(final Conversion definition,
                       final CoordinateReferenceSystem source,
                       final CoordinateReferenceSystem target,
-                      final MathTransformFactory factory) throws FactoryException
+                      final MathTransformFactory factory,
+                      final OperationMethod[] actual) throws FactoryException
     {
         super(definition);
         int interpDim = ReferencingUtilities.getDimension(super.getInterpolationCRS());
         if (transform == null) {
             /*
-             * If the user did not specified explicitely a MathTransform, we will need to create it
-             * from the parameters. This case happen often when creating a ProjectedCRS, because the
-             * user often did not have all needed information when he created the defining conversion:
-             * the length of semi-major and semi-minor axes were often missing. But now we know those
-             * lengths thanks to the 'sourceCRS' argument given to this method. So we can complete the
-             * parameters. This is the job of MathTransformFactory.createBaseToDerived(…).
+             * If the user did not specified explicitely a MathTransform, we will need to create it from the parameters.
+             * This case happen when creating a ProjectedCRS because the length of semi-major and semi-minor axes are
+             * often missing at defining conversion creation time. Since this constructor know those semi-axis lengths
+             * thanks to the 'sourceCRS' argument, we can complete the parameters.
              */
             if (parameters == null) {
                 throw new IllegalArgumentException(Errors.format(Errors.Keys.UnspecifiedParameterValues));
             }
-            transform = factory.createBaseToDerived(source, parameters, target.getCoordinateSystem());
+            if (factory instanceof DefaultMathTransformFactory) {
+                /*
+                 * Apache SIS specific API (not yet defined in GeoAPI, but could be proposed).
+                 * Note that setTarget(…) intentionally uses only the CoordinateSystem instead than the full
+                 * CoordinateReferenceSystem because the targetCRS is typically under construction when this
+                 * method in invoked, and attempts to use it can cause NullPointerException.
+                 */
+                final DefaultMathTransformFactory.Context context = new DefaultMathTransformFactory.Context();
+                context.setSource(source);
+                if (target instanceof GeneralDerivedCRS) {
+                    context.setTarget(target.getCoordinateSystem());    // Using 'target' would be unsafe here.
+                } else {
+                    context.setTarget(target);
+                }
+                transform = ((DefaultMathTransformFactory) factory).createParameterizedTransform(parameters, context);
+                parameters = Parameters.unmodifiable(context.getCompletedParameters());
+            } else {
+                /*
+                 * Fallback for non-SIS implementation. Equivalent to the above code, except that we can
+                 * not get the parameters completed with semi-major and semi-minor axis lengths. Most of
+                 * the code should work anyway.
+                 */
+                transform = factory.createBaseToDerived(source, parameters, target.getCoordinateSystem());
+            }
+            actual[0] = factory.getLastMethodUsed();
         } else {
             /*
              * If the user specified explicitely a MathTransform, we may still need to swap or scale axes.
@@ -256,12 +279,11 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
              * ProjectedCRS), then DefaultMathTransformFactory has a specialized createBaseToDerived(…)
              * method for this job.
              */
-            final CoordinateReferenceSystem sourceCRS = super.getSourceCRS();
-            final CoordinateReferenceSystem targetCRS = super.getTargetCRS();
             if (sourceCRS == null && targetCRS == null && factory instanceof DefaultMathTransformFactory) {
-                transform = ((DefaultMathTransformFactory) factory).createBaseToDerived(
-                        source.getCoordinateSystem(), transform,
-                        target.getCoordinateSystem());
+                final DefaultMathTransformFactory.Context context = new DefaultMathTransformFactory.Context();
+                context.setSource(source.getCoordinateSystem());
+                context.setTarget(target.getCoordinateSystem());    // See comment on the other setTarget(…) call.
+                transform = ((DefaultMathTransformFactory) factory).swapAndScaleAxes(transform, context);
             } else {
                 /*
                  * If we can not use our SIS factory implementation, or if this conversion is not a defining
@@ -373,7 +395,7 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
      *         parameter values}, or a {@linkplain CoordinateSystems#swapAndScaleAxes change of axis order or units}
      *         failed.
      *
-     * @see DefaultMathTransformFactory#createBaseToDerived(CoordinateReferenceSystem, ParameterValueGroup, CoordinateSystem)
+     * @see DefaultMathTransformFactory#createParameterizedTransform(ParameterValueGroup, DefaultMathTransformFactory.Context)
      */
     public <T extends Conversion> T specialize(final Class<T> baseType,
             final CoordinateReferenceSystem sourceCRS, final CoordinateReferenceSystem targetCRS,

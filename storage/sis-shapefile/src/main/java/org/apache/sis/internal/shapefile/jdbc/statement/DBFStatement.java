@@ -68,7 +68,7 @@ public class DBFStatement extends AbstractStatement {
     @Override
     public Connection getConnection() throws SQLConnectionClosedException {
         assertNotClosed();
-        return connection;
+        return this.connection;
     }
 
     /**
@@ -77,7 +77,7 @@ public class DBFStatement extends AbstractStatement {
      */
     @Override
     public File getFile() {
-        return connection.getFile();
+        return this.connection.getFile();
     }
 
     /**
@@ -134,7 +134,7 @@ public class DBFStatement extends AbstractStatement {
     @Override
     public ResultSet getResultSet() throws SQLConnectionClosedException {
         assertNotClosed();
-        return currentResultSet;
+        return this.currentResultSet;
     }
 
     /**
@@ -153,23 +153,23 @@ public class DBFStatement extends AbstractStatement {
         if (isClosed())
             return;
 
-        if (currentResultSet != null) {
+        if (this.currentResultSet != null) {
             // Inform that this ResultSet could have been closed but that we are handling this :
             // Some developpers may expect their ResultSet should have been closed before in their program.
-            format(Level.FINE, "log.closing_underlying_resultset", currentResultSet);
-            currentResultSet.close();
+            log(Level.FINE, "log.closing_underlying_resultset", this.currentResultSet);
+            this.currentResultSet.close();
 
-            currentResultSet = null;
+            this.currentResultSet = null;
         }
 
         // Check if all the underlying ResultSets that has been opened with this statement has been closed.
         // If not, we log a warning to help the developper.
-        if (openedResultSets.size() > 0) {
-            format(Level.WARNING, "log.resultsets_left_opened", openedResultSets.size(), openedResultSets.toString());
+        if (this.openedResultSets.size() > 0) {
+            log(Level.WARNING, "log.resultsets_left_opened", this.openedResultSets.size(), openedResultSets.toString());
         }
 
-        isClosed = true;
-        connection.notifyCloseStatement(this);
+        this.isClosed = true;
+        this.connection.notifyCloseStatement(this);
     }
 
     /**
@@ -178,7 +178,7 @@ public class DBFStatement extends AbstractStatement {
      */
     @Override
     public boolean isClosed() {
-        return isClosed || connection.isClosed();
+        return this.isClosed || this.connection.isClosed();
     }
 
     /**
@@ -186,11 +186,11 @@ public class DBFStatement extends AbstractStatement {
      * @throws SQLConnectionClosedException if one of them is closed.
      */
     public void assertNotClosed() throws SQLConnectionClosedException {
-        connection.assertNotClosed(); // First, the underlying shall not be closed.
+        this.connection.assertNotClosed(); // First, the underlying shall not be closed.
 
         // Then, this statement shouldn't be closed too.
-        if (isClosed) {
-            throw new SQLConnectionClosedException(format(Level.WARNING, "excp.closed_statement", connection.getFile().getName()), null, connection.getFile());
+        if (this.isClosed) {
+            throw new SQLConnectionClosedException(format(Level.WARNING, "excp.closed_statement", this.connection.getFile().getName()), null, this.connection.getFile());
         }
     }
 
@@ -210,10 +210,10 @@ public class DBFStatement extends AbstractStatement {
         Objects.requireNonNull(rs, "The ResultSet notified being closed cannot be null.");
 
         // If this ResultSet was the current ResultSet, now there is no more current ResultSet.
-        if (currentResultSet == rs)
-            currentResultSet = null;
+        if (this.currentResultSet == rs)
+            this.currentResultSet = null;
 
-        if (openedResultSets.remove(rs) == false) {
+        if (this.openedResultSets.remove(rs) == false) {
             throw new RuntimeException(format(Level.SEVERE, "assert.resultset_not_opened_by_me", rs, toString()));
         }
     }
@@ -223,8 +223,8 @@ public class DBFStatement extends AbstractStatement {
      * @param rs Result Set.
      */
     public void registerResultSet(DBFResultSet rs) {
-        currentResultSet = rs;
-        openedResultSets.add(rs);
+        this.currentResultSet = rs;
+        this.openedResultSets.add(rs);
     }
 
     /**
@@ -240,6 +240,6 @@ public class DBFStatement extends AbstractStatement {
      */
     @Override
     public String toString() {
-        return format("toString", connection != null ? connection.toString() : null, isClosed() == false);
+        return format("toString", this.connection != null ? this.connection.toString() : null, isClosed() == false);
     }
 }

@@ -44,6 +44,9 @@ import org.apache.sis.internal.util.Constants;
 
 import static java.lang.StrictMath.*;
 
+// Branch-dependent imports
+import org.apache.sis.internal.jdk8.JDK8;
+
 
 /**
  * Assertion methods used by the {@code sis-referencing} module in addition of the ones inherited
@@ -371,7 +374,7 @@ public strictfp class ReferencingAssert extends MetadataAssert {
             assertFalse("e2.contains(e1)",   ae.contains  (e1, true));
         }
         final int dimension = e1.getDimension();
-        final int numCases = (int) round(pow(3, dimension));
+        final int numCases = JDK8.toIntExact(round(pow(3, dimension)));
         final GeneralDirectPosition pos = new GeneralDirectPosition(dimension);
         for (int index=0; index<numCases; index++) {
             int n = index;

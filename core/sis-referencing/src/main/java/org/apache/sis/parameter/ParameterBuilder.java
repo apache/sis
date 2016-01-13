@@ -20,9 +20,6 @@ import javax.measure.unit.Unit;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.GeneralParameterDescriptor;
-import org.opengis.parameter.ParameterValueGroup;
-import org.opengis.referencing.cs.CoordinateSystem;             // For javadoc
-import org.opengis.referencing.crs.CoordinateReferenceSystem;   // For javadoc
 import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.measure.Range;
@@ -427,8 +424,6 @@ public class ParameterBuilder extends Builder<ParameterBuilder> {
      * @param  parameters The {@linkplain DefaultParameterDescriptorGroup#descriptors() parameter descriptors}
      *         for the group to create.
      * @return The parameter descriptor group for a map projection.
-     *
-     * @see org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory#createBaseToDerived(CoordinateReferenceSystem, ParameterValueGroup, CoordinateSystem)
      *
      * @since 0.6
      */

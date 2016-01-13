@@ -50,7 +50,7 @@ public class DBFBuiltInMemoryResultSetForColumnsListing extends BuiltInMemoryRes
      */
     public DBFBuiltInMemoryResultSetForColumnsListing(DBFStatement stmt, List<DBase3FieldDescriptor> fieldsDescriptors) {
         super(stmt, "driver list columns in this DBase 3 file");
-        itDescriptor = fieldsDescriptors.iterator();
+        this.itDescriptor = fieldsDescriptors.iterator();
     }
 
     /**
@@ -60,98 +60,103 @@ public class DBFBuiltInMemoryResultSetForColumnsListing extends BuiltInMemoryRes
     @Override public String getString(String columnLabel) throws SQLNoSuchFieldException {
         logStep("getString", columnLabel);
 
-        // String => table name
-        if (columnLabel.equals("TABLE_NAME")) {
-            String tableName = getTableName();
-            wasNull = (tableName == null);
-            return tableName;
-        }
+        {   // On the JDK7 branch, this is a switch on strings.
+            // String => table name
+            if (columnLabel.equals("TABLE_NAME")) {
+                String tableName = getTableName();
+                this.wasNull = (tableName == null);
+                return tableName;
+            }
 
-        // String => column name
-        if (columnLabel.equals("COLUMN_NAME")) {
-            String columnName = current.getName();
-            wasNull = (columnName == null);
-            return columnName;
-        }
+            // String => column name
+            else if (columnLabel.equals("COLUMN_NAME")) {
+                String columnName = this.current.getName();
+                this.wasNull = (columnName == null);
+                return columnName;
+            }
 
-        // String => Data source dependent type name, for a UDT the type name is fully qualified
-        if (columnLabel.equals("TYPE_NAME")) {
-            String typeName = current.getType() != null ? toColumnTypeName() : null;
-            wasNull = (typeName == null);
-            return typeName;
-        }
+            // String => Data source dependent type name, for a UDT the type name is fully qualified
+            else if (columnLabel.equals("TYPE_NAME")) {
+                String typeName = this.current.getType() != null ? toColumnTypeName() : null;
+                this.wasNull = (typeName == null);
+                return typeName;
+            }
 
-        /**
-         * Columns responding to features that aren't handled by DBase 3.
-         * and return always a default value NULL or "NO"...
-         */
+            /**
+             * Columns responding to features that aren't handled by DBase 3.
+             * and return always a default value NULL or "NO"...
+             */
 
-        // String => table catalog (may be null)
-        if (columnLabel.equals("TABLE_CAT")) {
-            wasNull = true;
-            return null;
-        }
+            // String => table catalog (may be null)
+            else if (columnLabel.equals("TABLE_CAT")) {
+                this.wasNull = true;
+                return null;
+            }
 
-        // String => table schema (may be null)
-        if (columnLabel.equals("TABLE_SCHEM")) {
-            wasNull = true;
-            return null;
-        }
+            // String => table schema (may be null)
+            else if (columnLabel.equals("TABLE_SCHEM")) {
+                this.wasNull = true;
+                return null;
+            }
 
-        // String => comment describing column (may be null)
-        if (columnLabel.equals("REMARKS")) {
-            wasNull = true;
-            return null;
-        }
-        // String => default value for the column, which should be interpreted as a string when the value is enclosed in single quotes (may be null)
-        if (columnLabel.equals("COLUMN_DEF")) {
-            wasNull = true;
-            return null;
-        }
+            // String => comment describing column (may be null)
+            else if (columnLabel.equals("REMARKS")) {
+                this.wasNull = true;
+                return null;
+            }
 
-        // String => catalog of table that is the scope of a reference attribute (null if DATA_TYPE isn't REF)
-        if (columnLabel.equals("SCOPE_CATALOG")) {
-            wasNull = true;
-            return null;
-        }
+            // String => default value for the column, which should be interpreted as a string when the value is enclosed in single quotes (may be null)
+            else if (columnLabel.equals("COLUMN_DEF")) {
+                this.wasNull = true;
+                return null;
+            }
 
-        // String => schema of table that is the scope of a reference attribute (null if the DATA_TYPE isn't REF)
-        if (columnLabel.equals("SCOPE_SCHEMA")) {
-            wasNull = true;
-            return null;
-        }
+            // String => catalog of table that is the scope of a reference attribute (null if DATA_TYPE isn't REF)
+            else if (columnLabel.equals("SCOPE_CATALOG")) {
+                this.wasNull = true;
+                return null;
+            }
 
-        // String => table name that this the scope of a reference attribute (null if the DATA_TYPE isn't REF)
-        if (columnLabel.equals("SCOPE_TABLE")) {
-            wasNull = true;
-            return null;
-        }
+            // String => schema of table that is the scope of a reference attribute (null if the DATA_TYPE isn't REF)
+            else if (columnLabel.equals("SCOPE_SCHEMA")) {
+                this.wasNull = true;
+                return null;
+            }
 
-        /**
-         * String => Indicates whether this column is auto incremented
-         * YES --- if the column is auto incremented
-         * NO --- if the column is not auto incremented
-         * empty string --- if it cannot be determined whether the column is auto incremented
-         */
-        if (columnLabel.equals("IS_AUTOINCREMENT")) {
-            wasNull = false;
-            return "NO";
-        }
+            // String => table name that this the scope of a reference attribute (null if the DATA_TYPE isn't REF)
+            else if (columnLabel.equals("SCOPE_TABLE")) {
+                this.wasNull = true;
+                return null;
+            }
 
-        /**
-         * String => Indicates whether this is a generated column
-         * YES --- if this a generated column
-         * NO --- if this not a generated column
-         * empty string --- if it cannot be determined whether this is a generated column
-         */
-        if (columnLabel.equals("IS_GENERATEDCOLUMN")) {
-            wasNull = false;
-            return "NO";
-        }
+            /**
+             * String => Indicates whether this column is auto incremented
+             * YES --- if the column is auto incremented
+             * NO --- if the column is not auto incremented
+             * empty string --- if it cannot be determined whether the column is auto incremented
+             */
+            else if (columnLabel.equals("IS_AUTOINCREMENT")) {
+                this.wasNull = false;
+                return "NO";
+            }
 
-        // Attempt to load it from an Integer column and convert it.
-        int value = getInt(columnLabel);
-        return MessageFormat.format("{0,number,#0}", value); // Remove decimal separators.
+            /**
+             * String => Indicates whether this is a generated column
+             * YES --- if this a generated column
+             * NO --- if this not a generated column
+             * empty string --- if it cannot be determined whether this is a generated column
+             */
+            else if (columnLabel.equals("IS_GENERATEDCOLUMN")) {
+                this.wasNull = false;
+                return "NO";
+            }
+
+            else {
+                // Attempt to load it from an Integer column and convert it.
+                int value = getInt(columnLabel);
+                return MessageFormat.format("{0,number,#0}", value); // Remove decimal separators.
+            }
+        }
     }
 
     /**
@@ -161,104 +166,108 @@ public class DBFBuiltInMemoryResultSetForColumnsListing extends BuiltInMemoryRes
     @Override public int getInt(String columnLabel) throws SQLNoSuchFieldException {
         logStep("getInt", columnLabel);
 
-        // int => SQL type from java.sql.Types
-        if (columnLabel.equals("DATA_TYPE")) {
-            wasNull = false;
-            return toSQLDataType();
-        }
+        {   // On the JDK7 branch, this is a switch on strings.
+            // int => SQL type from java.sql.Types
+            if (columnLabel.equals("DATA_TYPE")) {
+                this.wasNull = false;
+                return toSQLDataType();
+            }
 
-        // int => column size.
-        if (columnLabel.equals("COLUMN_SIZE")) {
-            wasNull = false;
-            return toPrecision();
-        }
-
-        // int => the number of fractional digits. Null is returned for data types where DECIMAL_DIGITS is not applicable.
-        if (columnLabel.equals("DECIMAL_DIGITS")) {
-            int scale = toScale();
-            wasNull = toScale() == -1;
-            return scale == -1 ? 0 : scale;
-        }
-
-        // int => Radix (typically either 10 or 2)
-        if (columnLabel.equals("NUM_PREC_RADIX")) {
-            return 10;
-        }
-
-        /**
-         * int => is NULL allowed.
-         * columnNoNulls - might not allow NULL values
-         * columnNullable - definitely allows NULL values
-         * columnNullableUnknown - nullability unknown
-         */
-        if (columnLabel.equals("NULLABLE")) {
-            wasNull = false;
-            return DatabaseMetaData.columnNullableUnknown;
-        }
-
-        // int => unused
-        if (columnLabel.equals("SQL_DATA_TYPE")) {
-            wasNull = false;
-            return toSQLDataType();
-        }
-
-        // int => for char types the maximum number of bytes in the column
-        if (columnLabel.equals("CHAR_OCTET_LENGTH")) {
-            if (toSQLDataType() == Types.CHAR) {
+            // int => column size.
+            else if (columnLabel.equals("COLUMN_SIZE")) {
+                this.wasNull = false;
                 return toPrecision();
             }
 
-            return 0;
+            // int => the number of fractional digits. Null is returned for data types where DECIMAL_DIGITS is not applicable.
+            else if (columnLabel.equals("DECIMAL_DIGITS")) {
+                int scale = toScale();
+                this.wasNull = toScale() == -1;
+                return scale == -1 ? 0 : scale;
+            }
+
+            // int => Radix (typically either 10 or 2)
+            else if (columnLabel.equals("NUM_PREC_RADIX")) {
+                return 10;
+            }
+
+            /**
+             * int => is NULL allowed.
+             * columnNoNulls - might not allow NULL values
+             * columnNullable - definitely allows NULL values
+             * columnNullableUnknown - nullability unknown
+             */
+            else if (columnLabel.equals("NULLABLE")) {
+                this.wasNull = false;
+                return DatabaseMetaData.columnNullableUnknown;
+            }
+
+            // int => unused
+            else if (columnLabel.equals("SQL_DATA_TYPE")) {
+                this.wasNull = false;
+                return toSQLDataType();
+            }
+
+            // int => for char types the maximum number of bytes in the column
+            else if (columnLabel.equals("CHAR_OCTET_LENGTH")) {
+                if (toSQLDataType() == Types.CHAR) {
+                    return toPrecision();
+                }
+
+                return 0;
+            }
+
+            // int => index of column in table (starting at 1)
+            else if (columnLabel.equals("ORDINAL_POSITION")) {
+                return this.columnIndex;
+            }
+
+            /**
+             * Columns responding to features that aren't handled by DBase 3.
+             * and return always a default value NULL or "NO"...
+             */
+
+            // short => source type of a distinct type or user-generated Ref type, SQL type from java.sql.Types (null if DATA_TYPE isn't DISTINCT or user-generated REF)
+            else if (columnLabel.equals("SOURCE_DATA_TYPE")) {
+                this.wasNull = true;
+                return 0;
+            }
+
+            // is not used.
+            else if (columnLabel.equals("BUFFER_LENGTH")) {
+                this.wasNull = false;
+                return 0;
+            }
+
+            // int => unused
+            else if (columnLabel.equals("SQL_DATETIME_SUB")) {
+                this.wasNull = false;
+                return 0;
+            }
+
+            else {
+                // FIXME : this function is not perfect. It a column label is given that refers to a field described in getString(..) this function
+                // will tell that the field doesn't exist. It's not true : the field is not numeric. But as getString(..) defaults to getInt(...),
+                // getInt(..) cannot default to getString(..), else the function will run in a cycle.
+                String message = format(Level.WARNING, "excp.no_desc_field", columnLabel, getTableName());
+                throw new SQLNoSuchFieldException(message, "asking columns desc", getFile(), columnLabel);
+            }
         }
-
-        // int => index of column in table (starting at 1)
-        if (columnLabel.equals("ORDINAL_POSITION")) {
-            return columnIndex;
-        }
-
-        /**
-         * Columns responding to features that aren't handled by DBase 3.
-         * and return always a default value NULL or "NO"...
-         */
-
-        // short => source type of a distinct type or user-generated Ref type, SQL type from java.sql.Types (null if DATA_TYPE isn't DISTINCT or user-generated REF)
-        if (columnLabel.equals("SOURCE_DATA_TYPE")) {
-            wasNull = true;
-            return 0;
-        }
-
-        // is not used.
-        if (columnLabel.equals("BUFFER_LENGTH")) {
-            wasNull = false;
-            return 0;
-        }
-
-        // int => unused
-        if (columnLabel.equals("SQL_DATETIME_SUB")) {
-            wasNull = false;
-            return 0;
-        }
-
-        // FIXME : this function is not perfect. It a column label is given that refers to a field described in getString(..) this function
-        // will tell that the field doesn't exist. It's not true : the field is not numeric. But as getString(..) defaults to getInt(...),
-        // getInt(..) cannot default to getString(..), else the function will run in a cycle.
-        String message = format(Level.WARNING, "excp.no_desc_field", columnLabel, getTableName());
-        throw new SQLNoSuchFieldException(message, "asking columns desc", getFile(), columnLabel);
     }
 
     /**
      * @see java.sql.ResultSet#next()
      */
     @Override public boolean next() throws SQLNoResultException {
-        if (itDescriptor.hasNext()) {
-            current = itDescriptor.next();
-            columnIndex ++;
+        if (this.itDescriptor.hasNext()) {
+            this.current = this.itDescriptor.next();
+            this.columnIndex ++;
             return true;
         }
         else {
-            if (afterLast) {
+            if (this.afterLast) {
                 // The ResultSet has no more records and has been call one time too much.
-                afterLast = true;
+                this.afterLast = true;
 
                 String message = format(Level.WARNING, "excp.no_more_desc", getTableName());
                 throw new SQLNoResultException(message, "asking columns desc", getFile());
@@ -274,7 +283,7 @@ public class DBFBuiltInMemoryResultSetForColumnsListing extends BuiltInMemoryRes
      * @return SQL Datatype.
      */
     private int toSQLDataType() {
-        switch(current.getType()) {
+        switch(this.current.getType()) {
             case AutoIncrement:
                 return Types.INTEGER;
 
@@ -330,7 +339,7 @@ public class DBFBuiltInMemoryResultSetForColumnsListing extends BuiltInMemoryRes
      * @return Column type name.
      */
     private String toColumnTypeName() {
-        switch(current.getType()) {
+        switch(this.current.getType()) {
             case AutoIncrement:
                 return "AUTO_INCREMENT";
 
@@ -386,11 +395,11 @@ public class DBFBuiltInMemoryResultSetForColumnsListing extends BuiltInMemoryRes
      * @return Precision of the current field.
      */
     public int toPrecision() {
-        switch(current.getType()) {
+        switch(this.current.getType()) {
             case AutoIncrement:
             case Character:
             case Integer:
-               return current.getLength();
+               return this.current.getLength();
 
             case Date:
                 return 8;
@@ -398,7 +407,7 @@ public class DBFBuiltInMemoryResultSetForColumnsListing extends BuiltInMemoryRes
             case Double:
             case FloatingPoint:
             case Number:
-                return current.getLength();
+                return this.current.getLength();
 
             case Logical:
                 return 0;
@@ -406,7 +415,7 @@ public class DBFBuiltInMemoryResultSetForColumnsListing extends BuiltInMemoryRes
             case Currency:
             case DateTime:
             case TimeStamp:
-                return current.getLength();
+                return this.current.getLength();
 
             case Memo:
             case Picture:
@@ -415,7 +424,7 @@ public class DBFBuiltInMemoryResultSetForColumnsListing extends BuiltInMemoryRes
                 return 0;
 
             default:
-                return current.getLength();
+                return this.current.getLength();
         }
     }
 
@@ -424,7 +433,7 @@ public class DBFBuiltInMemoryResultSetForColumnsListing extends BuiltInMemoryRes
      * @return Scale of the current field, -1 means : this field is not numeric.
      */
     private int toScale() {
-        switch(current.getType()) {
+        switch(this.current.getType()) {
             case AutoIncrement:
             case Logical:
                 return 0;
@@ -434,7 +443,7 @@ public class DBFBuiltInMemoryResultSetForColumnsListing extends BuiltInMemoryRes
             case FloatingPoint:
             case Number:
             case Currency:
-                return current.getDecimalCount();
+                return this.current.getDecimalCount();
 
             case Character:
             case Date:

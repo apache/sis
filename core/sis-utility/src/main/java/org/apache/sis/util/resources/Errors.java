@@ -151,6 +151,16 @@ public final class Errors extends IndexedResourceBundle {
         public static final short CanNotRepresentInFormat_2 = 10;
 
         /**
+         * Target dimension {0} depends on excluded source dimensions.
+         */
+        public static final short CanNotSeparateTargetDimension_1 = 175;
+
+        /**
+         * Can not set a value for parameter “{0}”.
+         */
+        public static final short CanNotSetParameterValue_1 = 214;
+
+        /**
          * Can not set a value for property “{0}”.
          */
         public static final short CanNotSetPropertyValue_1 = 11;
@@ -184,6 +194,16 @@ public final class Errors extends IndexedResourceBundle {
          * Axis directions {0} and {1} are colinear.
          */
         public static final short ColinearAxisDirections_2 = 14;
+
+        /**
+         * Database error while creating a ‘{0}’ object for code “{1}”.
+         */
+        public static final short DatabaseError_2 = 209;
+
+        /**
+         * Origin of temporal datum shall be a date.
+         */
+        public static final short DatumOriginShallBeDate = 213;
 
         /**
          * Thread “{0}” is dead.
@@ -276,6 +296,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final short ExcessiveStringSize = 153;
 
         /**
+         * No factory of kind ‘{0}’ found.
+         */
+        public static final short FactoryNotFound_1 = 205;
+
+        /**
          * File “{0}” has not been found.
          */
         public static final short FileNotFound_1 = 166;
@@ -356,6 +381,11 @@ public final class Errors extends IndexedResourceBundle {
          * The “{1}” pattern can not be applied to formating of objects of type ‘{0}’.
          */
         public static final short IllegalFormatPatternForClass_2 = 35;
+
+        /**
+         * “{1}” is not a valid identifier for the “{0}” code space.
+         */
+        public static final short IllegalIdentifierForCodespace_2 = 208;
 
         /**
          * The “{0}” language is not recognized.
@@ -479,11 +509,6 @@ public final class Errors extends IndexedResourceBundle {
         public static final short InfiniteArgumentValue_1 = 51;
 
         /**
-         * Inseparable transform.
-         */
-        public static final short InseparableTransform = 175;
-
-        /**
          * Argument ‘{0}’ shall contain at least {1} elements. A number of {2} is insufficient.
          */
         public static final short InsufficientArgumentSize_3 = 53;
@@ -522,6 +547,11 @@ public final class Errors extends IndexedResourceBundle {
          * Argument ‘{0}’ has {2} dimension{2,choice,1#|2#s}, while {1} was expected.
          */
         public static final short MismatchedDimension_3 = 59;
+
+        /**
+         * The grid geometry must be the same for “{0}” and “{1}”.
+         */
+        public static final short MismatchedGridGeometry_2 = 203;
 
         /**
          * Mismatched matrix sizes: expected {0}×{1} but got {2}×{3}.
@@ -811,6 +841,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final short NullMapValue = 97;
 
         /**
+         * Unexpected null value in record “{2}” for the column “{1}” in table “{0}”.
+         */
+        public static final short NullValueInTable_3 = 207;
+
+        /**
          * Array length is {0}, while we expected an even length.
          */
         public static final short OddArrayLength_1 = 98;
@@ -836,6 +871,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final short RecordAlreadyDefined_2 = 161;
 
         /**
+         * Recursive call while creating an object of type ‘{0}’ for code “{1}”.
+         */
+        public static final short RecursiveCreateCallForCode_2 = 210;
+
+        /**
          * Recursive call while creating an object for the “{0}” key.
          */
         public static final short RecursiveCreateCallForKey_1 = 99;
@@ -859,6 +899,11 @@ public final class Errors extends IndexedResourceBundle {
          * Can not move backward in the “{0}” stream.
          */
         public static final short StreamIsForwardOnly_1 = 103;
+
+        /**
+         * Table “{0}” has not been found.
+         */
+        public static final short TableNotFound_1 = 206;
 
         /**
          * Expected at least {0} argument{0,choice,1#|2#s}, but got {1}.
@@ -904,6 +949,11 @@ public final class Errors extends IndexedResourceBundle {
          * The “{1}” characters after “{0}” was unexpected.
          */
         public static final short UnexpectedCharactersAfter_2 = 198;
+
+        /**
+         * Unexpected dimension for a coordinate system of type ‘{0}’.
+         */
+        public static final short UnexpectedDimensionForCS_1 = 212;
 
         /**
          * Unexpected end of file while reading “{0}”.
@@ -986,6 +1036,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final short UnknownType_1 = 118;
 
         /**
+         * Unit “{0}” is not recognized.
+         */
+        public static final short UnknownUnit_1 = 211;
+
+        /**
          * This affine transform is unmodifiable.
          */
         public static final short UnmodifiableAffineTransform = 119;
@@ -1036,6 +1091,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final short UnspecifiedCRS = 173;
 
         /**
+         * Dimensions have not been specified.
+         */
+        public static final short UnspecifiedDimensions = 204;
+
+        /**
          * No format is specified for objects of class ‘{0}’.
          */
         public static final short UnspecifiedFormatForClass_1 = 126;
@@ -1049,6 +1109,11 @@ public final class Errors extends IndexedResourceBundle {
          * Can not handle instances of ‘{0}’ because arbitrary implementations are not yet supported.
          */
         public static final short UnsupportedImplementation_1 = 127;
+
+        /**
+         * The “{0}” interpolation is unsupported.
+         */
+        public static final short UnsupportedInterpolation_1 = 202;
 
         /**
          * The ‘{0}’ operation is unsupported.

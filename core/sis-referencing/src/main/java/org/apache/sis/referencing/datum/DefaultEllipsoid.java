@@ -117,6 +117,7 @@ import org.apache.sis.internal.jdk7.Objects;
  * @module
  *
  * @see org.apache.sis.referencing.CommonCRS#ellipsoid()
+ * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createEllipsoid(String)
  */
 @XmlType(name = "EllipsoidType", propOrder = {
     "semiMajorAxisMeasure",
@@ -277,6 +278,8 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
      * @param semiMinorAxis The polar radius in the given unit.
      * @param unit          The units of the semi-major and semi-minor axis values.
      * @return An ellipsoid with the given axis length.
+     *
+     * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createEllipsoid(Map, double, double, Unit)
      */
     public static DefaultEllipsoid createEllipsoid(final Map<String,?> properties,
                                                    final double semiMajorAxis,
@@ -301,6 +304,8 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
      * @param inverseFlattening The inverse flattening value.
      * @param unit              The units of the semi-major and semi-minor axis values.
      * @return An ellipsoid with the given axis length.
+     *
+     * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createFlattenedSphere(Map, double, double, Unit)
      */
     public static DefaultEllipsoid createFlattenedSphere(final Map<String,?> properties,
                                                          final double semiMajorAxis,

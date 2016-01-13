@@ -36,7 +36,7 @@ import org.apache.sis.util.UnconvertibleObjectException;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.3
+ * @version 0.7
  * @module
  */
 abstract class PathConverter<S,T> extends SystemConverter<S,T> {
@@ -98,7 +98,7 @@ abstract class PathConverter<S,T> extends SystemConverter<S,T> {
     public static final class FileURI extends PathConverter<File,URI> {
         private static final long serialVersionUID = 1122784850124333991L;
         static final FileURI INSTANCE = new FileURI();
-        public FileURI() {super(File.class, URI.class);} // Instantiated by ServiceLoader.
+        public FileURI() {super(File.class, URI.class);}        // Instantiated by ServiceLoader.
 
         @Override public ObjectConverter<File,URI> unique()  {return INSTANCE;}
         @Override public ObjectConverter<URI,File> inverse() {return URIFile.INSTANCE;}
@@ -113,7 +113,7 @@ abstract class PathConverter<S,T> extends SystemConverter<S,T> {
     public static final class FileURL extends PathConverter<File,URL> {
         private static final long serialVersionUID = 2191394598748096966L;
         static final FileURL INSTANCE = new FileURL();
-        public FileURL() {super(File.class, URL.class);} // Instantiated by ServiceLoader.
+        public FileURL() {super(File.class, URL.class);}        // Instantiated by ServiceLoader.
 
         @Override public ObjectConverter<File,URL> unique()  {return INSTANCE;}
         @Override public ObjectConverter<URL,File> inverse() {return URLFile.INSTANCE;}
@@ -128,7 +128,7 @@ abstract class PathConverter<S,T> extends SystemConverter<S,T> {
     public static final class URLFile extends PathConverter<URL,File> {
         private static final long serialVersionUID = 3669726699184691997L;
         static final URLFile INSTANCE = new URLFile();
-        public URLFile() {super(URL.class, File.class);} // Instantiated by ServiceLoader.
+        public URLFile() {super(URL.class, File.class);}        // Instantiated by ServiceLoader.
 
         @Override public ObjectConverter<URL,File> unique()  {return INSTANCE;}
         @Override public ObjectConverter<File,URL> inverse() {return FileURL.INSTANCE;}
@@ -138,12 +138,12 @@ abstract class PathConverter<S,T> extends SystemConverter<S,T> {
     }
 
     /**
-     * Converter from {@link URL} to {@link File}.
+     * Converter from {@link URI} to {@link File}.
      */
     public static final class URIFile extends PathConverter<URI,File> {
         private static final long serialVersionUID = 5070991554943811760L;
         static final URIFile INSTANCE = new URIFile();
-        public URIFile() {super(URI.class, File.class);} // Instantiated by ServiceLoader.
+        public URIFile() {super(URI.class, File.class);}        // Instantiated by ServiceLoader.
 
         @Override public ObjectConverter<URI,File> unique()  {return INSTANCE;}
         @Override public ObjectConverter<File,URI> inverse() {return FileURI.INSTANCE;}
@@ -158,7 +158,7 @@ abstract class PathConverter<S,T> extends SystemConverter<S,T> {
     public static final class URL_URI extends PathConverter<URL,URI> {
         private static final long serialVersionUID = 6327568235014244008L;
         static final URL_URI INSTANCE = new URL_URI();
-        public URL_URI() {super(URL.class, URI.class);} // Instantiated by ServiceLoader.
+        public URL_URI() {super(URL.class, URI.class);}         // Instantiated by ServiceLoader.
 
         @Override public ObjectConverter<URL,URI> unique()  {return INSTANCE;}
         @Override public ObjectConverter<URI,URL> inverse() {return URI_URL.INSTANCE;}
@@ -173,7 +173,7 @@ abstract class PathConverter<S,T> extends SystemConverter<S,T> {
     public static final class URI_URL extends PathConverter<URI,URL> {
         private static final long serialVersionUID = 5478354821309176895L;
         static final URI_URL INSTANCE = new URI_URL();
-        public URI_URL() {super(URI.class, URL.class);} // Instantiated by ServiceLoader.
+        public URI_URL() {super(URI.class, URL.class);}         // Instantiated by ServiceLoader.
 
         @Override public ObjectConverter<URI,URL> unique()  {return INSTANCE;}
         @Override public ObjectConverter<URL,URI> inverse() {return URL_URI.INSTANCE;}

@@ -14,44 +14,54 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.referencing;
+package org.apache.sis.internal.referencing;
 
 import javax.measure.unit.Unit;
+import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterNotFoundException;
 import org.opengis.parameter.InvalidParameterValueException;
+import org.opengis.referencing.crs.CRSFactory;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.cs.CartesianCS;
+import org.opengis.referencing.operation.CoordinateOperationFactory;
+import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.Conversion;
-import org.opengis.referencing.operation.MathTransform;
-import org.opengis.referencing.operation.MathTransformFactory;
-import org.opengis.util.NoSuchIdentifierException;
-import org.opengis.util.FactoryException;
-import org.apache.sis.internal.system.DefaultFactories;
-import org.apache.sis.referencing.crs.DefaultProjectedCRS;
-import org.apache.sis.referencing.operation.DefaultConversion;
+import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.internal.system.DefaultFactories;
+import org.apache.sis.internal.referencing.provider.TransverseMercator;
+import org.apache.sis.measure.Latitude;
+import org.apache.sis.referencing.Builder;
 
 
 /**
  * Helper methods for building Coordinate Reference Systems and related objects.
  *
- * <p>For now, this class is defined in the test directory because this API needs more experimentation.
- * However this class may move in the main source directory later if we feel confident that its API is
- * mature enough.</p>
+ * <p>For now, this class is defined in the internal package because this API needs more experimentation.
+ * However this class may move in a public package later if we feel confident that its API is mature enough.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.6
- * @version 0.6
+ * @version 0.7
  * @module
  */
-public strictfp class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> {
+public class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> {
     /**
-     * The name of the conversion used by {@code ProjectedCRS} or {@code DerivedCRS},
-     * or {@code null} if unspecified.
+     * The name of the conversion to use for creating a {@code ProjectedCRS} or {@code DerivedCRS}.
+     * This name is for information purpose; its value does not impact the numerical results of coordinate operations.
+     *
+     * @see #setConversionName(String)
      */
     private String conversionName;
+
+    /**
+     * The conversion method used by {@code ProjectedCRS} or {@code DerivedCRS}, or {@code null} if unspecified.
+     *
+     * @see #setConversionMethod(String)
+     */
+    private OperationMethod method;
 
     /**
      * The projection parameters, or {@code null} if not applicable.
@@ -59,9 +69,14 @@ public strictfp class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilde
     private ParameterValueGroup parameters;
 
     /**
-     * The math transform factory, fetched when first needed.
+     * The factor for Coordinate Reference System objects, fetched when first needed.
      */
-    private MathTransformFactory mtFactory;
+    private CRSFactory crsFactory;
+
+    /**
+     * The factor for Coordinate Operation objects, fetched when first needed.
+     */
+    private CoordinateOperationFactory copFactory;
 
     /**
      * Creates a new builder.
@@ -70,13 +85,23 @@ public strictfp class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilde
     }
 
     /**
-     * Returns the math transform factory. This method fetch the factory when first needed.
+     * Returns the factory for Coordinate Reference System objects. This method fetches the factory when first needed.
      */
-    private MathTransformFactory getMathTransformFactory() {
-        if (mtFactory == null) {
-            mtFactory = DefaultFactories.forBuildin(MathTransformFactory.class);
+    private CRSFactory getCRSFactory() {
+        if (crsFactory == null) {
+            crsFactory = DefaultFactories.forBuildin(CRSFactory.class);
         }
-        return mtFactory;
+        return crsFactory;
+    }
+
+    /**
+     * Returns the factory for Coordinate Operation objects. This method fetches the factory when first needed.
+     */
+    private CoordinateOperationFactory getCoordinateOperationFactory() {
+        if (copFactory == null) {
+            copFactory = DefaultFactories.forBuildin(CoordinateOperationFactory.class);
+        }
+        return copFactory;
     }
 
     /**
@@ -94,15 +119,16 @@ public strictfp class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilde
      *
      * This method can be invoked only once.
      *
-     * @param  method Name of the conversion method.
+     * @param  name Name of the conversion method.
      * @return {@code this}, for method call chaining.
-     * @throws NoSuchIdentifierException if the given name is unknown to the math transform factory.
+     * @throws FactoryException if the operation method of the given name can not be obtained.
      */
-    public GeodeticObjectBuilder setConversionMethod(final String method) throws NoSuchIdentifierException {
-        if (parameters != null) {
+    public GeodeticObjectBuilder setConversionMethod(final String name) throws FactoryException {
+        if (method != null) {
             throw new IllegalStateException(Errors.format(Errors.Keys.ElementAlreadyPresent_1, "OperationMethod"));
         }
-        parameters = getMathTransformFactory().getDefaultParameters(method);
+        method = getCoordinateOperationFactory().getOperationMethod(name);
+        parameters = method.getParameters().createValue();
         return this;
     }
 
@@ -148,6 +174,43 @@ public strictfp class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilde
     }
 
     /**
+     * Sets the operation method, parameters and conversion name for a Transverse Mercator projection.
+     * This convenience method delegates to the following methods:
+     *
+     * <ul>
+     *   <li>{@link #setConversionName(String)} with a name like <cite>"Transverse Mercator"</cite>
+     *       or <cite>"UTM zone 10N"</cite>, depending on the arguments given to this method.</li>
+     *   <li>{@link #setConversionMethod(String)} with the name of the Transverse Mercator projection method.</li>
+     *   <li>{@link #setParameter(String, double, Unit)} for each of the parameters enumerated below:</li>
+     * </ul>
+     *
+     * <blockquote><table class="sis">
+     *   <caption>Transverse Mercator parameters</caption>
+     *   <tr><th>Parameter name</th>                 <th>Value</th></tr>
+     *   <tr><td>Latitude of natural origin</td>     <td>Given latitude, snapped to 0° in the UTM case</td></tr>
+     *   <tr><td>Longitude of natural origin</td>    <td>Given longitude, optionally snapped to a UTM zone</td></tr>
+     *   <tr><td>Scale factor at natural origin</td> <td>0.9996</td></tr>
+     *   <tr><td>False easting</td>                  <td>500000 metres</td></tr>
+     *   <tr><td>False northing</td>                 <td>0 (North hemisphere) or 10000000 (South hemisphere) metres</td></tr>
+     * </table></blockquote>
+     *
+     * @param  isUTM      If {@code true}, the given central meridian will be snapped to the central meridian of a UTM zone.
+     * @param  latitude   The latitude in the center of the desired projection.
+     * @param  longitude  The longitude in the center of the desired projection.
+     * @return {@code this}, for method call chaining.
+     * @throws FactoryException if the operation method for the Transverse Mercator projection can not be obtained.
+     */
+    public GeodeticObjectBuilder setTransverseMercator(boolean isUTM, double latitude, double longitude)
+            throws FactoryException
+    {
+        ArgumentChecks.ensureBetween("latitude",   Latitude.MIN_VALUE,     Latitude.MAX_VALUE,     latitude);
+        ArgumentChecks.ensureBetween("longitude", -Formulas.LONGITUDE_MAX, Formulas.LONGITUDE_MAX, longitude);
+        setConversionMethod(TransverseMercator.NAME);
+        setConversionName(TransverseMercator.setParameters(parameters, isUTM, latitude, longitude));
+        return this;
+    }
+
+    /**
      * Creates a projected CRS using a conversion built from the values given by the {@code setParameter(…)} calls.
      *
      * <div class="note"><b>Example:</b>
@@ -177,8 +240,6 @@ public strictfp class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilde
      */
     public ProjectedCRS createProjectedCRS(final GeographicCRS baseCRS, final CartesianCS derivedCS) throws FactoryException {
         ensureConversionMethodSet();
-        final MathTransformFactory mtFactory = getMathTransformFactory();
-        final MathTransform mt = mtFactory.createBaseToDerived(baseCRS, parameters, derivedCS);
         onCreate(false);
         try {
             /*
@@ -189,7 +250,7 @@ public strictfp class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilde
             final Object name = (conversionName != null) ? properties.put(Conversion.NAME_KEY, conversionName) : null;
             final Object alias = properties.put(Conversion.ALIAS_KEY, null);
             final Object identifier = properties.put(Conversion.IDENTIFIERS_KEY, null);
-            final Conversion conversion = new DefaultConversion(properties, mtFactory.getLastMethodUsed(), mt, parameters);
+            final Conversion conversion = getCoordinateOperationFactory().createDefiningConversion(properties, method, parameters);
             /*
              * Restore the original properties and create the final ProjectedCRS.
              */
@@ -198,7 +259,7 @@ public strictfp class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilde
             if (name != null) {
                 properties.put(Conversion.NAME_KEY, name);
             }
-            return new DefaultProjectedCRS(properties, baseCRS, conversion, derivedCS);
+            return getCRSFactory().createProjectedCRS(properties, baseCRS, conversion, derivedCS);
         } finally {
             onCreate(true);
         }

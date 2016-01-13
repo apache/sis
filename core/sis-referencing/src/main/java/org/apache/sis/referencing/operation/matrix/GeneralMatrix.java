@@ -36,7 +36,7 @@ import org.apache.sis.internal.referencing.ExtendedPrecisionMatrix;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4
- * @version 0.5
+ * @version 0.7
  * @module
  *
  * @see Matrices#createDiagonal(int, int)
@@ -168,27 +168,6 @@ class GeneralMatrix extends MatrixSIS implements ExtendedPrecisionMatrix {
             return new GeneralMatrix(numRow, numCol, setToIdentity, 2);
         } else {
             return new NonSquareMatrix(numRow, numCol, setToIdentity, 2);
-        }
-    }
-
-    /**
-     * Copies the elements of the given matrix in the given array.
-     * This method ignores the error terms, if any.
-     *
-     * @param matrix   The matrix to copy.
-     * @param numRow   The number of rows to copy (usually {@code matrix.getNumRow()}).
-     * @param numCol   The number of columns to copy (usually {@code matrix.getNumCol()}).
-     * @param elements Where to copy the elements.
-     */
-    private static void getElements(final Matrix matrix, final int numRow, final int numCol, final double[] elements) {
-        if (matrix instanceof MatrixSIS) {
-            ((MatrixSIS) matrix).getElements(elements);
-        } else {
-            for (int k=0,j=0; j<numRow; j++) {
-                for (int i=0; i<numCol; i++) {
-                    elements[k++] = matrix.getElement(j, i);
-                }
-            }
         }
     }
 
@@ -476,6 +455,32 @@ class GeneralMatrix extends MatrixSIS implements ExtendedPrecisionMatrix {
             elements[i + length] = error;
         }
         return isExtended;
+    }
+
+    /**
+     * Sets this matrix to the values of another matrix. This method overrides the default implementation with a more
+     * efficient implementation in the particular case where the other matrix is an instance of {@code GeneralMatrix}.
+     *
+     * @param matrix  The matrix to copy.
+     * @throws MismatchedMatrixSizeException if the given matrix has a different size than this matrix.
+     *
+     * @since 0.7
+     */
+    @Override
+    public void setMatrix(final Matrix matrix) throws MismatchedMatrixSizeException {
+        if (matrix instanceof GeneralMatrix) {
+            final GeneralMatrix gm = (GeneralMatrix) matrix;
+            ensureSizeMatch(numRow, numCol, matrix);
+            final int length = gm.elements.length;
+            if (elements.length <= length) {
+                System.arraycopy(gm.elements, 0, elements, 0, elements.length);
+            } else {
+                System.arraycopy(gm.elements, 0, elements, 0, length);
+                inferErrors(elements);
+            }
+        } else {
+            super.setMatrix(matrix);
+        }
     }
 
     /**

@@ -16,8 +16,6 @@
  */
 package org.apache.sis.internal.system;
 
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.ExecutorService;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.logging.Logging;
 
@@ -34,7 +32,7 @@ import org.apache.sis.util.logging.Logging;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.3
+ * @version 0.7
  * @module
  */
 final class Threads extends Static {
@@ -83,19 +81,6 @@ final class Threads extends Static {
     static DaemonThread lastCreatedDaemon;
 
     /**
-     * Executor to shutdown. This is a copy of the {@code <removed class>} executor static final
-     * field, copied here only when the {@code <removed class>} class is loaded and initialized.
-     * We proceed that way for avoiding dependency from {@code Threads} to {@code <removed class>}.
-     *
-     * <p>This field has been temporarily fixed to {@code null} since we removed executor as of
-     * <a href="https://issues.apache.org/jira/browse/SIS-76">SIS-76</a>. However we may revert
-     * to a modifiable field in a future version if we choose to use executor again. In the main
-     * time, we declare this field as {@code final} for allowing the Javac compiler to omit all
-     * compiled code inside {@code if (executor != null)} block.</p>
-     */
-    private static final ExecutorService executor = null;
-
-    /**
      * Do not allows instantiation of this class.
      */
     private Threads() {
@@ -114,20 +99,6 @@ final class Threads extends Static {
      *         we were waiting for the daemon threads to die.
      */
     static synchronized void shutdown(final long stopWaitingAt) throws InterruptedException {
-        if (executor != null) {
-            executor.shutdown();
-            /*
-             * Wait for work completion. In theory this is not necessary since the daemon
-             * tasks are only house-cleaning work. We nevertheless wait for their completion
-             * as a safety. There tasks are supposed to be short.
-             */
-            final long delay = stopWaitingAt - System.nanoTime();
-            if (delay > 0) {
-                executor.awaitTermination(delay, TimeUnit.NANOSECONDS);
-                // Even if the tasks didn't completed, continue without waiting for them.
-                // We can not log at this point, since the logging framework may be shutdown.
-            }
-        }
         DaemonThread.killAll(lastCreatedDaemon, stopWaitingAt);
     }
 }

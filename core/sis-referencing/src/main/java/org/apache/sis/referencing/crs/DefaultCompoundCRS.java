@@ -112,6 +112,8 @@ import static org.apache.sis.internal.referencing.WKTUtilities.toFormattable;
  * @since   0.4
  * @version 0.7
  * @module
+ *
+ * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createCompoundCRS(String)
  */
 @XmlType(name = "CompoundCRSType")
 @XmlRootElement(name = "CompoundCRS")
@@ -183,6 +185,8 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
      *
      * @param properties The properties to be given to the coordinate reference system.
      * @param components The sequence of coordinate reference systems making this compound CRS.
+     *
+     * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createCompoundCRS(Map, CoordinateReferenceSystem...)
      */
     public DefaultCompoundCRS(final Map<String,?> properties, final CoordinateReferenceSystem... components) {
         super(properties, createCoordinateSystem(properties, components));

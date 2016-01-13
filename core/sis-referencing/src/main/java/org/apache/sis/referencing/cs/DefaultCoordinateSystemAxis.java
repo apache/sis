@@ -292,6 +292,8 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
      * @param abbreviation The {@linkplain #getAbbreviation() abbreviation} used for this coordinate system axis.
      * @param direction    The {@linkplain #getDirection() direction} of this coordinate system axis.
      * @param unit         The {@linkplain #getUnit() unit of measure} used for this coordinate system axis.
+     *
+     * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createCoordinateSystemAxis(Map, String, AxisDirection, Unit)
      */
     public DefaultCoordinateSystemAxis(final Map<String,?> properties,
                                        final String        abbreviation,

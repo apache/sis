@@ -83,6 +83,8 @@ public final strictfp class Geographic3Dto2DTest extends TestCase {
     static MathTransform createDatumShiftForGeographic2D(final MathTransformFactory factory,
             final MathTransform affine, final Parameters pv) throws FactoryException
     {
+        assertEquals("sourceDimensions", 3, affine.getSourceDimensions());
+        assertEquals("targetDimensions", 3, affine.getTargetDimensions());
         /*
          * Create a "Geographic to Geocentric" conversion with ellipsoid axis length units converted to metres
          * (the unit implied by SRC_SEMI_MAJOR) because it is the unit of Bursa-Wolf parameters that we created above.
@@ -91,12 +93,19 @@ public final strictfp class Geographic3Dto2DTest extends TestCase {
         step.getOrCreate(MapProjection.SEMI_MAJOR).setValue(pv.doubleValue(GeocentricAffineBetweenGeographic.SRC_SEMI_MAJOR));
         step.getOrCreate(MapProjection.SEMI_MINOR).setValue(pv.doubleValue(GeocentricAffineBetweenGeographic.SRC_SEMI_MINOR));
         MathTransform toGeocentric = factory.createParameterizedTransform(step);
+        assertEquals("sourceDimensions", 3, toGeocentric.getSourceDimensions());
+        assertEquals("targetDimensions", 3, toGeocentric.getTargetDimensions());
+
         final MathTransform reduce = factory.createParameterizedTransform(factory.getDefaultParameters("Geographic3D to 2D conversion"));
+        assertEquals("sourceDimensions", 3, reduce.getSourceDimensions());
+        assertEquals("targetDimensions", 2, reduce.getTargetDimensions());
         try {
             toGeocentric = factory.createConcatenatedTransform(reduce.inverse(), toGeocentric);
         } catch (NoninvertibleTransformException e) {
             throw new FactoryException(e);
         }
+        assertEquals("sourceDimensions", 2, toGeocentric.getSourceDimensions());
+        assertEquals("targetDimensions", 3, toGeocentric.getTargetDimensions());
         /*
          * Create a "Geocentric to Geographic" conversion with ellipsoid axis length units converted to metres
          * because this is the unit of the Geocentric CRS used above.
@@ -105,7 +114,12 @@ public final strictfp class Geographic3Dto2DTest extends TestCase {
         step.getOrCreate(MapProjection.SEMI_MAJOR).setValue(pv.doubleValue(GeocentricAffineBetweenGeographic.TGT_SEMI_MAJOR));
         step.getOrCreate(MapProjection.SEMI_MINOR).setValue(pv.doubleValue(GeocentricAffineBetweenGeographic.TGT_SEMI_MINOR));
         MathTransform toGeographic = factory.createParameterizedTransform(step);
+        assertEquals("sourceDimensions", 3, toGeographic.getSourceDimensions());
+        assertEquals("targetDimensions", 3, toGeographic.getTargetDimensions());
+
         toGeographic = factory.createConcatenatedTransform(toGeographic, reduce);
+        assertEquals("sourceDimensions", 3, toGeographic.getSourceDimensions());
+        assertEquals("targetDimensions", 2, toGeographic.getTargetDimensions());
         /*
          * The  Geocentric → Affine → Geographic  chain.
          */

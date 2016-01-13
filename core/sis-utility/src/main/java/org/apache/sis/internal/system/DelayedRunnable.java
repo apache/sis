@@ -39,6 +39,12 @@ public abstract class DelayedRunnable implements Delayed, Runnable {
      * Time of execution of this task, in nanoseconds provided by {@link System#nanoTime()}.
      * In the particular case of the {@link Immediate} subclass, the meaning of this field is
      * modified: it is rather an ordinal value used for preserving task order.
+     *
+     * <div class="note"><b>Note:</b>
+     * we use {@link System#nanoTime()} instead than {@link System#currentTimeMillis()} because
+     * the later is not guaranteed to be monotonic: {@code currentTimeMillis} may change abruptly
+     * for example if the user adjusts the clock of his operating system.
+     * </div>
      */
     final long timestamp;
 
@@ -74,7 +80,7 @@ public abstract class DelayedRunnable implements Delayed, Runnable {
     @Override
     public int compareTo(final Delayed other) {
         if (other instanceof Immediate) {
-            return +1; // "Immediate" tasks always have precedence over delayed ones.
+            return +1;                      // "Immediate" tasks always have precedence over delayed ones.
         }
         return Long.signum(timestamp - ((DelayedRunnable) other).timestamp);
     }

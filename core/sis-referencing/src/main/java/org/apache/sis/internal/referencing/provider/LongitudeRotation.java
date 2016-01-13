@@ -20,7 +20,6 @@ import javax.xml.bind.annotation.XmlTransient;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.ParameterNotFoundException;
-import org.opengis.referencing.operation.Transformation;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.apache.sis.internal.referencing.j2d.AffineTransform2D;
@@ -45,11 +44,11 @@ import org.apache.sis.parameter.Parameters;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.6
- * @version 0.6
+ * @version 0.7
  * @module
  */
 @XmlTransient
-public final class LongitudeRotation extends AbstractProvider {
+public final class LongitudeRotation extends GeographicOffsets {
     /**
      * Serial number for inter-operability with different versions.
      */
@@ -60,24 +59,14 @@ public final class LongitudeRotation extends AbstractProvider {
      */
     private static final ParameterDescriptorGroup PARAMETERS;
     static {
-        PARAMETERS = builder().addIdentifier("9601").addName("Longitude rotation").createGroup(GeographicOffsets.TX);
+        PARAMETERS = builder().addIdentifier("9601").addName("Longitude rotation").createGroup(TX);
     }
 
     /**
      * Constructs a provider with default parameters.
      */
     public LongitudeRotation() {
-        super(2, 2, PARAMETERS);
-    }
-
-    /**
-     * Returns the operation type.
-     *
-     * @return Interface implemented by all coordinate operations that use this method.
-     */
-    @Override
-    public Class<Transformation> getOperationType() {
-        return Transformation.class;
+        super(2, PARAMETERS);
     }
 
     /**
@@ -100,7 +89,7 @@ public final class LongitudeRotation extends AbstractProvider {
     public MathTransform createMathTransform(final MathTransformFactory factory, final ParameterValueGroup values)
             throws ParameterNotFoundException
     {
-        final double offset = Parameters.castOrWrap(values).doubleValue(GeographicOffsets.TX);
-        return new AffineTransform2D(1, 0, 0, 1, offset, 0);
+        final Parameters pv = Parameters.castOrWrap(values);
+        return new AffineTransform2D(1, 0, 0, 1, pv.doubleValue(TX), 0);
     }
 }

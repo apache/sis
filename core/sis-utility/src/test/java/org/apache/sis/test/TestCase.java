@@ -27,9 +27,6 @@ import java.io.UnsupportedEncodingException;
 import org.apache.sis.util.logging.Logging;
 import org.junit.runner.RunWith;
 
-import static org.apache.sis.test.TestConfiguration.VERBOSE_OUTPUT_KEY;
-import static org.apache.sis.test.TestConfiguration.OUTPUT_ENCODING_KEY;
-
 
 /**
  * Base class of Apache SIS tests (except the ones that extend GeoAPI tests).
@@ -50,7 +47,7 @@ import static org.apache.sis.test.TestConfiguration.OUTPUT_ENCODING_KEY;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.6
+ * @version 0.7
  * @module
  */
 @RunWith(TestRunner.class)
@@ -110,14 +107,22 @@ public abstract strictfp class TestCase {
      * {@code true} if the {@value org.apache.sis.test.TestConfiguration#VERBOSE_OUTPUT_KEY}
      * system property is set to {@code true}.
      */
-    public static final boolean verbose;
+    public static final boolean VERBOSE;
+
+    /**
+     * {@code true} if the {@value org.apache.sis.test.TestConfiguration#EXTENSIVE_TESTS_KEY}
+     * system property is set to {@code true}.
+     * If {@code true}, then Apache SIS will run some tests which were normally skipped because they are slow.
+     */
+    public static final boolean RUN_EXTENSIVE_TESTS;
 
     /**
      * Sets the {@link #out} writer and its underlying {@link #buffer}.
      */
     static {
-        verbose = Boolean.getBoolean(VERBOSE_OUTPUT_KEY);
         out = new PrintWriter(buffer = new StringWriter());
+        VERBOSE = Boolean.getBoolean(TestConfiguration.VERBOSE_OUTPUT_KEY);
+        RUN_EXTENSIVE_TESTS = Boolean.getBoolean(TestConfiguration.EXTENSIVE_TESTS_KEY);
     }
 
     /**
@@ -136,12 +141,12 @@ public abstract strictfp class TestCase {
      * message and left the encoding unchanged.</p>
      */
     static {
-        final String encoding = System.getProperty(OUTPUT_ENCODING_KEY);
+        final String encoding = System.getProperty(TestConfiguration.OUTPUT_ENCODING_KEY);
         if (encoding != null) try {
             for (Logger logger=LOGGER; logger!=null; logger=logger.getParent()) {
                 for (final Handler handler : logger.getHandlers()) {
                     if (handler instanceof ConsoleHandler) {
-                        ((ConsoleHandler) handler).setEncoding(encoding);
+                        handler.setEncoding(encoding);
                     }
                 }
                 if (!logger.getUseParentHandlers()) {
@@ -200,7 +205,7 @@ public abstract strictfp class TestCase {
              * Get the output writer, using the specified encoding if any.
              */
             PrintWriter writer = null;
-            final String encoding = System.getProperty(OUTPUT_ENCODING_KEY);
+            final String encoding = System.getProperty(TestConfiguration.OUTPUT_ENCODING_KEY);
             if (encoding == null) {
                 final Console console = System.console();
                 if (console != null) {

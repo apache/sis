@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.io.Serializable;
 import java.awt.geom.AffineTransform;   // For javadoc
 import org.opengis.referencing.operation.Matrix;
+import org.apache.sis.internal.referencing.ExtendedPrecisionMatrix;
 import org.apache.sis.internal.util.DoubleDouble;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.util.ArgumentChecks;
@@ -87,25 +88,26 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
     }
 
     /**
-     * Ensures that the given matrix is a square matrix having the given dimension.
+     * Ensures that the given matrix has the given dimension.
      * This is a convenience method for subclasses.
      */
-    static void ensureSizeMatch(final int size, final Matrix matrix) {
-        final int numRow = matrix.getNumRow();
-        final int numCol = matrix.getNumCol();
-        if (numRow != size || numCol != size) {
-            final Integer n = size;
+    static void ensureSizeMatch(final int numRow, final int numCol, final Matrix matrix)
+            throws MismatchedMatrixSizeException
+    {
+        final int othRow = matrix.getNumRow();
+        final int othCol = matrix.getNumCol();
+        if (numRow != othRow || numCol != othCol) {
             throw new MismatchedMatrixSizeException(Errors.format(
-                    Errors.Keys.MismatchedMatrixSize_4, n, n, numRow, numCol));
+                    Errors.Keys.MismatchedMatrixSize_4, numRow, numCol, othRow, othCol));
         }
     }
 
     /**
-     * Ensures that the number of rows of the given matrix matches the given value.
+     * Ensures that the number of rows of a given matrix matches the given value.
      * This is a convenience method for {@link #multiply(Matrix)} implementations.
      *
      * @param expected The expected number of rows.
-     * @param matrix   The matrix to verify.
+     * @param actual   The actual number of rows in the matrix to verify.
      * @param numCol   The number of columns to report in case of errors. This is an arbitrary
      *                 value and have no incidence on the verification performed by this method.
      */
@@ -214,6 +216,27 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
     }
 
     /**
+     * Copies the elements of the given matrix in the given array.
+     * This method ignores the error terms, if any.
+     *
+     * @param matrix   The matrix to copy.
+     * @param numRow   {@code matrix.getNumRow()}.
+     * @param numCol   {@code matrix.getNumCol()}.
+     * @param elements Where to copy the elements.
+     */
+    static void getElements(final Matrix matrix, final int numRow, final int numCol, final double[] elements) {
+        if (matrix instanceof MatrixSIS) {
+            ((MatrixSIS) matrix).getElements(elements);
+        } else {
+            for (int k=0,j=0; j<numRow; j++) {
+                for (int i=0; i<numCol; i++) {
+                    elements[k++] = matrix.getElement(j, i);
+                }
+            }
+        }
+    }
+
+    /**
      * Sets all matrix elements from a flat, row-major (column indices vary fastest) array.
      * The array length shall be <code>{@linkplain #getNumRow()} * {@linkplain #getNumCol()}</code>.
      *
@@ -224,6 +247,47 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
      * @see Matrices#create(int, int, double[])
      */
     public abstract void setElements(final double[] elements);
+
+    /**
+     * Sets this matrix to the values of another matrix.
+     * The given matrix must have the same size.
+     *
+     * @param matrix  The matrix to copy.
+     * @throws MismatchedMatrixSizeException if the given matrix has a different size than this matrix.
+     *
+     * @since 0.7
+     */
+    public void setMatrix(final Matrix matrix) throws MismatchedMatrixSizeException {
+        ArgumentChecks.ensureNonNull("matrix", matrix);
+        final int numRow = getNumRow();
+        final int numCol = getNumCol();
+        ensureSizeMatch(numRow, numCol, matrix);
+        final int count = numRow * numCol;
+        final double[] elements;
+        /*
+         * If both matrices use extended precision, the elements array will have twice the expected length
+         * with the matrix values in the first half and the error terms in the second half.  If we want to
+         * preserve the extended precision, we have to transfer the values between the two matrices with a
+         * DoubleDouble object.
+         */
+        if (isExtendedPrecision() && matrix instanceof ExtendedPrecisionMatrix) {
+            elements = ((ExtendedPrecisionMatrix) matrix).getExtendedElements();
+            if (elements.length > count) {
+                final DoubleDouble t = new DoubleDouble();
+                for (int i=0; i<count; i++) {
+                    t.value = elements[i];
+                    t.error = elements[i + count];
+                    set(i / numCol, i % numCol, t);
+                }
+                return;
+            }
+        } else {
+            // Fallback for matrices that do not use extended precision.
+            elements = new double[count];
+            getElements(matrix, numRow, numCol, elements);
+        }
+        setElements(elements);
+    }
 
     /**
      * Returns {@code true} if this matrix uses extended precision.

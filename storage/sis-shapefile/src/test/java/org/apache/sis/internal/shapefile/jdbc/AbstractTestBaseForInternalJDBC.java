@@ -51,7 +51,7 @@ public abstract class AbstractTestBaseForInternalJDBC extends TestCase {
      */
     public Connection connect() throws SQLException {
         final Driver driver = new DBFDriver();
-        return driver.connect(dbfFile.getAbsolutePath(), null);
+        return driver.connect(this.dbfFile.getAbsolutePath(), null);
     }
 
     /**
@@ -62,7 +62,7 @@ public abstract class AbstractTestBaseForInternalJDBC extends TestCase {
     public void setup() throws URISyntaxException {
         final URL url = ShapeFileTest.class.getResource("SignedBikeRoute_4326_clipped.dbf");
         assertNotNull("The database file used for testing doesn't exist.", url);
-        dbfFile = new File(url.toURI());
-        assertTrue(dbfFile.isFile());
+        this.dbfFile = new File(url.toURI());
+        assertTrue(this.dbfFile.isFile());
     }
 }
