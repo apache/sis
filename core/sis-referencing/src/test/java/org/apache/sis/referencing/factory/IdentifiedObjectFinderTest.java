@@ -17,13 +17,11 @@
 package org.apache.sis.referencing.factory;
 
 import java.util.Collections;
-import org.opengis.util.NameFactory;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.crs.CRSAuthorityFactory;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.GeographicCRS;
-import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.referencing.crs.DefaultGeographicCRS;
 
 // Test imports
@@ -55,7 +53,7 @@ public final strictfp class IdentifiedObjectFinderTest extends TestCase {
      * Initializes the factory to test.
      */
     public IdentifiedObjectFinderTest() {
-        factory = new CommonAuthorityFactory(DefaultFactories.forBuildin(NameFactory.class));
+        factory = new CommonAuthorityFactory();
     }
 
     /**
@@ -117,7 +115,7 @@ public final strictfp class IdentifiedObjectFinderTest extends TestCase {
         private final GeodeticAuthorityFactory factory;
 
         public Cached(final GeodeticAuthorityFactory factory) {
-            super(GeodeticAuthorityFactory.class, factory.nameFactory);
+            super(GeodeticAuthorityFactory.class);
             this.factory = factory;
         }
 

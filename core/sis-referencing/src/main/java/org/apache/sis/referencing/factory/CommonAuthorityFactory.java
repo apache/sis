@@ -25,7 +25,6 @@ import javax.measure.unit.SI;
 import javax.measure.unit.NonSI;
 import javax.measure.unit.Unit;
 import javax.measure.quantity.Length;
-import org.opengis.util.NameFactory;
 import org.opengis.util.FactoryException;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Citation;
@@ -44,8 +43,6 @@ import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.datum.DatumFactory;
 import org.opengis.referencing.datum.EngineeringDatum;
-import org.opengis.util.GenericName;
-import org.opengis.util.ScopedName;
 import org.apache.sis.internal.referencing.GeodeticObjectBuilder;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.internal.system.DefaultFactories;
@@ -247,11 +244,8 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
 
     /**
      * Constructs a default factory for the {@code CRS} authority.
-     *
-     * @param nameFactory The factory to use for {@linkplain NameFactory#parseGenericName parsing} authority codes.
      */
-    public CommonAuthorityFactory(final NameFactory nameFactory) {
-        super(nameFactory);
+    public CommonAuthorityFactory() {
         codes = new LinkedHashMap<>();
     }
 
@@ -293,13 +287,15 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
      * other authority, throw an exception. Otherwise if the code has no authority, returns the code as-is.
      */
     private String trimAuthority(String code) throws NoSuchAuthorityCodeException {
-        final GenericName name = nameFactory.parseGenericName(null, code);
-        if (name instanceof ScopedName) {
-            final GenericName scope = ((ScopedName) name).path();
-            if (!isCodeSpace(CharSequences.trimWhitespaces(scope.toString()))) {
+        int s = code.indexOf(DefaultNameSpace.DEFAULT_SEPARATOR);
+        if (s >= 0) {
+            final String scope = code.substring(0, s);
+            if (!isCodeSpace(CharSequences.trimWhitespaces(scope))) {
                 throw new NoSuchAuthorityCodeException(Errors.format(Errors.Keys.UnknownAuthority_1, scope), Constants.OGC, code);
             }
-            code = name.tip().toString();
+            final int length = code.length();
+            s = CharSequences.skipLeadingWhitespaces(code, s+1, length);
+            code = code.substring(s, CharSequences.skipTrailingWhitespaces(code, s, length));
         }
         /*
          * Above code removed the "CRS" part when it is used as a namespace, as in "CRS:84".

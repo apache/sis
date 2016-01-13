@@ -155,8 +155,9 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
 {
     /**
      * The namespace of EPSG names and codes. This namespace is needed by all {@code createFoo(String)} methods.
-     * The {@code EPSGDataAccess} constructor relies on the {@link #nameFactory} caching mechanism for giving us
-     * the same {@code NameSpace} instance than the one used by previous {@code EPSGDataAccess} instances, if any.
+     * The {@code EPSGDataAccess} constructor relies on the {@link EPSGFactory#nameFactory} caching mechanism
+     * for giving us the same {@code NameSpace} instance than the one used by previous {@code EPSGDataAccess}
+     * instances, if any.
      */
     private final NameSpace namespace;
 
@@ -301,13 +302,13 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
      * @see EPSGFactory#newDataAccess(Connection, SQLTranslator)
      */
     protected EPSGDataAccess(final EPSGFactory parent, final Connection connection, final SQLTranslator translator) {
-        super(parent);
         ArgumentChecks.ensureNonNull("connection", connection);
         ArgumentChecks.ensureNonNull("translator", translator);
         this.parent     = parent;
         this.connection = connection;
         this.translator = translator;
-        this.namespace  = nameFactory.createNameSpace(nameFactory.createLocalName(null, Constants.IOGP), null);
+        this.namespace  = parent.nameFactory.createNameSpace(
+                          parent.nameFactory.createLocalName(null, Constants.IOGP), null);
     }
 
     /**
@@ -983,7 +984,7 @@ addURIs:    for (int i=0; ; i++) {
         final InternationalString edition = authority.getEdition();
         final String version = (edition != null) ? edition.toString() : null;
         if (name != null) {
-            gn = nameFactory.createGenericName(namespace, Constants.EPSG, name);
+            gn = parent.nameFactory.createGenericName(namespace, Constants.EPSG, name);
             properties.put("name", gn);
             properties.put(NamedIdentifier.CODE_KEY,      name);
             properties.put(NamedIdentifier.VERSION_KEY,   version);
@@ -1025,11 +1026,12 @@ addURIs:    for (int i=0; ; i++) {
                     if (naming != null) {
                         ns = namingSystems.get(naming);
                         if (ns == null) {
-                            ns = nameFactory.createNameSpace(nameFactory.createLocalName(null, naming), null);
+                            ns = parent.nameFactory.createNameSpace(
+                                 parent.nameFactory.createLocalName(null, naming), null);
                             namingSystems.put(naming, ns);
                         }
                     }
-                    aliases.add(nameFactory.createLocalName(ns, alias));
+                    aliases.add(parent.nameFactory.createLocalName(ns, alias));
                 }
             }
         }
