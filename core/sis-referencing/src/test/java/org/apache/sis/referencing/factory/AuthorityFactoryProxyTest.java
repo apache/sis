@@ -16,13 +16,11 @@
  */
 package org.apache.sis.referencing.factory;
 
-import org.opengis.util.NameFactory;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.AuthorityFactory;
 import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.referencing.crs.*;
-import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.referencing.datum.DefaultGeodeticDatum;
 import org.apache.sis.referencing.crs.DefaultGeographicCRS;
 import org.apache.sis.referencing.crs.DefaultProjectedCRS;
@@ -80,7 +78,7 @@ public final strictfp class AuthorityFactoryProxyTest extends TestCase {
      */
     @Test
     public void testCreateFromAPI() throws FactoryException {
-        final CRSAuthorityFactory factory = new CommonAuthorityFactory(DefaultFactories.forBuildin(NameFactory.class));
+        final CRSAuthorityFactory factory = new CommonAuthorityFactory();
         final CoordinateReferenceSystem expected = factory.createCoordinateReferenceSystem("83");
         AuthorityFactoryProxy<?> proxy;
         /*

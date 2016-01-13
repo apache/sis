@@ -28,18 +28,14 @@ import org.opengis.metadata.Identifier;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.parameter.ParameterDescriptor;
-import org.opengis.util.ScopedName;
-import org.opengis.util.GenericName;
-import org.opengis.util.NameFactory;
 import org.opengis.util.FactoryException;
 import org.opengis.util.InternationalString;
 import org.apache.sis.internal.util.Citations;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.util.iso.SimpleInternationalString;
+import org.apache.sis.util.iso.DefaultNameSpace;
 import org.apache.sis.util.iso.AbstractFactory;
-import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Debug;
@@ -69,47 +65,9 @@ import org.apache.sis.util.Debug;
  */
 public abstract class GeodeticAuthorityFactory extends AbstractFactory implements AuthorityFactory {
     /**
-     * The factory to use for parsing authority codes as {@link GenericName} instances.
-     *
-     * <div class="note"><b>Example:</b>
-     * This factory can be used as below:
-     *
-     * {@preformat java
-     *     public Foo createFoo(String code) {
-     *         GenericName name = nameFactory.parseGenericName(null, code);
-     *         if (name instanceof ScopedName) {
-     *             GenericName scope = ((ScopedName) name).path();
-     *             if (!MY_AUTHORITY.equals(scope.toString())) {
-     *                 throw new NoSuchAuthorityCodeException("Not a code managed by MyAuthority.", "MyAuthority", code);
-     *             }
-     *         }
-     *         code = name.tip().toString();
-     *         // From this point, the code is local to this factory namespace.
-     *     }
-     * }</div>
-     *
-     * Subclasses may also use this factory for creating {@linkplain AbstractIdentifiedObject#getAlias() aliases}.
-     */
-    protected final NameFactory nameFactory;
-
-    /**
      * Creates a new authority factory for geodetic objects.
-     *
-     * @param nameFactory The factory to use for {@linkplain NameFactory#parseGenericName parsing} authority codes.
      */
-    protected GeodeticAuthorityFactory(final NameFactory nameFactory) {
-        ArgumentChecks.ensureNonNull("nameFactory", nameFactory);
-        this.nameFactory = nameFactory;
-    }
-
-    /**
-     * Creates a new authority factory with the same configuration than the given factory.
-     *
-     * @param parent The factory from which to copy the configuration.
-     */
-    protected GeodeticAuthorityFactory(final GeodeticAuthorityFactory parent) {
-        ArgumentChecks.ensureNonNull("parent", parent);
-        nameFactory = parent.nameFactory;
+    protected GeodeticAuthorityFactory() {
     }
 
     /**
@@ -1167,41 +1125,36 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
     }
 
     /**
-     * Trims the authority scope, if presents. For example if this factory is an EPSG authority factory
+     * Trims the authority scope, if present. For example if this factory is an EPSG authority factory
      * and the specified code start with the {@code "EPSG:"} prefix, then the prefix is removed.
      * Otherwise, the string is returned unchanged (except for leading and trailing spaces).
      *
      * @param  code The code to trim.
-     * @return The code without the authority scope.
+     * @param  authority The authority factory, or {@code null} for {@link #getAuthority()}.
+     * @return The code with the authority part removed if that part matched the expected authority.
      */
-    final String trimAuthority(String code, Citation authority) {
-        final GenericName name = nameFactory.parseGenericName(null, code);
-        if (name instanceof ScopedName) {
-            final GenericName scope = ((ScopedName) name).path();
+    final String trimAuthority(final String code, Citation authority) {
+        int s = code.indexOf(DefaultNameSpace.DEFAULT_SEPARATOR);
+        if (s >= 0) {
             if (authority == null) {
                 authority = getAuthority();     // Costly operation for EPSGDataAccess.
             }
-            if (Citations.identifierMatches(authority, null, scope.toString())) {    // Comparison ignores spaces.
-                code = name.tip().toString();
+            if (Citations.identifierMatches(authority, null, code.substring(0, s))) {    // Comparison ignores spaces.
+                final int n = code.indexOf(DefaultNameSpace.DEFAULT_SEPARATOR, s + 1);
+                if (n >= 0) {
+                    /*
+                     * The separator sometime appears twice, as in "EPSG::4326" or "EPSG:8.8:4326".
+                     * The part between the two separators is the verion number, which we ignore in
+                     * this simple version.
+                     */
+                    s = n;
+                }
+                final int length = code.length();
+                s = CharSequences.skipLeadingWhitespaces(code, s+1, length);
+                return code.substring(s, CharSequences.skipTrailingWhitespaces(code, s, length));
             }
         }
         return CharSequences.trimWhitespaces(code);
-    }
-
-    /**
-     * Creates an exception for an unknown authority code.
-     * This convenience method is provided for implementation of {@code createFoo(String)} methods in subclasses.
-     *
-     * @param  type  The GeoAPI interface of the requested object (e.g. {@code CoordinateReferenceSystem.class}).
-     * @param  code  The unknown authority code.
-     * @return An exception initialized with an error message built from the specified informations.
-     */
-    final NoSuchAuthorityCodeException noSuchAuthorityCode(final Class<?> type, final String code) {
-        final Citation authority = getAuthority();
-        final String name = Citations.getIdentifier(authority, false);
-        return new NoSuchAuthorityCodeException(Errors.format(Errors.Keys.NoSuchAuthorityCode_3,
-                   (name != null) ? name : Vocabulary.formatInternational(Vocabulary.Keys.Untitled),
-                   type, code), name, trimAuthority(code, authority), code);
     }
 
     /**

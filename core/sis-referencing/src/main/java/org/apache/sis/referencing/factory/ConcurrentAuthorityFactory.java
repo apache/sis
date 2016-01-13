@@ -39,7 +39,6 @@ import org.opengis.referencing.datum.*;
 import org.opengis.referencing.operation.*;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
-import org.opengis.util.NameFactory;
 import org.opengis.util.FactoryException;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.extent.Extent;
@@ -246,10 +245,9 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
      * on experience gained.
      *
      * @param dataAccessClass The class of Data Access Object (DAO) created by {@link #newDataAccess()}.
-     * @param nameFactory The factory to use for {@linkplain NameFactory#parseGenericName parsing} authority codes.
      */
-    protected ConcurrentAuthorityFactory(Class<DAO> dataAccessClass, NameFactory nameFactory) {
-        this(dataAccessClass, nameFactory, 100, 8);
+    protected ConcurrentAuthorityFactory(Class<DAO> dataAccessClass) {
+        this(dataAccessClass, 100, 8);
         /*
          * NOTE: if the default maximum number of Data Access Objects (currently 8) is augmented,
          * make sure to augment the number of runner threads in the "StressTest" class to a greater amount.
@@ -259,19 +257,17 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
     /**
      * Constructs an instance with the specified number of entries to keep by strong references.
      * If a number of object greater than {@code maxStrongReferences} are created, then the strong references
-     * for the eldest ones will be replaced by weak references.
+     * for the eldest objects will be replaced by weak references.
      *
      * @param dataAccessClass The class of Data Access Object (DAO) created by {@link #newDataAccess()}.
-     * @param nameFactory The factory to use for {@linkplain NameFactory#parseGenericName parsing} authority codes.
      * @param maxStrongReferences The maximum number of objects to keep by strong reference.
      * @param maxConcurrentQueries The maximal amount of Data Access Objects to use concurrently.
      *        If more than this amount of threads are querying this {@code ConcurrentAuthorityFactory} concurrently,
      *        additional threads will be blocked until a Data Access Object become available.
      */
     protected ConcurrentAuthorityFactory(final Class<DAO> dataAccessClass,
-            final NameFactory nameFactory, final int maxStrongReferences, final int maxConcurrentQueries)
+            final int maxStrongReferences, final int maxConcurrentQueries)
     {
-        super(nameFactory);
         ArgumentChecks.ensureNonNull("dataAccessClass", dataAccessClass);
         ArgumentChecks.ensurePositive("maxStrongReferences", maxStrongReferences);
         ArgumentChecks.ensureStrictlyPositive("maxConcurrentQueries", maxConcurrentQueries);

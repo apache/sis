@@ -19,7 +19,6 @@ package org.apache.sis.referencing.factory;
 import java.util.Arrays;
 import javax.measure.unit.SI;
 import javax.measure.unit.NonSI;
-import org.opengis.util.NameFactory;
 import org.opengis.util.FactoryException;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.parameter.ParameterValueGroup;
@@ -32,7 +31,6 @@ import org.opengis.referencing.crs.VerticalCRS;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.datum.Datum;
 import org.apache.sis.internal.util.Constants;
-import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.referencing.provider.TransverseMercator;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.referencing.CommonCRS;
@@ -66,7 +64,7 @@ public final strictfp class CommonAuthorityFactoryTest extends TestCase {
      * Initializes the factory to test.
      */
     public CommonAuthorityFactoryTest() {
-        factory = new CommonAuthorityFactory(DefaultFactories.forBuildin(NameFactory.class));
+        factory = new CommonAuthorityFactory();
     }
 
     /**
