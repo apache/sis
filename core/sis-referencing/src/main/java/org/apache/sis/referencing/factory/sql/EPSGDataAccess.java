@@ -158,8 +158,9 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
 {
     /**
      * The namespace of EPSG names and codes. This namespace is needed by all {@code createFoo(String)} methods.
-     * The {@code EPSGDataAccess} constructor relies on the {@link #nameFactory} caching mechanism for giving us
-     * the same {@code NameSpace} instance than the one used by previous {@code EPSGDataAccess} instances, if any.
+     * The {@code EPSGDataAccess} constructor relies on the {@link EPSGFactory#nameFactory} caching mechanism
+     * for giving us the same {@code NameSpace} instance than the one used by previous {@code EPSGDataAccess}
+     * instances, if any.
      */
     private final NameSpace namespace;
 
@@ -261,6 +262,13 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
     private final Map<Integer,Class<?>> safetyGuard = new HashMap<>();
 
     /**
+     * {@code true} for disabling the logging of warnings when this factory creates deprecated objects.
+     * This flag should be always {@code false}, except during {@link Finder#find(IdentifiedObject)}
+     * execution since that method may temporarily creates deprecated objects which are later discarded.
+     */
+    private transient boolean quiet;
+
+    /**
      * The {@code ConcurrentAuthorityFactory} that supply caching for all {@code createFoo(String)} methods.
      */
     protected final EPSGFactory parent;
@@ -297,13 +305,13 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
      * @see EPSGFactory#newDataAccess(Connection, SQLTranslator)
      */
     protected EPSGDataAccess(final EPSGFactory parent, final Connection connection, final SQLTranslator translator) {
-        super(parent);
         ArgumentChecks.ensureNonNull("connection", connection);
         ArgumentChecks.ensureNonNull("translator", translator);
         this.parent     = parent;
         this.connection = connection;
         this.translator = translator;
-        this.namespace  = nameFactory.createNameSpace(nameFactory.createLocalName(null, Constants.IOGP), null);
+        this.namespace  = parent.nameFactory.createNameSpace(
+                          parent.nameFactory.createLocalName(null, Constants.IOGP), null);
     }
 
     /**
@@ -421,6 +429,16 @@ addURIs:    for (int i=0; ; i++) {
      * The returned set should not be referenced for a long time, as it may prevent this factory to release
      * JDBC resources. If the set of codes is needed for a long time, their values should be copied in another
      * collection object.
+     *
+     * <div class="section">Handling of deprecated objects</div>
+     * The collection returned by this method gives an enumeration of EPSG codes for valid objects only.
+     * The EPSG codes of deprecated objects are not included in iterations, computation of {@code Set.size()} value,
+     * {@code Set.toString()} result, <i>etc.</i> with one exception:
+     * a call to {@code Set.contains(…)} will return {@code true} if the given identifier exists
+     * for a deprecated object, even if that identifier does not show up in iterations.
+     *
+     * <p>An other point of view could be to said that the returned collection behaves as if the deprecated codes
+     * were included in the set but invisible.</p>
      *
      * @param  type The spatial reference objects type (may be {@code Object.class}).
      * @return The set of authority codes for spatial reference objects of the given type (may be an empty set).
@@ -939,10 +957,12 @@ addURIs:    for (int i=0; ; i++) {
                 break;
             }
         }
-        LogRecord record = Messages.getResources(locale).getLogRecord(Level.WARNING, Messages.Keys.DeprecatedCode_3,
-                Constants.EPSG + DefaultNameSpace.DEFAULT_SEPARATOR + code, replacedBy, reason);
-        record.setLoggerName(Loggers.CRS_FACTORY);
-        Logging.log(EPSGDataAccess.class, method, record);
+        if (!quiet) {
+            LogRecord record = Messages.getResources(locale).getLogRecord(Level.WARNING, Messages.Keys.DeprecatedCode_3,
+                    Constants.EPSG + DefaultNameSpace.DEFAULT_SEPARATOR + code, replacedBy, reason);
+            record.setLoggerName(Loggers.CRS_FACTORY);
+            Logging.log(EPSGDataAccess.class, method, record);
+        }
         return Vocabulary.formatInternational(Vocabulary.Keys.SupersededBy_1, replacedBy);
     }
 
@@ -967,7 +987,7 @@ addURIs:    for (int i=0; ; i++) {
         final InternationalString edition = authority.getEdition();
         final String version = (edition != null) ? edition.toString() : null;
         if (name != null) {
-            gn = nameFactory.createGenericName(namespace, Constants.EPSG, name);
+            gn = parent.nameFactory.createGenericName(namespace, Constants.EPSG, name);
             properties.put("name", gn);
             properties.put(NamedIdentifier.CODE_KEY,      name);
             properties.put(NamedIdentifier.VERSION_KEY,   version);
@@ -1009,11 +1029,12 @@ addURIs:    for (int i=0; ; i++) {
                     if (naming != null) {
                         ns = namingSystems.get(naming);
                         if (ns == null) {
-                            ns = nameFactory.createNameSpace(nameFactory.createLocalName(null, naming), null);
+                            ns = parent.nameFactory.createNameSpace(
+                                 parent.nameFactory.createLocalName(null, naming), null);
                             namingSystems.put(naming, ns);
                         }
                     }
-                    aliases.add(nameFactory.createLocalName(ns, alias));
+                    aliases.add(parent.nameFactory.createLocalName(ns, alias));
                 }
             }
         }
@@ -1517,12 +1538,13 @@ addURIs:    for (int i=0; ; i++) {
                       " COORD_OP_METHOD_CODE," +
                       " TARGET_CRS_CODE" +
                 " FROM [Coordinate_Operation]" +
-               " WHERE TARGET_CRS_CODE = "       + BursaWolfInfo.TARGET_CRS +
+               " WHERE DEPRECATED=0" +
+                 " AND TARGET_CRS_CODE = "       + BursaWolfInfo.TARGET_CRS +
                  " AND COORD_OP_METHOD_CODE >= " + BursaWolfInfo.MIN_METHOD_CODE +
                  " AND COORD_OP_METHOD_CODE <= " + BursaWolfInfo.MAX_METHOD_CODE +
                  " AND SOURCE_CRS_CODE IN " +
                "(SELECT COORD_REF_SYS_CODE FROM [Coordinate Reference System] WHERE DATUM_CODE = ?)" +
-            " ORDER BY TARGET_CRS_CODE, ABS(DEPRECATED), COORD_OP_ACCURACY, COORD_OP_CODE DESC", code))
+            " ORDER BY TARGET_CRS_CODE, COORD_OP_ACCURACY, COORD_OP_CODE DESC", code))
         {
             while (result.next()) {
                 final BursaWolfInfo info = new BursaWolfInfo(
@@ -2763,6 +2785,20 @@ addURIs:    for (int i=0; ; i++) {
          */
         Finder() {
             super(parent);
+        }
+
+        /**
+         * Searches for the given object with warnings for deprecations temporarily disabled.
+         */
+        @Override
+        public Set<IdentifiedObject> find(final IdentifiedObject object) throws FactoryException {
+            final boolean old = quiet;
+            quiet = true;
+            try {
+                return super.find(object);
+            } finally {
+                quiet = old;
+            }
         }
 
         /**

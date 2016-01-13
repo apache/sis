@@ -17,6 +17,7 @@
 package org.apache.sis.internal.referencing;
 
 import org.apache.sis.internal.metadata.ReferencingServices;
+import org.apache.sis.measure.Longitude;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -28,15 +29,24 @@ import static org.junit.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.5
+ * @version 0.7
  * @module
  */
 public final strictfp class FormulasTest extends TestCase {
     /**
+     * Verifies the {@link Formulas#LONGITUDE_MAX} constant.
+     */
+    @Test
+    public void verifyLongitudeMax() {
+        assertTrue(Formulas.LONGITUDE_MAX > Longitude.MAX_VALUE);
+        assertTrue(StrictMath.ulp(Formulas.LONGITUDE_MAX) <= Formulas.ANGULAR_TOLERANCE);
+    }
+
+    /**
      * Verifies the {@link Formulas#JULIAN_YEAR_LENGTH} constant.
      */
     @Test
-    public void testConstants() {
+    public void verifyJulianYearLength() {
         assertEquals(StrictMath.round(365.25 * 24 * 60 * 60 * 1000), Formulas.JULIAN_YEAR_LENGTH);
     }
 

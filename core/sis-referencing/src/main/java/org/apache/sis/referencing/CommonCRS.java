@@ -18,6 +18,8 @@ package org.apache.sis.referencing;
 
 import java.util.Map;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
 import javax.measure.unit.SI;
 import javax.measure.unit.NonSI;
 import javax.measure.unit.Unit;
@@ -32,7 +34,9 @@ import org.opengis.referencing.crs.VerticalCRS;
 import org.opengis.referencing.crs.TemporalCRS;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.GeocentricCRS;
+import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.crs.CRSAuthorityFactory;
 import org.opengis.referencing.cs.TimeCS;
 import org.opengis.referencing.cs.VerticalCS;
 import org.opengis.referencing.cs.CartesianCS;
@@ -45,7 +49,6 @@ import org.opengis.referencing.datum.VerticalDatum;
 import org.opengis.referencing.datum.VerticalDatumType;
 import org.opengis.referencing.datum.TemporalDatum;
 import org.opengis.referencing.datum.DatumAuthorityFactory;
-import org.opengis.referencing.crs.CRSAuthorityFactory;
 import org.apache.sis.referencing.datum.DefaultVerticalDatum;
 import org.apache.sis.referencing.datum.DefaultTemporalDatum;
 import org.apache.sis.referencing.cs.AxesConvention;
@@ -56,12 +59,17 @@ import org.apache.sis.referencing.crs.DefaultTemporalCRS;
 import org.apache.sis.referencing.crs.DefaultVerticalCRS;
 import org.apache.sis.referencing.crs.DefaultGeographicCRS;
 import org.apache.sis.referencing.crs.DefaultGeocentricCRS;
+import org.apache.sis.internal.referencing.provider.TransverseMercator;
+import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.internal.system.SystemListener;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.logging.Logging;
+import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.math.MathFunctions;
+import org.apache.sis.measure.Latitude;
 import org.apache.sis.measure.Units;
 
 import static java.util.Collections.singletonMap;
@@ -71,6 +79,9 @@ import static org.apache.sis.internal.util.Constants.EPSG;
 import static org.apache.sis.internal.util.Constants.CRS27;
 import static org.apache.sis.internal.util.Constants.CRS83;
 import static org.apache.sis.internal.util.Constants.CRS84;
+
+// Branch-dependent imports
+import org.apache.sis.internal.jdk8.JDK8;
 
 
 /**
@@ -115,7 +126,7 @@ import static org.apache.sis.internal.util.Constants.CRS84;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.5
+ * @version 0.7
  * @module
  *
  * @see org.apache.sis.referencing.factory.CommonAuthorityFactory
@@ -136,9 +147,11 @@ public enum CommonCRS {
      *   <tr><th>Semi-minor axis length:</th>  <td>6356752 <i>(approximative)</i></td></tr>
      *   <tr><th>Inverse flattening:</th>      <td>298.257223563 <i>(definitive)</i></td></tr>
      *   <tr><th>Ellipsoid axes unit:</th>     <td>{@link SI#METRE}</td></tr>
+     *   <tr><th>UTM zones:</th>               <td>1 to 60 in North and South hemispheres</td></tr>
      * </table></blockquote>
      */
-    WGS84((short) 4326, (short) 4979, (short) 4978, (short) 6326, (short) 7030),
+    WGS84((short) 4326, (short) 4979, (short) 4978, (short) 6326, (short) 7030,     // Geodetic info
+          (short) 32600, (short) 32700, (byte) 1, (byte) 60),                       // UTM info
 
     /**
      * World Geodetic System 1972.
@@ -152,9 +165,11 @@ public enum CommonCRS {
      *   <tr><th>Semi-minor axis length:</th>  <td>6356751 <i>(approximative)</i></td></tr>
      *   <tr><th>Inverse flattening:</th>      <td>298.26 <i>(definitive)</i></td></tr>
      *   <tr><th>Ellipsoid axes unit:</th>     <td>{@link SI#METRE}</td></tr>
+     *   <tr><th>UTM zones:</th>               <td>1 to 60 in North and South hemispheres</td></tr>
      * </table></blockquote>
      */
-    WGS72((short) 4322, (short) 4985, (short) 4984, (short) 6322, (short) 7043),
+    WGS72((short) 4322, (short) 4985, (short) 4984, (short) 6322, (short) 7043,     // Geodetic info
+          (short) 32200, (short) 32300, (byte) 1, (byte) 60),                       // UTM info
 
     /**
      * North American Datum 1983.
@@ -171,6 +186,7 @@ public enum CommonCRS {
      *   <tr><th>Semi-minor axis length:</th>  <td>6356752 <i>(approximative)</i></td></tr>
      *   <tr><th>Inverse flattening:</th>      <td>298.257222101 <i>(definitive)</i></td></tr>
      *   <tr><th>Ellipsoid axes unit:</th>     <td>{@link SI#METRE}</td></tr>
+     *   <tr><th>UTM zones:</th>               <td>1 to 23 in the North hemisphere</td></tr>
      * </table></blockquote>
      *
      * <div class="note"><b>Note:</b>
@@ -178,7 +194,8 @@ public enum CommonCRS {
      * The <cite>Web Map Server</cite> {@code "CRS:83"} authority code uses the NAD83 datum,
      * while the {@code "IGNF:MILLER"} authority code uses the GRS80 datum.</div>
      */
-    NAD83((short) 4269, (short) 0, (short) 0, (short) 6269, (short) 7019),
+    NAD83((short) 4269, (short) 0, (short) 0, (short) 6269, (short) 7019,           // Geodetic info
+          (short) 26900, (short) 0, (byte) 1, (byte) 23),                           // UTM info
 
     /**
      * North American Datum 1927.
@@ -192,9 +209,11 @@ public enum CommonCRS {
      *   <tr><th>Semi-major axis length:</th>  <td>6378206.4</td></tr>
      *   <tr><th>Semi-minor axis length:</th>  <td>6356583.8 <i>(definitive)</i></td></tr>
      *   <tr><th>Ellipsoid axes unit:</th>     <td>{@link SI#METRE}</td></tr>
+     *   <tr><th>UTM zones:</th>               <td>1 to 22 in the North hemisphere</td></tr>
      * </table></blockquote>
      */
-    NAD27((short) 4267, (short) 0, (short) 0, (short) 6267, (short) 7008),
+    NAD27((short) 4267, (short) 0, (short) 0, (short) 6267, (short) 7008,           // Geodetic info
+          (short) 26700, (short) 0, (byte) 1, (byte) 22),                           // UTM info
 
     /**
      * European Terrestrial Reference System 1989.
@@ -210,6 +229,7 @@ public enum CommonCRS {
      *   <tr><th>Semi-minor axis length:</th>  <td>6356752 <i>(approximative)</i></td></tr>
      *   <tr><th>Inverse flattening:</th>      <td>298.257222101 <i>(definitive)</i></td></tr>
      *   <tr><th>Ellipsoid axes unit:</th>     <td>{@link SI#METRE}</td></tr>
+     *   <tr><th>UTM zones:</th>               <td>28 to 38 in the North hemisphere</td></tr>
      * </table></blockquote>
      *
      * <div class="note"><b>Note:</b>
@@ -217,7 +237,8 @@ public enum CommonCRS {
      * The <cite>Web Map Server</cite> {@code "CRS:83"} authority code uses the NAD83 datum,
      * while the {@code "IGNF:MILLER"} authority code uses the GRS80 datum.</div>
      */
-    ETRS89((short) 4258, (short) 4937, (short) 4936, (short) 6258, (short) 7019),
+    ETRS89((short) 4258, (short) 4937, (short) 4936, (short) 6258, (short) 7019,    // Geodetic info
+           (short) 25800, (short) 0, (byte) 28, (byte) 38),                         // UTM info
 
     /**
      * European Datum 1950.
@@ -231,9 +252,11 @@ public enum CommonCRS {
      *   <tr><th>Semi-minor axis length:</th>  <td>6356912 <i>(approximative)</i></td></tr>
      *   <tr><th>Inverse flattening:</th>      <td>297 <i>(definitive)</i></td></tr>
      *   <tr><th>Ellipsoid axes unit:</th>     <td>{@link SI#METRE}</td></tr>
+     *   <tr><th>UTM zones:</th>               <td>28 to 38 in the North hemisphere</td></tr>
      * </table></blockquote>
      */
-    ED50((short) 4230, (short) 0, (short) 0, (short) 6230, (short) 7022),
+    ED50((short) 4230, (short) 0, (short) 0, (short) 6230, (short) 7022,            // Geodetic info
+           (short) 23000, (short) 0, (byte) 28, (byte) 38),                         // UTM info
 
     /**
      * Unspecified datum based upon the GRS 1980 Authalic Sphere. Spheres use a simpler algorithm for
@@ -251,7 +274,8 @@ public enum CommonCRS {
      *
      * @see org.apache.sis.referencing.datum.DefaultEllipsoid#getAuthalicRadius()
      */
-    SPHERE((short) 4047, (short) 0, (short) 0, (short) 6047, (short) 7048);
+    SPHERE((short) 4047, (short) 0, (short) 0, (short) 6047, (short) 7048,          // Geodetic info
+           (short) 0, (short) 0, (byte) 0, (byte) 0);                               // UTM info
 
     /**
      * The enum for the default CRS.
@@ -288,6 +312,16 @@ public enum CommonCRS {
     final short ellipsoid;
 
     /**
+     * EPSG codes of pseudo "UTM zone zero" (North case and South case), or 0 if none.
+     */
+    final short northUTM, southUTM;
+
+    /**
+     * Zone number of the first UTM and last UTM zone defined in the EPSG database, inclusive.
+     */
+    final byte firstZone, lastZone;
+
+    /**
      * The cached object. This is initially {@code null}, then set to various kind of objects depending
      * on which method has been invoked. The kind of object stored in this field may change during the
      * application execution.
@@ -316,6 +350,14 @@ public enum CommonCRS {
     private transient volatile GeocentricCRS cachedGeocentric;
 
     /**
+     * The Universal Transverse Mercator projections, created when first needed.
+     * All accesses to this map shall be synchronized on {@code cachedUTM}.
+     *
+     * @see #UTM(double, double)
+     */
+    private final Map<Integer,ProjectedCRS> cachedUTM;
+
+    /**
      * Creates a new constant for the given EPSG or SIS codes.
      *
      * @param geographic The EPSG code for the two-dimensional geographic CRS.
@@ -324,14 +366,19 @@ public enum CommonCRS {
      * @param datum      The EPSG code for the datum.
      * @param ellipsoid  The EPSG code for the ellipsoid.
      */
-    private CommonCRS(final short geographic, final short geo3D, final short geocentric,
-            final short datum, final short ellipsoid)
+    private CommonCRS(final short geographic, final short geo3D, final short geocentric, final short datum, final short ellipsoid,
+            final short northUTM, final short southUTM, final byte firstZone, final byte lastZone)
     {
         this.geographic = geographic;
         this.geocentric = geocentric;
         this.geo3D      = geo3D;
         this.datum      = datum;
         this.ellipsoid  = ellipsoid;
+        this.northUTM   = northUTM;
+        this.southUTM   = southUTM;
+        this.firstZone  = firstZone;
+        this.lastZone   = lastZone;
+        cachedUTM = new HashMap<>();
     }
 
     /**
@@ -351,11 +398,15 @@ public enum CommonCRS {
     /**
      * Invoked by when the cache needs to be cleared after a classpath change.
      */
+    @SuppressWarnings("NestedSynchronizedStatement")    // Safe because cachedUTM never call any method of 'this'.
     synchronized void clear() {
         cached           = null;
         cachedGeo3D      = null;
         cachedNormalized = null;
         cachedGeocentric = null;
+        synchronized (cachedUTM) {
+            cachedUTM.clear();
+        }
     }
 
     /**
@@ -667,7 +718,7 @@ public enum CommonCRS {
                 object = ellipsoid(cached);
                 if (object == null) {
                     if (this == NAD83) {
-                        object = ETRS89.ellipsoid(); // Share the same instance for NAD83 and ETRS89.
+                        object = ETRS89.ellipsoid();            // Share the same instance for NAD83 and ETRS89.
                     } else {
                         final DatumAuthorityFactory factory = datumFactory();
                         if (factory != null) try {
@@ -707,7 +758,7 @@ public enum CommonCRS {
                 object = primeMeridian(cached);
                 if (object == null) {
                     if (this != DEFAULT) {
-                        object = DEFAULT.primeMeridian(); // Share the same instance for all constants.
+                        object = DEFAULT.primeMeridian();           // Share the same instance for all constants.
                     } else {
                         final DatumAuthorityFactory factory = datumFactory();
                         if (factory != null) try {
@@ -765,6 +816,130 @@ public enum CommonCRS {
         }
         final GeodeticDatum datum = datum(object);
         return (datum != null) ? datum.getPrimeMeridian() : null;
+    }
+
+    /*
+     * NOTE ABOUT MAP PROJECTION CONVENIENCE METHODS:
+     * There is no convenience method for projections other than UTM because this enumeration is not a
+     * factory for arbitrary CRS (the UTM projection has the advantage of being constrained to zones).
+     * World-wide projections like "WGS 84 / World Mercator" are not handled neither because they make
+     * sense only for some datum like WGS84 or WGS72. Application to more regional datum like NAD27 or
+     * ED50 would be more questionable.
+     */
+
+    /**
+     * Returns a Universal Transverse Mercator (UTM) projection for the zone containing the given point.
+     * There is a total of 120 UTM zones, with 60 zones in the North hemisphere and 60 zones in the South hemisphere.
+     * The projection zone is determined from the arguments as below:
+     *
+     * <ul>
+     *   <li>The sign of the <var>latitude</var> argument determines the hemisphere:
+     *       North for positive latitudes (including positive zero) or
+     *       South for negative latitudes (including negative zero).
+     *       The latitude magnitude is ignored, except for ensuring that the latitude is inside the [-90 … 90]° range.</li>
+     *   <li>The value of the <var>longitude</var> argument determines the 6°-width zone,
+     *       numbered from 1 for the zone starting at 180°W up to 60 for the zone finishing at 180°E.
+     *       Longitudes outside the [-180 … 180]° range will be rolled as needed before to compute the zone.</li>
+     * </ul>
+     *
+     * <div class="note"><b>Warning:</b>
+     * be aware of parameter order! For this method, latitude is first.
+     * This order is for consistency with the non-normalized {@linkplain #geographic() geographic} CRS
+     * of all items in this {@code CommonCRS} enumeration.</div>
+     *
+     * The map projection uses the following parameters:
+     *
+     * <blockquote><table class="sis">
+     *   <caption>Universal Transverse Mercator (UTM) parameters</caption>
+     *   <tr><th>Parameter name</th>                 <th>Value</th></tr>
+     *   <tr><td>Latitude of natural origin</td>     <td>0°</td></tr>
+     *   <tr><td>Longitude of natural origin</td>    <td>Central meridian of the UTM zone containing the given longitude</td></tr>
+     *   <tr><td>Scale factor at natural origin</td> <td>0.9996</td></tr>
+     *   <tr><td>False easting</td>                  <td>500000 metres</td></tr>
+     *   <tr><td>False northing</td>                 <td>0 (North hemisphere) or 10000000 (South hemisphere) metres</td></tr>
+     * </table></blockquote>
+     *
+     * The coordinate system axes are (Easting, Northing) in metres.
+     *
+     * @param  latitude  A latitude in the desired UTM projection zone.
+     * @param  longitude A longitude in the desired UTM projection zone.
+     * @return A Universal Transverse Mercator projection for the zone containing the given point.
+     *
+     * @since 0.7
+     */
+    public ProjectedCRS UTM(final double latitude, final double longitude) {
+        ArgumentChecks.ensureBetween("latitude",   Latitude.MIN_VALUE,     Latitude.MAX_VALUE,     latitude);
+        ArgumentChecks.ensureBetween("longitude", -Formulas.LONGITUDE_MAX, Formulas.LONGITUDE_MAX, longitude);
+        final boolean isSouth = MathFunctions.isNegative(latitude);
+        final int zone = TransverseMercator.zone(longitude);
+        final Integer key = isSouth ? -zone : zone;
+        ProjectedCRS crs;
+        synchronized (cachedUTM) {
+            crs = cachedUTM.get(key);
+        }
+        if (crs == null) {
+            int code = 0;
+            if (zone >= firstZone && zone <= lastZone) {
+                code = JDK8.toUnsignedInt(isSouth ? southUTM : northUTM);
+                if (code != 0) {
+                    code += zone;
+                    final CRSAuthorityFactory factory = crsFactory();
+                    if (factory != null) try {
+                        return factory.createProjectedCRS(String.valueOf(code));
+                    } catch (FactoryException e) {
+                        failure(this, "UTM", e);
+                    }
+                }
+            }
+            /*
+             * All constants defined in this enumeration use the same coordinate system, EPSG::4400.
+             * We will arbitrarily create this CS only for a frequently created CRS, and share that
+             * CS instance for all other constants.
+             */
+            CartesianCS cs = null;
+            synchronized (DEFAULT.cachedUTM) {
+                final Iterator<ProjectedCRS> it = DEFAULT.cachedUTM.values().iterator();
+                if (it.hasNext()) {
+                    cs = it.next().getCoordinateSystem();
+                }
+            }
+            if (cs == null) {
+                if (this != DEFAULT) {
+                    cs = DEFAULT.UTM(latitude, longitude).getCoordinateSystem();
+                } else {
+                    cs = (CartesianCS) StandardDefinitions.createCoordinateSystem((short) 4400);
+                }
+            }
+            crs = StandardDefinitions.createUTM(code, geographic(), latitude, longitude, cs);
+            final ProjectedCRS other;
+            synchronized (cachedUTM) {
+                other = JDK8.putIfAbsent(cachedUTM, key, crs);
+            }
+            if (other != null) {
+                return other;
+            }
+        }
+        return crs;
+    }
+
+    /**
+     * Returns the CRS for the given EPSG code, or {@code null} if none.
+     * This is a helper method for {@link #forCode(String, String, FactoryException)} only.
+     */
+    private CoordinateReferenceSystem forCode(final int code) {
+        if (code == geographic) return geographic();
+        if (code == geocentric) return geocentric();
+        if (code == geo3D)      return geographic3D();
+        final double latitude;
+        int zone;
+        if (northUTM != 0 && (zone = code - northUTM) >= firstZone && zone <= lastZone) {
+            latitude = +1;
+        } else if (southUTM != 0 && (zone = code - southUTM) >= firstZone && zone <= lastZone) {
+            latitude = -1;
+        } else {
+            return null;
+        }
+        return UTM(latitude, TransverseMercator.centralMeridian(zone));
     }
 
 
@@ -1402,9 +1577,10 @@ public enum CommonCRS {
                 final int n = Integer.parseInt(code);
                 if (n != 0) { // CommonCRS uses 0 as a sentinel value for "no EPSG code".
                     for (final CommonCRS candidate : CommonCRS.values()) {
-                        if (candidate.geographic == n) return candidate.geographic();
-                        if (candidate.geocentric == n) return candidate.geocentric();
-                        if (candidate.geo3D      == n) return candidate.geographic3D();
+                        final CoordinateReferenceSystem crs = candidate.forCode(n);
+                        if (crs != null) {
+                            return crs;
+                        }
                     }
                     for (final CommonCRS.Vertical candidate : CommonCRS.Vertical.values()) {
                         if (candidate.isEPSG && candidate.crs == n) {

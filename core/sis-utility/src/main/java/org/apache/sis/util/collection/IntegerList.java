@@ -450,6 +450,9 @@ public class IntegerList extends AbstractList<Integer> implements RandomAccess, 
 
     /**
      * Invokes {@link #trimToSize()} before serialization in order to make the stream more compact.
+     *
+     * @param  out The output stream where to serialize this list.
+     * @throws IOException If an I/O error occurred while writing.
      */
     private void writeObject(final ObjectOutputStream out) throws IOException {
         trimToSize();

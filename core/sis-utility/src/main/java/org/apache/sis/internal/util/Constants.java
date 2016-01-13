@@ -111,6 +111,11 @@ public final class Constants extends Static {
     public static final String CENTRAL_MERIDIAN = "central_meridian";
 
     /**
+     * The OGC parameter name for the latitude of origin.
+     */
+    public static final String LATITUDE_OF_ORIGIN = "latitude_of_origin";
+
+    /**
      * The NetCDF parameter name for the standard parallels.
      */
     public static final String STANDARD_PARALLEL = "standard_parallel";
@@ -177,6 +182,21 @@ public final class Constants extends Static {
      * Codes for parameters {@code B1} to {@code B3} inclusive follow, but the affine coefficients stop at {@code B2}.
      */
     public static final short EPSG_B0 = 8639;
+
+    /**
+     * The EPSG code for metres.
+     */
+    public static final short EPSG_METRE = 9001;
+
+    /**
+     * The EPSG code for degrees when used in parameters.
+     */
+    public static final short EPSG_PARAM_DEGREES = 9102;
+
+    /**
+     * The EPSG code for degrees when used in axes.
+     */
+    public static final short EPSG_AXIS_DEGREES = 9122;
 
     /**
      * Do not allow instantiation of this class.

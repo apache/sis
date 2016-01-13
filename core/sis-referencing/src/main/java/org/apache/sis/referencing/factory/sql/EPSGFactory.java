@@ -64,6 +64,11 @@ public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> impl
     protected final DataSource dataSource;
 
     /**
+     * The factory to use for creating {@link org.opengis.util.GenericName} instances.
+     */
+    protected final NameFactory nameFactory;
+
+    /**
      * The factory to use for creating {@link org.opengis.referencing.datum.Datum} instances
      * from the properties read in the database.
      */
@@ -124,7 +129,7 @@ public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> impl
      * Those default values are implementation-specific and may change in any future SIS version.
      *
      * @param dataSource    The factory to use for creating {@link Connection}s to the EPSG database.
-     * @param nameFactory   The factory to use for creating authority codes as {@link GenericName} instances.
+     * @param nameFactory   The factory to use for creating {@link org.opengis.util.GenericName} instances.
      * @param datumFactory  The factory to use for creating {@link Datum} instances.
      * @param csFactory     The factory to use for creating {@link CoordinateSystem} instances.
      * @param crsFactory    The factory to use for creating {@link CoordinateReferenceSystem} instances.
@@ -144,7 +149,7 @@ public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> impl
                        final SQLTranslator              translator)
             throws FactoryException
     {
-        super(EPSGDataAccess.class, factory(NameFactory.class, nameFactory));
+        super(EPSGDataAccess.class);
         if (dataSource != null) {
             this.dataSource = dataSource;
         } else try {
@@ -155,6 +160,7 @@ public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> impl
         } catch (Exception e) {
             throw new UnavailableFactoryException(e.getLocalizedMessage(), e);
         }
+        this.nameFactory  = factory(NameFactory.class, nameFactory);
         this.datumFactory = factory(DatumFactory.class, datumFactory);
         this.csFactory    = factory(CSFactory.class, csFactory);
         this.crsFactory   = factory(CRSFactory.class, crsFactory);
