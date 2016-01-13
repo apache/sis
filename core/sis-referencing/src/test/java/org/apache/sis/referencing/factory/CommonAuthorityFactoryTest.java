@@ -17,6 +17,8 @@
 package org.apache.sis.referencing.factory;
 
 import java.util.Arrays;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.NoninvertibleTransformException;
 import javax.measure.unit.SI;
 import javax.measure.unit.NonSI;
 import org.opengis.util.FactoryException;
@@ -32,6 +34,7 @@ import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.datum.Datum;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.referencing.provider.TransverseMercator;
+import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.io.wkt.Convention;
@@ -40,6 +43,7 @@ import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.apache.sis.test.ReferencingAssert.*;
@@ -189,6 +193,8 @@ public final strictfp class CommonAuthorityFactoryTest extends TestCase {
         assertSame("With other coord.",   crs, factory.createProjectedCRS("AUTO : 42001, -122, 10 "));
         assertSame("Omitting namespace.", crs, factory.createProjectedCRS(" 42001, -122 , 10 "));
         assertSame("With explicit unit.", crs, factory.createProjectedCRS("AUTO2 :  42001, 1, -122 , 10 "));
+        assertSame("With explicit unit.", crs, factory.createProjectedCRS("AUTO1 :  42001, 9001, -122 , 10 "));
+        assertSame("Legacy namespace.",   crs, factory.createProjectedCRS("AUTO:42001,9001,-122,10"));
         assertSame("When the given parameters match exactly the UTM central meridian and latitude of origin,"
                 + " the CRS created by AUTO:42002 should be the same than the CRS created by AUTO:42001.",
                 crs, factory.createProjectedCRS("AUTO2:42002,1,-123,0"));
@@ -219,6 +225,7 @@ public final strictfp class CommonAuthorityFactoryTest extends TestCase {
     @DependsOnMethod("testAuto42001")
     public void testAuto42001_foot() throws FactoryException {
         final ProjectedCRS crs = factory.createProjectedCRS("AUTO2:42001, 0.3048, -123, 0");
+        assertSame("Legacy namespace.", crs, factory.createProjectedCRS("AUTO:42001,9002,-123,0"));
         assertEquals("name", "WGS 84 / UTM zone 10N", crs.getName().getCode());
         assertTrue("Expected no EPSG identifier because the axes are not in metres.", crs.getIdentifiers().isEmpty());
         assertEquals("axis[0].unit", NonSI.FOOT, crs.getCoordinateSystem().getAxis(0).getUnit());
@@ -244,6 +251,77 @@ public final strictfp class CommonAuthorityFactoryTest extends TestCase {
         assertEquals(Constants.CENTRAL_MERIDIAN, -122, p.parameter(Constants.CENTRAL_MERIDIAN)  .doubleValue(), STRICT);
         assertEquals(Constants.LATITUDE_OF_ORIGIN, 10, p.parameter(Constants.LATITUDE_OF_ORIGIN).doubleValue(), STRICT);
         assertEquals(Constants.FALSE_NORTHING,      0, p.parameter(Constants.FALSE_NORTHING)    .doubleValue(), STRICT);
+    }
+
+    /**
+     * Tests {@link CommonAuthorityFactory#createProjectedCRS(String)} with the {@code "AUTO:42003"} code.
+     *
+     * @throws FactoryException if an error occurred while creating a CRS.
+     */
+    @Test
+    @DependsOnMethod("testAuto42001")
+    @Ignore("Pending the port of Orthographic projection.")
+    public void testAuto42003() throws FactoryException {
+        final ProjectedCRS crs = factory.createProjectedCRS("AUTO:42003,9001,10,45");
+        final ParameterValueGroup p = crs.getConversionFromBase().getParameterValues();
+        assertAxisDirectionsEqual("CS", crs.getCoordinateSystem(), AxisDirection.EAST, AxisDirection.NORTH);
+        assertEquals(Constants.CENTRAL_MERIDIAN,   10, p.parameter(Constants.CENTRAL_MERIDIAN)  .doubleValue(), STRICT);
+        assertEquals(Constants.LATITUDE_OF_ORIGIN, 45, p.parameter(Constants.LATITUDE_OF_ORIGIN).doubleValue(), STRICT);
+    }
+
+    /**
+     * Tests {@link CommonAuthorityFactory#createProjectedCRS(String)} with the {@code "AUTO:42004"} code.
+     *
+     * @throws FactoryException if an error occurred while creating a CRS.
+     */
+    @Test
+    @DependsOnMethod("testAuto42001")
+    public void testAuto42004() throws FactoryException {
+        final ProjectedCRS crs = factory.createProjectedCRS("AUTO2:42004,1,10,45");
+        final ParameterValueGroup p = crs.getConversionFromBase().getParameterValues();
+        assertAxisDirectionsEqual("CS", crs.getCoordinateSystem(), AxisDirection.EAST, AxisDirection.NORTH);
+        assertEquals(Constants.CENTRAL_MERIDIAN,   10, p.parameter(Constants.CENTRAL_MERIDIAN)   .doubleValue(), STRICT);
+        assertEquals(Constants.LATITUDE_OF_ORIGIN, 45, p.parameter(Constants.STANDARD_PARALLEL_1).doubleValue(), STRICT);
+        assertInstanceOf("Opportunistic check: in the special case of Equirectangular projection, "
+                + "SIS should have optimized the MathTransform as an affine transform.",
+                LinearTransform.class, crs.getConversionFromBase().getMathTransform());
+    }
+
+    /**
+     * Tests {@link CommonAuthorityFactory#createProjectedCRS(String)} with the {@code "AUTO:42005"} code.
+     *
+     * @throws FactoryException if an error occurred while creating a CRS.
+     */
+    @Test
+    @DependsOnMethod("testAuto42001")
+    @Ignore("Pending implementation of Mollweide projection.")
+    public void testAuto42005() throws FactoryException {
+        final ProjectedCRS crs = factory.createProjectedCRS("AUTO:42005,9001,10,45");
+        final ParameterValueGroup p = crs.getConversionFromBase().getParameterValues();
+        assertAxisDirectionsEqual("CS", crs.getCoordinateSystem(), AxisDirection.EAST, AxisDirection.NORTH);
+        assertEquals(Constants.CENTRAL_MERIDIAN,   10, p.parameter(Constants.CENTRAL_MERIDIAN)  .doubleValue(), STRICT);
+    }
+
+    /**
+     * Tests two {@code "AUTO:42004"} (Equirectangular projection) case built in such a way that the conversion
+     * from one to the other should be the conversion factor from metres to feet.
+     *
+     * This is an integration test.
+     *
+     * @throws FactoryException if an error occurred while creating a CRS.
+     * @throws NoninvertibleTransformException Should never happen.
+     */
+    @Test
+    @DependsOnMethod("testAuto42004")
+    public void testUnits() throws FactoryException, NoninvertibleTransformException {
+        AffineTransform tr1, tr2;
+        tr1 = (AffineTransform) factory.createProjectedCRS("AUTO:42004,9001,0,35").getConversionFromBase().getMathTransform();
+        tr2 = (AffineTransform) factory.createProjectedCRS("AUTO:42004,9002,0,35").getConversionFromBase().getMathTransform();
+        tr2 = tr2.createInverse();
+        tr2.concatenate(tr1);
+        assertEquals("Expected any kind of scale.", 0, tr2.getType() & ~AffineTransform.TYPE_MASK_SCALE);
+        assertEquals("Expected the conversion factor from foot to metre.", 0.3048, tr2.getScaleX(), 1E-9);
+        assertEquals("Expected the conversion factor from foot to metre.", 0.3048, tr2.getScaleY(), 1E-9);
     }
 
     /**
