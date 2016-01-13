@@ -88,6 +88,7 @@ import org.apache.sis.internal.referencing.Formulas;
  * @module
  *
  * @see org.apache.sis.referencing.CommonCRS#primeMeridian()
+ * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createPrimeMeridian(String)
  */
 @XmlType(name = "PrimeMeridianType")
 @XmlRootElement(name = "PrimeMeridian")
@@ -150,6 +151,8 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
      * @param properties          The properties to be given to the identified object.
      * @param greenwichLongitude  The longitude value relative to the Greenwich Meridian.
      * @param angularUnit         The angular unit of the longitude.
+     *
+     * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createPrimeMeridian(Map, double, Unit)
      */
     public DefaultPrimeMeridian(final Map<String,?> properties, final double greenwichLongitude,
                                 final Unit<Angle> angularUnit)

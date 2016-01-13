@@ -32,9 +32,17 @@ import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.cs.EllipsoidalCS;
+import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.referencing.crs.GeographicCRS;
+import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.crs.VerticalCRS;
+import org.opengis.referencing.operation.OperationMethod;
+import org.opengis.referencing.operation.MathTransformFactory;
+import org.opengis.parameter.ParameterValueGroup;
+import org.opengis.util.NoSuchIdentifierException;
+import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.metadata.AxisNames;
+import org.apache.sis.internal.referencing.provider.TransverseMercator;
 import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.referencing.datum.DefaultEllipsoid;
@@ -47,6 +55,9 @@ import org.apache.sis.referencing.cs.DefaultEllipsoidalCS;
 import org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis;
 import org.apache.sis.referencing.crs.DefaultGeographicCRS;
 import org.apache.sis.referencing.crs.DefaultVerticalCRS;
+import org.apache.sis.referencing.crs.DefaultProjectedCRS;
+import org.apache.sis.referencing.operation.DefaultConversion;
+import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
 import org.apache.sis.measure.Longitude;
 import org.apache.sis.measure.Latitude;
 
@@ -63,7 +74,7 @@ import static org.apache.sis.internal.metadata.ReferencingServices.AUTHALIC_RADI
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.4
+ * @version 0.7
  * @module
  */
 final class StandardDefinitions {
@@ -81,21 +92,64 @@ final class StandardDefinitions {
     /**
      * Returns a map of properties for the given EPSG code, name and alias.
      *
-     * @param  code  The EPSG code.
+     * @param  code  The EPSG code, or 0 if none.
      * @param  name  The object name.
      * @param  alias The alias, or {@code null} if none.
      * @param  world {@code true} if the properties shall have an entry for the domain of validity.
      * @return The map of properties to give to constructors or factory methods.
      */
-    private static Map<String,Object> properties(final short code, final String name, final String alias, final boolean world) {
+    private static Map<String,Object> properties(final int code, final String name, final String alias, final boolean world) {
         final Map<String,Object> map = new HashMap<String,Object>(8);
-        map.put(IDENTIFIERS_KEY, new NamedIdentifier(Citations.EPSG, String.valueOf(code)));
+        if (code != 0) {
+            map.put(IDENTIFIERS_KEY, new NamedIdentifier(Citations.EPSG, String.valueOf(code)));
+        }
         map.put(NAME_KEY, new NamedIdentifier(Citations.EPSG, name));
         map.put(ALIAS_KEY, alias); // May be null, which is okay.
         if (world) {
             map.put(DOMAIN_OF_VALIDITY_KEY, Extents.WORLD);
         }
         return map;
+    }
+
+    /**
+     * Adds to the given properties an additional identifier in the {@code "CRS"} namespace.
+     * This method presume that the only identifier that existed before this method call was the EPSG one.
+     */
+    private static void addWMS(final Map<String,Object> properties, final String code) {
+        properties.put(IDENTIFIERS_KEY, new NamedIdentifier[] {
+            (NamedIdentifier) properties.get(IDENTIFIERS_KEY),
+            new NamedIdentifier(Citations.OGC, code)
+        });
+    }
+
+    /**
+     * Returns the operation method for Transverse Mercator projection using the SIS factory implementation.
+     * This method restricts the factory to SIS implementation instead than arbitrary factory in order to meet
+     * the contract saying that {@link CommonCRS} methods should never fail.
+     *
+     * @param code       The EPSG code, or 0 if none.
+     * @param baseCRS    The geographic CRS on which the projected CRS is based.
+     * @param latitude   A latitude in the zone of the desired projection, to be snapped to 0°.
+     * @param longitude  A longitude in the zone of the desired projection, to be snapped to UTM central meridian.
+     * @param derivedCS  The projected coordinate system.
+     */
+    static ProjectedCRS createUTM(final int code, final GeographicCRS baseCRS,
+            final double latitude, final double longitude, final CartesianCS derivedCS)
+    {
+        final OperationMethod method;
+        try {
+            method = DefaultFactories.forBuildin(MathTransformFactory.class,
+                                          DefaultMathTransformFactory.class)
+                    .getOperationMethod(TransverseMercator.NAME);
+        } catch (NoSuchIdentifierException e) {
+            throw new IllegalStateException(e);     // Should not happen with SIS implementation.
+        }
+        final ParameterValueGroup parameters = method.getParameters().createValue();
+        String name = TransverseMercator.setParameters(parameters, true, latitude, longitude);
+        final DefaultConversion conversion = new DefaultConversion(properties(0, name, null, false), method, null, parameters);
+
+        name = baseCRS.getName().getCode() + " / " + name;
+        return new DefaultProjectedCRS(properties(code, name, null, false), baseCRS, conversion, derivedCS);
     }
 
     /**
@@ -197,15 +251,32 @@ final class StandardDefinitions {
      * @return The vertical CRS for the given code.
      */
     static VerticalCRS createVerticalCRS(final short code, final VerticalDatum datum) {
-        final String name, alias, cs;
-        final short c, axis;
+        String cs   = "Vertical CS. Axis: height (H).";   // Default coordinate system
+        short  c    = 6499;                               // EPSG code of above coordinate system.
+        short  axis = 114;                                // Axis of above coordinate system.
+        String wms  = null;
+        final  String name, alias;
         switch (code) {
-            case 5714: name = "MSL height"; alias = "mean sea level height"; cs = "Vertical CS. Axis: height (H)."; c = 6499; axis = 114; break;
-            case 5715: name = "MSL depth";  alias = "mean sea level depth";  cs = "Vertical CS. Axis: depth (D).";  c = 6498; axis = 113; break;
+            case 5703: wms   = "88";
+                       name  = "NAVD88 height";
+                       alias = "North American Vertical Datum of 1988 height (m)";
+                       break;
+            case 5714: name  = "MSL height";
+                       alias = "mean sea level height";
+                       break;
+            case 5715: name  = "MSL depth";
+                       alias = "mean sea level depth";
+                       cs    = "Vertical CS. Axis: depth (D).";
+                       c     = 6498;
+                       axis  = 113;
+                       break;
             default:   throw new AssertionError(code);
         }
-        return new DefaultVerticalCRS(properties(code, name, alias, true), datum,
-                new DefaultVerticalCS(properties(c, cs, null, false), createAxis(axis)));
+        final Map<String,Object> properties = properties(code, name, alias, true);
+        if (wms != null) {
+            addWMS(properties, wms);
+        }
+        return new DefaultVerticalCRS(properties, datum, new DefaultVerticalCS(properties(c, cs, null, false), createAxis(axis)));
     }
 
     /**
@@ -218,7 +289,8 @@ final class StandardDefinitions {
         final String name;
         final String alias;
         switch (code) {
-            case 5100: name = "Mean Sea Level"; alias = "MSL"; break;
+            case 5100: name = "Mean Sea Level";                     alias = "MSL";    break;
+            case 5103: name = "North American Vertical Datum 1988"; alias = "NAVD88"; break;
             default:   throw new AssertionError(code);
         }
         return new DefaultVerticalDatum(properties(code, name, alias, true), VerticalDatumType.GEOIDAL);
@@ -242,6 +314,7 @@ final class StandardDefinitions {
             case 6422: name = "Ellipsoidal 2D"; dim = 2; axisCode = 108; break;
             case 6423: name = "Ellipsoidal 3D"; dim = 3; axisCode = 111; break;
             case 6500: name = "Earth centred";  dim = 3; axisCode = 118; isCartesian = true; break;
+            case 4400: name = "Cartesian 2D";   dim = 2; axisCode =   3; isCartesian = true; break;
             default:   throw new AssertionError(code);
         }
         final Map<String,?> properties = properties(code, name, null, false);
@@ -254,12 +327,17 @@ final class StandardDefinitions {
             case 0:  break;
         }
         if (isCartesian) {
-            return new DefaultCartesianCS(properties, xAxis, yAxis, zAxis);
-        }
-        if (zAxis != null) {
-            return new DefaultEllipsoidalCS(properties, xAxis, yAxis, zAxis);
+            if (zAxis != null) {
+                return new DefaultCartesianCS(properties, xAxis, yAxis, zAxis);
+            } else {
+                return new DefaultCartesianCS(properties, xAxis, yAxis);
+            }
         } else {
-            return new DefaultEllipsoidalCS(properties, xAxis, yAxis);
+            if (zAxis != null) {
+                return new DefaultEllipsoidalCS(properties, xAxis, yAxis, zAxis);
+            } else {
+                return new DefaultEllipsoidalCS(properties, xAxis, yAxis);
+            }
         }
     }
 
@@ -277,6 +355,16 @@ final class StandardDefinitions {
         RangeMeaning rm = null;
         final AxisDirection dir;
         switch (code) {
+            case 1:    name = "Easting";
+                       abrv = "E";
+                       unit = SI.METRE;
+                       dir  = AxisDirection.EAST;
+                       break;
+            case 2:    name = "Northing";
+                       abrv = "N";
+                       unit = SI.METRE;
+                       dir  = AxisDirection.NORTH;
+                       break;
             case 108:  // Used in Ellipsoidal 3D.
             case 106:  name = AxisNames.GEODETIC_LATITUDE;
                        abrv = "φ";

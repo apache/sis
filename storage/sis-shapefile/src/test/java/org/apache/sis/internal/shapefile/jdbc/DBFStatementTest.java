@@ -41,7 +41,7 @@ public class DBFStatementTest extends AbstractTestBaseForInternalJDBC {
     public void openCloseStatement() throws SQLException {
         final Driver driver = new DBFDriver();
 
-        Connection connection = driver.connect(dbfFile.getAbsolutePath(), null);
+        Connection connection = driver.connect(this.dbfFile.getAbsolutePath(), null);
         try {
             final Statement stmt = connection.createStatement();
             assertFalse("Statement should be opened", stmt.isClosed());
@@ -71,7 +71,7 @@ public class DBFStatementTest extends AbstractTestBaseForInternalJDBC {
                 stmt.executeQuery("Must detect that the statement is closed, and not try to parse this query.");
             }
             catch(SQLConnectionClosedException e) {
-                assertEquals("The database name in this exception is not well set.", e.getDatabase().getName(), dbfFile.getName());
+                assertEquals("The database name in this exception is not well set.", e.getDatabase().getName(), this.dbfFile.getName());
             }
             catch(SQLException e) {
                 fail("Not the expected exception for using a closed statement.");
@@ -91,7 +91,7 @@ public class DBFStatementTest extends AbstractTestBaseForInternalJDBC {
             stmt.executeQuery("Must detect that the statement is closed, and not try to parse this query.");
         }
         catch(SQLConnectionClosedException e) {
-            assertEquals("The database name in this exception is not well set.", e.getDatabase().getName(), dbfFile.getName());
+            assertEquals("The database name in this exception is not well set.", e.getDatabase().getName(), this.dbfFile.getName());
         }
         catch(SQLException e) {
             fail("Not the expected exception for using a closed statement.");

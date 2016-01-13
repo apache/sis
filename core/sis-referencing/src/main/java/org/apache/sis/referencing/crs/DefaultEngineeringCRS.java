@@ -61,6 +61,9 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * @since   0.4
  * @version 0.7
  * @module
+ *
+ * @see org.apache.sis.referencing.datum.DefaultEngineeringDatum
+ * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createEngineeringCRS(String)
  */
 @XmlType(name = "EngineeringCRSType", propOrder = {
     "coordinateSystem",
@@ -131,6 +134,8 @@ public class DefaultEngineeringCRS extends AbstractCRS implements EngineeringCRS
      * @param properties The properties to be given to the coordinate reference system.
      * @param datum The datum.
      * @param cs The coordinate system.
+     *
+     * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createEngineeringCRS(Map, EngineeringDatum, CoordinateSystem)
      */
     public DefaultEngineeringCRS(final Map<String,?> properties,
                                  final EngineeringDatum   datum,

@@ -36,7 +36,7 @@
  * {@code about} sub-command shall be invoked as below:
  *
  * {@preformat shell
- *   java org.apache.sis.console.Command about localhost:9999
+ *   java org.apache.sis.console.Command about localhost:1099
  * }
  *
  * The {@code com.sun.management.jmxremote.local.only} property is recommended if the remote JVM is an other
@@ -47,7 +47,7 @@
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.4
+ * @version 0.7
  * @module
  */
 package org.apache.sis.console;

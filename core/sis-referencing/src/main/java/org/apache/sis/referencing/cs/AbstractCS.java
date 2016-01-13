@@ -408,9 +408,11 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
                 if (dimension != that.getDimension()) {
                     return false;
                 }
-                for (int i=0; i<dimension; i++) {
-                    if (!deepEquals(getAxis(i), that.getAxis(i), mode)) {
-                        return false;
+                if (mode != ComparisonMode.ALLOW_VARIANT) {
+                    for (int i=0; i<dimension; i++) {
+                        if (!deepEquals(getAxis(i), that.getAxis(i), mode)) {
+                            return false;
+                        }
                     }
                 }
                 return true;

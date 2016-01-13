@@ -26,14 +26,19 @@ import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.operation.Projection;
 import org.opengis.parameter.ParameterValueGroup;
-import org.opengis.test.Validators;
 import org.apache.sis.metadata.iso.citation.Citations;
+import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.cs.HardCodedCS;
-import org.apache.sis.referencing.GeodeticObjectBuilder;
+import org.apache.sis.internal.referencing.GeodeticObjectBuilder;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.util.logging.Logging;
+import org.apache.sis.util.ComparisonMode;
+import org.apache.sis.util.LenientComparable;
+
+// Test dependencies
+import org.opengis.test.Validators;
 import org.apache.sis.test.LoggingWatcher;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
@@ -49,7 +54,7 @@ import static org.apache.sis.test.ReferencingAssert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.6
- * @version 0.6
+ * @version 0.7
  * @module
  */
 @DependsOn({
@@ -454,5 +459,24 @@ public final strictfp class DefaultProjectedCRSTest extends XMLTestCase {
          */
         assertMarshalEqualsFile(XML_FILE, crs, STRICT, new String[] {"gml:name"},
                 new String[] {"xmlns:*", "xsi:schemaLocation", "gml:id"});
+    }
+
+    /**
+     * Tests {@link DefaultProjectedCRS#equals(Object, ComparisonMode)}.
+     * In particular, we want to test the ability to ignore axis order of the base CRS in "ignore metadata" mode.
+     *
+     * @throws FactoryException if the CRS creation failed.
+     *
+     * @since 0.7
+     */
+    @Test
+    public void testEquals() throws FactoryException {
+        final ProjectedCRS standard   = create(CommonCRS.WGS84.geographic());
+        final ProjectedCRS normalized = create(CommonCRS.WGS84.normalizedGeographic());
+        assertFalse("STRICT",          ((LenientComparable) standard).equals(normalized, ComparisonMode.STRICT));
+        assertFalse("BY_CONTRACT",     ((LenientComparable) standard).equals(normalized, ComparisonMode.BY_CONTRACT));
+        assertTrue ("IGNORE_METADATA", ((LenientComparable) standard).equals(normalized, ComparisonMode.IGNORE_METADATA));
+        assertTrue ("APPROXIMATIVE",   ((LenientComparable) standard).equals(normalized, ComparisonMode.APPROXIMATIVE));
+        assertTrue ("ALLOW_VARIANT",   ((LenientComparable) standard).equals(normalized, ComparisonMode.ALLOW_VARIANT));
     }
 }

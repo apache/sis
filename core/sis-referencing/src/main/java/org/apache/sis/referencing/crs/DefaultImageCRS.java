@@ -53,6 +53,9 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * @since   0.4
  * @version 0.7
  * @module
+ *
+ * @see org.apache.sis.referencing.datum.DefaultImageDatum
+ * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createImageCRS(String)
  */
 @XmlType(name = "ImageCRSType", propOrder = {
     "cartesianCS",
@@ -124,6 +127,8 @@ public class DefaultImageCRS extends AbstractCRS implements ImageCRS {
      * @param properties The properties to be given to the coordinate reference system.
      * @param datum The datum.
      * @param cs The coordinate system.
+     *
+     * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createImageCRS(Map, ImageDatum, AffineCS)
      */
     public DefaultImageCRS(final Map<String,?> properties,
                            final ImageDatum    datum,

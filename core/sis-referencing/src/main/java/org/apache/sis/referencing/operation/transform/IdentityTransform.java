@@ -18,7 +18,6 @@ package org.apache.sis.referencing.operation.transform;
 
 import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.operation.Matrix;
-import org.opengis.referencing.operation.MathTransform;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.geometry.GeneralDirectPosition;
 import org.apache.sis.referencing.operation.matrix.Matrices;
@@ -228,7 +227,7 @@ final class IdentityTransform extends AbstractLinearTransform {
      * Returns the inverse transform of this object, which is this transform itself
      */
     @Override
-    public MathTransform inverse() {
+    public LinearTransform inverse() {
         return this;
     }
 

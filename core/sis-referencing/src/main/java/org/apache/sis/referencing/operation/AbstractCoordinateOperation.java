@@ -44,8 +44,11 @@ import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.UnsupportedImplementationException;
+import org.apache.sis.util.logging.Logging;
 import org.apache.sis.parameter.Parameterized;
+import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
+import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.PassThroughTransform;
 import org.apache.sis.internal.referencing.PositionalAccuracyConstant;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
@@ -54,6 +57,7 @@ import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.internal.system.Semaphores;
+import org.apache.sis.internal.system.Loggers;
 
 import static org.apache.sis.util.Utilities.deepEquals;
 
@@ -718,7 +722,7 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
      * @return {@code true} if both objects are equal for the given comparison mode.
      */
     @Override
-    public boolean equals(final Object object, final ComparisonMode mode) {
+    public boolean equals(final Object object, ComparisonMode mode) {
         if (super.equals(object, mode)) {
             if (mode == ComparisonMode.STRICT) {
                 final AbstractCoordinateOperation that = (AbstractCoordinateOperation) object;
@@ -730,34 +734,76 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
                     Objects.equals(coordinateOperationAccuracy, that.coordinateOperationAccuracy))
                 {
                     // Check against never-ending recursivity with DerivedCRS.
-                    if (Semaphores.queryAndSet(Semaphores.COMPARING)) {
+                    if (Semaphores.queryAndSet(Semaphores.CONVERSION_AND_CRS)) {
                         return true;
                     } else try {
                         return Objects.equals(targetCRS, that.targetCRS);
                     } finally {
-                        Semaphores.clear(Semaphores.COMPARING);
+                        Semaphores.clear(Semaphores.CONVERSION_AND_CRS);
                     }
                 }
             } else {
+                /*
+                 * This block is for all ComparisonModes other than STRICT. At this point we know that the metadata
+                 * properties (class, name, identifiers, etc.) match the criterion of the given comparison mode.
+                 * Before to continue perform the following checks:
+                 *
+                 *   - Scope, domain and accuracy properties only if NOT in "ignore metadata" mode.
+                 *   - Interpolation CRS in all cases (regardless if ignoring metadata or not).
+                 */
                 final CoordinateOperation that = (CoordinateOperation) object;
-                if (mode == ComparisonMode.BY_CONTRACT) {
-                    if (!deepEquals(getScope(),                       that.getScope(), mode) ||
-                        !deepEquals(getDomainOfValidity(),            that.getDomainOfValidity(), mode) ||
-                        !deepEquals(getCoordinateOperationAccuracy(), that.getCoordinateOperationAccuracy(), mode))
-                    {
-                        return false;
-                    }
-                }
-                if (deepEquals(getMathTransform(),    that.getMathTransform(),   mode) &&
-                    deepEquals(getSourceCRS(),        that.getSourceCRS(),       mode) &&
-                    deepEquals(getInterpolationCRS(), getInterpolationCRS(that), mode))
+                if ((mode.isIgnoringMetadata() ||
+                    (deepEquals(getScope(),                       that.getScope(), mode) &&
+                     deepEquals(getDomainOfValidity(),            that.getDomainOfValidity(), mode) &&
+                     deepEquals(getCoordinateOperationAccuracy(), that.getCoordinateOperationAccuracy(), mode))) &&
+                     deepEquals(getInterpolationCRS(),            getInterpolationCRS(that), mode))
                 {
-                    if (Semaphores.queryAndSet(Semaphores.COMPARING)) {
-                        return true;
+                    /*
+                     * At this point all metdata match or can be ignored. First, compare the targetCRS.
+                     * We need to perform this comparison only if this 'equals(…)' method is not invoked
+                     * from AbstractDerivedCRS, otherwise we would fall in an infinite recursive loop
+                     * (because targetCRS is the DerivedCRS, which in turn wants to compare this operation).
+                     *
+                     * We also opportunistically use this "anti-recursivity" check for another purpose.
+                     * The Semaphores.COMPARING flag should be set only when AbstractDerivedCRS is comparing
+                     * its "from base" conversion. The flag should never be set in any other circumstance,
+                     * since this is an internal Apache SIS mechanism. If we know that we are comparing the
+                     * AbstractDerivedCRS.fromBase conversion, then (in the way Apache SIS is implemented)
+                     * this.sourceCRS == AbstractDerivedCRS.baseCRS. Consequently we can relax the check
+                     * sourceCRS axis order if the mode is ComparisonMode.IGNORE_METADATA.
+                     */
+                    if (Semaphores.queryAndSet(Semaphores.CONVERSION_AND_CRS)) {
+                        if (mode.isIgnoringMetadata()) {
+                            mode = ComparisonMode.ALLOW_VARIANT;
+                        }
                     } else try {
-                        return deepEquals(getTargetCRS(), that.getTargetCRS(), mode);
+                        if (!deepEquals(getTargetCRS(), that.getTargetCRS(), mode)) {
+                            return false;
+                        }
                     } finally {
-                        Semaphores.clear(Semaphores.COMPARING);
+                        Semaphores.clear(Semaphores.CONVERSION_AND_CRS);
+                    }
+                    /*
+                     * Now compare the sourceCRS, potentially with a relaxed ComparisonMode (see above comment).
+                     * If the comparison mode allows the two CRS to have different axis order and units, then we
+                     * need to take in account those difference before to compare the MathTransform. We proceed
+                     * by modifying 'tr2' as if it was a MathTransform with crs1 as the source instead of crs2.
+                     */
+                    final CoordinateReferenceSystem crs1 = this.getSourceCRS();
+                    final CoordinateReferenceSystem crs2 = that.getSourceCRS();
+                    if (deepEquals(crs1, crs2, mode)) {
+                        MathTransform tr1 = this.getMathTransform();
+                        MathTransform tr2 = that.getMathTransform();
+                        if (mode == ComparisonMode.ALLOW_VARIANT) try {
+                            final MathTransform swap = MathTransforms.linear(
+                                    CoordinateSystems.swapAndScaleAxes(crs1.getCoordinateSystem(),
+                                                                       crs2.getCoordinateSystem()));
+                            tr2 = MathTransforms.concatenate(swap, tr2);
+                        } catch (Exception e) {    // (ConversionException | RuntimeException) on the JDK7 branch.
+                            Logging.recoverableException(Logging.getLogger(Loggers.COORDINATE_OPERATION),
+                                    AbstractCoordinateOperation.class, "equals", e);
+                        }
+                        return deepEquals(tr1, tr2, mode);
                     }
                 }
             }

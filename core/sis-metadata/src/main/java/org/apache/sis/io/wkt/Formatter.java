@@ -1615,13 +1615,13 @@ public class Formatter implements Localized {
     @Debug
     @Override
     public String toString() {
-        final StringBuilder b = new StringBuilder(Classes.getShortClassName(this)).append('[');
-        String separator = "";
-        for (final FormattableObject element : enclosingElements) {
-            b.append(separator).append(Classes.getShortClassName(element));
-            separator = " 〉 ";
+        final StringBuilder b = new StringBuilder(Classes.getShortClassName(this));
+        String separator = " of ";
+        for (int i=enclosingElements.size(); --i >= 0;) {
+            b.append(separator).append(Classes.getShortClassName(enclosingElements.get(i)));
+            separator = " inside ";
         }
-        return b.append(']').toString();
+        return b.toString();
     }
 
     /**

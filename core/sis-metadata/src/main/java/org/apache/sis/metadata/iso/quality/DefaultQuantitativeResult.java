@@ -143,23 +143,43 @@ public class DefaultQuantitativeResult extends AbstractResult implements Quantit
      *
      * @param newValues The new values.
      */
-    public void setValues(final List<Record> newValues) {
+    public void setValues(final List<? extends Record> newValues) {
         values = writeList(newValues, values, Record.class);
     }
 
     /**
      * Return the value type for reporting a data quality result.
      *
+     * <div class="section">Default value</div>
+     * If no type has been set but all {@linkplain #getValues() values} are of the same type,
+     * then this method defaults to that type. Otherwise this method returns {@code null}.
+     *
      * @return Value type for reporting a data quality result, or {@code null}.
      */
     @Override
     @XmlElement(name = "valueType")
     public RecordType getValueType()  {
-        return valueType;
+        RecordType type = valueType;
+        if (type == null && values != null) {
+            for (final Record value : values) {
+                if (value != null) {
+                    final RecordType t = value.getRecordType();
+                    if (t == null) {
+                        return null;
+                    } else if (type == null) {
+                        type = t;
+                    } else if (type != t) {
+                        return null;
+                    }
+                }
+            }
+        }
+        return type;
     }
 
     /**
      * Sets the value type for reporting a data quality result.
+     * A {@code null} value restores the default value documented in {@link #getValueType()}.
      *
      * @param newValue The new value type.
      */

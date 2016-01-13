@@ -811,7 +811,7 @@ final class MetadataReader {
                  */
                 if (processingLevel != null) {
                     content = new DefaultImageDescription();
-                    ((DefaultImageDescription) content).setProcessingLevelCode(new DefaultIdentifier(processingLevel));
+                    content.setProcessingLevelCode(new DefaultIdentifier(processingLevel));
                 } else {
                     content = new DefaultCoverageDescription();
                 }

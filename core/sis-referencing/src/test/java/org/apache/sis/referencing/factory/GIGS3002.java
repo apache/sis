@@ -19,8 +19,10 @@ package org.apache.sis.referencing.factory;
 import org.opengis.referencing.datum.DatumFactory;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.test.DependsOn;
+import org.junit.FixMethodOrder;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+import org.junit.runners.MethodSorters;
 
 
 /**
@@ -32,10 +34,11 @@ import org.junit.runners.JUnit4;
  * @version 0.6
  * @module
  */
-@RunWith(JUnit4.class)
 @DependsOn({
     org.apache.sis.referencing.datum.DefaultEllipsoidTest.class
 })
+@RunWith(JUnit4.class)
+@FixMethodOrder(MethodSorters.JVM)      // Intentionally want some randomness
 public final strictfp class GIGS3002 extends org.opengis.test.referencing.gigs.GIGS3002 {
     /**
      * Creates a new test suite using the singleton factory instance.

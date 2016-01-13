@@ -28,8 +28,8 @@ import static java.lang.Double.*;
 
 /**
  * Equation of a line in a two dimensional space (<var>x</var>,<var>y</var>).
- * A line can be expressed by the <var>y</var> = <var>slope</var>⋅<var>x</var> + <var>y</var>₀ equation
- * where <var>y</var>₀ is the value of <var>y</var> at <var>x</var> = 0.
+ * A line can be expressed by the <var>y</var> = <var>slope</var>⋅<var>x</var> + <var>y₀</var> equation
+ * where <var>y₀</var> is the value of <var>y</var> at <var>x</var> = 0.
  *
  * <p>The equation parameters for a {@code Line} object can be set at construction time or using one
  * of the {@code setLine(…)} methods. The <var>y</var> value can be computed for a given <var>x</var>
@@ -37,8 +37,8 @@ import static java.lang.Double.*;
  * work even if the line is vertical.</p>
  *
  * <div class="note"><b>Comparison with Java2D geometries:</b>
- * At the difference of {@link java.awt.geom.Line2D} which is bounded by (<var>x</var>₁,<var>y</var>₁)
- * and (<var>x</var>₂,<var>y</var>₂) points, {@code Line} objects extend toward infinity.</div>
+ * At the difference of {@link java.awt.geom.Line2D} which is bounded by (<var>x₁</var>,<var>y₁</var>)
+ * and (<var>x₂</var>,<var>y₂</var>) points, {@code Line} objects extend toward infinity.</div>
  *
  * @author  Martin Desruisseaux (MPO, IRD)
  * @since   0.5
@@ -84,7 +84,7 @@ public class Line implements Cloneable, Serializable {
 
     /**
      * Constructs a line with the specified slope and offset.
-     * The linear equation will be <var>y</var> = <var>slope</var>⋅<var>x</var> + <var>y</var>₀.
+     * The linear equation will be <var>y</var> = <var>slope</var>⋅<var>x</var> + <var>y₀</var>.
      *
      * @param slope The slope.
      * @param y0 The <var>y</var> value at <var>x</var> = 0.
@@ -111,7 +111,7 @@ public class Line implements Cloneable, Serializable {
 
     /**
      * Returns the <var>x</var> value for <var>y</var> = 0.
-     * Coordinate (<var>x</var>₀, 0) is the intersection point with the <var>x</var> axis.
+     * Coordinate (<var>x₀</var>, 0) is the intersection point with the <var>x</var> axis.
      *
      * @return The <var>x</var> value for <var>y</var> = 0.
      *
@@ -137,7 +137,7 @@ public class Line implements Cloneable, Serializable {
 
     /**
      * Returns the <var>y</var> value for <var>x</var> = 0.
-     * Coordinate (0, <var>y</var>₀) is the intersection point with the <var>y</var> axis.
+     * Coordinate (0, <var>y₀</var>) is the intersection point with the <var>y</var> axis.
      *
      * @return The <var>y</var> value for <var>x</var> = 0.
      *
@@ -179,7 +179,7 @@ public class Line implements Cloneable, Serializable {
 
     /**
      * Sets this line to the specified slope and offset.
-     * The linear equation will be <var>y</var> = <var>slope</var>⋅<var>x</var> + <var>y</var>₀.
+     * The linear equation will be <var>y</var> = <var>slope</var>⋅<var>x</var> + <var>y₀</var>.
      *
      * @param slope The slope.
      * @param y0 The <var>y</var> value at <var>x</var> = 0.
@@ -218,7 +218,7 @@ public class Line implements Cloneable, Serializable {
 
     /**
      * Given a set of data points <var>x</var>[0 … <var>n</var>-1], <var>y</var>[0 … <var>n</var>-1],
-     * fits them to a straight line <var>y</var> = <var>slope</var>⋅<var>x</var> + <var>y</var>₀ in a
+     * fits them to a straight line <var>y</var> = <var>slope</var>⋅<var>x</var> + <var>y₀</var> in a
      * least-squares senses. This method assume that the <var>x</var> values are precise and all uncertainty
      * is in <var>y</var>.
      *
@@ -235,7 +235,7 @@ public class Line implements Cloneable, Serializable {
 
     /**
      * Given a sequence of points, fits them to a straight line <var>y</var> = <var>slope</var>⋅<var>x</var> +
-     * <var>y</var>₀ in a least-squares senses. This method assume that the <var>x</var> values are precise and
+     * <var>y₀</var> in a least-squares senses. This method assume that the <var>x</var> values are precise and
      * all uncertainty is in <var>y</var>.
      *
      * <p>Points shall be two dimensional with ordinate values in the (<var>x</var>,<var>y</var>) order.
@@ -382,7 +382,7 @@ public class Line implements Cloneable, Serializable {
 
     /**
      * Returns a string representation of this line. This method returns the linear equation
-     * in the form <var>y</var> = <var>slope</var>⋅<var>x</var> + <var>y</var>₀.
+     * in the form <var>y</var> = <var>slope</var>⋅<var>x</var> + <var>y₀</var>.
      *
      * @return A string representation of this line.
      */

@@ -49,13 +49,13 @@ import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.5
- * @version 0.6
+ * @version 0.7
  * @module
  *
  * @see ProjectiveTransform
  */
-public class AffineTransform2D extends ImmutableAffineTransform implements MathTransform2D,
-        LinearTransform, LenientComparable, Parameterized
+public class AffineTransform2D extends ImmutableAffineTransform
+        implements MathTransform2D, LinearTransform, LenientComparable, Parameterized
 {
     /**
      * Serial number for inter-operability with different versions.
@@ -284,7 +284,7 @@ public class AffineTransform2D extends ImmutableAffineTransform implements MathT
      * @throws NoninvertibleTransformException if this transform can not be inverted.
      */
     @Override
-    public final MathTransform2D inverse() throws NoninvertibleTransformException {
+    public final AffineTransform2D inverse() throws NoninvertibleTransformException {
         if (inverse == null) {
             if (super.isIdentity()) {
                 inverse = this;
