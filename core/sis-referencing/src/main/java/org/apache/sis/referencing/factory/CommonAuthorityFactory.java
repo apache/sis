@@ -24,7 +24,6 @@ import java.util.Collections;
 import javax.measure.unit.SI;
 import javax.measure.unit.NonSI;
 import javax.measure.unit.Unit;
-import javax.measure.quantity.Length;
 import org.opengis.util.FactoryException;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Citation;
@@ -201,6 +200,11 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
     private static final String AUTO2 = "AUTO2";
 
     /**
+     * The bit for saying that a namespace is the legacy {@code "AUTO"} namespace.
+     */
+    private static final int LEGACY_MASK = 0x80000000;
+
+    /**
      * First code in the AUTO(2) namespace.
      */
     private static final int FIRST_PROJECTION_CODE = 42001;
@@ -263,55 +267,67 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
     }
 
     /**
-     * Returns {@code true} if the given string if one of the namespaces recognized by this factory.
+     * Returns {@code true} if the given portion of the code is equal, ignoring case, to the given namespace.
      */
-    private static boolean isCodeSpace(final String namespace) {
-        if (!namespace.equalsIgnoreCase(Constants.CRS) && !namespace.equalsIgnoreCase(Constants.OGC)) {
-            final int s = AUTO2.length() - 1;
-            if (!namespace.regionMatches(true, 0, AUTO2, 0, s)) {
-                return false;
-            }
-            switch (namespace.length() - s) {
-                case 0:  break;                                 // Namespace is exactly "AUTO" (ignoring case).
-                case 1:  final char c = namespace.charAt(s);    // Namespace has one more character than "AUTO".
-                         return (c >= '1' && c <= '2');         // Namespace has more than one more character.
-                default: return false;
-            }
-        }
-        return true;
+    private static boolean regionMatches(final String namespace, final String code, final int start, final int end) {
+        return (namespace.length() == end - start) && code.regionMatches(true, start, namespace, 0, namespace.length());
     }
 
     /**
-     * If the given code begins with {@code "OGC"}, {@code "CRS"}, {@code "AUTO"}, {@code "AUTO1"} or {@code "AUTO2"}
-     * authority (ignoring spaces), returns the code without the authority part. Otherwise if the code starts with any
-     * other authority, throw an exception. Otherwise if the code has no authority, returns the code as-is.
+     * Returns the index where the code begins, ignoring spaces and the {@code "OGC"}, {@code "CRS"}, {@code "AUTO"},
+     * {@code "AUTO1"} or {@code "AUTO2"} namespaces if present. If a namespace is found and is a legacy one, then
+     * this {@link #LEGACY_MASK} bit will be set.
+     *
+     * @return Index where the code begin, possibly with the {@link #LEGACY_MASK} bit set.
+     * @throws NoSuchAuthorityCodeException if an authority is present but is not one of the recognized authorities.
      */
-    private String trimAuthority(String code) throws NoSuchAuthorityCodeException {
+    private static int skipNamespace(final String code) throws NoSuchAuthorityCodeException {
+        int isLegacy = 0;
         int s = code.indexOf(DefaultNameSpace.DEFAULT_SEPARATOR);
         if (s >= 0) {
-            final String scope = code.substring(0, s);
-            if (!isCodeSpace(CharSequences.trimWhitespaces(scope))) {
-                throw new NoSuchAuthorityCodeException(Errors.format(Errors.Keys.UnknownAuthority_1, scope), Constants.OGC, code);
+            final int end   = CharSequences.skipTrailingWhitespaces(code, 0, s);
+            final int start = CharSequences.skipLeadingWhitespaces (code, 0, end);
+            if (!regionMatches(Constants.CRS, code, start, end) &&
+                !regionMatches(Constants.OGC, code, start, end))
+            {
+                boolean isRecognized = false;
+                final int length = AUTO2.length() - 1;
+                if (code.regionMatches(true, start, AUTO2, 0, length)) {
+                    switch (end - start - length) {         // Number of extra characters after "AUTO".
+                        case 0: {                           // Namespace is exactly "AUTO" (ignoring case).
+                            isRecognized = true;
+                            isLegacy = LEGACY_MASK;
+                            break;
+                        }
+                        case 1: {                           // Namespace has one more character than "AUTO".
+                            final char c = code.charAt(end - 1);
+                            isRecognized = (c >= '1' && c <= '2');
+                            if (c == '1') {
+                                isLegacy = LEGACY_MASK;
+                            }
+                        }
+                    }
+                }
+                if (!isRecognized) {
+                    throw new NoSuchAuthorityCodeException(Errors.format(Errors.Keys.UnknownAuthority_1,
+                            CharSequences.trimWhitespaces(code.substring(0, s))), Constants.OGC, code);
+                }
             }
-            final int length = code.length();
-            s = CharSequences.skipLeadingWhitespaces(code, s+1, length);
-            code = code.substring(s, CharSequences.skipTrailingWhitespaces(code, s, length));
         }
+        s = CharSequences.skipLeadingWhitespaces(code, s+1, code.length());
         /*
          * Above code removed the "CRS" part when it is used as a namespace, as in "CRS:84".
          * The code below removes the "CRS" prefix when it is concatenated within the code,
          * as in "CRS84". Together, those two checks handle redundant codes like "CRS:CRS84"
          * (malformed code, but seen in practice).
          */
-        int start = CharSequences.skipLeadingWhitespaces(code, 0, code.length());
-        if (code.regionMatches(true, start, Constants.CRS, 0, Constants.CRS.length())) {
-            start = CharSequences.skipLeadingWhitespaces(code, start + Constants.CRS.length(), code.length());
+        if (code.regionMatches(true, s, Constants.CRS, 0, Constants.CRS.length())) {
+            s = CharSequences.skipLeadingWhitespaces(code, s + Constants.CRS.length(), code.length());
         }
-        code = code.substring(start, CharSequences.skipTrailingWhitespaces(code, start, code.length()));
-        if (code.isEmpty()) {
+        if (s >= code.length()) {
             throw new NoSuchAuthorityCodeException(Errors.format(Errors.Keys.EmptyArgument_1, "code"), Constants.OGC, code);
         }
-        return code;
+        return s | isLegacy;
     }
 
     /**
@@ -377,7 +393,8 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
      */
     @Override
     public InternationalString getDescriptionText(final String code) throws FactoryException {
-        final String localCode = trimAuthority(code);
+        final int s = skipNamespace(code) & ~LEGACY_MASK;
+        final String localCode = code.substring(s, CharSequences.skipTrailingWhitespaces(code, s, code.length()));
         if (localCode.indexOf(SEPARATOR) < 0) {
             /*
              * For codes in the "AUTO(2)" namespace without parameters, we can not rely on the default implementation
@@ -430,12 +447,20 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
     @Override
     public CoordinateReferenceSystem createCoordinateReferenceSystem(final String code) throws FactoryException {
         ArgumentChecks.ensureNonNull("code", code);
-        String localCode  = trimAuthority(code);
+        final String localCode;
+        final boolean isLegacy;
         String complement = null;
-        final int startOfParameters = localCode.indexOf(SEPARATOR);
-        if (startOfParameters >= 0) {
-            complement = localCode.substring(startOfParameters + 1);
-            localCode = localCode.substring(0, CharSequences.skipTrailingWhitespaces(localCode, 0, startOfParameters));
+        { // Block for keeping 'start' and 'end' variables locale.
+            int start = skipNamespace(code);
+            isLegacy = (start & LEGACY_MASK) != 0;
+            start &= ~LEGACY_MASK;
+            final int startOfParameters = code.indexOf(SEPARATOR, start);
+            int end = CharSequences.skipTrailingWhitespaces(code, start, code.length());
+            if (startOfParameters >= 0) {
+                complement = code.substring(startOfParameters + 1);
+                end = CharSequences.skipTrailingWhitespaces(code, start, startOfParameters);
+            }
+            localCode = code.substring(start, end);
         }
         int codeValue = 0;
         double[] parameters = ArraysExt.EMPTY_DOUBLE;
@@ -462,9 +487,10 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
                 errorKey = Errors.Keys.TooManyArguments_2;
             }
             if (errorKey == 0) {
-                return createAuto(code, codeValue, (count > 2) ? parameters[0] : 1,
-                                                                 parameters[count - 2],
-                                                                 parameters[count - 1]);
+                return createAuto(code, codeValue, isLegacy,
+                        (count > 2) ? parameters[0] : isLegacy ? Constants.EPSG_METRE : 1,
+                                      parameters[count - 2],
+                                      parameters[count - 1]);
             }
             throw new NoSuchAuthorityCodeException(Errors.format(errorKey, expected, count), AUTO2, localCode, code);
         }
@@ -489,13 +515,14 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
      *
      * @param  code        The user-specified code, used only for error reporting.
      * @param  projection  The projection code (e.g. 42001).
+     * @param  isLegacy    {@code true} if the code was found in {@code "AUTO"} or {@code "AUTO1"} namespace.
      * @param  factor      The multiplication factor for the unit of measurement.
      * @param  longitude   A longitude in the desired projection zone.
      * @param  latitude    A latitude in the desired projection zone.
      * @return The projected CRS for the given projection and parameters.
      */
     @SuppressWarnings("null")
-    private ProjectedCRS createAuto(final String code, final int projection,
+    private ProjectedCRS createAuto(final String code, final int projection, final boolean isLegacy,
             final double factor, final double longitude, final double latitude) throws FactoryException
     {
         Boolean isUTM = null;
@@ -527,7 +554,7 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
         try {
             if (isUTM != null && isUTM) {
                 crs = datum.UTM(latitude, longitude);
-                if (factor == 1) {
+                if (factor == (isLegacy ? Constants.EPSG_METRE : 1)) {
                     return crs;
                 }
                 baseCRS = crs.getBaseCRS();
@@ -547,8 +574,13 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
              * At this point we got a coordinate system with axes in metres.
              * If the user asked for another unit of measurement, change the axes now.
              */
-            if (factor != 1) {
-                final Unit<Length> unit = Units.multiply(SI.METRE, factor);
+            final Unit<?> unit;
+            if (isLegacy) {
+                unit = createUnitFromEPSG(factor);
+            } else {
+                unit = (factor != 1) ? Units.multiply(SI.METRE, factor) : SI.METRE;
+            }
+            if (!SI.METRE.equals(unit)) {
                 cs = (CartesianCS) CoordinateSystems.replaceAxes(cs, new AxisFilter() {
                     @Override public Unit<?> getUnitReplacement(Unit<?> ignored) {
                         assert SI.METRE.equals(ignored) : ignored;
@@ -578,6 +610,31 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
         } catch (IllegalArgumentException e) {
             throw noSuchAuthorityCode(String.valueOf(projection), code, e);
         }
+    }
+
+    /**
+     * Returns the unit of measurement for the given EPSG code.
+     * This is used only for codes in the legacy {@code "AUTO"} namespace.
+     */
+    private static Unit<?> createUnitFromEPSG(final double code) throws NoSuchAuthorityCodeException {
+        String message = null;      // Error message to be used only in case of failure.
+        final String s;             // The string representation of the code, to be used only in case of failure.
+        final int c = (int) code;
+        if (c == code) {
+            final Unit<?> unit = Units.valueOfEPSG(c);
+            if (Units.isLinear(unit)) {
+                return unit;
+            } else if (unit != null) {
+                message = Errors.format(Errors.Keys.NonLinearUnit_1, unit);
+            }
+            s = String.valueOf(c);
+        } else {
+            s = String.valueOf(code);
+        }
+        if (message == null) {
+            message = Errors.format(Errors.Keys.NoSuchAuthorityCode_3, Constants.EPSG, Unit.class, s);
+        }
+        throw new NoSuchAuthorityCodeException(message, Constants.EPSG, s);
     }
 
     /**
