@@ -144,6 +144,7 @@ public enum CommonCRS {
      *   <tr><th>Semi-minor axis length:</th>  <td>6356752 <i>(approximative)</i></td></tr>
      *   <tr><th>Inverse flattening:</th>      <td>298.257223563 <i>(definitive)</i></td></tr>
      *   <tr><th>Ellipsoid axes unit:</th>     <td>{@link SI#METRE}</td></tr>
+     *   <tr><th>UTM zones:</th>               <td>1 to 60 in North and South hemispheres</td></tr>
      * </table></blockquote>
      */
     WGS84((short) 4326, (short) 4979, (short) 4978, (short) 6326, (short) 7030,     // Geodetic info
@@ -161,6 +162,7 @@ public enum CommonCRS {
      *   <tr><th>Semi-minor axis length:</th>  <td>6356751 <i>(approximative)</i></td></tr>
      *   <tr><th>Inverse flattening:</th>      <td>298.26 <i>(definitive)</i></td></tr>
      *   <tr><th>Ellipsoid axes unit:</th>     <td>{@link SI#METRE}</td></tr>
+     *   <tr><th>UTM zones:</th>               <td>1 to 60 in North and South hemispheres</td></tr>
      * </table></blockquote>
      */
     WGS72((short) 4322, (short) 4985, (short) 4984, (short) 6322, (short) 7043,     // Geodetic info
@@ -181,6 +183,7 @@ public enum CommonCRS {
      *   <tr><th>Semi-minor axis length:</th>  <td>6356752 <i>(approximative)</i></td></tr>
      *   <tr><th>Inverse flattening:</th>      <td>298.257222101 <i>(definitive)</i></td></tr>
      *   <tr><th>Ellipsoid axes unit:</th>     <td>{@link SI#METRE}</td></tr>
+     *   <tr><th>UTM zones:</th>               <td>1 to 23 in the North hemisphere</td></tr>
      * </table></blockquote>
      *
      * <div class="note"><b>Note:</b>
@@ -203,6 +206,7 @@ public enum CommonCRS {
      *   <tr><th>Semi-major axis length:</th>  <td>6378206.4</td></tr>
      *   <tr><th>Semi-minor axis length:</th>  <td>6356583.8 <i>(definitive)</i></td></tr>
      *   <tr><th>Ellipsoid axes unit:</th>     <td>{@link SI#METRE}</td></tr>
+     *   <tr><th>UTM zones:</th>               <td>1 to 22 in the North hemisphere</td></tr>
      * </table></blockquote>
      */
     NAD27((short) 4267, (short) 0, (short) 0, (short) 6267, (short) 7008,           // Geodetic info
@@ -222,6 +226,7 @@ public enum CommonCRS {
      *   <tr><th>Semi-minor axis length:</th>  <td>6356752 <i>(approximative)</i></td></tr>
      *   <tr><th>Inverse flattening:</th>      <td>298.257222101 <i>(definitive)</i></td></tr>
      *   <tr><th>Ellipsoid axes unit:</th>     <td>{@link SI#METRE}</td></tr>
+     *   <tr><th>UTM zones:</th>               <td>28 to 38 in the North hemisphere</td></tr>
      * </table></blockquote>
      *
      * <div class="note"><b>Note:</b>
@@ -244,6 +249,7 @@ public enum CommonCRS {
      *   <tr><th>Semi-minor axis length:</th>  <td>6356912 <i>(approximative)</i></td></tr>
      *   <tr><th>Inverse flattening:</th>      <td>297 <i>(definitive)</i></td></tr>
      *   <tr><th>Ellipsoid axes unit:</th>     <td>{@link SI#METRE}</td></tr>
+     *   <tr><th>UTM zones:</th>               <td>28 to 38 in the North hemisphere</td></tr>
      * </table></blockquote>
      */
     ED50((short) 4230, (short) 0, (short) 0, (short) 6230, (short) 7022,            // Geodetic info
@@ -808,6 +814,15 @@ public enum CommonCRS {
         final GeodeticDatum datum = datum(object);
         return (datum != null) ? datum.getPrimeMeridian() : null;
     }
+
+    /*
+     * NOTE ABOUT MAP PROJECTION CONVENIENCE METHODS:
+     * There is no convenience method for projections other than UTM because this enumeration is not a
+     * factory for arbitrary CRS (the UTM projection has the advantage of being constrained to zones).
+     * World-wide projections like "WGS 84 / World Mercator" are not handled neither because they make
+     * sense only for some datum like WGS84 or WGS72. Application to more regional datum like NAD27 or
+     * ED50 would be more questionable.
+     */
 
     /**
      * Returns a Universal Transverse Mercator (UTM) projection for the zone containing the given point.
