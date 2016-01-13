@@ -16,14 +16,15 @@
  */
 package org.apache.sis.referencing.operation.transform;
 
+import java.util.Arrays;
 import java.io.Serializable;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptorGroup;
-import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.internal.referencing.provider.Affine;
+import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.resources.Errors;
 
@@ -55,7 +56,7 @@ abstract class AbstractLinearTransform extends AbstractMathTransform implements 
      * This field is part of the serialization form in order to avoid rounding errors if a user
      * asks for the inverse of the inverse (i.e. the original transform) after deserialization.
      */
-    MathTransform inverse;
+    volatile LinearTransform inverse;
 
     /**
      * Constructs a transform.
@@ -110,23 +111,31 @@ abstract class AbstractLinearTransform extends AbstractMathTransform implements 
      * Creates the inverse transform of this object.
      */
     @Override
-    public synchronized MathTransform inverse() throws NoninvertibleTransformException {
-        if (inverse == null) {
-            /*
-             * Should never be the identity transform at this point (except during tests) because
-             * MathTransforms.linear(…) should never instantiate this class in the identity case.
-             * But we check anyway as a paranoiac safety.
-             */
-            if (isIdentity()) {
-                inverse = this;
-            } else {
-                inverse = MathTransforms.linear(Matrices.inverse(this));
-                if (inverse instanceof AbstractLinearTransform) {
-                    ((AbstractLinearTransform) inverse).inverse = this;
+    @SuppressWarnings("DoubleCheckedLocking")  // Okay since 'inverse' is volatile.
+    public LinearTransform inverse() throws NoninvertibleTransformException {
+        LinearTransform inv = inverse;
+        if (inv == null) {
+            synchronized (this) {
+                inv = inverse;
+                if (inv == null) {
+                    /*
+                     * Should never be the identity transform at this point (except during tests) because
+                     * MathTransforms.linear(…) should never instantiate this class in the identity case.
+                     * But we check anyway as a paranoiac safety.
+                     */
+                    if (isIdentity()) {
+                        inv = this;
+                    } else {
+                        inv = MathTransforms.linear(Matrices.inverse(this));
+                        if (inv instanceof AbstractLinearTransform) {
+                            ((AbstractLinearTransform) inv).inverse = this;
+                        }
+                    }
+                    inverse = inv;
                 }
             }
         }
-        return inverse;
+        return inv;
     }
 
     /**
@@ -161,6 +170,63 @@ abstract class AbstractLinearTransform extends AbstractMathTransform implements 
     }
 
     /**
+     * Transforms an array of relative distance vectors. Distance vectors are transformed without applying
+     * the translation components. The default implementation is not very efficient, but it should not be
+     * an issue since this method is not invoked often.
+     *
+     * @since 0.7
+     */
+    @Override
+    public void deltaTransform(double[] srcPts, int srcOff, double[] dstPts, int dstOff, int numPts) {
+        int offFinal = 0;
+        double[] dstFinal = null;
+        final int srcDim, dstDim;
+        int srcInc = srcDim = getSourceDimensions();
+        int dstInc = dstDim = getTargetDimensions();
+        if (srcPts == dstPts) {
+            switch (IterationStrategy.suggest(srcOff, srcDim, dstOff, dstDim, numPts)) {
+                case ASCENDING: {
+                    break;
+                }
+                case DESCENDING: {
+                    srcOff += (numPts - 1) * srcDim;  srcInc = -srcInc;
+                    dstOff += (numPts - 1) * dstDim;  dstInc = -dstInc;
+                    break;
+                }
+                default: {
+                    srcPts = Arrays.copyOfRange(srcPts, srcOff, srcOff + numPts*srcDim);
+                    srcOff = 0;
+                    break;
+                }
+                case BUFFER_TARGET: {
+                    dstFinal = dstPts; dstPts = new double[numPts * dstInc];
+                    offFinal = dstOff; dstOff = 0;
+                    break;
+                }
+            }
+        }
+        final double[] buffer = new double[dstDim];
+        while (--numPts >= 0) {
+            for (int j=0; j<dstDim; j++) {
+                double sum = 0;
+                for (int i=0; i<srcDim; i++) {
+                    final double e = getElement(j, i);
+                    if (e != 0) {   // See the comment in ProjectiveTransform for the purpose of this test.
+                        sum += srcPts[srcOff + i] * e;
+                    }
+                }
+                buffer[j] = sum;
+            }
+            System.arraycopy(buffer, 0, dstPts, dstOff, dstDim);
+            srcOff += srcInc;
+            dstOff += dstInc;
+        }
+        if (dstFinal != null) {
+            System.arraycopy(dstPts, 0, dstFinal, offFinal, dstPts.length);
+        }
+    }
+
+    /**
      * Compares this math transform with an object which is known to be of the same class.
      * Implementors can safely cast the {@code object} argument to their subclass.
      *
@@ -187,19 +253,77 @@ abstract class AbstractLinearTransform extends AbstractMathTransform implements 
         if (object == this) { // Slight optimization
             return true;
         }
-        if (object != null) {
-            if (getClass() == object.getClass() && !mode.isApproximative()) {
-                return equalsSameClass(object);
+        if (object == null) {
+            return false;
+        }
+        final boolean isApproximative = mode.isApproximative();
+        if (!isApproximative && getClass() == object.getClass()) {
+            if (!equalsSameClass(object)) {
+                return false;
             }
-            if (mode != ComparisonMode.STRICT) {
-                if (object instanceof LinearTransform) {
-                    return Matrices.equals(this, ((LinearTransform) object).getMatrix(), mode);
-                } else if (object instanceof Matrix) {
-                    return Matrices.equals(this, (Matrix) object, mode);
-                }
+        } else if (mode == ComparisonMode.STRICT) {
+            return false;
+        } else {
+            final Matrix m;
+            if (object instanceof LinearTransform) {
+                m = ((LinearTransform) object).getMatrix();
+            } else if (object instanceof Matrix) {
+                m = (Matrix) object;
+            } else {
+                return false;
+            }
+            if (!Matrices.equals(this, m, mode)) {
+                return false;
             }
         }
-        return false;
+        /*
+         * At this point the transforms are considered equal. In theory we would not need to check
+         * the inverse transforms since if A and B are equal, then A⁻¹ and B⁻¹ should be equal too.
+         * However in Apache SIS this is not exactly true because computation of inverse transforms
+         * avoid NaN values in some circumstances. For example the inverse of a 2×3 matrix normally
+         * sets the "new" dimensions to NaN, but in the particular case where the transform is used
+         * for a "Geographic 2D to 3D" conversion it will rather set the new dimensions to zero. So
+         * A⁻¹ and B⁻¹ may differ in their "NaN versus 0" values even if A and B are equal.
+         *
+         * Opportunistically, the comparison of inverse transforms in approximative mode also ensures
+         * that we are below the tolerance threshold not only for this matrix, but for the inverse one
+         * as well.
+         */
+        if (object instanceof AbstractLinearTransform) {
+            /*
+             * If the 'inverse' matrix was not computed in any of the transforms being compared
+             * (i.e. if 'this.inverse' and 'object.inverse' are both null), then assume that the
+             * two transforms will compute their inverse in the same way. The intend is to avoid
+             * to trig the inverse transform computation.
+             *
+             * Note that this code requires the 'inverse' fields to be volatile
+             * (otherwise we would need to synchronize).
+             */
+            if (inverse == ((AbstractLinearTransform) object).inverse) {
+                return true;
+            }
+        }
+        /*
+         * Get the matrices of inverse transforms. In the following code 'null' is really the intended
+         * value for non-invertible matrices because the Matrices.equals(…) methods accept null values,
+         * so we are okay to ignore NoninvertibleTransformException in this particular case.
+         */
+        Matrix mt = null, mo = null;
+        try {
+            mt = inverse().getMatrix();
+        } catch (NoninvertibleTransformException e) {
+            // Leave 'mt' to null.
+        }
+        try {
+            if (object instanceof LinearTransform) {
+                mo = ((LinearTransform) object).inverse().getMatrix();
+            } else if (object instanceof Matrix) {
+                mo = Matrices.inverse((Matrix) object);
+            }
+        } catch (NoninvertibleTransformException e) {
+            // Leave 'mo' to null.
+        }
+        return Matrices.equals(mt, mo, isApproximative ? Numerics.COMPARISON_THRESHOLD : 0, isApproximative);
     }
 
     /**

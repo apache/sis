@@ -109,6 +109,18 @@ public abstract class GeocentricAffineBetweenGeographic extends GeocentricAffine
     }
 
     /**
+     * Notifies {@code DefaultMathTransformFactory} that map projections require values for the
+     * {@code "src_semi_major"}, {@code "src_semi_minor"} , {@code "tgt_semi_major"} and
+     * {@code "tgt_semi_minor"} parameters.
+     *
+     * @return 3, meaning that the operation requires source and target ellipsoids.
+     */
+    @Override
+    public final int getEllipsoidsMask() {
+        return 3;
+    }
+
+    /**
      * Creates a math transform from the specified group of parameter values.
      * This method wraps the affine operation into Geographic/Geocentric conversions.
      *
@@ -144,7 +156,7 @@ public abstract class GeocentricAffineBetweenGeographic extends GeocentricAffine
         try {
             toGeographic = toGeographic.inverse();
         } catch (NoninvertibleTransformException e) {
-            throw new FactoryException(e);  // Should never happen with SIS implementation.
+            throw new FactoryException(e);                  // Should never happen with SIS implementation.
         }
         /*
          * The  Geocentric → Affine → Geographic  chain.

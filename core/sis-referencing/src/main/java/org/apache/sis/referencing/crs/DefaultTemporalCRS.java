@@ -62,6 +62,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  *
  * @see org.apache.sis.referencing.datum.DefaultTemporalDatum
  * @see org.apache.sis.referencing.cs.DefaultTimeCS
+ * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createTemporalCRS(String)
  */
 @XmlType(name = "TemporalCRSType", propOrder = {
     "coordinateSystem",
@@ -145,6 +146,8 @@ public class DefaultTemporalCRS extends AbstractCRS implements TemporalCRS {
      * @param properties The properties to be given to the coordinate reference system.
      * @param datum The datum.
      * @param cs The coordinate system.
+     *
+     * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createTemporalCRS(Map, TemporalDatum, TimeCS)
      */
     public DefaultTemporalCRS(final Map<String,?> properties,
                               final TemporalDatum datum,

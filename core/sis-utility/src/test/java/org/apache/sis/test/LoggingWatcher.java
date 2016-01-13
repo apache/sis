@@ -126,7 +126,7 @@ public strictfp class LoggingWatcher extends TestWatchman implements Filter {
         }
         maximumLogCount--;
         verifyMessage(formatter.formatMessage(record));
-        return TestCase.verbose;
+        return TestCase.VERBOSE;
     }
 
     /**

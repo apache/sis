@@ -116,7 +116,7 @@ public final strictfp class DefaultDerivedCRSTest extends XMLTestCase {
     @Test
     public void testConstruction() {
         final DefaultDerivedCRS crs = createLongitudeRotation();
-        Validators.validate(crs);
+//      Validators.validate(crs);
 
         assertEquals("name",    "Back to Greenwich",                crs.getName().getCode());
         assertEquals("baseCRS", "NTF (Paris)",                      crs.getBaseCRS().getName().getCode());

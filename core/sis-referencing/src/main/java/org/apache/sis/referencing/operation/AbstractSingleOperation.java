@@ -93,7 +93,7 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
      * The operation method.
      *
      * <p><b>Consider this field as final!</b>
-     * This field is modified only at unmarshalling time by {@link #setMethod(OperationMethod)}</p>
+     * This field is modified only at unmarshalling time by {@link #setMethod(OperationMethod)}.</p>
      *
      * @see #getMethod()
      */
@@ -104,7 +104,7 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
      *
      * <p><b>Consider this field as final!</b>
      * This field is non-final only for the convenience of constructors and for initialization
-     * at XML unmarshalling time by {@link #setParameters(GeneralParameterValue[])}</p>
+     * at XML unmarshalling time by {@link #setParameters(GeneralParameterValue[])}.</p>
      */
     ParameterValueGroup parameters;
 
@@ -128,8 +128,7 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
          * However there is a few cases, for example the Molodenski transform, where we can not infer the
          * parameters easily because the operation is implemented by a concatenation of math transforms.
          */
-        parameters = Containers.property(properties, ReferencingServices.PARAMETERS_KEY, ParameterValueGroup.class);
-        // No clone since this is a SIS internal property and SIS does not modify those values after construction.
+        parameters = Parameters.unmodifiable(Containers.property(properties, ReferencingServices.PARAMETERS_KEY, ParameterValueGroup.class));
     }
 
     /**
@@ -164,7 +163,7 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
     protected AbstractSingleOperation(final SingleOperation operation) {
         super(operation);
         method = operation.getMethod();
-        parameters = getParameterValues(operation);
+        parameters = Parameters.unmodifiable(operation.getParameterValues());
     }
 
     /**
@@ -314,9 +313,8 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
      * Returns the parameter values. The default implementation performs the following choice:
      *
      * <ul>
-     *   <li>If parameter values were specified explicitely at construction time, then a
-     *       {@linkplain org.apache.sis.parameter.DefaultParameterValueGroup#clone() clone}
-     *       of those parameters is returned.</li>
+     *   <li>If parameter values were specified explicitely at construction time, then they are returned as an
+     *       {@linkplain Parameters#unmodifiable(ParameterValueGroup) unmodifiable parameter group}.</li>
      *   <li>Otherwise if this method can infer the parameter values from the
      *       {@linkplain #getMathTransform() math transform}, then those parameters are returned.</li>
      *   <li>Otherwise throw {@link org.apache.sis.util.UnsupportedImplementationException}.</li>
@@ -330,18 +328,7 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
      */
     @Override
     public ParameterValueGroup getParameterValues() {
-        return (parameters != null) ? parameters.clone() : super.getParameterValues();
-    }
-
-    /**
-     * Gets the parameter values of the given operation without computing and without cloning them (if possible).
-     * If the parameters are automatically inferred from the math transform, do not compute them and instead return
-     * {@code null} (in conformance with {@link #parameters} contract).
-     */
-    private static ParameterValueGroup getParameterValues(final SingleOperation operation) {
-        return (operation instanceof AbstractSingleOperation)
-               ? ((AbstractSingleOperation) operation).parameters   // Null if inferred from MathTransform
-               : operation.getParameterValues();
+        return (parameters != null) ? parameters : super.getParameterValues();
     }
 
     /**
@@ -508,6 +495,7 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
              */
             parameters = new DefaultParameterValueGroup(method.getParameters());
             CC_OperationMethod.store(values, parameters.values(), replacements);
+            parameters = Parameters.unmodifiable(parameters);
         } else {
             ReferencingUtilities.propertyAlreadySet(AbstractSingleOperation.class, "setParameters", "parameterValue");
         }

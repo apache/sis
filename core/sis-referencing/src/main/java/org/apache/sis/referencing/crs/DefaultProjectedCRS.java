@@ -55,9 +55,9 @@ import static org.apache.sis.internal.referencing.WKTUtilities.toFormattable;
 
 /**
  * A 2-dimensional coordinate reference system used to approximate the shape of the earth on a planar surface.
- * It is done in such a way that the distortion that is inherent to the approximation is carefully
- * controlled and known. Distortion correction is commonly applied to calculated bearings and
- * distances to produce values that are a close match to actual field values.
+ * It is done in such a way that the distortion that is inherent to the approximation is carefully controlled and known.
+ * Distortion correction is commonly applied to calculated bearings and distances to produce values
+ * that are a close match to actual field values.
  *
  * <p><b>Used with coordinate system type:</b>
  *   {@linkplain org.apache.sis.referencing.cs.DefaultCartesianCS Cartesian}.
@@ -72,6 +72,8 @@ import static org.apache.sis.internal.referencing.WKTUtilities.toFormattable;
  * @since   0.6
  * @version 0.6
  * @module
+ *
+ * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createProjectedCRS(String)
  */
 @XmlType(name="ProjectedCRSType", propOrder = {
     "baseCRS",
@@ -141,6 +143,8 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS<Projection> implemen
      *         must match the target dimension of the {@code baseToDerived} transform.
      * @throws MismatchedDimensionException if the source and target dimensions of {@code baseToDerived}
      *         do not match the dimensions of {@code base} and {@code derivedCS} respectively.
+     *
+     * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createProjectedCRS(Map, GeographicCRS, Conversion, CartesianCS)
      */
     public DefaultProjectedCRS(final Map<String,?> properties,
                                final GeographicCRS baseCRS,
@@ -284,6 +288,12 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS<Projection> implemen
 
     /**
      * Compares this coordinate reference system with the specified object for equality.
+     * In addition to the metadata documented in the
+     * {@linkplain org.apache.sis.referencing.AbstractIdentifiedObject#equals(Object, ComparisonMode) parent class},
+     * this method considers coordinate system axes of the {@linkplain #getBaseCRS() base CRS} as metadata.
+     * This means that if the given {@code ComparisonMode} is {@code IGNORE_METADATA} or {@code APPROXIMATIVE},
+     * then axis order of the base geographic CRS are ignored
+     * (but <strong>not</strong> axis order of <strong>this</strong> projected CRS).
      *
      * @param  object The object to compare to {@code this}.
      * @param  mode {@link ComparisonMode#STRICT STRICT} for performing a strict comparison, or
@@ -293,7 +303,7 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS<Projection> implemen
      */
     @Override
     public boolean equals(final Object object, final ComparisonMode mode) {
-        return (object == this) || super.equals(object, mode);
+        return super.equals(object, mode);
     }
 
     /**

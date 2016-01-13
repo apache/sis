@@ -77,7 +77,7 @@ import static org.apache.sis.internal.jdk7.JDK7.highSurrogate;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.4
+ * @version 0.7
  * @module
  *
  * @see StringBuilders
@@ -400,7 +400,7 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
             }
             char head = (char) toSearch;
             char tail = (char) 0;
-            if (head != toSearch) { // Outside BMP plane?
+            if (head != toSearch) {                     // Outside BMP plane?
                 head = highSurrogate(toSearch);
                 tail = lowSurrogate (toSearch);
                 toIndex--;
@@ -580,7 +580,7 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
      *
      * <p>Special cases:</p>
      * <ul>
-     *   <li>If {@code toIndex} is lower than {@code toIndex},
+     *   <li>If {@code fromIndex} is lower than {@code toIndex},
      *       then this method unconditionally returns {@code toIndex}.</li>
      *   <li>If the given range contains only space characters and the character at {@code fromIndex}
      *       is the low surrogate of a valid supplementary code point, then this method returns
@@ -1327,12 +1327,13 @@ searchWordBreak:    while (true) {
     }
 
     /**
-     * Creates an acronym from the given text. If every characters in the given text are upper
-     * case, then the text is returned unchanged on the assumption that it is already an acronym.
-     * Otherwise this method returns a string containing the first character of each word, where
-     * the words are separated by the camel case convention, the {@code '_'} character, or any
-     * character which is not a {@linkplain Character#isUnicodeIdentifierPart(int) Unicode
-     * identifier part} (including spaces).
+     * Creates an acronym from the given text. This method returns a string containing the first character of each word,
+     * where the words are separated by the camel case convention, the {@code '_'} character, or any character which is
+     * not a {@linkplain Character#isUnicodeIdentifierPart(int) Unicode identifier part} (including spaces).
+     *
+     * <p>An exception to the above rule happens if the given text is a Unicode identifier without the {@code '_'}
+     * character, and every characters are upper case. In such case the text is returned unchanged on the assumption
+     * that it is already an acronym.</p>
      *
      * <p><b>Examples:</b> given {@code "northEast"}, this method returns {@code "NE"}.
      * Given {@code "Open Geospatial Consortium"}, this method returns {@code "OGC"}.</p>
@@ -1342,9 +1343,9 @@ searchWordBreak:    while (true) {
      */
     public static CharSequence camelCaseToAcronym(CharSequence text) {
         text = trimWhitespaces(text);
-        if (text != null && !isUpperCase(text, 0, text.length())) {
+        if (text != null && !isAcronym(text)) {
             final int length = text.length();
-            final StringBuilder buffer = new StringBuilder(8); // Acronyms are usually short.
+            final StringBuilder buffer = new StringBuilder(8);              // Acronyms are usually short.
             boolean wantChar = true;
             for (int i=0; i<length;) {
                 final int c = codePointAt(text, i);
@@ -1371,7 +1372,7 @@ searchWordBreak:    while (true) {
                  * first one is upper-case as well. This is for handling the identifiers which
                  * are compliant to Java-Beans convention (e.g. "northEast").
                  */
-                if (isUpperCase(buffer, 1, acrlg)) {
+                if (isUpperCase(buffer, 1, acrlg, true)) {
                     final int c = buffer.codePointAt(0);
                     final int up = toUpperCase(c);
                     if (c != up) {
@@ -1498,6 +1499,16 @@ cmp:    while (ia < lga) {
     }
 
     /**
+     * Returns {@code true} if the given text is presumed to be an acronym. Acronyms are presumed
+     * to be valid Unicode identifiers in all upper-case letters and without the {@code '_'} character.
+     *
+     * @see #camelCaseToAcronym(CharSequence)
+     */
+    private static boolean isAcronym(final CharSequence text) {
+        return isUpperCase(text) && indexOf(text, '_', 0, text.length()) < 0 && isUnicodeIdentifier(text);
+    }
+
+    /**
      * Returns {@code true} if the given identifier is a legal Unicode identifier.
      * This method returns {@code true} if the identifier length is greater than zero,
      * the first character is a {@linkplain Character#isUnicodeIdentifierStart(int)
@@ -1560,27 +1571,43 @@ cmp:    while (ia < lga) {
     }
 
     /**
-     * Returns {@code true} if every characters in the given sequence are
-     * {@linkplain Character#isUpperCase(int) upper-case} letters.
+     * Returns {@code true} if the given text is non-null, contains at least one upper-case character and
+     * no lower-case character. Space and punctuation are ignored.
      *
-     * <div class="note"><b>Note:</b>
-     * The behavior of this method regarding digits and punctuation is unspecified
-     * and may change in future versions.</div>
-     *
-     * @param  text The character sequence to test.
-     * @return {@code true} if every character are upper-case.
+     * @param  text The character sequence to test (may be {@code null}).
+     * @return {@code true} if non-null, contains at least one upper-case character and no lower-case character.
      *
      * @see String#toUpperCase()
+     *
+     * @since 0.7
      */
-    static boolean isUpperCase(final CharSequence text, int lower, final int upper) {
+    public static boolean isUpperCase(final CharSequence text) {
+        return isUpperCase(text, 0, length(text), false);
+    }
+
+    /**
+     * Returns {@code true} if the given sub-sequence is non-null, contains at least one upper-case character and
+     * no lower-case character. Space and punctuation are ignored.
+     *
+     * @param  text  The character sequence to test.
+     * @param  lower Index of the first character to check, inclusive.
+     * @param  upper Index of the last character to check, exclusive.
+     * @param  hasUpperCase {@code true} if this method should behave as if the given text already had
+     *         at least one upper-case character (not necessarily in the portion given by the indices).
+     * @return {@code true} if contains at least one upper-case character and no lower-case character.
+     */
+    private static boolean isUpperCase(final CharSequence text, int lower, final int upper, boolean hasUpperCase) {
         while (lower < upper) {
             final int c = codePointAt(text, lower);
-            if (!Character.isUpperCase(c)) {
+            if (Character.isLowerCase(c)) {
                 return false;
+            }
+            if (!hasUpperCase) {
+                hasUpperCase = Character.isUpperCase(c);
             }
             lower += charCount(c);
         }
-        return true;
+        return hasUpperCase;
     }
 
     /**

@@ -32,7 +32,7 @@ import org.apache.sis.util.Static;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5
- * @version 0.6
+ * @version 0.7
  * @module
  */
 public final class Constants extends Static {
@@ -78,6 +78,16 @@ public final class Constants extends Static {
     public static final byte CRS84 = 84;
 
     /**
+     * The {@code CRS:88} identifier for a coordinate reference system.
+     */
+    public static final byte CRS88 = 88;
+
+    /**
+     * The {@code CRS:1} identifier for a coordinate reference system.
+     */
+    public static final byte CRS1 = 1;
+
+    /**
      * The NetCDF parameter name for the Earth radius.
      */
     public static final String EARTH_RADIUS = "earth_radius";
@@ -99,6 +109,11 @@ public final class Constants extends Static {
      * The OGC parameter name for the central meridian.
      */
     public static final String CENTRAL_MERIDIAN = "central_meridian";
+
+    /**
+     * The OGC parameter name for the latitude of origin.
+     */
+    public static final String LATITUDE_OF_ORIGIN = "latitude_of_origin";
 
     /**
      * The NetCDF parameter name for the standard parallels.
@@ -167,6 +182,21 @@ public final class Constants extends Static {
      * Codes for parameters {@code B1} to {@code B3} inclusive follow, but the affine coefficients stop at {@code B2}.
      */
     public static final short EPSG_B0 = 8639;
+
+    /**
+     * The EPSG code for metres.
+     */
+    public static final short EPSG_METRE = 9001;
+
+    /**
+     * The EPSG code for degrees when used in parameters.
+     */
+    public static final short EPSG_PARAM_DEGREES = 9102;
+
+    /**
+     * The EPSG code for degrees when used in axes.
+     */
+    public static final short EPSG_AXIS_DEGREES = 9122;
 
     /**
      * Do not allow instantiation of this class.

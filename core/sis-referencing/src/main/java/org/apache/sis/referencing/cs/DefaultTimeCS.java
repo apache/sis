@@ -54,6 +54,7 @@ import org.apache.sis.measure.Units;
  *
  * @see org.apache.sis.referencing.crs.DefaultTemporalCRS
  * @see org.apache.sis.referencing.datum.DefaultTemporalDatum
+ * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createTimeCS(String)
  */
 @XmlType(name = "TimeCSType")
 @XmlRootElement(name = "TimeCS")
@@ -109,6 +110,8 @@ public class DefaultTimeCS extends AbstractCS implements TimeCS {
      *
      * @param properties The properties to be given to the identified object.
      * @param axis       The axis.
+     *
+     * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createTimeCS(Map, CoordinateSystemAxis)
      */
     public DefaultTimeCS(final Map<String,?> properties, final CoordinateSystemAxis axis) {
         super(properties, axis);

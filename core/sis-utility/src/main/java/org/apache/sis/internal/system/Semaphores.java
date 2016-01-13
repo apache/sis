@@ -36,7 +36,7 @@ public final class Semaphores {
      * {@code AbstractDerivedCRS} objects contain a {@code conversionFromBase} field, which contains a
      * {@code DefaultConversion.targetCRS} field referencing back the {@code AbstractDerivedCRS} object.
      */
-    public static final byte COMPARING = 1;
+    public static final byte CONVERSION_AND_CRS = 1;
 
     /**
      * A flag to indicate that {@link org.apache.sis.referencing.operation.AbstractCoordinateOperation}
@@ -71,7 +71,7 @@ public final class Semaphores {
     /**
      * Returns {@code true} if the given flag is set.
      *
-     * @param flag One of {@link #COMPARING}, {@link #ENCLOSED_IN_OPERATION} or other constants.
+     * @param flag One of {@link #CONVERSION_AND_CRS}, {@link #ENCLOSED_IN_OPERATION} or other constants.
      * @return {@code true} if the given flag is set.
      */
     public static boolean query(final byte flag) {
@@ -82,7 +82,7 @@ public final class Semaphores {
     /**
      * Sets the given flag.
      *
-     * @param flag One of {@link #COMPARING}, {@link #ENCLOSED_IN_OPERATION} or other constants.
+     * @param flag One of {@link #CONVERSION_AND_CRS}, {@link #ENCLOSED_IN_OPERATION} or other constants.
      * @return {@code true} if the given flag was already set.
      */
     public static boolean queryAndSet(final byte flag) {
@@ -99,7 +99,7 @@ public final class Semaphores {
     /**
      * Clears the given flag.
      *
-     * @param flag One of {@link #COMPARING}, {@link #ENCLOSED_IN_OPERATION} or other constants.
+     * @param flag One of {@link #CONVERSION_AND_CRS}, {@link #ENCLOSED_IN_OPERATION} or other constants.
      */
     public static void clear(final byte flag) {
         final Semaphores s = FLAGS.get();

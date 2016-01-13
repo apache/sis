@@ -81,6 +81,7 @@ import org.apache.sis.internal.jdk7.Objects;
  * @see org.apache.sis.referencing.CommonCRS.Vertical#datum()
  * @see org.apache.sis.referencing.cs.DefaultVerticalCS
  * @see org.apache.sis.referencing.crs.DefaultVerticalCRS
+ * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createVerticalDatum(String)
  */
 @XmlType(name = "VerticalDatumType")
 @XmlRootElement(name = "VerticalDatum")
@@ -155,6 +156,8 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
      *
      * @param properties The properties to be given to the identified object.
      * @param type       The type of this vertical datum.
+     *
+     * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createVerticalDatum(Map, VerticalDatumType)
      */
     public DefaultVerticalDatum(final Map<String,?> properties, final VerticalDatumType type) {
         super(properties);

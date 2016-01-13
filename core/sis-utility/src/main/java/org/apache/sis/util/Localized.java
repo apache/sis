@@ -35,7 +35,7 @@ public interface Localized {
      * implementation-dependent, but typical interpretations are:
      *
      * <ul>
-     *   <li>A synonymous of the {@linkplain Locale#getDefault() system default locale};</li>
+     *   <li>A synonymous of the {@linkplain Locale#getDefault() system default locale}.</li>
      *   <li>A synonymous of {@link Locale#ROOT} for an "unlocalized" service. For example the
      *       service may format numbers using {@link Double#toString(double)} instead than
      *       {@link java.text.NumberFormat}.</li>
@@ -45,8 +45,6 @@ public interface Localized {
      * Nevertheless client codes should be prepared to receive null values.
      *
      * @return The locale, or {@code null} if not explicitly defined.
-     *
-     * @see org.apache.sis.io.CompoundFormat#getLocale()
      */
     Locale getLocale();
 }

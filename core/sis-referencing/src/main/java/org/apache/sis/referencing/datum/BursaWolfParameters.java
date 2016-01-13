@@ -60,7 +60,7 @@ import org.apache.sis.internal.jdk7.Objects;
  * while the <cite>legacy</cite> column lists the identifiers used in the legacy OGC 01-009 specification
  * (still used in some <cite>Well Known Texts</cite>).
  *
- * <table class="compact" summary="Parameters and formula"><tr><td>
+ * <table summary="Parameters and formula"><tr><td>
  * <table class="sis">
  *   <caption>Parameters defined by EPSG</caption>
  *   <tr><th>Code</th> <th>Name</th>               <th>Abbr.</th>       <th>Legacy</th></tr>

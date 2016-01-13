@@ -18,6 +18,8 @@ package org.apache.sis.referencing.operation.transform;
 
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
+import org.opengis.referencing.operation.TransformException;
+import org.opengis.referencing.operation.NoninvertibleTransformException;
 
 
 /**
@@ -61,7 +63,7 @@ import org.opengis.referencing.operation.MathTransform;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4
- * @version 0.6
+ * @version 0.7
  * @module
  *
  * @see org.apache.sis.referencing.operation.transform.MathTransforms#linear(Matrix)
@@ -93,4 +95,42 @@ public interface LinearTransform extends MathTransform {
      * @see MathTransforms#getMatrix(MathTransform)
      */
     Matrix getMatrix();
+
+    /**
+     * Transforms an array of relative distance vectors.
+     * Distance vectors are transformed without applying the translation components.
+     * The supplied array of distance values will contain packed values.
+     *
+     * <div class="note"><b>Example:</b> if the source dimension is 3, then the values will be packed in this order:
+     * (<var>Δx₀</var>,<var>Δy₀</var>,<var>Δz₀</var>,
+     *  <var>Δx₁</var>,<var>Δy₁</var>,<var>Δz₁</var> …).
+     * </div>
+     *
+     * @param  srcPts The array containing the source vectors.
+     * @param  srcOff The offset to the first vector to be transformed in the source array.
+     * @param  dstPts The array into which the transformed vectors are returned. Can be the same than {@code srcPts}.
+     * @param  dstOff The offset to the location of the first transformed vector that is stored in the destination array.
+     * @param  numPts The number of vector objects to be transformed.
+     * @throws TransformException if a vector can not be transformed.
+     *
+     * @see java.awt.geom.AffineTransform#deltaTransform(double[], int, double[], int, int)
+     *
+     * @since 0.7
+     */
+    void deltaTransform(double[] srcPts, int srcOff, double[] dstPts, int dstOff, int numPts) throws TransformException;
+
+    /**
+     * Returns the inverse transform of this object, which shall also be linear.
+     * The target of the inverse transform is the source of the original.
+     * The source of the inverse transform is the target of the original.
+     *
+     * @return The inverse transform.
+     * @throws NoninvertibleTransformException if the transform can not be inverted.
+     *
+     * @see java.awt.geom.AffineTransform#createInverse()
+     *
+     * @since 0.7
+     */
+    @Override
+    LinearTransform inverse() throws NoninvertibleTransformException;
 }

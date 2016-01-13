@@ -374,6 +374,29 @@ public abstract class AbstractMap<K,V> implements Map<K,V> {
                 final EntryIterator<K,V> it = entryIterator();
                 return (it != null) ? new Keys<K,V>(it) : Collections.<K>emptySet().iterator();
             }
+
+            /** Overridden for the same reason than {@link AbstractMap#equals(Object). */
+            @Override public boolean equals(final Object object) {
+                if (object == this) {
+                    return true;
+                }
+                if (!(object instanceof Set<?>)) {
+                    return false;
+                }
+                final Set<?> that = (Set<?>) object;
+                final EntryIterator<K,V> it = entryIterator();
+                if (it == null) {
+                    return that.isEmpty();
+                }
+                int size = 0;
+                while (it.next()) {
+                    if (!that.contains(it.getKey())) {
+                        return false;
+                    }
+                    size++;
+                }
+                return size == that.size();
+            }
         };
     }
 
@@ -432,6 +455,29 @@ public abstract class AbstractMap<K,V> implements Map<K,V> {
             @Override public Iterator<Entry<K,V>> iterator() {
                 final EntryIterator<K,V> it = entryIterator();
                 return (it != null) ? new Entries<K,V>(it) : Collections.<Entry<K,V>>emptySet().iterator();
+            }
+
+            /** Overridden for the same reason than {@link AbstractMap#equals(Object). */
+            @Override public boolean equals(final Object object) {
+                if (object == this) {
+                    return true;
+                }
+                if (!(object instanceof Set<?>)) {
+                    return false;
+                }
+                final Set<?> that = (Set<?>) object;
+                final EntryIterator<K,V> it = entryIterator();
+                if (it == null) {
+                    return that.isEmpty();
+                }
+                int size = 0;
+                while (it.next()) {
+                    if (!that.contains(it.getEntry())) {
+                        return false;
+                    }
+                    size++;
+                }
+                return size == that.size();
             }
         };
     }
@@ -543,27 +589,27 @@ public abstract class AbstractMap<K,V> implements Map<K,V> {
         if (object == this) {
             return true;
         }
-        if (object instanceof Map) {
-            final Map<?,?> map = (Map<?,?>) object;
-            final EntryIterator<K,V> it = entryIterator();
-            if (it == null) {
-                return map.isEmpty();
-            }
-            /*
-             * We do not check if map.size() == size() because in some Apache SIS implementations,
-             * the size() method have to scan through all map entries. We presume that if the maps
-             * are not equal, we will find a mismatched entry soon anyway.
-             */
-            int size = 0;
-            while (it.next()) {
-                if (!it.getValue().equals(map.get(it.getKey()))) {
-                    return false;
-                }
-                size++;
-            }
-            return size == map.size();
+        if (!(object instanceof Map<?,?>)) {
+            return false;
         }
-        return false;
+        final Map<?,?> that = (Map<?,?>) object;
+        final EntryIterator<K,V> it = entryIterator();
+        if (it == null) {
+            return that.isEmpty();
+        }
+        /*
+         * We do not check if map.size() == size() because in some Apache SIS implementations,
+         * the size() method have to scan through all map entries. We presume that if the maps
+         * are not equal, we will find a mismatched entry soon anyway.
+         */
+        int size = 0;
+        while (it.next()) {
+            if (!it.getValue().equals(that.get(it.getKey()))) {
+                return false;
+            }
+            size++;
+        }
+        return size == that.size();
     }
 
     /**

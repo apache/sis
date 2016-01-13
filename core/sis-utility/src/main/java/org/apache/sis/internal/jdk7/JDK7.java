@@ -21,6 +21,7 @@ import java.sql.Connection;
 import java.sql.Statement;
 import java.sql.ResultSet;
 import javax.imageio.stream.ImageInputStream;
+import java.lang.reflect.InvocationTargetException;
 
 
 /**
@@ -29,7 +30,7 @@ import javax.imageio.stream.ImageInputStream;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3 (derived from GeoAPI)
- * @version 0.3
+ * @version 0.7
  * @module
  */
 public final class JDK7 {
@@ -93,14 +94,26 @@ public final class JDK7 {
     }
 
     /**
+     * Compares to integer values.
+     *
+     * @param x First value to compare.
+     * @param y Second value to compare.
+     * @return Comparison result.
+     */
+    public static int compare(final int x, final int y) {
+        return (x < y) ? -1 : (x == y) ? 0 : 1;
+    }
+
+    /**
      * Simulates the {@code object instanceof AutoCloseable} code.
      *
      * @param  object The object to check, or {@code null}.
      * @return {@code true} if the given object is closeable.
      */
     public static boolean isAutoCloseable(final Object object) {
-        return (object instanceof AutoCloseable) || (object instanceof Closeable) || (object instanceof ImageInputStream) ||
-                (object instanceof Connection) || (object instanceof Statement) || (object instanceof ResultSet);
+        return (object instanceof Closeable) || (object instanceof ImageInputStream) ||
+               (object instanceof Connection) || (object instanceof Statement) || (object instanceof ResultSet) ||
+               (object != null && object.getClass().isAnnotationPresent(AutoCloseable.class));
     }
 
     /**
@@ -117,6 +130,15 @@ public final class JDK7 {
         else if (object instanceof Connection)       ((Connection)       object).close();
         else if (object instanceof Statement)        ((Statement)        object).close();
         else if (object instanceof ResultSet)        ((ResultSet)        object).close();
-        else ((AutoCloseable) object).close(); // Intentionally no 'instanceof' check.
+        else try {
+            object.getClass().getMethod("close", (Class<?>[]) null).invoke(object, (Object[]) null);
+        } catch (InvocationTargetException e) {
+            final Throwable cause = e.getTargetException();
+            if (cause instanceof Exception) {
+                throw (Exception) cause;
+            } else {
+                throw e;
+            }
+        }
     }
 }

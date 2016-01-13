@@ -217,20 +217,30 @@ abstract class AbstractDerivedCRS<C extends Conversion> extends AbstractCRS impl
      */
     @Override
     public boolean equals(final Object object, final ComparisonMode mode) {
+        if (object == this) {
+            return true;
+        }
         if (super.equals(object, mode)) {
             final boolean strict = (mode == ComparisonMode.STRICT);
             /*
              * Avoid never-ending recursivity: Conversion has a 'targetCRS' field (inherited from
              * the AbstractCoordinateOperation super-class) that is set to this AbstractDerivedCRS.
+             *
+             * Do NOT compare the baseCRS explicitely. This is done implicitely in the comparison of the Conversion
+             * objects, since (this.baseCRS == Conversion.sourceCRS) in Apache SIS.  The reason why we delegate the
+             * comparison of that CRS to the Conversion object is because we want to ignore the baseCRS axes if the
+             * mode said to ignore metadata, but ignoring axis order and units has implication on the MathTransform
+             * instances to compare.  The AbstractCoordinateOperation.equals(…) method implementation handles those
+             * cases.
              */
-            if (Semaphores.queryAndSet(Semaphores.COMPARING)) {
+            if (Semaphores.queryAndSet(Semaphores.CONVERSION_AND_CRS)) {
                 return true;
             } else try {
                 return deepEquals(strict ? conversionFromBase : getConversionFromBase(),
                                   strict ? ((AbstractDerivedCRS) object).conversionFromBase
                                          :  ((GeneralDerivedCRS) object).getConversionFromBase(), mode);
             } finally {
-                Semaphores.clear(Semaphores.COMPARING);
+                Semaphores.clear(Semaphores.CONVERSION_AND_CRS);
             }
         }
         return false;

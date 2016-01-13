@@ -47,7 +47,7 @@ import static org.apache.sis.util.CharSequences.trimWhitespaces;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.3
- * @version 0.4
+ * @version 0.7
  * @module
  */
 public final class Units extends Static {
@@ -68,6 +68,11 @@ public final class Units extends Static {
      * Unit for milliseconds. Useful for conversion from and to {@link java.util.Date} objects.
      */
     public static final Unit<Duration> MILLISECOND = SI.MetricPrefix.MILLI(SI.SECOND);
+
+    /**
+     * The EPSG::1029 definition of year.
+     */
+    private static final Unit<Duration> YEAR = SI.SECOND.divide(31556925.445);
 
     /**
      * Parts per million.
@@ -242,27 +247,27 @@ public final class Units extends Static {
      *   <li>This method tries to returns unique instances for some common units.</li>
      * </ul>
      *
-     * @param  <A>    The quantity measured by the unit.
+     * @param  <Q>    The quantity measured by the unit.
      * @param  unit   The unit to multiply.
      * @param  factor The multiplication factor.
      * @return The unit multiplied by the given factor.
      */
     @Workaround(library="JSR-275", version="0.9.3")
     @SuppressWarnings("unchecked")
-    public static <A extends Quantity> Unit<A> multiply(Unit<A> unit, final double factor) {
+    public static <Q extends Quantity> Unit<Q> multiply(Unit<Q> unit, final double factor) {
         if (SI.RADIAN.equals(unit)) {
             if (abs(factor - (PI / 180)) <= (EPS * PI/180)) {
-                return (Unit<A>) NonSI.DEGREE_ANGLE;
+                return (Unit<Q>) NonSI.DEGREE_ANGLE;
             }
             if (abs(factor - (PI / 200)) <= (EPS * PI/200)) {
-                return (Unit<A>) NonSI.GRADE;
+                return (Unit<Q>) NonSI.GRADE;
             }
         } else if (SI.METRE.equals(unit)) {
             if (abs(factor - 0.3048) <= (EPS * 0.3048)) {
-                return (Unit<A>) NonSI.FOOT;
+                return (Unit<Q>) NonSI.FOOT;
             }
             if (abs(factor - (1200.0/3937)) <= (EPS * (1200.0/3937))) {
-                return (Unit<A>) NonSI.FOOT_SURVEY_US;
+                return (Unit<Q>) NonSI.FOOT_SURVEY_US;
             }
         }
         if (abs(factor - 1) > EPS) {
@@ -289,13 +294,13 @@ public final class Units extends Static {
      * since a measurement in kilometres must be multiplied by 1000 in order to give the equivalent
      * measurement in the "standard" units (here <var>metres</var>).</p>
      *
-     * @param  <A>  The quantity measured by the unit.
+     * @param  <Q>  The quantity measured by the unit.
      * @param  unit The unit for which we want the multiplication factor to standard unit.
      * @return The factor by which to multiply a measurement in the given unit in order to
      *         get an equivalent measurement in the standard unit.
      */
     @Workaround(library="JSR-275", version="0.9.3")
-    public static <A extends Quantity> double toStandardUnit(final Unit<A> unit) {
+    public static <Q extends Quantity> double toStandardUnit(final Unit<Q> unit) {
         return derivative(unit.getConverterTo(unit.toSI()), 0);
     }
 
@@ -364,7 +369,7 @@ public final class Units extends Static {
          */
         if (isURI(uom)) {
             String code = DefinitionURI.codeOf("uom", Constants.EPSG, uom);
-            if (code != null && code != uom) try { // Really identity check, see above comment.
+            if (code != null && code != uom) try {              // Really identity check, see above comment.
                 return valueOfEPSG(Integer.parseInt(code));
             } catch (NumberFormatException e) {
                 throw new IllegalArgumentException(Errors.format(
@@ -493,28 +498,22 @@ public final class Units extends Static {
      * and some frequently-used units. The list of recognized units may be updated in any future
      * version of SIS.</p>
      *
-     * <p>The {@link org.apache.sis.referencing.factory.epsg.DirectEpsgFactory} uses this method
+     * <p>The {@link org.apache.sis.referencing.factory.sql.EPSGDataAccess} class uses this method
      * for fetching the base units, and derives automatically other units from the information
      * found in the EPSG database. This method is also used by other classes not directly related
-     * to the EPSG database, like {@link org.apache.sis.referencing.factory.web.AutoCRSFactory}
+     * to the EPSG database, like {@link org.apache.sis.referencing.factory.CommonAuthorityFactory}
      * which uses EPSG code for identifying units.</p>
      *
      * <p>The currently recognized values are:</p>
      * <table class="sis">
      *   <caption>EPSG codes for units</caption>
      *   <tr>
-     *     <th>Linear units</th>
-     *     <th class="sep">Angular units</th>
+     *     <th>Angular units</th>
+     *     <th class="sep">Linear units</th>
+     *     <th class="sep">Temporal units</th>
      *     <th class="sep">Scale units</th>
      *   </tr><tr>
-     *     <td><table class="compact" summary="Linear units">
-     *       <tr><td style="width: 40px"><b>Code</b></td><td><b>Unit</b></td></tr>
-     *       <tr><td>9001</td><td>metre</td></tr>
-     *       <tr><td>9002</td><td>foot</td></tr>
-     *       <tr><td>9030</td><td>nautical mile</td></tr>
-     *       <tr><td>9036</td><td>kilometre</td></tr>
-     *     </table></td>
-     *     <td class="sep"><table class="compact" summary="Angular units">
+     *     <td><table class="compact" summary="Angular units">
      *       <tr><td style="width: 40px"><b>Code</b></td><td><b>Unit</b></td></tr>
      *       <tr><td>9101</td><td>radian</td></tr>
      *       <tr><td>9102</td><td>decimal degree</td></tr>
@@ -527,6 +526,19 @@ public final class Units extends Static {
      *       <tr><td>9110</td><td>sexagesimal degree-minute-second</td></tr>
      *       <tr><td>9111</td><td>sexagesimal degree-minute</td></tr>
      *       <tr><td>9122</td><td>decimal degree</td></tr>
+     *     </table></td>
+     *     <td class="sep"><table class="compact" summary="Linear units">
+     *       <tr><td style="width: 40px"><b>Code</b></td><td><b>Unit</b></td></tr>
+     *       <tr><td>9001</td><td>metre</td></tr>
+     *       <tr><td>9002</td><td>foot</td></tr>
+     *       <tr><td>9003</td><td>US survey foot</td></tr>
+     *       <tr><td>9030</td><td>nautical mile</td></tr>
+     *       <tr><td>9036</td><td>kilometre</td></tr>
+     *     </table></td>
+     *     <td class="sep"><table class="compact" summary="Time units">
+     *       <tr><td style="width: 40px"><b>Code</b></td><td><b>Unit</b></td></tr>
+     *       <tr><td>1029</td><td>year</td></tr>
+     *       <tr><td>1040</td><td>second</td></tr>
      *     </table></td>
      *     <td class="sep"><table class="compact" summary="Scale units">
      *       <tr><td style="width: 40px"><b>Code</b></td><td><b>Unit</b></td></tr>
@@ -544,16 +556,22 @@ public final class Units extends Static {
      *
      * @param  code The EPSG code for a unit of measurement.
      * @return The unit, or {@code null} if the code is unrecognized.
+     *
+     * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createUnit(String)
      */
     public static Unit<?> valueOfEPSG(final int code) {
         switch (code) {
-            case 9001: return SI   .METRE;
+            case Constants.EPSG_PARAM_DEGREES:  // Fall through
+            case Constants.EPSG_AXIS_DEGREES:   return NonSI.DEGREE_ANGLE;
+            case Constants.EPSG_METRE:          return SI.METRE;
+
+            case 1029: return       YEAR;
+            case 1040: return SI   .SECOND;
             case 9002: return NonSI.FOOT;
+            case 9003: return NonSI.FOOT_SURVEY_US;
             case 9030: return NonSI.NAUTICAL_MILE;
             case 9036: return SI   .KILOMETRE;
             case 9101: return SI   .RADIAN;
-            case 9122: // Fall through
-            case 9102: return NonSI.DEGREE_ANGLE;
             case 9103: return NonSI.MINUTE_ANGLE;
             case 9104: return NonSI.SECOND_ANGLE;
             case 9105: return NonSI.GRADE;
@@ -575,8 +593,8 @@ public final class Units extends Static {
      *
      * <p>The same unit may be represented by different EPSG codes depending on the context:</p>
      * <ul>
-     *   <li>EPSG:9102 – <cite>degree</cite> – is used for prime meridian and coordinate operation parameters.</li>
-     *   <li>EPSG:9122 – <cite>degree (supplier to define representation)</cite> – is used for coordinate system axes.</li>
+     *   <li>EPSG::9102 – <cite>degree</cite> – is used for prime meridian and coordinate operation parameters.</li>
+     *   <li>EPSG::9122 – <cite>degree (supplier to define representation)</cite> – is used for coordinate system axes.</li>
      * </ul>
      *
      * When such choice exists, the code to return is determined by the {@code inAxis} argument,
@@ -590,8 +608,8 @@ public final class Units extends Static {
      */
     public static Integer getEpsgCode(final Unit<?> unit, final boolean inAxis) {
         Integer code = UnitsMap.EPSG_CODES.get(unit);
-        if (inAxis && code != null && code == 9102) {
-            code = UnitsMap.I9122;
+        if (inAxis && code != null && code == Constants.EPSG_PARAM_DEGREES) {
+            code = UnitsMap.EPSG_AXIS_DEGREES;
         }
         return code;
     }

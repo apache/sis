@@ -34,7 +34,7 @@ import static org.apache.sis.util.CharSequences.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
  * @since   0.3
- * @version 0.6
+ * @version 0.7
  * @module
  */
 @DependsOn({
@@ -315,6 +315,7 @@ public final strictfp class CharSequencesTest extends TestCase {
         assertEquals("OGC", camelCaseToAcronym("OGC").toString());
         assertEquals("OGC", camelCaseToAcronym("Open Geospatial Consortium").toString());
         assertEquals("E",   camelCaseToAcronym("East").toString());
+        assertEquals("E",   camelCaseToAcronym("east").toString());
         assertEquals("NE",  camelCaseToAcronym("North-East").toString());
         assertEquals("NE",  camelCaseToAcronym("NORTH_EAST").toString());
         assertEquals("NE",  camelCaseToAcronym("northEast").toString());
@@ -348,7 +349,7 @@ public final strictfp class CharSequencesTest extends TestCase {
         assertFalse(isAcronymForWords("ENE",    "NORTH_EAST"));
         /*
          * Following are mapping of EPSG table names from MS-Access to ANSI SQL.
-         * All those items must be recognized as acroynms - this is requred by DirectEpsgFactory.
+         * All those items must be recognized as acroynms - this is requred by EPSGDataAccess.
          */
         assertTrue(isAcronymForWords("alias",                     "[Alias]"));
         assertTrue(isAcronymForWords("area",                      "[Area]"));
@@ -374,7 +375,7 @@ public final strictfp class CharSequencesTest extends TestCase {
         assertFalse(isAcronymForWords(null,                       "[Deprecation]"));
         /*
          * It is important the following is not recognized as an acronym,
-         * otherwise it leads to a confusion in DirectEpsgFactory.
+         * otherwise it leads to a confusion in EPSGDataAccess.
          */
         assertFalse(isAcronymForWords("coordoperation", "[Coordinate_Operation Method]"));
     }
@@ -409,13 +410,19 @@ public final strictfp class CharSequencesTest extends TestCase {
     }
 
     /**
-     * Tests the {@link CharSequences#isUpperCase(CharSequence, int, int)} method.
+     * Tests the {@link CharSequences#isUpperCase(CharSequence)} method.
      */
     @Test
     public void testIsUpperCase() {
-        assertTrue ("ABC", isUpperCase("ABC", 0, 3));
-        assertFalse("AbC", isUpperCase("AbC", 0, 3));
-        assertFalse("A2C", isUpperCase("A2C", 0, 3));
+        assertFalse("null",  isUpperCase(null));
+        assertFalse("empty", isUpperCase(""));
+        assertTrue ("ABC",   isUpperCase("ABC"));
+        assertFalse("AbC",   isUpperCase("AbC"));
+        assertTrue ("A2C",   isUpperCase("A2C"));
+        assertFalse("A2c",   isUpperCase("A2c"));
+        assertTrue ("A.C",   isUpperCase("A.C"));
+        assertTrue ("A C",   isUpperCase("A C"));
+        assertFalse(".2-",   isUpperCase(".2-"));
     }
 
     /**

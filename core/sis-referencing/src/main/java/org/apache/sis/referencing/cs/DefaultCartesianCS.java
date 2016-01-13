@@ -59,6 +59,8 @@ import org.apache.sis.measure.Angle;
  * @since   0.4
  * @version 0.4
  * @module
+ *
+ * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createCartesianCS(String)
  */
 @XmlType(name = "CartesianCSType")
 @XmlRootElement(name = "CartesianCS")
@@ -115,6 +117,8 @@ public class DefaultCartesianCS extends DefaultAffineCS implements CartesianCS {
      * @param properties The properties to be given to the identified object.
      * @param axis0 The first  axis (e.g. “Easting”).
      * @param axis1 The second axis (e.g. “Northing”).
+     *
+     * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createCartesianCS(Map, CoordinateSystemAxis, CoordinateSystemAxis)
      */
     public DefaultCartesianCS(final Map<String,?>   properties,
                               final CoordinateSystemAxis axis0,
@@ -133,6 +137,8 @@ public class DefaultCartesianCS extends DefaultAffineCS implements CartesianCS {
      * @param axis0 The first  axis (e.g. “Geocentric X”).
      * @param axis1 The second axis (e.g. “Geocentric Y”).
      * @param axis2 The third  axis (e.g. “Geocentric Z”).
+     *
+     * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createCartesianCS(Map, CoordinateSystemAxis, CoordinateSystemAxis, CoordinateSystemAxis)
      */
     public DefaultCartesianCS(final Map<String,?>   properties,
                               final CoordinateSystemAxis axis0,

@@ -50,6 +50,17 @@ final class MolodenskyTransform2D extends MolodenskyTransform implements MathTra
     }
 
     /**
+     * Constructs the inverse of a 2D transform.
+     *
+     * @param inverse The transform for which to create the inverse.
+     * @param source  The source ellipsoid of the given {@code inverse} transform.
+     * @param target  The target ellipsoid of the given {@code inverse} transform.
+     */
+    MolodenskyTransform2D(final MolodenskyTransform inverse, final Ellipsoid source, final Ellipsoid target) {
+        super(inverse, source, target);
+    }
+
+    /**
      * Computes the derivative at the given position point.
      */
     @Override

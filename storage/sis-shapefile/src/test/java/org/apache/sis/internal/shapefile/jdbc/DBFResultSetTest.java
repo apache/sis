@@ -135,7 +135,8 @@ public class DBFResultSetTest extends AbstractTestBaseForInternalJDBC {
                 record.add(rs.getBigDecimal("SHAPE_LEN"));  // Type : Number, Field length : 19, Decimal positions : 11
 
                 count ++;
-                log.info(MessageFormat.format("Record {0,number} : {1}\n", count, record));
+                assertEquals("The record number returned by the ResultSet is not the same of the manual counting we are doing." , count, ((DBFRecordBasedResultSet)rs).getRowNum());
+                this.log.info(MessageFormat.format("Record {0,number} : {1}\n", count, record));
             }
 
             assertTrue("Less than one record was readed.", count > 1);
@@ -163,7 +164,7 @@ public class DBFResultSetTest extends AbstractTestBaseForInternalJDBC {
                 rs.close();
             }
             catch(SQLConnectionClosedException e) {
-                assertEquals("The database name in this exception is not well set.", e.getDatabase().getName(), dbfFile.getName());
+                assertEquals("The database name in this exception is not well set.", e.getDatabase().getName(), this.dbfFile.getName());
                 assertEquals("The SQL Query is exception is not well set.", e.getSQL(), sql);
             }
             catch(SQLException e) {
@@ -186,7 +187,7 @@ public class DBFResultSetTest extends AbstractTestBaseForInternalJDBC {
             rs.next();
         }
         catch(SQLConnectionClosedException e) {
-            assertEquals("The database name is exception message is not well set.", e.getDatabase().getName(), dbfFile.getName());
+            assertEquals("The database name is exception message is not well set.", e.getDatabase().getName(), this.dbfFile.getName());
         }
         catch(SQLException e) {
             fail("Not the expected exception for using a closed ResultSet.");
@@ -209,7 +210,7 @@ public class DBFResultSetTest extends AbstractTestBaseForInternalJDBC {
                 rs.next();
             }
             catch(SQLConnectionClosedException e) {
-                assertEquals("The database name is exception message is not well set.", e.getDatabase().getName(), dbfFile.getName());
+                assertEquals("The database name is exception message is not well set.", e.getDatabase().getName(), this.dbfFile.getName());
             }
             catch(SQLException e) {
                 fail("Not the expected exception for using a closed ResultSet.");

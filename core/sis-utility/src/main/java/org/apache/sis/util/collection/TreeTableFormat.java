@@ -30,6 +30,9 @@ import java.text.ParseException;
 import java.util.regex.Matcher;
 import org.opengis.util.CodeList;
 import java.nio.charset.Charset;
+import org.opengis.util.Type;
+import org.opengis.util.Record;
+import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.apache.sis.io.LineAppender;
 import org.apache.sis.io.TableAppender;
@@ -94,7 +97,7 @@ import static org.apache.sis.util.Characters.NO_BREAK_SPACE;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.3
- * @version 0.5
+ * @version 0.7
  * @module
  */
 public class TreeTableFormat extends TabularFormat<TreeTable> {
@@ -595,6 +598,12 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
         private final Map<Object,Object> parentObjects;
 
         /**
+         * The format for the column in process of being written. This is a format to use for the column as a whole.
+         * This field is updated for every new column to write. May be {@code null} if the format is unspecified.
+         */
+        private transient Format columnFormat;
+
+        /**
          * Creates a new instance which will write to the given appendable.
          *
          * @param out           Where to format the tree.
@@ -613,21 +622,42 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
         }
 
         /**
+         * Localizes the given name in the display locale, or returns "(Unnamed)" if no localized value is found.
+         */
+        private String toString(final GenericName name) {
+            final Locale locale = getDisplayLocale();
+            if (name != null) {
+                final InternationalString i18n = name.toInternationalString();
+                if (i18n != null) {
+                    final String localized = i18n.toString(locale);
+                    if (localized != null) {
+                        return localized;
+                    }
+                }
+                final String localized = name.toString();
+                if (localized != null) {
+                    return localized;
+                }
+            }
+            return '(' + Vocabulary.getResources(locale).getString(Vocabulary.Keys.Unnamed) + ')';
+        }
+
+        /**
          * Appends a textual representation of the given value.
          *
-         * @param  format The format to use for the column as a whole, or {@code null} if unknown.
-         * @param  value  The value to format (may be {@code null}).
+         * @param  value     The value to format (may be {@code null}).
+         * @param  recursive {@code true} if this method is invoking itself for writing collection values.
          */
-        private void formatValue(Format format, final Object value) throws IOException {
+        private void formatValue(final Object value, final boolean recursive) throws IOException {
             final CharSequence text;
             if (value == null) {
                 text = " "; // String for missing value.
-            } else if (format != null) {
-                if (format instanceof CompoundFormat<?>) {
-                    formatValue((CompoundFormat<?>) format, value);
+            } else if (columnFormat != null) {
+                if (columnFormat instanceof CompoundFormat<?>) {
+                    formatValue((CompoundFormat<?>) columnFormat, value);
                     return;
                 }
-                text = format.format(value);
+                text = columnFormat.format(value);
             } else if (value instanceof InternationalString) {
                 text = ((InternationalString) value).toString(getDisplayLocale());
             } else if (value instanceof CharSequence) {
@@ -636,6 +666,8 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
                 text = Types.getCodeTitle((CodeList<?>) value).toString(getDisplayLocale());
             } else if (value instanceof Enum<?>) {
                 text = CharSequences.upperCaseToSentence(((Enum<?>) value).name());
+            } else if (value instanceof Type) {
+                text = toString(((Type) value).getTypeName());
             } else if (value instanceof Locale) {
                 final Locale locale = getDisplayLocale();
                 text = (locale != Locale.ROOT) ? ((Locale) value).getDisplayName(locale) : value.toString();
@@ -645,17 +677,52 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
             } else if (value instanceof Charset) {
                 final Locale locale = getDisplayLocale();
                 text = (locale != Locale.ROOT) ? ((Charset) value).displayName(locale) : ((Charset) value).name();
+            } else if (value instanceof Record) {
+                formatCollection(((Record) value).getAttributes().values(), recursive);
+                return;
+            } else if (value instanceof Iterable<?>) {
+                formatCollection((Iterable<?>) value, recursive);
+                return;
+            } else if (value instanceof Object[]) {
+                formatCollection(Arrays.asList((Object[]) value), recursive);
+                return;
             } else {
                 /*
-                 * Check for a value-by-value format only as last resort.
-                 * If a column-wide format was given in argument to this method,
-                 * that format should have been used by above code in order to
-                 * produce a more uniform formatting.
+                 * Check for a value-by-value format only as last resort. If a column-wide format was specified by
+                 * the 'columnFormat' field, that format should have been used by above code in order to produce a
+                 * more uniform formatting.
                  */
-                format = getFormat(value.getClass());
+                final Format format = getFormat(value.getClass());
                 text = (format != null) ? format.format(value) : value.toString();
             }
             append(text);
+        }
+
+        /**
+         * Writes the values of the given collection. A maximum of 10 values will be written.
+         * If the collection contains other collections, the other collections will <strong>not</strong>
+         * be written recursively.
+         */
+        private void formatCollection(final Iterable<?> values, final boolean recursive)
+                throws IOException
+        {
+            if (values != null) {
+                if (recursive) {
+                    append('…');                                // Do not format collections inside collections.
+                } else {
+                    int count = 0;
+                    for (final Object value : values) {
+                        if (value != null) {
+                            if (count != 0) append(", ");
+                            formatValue(value, true);
+                            if (++count == 10) {                // Arbitrary limit.
+                                append(", …");
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         /**
@@ -690,7 +757,8 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
                 if (i != 0) {
                     writeColumnSeparator(out);
                 }
-                formatValue(formats[i], values[i]);
+                columnFormat = formats[i];
+                formatValue(values[i], false);
                 clear();
             }
             out.append(lineSeparator);

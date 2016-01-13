@@ -48,7 +48,7 @@ import org.apache.sis.referencing.AbstractReferenceSystem;
  *   <li>Create a {@code GeocentricCRS} from one of the static convenience shortcuts listed in
  *       {@link org.apache.sis.referencing.CommonCRS#geocentric()}.</li>
  *   <li>Create a {@code GeocentricCRS} from an identifier in a database by invoking
- *       {@link org.opengis.referencing.crs.CRSAuthorityFactory#createGeocentricCRS(String)}.</li>
+ *       {@link org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createGeocentricCRS(String)}.</li>
  *   <li>Create a {@code GeocentricCRS} by invoking the {@code CRSFactory.createGeocentricCRS(…)} method
  *       (implemented for example by {@link org.apache.sis.referencing.factory.GeodeticObjectFactory}).</li>
  *   <li>Create a {@code GeocentricCRS} by invoking the
@@ -70,6 +70,8 @@ import org.apache.sis.referencing.AbstractReferenceSystem;
  * @since   0.4
  * @version 0.4
  * @module
+ *
+ * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createGeocentricCRS(String)
  */
 @XmlTransient
 public class DefaultGeocentricCRS extends DefaultGeodeticCRS implements GeocentricCRS {
@@ -137,6 +139,8 @@ public class DefaultGeocentricCRS extends DefaultGeodeticCRS implements Geocentr
      * @param properties The properties to be given to the coordinate reference system.
      * @param datum The datum.
      * @param cs The coordinate system, which must be three-dimensional.
+     *
+     * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createGeocentricCRS(Map, GeodeticDatum, CartesianCS)
      */
     public DefaultGeocentricCRS(final Map<String,?> properties,
                                 final GeodeticDatum datum,
@@ -153,6 +157,8 @@ public class DefaultGeocentricCRS extends DefaultGeodeticCRS implements Geocentr
      * @param properties The properties to be given to the coordinate reference system.
      * @param datum The datum.
      * @param cs The coordinate system.
+     *
+     * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createGeocentricCRS(Map, GeodeticDatum, SphericalCS)
      */
     public DefaultGeocentricCRS(final Map<String,?> properties,
                                 final GeodeticDatum datum,

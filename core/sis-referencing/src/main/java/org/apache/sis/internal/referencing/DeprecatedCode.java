@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.referencing;
+package org.apache.sis.internal.referencing;
 
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Citation;
@@ -27,17 +27,17 @@ import org.apache.sis.util.Deprecable;
  * This is used mostly for deprecated EPSG codes.
  *
  * <div class="note"><b>Implementation note:</b>
- * this class opportunistically recycle the {@linkplain #getDescription() description} property into a
+ * this class opportunistically recycles the {@linkplain #getDescription() description} property into a
  * {@linkplain #getRemarks() remarks} property. This is a lazy way to inherit {@link #equals(Object)}
- * and {@link #hashCode()} implementation without adding code in this class for taking in account a
+ * and {@link #hashCode()} implementations without adding code in this class for taking in account a
  * new field.</div>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.6
- * @version 0.6
+ * @version 0.7
  * @module
  */
-final class DeprecatedCode extends ImmutableIdentifier implements Deprecable {
+public final class DeprecatedCode extends ImmutableIdentifier implements Deprecable {
     /**
      * For cross-version compatibility.
      */
@@ -45,8 +45,14 @@ final class DeprecatedCode extends ImmutableIdentifier implements Deprecable {
 
     /**
      * Creates a deprecated identifier.
+     *
+     * @param authority  Organization or party responsible for definition and maintenance of the code space or code.
+     * @param codeSpace  Name or identifier of the person or organization responsible for namespace.
+     * @param code       Identifier code or name, optionally from a controlled list or pattern defined by a code space.
+     * @param version    The version of the associated code space or code as specified by the code authority, or {@code null} if none.
+     * @param remarks    Comments on or information about why this identifier is deprecated, or {@code null} if none.
      */
-    DeprecatedCode(final Citation authority, final String codeSpace,
+    public DeprecatedCode(final Citation authority, final String codeSpace,
             final String code, final String version, final InternationalString remarks)
     {
         super(authority, codeSpace, code, version, remarks);

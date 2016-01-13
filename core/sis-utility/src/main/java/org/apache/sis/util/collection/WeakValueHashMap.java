@@ -80,7 +80,7 @@ import org.apache.sis.internal.jdk7.Objects;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.3
- * @version 0.4
+ * @version 0.7
  * @module
  *
  * @see java.util.WeakHashMap
@@ -398,7 +398,7 @@ public class WeakValueHashMap<K,V> extends AbstractMap<K,V> {
      * Implementation of {@link #put(Object, Object)} and {@link #remove(Object)} operations
      */
     @SuppressWarnings("unchecked")
-    private synchronized V intern(final Object key, final V value) {
+    private synchronized V intern(final Object key, final V value, final boolean replace) {
         assert isValid();
         /*
          * If 'value' is already contained in this WeakValueHashMap, we need to clear it.
@@ -410,6 +410,9 @@ public class WeakValueHashMap<K,V> extends AbstractMap<K,V> {
         for (Entry e = table[index]; e != null; e = (Entry) e.next) {
             if (keyEquals(key, e.key)) {
                 oldValue = e.get();
+                if (oldValue != null && !replace) {
+                    return oldValue;
+                }
                 e.dispose();
                 table = this.table; // May have changed.
                 index = hash % table.length;
@@ -435,8 +438,7 @@ public class WeakValueHashMap<K,V> extends AbstractMap<K,V> {
      *
      * @param  key key with which the specified value is to be associated.
      * @param  value value to be associated with the specified key.
-     * @return The previous value associated with specified key, or {@code null}
-     *         if there was no mapping for key.
+     * @return The previous value associated with specified key, or {@code null} if there was no mapping for key.
      *
      * @throws NullArgumentException if the key or the value is {@code null}.
      */
@@ -446,19 +448,40 @@ public class WeakValueHashMap<K,V> extends AbstractMap<K,V> {
             throw new NullArgumentException(Errors.format(key == null
                     ? Errors.Keys.NullMapKey : Errors.Keys.NullMapValue));
         }
-        return intern(key, value);
+        return intern(key, value, true);
+    }
+
+    /**
+     * Associates the specified value with the specified key in this map if no value were previously associated.
+     * If an other value is already associated to the given key, then the map is left unchanged and the current
+     * value is returned. Otherwise the specified value is associated to the key using a {@link WeakReference}
+     * and {@code null} is returned.
+     *
+     * @param  key key with which the specified value is to be associated.
+     * @param  value value to be associated with the specified key.
+     * @return The current value associated with specified key, or {@code null} if there was no mapping for key.
+     *
+     * @throws NullArgumentException if the key or the value is {@code null}.
+     *
+     * @since 0.7
+     */
+    public V putIfAbsent(final K key, final V value) throws NullArgumentException {
+        if (key == null || value == null) {
+            throw new NullArgumentException(Errors.format(key == null
+                    ? Errors.Keys.NullMapKey : Errors.Keys.NullMapValue));
+        }
+        return intern(key, value, false);
     }
 
     /**
      * Removes the mapping for this key from this map if present.
      *
      * @param key key whose mapping is to be removed from the map.
-     * @return previous value associated with specified key, or {@code null}
-     *         if there was no entry for key.
+     * @return previous value associated with specified key, or {@code null} if there was no entry for key.
      */
     @Override
     public V remove(final Object key) {
-        return intern(key, null);
+        return intern(key, null, true);
     }
 
     /**
@@ -477,6 +500,7 @@ public class WeakValueHashMap<K,V> extends AbstractMap<K,V> {
      * @return a set view of the mappings contained in this map.
      */
     @Override
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
     public synchronized Set<Map.Entry<K,V>> entrySet() {
         if (entrySet == null) {
             entrySet = new EntrySet();

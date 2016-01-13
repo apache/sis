@@ -16,7 +16,6 @@
  */
 package org.apache.sis.internal.system;
 
-import javax.management.JMException;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleEvent;
@@ -30,7 +29,7 @@ import org.osgi.framework.BundleListener;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.3
+ * @version 0.7
  * @module
  *
  * @see ServletListener
@@ -50,6 +49,7 @@ public final class OSGiActivator implements BundleActivator, BundleListener {
     @Override
     public void start(final BundleContext context) {
         context.addBundleListener(this);
+        Shutdown.setContainer("OSGi");
     }
 
     /**
@@ -57,10 +57,10 @@ public final class OSGiActivator implements BundleActivator, BundleListener {
      * This method shutdowns the {@code sis-utility} threads.
      *
      * @param  context The execution context of the bundle being stopped.
-     * @throws JMException If an error occurred during unregistration of the supervisor MBean.
+     * @throws Exception If an error occurred during unregistration of the supervisor MBean or resource disposal.
      */
     @Override
-    public void stop(final BundleContext context) throws JMException {
+    public void stop(final BundleContext context) throws Exception {
         context.removeBundleListener(this);
         Shutdown.stop(getClass());
     }

@@ -17,13 +17,14 @@
 package org.apache.sis.referencing;
 
 import java.util.Date;
-import org.opengis.test.Validators;
+import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.crs.TemporalCRS;
 import org.opengis.referencing.crs.VerticalCRS;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.GeocentricCRS;
+import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.EllipsoidalCS;
@@ -33,6 +34,9 @@ import org.opengis.referencing.datum.VerticalDatumType;
 import org.apache.sis.internal.metadata.AxisNames;
 import org.apache.sis.internal.metadata.VerticalDatumTypes;
 import org.apache.sis.internal.util.Constants;
+
+// Test dependencies
+import org.opengis.test.Validators;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -47,7 +51,7 @@ import static org.apache.sis.test.TestUtilities.*;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4
- * @version 0.5
+ * @version 0.7
  * @module
  */
 @DependsOn({
@@ -143,11 +147,12 @@ public final strictfp class CommonCRSTest extends TestCase {
             final VerticalDatumType datumType;
             final String axisName, datumName;
             switch (e) {
-                case BAROMETRIC:     axisName = "Barometric altitude";            datumName = "Constant pressure surface"; datumType = VerticalDatumType. BAROMETRIC;    break;
-                case MEAN_SEA_LEVEL: axisName = AxisNames.GRAVITY_RELATED_HEIGHT; datumName = "Mean Sea Level";            datumType = VerticalDatumType. GEOIDAL;       break;
-                case DEPTH:          axisName = AxisNames.DEPTH;                  datumName = "Mean Sea Level";            datumType = VerticalDatumType. GEOIDAL;       break;
-                case ELLIPSOIDAL:    axisName = AxisNames.ELLIPSOIDAL_HEIGHT;     datumName = "Ellipsoid";                 datumType = VerticalDatumTypes.ELLIPSOIDAL;   break;
-                case OTHER_SURFACE:  axisName = "Height";                         datumName = "Other surface";             datumType = VerticalDatumType. OTHER_SURFACE; break;
+                case NAVD88:         axisName = AxisNames.GRAVITY_RELATED_HEIGHT; datumName = "North American Vertical Datum 1988"; datumType = VerticalDatumType. GEOIDAL;       break;
+                case BAROMETRIC:     axisName = "Barometric altitude";            datumName = "Constant pressure surface";          datumType = VerticalDatumType. BAROMETRIC;    break;
+                case MEAN_SEA_LEVEL: axisName = AxisNames.GRAVITY_RELATED_HEIGHT; datumName = "Mean Sea Level";                     datumType = VerticalDatumType. GEOIDAL;       break;
+                case DEPTH:          axisName = AxisNames.DEPTH;                  datumName = "Mean Sea Level";                     datumType = VerticalDatumType. GEOIDAL;       break;
+                case ELLIPSOIDAL:    axisName = AxisNames.ELLIPSOIDAL_HEIGHT;     datumName = "Ellipsoid";                          datumType = VerticalDatumTypes.ELLIPSOIDAL;   break;
+                case OTHER_SURFACE:  axisName = "Height";                         datumName = "Other surface";                      datumType = VerticalDatumType. OTHER_SURFACE; break;
                 default: throw new AssertionError(e);
             }
             final String        name  = e.name();
@@ -199,6 +204,23 @@ public final strictfp class CommonCRSTest extends TestCase {
             assertEquals(name, epoch, format(origin));
             assertEquals(name, days, origin.getTime() / DAY_LENGTH - julianEpoch, 0);
         }
+    }
+
+    /**
+     * Tests {@link CommonCRS#UTM(double, double)}.
+     *
+     * @since 0.7
+     */
+    @Test
+    @DependsOnMethod("testGeographic")
+    public void testUTM() {
+        final ProjectedCRS crs = CommonCRS.WGS72.UTM(-45, -122);
+        assertEquals("name", "WGS 72 / UTM zone 10S", crs.getName().getCode());
+        final ParameterValueGroup pg = crs.getConversionFromBase().getParameterValues();
+        assertEquals(Constants.LATITUDE_OF_ORIGIN, -123, pg.parameter(Constants.CENTRAL_MERIDIAN).doubleValue(), STRICT);
+        assertEquals(Constants.FALSE_NORTHING, 10000000, pg.parameter(Constants.FALSE_NORTHING).doubleValue(),   STRICT);
+        assertSame("Expected a cached instance.", crs, CommonCRS.WGS72.UTM(-45, -122));
+        assertNotSame("Expected a new instance.", crs, CommonCRS.WGS72.UTM(+45, -122));
     }
 
     /**

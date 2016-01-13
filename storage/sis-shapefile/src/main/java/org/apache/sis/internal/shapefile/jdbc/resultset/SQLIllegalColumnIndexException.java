@@ -45,9 +45,9 @@ public class SQLIllegalColumnIndexException extends SQLException {
      */
     public SQLIllegalColumnIndexException(String message, String sqlStatement, File dbf, int colIndex) {
         super(message);
-        sql = sqlStatement;
-        database = dbf;
-        columnIndex = colIndex;
+        this.sql = sqlStatement;
+        this.database = dbf;
+        this.columnIndex = colIndex;
     }
 
     /**
@@ -55,7 +55,7 @@ public class SQLIllegalColumnIndexException extends SQLException {
      * @return SQL statement or null.
      */
     public String getSQL() {
-        return sql;
+        return this.sql;
     }
 
     /**
@@ -63,7 +63,7 @@ public class SQLIllegalColumnIndexException extends SQLException {
      * @return Column index.
      */
     public int getColumnIndex() {
-        return columnIndex;
+        return this.columnIndex;
     }
 
     /**
@@ -71,6 +71,6 @@ public class SQLIllegalColumnIndexException extends SQLException {
      * @return Database file.
      */
     public File getDatabase() {
-        return database;
+        return this.database;
     }
 }

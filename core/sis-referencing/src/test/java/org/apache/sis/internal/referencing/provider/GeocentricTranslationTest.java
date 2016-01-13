@@ -21,12 +21,15 @@ import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
+import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.referencing.CommonCRS;
+import org.apache.sis.referencing.operation.matrix.Matrix4;
 import org.apache.sis.referencing.operation.transform.CoordinateDomain;
+import org.apache.sis.referencing.operation.transform.EllipsoidToCentricTransform;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.referencing.operation.transform.MathTransformTestCase;
 import org.apache.sis.test.DependsOnMethod;
@@ -34,7 +37,7 @@ import org.apache.sis.test.DependsOn;
 import org.junit.Test;
 
 import static java.lang.StrictMath.toRadians;
-import static org.junit.Assert.*;
+import static org.opengis.test.Assert.*;
 
 
 /**
@@ -53,6 +56,12 @@ import static org.junit.Assert.*;
     org.apache.sis.referencing.datum.BursaWolfParametersTest.class
 })
 public final strictfp class GeocentricTranslationTest extends MathTransformTestCase {
+    /**
+     * Geocentric translation parameters for transforming a point in the North Sea from WGS84 to ED50.
+     * They are the parameters to use for transformation of the point given by {@link #samplePoint(int)}.
+     */
+    public static final double TX = 84.87, TY = 96.49, TZ = 116.95;
+
     /**
      * Returns the sample point for a step in the example given by the EPSG guidance note.
      *
@@ -137,6 +146,41 @@ public final strictfp class GeocentricTranslationTest extends MathTransformTestC
     }
 
     /**
+     * Creates a datum shift operation without using the provider. This method is equivalent to the
+     * <cite>"Geocentric translations (geog3D domain)"</cite> method (EPSG:1035), but the transform
+     * steps are created without the use of any {@link ParameterValueGroup}. This way to create the
+     * datum shift is provided for better separation of aspects being tested.
+     *
+     * @param factory  The factory to use for creating the transforms.
+     * @param source   The source ellipsoid.
+     * @param target   The target ellipsoid.
+     * @param tX       Geocentric translation on the X axis.
+     * @param tY       Geocentric translation on the Y axis.
+     * @param tZ       Geocentric translation on the Z axis.
+     * @return Transform performing the datum shift.
+     * @throws FactoryException if an error occurred while creating the transform.
+     * @throws NoninvertibleTransformException if an error occurred while creating the transform.
+     *
+     * @see #testGeographicDomain()
+     */
+    public static MathTransform createDatumShiftForGeographic3D(
+            final MathTransformFactory factory,
+            final Ellipsoid source, final Ellipsoid target,
+            final double tX, final double tY, final double tZ)
+            throws FactoryException, NoninvertibleTransformException
+    {
+        final Matrix4 translation = new Matrix4();
+        translation.m03 = tX;
+        translation.m13 = tY;
+        translation.m23 = tZ;
+        final MathTransform step1 = EllipsoidToCentricTransform.createGeodeticConversion(factory, source, true);
+        final MathTransform step3 = EllipsoidToCentricTransform.createGeodeticConversion(factory, target, true).inverse();
+        final MathTransform step2 = factory.createAffineTransform(translation);
+        return factory.createConcatenatedTransform(step1,
+               factory.createConcatenatedTransform(step2, step3));
+    }
+
+    /**
      * Creates a "Geographic 2D to 3D → Geocentric → Affine → Geographic → Geographic 3D to 2D" chain
      * using EPSG or OGC standard operation methods and parameters. This is used for integration tests.
      *
@@ -148,17 +192,21 @@ public final strictfp class GeocentricTranslationTest extends MathTransformTestC
         final Parameters values = Parameters.castOrWrap(factory.getDefaultParameters("Geocentric translations (geog2D domain)"));
         setTranslation(values);
         setEllipsoids(values, CommonCRS.WGS84.ellipsoid(), CommonCRS.ED50.ellipsoid());
-        return Geographic3Dto2DTest.createDatumShiftForGeographic2D(factory,
-                new GeocentricTranslation().createMathTransform(factory, values), values);
+        final MathTransform gt = new GeocentricTranslation().createMathTransform(factory, values);
+        assertFalse("isIdentity", gt.isIdentity());
+        assertEquals("sourceDimensions", 3, gt.getSourceDimensions());
+        assertEquals("targetDimensions", 3, gt.getTargetDimensions());
+        assertInstanceOf("Geocentric translation", LinearTransform.class, gt);
+        return Geographic3Dto2DTest.createDatumShiftForGeographic2D(factory, gt, values);
     }
 
     /**
      * Sets the translation parameters in the given parameter value group.
      */
     private static void setTranslation(final ParameterValueGroup values) {
-        values.parameter("X-axis translation").setValue( 84.87);
-        values.parameter("Y-axis translation").setValue( 96.49);
-        values.parameter("Z-axis translation").setValue(116.95);
+        values.parameter("X-axis translation").setValue(TX);
+        values.parameter("Y-axis translation").setValue(TY);
+        values.parameter("Z-axis translation").setValue(TZ);
     }
 
     /**
