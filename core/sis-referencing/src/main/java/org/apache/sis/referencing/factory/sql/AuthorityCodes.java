@@ -149,18 +149,19 @@ final class AuthorityCodes extends AbstractMap<String,String> implements Seriali
                 final Class<?> candidate = table.subTypes[i];
                 if (candidate.isAssignableFrom(type)) {
                     buffer.append(" WHERE (").append(table.typeColumn)
-                          .append(" LIKE '").append(table.typeNames[i]).append("%'");
+                          .append(" LIKE '").append(table.typeNames[i]).append("%')");
                     hasWhere = true;
                     tableType = candidate;
                     break;
                 }
             }
-            if (hasWhere) {
-                buffer.append(')');
-            }
         }
+        buffer.append(hasWhere ? " AND " : " WHERE ");
         final int conditionStart = buffer.length();
-        buffer.append(" ORDER BY ABS(DEPRECATED), ").append(table.codeColumn);
+        if (table.showColumn != null) {
+            buffer.append(table.showColumn).append("<>0 AND ");
+        }
+        buffer.append("DEPRECATED=0 ORDER BY ").append(table.codeColumn);
         sql[ALL] = factory.translator.apply(buffer.toString());
         /*
          * Build the SQL query for fetching the name of a single object for a given code.
@@ -172,7 +173,7 @@ final class AuthorityCodes extends AbstractMap<String,String> implements Seriali
         if (table.nameColumn != null) {
             buffer.replace(columnNameStart, columnNameEnd, table.nameColumn);
         }
-        buffer.append(hasWhere ? " AND " : " WHERE ").append(table.codeColumn).append(" = ?");
+        buffer.append(table.codeColumn).append(" = ?");
         sql[ONE] = factory.translator.apply(buffer.toString());
         /*
          * Other information opportunistically computed from above search.

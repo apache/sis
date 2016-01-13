@@ -531,6 +531,7 @@ public final class Units extends Static {
      *       <tr><td style="width: 40px"><b>Code</b></td><td><b>Unit</b></td></tr>
      *       <tr><td>9001</td><td>metre</td></tr>
      *       <tr><td>9002</td><td>foot</td></tr>
+     *       <tr><td>9003</td><td>US survey foot</td></tr>
      *       <tr><td>9030</td><td>nautical mile</td></tr>
      *       <tr><td>9036</td><td>kilometre</td></tr>
      *     </table></td>
@@ -560,15 +561,17 @@ public final class Units extends Static {
      */
     public static Unit<?> valueOfEPSG(final int code) {
         switch (code) {
+            case Constants.EPSG_PARAM_DEGREES:  // Fall through
+            case Constants.EPSG_AXIS_DEGREES:   return NonSI.DEGREE_ANGLE;
+            case Constants.EPSG_METRE:          return SI.METRE;
+
             case 1029: return       YEAR;
             case 1040: return SI   .SECOND;
-            case 9001: return SI   .METRE;
             case 9002: return NonSI.FOOT;
+            case 9003: return NonSI.FOOT_SURVEY_US;
             case 9030: return NonSI.NAUTICAL_MILE;
             case 9036: return SI   .KILOMETRE;
             case 9101: return SI   .RADIAN;
-            case 9122: // Fall through
-            case 9102: return NonSI.DEGREE_ANGLE;
             case 9103: return NonSI.MINUTE_ANGLE;
             case 9104: return NonSI.SECOND_ANGLE;
             case 9105: return NonSI.GRADE;
@@ -605,8 +608,8 @@ public final class Units extends Static {
      */
     public static Integer getEpsgCode(final Unit<?> unit, final boolean inAxis) {
         Integer code = UnitsMap.EPSG_CODES.get(unit);
-        if (inAxis && code != null && code == 9102) {
-            code = UnitsMap.I9122;
+        if (inAxis && code != null && code == Constants.EPSG_PARAM_DEGREES) {
+            code = UnitsMap.EPSG_AXIS_DEGREES;
         }
         return code;
     }
