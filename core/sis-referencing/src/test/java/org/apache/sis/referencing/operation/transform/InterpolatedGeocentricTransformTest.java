@@ -209,7 +209,8 @@ public strictfp class InterpolatedGeocentricTransformTest extends MathTransformT
                 "    Parameter[“tgt_semi_major”, 6378137.0],\n" +
                 "    Parameter[“tgt_semi_minor”, 6356752.314140356],\n" +
                 "    ParameterFile[“Geocentric translations file”, “\\E.*\\W\\Q" +
-                                   FranceGeocentricInterpolationTest.TEST_FILE + "”, Id[“EPSG”, 8727]]],\n" +
+                                   FranceGeocentricInterpolationTest.TEST_FILE + "”, Id[“EPSG”, 8727],\n" +
+                "      Remark[“\\E.*\\Q”]]],\n" +
                 "  Param_MT[“Affine parametric transformation”,\n" +
                 "    Parameter[“A0”, 57.29577951308232, Id[“EPSG”, 8623]],\n" +      // Radians to degrees conversion
                 "    Parameter[“B1”, 57.29577951308232, Id[“EPSG”, 8640]]]]\\E");
