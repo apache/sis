@@ -52,6 +52,8 @@ import org.apache.sis.util.resources.Messages;
 
 // Branch-dependent imports
 import java.io.File;
+import org.opengis.util.InternationalString;
+import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.internal.jdk7.Files;
 import org.apache.sis.internal.jdk7.Path;
 import org.apache.sis.internal.jdk7.StandardCharsets;
@@ -76,6 +78,14 @@ public final class NTv2 extends AbstractProvider {
     private static final long serialVersionUID = -4027618007780159180L;
 
     /**
+     * Warns the user that the parameter type will be changed from {@link File}
+     * to {@link java.nio.file.Path} when Apache SIS will upgrade to Java 7.
+     */
+    static final InternationalString WARNING = new SimpleInternationalString(
+            "The parameter type will be changed from ‘java.io.File’ to ‘java.nio.file.Path’ " +
+            "when Apache SIS will upgrade to Java 7.");
+
+    /**
      * The operation parameter descriptor for the <cite>"Latitude and longitude difference file"</cite> parameter value.
      * The file extension is typically {@code ".gsb"}. There is no default value.
      */
@@ -90,7 +100,7 @@ public final class NTv2 extends AbstractProvider {
         FILE = builder
                 .addIdentifier("8656")
                 .addName("Latitude and longitude difference file")
-                .create(File.class, null);
+                .setRemarks(WARNING).create(File.class, null);
         PARAMETERS = builder
                 .addIdentifier("9615")
                 .addName("NTv2")
