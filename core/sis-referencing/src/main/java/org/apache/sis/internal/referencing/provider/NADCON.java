@@ -93,11 +93,11 @@ public final class NADCON extends AbstractProvider {
         LATITUDE = builder
                 .addIdentifier("8657")
                 .addName("Latitude difference file")
-                .create(File.class, Paths.get("conus.las"));
+                .setRemarks(NTv2.WARNING).create(File.class, Paths.get("conus.las"));
         LONGITUDE = builder
                 .addIdentifier("8658")
                 .addName("Longitude difference file")
-                .create(File.class, Paths.get("conus.los"));
+                .setRemarks(NTv2.WARNING).create(File.class, Paths.get("conus.los"));
         PARAMETERS = builder
                 .addIdentifier("9613")
                 .addName("NADCON")
