@@ -2103,7 +2103,7 @@ addURIs:    for (int i=0; ; i++) {
      * Returns the name and description for the specified {@link CoordinateSystemAxis} code.
      * Many axes share the same name and description, so it is worth to cache them.
      */
-    private AxisName getAxisName(final Integer code) throws FactoryException {
+    private AxisName getAxisName(final Integer code) throws FactoryException, SQLException {
         assert Thread.holdsLock(this);
         AxisName returnValue = axisNames.get(code);
         if (returnValue == null) {
@@ -2124,8 +2124,6 @@ addURIs:    for (int i=0; ; i++) {
                     final AxisName axis = new AxisName(name, description);
                     returnValue = ensureSingleton(axis, returnValue, code);
                 }
-            } catch (SQLException exception) {
-                throw databaseFailure(AxisName.class, code, exception);
             }
             if (returnValue == null) {
                 throw noSuchAuthorityCode(AxisName.class, String.valueOf(code));
