@@ -159,7 +159,7 @@ public class FranceGeocentricInterpolation extends AbstractProvider {
         FILE = builder
                 .addIdentifier("8727")
                 .addName("Geocentric translations file")
-                .create(File.class, Paths.get(DEFAULT));
+                .setRemarks(NTv2.WARNING).create(File.class, Paths.get(DEFAULT));
         PARAMETERS = builder
                 .addIdentifier("9655")
                 .addName("France geocentric interpolation")
