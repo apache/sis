@@ -330,8 +330,8 @@ public class ImmutableIdentifier extends FormattableObject implements Identifier
         value = properties.get(CODESPACE_KEY);
         if (value == null) {
             codeSpace = org.apache.sis.internal.util.Citations.getCodeSpace(authority);
-        } else if (value instanceof CharSequence) {
-            codeSpace = trimWhitespaces((CharSequence) value).toString();
+        } else if (value instanceof String) {
+            codeSpace = trimWhitespaces((String) value);
         } else {
             throw illegalPropertyType(properties, CODESPACE_KEY, value);
         }
