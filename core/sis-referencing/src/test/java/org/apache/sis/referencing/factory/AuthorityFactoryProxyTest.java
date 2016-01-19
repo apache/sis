@@ -21,10 +21,16 @@ import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.AuthorityFactory;
 import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.referencing.crs.*;
+import org.opengis.referencing.cs.CoordinateSystem;
+import org.opengis.referencing.cs.CoordinateSystemAxis;
+import org.opengis.referencing.datum.PrimeMeridian;
+import org.opengis.referencing.datum.Ellipsoid;
+import org.opengis.referencing.datum.Datum;
 import org.apache.sis.referencing.datum.DefaultGeodeticDatum;
 import org.apache.sis.referencing.crs.DefaultGeographicCRS;
 import org.apache.sis.referencing.crs.DefaultProjectedCRS;
 import org.apache.sis.referencing.crs.DefaultDerivedCRS;
+import org.apache.sis.referencing.crs.AbstractCRS;
 
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -61,13 +67,32 @@ public final strictfp class AuthorityFactoryProxyTest extends TestCase {
      * Tests {@link AuthorityFactoryProxy#getInstance(Class)}.
      */
     @Test
-    public void testType() {
-        assertEquals(ProjectedCRS.class,  AuthorityFactoryProxy.getInstance(ProjectedCRS.class)        .type);
-        assertEquals(ProjectedCRS.class,  AuthorityFactoryProxy.getInstance(DefaultProjectedCRS.class) .type);
-        assertEquals(GeographicCRS.class, AuthorityFactoryProxy.getInstance(GeographicCRS.class)       .type);
-        assertEquals(GeographicCRS.class, AuthorityFactoryProxy.getInstance(DefaultGeographicCRS.class).type);
-        assertEquals(DerivedCRS.class,    AuthorityFactoryProxy.getInstance(DefaultDerivedCRS.class)   .type);
-        assertEquals(GeodeticDatum.class, AuthorityFactoryProxy.getInstance(DefaultGeodeticDatum.class).type);
+    public void testGetInstanceFromType() {
+        assertEquals(ProjectedCRS.class,              AuthorityFactoryProxy.getInstance(ProjectedCRS.class)        .type);
+        assertEquals(ProjectedCRS.class,              AuthorityFactoryProxy.getInstance(DefaultProjectedCRS.class) .type);
+        assertEquals(GeographicCRS.class,             AuthorityFactoryProxy.getInstance(GeographicCRS.class)       .type);
+        assertEquals(GeographicCRS.class,             AuthorityFactoryProxy.getInstance(DefaultGeographicCRS.class).type);
+        assertEquals(DerivedCRS.class,                AuthorityFactoryProxy.getInstance(DefaultDerivedCRS.class)   .type);
+        assertEquals(GeodeticDatum.class,             AuthorityFactoryProxy.getInstance(DefaultGeodeticDatum.class).type);
+        assertEquals(CoordinateReferenceSystem.class, AuthorityFactoryProxy.getInstance(AbstractCRS.class)         .type);
+        assertEquals(CoordinateSystem.class,          AuthorityFactoryProxy.getInstance(CoordinateSystem.class)    .type);
+        assertEquals(CoordinateSystemAxis.class,      AuthorityFactoryProxy.getInstance(CoordinateSystemAxis.class).type);
+        assertEquals(PrimeMeridian.class,             AuthorityFactoryProxy.getInstance(PrimeMeridian.class)       .type);
+        assertEquals(Ellipsoid.class,                 AuthorityFactoryProxy.getInstance(Ellipsoid.class)           .type);
+        assertEquals(Datum.class,                     AuthorityFactoryProxy.getInstance(Datum.class)               .type);
+    }
+
+    /**
+     * Tests {@link AuthorityFactoryProxy#getInstance(String)}.
+     */
+    @Test
+    public void testGetInstanceFromName() {
+        assertEquals(CoordinateReferenceSystem.class, AuthorityFactoryProxy.getInstance("CRS")      .type);
+        assertEquals(CoordinateSystem.class,          AuthorityFactoryProxy.getInstance("CS")       .type);
+        assertEquals(CoordinateSystemAxis.class,      AuthorityFactoryProxy.getInstance("aXis")     .type);
+        assertEquals(PrimeMeridian.class,             AuthorityFactoryProxy.getInstance("Meridian") .type);
+        assertEquals(Ellipsoid.class,                 AuthorityFactoryProxy.getInstance("ellipsoid").type);
+        assertEquals(Datum.class,                     AuthorityFactoryProxy.getInstance("datum")    .type);
     }
 
     /**

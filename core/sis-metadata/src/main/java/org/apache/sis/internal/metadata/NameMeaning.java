@@ -84,8 +84,10 @@ public final class NameMeaning extends Static {
      *
      * <p><b>Note on the case:</b> The <cite>"Name type specification — definitions"</cite> document (OGC 09-048) writes
      * authorities in upper cases, while <a href="http://www.opengis.net/def/auth/">http://www.opengis.net/def/auth/</a>
-     * use lower cases. Apache SIS uses upper cases for now.</p>
+     * use lower cases. Apache SIS uses upper cases for now. The lower/upper case policy should be kept consistent with
+     * the policy used by {@link org.apache.sis.referencing.factory.MultiAuthoritiesFactory} for its keys.</p>
      *
+     * @see org.apache.sis.referencing.factory.MultiAuthoritiesFactory
      * @see <a href="http://www.opengis.net/def/auth/">http://www.opengis.net/def/auth/</a>
      *
      * @since 0.7

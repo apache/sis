@@ -762,9 +762,8 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
      *
      * <p>The default implementation performs the following steps:</p>
      * <ol>
-     *   <li>Removes the authority scope if presents. For example if the {@linkplain #getAuthority() authority}
-     *       is EPSG and the given code starts with the {@code "EPSG:"} prefix, then that prefix is removed.
-     *       Otherwise, the scope is unchanged.</li>
+     *   <li>Removes the namespace if presents. For example if the {@linkplain #getCodeSpaces() codespace}
+     *       is EPSG and the given code starts with the {@code "EPSG:"} prefix, then that prefix is removed.</li>
      *   <li>Removes leading and trailing spaces.</li>
      * </ol>
      *
@@ -777,7 +776,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
      * @throws FactoryException if an error occurred while normalizing the given code.
      */
     protected String normalizeCode(String code) throws FactoryException {
-        return trimAuthority(code, null);
+        return trimNamespace(code);
     }
 
     /**

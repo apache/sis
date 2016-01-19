@@ -20,7 +20,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.Collections;
+import java.util.Arrays;
 import javax.measure.unit.SI;
 import javax.measure.unit.NonSI;
 import javax.measure.unit.Unit;
@@ -200,6 +202,14 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
     private static final String AUTO2 = "AUTO2";
 
     /**
+     * The namespaces of codes defined by OGC.
+     *
+     * @see #getCodeSpaces()
+     */
+    private static final Set<String> CODESPACES = Collections.unmodifiableSet(
+            new LinkedHashSet<>(Arrays.asList(Constants.OGC, Constants.CRS, "AUTO", AUTO2)));
+
+    /**
      * The bit for saying that a namespace is the legacy {@code "AUTO"} namespace.
      */
     private static final int LEGACY_MASK = 0x80000000;
@@ -264,13 +274,6 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
     @Override
     public Citation getAuthority() {
         return Citations.OGC;
-    }
-
-    /**
-     * Returns {@code true} if the given portion of the code is equal, ignoring case, to the given namespace.
-     */
-    private static boolean regionMatches(final String namespace, final String code, final int start, final int end) {
-        return (namespace.length() == end - start) && code.regionMatches(true, start, namespace, 0, namespace.length());
     }
 
     /**
@@ -369,6 +372,16 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
         if (codes.put(namespace + DefaultNameSpace.DEFAULT_SEPARATOR + code, type) != null) {
             throw new FactoryException();    // Should never happen, but we are paranoiac.
         }
+    }
+
+    /**
+     * Returns the namespaces of codes defined by OGC.
+     *
+     * @return A set containing at least the {@code "CRS"}, {@code "AUTO"} and {@code "AUTO2"} strings.
+     */
+    @Override
+    public Set<String> getCodeSpaces() {
+        return CODESPACES;
     }
 
     /**

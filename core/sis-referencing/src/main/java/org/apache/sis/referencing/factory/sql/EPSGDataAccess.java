@@ -518,6 +518,17 @@ addURIs:    for (int i=0; ; i++) {
     }
 
     /**
+     * Returns an empty set since this data access class expects no namespace.
+     * Code shall be given to {@code createFoo(String)} methods directly, without {@code "EPSG:"} prefix.
+     *
+     * @return Empty set.
+     */
+    @Override
+    public Set<String> getCodeSpaces() {
+        return Collections.emptySet();
+    }
+
+    /**
      * Gets a description of the object corresponding to a code.
      * This method returns the object name in a lightweight manner, without creating the full {@link IdentifiedObject}.
      *
