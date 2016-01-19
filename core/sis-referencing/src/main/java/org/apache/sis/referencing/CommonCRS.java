@@ -59,6 +59,7 @@ import org.apache.sis.referencing.crs.DefaultTemporalCRS;
 import org.apache.sis.referencing.crs.DefaultVerticalCRS;
 import org.apache.sis.referencing.crs.DefaultGeographicCRS;
 import org.apache.sis.referencing.crs.DefaultGeocentricCRS;
+import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.internal.referencing.provider.TransverseMercator;
 import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.internal.system.SystemListener;
@@ -583,7 +584,7 @@ public enum CommonCRS {
                     }
                     // Use same name and datum than the geographic CRS.
                     final GeographicCRS base = geographic();
-                    object = new DefaultGeographicCRS(IdentifiedObjects.getProperties(base), base.getDatum(), cs);
+                    object = new DefaultGeographicCRS(properties(base, geo3D), base.getDatum(), cs);
                     cachedGeo3D = object;
                 }
             }
@@ -641,7 +642,7 @@ public enum CommonCRS {
                     }
                     // Use same name and datum than the geographic CRS.
                     final GeographicCRS base = geographic();
-                    object = new DefaultGeocentricCRS(IdentifiedObjects.getProperties(base), base.getDatum(), cs);
+                    object = new DefaultGeocentricCRS(properties(base, geocentric), base.getDatum(), cs);
                     cachedGeocentric = object;
                 }
             }
@@ -1523,6 +1524,15 @@ public enum CommonCRS {
      */
     static Map<String,?> properties(final InternationalString name) {
         return singletonMap(NAME_KEY, new NamedIdentifier(null, name));
+    }
+
+    /**
+     * Returns the same properties than the given object, except for the identifier which is set to the given code.
+     */
+    private static Map<String,?> properties(final IdentifiedObject template, final short code) {
+        final Map<String,Object> properties = new HashMap<>(IdentifiedObjects.getProperties(template));
+        properties.put(GeographicCRS.IDENTIFIERS_KEY, new NamedIdentifier(Citations.EPSG, String.valueOf(code)));
+        return properties;
     }
 
     /**
