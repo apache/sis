@@ -176,6 +176,12 @@ public final class Messages extends IndexedResourceBundle {
         public static final short IgnoredPropertyAssociatedTo_1 = 7;
 
         /**
+         * More than one service provider of type ‘{0}’ are declared for “{1}”. Only the first provider
+         * (an instance of ‘{2}’) will be used.
+         */
+        public static final short IgnoredServiceProvider_3 = 36;
+
+        /**
          * Parsing of “{0}” done, but some elements were ignored.
          */
         public static final short IncompleteParsing_1 = 14;

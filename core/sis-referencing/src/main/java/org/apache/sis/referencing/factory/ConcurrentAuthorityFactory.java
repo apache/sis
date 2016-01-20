@@ -826,7 +826,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
     }
 
     /**
-     * Returns a geographic coordinate reference system from a code.
+     * Returns a 2- or 3-dimensional coordinate reference system based on an ellipsoidal approximation of the geoid.
      * The default implementation performs the following steps:
      * <ul>
      *   <li>Return the cached instance for the given code if such instance already exists.</li>
@@ -849,7 +849,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
     }
 
     /**
-     * Returns a geocentric coordinate reference system from a code.
+     * Returns a 3-dimensional coordinate reference system with the origin at the approximate centre of mass of the earth.
      * The default implementation performs the following steps:
      * <ul>
      *   <li>Return the cached instance for the given code if such instance already exists.</li>
@@ -872,7 +872,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
     }
 
     /**
-     * Returns a projected coordinate reference system from a code.
+     * Returns a 2-dimensional coordinate reference system used to approximate the shape of the earth on a planar surface.
      * The default implementation performs the following steps:
      * <ul>
      *   <li>Return the cached instance for the given code if such instance already exists.</li>
@@ -895,7 +895,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
     }
 
     /**
-     * Returns a vertical coordinate reference system from a code.
+     * Returns a 1-dimensional coordinate reference system used for recording heights or depths.
      * The default implementation performs the following steps:
      * <ul>
      *   <li>Return the cached instance for the given code if such instance already exists.</li>
@@ -918,7 +918,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
     }
 
     /**
-     * Returns a temporal coordinate reference system from a code.
+     * Returns a 1-dimensional coordinate reference system used for the recording of time.
      * The default implementation performs the following steps:
      * <ul>
      *   <li>Return the cached instance for the given code if such instance already exists.</li>
@@ -941,7 +941,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
     }
 
     /**
-     * Returns a 3D or 4D coordinate reference system from a code.
+     * Returns a CRS describing the position of points through two or more independent coordinate reference systems.
      * The default implementation performs the following steps:
      * <ul>
      *   <li>Return the cached instance for the given code if such instance already exists.</li>
@@ -964,7 +964,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
     }
 
     /**
-     * Returns a derived coordinate reference system from a code.
+     * Returns a CRS that is defined by its coordinate conversion from another CRS (not by a datum).
      * The default implementation performs the following steps:
      * <ul>
      *   <li>Return the cached instance for the given code if such instance already exists.</li>
@@ -987,7 +987,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
     }
 
     /**
-     * Returns an engineering coordinate reference system from a code.
+     * Returns a 1-, 2- or 3-dimensional contextually local coordinate reference system.
      * The default implementation performs the following steps:
      * <ul>
      *   <li>Return the cached instance for the given code if such instance already exists.</li>
@@ -1010,7 +1010,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
     }
 
     /**
-     * Returns an image coordinate reference system from a code.
+     * Returns a 2-dimensional engineering coordinate reference system applied to locations in images.
      * The default implementation performs the following steps:
      * <ul>
      *   <li>Return the cached instance for the given code if such instance already exists.</li>
@@ -1033,7 +1033,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
     }
 
     /**
-     * Returns an arbitrary datum from a code.
+     * Returns an arbitrary datum from a code. The returned object will typically be an
      * The default implementation performs the following steps:
      * <ul>
      *   <li>Return the cached instance for the given code if such instance already exists.</li>
@@ -1056,7 +1056,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
     }
 
     /**
-     * Returns a geodetic datum from a code.
+     * Returns a datum defining the location and orientation of an ellipsoid that approximates the shape of the earth.
      * The default implementation performs the following steps:
      * <ul>
      *   <li>Return the cached instance for the given code if such instance already exists.</li>
@@ -1079,7 +1079,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
     }
 
     /**
-     * Returns a vertical datum from a code.
+     * Returns a datum identifying a particular reference level surface used as a zero-height surface.
      * The default implementation performs the following steps:
      * <ul>
      *   <li>Return the cached instance for the given code if such instance already exists.</li>
@@ -1102,7 +1102,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
     }
 
     /**
-     * Returns a temporal datum from a code.
+     * Returns a datum defining the origin of a temporal coordinate reference system.
      * The default implementation performs the following steps:
      * <ul>
      *   <li>Return the cached instance for the given code if such instance already exists.</li>
@@ -1125,7 +1125,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
     }
 
     /**
-     * Returns an engineering datum from a code.
+     * Returns a datum defining the origin of an engineering coordinate reference system.
      * The default implementation performs the following steps:
      * <ul>
      *   <li>Return the cached instance for the given code if such instance already exists.</li>
@@ -1148,7 +1148,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
     }
 
     /**
-     * Returns an image datum from a code.
+     * Returns a datum defining the origin of an image coordinate reference system.
      * The default implementation performs the following steps:
      * <ul>
      *   <li>Return the cached instance for the given code if such instance already exists.</li>
@@ -1171,7 +1171,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
     }
 
     /**
-     * Returns an ellipsoid from a code.
+     * Returns a geometric figure that can be used to describe the approximate shape of the earth.
      * The default implementation performs the following steps:
      * <ul>
      *   <li>Return the cached instance for the given code if such instance already exists.</li>
@@ -1194,7 +1194,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
     }
 
     /**
-     * Returns a prime meridian from a code.
+     * Returns a prime meridian defining the origin from which longitude values are determined.
      * The default implementation performs the following steps:
      * <ul>
      *   <li>Return the cached instance for the given code if such instance already exists.</li>
@@ -1217,7 +1217,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
     }
 
     /**
-     * Returns an extent (usually a domain of validity) from a code.
+     * Returns information about spatial, vertical, and temporal extent (usually a domain of validity) from a code.
      * The default implementation performs the following steps:
      * <ul>
      *   <li>Return the cached instance for the given code if such instance already exists.</li>
@@ -1262,7 +1262,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
     }
 
     /**
-     * Returns an ellipsoidal coordinate system from a code.
+     * Returns a 2- or 3-dimensional coordinate system for geodetic latitude and longitude, sometime with ellipsoidal height.
      * The default implementation performs the following steps:
      * <ul>
      *   <li>Return the cached instance for the given code if such instance already exists.</li>
@@ -1285,7 +1285,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
     }
 
     /**
-     * Returns a vertical coordinate system from a code.
+     * Returns a 1-dimensional coordinate system for heights or depths of points.
      * The default implementation performs the following steps:
      * <ul>
      *   <li>Return the cached instance for the given code if such instance already exists.</li>
@@ -1308,7 +1308,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
     }
 
     /**
-     * Returns a temporal coordinate system from a code.
+     * Returns a 1-dimensional coordinate system for heights or depths of points.
      * The default implementation performs the following steps:
      * <ul>
      *   <li>Return the cached instance for the given code if such instance already exists.</li>
@@ -1331,7 +1331,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
     }
 
     /**
-     * Returns a Cartesian coordinate system from a code.
+     * Returns a 2- or 3-dimensional Cartesian coordinate system made of straight orthogonal axes.
      * The default implementation performs the following steps:
      * <ul>
      *   <li>Return the cached instance for the given code if such instance already exists.</li>
@@ -1354,7 +1354,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
     }
 
     /**
-     * Returns a spherical coordinate system from a code.
+     * Returns a 3-dimensional coordinate system with one distance measured from the origin and two angular coordinates.
      * The default implementation performs the following steps:
      * <ul>
      *   <li>Return the cached instance for the given code if such instance already exists.</li>
@@ -1377,7 +1377,8 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
     }
 
     /**
-     * Returns a cylindrical coordinate system from a code.
+     * Returns a 3-dimensional coordinate system made of a polar coordinate system
+     * extended by a straight perpendicular axis.
      * The default implementation performs the following steps:
      * <ul>
      *   <li>Return the cached instance for the given code if such instance already exists.</li>
@@ -1400,7 +1401,8 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
     }
 
     /**
-     * Returns a polar coordinate system from a code.
+     * Returns a 2-dimensional coordinate system for coordinates represented by a distance from the origin
+     * and an angle from a fixed direction.
      * The default implementation performs the following steps:
      * <ul>
      *   <li>Return the cached instance for the given code if such instance already exists.</li>
@@ -1423,7 +1425,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
     }
 
     /**
-     * Returns a coordinate system axis from a code.
+     * Returns a coordinate system axis with name, direction, unit and range of values.
      * The default implementation performs the following steps:
      * <ul>
      *   <li>Return the cached instance for the given code if such instance already exists.</li>
@@ -1468,7 +1470,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
     }
 
     /**
-     * Returns a parameter descriptor from a code.
+     * Returns a definition of a single parameter used by an operation method.
      * The default implementation performs the following steps:
      * <ul>
      *   <li>Return the cached instance for the given code if such instance already exists.</li>
@@ -1491,7 +1493,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
     }
 
     /**
-     * Returns an operation method from a code.
+     * Returns a description of the algorithm and parameters used to perform a coordinate operation.
      * The default implementation performs the following steps:
      * <ul>
      *   <li>Return the cached instance for the given code if such instance already exists.</li>
@@ -1514,7 +1516,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
     }
 
     /**
-     * Returns an operation from a code.
+     * Returns an operation for transforming coordinates in the source CRS to coordinates in the target CRS.
      * The default implementation performs the following steps:
      * <ul>
      *   <li>Return the cached instance for the given code if such instance already exists.</li>

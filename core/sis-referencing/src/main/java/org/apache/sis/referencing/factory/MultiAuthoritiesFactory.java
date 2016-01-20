@@ -20,6 +20,7 @@ import java.util.ServiceLoader;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.LinkedHashSet;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -29,9 +30,13 @@ import org.opengis.referencing.crs.*;
 import org.opengis.referencing.datum.*;
 import org.opengis.referencing.operation.*;
 import org.opengis.metadata.citation.Citation;
+import org.opengis.metadata.extent.Extent;
+import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.util.FactoryException;
+import javax.measure.unit.Unit;
 import org.apache.sis.internal.util.Citations;
 import org.apache.sis.internal.util.DefinitionURI;
+import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
@@ -41,59 +46,60 @@ import org.apache.sis.util.iso.DefaultNameSpace;
 
 /**
  * A factory that delegates the object creation to another factory determined from the <var>authority</var> part
- * in {@code "}<var>authority</var>{@code :}<var>code</var>{code "} arguments.
+ * in “<var>authority</var>:<var>code</var>” arguments.
  * The list of factories to use as delegates can be specified at construction time.
  *
- * <p>This factory requires that every codes given to a {@code createFoo(String)} method are prefixed by
- * the authority name, for example {@code "EPSG:4326"}. When a {@code createFoo(String)} method is invoked,
- * this class extracts the authority name from the {@code "authority:code"} argument and searches
- * for a factory for that authority in the list of factories given at construction time.
- * If a factory is found, then the work is delegated to that factory.
- * Otherwise a {@link NoSuchAuthorityCodeException} is thrown.</p>
+ * <p>This factory requires that every codes given to a {@code createFoo(String)} method are prefixed by a namespace,
+ * for example {@code "EPSG::4326"}.
+ * When a {@code createFoo(String)} method is invoked, this class uses the <var>authority</var> part in the
+ * “<var>authority</var>:<var>code</var>” argument for locating a factory capable to create a geodetic object
+ * for the <var>code</var> part.  If a factory is found in the list of factories given at construction time,
+ * then the work is delegated to that factory. Otherwise a {@link NoSuchAuthorityFactoryException} is thrown.</p>
  *
- * <p>This factory can also parse URNs of the form
- * {@code "urn:ogc:def:}<var>type</var>{@code :}<var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var>{@code "}.
- * In such case, the <var>type</var> specified in the URN may be used for invoking a more specific method.
+ * <div class="section">URI syntax</div>
+ * This factory can also parse URNs of the
+ * {@code "urn:ogc:def:}<var>type</var>{@code :}<var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var>{@code "}
+ * form and URLs of the {@code "http://www.opengis.net/gml/srs/}<var>authority</var>{@code .xml#}<var>code</var>{@code "} form.
+ * In such cases, the <var>type</var> specified in the URN may be used for invoking a more specific method.
  * However {@code MultiAuthoritiesFactory} uses the type information in the URN only for
  * delegating to a more specific method, never for delegating to a less specific method.
- * An exception will be thrown if the type in the URN is incompatible with the method invoked.</p>
+ * An exception will be thrown if the type in the URN is incompatible with the invoked method.
  *
  * <div class="note"><b>Example:</b>
- * if the {@link #createObject(String)} method is invoked with the <code>"urn:ogc:def:<b>crs</b>:EPSG::4326"</code>
- * URN, then {@code MultiAuthoritiesFactory} will delegate (indirectly, ignoring caching for this example) the object
+ * if <code>{@linkplain #createObject(String) createObject}("urn:ogc:def:<b>crs</b>:EPSG::4326")</code> is invoked,
+ * then {@code MultiAuthoritiesFactory} will delegate (indirectly, ignoring caching for this example) the object
  * creation to {@link org.apache.sis.referencing.factory.sql.EPSGDataAccess#createCoordinateReferenceSystem(String)}
  * instead of {@link org.apache.sis.referencing.factory.sql.EPSGDataAccess#createObject(String)} because of the
- * {@code "crs"} part in the URN. The more specific method gives more performances and avoid ambiguities.</div>
+ * {@code "crs"} part in the URN. The more specific method gives better performances and avoid ambiguities.</div>
  *
  * <div class="section">Multiple versions for the same authority</div>
  * {@code MultiAuthoritiesFactory} accepts an arbitrary amount of factories for the same authority, provided that
  * those factories have different version numbers. If a {@code createFoo(String)} method is invoked with a URN
- * containing a version number, then {@code MultiAuthoritiesFactory} will search for a factory with that exact
- * version, or throw a {@link NoSuchAuthorityCodeException} if no suitable factory is found.
+ * containing a version number different than zero, then {@code MultiAuthoritiesFactory} will search for a factory
+ * with that exact version, or throw a {@link NoSuchAuthorityFactoryException} if no suitable factory is found.
  * If a {@code createFoo(String)} method is invoked with the version number omitted, then {@code MultiAuthoritiesFactory}
  * will use the first factory in iteration order for the requested authority regardless of its version number.
  *
  * <div class="note"><b>Example:</b>
  * a {@code MultiAuthoritiesFactory} instance could contain two {@code EPSGFactory} instances:
- * one for version 8.2 of the EPSG dataset and another one for version 7.9 of the EPSG dataset.
+ * one for version 8.2 and another one for version 7.9 of the EPSG dataset.
  * A specific version can be requested in the URN given to {@code createFoo(String)} methods,
  * for example <code>"urn:ogc:def:crs:EPSG:<b>8.2</b>:4326"</code>.
- * If no version is given as in {@code "urn:ogc:def:crs:EPSG::4326"},
+ * If no version is given (for example {@code "urn:ogc:def:crs:EPSG::4326"}),
  * then the first EPSG factory in iteration order is used regardless of its version number.
  * </div>
  *
  * <div class="section">Multi-threading</div>
  * This class is thread-safe if all delegate factories are themselves thread-safe.
- * However the factory <em>providers</em>, which are given to the constructor as
- * {@code Iterable<? extends AuthorityFactory>} instances, do not need to be thread-safe.
- * See constructor Javadoc for more information.
+ * However the factory <em>providers</em>, which are given to the constructor as {@link Iterable} instances,
+ * do not need to be thread-safe. See constructor Javadoc for more information.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.7
  * @version 0.7
  * @module
  */
-public abstract class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements CRSAuthorityFactory,
+public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements CRSAuthorityFactory,
         CSAuthorityFactory, DatumAuthorityFactory, CoordinateOperationAuthorityFactory
 {
     /**
@@ -122,9 +128,16 @@ public abstract class MultiAuthoritiesFactory extends GeodeticAuthorityFactory i
     private final AtomicInteger iterationCompleted;
 
     /**
-     * Creates a new multi-factory using the given lists of factories.
+     * The code spaces of all factories given to the constructor, created when first requested.
+     *
+     * @see #getCodeSpaces()
+     */
+    private volatile Set<String> codeSpaces;
+
+    /**
+     * Creates a new multi-factories instance using the given lists of factories.
      * Calls to {@code createFoo(String)} methods will scan the supplied factories in their iteration order when first needed.
-     * The first factory having the expected {@linkplain GeodeticAuthorityFactory#getAuthority() authority name} will be used.
+     * The first factory having the requested {@linkplain GeodeticAuthorityFactory#getCodeSpaces() namespace} will be used.
      *
      * <div class="section">Requirements</div>
      * {@code MultiAuthoritiesFactory} may iterate over the same {@code Iterable} more than once.
@@ -186,6 +199,35 @@ public abstract class MultiAuthoritiesFactory extends GeodeticAuthorityFactory i
         return null;
     }
 
+    @Override
+    public Set<String> getAuthorityCodes(Class<? extends IdentifiedObject> type) throws FactoryException {
+        throw new UnsupportedOperationException("Not supported yet.");      // TODO
+    }
+
+    /**
+     * Returns the code spaces of all factories given to the constructor.
+     * This method may be relatively costly since it implies instantiation of all factories.
+     *
+     * @return The code spaces of all factories.
+     */
+    @Override
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
+    public Set<String> getCodeSpaces() {
+        Set<String> union = codeSpaces;
+        if (union == null) {
+            union = new LinkedHashSet<>();
+            for (final Iterable<? extends AuthorityFactory> provider : providers) {
+                if (provider != null) synchronized (provider) {
+                    for (final AuthorityFactory factory : provider) {
+                        union.addAll(getCodeSpaces(factory));
+                    }
+                }
+            }
+            codeSpaces = union = CollectionsExt.unmodifiableOrCopy(union);
+        }
+        return union;
+    }
+
     /**
      * Returns the code spaces for the given factory.
      * This method delegates to {@link GeodeticAuthorityFactory#getCodeSpaces()} if possible,
@@ -214,11 +256,36 @@ public abstract class MultiAuthoritiesFactory extends GeodeticAuthorityFactory i
     }
 
     /**
+     * Returns the factory identified by the given type, authority and version.
+     *
+     * @param  <T>        The compile-time value of {@code type}.
+     * @param  type       The type of the desired factory as one of the {@link CRSAuthorityFactory}, {@link CSAuthorityFactory},
+     *                    {@link DatumAuthorityFactory} or {@link CoordinateOperationFactory} interfaces.
+     * @param  authority  The namespace or authority identifier of the desired factory.
+     *                    Examples: {@code "EPSG"}, {@code "CRS"} or {@code "AUTO2"}.
+     * @param  version    The version of the desired factory, or {@code null} for the default version.
+     * @return The factory for the given type, authority and version.
+     * @throws NoSuchAuthorityFactoryException if no suitable factory has been found.
+     */
+    /*
+     * This method is declared final for avoiding the false impression than overriding this method would change
+     * the behavior of MultiAuthoritiesFactory. It would not because the 'create(…)' method invokes the private
+     * 'getAuthorityFactory(…)' instead of the public one.
+     */
+    public final <T extends AuthorityFactory> T getAuthorityFactory(final Class<T> type,
+            final String authority, final String version) throws NoSuchAuthorityFactoryException
+    {
+        ArgumentChecks.ensureNonNull("type", type);
+        ArgumentChecks.ensureNonNull("authority", authority);
+        return type.cast(getAuthorityFactory(AuthorityFactoryIdentifier.create(type, authority, version)));
+    }
+
+    /**
      * Returns the factory identified by the given type, authority and version. If no such factory is found in
-     * the cache, then this method iterates on the factories created by the providers given at construction time.
+     * the cache, then this method iterates over the factories created by the providers given at construction time.
      *
      * @param  request The type, authority and version of the desired factory.
-     * @return The factory.
+     * @return The factory for the given type, authority and version.
      * @throws NoSuchAuthorityFactoryException if no suitable factory has been found.
      */
     private AuthorityFactory getAuthorityFactory(final AuthorityFactoryIdentifier request)
@@ -255,55 +322,55 @@ public abstract class MultiAuthoritiesFactory extends GeodeticAuthorityFactory i
                 final Iterable<? extends AuthorityFactory> provider = providers[type];
                 synchronized (provider) {   // Should never be null because of the 'doneMask' check.
                     /*
-                     * Check again in case another thread has found the factory after the check at
-                     * the beginning of this method but before we entered in the synchronized block.
-                     */
-                    factory = factories.get(request);
-                    if (factory != null) {
-                        return factory;
-                    }
-                    /*
                      * Search for a factory for the given authority. Caches all factories that we find
-                     * during the iteration process. Some factories may be already cached as a result
+                     * during the iteration process. Some factories may already be cached as a result
                      * of a partial iteration in a previous call to getAuthorityFactory(…).
                      */
                     for (final Iterator<? extends AuthorityFactory> it = provider.iterator(); it.hasNext();) {
                         factory = it.next();
-                        AuthorityFactory found = null;
-                        AuthorityFactory conflict = null;
                         for (final String namespace : getCodeSpaces(factory)) {
                             final AuthorityFactoryIdentifier unversioned = request.unversioned(namespace);
                             AuthorityFactory cached = cache(unversioned, factory);
-                            if (request.equals(unversioned)) {
-                                found = cached;
-                            }
+                            final AuthorityFactory found = request.equals(unversioned) ? cached : null;
                             /*
                              * Only if we have no choice, ask to the factory what is its version number.
                              * We have no choice when ignoring the version number causes a conflict, or
                              * when the user asked for a specific version.
                              */
-                            if (cached != factory || request.hasVersion()) {
-                                // Make sure that we took in account the version number of the default factory.
-                                cache(unversioned.versionOf(cached.getAuthority()), cached);
-
-                                // Now check the version number of the new factory that we just fetched.
+                            if (factory != cached || (request.hasVersion() && request.getAuthority().equals(unversioned.getAuthority()))) {
                                 final AuthorityFactoryIdentifier versioned = unversioned.versionOf(factory.getAuthority());
                                 if (versioned != unversioned) {
+                                    /*
+                                     * Before to cache the factory with a key containing the factory version, make sure
+                                     * that we took in account the version of the default factory. This will prevent the
+                                     * call to 'cache(versioned, factory)' to overwrite the default factory.
+                                     */
+                                    if (factory != cached) {
+                                        cache(unversioned.versionOf(cached.getAuthority()), cached);
+                                    }
                                     cached = cache(versioned, factory);
-                                    if (request.equals(versioned)) {
-                                        found = cached;
+                                }
+                                /*
+                                 * If there is a conflict, log a warning provided that we did not already reported
+                                 * that conflict. The flag telling us if we already logged a warning is in the key,
+                                 * so we have to find that key in the loop below. This is inefficient, but conflict
+                                 * should not happen in a sane environment.
+                                 */
+                                if (factory != cached) {
+                                    for (final AuthorityFactoryIdentifier identifier : factories.keySet()) {
+                                        if (identifier.equals(versioned)) {
+                                            identifier.logConflictWarning(cached);
+                                            break;
+                                        }
                                     }
                                 }
-                                if (cached != factory) {
-                                    conflict = cached;
+                                if (request.equals(versioned)) {
+                                    return cached;
                                 }
                             }
-                        }
-                        if (conflict != null) {
-                            // TODO: log a warning
-                        }
-                        if (found != null) {
-                            return found;
+                            if (found != null) {
+                                return found;
+                            }
                         }
                     }
                 }
@@ -343,7 +410,7 @@ public abstract class MultiAuthoritiesFactory extends GeodeticAuthorityFactory i
     }
 
     /**
-     * Returns an object from a code using the given proxy.
+     * Creates an object from a code using the given proxy.
      *
      * @param  <T>   The type of the object to be returned.
      * @param  proxy The proxy to use for creating the object.
@@ -386,6 +453,582 @@ public abstract class MultiAuthoritiesFactory extends GeodeticAuthorityFactory i
     }
 
     /**
+     * Creates an arbitrary object from a code.
+     * The given code can use any of the following patterns, where <var>version</var> is optional:
+     * <ul>
+     *   <li><var>authority</var>{@code :}<var>code</var> — note that this form is ambiguous</li>
+     *   <li><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var> — note that this form is ambiguous</li>
+     *   <li>{@code urn:ogc:def:}<var>type</var>{@code :}<var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
+     *   <li>{@code http://www.opengis.net/gml/srs/}<var>authority</var>{@code .xml#}<var>code</var></li>
+     * </ul>
+     *
+     * The two first formats are ambiguous when used with this {@code createObject(String)} because different kinds
+     * of objects can have the same code.
+     *
+     * @return The object for the given code.
+     * @throws FactoryException if the object creation failed.
+     */
+    @Override
+    public IdentifiedObject createObject(final String code) throws FactoryException {
+        return create(AuthorityFactoryProxy.OBJECT, code);
+    }
+
+    /**
+     * Creates an arbitrary coordinate reference system from a code.
+     * The given code can use any of the following patterns, where <var>version</var> is optional:
+     * <ul>
+     *   <li><var>authority</var>{@code :}<var>code</var></li>
+     *   <li><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
+     *   <li><code>urn:ogc:def:<b>crs</b>:</code><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
+     *   <li>{@code http://www.opengis.net/gml/srs/}<var>authority</var>{@code .xml#}<var>code</var></li>
+     * </ul>
+     *
+     * @return The coordinate reference system for the given code.
+     * @throws FactoryException if the object creation failed.
+     */
+    @Override
+    public CoordinateReferenceSystem createCoordinateReferenceSystem(final String code) throws FactoryException {
+        return create(AuthorityFactoryProxy.CRS, code);
+    }
+
+    /**
+     * Creates a 2- or 3-dimensional coordinate reference system based on an ellipsoidal approximation of the geoid.
+     * The given code can use any of the following patterns, where <var>version</var> is optional:
+     * <ul>
+     *   <li><var>authority</var>{@code :}<var>code</var></li>
+     *   <li><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
+     *   <li><code>urn:ogc:def:<b>crs</b>:</code><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
+     *   <li>{@code http://www.opengis.net/gml/srs/}<var>authority</var>{@code .xml#}<var>code</var></li>
+     * </ul>
+     *
+     * @return The coordinate reference system for the given code.
+     * @throws FactoryException if the object creation failed.
+     */
+    @Override
+    public GeographicCRS createGeographicCRS(final String code) throws FactoryException {
+        return create(AuthorityFactoryProxy.GEOGRAPHIC_CRS, code);
+    }
+
+    /**
+     * Creates a 3-dimensional coordinate reference system with the origin at the approximate centre of mass of the earth.
+     * The given code can use any of the following patterns, where <var>version</var> is optional:
+     * <ul>
+     *   <li><var>authority</var>{@code :}<var>code</var></li>
+     *   <li><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
+     *   <li><code>urn:ogc:def:<b>crs</b>:</code><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
+     *   <li>{@code http://www.opengis.net/gml/srs/}<var>authority</var>{@code .xml#}<var>code</var></li>
+     * </ul>
+     *
+     * @return The coordinate reference system for the given code.
+     * @throws FactoryException if the object creation failed.
+     */
+    @Override
+    public GeocentricCRS createGeocentricCRS(final String code) throws FactoryException {
+        return create(AuthorityFactoryProxy.GEOCENTRIC_CRS, code);
+    }
+
+    /**
+     * Creates a 2-dimensional coordinate reference system used to approximate the shape of the earth on a planar surface.
+     * The given code can use any of the following patterns, where <var>version</var> is optional:
+     * <ul>
+     *   <li><var>authority</var>{@code :}<var>code</var></li>
+     *   <li><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
+     *   <li><code>urn:ogc:def:<b>crs</b>:</code><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
+     *   <li>{@code http://www.opengis.net/gml/srs/}<var>authority</var>{@code .xml#}<var>code</var></li>
+     * </ul>
+     *
+     * @return The coordinate reference system for the given code.
+     * @throws FactoryException if the object creation failed.
+     */
+    @Override
+    public ProjectedCRS createProjectedCRS(final String code) throws FactoryException {
+        return create(AuthorityFactoryProxy.PROJECTED_CRS, code);
+    }
+
+    /**
+     * Creates a 1-dimensional coordinate reference system used for recording heights or depths.
+     * The given code can use any of the following patterns, where <var>version</var> is optional:
+     * <ul>
+     *   <li><var>authority</var>{@code :}<var>code</var></li>
+     *   <li><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
+     *   <li><code>urn:ogc:def:<b>crs</b>:</code><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
+     *   <li>{@code http://www.opengis.net/gml/srs/}<var>authority</var>{@code .xml#}<var>code</var></li>
+     * </ul>
+     *
+     * @return The coordinate reference system for the given code.
+     * @throws FactoryException if the object creation failed.
+     */
+    @Override
+    public VerticalCRS createVerticalCRS(final String code) throws FactoryException {
+        return create(AuthorityFactoryProxy.VERTICAL_CRS, code);
+    }
+
+    /**
+     * Creates a 1-dimensional coordinate reference system used for the recording of time.
+     * The given code can use any of the following patterns, where <var>version</var> is optional:
+     * <ul>
+     *   <li><var>authority</var>{@code :}<var>code</var></li>
+     *   <li><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
+     *   <li><code>urn:ogc:def:<b>crs</b>:</code><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
+     *   <li>{@code http://www.opengis.net/gml/srs/}<var>authority</var>{@code .xml#}<var>code</var></li>
+     * </ul>
+     *
+     * @return The coordinate reference system for the given code.
+     * @throws FactoryException if the object creation failed.
+     */
+    @Override
+    public TemporalCRS createTemporalCRS(final String code) throws FactoryException {
+        return create(AuthorityFactoryProxy.TEMPORAL_CRS, code);
+    }
+
+    /**
+     * Creates a CRS describing the position of points through two or more independent coordinate reference systems.
+     * The given code can use any of the following patterns, where <var>version</var> is optional:
+     * <ul>
+     *   <li><var>authority</var>{@code :}<var>code</var></li>
+     *   <li><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
+     *   <li><code>urn:ogc:def:<b>crs</b>:</code><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
+     *   <li>{@code http://www.opengis.net/gml/srs/}<var>authority</var>{@code .xml#}<var>code</var></li>
+     * </ul>
+     *
+     * @return The coordinate reference system for the given code.
+     * @throws FactoryException if the object creation failed.
+     */
+    @Override
+    public CompoundCRS createCompoundCRS(final String code) throws FactoryException {
+        return create(AuthorityFactoryProxy.COMPOUND_CRS, code);
+    }
+
+    /**
+     * Creates a CRS that is defined by its coordinate conversion from another CRS (not by a datum).
+     * The given code can use any of the following patterns, where <var>version</var> is optional:
+     * <ul>
+     *   <li><var>authority</var>{@code :}<var>code</var></li>
+     *   <li><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
+     *   <li><code>urn:ogc:def:<b>crs</b>:</code><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
+     *   <li>{@code http://www.opengis.net/gml/srs/}<var>authority</var>{@code .xml#}<var>code</var></li>
+     * </ul>
+     *
+     * @return The coordinate reference system for the given code.
+     * @throws FactoryException if the object creation failed.
+     */
+    @Override
+    public DerivedCRS createDerivedCRS(final String code) throws FactoryException {
+        return create(AuthorityFactoryProxy.DERIVED_CRS, code);
+    }
+
+    /**
+     * Creates a 1-, 2- or 3-dimensional contextually local coordinate reference system.
+     * The given code can use any of the following patterns, where <var>version</var> is optional:
+     * <ul>
+     *   <li><var>authority</var>{@code :}<var>code</var></li>
+     *   <li><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
+     *   <li><code>urn:ogc:def:<b>crs</b>:</code><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
+     *   <li>{@code http://www.opengis.net/gml/srs/}<var>authority</var>{@code .xml#}<var>code</var></li>
+     * </ul>
+     *
+     * @return The coordinate reference system for the given code.
+     * @throws FactoryException if the object creation failed.
+     */
+    @Override
+    public EngineeringCRS createEngineeringCRS(final String code) throws FactoryException {
+        return create(AuthorityFactoryProxy.ENGINEERING_CRS, code);
+    }
+
+    /**
+     * Creates a 2-dimensional engineering coordinate reference system applied to locations in images.
+     * The given code can use any of the following patterns, where <var>version</var> is optional:
+     * <ul>
+     *   <li><var>authority</var>{@code :}<var>code</var></li>
+     *   <li><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
+     *   <li><code>urn:ogc:def:<b>crs</b>:</code><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
+     *   <li>{@code http://www.opengis.net/gml/srs/}<var>authority</var>{@code .xml#}<var>code</var></li>
+     * </ul>
+     *
+     * @return The coordinate reference system for the given code.
+     * @throws FactoryException if the object creation failed.
+     */
+    @Override
+    public ImageCRS createImageCRS(final String code) throws FactoryException {
+        return create(AuthorityFactoryProxy.IMAGE_CRS, code);
+    }
+
+    /**
+     * Creates an arbitrary datum from a code. The returned object will typically be an
+     * The given code can use any of the following patterns, where <var>version</var> is optional:
+     * <ul>
+     *   <li><var>authority</var>{@code :}<var>code</var></li>
+     *   <li><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
+     *   <li><code>urn:ogc:def:<b>datum</b>:</code><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
+     * </ul>
+     *
+     * @return The datum for the given code.
+     * @throws FactoryException if the object creation failed.
+     */
+    @Override
+    public Datum createDatum(final String code) throws FactoryException {
+        return create(AuthorityFactoryProxy.DATUM, code);
+    }
+
+    /**
+     * Creates a datum defining the location and orientation of an ellipsoid that approximates the shape of the earth.
+     * The given code can use any of the following patterns, where <var>version</var> is optional:
+     * <ul>
+     *   <li><var>authority</var>{@code :}<var>code</var></li>
+     *   <li><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
+     *   <li><code>urn:ogc:def:<b>datum</b>:</code><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
+     * </ul>
+     *
+     * @return The datum for the given code.
+     * @throws FactoryException if the object creation failed.
+     */
+    @Override
+    public GeodeticDatum createGeodeticDatum(final String code) throws FactoryException {
+        return create(AuthorityFactoryProxy.GEODETIC_DATUM, code);
+    }
+
+    /**
+     * Creates a datum identifying a particular reference level surface used as a zero-height surface.
+     * The given code can use any of the following patterns, where <var>version</var> is optional:
+     * <ul>
+     *   <li><var>authority</var>{@code :}<var>code</var></li>
+     *   <li><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
+     *   <li><code>urn:ogc:def:<b>datum</b>:</code><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
+     * </ul>
+     *
+     * @return The datum for the given code.
+     * @throws FactoryException if the object creation failed.
+     */
+    @Override
+    public VerticalDatum createVerticalDatum(final String code) throws FactoryException {
+        return create(AuthorityFactoryProxy.VERTICAL_DATUM, code);
+    }
+
+    /**
+     * Creates a datum defining the origin of a temporal coordinate reference system.
+     * The given code can use any of the following patterns, where <var>version</var> is optional:
+     * <ul>
+     *   <li><var>authority</var>{@code :}<var>code</var></li>
+     *   <li><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
+     *   <li><code>urn:ogc:def:<b>datum</b>:</code><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
+     * </ul>
+     *
+     * @return The datum for the given code.
+     * @throws FactoryException if the object creation failed.
+     */
+    @Override
+    public TemporalDatum createTemporalDatum(final String code) throws FactoryException {
+        return create(AuthorityFactoryProxy.TEMPORAL_DATUM, code);
+    }
+
+    /**
+     * Creates a datum defining the origin of an engineering coordinate reference system.
+     * The given code can use any of the following patterns, where <var>version</var> is optional:
+     * <ul>
+     *   <li><var>authority</var>{@code :}<var>code</var></li>
+     *   <li><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
+     *   <li><code>urn:ogc:def:<b>datum</b>:</code><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
+     * </ul>
+     *
+     * @return The datum for the given code.
+     * @throws FactoryException if the object creation failed.
+     */
+    @Override
+    public EngineeringDatum createEngineeringDatum(final String code) throws FactoryException {
+        return create(AuthorityFactoryProxy.ENGINEERING_DATUM, code);
+    }
+
+    /**
+     * Creates a datum defining the origin of an image coordinate reference system.
+     * The given code can use any of the following patterns, where <var>version</var> is optional:
+     * <ul>
+     *   <li><var>authority</var>{@code :}<var>code</var></li>
+     *   <li><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
+     *   <li><code>urn:ogc:def:<b>datum</b>:</code><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
+     * </ul>
+     *
+     * @return The datum for the given code.
+     * @throws FactoryException if the object creation failed.
+     */
+    @Override
+    public ImageDatum createImageDatum(final String code) throws FactoryException {
+        return create(AuthorityFactoryProxy.IMAGE_DATUM, code);
+    }
+
+    /**
+     * Creates a geometric figure that can be used to describe the approximate shape of the earth.
+     * The given code can use any of the following patterns, where <var>version</var> is optional:
+     * <ul>
+     *   <li><var>authority</var>{@code :}<var>code</var></li>
+     *   <li><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
+     *   <li><code>urn:ogc:def:<b>ellipsoid</b>:</code><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
+     * </ul>
+     *
+     * @return The ellipsoid for the given code.
+     * @throws FactoryException if the object creation failed.
+     */
+    @Override
+    public Ellipsoid createEllipsoid(final String code) throws FactoryException {
+        return create(AuthorityFactoryProxy.ELLIPSOID, code);
+    }
+
+    /**
+     * Creates a prime meridian defining the origin from which longitude values are determined.
+     * The given code can use any of the following patterns, where <var>version</var> is optional:
+     * <ul>
+     *   <li><var>authority</var>{@code :}<var>code</var></li>
+     *   <li><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
+     *   <li><code>urn:ogc:def:<b>meridian</b>:</code><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
+     * </ul>
+     *
+     * @return The prime meridian for the given code.
+     * @throws FactoryException if the object creation failed.
+     */
+    @Override
+    public PrimeMeridian createPrimeMeridian(final String code) throws FactoryException {
+        return create(AuthorityFactoryProxy.PRIME_MERIDIAN, code);
+    }
+
+    /**
+     * Creates information about spatial, vertical, and temporal extent (usually a domain of validity) from a code.
+     * The given code can use any of the following patterns, where <var>version</var> is optional:
+     * <ul>
+     *   <li><var>authority</var>{@code :}<var>code</var></li>
+     *   <li><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
+     * </ul>
+     *
+     * @return The extent for the given code.
+     * @throws FactoryException if the object creation failed.
+     */
+    @Override
+    public Extent createExtent(final String code) throws FactoryException {
+        return create(AuthorityFactoryProxy.EXTENT, code);
+    }
+
+    /**
+     * Creates an arbitrary coordinate system from a code.
+     * The given code can use any of the following patterns, where <var>version</var> is optional:
+     * <ul>
+     *   <li><var>authority</var>{@code :}<var>code</var></li>
+     *   <li><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
+     *   <li><code>urn:ogc:def:<b>cs</b>:</code><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
+     * </ul>
+     *
+     * @return The coordinate system for the given code.
+     * @throws FactoryException if the object creation failed.
+     */
+    @Override
+    public CoordinateSystem createCoordinateSystem(final String code) throws FactoryException {
+        return create(AuthorityFactoryProxy.COORDINATE_SYSTEM, code);
+    }
+
+    /**
+     * Creates a 2- or 3-dimensional coordinate system for geodetic latitude and longitude, sometime with ellipsoidal height.
+     * The given code can use any of the following patterns, where <var>version</var> is optional:
+     * <ul>
+     *   <li><var>authority</var>{@code :}<var>code</var></li>
+     *   <li><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
+     *   <li><code>urn:ogc:def:<b>cs</b>:</code><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
+     * </ul>
+     *
+     * @return The coordinate system for the given code.
+     * @throws FactoryException if the object creation failed.
+     */
+    @Override
+    public EllipsoidalCS createEllipsoidalCS(final String code) throws FactoryException {
+        return create(AuthorityFactoryProxy.ELLIPSOIDAL_CS, code);
+    }
+
+    /**
+     * Creates a 1-dimensional coordinate system for heights or depths of points.
+     * The given code can use any of the following patterns, where <var>version</var> is optional:
+     * <ul>
+     *   <li><var>authority</var>{@code :}<var>code</var></li>
+     *   <li><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
+     *   <li><code>urn:ogc:def:<b>cs</b>:</code><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
+     * </ul>
+     *
+     * @return The coordinate system for the given code.
+     * @throws FactoryException if the object creation failed.
+     */
+    @Override
+    public VerticalCS createVerticalCS(final String code) throws FactoryException {
+        return create(AuthorityFactoryProxy.VERTICAL_CS, code);
+    }
+
+    /**
+     * Creates a 1-dimensional coordinate system for heights or depths of points.
+     * The given code can use any of the following patterns, where <var>version</var> is optional:
+     * <ul>
+     *   <li><var>authority</var>{@code :}<var>code</var></li>
+     *   <li><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
+     *   <li><code>urn:ogc:def:<b>cs</b>:</code><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
+     * </ul>
+     *
+     * @return The coordinate system for the given code.
+     * @throws FactoryException if the object creation failed.
+     */
+    @Override
+    public TimeCS createTimeCS(final String code) throws FactoryException {
+        return create(AuthorityFactoryProxy.TIME_CS, code);
+    }
+
+    /**
+     * Creates a 2- or 3-dimensional Cartesian coordinate system made of straight orthogonal axes.
+     * The given code can use any of the following patterns, where <var>version</var> is optional:
+     * <ul>
+     *   <li><var>authority</var>{@code :}<var>code</var></li>
+     *   <li><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
+     *   <li><code>urn:ogc:def:<b>cs</b>:</code><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
+     * </ul>
+     *
+     * @return The coordinate system for the given code.
+     * @throws FactoryException if the object creation failed.
+     */
+    @Override
+    public CartesianCS createCartesianCS(final String code) throws FactoryException {
+        return create(AuthorityFactoryProxy.CARTESIAN_CS, code);
+    }
+
+    /**
+     * Creates a 3-dimensional coordinate system with one distance measured from the origin and two angular coordinates.
+     * The given code can use any of the following patterns, where <var>version</var> is optional:
+     * <ul>
+     *   <li><var>authority</var>{@code :}<var>code</var></li>
+     *   <li><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
+     *   <li><code>urn:ogc:def:<b>cs</b>:</code><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
+     * </ul>
+     *
+     * @return The coordinate system for the given code.
+     * @throws FactoryException if the object creation failed.
+     */
+    @Override
+    public SphericalCS createSphericalCS(final String code) throws FactoryException {
+        return create(AuthorityFactoryProxy.SPHERICAL_CS, code);
+    }
+
+    /**
+     * Creates a 3-dimensional coordinate system made of a polar coordinate system
+     * extended by a straight perpendicular axis.
+     * The given code can use any of the following patterns, where <var>version</var> is optional:
+     * <ul>
+     *   <li><var>authority</var>{@code :}<var>code</var></li>
+     *   <li><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
+     *   <li><code>urn:ogc:def:<b>cs</b>:</code><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
+     * </ul>
+     *
+     * @return The coordinate system for the given code.
+     * @throws FactoryException if the object creation failed.
+     */
+    @Override
+    public CylindricalCS createCylindricalCS(final String code) throws FactoryException {
+        return create(AuthorityFactoryProxy.CYLINDRICAL_CS, code);
+    }
+
+    /**
+     * Creates a 2-dimensional coordinate system for coordinates represented by a distance from the origin
+     * and an angle from a fixed direction.
+     * The given code can use any of the following patterns, where <var>version</var> is optional:
+     * <ul>
+     *   <li><var>authority</var>{@code :}<var>code</var></li>
+     *   <li><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
+     *   <li><code>urn:ogc:def:<b>cs</b>:</code><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
+     * </ul>
+     *
+     * @return The coordinate system for the given code.
+     * @throws FactoryException if the object creation failed.
+     */
+    @Override
+    public PolarCS createPolarCS(final String code) throws FactoryException {
+        return create(AuthorityFactoryProxy.POLAR_CS, code);
+    }
+
+    /**
+     * Creates a coordinate system axis with name, direction, unit and range of values.
+     * The given code can use any of the following patterns, where <var>version</var> is optional:
+     * <ul>
+     *   <li><var>authority</var>{@code :}<var>code</var></li>
+     *   <li><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
+     *   <li><code>urn:ogc:def:<b>axis</b>:</code><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
+     * </ul>
+     *
+     * @return The axis for the given code.
+     * @throws FactoryException if the object creation failed.
+     */
+    @Override
+    public CoordinateSystemAxis createCoordinateSystemAxis(final String code) throws FactoryException {
+        return create(AuthorityFactoryProxy.AXIS, code);
+    }
+
+    /**
+     * Creates an unit of measurement from a code.
+     * The given code can use any of the following patterns, where <var>version</var> is optional:
+     * <ul>
+     *   <li><var>authority</var>{@code :}<var>code</var></li>
+     *   <li><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
+     *   <li><code>urn:ogc:def:<b>uom</b>:</code><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
+     * </ul>
+     *
+     * @return The unit of measurement for the given code.
+     * @throws FactoryException if the object creation failed.
+     */
+    @Override
+    public Unit<?> createUnit(final String code) throws FactoryException {
+        return create(AuthorityFactoryProxy.UNIT, code);
+    }
+
+    /**
+     * Creates a definition of a single parameter used by an operation method.
+     * The given code can use any of the following patterns, where <var>version</var> is optional:
+     * <ul>
+     *   <li><var>authority</var>{@code :}<var>code</var></li>
+     *   <li><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
+     *   <li><code>urn:ogc:def:<b>parameter</b>:</code><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
+     * </ul>
+     *
+     * @return The parameter descriptor for the given code.
+     * @throws FactoryException if the object creation failed.
+     */
+    @Override
+    public ParameterDescriptor<?> createParameterDescriptor(final String code) throws FactoryException {
+        return create(AuthorityFactoryProxy.PARAMETER, code);
+    }
+
+    /**
+     * Creates a description of the algorithm and parameters used to perform a coordinate operation.
+     * The given code can use any of the following patterns, where <var>version</var> is optional:
+     * <ul>
+     *   <li><var>authority</var>{@code :}<var>code</var></li>
+     *   <li><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
+     *   <li><code>urn:ogc:def:<b>method</b>:</code><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
+     * </ul>
+     *
+     * @return The operation method for the given code.
+     * @throws FactoryException if the object creation failed.
+     */
+    @Override
+    public OperationMethod createOperationMethod(final String code) throws FactoryException {
+        return create(AuthorityFactoryProxy.METHOD, code);
+    }
+
+    /**
+     * Creates an operation for transforming coordinates in the source CRS to coordinates in the target CRS.
+     * The given code can use any of the following patterns, where <var>version</var> is optional:
+     * <ul>
+     *   <li><var>authority</var>{@code :}<var>code</var></li>
+     *   <li><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
+     *   <li><code>urn:ogc:def:<b>coordinateOperation</b>:</code><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
+     * </ul>
+     *
+     * @return The operation for the given code.
+     * @throws FactoryException if the object creation failed.
+     */
+    @Override
+    public CoordinateOperation createCoordinateOperation(final String code) throws FactoryException {
+        return create(AuthorityFactoryProxy.OPERATION, code);
+    }
+
+    /**
      * Clears the cache and notifies all factories need to be fetched again from the providers given at
      * construction time. All providers that are instances of {@link ServiceLoader} will have their
      * {@link ServiceLoader#reload() reload()} method invoked.
@@ -403,6 +1046,12 @@ public abstract class MultiAuthoritiesFactory extends GeodeticAuthorityFactory i
                         ((ServiceLoader<?>) provider).reload();
                     }
                     /*
+                     * Clear the 'iterationCompleted' bit before to clear the cache so that if another thread
+                     * invokes 'getAuthorityFactory(…)', it will block on the synchronized(provider) statement
+                     * until we finished the cleanup.
+                     */
+                    applyAndMask(~(1 << type));
+                    /*
                      * Clear the cache on a provider-by-provider basis, not by a call to factories.clear().
                      * This is needed because this MultiAuthoritiesFactory instance may be used concurrently
                      * by other threads, and we have no global lock for the whole factory.
@@ -413,11 +1062,19 @@ public abstract class MultiAuthoritiesFactory extends GeodeticAuthorityFactory i
                             it.remove();
                         }
                     }
-                    int doneMask;
-                    do doneMask = iterationCompleted.get();
-                    while (iterationCompleted.compareAndSet(doneMask, doneMask & ~(1 << type)));
                 }
             }
         }
+        applyAndMask(providers.length - 1);     // Clears all bits other than the bits for providers.
+    }
+
+    /**
+     * Sets {@link #iterationCompleted} to {@code iterationCompleted & mask}.
+     * This is used by {@link #reload()} for clearing bits.
+     */
+    private void applyAndMask(final int mask) {
+        int value;
+        do value = iterationCompleted.get();
+        while (!iterationCompleted.compareAndSet(value, value & mask));
     }
 }
