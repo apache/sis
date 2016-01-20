@@ -28,7 +28,7 @@ import org.junit.Test;
 
 import static org.apache.sis.test.Assert.*;
 import static org.apache.sis.test.TestUtilities.date;
-import static org.apache.sis.test.mock.GeodeticDatumMock.WGS84;
+import static org.apache.sis.referencing.datum.GeodeticDatumMock.WGS84;
 import static org.apache.sis.internal.referencing.Formulas.JULIAN_YEAR_LENGTH;
 
 

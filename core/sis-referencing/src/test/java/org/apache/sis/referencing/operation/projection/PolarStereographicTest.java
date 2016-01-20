@@ -26,10 +26,10 @@ import org.apache.sis.internal.referencing.provider.PolarStereographicC;
 import org.apache.sis.internal.referencing.provider.PolarStereographicNorth;
 import org.apache.sis.internal.referencing.provider.PolarStereographicSouth;
 import org.apache.sis.referencing.operation.transform.CoordinateDomain;
+import org.apache.sis.referencing.operation.transform.MathTransformFactoryMock;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
-import org.apache.sis.test.mock.MathTransformFactoryMock;
 import org.junit.Test;
 
 import static java.lang.StrictMath.*;

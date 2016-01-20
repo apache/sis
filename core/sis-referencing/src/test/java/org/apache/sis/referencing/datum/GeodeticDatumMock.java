@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.test.mock;
+package org.apache.sis.referencing.datum;
 
 import java.util.Date;
 import javax.measure.unit.Unit;
@@ -25,6 +25,7 @@ import org.opengis.metadata.extent.Extent;
 import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.referencing.datum.PrimeMeridian;
+import org.apache.sis.test.mock.IdentifiedObjectMock;
 import org.apache.sis.internal.metadata.ReferencingServices;
 
 
@@ -115,7 +116,7 @@ public final strictfp class GeodeticDatumMock extends IdentifiedObjectMock imple
      * {@inheritDoc}
      */
     @Override
-    Object[] properties() {
+    protected Object[] properties() {
         return new Object[] {getCode(), alias, semiMajorAxis, semiMinorAxis, inverseFlattening, isIvfDefinitive};
     }
 

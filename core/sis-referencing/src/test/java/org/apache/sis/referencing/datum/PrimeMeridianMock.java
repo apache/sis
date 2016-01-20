@@ -14,12 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.test.mock;
+package org.apache.sis.referencing.datum;
 
 import javax.measure.unit.Unit;
 import javax.measure.unit.NonSI;
 import javax.measure.quantity.Angle;
 import org.opengis.referencing.datum.PrimeMeridian;
+import org.apache.sis.test.mock.IdentifiedObjectMock;
 
 
 /**

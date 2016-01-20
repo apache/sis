@@ -117,7 +117,7 @@ public final strictfp class VerticalCRSMock extends IdentifiedObjectMock
      * {@inheritDoc}
      */
     @Override
-    Object[] properties() {
+    protected Object[] properties() {
         return new Object[] {getCode(), alias, minimumValue, maximumValue, unit, up};
     }
 

@@ -32,7 +32,7 @@ import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.internal.util.Constants;
 
 // Test dependencies
-import org.apache.sis.test.mock.GeodeticDatumMock;
+import org.apache.sis.referencing.datum.GeodeticDatumMock;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
