@@ -17,6 +17,8 @@
 package org.apache.sis.referencing.factory;
 
 import java.util.Locale;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.referencing.AuthorityFactory;
@@ -27,6 +29,10 @@ import org.opengis.referencing.operation.CoordinateOperationAuthorityFactory;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.iso.DefaultNameSpace;
+import org.apache.sis.util.resources.Vocabulary;
+import org.apache.sis.util.resources.Messages;
+import org.apache.sis.util.logging.Logging;
+import org.apache.sis.internal.system.Loggers;
 
 // Branch-dependent imports
 import java.util.Objects;
@@ -118,6 +124,20 @@ final class AuthorityFactoryIdentifier {
     private String version;
 
     /**
+     * {@code true} if {@code MultiAuthoritiesFactory} found more than one factory for this identifier.
+     * This is rarely needed, unless there is a configuration problem. This information is ignored by
+     * all methods in this class except {@link #conflict(AuthorityFactory)}, which use this field only
+     * for avoiding to log the same message twice.
+     *
+     * <p>This field does not need to be declared {@code volatile} because {@code MultiAuthoritiesFactory}
+     * will read and write this field in a {@code synchronized} block using the same lock (at least for the
+     * same instance of {@code AuthorityFactoryIdentifier}; lock may vary for other instances).</p>
+     *
+     * @see #conflict(AuthorityFactory)
+     */
+    private boolean hasLoggedWarning;
+
+    /**
      * Creates a new identifier for a factory of the given type, authority and version.
      * The given authority shall be already in upper cases and the version in lower cases
      * (this is not verified by this constructor).
@@ -126,6 +146,21 @@ final class AuthorityFactoryIdentifier {
         this.type      = type;
         this.authority = authority;
         this.version   = version;
+    }
+
+    /**
+     * Creates a new identifier for a factory of the given type, authority and version.
+     * Only the version can be null.
+     */
+    static AuthorityFactoryIdentifier create(final Class<? extends AuthorityFactory> type,
+            final String authority, final String version)
+    {
+        for (byte i=0; i<TYPES.length; i++) {
+            if (TYPES[i].isAssignableFrom(type)) {
+                return create(i, authority, version);
+            }
+        }
+        throw new IllegalArgumentException();   // Should never happen since above loop should have found ANY.
     }
 
     /**
@@ -176,7 +211,7 @@ final class AuthorityFactoryIdentifier {
      * Creates a new identifier for the same authority and version than this identifier, but a different factory.
      */
     AuthorityFactoryIdentifier newType(final byte newType) {
-        return (newType != type) ? new AuthorityFactoryIdentifier(newType, authority, version) : this;
+        return new AuthorityFactoryIdentifier(newType, authority, version);
     }
 
     /**
@@ -225,6 +260,28 @@ final class AuthorityFactoryIdentifier {
             }
         }
         return false;
+    }
+
+    /**
+     * Logs a message reporting a conflict between the factory identified by this {@code AuthorityFactoryIdentifier}
+     * and another factory, if this instance has not already logged a warning. This method assumes that it is invoked
+     * by the {@code MultiAuthoritiesFactory.getAuthorityFactory(…)} method.
+     *
+     * @param used The factory which will be used.
+     */
+    void logConflictWarning(final AuthorityFactory used) {
+        if (!hasLoggedWarning) {
+            hasLoggedWarning = true;
+            CharSequence name = authority;
+            if (version != null) {
+                name = Vocabulary.formatInternational(Vocabulary.Keys.Version_2, name, version);
+            }
+            final LogRecord record = Messages.getResources(null).getLogRecord(Level.WARNING,
+                    Messages.Keys.IgnoredServiceProvider_3, TYPES[type], name, Classes.getClass(used));
+            record.setLoggerName(Loggers.CRS_FACTORY);
+            // MultiAuthoritiesFactory.getAuthorityFactory(…) is the nearest public API.
+            Logging.log(MultiAuthoritiesFactory.class, "getAuthorityFactory", record);
+        }
     }
 
     /**

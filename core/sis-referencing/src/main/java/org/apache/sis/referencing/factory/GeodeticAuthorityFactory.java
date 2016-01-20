@@ -788,7 +788,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
     }
 
     /**
-     * Creates 2- or 3-dimensional coordinate system for geodetic latitude and longitude,
+     * Creates a 2- or 3-dimensional coordinate system for geodetic latitude and longitude,
      * sometime with ellipsoidal height.
      *
      * <div class="note"><b>Example:</b>
@@ -1069,7 +1069,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
     }
 
     /**
-     * Creates description of the algorithm and parameters used to perform a coordinate operation.
+     * Creates a description of the algorithm and parameters used to perform a coordinate operation.
      * An {@code OperationMethod} is a kind of metadata: it does not perform any coordinate operation
      * (e.g. map projection) by itself, but tells us what is needed in order to perform such operation.
      *
