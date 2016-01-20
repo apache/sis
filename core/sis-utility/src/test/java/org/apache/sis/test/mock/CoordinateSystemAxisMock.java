@@ -56,7 +56,7 @@ public strictfp class CoordinateSystemAxisMock extends IdentifiedObjectMock
      * {@inheritDoc}
      */
     @Override
-    Object[] properties() {
+    protected Object[] properties() {
         return new Object[] {getCode(), alias, abbreviation};
     }
 

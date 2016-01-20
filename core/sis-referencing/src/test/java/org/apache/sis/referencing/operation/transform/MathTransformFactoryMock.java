@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.test.mock;
+package org.apache.sis.referencing.operation.transform;
 
 import java.util.Set;
 import java.util.Collections;

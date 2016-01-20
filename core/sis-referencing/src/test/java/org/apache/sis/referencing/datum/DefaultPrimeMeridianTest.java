@@ -36,7 +36,7 @@ import org.junit.Test;
 import static java.util.Collections.singletonMap;
 import static org.apache.sis.test.MetadataAssert.*;
 import static org.apache.sis.referencing.GeodeticObjectVerifier.*;
-import static org.apache.sis.test.mock.PrimeMeridianMock.GREENWICH;
+import static org.apache.sis.referencing.datum.PrimeMeridianMock.GREENWICH;
 
 
 /**
