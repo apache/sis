@@ -32,7 +32,7 @@ import org.apache.sis.test.mock.IdentifiedObjectMock;
  * @module
  */
 @SuppressWarnings("serial")
-public final strictfp class PrimeMeridianMock extends IdentifiedObjectMock implements PrimeMeridian {
+final strictfp class PrimeMeridianMock extends IdentifiedObjectMock implements PrimeMeridian {
     /**
      * A mock for the Greenwich prime meridian.
      */

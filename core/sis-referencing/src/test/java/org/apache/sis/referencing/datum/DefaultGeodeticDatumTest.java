@@ -37,7 +37,6 @@ import org.apache.sis.test.TestStep;
 import org.junit.Test;
 
 import static org.apache.sis.test.MetadataAssert.*;
-import static org.apache.sis.referencing.datum.GeodeticDatumMock.*;
 import static org.apache.sis.referencing.GeodeticObjectVerifier.*;
 
 
@@ -105,7 +104,7 @@ public final strictfp class DefaultGeodeticDatumTest extends XMLTestCase {
      */
     @Test
     public void testIsHeuristicMatchForName() {
-        final DefaultGeodeticDatum datum = new DefaultGeodeticDatum(WGS84);
+        final DefaultGeodeticDatum datum = new DefaultGeodeticDatum(GeodeticDatumMock.WGS84);
         assertFalse(datum.isHeuristicMatchForName("WGS72"));
         assertTrue (datum.isHeuristicMatchForName("WGS84"));
         assertTrue (datum.isHeuristicMatchForName("WGS 84"));
@@ -136,28 +135,29 @@ public final strictfp class DefaultGeodeticDatumTest extends XMLTestCase {
          * Build the datum using WGS 72 ellipsoid (so at least one of the BursaWolfParameters is real).
          */
         final DefaultGeodeticDatum datum = new DefaultGeodeticDatum(properties,
-                WGS72.getEllipsoid(), WGS72.getPrimeMeridian());
+                GeodeticDatumMock.WGS72.getEllipsoid(),
+                GeodeticDatumMock.WGS72.getPrimeMeridian());
         /*
          * Search for BursaWolfParameters around the North Sea area.
          */
         final DefaultGeographicBoundingBox areaOfInterest = new DefaultGeographicBoundingBox(-2, 8, 55, 60);
         final DefaultExtent extent = new DefaultExtent("Around the North Sea", areaOfInterest, null, null);
-        Matrix matrix = datum.getPositionVectorTransformation(NAD83, extent);
+        Matrix matrix = datum.getPositionVectorTransformation(GeodeticDatumMock.NAD83, extent);
         assertNull("No BursaWolfParameters for NAD83", matrix);
-        matrix = datum.getPositionVectorTransformation(WGS84, extent);
+        matrix = datum.getPositionVectorTransformation(GeodeticDatumMock.WGS84, extent);
         assertNotNull("BursaWolfParameters for WGS84", matrix);
         checkTransformationSignature(local, matrix, 0);
         /*
          * Expand the area of interest to something greater than North Sea, and test again.
          */
         areaOfInterest.setWestBoundLongitude(-8);
-        matrix = datum.getPositionVectorTransformation(WGS84, extent);
+        matrix = datum.getPositionVectorTransformation(GeodeticDatumMock.WGS84, extent);
         assertNotNull("BursaWolfParameters for WGS84", matrix);
         checkTransformationSignature(global, matrix, 0);
         /*
          * Search in the reverse direction.
          */
-        final DefaultGeodeticDatum targetDatum = new DefaultGeodeticDatum(WGS84);
+        final DefaultGeodeticDatum targetDatum = new DefaultGeodeticDatum(GeodeticDatumMock.WGS84);
         matrix = targetDatum.getPositionVectorTransformation(datum, extent);
         global.invert(); // Expected result is the inverse.
         checkTransformationSignature(global, matrix, 1E-6);
@@ -182,7 +182,7 @@ public final strictfp class DefaultGeodeticDatumTest extends XMLTestCase {
      */
     @Test
     public void testToWKT() {
-        final DefaultGeodeticDatum datum = new DefaultGeodeticDatum(WGS84);
+        final DefaultGeodeticDatum datum = new DefaultGeodeticDatum(GeodeticDatumMock.WGS84);
         assertWktEquals(Convention.WKT2,
                 "DATUM[“WGS84”,\n" +
                 "  ELLIPSOID[“WGS84”, 6378137.0, 298.257223563, LENGTHUNIT[“metre”, 1]]]",
@@ -222,7 +222,7 @@ public final strictfp class DefaultGeodeticDatumTest extends XMLTestCase {
                 "    </gml:Ellipsoid>\n" +
                 "  </gml:ellipsoid>\n" +
                 "</gml:GeodeticDatum>",
-                marshal(new DefaultGeodeticDatum(WGS84)), "xmlns:*");
+                marshal(new DefaultGeodeticDatum(GeodeticDatumMock.WGS84)), "xmlns:*");
     }
 
     /**
