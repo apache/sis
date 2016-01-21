@@ -33,6 +33,7 @@ import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.util.FactoryException;
+import org.opengis.util.InternationalString;
 import javax.measure.unit.Unit;
 import org.apache.sis.internal.util.Citations;
 import org.apache.sis.internal.util.DefinitionURI;
@@ -57,9 +58,13 @@ import org.apache.sis.util.iso.DefaultNameSpace;
  * then the work is delegated to that factory. Otherwise a {@link NoSuchAuthorityFactoryException} is thrown.</p>
  *
  * <div class="section">URI syntax</div>
- * This factory can also parse URNs of the
- * {@code "urn:ogc:def:}<var>type</var>{@code :}<var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var>{@code "}
- * form and URLs of the {@code "http://www.opengis.net/gml/srs/}<var>authority</var>{@code .xml#}<var>code</var>{@code "} form.
+ * This factory can also parse URNs of the following forms:
+ *
+ * <ul>
+ *   <li>{@code "urn:ogc:def:}<var>type</var>{@code :}<var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var>{@code "}</li>
+ *   <li>{@code "http://www.opengis.net/gml/srs/}<var>authority</var>{@code .xml#}<var>code</var>{@code "}</li>
+ * </ul>
+ *
  * In such cases, the <var>type</var> specified in the URN may be used for invoking a more specific method.
  * However {@code MultiAuthoritiesFactory} uses the type information in the URN only for
  * delegating to a more specific method, never for delegating to a less specific method.
@@ -85,7 +90,7 @@ import org.apache.sis.util.iso.DefaultNameSpace;
  * one for version 8.2 and another one for version 7.9 of the EPSG dataset.
  * A specific version can be requested in the URN given to {@code createFoo(String)} methods,
  * for example <code>"urn:ogc:def:crs:EPSG:<b>8.2</b>:4326"</code>.
- * If no version is given (for example {@code "urn:ogc:def:crs:EPSG::4326"}),
+ * If no version is given of if the given version is zero,
  * then the first EPSG factory in iteration order is used regardless of its version number.
  * </div>
  *
@@ -420,15 +425,21 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
      * @return The object from one of the authority factory specified at construction time.
      * @throws FactoryException If an error occurred while creating the object.
      */
-    private <T> T create(final AuthorityFactoryProxy<T> proxy, String code) throws FactoryException {
+    private <T> T create(AuthorityFactoryProxy<? extends T> proxy, String code) throws FactoryException {
         ArgumentChecks.ensureNonNull("code", code);
         final String authority;
         String version;
         final DefinitionURI uri = DefinitionURI.parse(code);
         if (uri != null) {
+            final Class<? extends T> type = proxy.type;
             authority = uri.authority;
             version   = uri.version;
             code      = uri.code;
+            proxy     = proxy.cast(uri.type);
+            if (proxy == null) {
+                throw new NoSuchAuthorityCodeException(Errors.format(Errors.Keys.CanNotCreateObjectOfType_2,
+                        type, uri.type), uri.authority, uri.code, uri.toString());
+            }
         } else {
             /*
              * Separate the authority from the rest of the code. The authority is mandatory; if missing,
@@ -480,6 +491,25 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
     }
 
     /**
+     * Returns a description of the object corresponding to a code.
+     * The given code can use any of the following patterns, where <var>version</var> is optional:
+     * <ul>
+     *   <li><var>authority</var>{@code :}<var>code</var></li>
+     *   <li><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
+     *   <li>{@code urn:ogc:def:}<var>type</var>{@code :}<var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
+     *   <li>{@code http://www.opengis.net/gml/srs/}<var>authority</var>{@code .xml#}<var>code</var></li>
+     * </ul>
+     *
+     * @return A description of the object, or {@code null} if the object
+     *         corresponding to the specified {@code code} has no description.
+     * @throws FactoryException if an error occurred while fetching the description.
+     */
+    @Override
+    public InternationalString getDescriptionText(final String code) throws FactoryException {
+        return create(AuthorityFactoryProxy.DESCRIPTION, code);
+    }
+
+    /**
      * Creates an arbitrary object from a code.
      * The given code can use any of the following patterns, where <var>version</var> is optional:
      * <ul>
@@ -489,8 +519,8 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
      *   <li>{@code http://www.opengis.net/gml/srs/}<var>authority</var>{@code .xml#}<var>code</var></li>
      * </ul>
      *
-     * The two first formats are ambiguous when used with this {@code createObject(String)} because different kinds
-     * of objects can have the same code.
+     * The two first formats are ambiguous when used with this {@code createObject(String)} method
+     * because different kinds of objects can have the same code.
      *
      * @return The object for the given code.
      * @throws FactoryException if the object creation failed.
