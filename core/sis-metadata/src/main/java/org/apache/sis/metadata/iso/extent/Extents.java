@@ -144,7 +144,7 @@ public final class Extents extends Static {
      * If the given {@code Extent} object contains more than one vertical extent, then this method
      * performs a choice based on the vertical datum and the unit of measurement:
      *
-     * <ul>
+     * <ul class="verbose">
      *   <li><p><b>Choice based on vertical datum</b><br>
      *   Only the extents associated (indirectly, through their CRS) to the same non-null {@link VerticalDatumType}
      *   will be taken in account. If all datum types are null, then this method conservatively uses only the first
