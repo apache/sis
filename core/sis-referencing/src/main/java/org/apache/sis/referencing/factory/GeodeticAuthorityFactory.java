@@ -75,8 +75,8 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * This method may return {@code null} if it can not obtain this information, for example because
      * the connection to a database is not available.
      *
-     * <div class="note"><b>Example</b>
-     * A factory that create coordinate reference system objects from EPSG codes could return
+     * <div class="note"><b>Example:</b>
+     * a factory that create coordinate reference system objects from EPSG codes could return
      * a citation like below:
      *
      * {@preformat text
@@ -111,21 +111,21 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * but not always.</p>
      *
      * <div class="note"><b>Examples:</b>
-     * <ul>
-     *   <li><p>The {@link org.apache.sis.referencing.factory.sql.EPSGFactory} authority identifier is {@code "EPSG"}
+     * <ul class="verbose">
+     *   <li>The {@link org.apache.sis.referencing.factory.sql.EPSGFactory} authority identifier is {@code "EPSG"}
      *       and its {@code getCodeSpaces()} method returns a set containing {@code "EPSG"}. So in this example,
      *       authority and namespace match. That namespace value means that {@code EPSGFactory.createFoo(String)}
-     *       methods accept both {@code "EPSG::4326"} (case-insensitive) and {@code "4326"} codes as argument.</p></li>
+     *       methods accept both {@code "EPSG::4326"} (case-insensitive) and {@code "4326"} codes as argument.</li>
      *
-     *   <li><p>The {@link org.apache.sis.referencing.factory.sql.EPSGDataAccess} authority identifier is {@code "EPSG"}
+     *   <li>The {@link org.apache.sis.referencing.factory.sql.EPSGDataAccess} authority identifier is {@code "EPSG"}
      *       but its {@code getCodeSpaces()} method returns an empty set. This means that despite the EPSG authority,
      *       {@code EPSGDataAccess.createFoo(String)} methods accept only codes like {@code "4326"} without
-     *       {@code "EPSG:"} prefix (the reason is that {@code EPSGDataAccess} is not expected to be used directly).</p></li>
+     *       {@code "EPSG:"} prefix (the reason is that {@code EPSGDataAccess} is not expected to be used directly).</li>
      *
-     *   <li><p>The {@link CommonAuthorityFactory} authority identifier is {@code "OGC"} but its {@code getCodeSpaces()}
+     *   <li>The {@link CommonAuthorityFactory} authority identifier is {@code "OGC"} but its {@code getCodeSpaces()}
      *       method returns a set containing {@code "CRS"}, {@code "AUTO"} and {@code "AUTO2"}.
      *       While OGC is the authority defining those namespaces, the {@code "OGC"} string itself
-     *       is not used as a namespace for CRS objects (in theory — in practice some do).</p></li>
+     *       is not used as a namespace for CRS objects (in theory — in practice some do).</li>
      * </ul></div>
      *
      * The default implementation infers the namespace from the {@linkplain #getAuthority() authority}.

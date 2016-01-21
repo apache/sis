@@ -72,24 +72,24 @@ import java.util.Objects;
  * and apply the interpolated translations on coordinate values in their own step between above steps 3 and 4.
  *
  * <div class="note"><b>Use cases:</b>
- * <ul>
- *   <li><p><b>Datum shift by geographic translations</b><br>
+ * <ul class="verbose">
+ *   <li><b>Datum shift by geographic translations</b><br>
  *   NADCON and NTv2 grids are defined with longitude (<var>λ</var>) and latitude (<var>φ</var>) inputs in angular
  *   <em>degrees</em> and give (<var>Δλ</var>, <var>Δφ</var>) translations in angular <em>seconds</em>.
  *   However SIS stores the translation values in units of grid cell rather than angular seconds.
  *   The translations will be applied by {@link org.apache.sis.referencing.operation.transform.InterpolatedTransform}
  *   directly on the given (<var>λ</var>,<var>φ</var>) coordinates.
- *   </p></li>
+ *   </li>
  *
- *   <li><p><b>Datum shift by geocentric translations</b><br>
+ *   <li><b>Datum shift by geocentric translations</b><br>
  *   France interpolation grid is defined with longitude (<var>λ</var>) and latitude (<var>φ</var>) inputs in angular
  *   <em>degrees</em> and gives (<var>ΔX</var>, <var>ΔY</var>, <var>ΔZ</var>) geocentric translations in <em>metres</em>.
  *   Those translations will not be added directly to the given (<var>λ</var>,<var>φ</var>) coordinates since there is
  *   a geographic/geocentric conversion in the middle
  *   (see {@link org.apache.sis.referencing.operation.transform.InterpolatedGeocentricTransform}).
- *   </p></li>
+ *   </li>
  *
- *   <li><p><b>Localization grid of raster data</b><br>
+ *   <li><b>Localization grid of raster data</b><br>
  *   Some remote sensing raster data are provided with a <cite>localization grid</cite> giving pixel coordinates
  *   (e.g. latitude and longitude). This can been seen as a change from {@linkplain DefaultImageDatum image datum}
  *   to {@linkplain DefaultGeodeticDatum geodetic datum}. The coordinate transformation process can sometime be
@@ -97,7 +97,7 @@ import java.util.Objects;
  *   {@linkplain org.apache.sis.referencing.operation.builder.LinearTransformBuilder first approximation},
  *   followed by small corrections for the residual part.
  *   {@code DatumShiftGrid} can describe the small corrections part.
- *   </p></li>
+ *   </li>
  * </ul></div>
  *
  * Implementations of this class shall be immutable and thread-safe.
