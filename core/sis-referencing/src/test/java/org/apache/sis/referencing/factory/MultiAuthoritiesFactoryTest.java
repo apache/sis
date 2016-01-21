@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Set;
 import org.opengis.referencing.IdentifiedObject;
+import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.opengis.referencing.crs.CRSAuthorityFactory;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.GeocentricCRS;
@@ -203,6 +204,7 @@ public final strictfp class MultiAuthoritiesFactoryTest extends TestCase {
      * @throws FactoryException if an authority or a code is not recognized.
      */
     @Test
+    @DependsOnMethod("testGetAuthorityFactory")
     public void testCreateFromSimpleCodes() throws FactoryException {
         final Set<AuthorityFactoryMock> mock = Collections.singleton(new AuthorityFactoryMock("MOCK", "2.3"));
         final MultiAuthoritiesFactory factory = new MultiAuthoritiesFactory(mock, null, mock, null);
@@ -213,5 +215,41 @@ public final strictfp class MultiAuthoritiesFactoryTest extends TestCase {
         assertSame("Empty version", HardCodedDatum.GREENWICH, factory.createPrimeMeridian(" MoCk :: 8901"));
         assertSame("With spaces",   HardCodedCRS  .DEPTH,     factory.createVerticalCRS  (" MoCk : : 9905"));
         assertSame("Version 0",     HardCodedDatum.SPHERE,    factory.createGeodeticDatum("MOCK: 0:6047"));
+        assertEquals("Greenwich",   factory.getDescriptionText("MOCK:8901").toString());
+        try {
+            factory.createGeodeticDatum("MOCK2:4326");
+            fail("Should not have found an object from a non-existent factory.");
+        } catch (NoSuchAuthorityFactoryException e) {
+            final String message = e.getMessage();
+            assertTrue(message, message.contains("MOCK2"));
+        }
+    }
+
+    /**
+     * Tests {@code MultiAuthoritiesFactory.createFoo(String)} from codes in the
+     * {@code "urn:ogc:def:type:authority:version:code"} form.
+     *
+     * @throws FactoryException if an authority or a code is not recognized.
+     */
+    @Test
+    @DependsOnMethod("testCreateFromSimpleCodes")
+    public void testCreateFromURNs() throws FactoryException {
+        final Set<AuthorityFactoryMock> mock = Collections.singleton(new AuthorityFactoryMock("MOCK", "2.3"));
+        final MultiAuthoritiesFactory factory = new MultiAuthoritiesFactory(mock, null, mock, null);
+
+        assertSame("Straight",      HardCodedCRS  .WGS84_φλ,  factory.createGeographicCRS("urn:ogc:def:crs:MOCK::4326"));
+//      assertSame("With spaces",   HardCodedCRS  .WGS84,     factory.createGeographicCRS(" urn : ogc  : def:crs :  mock :  84 "));
+        assertSame("With version",  HardCodedDatum.WGS84,     factory.createDatum        ("urn:ogc:def:datum:mock:2.3:6326"));
+        assertSame("Empty version", HardCodedDatum.GREENWICH, factory.createObject       ("urn:ogc:def:meridian: MoCk :: 8901"));
+        assertSame("With spaces",   HardCodedCRS  .DEPTH,     factory.createVerticalCRS  (" urn : ogc : def : crs : MoCk : : 9905"));
+//      assertSame("Version 0",     HardCodedDatum.SPHERE,    factory.createGeodeticDatum("urn:ogc:def:datum:MOCK: 0 :6047"));
+        try {
+            factory.createGeographicCRS("urn:ogc:def:datum:MOCK::4326");
+            fail("Should create an object of the wrong type.");
+        } catch (NoSuchAuthorityCodeException e) {
+            final String message = e.getMessage();
+            assertTrue(message, message.contains("datum"));
+            assertTrue(message, message.contains("GeographicCRS"));
+        }
     }
 }

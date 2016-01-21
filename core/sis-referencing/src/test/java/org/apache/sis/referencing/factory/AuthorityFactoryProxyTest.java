@@ -67,7 +67,7 @@ public final strictfp class AuthorityFactoryProxyTest extends TestCase {
      * Tests {@link AuthorityFactoryProxy#getInstance(Class)}.
      */
     @Test
-    public void testGetInstanceFromType() {
+    public void testGetInstance() {
         assertEquals(ProjectedCRS.class,              AuthorityFactoryProxy.getInstance(ProjectedCRS.class)        .type);
         assertEquals(ProjectedCRS.class,              AuthorityFactoryProxy.getInstance(DefaultProjectedCRS.class) .type);
         assertEquals(GeographicCRS.class,             AuthorityFactoryProxy.getInstance(GeographicCRS.class)       .type);
@@ -83,16 +83,20 @@ public final strictfp class AuthorityFactoryProxyTest extends TestCase {
     }
 
     /**
-     * Tests {@link AuthorityFactoryProxy#getInstance(String)}.
+     * Tests {@link AuthorityFactoryProxy#cast(String)}.
      */
     @Test
-    public void testGetInstanceFromName() {
-        assertEquals(CoordinateReferenceSystem.class, AuthorityFactoryProxy.getInstance("CRS")      .type);
-        assertEquals(CoordinateSystem.class,          AuthorityFactoryProxy.getInstance("CS")       .type);
-        assertEquals(CoordinateSystemAxis.class,      AuthorityFactoryProxy.getInstance("aXis")     .type);
-        assertEquals(PrimeMeridian.class,             AuthorityFactoryProxy.getInstance("Meridian") .type);
-        assertEquals(Ellipsoid.class,                 AuthorityFactoryProxy.getInstance("ellipsoid").type);
-        assertEquals(Datum.class,                     AuthorityFactoryProxy.getInstance("datum")    .type);
+    public void testCast() {
+        final AuthorityFactoryProxy<IdentifiedObject> base = AuthorityFactoryProxy.OBJECT;
+        assertEquals(CoordinateReferenceSystem.class, base.cast("CRS")      .type);
+        assertEquals(CoordinateSystem.class,          base.cast("CS")       .type);
+        assertEquals(CoordinateSystemAxis.class,      base.cast("aXis")     .type);
+        assertEquals(PrimeMeridian.class,             base.cast("Meridian") .type);
+        assertEquals(Ellipsoid.class,                 base.cast("ellipsoid").type);
+        assertEquals(Datum.class,                     base.cast("datum")    .type);
+
+        assertEquals(GeodeticDatum.class, AuthorityFactoryProxy.GEODETIC_DATUM.cast("datum").type);
+        assertNull(AuthorityFactoryProxy.COORDINATE_SYSTEM.cast("datum"));
     }
 
     /**

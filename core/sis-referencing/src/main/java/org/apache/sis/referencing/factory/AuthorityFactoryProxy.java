@@ -29,6 +29,7 @@ import org.opengis.referencing.AuthorityFactory;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.util.FactoryException;
+import org.opengis.util.InternationalString;
 import org.apache.sis.util.resources.Errors;
 
 
@@ -172,7 +173,20 @@ abstract class AuthorityFactoryProxy<T> {
     abstract T createFromAPI(AuthorityFactory factory, String code) throws FactoryException;
 
     /**
-     * The proxy for the {@link GeodeticAuthorityFactory#createObject} method.
+     * The proxy for the {@link GeodeticAuthorityFactory#getDescriptionText(String)} method.
+     */
+    static final AuthorityFactoryProxy<InternationalString> DESCRIPTION =
+        new AuthorityFactoryProxy<InternationalString>(InternationalString.class, AuthorityFactoryIdentifier.ANY) {
+            @Override InternationalString create(GeodeticAuthorityFactory factory, String code) throws FactoryException {
+                return factory.getDescriptionText(code);
+            }
+            @Override InternationalString createFromAPI(AuthorityFactory factory, String code) throws FactoryException {
+                return factory.getDescriptionText(code);
+            }
+    };
+
+    /**
+     * The proxy for the {@link GeodeticAuthorityFactory#createObject(String)} method.
      */
     static final AuthorityFactoryProxy<IdentifiedObject> OBJECT =
         new AuthorityFactoryProxy<IdentifiedObject>(IdentifiedObject.class, AuthorityFactoryIdentifier.ANY) {
@@ -544,7 +558,8 @@ abstract class AuthorityFactoryProxy<T> {
         PARAMETER,
         UNIT,
         EXTENT,
-        OBJECT
+        OBJECT,
+        DESCRIPTION
     };
 
     /**
@@ -596,10 +611,20 @@ abstract class AuthorityFactoryProxy<T> {
      * The proxy to use for a given type declared in a URN.
      * For example in the {@code "urn:ogc:def:crs:EPSG::4326"} URN, the proxy to use is {@link #CRS}.
      *
-     * @param  type The URN type.
-     * @return The proxy for the given type, or {@code null} if none.
+     * @param  typeName The URN type.
+     * @return The proxy for the given type, or {@code null} if the given type is illegal.
      */
-    static AuthorityFactoryProxy<?> getInstance(final String type) {
-        return BY_URN_TYPE.get(type.toLowerCase(Locale.US));
+    @SuppressWarnings("unchecked")
+    final AuthorityFactoryProxy<? extends T> cast(final String typeName) {
+        final AuthorityFactoryProxy<?> c = BY_URN_TYPE.get(typeName.toLowerCase(Locale.US));
+        if (c != null) {
+            if (c.type.isAssignableFrom(type)) {
+                return this;
+            }
+            if (type.isAssignableFrom(c.type)) {
+                return (AuthorityFactoryProxy<? extends T>) c;
+            }
+        }
+        return null;
     }
 }
