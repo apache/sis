@@ -215,20 +215,6 @@ final class AuthorityFactoryIdentifier {
     }
 
     /**
-     * Returns the authority.
-     */
-    String getAuthority() {
-        return authority;
-    }
-
-    /**
-     * Returns {@code true} if this identifier is for a specific dataset version.
-     */
-    boolean hasVersion() {
-        return version != null;
-    }
-
-    /**
      * Ensures that the authority and version use shared {@link String} instances. This method is invoked only when
      * we have determined that this {@code AuthorityFactoryIdentifier} instance will be used as a key in a hash map.
      */
@@ -263,6 +249,31 @@ final class AuthorityFactoryIdentifier {
     }
 
     /**
+     * Returns {@code true} if the given identifier is for the same authority than this identifier.
+     */
+    boolean isSameAuthority(final AuthorityFactoryIdentifier other) {
+        return authority.equals(other.authority);
+    }
+
+    /**
+     * Returns the authority with the version, if any.
+     */
+    CharSequence getAuthority() {
+        CharSequence name = authority;
+        if (hasVersion()) {
+            name = Vocabulary.formatInternational(Vocabulary.Keys.Version_2, name, version);
+        }
+        return name;
+    }
+
+    /**
+     * Returns {@code true} if this identifier is for a specific dataset version.
+     */
+    boolean hasVersion() {
+        return version != null;
+    }
+
+    /**
      * Logs a message reporting a conflict between the factory identified by this {@code AuthorityFactoryIdentifier}
      * and another factory, if this instance has not already logged a warning. This method assumes that it is invoked
      * by the {@code MultiAuthoritiesFactory.getAuthorityFactory(…)} method.
@@ -272,12 +283,8 @@ final class AuthorityFactoryIdentifier {
     void logConflictWarning(final AuthorityFactory used) {
         if (!hasLoggedWarning) {
             hasLoggedWarning = true;
-            CharSequence name = authority;
-            if (version != null) {
-                name = Vocabulary.formatInternational(Vocabulary.Keys.Version_2, name, version);
-            }
             final LogRecord record = Messages.getResources(null).getLogRecord(Level.WARNING,
-                    Messages.Keys.IgnoredServiceProvider_3, TYPES[type], name, Classes.getClass(used));
+                    Messages.Keys.IgnoredServiceProvider_3, TYPES[type], getAuthority(), Classes.getClass(used));
             record.setLoggerName(Loggers.CRS_FACTORY);
             // MultiAuthoritiesFactory.getAuthorityFactory(…) is the nearest public API.
             Logging.log(MultiAuthoritiesFactory.class, "getAuthorityFactory", record);

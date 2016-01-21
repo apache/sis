@@ -236,7 +236,7 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
     /**
      * The parameter separator for codes in the {@code "AUTO(2)"} namespace.
      */
-    private static final char SEPARATOR = ',';
+    static final char SEPARATOR = ',';
 
     /**
      * The codes known to this factory, associated with their CRS type. This is set to an empty map

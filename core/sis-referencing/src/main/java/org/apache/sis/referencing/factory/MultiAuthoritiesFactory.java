@@ -124,8 +124,10 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
 
     /**
      * A bit masks identifying which providers have given us all their factories.
+     * The value {@code (1 << type)} is set when {@code MultiAuthoritiesFactory}
+     * has iterated until the end of {@code providers[type].iterator()}.
      */
-    private final AtomicInteger iterationCompleted;
+    private final AtomicInteger isIterationCompleted;
 
     /**
      * The code spaces of all factories given to the constructor, created when first requested.
@@ -186,7 +188,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
         }
         providers = ArraysExt.resize(p, length);
         factories = new ConcurrentHashMap<>();
-        iterationCompleted = new AtomicInteger(nullMask);
+        isIterationCompleted = new AtomicInteger(nullMask);
     }
 
     /**
@@ -315,7 +317,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
          * a previous call to this getAuthorityFactory(…) method, we will continue the search after skipping already
          * cached instances.
          */
-        int doneMask = iterationCompleted.get();
+        int doneMask = isIterationCompleted.get();
         final int type = request.type;
         if ((doneMask & (1 << type)) == 0) {
             if (type >= 0 && type < providers.length) {
@@ -337,7 +339,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
                              * We have no choice when ignoring the version number causes a conflict, or
                              * when the user asked for a specific version.
                              */
-                            if (factory != cached || (request.hasVersion() && request.getAuthority().equals(unversioned.getAuthority()))) {
+                            if (factory != cached || (request.hasVersion() && request.isSameAuthority(unversioned))) {
                                 final AuthorityFactoryIdentifier versioned = unversioned.versionOf(factory.getAuthority());
                                 if (versioned != unversioned) {
                                     /*
@@ -401,11 +403,11 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
              * Note that the mask values may also be modified in other threads for other providers, so we
              * need to atomically verify that the current value has not been modified before to set it.
              */
-            while (!iterationCompleted.compareAndSet(doneMask, doneMask | (1 << type))) {
-                doneMask = iterationCompleted.get();
+            while (!isIterationCompleted.compareAndSet(doneMask, doneMask | (1 << type))) {
+                doneMask = isIterationCompleted.get();
             }
         }
-        final String authority = request.getAuthority();
+        final String authority = request.getAuthority().toString();
         throw new NoSuchAuthorityFactoryException(Errors.format(Errors.Keys.UnknownAuthority_1, authority), authority);
     }
 
@@ -418,17 +420,20 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
      * @return The object from one of the authority factory specified at construction time.
      * @throws FactoryException If an error occurred while creating the object.
      */
-    private <T> T create(final AuthorityFactoryProxy<T> proxy, final String code) throws FactoryException {
+    private <T> T create(final AuthorityFactoryProxy<T> proxy, String code) throws FactoryException {
         ArgumentChecks.ensureNonNull("code", code);
-        final String authority, version;
+        final String authority;
+        String version;
         final DefinitionURI uri = DefinitionURI.parse(code);
         if (uri != null) {
             authority = uri.authority;
-            version = uri.version;
+            version   = uri.version;
+            code      = uri.code;
         } else {
             /*
-             * Usages of CharSequences.skipLeadingWhitespaces(…) and skipTrailingWhitespaces(…)
-             * below will work even if code.indexOf(…) returned -1.
+             * Separate the authority from the rest of the code. The authority is mandatory; if missing,
+             * an exception will be thrown. Note that the CharSequences.skipLeading/TrailingWhitespaces(…)
+             * methods are robust to negative index, so the code will work even if code.indexOf(…) returned -1.
              */
             int afterAuthority = code.indexOf(DefaultNameSpace.DEFAULT_SEPARATOR);
             int end = CharSequences.skipTrailingWhitespaces(code, 0, afterAuthority);
@@ -437,19 +442,41 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
                 throw new NoSuchAuthorityFactoryException(Errors.format(Errors.Keys.MissingAuthority_1, code), null);
             }
             authority = code.substring(start, end);
+            version = null;
+            /*
+             * Separate the version from the rest of the code. The version is optional. The code may have no room
+             * for version (e.g. "EPSG:4326"), or specify an empty version (e.g. "EPSG::4326"). If the version is
+             * equals to an empty string or to the "0" string, it will be considered as no version. Usage of 0 as
+             * a pseudo-version is a practice commonly found in other softwares.
+             */
             int afterVersion = code.indexOf(DefaultNameSpace.DEFAULT_SEPARATOR, ++afterAuthority);
             start = CharSequences.skipLeadingWhitespaces(code, afterAuthority, afterVersion);
             end = CharSequences.skipTrailingWhitespaces(code, start, afterVersion);
             if (start < end) {
-                version = code.substring(start, end);
-                afterVersion++;
-            } else {
-                version = null;
-                afterVersion = afterAuthority;
+                if (end - start != 1 || code.charAt(start) != '0') {
+                    version = code.substring(start, end);
+                }
             }
+            /*
+             * Separate the code from the authority and the version.
+             */
+            afterVersion = Math.max(afterAuthority, afterVersion + 1);
+            end   = CharSequences.skipTrailingWhitespaces(code, afterVersion, code.length());
+            start = CharSequences.skipLeadingWhitespaces(code, afterVersion, end);
+            code  = code.substring(start, end);
         }
-        return proxy.createFromAPI(getAuthorityFactory(
-                AuthorityFactoryIdentifier.create(proxy.factoryType, authority, version)), code);
+        /*
+         * At this point we have the code without the authority and version parts.
+         * Push back the authority part if the factory may need it. For now we do that only if the code has
+         * parameters, since interpretation of the unit parameter in "AUTO(2):42001,unit,longitude,latitude"
+         * depends on whether the authority is "AUTO" or "AUTO2". This works for now, but we may need a more
+         * rigorous approach in a future SIS version.
+         */
+        if (code.indexOf(CommonAuthorityFactory.SEPARATOR) >= 0) {
+            code = authority + DefaultNameSpace.DEFAULT_SEPARATOR + code;
+        }
+        return proxy.createFromAPI(
+                getAuthorityFactory(AuthorityFactoryIdentifier.create(proxy.factoryType, authority, version)), code);
     }
 
     /**
@@ -1069,12 +1096,12 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
     }
 
     /**
-     * Sets {@link #iterationCompleted} to {@code iterationCompleted & mask}.
+     * Sets {@link #isIterationCompleted} to {@code iterationCompleted & mask}.
      * This is used by {@link #reload()} for clearing bits.
      */
     private void applyAndMask(final int mask) {
         int value;
-        do value = iterationCompleted.get();
-        while (!iterationCompleted.compareAndSet(value, value & mask));
+        do value = isIterationCompleted.get();
+        while (!isIterationCompleted.compareAndSet(value, value & mask));
     }
 }
