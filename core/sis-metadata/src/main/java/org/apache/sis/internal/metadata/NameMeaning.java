@@ -101,6 +101,11 @@ public final class NameMeaning extends Static {
         add("UCUM");            // Unified Code for Units of Measure
         add("UNSD");            // United Nations Statistics Division
         add("USNO");            // United States Naval Observatory
+
+        // Codespaces defined by WMS specification for CRS.
+        AUTHORITIES.put(Constants.CRS, Constants.OGC);
+        AUTHORITIES.put("AUTO",        Constants.OGC);
+        AUTHORITIES.put("AUTO2",       Constants.OGC);
     }
 
     /**

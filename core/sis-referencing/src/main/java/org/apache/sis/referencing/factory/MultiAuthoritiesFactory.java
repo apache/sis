@@ -198,7 +198,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
     }
 
     /**
-     * Returns the organization or party responsible for definition and maintenance of the database.
+     * Returns the database or specification that defines the codes recognized by this factory.
      * The default implementation returns {@code null} since {@code MultiAuthoritiesFactory} is not
      * about a particular authority.
      */

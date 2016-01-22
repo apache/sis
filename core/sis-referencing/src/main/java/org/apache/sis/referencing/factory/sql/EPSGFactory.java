@@ -22,6 +22,7 @@ import java.util.Set;
 import java.sql.Connection;
 import java.sql.SQLException;
 import javax.sql.DataSource;
+import java.util.concurrent.TimeUnit;
 import org.opengis.util.NameFactory;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.crs.CRSFactory;
@@ -178,6 +179,7 @@ public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> impl
         this.mtFactory    = factory(MathTransformFactory.class, mtFactory);
         this.translator   = translator;
         this.locale       = Locale.getDefault(Locale.Category.DISPLAY);
+        super.setTimeout(10, TimeUnit.SECONDS);
     }
 
     /**
