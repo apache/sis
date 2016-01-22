@@ -107,9 +107,6 @@ import java.util.Objects;
  *
  * {@preformat xml
  *   <gmd:RS_Identifier>
- *     <gmd:code>
- *       <gco:CharacterString>4326</gco:CharacterString>
- *     </gmd:code>
  *     <gmd:authority>
  *       <gmd:CI_Citation>
  *         <gmd:title>
@@ -117,6 +114,9 @@ import java.util.Objects;
  *         </gmd:title>
  *       </gmd:CI_Citation>
  *     </gmd:authority>
+ *     <gmd:code>
+ *       <gco:CharacterString>4326</gco:CharacterString>
+ *     </gmd:code>
  *   </gmd:RS_Identifier>
  * }
  * </li></ul>

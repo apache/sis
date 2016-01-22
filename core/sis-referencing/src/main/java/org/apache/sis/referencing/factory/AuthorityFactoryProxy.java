@@ -615,7 +615,7 @@ abstract class AuthorityFactoryProxy<T> {
      * @return The proxy for the given type, or {@code null} if the given type is illegal.
      */
     @SuppressWarnings("unchecked")
-    final AuthorityFactoryProxy<? extends T> cast(final String typeName) {
+    final AuthorityFactoryProxy<? extends T> specialize(final String typeName) {
         final AuthorityFactoryProxy<?> c = BY_URN_TYPE.get(typeName.toLowerCase(Locale.US));
         if (c != null) {
             if (c.type.isAssignableFrom(type)) {

@@ -51,7 +51,7 @@ import org.apache.sis.util.iso.DefaultNameSpace;
  * The list of factories to use as delegates can be specified at construction time.
  *
  * <p>This factory requires that every codes given to a {@code createFoo(String)} method are prefixed by a namespace,
- * for example {@code "EPSG::4326"}.
+ * for example {@code "EPSG:4326"} or {@code "EPSG::4326"}.
  * When a {@code createFoo(String)} method is invoked, this class uses the <var>authority</var> part in the
  * “<var>authority</var>:<var>code</var>” argument for locating a factory capable to create a geodetic object
  * for the <var>code</var> part.  If a factory is found in the list of factories given at construction time,
@@ -62,6 +62,7 @@ import org.apache.sis.util.iso.DefaultNameSpace;
  *
  * <ul>
  *   <li>{@code "urn:ogc:def:}<var>type</var>{@code :}<var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var>{@code "}</li>
+ *   <li>{@code "http://www.opengis.net/def/}<var>type</var>{@code /}<var>authority</var>{@code /}<var>version</var>{@code /}<var>code</var>{@code "}</li>
  *   <li>{@code "http://www.opengis.net/gml/srs/}<var>authority</var>{@code .xml#}<var>code</var>{@code "}</li>
  * </ul>
  *
@@ -436,10 +437,16 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
             version    = uri.version;
             code       = uri.code;
             parameters = uri.parameters;
-            proxy      = proxy.cast(uri.type);
-            if (proxy == null) {
-                throw new NoSuchAuthorityCodeException(Errors.format(Errors.Keys.CanNotCreateObjectOfType_2,
-                        type, uri.type), uri.authority, uri.code, uri.toString());
+            proxy      = proxy.specialize(uri.type);
+            if (code == null || proxy == null) {
+                final String s = uri.toString();
+                final String message;
+                if (code == null) {
+                    message = Errors.format(Errors.Keys.MissingComponentInElement_2, s, "code");
+                } else {
+                    message = Errors.format(Errors.Keys.CanNotCreateObjectOfType_2, type, uri.type);
+                }
+                throw new NoSuchAuthorityCodeException(message, authority, code, s);
             }
         } else {
             /*
@@ -463,7 +470,8 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
             int afterVersion = code.indexOf(DefaultNameSpace.DEFAULT_SEPARATOR, ++afterAuthority);
             start = CharSequences.skipLeadingWhitespaces(code, afterAuthority, afterVersion);
             end = CharSequences.skipTrailingWhitespaces(code, start, afterVersion);
-            version = (start < end) ? code.substring(start, end) : null;
+            version = (start < end && !code.regionMatches(start, DefinitionURI.NO_VERSION, 0,
+                    DefinitionURI.NO_VERSION.length())) ? code.substring(start, end) : null;
             /*
              * Separate the code from the authority and the version.
              */
@@ -487,8 +495,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
             }
             code = buffer.toString();
         }
-        return proxy.createFromAPI(getAuthorityFactory(AuthorityFactoryIdentifier.create(
-                proxy.factoryType, authority, "0".equals(version) ? null : version)), code);
+        return proxy.createFromAPI(getAuthorityFactory(AuthorityFactoryIdentifier.create(proxy.factoryType, authority, version)), code);
     }
 
     /**
@@ -498,6 +505,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
      *   <li><var>authority</var>{@code :}<var>code</var></li>
      *   <li><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
      *   <li>{@code urn:ogc:def:}<var>type</var>{@code :}<var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
+     *   <li>{@code http://www.opengis.net/def/}<var>type</var>{@code /}<var>authority</var>{@code /}<var>version</var>{@code /}<var>code</var></li>
      *   <li>{@code http://www.opengis.net/gml/srs/}<var>authority</var>{@code .xml#}<var>code</var></li>
      * </ul>
      *
@@ -517,6 +525,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
      *   <li><var>authority</var>{@code :}<var>code</var> — note that this form is ambiguous</li>
      *   <li><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var> — note that this form is ambiguous</li>
      *   <li>{@code urn:ogc:def:}<var>type</var>{@code :}<var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
+     *   <li>{@code http://www.opengis.net/def/}<var>type</var>{@code /}<var>authority</var>{@code /}<var>version</var>{@code /}<var>code</var></li>
      *   <li>{@code http://www.opengis.net/gml/srs/}<var>authority</var>{@code .xml#}<var>code</var></li>
      * </ul>
      *
@@ -538,6 +547,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
      *   <li><var>authority</var>{@code :}<var>code</var></li>
      *   <li><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
      *   <li><code>urn:ogc:def:<b>crs</b>:</code><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
+     *   <li><code>http://www.opengis.net/def/<b>crs</b>/</code><var>authority</var>{@code /}<var>version</var>{@code /}<var>code</var></li>
      *   <li>{@code http://www.opengis.net/gml/srs/}<var>authority</var>{@code .xml#}<var>code</var></li>
      * </ul>
      *
@@ -556,6 +566,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
      *   <li><var>authority</var>{@code :}<var>code</var></li>
      *   <li><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
      *   <li><code>urn:ogc:def:<b>crs</b>:</code><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
+     *   <li><code>http://www.opengis.net/def/<b>crs</b>/</code><var>authority</var>{@code /}<var>version</var>{@code /}<var>code</var></li>
      *   <li>{@code http://www.opengis.net/gml/srs/}<var>authority</var>{@code .xml#}<var>code</var></li>
      * </ul>
      *
@@ -574,6 +585,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
      *   <li><var>authority</var>{@code :}<var>code</var></li>
      *   <li><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
      *   <li><code>urn:ogc:def:<b>crs</b>:</code><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
+     *   <li><code>http://www.opengis.net/def/<b>crs</b>/</code><var>authority</var>{@code /}<var>version</var>{@code /}<var>code</var></li>
      *   <li>{@code http://www.opengis.net/gml/srs/}<var>authority</var>{@code .xml#}<var>code</var></li>
      * </ul>
      *
@@ -592,6 +604,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
      *   <li><var>authority</var>{@code :}<var>code</var></li>
      *   <li><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
      *   <li><code>urn:ogc:def:<b>crs</b>:</code><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
+     *   <li><code>http://www.opengis.net/def/<b>crs</b>/</code><var>authority</var>{@code /}<var>version</var>{@code /}<var>code</var></li>
      *   <li>{@code http://www.opengis.net/gml/srs/}<var>authority</var>{@code .xml#}<var>code</var></li>
      * </ul>
      *
@@ -610,6 +623,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
      *   <li><var>authority</var>{@code :}<var>code</var></li>
      *   <li><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
      *   <li><code>urn:ogc:def:<b>crs</b>:</code><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
+     *   <li><code>http://www.opengis.net/def/<b>crs</b>/</code><var>authority</var>{@code /}<var>version</var>{@code /}<var>code</var></li>
      *   <li>{@code http://www.opengis.net/gml/srs/}<var>authority</var>{@code .xml#}<var>code</var></li>
      * </ul>
      *
@@ -628,6 +642,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
      *   <li><var>authority</var>{@code :}<var>code</var></li>
      *   <li><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
      *   <li><code>urn:ogc:def:<b>crs</b>:</code><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
+     *   <li><code>http://www.opengis.net/def/<b>crs</b>/</code><var>authority</var>{@code /}<var>version</var>{@code /}<var>code</var></li>
      *   <li>{@code http://www.opengis.net/gml/srs/}<var>authority</var>{@code .xml#}<var>code</var></li>
      * </ul>
      *
@@ -646,6 +661,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
      *   <li><var>authority</var>{@code :}<var>code</var></li>
      *   <li><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
      *   <li><code>urn:ogc:def:<b>crs</b>:</code><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
+     *   <li><code>http://www.opengis.net/def/<b>crs</b>/</code><var>authority</var>{@code /}<var>version</var>{@code /}<var>code</var></li>
      *   <li>{@code http://www.opengis.net/gml/srs/}<var>authority</var>{@code .xml#}<var>code</var></li>
      * </ul>
      *
@@ -664,6 +680,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
      *   <li><var>authority</var>{@code :}<var>code</var></li>
      *   <li><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
      *   <li><code>urn:ogc:def:<b>crs</b>:</code><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
+     *   <li><code>http://www.opengis.net/def/<b>crs</b>/</code><var>authority</var>{@code /}<var>version</var>{@code /}<var>code</var></li>
      *   <li>{@code http://www.opengis.net/gml/srs/}<var>authority</var>{@code .xml#}<var>code</var></li>
      * </ul>
      *
@@ -682,6 +699,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
      *   <li><var>authority</var>{@code :}<var>code</var></li>
      *   <li><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
      *   <li><code>urn:ogc:def:<b>crs</b>:</code><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
+     *   <li><code>http://www.opengis.net/def/<b>crs</b>/</code><var>authority</var>{@code /}<var>version</var>{@code /}<var>code</var></li>
      *   <li>{@code http://www.opengis.net/gml/srs/}<var>authority</var>{@code .xml#}<var>code</var></li>
      * </ul>
      *
@@ -700,6 +718,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
      *   <li><var>authority</var>{@code :}<var>code</var></li>
      *   <li><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
      *   <li><code>urn:ogc:def:<b>crs</b>:</code><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
+     *   <li><code>http://www.opengis.net/def/<b>crs</b>/</code><var>authority</var>{@code /}<var>version</var>{@code /}<var>code</var></li>
      *   <li>{@code http://www.opengis.net/gml/srs/}<var>authority</var>{@code .xml#}<var>code</var></li>
      * </ul>
      *
@@ -718,6 +737,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
      *   <li><var>authority</var>{@code :}<var>code</var></li>
      *   <li><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
      *   <li><code>urn:ogc:def:<b>datum</b>:</code><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
+     *   <li><code>http://www.opengis.net/def/<b>datum</b>/</code><var>authority</var>{@code /}<var>version</var>{@code /}<var>code</var></li>
      * </ul>
      *
      * @return The datum for the given code.
@@ -735,6 +755,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
      *   <li><var>authority</var>{@code :}<var>code</var></li>
      *   <li><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
      *   <li><code>urn:ogc:def:<b>datum</b>:</code><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
+     *   <li><code>http://www.opengis.net/def/<b>datum</b>/</code><var>authority</var>{@code /}<var>version</var>{@code /}<var>code</var></li>
      * </ul>
      *
      * @return The datum for the given code.
@@ -752,6 +773,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
      *   <li><var>authority</var>{@code :}<var>code</var></li>
      *   <li><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
      *   <li><code>urn:ogc:def:<b>datum</b>:</code><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
+     *   <li><code>http://www.opengis.net/def/<b>datum</b>/</code><var>authority</var>{@code /}<var>version</var>{@code /}<var>code</var></li>
      * </ul>
      *
      * @return The datum for the given code.
@@ -769,6 +791,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
      *   <li><var>authority</var>{@code :}<var>code</var></li>
      *   <li><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
      *   <li><code>urn:ogc:def:<b>datum</b>:</code><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
+     *   <li><code>http://www.opengis.net/def/<b>datum</b>/</code><var>authority</var>{@code /}<var>version</var>{@code /}<var>code</var></li>
      * </ul>
      *
      * @return The datum for the given code.
@@ -786,6 +809,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
      *   <li><var>authority</var>{@code :}<var>code</var></li>
      *   <li><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
      *   <li><code>urn:ogc:def:<b>datum</b>:</code><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
+     *   <li><code>http://www.opengis.net/def/<b>datum</b>/</code><var>authority</var>{@code /}<var>version</var>{@code /}<var>code</var></li>
      * </ul>
      *
      * @return The datum for the given code.
@@ -803,6 +827,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
      *   <li><var>authority</var>{@code :}<var>code</var></li>
      *   <li><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
      *   <li><code>urn:ogc:def:<b>datum</b>:</code><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
+     *   <li><code>http://www.opengis.net/def/<b>datum</b>/</code><var>authority</var>{@code /}<var>version</var>{@code /}<var>code</var></li>
      * </ul>
      *
      * @return The datum for the given code.
@@ -820,6 +845,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
      *   <li><var>authority</var>{@code :}<var>code</var></li>
      *   <li><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
      *   <li><code>urn:ogc:def:<b>ellipsoid</b>:</code><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
+     *   <li><code>http://www.opengis.net/def/<b>ellipsoid</b>/</code><var>authority</var>{@code /}<var>version</var>{@code /}<var>code</var></li>
      * </ul>
      *
      * @return The ellipsoid for the given code.
@@ -837,6 +863,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
      *   <li><var>authority</var>{@code :}<var>code</var></li>
      *   <li><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
      *   <li><code>urn:ogc:def:<b>meridian</b>:</code><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
+     *   <li><code>http://www.opengis.net/def/<b>meridian</b>/</code><var>authority</var>{@code /}<var>version</var>{@code /}<var>code</var></li>
      * </ul>
      *
      * @return The prime meridian for the given code.
@@ -870,6 +897,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
      *   <li><var>authority</var>{@code :}<var>code</var></li>
      *   <li><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
      *   <li><code>urn:ogc:def:<b>cs</b>:</code><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
+     *   <li><code>http://www.opengis.net/def/<b>cs</b>/</code><var>authority</var>{@code /}<var>version</var>{@code /}<var>code</var></li>
      * </ul>
      *
      * @return The coordinate system for the given code.
@@ -887,6 +915,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
      *   <li><var>authority</var>{@code :}<var>code</var></li>
      *   <li><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
      *   <li><code>urn:ogc:def:<b>cs</b>:</code><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
+     *   <li><code>http://www.opengis.net/def/<b>cs</b>/</code><var>authority</var>{@code /}<var>version</var>{@code /}<var>code</var></li>
      * </ul>
      *
      * @return The coordinate system for the given code.
@@ -904,6 +933,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
      *   <li><var>authority</var>{@code :}<var>code</var></li>
      *   <li><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
      *   <li><code>urn:ogc:def:<b>cs</b>:</code><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
+     *   <li><code>http://www.opengis.net/def/<b>cs</b>/</code><var>authority</var>{@code /}<var>version</var>{@code /}<var>code</var></li>
      * </ul>
      *
      * @return The coordinate system for the given code.
@@ -921,6 +951,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
      *   <li><var>authority</var>{@code :}<var>code</var></li>
      *   <li><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
      *   <li><code>urn:ogc:def:<b>cs</b>:</code><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
+     *   <li><code>http://www.opengis.net/def/<b>cs</b>/</code><var>authority</var>{@code /}<var>version</var>{@code /}<var>code</var></li>
      * </ul>
      *
      * @return The coordinate system for the given code.
@@ -938,6 +969,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
      *   <li><var>authority</var>{@code :}<var>code</var></li>
      *   <li><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
      *   <li><code>urn:ogc:def:<b>cs</b>:</code><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
+     *   <li><code>http://www.opengis.net/def/<b>cs</b>/</code><var>authority</var>{@code /}<var>version</var>{@code /}<var>code</var></li>
      * </ul>
      *
      * @return The coordinate system for the given code.
@@ -955,6 +987,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
      *   <li><var>authority</var>{@code :}<var>code</var></li>
      *   <li><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
      *   <li><code>urn:ogc:def:<b>cs</b>:</code><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
+     *   <li><code>http://www.opengis.net/def/<b>cs</b>/</code><var>authority</var>{@code /}<var>version</var>{@code /}<var>code</var></li>
      * </ul>
      *
      * @return The coordinate system for the given code.
@@ -973,6 +1006,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
      *   <li><var>authority</var>{@code :}<var>code</var></li>
      *   <li><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
      *   <li><code>urn:ogc:def:<b>cs</b>:</code><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
+     *   <li><code>http://www.opengis.net/def/<b>cs</b>/</code><var>authority</var>{@code /}<var>version</var>{@code /}<var>code</var></li>
      * </ul>
      *
      * @return The coordinate system for the given code.
@@ -991,6 +1025,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
      *   <li><var>authority</var>{@code :}<var>code</var></li>
      *   <li><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
      *   <li><code>urn:ogc:def:<b>cs</b>:</code><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
+     *   <li><code>http://www.opengis.net/def/<b>cs</b>/</code><var>authority</var>{@code /}<var>version</var>{@code /}<var>code</var></li>
      * </ul>
      *
      * @return The coordinate system for the given code.
@@ -1008,6 +1043,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
      *   <li><var>authority</var>{@code :}<var>code</var></li>
      *   <li><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
      *   <li><code>urn:ogc:def:<b>axis</b>:</code><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
+     *   <li><code>http://www.opengis.net/def/<b>axis</b>/</code><var>authority</var>{@code /}<var>version</var>{@code /}<var>code</var></li>
      * </ul>
      *
      * @return The axis for the given code.
@@ -1025,6 +1061,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
      *   <li><var>authority</var>{@code :}<var>code</var></li>
      *   <li><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
      *   <li><code>urn:ogc:def:<b>uom</b>:</code><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
+     *   <li><code>http://www.opengis.net/def/<b>uom</b>/</code><var>authority</var>{@code /}<var>version</var>{@code /}<var>code</var></li>
      * </ul>
      *
      * @return The unit of measurement for the given code.
@@ -1042,6 +1079,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
      *   <li><var>authority</var>{@code :}<var>code</var></li>
      *   <li><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
      *   <li><code>urn:ogc:def:<b>parameter</b>:</code><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
+     *   <li><code>http://www.opengis.net/def/<b>parameter</b>/</code><var>authority</var>{@code /}<var>version</var>{@code /}<var>code</var></li>
      * </ul>
      *
      * @return The parameter descriptor for the given code.
@@ -1059,6 +1097,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
      *   <li><var>authority</var>{@code :}<var>code</var></li>
      *   <li><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
      *   <li><code>urn:ogc:def:<b>method</b>:</code><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
+     *   <li><code>http://www.opengis.net/def/<b>method</b>/</code><var>authority</var>{@code /}<var>version</var>{@code /}<var>code</var></li>
      * </ul>
      *
      * @return The operation method for the given code.
@@ -1076,6 +1115,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
      *   <li><var>authority</var>{@code :}<var>code</var></li>
      *   <li><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
      *   <li><code>urn:ogc:def:<b>coordinateOperation</b>:</code><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
+     *   <li><code>http://www.opengis.net/def/<b>coordinateOperation</b>/</code><var>authority</var>{@code /}<var>version</var>{@code /}<var>code</var></li>
      * </ul>
      *
      * @return The operation for the given code.
