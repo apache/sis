@@ -149,7 +149,7 @@ public final class CRS extends Static {
         final String authority;
         final String value;
         final DefinitionURI uri = DefinitionURI.parse(code);
-        if (uri != null) {
+        if (uri != null && uri.code != null) {
             final String type = uri.type;
             if (type != null && !type.equalsIgnoreCase("crs")) {
                 throw new NoSuchIdentifierException(Errors.format(Errors.Keys.UnknownType_1, type), type);

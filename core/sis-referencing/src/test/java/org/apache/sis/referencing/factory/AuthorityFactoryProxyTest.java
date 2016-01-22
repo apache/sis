@@ -83,20 +83,20 @@ public final strictfp class AuthorityFactoryProxyTest extends TestCase {
     }
 
     /**
-     * Tests {@link AuthorityFactoryProxy#cast(String)}.
+     * Tests {@link AuthorityFactoryProxy#specialize(String)}.
      */
     @Test
-    public void testCast() {
+    public void testSpecialize() {
         final AuthorityFactoryProxy<IdentifiedObject> base = AuthorityFactoryProxy.OBJECT;
-        assertEquals(CoordinateReferenceSystem.class, base.cast("CRS")      .type);
-        assertEquals(CoordinateSystem.class,          base.cast("CS")       .type);
-        assertEquals(CoordinateSystemAxis.class,      base.cast("aXis")     .type);
-        assertEquals(PrimeMeridian.class,             base.cast("Meridian") .type);
-        assertEquals(Ellipsoid.class,                 base.cast("ellipsoid").type);
-        assertEquals(Datum.class,                     base.cast("datum")    .type);
+        assertEquals(CoordinateReferenceSystem.class, base.specialize("CRS")      .type);
+        assertEquals(CoordinateSystem.class,          base.specialize("CS")       .type);
+        assertEquals(CoordinateSystemAxis.class,      base.specialize("aXis")     .type);
+        assertEquals(PrimeMeridian.class,             base.specialize("Meridian") .type);
+        assertEquals(Ellipsoid.class,                 base.specialize("ellipsoid").type);
+        assertEquals(Datum.class,                     base.specialize("datum")    .type);
 
-        assertEquals(GeodeticDatum.class, AuthorityFactoryProxy.GEODETIC_DATUM.cast("datum").type);
-        assertNull(AuthorityFactoryProxy.COORDINATE_SYSTEM.cast("datum"));
+        assertEquals(GeodeticDatum.class, AuthorityFactoryProxy.GEODETIC_DATUM.specialize("datum").type);
+        assertNull(AuthorityFactoryProxy.COORDINATE_SYSTEM.specialize("datum"));
     }
 
     /**

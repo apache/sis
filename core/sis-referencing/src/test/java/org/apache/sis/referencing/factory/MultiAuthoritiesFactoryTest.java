@@ -270,7 +270,8 @@ public final strictfp class MultiAuthoritiesFactoryTest extends TestCase {
         final Set<AuthorityFactoryMock> mock = Collections.singleton(new AuthorityFactoryMock("MOCK", "2.3"));
         final MultiAuthoritiesFactory factory = new MultiAuthoritiesFactory(mock, mock, mock, null);
 
-        assertSame("Straight",      HardCodedCRS  .WGS84_φλ,  factory.createGeographicCRS("http://www.opengis.net/gml/srs/mock.xml#4326"));
+        assertSame("HTTP",          HardCodedCRS  .WGS84_φλ,  factory.createGeographicCRS("http://www.opengis.net/def/crs/mock/0/4326"));
+        assertSame("GML",           HardCodedCRS  .WGS84_φλ,  factory.createObject       ("http://www.opengis.net/gml/srs/mock.xml#4326"));
         assertSame("With spaces",   HardCodedCRS  .WGS84,     factory.createGeographicCRS("http://www.opengis.net/gml/srs/ mock.xml # 84 "));
         assertSame("Mixed case",    HardCodedCRS  .DEPTH,     factory.createVerticalCRS  ("HTTP://www.OpenGIS.net/GML/SRS/MoCk.xml#9905"));
         try {

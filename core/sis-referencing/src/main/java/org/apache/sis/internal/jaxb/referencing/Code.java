@@ -103,7 +103,7 @@ public final class Code {
         Citation authority = null;
         String version = null, cs = codeSpace;
         final DefinitionURI parsed = DefinitionURI.parse(c);
-        if (parsed != null) {
+        if (parsed != null && parsed.code != null) {
             /*
              * Case where the URN has been successfully parsed. The OGC's URN contains an "authority" component,
              * which we take as the Identifier.codeSpace value (not Identifier.authority despite what the names

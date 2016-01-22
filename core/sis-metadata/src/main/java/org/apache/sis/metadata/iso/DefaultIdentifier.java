@@ -50,7 +50,10 @@ import org.apache.sis.internal.util.Citations;
  * one except for the {@code "MD_"} prefix. Example:
  *
  * {@preformat xml
- *   <gmd:MD_Identifier>
+ *   <gmd:MD_Identifier
+ *     <gmd:code>
+ *       <gco:CharacterString>4326</gco:CharacterString>
+ *     </gmd:code>
  *     <gmd:authority>
  *       <gmd:CI_Citation>
  *         <gmd:title>
@@ -58,9 +61,6 @@ import org.apache.sis.internal.util.Citations;
  *         </gmd:title>
  *       </gmd:CI_Citation>
  *     </gmd:authority>
- *     <gmd:code>
- *       <gco:CharacterString>4326</gco:CharacterString>
- *     </gmd:code>
  *   </gmd:MD_Identifier>
  * }
  *
