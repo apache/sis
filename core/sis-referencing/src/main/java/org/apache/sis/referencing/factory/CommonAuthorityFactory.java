@@ -313,7 +313,7 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
                 }
                 if (!isRecognized) {
                     throw new NoSuchAuthorityCodeException(Errors.format(Errors.Keys.UnknownAuthority_1,
-                            CharSequences.trimWhitespaces(code.substring(0, s))), Constants.OGC, code);
+                            CharSequences.trimWhitespaces(code, 0, s)), Constants.OGC, code);
                 }
             }
         }

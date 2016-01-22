@@ -19,6 +19,7 @@ package org.apache.sis.internal.util;
 import java.util.Map;
 import java.util.Collections;
 
+import org.apache.sis.util.CharSequences;
 import static org.apache.sis.util.CharSequences.*;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 import static org.apache.sis.internal.util.Utilities.appendUnicodeIdentifier;
@@ -411,12 +412,12 @@ public final class DefinitionURI {
             }
             // TODO: For now do nothing since PATHS is a singleton. However if a future SIS version
             //       defines more PATHS entries, then we should replace here the 'paths' reference by
-            //       a new Collection.singletonMap containing only the entry of interest.
+            //       a new Collections.singletonMap containing only the entry of interest.
         }
         for (final Map.Entry<String,String> entry : paths.entrySet()) {
             final String path = entry.getValue();
             if (url.regionMatches(true, lower, path, 0, path.length())) {
-                lower += path.length();
+                lower = CharSequences.skipLeadingWhitespaces(url, lower + path.length(), url.length());
                 if (authority == null) {
                     authority = url.substring(lower, skipIdentifierPart(url, lower));
                 } else if (!url.regionMatches(true, lower, authority, 0, authority.length())) {

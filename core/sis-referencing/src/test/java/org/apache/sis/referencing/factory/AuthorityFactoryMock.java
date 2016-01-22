@@ -18,7 +18,7 @@ package org.apache.sis.referencing.factory;
 
 import java.util.Set;
 import java.util.LinkedHashSet;
-import org.opengis.util.FactoryException;
+import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
@@ -26,13 +26,17 @@ import org.opengis.referencing.crs.CRSAuthorityFactory;
 import org.opengis.referencing.crs.GeocentricCRS;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.VerticalCRS;
+import org.opengis.referencing.cs.CSAuthorityFactory;
 import org.opengis.referencing.datum.DatumAuthorityFactory;
 import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.referencing.datum.PrimeMeridian;
 import org.opengis.referencing.datum.VerticalDatum;
 import org.opengis.util.InternationalString;
+import javax.measure.unit.Unit;
 import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.internal.simple.SimpleCitation;
+import org.apache.sis.measure.Units;
+import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.referencing.datum.HardCodedDatum;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 
@@ -48,7 +52,7 @@ import static org.junit.Assert.*;
  * @module
  */
 public final strictfp class AuthorityFactoryMock extends GeodeticAuthorityFactory
-        implements CRSAuthorityFactory, DatumAuthorityFactory
+        implements CRSAuthorityFactory, CSAuthorityFactory, DatumAuthorityFactory
 {
     /**
      * The authority.
@@ -107,9 +111,11 @@ public final strictfp class AuthorityFactoryMock extends GeodeticAuthorityFactor
 
     /**
      * Returns the geodetic object for the given code.
+     *
+     * @throws NoSuchAuthorityCodeException if the given code is unknown.
      */
     @Override
-    public IdentifiedObject createObject(final String code) throws FactoryException {
+    public IdentifiedObject createObject(final String code) throws NoSuchAuthorityCodeException {
         switch (Integer.parseInt(trimNamespace(code))) {
             case   84: return HardCodedCRS.WGS84;
             case 4326: return HardCodedCRS.WGS84_φλ;
@@ -126,6 +132,35 @@ public final strictfp class AuthorityFactoryMock extends GeodeticAuthorityFactor
             case 6612: return HardCodedDatum.JGD2000;
             case 6047: return HardCodedDatum.SPHERE;
             case 5100: return HardCodedDatum.MEAN_SEA_LEVEL;
+            default: throw new NoSuchAuthorityCodeException(code, authority.getTitle().toString(), code);
+        }
+    }
+
+    /**
+     * Returns the unit of measurement for the given code.
+     *
+     * @return The unit of measurement.
+     * @throws NoSuchAuthorityCodeException if the given code is unknown.
+     */
+    @Override
+    public Unit<?> createUnit(final String code) throws NoSuchAuthorityCodeException {
+        final Unit<?> unit = Units.valueOfEPSG(Integer.parseInt(trimNamespace(code)));
+        if (unit == null) {
+            throw new NoSuchAuthorityCodeException(code, authority.getTitle().toString(), code);
+        }
+        return unit;
+    }
+
+    /**
+     * Returns the spatial extent for the given code.
+     *
+     * @return The spatial extent.
+     * @throws NoSuchAuthorityCodeException if the given code is unknown.
+     */
+    @Override
+    public Extent createExtent(final String code) throws NoSuchAuthorityCodeException {
+        switch (Integer.parseInt(trimNamespace(code))) {
+            case 1262: return Extents.WORLD;
             default: throw new NoSuchAuthorityCodeException(code, authority.getTitle().toString(), code);
         }
     }

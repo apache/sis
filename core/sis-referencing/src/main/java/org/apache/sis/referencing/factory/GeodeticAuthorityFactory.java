@@ -1195,8 +1195,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
                         s = n;
                     }
                     final int length = code.length();
-                    s = CharSequences.skipLeadingWhitespaces(code, s+1, length);
-                    return code.substring(s, CharSequences.skipTrailingWhitespaces(code, s, length));
+                    return CharSequences.trimWhitespaces(code, s+1, length).toString();
                 }
             }
         }

@@ -427,15 +427,16 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
      */
     private <T> T create(AuthorityFactoryProxy<? extends T> proxy, String code) throws FactoryException {
         ArgumentChecks.ensureNonNull("code", code);
-        final String authority;
-        String version;
+        final String authority, version;
+        final String[] parameters;
         final DefinitionURI uri = DefinitionURI.parse(code);
         if (uri != null) {
             final Class<? extends T> type = proxy.type;
-            authority = uri.authority;
-            version   = uri.version;
-            code      = uri.code;
-            proxy     = proxy.cast(uri.type);
+            authority  = uri.authority;
+            version    = uri.version;
+            code       = uri.code;
+            parameters = uri.parameters;
+            proxy      = proxy.cast(uri.type);
             if (proxy == null) {
                 throw new NoSuchAuthorityCodeException(Errors.format(Errors.Keys.CanNotCreateObjectOfType_2,
                         type, uri.type), uri.authority, uri.code, uri.toString());
@@ -453,7 +454,6 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
                 throw new NoSuchAuthorityFactoryException(Errors.format(Errors.Keys.MissingAuthority_1, code), null);
             }
             authority = code.substring(start, end);
-            version = null;
             /*
              * Separate the version from the rest of the code. The version is optional. The code may have no room
              * for version (e.g. "EPSG:4326"), or specify an empty version (e.g. "EPSG::4326"). If the version is
@@ -463,18 +463,12 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
             int afterVersion = code.indexOf(DefaultNameSpace.DEFAULT_SEPARATOR, ++afterAuthority);
             start = CharSequences.skipLeadingWhitespaces(code, afterAuthority, afterVersion);
             end = CharSequences.skipTrailingWhitespaces(code, start, afterVersion);
-            if (start < end) {
-                if (end - start != 1 || code.charAt(start) != '0') {
-                    version = code.substring(start, end);
-                }
-            }
+            version = (start < end) ? code.substring(start, end) : null;
             /*
              * Separate the code from the authority and the version.
              */
-            afterVersion = Math.max(afterAuthority, afterVersion + 1);
-            end   = CharSequences.skipTrailingWhitespaces(code, afterVersion, code.length());
-            start = CharSequences.skipLeadingWhitespaces(code, afterVersion, end);
-            code  = code.substring(start, end);
+            code = CharSequences.trimWhitespaces(code, Math.max(afterAuthority, afterVersion + 1), code.length()).toString();
+            parameters = null;
         }
         /*
          * At this point we have the code without the authority and version parts.
@@ -483,11 +477,18 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
          * depends on whether the authority is "AUTO" or "AUTO2". This works for now, but we may need a more
          * rigorous approach in a future SIS version.
          */
-        if (code.indexOf(CommonAuthorityFactory.SEPARATOR) >= 0) {
-            code = authority + DefaultNameSpace.DEFAULT_SEPARATOR + code;
+        if (parameters != null || code.indexOf(CommonAuthorityFactory.SEPARATOR) >= 0) {
+            final StringBuilder buffer = new StringBuilder(authority.length() + code.length() + 1)
+                    .append(authority).append(DefaultNameSpace.DEFAULT_SEPARATOR).append(code);
+            if (parameters != null) {
+                for (final String p : parameters) {
+                    buffer.append(CommonAuthorityFactory.SEPARATOR).append(p);
+                }
+            }
+            code = buffer.toString();
         }
-        return proxy.createFromAPI(
-                getAuthorityFactory(AuthorityFactoryIdentifier.create(proxy.factoryType, authority, version)), code);
+        return proxy.createFromAPI(getAuthorityFactory(AuthorityFactoryIdentifier.create(
+                proxy.factoryType, authority, "0".equals(version) ? null : version)), code);
     }
 
     /**
