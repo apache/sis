@@ -355,6 +355,6 @@ public final strictfp class CommonAuthorityFactoryTest extends TestCase {
                 "    ANGLEUNIT[“degree”, 0.017453292519943295],\n" +
                 "  AREA[“World”],\n" +
                 "  BBOX[-90.00, -180.00, 90.00, 180.00],\n" +
-                "  ID[“CRS”, 84, CITATION[“OGC”]]]", crs);
+                "  ID[“CRS”, 84, CITATION[“OGC”], URI[“urn:ogc:def:crs:OGC::84”]]]", crs);  // TODO: URI needs tuning.
     }
 }

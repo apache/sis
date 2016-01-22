@@ -127,9 +127,9 @@ public strictfp class IdentifiedObjectMock implements IdentifiedObject, Identifi
     }
 
     /**
-     * Returns the identifier version ({@code null} for now).
+     * Returns the namespace version ({@code null} for now).
      *
-     * @return The identifier version.
+     * @return The namespace version.
      */
     @Override
     public final String getVersion() {

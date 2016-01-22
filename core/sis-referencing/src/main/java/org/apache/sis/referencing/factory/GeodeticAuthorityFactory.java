@@ -71,7 +71,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
     }
 
     /**
-     * Returns the organization or party responsible for definition and maintenance of the database.
+     * Returns the database or specification that defines the codes recognized by this factory.
      * This method may return {@code null} if it can not obtain this information, for example because
      * the connection to a database is not available.
      *
@@ -122,10 +122,9 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      *       {@code EPSGDataAccess.createFoo(String)} methods accept only codes like {@code "4326"} without
      *       {@code "EPSG:"} prefix (the reason is that {@code EPSGDataAccess} is not expected to be used directly).</li>
      *
-     *   <li>The {@link CommonAuthorityFactory} authority identifier is {@code "OGC"} but its {@code getCodeSpaces()}
-     *       method returns a set containing {@code "CRS"}, {@code "AUTO"} and {@code "AUTO2"}.
-     *       While OGC is the authority defining those namespaces, the {@code "OGC"} string itself
-     *       is not used as a namespace for CRS objects (in theory — in practice some do).</li>
+     *   <li>The {@link CommonAuthorityFactory} authority identifiers are ISO 19128 and OGC 06-042 (the WMS specification)
+     *       but its {@code getCodeSpaces()} method returns a set containing {@code "CRS"}, {@code "AUTO"} and {@code "AUTO2"}.
+     *       While ISO 19128 is defined as the first authority, the namespace is actually defined by OGC.</li>
      * </ul></div>
      *
      * The default implementation infers the namespace from the {@linkplain #getAuthority() authority}.

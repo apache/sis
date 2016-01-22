@@ -650,7 +650,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
     }
 
     /**
-     * Returns the organization or party responsible for definition and maintenance of the underlying database.
+     * Returns the database or specification that defines the codes recognized by this factory.
      * The default implementation performs the following steps:
      * <ul>
      *   <li>Returns the cached value if it exists.</li>

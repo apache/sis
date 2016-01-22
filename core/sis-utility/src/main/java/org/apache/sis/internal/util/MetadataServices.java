@@ -17,6 +17,7 @@
 package org.apache.sis.internal.util;
 
 import org.opengis.metadata.citation.Citation;
+import org.apache.sis.internal.simple.CitationConstant;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.system.OptionalDependency;
 
@@ -28,7 +29,7 @@ import org.apache.sis.internal.system.OptionalDependency;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.6
- * @version 0.6
+ * @version 0.7
  * @module
  */
 public class MetadataServices extends OptionalDependency {
@@ -95,7 +96,7 @@ public class MetadataServices extends OptionalDependency {
      * @param  name The name of one of the citation constants defined in the {@code Citations} class.
      * @return The requested citation, or {@code null} if the {@code sis-metadata} module is not available.
      */
-    public Citation getCitationConstant(final String name) {
+    public CitationConstant getCitationConstant(final String name) {
         return null;
     }
 

@@ -336,9 +336,23 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
     }
 
     /**
-     * Returns the authority for this EPSG database. The returned citation contains the database version
+     * Returns the authority for this EPSG dataset. The returned citation contains the database version
      * in the {@linkplain Citation#getEdition() edition} attribute, together with date of last update in
      * the {@linkplain Citation#getEditionDate() edition date}.
+     * Example (the exact content will vary with Apache SIS versions, JDBC driver and EPSG dataset versions):
+     *
+     * {@preformat text
+     *   Citation
+     *   ├─ Title ……………………………………………………… EPSG Geodetic Parameter Dataset
+     *   ├─ Identifier ………………………………………… EPSG
+     *   ├─ Online resource (1 of 2)
+     *   │  ├─ Linkage ………………………………………… http://epsg-registry.org/
+     *   │  └─ Function ……………………………………… Browse
+     *   └─ Online resource (2 of 2)
+     *      ├─ Linkage ………………………………………… jdbc:derby:/my/path/to/SIS_DATA/Databases/SpatialMetadata
+     *      ├─ Description ……………………………… EPSG dataset version 8.8 on “Apache Derby Embedded JDBC Driver” version 10.12.
+     *      └─ Function ……………………………………… Connection
+     * }
      */
     @Override
     public synchronized Citation getAuthority() {
@@ -376,6 +390,9 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
              *    Linkage:      jdbc:derby:/my/path/to/SIS_DATA/Databases/SpatialMetadata
              *    Function:     Connection
              *    Description:  EPSG dataset version 8.8 on “Apache Derby Embedded JDBC Driver” version 10.12.
+             *
+             * TODO: A future version should use Citations.EPSG as a template.
+             *       See the "EPSG" case in ServiceForUtility.createCitation(String).
              */
             final DatabaseMetaData metadata  = connection.getMetaData();
 addURIs:    for (int i=0; ; i++) {

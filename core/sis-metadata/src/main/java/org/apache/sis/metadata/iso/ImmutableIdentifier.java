@@ -142,25 +142,7 @@ public class ImmutableIdentifier extends FormattableObject implements Identifier
     private static final long serialVersionUID = -7681717592582493409L;
 
     /**
-     * Identifier code or name, optionally from a controlled list or pattern defined by a code space.
-     *
-     * @see #getCode()
-     */
-    @XmlElement(required = true)
-    private final String code;
-
-    /**
-     * Name or identifier of the person or organization responsible for namespace, or
-     * {@code null} if not available. This is often an abbreviation of the authority name.
-     *
-     * @see #getCodeSpace()
-     */
-    @XmlElement(required = true)
-    private final String codeSpace;
-
-    /**
-     * Organization or party responsible for definition and maintenance of the code space or code,
-     * or {@code null} if not available.
+     * The person or party responsible for maintenance of the namespace, or {@code null} if not available.
      *
      * @see #getAuthority()
      */
@@ -168,11 +150,26 @@ public class ImmutableIdentifier extends FormattableObject implements Identifier
     private final Citation authority;
 
     /**
-     * Identifier of the version of the associated code space or code as specified
-     * by the code space or code authority, or {@code null} if not available. This
-     * version is included only when the {@linkplain #getCode() code} uses versions.
-     * When appropriate, the edition is identified by the effective date, coded using
-     * ISO 8601 date format.
+     * Alphanumeric value identifying an instance in the namespace.
+     *
+     * @see #getCode()
+     */
+    @XmlElement(required = true)
+    private final String code;
+
+    /**
+     * Identifier or namespace in which the code is valid, or {@code null} if not available.
+     * This is often an abbreviation of the authority name.
+     *
+     * @see #getCodeSpace()
+     */
+    @XmlElement(required = true)
+    private final String codeSpace;
+
+    /**
+     * Version identifier for the namespace, as specified by the code authority.
+     * This version is included only when the {@linkplain #getCode code} uses versions.
+     * When appropriate, the edition is identified by the effective date, coded using ISO 8601 date format.
      *
      * @see #getVersion()
      */
@@ -204,14 +201,12 @@ public class ImmutableIdentifier extends FormattableObject implements Identifier
      * Creates a new identifier from the specified code and authority.
      *
      * @param authority
-     *          Organization or party responsible for definition and maintenance of the code
-     *          space or code, or {@code null} if not available.
+     *          The person or party responsible for maintenance of the namespace, or {@code null} if not available.
      * @param codeSpace
-     *          Name or identifier of the person or organization responsible for namespace, or
-     *          {@code null} if not available. This is often an abbreviation of the authority name.
+     *          Identifier or namespace in which the code is valid, or {@code null} if not available.
+     *          This is often an abbreviation of the authority name.
      * @param code
-     *          Identifier code or name, optionally from a controlled list or pattern defined by
-     *          a code space. The code can not be null.
+     *          Alphanumeric value identifying an instance in the namespace. The code can not be null.
      */
     public ImmutableIdentifier(final Citation authority, final String codeSpace, final String code) {
         this(authority, codeSpace, code, null, null);
@@ -222,17 +217,14 @@ public class ImmutableIdentifier extends FormattableObject implements Identifier
      * with an optional version number and description.
      *
      * @param authority
-     *          Organization or party responsible for definition and maintenance of the code
-     *          space or code, or {@code null} if not available.
+     *          The person or party responsible for maintenance of the namespace, or {@code null} if not available.
      * @param codeSpace
-     *          Name or identifier of the person or organization responsible for namespace, or
-     *          {@code null} if not available. This is often an abbreviation of the authority name.
+     *          Identifier or namespace in which the code is valid, or {@code null} if not available.
+     *          This is often an abbreviation of the authority name.
      * @param code
-     *          Identifier code or name, optionally from a controlled list or pattern defined by
-     *          a code space. The code can not be null.
+     *          Alphanumeric value identifying an instance in the namespace. The code can not be null.
      * @param version
-     *          The version of the associated code space or code as specified by the code authority,
-     *          or {@code null} if none.
+     *          The version identifier for the namespace as specified by the code authority, or {@code null} if none.
      * @param description
      *          Natural language description of the meaning of the code value, or {@code null} if none.
      */
@@ -385,37 +377,7 @@ public class ImmutableIdentifier extends FormattableObject implements Identifier
     }
 
     /**
-     * Identifier code or name, optionally from a controlled list or pattern.
-     *
-     * <div class="note"><b>Example:</b> {@code "4326"}.</div>
-     *
-     * @return The code, never {@code null}.
-     *
-     * @see org.apache.sis.referencing.NamedIdentifier#tip()
-     */
-    @Override
-    public String getCode() {
-        return code;
-    }
-
-    /**
-     * Name or identifier of the person or organization responsible for namespace.
-     * This is often the {@linkplain #getAuthority() authority}'s abbreviation, but not necessarily.
-     *
-     * <div class="note"><b>Example:</b> {@code "EPSG"}.</div>
-     *
-     * @return The code space, or {@code null} if not available.
-     *
-     * @see org.apache.sis.referencing.NamedIdentifier#head()
-     * @see org.apache.sis.referencing.NamedIdentifier#scope()
-     */
-    @Override
-    public String getCodeSpace() {
-        return codeSpace;
-    }
-
-    /**
-     * Organization or party responsible for definition and maintenance of the {@linkplain #getCode() code}.
+     * The person or party responsible for maintenance of the namespace.
      * The organization's abbreviation is often the same than this identifier {@linkplain #getCodeSpace() code space},
      * but not necessarily.
      *
@@ -427,13 +389,43 @@ public class ImmutableIdentifier extends FormattableObject implements Identifier
     }
 
     /**
-     * Identifier of the version of the associated code space or code, as specified by the code authority.
-     * This version is included only when the {@linkplain #getCode() code} uses versions. When appropriate,
-     * the edition is identified by the effective date, coded using ISO 8601 date format.
+     * Alphanumeric value identifying an instance in the namespace.
+     *
+     * <div class="note"><b>Example:</b> {@code "4326"}.</div>
+     *
+     * @return Value identifying an instance in the namespace (never {@code null}).
+     *
+     * @see org.apache.sis.referencing.NamedIdentifier#tip()
+     */
+    @Override
+    public String getCode() {
+        return code;
+    }
+
+    /**
+     * Identifier or namespace in which the code is valid.
+     * This is often the {@linkplain #getAuthority() authority}'s abbreviation, but not necessarily.
+     *
+     * <div class="note"><b>Example:</b> {@code "EPSG"}.</div>
+     *
+     * @return Identifier or namespace in which the code is valid, or {@code null} if not available.
+     *
+     * @see org.apache.sis.referencing.NamedIdentifier#head()
+     * @see org.apache.sis.referencing.NamedIdentifier#scope()
+     */
+    @Override
+    public String getCodeSpace() {
+        return codeSpace;
+    }
+
+    /**
+     * The version identifier for the namespace, as specified by the code authority.
+     * This version is included only when the {@linkplain #getCode() code} uses versions.
+     * When appropriate, the edition is identified by the effective date, coded using ISO 8601 date format.
      *
      * <div class="note"><b>Example:</b> the version of the underlying EPSG database.</div>
      *
-     * @return The version, or {@code null} if not available.
+     * @return The version identifier for the namespace, or {@code null} if none.
      */
     @Override
     public String getVersion() {
@@ -629,15 +621,7 @@ public class ImmutableIdentifier extends FormattableObject implements Identifier
         /** Formats the URI. */
         @Override
         protected String formatTo(final Formatter formatter) {
-            final StringBuilder buffer = new StringBuilder(DefinitionURI.PREFIX)
-                    .append(DefinitionURI.SEPARATOR).append(type)
-                    .append(DefinitionURI.SEPARATOR).append(codeSpace)
-                    .append(DefinitionURI.SEPARATOR);
-            if (version != null) {
-                buffer.append(version);
-            }
-            buffer.append(DefinitionURI.SEPARATOR).append(code);
-            formatter.append(buffer.toString(), null);
+            formatter.append(DefinitionURI.format(type, codeSpace, version, code), null);
             return WKTKeywords.URI;
         }
     }

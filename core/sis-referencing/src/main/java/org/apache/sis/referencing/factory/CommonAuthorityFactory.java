@@ -264,12 +264,16 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
     }
 
     /**
-     * Returns the organization responsible for definition of the CRS codes recognized by this factory.
-     * The authority for this factory is the <cite>Open Geospatial Consortium</cite>.
+     * Returns the specification that defines the codes recognized by this factory. The definitive source
+     * for this factory is ISO 19128: <cite>Geographic Information — Web map server interface</cite>,
+     * also available as the OGC <a href="http://www.opengeospatial.org/standards/wms">Web Map Service</a> (WMS)
+     * specification. However this method returns OGC as the authority since it is the authority reported in URN
+     * (for example {@code "urn:ogc:def:crs:OGC:1.3:CRS84"}).
      *
-     * @return The OGC authority.
+     * @return The <cite>"Identifiers in OGC namespace"</cite> authority.
      *
      * @see Citations#OGC
+     * @see Citations#ISO_19128
      */
     @Override
     public Citation getAuthority() {

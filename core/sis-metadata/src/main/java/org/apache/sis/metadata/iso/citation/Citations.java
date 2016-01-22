@@ -17,6 +17,7 @@
 package org.apache.sis.metadata.iso.citation;
 
 import java.util.List;
+import java.util.Collections;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.referencing.IdentifiedObject;        // For javadoc
 import org.apache.sis.util.Static;
@@ -70,7 +71,7 @@ import static org.apache.sis.internal.util.Citations.equalsFiltered;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.3
- * @version 0.6
+ * @version 0.7
  * @module
  */
 public final class Citations extends Static {
@@ -111,15 +112,42 @@ public final class Citations extends Static {
     });
 
     /**
+     * The <cite>Geographic Information — Web map server interface</cite> standards defined by ISO 19128.
+     * This specification is also available as the OGC
+     * <a href="http://www.opengeospatial.org/standards/wms">Web Map Service</a> (WMS) specification version 1.3.
+     *
+     * <div class="section">Content and future evolution</div>
+     * This list currently contains only one standard, but is nevertheless defined as a list in case a
+     * future version splits the standard in many parts.
+     * The content of this list may vary in future Apache SIS versions depending on the evolution of standards
+     * and in the way that SIS support them.
+     *
+     * <div class="section">Main usage</div>
+     * Among other things, this specification defines the Coordinate Reference System objects
+     * in the {@code "CRS"}, {@code "AUTO"} and {@code "AUTO2"} namespaces.
+     *
+     * @since 0.7
+     */
+    public static final List<Citation> ISO_19128 = Collections.singletonList(new CitationConstant("ISO 19128"));
+
+    /**
      * The <a href="http://www.iogp.org">International Association of Oil &amp; Gas producers</a> (IOGP) organization.
      * This organization is responsible for maintainance of {@link #EPSG} database.
      *
      * <p>We do not expose this citation in public API because it is an organization rather than a reference
-     * to a document or a database (see SIS-200). However we need it as the authority of {@link #EPSG}.</p>
+     * to a document or a database (see SIS-200). For now we keep this citation mostly for resolving the legacy
+     * "OGP" identifier as "IOGP" (see the special case in fromName(String) method). This is also a way to share
+     * the same citation instance in GML like below:</p>
      *
+     * {@preformat xml
+     *   <gml:identifier codeSpace="IOGP">urn:ogc:def:crs:EPSG::4326</gml:identifier>
+     * }
+     *
+     * @see #fromName(String)
+     * @see org.apache.sis.internal.jaxb.referencing.Code#getIdentifier()
      * @see <a href="http://issues.apache.org/jira/browse/SIS-200">SIS-200</a>
      */
-    static final Citation IOGP = new SimpleCitation("IOGP");
+    static final Citation IOGP = new CitationConstant(Constants.IOGP);
 
     /**
      * The authority for identifiers of objects defined by the
@@ -168,6 +196,8 @@ public final class Citations extends Static {
      * This value can be returned by:
      * <ul>
      *   <li>{@link org.apache.sis.metadata.iso.ImmutableIdentifier#getAuthority()}</li>
+     *   <li>{@link org.apache.sis.referencing.factory.sql.EPSGFactory#getAuthority()}
+     *       with the addition of version information.</li>
      * </ul>
      *
      * @since 0.4
@@ -390,21 +420,22 @@ public final class Citations extends Static {
      * List of citations declared in this class.
      * Most frequently used citations (at least in SIS) should be first.
      */
-    private static final SimpleCitation[] CITATIONS = {
-        (SimpleCitation) EPSG,
-        (SimpleCitation) OGC,
-        (SimpleCitation) ESRI,
-        (SimpleCitation) NETCDF,
-        (SimpleCitation) GEOTIFF,
-        (SimpleCitation) PROJ4,
-        (SimpleCitation) MAP_INFO,
-        (SimpleCitation) S57,
-        (SimpleCitation) ISBN,
-        (SimpleCitation) ISSN,
-        (SimpleCitation) SIS,
-        (SimpleCitation) ISO_19115.get(0),
-        (SimpleCitation) ISO_19115.get(1),
-        (SimpleCitation) IOGP
+    private static final CitationConstant[] CITATIONS = {
+        (CitationConstant) EPSG,
+        (CitationConstant) OGC,
+        (CitationConstant) ESRI,
+        (CitationConstant) NETCDF,
+        (CitationConstant) GEOTIFF,
+        (CitationConstant) PROJ4,
+        (CitationConstant) MAP_INFO,
+        (CitationConstant) S57,
+        (CitationConstant) ISBN,
+        (CitationConstant) ISSN,
+        (CitationConstant) SIS,
+        (CitationConstant) ISO_19115.get(0),
+        (CitationConstant) ISO_19115.get(1),
+        (CitationConstant) ISO_19128.get(0),
+        (CitationConstant) IOGP
     };
 
     static {  // Must be after CITATIONS array construction.
@@ -425,10 +456,8 @@ public final class Citations extends Static {
      * may have changed. This method notifies all citations that they will need to refresh their content.
      */
     static void refresh() {
-        for (final SimpleCitation citation : CITATIONS) {
-            if (citation instanceof CitationConstant) {
-                ((CitationConstant) citation).refresh();
-            }
+        for (final CitationConstant citation : CITATIONS) {
+            citation.refresh();
         }
     }
 
@@ -449,7 +478,7 @@ public final class Citations extends Static {
         if (identifier == null || ((identifier = CharSequences.trimWhitespaces(identifier)).isEmpty())) {
             return null;
         }
-        for (final SimpleCitation citation : CITATIONS) {
+        for (final CitationConstant citation : CITATIONS) {
             if (equalsFiltered(identifier, citation.title)) {
                 return citation;
             }
@@ -458,9 +487,8 @@ public final class Citations extends Static {
             return IOGP;
         }
         /*
-         * If we found no match, org.apache.sis.internal.metadata.ServicesForUtility expects the default citation
-         * to be of this exact class: SimpleCitation (not a subclass). If the type of citation created below is
-         * modified, then we need to review ServicesForUtility.getCitationConstant(String) method body.
+         * If we found no match, org.apache.sis.internal.metadata.ServicesForUtility expects
+         * that we return anything that is not an instance of CitationConstant.
          */
         return new SimpleCitation(identifier);
     }
