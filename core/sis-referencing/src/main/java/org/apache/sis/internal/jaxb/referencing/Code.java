@@ -193,9 +193,7 @@ public final class Code {
              */
             if (fallback != null) {
                 if (!isHTTP) {
-                    final String urn = DefinitionURI.format(NameMeaning.toObjectType(type),
-                                                            NameMeaning.authority(fallback.getCodeSpace()),
-                                                            fallback.getVersion(), fallback.getCode());
+                    final String urn = NameMeaning.toURN(type, fallback.getCodeSpace(), fallback.getVersion(), fallback.getCode());
                     if (urn != null) {
                         final Code code = new Code();
                         /*

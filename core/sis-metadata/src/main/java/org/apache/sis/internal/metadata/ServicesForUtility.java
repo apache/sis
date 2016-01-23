@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.metadata;
 
+import java.util.Arrays;
 import java.util.Collection;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Role;
@@ -81,7 +82,7 @@ public final class ServicesForUtility extends MetadataServices {
         String           code                  = null;
         String           codeSpace             = null;
         String           version               = null;
-        Identifier       alternateIdentifier   = null;
+        Identifier[]     alternateIdentifiers  = null;
         CharSequence     citedResponsibleParty = null;
         PresentationForm presentationForm      = null;
         Citation[]       copyFrom              = null;      // Copy citedResponsibleParty from those citations.
@@ -106,16 +107,18 @@ public final class ServicesForUtility extends MetadataServices {
                 presentationForm = PresentationForm.DOCUMENT_DIGITAL;
                 break;
             }
-            case "ISO 19128": {
-                title               = "Geographic Information — Web map server interface";   // ISO title
-                alternateTitle      = "Web Map Server Implementation Specification";         // OGC title
-                alternateIdentifier = new ImmutableIdentifier(Citations.OGC, "OGC", "06-042", null, null);
-                edition             = "ISO 19128:2005";
-                code                = "19128";
-                codeSpace           = "ISO";
-                version             = "2005";
-                copyFrom            = new Citation[] {Citations.ISO_19115.get(0), Citations.OGC};
-                presentationForm    = PresentationForm.DOCUMENT_DIGITAL;
+            case "WMS": {
+                title                = "Web Map Server";                                      // OGC title
+                alternateTitle       = "Geographic Information — Web map server interface";   // ISO title
+                alternateIdentifiers = new Identifier[] {
+                    new ImmutableIdentifier(null, "OGC", "06-042",  null, null),
+                    new ImmutableIdentifier(null, "ISO", "19128", "2005", null)
+                };
+                edition          = "1.3";
+                code             = "WMS";
+                codeSpace        = "OGC";
+                copyFrom         = new Citation[] {Citations.OGC, Citations.ISO_19115.get(0)};
+                presentationForm = PresentationForm.DOCUMENT_DIGITAL;
                 break;
             }
             case Constants.OGC: {
@@ -197,8 +200,9 @@ public final class ServicesForUtility extends MetadataServices {
                 }
             }
         }
-        if (alternateIdentifier != null) {
-            c.getIdentifiers().add(alternateIdentifier);    // getIdentifiers() should not return null at this point.
+        if (alternateIdentifiers != null) {
+            // getIdentifiers() should not return null at this point.
+            c.getIdentifiers().addAll(Arrays.asList(alternateIdentifiers));
         }
         c.freeze();
         return c;

@@ -18,6 +18,7 @@ package org.apache.sis.internal.util;
 
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Arrays;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.apache.sis.internal.simple.SimpleCitation;
@@ -35,10 +36,22 @@ import static org.junit.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.6
- * @version 0.6
+ * @version 0.7
  * @module
  */
 public final strictfp class CitationsTest extends TestCase {
+    /**
+     * Creates a citation with the given title and the given identifiers.
+     */
+     @SuppressWarnings("serial")
+     private static SimpleCitation citation(final String title, final Identifier... identifiers) {
+        return new SimpleCitation(title) {
+            @Override public List<Identifier> getIdentifiers() {
+                return Arrays.asList(identifiers);
+            }
+        };
+    }
+
     /**
      * Creates an identifier with a code space.
      */
@@ -93,6 +106,13 @@ public final strictfp class CitationsTest extends TestCase {
         citation = new SimpleCitation(" ValidIdentifier ");
         assertEquals("ValidIdentifier", Citations.getIdentifier(citation, false));
         assertEquals("ValidIdentifier", Citations.getIdentifier(citation, true));
+        /*
+         * Following test uses '-' in the first identifier, which is an invalid Unicode identifier part.
+         * Consequently the identifier that we get depends on whether we ask for strict Unicode or not.
+         */
+        citation = citation("Web Map Server", identifier("OGC", "06-042"), identifier("ISO", "19128"));
+        assertEquals("OGC:06-042", Citations.getIdentifier(citation, false));
+        assertEquals("ISO_19128",  Citations.getIdentifier(citation, true));
     }
 
     /**

@@ -19,7 +19,6 @@ package org.apache.sis.referencing.factory;
 import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
-import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.referencing.AuthorityFactory;
 import org.opengis.referencing.cs.CSAuthorityFactory;
@@ -33,6 +32,7 @@ import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.resources.Messages;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.internal.system.Loggers;
+import org.apache.sis.internal.metadata.NameMeaning;
 
 // Branch-dependent imports
 import java.util.Objects;
@@ -191,15 +191,9 @@ final class AuthorityFactoryIdentifier {
      * @return An identifier for the version of the given authority, or {@code this} if the version is the same.
      */
     AuthorityFactoryIdentifier versionOf(final Citation factory) {
-        String newVersion = null;
-        if (factory != null) {
-            final InternationalString i18n = factory.getEdition();
-            if (i18n != null) {
-                newVersion = i18n.toString(Locale.US);
-                if (newVersion != null) {
-                    newVersion = newVersion.toLowerCase(Locale.US);
-                }
-            }
+        String newVersion = NameMeaning.getVersion(factory);
+        if (newVersion != null) {
+            newVersion = newVersion.toLowerCase(Locale.US);
         }
         if (Objects.equals(version, newVersion)) {
             return this;

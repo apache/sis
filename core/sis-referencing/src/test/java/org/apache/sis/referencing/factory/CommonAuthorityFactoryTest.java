@@ -112,12 +112,10 @@ public final strictfp class CommonAuthorityFactoryTest extends TestCase {
     @Test
     public void testAuthority() {
         final Citation authority = factory.getAuthority();
-        assertFalse(Citations.identifierMatches(authority, "CRS"));
-        assertTrue (Citations.identifierMatches(authority, "OGC"));
+        assertTrue (Citations.identifierMatches(authority, "WMS"));
         assertFalse(Citations.identifierMatches(authority, "OGP"));
         assertFalse(Citations.identifierMatches(authority, "EPSG"));
-        assertFalse(Citations.identifierMatches(authority, "AUTO"));
-        assertFalse(Citations.identifierMatches(authority, "AUTO2"));
+        assertEquals(Constants.OGC, org.apache.sis.internal.util.Citations.getCodeSpace(authority));
     }
 
     /**
@@ -355,6 +353,15 @@ public final strictfp class CommonAuthorityFactoryTest extends TestCase {
                 "    ANGLEUNIT[“degree”, 0.017453292519943295],\n" +
                 "  AREA[“World”],\n" +
                 "  BBOX[-90.00, -180.00, 90.00, 180.00],\n" +
-                "  ID[“CRS”, 84, CITATION[“OGC”], URI[“urn:ogc:def:crs:OGC::84”]]]", crs);  // TODO: URI needs tuning.
+                "  ID[“CRS”, 84, CITATION[“OGC:WMS”], URI[“urn:ogc:def:crs:OGC:1.3:CRS84”]]]", crs);
+        /*
+         * Note: the WKT specification defines the ID element as:
+         *
+         *     ID[authority, code, (version), (authority citation), (URI)]
+         *
+         * where everything after the code is optional. The difference between "authority" and "authority citation"
+         * is unclear. The only example found in OGC 12-063r5 uses CITATION[…] as the source of an EPSG definition
+         * (so we could almost said "the authority of the authority").
+         */
     }
 }

@@ -29,7 +29,6 @@ import org.opengis.util.InternationalString;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.metadata.iso.citation.Citations;
-import org.apache.sis.internal.util.DefinitionURI;
 import org.apache.sis.internal.metadata.NameMeaning;
 import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.io.wkt.FormattableObject;
@@ -549,12 +548,14 @@ public class ImmutableIdentifier extends FormattableObject implements Identifier
                      * Other conventions format only for the ID[…] of root element.
                      */
                     if (isRoot && enclosing != null && convention != Convention.INTERNAL) {
-                        final String auth = NameMeaning.authority(cs);
-                        if (auth != null) {
-                            final String type = NameMeaning.toObjectType(enclosing.getClass());
-                            if (type != null) {
-                                formatter.append(new URI(type, auth, version, code));
-                            }
+                        final String urn = NameMeaning.toURN(enclosing.getClass(), cs, version, code);
+                        if (urn != null) {
+                            formatter.append(new FormattableObject() {
+                                @Override protected String formatTo(final Formatter formatter) {
+                                    formatter.append(urn, null);
+                                    return WKTKeywords.URI;
+                                }
+                            });
                         }
                     }
                 }
@@ -600,29 +601,6 @@ public class ImmutableIdentifier extends FormattableObject implements Identifier
         protected String formatTo(final Formatter formatter) {
             formatter.append(identifier, ElementKind.CITATION);
             return WKTKeywords.Citation;
-        }
-    }
-
-    /**
-     * The {@code URI[…]} element inside an {@code ID[…]}.
-     */
-    private static final class URI extends FormattableObject {
-        /** The components of the URI to format. */
-        private final String type, codeSpace, version, code;
-
-        /** Creates a new URI with the given components. */
-        URI(final String type, final String codeSpace, final String version, final String code) {
-            this.type      = type;
-            this.codeSpace = codeSpace;
-            this.version   = version;
-            this.code      = code;
-        }
-
-        /** Formats the URI. */
-        @Override
-        protected String formatTo(final Formatter formatter) {
-            formatter.append(DefinitionURI.format(type, codeSpace, version, code), null);
-            return WKTKeywords.URI;
         }
     }
 
