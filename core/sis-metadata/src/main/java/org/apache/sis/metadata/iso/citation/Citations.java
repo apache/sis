@@ -17,7 +17,6 @@
 package org.apache.sis.metadata.iso.citation;
 
 import java.util.List;
-import java.util.Collections;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.referencing.IdentifiedObject;        // For javadoc
 import org.apache.sis.util.Static;
@@ -112,25 +111,6 @@ public final class Citations extends Static {
     });
 
     /**
-     * The <cite>Geographic Information — Web map server interface</cite> standards defined by ISO 19128.
-     * This specification is also available as the OGC
-     * <a href="http://www.opengeospatial.org/standards/wms">Web Map Service</a> (WMS) specification version 1.3.
-     *
-     * <div class="section">Content and future evolution</div>
-     * This list currently contains only one standard, but is nevertheless defined as a list in case a
-     * future version splits the standard in many parts.
-     * The content of this list may vary in future Apache SIS versions depending on the evolution of standards
-     * and in the way that SIS support them.
-     *
-     * <div class="section">Main usage</div>
-     * Among other things, this specification defines the Coordinate Reference System objects
-     * in the {@code "CRS"}, {@code "AUTO"} and {@code "AUTO2"} namespaces.
-     *
-     * @since 0.7
-     */
-    public static final List<Citation> ISO_19128 = Collections.singletonList(new CitationConstant("ISO 19128"));
-
-    /**
      * The <a href="http://www.iogp.org">International Association of Oil &amp; Gas producers</a> (IOGP) organization.
      * This organization is responsible for maintainance of {@link #EPSG} database.
      *
@@ -203,6 +183,43 @@ public final class Citations extends Static {
      * @since 0.4
      */
     public static final IdentifierSpace<Integer> EPSG = new CitationConstant.Authority<>(Constants.EPSG);
+
+    /**
+     * The authority for identifiers of objects defined by the
+     * <a href="http://www.opengeospatial.org/standards/wms">Web Map Service</a> (WMS) specification.
+     * The WMS 1.3 specifications is also known as ISO 19128
+     * <cite>Geographic Information — Web map server interface</cite> standard.
+     *
+     * <p>The citation {@linkplain DefaultCitation#getCitedResponsibleParties() responsible parties}
+     * are the OGC and ISO organizations.
+     * The {@linkplain IdentifierSpace#getName() namespace} declared by this constant is {@code "OGC"},
+     * but the {@code "CRS"}, {@code "AUTO"} and {@code "AUTO2"} namespaces are also commonly found in practice.</p>
+     *
+     * <div class="section">Main usage</div>
+     * This value can be returned by:
+     * <ul>
+     *   <li>{@link org.apache.sis.referencing.factory.CommonAuthorityFactory#getAuthority()}</li>
+     * </ul>
+     *
+     * @since 0.7
+     */
+    public static final IdentifierSpace<Integer> WMS = new WMS();
+
+    /**
+     * Special case for the {@link Citations#WMS} constant
+     * since it uses the same codespace than {@link Citations#OGC}.
+     */
+    private static final class WMS extends CitationConstant.Authority<Integer> {
+        private static final long serialVersionUID = -8490156477724003085L;
+
+        WMS() {
+            super("WMS");
+        }
+
+        @Override public String getName() {
+            return Constants.OGC;
+        }
+    }
 
     /**
      * The authority for identifiers found in specifications from the
@@ -422,6 +439,7 @@ public final class Citations extends Static {
      */
     private static final CitationConstant[] CITATIONS = {
         (CitationConstant) EPSG,
+        (CitationConstant) WMS,
         (CitationConstant) OGC,
         (CitationConstant) ESRI,
         (CitationConstant) NETCDF,
@@ -434,7 +452,6 @@ public final class Citations extends Static {
         (CitationConstant) SIS,
         (CitationConstant) ISO_19115.get(0),
         (CitationConstant) ISO_19115.get(1),
-        (CitationConstant) ISO_19128.get(0),
         (CitationConstant) IOGP
     };
 
@@ -485,6 +502,9 @@ public final class Citations extends Static {
         }
         if (equalsFiltered(identifier, "OGP")) {    // Old name of "IOGP" organization.
             return IOGP;
+        }
+        if (equalsFiltered(identifier, Constants.CRS)) {
+            return WMS;
         }
         /*
          * If we found no match, org.apache.sis.internal.metadata.ServicesForUtility expects
@@ -570,17 +590,26 @@ public final class Citations extends Static {
      * This method is useful for extracting a short designation of an authority (e.g. {@code "EPSG"})
      * for display purpose. This method performs the following choices:
      *
-     * <ul>
+     * <ul class="verbose">
      *   <li>If the given citation is {@code null}, then this method returns {@code null}.</li>
      *   <li>Otherwise if the collection of {@linkplain DefaultCitation#getIdentifiers() citation identifiers}
      *       contains at least one non-{@linkplain org.apache.sis.util.Deprecable#isDeprecated() deprecated}
      *       identifier, then:
      *     <ul>
-     *       <li>If the code and codespace of at least one non-deprecated identifier are
-     *           {@linkplain org.apache.sis.util.CharSequences#isUnicodeIdentifier unicode identifiers}, then
-     *           the <strong>first</strong> of those identifiers is returned in a {@code "[codespace:]code"} format.
-     *           Only the first character of the resulting string needs to be an
-     *           {@linkplain Character#isUnicodeIdentifierStart(int) identifier start character}.</li>
+     *       <li>If the <var>codespace</var> (if any) and the <var>code</var> of at least one non-deprecated identifier
+     *           are {@linkplain org.apache.sis.util.CharSequences#isUnicodeIdentifier valid Unicode identifiers}
+     *           (with relaxed rules regarding the code), then the <strong>first</strong> of those identifiers
+     *           is returned in a {@code "[codespace:]code"} format. If a <var>codespace</var> exists,
+     *           then the above restriction about the <var>code</var> is relaxed in two ways:
+     *         <ul>
+     *           <li>The code is allowed to start with a
+     *               Unicode identifier {@linkplain Character#isUnicodeIdentifierPart(int) part}
+     *               (not necessarily {@linkplain Character#isUnicodeIdentifierStart(int) start})
+     *               since the <var>codespace</var> already provides the start character.</li>
+     *           <li>The code is allowed to contain some other characters (currently {@code '.'} and {@code '-'})
+     *               commonly found in identifiers in the codespace managed by various authorities.</li>
+     *         </ul>
+     *       </li>
      *       <li>Otherwise the first non-empty and non-deprecated identifier is returned in a
      *           {@code "[codespace:]code"} format, despite not being a valid Unicode identifier.</li>
      *     </ul>
@@ -622,7 +651,7 @@ public final class Citations extends Static {
      * This method is useful for extracting a short designation of an authority (e.g. {@code "EPSG"})
      * for processing purpose. This method performs the following actions:
      *
-     * <ul>
+     * <ul class="verbose">
      *   <li>First, performs the same work than {@link #getIdentifier(Citation)} except that {@code '_'}
      *       is used instead of {@link org.apache.sis.util.iso.DefaultNameSpace#DEFAULT_SEPARATOR ':'}
      *       as the separator between the codespace and the code.</li>

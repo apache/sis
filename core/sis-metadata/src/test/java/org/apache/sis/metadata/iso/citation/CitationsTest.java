@@ -65,7 +65,8 @@ public final strictfp class CitationsTest extends TestCase {
         assertSame(ISSN,             fromName("ISSN"));
         assertSame(ISO_19115.get(0), fromName("ISO 19115-1"));
         assertSame(ISO_19115.get(1), fromName("ISO 19115-2"));
-        assertSame(ISO_19128.get(0), fromName("ISO 19128"));
+        assertSame(WMS,              fromName("WMS"));
+        assertSame(WMS,              fromName(Constants.CRS));
         /*
          * Verify again, but using reflection for making sure that the field names
          * are consistent and that we did not forgot any citation constant.
@@ -98,9 +99,11 @@ public final strictfp class CitationsTest extends TestCase {
         assertEquals("S-57",        getIdentifier(S57));    // Not a valid Unicode identifier.
         assertEquals("ISO:19115-1", getIdentifier(ISO_19115.get(0)));  // The ':' separator is not usual in ISO references
         assertEquals("ISO:19115-2", getIdentifier(ISO_19115.get(1)));  // and could be changed in future SIS versions.
-        assertEquals("ISO:19128",   getIdentifier(ISO_19128.get(0)));
-        assertIdentifierEquals("OGC:06-042", "Identifiers in OGC namespace", "OGC", null, "06-042",
-                ((List<? extends Identifier>) ISO_19128.get(0).getIdentifiers()).get(1));
+        assertEquals("OGC:WMS",     getIdentifier(WMS));
+        assertIdentifierEquals("OGC:06-042", null, "OGC", null, "06-042",
+                ((List<? extends Identifier>) WMS.getIdentifiers()).get(1));
+        assertIdentifierEquals("ISO:19128", null, "ISO", "2005", "19128",
+                ((List<? extends Identifier>) WMS.getIdentifiers()).get(2));
     }
 
     /**
@@ -122,9 +125,9 @@ public final strictfp class CitationsTest extends TestCase {
         assertEquals("ISSN",        getUnicodeIdentifier(ISSN));
         assertNull  ("Proj4",       getUnicodeIdentifier(PROJ4));      // Not yet publicly declared as an identifier.
         assertNull  ("S57",         getUnicodeIdentifier(S57));        // Not yet publicly declared as an identifier.
+        assertEquals("OGC_WMS",     getUnicodeIdentifier(WMS));
         assertNull  ("ISO_19115-1", getUnicodeIdentifier(ISO_19115.get(0)));  // Not a valid Unicode identifier.
         assertNull  ("ISO_19115-2", getUnicodeIdentifier(ISO_19115.get(1)));
-        assertEquals("ISO_19128",   getUnicodeIdentifier(ISO_19128.get(0)));
     }
 
     /**
@@ -135,6 +138,7 @@ public final strictfp class CitationsTest extends TestCase {
     @DependsOnMethod("testGetUnicodeIdentifier")
     public void testGetCodeSpace() {
         assertEquals("SIS",         org.apache.sis.internal.util.Citations.getCodeSpace(SIS));
+        assertEquals("OGC",         org.apache.sis.internal.util.Citations.getCodeSpace(WMS));
         assertEquals("OGC",         org.apache.sis.internal.util.Citations.getCodeSpace(OGC));
         assertEquals("IOGP",        org.apache.sis.internal.util.Citations.getCodeSpace(IOGP));
         assertEquals("EPSG",        org.apache.sis.internal.util.Citations.getCodeSpace(EPSG));
@@ -148,7 +152,6 @@ public final strictfp class CitationsTest extends TestCase {
         assertEquals("S57",         org.apache.sis.internal.util.Citations.getCodeSpace(S57));
         assertNull  ("ISO_19115-1", org.apache.sis.internal.util.Citations.getCodeSpace(ISO_19115.get(0)));
         assertNull  ("ISO_19115-2", org.apache.sis.internal.util.Citations.getCodeSpace(ISO_19115.get(1)));
-        assertEquals("ISO_19128",   org.apache.sis.internal.util.Citations.getCodeSpace(ISO_19128.get(0)));
     }
 
     /**
@@ -157,6 +160,7 @@ public final strictfp class CitationsTest extends TestCase {
     @Test
     public void testGetTitles() {
         assertTitleEquals("SIS",     "Apache Spatial Information System",    SIS);
+        assertTitleEquals("WMS",     "Web Map Server",                       WMS);
         assertTitleEquals("OGC",     "Identifiers in OGC namespace",         OGC);
         assertTitleEquals("EPSG",    "EPSG Geodetic Parameter Dataset",      EPSG);
         assertTitleEquals("ISBN",    "International Standard Book Number",   ISBN);
@@ -167,7 +171,7 @@ public final strictfp class CitationsTest extends TestCase {
         assertTitleEquals("S57",     "S-57",                                 S57);
         assertTitleEquals("ISO_19115", "Geographic Information — Metadata Part 1: Fundamentals", ISO_19115.get(0));
         assertTitleEquals("ISO_19115", "Geographic Information — Metadata Part 2: Extensions for imagery and gridded data", ISO_19115.get(1));
-        assertTitleEquals("ISO_19128", "Geographic Information — Web map server interface", ISO_19128.get(0));
+        assertEquals     ("ISO_19128", "Geographic Information — Web map server interface", getSingleton(WMS.getAlternateTitles()).toString());
     }
 
     /**

@@ -82,7 +82,7 @@ public class CitationConstant extends SimpleCitation {
          * </ul>
          */
         @Override
-        public final String getName() {
+        public String getName() {
             return title;
         }
 
@@ -92,7 +92,7 @@ public class CitationConstant extends SimpleCitation {
         @Debug
         @Override
         public final String toString() {
-            return "IdentifierSpace[“" + getName() + "”]";
+            return "IdentifierSpace[" + title + ']';
         }
     }
 

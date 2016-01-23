@@ -264,20 +264,22 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
     }
 
     /**
-     * Returns the specification that defines the codes recognized by this factory. The definitive source
-     * for this factory is ISO 19128: <cite>Geographic Information — Web map server interface</cite>,
-     * also available as the OGC <a href="http://www.opengeospatial.org/standards/wms">Web Map Service</a> (WMS)
-     * specification. However this method returns OGC as the authority since it is the authority reported in URN
-     * (for example {@code "urn:ogc:def:crs:OGC:1.3:CRS84"}).
+     * Returns the specification that defines the codes recognized by this factory. The definitive source for this
+     * factory is OGC <a href="http://www.opengeospatial.org/standards/wms">Web Map Service</a> (WMS) specification,
+     * also available as the ISO 19128 <cite>Geographic Information — Web map server interface</cite> standard.
      *
-     * @return The <cite>"Identifiers in OGC namespace"</cite> authority.
+     * <p>While the authority is WMS, the {@linkplain org.apache.sis.xml.IdentifierSpace#getName() namespace}
+     * of that authority is set to {@code "OGC"}. Apache SIS does that for consistency with the namespace used
+     * in URNs (for example {@code "urn:ogc:def:crs:OGC:1.3:CRS84"}).</p>
      *
-     * @see Citations#OGC
-     * @see Citations#ISO_19128
+     * @return The <cite>"Web Map Service"</cite> authority.
+     *
+     * @see #getCodeSpaces()
+     * @see Citations#WMS
      */
     @Override
     public Citation getAuthority() {
-        return Citations.OGC;
+        return Citations.WMS;
     }
 
     /**
@@ -379,9 +381,21 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
     }
 
     /**
-     * Returns the namespaces of codes defined by OGC.
+     * Returns the namespaces defined by the OGC specifications implemented by this factory.
+     * At the difference of other factories, the namespaces of {@code CommonAuthorityFactory}
+     * are quite different than the {@linkplain #getAuthority() authority} title or identifier:
+     *
+     * <ul>
+     *   <li><b>Authority:</b> {@code "WMS"} (for <cite>"Web Map Services"</cite>)</li>
+     *   <li><b>Namespaces:</b> {@code "CRS"}, {@code "AUTO"}, {@code "AUTO2"}.
+     *       The {@code "OGC"} namespace is also accepted for compatibility reason,
+     *       but its scope is wider than the above-cited namespaces.</li>
+     * </ul>
      *
      * @return A set containing at least the {@code "CRS"}, {@code "AUTO"} and {@code "AUTO2"} strings.
+     *
+     * @see #getAuthority()
+     * @see Citations#WMS
      */
     @Override
     public Set<String> getCodeSpaces() {

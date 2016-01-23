@@ -521,6 +521,8 @@ public final class DefinitionURI {
      * @param  version   The code version, or {@code null}. This is the only optional information.
      * @param  code      The code, or {@code null}.
      * @return An identifier using the URN syntax, or {@code null} if a mandatory information is missing.
+     *
+     * @see org.apache.sis.internal.metadata.NameMeaning#toURN(Class, String, String, String)
      */
     public static String format(final String type, final String authority, final String version, final String code) {
         final StringBuilder buffer = new StringBuilder(PREFIX);
