@@ -17,8 +17,6 @@
 package org.apache.sis.internal.util;
 
 import java.util.Iterator;
-import java.util.IdentityHashMap;
-import java.util.NoSuchElementException;
 
 
 /**
@@ -30,9 +28,6 @@ import java.util.NoSuchElementException;
  * different threads can safely use their iterators concurrently even if the underlying {@code Iterable}s
  * were not thread-safe, because of the synchronization on {@code Iterable<E>} instances.</p>
  *
- * <p>This class extends {@code IdentityHashMap} for making sure that we do not return the same instance twice
- * This particular hierarchy is an implementation details that users of this iterator should ignore.</p>
- *
  * @param <E> The type of elements to be returned by the iterator.
  *
  * @author  Martin Desruisseaux (Geomatys)
@@ -40,8 +35,7 @@ import java.util.NoSuchElementException;
  * @version 0.7
  * @module
  */
-@SuppressWarnings("serial")
-public final class LazySynchronizedSetIterator<E> extends IdentityHashMap<E,Boolean> implements Iterator<E> {
+public final class LazySynchronizedIterator<E> extends AbstractIterator<E> {
     /**
      * The providers of iterators. This array shall not be modified by {@code LazySynchronizedSetIterator},
      * since this is a direct reference to the array given to the constructor (not a copy).
@@ -61,17 +55,12 @@ public final class LazySynchronizedSetIterator<E> extends IdentityHashMap<E,Bool
     private Iterator<? extends E> it;
 
     /**
-     * The next value to be returned by {@link #next()}, or {@code null} if not yet determined.
-     */
-    private E next;
-
-    /**
      * Creates a new iterator over all elements returned by the given providers.
      * Null elements in the given array will be ignored.
      *
      * @param providers The providers of iterators. This array is <strong>not</strong> cloned.
      */
-    public LazySynchronizedSetIterator(final Iterable<? extends E>[] providers) {
+    public LazySynchronizedIterator(final Iterable<? extends E>[] providers) {
         this.providers = providers;
     }
 
@@ -96,7 +85,7 @@ public final class LazySynchronizedSetIterator<E> extends IdentityHashMap<E,Bool
                     }
                     while (it.hasNext()) {
                         next = it.next();
-                        if (next != null && put(next, Boolean.TRUE) == null) {
+                        if (next != null) {
                             return true;
                         }
                     }
@@ -106,23 +95,5 @@ public final class LazySynchronizedSetIterator<E> extends IdentityHashMap<E,Bool
             providerIndex++;
         }
         return false;
-    }
-
-    /**
-     * Returns the next element in this iteration.
-     *
-     * @return The next element.
-     */
-    @Override
-    public E next() {
-        E value = next;
-        if (value == null) {
-            if (!hasNext()) {
-                throw new NoSuchElementException();
-            }
-            value = next;
-        }
-        next = null;
-        return value;
     }
 }

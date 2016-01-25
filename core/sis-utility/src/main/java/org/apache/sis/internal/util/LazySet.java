@@ -18,7 +18,6 @@ package org.apache.sis.internal.util;
 
 import java.util.Arrays;
 import java.util.Iterator;
-import java.util.AbstractSet;
 import java.util.NoSuchElementException;
 import org.apache.sis.util.Workaround;
 
@@ -39,11 +38,11 @@ import org.apache.sis.util.Workaround;
  *
  * @author  Martin Desruisseaux (IRD)
  * @since   0.6
- * @version 0.6
+ * @version 0.7
  * @module
  */
 @Workaround(library="JDK", version="1.8.0_31-b13")
-public final class LazySet<E> extends AbstractSet<E> {
+public final class LazySet<E> extends SetOfUnknownSize<E> {
     /**
      * The original source of elements, or {@code null} if unknown.
      */

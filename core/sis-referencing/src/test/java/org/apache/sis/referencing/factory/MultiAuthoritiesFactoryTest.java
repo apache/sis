@@ -18,6 +18,7 @@ package org.apache.sis.referencing.factory;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 import javax.measure.unit.SI;
 import org.opengis.referencing.IdentifiedObject;
@@ -282,5 +283,28 @@ public final strictfp class MultiAuthoritiesFactoryTest extends TestCase {
             assertTrue(message, message.contains("crs"));
             assertTrue(message, message.contains("Datum"));
         }
+    }
+
+    /**
+     * Tests {@link MultiAuthoritiesFactory#getAuthorityCodes(Class)}.
+     *
+     * @throws FactoryException if an error occurred while fetching the set of codes.
+     */
+    @Test
+    public void testGetAuthorityCodes() throws FactoryException {
+        final List<AuthorityFactoryMock> mock = Arrays.asList(
+                new AuthorityFactoryMock("MOCK", null),
+                new AuthorityFactoryMock("MOCK", "2.3"));
+        final MultiAuthoritiesFactory factory = new MultiAuthoritiesFactory(mock, mock, mock, null);
+        final Set<String> codes = factory.getAuthorityCodes(CoordinateReferenceSystem.class);
+
+        assertTrue("MOCK:4979",   codes.contains("MOCK:4979"));     // A geocentric CRS.
+        assertTrue(" mock :: 84", codes.contains(" mock :: 84"));   // A geographic CRS.
+        assertTrue("http://www.opengis.net/gml/srs/mock.xml#4326",
+                codes.contains("http://www.opengis.net/gml/srs/mock.xml#4326"));
+
+        assertFalse("MOCK:6326", codes.contains("MOCK:6326"));      // A geodetic datum.
+        assertFalse("isEmpty()", codes.isEmpty());
+        assertArrayEquals(new String[] {"MOCK:4979", "MOCK:84", "MOCK:4326", "MOCK:5714", "MOCK:9905"}, codes.toArray());
     }
 }

@@ -19,12 +19,12 @@ package org.apache.sis.referencing.operation.transform;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Set;
-import java.util.AbstractSet;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.ServiceLoader;
 import org.opengis.referencing.operation.SingleOperation;
 import org.opengis.referencing.operation.OperationMethod;
+import org.apache.sis.internal.util.SetOfUnknownSize;
 import org.apache.sis.referencing.operation.DefaultOperationMethod;
 
 
@@ -43,10 +43,10 @@ import org.apache.sis.referencing.operation.DefaultOperationMethod;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.6
- * @version 0.6
+ * @version 0.7
  * @module
  */
-final class OperationMethodSet extends AbstractSet<OperationMethod> {
+final class OperationMethodSet extends SetOfUnknownSize<OperationMethod> {
     /**
      * The operation type we are looking for.
      */
@@ -160,6 +160,14 @@ final class OperationMethodSet extends AbstractSet<OperationMethod> {
             transfer();
         }
         return cachedMethods.size();
+    }
+
+    /**
+     * Returns {@code true} if the {@link #size()} method is cheap.
+     */
+    @Override
+    protected synchronized boolean isSizeKnown() {
+        return methodIterator == null;
     }
 
     /**
