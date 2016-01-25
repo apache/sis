@@ -34,14 +34,23 @@ import static org.junit.Assert.*;
  */
 public final strictfp class DefinitionURITest extends TestCase {
     /**
+     * Tests {@link DefinitionURI#parse(String)} on strings that should not be recognized as URN.
+     */
+    @Test
+    public void testParseInvalid() {
+        assertNull(DefinitionURI.parse("EPSG:4326"));
+        assertNull(DefinitionURI.parse("EPSG::4326"));
+        assertNull(DefinitionURI.parse("urn:ogcx:def:CRS:EPSG:8.2:4326"));
+    }
+
+    /**
      * Tests {@link DefinitionURI#parse(String)} on {@code "urn:ogc:def:crs:EPSG:8.2:4326"}.
-     * This is a URN without parameters defined by EPSG.
+     * This is a URN without parameters defined by EPSG. This test also puts some spaces for
+     * testing the parser capability to ignore them.
      */
     @Test
     public void testParse() {
-        assertNull(DefinitionURI.parse("EPSG:4326"));
-
-        DefinitionURI parsed = DefinitionURI.parse(" urn:ogc:def: crs : EPSG: 8.2 :4326 ");
+        final DefinitionURI parsed = DefinitionURI.parse(" urn:ogc:def: crs : EPSG: 8.2 :4326 ");
         assertNotNull("DefinitionURI", parsed);
         assertEquals ("isHTTP",    false,   parsed.isHTTP);
         assertEquals ("isGML",     false,   parsed.isGML);
@@ -51,8 +60,15 @@ public final strictfp class DefinitionURITest extends TestCase {
         assertEquals ("code",      "4326",  parsed.code);
         assertNull   ("parameters",         parsed.parameters);
         assertEquals ("toString()", "urn:ogc:def:crs:EPSG:8.2:4326", parsed.toString());
+    }
 
-        parsed = DefinitionURI.parse("URN :X-OGC: Def:crs:EPSG::4326");
+    /**
+     * Tests {@link DefinitionURI#parse(String)} on {@code "urn:ogc:def:crs:EPSG::4326"}.
+     * This is a URN without version. This test also mixes lower and upper cases.
+     */
+    @Test
+    public void testParseWithoutVersion() {
+        final DefinitionURI parsed = DefinitionURI.parse("URN :X-OGC: Def:crs:EPSG::4326");
         assertNotNull("DefinitionURI", parsed);
         assertEquals ("isHTTP",    false,   parsed.isHTTP);
         assertEquals ("isGML",     false,   parsed.isGML);
