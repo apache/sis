@@ -19,6 +19,7 @@ package org.apache.sis.internal.metadata;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Locale;
+import javax.measure.unit.Unit;
 import org.opengis.parameter.*;
 import org.opengis.referencing.*;
 import org.opengis.referencing.cs.*;
@@ -63,12 +64,21 @@ public final class NameMeaning extends Static {
         CoordinateOperation.class,
         OperationMethod.class,
         ParameterDescriptor.class,
-        ReferenceSystem.class
+        ReferenceSystem.class,
+        Unit.class
     };
 
     /**
      * The object types for instances of {@link #CLASSES}.
      * See {@link org.apache.sis.internal.util.DefinitionURI} javadoc for a list of object types in URN.
+     *
+     * <p>Types not yet listed (waiting to see if there is a use for them):</p>
+     *
+     * "group"              for  ParameterValueGroup.class;
+     * "verticalDatumType"  for  VerticalDatumType.class;
+     * "pixelInCell"        for  PixelInCell.class;
+     * "rangeMeaning"       for  RangeMeaning.class;
+     * "axisDirection"      for  AxisDirection.class;
      */
     private static final String[] TYPES = {
         "crs",
@@ -80,7 +90,8 @@ public final class NameMeaning extends Static {
         "coordinateOperation",
         "method",
         "parameter",
-        "referenceSystem"
+        "referenceSystem",
+        "uom"
     };
 
     /**

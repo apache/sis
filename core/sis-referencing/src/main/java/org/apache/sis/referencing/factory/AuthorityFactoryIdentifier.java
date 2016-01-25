@@ -130,10 +130,10 @@ final class AuthorityFactoryIdentifier {
      * for avoiding to log the same message twice.
      *
      * <p>This field does not need to be declared {@code volatile} because {@code MultiAuthoritiesFactory}
-     * will read and write this field in a {@code synchronized} block using the same lock (at least for the
-     * same instance of {@code AuthorityFactoryIdentifier}; lock may vary for other instances).</p>
+     * will read and write this field (indirectly, though a call to {@code logConflictWarning(…)} only in
+     * a {@code synchronized} block.</p>
      *
-     * @see #conflict(AuthorityFactory)
+     * @see #logConflictWarning(AuthorityFactory)
      */
     private boolean hasLoggedWarning;
 
@@ -270,7 +270,7 @@ final class AuthorityFactoryIdentifier {
     /**
      * Logs a message reporting a conflict between the factory identified by this {@code AuthorityFactoryIdentifier}
      * and another factory, if this instance has not already logged a warning. This method assumes that it is invoked
-     * by the {@code MultiAuthoritiesFactory.getAuthorityFactory(…)} method.
+     * by the {@code MultiAuthoritiesFactory.getAuthorityFactory(…)} method in a synchronized block.
      *
      * @param used The factory which will be used.
      */

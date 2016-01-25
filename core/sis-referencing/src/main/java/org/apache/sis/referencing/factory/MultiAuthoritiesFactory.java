@@ -38,6 +38,7 @@ import javax.measure.unit.Unit;
 import org.apache.sis.internal.util.Citations;
 import org.apache.sis.internal.util.DefinitionURI;
 import org.apache.sis.internal.util.CollectionsExt;
+import org.apache.sis.internal.util.LazySynchronizedSetIterator;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
@@ -207,6 +208,24 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
         return null;
     }
 
+    /**
+     * Returns the set of authority codes for objects of the given type.
+     * This method returns the union of codes returned by all factories specified at construction time.
+     *
+     * <p><b>Warnings:</b>
+     * <ul>
+     *   <li>Callers should not retain a reference to the returned collection for a long time,
+     *       since it may be backed by database connections (depending on the factory implementations).</li>
+     *   <li>The returned set is not thread-safe. Each thread should ask its own instance and let
+     *       the garbage collector disposes it as soon as the collection is not needed anymore.</li>
+     *   <li>Call to the {@link Set#size()} method on the returned collection should be avoided
+     *       since it may be costly.</li>
+     * </ul>
+     *
+     * @param  type The spatial reference objects type.
+     * @return The set of authority codes for spatial reference objects of the given type.
+     * @throws FactoryException if access to an underlying factory failed.
+     */
     @Override
     public Set<String> getAuthorityCodes(Class<? extends IdentifiedObject> type) throws FactoryException {
         throw new UnsupportedOperationException("Not supported yet.");      // TODO
@@ -214,7 +233,10 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
 
     /**
      * Returns the code spaces of all factories given to the constructor.
-     * This method may be relatively costly since it implies instantiation of all factories.
+     *
+     * <div class="note"><b>Implementation note:</b>
+     * the current implementation may be relatively costly since it implies instantiation of all factories.
+     * </div>
      *
      * @return The code spaces of all factories.
      */
@@ -224,12 +246,8 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
         Set<String> union = codeSpaces;
         if (union == null) {
             union = new LinkedHashSet<>();
-            for (final Iterable<? extends AuthorityFactory> provider : providers) {
-                if (provider != null) synchronized (provider) {
-                    for (final AuthorityFactory factory : provider) {
-                        union.addAll(getCodeSpaces(factory));
-                    }
-                }
+            for (final Iterator<AuthorityFactory> it = getAllFactories(); it.hasNext();) {
+                union.addAll(getCodeSpaces(it.next()));
             }
             codeSpaces = union = CollectionsExt.unmodifiableOrCopy(union);
         }
@@ -261,6 +279,19 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
     private AuthorityFactory cache(final AuthorityFactoryIdentifier identifier, final AuthorityFactory factory) {
         final AuthorityFactory existing = factories.putIfAbsent(identifier.intern(), factory);
         return (existing != null) ? existing : factory;
+    }
+
+    /**
+     * Returns an iterator over all factories in this {@link MultiAuthoritiesFactory}.
+     * This iterator takes care of synchronization on the {@code Iterable<AuthorityFactory>} instances
+     * and ensures that the same factory is not returned twice.
+     *
+     * <p>Note that despite the above-cited synchronization, the returned iterator is <strong>not</strong>
+     * thread-safe: each thread needs to use its own iterator instance. However provided that the above
+     * condition is meet, threads can safely use their iterators concurrently.</p>
+     */
+    final Iterator<AuthorityFactory> getAllFactories() {
+        return new LazySynchronizedSetIterator<>(providers);
     }
 
     /**
@@ -312,9 +343,12 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
          */
         if (request.hasVersion()) {
             factory = factories.get(request.versionOf(null));
-            if (factory != null && request.versionOf(factory.getAuthority()) == request) {
-                // Default factory is for the version that user requested. Cache that finding.
-                return cache(request, factory);
+            if (factory != null) {
+                if (request.versionOf(factory.getAuthority()) == request) {
+                    // Default factory is for the version that user requested. Cache that finding.
+                    return cache(request, factory);
+                }
+                factory = null;
             }
         }
         /*
@@ -328,57 +362,71 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
         if ((doneMask & (1 << type)) == 0) {
             if (type >= 0 && type < providers.length) {
                 final Iterable<? extends AuthorityFactory> provider = providers[type];
-                synchronized (provider) {   // Should never be null because of the 'doneMask' check.
-                    /*
-                     * Search for a factory for the given authority. Caches all factories that we find
-                     * during the iteration process. Some factories may already be cached as a result
-                     * of a partial iteration in a previous call to getAuthorityFactory(…).
-                     */
-                    for (final Iterator<? extends AuthorityFactory> it = provider.iterator(); it.hasNext();) {
+                final Iterator<? extends AuthorityFactory> it;
+                synchronized (provider) {               // Should never be null because of the 'doneMask' check.
+                    it = provider.iterator();
+                    while (it.hasNext()) {
                         factory = it.next();
-                        for (final String namespace : getCodeSpaces(factory)) {
-                            final AuthorityFactoryIdentifier unversioned = request.unversioned(namespace);
-                            AuthorityFactory cached = cache(unversioned, factory);
-                            final AuthorityFactory found = request.equals(unversioned) ? cached : null;
-                            /*
-                             * Only if we have no choice, ask to the factory what is its version number.
-                             * We have no choice when ignoring the version number causes a conflict, or
-                             * when the user asked for a specific version.
-                             */
-                            if (factory != cached || (request.hasVersion() && request.isSameAuthority(unversioned))) {
-                                final AuthorityFactoryIdentifier versioned = unversioned.versionOf(factory.getAuthority());
-                                if (versioned != unversioned) {
-                                    /*
-                                     * Before to cache the factory with a key containing the factory version, make sure
-                                     * that we took in account the version of the default factory. This will prevent the
-                                     * call to 'cache(versioned, factory)' to overwrite the default factory.
-                                     */
-                                    if (factory != cached) {
-                                        cache(unversioned.versionOf(cached.getAuthority()), cached);
-                                    }
-                                    cached = cache(versioned, factory);
-                                }
+                        if (factory != null) break;     // Paranoiac check against null factories.
+                    }
+                }
+                /*
+                 * Search for a factory for the given authority. Caches all factories that we find
+                 * during the iteration process. Some factories may already be cached as a result
+                 * of a partial iteration in a previous call to getAuthorityFactory(…).
+                 */
+                while (factory != null) {
+                    for (final String namespace : getCodeSpaces(factory)) {
+                        final AuthorityFactoryIdentifier unversioned = request.unversioned(namespace);
+                        AuthorityFactory cached = cache(unversioned, factory);
+                        final AuthorityFactory found = request.equals(unversioned) ? cached : null;
+                        /*
+                         * Only if we have no choice, ask to the factory what is its version number.
+                         * We have no choice when ignoring the version number causes a conflict, or
+                         * when the user asked for a specific version.
+                         */
+                        if (factory != cached || (request.hasVersion() && request.isSameAuthority(unversioned))) {
+                            final AuthorityFactoryIdentifier versioned = unversioned.versionOf(factory.getAuthority());
+                            if (versioned != unversioned) {
                                 /*
-                                 * If there is a conflict, log a warning provided that we did not already reported
-                                 * that conflict. The flag telling us if we already logged a warning is in the key,
-                                 * so we have to find that key in the loop below. This is inefficient, but conflict
-                                 * should not happen in a sane environment.
+                                 * Before to cache the factory with a key containing the factory version, make sure
+                                 * that we took in account the version of the default factory. This will prevent the
+                                 * call to 'cache(versioned, factory)' to overwrite the default factory.
                                  */
                                 if (factory != cached) {
-                                    for (final AuthorityFactoryIdentifier identifier : factories.keySet()) {
-                                        if (identifier.equals(versioned)) {
+                                    cache(unversioned.versionOf(cached.getAuthority()), cached);
+                                }
+                                cached = cache(versioned, factory);
+                            }
+                            /*
+                             * If there is a conflict, log a warning provided that we did not already reported
+                             * that conflict. The flag telling us if we already logged a warning is in the key,
+                             * so we have to find that key in the loop below. This is inefficient, but conflict
+                             * should not happen in a sane environment.
+                             */
+                            if (factory != cached) {
+                                for (final AuthorityFactoryIdentifier identifier : factories.keySet()) {
+                                    if (identifier.equals(versioned)) {
+                                        synchronized (provider) {
                                             identifier.logConflictWarning(cached);
-                                            break;
                                         }
+                                        break;
                                     }
                                 }
-                                if (request.equals(versioned)) {
-                                    return cached;
-                                }
                             }
-                            if (found != null) {
-                                return found;
+                            if (request.equals(versioned)) {
+                                return cached;
                             }
+                        }
+                        if (found != null) {
+                            return found;
+                        }
+                    }
+                    factory = null;
+                    synchronized (provider) {
+                        while (it.hasNext()) {
+                            factory = it.next();
+                            if (factory != null) break;         // Paranoiac check against null factories.
                         }
                     }
                 }
