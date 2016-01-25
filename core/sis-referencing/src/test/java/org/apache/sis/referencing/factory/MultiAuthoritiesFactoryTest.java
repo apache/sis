@@ -307,4 +307,19 @@ public final strictfp class MultiAuthoritiesFactoryTest extends TestCase {
         assertFalse("isEmpty()", codes.isEmpty());
         assertArrayEquals(new String[] {"MOCK:4979", "MOCK:84", "MOCK:4326", "MOCK:5714", "MOCK:9905"}, codes.toArray());
     }
+
+    /**
+     * Tests {@link MultiAuthoritiesFactory#newIdentifiedObjectFinder()}.
+     *
+     * @throws FactoryException if an error occurred while creating the finder.
+     */
+    @Test
+    public void testNewIdentifiedObjectFinder() throws FactoryException {
+        final List<AuthorityFactoryMock> mock = Arrays.asList(
+                new AuthorityFactoryMock("MOCK", null),
+                new AuthorityFactoryMock("MOCK", "2.3"));
+        final MultiAuthoritiesFactory factory = new MultiAuthoritiesFactory(mock, null, mock, null);
+        final IdentifiedObjectFinder finder = factory.newIdentifiedObjectFinder();
+        assertSame(HardCodedDatum.WGS72, finder.findSingleton(HardCodedDatum.WGS72));
+    }
 }

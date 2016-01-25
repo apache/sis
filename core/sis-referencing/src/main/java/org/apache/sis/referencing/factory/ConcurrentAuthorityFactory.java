@@ -1785,19 +1785,6 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
         }
 
         /**
-         * Returns the authority of the factory examined by this finder.
-         */
-        @Override
-        public synchronized Citation getAuthority() throws FactoryException {
-            try {
-                acquire();
-                return finder.getAuthority();
-            } finally {
-                release();
-            }
-        }
-
-        /**
          * Returns a set of authority codes that <strong>may</strong> identify the same
          * object than the specified one. This method delegates to the data access object.
          */

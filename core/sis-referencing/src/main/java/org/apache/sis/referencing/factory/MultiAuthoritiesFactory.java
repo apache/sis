@@ -19,6 +19,7 @@ package org.apache.sis.referencing.factory;
 import java.util.ServiceLoader;
 import java.util.Collections;
 import java.util.Collection;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.Map;
@@ -1361,13 +1362,109 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
     }
 
     /**
-     * Clears the cache and notifies all factories need to be fetched again from the providers given at
-     * construction time. All providers that are instances of {@link ServiceLoader} will have their
-     * {@link ServiceLoader#reload() reload()} method invoked.
+     * Returns a finder which can be used for looking up unidentified objects.
+     * The default implementation delegates the lookups to the underlying factories.
+     *
+     * @return A finder to use for looking up unidentified objects.
+     * @throws FactoryException if the finder can not be created.
+     */
+    @Override
+    public IdentifiedObjectFinder newIdentifiedObjectFinder() throws FactoryException {
+        return new Finder(this);
+    }
+
+    /**
+     * A {@link IdentifiedObjectFinder} which tests every factories declared in the
+     * {@linkplain MultiAuthoritiesFactory#getAllFactories() collection of factories}.
+     */
+    private static class Finder extends IdentifiedObjectFinder {
+        /**
+         * The finders of all factories, or {@code null} if not yet fetched.
+         * We will create this array only when first needed in order to avoid instantiating the factories
+         * before needed (for example we may be able to find an object using only its code). However if we
+         * need to create this array, then we will create it fully (for all factories at once).
+         */
+        private IdentifiedObjectFinder[] finders;
+
+        /**
+         * Creates a new finder.
+         */
+        protected Finder(final MultiAuthoritiesFactory factory) throws FactoryException {
+            super(factory);
+        }
+
+        /**
+         * Sets the domain of the search (for example whether to include deprecated objects in the search).
+         */
+        @Override
+        public void setSearchDomain(final Domain domain) {
+            super.setSearchDomain(domain);
+            if (finders != null) {
+                for (final IdentifiedObjectFinder finder : finders) {
+                    finder.setSearchDomain(domain);
+                }
+            }
+        }
+
+        /**
+         * Sets whether the search should ignore coordinate system axes.
+         */
+        @Override
+        public void setIgnoringAxes(final boolean ignore) {
+            super.setIgnoringAxes(ignore);
+            if (finders != null) {
+                for (final IdentifiedObjectFinder finder : finders) {
+                    finder.setIgnoringAxes(ignore);
+                }
+            }
+        }
+
+        /**
+         * Delegates to every factories registered in the enclosing {@link MultiAuthoritiesFactory},
+         * in iteration order. This method is invoked only if the parent class failed to find the
+         * object by its identifiers and by its name. At this point, as a last resource, we will
+         * scan over the objects in the database.
+         *
+         * <p>This method shall <strong>not</strong> delegate the job to the parent class, as the default
+         * implementation in the parent class is very inefficient. We need to delegate to the finders of
+         * all factories, so we can leverage their potentially more efficient algorithms.</p>
+         */
+        @Override
+        final Set<IdentifiedObject> createFromCodes(final IdentifiedObject object) throws FactoryException {
+            if (finders == null) try {
+                final ArrayList<IdentifiedObjectFinder> list = new ArrayList<>();
+                final Map<AuthorityFactory,Boolean> unique = new IdentityHashMap<>();
+                final Iterator<AuthorityFactory> it = ((MultiAuthoritiesFactory) factory).getAllFactories();
+                while (it.hasNext()) {
+                    final AuthorityFactory candidate = it.next();
+                    if (candidate instanceof GeodeticAuthorityFactory && unique.put(candidate, Boolean.TRUE) == null) {
+                        IdentifiedObjectFinder finder = ((GeodeticAuthorityFactory) candidate).newIdentifiedObjectFinder();
+                        if (finder != null) {   // Should never be null according method contract, but we are paranoiac.
+                            finder.ignoreIdentifiers = true;
+                            finder.setWrapper(this);
+                            list.add(finder);
+                        }
+                    }
+                }
+                finders = list.toArray(new IdentifiedObjectFinder[list.size()]);
+            } catch (BackingStoreException e) {
+                throw e.unwrapOrRethrow(FactoryException.class);
+            }
+            final Set<IdentifiedObject> found = new LinkedHashSet<>();
+            for (final IdentifiedObjectFinder finder : finders) {
+                found.addAll(finder.find(object));
+            }
+            return found;
+        }
+    }
+
+    /**
+     * Clears the cache and notifies this {@code MultiAuthoritiesFactory} that all factories will need to
+     * be fetched again from the providers given at construction time. In addition, all providers that are
+     * instances of {@link ServiceLoader} will have their {@link ServiceLoader#reload() reload()} method invoked.
      *
      * <p>This method is intended for use in situations in which new factories can be installed into a running
-     * Java virtual machine. This method invocation will happen automatically if Apache SIS is running in a
-     * servlet or OSGi container.</p>
+     * Java virtual machine.</p>
      */
     public void reload() {
         for (int type=0; type < providers.length; type++) {
