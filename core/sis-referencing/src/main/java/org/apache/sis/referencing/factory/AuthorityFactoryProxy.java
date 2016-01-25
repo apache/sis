@@ -159,7 +159,9 @@ abstract class AuthorityFactoryProxy<T> {
      * @return The object created from the given code.
      * @throws FactoryException If an error occurred while creating the object.
      */
-    abstract T create(GeodeticAuthorityFactory factory, String code) throws FactoryException;
+    T create(GeodeticAuthorityFactory factory, String code) throws FactoryException {
+        return createFromAPI(factory, code);
+    }
 
     /**
      * Creates the object for the given code using only GeoAPI interfaces.
@@ -177,9 +179,6 @@ abstract class AuthorityFactoryProxy<T> {
      */
     static final AuthorityFactoryProxy<InternationalString> DESCRIPTION =
         new AuthorityFactoryProxy<InternationalString>(InternationalString.class, AuthorityFactoryIdentifier.ANY) {
-            @Override InternationalString create(GeodeticAuthorityFactory factory, String code) throws FactoryException {
-                return factory.getDescriptionText(code);
-            }
             @Override InternationalString createFromAPI(AuthorityFactory factory, String code) throws FactoryException {
                 return factory.getDescriptionText(code);
             }
@@ -190,9 +189,6 @@ abstract class AuthorityFactoryProxy<T> {
      */
     static final AuthorityFactoryProxy<IdentifiedObject> OBJECT =
         new AuthorityFactoryProxy<IdentifiedObject>(IdentifiedObject.class, AuthorityFactoryIdentifier.ANY) {
-            @Override IdentifiedObject create(GeodeticAuthorityFactory factory, String code) throws FactoryException {
-                return factory.createObject(code);
-            }
             @Override IdentifiedObject createFromAPI(AuthorityFactory factory, String code) throws FactoryException {
                 return factory.createObject(code);
             }
@@ -615,7 +611,7 @@ abstract class AuthorityFactoryProxy<T> {
      * @return The proxy for the given type, or {@code null} if the given type is illegal.
      */
     @SuppressWarnings("unchecked")
-    final AuthorityFactoryProxy<? extends T> specialize(final String typeName) {
+    AuthorityFactoryProxy<? extends T> specialize(final String typeName) {
         final AuthorityFactoryProxy<?> c = BY_URN_TYPE.get(typeName.toLowerCase(Locale.US));
         if (c != null) {
             if (c.type.isAssignableFrom(type)) {

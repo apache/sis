@@ -18,12 +18,18 @@ package org.apache.sis.referencing.factory;
 
 import java.util.ServiceLoader;
 import java.util.Collections;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.Map;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
+import java.util.IdentityHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.ConcurrentModificationException;
+import javax.measure.unit.Unit;
 import org.opengis.referencing.*;
 import org.opengis.referencing.cs.*;
 import org.opengis.referencing.crs.*;
@@ -34,16 +40,18 @@ import org.opengis.metadata.extent.Extent;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.util.FactoryException;
 import org.opengis.util.InternationalString;
-import javax.measure.unit.Unit;
+import org.apache.sis.internal.util.AbstractIterator;
 import org.apache.sis.internal.util.Citations;
 import org.apache.sis.internal.util.DefinitionURI;
 import org.apache.sis.internal.util.CollectionsExt;
-import org.apache.sis.internal.util.LazySynchronizedSetIterator;
+import org.apache.sis.internal.util.LazySynchronizedIterator;
+import org.apache.sis.internal.util.SetOfUnknownSize;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.iso.DefaultNameSpace;
+import org.apache.sis.util.collection.BackingStoreException;
 
 
 /**
@@ -212,7 +220,13 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
      * Returns the set of authority codes for objects of the given type.
      * This method returns the union of codes returned by all factories specified at construction time.
      *
-     * <p><b>Warnings:</b>
+     * <p>The {@link Set#contains(Object)} method of the returned set is lenient:
+     * it accepts various ways to format a code even if the iterator returns only one form.
+     * For example the {@code contains(Object)} method may return {@code true} for {@code "EPSG:4326"},
+     * {code "EPSG::4326"}, {@code "urn:ogc:def:crs:EPSG::4326"}, <i>etc.</i> even if
+     * the iterator returns only {@code "EPSG:4326"}.</p>
+     *
+     * <p><b>Warnings:</b></p>
      * <ul>
      *   <li>Callers should not retain a reference to the returned collection for a long time,
      *       since it may be backed by database connections (depending on the factory implementations).</li>
@@ -227,8 +241,168 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
      * @throws FactoryException if access to an underlying factory failed.
      */
     @Override
-    public Set<String> getAuthorityCodes(Class<? extends IdentifiedObject> type) throws FactoryException {
-        throw new UnsupportedOperationException("Not supported yet.");      // TODO
+    public Set<String> getAuthorityCodes(final Class<? extends IdentifiedObject> type) throws FactoryException {
+        return new SetOfUnknownSize<String>() {
+            /**
+             * Returns an iterator over all authority codes.
+             * Codes are fetched on-the-fly.
+             */
+            @Override
+            public Iterator<String> iterator() {
+                return new AbstractIterator<String>() {
+                    /** An iterator over the factories for which to return codes. */
+                    private final Iterator<AuthorityFactory> factories = getAllFactories();
+
+                    /** An iterator over the codes of the current factory. */
+                    private Iterator<String> codes = Collections.emptyIterator();
+
+                    /** The prefix to prepend before codes, or {@code null} if none. */
+                    private String prefix;
+
+                    /** For filtering duplicated codes when there is many versions of the same authority. */
+                    private final Set<String> done = new HashSet<>();
+
+                    /** Tests if there is more codes to return. */
+                    @Override public boolean hasNext() {
+                        while (next == null) {
+                            while (!codes.hasNext()) {
+                                do {
+                                    if (!factories.hasNext()) {
+                                        return false;
+                                    }
+                                    final AuthorityFactory factory = factories.next();
+                                    codes = getAuthorityCodes(factory).iterator();
+                                    prefix = getCodeSpace(factory);
+                                } while (!done.add(prefix));
+                            }
+                            next = codes.next();
+                        }
+                        return true;
+                    }
+
+                    /** Returns the next element, with namespace inserted before the code if needed. */
+                    @Override public String next() {
+                        String code = super.next();
+                        if (prefix != null && code.indexOf(DefaultNameSpace.DEFAULT_SEPARATOR) < 0) {
+                            code = prefix + DefaultNameSpace.DEFAULT_SEPARATOR + code;
+                        }
+                        return code;
+                    }
+                };
+            }
+
+            /**
+             * The cache of values returned by {@link #getAuthorityCodes(AuthorityFactory)}.
+             */
+            private final Map<AuthorityFactory, Set<String>> cache = new IdentityHashMap<>();
+
+            /**
+             * Returns the authority codes for the given factory.
+             * This method invokes {@link AuthorityFactory#getAuthorityCodes(Class)}
+             * only once per factory and caches the returned {@code Set<String>}.
+             */
+            final Set<String> getAuthorityCodes(final AuthorityFactory factory) {
+                Set<String> codes = cache.get(factory);
+                if (codes == null) {
+                    try {
+                        codes = factory.getAuthorityCodes(type);
+                    } catch (FactoryException e) {
+                        throw new BackingStoreException(e);
+                    }
+                    if (cache.put(factory, codes) != null) {
+                        throw new ConcurrentModificationException();
+                    }
+                }
+                return codes;
+            }
+
+            /**
+             * The collection size, or a negative value if we have not yet computed the size.
+             * A negative value different than -1 means that we have not counted all elements,
+             * but we have determined that the set is not empty.
+             */
+            private int size = -1;
+
+            /**
+             * Returns {@code true} if the {@link #size()} method is cheap.
+             */
+            @Override
+            protected boolean isSizeKnown() {
+                return size >= 0;
+            }
+
+            /**
+             * Returns the number of elements in this set (costly operation).
+             */
+            @Override
+            public int size() {
+                if (size < 0) {
+                    int n = 0;
+                    final Set<String> done = new HashSet<>();
+                    for (final Iterator<AuthorityFactory> it = getAllFactories(); it.hasNext();) {
+                        final AuthorityFactory factory = it.next();
+                        if (done.add(getCodeSpace(factory))) {
+                            n += getAuthorityCodes(factory).size();
+                        }
+                    }
+                    size = n;
+                }
+                return size;
+            }
+
+            /**
+             * Returns {@code true} if the set does not contain any element.
+             * This method is much more efficient than testing {@code size() != 0}
+             * since it will stop iteration as soon as an element is found.
+             */
+            @Override
+            public boolean isEmpty() {
+                if (size == -1) {
+                    for (final Iterator<AuthorityFactory> it = getAllFactories(); it.hasNext();) {
+                        if (!getAuthorityCodes(it.next()).isEmpty()) {
+                            size = -2;      // Size still unknown, but we know that the set is not empty.
+                            return false;
+                        }
+                    }
+                    size = 0;
+                }
+                return size == 0;
+            }
+
+            /**
+             * The proxy for the {@code GeodeticAuthorityFactory.getAuthorityCodes(type).contains(String)}.
+             * Used by {@link #contains(Object)} for delegating its work to the most appropriate factory.
+             */
+            private final AuthorityFactoryProxy<Boolean> contains =
+                new AuthorityFactoryProxy<Boolean>(Boolean.class, AuthorityFactoryIdentifier.ANY) {
+                    @Override Boolean createFromAPI(AuthorityFactory factory, String code) throws FactoryException {
+                        return getAuthorityCodes(factory).contains(code);
+                    }
+                    @Override AuthorityFactoryProxy<Boolean> specialize(String typeName) {
+                        return this;
+                    }
+                };
+
+            /**
+             * Returns {@code true} if the factory contains the given code.
+             */
+            @Override
+            public boolean contains(final Object code) {
+                if (code instanceof String) try {
+                    return create(contains, (String) code);
+                } catch (NoSuchAuthorityCodeException e) {
+                    // Ignore - will return false.
+                } catch (FactoryException e) {
+                    throw new BackingStoreException(e);
+                }
+                return false;
+            }
+
+            /** Declared soon as unsupported operation for preventing a call to {@link #size()}. */
+            @Override public boolean removeAll(Collection<?> c) {throw new UnsupportedOperationException();}
+            @Override public boolean retainAll(Collection<?> c) {throw new UnsupportedOperationException();}
+            @Override public boolean remove   (Object o)        {throw new UnsupportedOperationException();}
+        };
     }
 
     /**
@@ -269,6 +443,16 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
     }
 
     /**
+     * Returns the "main" namespace of the given factory, or {@code null} if none.
+     * Current implementation returns the first namespace, but this may be changed in any future SIS version.
+     *
+     * <p>The purpose of this method is to get a unique identifier of a factory, ignoring version number.</p>
+     */
+    static String getCodeSpace(final AuthorityFactory factory) {
+        return CollectionsExt.first(getCodeSpaces(factory));
+    }
+
+    /**
      * Caches the given factory, but without replacing existing instance if any.
      * This method returns the factory that we should use, either the given instance of the cached one.
      *
@@ -283,15 +467,17 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
 
     /**
      * Returns an iterator over all factories in this {@link MultiAuthoritiesFactory}.
-     * This iterator takes care of synchronization on the {@code Iterable<AuthorityFactory>} instances
-     * and ensures that the same factory is not returned twice.
+     * Note that the same factory instance may be returned more than once if it implements more than one
+     * of the {@link CRSAuthorityFactory}, {@link CSAuthorityFactory}, {@link DatumAuthorityFactory} or
+     * {@link CoordinateOperationAuthorityFactory} interfaces.
      *
-     * <p>Note that despite the above-cited synchronization, the returned iterator is <strong>not</strong>
+     * <p>This iterator takes care of synchronization on the {@code Iterable<AuthorityFactory>} instances.
+     * Note that despite the above-cited synchronization, the returned iterator is <strong>not</strong>
      * thread-safe: each thread needs to use its own iterator instance. However provided that the above
      * condition is meet, threads can safely use their iterators concurrently.</p>
      */
     final Iterator<AuthorityFactory> getAllFactories() {
-        return new LazySynchronizedSetIterator<>(providers);
+        return new LazySynchronizedIterator<>(providers);
     }
 
     /**
@@ -474,7 +660,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
      * @return The object from one of the authority factory specified at construction time.
      * @throws FactoryException If an error occurred while creating the object.
      */
-    private <T> T create(AuthorityFactoryProxy<? extends T> proxy, String code) throws FactoryException {
+    final <T> T create(AuthorityFactoryProxy<? extends T> proxy, String code) throws FactoryException {
         ArgumentChecks.ensureNonNull("code", code);
         final String authority, version;
         final String[] parameters;
