@@ -116,7 +116,13 @@ public final strictfp class AuthorityFactoryMock extends GeodeticAuthorityFactor
      */
     @Override
     public IdentifiedObject createObject(final String code) throws NoSuchAuthorityCodeException {
-        switch (Integer.parseInt(trimNamespace(code))) {
+        final int n;
+        try {
+            n = Integer.parseInt(trimNamespace(code));
+        } catch (NumberFormatException e) {
+            throw new NoSuchAuthorityCodeException(e.toString(), "MOCK", code);
+        }
+        switch (n) {
             case   84: return HardCodedCRS.WGS84;
             case 4326: return HardCodedCRS.WGS84_φλ;
             case 4979: return HardCodedCRS.GEOCENTRIC;
@@ -144,7 +150,13 @@ public final strictfp class AuthorityFactoryMock extends GeodeticAuthorityFactor
      */
     @Override
     public Unit<?> createUnit(final String code) throws NoSuchAuthorityCodeException {
-        final Unit<?> unit = Units.valueOfEPSG(Integer.parseInt(trimNamespace(code)));
+        final int n;
+        try {
+            n = Integer.parseInt(trimNamespace(code));
+        } catch (NumberFormatException e) {
+            throw new NoSuchAuthorityCodeException(e.toString(), "MOCK", code);
+        }
+        final Unit<?> unit = Units.valueOfEPSG(n);
         if (unit == null) {
             throw new NoSuchAuthorityCodeException(code, authority.getTitle().toString(), code);
         }
@@ -159,7 +171,13 @@ public final strictfp class AuthorityFactoryMock extends GeodeticAuthorityFactor
      */
     @Override
     public Extent createExtent(final String code) throws NoSuchAuthorityCodeException {
-        switch (Integer.parseInt(trimNamespace(code))) {
+        final int n;
+        try {
+            n = Integer.parseInt(trimNamespace(code));
+        } catch (NumberFormatException e) {
+            throw new NoSuchAuthorityCodeException(e.toString(), "MOCK", code);
+        }
+        switch (n) {
             case 1262: return Extents.WORLD;
             default: throw new NoSuchAuthorityCodeException(code, authority.getTitle().toString(), code);
         }
