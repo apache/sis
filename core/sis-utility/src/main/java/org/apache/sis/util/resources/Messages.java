@@ -166,6 +166,12 @@ public final class Messages extends IndexedResourceBundle {
         public static final short DiscardedExclusiveProperty_2 = 2;
 
         /**
+         * There is no factory for version {1} of “{0}” authority. Fallback on default version for
+         * objects creation.
+         */
+        public static final short FallbackDefaultFactoryVersion_2 = 38;
+
+        /**
          * Ignored properties after the first occurrence of ‘{0}’.
          */
         public static final short IgnoredPropertiesAfterFirst_1 = 6;

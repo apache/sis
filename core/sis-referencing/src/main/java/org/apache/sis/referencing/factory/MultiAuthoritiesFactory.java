@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.Map;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.IdentityHashMap;
@@ -159,6 +160,20 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
     private volatile Set<String> codeSpaces;
 
     /**
+     * Whether this factory should relax some rules when processing a given authority code.
+     * See {@link #isLenient()} javadoc for a description of relaxed rules.
+     *
+     * @see #isLenient()
+     */
+    private volatile boolean isLenient;
+
+    /**
+     * The factories for which we have logged a warning. This is used in order to avoid logging the same
+     * warnings many time. We do not bother using a concurrent map here since this map should be rarely used.
+     */
+    private final Map<AuthorityFactoryIdentifier, Boolean> warnings;
+
+    /**
      * Creates a new multi-factories instance using the given lists of factories.
      * Calls to {@code createFoo(String)} methods will scan the supplied factories in their iteration order when first needed.
      * The first factory having the requested {@linkplain GeodeticAuthorityFactory#getCodeSpaces() namespace} will be used.
@@ -210,7 +225,36 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
         }
         providers = ArraysExt.resize(p, length);
         factories = new ConcurrentHashMap<>();
+        warnings  = new HashMap<>();
         isIterationCompleted = new AtomicInteger(nullMask);
+    }
+
+    /**
+     * Returns whether this factory should relax some rules when processing a given authority code.
+     * If this value is {@code true}, then the behavior of this {@code MultiAuthoritiesFactory}
+     * is changed as below:
+     *
+     * <ul>
+     *   <li>If a version is specified in a URN but there is no factory for that specific version,
+     *       then fallback on a factory for the same authority but the default version.</li>
+     * </ul>
+     *
+     * The default value is {@code false}, which means that an exception will be thrown
+     * if there is no factory specifically for the requested version.
+     *
+     * @return Whether this factory should relax some rules when processing a given authority code.
+     */
+    public boolean isLenient() {
+        return isLenient;
+    }
+
+    /**
+     * Sets whether this factory should relax some rules when processing a given code.
+     *
+     * @param lenient Whether this factory should relax some rules when processing a given authority code.
+     */
+    public void setLenient(final boolean lenient) {
+        isLenient = lenient;
     }
 
     /**
@@ -593,19 +637,10 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
                             }
                             /*
                              * If there is a conflict, log a warning provided that we did not already reported
-                             * that conflict. The flag telling us if we already logged a warning is in the key,
-                             * so we have to find that key in the loop below. This is inefficient, but conflict
-                             * should not happen in a sane environment.
+                             * that conflict.
                              */
-                            if (factory != cached) {
-                                for (final AuthorityFactoryIdentifier identifier : factories.keySet()) {
-                                    if (identifier.equals(versioned)) {
-                                        synchronized (provider) {
-                                            identifier.logConflictWarning(cached);
-                                        }
-                                        break;
-                                    }
-                                }
+                            if (factory != cached && canLog(versioned)) {
+                                versioned.logConflict(cached);
                             }
                             if (request.equals(versioned)) {
                                 return cached;
@@ -654,8 +689,31 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
                 doneMask = isIterationCompleted.get();
             }
         }
-        final String authority = request.getAuthority().toString();
+        /*
+         * No factory found. Before to fail, search for a factory for the default version if we are allowed to.
+         */
+        if (request.hasVersion() && isLenient) {
+            factory = getAuthorityFactory(request.versionOf(null));
+            if (canLog(request)) {
+                request.logFallback();
+            }
+            return factory;
+        }
+        final String authority = request.getAuthorityAndVersion().toString();
         throw new NoSuchAuthorityFactoryException(Errors.format(Errors.Keys.UnknownAuthority_1, authority), authority);
+    }
+
+    /**
+     * Returns {@code true} if this {@code MultiAuthoritiesFactory} can log a warning for the given factory.
+     */
+    private boolean canLog(AuthorityFactoryIdentifier identifier) {
+        synchronized (warnings) {
+            if (warnings.containsKey(identifier)) {
+                return false;
+            }
+            // Invoke identifier.intern() only if needed.
+            return warnings.putIfAbsent(identifier.intern(), Boolean.TRUE) == null;
+        }
     }
 
     /**

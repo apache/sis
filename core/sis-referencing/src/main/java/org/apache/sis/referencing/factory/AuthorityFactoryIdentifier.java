@@ -124,20 +124,6 @@ final class AuthorityFactoryIdentifier {
     private String version;
 
     /**
-     * {@code true} if {@code MultiAuthoritiesFactory} found more than one factory for this identifier.
-     * This is rarely needed, unless there is a configuration problem. This information is ignored by
-     * all methods in this class except {@link #conflict(AuthorityFactory)}, which use this field only
-     * for avoiding to log the same message twice.
-     *
-     * <p>This field does not need to be declared {@code volatile} because {@code MultiAuthoritiesFactory}
-     * will read and write this field (indirectly, though a call to {@code logConflictWarning(…)} only in
-     * a {@code synchronized} block.</p>
-     *
-     * @see #logConflictWarning(AuthorityFactory)
-     */
-    private boolean hasLoggedWarning;
-
-    /**
      * Creates a new identifier for a factory of the given type, authority and version.
      * The given authority shall be already in upper cases and the version in lower cases
      * (this is not verified by this constructor).
@@ -187,7 +173,7 @@ final class AuthorityFactoryIdentifier {
      * Creates a new identifier for the same type and authority than this identifier, but a different version
      * extracted from the given authority.
      *
-     * @param  factory The factory's authority.
+     * @param  factory The factory's authority, or {@code null} for creating an identifier without version.
      * @return An identifier for the version of the given authority, or {@code this} if the version is the same.
      */
     AuthorityFactoryIdentifier versionOf(final Citation factory) {
@@ -252,7 +238,7 @@ final class AuthorityFactoryIdentifier {
     /**
      * Returns the authority with the version, if any.
      */
-    CharSequence getAuthority() {
+    CharSequence getAuthorityAndVersion() {
         CharSequence name = authority;
         if (hasVersion()) {
             name = Vocabulary.formatInternational(Vocabulary.Keys.Version_2, name, version);
@@ -270,19 +256,31 @@ final class AuthorityFactoryIdentifier {
     /**
      * Logs a message reporting a conflict between the factory identified by this {@code AuthorityFactoryIdentifier}
      * and another factory, if this instance has not already logged a warning. This method assumes that it is invoked
-     * by the {@code MultiAuthoritiesFactory.getAuthorityFactory(…)} method in a synchronized block.
+     * by the {@code MultiAuthoritiesFactory.getAuthorityFactory(…)} method.
      *
      * @param used The factory which will be used.
      */
-    void logConflictWarning(final AuthorityFactory used) {
-        if (!hasLoggedWarning) {
-            hasLoggedWarning = true;
-            final LogRecord record = Messages.getResources(null).getLogRecord(Level.WARNING,
-                    Messages.Keys.IgnoredServiceProvider_3, TYPES[type], getAuthority(), Classes.getClass(used));
-            record.setLoggerName(Loggers.CRS_FACTORY);
-            // MultiAuthoritiesFactory.getAuthorityFactory(…) is the nearest public API.
-            Logging.log(MultiAuthoritiesFactory.class, "getAuthorityFactory", record);
-        }
+    void logConflict(final AuthorityFactory used) {
+        log(Messages.getResources(null).getLogRecord(Level.WARNING, Messages.Keys.IgnoredServiceProvider_3,
+                TYPES[type], getAuthorityAndVersion(), Classes.getClass(used)));
+    }
+
+    /**
+     * Logs a warning about a factory not found for the requested version, in which case
+     * {@code AuthorityFactoryIdentifier} fallback on a default version.
+     */
+    void logFallback() {
+        log(Messages.getResources(null).getLogRecord(Level.WARNING, Messages.Keys.FallbackDefaultFactoryVersion_2,
+                authority, version));
+    }
+
+    /**
+     * Do the logging of the warning prepared by the above methods.
+     */
+    private void log(final LogRecord record) {
+        record.setLoggerName(Loggers.CRS_FACTORY);
+        // MultiAuthoritiesFactory.getAuthorityFactory(…) is the nearest public API.
+        Logging.log(MultiAuthoritiesFactory.class, "getAuthorityFactory", record);
     }
 
     /**

@@ -388,6 +388,8 @@ public final class IdentifiedObjects extends Static {
      *     String urn = toURN(object.getClass(), getIdentifier(object, authority));
      * }
      *
+     * This method can be seen as a converse of {@link CRS#forCode(String)}.
+     *
      * @param  object The object (usually a {@linkplain org.apache.sis.referencing.crs.AbstractCRS
      *         coordinate reference system}) whose identifier is to be found, or {@code null}.
      * @param  authority The authority for the identifier to return, or {@code null} for
@@ -432,6 +434,8 @@ public final class IdentifiedObjects extends Static {
      * {@preformat java
      *     String code = toString(getIdentifier(object, Citations.EPSG));
      * }
+     *
+     * This method can be seen as a converse of {@link CRS#forCode(String)}.
      *
      * @param  object The object (usually a {@linkplain org.apache.sis.referencing.crs.AbstractCRS
      *         coordinate reference system}) whose EPSG code is to be found, or {@code null}.
@@ -582,6 +586,8 @@ public final class IdentifiedObjects extends Static {
      *
      * The reason why the authorities are restricted to the above white list is because this method formats a URN
      * in the OGC namespace. Consequently the URN should use only components recognized by the OGC Naming Authority.
+     *
+     * <p>The above tables may be expanded in any future SIS version.</p>
      *
      * @param  type A type assignable to one of the types listed in above table.
      * @param  identifier The identifier for which to format a URN, or {@code null}.
