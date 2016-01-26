@@ -113,12 +113,12 @@ final class StandardDefinitions {
 
     /**
      * Adds to the given properties an additional identifier in the {@code "CRS"} namespace.
-     * This method presume that the only identifier that existed before this method call was the EPSG one.
+     * This method presumes that the only identifier that existed before this method call was the EPSG one.
      */
     private static void addWMS(final Map<String,Object> properties, final String code) {
         properties.put(IDENTIFIERS_KEY, new NamedIdentifier[] {
             (NamedIdentifier) properties.get(IDENTIFIERS_KEY),
-            new NamedIdentifier(Citations.OGC, code)
+            new NamedIdentifier(Citations.WMS, code)
         });
     }
 

@@ -24,7 +24,7 @@ import static java.lang.StrictMath.*;
 import static org.apache.sis.internal.metadata.ReferencingServices.AUTHALIC_RADIUS;
 
 // Test imports
-import org.apache.sis.test.mock.GeodeticDatumMock;
+import org.apache.sis.referencing.datum.GeodeticDatumMock;
 
 
 /**

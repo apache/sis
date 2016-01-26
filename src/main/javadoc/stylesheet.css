@@ -180,7 +180,7 @@ div.block ol {
 div.block ul > li,
 div.block ol > li {
   margin-top:    0;
-  margin-bottom: 3px;
+  margin-bottom: 0;
 }
 
 div.block ul.verbose > li,

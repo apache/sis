@@ -20,9 +20,9 @@ import java.util.AbstractCollection;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
-import java.util.NoSuchElementException;
 import org.apache.sis.metadata.AbstractMetadata;
 import org.apache.sis.internal.jaxb.Context;
+import org.apache.sis.internal.util.AbstractIterator;
 import org.apache.sis.util.resources.Messages;
 import org.apache.sis.util.ArgumentChecks;
 
@@ -257,16 +257,11 @@ public abstract class LegacyPropertyAdapter<L,N> extends AbstractCollection<L> {
     @Override
     public final Iterator<L> iterator() {
         final Iterator<N> it = elements.iterator();
-        return new Iterator<L>() {
+        return new AbstractIterator<L>() {
             /**
              * The container of the next value to return.
              */
             private N container;
-
-            /**
-             * The next value to return, or {@code null} if not yet verified.
-             */
-            private L next;
 
             /**
              * Returns {@code true} if there is more elements to iterate.
@@ -286,22 +281,6 @@ public abstract class LegacyPropertyAdapter<L,N> extends AbstractCollection<L> {
                 }
                 container = null;
                 return false;
-            }
-
-            /**
-             * Returns the next element.
-             */
-            @Override
-            public final L next() {
-                L value = next;
-                if (value == null) {
-                    if (!hasNext()) {
-                        throw new NoSuchElementException();
-                    }
-                    value = next;
-                }
-                next = null;
-                return value;
             }
 
             /**

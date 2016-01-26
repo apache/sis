@@ -102,9 +102,9 @@ public class SimpleIdentifier implements Identifier, Deprecable, Serializable {
     }
 
     /**
-     * Returns the name or identifier of the person or organization responsible for namespace,
-     * or {@code null} if none. The default implementation returns the shortest identifier of
-     * the {@linkplain #getAuthority() authority}, if any.
+     * Returns the identifier or namespace in which the code is valid, or {@code null} if none.
+     * The default implementation returns the shortest identifier of the {@linkplain #getAuthority() authority},
+     * if any.
      *
      * @return A code space inferred from the authority given at construction time, or {@code null} if none.
      */

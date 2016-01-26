@@ -32,7 +32,7 @@ import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.internal.util.Constants;
 
 // Test dependencies
-import org.apache.sis.test.mock.GeodeticDatumMock;
+import org.apache.sis.referencing.datum.GeodeticDatumMock;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -194,7 +194,7 @@ public final strictfp class StandardDefinitionsTest extends TestCase {
         crs = StandardDefinitions.createVerticalCRS(CommonCRS.Vertical.NAVD88.crs, datum);
         assertEquals("name", "NAVD88 height", crs.getName().getCode());
         assertEquals("identifier", "5703", IdentifiedObjects.getIdentifier(crs, Citations.EPSG).getCode());
-        assertEquals("identifier",   "88", IdentifiedObjects.getIdentifier(crs, Citations.OGC ).getCode());
+        assertEquals("identifier",   "88", IdentifiedObjects.getIdentifier(crs, Citations.WMS ).getCode());
         assertEquals("direction", AxisDirection.UP, crs.getCoordinateSystem().getAxis(0).getDirection());
 
         datum = StandardDefinitions.createVerticalDatum(CommonCRS.Vertical.MEAN_SEA_LEVEL.datum);
