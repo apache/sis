@@ -170,6 +170,7 @@ import org.junit.BeforeClass;
 
     org.apache.sis.referencing.StandardDefinitionsTest.class,
     org.apache.sis.referencing.CommonCRSTest.class,
+    org.apache.sis.referencing.EPSGFactoryFallbackTest.class,
     org.apache.sis.referencing.CRSTest.class,
     org.apache.sis.referencing.factory.GIGS3002.class,
     org.apache.sis.referencing.factory.GIGS3003.class,
@@ -179,6 +180,7 @@ import org.junit.BeforeClass;
     org.apache.sis.referencing.factory.CommonAuthorityFactoryTest.class,
     org.apache.sis.referencing.factory.AuthorityFactoryProxyTest.class,
     org.apache.sis.referencing.factory.IdentifiedObjectFinderTest.class,
+    org.apache.sis.referencing.factory.MultiAuthoritiesFactoryTest.class,
     org.apache.sis.referencing.factory.GIGS2001.class,
     org.apache.sis.referencing.factory.GIGS2002.class,
     org.apache.sis.referencing.factory.GIGS2003.class,

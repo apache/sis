@@ -40,7 +40,6 @@ import static org.apache.sis.internal.metadata.ReferencingServices.NAUTICAL_MILE
 import org.apache.sis.internal.referencing.provider.FranceGeocentricInterpolationTest;
 import org.apache.sis.internal.referencing.provider.GeocentricTranslationTest;
 import org.apache.sis.referencing.datum.HardCodedDatum;
-import org.apache.sis.test.mock.MathTransformFactoryMock;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestUtilities;

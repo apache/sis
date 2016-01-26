@@ -19,6 +19,10 @@
  * Provides objects that simulate the behavior of complex or unavailable real objects.
  * Mocks are often used as a replacement for objects to be defined only in dependant modules.
  *
+ * <p>This package does not provide all mocks defined by SIS, but only the mocks that could not be put in
+ * the right package for the interface that they implement. To get a list of all mocks used in SIS tests,
+ * we need to search for classes ending in {@code *Mock}.</p>
+ *
  * <p>Objects defined in this package are only for SIS testing purpose any many change
  * in any future version without notice.</p>
  *

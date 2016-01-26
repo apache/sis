@@ -20,7 +20,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.Collections;
+import java.util.Arrays;
 import javax.measure.unit.SI;
 import javax.measure.unit.NonSI;
 import javax.measure.unit.Unit;
@@ -201,6 +203,14 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
     private static final String AUTO2 = "AUTO2";
 
     /**
+     * The namespaces of codes defined by OGC.
+     *
+     * @see #getCodeSpaces()
+     */
+    private static final Set<String> CODESPACES = Collections.unmodifiableSet(
+            new LinkedHashSet<>(Arrays.asList(Constants.OGC, Constants.CRS, "AUTO", AUTO2)));
+
+    /**
      * The bit for saying that a namespace is the legacy {@code "AUTO"} namespace.
      */
     private static final int LEGACY_MASK = 0x80000000;
@@ -227,7 +237,7 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
     /**
      * The parameter separator for codes in the {@code "AUTO(2)"} namespace.
      */
-    private static final char SEPARATOR = ',';
+    static final char SEPARATOR = ',';
 
     /**
      * The codes known to this factory, associated with their CRS type. This is set to an empty map
@@ -255,23 +265,22 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
     }
 
     /**
-     * Returns the organization responsible for definition of the CRS codes recognized by this factory.
-     * The authority for this factory is the <cite>Open Geospatial Consortium</cite>.
+     * Returns the specification that defines the codes recognized by this factory. The definitive source for this
+     * factory is OGC <a href="http://www.opengeospatial.org/standards/wms">Web Map Service</a> (WMS) specification,
+     * also available as the ISO 19128 <cite>Geographic Information — Web map server interface</cite> standard.
      *
-     * @return The OGC authority.
+     * <p>While the authority is WMS, the {@linkplain org.apache.sis.xml.IdentifierSpace#getName() namespace}
+     * of that authority is set to {@code "OGC"}. Apache SIS does that for consistency with the namespace used
+     * in URNs (for example {@code "urn:ogc:def:crs:OGC:1.3:CRS84"}).</p>
      *
-     * @see Citations#OGC
+     * @return The <cite>"Web Map Service"</cite> authority.
+     *
+     * @see #getCodeSpaces()
+     * @see Citations#WMS
      */
     @Override
     public Citation getAuthority() {
-        return Citations.OGC;
-    }
-
-    /**
-     * Returns {@code true} if the given portion of the code is equal, ignoring case, to the given namespace.
-     */
-    private static boolean regionMatches(final String namespace, final String code, final int start, final int end) {
-        return (namespace.length() == end - start) && code.regionMatches(true, start, namespace, 0, namespace.length());
+        return Citations.WMS;
     }
 
     /**
@@ -311,7 +320,7 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
                 }
                 if (!isRecognized) {
                     throw new NoSuchAuthorityCodeException(Errors.format(Errors.Keys.UnknownAuthority_1,
-                            CharSequences.trimWhitespaces(code.substring(0, s))), Constants.OGC, code);
+                            CharSequences.trimWhitespaces(code, 0, s)), Constants.OGC, code);
                 }
             }
         }
@@ -370,6 +379,28 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
         if (codes.put(namespace + DefaultNameSpace.DEFAULT_SEPARATOR + code, type) != null) {
             throw new FactoryException();    // Should never happen, but we are paranoiac.
         }
+    }
+
+    /**
+     * Returns the namespaces defined by the OGC specifications implemented by this factory.
+     * At the difference of other factories, the namespaces of {@code CommonAuthorityFactory}
+     * are quite different than the {@linkplain #getAuthority() authority} title or identifier:
+     *
+     * <ul>
+     *   <li><b>Authority:</b> {@code "WMS"} (for <cite>"Web Map Services"</cite>)</li>
+     *   <li><b>Namespaces:</b> {@code "CRS"}, {@code "AUTO"}, {@code "AUTO2"}.
+     *       The {@code "OGC"} namespace is also accepted for compatibility reason,
+     *       but its scope is wider than the above-cited namespaces.</li>
+     * </ul>
+     *
+     * @return A set containing at least the {@code "CRS"}, {@code "AUTO"} and {@code "AUTO2"} strings.
+     *
+     * @see #getAuthority()
+     * @see Citations#WMS
+     */
+    @Override
+    public Set<String> getCodeSpaces() {
+        return CODESPACES;
     }
 
     /**

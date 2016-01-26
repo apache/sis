@@ -71,12 +71,12 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
     }
 
     /**
-     * Returns the organization or party responsible for definition and maintenance of the database.
+     * Returns the database or specification that defines the codes recognized by this factory.
      * This method may return {@code null} if it can not obtain this information, for example because
      * the connection to a database is not available.
      *
-     * <div class="note"><b>Example</b>
-     * A factory that create coordinate reference system objects from EPSG codes could return
+     * <div class="note"><b>Example:</b>
+     * a factory that create coordinate reference system objects from EPSG codes could return
      * a citation like below:
      *
      * {@preformat text
@@ -100,6 +100,43 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      */
     @Override
     public abstract Citation getAuthority();
+
+    /**
+     * Returns all namespaces recognized by this factory. Those namespaces can appear before codes in
+     * calls to {@code createFoo(String)} methods, for example {@code "EPSG"} in {@code "EPSG::4326"}.
+     * Namespaces are case-insensitive.
+     *
+     * <p>The namespaces are closely related to the {@linkplain #getAuthority() authority}. Often the namespace is
+     * the authority {@linkplain org.apache.sis.metadata.iso.citation.DefaultCitation#getIdentifiers() identifier},
+     * but not always.</p>
+     *
+     * <div class="note"><b>Examples:</b>
+     * <ul class="verbose">
+     *   <li>The {@link org.apache.sis.referencing.factory.sql.EPSGFactory} authority identifier is {@code "EPSG"}
+     *       and its {@code getCodeSpaces()} method returns a set containing {@code "EPSG"}. So in this example,
+     *       authority and namespace match. That namespace value means that {@code EPSGFactory.createFoo(String)}
+     *       methods accept both {@code "EPSG::4326"} (case-insensitive) and {@code "4326"} codes as argument.</li>
+     *
+     *   <li>The {@link org.apache.sis.referencing.factory.sql.EPSGDataAccess} authority identifier is {@code "EPSG"}
+     *       but its {@code getCodeSpaces()} method returns an empty set. This means that despite the EPSG authority,
+     *       {@code EPSGDataAccess.createFoo(String)} methods accept only codes like {@code "4326"} without
+     *       {@code "EPSG:"} prefix (the reason is that {@code EPSGDataAccess} is not expected to be used directly).</li>
+     *
+     *   <li>The {@link CommonAuthorityFactory} authority identifiers are ISO 19128 and OGC 06-042 (the WMS specification)
+     *       but its {@code getCodeSpaces()} method returns a set containing {@code "CRS"}, {@code "AUTO"} and {@code "AUTO2"}.
+     *       While ISO 19128 is defined as the first authority, the namespace is actually defined by OGC.</li>
+     * </ul></div>
+     *
+     * The default implementation infers the namespace from the {@linkplain #getAuthority() authority}.
+     * Subclasses can override this method, but the set should always contain the same elements during
+     * all factory lifetime.
+     *
+     * @return The namespaces recognized by this factory, or an empty set if none.
+     */
+    public Set<String> getCodeSpaces() {
+        final String authority = Citations.getCodeSpace(getAuthority());
+        return (authority != null) ? Collections.singleton(authority) : Collections.<String>emptySet();
+    }
 
     /**
      * Returns a description of the object corresponding to a code.
@@ -750,7 +787,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
     }
 
     /**
-     * Creates 2- or 3-dimensional coordinate system for geodetic latitude and longitude,
+     * Creates a 2- or 3-dimensional coordinate system for geodetic latitude and longitude,
      * sometime with ellipsoidal height.
      *
      * <div class="note"><b>Example:</b>
@@ -1031,7 +1068,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
     }
 
     /**
-     * Creates description of the algorithm and parameters used to perform a coordinate operation.
+     * Creates a description of the algorithm and parameters used to perform a coordinate operation.
      * An {@code OperationMethod} is a kind of metadata: it does not perform any coordinate operation
      * (e.g. map projection) by itself, but tells us what is needed in order to perform such operation.
      *
@@ -1125,33 +1162,40 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
     }
 
     /**
-     * Trims the authority scope, if present. For example if this factory is an EPSG authority factory
+     * Returns {@code true} if the given portion of the code is equal, ignoring case, to the given namespace.
+     */
+    static boolean regionMatches(final String namespace, final String code, final int start, final int end) {
+        return (namespace.length() == end - start) && code.regionMatches(true, start, namespace, 0, namespace.length());
+    }
+
+    /**
+     * Trims the namespace, if present. For example if this factory is an EPSG authority factory
      * and the specified code start with the {@code "EPSG:"} prefix, then the prefix is removed.
      * Otherwise, the string is returned unchanged (except for leading and trailing spaces).
      *
      * @param  code The code to trim.
-     * @param  authority The authority factory, or {@code null} for {@link #getAuthority()}.
-     * @return The code with the authority part removed if that part matched the expected authority.
+     * @return The code with the namespace part removed if that part matched one of the values given by
+     *         {@link #getCodeSpaces()}.
      */
-    final String trimAuthority(final String code, Citation authority) {
+    final String trimNamespace(final String code) {
         int s = code.indexOf(DefaultNameSpace.DEFAULT_SEPARATOR);
         if (s >= 0) {
-            if (authority == null) {
-                authority = getAuthority();     // Costly operation for EPSGDataAccess.
-            }
-            if (Citations.identifierMatches(authority, null, code.substring(0, s))) {    // Comparison ignores spaces.
-                final int n = code.indexOf(DefaultNameSpace.DEFAULT_SEPARATOR, s + 1);
-                if (n >= 0) {
-                    /*
-                     * The separator sometime appears twice, as in "EPSG::4326" or "EPSG:8.8:4326".
-                     * The part between the two separators is the verion number, which we ignore in
-                     * this simple version.
-                     */
-                    s = n;
+            final int end   = CharSequences.skipTrailingWhitespaces(code, 0, s);
+            final int start = CharSequences.skipLeadingWhitespaces (code, 0, end);
+            for (final String codespace : getCodeSpaces()) {
+                if (regionMatches(codespace, code, start, end)) {
+                    final int n = code.indexOf(DefaultNameSpace.DEFAULT_SEPARATOR, s + 1);
+                    if (n >= 0) {
+                        /*
+                         * The separator sometime appears twice, as in "EPSG::4326" or "EPSG:8.8:4326".
+                         * The part between the two separators is the verion number, which we ignore in
+                         * this simple version.
+                         */
+                        s = n;
+                    }
+                    final int length = code.length();
+                    return CharSequences.trimWhitespaces(code, s+1, length).toString();
                 }
-                final int length = code.length();
-                s = CharSequences.skipLeadingWhitespaces(code, s+1, length);
-                return code.substring(s, CharSequences.skipTrailingWhitespaces(code, s, length));
             }
         }
         return CharSequences.trimWhitespaces(code);
@@ -1191,7 +1235,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
         final Identifier id = object.getName();
         final Citation authority = (id != null) ? id.getAuthority() : getAuthority();
         throw new NoSuchAuthorityCodeException(Errors.format(Errors.Keys.UnexpectedTypeForReference_3, code, type, actual),
-                Citations.getIdentifier(authority, false), trimAuthority(code, authority), code);
+                Citations.getIdentifier(authority, false), trimNamespace(code), code);
     }
 
     /**

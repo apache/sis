@@ -40,7 +40,7 @@ import org.apache.sis.internal.util.MetadataServices;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.6
- * @version 0.6
+ * @version 0.7
  * @module
  *
  * @see IdentifierSpace
@@ -82,7 +82,7 @@ public class CitationConstant extends SimpleCitation {
          * </ul>
          */
         @Override
-        public final String getName() {
+        public String getName() {
             return title;
         }
 
@@ -92,7 +92,7 @@ public class CitationConstant extends SimpleCitation {
         @Debug
         @Override
         public final String toString() {
-            return "IdentifierSpace[“" + getName() + "”]";
+            return "IdentifierSpace[" + title + ']';
         }
     }
 
@@ -136,7 +136,8 @@ public class CitationConstant extends SimpleCitation {
                 if (c == null) {
                     c = MetadataServices.getInstance().createCitation(title);
                     if (c == null) {
-                        // 'sis-metadata' module not on the classpath (should be very rare).
+                        // 'sis-metadata' module not on the classpath (should be very rare)
+                        // or no citation defined for the given primary key.
                         c = new SimpleCitation(title);
                     }
                     delegate = c;
@@ -173,7 +174,15 @@ public class CitationConstant extends SimpleCitation {
      * @return The instance to use, as an unique instance if possible.
      */
     protected Object readResolve() {
-        final Citation c = MetadataServices.getInstance().getCitationConstant(title);
-        return (c != null) ? c : this;
+        CitationConstant c = MetadataServices.getInstance().getCitationConstant(title);
+        if (c == null) {
+            /*
+             * Should happen only if the sis-metadata module is not on the classpath (should be rare)
+             * or if the Citation has been serialized on a more recent version of Apache SIS than the
+             * current version.
+             */
+            c = this;
+        }
+        return c;
     }
 }

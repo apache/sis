@@ -23,15 +23,14 @@ import java.util.LinkedHashSet;
 import org.opengis.util.GenericName;
 import org.opengis.util.FactoryException;
 import org.opengis.metadata.Identifier;
-import org.opengis.metadata.citation.Citation;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.AuthorityFactory;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.referencing.IdentifiedObjects;
-import org.apache.sis.internal.util.Citations;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.util.collection.BackingStoreException;
+import org.apache.sis.util.iso.DefaultNameSpace;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ComparisonMode;
@@ -154,6 +153,13 @@ public class IdentifiedObjectFinder {
     private boolean ignoreAxes;
 
     /**
+     * {@code true} if the search should ignore names, aliases and identifiers. This is set to {@code true}
+     * only when this finder is wrapped by a {@link MultiAuthoritiesFactory} finder, which performs it own
+     * search based on identifiers.
+     */
+    boolean ignoreIdentifiers;
+
+    /**
      * Creates a finder using the specified factory.
      *
      * <div class="note"><b>Design note:</b>
@@ -183,17 +189,6 @@ public class IdentifiedObjectFinder {
         wrapper = other;
         setSearchDomain(other.domain);
         setIgnoringAxes(other.ignoreAxes);
-    }
-
-    /**
-     * Returns the authority of the factory used by this finder.
-     * The default implementation delegates to {@link GeodeticAuthorityFactory#getAuthority()}.
-     *
-     * @return The authority of the factory used for the searches, or {@code null} if unknown.
-     * @throws FactoryException If an error occurred while fetching the authority.
-     */
-    public Citation getAuthority() throws FactoryException {
-        return factory.getAuthority();
     }
 
     /**
@@ -305,23 +300,25 @@ public class IdentifiedObjectFinder {
             final AuthorityFactoryProxy<?> previous = proxy;
             proxy = AuthorityFactoryProxy.getInstance(object.getClass());
             try {
-                /*
-                 * First check if one of the identifiers can be used to find directly an identified object.
-                 * Verify that the object that we found is actually equal to given one; we do not blindly
-                 * trust the identifiers in the user object.
-                 */
-                IdentifiedObject candidate = createFromIdentifiers(object);
-                if (candidate != null) {
-                    return Collections.singleton(candidate);    // Not worth to cache.
-                }
-                /*
-                 * We are unable to find the object from its identifiers. Try a quick name lookup.
-                 * Some implementations like the one backed by the EPSG database are capable to find
-                 * an object from its name.
-                 */
-                candidate = createFromNames(object);
-                if (candidate != null) {
-                    return Collections.singleton(candidate);    // Not worth to cache.
+                if (!ignoreIdentifiers) {
+                    /*
+                     * First check if one of the identifiers can be used to find directly an identified object.
+                     * Verify that the object that we found is actually equal to given one; we do not blindly
+                     * trust the identifiers in the user object.
+                     */
+                    IdentifiedObject candidate = createFromIdentifiers(object);
+                    if (candidate != null) {
+                        return Collections.singleton(candidate);    // Not worth to cache.
+                    }
+                    /*
+                     * We are unable to find the object from its identifiers. Try a quick name lookup.
+                     * Some implementations like the one backed by the EPSG database are capable to find
+                     * an object from its name.
+                     */
+                    candidate = createFromNames(object);
+                    if (candidate != null) {
+                        return Collections.singleton(candidate);    // Not worth to cache.
+                    }
                 }
                 /*
                  * Here we exhausted the quick paths.
@@ -385,10 +382,15 @@ public class IdentifiedObjectFinder {
      * @see #createFromNames(IdentifiedObject)
      */
     private IdentifiedObject createFromIdentifiers(final IdentifiedObject object) throws FactoryException {
-        final Citation authority = getAuthority();
         for (final Identifier id : object.getIdentifiers()) {
-            if (Citations.identifierMatches(authority, id.getAuthority())) {
-                final String code = IdentifiedObjects.toString(id);
+            final String code = IdentifiedObjects.toString(id);
+            /*
+             * We will process only codes with a namespace (e.g. "AUTHORITY:CODE") for avoiding ambiguity.
+             * We do not try to check by ourselves if the identifier is in the namespace of the factory,
+             * because calling factory.getAuthorityCodes() or factory.getCodeSpaces() may be costly for
+             * some implementations.
+             */
+            if (code.indexOf(DefaultNameSpace.DEFAULT_SEPARATOR) >= 0) {
                 final IdentifiedObject candidate;
                 try {
                     candidate = create(code);
@@ -458,11 +460,11 @@ public class IdentifiedObjectFinder {
     /**
      * Creates an object equals (optionally ignoring metadata), to the specified object.
      * This method scans the {@linkplain #getCodeCandidates(IdentifiedObject) authority codes},
-     * create the objects and returns the first one which is equal to the specified object in
+     * creates the objects and returns the first one which is equal to the specified object in
      * the sense of {@link Utilities#deepEquals(Object, Object, ComparisonMode)}.
      *
-     * <p>This method may be used in order to get a fully {@linkplain AbstractIdentifiedObject identified
-     * object} from an object without {@linkplain AbstractIdentifiedObject#getIdentifiers() identifiers}.</p>
+     * <p>This method may be used in order to get a fully {@linkplain AbstractIdentifiedObject identified object}
+     * from an object without {@linkplain AbstractIdentifiedObject#getIdentifiers() identifiers}.</p>
      *
      * <p>Scanning the whole set of authority codes may be slow. Users should try
      * <code>{@linkplain #createFromIdentifiers createFromIdentifiers}(object)</code> and/or
@@ -476,7 +478,7 @@ public class IdentifiedObjectFinder {
      * @see #createFromIdentifiers(IdentifiedObject)
      * @see #createFromNames(IdentifiedObject)
      */
-    private Set<IdentifiedObject> createFromCodes(final IdentifiedObject object) throws FactoryException {
+    Set<IdentifiedObject> createFromCodes(final IdentifiedObject object) throws FactoryException {
         final Set<IdentifiedObject> result = new LinkedHashSet<>();     // We need to preserve order.
         for (final String code : getCodeCandidates(object)) {
             final IdentifiedObject candidate;
@@ -536,6 +538,6 @@ public class IdentifiedObjectFinder {
      * Invoked when an exception occurred during the creation of a candidate from a code.
      */
     private static void exceptionOccurred(final FactoryException exception) {
-        Logging.recoverableException(Logging.getLogger(Loggers.CRS_FACTORY), IdentifiedObjectFinder.class, "fine", exception);
+        Logging.recoverableException(Logging.getLogger(Loggers.CRS_FACTORY), IdentifiedObjectFinder.class, "find", exception);
     }
 }

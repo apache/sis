@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.test.mock;
+package org.apache.sis.referencing.operation.transform;
 
 import java.util.Set;
 import java.util.Collections;
@@ -66,9 +66,7 @@ public final strictfp class MathTransformFactoryMock implements MathTransformFac
      */
     @Override
     public Set<OperationMethod> getAvailableMethods(Class<? extends SingleOperation> type) {
-        return type.isInstance(method)
-               ? Collections.<OperationMethod>singleton(method)
-               : Collections.<OperationMethod>emptySet();
+        return type.isInstance(method) ? Collections.<OperationMethod>singleton(method) : Collections.<OperationMethod>emptySet();
     }
 
     /**

@@ -29,7 +29,7 @@
  * The method Javadoc describes the steps for fetching that data source.
  * When used in a JavaEE container, the data source can be configured as below:
  *
- * <ol>
+ * <ol class="verbose">
  *   <li><p>Make the JDBC driver available to the web container and its applications. On Tomcat, this
  *     is accomplished by installing the driver's JAR files into the {@code $CATALINA_HOME/lib} directory
  *     (<a href="https://tomcat.apache.org/tomcat-9.0-doc/jndi-resources-howto.html">source</a>).</p></li>
