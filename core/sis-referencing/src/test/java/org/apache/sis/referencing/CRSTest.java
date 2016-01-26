@@ -82,7 +82,7 @@ public final strictfp class CRSTest extends TestCase {
          * Following test is skipped when using the EPSG factory because EPSG uses
          * the "Gravity-related depth" axis name while ISO 19111 mandates "Depth".
          */
-        if (AuthorityFactories.EPSG() instanceof EPSGFactoryFallback) {
+        if (EPSGFactoryFallback.PENDING_NEXT_EPSG) {
             verifyForCode(CommonCRS.Vertical.DEPTH.crs(), "EPSG:5715");
         }
     }

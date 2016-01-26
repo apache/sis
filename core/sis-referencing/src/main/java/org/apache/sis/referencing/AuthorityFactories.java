@@ -64,9 +64,7 @@ final class AuthorityFactories<T extends AuthorityFactory> extends LazySet<T> {
     {
         @Override
         public void reload() {
-            synchronized (EPSG) {
-                EPSG[0] = null;
-            }
+            EPSG(null);
             super.reload();
         }
     };
@@ -86,6 +84,15 @@ final class AuthorityFactories<T extends AuthorityFactory> extends LazySet<T> {
      */
     private AuthorityFactories(final Class<T> type) {
         super(ServiceLoader.load(type));
+    }
+
+    /**
+     * Sets the EPSG factory to the given value.
+     */
+    static void EPSG(final AuthorityFactory factory) {
+        synchronized (EPSG) {
+            EPSG[0] = factory;
+        }
     }
 
     /**
