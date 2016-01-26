@@ -30,6 +30,8 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.ConcurrentModificationException;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import javax.measure.unit.Unit;
 import org.opengis.referencing.*;
 import org.opengis.referencing.cs.*;
@@ -41,6 +43,7 @@ import org.opengis.metadata.extent.Extent;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.util.FactoryException;
 import org.opengis.util.InternationalString;
+import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.util.AbstractIterator;
 import org.apache.sis.internal.util.Citations;
 import org.apache.sis.internal.util.DefinitionURI;
@@ -51,7 +54,9 @@ import org.apache.sis.internal.util.SetOfUnknownSize;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.resources.Messages;
 import org.apache.sis.util.iso.DefaultNameSpace;
 import org.apache.sis.util.collection.BackingStoreException;
 
@@ -1360,6 +1365,57 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
     @Override
     public CoordinateOperation createCoordinateOperation(final String code) throws FactoryException {
         return create(AuthorityFactoryProxy.OPERATION, code);
+    }
+
+    /**
+     * Creates operations from source and target coordinate reference system codes.
+     * If the authority for the two given CRS is handled by the same factory, then
+     * this method delegates to that factory. Otherwise this method returns an empty set.
+     *
+     * @throws FactoryException if the object creation failed.
+     */
+    @Override
+    public Set<CoordinateOperation> createFromCoordinateReferenceSystemCodes(
+            final String sourceCRS, final String targetCRS) throws FactoryException
+    {
+        final Deferred deferred = new Deferred();
+        final CoordinateOperationAuthorityFactory factory = create(deferred, sourceCRS);
+        final String source = deferred.code;
+        if (create(deferred, targetCRS) == factory) {
+            return factory.createFromCoordinateReferenceSystemCodes(source, deferred.code);
+        }
+        /*
+         * No coordinate operation because of mismatched factories. This is not illegal (the result is an empty set)
+         * but it is worth to notify the user because this case has some chances to be an user error.
+         */
+        final LogRecord record = Messages.getResources(null).getLogRecord(Level.WARNING,
+                Messages.Keys.MismatchedOperationFactories_2, sourceCRS, targetCRS);
+        record.setLoggerName(Loggers.CRS_FACTORY);
+        Logging.log(MultiAuthoritiesFactory.class, "createFromCoordinateReferenceSystemCodes", record);
+        return super.createFromCoordinateReferenceSystemCodes(sourceCRS, targetCRS);
+    }
+
+    /**
+     * A proxy that does not execute immediately the {@code create} method on a factory,
+     * but instead stores information for later execution.
+     */
+    private static final class Deferred extends AuthorityFactoryProxy<CoordinateOperationAuthorityFactory> {
+        Deferred() {super(CoordinateOperationAuthorityFactory.class, AuthorityFactoryIdentifier.OPERATION);}
+
+        /** The authority code saved by the {@code createFromAPI(…)} method. */
+        String code;
+
+        /**
+         * Saves the given code in the {@link #code} field and returns the given factory unchanged.
+         * @throws FactoryException if the given factory is not an instance of {@link CoordinateOperationAuthorityFactory}.
+         */
+        @Override
+        CoordinateOperationAuthorityFactory createFromAPI(final AuthorityFactory factory, final String code)
+                throws FactoryException
+        {
+            this.code = code;
+            return opFactory(factory);
+        }
     }
 
     /**

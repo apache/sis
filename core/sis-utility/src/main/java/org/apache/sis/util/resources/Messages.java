@@ -208,6 +208,11 @@ public final class Messages extends IndexedResourceBundle {
         public static final short MismatchedEllipsoidAxisLength_3 = 9;
 
         /**
+         * No coordinate operation from “{0}” to “{1}” because of mismatched factories.
+         */
+        public static final short MismatchedOperationFactories_2 = 37;
+
+        /**
          * Despite its name, this parameter is effectively “{0}”.
          */
         public static final short MisnamedParameter_1 = 18;

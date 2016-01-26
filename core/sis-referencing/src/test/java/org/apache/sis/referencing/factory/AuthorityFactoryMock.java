@@ -18,6 +18,7 @@ package org.apache.sis.referencing.factory;
 
 import java.util.Set;
 import java.util.LinkedHashSet;
+import javax.measure.unit.Unit;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.referencing.IdentifiedObject;
@@ -31,8 +32,8 @@ import org.opengis.referencing.datum.DatumAuthorityFactory;
 import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.referencing.datum.PrimeMeridian;
 import org.opengis.referencing.datum.VerticalDatum;
+import org.opengis.referencing.operation.CoordinateOperationAuthorityFactory;
 import org.opengis.util.InternationalString;
-import javax.measure.unit.Unit;
 import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.internal.simple.SimpleCitation;
 import org.apache.sis.measure.Units;
@@ -52,7 +53,7 @@ import static org.junit.Assert.*;
  * @module
  */
 public final strictfp class AuthorityFactoryMock extends GeodeticAuthorityFactory
-        implements CRSAuthorityFactory, CSAuthorityFactory, DatumAuthorityFactory
+        implements CRSAuthorityFactory, CSAuthorityFactory, DatumAuthorityFactory, CoordinateOperationAuthorityFactory
 {
     /**
      * The authority.
