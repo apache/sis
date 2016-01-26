@@ -62,6 +62,10 @@ final class AuthorityFactories<T extends AuthorityFactory> extends LazySet<T> {
             new AuthorityFactories<>(DatumAuthorityFactory.class),
             new AuthorityFactories<>(CoordinateOperationAuthorityFactory.class))
     {
+        /** Anonymous constructor */ {
+            setLenient(true);
+        }
+
         @Override
         public void reload() {
             EPSG(null);

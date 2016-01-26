@@ -23,6 +23,7 @@ import java.util.Collections;
 import javax.measure.unit.NonSI;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
+import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystem;
@@ -38,6 +39,7 @@ import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.crs.TemporalCRS;
 import org.opengis.referencing.crs.VerticalCRS;
 import org.opengis.referencing.crs.EngineeringCRS;
+import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.apache.sis.internal.metadata.AxisDirections;
@@ -128,6 +130,9 @@ public final class CRS extends Static {
      *   <li>{@code "http://www.opengis.net/def/crs/epsg/0/4326"}</li>
      *   <li>{@code "http://www.opengis.net/gml/srs/epsg.xml#4326"}</li>
      * </ul>
+     *
+     * The {@link IdentifiedObjects#lookupURN(IdentifiedObject, Citation)} method can be seen
+     * as a converse of this method.
      *
      * @param  code The authority code.
      * @return The Coordinate Reference System for the given authority code.
