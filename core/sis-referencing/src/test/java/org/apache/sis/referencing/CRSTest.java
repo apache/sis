@@ -22,6 +22,10 @@ import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.util.FactoryException;
 import org.apache.sis.referencing.crs.DefaultCompoundCRS;
 import org.apache.sis.referencing.crs.HardCodedCRS;
+import org.apache.sis.util.ComparisonMode;
+import org.apache.sis.util.Utilities;
+
+// Test imports
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -35,7 +39,7 @@ import static org.apache.sis.test.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.5
+ * @version 0.7
  * @module
  */
 @DependsOn({
@@ -46,7 +50,7 @@ public final strictfp class CRSTest extends TestCase {
      * Asserts that the result of {@link CRS#forCode(String)} is the given CRS.
      */
     private static void verifyForCode(final SingleCRS expected, final String code) throws FactoryException {
-        assertSame(code, expected, CRS.forCode(code));
+        assertTrue(code, Utilities.deepEquals(expected, CRS.forCode(code), ComparisonMode.IGNORE_METADATA));
     }
 
     /**
@@ -74,7 +78,13 @@ public final strictfp class CRSTest extends TestCase {
         verifyForCode(CommonCRS.WGS72 .geographic3D(), "EPSG:4985");
         verifyForCode(CommonCRS.ETRS89.geographic3D(), "EPSG:4937");
         verifyForCode(CommonCRS.Vertical.MEAN_SEA_LEVEL.crs(), "EPSG:5714");
-        verifyForCode(CommonCRS.Vertical.DEPTH.crs(), "EPSG:5715");
+        /*
+         * Following test is skipped when using the EPSG factory because EPSG uses
+         * the "Gravity-related depth" axis name while ISO 19111 mandates "Depth".
+         */
+        if (AuthorityFactories.EPSG() instanceof EPSGFactoryFallback) {
+            verifyForCode(CommonCRS.Vertical.DEPTH.crs(), "EPSG:5715");
+        }
     }
 
     /**

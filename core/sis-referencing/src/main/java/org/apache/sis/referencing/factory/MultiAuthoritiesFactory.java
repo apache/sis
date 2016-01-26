@@ -45,6 +45,7 @@ import org.apache.sis.internal.util.AbstractIterator;
 import org.apache.sis.internal.util.Citations;
 import org.apache.sis.internal.util.DefinitionURI;
 import org.apache.sis.internal.util.CollectionsExt;
+import org.apache.sis.internal.util.LazySet;
 import org.apache.sis.internal.util.LazySynchronizedIterator;
 import org.apache.sis.internal.util.SetOfUnknownSize;
 import org.apache.sis.util.ArraysExt;
@@ -224,7 +225,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
      * <p>The {@link Set#contains(Object)} method of the returned set is lenient:
      * it accepts various ways to format a code even if the iterator returns only one form.
      * For example the {@code contains(Object)} method may return {@code true} for {@code "EPSG:4326"},
-     * {code "EPSG::4326"}, {@code "urn:ogc:def:crs:EPSG::4326"}, <i>etc.</i> even if
+     * {@code "EPSG::4326"}, {@code "urn:ogc:def:crs:EPSG::4326"}, <i>etc.</i> even if
      * the iterator returns only {@code "EPSG:4326"}.</p>
      *
      * <p><b>Warnings:</b></p>
@@ -1468,9 +1469,12 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
      */
     public void reload() {
         for (int type=0; type < providers.length; type++) {
-            final Iterable<?> provider = providers[type];
+            Iterable<?> provider = providers[type];
             if (provider != null) {
                 synchronized (provider) {
+                    if (provider instanceof LazySet<?>) {
+                        provider = ((LazySet<?>) provider).reload();
+                    }
                     if (provider instanceof ServiceLoader<?>) {
                         ((ServiceLoader<?>) provider).reload();
                     }
