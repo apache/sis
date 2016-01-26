@@ -404,13 +404,12 @@ public final class IdentifiedObjects extends Static {
         String urn = null;
         if (object != null) {
             for (final IdentifiedObject candidate : newFinder().find(object)) {
-                final Identifier id = getIdentifier(candidate, authority);
-                if (id != null) {
-                    final String previous = urn;
-                    urn = NameMeaning.toURN(candidate.getClass(), id.getCodeSpace(), id.getVersion(), id.getCode());
-                    if (previous != null && !previous.equals(urn)) {
+                final String c = toURN(candidate.getClass(), getIdentifier(candidate, authority));
+                if (c != null) {
+                    if (urn != null && !urn.equals(c)) {
                         return null;
                     }
+                    urn = c;
                 }
             }
         }

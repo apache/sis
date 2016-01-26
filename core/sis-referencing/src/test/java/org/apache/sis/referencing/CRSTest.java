@@ -43,7 +43,8 @@ import static org.apache.sis.test.Assert.*;
  * @module
  */
 @DependsOn({
-    CommonCRSTest.class
+    CommonCRSTest.class,
+    AuthorityFactoriesTest.class
 })
 public final strictfp class CRSTest extends TestCase {
     /**
@@ -250,5 +251,17 @@ public final strictfp class CRSTest extends TestCase {
     public void testGetGreenwichLongitude() {
         assertEquals(0,          CRS.getGreenwichLongitude(HardCodedCRS.WGS84), STRICT);
         assertEquals(2.33722917, CRS.getGreenwichLongitude(HardCodedCRS.NTF),   1E-12);
+    }
+
+    /**
+     * Tests {@link IdentifiedObjects#lookupEPSG(IdentifiedObject)} and
+     * {@link IdentifiedObjects#lookupURN(IdentifiedObject, Citation)}.
+     *
+     * @throws FactoryException if an error occurred during the lookup.
+     */
+    @Test
+    public void testIdentifiedObjectLookup() throws FactoryException {
+        IdentifiedObjectsTest.testLookupEPSG();
+        IdentifiedObjectsTest.testLookupWMS();
     }
 }
