@@ -26,16 +26,14 @@ import javax.measure.unit.Unit;
 import javax.measure.quantity.Duration;
 import org.opengis.util.FactoryException;
 import org.opengis.util.InternationalString;
-import org.opengis.util.NoSuchIdentifierException;
-import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.opengis.referencing.IdentifiedObject;
+import org.opengis.referencing.AuthorityFactory;
 import org.opengis.referencing.crs.GeodeticCRS;
 import org.opengis.referencing.crs.VerticalCRS;
 import org.opengis.referencing.crs.TemporalCRS;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.GeocentricCRS;
 import org.opengis.referencing.crs.ProjectedCRS;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.CRSAuthorityFactory;
 import org.opengis.referencing.cs.TimeCS;
 import org.opengis.referencing.cs.VerticalCS;
@@ -66,7 +64,6 @@ import org.apache.sis.internal.system.SystemListener;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.util.resources.Vocabulary;
-import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.math.MathFunctions;
@@ -75,11 +72,6 @@ import org.apache.sis.measure.Units;
 
 import static java.util.Collections.singletonMap;
 import static org.opengis.referencing.IdentifiedObject.NAME_KEY;
-import static org.apache.sis.internal.util.Constants.CRS;
-import static org.apache.sis.internal.util.Constants.EPSG;
-import static org.apache.sis.internal.util.Constants.CRS27;
-import static org.apache.sis.internal.util.Constants.CRS83;
-import static org.apache.sis.internal.util.Constants.CRS84;
 
 
 /**
@@ -920,26 +912,6 @@ public enum CommonCRS {
         return crs;
     }
 
-    /**
-     * Returns the CRS for the given EPSG code, or {@code null} if none.
-     * This is a helper method for {@link #forCode(String, String, FactoryException)} only.
-     */
-    private CoordinateReferenceSystem forCode(final int code) {
-        if (code == geographic) return geographic();
-        if (code == geocentric) return geocentric();
-        if (code == geo3D)      return geographic3D();
-        final double latitude;
-        int zone;
-        if (northUTM != 0 && (zone = code - northUTM) >= firstZone && zone <= lastZone) {
-            latitude = +1;
-        } else if (southUTM != 0 && (zone = code - southUTM) >= firstZone && zone <= lastZone) {
-            latitude = -1;
-        } else {
-            return null;
-        }
-        return UTM(latitude, TransverseMercator.centralMeridian(zone));
-    }
-
 
 
 
@@ -1537,7 +1509,13 @@ public enum CommonCRS {
      * If this method returns {@code null}, then the caller will silently fallback on hard-coded values.
      */
     static CRSAuthorityFactory crsFactory() {
-        return null; // TODO
+        if (!EPSGFactoryFallback.FORCE_HARDCODED) {
+            final AuthorityFactory factory = AuthorityFactories.EPSG();
+            if (!(factory instanceof EPSGFactoryFallback)) {
+                return (CRSAuthorityFactory) factory;
+            }
+        }
+        return null;
     }
 
     /**
@@ -1545,7 +1523,13 @@ public enum CommonCRS {
      * If this method returns {@code null}, then the caller will silently fallback on hard-coded values.
      */
     static DatumAuthorityFactory datumFactory() {
-        return null; // TODO
+        if (!EPSGFactoryFallback.FORCE_HARDCODED) {
+            final AuthorityFactory factory = AuthorityFactories.EPSG();
+            if (!(factory instanceof EPSGFactoryFallback)) {
+                return (DatumAuthorityFactory) factory;
+            }
+        }
+        return null;
     }
 
     /**
@@ -1554,62 +1538,5 @@ public enum CommonCRS {
      */
     static void failure(final Object caller, final String method, final FactoryException e) {
         Logging.unexpectedException(Logging.getLogger(Loggers.CRS_FACTORY), caller.getClass(), method, e);
-    }
-
-    /**
-     * Returns a coordinate reference system for the given authority code.
-     * This method is invoked as a fallback when {@link CRS#forCode(String)}
-     * can not create a CRS for a given code.
-     *
-     * @param authority The authority, either {@code "CRS"} or {@code "EPSG"} (case-insensitive).
-     * @param code      The code, to be parsed as an integer.
-     * @param failure   The exception to throw in case of failure, or {@code null} for creating our own.
-     *                  A non-null value is provided when a real EPSG factory exists but failed to create the CRS.
-     *                  In such case, we want to report the error from the real factory instead than from this fallback.
-     *
-     * @since 0.5
-     */
-    static CoordinateReferenceSystem forCode(final String authority, final String code, final FactoryException failure)
-            throws FactoryException
-    {
-        NumberFormatException cause = null;
-        try {
-            if (authority.equalsIgnoreCase(CRS)) {
-                switch (Integer.parseInt(code)) {
-                    case CRS27: return CommonCRS.NAD27.normalizedGeographic();
-                    case CRS83: return CommonCRS.NAD83.normalizedGeographic();
-                    case CRS84: return CommonCRS.WGS84.normalizedGeographic();
-                }
-            } else if (authority.equalsIgnoreCase(EPSG)) {
-                final int n = Integer.parseInt(code);
-                if (n != 0) { // CommonCRS uses 0 as a sentinel value for "no EPSG code".
-                    for (final CommonCRS candidate : CommonCRS.values()) {
-                        final CoordinateReferenceSystem crs = candidate.forCode(n);
-                        if (crs != null) {
-                            return crs;
-                        }
-                    }
-                    for (final CommonCRS.Vertical candidate : CommonCRS.Vertical.values()) {
-                        if (candidate.isEPSG && candidate.crs == n) {
-                            return candidate.crs();
-                        }
-                    }
-                }
-            } else if (failure != null) {
-                throw failure;
-            } else {
-                throw new NoSuchIdentifierException(Errors.format(Errors.Keys.UnknownAuthority_1, authority), authority);
-            }
-        } catch (NumberFormatException e) {
-            cause = e;
-        }
-        if (failure != null) {
-            throw failure;
-        }
-        final NoSuchAuthorityCodeException e = new NoSuchAuthorityCodeException(
-                Errors.format(Errors.Keys.NoSuchAuthorityCode_3, authority, CoordinateReferenceSystem.class, code),
-                authority, code, code);
-        e.initCause(cause);
-        throw e;
     }
 }

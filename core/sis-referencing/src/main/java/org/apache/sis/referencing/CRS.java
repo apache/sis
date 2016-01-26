@@ -22,7 +22,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import javax.measure.unit.NonSI;
 import org.opengis.util.FactoryException;
-import org.opengis.util.NoSuchIdentifierException;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.cs.AxisDirection;
@@ -41,11 +40,9 @@ import org.opengis.referencing.crs.VerticalCRS;
 import org.opengis.referencing.crs.EngineeringCRS;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.extent.GeographicBoundingBox;
-import org.apache.sis.internal.util.DefinitionURI;
 import org.apache.sis.internal.metadata.AxisDirections;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.system.DefaultFactories;
-import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.referencing.cs.DefaultVerticalCS;
 import org.apache.sis.referencing.cs.DefaultEllipsoidalCS;
 import org.apache.sis.referencing.crs.DefaultGeographicCRS;
@@ -53,9 +50,6 @@ import org.apache.sis.referencing.crs.DefaultVerticalCRS;
 import org.apache.sis.referencing.crs.DefaultCompoundCRS;
 import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.logging.Logging;
-import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.Static;
 
@@ -146,40 +140,7 @@ public final class CRS extends Static {
             throws NoSuchAuthorityCodeException, FactoryException
     {
         ArgumentChecks.ensureNonNull("code", code);
-        final String authority;
-        final String value;
-        final DefinitionURI uri = DefinitionURI.parse(code);
-        if (uri != null && uri.code != null) {
-            final String type = uri.type;
-            if (type != null && !type.equalsIgnoreCase("crs")) {
-                throw new NoSuchIdentifierException(Errors.format(Errors.Keys.UnknownType_1, type), type);
-            }
-            authority = uri.authority;
-            value = uri.code;
-        } else {
-            final int s = code.indexOf(DefinitionURI.SEPARATOR);
-            authority = CharSequences.trimWhitespaces(code.substring(0, Math.max(0, s)));
-            value = CharSequences.trimWhitespaces(code.substring(s + 1));
-        }
-        if (authority == null || authority.isEmpty()) {
-            throw new NoSuchIdentifierException(Errors.format(Errors.Keys.MissingAuthority_1, code), code);
-        }
-        /*
-         * Delegate to the factory for the code space of the given code. If no authority factory
-         * is available, or if the factory failed to create the CRS, delegate to CommonCRS. Note
-         * that CommonCRS is not expected to succeed if the real EPSG factory threw an exception,
-         * so we will log a message at the warning level in such case.
-         */
-        final CRSAuthorityFactory factory = DefaultFactories.forClass(CRSAuthorityFactory.class);
-        if (factory != null) try {
-            return factory.createCoordinateReferenceSystem(value);
-        } catch (FactoryException failure) {
-            final CoordinateReferenceSystem crs = CommonCRS.forCode(authority, value, failure);
-            Logging.unexpectedException(Logging.getLogger(Loggers.CRS_FACTORY), CRS.class, "forCode", failure); // See above comment.
-            return crs;
-        } else {
-            return CommonCRS.forCode(authority, value, null);
-        }
+        return AuthorityFactories.ALL.createCoordinateReferenceSystem(code);
     }
 
     /**
@@ -291,6 +252,7 @@ public final class CRS extends Static {
          */
         final boolean isGeodetic = (crs instanceof GeodeticCRS);
         if (isGeodetic || crs instanceof ProjectedCRS || crs instanceof EngineeringCRS) {
+            @SuppressWarnings("null")
             final CoordinateSystem cs = crs.getCoordinateSystem();
             if (cs.getDimension() == 2) {
                 return !isGeodetic || (cs instanceof EllipsoidalCS);
