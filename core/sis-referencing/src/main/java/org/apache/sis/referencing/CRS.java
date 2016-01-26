@@ -123,7 +123,9 @@ public final class CRS extends Static {
      * This method accepts also the URN and URL syntax.
      * For example the following codes are considered equivalent to {@code "EPSG:4326"}:
      * <ul>
+     *   <li>{@code "EPSG::4326"}</li>
      *   <li>{@code "urn:ogc:def:crs:EPSG::4326"}</li>
+     *   <li>{@code "http://www.opengis.net/def/crs/epsg/0/4326"}</li>
      *   <li>{@code "http://www.opengis.net/gml/srs/epsg.xml#4326"}</li>
      * </ul>
      *
@@ -545,17 +547,17 @@ check:  while (lower != 0 || upper != dimension) {
 
     /**
      * Returns the system-wide authority factory used by {@link #forCode(String)} and other SIS methods.
-     * By default, this factory is an instance of {@link org.apache.sis.referencing.factory.MultiAuthoritiesFactory}
+     * By default, this method returns an instance of {@link org.apache.sis.referencing.factory.MultiAuthoritiesFactory}
      * capable to process at least some EPSG and WMS codes. The set of EPSG codes that are guaranteed to be supported
-     * is listed in {@link #forCode(String)}. Other authorities may also be supported if their factories are declared
-     * in the following file:
+     * is listed in the {@link #forCode(String)} method javadoc.
+     * Other authorities may also be supported if their factories are declared in the following file:
      *
      * {@preformat text
      *     META-INF/services/org.opengis.referencing.crs.CRSAuthorityFactory
      * }
      *
      * <div class="section">Factories of other kinds</div>
-     * By default the returned factory can also be used as a
+     * By default the returned factory can also be used as
      * {@link org.opengis.referencing.cs.CSAuthorityFactory},
      * {@link org.opengis.referencing.datum.DatumAuthorityFactory} or
      * {@link org.opengis.referencing.operation.CoordinateOperationAuthorityFactory}.

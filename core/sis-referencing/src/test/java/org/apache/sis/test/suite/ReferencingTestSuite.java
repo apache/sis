@@ -168,19 +168,21 @@ import org.junit.BeforeClass;
     org.apache.sis.referencing.crs.DefaultCompoundCRSTest.class,
     org.apache.sis.referencing.crs.HardCodedCRSTest.class,
 
+    // Direct (not from authority codes) geodetic object creations.
     org.apache.sis.referencing.StandardDefinitionsTest.class,
-    org.apache.sis.referencing.CommonCRSTest.class,
-    org.apache.sis.referencing.EPSGFactoryFallbackTest.class,
-    org.apache.sis.referencing.CRSTest.class,
+    org.apache.sis.referencing.factory.GeodeticObjectFactoryTest.class,
     org.apache.sis.referencing.factory.GIGS3002.class,
     org.apache.sis.referencing.factory.GIGS3003.class,
     org.apache.sis.referencing.factory.GIGS3004.class,
     org.apache.sis.referencing.factory.GIGS3005.class,
-    org.apache.sis.referencing.factory.GeodeticObjectFactoryTest.class,
-    org.apache.sis.referencing.factory.CommonAuthorityFactoryTest.class,
-    org.apache.sis.referencing.factory.AuthorityFactoryProxyTest.class,
-    org.apache.sis.referencing.factory.IdentifiedObjectFinderTest.class,
-    org.apache.sis.referencing.factory.MultiAuthoritiesFactoryTest.class,
+
+    // Well Known Text parsing require above factory.
+    org.apache.sis.io.wkt.MathTransformParserTest.class,
+    org.apache.sis.io.wkt.GeodeticObjectParserTest.class,
+    org.apache.sis.io.wkt.WKTFormatTest.class,
+    org.apache.sis.io.wkt.WKTParserTest.class,
+
+    // Geodetic object creations from authority codes.
     org.apache.sis.referencing.factory.GIGS2001.class,
     org.apache.sis.referencing.factory.GIGS2002.class,
     org.apache.sis.referencing.factory.GIGS2003.class,
@@ -190,12 +192,17 @@ import org.junit.BeforeClass;
     org.apache.sis.referencing.factory.GIGS2007.class,
     org.apache.sis.referencing.factory.GIGS2008.class,
     org.apache.sis.referencing.factory.GIGS2009.class,
-    org.apache.sis.referencing.factory.sql.EPSGFactoryTest.class,
 
-    org.apache.sis.io.wkt.MathTransformParserTest.class,
-    org.apache.sis.io.wkt.GeodeticObjectParserTest.class,
-    org.apache.sis.io.wkt.WKTFormatTest.class,
-    org.apache.sis.io.wkt.WKTParserTest.class,
+    // Following tests use indirectly EPSG factory.
+    org.apache.sis.referencing.CommonCRSTest.class,
+    org.apache.sis.referencing.factory.CommonAuthorityFactoryTest.class,
+    org.apache.sis.referencing.factory.AuthorityFactoryProxyTest.class,
+    org.apache.sis.referencing.factory.IdentifiedObjectFinderTest.class,
+    org.apache.sis.referencing.factory.MultiAuthoritiesFactoryTest.class,
+    org.apache.sis.referencing.factory.sql.EPSGFactoryTest.class,
+    org.apache.sis.referencing.EPSGFactoryFallbackTest.class,
+    org.apache.sis.referencing.AuthorityFactoriesTest.class,
+    org.apache.sis.referencing.CRSTest.class,
 
     org.apache.sis.geometry.AbstractDirectPositionTest.class,
     org.apache.sis.geometry.GeneralDirectPositionTest.class,

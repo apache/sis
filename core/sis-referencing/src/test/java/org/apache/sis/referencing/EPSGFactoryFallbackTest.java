@@ -17,6 +17,8 @@
 package org.apache.sis.referencing;
 
 import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.Collections;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.crs.VerticalCRS;
@@ -31,6 +33,7 @@ import org.apache.sis.util.Utilities;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
+import org.apache.sis.test.TestUtilities;
 import org.junit.Test;
 
 import static org.apache.sis.test.Assert.*;
@@ -119,7 +122,9 @@ public final strictfp class EPSGFactoryFallbackTest extends TestCase {
         final CRSAuthorityFactory EPSG = (CRSAuthorityFactory) AuthorityFactories.EPSG();
         try {
             setEPSGFactory(EPSGFactoryFallback.INSTANCE);
-            for (final String code : EPSGFactoryFallback.INSTANCE.getAuthorityCodes(CoordinateReferenceSystem.class)) {
+            final ArrayList<String> codes = new ArrayList<>(EPSGFactoryFallback.INSTANCE.getAuthorityCodes(CoordinateReferenceSystem.class));
+            Collections.shuffle(codes, TestUtilities.createRandomNumberGenerator());
+            for (final String code : codes) {
                 if (!EPSGFactoryFallback.PENDING_NEXT_EPSG && code.equals("5715")) {
                     continue;
                 }
