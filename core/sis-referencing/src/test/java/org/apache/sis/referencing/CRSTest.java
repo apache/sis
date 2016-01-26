@@ -43,14 +43,19 @@ import static org.apache.sis.test.Assert.*;
  * @module
  */
 @DependsOn({
-    CommonCRSTest.class
+    CommonCRSTest.class,
+    AuthorityFactoriesTest.class
 })
 public final strictfp class CRSTest extends TestCase {
     /**
      * Asserts that the result of {@link CRS#forCode(String)} is the given CRS.
      */
     private static void verifyForCode(final SingleCRS expected, final String code) throws FactoryException {
-        assertTrue(code, Utilities.deepEquals(expected, CRS.forCode(code), ComparisonMode.IGNORE_METADATA));
+        final CoordinateReferenceSystem actual = CRS.forCode(code);
+        assertTrue(code, Utilities.deepEquals(expected, actual, ComparisonMode.DEBUG));
+        if (!EPSGFactoryFallback.FORCE_HARDCODED) {
+            assertSame(code, expected, actual);
+        }
     }
 
     /**
@@ -64,6 +69,7 @@ public final strictfp class CRSTest extends TestCase {
     public void testForEpsgCode() throws FactoryException {
         verifyForCode(CommonCRS.WGS84 .geographic(),   "EPSG:4326");
         verifyForCode(CommonCRS.WGS84 .geographic(),   "urn:ogc:def:crs:EPSG::4326");
+        verifyForCode(CommonCRS.WGS84 .geographic(),   "urn:x-ogc:def:crs:EPSG::4326");
         verifyForCode(CommonCRS.WGS84 .geographic(),   "http://www.opengis.net/gml/srs/epsg.xml#4326");
         verifyForCode(CommonCRS.WGS72 .geographic(),   "EPSG:4322");
         verifyForCode(CommonCRS.SPHERE.geographic(),   "EPSG:4047");
@@ -82,7 +88,7 @@ public final strictfp class CRSTest extends TestCase {
          * Following test is skipped when using the EPSG factory because EPSG uses
          * the "Gravity-related depth" axis name while ISO 19111 mandates "Depth".
          */
-        if (AuthorityFactories.EPSG() instanceof EPSGFactoryFallback) {
+        if (EPSGFactoryFallback.PENDING_NEXT_EPSG) {
             verifyForCode(CommonCRS.Vertical.DEPTH.crs(), "EPSG:5715");
         }
     }
@@ -100,6 +106,8 @@ public final strictfp class CRSTest extends TestCase {
         verifyForCode(CommonCRS.WGS84.normalizedGeographic(), "CRS:84");
         verifyForCode(CommonCRS.NAD83.normalizedGeographic(), "CRS:83");
         verifyForCode(CommonCRS.NAD27.normalizedGeographic(), "CRS:27");
+        verifyForCode(CommonCRS.WGS84.normalizedGeographic(), "http://www.opengis.net/gml/srs/crs.xml#84");
+        verifyForCode(CommonCRS.NAD83.normalizedGeographic(), "http://www.opengis.net/gml/srs/crs.xml#83");
     }
 
     /**
@@ -243,5 +251,17 @@ public final strictfp class CRSTest extends TestCase {
     public void testGetGreenwichLongitude() {
         assertEquals(0,          CRS.getGreenwichLongitude(HardCodedCRS.WGS84), STRICT);
         assertEquals(2.33722917, CRS.getGreenwichLongitude(HardCodedCRS.NTF),   1E-12);
+    }
+
+    /**
+     * Tests {@link IdentifiedObjects#lookupEPSG(IdentifiedObject)} and
+     * {@link IdentifiedObjects#lookupURN(IdentifiedObject, Citation)}.
+     *
+     * @throws FactoryException if an error occurred during the lookup.
+     */
+    @Test
+    public void testIdentifiedObjectLookup() throws FactoryException {
+        IdentifiedObjectsTest.testLookupEPSG();
+        IdentifiedObjectsTest.testLookupWMS();
     }
 }

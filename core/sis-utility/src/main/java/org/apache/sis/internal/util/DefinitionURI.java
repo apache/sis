@@ -240,6 +240,9 @@ public final class DefinitionURI {
             upper = uri.indexOf(separator, lower);
             if (upper < 0) {
                 upper = uri.length();
+                if (lower > upper) {
+                    return result;        // Happen if a component is missing.
+                }
             }
             switch (p) {
                 /*

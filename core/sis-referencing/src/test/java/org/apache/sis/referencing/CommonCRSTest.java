@@ -163,10 +163,13 @@ public final strictfp class CommonCRSTest extends TestCase {
                  */
                 Validators.validate(crs);
             }
-            assertSame  (name, datum,          e.datum()); // Datum before CRS creation.
-            assertSame  (name, crs.getDatum(), e.datum()); // Datum after CRS creation.
+            assertSame  (name, datum,          e.datum());                      // Datum before CRS creation.
+            assertSame  (name, crs.getDatum(), e.datum());                      // Datum after CRS creation.
             assertEquals(name, datumName, datum.getName().getCode());
             assertEquals(name, datumType, datum.getVerticalDatumType());
+            if (!EPSGFactoryFallback.PENDING_NEXT_EPSG && e == CommonCRS.Vertical.DEPTH) {
+                continue;   // Pending the renaming of "Gravity-related depth" as "Depth" in EPSG database.
+            }
             assertEquals(name, axisName,  crs.getCoordinateSystem().getAxis(0).getName().getCode());
         }
     }
