@@ -328,41 +328,46 @@ public abstract class Transliterator implements Serializable {
      * @see org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis#formatTo(Formatter)
      */
     public String toLatinAbbreviation(final CoordinateSystem cs, final AxisDirection direction, String abbreviation) {
-        if (abbreviation != null && !abbreviation.isEmpty() && abbreviation.length() <= 2) {
-            switch (abbreviation.charAt(0)) {
-                /*
-                 * ISO 19162:2015 §7.5.3 recommendations:
-                 *
-                 *   a) For PolarCS using Greek letter θ for direction, the letter ‘U’ should be used in WKT.
-                 *   b) For SphericalCS using φ and θ, the letter ‘U’ and ‘V’ respectively should be used in WKT.
-                 */
-                case 'θ': {
-                    if  (cs instanceof SphericalCS) abbreviation ="V";
-                    else if (cs instanceof PolarCS) abbreviation ="U";
-                    break;
-                }
-                /*
-                 * ISO 19162:2015 §7.5.3 requirement (ii) and recommendation (b):
-                 *
-                 *  ii) Greek letters φ and λ for geodetic latitude and longitude must be replaced by Latin char.
-                 *   b) For SphericalCS using φ and θ, the letter ‘U’ and ‘V’ respectively should be used in WKT.
-                 *
-                 * Note that some SphericalCS may use φ′ or φc for distinguishing from geodetic latitude φ.
-                 */
-                case 'φ': {
-                    if (cs instanceof SphericalCS) {
-                        abbreviation = "U";
-                    } else if (cs instanceof EllipsoidalCS) {
-                        abbreviation = "B";    // From German "Breite", used in academic texts worldwide.
+        if (abbreviation != null && !abbreviation.isEmpty()) {
+            if (abbreviation.length() <= 2) {
+                switch (abbreviation.charAt(0)) {
+                    /*
+                     * ISO 19162:2015 §7.5.3 recommendations:
+                     *
+                     *   a) For PolarCS using Greek letter θ for direction, the letter ‘U’ should be used in WKT.
+                     *   b) For SphericalCS using φ and θ, the letter ‘U’ and ‘V’ respectively should be used in WKT.
+                     */
+                    case 'θ': {
+                        if  (cs instanceof SphericalCS) abbreviation ="V";
+                        else if (cs instanceof PolarCS) abbreviation ="U";
+                        break;
                     }
-                    break;
-                }
-                case 'λ': {
-                    if (cs instanceof EllipsoidalCS) {
-                        abbreviation = "L";    // From German "Länge", used in academic texts worldwide.
+                    /*
+                     * ISO 19162:2015 §7.5.3 requirement (ii) and recommendation (b):
+                     *
+                     *  ii) Greek letters φ and λ for geodetic latitude and longitude must be replaced by Latin char.
+                     *   b) For SphericalCS using φ and θ, the letter ‘U’ and ‘V’ respectively should be used in WKT.
+                     *
+                     * Note that some SphericalCS may use φ′ or φc for distinguishing from geodetic latitude φ.
+                     */
+                    case 'φ': {
+                        if (cs instanceof SphericalCS) {
+                            abbreviation = "U";
+                        } else if (cs instanceof EllipsoidalCS) {
+                            abbreviation = "B";    // From German "Breite", used in academic texts worldwide.
+                        }
+                        break;
                     }
-                    break;
+                    case 'λ': {
+                        if (cs instanceof EllipsoidalCS) {
+                            abbreviation = "L";    // From German "Länge", used in academic texts worldwide.
+                        }
+                        break;
+                    }
                 }
+            } else {
+                if      (abbreviation.equalsIgnoreCase("Lat" )) abbreviation = "B";
+                else if (abbreviation.equalsIgnoreCase("Long")) abbreviation = "L";
             }
         }
         return abbreviation;

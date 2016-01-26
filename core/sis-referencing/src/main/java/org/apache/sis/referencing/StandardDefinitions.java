@@ -64,6 +64,7 @@ import org.apache.sis.measure.Latitude;
 import static org.opengis.referencing.IdentifiedObject.NAME_KEY;
 import static org.opengis.referencing.IdentifiedObject.ALIAS_KEY;
 import static org.opengis.referencing.IdentifiedObject.IDENTIFIERS_KEY;
+import static org.opengis.referencing.crs.GeographicCRS.SCOPE_KEY;
 import static org.opengis.referencing.datum.Datum.DOMAIN_OF_VALIDITY_KEY;
 import static org.apache.sis.internal.metadata.ReferencingServices.AUTHALIC_RADIUS;
 
@@ -163,9 +164,10 @@ final class StandardDefinitions {
     static GeographicCRS createGeographicCRS(final short code, final GeodeticDatum datum, final EllipsoidalCS cs) {
         final String name;
         String alias = null;
+        String scope = null;
         boolean world = false;
         switch (code) {
-            case 4326: name = "WGS 84"; world = true; break;
+            case 4326: name = "WGS 84"; world = true; scope = "Horizontal component of 3D system."; break;
             case 4322: name = "WGS 72"; world = true; break;
             case 4258: name = "ETRS89"; alias = "ETRS89-GRS80"; break;
             case 4269: name = "NAD83";  break;
@@ -174,7 +176,9 @@ final class StandardDefinitions {
             case 4047: name = "Unspecified datum based upon the GRS 1980 Authalic Sphere"; world = true; break;
             default:   throw new AssertionError(code);
         }
-        return new DefaultGeographicCRS(properties(code, name, alias, world), datum, cs);
+        final Map<String, Object> properties = properties(code, name, alias, world);
+        properties.put(SCOPE_KEY, scope);
+        return new DefaultGeographicCRS(properties, datum, cs);
     }
 
     /**

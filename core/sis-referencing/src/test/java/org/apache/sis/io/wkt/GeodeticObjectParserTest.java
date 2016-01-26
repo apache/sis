@@ -73,7 +73,8 @@ import org.opengis.util.Factory;
     org.apache.sis.referencing.crs.DefaultCompoundCRSTest.class,
     org.apache.sis.referencing.crs.DefaultEngineeringCRSTest.class,
     org.apache.sis.referencing.crs.DefaultImageCRSTest.class,
-    org.apache.sis.referencing.cs.DirectionAlongMeridianTest.class
+    org.apache.sis.referencing.cs.DirectionAlongMeridianTest.class,
+    org.apache.sis.referencing.factory.GeodeticObjectFactoryTest.class
 })
 public final strictfp class GeodeticObjectParserTest extends TestCase {
     /**

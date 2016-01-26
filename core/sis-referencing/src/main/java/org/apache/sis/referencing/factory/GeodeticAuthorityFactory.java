@@ -1149,7 +1149,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
     }
 
     /**
-     * Returns a finder which can be used for looking up unidentified objects.
+     * Creates a finder which can be used for looking up unidentified objects.
      * The finder tries to fetch a fully {@linkplain AbstractIdentifiedObject identified object}
      * from an incomplete one, for example from an object without "{@code ID[…]}" or
      * "{@code AUTHORITY[…]}" element in <cite>Well Known Text</cite>.
