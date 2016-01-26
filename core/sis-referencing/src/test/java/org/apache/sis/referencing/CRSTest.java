@@ -50,7 +50,11 @@ public final strictfp class CRSTest extends TestCase {
      * Asserts that the result of {@link CRS#forCode(String)} is the given CRS.
      */
     private static void verifyForCode(final SingleCRS expected, final String code) throws FactoryException {
-        assertTrue(code, Utilities.deepEquals(expected, CRS.forCode(code), ComparisonMode.IGNORE_METADATA));
+        final CoordinateReferenceSystem actual = CRS.forCode(code);
+        assertTrue(code, Utilities.deepEquals(expected, actual, ComparisonMode.DEBUG));
+        if (!EPSGFactoryFallback.FORCE_HARDCODED) {
+            assertSame(code, expected, actual);
+        }
     }
 
     /**
@@ -64,6 +68,7 @@ public final strictfp class CRSTest extends TestCase {
     public void testForEpsgCode() throws FactoryException {
         verifyForCode(CommonCRS.WGS84 .geographic(),   "EPSG:4326");
         verifyForCode(CommonCRS.WGS84 .geographic(),   "urn:ogc:def:crs:EPSG::4326");
+        verifyForCode(CommonCRS.WGS84 .geographic(),   "urn:x-ogc:def:crs:EPSG::4326");
         verifyForCode(CommonCRS.WGS84 .geographic(),   "http://www.opengis.net/gml/srs/epsg.xml#4326");
         verifyForCode(CommonCRS.WGS72 .geographic(),   "EPSG:4322");
         verifyForCode(CommonCRS.SPHERE.geographic(),   "EPSG:4047");
@@ -100,6 +105,8 @@ public final strictfp class CRSTest extends TestCase {
         verifyForCode(CommonCRS.WGS84.normalizedGeographic(), "CRS:84");
         verifyForCode(CommonCRS.NAD83.normalizedGeographic(), "CRS:83");
         verifyForCode(CommonCRS.NAD27.normalizedGeographic(), "CRS:27");
+        verifyForCode(CommonCRS.WGS84.normalizedGeographic(), "http://www.opengis.net/gml/srs/crs.xml#84");
+        verifyForCode(CommonCRS.NAD83.normalizedGeographic(), "http://www.opengis.net/gml/srs/crs.xml#83");
     }
 
     /**

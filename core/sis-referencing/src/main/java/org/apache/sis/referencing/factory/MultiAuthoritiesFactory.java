@@ -1419,7 +1419,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
     }
 
     /**
-     * Returns a finder which can be used for looking up unidentified objects.
+     * Creates a finder which can be used for looking up unidentified objects.
      * The default implementation delegates the lookups to the underlying factories.
      *
      * @return A finder to use for looking up unidentified objects.

@@ -132,6 +132,7 @@ public final class CRS extends Static {
      * @throws NoSuchAuthorityCodeException If there is no known CRS associated to the given code.
      * @throws FactoryException if the CRS creation failed for an other reason.
      *
+     * @see #getAuthorityFactory()
      * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory
      *
      * @category factory
@@ -540,5 +541,35 @@ check:  while (lower != 0 || upper != dimension) {
     public static double getGreenwichLongitude(final GeodeticCRS crs) {
         ArgumentChecks.ensureNonNull("crs", crs);
         return ReferencingUtilities.getGreenwichLongitude(crs.getDatum().getPrimeMeridian(), NonSI.DEGREE_ANGLE);
+    }
+
+    /**
+     * Returns the system-wide authority factory used by {@link #forCode(String)} and other SIS methods.
+     * By default, this factory is an instance of {@link org.apache.sis.referencing.factory.MultiAuthoritiesFactory}
+     * capable to process at least some EPSG and WMS codes. The set of EPSG codes that are guaranteed to be supported
+     * is listed in {@link #forCode(String)}. Other authorities may also be supported if their factories are declared
+     * in the following file:
+     *
+     * {@preformat text
+     *     META-INF/services/org.opengis.referencing.crs.CRSAuthorityFactory
+     * }
+     *
+     * <div class="section">Factories of other kinds</div>
+     * By default the returned factory can also be used as a
+     * {@link org.opengis.referencing.cs.CSAuthorityFactory},
+     * {@link org.opengis.referencing.datum.DatumAuthorityFactory} or
+     * {@link org.opengis.referencing.operation.CoordinateOperationAuthorityFactory}.
+     * However callers are encouraged to verify the type before to cast
+     * since a future SIS version may allow users to set a custom factory.
+     *
+     * @return The system-wide authority factory used by SIS.
+     *
+     * @see #forCode(String)
+     * @see org.apache.sis.referencing.factory.MultiAuthoritiesFactory
+     *
+     * @since 0.7
+     */
+    public static CRSAuthorityFactory getAuthorityFactory() {
+        return AuthorityFactories.ALL;
     }
 }
