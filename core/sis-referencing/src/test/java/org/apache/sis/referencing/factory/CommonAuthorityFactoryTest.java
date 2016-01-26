@@ -342,7 +342,7 @@ public final strictfp class CommonAuthorityFactoryTest extends TestCase {
                 "  AXIS[“Latitude”, NORTH],\n" +
                 "  AUTHORITY[“CRS”, “84”]]", crs);
 
-        assertWktEquals(Convention.WKT2,
+        assertWktEqualsRegex(Convention.WKT2, "(?m)\\Q" +
                 "GEODCRS[“WGS 84”,\n" +
                 "  DATUM[“World Geodetic System 1984”,\n" +
                 "    ELLIPSOID[“WGS 84”, 6378137.0, 298.257223563, LENGTHUNIT[“metre”, 1]]],\n" +
@@ -351,9 +351,10 @@ public final strictfp class CommonAuthorityFactoryTest extends TestCase {
                 "    AXIS[“Longitude (L)”, east, ORDER[1]],\n" +
                 "    AXIS[“Latitude (B)”, north, ORDER[2]],\n" +
                 "    ANGLEUNIT[“degree”, 0.017453292519943295],\n" +
-                "  AREA[“World”],\n" +
+                "  SCOPE[“Horizontal component of 3D system.\\E.*\\Q”],\n" +
+                "  AREA[“World\\E.*\\Q”],\n" +
                 "  BBOX[-90.00, -180.00, 90.00, 180.00],\n" +
-                "  ID[“CRS”, 84, CITATION[“OGC:WMS”], URI[“urn:ogc:def:crs:OGC:1.3:CRS84”]]]", crs);
+                "  ID[“CRS”, 84, CITATION[“OGC:WMS”], URI[“urn:ogc:def:crs:OGC:1.3:CRS84”]]]\\E", crs);
         /*
          * Note: the WKT specification defines the ID element as:
          *

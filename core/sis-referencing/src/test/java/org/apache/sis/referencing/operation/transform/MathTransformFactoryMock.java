@@ -30,8 +30,6 @@ import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.SingleOperation;
 import org.apache.sis.referencing.operation.DefaultOperationMethod;
-import org.apache.sis.referencing.operation.transform.MathTransformProvider;
-import org.apache.sis.referencing.operation.transform.MathTransforms;
 
 
 /**
