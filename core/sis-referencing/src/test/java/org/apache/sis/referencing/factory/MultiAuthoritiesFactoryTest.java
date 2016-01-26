@@ -79,8 +79,6 @@ public final strictfp class MultiAuthoritiesFactoryTest extends TestCase {
 
         /** Verifies the log message. */
         @Override protected void verifyMessage(final String message) {
-            assertTrue(message, message.contains("CRSAuthorityFactory"));
-            assertTrue(message, message.contains("AuthorityFactoryMock"));
             for (final String keyword : expectedKeywords) {
                 assertTrue(message, message.contains(keyword));
             }
@@ -186,12 +184,12 @@ public final strictfp class MultiAuthoritiesFactoryTest extends TestCase {
         assertSame("MOCK1", mock1, factory.getAuthorityFactory(CRSAuthorityFactory.class, "mock1", "2.3"));
 
         listener.maximumLogCount = 1;
-        ((Listener) listener).expectedKeywords = new String[] {"MOCK1", "2.3"};
+        ((Listener) listener).expectedKeywords = new String[] {"CRSAuthorityFactory", "AuthorityFactoryMock", "MOCK1", "2.3"};
         assertSame("MOCK3", mock3, factory.getAuthorityFactory(CRSAuthorityFactory.class, "mock3", null));
         assertEquals("Expected a warning about the extraneous MOCK1 factory.", 0, listener.maximumLogCount);
 
         listener.maximumLogCount = 1;
-        ((Listener) listener).expectedKeywords = new String[] {"MOCK3"};
+        ((Listener) listener).expectedKeywords = new String[] {"CRSAuthorityFactory", "AuthorityFactoryMock", "MOCK3"};
         assertSame("MOCK5", mock5, factory.getAuthorityFactory(CRSAuthorityFactory.class, "mock5", null));
         assertEquals("Expected a warning about the extraneous MOCK3 factory.", 0, listener.maximumLogCount);
 
@@ -306,6 +304,31 @@ public final strictfp class MultiAuthoritiesFactoryTest extends TestCase {
         assertFalse("MOCK:6326", codes.contains("MOCK:6326"));      // A geodetic datum.
         assertFalse("isEmpty()", codes.isEmpty());
         assertArrayEquals(new String[] {"MOCK:4979", "MOCK:84", "MOCK:4326", "MOCK:5714", "MOCK:9905"}, codes.toArray());
+    }
+
+    /**
+     * Tests {@link MultiAuthoritiesFactory#createFromCoordinateReferenceSystemCodes(String, String)}.
+     *
+     * @throws FactoryException if an error occurred while creating the operation.
+     */
+    @Test
+    public void testCreateFromCoordinateReferenceSystemCodes() throws FactoryException {
+        final List<AuthorityFactoryMock> mock = Arrays.asList(
+                new AuthorityFactoryMock("MOCK", null),
+                new AuthorityFactoryMock("MOCK", "2.3"));
+        final MultiAuthoritiesFactory factory = new MultiAuthoritiesFactory(mock, null, null, mock);
+        /*
+         * Our mock factory does not implement createFromCoordinateReferenceSystemCodes(String, String),
+         * so we just test that we didn't got an exception and no message were logged.
+         */
+        assertTrue(factory.createFromCoordinateReferenceSystemCodes("MOCK:4326", "MOCK:84").isEmpty());
+        /*
+         * Following should log a warning telling that the authority factories do not match.
+         */
+        listener.maximumLogCount = 1;
+        ((Listener) listener).expectedKeywords = new String[] {"MOCK:4326", "MOCK:2.3:84"};
+        assertTrue(factory.createFromCoordinateReferenceSystemCodes("MOCK:4326", "MOCK:2.3:84").isEmpty());
+        assertEquals("Expected a warning about mismatched factories.", 0, listener.maximumLogCount);
     }
 
     /**
