@@ -1156,6 +1156,8 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      *
      * @return A finder to use for looking up unidentified objects.
      * @throws FactoryException if the finder can not be created.
+     *
+     * @see org.apache.sis.referencing.IdentifiedObjects#newFinder(String)
      */
     public IdentifiedObjectFinder newIdentifiedObjectFinder() throws FactoryException {
         return new IdentifiedObjectFinder(this);
