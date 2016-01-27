@@ -325,10 +325,7 @@ public final strictfp class EPSGFactoryTest extends TestCase {
         assertEpsgNameAndIdentifierEqual("Transverse Mercator", 9807, variant.getConversionFromBase().getMethod());
         assertEpsgNameAndIdentifierEqual("UTM zone 10N", 16010, variant.getConversionFromBase());
         verifyTransverseMercatorParmeters(crs.getConversionFromBase().getParameterValues(), -123);
-        assertEquals("Operation method", crs.getConversionFromBase().getMethod(),
-                                     variant.getConversionFromBase().getMethod());
-        assertEquals("Coordinate system", crs.getCoordinateSystem(),
-                                      variant.getCoordinateSystem());
+
         assertSame("Operation method", crs.getConversionFromBase().getMethod(),
                                    variant.getConversionFromBase().getMethod());
         assertSame("Coordinate system", crs.getCoordinateSystem(),
