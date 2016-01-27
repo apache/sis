@@ -759,7 +759,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
             int end = CharSequences.skipTrailingWhitespaces(code, 0, afterAuthority);
             int start = CharSequences.skipLeadingWhitespaces(code, 0, end);
             if (start >= end) {
-                throw new NoSuchAuthorityFactoryException(Errors.format(Errors.Keys.MissingAuthority_1, code), null);
+                throw new NoSuchAuthorityCodeException(Errors.format(Errors.Keys.MissingAuthority_1, code), null, code);
             }
             authority = code.substring(start, end);
             /*

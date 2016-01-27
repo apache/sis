@@ -556,7 +556,7 @@ check:  while (lower != 0 || upper != dimension) {
      * Otherwise, this method returns the {@link org.apache.sis.referencing.factory.MultiAuthoritiesFactory}
      * instance that manages all other factories.
      *
-     * <p>The {@code authority} argument can be {@code "EPSG"}, {@code "WMS"} or any other authority found
+     * <p>The {@code authority} argument can be {@code "EPSG"}, {@code "OGC"} or any other authority found
      * on the classpath. In the {@code "EPSG"} case, whether the full set of EPSG codes is supported or not
      * depends on whether a {@linkplain org.apache.sis.referencing.factory.sql connection to the database}
      * can be established. If no connection can be established, then this method returns a small embedded
@@ -570,7 +570,7 @@ check:  while (lower != 0 || upper != dimension) {
      *     META-INF/services/org.opengis.referencing.crs.CRSAuthorityFactory
      * }
      *
-     * @param  authority The authority of the desired factory (typically {@code "EPSG"} or {@code "WMS"}),
+     * @param  authority The authority of the desired factory (typically {@code "EPSG"} or {@code "OGC"}),
      *         or {@code null} for the {@link org.apache.sis.referencing.factory.MultiAuthoritiesFactory}
      *         instance that manage all factories.
      * @return The system-wide authority factory used by SIS for the given authority.

@@ -197,6 +197,7 @@ import org.junit.BeforeClass;
     org.apache.sis.referencing.CommonCRSTest.class,
     org.apache.sis.referencing.factory.CommonAuthorityFactoryTest.class,
     org.apache.sis.referencing.factory.AuthorityFactoryProxyTest.class,
+    org.apache.sis.referencing.factory.ConcurrentAuthorityFactoryTest.class,
     org.apache.sis.referencing.factory.IdentifiedObjectFinderTest.class,
     org.apache.sis.referencing.factory.MultiAuthoritiesFactoryTest.class,
     org.apache.sis.referencing.factory.sql.EPSGFactoryTest.class,
