@@ -88,10 +88,17 @@ final class FilteredCodes extends AbstractMap<String, Boolean> {
     }
 
     /**
-     * Ignored, except that it must be non-null.
+     * Returns a non-null value if the given code is included in the set.
      */
     @Override
     public Boolean get(final Object key) {
-        return Boolean.TRUE;
+        Class<?> t = codes.get(key);
+        if (t == null && key instanceof String) {
+            t = codes.get(CommonAuthorityFactory.reformat((String) key));
+            if (t == null) {
+                return null;
+            }
+        }
+        return type.isAssignableFrom(t) ? Boolean.TRUE : null;
     }
 }

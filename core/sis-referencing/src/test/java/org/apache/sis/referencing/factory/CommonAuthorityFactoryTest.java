@@ -17,6 +17,7 @@
 package org.apache.sis.referencing.factory;
 
 import java.util.Arrays;
+import java.util.Set;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.NoninvertibleTransformException;
 import javax.measure.unit.SI;
@@ -91,6 +92,16 @@ public final strictfp class CommonAuthorityFactoryTest extends TestCase {
                 factory.getAuthorityCodes(VerticalCRS.class));
         assertSetEquals(Arrays.asList("CRS:1"),
                 factory.getAuthorityCodes(EngineeringCRS.class));
+
+        final Set<String> codes = factory.getAuthorityCodes(GeographicCRS.class);
+        assertFalse("CRS:1",      codes.contains("CRS:1"));
+        assertTrue ("CRS:27",     codes.contains("CRS:27"));
+        assertTrue ("CRS:83",     codes.contains("CRS:83"));
+        assertTrue ("CRS:84",     codes.contains("CRS:84"));
+        assertFalse("CRS:88",     codes.contains("CRS:88"));
+        assertTrue ("0084",       codes.contains("0084"));
+        assertFalse("0088",       codes.contains("0088"));
+        assertTrue ("OGC:CRS084", codes.contains("OGC:CRS084"));
     }
 
     /**
