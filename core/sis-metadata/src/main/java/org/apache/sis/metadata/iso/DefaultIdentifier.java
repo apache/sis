@@ -81,6 +81,7 @@ import org.apache.sis.internal.util.Citations;
  * @module
  *
  * @see ImmutableIdentifier
+ * @see org.apache.sis.referencing.IdentifiedObjects#toURN(Class, Identifier)
  */
 @XmlType(name = "MD_Identifier_Type", propOrder = {
     "authority",

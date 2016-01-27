@@ -126,6 +126,7 @@ import java.util.Objects;
  * @module
  *
  * @see DefaultIdentifier
+ * @see org.apache.sis.referencing.IdentifiedObjects#toURN(Class, Identifier)
  */
 @XmlType(name = "RS_Identifier_Type", propOrder = {
     "authority",

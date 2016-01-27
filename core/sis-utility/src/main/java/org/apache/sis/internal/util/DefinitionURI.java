@@ -460,6 +460,7 @@ public final class DefinitionURI {
      * @param url       The URL to parse.
      * @param result    If non-null, store the type, authority and code in that object.
      */
+    @SuppressWarnings("fallthrough")
     private static String codeForGML(final String type, String authority, final String url, int lower,
             final DefinitionURI result)
     {
@@ -484,17 +485,24 @@ public final class DefinitionURI {
                 }
                 lower += authority.length();
                 int upper = url.length();
-                if (lower < upper && url.charAt(lower) == '.') {
-                    // Ignore the extension (typically ".xml", but we accept anything).
-                    if ((lower = url.indexOf('#', lower+1)) >= 0) {
-                        final String code = trimWhitespaces(url, lower+1, upper).toString();
-                        if (result != null) {
-                            result.isGML     = true;
-                            result.type      = entry.getKey();
-                            result.authority = authority;
-                            result.code      = code;
+                if (lower < upper) {
+                    switch (url.charAt(lower)) {
+                        case '.': {
+                            // Ignore the extension (typically ".xml", but we accept anything).
+                            lower = url.indexOf('#', lower + 1);
+                            if (lower < 0) continue;
+                            // Fall through
                         }
-                        return code;
+                        case '#': {
+                            final String code = trimWhitespaces(url, lower+1, upper).toString();
+                            if (result != null) {
+                                result.isGML     = true;
+                                result.type      = entry.getKey();
+                                result.authority = authority;
+                                result.code      = code;
+                            }
+                            return code;
+                        }
                     }
                 }
             }

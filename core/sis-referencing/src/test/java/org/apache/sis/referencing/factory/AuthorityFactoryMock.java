@@ -52,13 +52,19 @@ import static org.junit.Assert.*;
  * @version 0.7
  * @module
  */
-public final strictfp class AuthorityFactoryMock extends GeodeticAuthorityFactory
-        implements CRSAuthorityFactory, CSAuthorityFactory, DatumAuthorityFactory, CoordinateOperationAuthorityFactory
+public final strictfp class AuthorityFactoryMock extends GeodeticAuthorityFactory implements CRSAuthorityFactory,
+        CSAuthorityFactory, DatumAuthorityFactory, CoordinateOperationAuthorityFactory, AutoCloseable
 {
     /**
      * The authority.
      */
     private final Citation authority;
+
+    /**
+     * {@code true} if this factory has been closed by
+     * an explicit call to the {@link #close()} method.
+     */
+    private boolean closed;
 
     /**
      * Creates a new factory for the given authority.
@@ -100,6 +106,7 @@ public final strictfp class AuthorityFactoryMock extends GeodeticAuthorityFactor
      */
     @Override
     public Set<String> getAuthorityCodes(Class<? extends IdentifiedObject> type) {
+        assertFalse("This factory has been closed.", isClosed());
         final Set<String> codes = new LinkedHashSet<>();
         if (type.isAssignableFrom(GeocentricCRS.class)) add(codes, 4979);
         if (type.isAssignableFrom(GeographicCRS.class)) add(codes, 84, 4326);
@@ -117,6 +124,7 @@ public final strictfp class AuthorityFactoryMock extends GeodeticAuthorityFactor
      */
     @Override
     public IdentifiedObject createObject(final String code) throws NoSuchAuthorityCodeException {
+        assertFalse("This factory has been closed.", isClosed());
         final int n;
         try {
             n = Integer.parseInt(trimNamespace(code));
@@ -151,6 +159,7 @@ public final strictfp class AuthorityFactoryMock extends GeodeticAuthorityFactor
      */
     @Override
     public Unit<?> createUnit(final String code) throws NoSuchAuthorityCodeException {
+        assertFalse("This factory has been closed.", isClosed());
         final int n;
         try {
             n = Integer.parseInt(trimNamespace(code));
@@ -172,6 +181,7 @@ public final strictfp class AuthorityFactoryMock extends GeodeticAuthorityFactor
      */
     @Override
     public Extent createExtent(final String code) throws NoSuchAuthorityCodeException {
+        assertFalse("This factory has been closed.", isClosed());
         final int n;
         try {
             n = Integer.parseInt(trimNamespace(code));
@@ -182,5 +192,21 @@ public final strictfp class AuthorityFactoryMock extends GeodeticAuthorityFactor
             case 1262: return Extents.WORLD;
             default: throw new NoSuchAuthorityCodeException(code, authority.getTitle().toString(), code);
         }
+    }
+
+    /**
+     * Returns {@code true} if this factory has been closed
+     * by an explicit call to the {@link #close()} method.
+     */
+    final synchronized boolean isClosed() {
+        return closed;
+    }
+
+    /**
+     * Flags this factory as closed.
+     */
+    @Override
+    public synchronized void close() {
+        closed = true;
     }
 }

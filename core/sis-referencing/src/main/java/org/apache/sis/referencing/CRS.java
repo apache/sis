@@ -131,15 +131,15 @@ public final class CRS extends Static {
      *   <li>{@code "http://www.opengis.net/gml/srs/epsg.xml#4326"}</li>
      * </ul>
      *
-     * The {@link IdentifiedObjects#lookupURN(IdentifiedObject, Citation)} method can be seen
-     * as a converse of this method.
+     * Note that the {@link IdentifiedObjects#lookupURN(IdentifiedObject, Citation)}
+     * method can be seen as a converse of this method.
      *
      * @param  code The authority code.
      * @return The Coordinate Reference System for the given authority code.
      * @throws NoSuchAuthorityCodeException If there is no known CRS associated to the given code.
      * @throws FactoryException if the CRS creation failed for an other reason.
      *
-     * @see #getAuthorityFactory()
+     * @see #getAuthorityFactory(String)
      * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory
      *
      * @category factory
@@ -552,31 +552,39 @@ check:  while (lower != 0 || upper != dimension) {
 
     /**
      * Returns the system-wide authority factory used by {@link #forCode(String)} and other SIS methods.
-     * By default, this method returns an instance of {@link org.apache.sis.referencing.factory.MultiAuthoritiesFactory}
-     * capable to process at least some EPSG and WMS codes. The set of EPSG codes that are guaranteed to be supported
-     * is listed in the {@link #forCode(String)} method javadoc.
-     * Other authorities may also be supported if their factories are declared in the following file:
+     * If the given authority is non-null, then this method returns a factory specifically for that authority.
+     * Otherwise, this method returns the {@link org.apache.sis.referencing.factory.MultiAuthoritiesFactory}
+     * instance that manages all other factories.
+     *
+     * <p>The {@code authority} argument can be {@code "EPSG"}, {@code "OGC"} or any other authority found
+     * on the classpath. In the {@code "EPSG"} case, whether the full set of EPSG codes is supported or not
+     * depends on whether a {@linkplain org.apache.sis.referencing.factory.sql connection to the database}
+     * can be established. If no connection can be established, then this method returns a small embedded
+     * EPSG factory containing at least the CRS defined in the {@link #forCode(String)} method javadoc.</p>
+     *
+     * <p>User-defined authorities can be added to the SIS environment by creating a {@code CRSAuthorityFactory}
+     * implementation with a public no-argument constructor, and declaring the fully-qualified name of that class
+     * in a file at the following location:</p>
      *
      * {@preformat text
      *     META-INF/services/org.opengis.referencing.crs.CRSAuthorityFactory
      * }
      *
-     * <div class="section">Factories of other kinds</div>
-     * By default the returned factory can also be used as
-     * {@link org.opengis.referencing.cs.CSAuthorityFactory},
-     * {@link org.opengis.referencing.datum.DatumAuthorityFactory} or
-     * {@link org.opengis.referencing.operation.CoordinateOperationAuthorityFactory}.
-     * However callers are encouraged to verify the type before to cast
-     * since a future SIS version may allow users to set a custom factory.
-     *
-     * @return The system-wide authority factory used by SIS.
+     * @param  authority The authority of the desired factory (typically {@code "EPSG"} or {@code "OGC"}),
+     *         or {@code null} for the {@link org.apache.sis.referencing.factory.MultiAuthoritiesFactory}
+     *         instance that manage all factories.
+     * @return The system-wide authority factory used by SIS for the given authority.
+     * @throws FactoryException if no factory can be returned for the given authority.
      *
      * @see #forCode(String)
      * @see org.apache.sis.referencing.factory.MultiAuthoritiesFactory
      *
      * @since 0.7
      */
-    public static CRSAuthorityFactory getAuthorityFactory() {
-        return AuthorityFactories.ALL;
+    public static CRSAuthorityFactory getAuthorityFactory(final String authority) throws FactoryException {
+        if (authority == null) {
+            return AuthorityFactories.ALL;
+        }
+        return AuthorityFactories.ALL.getAuthorityFactory(CRSAuthorityFactory.class, authority, null);
     }
 }

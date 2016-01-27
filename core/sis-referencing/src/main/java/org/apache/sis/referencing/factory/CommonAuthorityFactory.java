@@ -48,6 +48,7 @@ import org.opengis.referencing.datum.EngineeringDatum;
 import org.apache.sis.internal.referencing.GeodeticObjectBuilder;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.internal.system.DefaultFactories;
+import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.measure.Units;
 import org.apache.sis.referencing.CommonCRS;
@@ -56,6 +57,7 @@ import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.CharSequences;
+import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.iso.DefaultNameSpace;
 import org.apache.sis.util.iso.SimpleInternationalString;
@@ -284,6 +286,19 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
     }
 
     /**
+     * Rewrites the given code in a canonical format.
+     * If the code can not be reformatted, then this method returns {@code null}.
+     */
+    static String reformat(final String code) {
+        try {
+            return format(Integer.parseInt(code.substring(skipNamespace(code) & ~LEGACY_MASK)));
+        } catch (NoSuchAuthorityCodeException | NumberFormatException e) {
+            Logging.recoverableException(Logging.getLogger(Loggers.CRS_FACTORY), CommonAuthorityFactory.class, "reformat", e);
+            return null;
+        }
+    }
+
+    /**
      * Returns the index where the code begins, ignoring spaces and the {@code "OGC"}, {@code "CRS"}, {@code "AUTO"},
      * {@code "AUTO1"} or {@code "AUTO2"} namespaces if present. If a namespace is found and is a legacy one, then
      * this {@link #LEGACY_MASK} bit will be set.
@@ -352,8 +367,7 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
     @Override
     public Set<String> getAuthorityCodes(final Class<? extends IdentifiedObject> type) throws FactoryException {
         ArgumentChecks.ensureNonNull("type", type);
-        final boolean all = type.isAssignableFrom(SingleCRS.class);
-        if (!all && !SingleCRS.class.isAssignableFrom(type)) {
+        if (!type.isAssignableFrom(SingleCRS.class) && !SingleCRS.class.isAssignableFrom(type)) {
             return Collections.emptySet();
         }
         synchronized (codes) {
@@ -368,15 +382,22 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
                 }
             }
         }
-        return all ? Collections.unmodifiableSet(codes.keySet()) : new FilteredCodes(codes, type).keySet();
+        return new FilteredCodes(codes, type).keySet();
+    }
+
+    /**
+     * Formats the given code with a {@code "CRS:"} or {@code "AUTO2:"} prefix.
+     */
+    private static String format(final int code) {
+        return ((code >= FIRST_PROJECTION_CODE) ? AUTO2 : Constants.CRS) + DefaultNameSpace.DEFAULT_SEPARATOR + code;
     }
 
     /**
      * Adds an element in the {@link #codes} map, witch check against duplicated values.
      */
     private void add(final int code, final Class<? extends SingleCRS> type) throws FactoryException {
-        final String namespace = (code >= FIRST_PROJECTION_CODE) ? AUTO2 : Constants.CRS;
-        if (codes.put(namespace + DefaultNameSpace.DEFAULT_SEPARATOR + code, type) != null) {
+        assert (code >= FIRST_PROJECTION_CODE) == (ProjectedCRS.class.isAssignableFrom(type)) : code;
+        if (codes.put(format(code), type) != null) {
             throw new FactoryException();    // Should never happen, but we are paranoiac.
         }
     }

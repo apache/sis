@@ -124,6 +124,8 @@ import org.apache.sis.internal.jdk8.JDK8;
  * @since   0.7
  * @version 0.7
  * @module
+ *
+ * @see org.apache.sis.referencing.CRS#getAuthorityFactory(String)
  */
 public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements CRSAuthorityFactory,
         CSAuthorityFactory, DatumAuthorityFactory, CoordinateOperationAuthorityFactory
@@ -663,12 +665,12 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
                 }
             } else if (type >= AuthorityFactoryIdentifier.GEODETIC) {
                 /*
-                 * Special cases: if the requested factory is ANY, take the first factory that we can found
+                 * Special cases: if the requested factory is ANY, take the first factory that we can find
                  * regardless of its type. We will try CRS, CS, DATUM and OPERATION factories in that order.
                  * The GEODETIC type is like ANY except for the additional restriction that the factory shall
                  * be an instance of the SIS-specific GeodeticAuthorityFactory class.
                  */
-                assert providers.length < Math.min(type, Byte.MAX_VALUE) : type;
+                assert providers.length <= Math.min(type, Byte.MAX_VALUE) : type;
                 for (byte i=0; i < providers.length; i++) {
                     factory = getAuthorityFactory(request.newType(i));
                     switch (type) {
@@ -760,7 +762,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
             int end = CharSequences.skipTrailingWhitespaces(code, 0, afterAuthority);
             int start = CharSequences.skipLeadingWhitespaces(code, 0, end);
             if (start >= end) {
-                throw new NoSuchAuthorityFactoryException(Errors.format(Errors.Keys.MissingAuthority_1, code), null);
+                throw new NoSuchAuthorityCodeException(Errors.format(Errors.Keys.MissingAuthority_1, code), null, code);
             }
             authority = code.substring(start, end);
             /*

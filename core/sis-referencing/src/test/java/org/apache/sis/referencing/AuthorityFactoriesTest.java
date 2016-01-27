@@ -16,13 +16,25 @@
  */
 package org.apache.sis.referencing;
 
-import org.opengis.referencing.crs.CRSAuthorityFactory;
-import org.opengis.referencing.crs.GeographicCRS;
+import java.util.Collection;
 import org.opengis.util.FactoryException;
+import org.opengis.referencing.NoSuchAuthorityCodeException;
+import org.opengis.referencing.IdentifiedObject;
+import org.opengis.referencing.crs.CRSAuthorityFactory;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.crs.GeographicCRS;
+import org.apache.sis.util.ComparisonMode;
+import org.apache.sis.util.logging.Logging;
 import org.apache.sis.internal.system.Loggers;
+import org.apache.sis.internal.util.Constants;
+import org.apache.sis.referencing.crs.HardCodedCRS;
+import org.apache.sis.referencing.factory.IdentifiedObjectFinder;
+import org.apache.sis.referencing.factory.NoSuchAuthorityFactoryException;
+
+// Test imports
+import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.LoggingWatcher;
 import org.apache.sis.test.TestCase;
-import org.apache.sis.util.logging.Logging;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -115,5 +127,114 @@ public final strictfp class AuthorityFactoriesTest extends TestCase {
 
         assertEquals(0, listener.maximumLogCount);
         assertSame(crs, factory.createGeographicCRS("urn:ogc:def:crs:EPSG::4326"));
+    }
+
+    /**
+     * Tests the {@code createCoordinateReferenceSystem(…)} method with various code.
+     *
+     * @throws FactoryException if a CRS creation failed.
+     */
+    @Test
+    @DependsOnMethod("testCRS84")
+    public void testCreateCRS() throws FactoryException {
+        final CRSAuthorityFactory factory = AuthorityFactories.ALL;
+        final CRSAuthorityFactory wms = AuthorityFactories.ALL.getAuthorityFactory(CRSAuthorityFactory.class, Constants.OGC, null);
+        CoordinateReferenceSystem actual, expected;
+
+        actual   = factory.createCoordinateReferenceSystem("CRS:84");
+        expected = wms.createCoordinateReferenceSystem("84");
+        assertSame(expected, actual);
+        assertSame(expected, factory.createObject("CRS:84"));
+
+        actual   = factory .createCoordinateReferenceSystem("AUTO:42001,0,0");
+        expected = wms.createCoordinateReferenceSystem("42001,0,0");
+        assertSame(expected, actual);
+        assertSame(expected, factory.createObject("AUTO:42001,0,0"));
+
+        actual   = factory.createCoordinateReferenceSystem("CRS:27");
+        expected = wms.createCoordinateReferenceSystem("27");
+        assertSame(expected, actual);
+        assertSame(expected, factory.createObject("CRS:27"));
+
+        try {
+            factory.createCoordinateReferenceSystem("84");
+            fail("Should not work without authority.");
+        } catch (NoSuchAuthorityCodeException exception) {
+            // This is the expected exception.
+            assertEquals("84", exception.getAuthorityCode());
+        }
+
+        try {
+            factory.createCoordinateReferenceSystem("FOO:84");
+            fail("Should not work with unknown authority.");
+        } catch (NoSuchAuthorityFactoryException exception) {
+            // This is the expected exception.
+            assertEquals("FOO", exception.getAuthority());
+        }
+    }
+
+    /**
+     * Tests creation of CRS from codes in the {@code "http://www.opengis.net/gml/srs/"} name space.
+     *
+     * @throws FactoryException if a CRS creation failed.
+     */
+    @Test
+    public void testHttp() throws FactoryException {
+        final CRSAuthorityFactory factory = AuthorityFactories.ALL;
+        final CRSAuthorityFactory wms = AuthorityFactories.ALL.getAuthorityFactory(CRSAuthorityFactory.class, Constants.OGC, null);
+        CoordinateReferenceSystem actual, expected;
+
+        actual   = factory.createCoordinateReferenceSystem("http://www.opengis.net/gml/srs/CRS#84");
+        expected = wms.createCoordinateReferenceSystem("84");
+        assertSame(expected, actual);
+
+        actual = factory.createCoordinateReferenceSystem("HTTP://WWW.OPENGIS.NET/GML/SRS/crs#84");
+        assertSame(expected, actual);
+
+        actual = factory.createCoordinateReferenceSystem("http://www.opengis.net/gml/srs/CRS.xml#84");
+        assertSame(expected, actual);
+
+        try {
+            factory.createCoordinateReferenceSystem("http://www.dummy.net/gml/srs/CRS#84");
+            fail("Should not accept http://www.dummy.net");
+        } catch (NoSuchAuthorityCodeException e) {
+            assertNotNull(e.getMessage());
+        }
+
+        try {
+            factory.createCoordinateReferenceSystem("http://www.opengis.net/gml/dummy/CRS#84");
+            fail("Should not accept “dummy” as an authority");
+        } catch (NoSuchAuthorityCodeException e) {
+            assertNotNull(e.getMessage());
+        }
+    }
+
+    /**
+     * Tests the {@code getAuthorityCodes(…)} method.
+     *
+     * @throws FactoryException if an error occurred while fetching the codes.
+     */
+    @Test
+    public void testGetAuthorityCodes() throws FactoryException {
+        final CRSAuthorityFactory factory = AuthorityFactories.ALL;
+        final Collection<String> codes = factory.getAuthorityCodes(CoordinateReferenceSystem.class);
+        assertFalse(codes.isEmpty());
+        assertTrue(codes.contains("CRS:84"));
+        assertTrue(codes.contains("AUTO:42001") || codes.contains("AUTO2:42001"));
+    }
+
+    /**
+     * Tests the {@code IdentifiedObjectFinder.find(…)} method.
+     *
+     * @throws FactoryException if the operation failed creation failed.
+     */
+    @Test
+    public void testFind() throws FactoryException {
+        final CRSAuthorityFactory factory = AuthorityFactories.ALL;
+        final IdentifiedObjectFinder finder = AuthorityFactories.ALL.newIdentifiedObjectFinder();
+        final IdentifiedObject find = finder.findSingleton(HardCodedCRS.WGS84);
+        assertNotNull("With scan allowed, should find the CRS.", find);
+        assertTrue(HardCodedCRS.WGS84.equals(find, ComparisonMode.DEBUG));
+        assertSame(factory.createCoordinateReferenceSystem("CRS:84"), find);
     }
 }
