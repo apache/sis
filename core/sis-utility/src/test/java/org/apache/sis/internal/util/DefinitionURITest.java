@@ -134,6 +134,13 @@ public final strictfp class DefinitionURITest extends TestCase {
         assertEquals ("code",      "4326", parsed.code);
         assertNull   ("parameters",        parsed.parameters);
         assertEquals ("toString()", "http://www.opengis.net/gml/srs/epsg.xml#4326", parsed.toString());
+
+        final DefinitionURI withoutExtension = DefinitionURI.parse("http://www.opengis.net/gml/srs/epsg#4326");
+        assertNotNull("Should parse even if the .xml extension is missig.", withoutExtension);
+        assertEquals(parsed.toString(), withoutExtension.toString());
+
+        assertNull("Should not parse if no '#' character.",
+                DefinitionURI.parse("http://www.opengis.net/gml/srs/epsg?4326"));
     }
 
     /**

@@ -215,13 +215,15 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
     /**
      * {@code true} if the call to {@link #closeExpired()} is scheduled for future execution in the background
      * cleaner thread. A value of {@code true} implies that this factory contains at least one active data access.
-     * However the reciprocal is not true: this field may be set to {@code false} while a worker factory is currently
-     * in use because this field is set to {@code true} only when a worker factory is {@linkplain #release() released}.
+     * However the reciprocal is not true: this field may be set to {@code false} while a DAO is currently in use
+     * because this field is set to {@code true} only when a worker factory is {@linkplain #release released}.
      *
      * <p>Note that we can not use {@code !availableDAOs.isEmpty()} as a replacement of {@code isCleanScheduled}
      * because the queue is empty if all Data Access Objects are currently in use.</p>
      *
      * <p>Every access to this field must be performed in a block synchronized on {@link #availableDAOs}.</p>
+     *
+     * @see #isCleanScheduled()
      */
     private boolean isCleanScheduled;
 
@@ -307,6 +309,8 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
     /**
      * Returns the number of Data Access Objects available for reuse. This count does not include the
      * Data Access Objects that are currently in use. This method is used only for testing purpose.
+     *
+     * @see #isCleanScheduled()
      */
     @Debug
     final int countAvailableDataAccess() {
@@ -468,6 +472,23 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
         if (!isCleanScheduled) {
             isCleanScheduled = true;
             DelayedExecutor.schedule(new CloseTask(usage.timestamp + timeout));
+        }
+    }
+
+    /**
+     * {@code true} if the call to {@link #closeExpired()} is scheduled for future execution in the background
+     * cleaner thread. A value of {@code true} implies that this factory contains at least one active data access.
+     * However the reciprocal is not true: this field may be set to {@code false} while a DAO is currently in use
+     * because this field is set to {@code true} only when a worker factory is {@linkplain #release released}.
+     *
+     * <p>This method is used only for testing purpose.</p>
+     *
+     * @see #countAvailableDataAccess()
+     */
+    @Debug
+    final boolean isCleanScheduled() {
+        synchronized (availableDAOs) {
+            return isCleanScheduled;
         }
     }
 

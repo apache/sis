@@ -496,7 +496,7 @@ public final class IdentifiedObjects extends Static {
      *     Set<IdentifiedObject> found = finder.find(object);
      * }</div>
      *
-     * @param  authority The authority of the objects to search (typically {@code "EPSG"} or {@code "WMS"}),
+     * @param  authority The authority of the objects to search (typically {@code "EPSG"} or {@code "OGC"}),
      *         or {@code null} for searching among the objects created by all authorities.
      * @return A finder to use for looking up unidentified objects.
      * @throws FactoryException if the finder can not be created.
