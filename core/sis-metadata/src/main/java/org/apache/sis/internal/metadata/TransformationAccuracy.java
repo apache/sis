@@ -22,11 +22,9 @@ import org.opengis.util.RecordType;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.quality.PositionalAccuracy;
 import org.opengis.metadata.quality.EvaluationMethodType;
-import org.apache.sis.internal.util.Constants;
 import org.apache.sis.metadata.iso.quality.DefaultQuantitativeResult;
 import org.apache.sis.metadata.iso.quality.DefaultAbsoluteExternalPositionalAccuracy;
 import org.apache.sis.util.collection.WeakValueHashMap;
-import org.apache.sis.util.iso.DefaultRecordSchema;
 import org.apache.sis.util.iso.DefaultRecord;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.Static;
@@ -50,12 +48,9 @@ public final class TransformationAccuracy extends Static {
     /**
      * The type of record instances which will hold coordinate transformation accuracy values.
      */
-    private static final RecordType TYPE;
-    static {
-        final DefaultRecordSchema schema = new DefaultRecordSchema(null, null, Constants.SIS);
-        TYPE = schema.createRecordType("Real", Collections.<CharSequence,Class<?>>singletonMap(
-                Vocabulary.formatInternational(Vocabulary.Keys.Value), Double.class));
-    }
+    private static final RecordType TYPE = RecordSchemaSIS.INSTANCE.createRecordType("Real",
+            Collections.<CharSequence,Class<?>>singletonMap(
+                    Vocabulary.formatInternational(Vocabulary.Keys.Value), Double.class));
 
     /**
      * Cache the positional accuracies. Most coordinate operation use a small set of accuracy values.

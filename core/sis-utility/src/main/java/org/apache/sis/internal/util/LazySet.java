@@ -96,7 +96,7 @@ public class LazySet<E> extends SetOfUnknownSize<E> {
      * @param iterator The iterator to use for filling this set.
      */
     public LazySet(final Iterator<? extends E> iterator) {
-        Objects.requireNonNull(sourceIterator);
+        Objects.requireNonNull(iterator);
         sourceIterator = iterator;
         source = null;
         createCache();
