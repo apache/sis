@@ -733,6 +733,9 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
         final String[] parameters;
         final DefinitionURI uri = DefinitionURI.parse(code);
         if (uri != null) {
+            if (uri.authority == null) {
+                throw new NoSuchAuthorityCodeException(Errors.format(Errors.Keys.MissingAuthority_1, code), null, uri.code, code);
+            }
             final Class<? extends T> type = proxy.type;
             authority  = uri.authority;
             version    = uri.version;
