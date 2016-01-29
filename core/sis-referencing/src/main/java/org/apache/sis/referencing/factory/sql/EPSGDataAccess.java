@@ -109,6 +109,8 @@ import org.apache.sis.util.collection.Containers;
 import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.measure.Units;
 
+import static org.apache.sis.internal.referencing.ServicesForMetadata.CONNECTION;
+
 
 /**
  * <cite>Data Access Object</cite> (DAO) creating geodetic objects from a JDBC connection to an EPSG database.
@@ -404,7 +406,7 @@ addURIs:    for (int i=0; ; i++) {
                     case 1: url = "http://www.epsg.org/"; function = OnLineFunction.DOWNLOAD; break;
                     case 2: {
                         url = metadata.getURL();
-                        function = OnLineFunction.valueOf("CONNECTION");
+                        function = OnLineFunction.valueOf(CONNECTION);
                         description = Messages.formatInternational(Messages.Keys.DataBase_4,
                                 Constants.EPSG, version, metadata.getDatabaseProductName(),
                                 Version.valueOf(metadata.getDatabaseMajorVersion(),

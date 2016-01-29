@@ -18,6 +18,7 @@ package org.apache.sis.internal.metadata;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Locale;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Role;
 import org.opengis.metadata.citation.Citation;
@@ -206,5 +207,18 @@ public final class ServicesForUtility extends MetadataServices {
         }
         c.freeze();
         return c;
+    }
+
+    /**
+     * Returns information about the Apache SIS configuration.
+     * See super-class for a list of keys.
+     *
+     * @param  key A key identifying the information to return.
+     * @param  locale Language to use if possible.
+     * @return The information, or {@code null} if none.
+     */
+    @Override
+    public String getInformation(final String key, final Locale locale) {
+        return ReferencingServices.getInstance().getInformation(key, locale);
     }
 }

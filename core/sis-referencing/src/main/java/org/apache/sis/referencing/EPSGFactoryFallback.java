@@ -16,8 +16,10 @@
  */
 package org.apache.sis.referencing;
 
+import java.util.Collections;
 import java.util.Set;
 import java.util.LinkedHashSet;
+import java.util.Locale;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.opengis.referencing.crs.GeocentricCRS;
@@ -28,9 +30,11 @@ import org.opengis.referencing.crs.CRSAuthorityFactory;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.metadata.citation.Citation;
 import org.apache.sis.metadata.iso.citation.Citations;
+import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.referencing.factory.GeodeticAuthorityFactory;
 import org.apache.sis.internal.referencing.provider.TransverseMercator;
 import org.apache.sis.internal.util.Constants;
+import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.Debug;
 
@@ -66,17 +70,38 @@ final class EPSGFactoryFallback extends GeodeticAuthorityFactory implements CRSA
     static final CRSAuthorityFactory INSTANCE = new EPSGFactoryFallback();
 
     /**
+     * The authority, created when first needed.
+     */
+    private Citation authority;
+
+    /**
      * Constructor for the singleton instance.
      */
     private EPSGFactoryFallback() {
     }
 
     /**
-     * Returns the EPSG authority.
+     * Returns the EPSG authority with only a modification in the title of emphasing that this is a subset
+     * of EPSG dataset.
      */
     @Override
-    public Citation getAuthority() {
-        return Citations.EPSG;
+    public synchronized Citation getAuthority() {
+        if (authority == null) {
+            final DefaultCitation c = new DefaultCitation(Citations.EPSG);
+            c.setTitle(new SimpleInternationalString("Subset of " + c.getTitle().toString(Locale.ENGLISH)));
+            authority = c;
+        }
+        return authority;
+    }
+
+    /**
+     * Returns the namespace of EPSG codes.
+     *
+     * @return The {@code "EPSG"} string in a singleton map.
+     */
+    @Override
+    public Set<String> getCodeSpaces() {
+        return Collections.singleton(Constants.EPSG);
     }
 
     /**

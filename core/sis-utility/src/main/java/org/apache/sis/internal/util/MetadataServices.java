@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.util;
 
+import java.util.Locale;
 import org.opengis.metadata.citation.Citation;
 import org.apache.sis.internal.simple.CitationConstant;
 import org.apache.sis.internal.system.Modules;
@@ -109,6 +110,25 @@ public class MetadataServices extends OptionalDependency {
      * @return The requested citation, or {@code null} if the {@code sis-metadata} module is not available.
      */
     public Citation createCitation(final String key) {
+        return null;
+    }
+
+    /**
+     * Returns information about the Apache SIS configuration to be reported in {@link org.apache.sis.setup.About}.
+     * This method is invoked only for aspects that depends on other modules than {@code sis-utility}.
+     *
+     * <p>Current keys are:</p>
+     * <ul>
+     *   <li>{@code "EPSG"}: version of EPSG database.</li>
+     * </ul>
+     *
+     * @param  key A key identifying the information to return.
+     * @param  locale Language to use if possible.
+     * @return The information, or {@code null} if none.
+     *
+     * @see org.apache.sis.internal.metadata.ReferencingServices#getInformation(String)
+     */
+    public String getInformation(String key, Locale locale) {
         return null;
     }
 }
