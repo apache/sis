@@ -20,6 +20,7 @@ import java.util.Locale;
 import java.io.File;
 import java.io.IOException;
 
+import org.opengis.metadata.Identifier;
 import org.opengis.util.FactoryException;
 import org.opengis.util.InternationalString;
 import org.opengis.referencing.IdentifiedObject;
@@ -89,10 +90,6 @@ public strictfp class CoordinateReferenceSystems extends AuthorityCodesReport {
                 "</ul>");
         factory = org.apache.sis.referencing.CRS.getAuthorityFactory(null);
         add(factory);
-        /*
-         * We have to use this hack for now because exceptions are formatted in the current locale.
-         */
-        Locale.setDefault(getLocale());
     }
 
     /**
@@ -118,6 +115,7 @@ public strictfp class CoordinateReferenceSystems extends AuthorityCodesReport {
      */
     @SuppressWarnings("UseOfSystemOutOrSystemErr")
     public static void main(final String[] args) throws FactoryException, IOException {
+        Locale.setDefault(Locale.US);   // We have to use this hack for now because exceptions are formatted in the current locale.
         final CoordinateReferenceSystems writer = new CoordinateReferenceSystems();
         final File file = writer.write(new File("CoordinateReferenceSystems.html"));
         System.out.println("Created " + file.getAbsolutePath());
@@ -188,24 +186,15 @@ public strictfp class CoordinateReferenceSystems extends AuthorityCodesReport {
          * Don't take the whole comment, because it may be pretty long.
          */
         if (row.isDeprecated) {
-            final InternationalString i18n = object.getRemarks();
-            if (i18n != null) {
-                String remark = i18n.toString(getLocale());
-                final int s = Math.max(remark.lastIndexOf("Superseded"),
-                              Math.max(remark.lastIndexOf("superseded"),
-                              Math.max(remark.lastIndexOf("Replaced"),
-                              Math.max(remark.lastIndexOf("replaced"),
-                              Math.max(remark.lastIndexOf("See"),
-                                       remark.lastIndexOf("see"))))));
-                if (s >= 0) {
-                    final int start = remark.lastIndexOf('.', s) + 1;
-                    final int end = remark.indexOf('.', s);
-                    remark = (end >= 0) ? remark.substring(start, end) : remark.substring(start);
-                    remark = CharSequences.trimWhitespaces(remark.replace('¶', '\n').trim());
-                    if (!remark.isEmpty()) {
-                        row.remark = remark;
-                    }
+            InternationalString i18n = object.getRemarks();
+            for (final Identifier id : object.getIdentifiers()) {
+                if (id instanceof Deprecable && ((Deprecable) id).isDeprecated()) {
+                    i18n = ((Deprecable) id).getRemarks();
+                    break;
                 }
+            }
+            if (i18n != null) {
+                row.remark = i18n.toString(getLocale());
             }
         }
         return row;
