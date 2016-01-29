@@ -39,7 +39,7 @@ import org.apache.sis.internal.jaxb.gco.GO_GenericName;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.5
+ * @version 0.7
  * @module
  */
 @SuppressWarnings("serial")
@@ -60,8 +60,10 @@ public strictfp class IdentifiedObjectMock implements IdentifiedObject, Identifi
     /**
      * Returns all properties defined in this object,
      * for the convenience of {@link #equals(Object)} and {@link #hashCode()}.
+     *
+     * @return The properties to use in hash code computations and in comparisons.
      */
-    Object[] properties() {
+    protected Object[] properties() {
         return new Object[] {code, alias};
     }
 
@@ -125,9 +127,9 @@ public strictfp class IdentifiedObjectMock implements IdentifiedObject, Identifi
     }
 
     /**
-     * Returns the identifier version ({@code null} for now).
+     * Returns the namespace version ({@code null} for now).
      *
-     * @return The identifier version.
+     * @return The namespace version.
      */
     @Override
     public final String getVersion() {

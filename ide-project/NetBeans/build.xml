@@ -77,6 +77,13 @@
       </fileset>
     </concat>
 
+    <!-- CRSAuthorityFactory implementations to be loaded by ServiceLoader. -->
+    <concat destfile="${build.classes.dir}/META-INF/services/org.opengis.referencing.crs.CRSAuthorityFactory" encoding="UTF-8" fixlastline="yes">
+      <fileset dir="${project.root}">
+        <include name="*/*/src/main/resources/META-INF/services/org.opengis.referencing.crs.CRSAuthorityFactory"/>
+      </fileset>
+    </concat>
+
     <!-- CRSFactory implementations to be loaded by ServiceLoader. -->
     <concat destfile="${build.classes.dir}/META-INF/services/org.opengis.referencing.crs.CRSFactory" encoding="UTF-8" fixlastline="yes">
       <fileset dir="${project.root}">

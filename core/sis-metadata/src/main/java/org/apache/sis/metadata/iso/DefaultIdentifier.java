@@ -50,7 +50,10 @@ import org.apache.sis.internal.util.Citations;
  * one except for the {@code "MD_"} prefix. Example:
  *
  * {@preformat xml
- *   <gmd:MD_Identifier>
+ *   <gmd:MD_Identifier
+ *     <gmd:code>
+ *       <gco:CharacterString>4326</gco:CharacterString>
+ *     </gmd:code>
  *     <gmd:authority>
  *       <gmd:CI_Citation>
  *         <gmd:title>
@@ -58,9 +61,6 @@ import org.apache.sis.internal.util.Citations;
  *         </gmd:title>
  *       </gmd:CI_Citation>
  *     </gmd:authority>
- *     <gmd:code>
- *       <gco:CharacterString>4326</gco:CharacterString>
- *     </gmd:code>
  *   </gmd:MD_Identifier>
  * }
  *
@@ -81,6 +81,7 @@ import org.apache.sis.internal.util.Citations;
  * @module
  *
  * @see ImmutableIdentifier
+ * @see org.apache.sis.referencing.IdentifiedObjects#toURN(Class, Identifier)
  */
 @XmlType(name = "MD_Identifier_Type", propOrder = {
     "authority",
@@ -94,33 +95,41 @@ public class DefaultIdentifier extends ISOMetadata implements Identifier {
     private static final long serialVersionUID = -23375776954553866L;
 
     /**
+     * Person or party responsible for maintenance of the namespace.
+     *
+     * @see #getAuthority()
+     */
+    private Citation authority;
+
+    /**
      * Alphanumeric value identifying an instance in the namespace.
+     *
+     * @see #getCode()
      */
     private String code;
 
     /**
      * Identifier or namespace in which the code is valid.
+     *
+     * @see #getCodeSpace()
      */
     private String codeSpace;
 
     /**
-     * Identifier of the version of the associated code space or code, as specified
-     * by the code space or code authority. This version is included only when the
-     * {@linkplain #getCode code} uses versions. When appropriate, the edition is
-     * identified by the effective date, coded using ISO 8601 date format.
+     * Version identifier for the namespace, as specified by the code authority.
+     * This version is included only when the {@linkplain #getCode code} uses versions.
+     * When appropriate, the edition is identified by the effective date, coded using ISO 8601 date format.
+     *
+     * @see #getVersion()
      */
     private String version;
 
     /**
      * Natural language description of the meaning of the code value.
+     *
+     * @see #getDescription()
      */
     private InternationalString description;
-
-    /**
-     * Organization or party responsible for definition and maintenance of the
-     * {@linkplain #getCode code}.
-     */
-    private Citation authority;
 
     /**
      * Construct an initially empty identifier.
@@ -155,10 +164,8 @@ public class DefaultIdentifier extends ISOMetadata implements Identifier {
      *       {@linkplain org.apache.sis.util.CharSequences#isUnicodeIdentifier(CharSequence) unicode identifier}.</li>
      * </ol>
      *
-     * @param authority The organization or party responsible for definition and maintenance
-     *                  of the code, or {@code null} if none.
-     * @param code      The alphanumeric value identifying an instance in the namespace,
-     *                  or {@code null} if none.
+     * @param authority The the person or party responsible for maintenance of the namespace, or {@code null} if none.
+     * @param code      The alphanumeric value identifying an instance in the namespace, or {@code null} if none.
      *
      * @see org.apache.sis.metadata.iso.citation.Citations#getUnicodeIdentifier(Citation)
      */
@@ -214,6 +221,29 @@ public class DefaultIdentifier extends ISOMetadata implements Identifier {
     }
 
     /**
+     * Returns the person or party responsible for maintenance of the namespace.
+     * The organization's abbreviation is often the same than this identifier
+     * {@linkplain #getCodeSpace() code space}, but not necessarily.
+     *
+     * @return Person or party responsible for maintenance of the namespace, or {@code null} if not available.
+     */
+    @Override
+    @XmlElement(name = "authority")
+    public Citation getAuthority() {
+        return authority;
+    }
+
+    /**
+     * Sets the person or party responsible for maintenance of the namespace.
+     *
+     * @param newValue The new authority.
+     */
+    public void setAuthority(final Citation newValue) {
+        checkWritePermission();
+        authority = newValue;
+    }
+
+    /**
      * Returns the alphanumeric value identifying an instance in the namespace.
      * The code is optionally from a controlled list or pattern.
      *
@@ -232,6 +262,7 @@ public class DefaultIdentifier extends ISOMetadata implements Identifier {
 
     /**
      * Sets the alphanumeric value identifying an instance in the namespace.
+     * Should avoid characters that are not legal in URLs.
      *
      * @param newValue The new code, or {@code null}.
      */
@@ -246,7 +277,7 @@ public class DefaultIdentifier extends ISOMetadata implements Identifier {
      *
      * <div class="note"><b>Example:</b> {@code "EPSG"}.</div>
      *
-     * @return The identifier code space, or {@code null} if none.
+     * @return The identifier or namespace in which the code is valid, or {@code null} if none.
      *
      * @since 0.5
      */
@@ -268,14 +299,13 @@ public class DefaultIdentifier extends ISOMetadata implements Identifier {
     }
 
     /**
-     * Identifier of the version of the associated code, as specified by the code space or
-     * code authority. This version is included only when the {@linkplain #getCode() code}
-     * uses versions. When appropriate, the edition is identified by the effective date,
-     * coded using ISO 8601 date format.
+     * Returns the version identifier for the namespace, as specified by the code authority.
+     * This version is included only when the {@linkplain #getCode() code} uses versions.
+     * When appropriate, the edition is identified by the effective date, coded using ISO 8601 date format.
      *
      * <div class="note"><b>Example:</b> the version of the underlying EPSG database.</div>
      *
-     * @return The version, or {@code null} if not available.
+     * @return The version identifier for the namespace, or {@code null} if none.
      */
     @Override
     public String getVersion() {
@@ -283,9 +313,9 @@ public class DefaultIdentifier extends ISOMetadata implements Identifier {
     }
 
     /**
-     * Sets an identifier of the version of the associated code.
+     * Sets the version identifier for the namespace.
      *
-     * @param newValue The new version.
+     * @param newValue The new version, or {@code null} if none.
      */
     public void setVersion(final String newValue) {
         checkWritePermission();
@@ -316,28 +346,5 @@ public class DefaultIdentifier extends ISOMetadata implements Identifier {
     public void setDescription(final InternationalString newValue) {
         checkWritePermission();
         description = newValue;
-    }
-
-    /**
-     * Organization or party responsible for definition and maintenance of the {@linkplain #getCode() code}.
-     * The organization's abbreviation is often the same than this identifier {@linkplain #getCodeSpace() code space},
-     * but not necessarily.
-     *
-     * @return The authority, or {@code null} if not available.
-     */
-    @Override
-    @XmlElement(name = "authority")
-    public Citation getAuthority() {
-        return authority;
-    }
-
-    /**
-     * Sets the organization or party responsible for definition and maintenance of the {@linkplain #getCode() code}.
-     *
-     * @param newValue The new authority.
-     */
-    public void setAuthority(final Citation newValue) {
-        checkWritePermission();
-        authority = newValue;
     }
 }

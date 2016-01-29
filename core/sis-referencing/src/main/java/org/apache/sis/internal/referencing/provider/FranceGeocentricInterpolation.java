@@ -144,7 +144,7 @@ public class FranceGeocentricInterpolation extends AbstractProvider {
     private static final String DEFAULT = "gr3df97a.txt";
 
     /**
-     * The operation parameter descriptor for the <cite>Geocentric translations file</cite> parameter value.
+     * The operation parameter descriptor for the <cite>Geocentric translation file</cite> parameter value.
      */
     public static final ParameterDescriptor<File> FILE;
 
@@ -158,7 +158,7 @@ public class FranceGeocentricInterpolation extends AbstractProvider {
         final ParameterBuilder builder = builder();
         FILE = builder
                 .addIdentifier("8727")
-                .addName("Geocentric translations file")
+                .addName("Geocentric translation file")
                 .setRemarks(NTv2.WARNING).create(File.class, Paths.get(DEFAULT));
         PARAMETERS = builder
                 .addIdentifier("9655")

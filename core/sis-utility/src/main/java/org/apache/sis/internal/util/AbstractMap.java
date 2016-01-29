@@ -21,7 +21,6 @@ import java.util.Set;
 import java.util.Iterator;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.AbstractSet;
 import java.util.AbstractCollection;
 import java.util.NoSuchElementException;
 import org.apache.sis.io.TableAppender;
@@ -69,7 +68,7 @@ import org.apache.sis.internal.jdk7.Objects;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5
- * @version 0.6
+ * @version 0.7
  * @module
  */
 public abstract class AbstractMap<K,V> implements Map<K,V> {
@@ -363,7 +362,7 @@ public abstract class AbstractMap<K,V> implements Map<K,V> {
      */
     @Override
     public Set<K> keySet() {
-        return new AbstractSet<K>() {
+        return new SetOfUnknownSize<K>() {
             @Override public void        clear()            {       AbstractMap.this.clear();}
             @Override public boolean     isEmpty()          {return AbstractMap.this.isEmpty();}
             @Override public int         size()             {return AbstractMap.this.size();}
@@ -434,7 +433,7 @@ public abstract class AbstractMap<K,V> implements Map<K,V> {
      */
     @Override
     public Set<Entry<K,V>> entrySet() {
-        return new AbstractSet<Entry<K,V>>() {
+        return new SetOfUnknownSize<Entry<K,V>>() {
             @Override public void    clear()   {       AbstractMap.this.clear();}
             @Override public boolean isEmpty() {return AbstractMap.this.isEmpty();}
             @Override public int     size()    {return AbstractMap.this.size();}

@@ -30,7 +30,6 @@ import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.apache.sis.test.Assert.*;
-import static org.apache.sis.test.mock.GeodeticDatumMock.WGS84;
 
 
 /**
@@ -52,7 +51,7 @@ public final strictfp class BursaWolfParametersTest extends TestCase {
      * Area of validity is the World.
      */
     static BursaWolfParameters createWGS72_to_WGS84() {
-        final BursaWolfParameters bursaWolf = new BursaWolfParameters(WGS84, Extents.WORLD);
+        final BursaWolfParameters bursaWolf = new BursaWolfParameters(GeodeticDatumMock.WGS84, Extents.WORLD);
         bursaWolf.tZ = 4.5;
         bursaWolf.rZ = 0.554;
         bursaWolf.dS = 0.219;
@@ -67,7 +66,7 @@ public final strictfp class BursaWolfParametersTest extends TestCase {
      * Area of validity is the North Sea: 5.05°W to 11.13°E in longitude and 51.04°N to 62.0°N in latitude.
      */
     static BursaWolfParameters createED87_to_WGS84() {
-        final BursaWolfParameters bursaWolf = new BursaWolfParameters(WGS84, new DefaultExtent("Europe - North Sea",
+        final BursaWolfParameters bursaWolf = new BursaWolfParameters(GeodeticDatumMock.WGS84, new DefaultExtent("Europe - North Sea",
                 new DefaultGeographicBoundingBox(-5.05, 11.13, 51.04, 62.0), null, null));
         bursaWolf.tX =  -82.981;
         bursaWolf.tY =  -99.719;
@@ -88,7 +87,7 @@ public final strictfp class BursaWolfParametersTest extends TestCase {
      * This transformation uses only translation parameters.
      */
     static BursaWolfParameters createNTF_to_WGS84() {
-        final BursaWolfParameters bursaWolf = new BursaWolfParameters(WGS84, Extents.WORLD);
+        final BursaWolfParameters bursaWolf = new BursaWolfParameters(GeodeticDatumMock.WGS84, Extents.WORLD);
         bursaWolf.tX = -168;
         bursaWolf.tY =  -60;
         bursaWolf.tZ =  320;

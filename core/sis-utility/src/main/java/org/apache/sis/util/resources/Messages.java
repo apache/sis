@@ -166,6 +166,12 @@ public final class Messages extends IndexedResourceBundle {
         public static final short DiscardedExclusiveProperty_2 = 2;
 
         /**
+         * There is no factory for version {1} of “{0}” authority. Fallback on default version for
+         * objects creation.
+         */
+        public static final short FallbackDefaultFactoryVersion_2 = 38;
+
+        /**
          * Ignored properties after the first occurrence of ‘{0}’.
          */
         public static final short IgnoredPropertiesAfterFirst_1 = 6;
@@ -174,6 +180,12 @@ public final class Messages extends IndexedResourceBundle {
          * Ignored property associated to ‘{0}’.
          */
         public static final short IgnoredPropertyAssociatedTo_1 = 7;
+
+        /**
+         * More than one service provider of type ‘{0}’ are declared for “{1}”. Only the first provider
+         * (an instance of ‘{2}’) will be used.
+         */
+        public static final short IgnoredServiceProvider_3 = 36;
 
         /**
          * Parsing of “{0}” done, but some elements were ignored.
@@ -200,6 +212,11 @@ public final class Messages extends IndexedResourceBundle {
          * not match the definition of the “{0}” ellipsoid.
          */
         public static final short MismatchedEllipsoidAxisLength_3 = 9;
+
+        /**
+         * No coordinate operation from “{0}” to “{1}” because of mismatched factories.
+         */
+        public static final short MismatchedOperationFactories_2 = 37;
 
         /**
          * Despite its name, this parameter is effectively “{0}”.
