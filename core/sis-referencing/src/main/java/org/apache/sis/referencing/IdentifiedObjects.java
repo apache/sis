@@ -623,7 +623,11 @@ public final class IdentifiedObjects extends Static {
         if (identifier == null) {
             return null;
         }
-        return NameMeaning.toURN(type, identifier.getCodeSpace(), identifier.getVersion(), identifier.getCode());
+        String cs = identifier.getCodeSpace();
+        if (cs == null || cs.isEmpty()) {
+            cs = org.apache.sis.internal.util.Citations.getIdentifier(identifier.getAuthority(), true);
+        }
+        return NameMeaning.toURN(type, cs, identifier.getVersion(), identifier.getCode());
     }
 
     /**
