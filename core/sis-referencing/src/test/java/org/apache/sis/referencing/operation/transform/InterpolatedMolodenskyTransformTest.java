@@ -80,7 +80,7 @@ public final strictfp class InterpolatedMolodenskyTransformTest extends Interpol
                 "  PARAMETER[“src_semi_minor”, 6356752.314140356],\n" +
                 "  PARAMETER[“tgt_semi_major”, 6378249.2],\n" +
                 "  PARAMETER[“tgt_semi_minor”, 6356515.0],\n" +
-                "  PARAMETER[“Geocentric translations file”, “\\E.*\\W\\Q" +
+                "  PARAMETER[“Geocentric translation file”, “\\E.*\\W\\Q" +
                              FranceGeocentricInterpolationTest.TEST_FILE + "”]]\\E");
 
         transform = transform.inverse();
@@ -91,7 +91,7 @@ public final strictfp class InterpolatedMolodenskyTransformTest extends Interpol
                 "  PARAMETER[“src_semi_minor”, 6356515.0],\n" +
                 "  PARAMETER[“tgt_semi_major”, 6378137.0],\n" +
                 "  PARAMETER[“tgt_semi_minor”, 6356752.314140356],\n" +
-                "  PARAMETER[“Geocentric translations file”, “\\E.*\\W\\Q" +
+                "  PARAMETER[“Geocentric translation file”, “\\E.*\\W\\Q" +
                              FranceGeocentricInterpolationTest.TEST_FILE + "”]]\\E");
     }
 
@@ -117,7 +117,7 @@ public final strictfp class InterpolatedMolodenskyTransformTest extends Interpol
                 "    Parameter[“src_semi_minor”, 6356515.0],\n" +
                 "    Parameter[“Semi-major axis length difference”, -112.2],\n" +
                 "    Parameter[“Flattening difference”, -5.4738838833299144E-5],\n" +
-                "    ParameterFile[“Geocentric translations file”, “\\E.*\\W\\Q" +
+                "    ParameterFile[“Geocentric translation file”, “\\E.*\\W\\Q" +
                                    FranceGeocentricInterpolationTest.TEST_FILE + "”, Id[“EPSG”, 8727],\n" +
                 "      Remark[“\\E.*\\Q”]],\n" +
                 "    Parameter[“dim”, 2]],\n" +

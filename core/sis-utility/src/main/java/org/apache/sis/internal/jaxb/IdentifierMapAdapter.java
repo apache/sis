@@ -23,7 +23,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.AbstractSet;
 import java.util.AbstractMap;
 import java.util.NoSuchElementException;
 import java.io.Serializable;
@@ -33,6 +32,7 @@ import org.apache.sis.util.Debug;
 import org.apache.sis.xml.XLink;
 import org.apache.sis.xml.IdentifierMap;
 import org.apache.sis.xml.IdentifierSpace;
+import org.apache.sis.internal.util.SetOfUnknownSize;
 
 import static org.apache.sis.util.collection.Containers.hashMapCapacity;
 
@@ -358,7 +358,7 @@ public class IdentifierMapAdapter extends AbstractMap<Citation,String> implement
          * fields if the underlying list is thread-safe. Furthermore, IdentifierMapAdapter are temporary
          * objects anyway in the current ISOMetadata implementation.
          */
-        return new AbstractSet<Entry<Citation,String>>() {
+        return new SetOfUnknownSize<Entry<Citation,String>>() {
             /** Delegates to the enclosing class. */
             @Override public void clear() throws UnsupportedOperationException {
                 IdentifierMapAdapter.this.clear();

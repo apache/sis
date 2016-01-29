@@ -18,9 +18,11 @@ package org.apache.sis.internal.util;
 
 import java.util.Arrays;
 import java.util.Iterator;
-import java.util.AbstractSet;
 import java.util.NoSuchElementException;
 import org.apache.sis.util.Workaround;
+
+// Branch-specific imports
+import org.apache.sis.internal.jdk7.Objects;
 
 
 /**
@@ -28,10 +30,12 @@ import org.apache.sis.util.Workaround;
  * This implementation does <strong>not</strong> check if all elements in the iterator
  * are really unique; we assume that this condition was already verified by the caller.
  *
- * <p>One usage of {@code LazySet} is to workaround a {@link java.util.ServiceLoader} bug which block usage of two
+ * <p>One usage of {@code LazySet} is to workaround a {@link java.util.ServiceLoader} bug which blocks usage of two
  * {@link Iterator} instances together: the first iteration must be fully completed or abandoned before we can start
  * a new iteration. See
  * {@link org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory#DefaultMathTransformFactory()}.</p>
+ *
+ * <p>Another usage for this class is to prepend some values before the elements given by the source {@code Iterable}.</p>
  *
  * <p>This class is not thread-safe. Synchronization, if desired, shall be done by the caller.</p>
  *
@@ -39,93 +43,129 @@ import org.apache.sis.util.Workaround;
  *
  * @author  Martin Desruisseaux (IRD)
  * @since   0.6
- * @version 0.6
+ * @version 0.7
  * @module
  */
 @Workaround(library="JDK", version="1.8.0_31-b13")
-public final class LazySet<E> extends AbstractSet<E> {
+public class LazySet<E> extends SetOfUnknownSize<E> {
     /**
      * The original source of elements, or {@code null} if unknown.
      */
-    public final Iterable<? extends E> source;
+    private final Iterable<? extends E> source;
 
     /**
      * The iterator to use for filling this set, or {@code null} if the iteration did not started yet
-     * or is finished. Those two cases can be distinguished by looking whether the {@link #elements}
+     * or is finished. Those two cases can be distinguished by looking whether the {@link #cachedElements}
      * array is null or not.
+     *
+     * @see #sourceIterator()
      */
-    private Iterator<? extends E> iterator;
+    private Iterator<? extends E> sourceIterator;
 
     /**
-     * The elements in this set, or {@code null} if the iteration did not started yet.
+     * The elements that we cached so far, or {@code null} if the iteration did not started yet.
      * After the iteration started, this array will grow as needed.
+     *
+     * @see #createCache()
+     * @see #cache(Object)
      */
-    private E[] elements;
+    private E[] cachedElements;
 
     /**
-     * The current position in the iteration. This position will be incremented as long as
-     * there is some elements remaining in the iterator.
+     * The number of valid elements in the {@link #cachedElements} array.
+     * This counter will be incremented as long as there is more elements returned by {@link #sourceIterator}.
      */
-    private int position;
+    private int numCached;
 
     /**
      * Constructs a set to be filled by the elements from the specified source. Iteration will starts
      * only when first needed, and at most one iteration will be performed (unless {@link #reload()}
      * is invoked).
      *
-     * @param source The source of elements to use for filling the set.
+     * @param source The source of elements to use for filling this set.
      */
-    @SuppressWarnings("unchecked")
     public LazySet(final Iterable<? extends E> source) {
+        Objects.requireNonNull(source);
         this.source = source;
     }
 
     /**
      * Constructs a set to be filled using the specified iterator.
-     * Iteration in the given iterator will occurs only when needed.
+     * Iteration with the given iterator will occur only when needed.
      *
-     * @param iterator The iterator to use for filling the set.
+     * @param iterator The iterator to use for filling this set.
      */
-    @SuppressWarnings("unchecked")
     public LazySet(final Iterator<? extends E> iterator) {
+        Objects.requireNonNull(iterator);
+        sourceIterator = iterator;
         source = null;
-        this.iterator = iterator;
-        elements = (E[]) new Object[4];
+        createCache();
     }
 
     /**
-     * Notify this {@code LazySet} that it should re-fetch the elements from the {@linkplain #source}.
+     * Notifies this {@code LazySet} that it should re-fetch the elements from the source given at construction time.
+     * This method does not verify if the source needs also to be reloaded; it is up to the caller to verify.
+     *
+     * @return The original source of elements, or {@code null} if unknown.
      */
-    public void reload() {
+    public Iterable<? extends E> reload() {
         if (source != null) {
-            iterator = null;
-            elements = null;
-            position = 0;
+            sourceIterator = null;
+            cachedElements = null;
+            numCached = 0;
         }
+        return source;
     }
 
     /**
-     * Returns the iterator over the source elements, or {@code null} if the iteration is finished.
+     * Hook for subclasses that want to prepend some values before the source {@code Iterable}.
+     * This method is invoked only when first needed. It is safe to return a shared array since
+     * {@code LazySet} will not write in that array ({@code LazySet} will create a new array if
+     * it needs to add more values).
+     *
+     * @return Values to prepend before the source {@code Iterable}, or {@code null} if none.
+     *
+     * @since 0.7
+     */
+    protected E[] initialValues() {
+        return null;
+    }
+
+    /**
+     * Creates the {@link #cachedElements} array. This array will contains the elements
+     * given by {@link #initialContent()} if that method returned a non-null and non-empty array.
+     *
+     * @return {@code true} if {@link #initialValues()} initialized the set with at least one value.
      */
     @SuppressWarnings("unchecked")
-    private Iterator<? extends E> sourceElements() {
-        if (iterator == null && elements == null && source != null) {
-            iterator = source.iterator();
-            elements = (E[]) new Object[4];
-        }
-        return iterator;
-    }
-
-    /**
-     * Returns {@code true} if the {@link #iterator} is non-null and have more elements to return.
-     */
-    private boolean hasNext() {
-        final Iterator<? extends E> it = sourceElements();
-        if (it != null) {
-            if (it.hasNext()) {
+    private boolean createCache() {
+        cachedElements = initialValues();   // No need to clone.
+        if (cachedElements != null) {
+            numCached = cachedElements.length;
+            if (numCached != 0) {
                 return true;
             }
-            iterator = null;
+        }
+        cachedElements = (E[]) new Object[4];
+        return false;
+    }
+
+    /**
+     * Returns {@code true} if the {@link #sourceIterator} is non-null and have more elements to return,
+     * or if we initialized the cache with some elements declared by {@link #initialValues()}.
+     */
+    private boolean canPullMore() {
+        if (sourceIterator == null && cachedElements == null) {
+            sourceIterator = source.iterator();
+            if (createCache()) {
+                return true;
+            }
+        }
+        if (sourceIterator != null) {
+            if (sourceIterator.hasNext()) {
+                return true;
+            }
+            sourceIterator = null;
         }
         return false;
     }
@@ -136,8 +176,8 @@ public final class LazySet<E> extends AbstractSet<E> {
      * @return {@code true} if this set has no element.
      */
     @Override
-    public boolean isEmpty() {
-        return (position == 0) && !hasNext();
+    public final boolean isEmpty() {
+        return (numCached == 0) && !canPullMore();
     }
 
     /**
@@ -147,25 +187,26 @@ public final class LazySet<E> extends AbstractSet<E> {
      * @return Number of elements in the iterator.
      */
     @Override
-    public int size() {
-        final Iterator<? extends E> it = sourceElements();
-        if (it != null) {
-            while (it.hasNext()) {
-                cache(it.next());
+    public final int size() {
+        if (canPullMore()) {
+            while (sourceIterator.hasNext()) {
+                cache(sourceIterator.next());
             }
-            iterator = null;
+            sourceIterator = null;
         }
-        return position;
+        return numCached;
     }
 
     /**
-     * Adds the given element to the {@link #elements} array.
+     * Adds the given element to the {@link #cachedElements} array.
+     *
+     * @param element The element to add to the cache.
      */
     private void cache(final E element) {
-        if (position >= elements.length) {
-            elements = Arrays.copyOf(elements, position*2);
+        if (numCached >= cachedElements.length) {
+            cachedElements = Arrays.copyOf(cachedElements, numCached << 1);
         }
-        elements[position++] = element;
+        cachedElements[numCached++] = element;
     }
 
     /**
@@ -177,7 +218,7 @@ public final class LazySet<E> extends AbstractSet<E> {
      * negative index and for skipped elements.</p>
      */
     final boolean exists(final int index) {
-        return (index < position) || hasNext();
+        return (index < numCached) || canPullMore();
     }
 
     /**
@@ -187,14 +228,14 @@ public final class LazySet<E> extends AbstractSet<E> {
      * @return The element at the requested index.
      */
     final E get(final int index) {
-        if (index >= position) {
-            if (hasNext()) {
-                cache(iterator.next());
+        if (index >= numCached) {
+            if (canPullMore()) {
+                cache(sourceIterator.next());
             } else {
                 throw new NoSuchElementException();
             }
         }
-        return elements[index];
+        return cachedElements[index];
     }
 
     /**
@@ -204,7 +245,7 @@ public final class LazySet<E> extends AbstractSet<E> {
      * @return An iterator over the elements in this set.
      */
     @Override
-    public Iterator<E> iterator() {
+    public final Iterator<E> iterator() {
         return new Iterator<E>() {
             private int cursor;
 

@@ -24,6 +24,7 @@ import java.util.Collection;
 
 import org.opengis.util.NameSpace;
 import org.opengis.util.GenericName;
+import org.opengis.util.FactoryException;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.referencing.IdentifiedObject;
@@ -32,11 +33,17 @@ import org.opengis.referencing.operation.CoordinateOperation;
 
 import org.apache.sis.util.Static;
 import org.apache.sis.util.CharSequences;
+import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.iso.DefaultNameSpace;
-import org.apache.sis.metadata.iso.citation.Citations; // For javadoc.
+import org.apache.sis.internal.util.Constants;
+import org.apache.sis.internal.system.Loggers;
+import org.apache.sis.internal.metadata.NameMeaning;
 import org.apache.sis.internal.metadata.NameToIdentifier;
+import org.apache.sis.metadata.iso.citation.Citations;
+import org.apache.sis.referencing.factory.IdentifiedObjectFinder;
+import org.apache.sis.referencing.factory.GeodeticAuthorityFactory;
 
-import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 import static org.apache.sis.internal.util.Citations.iterator;
 import static org.apache.sis.internal.util.Citations.identifierMatches;
 
@@ -47,7 +54,7 @@ import static org.apache.sis.internal.util.Citations.identifierMatches;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Guilhem Legal (Geomatys)
  * @since   0.4
- * @version 0.5
+ * @version 0.7
  * @module
  *
  * @see CRS
@@ -100,8 +107,8 @@ public final class IdentifiedObjects extends Static {
      * @return An view of the identified object as an immutable map.
      */
     public static Map<String,?> getProperties(final IdentifiedObject object, final String... excludes) {
-        ensureNonNull("object", object);
-        ensureNonNull("excludes", excludes);
+        ArgumentChecks.ensureNonNull("object", object);
+        ArgumentChecks.ensureNonNull("excludes", excludes);
         return new Properties(object, excludes);
     }
 
@@ -367,6 +374,148 @@ public final class IdentifiedObjects extends Static {
     }
 
     /**
+     * Looks up a URN, such as {@code "urn:ogc:def:crs:EPSG:8.2:4326"}, of the specified object.
+     * This method searches in all {@linkplain org.apache.sis.referencing.factory.GeodeticAuthorityFactory geodetic
+     * authority factories} known to SIS for an object {@linkplain org.apache.sis.util.ComparisonMode#APPROXIMATIVE
+     * approximatively equals} to the specified object. If such an object is found, then the URN for the given
+     * authority is returned. Otherwise or if there is ambiguity, this method returns {@code null}.
+     *
+     * <p><strong>Note that this method checks the identifier validity.</strong>
+     * If the given object declares explicitly an identifier, then this method will instantiate an object from the
+     * authority factory using that identifier and compare it with the given object. If the comparison fails, then
+     * this method returns {@code null}. Consequently this method may return {@code null} even if the given object
+     * declares explicitly its identifier. If the declared identifier is wanted unconditionally,
+     * one can use the following pattern instead:
+     *
+     * {@preformat java
+     *     String urn = toURN(object.getClass(), getIdentifier(object, authority));
+     * }
+     *
+     * This method can be seen as a converse of {@link CRS#forCode(String)}.
+     *
+     * @param  object The object (usually a {@linkplain org.apache.sis.referencing.crs.AbstractCRS
+     *         coordinate reference system}) whose identifier is to be found, or {@code null}.
+     * @param  authority The authority for the identifier to return, or {@code null} for
+     *         the first identifier regardless its authority.
+     * @return The identifier, or {@code null} if none was found without ambiguity or if the given object was null.
+     * @throws FactoryException if an error occurred during the search.
+     *
+     * @see #newFinder(String)
+     * @see #toURN(Class, Identifier)
+     *
+     * @since 0.7
+     */
+    public static String lookupURN(final IdentifiedObject object, final Citation authority) throws FactoryException {
+        String urn = null;
+        if (object != null) {
+            for (final IdentifiedObject candidate : newFinder(null).find(object)) {
+                final String c = toURN(candidate.getClass(), getIdentifier(candidate, authority));
+                if (c != null) {
+                    if (urn != null && !urn.equals(c)) {
+                        return null;
+                    }
+                    urn = c;
+                }
+            }
+        }
+        return urn;
+    }
+
+    /**
+     * Looks up an EPSG code, such as {@code 4326}, of the specified object. This method searches in EPSG factories
+     * known to SIS for an object {@linkplain org.apache.sis.util.ComparisonMode#APPROXIMATIVE approximatively equals}
+     * to the specified object. If such an object is found, then its EPSG identifier is returned.
+     * Otherwise or if there is ambiguity, this method returns {@code null}.
+     *
+     * <p><strong>Note that this method checks the identifier validity.</strong>
+     * If the given object declares explicitly an identifier, then this method will instantiate an object from the
+     * EPSG factory using that identifier and compare it with the given object. If the comparison fails, then this
+     * method returns {@code null}. Consequently this method may return {@code null} even if the given object
+     * declares explicitly its identifier. If the declared identifier is wanted unconditionally,
+     * one can use the following pattern instead:
+     *
+     * {@preformat java
+     *     String code = toString(getIdentifier(object, Citations.EPSG));
+     * }
+     *
+     * This method can be seen as a converse of {@link CRS#forCode(String)}.
+     *
+     * @param  object The object (usually a {@linkplain org.apache.sis.referencing.crs.AbstractCRS
+     *         coordinate reference system}) whose EPSG code is to be found, or {@code null}.
+     * @return The EPSG code, or {@code null} if none was found without ambiguity or if the given object was null.
+     * @throws FactoryException if an error occurred during the search.
+     *
+     * @see #newFinder(String)
+     *
+     * @since 0.7
+     */
+    public static Integer lookupEPSG(final IdentifiedObject object) throws FactoryException {
+        Integer code = null;
+        if (object != null) {
+            for (final IdentifiedObject candidate : newFinder(Constants.EPSG).find(object)) {
+                final Identifier id = getIdentifier(candidate, Citations.EPSG);
+                if (id != null) try {
+                    Integer previous = code;
+                    code = Integer.valueOf(id.getCode());
+                    if (previous != null && !previous.equals(code)) {
+                        return null;
+                    }
+                } catch (NumberFormatException e) {
+                    Logging.recoverableException(Logging.getLogger(Loggers.CRS_FACTORY), IdentifiedObjects.class, "lookupEPSG", e);
+                }
+            }
+        }
+        return code;
+    }
+
+    /**
+     * Creates a finder which can be used for looking up unidentified objects.
+     * This method is an alternative to {@code lookup(…)} methods when more control are desired.
+     *
+     * <div class="note"><b>Example 1: be lenient regarding axis order</b><br>
+     * By default, {@code lookup(…)} methods require that objects in the dataset have their axes in the
+     * same order than the given object. For relaxing this condition, one can use the following Java code.
+     * This example assumes that at most one object from the dataset will match the given object.
+     * If more than one object may match, then the call to {@code findSingleton(…)} should be replaced
+     * by {@code find(…)}.
+     *
+     * {@preformat java
+     *     IdentifiedObjectFinder finder = IdentifiedObjects.newFinder(null);
+     *     finder.setIgnoringAxes(true);
+     *     IdentifiedObject found = finder.findSingleton(object);
+     * }</div>
+     *
+     * <div class="note"><b>Example 2: extend the search to deprecated definitions</b><br>
+     * By default, {@code lookup(…)} methods exclude deprecated objects from the search.
+     * To search also among deprecated objects, one can use the following Java code:
+     * This example does not use the {@code findSingleton(…)} convenience method on the assumption
+     * that the search may find both deprecated and non-deprecated objects.
+     *
+     * {@preformat java
+     *     IdentifiedObjectFinder finder = IdentifiedObjects.newFinder(null);
+     *     finder.setSearchDomain(IdentifiedObjectFinder.Domain.ALL_DATASET);
+     *     Set<IdentifiedObject> found = finder.find(object);
+     * }</div>
+     *
+     * @param  authority The authority of the objects to search (typically {@code "EPSG"} or {@code "OGC"}),
+     *         or {@code null} for searching among the objects created by all authorities.
+     * @return A finder to use for looking up unidentified objects.
+     * @throws FactoryException if the finder can not be created.
+     *
+     * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#newIdentifiedObjectFinder()
+     * @see IdentifiedObjectFinder#find(IdentifiedObject)
+     */
+    public static IdentifiedObjectFinder newFinder(final String authority) throws FactoryException {
+        final GeodeticAuthorityFactory factory;
+        if (authority == null) {
+            factory = AuthorityFactories.ALL;
+        } else {
+            factory = AuthorityFactories.ALL.getAuthorityFactory(GeodeticAuthorityFactory.class, authority, null);
+        }
+        return factory.newIdentifiedObjectFinder();
+    }
+
+    /**
      * Returns {@code true} if either the {@linkplain AbstractIdentifiedObject#getName() primary name} or at least
      * one {@linkplain AbstractIdentifiedObject#getAlias() alias} matches the given string according heuristic rules.
      * If the given object is an instance of {@link AbstractIdentifiedObject}, then this method delegates to its
@@ -405,9 +554,86 @@ public final class IdentifiedObjects extends Static {
             // We really need to delegate to the overridden method.
             return ((AbstractIdentifiedObject) object).isHeuristicMatchForName(name);
         } else {
-            ensureNonNull("object", object);
+            ArgumentChecks.ensureNonNull("object", object);
             return NameToIdentifier.isHeuristicMatchForName(object.getName(), object.getAlias(), name);
         }
+    }
+
+    /**
+     * Returns the URN of the given identifier, or {@code null} if no valid URN can be formed.
+     * This method builds a URN from the {@linkplain NamedIdentifier#getCodeSpace() codespace},
+     * {@linkplain NamedIdentifier#getVersion() version} and {@linkplain NamedIdentifier#getCode() code}
+     * of the given identifier, completed by the given {@link Class} argument.
+     *
+     * <p>First, this method starts the URN with {@code "urn:"} followed by a namespace determined
+     * from the identifier {@linkplain NamedIdentifier#getCodeSpace() codespace} (which is usually
+     * an abbreviation of the identifier {@linkplain NamedIdentifier#getAuthority() authority}).
+     * The recognized namespaces are listed in the following table
+     * (note that the list of authorities than can be used in the {@code "urn:ogc:def"} namespace
+     * is specified by the <a href="http://www.opengeospatial.org/ogcna">OGC Naming Authority</a>).
+     * If this method can not determine a namespace for the given identifier, it returns {@code null}.</p>
+     *
+     * <table class="sis">
+     *   <caption>Valid values for the authority component in URN</caption>
+     *   <tr><th>Namespace</th>           <th>Authority in URN</th> <th>Description</th></tr>
+     *   <tr><td>{@code urn:ogc:def}</td> <td>{@code EPSG}</td>     <td>EPSG dataset</td></tr>
+     *   <tr><td>{@code urn:ogc:def}</td> <td>{@code OGC}</td>      <td>Open Geospatial Consortium</td></tr>
+     *   <tr><td>{@code urn:ogc:def}</td> <td>{@code OGC-WFS}</td>  <td>OGC Web Feature Service</td></tr>
+     *   <tr><td>{@code urn:ogc:def}</td> <td>{@code SI}</td>       <td>Système International d'Unités</td></tr>
+     *   <tr><td>{@code urn:ogc:def}</td> <td>{@code UCUM}</td>     <td>Unified Code for Units of Measure</td></tr>
+     *   <tr><td>{@code urn:ogc:def}</td> <td>{@code UNSD}</td>     <td>United Nations Statistics Division</td></tr>
+     *   <tr><td>{@code urn:ogc:def}</td> <td>{@code USNO}</td>     <td>United States Naval Observatory</td></tr>
+     * </table>
+     *
+     * The namespace is followed by the authority, then by a type determined from the given {@link Class} argument.
+     * That class is usually determined simply by {@code IdentifiedObject.getClass()}.
+     * The given class shall be assignable to one of the following types, otherwise this method returns {@code null}:
+     *
+     * <table class="sis">
+     *   <caption>Valid values for the type component in URN</caption>
+     *   <tr><th>Interface</th>                                                     <th>Type in URN</th>                 <th>Description</th></tr>
+     *   <tr><td>{@link org.opengis.referencing.cs.CoordinateSystemAxis}</td>       <td>{@code axis}</td>                <td>Coordinate system axe definition</td></tr>
+     *   <tr><td>{@link org.opengis.referencing.operation.CoordinateOperation}</td> <td>{@code coordinateOperation}</td> <td>Coordinate operation definition</td></tr>
+     *   <tr><td>{@link org.opengis.referencing.crs.CoordinateReferenceSystem}</td> <td>{@code crs}</td>                 <td>Coordinate reference system definition</td></tr>
+     *   <tr><td>{@link org.opengis.referencing.cs.CoordinateSystem}</td>           <td>{@code cs}</td>                  <td>Coordinate system definition</td></tr>
+     *   <tr><td>{@link org.opengis.referencing.datum.Datum}</td>                   <td>{@code datum}</td>               <td>Datum definition</td></tr>
+     *   <tr><td>{@link org.opengis.referencing.datum.Ellipsoid}</td>               <td>{@code ellipsoid}</td>           <td>Ellipsoid definition</td></tr>
+     *   <tr><td>{@link org.opengis.referencing.datum.PrimeMeridian}</td>           <td>{@code meridian}</td>            <td>Prime meridian definition</td></tr>
+     *   <tr><td>{@link org.opengis.referencing.operation.OperationMethod}</td>     <td>{@code method}</td>              <td>Operation method definition</td></tr>
+     *   <tr><td>{@link org.opengis.parameter.ParameterDescriptor}</td>             <td>{@code parameter}</td>           <td>Operation parameter definition</td></tr>
+     *   <tr><td>{@link org.opengis.referencing.ReferenceSystem}</td>               <td>{@code referenceSystem}</td>     <td>Value reference system definition</td></tr>
+     *   <tr><td>{@link javax.measure.unit.Unit}</td>                               <td>{@code uom}</td>                 <td>Unit of measure definition</td></tr>
+     * </table>
+     *
+     * The type is followed by the {@linkplain NamedIdentifier#getVersion() codespace version} if available,
+     * and finally by the {@linkplain NamedIdentifier#getCode() code} value.
+     *
+     * <p>The above tables may be expanded in any future SIS version.</p>
+     *
+     * @param  type A type assignable to one of the types listed in above table.
+     * @param  identifier The identifier for which to format a URN, or {@code null}.
+     * @return The URN for the given identifier, or {@code null} if the given identifier was null
+     *         or can not be formatted by this method.
+     *
+     * @see #lookupURN(IdentifiedObject, Citation)
+     *
+     * @since 0.7
+     */
+    public static String toURN(final Class<?> type, final Identifier identifier) {
+        ArgumentChecks.ensureNonNull("type", type);
+        if (identifier == null) {
+            return null;
+        }
+        String cs = null;
+        if (identifier instanceof ReferenceIdentifier) {
+            cs = ((ReferenceIdentifier) identifier).getCodeSpace();
+        }
+        if (cs == null || cs.isEmpty()) {
+            cs = org.apache.sis.internal.util.Citations.getIdentifier(identifier.getAuthority(), true);
+        }
+        return NameMeaning.toURN(type, cs,
+                (identifier instanceof ReferenceIdentifier) ? ((ReferenceIdentifier) identifier).getVersion() : null,
+                identifier.getCode());
     }
 
     /**

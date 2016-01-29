@@ -17,6 +17,7 @@
 package org.apache.sis.referencing.factory;
 
 import java.util.Arrays;
+import java.util.Set;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.NoninvertibleTransformException;
 import javax.measure.unit.SI;
@@ -91,6 +92,16 @@ public final strictfp class CommonAuthorityFactoryTest extends TestCase {
                 factory.getAuthorityCodes(VerticalCRS.class));
         assertSetEquals(Arrays.asList("CRS:1"),
                 factory.getAuthorityCodes(EngineeringCRS.class));
+
+        final Set<String> codes = factory.getAuthorityCodes(GeographicCRS.class);
+        assertFalse("CRS:1",      codes.contains("CRS:1"));
+        assertTrue ("CRS:27",     codes.contains("CRS:27"));
+        assertTrue ("CRS:83",     codes.contains("CRS:83"));
+        assertTrue ("CRS:84",     codes.contains("CRS:84"));
+        assertFalse("CRS:88",     codes.contains("CRS:88"));
+        assertTrue ("0084",       codes.contains("0084"));
+        assertFalse("0088",       codes.contains("0088"));
+        assertTrue ("OGC:CRS084", codes.contains("OGC:CRS084"));
     }
 
     /**
@@ -112,12 +123,10 @@ public final strictfp class CommonAuthorityFactoryTest extends TestCase {
     @Test
     public void testAuthority() {
         final Citation authority = factory.getAuthority();
-        assertFalse(Citations.identifierMatches(authority, "CRS"));
-        assertTrue (Citations.identifierMatches(authority, "OGC"));
+        assertTrue (Citations.identifierMatches(authority, "WMS"));
         assertFalse(Citations.identifierMatches(authority, "OGP"));
         assertFalse(Citations.identifierMatches(authority, "EPSG"));
-        assertFalse(Citations.identifierMatches(authority, "AUTO"));
-        assertFalse(Citations.identifierMatches(authority, "AUTO2"));
+        assertEquals(Constants.OGC, org.apache.sis.internal.util.Citations.getCodeSpace(authority));
     }
 
     /**
@@ -344,7 +353,7 @@ public final strictfp class CommonAuthorityFactoryTest extends TestCase {
                 "  AXIS[“Latitude”, NORTH],\n" +
                 "  AUTHORITY[“CRS”, “84”]]", crs);
 
-        assertWktEquals(Convention.WKT2,
+        assertWktEqualsRegex(Convention.WKT2, "(?m)\\Q" +
                 "GEODCRS[“WGS 84”,\n" +
                 "  DATUM[“World Geodetic System 1984”,\n" +
                 "    ELLIPSOID[“WGS 84”, 6378137.0, 298.257223563, LENGTHUNIT[“metre”, 1]]],\n" +
@@ -353,8 +362,18 @@ public final strictfp class CommonAuthorityFactoryTest extends TestCase {
                 "    AXIS[“Longitude (L)”, east, ORDER[1]],\n" +
                 "    AXIS[“Latitude (B)”, north, ORDER[2]],\n" +
                 "    ANGLEUNIT[“degree”, 0.017453292519943295],\n" +
-                "  AREA[“World”],\n" +
+                "  SCOPE[“Horizontal component of 3D system.\\E.*\\Q”],\n" +
+                "  AREA[“World\\E.*\\Q”],\n" +
                 "  BBOX[-90.00, -180.00, 90.00, 180.00],\n" +
-                "  ID[“CRS”, 84, CITATION[“OGC”]]]", crs);
+                "  ID[“CRS”, 84, CITATION[“OGC:WMS”], URI[“urn:ogc:def:crs:OGC:1.3:CRS84”]]]\\E", crs);
+        /*
+         * Note: the WKT specification defines the ID element as:
+         *
+         *     ID[authority, code, (version), (authority citation), (URI)]
+         *
+         * where everything after the code is optional. The difference between "authority" and "authority citation"
+         * is unclear. The only example found in OGC 12-063r5 uses CITATION[…] as the source of an EPSG definition
+         * (so we could almost said "the authority of the authority").
+         */
     }
 }

@@ -30,7 +30,6 @@ import static java.lang.StrictMath.*;
 
 // Test dependencies
 import org.apache.sis.internal.referencing.provider.GeocentricTranslationTest;
-import org.apache.sis.test.mock.MathTransformFactoryMock;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestUtilities;

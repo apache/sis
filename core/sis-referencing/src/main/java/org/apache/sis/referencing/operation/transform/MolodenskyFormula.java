@@ -255,7 +255,7 @@ abstract class MolodenskyFormula extends DatumShiftTransform {
      *   <li><cite>"X-axis translation"</cite> (Molodensky only)</li>
      *   <li><cite>"Y-axis translation"</cite> (Molodensky only)</li>
      *   <li><cite>"Z-axis translation"</cite> (Molodensky only)</li>
-     *   <li><cite>"Geocentric translations file"</cite> (Geocentric interpolations only)</li>
+     *   <li><cite>"Geocentric translation file"</cite> (Geocentric interpolations only)</li>
      *   <li><cite>"Semi-major axis length difference"</cite> (Always for Molodensky, internal WKT only for geocentric interpolations)</li>
      *   <li><cite>"Flattening difference"</cite> (Always for Molodensky, internal WKT only for geocentric interpolations)</li>
      * </ul>

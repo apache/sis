@@ -22,7 +22,6 @@ import javax.measure.unit.NonSI;
 import org.apache.sis.measure.Latitude;
 import org.apache.sis.measure.Longitude;
 import org.apache.sis.referencing.IdentifiedObjects;
-import org.apache.sis.test.mock.GeodeticDatumMock;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.XMLTestCase;
 import org.apache.sis.test.DependsOn;

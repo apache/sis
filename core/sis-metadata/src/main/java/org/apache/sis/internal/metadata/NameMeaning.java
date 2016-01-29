@@ -19,14 +19,19 @@ package org.apache.sis.internal.metadata;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Locale;
+import javax.measure.unit.Unit;
 import org.opengis.parameter.*;
 import org.opengis.referencing.*;
 import org.opengis.referencing.cs.*;
 import org.opengis.referencing.crs.*;
 import org.opengis.referencing.datum.*;
 import org.opengis.referencing.operation.*;
+import org.opengis.util.InternationalString;
+import org.opengis.metadata.citation.Citation;
 import org.apache.sis.util.Static;
 import org.apache.sis.internal.util.Constants;
+import org.apache.sis.internal.util.DefinitionURI;
+import org.apache.sis.metadata.iso.citation.Citations;
 
 
 /**
@@ -59,12 +64,21 @@ public final class NameMeaning extends Static {
         CoordinateOperation.class,
         OperationMethod.class,
         ParameterDescriptor.class,
-        ReferenceSystem.class
+        ReferenceSystem.class,
+        Unit.class
     };
 
     /**
      * The object types for instances of {@link #CLASSES}.
      * See {@link org.apache.sis.internal.util.DefinitionURI} javadoc for a list of object types in URN.
+     *
+     * <p>Types not yet listed (waiting to see if there is a use for them):</p>
+     *
+     * "group"              for  ParameterValueGroup.class;
+     * "verticalDatumType"  for  VerticalDatumType.class;
+     * "pixelInCell"        for  PixelInCell.class;
+     * "rangeMeaning"       for  RangeMeaning.class;
+     * "axisDirection"      for  AxisDirection.class;
      */
     private static final String[] TYPES = {
         "crs",
@@ -76,16 +90,26 @@ public final class NameMeaning extends Static {
         "coordinateOperation",
         "method",
         "parameter",
-        "referenceSystem"
+        "referenceSystem",
+        "uom"
     };
 
     /**
      * Naming authorities allowed to appear in {@code "urn:ogc:def:"}.
+     * This map serves two purposes:
      *
-     * <p><b>Note on the case:</b> The <cite>"Name type specification — definitions"</cite> document (OGC 09-048) writes
-     * authorities in upper cases, while <a href="http://www.opengis.net/def/auth/">http://www.opengis.net/def/auth/</a>
-     * use lower cases. Apache SIS uses upper cases for now.</p>
+     * <ul>
+     *   <li>Tell if a given authority is one of the authorities allowed by the OGC namespace.</li>
+     *   <li>Opportunistically fix the letter case.</li>
+     * </ul>
      *
+     * <b>Note on the case:</b>
+     * <cite>"Name type specification — definitions"</cite> (OGC 09-048) writes authorities in upper cases,
+     * while <a href="http://www.opengis.net/def/auth/">http://www.opengis.net/def/auth/</a> uses lower cases.
+     * Apache SIS uses upper cases for now. The lower/upper case policy should be kept consistent with the policy
+     * used by {@link org.apache.sis.referencing.factory.MultiAuthoritiesFactory} for its keys.
+     *
+     * @see org.apache.sis.referencing.factory.MultiAuthoritiesFactory
      * @see <a href="http://www.opengis.net/def/auth/">http://www.opengis.net/def/auth/</a>
      *
      * @since 0.7
@@ -116,20 +140,54 @@ public final class NameMeaning extends Static {
     }
 
     /**
-     * Returns the authority to format for the given code space, or {@code null} if there is no known authority
-     * in URN syntax for the given code space. The return value is used for fixing the Apache SIS policy regarding
-     * lower or upper cases (both conventions are used in different OGC resources).
+     * Formats the given identifier using the {@code "ogc:urn:def:"} syntax with possible heuristic changes to
+     * the given values. This method delegates to {@link DefinitionURI#format(String, String, String, String)}
+     * after "fixing" the given values using some heuristic knowledge about the meaning of URN.
      *
-     * @param  codeSpace The code space (can be {@code null}).
-     * @return The authority to format in the URN, or {@code null} if none.
+     * @param  type      The object type.
+     * @param  authority The authority as one of the values documented in {@link DefinitionURI} javadoc.
+     * @param  version   The code version, or {@code null}. This is the only optional information.
+     * @param  code      The code.
+     * @return An identifier using the URN syntax, or {@code null} if a mandatory information is missing.
      *
      * @since 0.7
+     *
+     * @see DefinitionURI#format(String, String, String, String)
      */
-    public static String authority(String codeSpace) {
-        if (codeSpace != null) {
-            codeSpace = AUTHORITIES.get(codeSpace.toUpperCase(Locale.US));
+    public static String toURN(final Class<?> type, final String authority, String version, String code) {
+        if (type != null && authority != null && code != null) {
+            final String key = authority.toUpperCase(Locale.US);
+            String codeSpace = AUTHORITIES.get(key);
+            if (codeSpace == null) {
+                /*
+                 * If the given authority is not one of the authorities that we expected for the OGC namespace,
+                 * verify if we can related it to one of the specifications enumerated in the Citations class.
+                 * For example if the user gave us "OGP" as the authority, we will replace that by "IOGP" (the
+                 * new name for that organization).
+                 */
+                final Citation c = Citations.fromName(key);
+                codeSpace = org.apache.sis.internal.util.Citations.getCodeSpace(c);
+                if (AUTHORITIES.get(codeSpace) == null) {
+                    return null;            // Not an authority that we recognize for the OGC namespace.
+                }
+                version = getVersion(c);    // Unconditionally overwrite the user-specified version.
+                /*
+                 * If the above lines resulted in a chance of codespace, we may need to concatenate the authority
+                 * with the code for preserving information. The main use case is WMS codes like "CRS:84":
+                 *
+                 *   1) Citations.fromName("CRS") gave us Citations.WMS (version 1.3) as the authority.
+                 *   2) getCodeSpace(Citations.WMS) gave us "OGC", which is indeed the codespace used in URN.
+                 *   3) OGC Naming Authority – Procedures (OGC-09-046r2) said that "CRS:84" should be formatted
+                 *      as "urn:ogc:def:crs:OGC:1.3:CRS84". We already got the "OGC" and "1.3" parts with above
+                 *      steps, the last part is to replace "84" by "CRS84".
+                 */
+                if (!authority.equals(codeSpace) && !code.startsWith(authority)) {
+                    code = authority + code;    // Intentionally no ':' separator.
+                }
+            }
+            return DefinitionURI.format(toObjectType(type), codeSpace, version, code);
         }
-        return codeSpace;
+        return null;
     }
 
     /**
@@ -143,6 +201,27 @@ public final class NameMeaning extends Static {
         for (int i=0; i<CLASSES.length; i++) {
             if (CLASSES[i].isAssignableFrom(type)) {
                 return TYPES[i];
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Returns the version of the namespace managed by the given authority.
+     * Current Apache SIS implementation searches this information in the {@link Citation#getEdition()} property.
+     * This approach is based on the assumption that the authority is some specification document or reference to
+     * a database, not an organization. However this policy may be revisited in any future SIS version.
+     *
+     * @param authority The authority from which to get a version, or {@code null}.
+     * @return The version, or {@code null} if none.
+     *
+     * @since 0.7
+     */
+    public static String getVersion(final Citation authority) {
+        if (authority != null) {
+            final InternationalString i18n = authority.getEdition();
+            if (i18n != null) {
+                return i18n.toString(Locale.US);
             }
         }
         return null;

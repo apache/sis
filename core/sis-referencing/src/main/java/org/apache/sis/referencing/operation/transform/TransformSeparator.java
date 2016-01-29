@@ -272,16 +272,16 @@ public class TransformSeparator {
      * Returns the input dimensions to keep or kept in the separated transform.
      * This method performs the first applicable action in the following list:
      *
-     * <ol>
-     *   <li><p>Source dimensions have been explicitly set by at least one call to {@link #addSourceDimensions(int...)}
+     * <ol class="verbose">
+     *   <li>Source dimensions have been explicitly set by at least one call to {@link #addSourceDimensions(int...)}
      *       or {@link #addSourceDimensionRange(int, int)} since construction or since last call to {@link #clear()}.
-     *       In such case, this method returns all specified source dimensions.</p></li>
+     *       In such case, this method returns all specified source dimensions.</li>
      *
-     *   <li><p>No source dimensions were set but {@link #separate()} has been invoked.
+     *   <li>No source dimensions were set but {@link #separate()} has been invoked.
      *       In such case, this method returns the sequence of source dimensions that {@code separate()} chooses to retain.
-     *       It is often, but not necessarily, all source dimensions of the transform given at construction time.</p></li>
+     *       It is often, but not necessarily, all source dimensions of the transform given at construction time.</li>
      *
-     *   <li><p>Otherwise an exception is thrown.</p></li>
+     *   <li>Otherwise an exception is thrown.</li>
      * </ol>
      *
      * @return The input dimension as a sequence of strictly increasing values.
@@ -333,16 +333,16 @@ public class TransformSeparator {
      * Returns the output dimensions to keep or kept in the separated transform.
      * This method performs the first applicable action in the following list:
      *
-     * <ol>
-     *   <li><p>Target dimensions have been explicitly set by at least one call to {@link #addTargetDimensions(int...)}
+     * <ol class="verbose">
+     *   <li>Target dimensions have been explicitly set by at least one call to {@link #addTargetDimensions(int...)}
      *       or {@link #addTargetDimensionRange(int, int)} since construction or since last call to {@link #clear()}.
-     *       In such case, this method returns all specified target dimensions.</p></li>
+     *       In such case, this method returns all specified target dimensions.</li>
      *
-     *   <li><p>No target dimensions were set but {@link #separate()} has been invoked.
+     *   <li>No target dimensions were set but {@link #separate()} has been invoked.
      *       In such case, the target dimensions are inferred automatically from the {@linkplain #getSourceDimensions()
-     *       source dimensions} and the transform.</p></li>
+     *       source dimensions} and the transform.</li>
      *
-     *   <li><p>Otherwise an exception is thrown.</p></li>
+     *   <li>Otherwise an exception is thrown.</li>
      * </ol>
      *
      * @return The output dimension as a sequence of strictly increasing values.
@@ -362,14 +362,14 @@ public class TransformSeparator {
      * source dimensions} and return only the {@linkplain #addTargetDimensions(int...) specified target dimensions}.
      * If the source or target dimensions were not specified, then they will be inferred as below:
      *
-     * <ul>
-     *   <li><p>If source dimensions were unspecified, then the returned transform will keep at least all source
+     * <ul class="verbose">
+     *   <li>If source dimensions were unspecified, then the returned transform will keep at least all source
      *       dimensions needed for computing the specified target dimensions. In many cases the returned transform
      *       unconditionally keep all source dimensions, but not necessarily. If all source dimensions need to be
-     *       kept, it is better to {@linkplain #addSourceDimensionRange(int, int) specify that explicitely}.</p></li>
+     *       kept, it is better to {@linkplain #addSourceDimensionRange(int, int) specify that explicitely}.</li>
      *
-     *   <li><p>If target dimensions were unspecified, then the returned transform will expect only the specified
-     *       source dimensions as inputs, and the target dimensions will be inferred automatically.</p></li>
+     *   <li>If target dimensions were unspecified, then the returned transform will expect only the specified
+     *       source dimensions as inputs, and the target dimensions will be inferred automatically.</li>
      * </ul>
      *
      * The source and target dimensions actually used can be queried by calls to {@link #getSourceDimensions()}
@@ -446,7 +446,7 @@ public class TransformSeparator {
      *
      * <p>Subclasses can override this method if they need to handle some {@code MathTransform} implementations
      * in a special way. However all implementations of this method shall obey to the following contract:</p>
-     * <ul>
+     * <ul class="verbose">
      *   <li>{@link #sourceDimensions} and {@link #targetDimensions} should not be assumed accurate
      *       since they may be temporarily outdated or modified during recursive calls to this method.</li>
      *   <li>{@link #sourceDimensions} should not be modified by this method.</li>
