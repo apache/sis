@@ -21,6 +21,8 @@ import org.opengis.referencing.cs.SphericalCS;
 import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.apache.sis.internal.metadata.AxisNames;
+
+// Test imports
 import org.apache.sis.test.mock.CoordinateSystemAxisMock;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;

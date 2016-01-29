@@ -28,7 +28,6 @@ import org.junit.Test;
 
 import static org.apache.sis.test.Assert.*;
 import static org.apache.sis.test.TestUtilities.date;
-import static org.apache.sis.test.mock.GeodeticDatumMock.WGS84;
 import static org.apache.sis.internal.referencing.Formulas.JULIAN_YEAR_LENGTH;
 
 
@@ -48,7 +47,7 @@ public final strictfp class TimeDependentBWPTest extends TestCase {
      * For the purpose of this test, the target datum does not matter anyway.
      */
     private static TimeDependentBWP create() {
-        final TimeDependentBWP p = new TimeDependentBWP(WGS84, null, date("1994-01-01 00:00:00"));
+        final TimeDependentBWP p = new TimeDependentBWP(GeodeticDatumMock.WGS84, null, date("1994-01-01 00:00:00"));
         p.tX = -0.08468;    p.dtX = +1.42;
         p.tY = -0.01942;    p.dtY = +1.34;
         p.tZ = +0.03201;    p.dtZ = +0.90;

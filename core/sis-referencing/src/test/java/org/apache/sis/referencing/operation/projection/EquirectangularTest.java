@@ -23,7 +23,7 @@ import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.internal.referencing.provider.Equirectangular;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.referencing.operation.transform.CoordinateDomain;
-import org.apache.sis.test.mock.MathTransformFactoryMock;
+import org.apache.sis.referencing.operation.transform.MathTransformFactoryMock;
 import org.apache.sis.test.ReferencingAssert;
 import org.junit.Test;
 

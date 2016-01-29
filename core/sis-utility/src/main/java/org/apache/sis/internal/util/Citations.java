@@ -42,7 +42,7 @@ import org.opengis.referencing.ReferenceIdentifier;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.6
+ * @version 0.7
  * @module
  */
 public final class Citations extends Static {
@@ -107,7 +107,7 @@ public final class Citations extends Static {
      *
      * @param  s1 The first characters sequence to compare, or {@code null}.
      * @param  s2 The second characters sequence to compare, or {@code null}.
-     * @return {@code true}if both arguments are {@code null} or if the two given texts are equal,
+     * @return {@code true} if both arguments are {@code null} or if the two given texts are equal,
      *         ignoring case and any characters other than digits and letters.
      *
      * @since 0.6
@@ -140,7 +140,7 @@ public final class Citations extends Static {
                         return true;
                     }
                     final String localized = candidate.toString();
-                    if (!Objects.equals(localized, unlocalized) // Slight optimization for a common case.
+                    if (!Objects.equals(localized, unlocalized)             // Slight optimization for a common case.
                             && titleMatches(c1, localized))
                     {
                         return true;
@@ -179,7 +179,7 @@ public final class Citations extends Static {
                         return true;
                     }
                     final String localized = candidate.toString();
-                    if (!Objects.equals(localized, unlocalized) // Slight optimization for a common case.
+                    if (!Objects.equals(localized, unlocalized)             // Slight optimization for a common case.
                             && equalsFiltered(localized, title))
                     {
                         return true;
@@ -210,7 +210,7 @@ public final class Citations extends Static {
     public static boolean identifierMatches(Citation c1, Citation c2) {
         if (c1 != null && c2 != null) {
             if (c1 == c2) {
-                return true; // Optimisation for a common case.
+                return true;                            // Optimisation for a common case.
             }
             /*
              * If there is no identifier in both citations, fallback on title comparisons.
@@ -370,9 +370,9 @@ public final class Citations extends Static {
                     final String candidate = CharSequences.trimWhitespaces(id.getCode());
                     if (candidate != null && !candidate.isEmpty()) {
                         /*
-                         * For a non-empty identifier. Verify if both the code ans its codespace are valid
-                         * Unicode identifiers. If a codespace exist, the code does not need to begin with
-                         * a "Unicode identifier start" (it may be a "Unicode identifier part").
+                         * For a non-empty identifier, verify if both the code and its codespace are valid
+                         * Unicode identifiers. If a codespace exists, then the code does not need to begin
+                         * with a "Unicode identifier start" (it may be a "Unicode identifier part").
                          */
                         String cs = (id instanceof ReferenceIdentifier)
                                     ? CharSequences.trimWhitespaces(((ReferenceIdentifier) id).getCodeSpace()) : null;
@@ -383,7 +383,11 @@ public final class Citations extends Static {
                             isUnicode = CharSequences.isUnicodeIdentifier(cs);
                             if (isUnicode) for (int i = 0; i < candidate.length();) {
                                 final int c = candidate.codePointAt(i);
-                                if (!Character.isUnicodeIdentifierPart(c)) {
+                                if (!Character.isUnicodeIdentifierPart(c) &&
+                                        (strict || (c != '.' && c != '-')))
+                                {
+                                    // Above special case for '.' and '-' characters is documented
+                                    // in the public Citations.getIdentifier(Citation) method.
                                     isUnicode = false;
                                     break;
                                 }

@@ -73,7 +73,7 @@ public strictfp class InterpolatedGeocentricTransformTest extends MathTransformT
         values.parameter("src_semi_minor").setValue(source.getSemiMinorAxis());
         values.parameter("tgt_semi_major").setValue(target.getSemiMajorAxis());
         values.parameter("tgt_semi_minor").setValue(target.getSemiMinorAxis());
-        values.parameter("Geocentric translations file").setValue(file);    // Automatic conversion from URL to Path.
+        values.parameter("Geocentric translation file").setValue(file);    // Automatic conversion from URL to Path.
         transform = provider.createMathTransform(DefaultFactories.forBuildin(MathTransformFactory.class), values);
         tolerance = FranceGeocentricInterpolationTest.ANGULAR_TOLERANCE;
     }
@@ -171,7 +171,7 @@ public strictfp class InterpolatedGeocentricTransformTest extends MathTransformT
                 "  PARAMETER[“src_semi_minor”, 6356752.314140356],\n" +
                 "  PARAMETER[“tgt_semi_major”, 6378249.2],\n" +
                 "  PARAMETER[“tgt_semi_minor”, 6356515.0],\n" +
-                "  PARAMETER[“Geocentric translations file”, “\\E.*\\W\\Q" +
+                "  PARAMETER[“Geocentric translation file”, “\\E.*\\W\\Q" +
                              FranceGeocentricInterpolationTest.TEST_FILE + "”]]\\E");
 
         transform = transform.inverse();
@@ -182,7 +182,7 @@ public strictfp class InterpolatedGeocentricTransformTest extends MathTransformT
                 "  PARAMETER[“src_semi_minor”, 6356515.0],\n" +
                 "  PARAMETER[“tgt_semi_major”, 6378137.0],\n" +
                 "  PARAMETER[“tgt_semi_minor”, 6356752.314140356],\n" +
-                "  PARAMETER[“Geocentric translations file”, “\\E.*\\W\\Q" +
+                "  PARAMETER[“Geocentric translation file”, “\\E.*\\W\\Q" +
                              FranceGeocentricInterpolationTest.TEST_FILE + "”]]\\E");
     }
 
@@ -208,7 +208,7 @@ public strictfp class InterpolatedGeocentricTransformTest extends MathTransformT
                 "    Parameter[“src_semi_minor”, 6356515.0],\n" +
                 "    Parameter[“tgt_semi_major”, 6378137.0],\n" +
                 "    Parameter[“tgt_semi_minor”, 6356752.314140356],\n" +
-                "    ParameterFile[“Geocentric translations file”, “\\E.*\\W\\Q" +
+                "    ParameterFile[“Geocentric translation file”, “\\E.*\\W\\Q" +
                                    FranceGeocentricInterpolationTest.TEST_FILE + "”, Id[“EPSG”, 8727],\n" +
                 "      Remark[“\\E.*\\Q”]]],\n" +
                 "  Param_MT[“Affine parametric transformation”,\n" +

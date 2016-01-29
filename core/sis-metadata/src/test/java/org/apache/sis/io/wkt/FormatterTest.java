@@ -25,6 +25,8 @@ import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.metadata.iso.extent.DefaultVerticalExtent;
 import org.apache.sis.measure.Units;
 import org.apache.sis.internal.util.X364;
+
+// Test imports
 import org.apache.sis.test.mock.VerticalCRSMock;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;

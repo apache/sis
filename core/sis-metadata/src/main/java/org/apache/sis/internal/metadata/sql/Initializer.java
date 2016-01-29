@@ -118,11 +118,14 @@ public abstract class Initializer {
      */
     public static synchronized DataSource getDataSource() throws Exception {
         if (source == null) {
-            if (NamingManager.hasInitialContextFactoryBuilder()) try {
+            if (hasJNDI()) try {
                 final Context env = (Context) InitialContext.doLookup("java:comp/env");
                 return source = (DataSource) env.lookup("jdbc/" + DATABASE);
             } catch (NameNotFoundException e) {
-                Logging.unexpectedException(Logging.getLogger(Loggers.SQL), Initializer.class, "getDataSource", e);
+                final LogRecord record = Messages.getResources(null).getLogRecord(
+                        Level.CONFIG, Messages.Keys.JNDINotSpecified_1, "jdbc/" + DATABASE);
+                record.setLoggerName(Loggers.SQL);
+                Logging.log(Initializer.class, "getDataSource", record);
             }
             final Path dir = DataDirectory.DATABASES.getDirectory();
             if (dir != null) {
@@ -135,6 +138,16 @@ public abstract class Initializer {
     }
 
     /**
+     * Returns {@code true} if SIS will try to fetch the {@link DataSource} from JNDI.
+     *
+     * @return {@code true} if a JNDI environment seems to be present.
+     */
+    public static boolean hasJNDI() {
+        return NamingManager.hasInitialContextFactoryBuilder() ||
+               System.getProperty(Context.INITIAL_CONTEXT_FACTORY) != null;
+    }
+
+    /**
      * Returns a message for unspecified data source. The message will depend on whether a JNDI context exists or not.
      * This message can be used for constructing an exception when {@link #getDataSource()} returned {@code null}.
      *
@@ -144,7 +157,7 @@ public abstract class Initializer {
     public static String unspecified(final Locale locale) {
         final short key;
         final String value;
-        if (NamingManager.hasInitialContextFactoryBuilder()) {
+        if (hasJNDI()) {
             key = Messages.Keys.JNDINotSpecified_1;
             value = "jdbc/" + DATABASE;
         } else {

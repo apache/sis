@@ -260,7 +260,7 @@ public class DefaultGeographicCRS extends DefaultGeodeticCRS implements Geograph
                     final int i = Arrays.binarySearch(EPSG_CODES, Short.parseShort(identifier.getCode()));
                     if (i >= 0) {
                         final Map<String,Object> c = new HashMap<String,Object>(properties);
-                        c.put(IDENTIFIERS_KEY, new ImmutableIdentifier(Citations.OGC, CRS, Short.toString(CRS_CODES[i])));
+                        c.put(IDENTIFIERS_KEY, new ImmutableIdentifier(Citations.WMS, CRS, Short.toString(CRS_CODES[i])));
                         properties = c;
                     }
                 } catch (NumberFormatException e) {

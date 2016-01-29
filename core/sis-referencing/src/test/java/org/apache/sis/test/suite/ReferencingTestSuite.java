@@ -167,18 +167,26 @@ import org.junit.BeforeClass;
     org.apache.sis.referencing.crs.SubTypesTest.class,
     org.apache.sis.referencing.crs.DefaultCompoundCRSTest.class,
     org.apache.sis.referencing.crs.HardCodedCRSTest.class,
+
+    // Direct (not from authority codes) geodetic object creations.
     org.apache.sis.referencing.StandardDefinitionsTest.class,
-    org.apache.sis.referencing.CommonCRSTest.class,
-    org.apache.sis.referencing.CRSTest.class,
 
-    org.apache.sis.referencing.factory.CommonAuthorityFactoryTest.class,
-    org.apache.sis.referencing.factory.AuthorityFactoryProxyTest.class,
-    org.apache.sis.referencing.factory.IdentifiedObjectFinderTest.class,
-    org.apache.sis.referencing.factory.sql.EPSGFactoryTest.class,
-
+    // Well Known Text parsing require above factory.
     org.apache.sis.io.wkt.MathTransformParserTest.class,
     org.apache.sis.io.wkt.GeodeticObjectParserTest.class,
     org.apache.sis.io.wkt.WKTFormatTest.class,
+
+    // Following tests use indirectly EPSG factory.
+    org.apache.sis.referencing.CommonCRSTest.class,
+    org.apache.sis.referencing.factory.CommonAuthorityFactoryTest.class,
+    org.apache.sis.referencing.factory.AuthorityFactoryProxyTest.class,
+    org.apache.sis.referencing.factory.ConcurrentAuthorityFactoryTest.class,
+    org.apache.sis.referencing.factory.IdentifiedObjectFinderTest.class,
+    org.apache.sis.referencing.factory.MultiAuthoritiesFactoryTest.class,
+    org.apache.sis.referencing.factory.sql.EPSGFactoryTest.class,
+    org.apache.sis.referencing.EPSGFactoryFallbackTest.class,
+    org.apache.sis.referencing.AuthorityFactoriesTest.class,
+    org.apache.sis.referencing.CRSTest.class,
 
     org.apache.sis.geometry.AbstractDirectPositionTest.class,
     org.apache.sis.geometry.GeneralDirectPositionTest.class,
