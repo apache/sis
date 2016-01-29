@@ -112,7 +112,7 @@ public abstract class HTMLGenerator implements Closeable {
         out.newLine();
         println("title", title);
         openTag("style type=\"text/css\" media=\"all\"");
-        println("@import url(\"./reports.css\");");
+        println("@import url(\"../tables.css\");");
         closeTags(head);
         openTag("body");
     }
