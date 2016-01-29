@@ -1029,6 +1029,7 @@ addURIs:    for (int i=0; ; i++) {
             final ImmutableIdentifier identifier;
             if (deprecated) {
                 identifier = new DeprecatedCode(authority, Constants.EPSG, codeString, version, getSupersession(table, code, locale));
+                properties.put(AbstractIdentifiedObject.DEPRECATED_KEY, Boolean.TRUE);
             } else {
                 identifier = new ImmutableIdentifier(authority, Constants.EPSG, codeString, version,
                                     (gn != null) ? gn.toInternationalString() : null);
@@ -2558,6 +2559,7 @@ addURIs:    for (int i=0; ; i++) {
                      * However, this default number of dimensions is not generalizable to other kind of operation methods.
                      * For example the "Geocentric translation" operation method has 3-dimensional source and target CRS.
                      */
+                    boolean isDimensionKnown = true;
                     final int sourceDimensions, targetDimensions;
                     final CoordinateReferenceSystem sourceCRS, targetCRS;
                     if (sourceCode != null) {
@@ -2566,6 +2568,7 @@ addURIs:    for (int i=0; ; i++) {
                     } else {
                         sourceCRS = null;
                         sourceDimensions = 2;       // Acceptable default for projections only.
+                        isDimensionKnown = false;
                     }
                     if (targetCode != null) {
                         targetCRS = parent.createCoordinateReferenceSystem(targetCode);
@@ -2573,6 +2576,7 @@ addURIs:    for (int i=0; ; i++) {
                     } else {
                         targetCRS = null;
                         targetDimensions = 2;       // Acceptable default for projections only.
+                        isDimensionKnown = false;
                     }
                     /*
                      * Get the operation method. This is mandatory for conversions and transformations
@@ -2586,7 +2590,9 @@ addURIs:    for (int i=0; ; i++) {
                         parameters  = null;
                     } else {
                         method = parent.createOperationMethod(methodCode.toString());
-                        method = DefaultOperationMethod.redimension(method, sourceDimensions, targetDimensions);
+                        if (isDimensionKnown) {
+                            method = DefaultOperationMethod.redimension(method, sourceDimensions, targetDimensions);
+                        }
                         parameters = method.getParameters().createValue();
                         fillParameterValues(methodCode, epsg, parameters);
                     }
