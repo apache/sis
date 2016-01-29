@@ -74,6 +74,7 @@ public strictfp class CoordinateReferenceSystems extends AuthorityCodesReport {
      */
     private CoordinateReferenceSystems() throws FactoryException {
         super(null);
+        properties.setProperty("TITLE",           "Apache SIS™ Coordinate Reference System (CRS) codes");
         properties.setProperty("PRODUCT.NAME",    "Apache SIS™");
         properties.setProperty("PRODUCT.VERSION", getVersion());
         properties.setProperty("PRODUCT.URL",     "http://sis.apache.org");
