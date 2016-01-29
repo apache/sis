@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.test;
+package org.apache.sis.referencing.report;
 
 import java.util.Deque;
 import java.util.ArrayDeque;
@@ -39,10 +39,10 @@ import org.apache.sis.util.Deprecable;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.6
- * @version 0.6
+ * @version 0.7
  * @module
  */
-public abstract class HTMLGenerator implements Closeable {
+abstract strictfp class HTMLGenerator implements Closeable {
     /**
      * The encoding of the files to generate.
      */
@@ -53,7 +53,7 @@ public abstract class HTMLGenerator implements Closeable {
      *
      * @see #toLocalizedString(InternationalString)
      */
-    protected static final Locale LOCALE = Locale.US;
+    static final Locale LOCALE = Locale.US;
 
     /**
      * The number of space to add or remove in the {@linkplain #margin}
@@ -87,7 +87,7 @@ public abstract class HTMLGenerator implements Closeable {
      * @param  title The document title.
      * @throws IOException if the file can not be created (e.g. because it already exists).
      */
-    protected HTMLGenerator(final String filename, final String title) throws IOException {
+    HTMLGenerator(final String filename, final String title) throws IOException {
         final File file = new File(filename);
         if (file.exists()) {
             throw new IOException("File " + file.getAbsolutePath() + " already exists.");
@@ -123,7 +123,7 @@ public abstract class HTMLGenerator implements Closeable {
      * @param  text The text to escape, or {@code null}.
      * @return The escaped text, or {@code null} if the given text was null.
      */
-    protected static CharSequence escape(CharSequence text) {
+    static CharSequence escape(CharSequence text) {
         text = CharSequences.replace(text, "&", "&amp;");
         text = CharSequences.replace(text, "<", "&lt;");
         text = CharSequences.replace(text, ">", "&gt;");
@@ -149,7 +149,7 @@ public abstract class HTMLGenerator implements Closeable {
      * @return The value to give to {@link #closeTags(int)} for closing the tags.
      * @throws IOException if an error occurred while writing to the file.
      */
-    protected final int openTag(final String tag) throws IOException {
+    final int openTag(final String tag) throws IOException {
         out.write(margin);
         out.write('<');
         out.write(tag);
@@ -167,7 +167,7 @@ public abstract class HTMLGenerator implements Closeable {
      * @param  tag The HTML tag without brackets (e.g. {@code "h2"}).
      * @throws IOException if an error occurred while writing to the file.
      */
-    protected final void reopenTag(final String tag) throws IOException {
+    final void reopenTag(final String tag) throws IOException {
         final String tagWithoutAttributes = omitAttributes(tag);
         if (openedTags.getLast().equals(tagWithoutAttributes)) {
             out.write(CharSequences.spaces(margin.length() - INDENTATION).toString());
@@ -188,7 +188,7 @@ public abstract class HTMLGenerator implements Closeable {
      * @param  openedTag The value returned by the {@link #openTag(String)} matching the tag to close.
      * @throws IOException if an error occurred while writing to the file.
      */
-    protected final void closeTags(final int openedTag) throws IOException {
+    final void closeTags(final int openedTag) throws IOException {
         while (openedTags.size() != openedTag) {
             margin = CharSequences.spaces(margin.length() - INDENTATION).toString();
             out.write(margin);
@@ -208,7 +208,7 @@ public abstract class HTMLGenerator implements Closeable {
      * @param  value The text to write, or {@code null} for none.
      * @throws IOException if an error occurred while writing to the file.
      */
-    protected final void println(final String tag, final CharSequence value) throws IOException {
+    final void println(final String tag, final CharSequence value) throws IOException {
         out.write(margin);
         out.write('<');
         out.write(tag);
@@ -231,7 +231,7 @@ public abstract class HTMLGenerator implements Closeable {
      * @param  value The text to write, or {@code null} if none.
      * @throws IOException if an error occurred while writing to the file.
      */
-    protected final void println(final CharSequence value) throws IOException {
+    final void println(final CharSequence value) throws IOException {
         if (value != null) {
             out.write(margin);
             out.write(value.toString());
@@ -258,7 +258,7 @@ public abstract class HTMLGenerator implements Closeable {
      *
      * @see #LOCALE
      */
-    protected static String toLocalizedString(final InternationalString text) {
+    static String toLocalizedString(final InternationalString text) {
         return (text != null) ? text.toString(LOCALE) : null;
     }
 
@@ -268,7 +268,7 @@ public abstract class HTMLGenerator implements Closeable {
      * @param  object The object to test.
      * @return {@code true} if the given object is deprecated.
      */
-    protected static boolean isDeprecated(final Object object) {
+    static boolean isDeprecated(final Object object) {
         return (object instanceof Deprecable) && ((Deprecable) object).isDeprecated();
     }
 }
