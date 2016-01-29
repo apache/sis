@@ -18,8 +18,6 @@ package org.apache.sis.referencing;
 
 import java.util.Date;
 import org.opengis.parameter.ParameterValueGroup;
-import org.opengis.util.FactoryException;
-import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.crs.TemporalCRS;
 import org.opengis.referencing.crs.VerticalCRS;
 import org.opengis.referencing.crs.GeographicCRS;
@@ -165,10 +163,13 @@ public final strictfp class CommonCRSTest extends TestCase {
                  */
                 Validators.validate(crs);
             }
-            assertSame  (name, datum,          e.datum()); // Datum before CRS creation.
-            assertSame  (name, crs.getDatum(), e.datum()); // Datum after CRS creation.
+            assertSame  (name, datum,          e.datum());                      // Datum before CRS creation.
+            assertSame  (name, crs.getDatum(), e.datum());                      // Datum after CRS creation.
             assertEquals(name, datumName, datum.getName().getCode());
             assertEquals(name, datumType, datum.getVerticalDatumType());
+            if (!EPSGFactoryFallback.PENDING_NEXT_EPSG && e == CommonCRS.Vertical.DEPTH) {
+                continue;   // Pending the renaming of "Gravity-related depth" as "Depth" in EPSG database.
+            }
             assertEquals(name, axisName,  crs.getCoordinateSystem().getAxis(0).getName().getCode());
         }
     }
@@ -221,44 +222,5 @@ public final strictfp class CommonCRSTest extends TestCase {
         assertEquals(Constants.FALSE_NORTHING, 10000000, pg.parameter(Constants.FALSE_NORTHING).doubleValue(),   STRICT);
         assertSame("Expected a cached instance.", crs, CommonCRS.WGS72.UTM(-45, -122));
         assertNotSame("Expected a new instance.", crs, CommonCRS.WGS72.UTM(+45, -122));
-    }
-
-    /**
-     * Tests {@link CommonCRS#forCode(String, String, FactoryException)}.
-     *
-     * @throws FactoryException If a CRS can not be constructed.
-     *
-     * @see CRSTest#testForEpsgCode()
-     * @see CRSTest#testForCrsCode()
-     *
-     * @since 0.5
-     */
-    @Test
-    public void testForCode() throws FactoryException {
-        verifyForCode(CommonCRS.WGS84 .geographic(),            Constants.EPSG, "4326");
-        verifyForCode(CommonCRS.WGS72 .geographic(),            Constants.EPSG, "4322");
-        verifyForCode(CommonCRS.SPHERE.geographic(),            Constants.EPSG, "4047");
-        verifyForCode(CommonCRS.NAD83 .geographic(),            Constants.EPSG, "4269");
-        verifyForCode(CommonCRS.NAD27 .geographic(),            Constants.EPSG, "4267");
-        verifyForCode(CommonCRS.ETRS89.geographic(),            Constants.EPSG, "4258");
-        verifyForCode(CommonCRS.ED50  .geographic(),            Constants.EPSG, "4230");
-        verifyForCode(CommonCRS.WGS84 .geocentric(),            Constants.EPSG, "4978");
-        verifyForCode(CommonCRS.WGS72 .geocentric(),            Constants.EPSG, "4984");
-        verifyForCode(CommonCRS.ETRS89.geocentric(),            Constants.EPSG, "4936");
-        verifyForCode(CommonCRS.WGS84 .geographic3D(),          Constants.EPSG, "4979");
-        verifyForCode(CommonCRS.WGS72 .geographic3D(),          Constants.EPSG, "4985");
-        verifyForCode(CommonCRS.ETRS89.geographic3D(),          Constants.EPSG, "4937");
-        verifyForCode(CommonCRS.Vertical.MEAN_SEA_LEVEL.crs(),  Constants.EPSG, "5714");
-        verifyForCode(CommonCRS.Vertical.DEPTH.crs(),           Constants.EPSG, "5715");
-        verifyForCode(CommonCRS.WGS84.normalizedGeographic(),   Constants.CRS,  "84");
-        verifyForCode(CommonCRS.NAD83.normalizedGeographic(),   Constants.CRS,  "83");
-        verifyForCode(CommonCRS.NAD27.normalizedGeographic(),   Constants.CRS,  "27");
-    }
-
-    /**
-     * Asserts that the result of {@link CommonCRS#forCode(String, String, FactoryException)} is the given CRS.
-     */
-    private static void verifyForCode(final SingleCRS expected, final String authority, final String code) throws FactoryException {
-        assertSame(code, expected, CommonCRS.forCode(authority, code, null));
     }
 }

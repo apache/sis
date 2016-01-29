@@ -20,7 +20,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.Collections;
+import java.util.Arrays;
 import javax.measure.unit.SI;
 import javax.measure.unit.NonSI;
 import javax.measure.unit.Unit;
@@ -46,6 +48,7 @@ import org.opengis.referencing.datum.EngineeringDatum;
 import org.apache.sis.internal.referencing.GeodeticObjectBuilder;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.internal.system.DefaultFactories;
+import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.measure.Units;
 import org.apache.sis.referencing.CommonCRS;
@@ -54,6 +57,7 @@ import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.CharSequences;
+import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.iso.DefaultNameSpace;
 import org.apache.sis.util.iso.SimpleInternationalString;
@@ -201,6 +205,14 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
     private static final String AUTO2 = "AUTO2";
 
     /**
+     * The namespaces of codes defined by OGC.
+     *
+     * @see #getCodeSpaces()
+     */
+    private static final Set<String> CODESPACES = Collections.unmodifiableSet(
+            new LinkedHashSet<String>(Arrays.asList(Constants.OGC, Constants.CRS, "AUTO", AUTO2)));
+
+    /**
      * The bit for saying that a namespace is the legacy {@code "AUTO"} namespace.
      */
     private static final int LEGACY_MASK = 0x80000000;
@@ -227,7 +239,7 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
     /**
      * The parameter separator for codes in the {@code "AUTO(2)"} namespace.
      */
-    private static final char SEPARATOR = ',';
+    static final char SEPARATOR = ',';
 
     /**
      * The codes known to this factory, associated with their CRS type. This is set to an empty map
@@ -255,23 +267,35 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
     }
 
     /**
-     * Returns the organization responsible for definition of the CRS codes recognized by this factory.
-     * The authority for this factory is the <cite>Open Geospatial Consortium</cite>.
+     * Returns the specification that defines the codes recognized by this factory. The definitive source for this
+     * factory is OGC <a href="http://www.opengeospatial.org/standards/wms">Web Map Service</a> (WMS) specification,
+     * also available as the ISO 19128 <cite>Geographic Information — Web map server interface</cite> standard.
      *
-     * @return The OGC authority.
+     * <p>While the authority is WMS, the {@linkplain org.apache.sis.xml.IdentifierSpace#getName() namespace}
+     * of that authority is set to {@code "OGC"}. Apache SIS does that for consistency with the namespace used
+     * in URNs (for example {@code "urn:ogc:def:crs:OGC:1.3:CRS84"}).</p>
      *
-     * @see Citations#OGC
+     * @return The <cite>"Web Map Service"</cite> authority.
+     *
+     * @see #getCodeSpaces()
+     * @see Citations#WMS
      */
     @Override
     public Citation getAuthority() {
-        return Citations.OGC;
+        return Citations.WMS;
     }
 
     /**
-     * Returns {@code true} if the given portion of the code is equal, ignoring case, to the given namespace.
+     * Rewrites the given code in a canonical format.
+     * If the code can not be reformatted, then this method returns {@code null}.
      */
-    private static boolean regionMatches(final String namespace, final String code, final int start, final int end) {
-        return (namespace.length() == end - start) && code.regionMatches(true, start, namespace, 0, namespace.length());
+    static String reformat(final String code) {
+        try {
+            return format(Integer.parseInt(code.substring(skipNamespace(code) & ~LEGACY_MASK)));
+        } catch (Exception e) {  // (NoSuchAuthorityCodeException | NumberFormatException) on the JDK7 branch.
+            Logging.recoverableException(Logging.getLogger(Loggers.CRS_FACTORY), CommonAuthorityFactory.class, "reformat", e);
+            return null;
+        }
     }
 
     /**
@@ -311,7 +335,7 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
                 }
                 if (!isRecognized) {
                     throw new NoSuchAuthorityCodeException(Errors.format(Errors.Keys.UnknownAuthority_1,
-                            CharSequences.trimWhitespaces(code.substring(0, s))), Constants.OGC, code);
+                            CharSequences.trimWhitespaces(code, 0, s)), Constants.OGC, code);
                 }
             }
         }
@@ -343,8 +367,7 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
     @Override
     public Set<String> getAuthorityCodes(final Class<? extends IdentifiedObject> type) throws FactoryException {
         ArgumentChecks.ensureNonNull("type", type);
-        final boolean all = type.isAssignableFrom(SingleCRS.class);
-        if (!all && !SingleCRS.class.isAssignableFrom(type)) {
+        if (!type.isAssignableFrom(SingleCRS.class) && !SingleCRS.class.isAssignableFrom(type)) {
             return Collections.emptySet();
         }
         synchronized (codes) {
@@ -359,17 +382,46 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
                 }
             }
         }
-        return all ? Collections.unmodifiableSet(codes.keySet()) : new FilteredCodes(codes, type).keySet();
+        return new FilteredCodes(codes, type).keySet();
+    }
+
+    /**
+     * Formats the given code with a {@code "CRS:"} or {@code "AUTO2:"} prefix.
+     */
+    private static String format(final int code) {
+        return ((code >= FIRST_PROJECTION_CODE) ? AUTO2 : Constants.CRS) + DefaultNameSpace.DEFAULT_SEPARATOR + code;
     }
 
     /**
      * Adds an element in the {@link #codes} map, witch check against duplicated values.
      */
     private void add(final int code, final Class<? extends SingleCRS> type) throws FactoryException {
-        final String namespace = (code >= FIRST_PROJECTION_CODE) ? AUTO2 : Constants.CRS;
-        if (codes.put(namespace + DefaultNameSpace.DEFAULT_SEPARATOR + code, type) != null) {
+        assert (code >= FIRST_PROJECTION_CODE) == (ProjectedCRS.class.isAssignableFrom(type)) : code;
+        if (codes.put(format(code), type) != null) {
             throw new FactoryException();    // Should never happen, but we are paranoiac.
         }
+    }
+
+    /**
+     * Returns the namespaces defined by the OGC specifications implemented by this factory.
+     * At the difference of other factories, the namespaces of {@code CommonAuthorityFactory}
+     * are quite different than the {@linkplain #getAuthority() authority} title or identifier:
+     *
+     * <ul>
+     *   <li><b>Authority:</b> {@code "WMS"} (for <cite>"Web Map Services"</cite>)</li>
+     *   <li><b>Namespaces:</b> {@code "CRS"}, {@code "AUTO"}, {@code "AUTO2"}.
+     *       The {@code "OGC"} namespace is also accepted for compatibility reason,
+     *       but its scope is wider than the above-cited namespaces.</li>
+     * </ul>
+     *
+     * @return A set containing at least the {@code "CRS"}, {@code "AUTO"} and {@code "AUTO2"} strings.
+     *
+     * @see #getAuthority()
+     * @see Citations#WMS
+     */
+    @Override
+    public Set<String> getCodeSpaces() {
+        return CODESPACES;
     }
 
     /**

@@ -53,6 +53,7 @@ import org.apache.sis.referencing.crs.DefaultGeographicCRS;
 import org.apache.sis.referencing.datum.BursaWolfParameters;
 import org.apache.sis.referencing.datum.DefaultGeodeticDatum;
 import org.apache.sis.referencing.operation.AbstractCoordinateOperation;
+import org.apache.sis.referencing.factory.GeodeticObjectFactory;
 import org.apache.sis.referencing.factory.IdentifiedObjectFinder;
 import org.apache.sis.referencing.factory.UnavailableFactoryException;
 
@@ -100,8 +101,9 @@ public final strictfp class EPSGFactoryTest extends TestCase {
      */
     @BeforeClass
     public static void createFactory() throws FactoryException {
+        final GeodeticObjectFactory f = new GeodeticObjectFactory();
         try {
-            factory = new EPSGFactory();
+            factory = new EPSGFactory(null, null, f, f, f, null, null, null);
         } catch (UnavailableFactoryException e) {
             Logging.getLogger(Loggers.CRS_FACTORY).warning(e.toString());
             // Leave INSTANCE to null. This will have the effect of skipping tests.
@@ -298,7 +300,7 @@ public final strictfp class EPSGFactoryTest extends TestCase {
     /**
      * Tests the "WGS 72 / UTM zone 10N" projection and ensures
      * that it is not confused with "WGS 72BE / UTM zone 10N".
-     * In the EPSG database, those two projected CRS uses the same conversion.
+     * In the EPSG database, those two projected CRS use the same conversion.
      * However in Apache SIS the conversions must differ because the datum are not the same.
      *
      * @throws FactoryException if an error occurred while querying the factory.
@@ -323,6 +325,7 @@ public final strictfp class EPSGFactoryTest extends TestCase {
         assertEpsgNameAndIdentifierEqual("Transverse Mercator", 9807, variant.getConversionFromBase().getMethod());
         assertEpsgNameAndIdentifierEqual("UTM zone 10N", 16010, variant.getConversionFromBase());
         verifyTransverseMercatorParmeters(crs.getConversionFromBase().getParameterValues(), -123);
+
         assertSame("Operation method", crs.getConversionFromBase().getMethod(),
                                    variant.getConversionFromBase().getMethod());
         assertSame("Coordinate system", crs.getCoordinateSystem(),

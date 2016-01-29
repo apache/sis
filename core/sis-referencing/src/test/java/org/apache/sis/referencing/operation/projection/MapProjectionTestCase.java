@@ -27,8 +27,8 @@ import org.apache.sis.internal.referencing.provider.MapProjection;
 import org.apache.sis.referencing.operation.DefaultOperationMethod;
 import org.apache.sis.referencing.operation.transform.CoordinateDomain;
 import org.apache.sis.referencing.operation.transform.MathTransformTestCase;
-import org.apache.sis.test.mock.MathTransformFactoryMock;
-import org.apache.sis.test.mock.GeodeticDatumMock;
+import org.apache.sis.referencing.operation.transform.MathTransformFactoryMock;
+import org.apache.sis.referencing.datum.GeodeticDatumMock;
 
 import static java.lang.StrictMath.*;
 import static org.junit.Assert.*;

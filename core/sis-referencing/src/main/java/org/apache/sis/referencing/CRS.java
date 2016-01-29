@@ -22,8 +22,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import javax.measure.unit.NonSI;
 import org.opengis.util.FactoryException;
-import org.opengis.util.NoSuchIdentifierException;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
+import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystem;
@@ -39,13 +39,12 @@ import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.crs.TemporalCRS;
 import org.opengis.referencing.crs.VerticalCRS;
 import org.opengis.referencing.crs.EngineeringCRS;
+import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.extent.GeographicBoundingBox;
-import org.apache.sis.internal.util.DefinitionURI;
 import org.apache.sis.internal.metadata.AxisDirections;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.system.DefaultFactories;
-import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.referencing.cs.DefaultVerticalCS;
 import org.apache.sis.referencing.cs.DefaultEllipsoidalCS;
 import org.apache.sis.referencing.crs.DefaultGeographicCRS;
@@ -53,9 +52,6 @@ import org.apache.sis.referencing.crs.DefaultVerticalCRS;
 import org.apache.sis.referencing.crs.DefaultCompoundCRS;
 import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.logging.Logging;
-import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.Static;
 
@@ -129,15 +125,21 @@ public final class CRS extends Static {
      * This method accepts also the URN and URL syntax.
      * For example the following codes are considered equivalent to {@code "EPSG:4326"}:
      * <ul>
+     *   <li>{@code "EPSG::4326"}</li>
      *   <li>{@code "urn:ogc:def:crs:EPSG::4326"}</li>
+     *   <li>{@code "http://www.opengis.net/def/crs/epsg/0/4326"}</li>
      *   <li>{@code "http://www.opengis.net/gml/srs/epsg.xml#4326"}</li>
      * </ul>
+     *
+     * Note that the {@link IdentifiedObjects#lookupURN(IdentifiedObject, Citation)}
+     * method can be seen as a converse of this method.
      *
      * @param  code The authority code.
      * @return The Coordinate Reference System for the given authority code.
      * @throws NoSuchAuthorityCodeException If there is no known CRS associated to the given code.
      * @throws FactoryException if the CRS creation failed for an other reason.
      *
+     * @see #getAuthorityFactory(String)
      * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory
      *
      * @category factory
@@ -146,40 +148,7 @@ public final class CRS extends Static {
             throws NoSuchAuthorityCodeException, FactoryException
     {
         ArgumentChecks.ensureNonNull("code", code);
-        final String authority;
-        final String value;
-        final DefinitionURI uri = DefinitionURI.parse(code);
-        if (uri != null) {
-            final String type = uri.type;
-            if (type != null && !type.equalsIgnoreCase("crs")) {
-                throw new NoSuchIdentifierException(Errors.format(Errors.Keys.UnknownType_1, type), type);
-            }
-            authority = uri.authority;
-            value = uri.code;
-        } else {
-            final int s = code.indexOf(DefinitionURI.SEPARATOR);
-            authority = CharSequences.trimWhitespaces(code.substring(0, Math.max(0, s)));
-            value = CharSequences.trimWhitespaces(code.substring(s + 1));
-        }
-        if (authority == null || authority.isEmpty()) {
-            throw new NoSuchIdentifierException(Errors.format(Errors.Keys.MissingAuthority_1, code), code);
-        }
-        /*
-         * Delegate to the factory for the code space of the given code. If no authority factory
-         * is available, or if the factory failed to create the CRS, delegate to CommonCRS. Note
-         * that CommonCRS is not expected to succeed if the real EPSG factory threw an exception,
-         * so we will log a message at the warning level in such case.
-         */
-        final CRSAuthorityFactory factory = DefaultFactories.forClass(CRSAuthorityFactory.class);
-        if (factory != null) try {
-            return factory.createCoordinateReferenceSystem(value);
-        } catch (FactoryException failure) {
-            final CoordinateReferenceSystem crs = CommonCRS.forCode(authority, value, failure);
-            Logging.unexpectedException(Logging.getLogger(Loggers.CRS_FACTORY), CRS.class, "forCode", failure); // See above comment.
-            return crs;
-        } else {
-            return CommonCRS.forCode(authority, value, null);
-        }
+        return AuthorityFactories.ALL.createCoordinateReferenceSystem(code);
     }
 
     /**
@@ -291,6 +260,7 @@ public final class CRS extends Static {
          */
         final boolean isGeodetic = (crs instanceof GeodeticCRS);
         if (isGeodetic || crs instanceof ProjectedCRS || crs instanceof EngineeringCRS) {
+            @SuppressWarnings("null")
             final CoordinateSystem cs = crs.getCoordinateSystem();
             if (cs.getDimension() == 2) {
                 return !isGeodetic || (cs instanceof EllipsoidalCS);
@@ -578,5 +548,43 @@ check:  while (lower != 0 || upper != dimension) {
     public static double getGreenwichLongitude(final GeodeticCRS crs) {
         ArgumentChecks.ensureNonNull("crs", crs);
         return ReferencingUtilities.getGreenwichLongitude(crs.getDatum().getPrimeMeridian(), NonSI.DEGREE_ANGLE);
+    }
+
+    /**
+     * Returns the system-wide authority factory used by {@link #forCode(String)} and other SIS methods.
+     * If the given authority is non-null, then this method returns a factory specifically for that authority.
+     * Otherwise, this method returns the {@link org.apache.sis.referencing.factory.MultiAuthoritiesFactory}
+     * instance that manages all other factories.
+     *
+     * <p>The {@code authority} argument can be {@code "EPSG"}, {@code "OGC"} or any other authority found
+     * on the classpath. In the {@code "EPSG"} case, whether the full set of EPSG codes is supported or not
+     * depends on whether a {@linkplain org.apache.sis.referencing.factory.sql connection to the database}
+     * can be established. If no connection can be established, then this method returns a small embedded
+     * EPSG factory containing at least the CRS defined in the {@link #forCode(String)} method javadoc.</p>
+     *
+     * <p>User-defined authorities can be added to the SIS environment by creating a {@code CRSAuthorityFactory}
+     * implementation with a public no-argument constructor, and declaring the fully-qualified name of that class
+     * in a file at the following location:</p>
+     *
+     * {@preformat text
+     *     META-INF/services/org.opengis.referencing.crs.CRSAuthorityFactory
+     * }
+     *
+     * @param  authority The authority of the desired factory (typically {@code "EPSG"} or {@code "OGC"}),
+     *         or {@code null} for the {@link org.apache.sis.referencing.factory.MultiAuthoritiesFactory}
+     *         instance that manage all factories.
+     * @return The system-wide authority factory used by SIS for the given authority.
+     * @throws FactoryException if no factory can be returned for the given authority.
+     *
+     * @see #forCode(String)
+     * @see org.apache.sis.referencing.factory.MultiAuthoritiesFactory
+     *
+     * @since 0.7
+     */
+    public static CRSAuthorityFactory getAuthorityFactory(final String authority) throws FactoryException {
+        if (authority == null) {
+            return AuthorityFactories.ALL;
+        }
+        return AuthorityFactories.ALL.getAuthorityFactory(CRSAuthorityFactory.class, authority, null);
     }
 }

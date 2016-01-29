@@ -151,14 +151,15 @@ final class Element implements Serializable {
     /**
      * Constructs a new {@code Element}.
      * The {@code sharedValues} argument have two meanings:
-     * <ul>
-     *   <li><p>If {@code null}, then the caller is parsing a WKT string. The {@code Element}
-     *     must be mutable because its content will be emptied as the parsing progress.</p></li>
      *
-     *   <li><p>If non-null, then the caller is storing a WKT fragment. We create the elements but the caller will
+     * <ul class="verbose">
+     *   <li>If {@code null}, then the caller is parsing a WKT string. The {@code Element}
+     *     must be mutable because its content will be emptied as the parsing progress.</li>
+     *
+     *   <li>If non-null, then the caller is storing a WKT fragment. We create the elements but the caller will
      *     not parse them immediately. The {@code Element} should be immutable because the fragment will potentially
      *     be reused many time. Since the fragment may be stored for a long time, the {@code sharedValues} map will
-     *     be used for sharing unique instance of each value if possible.</p></li>
+     *     be used for sharing unique instance of each value if possible.</li>
      * </ul>
      *
      * @param text         The text to parse.

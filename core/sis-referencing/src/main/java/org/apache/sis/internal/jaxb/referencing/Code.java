@@ -103,7 +103,7 @@ public final class Code {
         Citation authority = null;
         String version = null, cs = codeSpace;
         final DefinitionURI parsed = DefinitionURI.parse(c);
-        if (parsed != null) {
+        if (parsed != null && parsed.code != null) {
             /*
              * Case where the URN has been successfully parsed. The OGC's URN contains an "authority" component,
              * which we take as the Identifier.codeSpace value (not Identifier.authority despite what the names
@@ -193,9 +193,7 @@ public final class Code {
              */
             if (fallback != null) {
                 if (!isHTTP) {
-                    final String urn = DefinitionURI.format(NameMeaning.toObjectType(type),
-                                                            NameMeaning.authority(fallback.getCodeSpace()),
-                                                            fallback.getVersion(), fallback.getCode());
+                    final String urn = NameMeaning.toURN(type, fallback.getCodeSpace(), fallback.getVersion(), fallback.getCode());
                     if (urn != null) {
                         final Code code = new Code();
                         /*

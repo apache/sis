@@ -16,10 +16,13 @@
  */
 package org.apache.sis.referencing.factory.sql;
 
+import java.util.Collections;
 import java.util.Locale;
+import java.util.Set;
 import java.sql.Connection;
 import java.sql.SQLException;
 import javax.sql.DataSource;
+import java.util.concurrent.TimeUnit;
 import org.opengis.util.NameFactory;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.crs.CRSFactory;
@@ -33,6 +36,7 @@ import org.opengis.referencing.operation.CoordinateOperationAuthorityFactory;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.apache.sis.internal.metadata.sql.Initializer;
 import org.apache.sis.internal.system.DefaultFactories;
+import org.apache.sis.internal.util.Constants;
 import org.apache.sis.referencing.factory.ConcurrentAuthorityFactory;
 import org.apache.sis.referencing.factory.UnavailableFactoryException;
 import org.apache.sis.util.ArgumentChecks;
@@ -58,6 +62,13 @@ import org.apache.sis.util.Localized;
 public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> implements CRSAuthorityFactory,
         CSAuthorityFactory, DatumAuthorityFactory, CoordinateOperationAuthorityFactory, Localized
 {
+    /**
+     * The namespace of EPSG codes.
+     *
+     * @see #getCodeSpaces()
+     */
+    private static final Set<String> CODESPACES = Collections.singleton(Constants.EPSG);
+
     /**
      * The factory to use for creating {@link Connection}s to the EPSG database.
      */
@@ -168,6 +179,7 @@ public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> impl
         this.mtFactory    = factory(MathTransformFactory.class, mtFactory);
         this.translator   = translator;
         this.locale       = Locale.getDefault();
+        super.setTimeout(10, TimeUnit.SECONDS);
     }
 
     /**
@@ -178,6 +190,16 @@ public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> impl
             factory = DefaultFactories.forBuildin(type);
         }
         return factory;
+    }
+
+    /**
+     * Returns the namespace of EPSG codes.
+     *
+     * @return The {@code "EPSG"} string in a singleton map.
+     */
+    @Override
+    public Set<String> getCodeSpaces() {
+        return CODESPACES;
     }
 
     /**

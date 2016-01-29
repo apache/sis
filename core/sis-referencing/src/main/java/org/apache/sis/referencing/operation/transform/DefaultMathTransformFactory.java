@@ -266,7 +266,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
          *
          * Wrapping the ServiceLoader in a LazySet avoid this issue.
          */
-        this(new LazySet<OperationMethod>(ServiceLoader.load(OperationMethod.class).iterator()));
+        this(new LazySet<OperationMethod>(ServiceLoader.load(OperationMethod.class)));
     }
 
     /**
@@ -1299,8 +1299,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
             methodsByName.clear();
             Iterable<? extends OperationMethod> m = methods;
             if (m instanceof LazySet<?>) { // Workaround for JDK bug. See DefaultMathTransformFactory() constructor.
-                ((LazySet<?>) m).reload();
-                m = ((LazySet<? extends OperationMethod>) m).source;
+                m = ((LazySet<? extends OperationMethod>) m).reload();
             }
             if (m instanceof ServiceLoader<?>) {
                 ((ServiceLoader<?>) m).reload();

@@ -1471,6 +1471,7 @@ public class Formatter implements Localized {
                     throw new IllegalStateException();
                 }
             }
+            hasContextualUnit &= ~1;
         } else if (units.put(previous.toSI(), previous) != unit) {
             /*
              * The unit that we replaced was not the expected one. Probably the user has invoked
