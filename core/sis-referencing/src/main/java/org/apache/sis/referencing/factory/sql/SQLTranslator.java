@@ -23,7 +23,6 @@ import java.util.Locale;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.SQLDataException;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
@@ -131,8 +130,11 @@ public class SQLTranslator implements Function<String,String> {
     /**
      * The name of the schema where the tables are located, or {@code null} if none.
      * In the later case, table names are prefixed by {@value #TABLE_PREFIX}.
+     *
+     * <p><b>Consider this field as final.</b> This field is non-final only for construction convenience,
+     * or for updating after the {@link EPSGInstaller} class created the database.</p>
      */
-    private final String schema;
+    private String schema;
 
     /**
      * Mapping from words used in the MS-Access database to words used in the ANSI versions of EPSG databases.
@@ -148,7 +150,8 @@ public class SQLTranslator implements Function<String,String> {
      * {@code true} if this class needs to quote table names. This quoting should be done only if the database
      * uses the MS-Access table names, even if we are targeting a PostgreSQL, MySQL or Oracle database.
      *
-     * <p><b>Consider this field as final.</b> This field is non-final only for construction convenience.</p>
+     * <p><b>Consider this field as final.</b> This field is non-final only for construction convenience,
+     * or for updating after the {@link EPSGInstaller} class created the database.</p>
      */
     private boolean quoteTableNames;
 
@@ -157,6 +160,11 @@ public class SQLTranslator implements Function<String,String> {
      * This information is provided by {@link DatabaseMetaData#getIdentifierQuoteString()}.
      */
     private final String quote;
+
+    /**
+     * {@code true} if the tables exist. If {@code false}, then {@link EPSGInstaller} needs to be run.
+     */
+    private boolean isSchemaFound;
 
     /**
      * Creates a new adapter for the database described by the given metadata.
@@ -178,7 +186,12 @@ public class SQLTranslator implements Function<String,String> {
     protected SQLTranslator(final DatabaseMetaData md) throws SQLException {
         ArgumentChecks.ensureNonNull("md", md);
         quote = md.getIdentifierQuoteString();
-        schema = findSchema(md);
+        findSchema(md);
+        /*
+         * Initialize the 'accessToAnsi' map. This map translates the table and column names used in the SQL
+         * statements into the names used by the database. Two conventions are understood: the names used in
+         * the MS-Access database or the names used in the SQL scripts. Both of them are distributed by EPSG.
+         */
         if (quoteTableNames) {
             /*
              * MS-Access database uses a column named "ORDER" in the "Coordinate Axis" table.
@@ -201,9 +214,11 @@ public class SQLTranslator implements Function<String,String> {
     };
 
     /**
-     * Returns the schema where the EPSG tables seems to be located.
+     * Finds the schema where the EPSG tables seem to be located. If there is more than one schema containing the
+     * tables, give precedence to the schema named "EPSG" if one is found. If there is no schema named "EPSG",
+     * take an arbitrary schema. It may be null if the tables are not located in a schema.
      */
-    private String findSchema(final DatabaseMetaData md) throws SQLException {
+    private void findSchema(final DatabaseMetaData md) throws SQLException {
         final boolean toUpperCase = md.storesUpperCaseIdentifiers();
         for (int i = SENTINEL.length; --i >= 0;) {
             String table = SENTINEL[i];
@@ -212,20 +227,38 @@ public class SQLTranslator implements Function<String,String> {
             }
             try (ResultSet result = md.getTables(null, null, table, null)) {
                 if (result.next()) {
+                    isSchemaFound = true;
                     quoteTableNames = (i == MIXED_CASE);
-                    /*
-                     * If there is more than one schema containing the tables, give precedence to the schema
-                     * named "EPSG" if one is found. If there is no "EPSG" schema, take an arbitrary schema.
-                     */
-                    String schema;
                     do {
                         schema = result.getString("TABLE_SCHEM");
                     } while (!Constants.EPSG.equalsIgnoreCase(schema) && result.next());
-                    return schema;
+                    break;
                 }
             }
         }
-        throw new SQLDataException(Errors.format(Errors.Keys.TableNotFound_1, SENTINEL[MIXED_CASE]));
+    }
+
+    /**
+     * Returns {@code true} if the constructor has found the EPSG schema.
+     */
+    final boolean isSchemaFound() {
+        return isSchemaFound;
+    }
+
+    /**
+     * Declares that the EPSG schema should exists now.
+     * This method is invoked after {@link EPSGInstaller} execution.
+     */
+    final void setSchemaFound(final DatabaseMetaData md) throws SQLException {
+        findSchema(md);
+        isSchemaFound = true;
+    }
+
+    /**
+     * Returns the error message for the exception to throw if the EPSG schema is not found and we can not create it.
+     */
+    static String schemaNotFound(final Locale locale) {
+        return Errors.getResources(locale).getString(Errors.Keys.TableNotFound_1, SENTINEL[MIXED_CASE]);
     }
 
     /**

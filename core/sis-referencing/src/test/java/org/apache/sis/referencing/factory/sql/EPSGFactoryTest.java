@@ -103,7 +103,7 @@ public final strictfp class EPSGFactoryTest extends TestCase {
     public static void createFactory() throws FactoryException {
         final GeodeticObjectFactory f = new GeodeticObjectFactory();
         try {
-            factory = new EPSGFactory(null, null, f, f, f, null, null, null);
+            factory = new EPSGFactory(null, null, f, f, f, null, null);
         } catch (UnavailableFactoryException e) {
             Logging.getLogger(Loggers.CRS_FACTORY).warning(e.toString());
             // Leave INSTANCE to null. This will have the effect of skipping tests.
