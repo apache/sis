@@ -109,6 +109,8 @@ import org.apache.sis.util.collection.Containers;
 import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.measure.Units;
 
+import static org.apache.sis.internal.referencing.ServicesForMetadata.CONNECTION;
+
 // Branch-dependent imports
 import org.apache.sis.internal.jdk8.JDK8;
 
@@ -129,7 +131,7 @@ import org.apache.sis.internal.jdk8.JDK8;
  *
  * <div class="section">Life cycle and caching</div>
  * {@code EPSGDataAccess} instances should be short-lived since they may hold a significant amount of JDBC resources.
- * Those instances are created on the fly by {@link EPSGFactory} and closed after a relatively short
+ * {@code EPSGDataAccess} instances are created on the fly by {@link EPSGFactory} and closed after a relatively short
  * {@linkplain EPSGFactory#getTimeout timeout}.
  * In addition {@code EPSGFactory} caches the most recently created objects, which reduce greatly
  * the amount of {@code EPSGDataAccess} instantiations (and consequently the amount of database accesses)
@@ -269,9 +271,10 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
     private transient boolean quiet;
 
     /**
-     * The {@code ConcurrentAuthorityFactory} that supply caching for all {@code createFoo(String)} methods.
+     * The {@code ConcurrentAuthorityFactory} that created this Data Access Object (DAO).
+     * The owner supplies caching for all {@code createFoo(String)} methods.
      */
-    protected final EPSGFactory parent;
+    protected final EPSGFactory owner;
 
     /**
      * The connection to the EPSG database. This connection is specified at {@linkplain #EPSGDataAccess construction time}
@@ -297,21 +300,21 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
      * by the {@link EPSGFactory#newDataAccess(Connection, SQLTranslator)} method of a corresponding custom
      * {@code EPSGFactory} subclass.</div>
      *
-     * @param parent      The {@code EPSGFactory} which is creating this Data Access Object (DAO).
+     * @param owner       The {@code EPSGFactory} which is creating this Data Access Object (DAO).
      * @param connection  The connection to the underlying EPSG database.
      * @param translator  The translator from the SQL statements using MS-Access dialect
      *                    to SQL statements using the dialect of the actual database.
      *
      * @see EPSGFactory#newDataAccess(Connection, SQLTranslator)
      */
-    protected EPSGDataAccess(final EPSGFactory parent, final Connection connection, final SQLTranslator translator) {
+    protected EPSGDataAccess(final EPSGFactory owner, final Connection connection, final SQLTranslator translator) {
         ArgumentChecks.ensureNonNull("connection", connection);
         ArgumentChecks.ensureNonNull("translator", translator);
-        this.parent     = parent;
+        this.owner      = owner;
         this.connection = connection;
         this.translator = translator;
-        this.namespace  = parent.nameFactory.createNameSpace(
-                          parent.nameFactory.createLocalName(null, Constants.IOGP), null);
+        this.namespace  = owner.nameFactory.createNameSpace(
+                          owner.nameFactory.createLocalName(null, Constants.IOGP), null);
     }
 
     /**
@@ -322,7 +325,7 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
      */
     @Override
     public Locale getLocale() {
-        return parent.getLocale();
+        return owner.getLocale();
     }
 
     /**
@@ -407,7 +410,7 @@ addURIs:    for (int i=0; ; i++) {
                     case 1: url = "http://www.epsg.org/"; function = OnLineFunction.DOWNLOAD; break;
                     case 2: {
                         url = metadata.getURL();
-                        function = OnLineFunction.valueOf("CONNECTION");
+                        function = OnLineFunction.valueOf(CONNECTION);
                         description = Messages.formatInternational(Messages.Keys.DataBase_4,
                                 Constants.EPSG, version, metadata.getDatabaseProductName(),
                                 Version.valueOf(metadata.getDatabaseMajorVersion(),
@@ -1011,11 +1014,11 @@ addURIs:    for (int i=0; ; i++) {
         properties.clear();
         GenericName gn = null;
         final Locale locale = getLocale();
-        final Citation authority = parent.getAuthority();
+        final Citation authority = owner.getAuthority();
         final InternationalString edition = authority.getEdition();
         final String version = (edition != null) ? edition.toString() : null;
         if (name != null) {
-            gn = parent.nameFactory.createGenericName(namespace, Constants.EPSG, name);
+            gn = owner.nameFactory.createGenericName(namespace, Constants.EPSG, name);
             properties.put("name", gn);
             properties.put(NamedIdentifier.CODE_KEY,      name);
             properties.put(NamedIdentifier.VERSION_KEY,   version);
@@ -1030,6 +1033,7 @@ addURIs:    for (int i=0; ; i++) {
             final ImmutableIdentifier identifier;
             if (deprecated) {
                 identifier = new DeprecatedCode(authority, Constants.EPSG, codeString, version, getSupersession(table, code, locale));
+                properties.put(AbstractIdentifiedObject.DEPRECATED_KEY, Boolean.TRUE);
             } else {
                 identifier = new ImmutableIdentifier(authority, Constants.EPSG, codeString, version,
                                     (gn != null) ? gn.toInternationalString() : null);
@@ -1057,12 +1061,11 @@ addURIs:    for (int i=0; ; i++) {
                     if (naming != null) {
                         ns = namingSystems.get(naming);
                         if (ns == null) {
-                            ns = parent.nameFactory.createNameSpace(
-                                 parent.nameFactory.createLocalName(null, naming), null);
+                            ns = owner.nameFactory.createNameSpace(owner.nameFactory.createLocalName(null, naming), null);
                             namingSystems.put(naming, ns);
                         }
                     }
-                    aliases.add(parent.nameFactory.createLocalName(ns, alias));
+                    aliases.add(owner.nameFactory.createLocalName(ns, alias));
                 }
             }
         }
@@ -1070,7 +1073,7 @@ addURIs:    for (int i=0; ; i++) {
             properties.put(IdentifiedObject.ALIAS_KEY, aliases.toArray(new GenericName[aliases.size()]));
         }
         properties.put(AbstractIdentifiedObject.LOCALE_KEY, locale);
-        properties.put(ReferencingServices.MT_FACTORY, parent.mtFactory);
+        properties.put(ReferencingServices.MT_FACTORY, owner.mtFactory);
         return properties;
     }
 
@@ -1091,7 +1094,7 @@ addURIs:    for (int i=0; ; i++) {
     {
         final Map<String,Object> properties = createProperties(table, name, code, remarks, deprecated);
         if (domainCode != null) {
-            properties.put(Datum.DOMAIN_OF_VALIDITY_KEY, parent.createExtent(domainCode));
+            properties.put(Datum.DOMAIN_OF_VALIDITY_KEY, owner.createExtent(domainCode));
         }
         properties.put(Datum.SCOPE_KEY, scope);
         return properties;
@@ -1249,7 +1252,7 @@ addURIs:    for (int i=0; ; i++) {
                  * Note: Do not invoke 'createProperties' now, even if we have all required informations,
                  *       because the 'properties' map is going to overwritten by calls to 'createDatum', etc.
                  */
-                final CRSFactory crsFactory = parent.crsFactory;
+                final CRSFactory crsFactory = owner.crsFactory;
                 final CoordinateReferenceSystem crs;
                 switch (type.toLowerCase(Locale.US)) {
                     /* ----------------------------------------------------------------------
@@ -1260,17 +1263,17 @@ addURIs:    for (int i=0; ; i++) {
                      * ---------------------------------------------------------------------- */
                     case "geographic 2d":
                     case "geographic 3d": {
-                        final EllipsoidalCS cs = parent.createEllipsoidalCS(getString(code, result, 8));
+                        final EllipsoidalCS cs = owner.createEllipsoidalCS(getString(code, result, 8));
                         final String datumCode = getOptionalString(result, 9);
                         final GeodeticDatum datum;
                         if (datumCode != null) {
-                            datum = parent.createGeodeticDatum(datumCode);
+                            datum = owner.createGeodeticDatum(datumCode);
                         } else {
                             final String geoCode = getString(code, result, 10, 9);
                             result.close();     // Must be closed before call to createGeographicCRS(String)
                             ensureNoCycle(GeographicCRS.class, epsg);
                             try {
-                                datum = parent.createGeographicCRS(geoCode).getDatum();
+                                datum = owner.createGeographicCRS(geoCode).getDatum();
                             } finally {
                                 endOfRecursivity(GeographicCRS.class, epsg);
                             }
@@ -1292,9 +1295,9 @@ addURIs:    for (int i=0; ; i++) {
                         result.close();      // Must be closed before call to createFoo(String)
                         ensureNoCycle(ProjectedCRS.class, epsg);
                         try {
-                            final CartesianCS   cs       = parent.createCartesianCS(csCode);
-                            final GeographicCRS baseCRS  = parent.createGeographicCRS(geoCode);
-                            final CoordinateOperation op = parent.createCoordinateOperation(opCode);
+                            final CartesianCS   cs       = owner.createCartesianCS(csCode);
+                            final GeographicCRS baseCRS  = owner.createGeographicCRS(geoCode);
+                            final CoordinateOperation op = owner.createCoordinateOperation(opCode);
                             if (op instanceof Conversion) {
                                 crs = crsFactory.createProjectedCRS(createProperties("Coordinate Reference System",
                                         name, epsg, area, scope, remarks, deprecated), baseCRS, (Conversion) op, cs);
@@ -1310,8 +1313,8 @@ addURIs:    for (int i=0; ; i++) {
                      *   VERTICAL CRS
                      * ---------------------------------------------------------------------- */
                     case "vertical": {
-                        final VerticalCS    cs    = parent.createVerticalCS   (getString(code, result, 8));
-                        final VerticalDatum datum = parent.createVerticalDatum(getString(code, result, 9));
+                        final VerticalCS    cs    = owner.createVerticalCS   (getString(code, result, 8));
+                        final VerticalDatum datum = owner.createVerticalDatum(getString(code, result, 9));
                         crs = crsFactory.createVerticalCRS(createProperties("Coordinate Reference System",
                                 name, epsg, area, scope, remarks, deprecated), datum, cs);
                         break;
@@ -1324,8 +1327,8 @@ addURIs:    for (int i=0; ; i++) {
                      * ---------------------------------------------------------------------- */
                     case "time":
                     case "temporal": {
-                        final TimeCS        cs    = parent.createTimeCS       (getString(code, result, 8));
-                        final TemporalDatum datum = parent.createTemporalDatum(getString(code, result, 9));
+                        final TimeCS        cs    = owner.createTimeCS       (getString(code, result, 8));
+                        final TemporalDatum datum = owner.createTemporalDatum(getString(code, result, 9));
                         crs = crsFactory.createTemporalCRS(createProperties("Coordinate Reference System",
                                 name, epsg, area, scope, remarks, deprecated), datum, cs);
                         break;
@@ -1343,8 +1346,8 @@ addURIs:    for (int i=0; ; i++) {
                         final CoordinateReferenceSystem crs1, crs2;
                         ensureNoCycle(CompoundCRS.class, epsg);
                         try {
-                            crs1 = parent.createCoordinateReferenceSystem(code1);
-                            crs2 = parent.createCoordinateReferenceSystem(code2);
+                            crs1 = owner.createCoordinateReferenceSystem(code1);
+                            crs2 = owner.createCoordinateReferenceSystem(code2);
                         } finally {
                             endOfRecursivity(CompoundCRS.class, epsg);
                         }
@@ -1357,8 +1360,8 @@ addURIs:    for (int i=0; ; i++) {
                      *   GEOCENTRIC CRS
                      * ---------------------------------------------------------------------- */
                     case "geocentric": {
-                        final CoordinateSystem cs = parent.createCoordinateSystem(getString(code, result, 8));
-                        final GeodeticDatum datum = parent.createGeodeticDatum   (getString(code, result, 9));
+                        final CoordinateSystem cs = owner.createCoordinateSystem(getString(code, result, 8));
+                        final GeodeticDatum datum = owner.createGeodeticDatum   (getString(code, result, 9));
                         final Map<String,Object> properties = createProperties("Coordinate Reference System",
                                 name, epsg, area, scope, remarks, deprecated);
                         if (cs instanceof CartesianCS) {
@@ -1375,8 +1378,8 @@ addURIs:    for (int i=0; ; i++) {
                      *   ENGINEERING CRS
                      * ---------------------------------------------------------------------- */
                     case "engineering": {
-                        final CoordinateSystem cs    = parent.createCoordinateSystem(getString(code, result, 8));
-                        final EngineeringDatum datum = parent.createEngineeringDatum(getString(code, result, 9));
+                        final CoordinateSystem cs    = owner.createCoordinateSystem(getString(code, result, 8));
+                        final EngineeringDatum datum = owner.createEngineeringDatum(getString(code, result, 9));
                         crs = crsFactory.createEngineeringCRS(createProperties("Coordinate Reference System",
                                 name, epsg, area, scope, remarks, deprecated), datum, cs);
                         break;
@@ -1468,7 +1471,7 @@ addURIs:    for (int i=0; ; i++) {
                 } catch (NumberFormatException exception) {
                     unexpectedException("createDatum", exception);          // Not a fatal error.
                 }
-                final DatumFactory datumFactory = parent.datumFactory;
+                final DatumFactory datumFactory = owner.datumFactory;
                 final Datum datum;
                 switch (type.toLowerCase(Locale.US)) {
                     /*
@@ -1478,8 +1481,8 @@ addURIs:    for (int i=0; ; i++) {
                      */
                     case "geodetic": {
                         properties = new HashMap<>(properties);         // Protect from changes
-                        final Ellipsoid ellipsoid    = parent.createEllipsoid    (getString(code, result, 10));
-                        final PrimeMeridian meridian = parent.createPrimeMeridian(getString(code, result, 11));
+                        final Ellipsoid ellipsoid    = owner.createEllipsoid    (getString(code, result, 10));
+                        final PrimeMeridian meridian = owner.createPrimeMeridian(getString(code, result, 11));
                         final BursaWolfParameters[] param = createBursaWolfParameters(epsg);
                         if (param != null) {
                             properties.put(DefaultGeodeticDatum.BURSA_WOLF_KEY, param);
@@ -1615,7 +1618,7 @@ addURIs:    for (int i=0; ; i++) {
             final GeodeticDatum datum;
             ensureNoCycle(BursaWolfParameters.class, code);    // See comment at the begining of this method.
             try {
-                datum = parent.createGeodeticDatum(String.valueOf(info.target));
+                datum = owner.createGeodeticDatum(String.valueOf(info.target));
             } finally {
                 endOfRecursivity(BursaWolfParameters.class, code);
             }
@@ -1632,7 +1635,7 @@ addURIs:    for (int i=0; ; i++) {
                     BursaWolfInfo.setBursaWolfParameter(bwp,
                             getInteger(info.operation, result, 1),
                             getDouble (info.operation, result, 2),
-                            parent.createUnit(getString(info.operation, result, 3)), locale);
+                            owner.createUnit(getString(info.operation, result, 3)), locale);
                 }
             }
             if (info.isFrameRotation()) {
@@ -1700,7 +1703,7 @@ addURIs:    for (int i=0; ; i++) {
                 final String  unitCode          = getString   (code, result, 6);
                 final String  remarks           = getOptionalString (result, 7);
                 final boolean deprecated        = getOptionalBoolean(result, 8);
-                final Unit<Length> unit         = parent.createUnit(unitCode).asType(Length.class);
+                final Unit<Length> unit         = owner.createUnit(unitCode).asType(Length.class);
                 final Map<String,Object> properties = createProperties("Ellipsoid", name, epsg, remarks, deprecated);
                 final Ellipsoid ellipsoid;
                 if (Double.isNaN(inverseFlattening)) {
@@ -1710,7 +1713,7 @@ addURIs:    for (int i=0; ; i++) {
                         throw new FactoryDataException(error().getString(Errors.Keys.NullValueInTable_3, code, column));
                     } else {
                         // We only have semiMinorAxis defined. It is OK
-                        ellipsoid = parent.datumFactory.createEllipsoid(properties, semiMajorAxis, semiMinorAxis, unit);
+                        ellipsoid = owner.datumFactory.createEllipsoid(properties, semiMajorAxis, semiMinorAxis, unit);
                     }
                 } else {
                     if (!Double.isNaN(semiMinorAxis)) {
@@ -1721,7 +1724,7 @@ addURIs:    for (int i=0; ; i++) {
                         record.setLoggerName(Loggers.CRS_FACTORY);
                         Logging.log(EPSGDataAccess.class, "createEllipsoid", record);
                     }
-                    ellipsoid = parent.datumFactory.createFlattenedSphere(properties, semiMajorAxis, inverseFlattening, unit);
+                    ellipsoid = owner.datumFactory.createFlattenedSphere(properties, semiMajorAxis, inverseFlattening, unit);
                 }
                 returnValue = ensureSingleton(ellipsoid, returnValue, code);
             }
@@ -1780,8 +1783,8 @@ addURIs:    for (int i=0; ; i++) {
                 final String  unitCode   = getString   (code, result, 4);
                 final String  remarks    = getOptionalString (result, 5);
                 final boolean deprecated = getOptionalBoolean(result, 6);
-                final Unit<Angle> unit = parent.createUnit(unitCode).asType(Angle.class);
-                final PrimeMeridian primeMeridian = parent.datumFactory.createPrimeMeridian(
+                final Unit<Angle> unit = owner.createUnit(unitCode).asType(Angle.class);
+                final PrimeMeridian primeMeridian = owner.datumFactory.createPrimeMeridian(
                         createProperties("Prime Meridian", name, epsg, remarks, deprecated), longitude, unit);
                 returnValue = ensureSingleton(primeMeridian, returnValue, code);
             }
@@ -1919,7 +1922,7 @@ addURIs:    for (int i=0; ; i++) {
                 final boolean deprecated = getOptionalBoolean(result, 6);
                 final CoordinateSystemAxis[] axes = createCoordinateSystemAxes(epsg, dimension);
                 final Map<String,Object> properties = createProperties("Coordinate System", name, epsg, remarks, deprecated);   // Must be after axes.
-                final CSFactory csFactory = parent.csFactory;
+                final CSFactory csFactory = owner.csFactory;
                 CoordinateSystem cs = null;
                 switch (type.toLowerCase(Locale.US)) {
                     case "ellipsoidal": {
@@ -2052,7 +2055,7 @@ addURIs:    for (int i=0; ; i++) {
                      * If 'i' is out of bounds, an exception will be thrown after the loop.
                      * We do not want to thrown an ArrayIndexOutOfBoundsException here.
                      */
-                    axes[i] = parent.createCoordinateSystemAxis(axis);
+                    axes[i] = owner.createCoordinateSystemAxis(axis);
                 }
                 ++i;
             }
@@ -2113,9 +2116,8 @@ addURIs:    for (int i=0; ; i++) {
                     throw new FactoryDataException(exception.getLocalizedMessage(), exception);
                 }
                 final AxisName an = getAxisName(nameCode);
-                final CoordinateSystemAxis axis = parent.csFactory.createCoordinateSystemAxis(
-                        createProperties("Coordinate Axis", an.name, epsg, an.description, false),
-                        abbreviation, direction, parent.createUnit(unit));
+                final CoordinateSystemAxis axis = owner.csFactory.createCoordinateSystemAxis(createProperties("Coordinate Axis", an.name, epsg, an.description, false),
+                        abbreviation, direction, owner.createUnit(unit));
                 returnValue = ensureSingleton(axis, returnValue, code);
             }
         } catch (SQLException exception) {
@@ -2299,7 +2301,7 @@ addURIs:    for (int i=0; ; i++) {
                         if (element != null) {
                             valueDomain = MeasurementRange.create(Double.NEGATIVE_INFINITY, false,
                                     Double.POSITIVE_INFINITY, false,
-                                    parent.createUnit(element));
+                                    owner.createUnit(element));
                         }
                     } else {
                         type = Double.class;
@@ -2338,7 +2340,7 @@ addURIs:    for (int i=0; ; i++) {
                 " ORDER BY SORT_ORDER", method))
         {
             while (result.next()) {
-                descriptors.add(parent.createParameterDescriptor(getString(method, result, 1)));
+                descriptors.add(owner.createParameterDescriptor(getString(method, result, 1)));
             }
         }
         return descriptors.toArray(new ParameterDescriptor<?>[descriptors.size()]);
@@ -2385,7 +2387,7 @@ addURIs:    for (int i=0; ; i++) {
                 } else {
                     reference = null;
                     final String unitCode = getOptionalString(result, 4);
-                    unit = (unitCode != null) ? parent.createUnit(unitCode) : null;
+                    unit = (unitCode != null) ? owner.createUnit(unitCode) : null;
                 }
                 final ParameterValue<?> param;
                 try {
@@ -2559,21 +2561,24 @@ addURIs:    for (int i=0; ; i++) {
                      * However, this default number of dimensions is not generalizable to other kind of operation methods.
                      * For example the "Geocentric translation" operation method has 3-dimensional source and target CRS.
                      */
+                    boolean isDimensionKnown = true;
                     final int sourceDimensions, targetDimensions;
                     final CoordinateReferenceSystem sourceCRS, targetCRS;
                     if (sourceCode != null) {
-                        sourceCRS = parent.createCoordinateReferenceSystem(sourceCode);
+                        sourceCRS = owner.createCoordinateReferenceSystem(sourceCode);
                         sourceDimensions = sourceCRS.getCoordinateSystem().getDimension();
                     } else {
                         sourceCRS = null;
                         sourceDimensions = 2;       // Acceptable default for projections only.
+                        isDimensionKnown = false;
                     }
                     if (targetCode != null) {
-                        targetCRS = parent.createCoordinateReferenceSystem(targetCode);
+                        targetCRS = owner.createCoordinateReferenceSystem(targetCode);
                         targetDimensions = targetCRS.getCoordinateSystem().getDimension();
                     } else {
                         targetCRS = null;
                         targetDimensions = 2;       // Acceptable default for projections only.
+                        isDimensionKnown = false;
                     }
                     /*
                      * Get the operation method. This is mandatory for conversions and transformations
@@ -2586,8 +2591,10 @@ addURIs:    for (int i=0; ; i++) {
                         method      = null;
                         parameters  = null;
                     } else {
-                        method = parent.createOperationMethod(methodCode.toString());
-                        method = DefaultOperationMethod.redimension(method, sourceDimensions, targetDimensions);
+                        method = owner.createOperationMethod(methodCode.toString());
+                        if (isDimensionKnown) {
+                            method = DefaultOperationMethod.redimension(method, sourceDimensions, targetDimensions);
+                        }
                         parameters = method.getParameters().createValue();
                         fillParameterValues(methodCode, epsg, parameters);
                     }
@@ -2613,7 +2620,7 @@ addURIs:    for (int i=0; ; i++) {
                      * (usually to be used later as part of a ProjectedCRS creation).
                      */
                     final CoordinateOperation operation;
-                    final CoordinateOperationFactory copFactory = parent.copFactory;
+                    final CoordinateOperationFactory copFactory = owner.copFactory;
                     if (isConversion && (sourceCRS == null || targetCRS == null)) {
                         operation = copFactory.createDefiningConversion(opProperties, method, parameters);
                     } else if (isConcatenated) {
@@ -2638,7 +2645,7 @@ addURIs:    for (int i=0; ; i++) {
                         ensureNoCycle(CoordinateOperation.class, epsg);
                         try {
                             for (int i=0; i<operations.length; i++) {
-                                operations[i] = parent.createCoordinateOperation(codes.get(i));
+                                operations[i] = owner.createCoordinateOperation(codes.get(i));
                             }
                         } finally {
                             endOfRecursivity(CoordinateOperation.class, epsg);
@@ -2656,7 +2663,7 @@ addURIs:    for (int i=0; ; i++) {
                          * GeoAPI method can not handle Molodensky transform because it does not give the target datum).
                          */
                         final MathTransform mt;
-                        final MathTransformFactory mtFactory = parent.mtFactory;
+                        final MathTransformFactory mtFactory = owner.mtFactory;
                         if (mtFactory instanceof DefaultMathTransformFactory) {
                             DefaultMathTransformFactory.Context context = new DefaultMathTransformFactory.Context();
                             context.setSource(sourceCRS);
@@ -2733,7 +2740,7 @@ addURIs:    for (int i=0; ; i++) {
         ArgumentChecks.ensureNonNull("sourceCRS", sourceCRS);
         ArgumentChecks.ensureNonNull("targetCRS", targetCRS);
         final String label = sourceCRS + " ⇨ " + targetCRS;
-        final CoordinateOperationSet set = new CoordinateOperationSet(parent);
+        final CoordinateOperationSet set = new CoordinateOperationSet(owner);
         try {
             final int[] pair = toPrimaryKeys(null, null, null, sourceCRS, targetCRS);
             boolean searchTransformations = false;
@@ -2810,7 +2817,7 @@ addURIs:    for (int i=0; ; i++) {
          * Creates a new finder.
          */
         Finder() {
-            super(parent);
+            super(owner);
         }
 
         /**

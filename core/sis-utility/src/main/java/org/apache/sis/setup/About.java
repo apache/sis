@@ -48,6 +48,8 @@ import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.collection.TreeTables;
 import org.apache.sis.util.collection.DefaultTreeTable;
+import org.apache.sis.internal.util.MetadataServices;
+import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.system.Shutdown;
@@ -233,6 +235,13 @@ fill:   for (int i=0; ; i++) {
                     break;
                 }
                 case 4: {
+                    if (sections.contains(VERSIONS)) {
+                        nameKey = Vocabulary.Keys.GeodeticDataset;
+                        value = MetadataServices.getInstance().getInformation(Constants.EPSG, locale);
+                    }
+                    break;
+                }
+                case 5: {
                     newSection = LOCALIZATION;
                     if (sections.contains(LOCALIZATION)) {
                         final Locale current = Locale.getDefault();
@@ -247,7 +256,7 @@ fill:   for (int i=0; ; i++) {
                     }
                     break;
                 }
-                case 5: {
+                case 6: {
                     if (sections.contains(LOCALIZATION)) {
                         final TimeZone current = TimeZone.getDefault();
                         if (current != null) {
@@ -268,7 +277,7 @@ fill:   for (int i=0; ; i++) {
                     }
                     break;
                 }
-                case 6: {
+                case 7: {
                     if (sections.contains(LOCALIZATION)) {
                         nameKey = Vocabulary.Keys.CurrentDateTime;
                         final DateFormat df = DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.LONG, formatLocale);
@@ -279,7 +288,7 @@ fill:   for (int i=0; ; i++) {
                     }
                     break;
                 }
-                case 7: {
+                case 8: {
                     if (sections.contains(LOCALIZATION)) {
                         final Charset current = Charset.defaultCharset();
                         if (current != null) {
@@ -299,7 +308,7 @@ fill:   for (int i=0; ; i++) {
                     }
                     break;
                 }
-                case 8: {
+                case 9: {
                     newSection = LOGGING;
                     if (sections.contains(LOGGING)) {
                         nameKey = Vocabulary.Keys.Implementation;
@@ -308,7 +317,7 @@ fill:   for (int i=0; ; i++) {
                     }
                     break;
                 }
-                case 9: {
+                case 10: {
                     if (sections.contains(LOGGING)) {
                         nameKey = Vocabulary.Keys.Level;
                         final Level level = Logging.getLogger("").getLevel();   // Root logger level.
@@ -325,7 +334,7 @@ fill:   for (int i=0; ; i++) {
                     }
                     break;
                 }
-                case 10: {
+                case 11: {
                     newSection = PATHS;
                     if (sections.contains(PATHS)) {
                         nameKey = Vocabulary.Keys.UserHome;
@@ -333,14 +342,14 @@ fill:   for (int i=0; ; i++) {
                     }
                     break;
                 }
-                case 11: {
+                case 12: {
                     if (sections.contains(PATHS)) {
                         nameKey = Vocabulary.Keys.CurrentDirectory;
                         value = getProperty("user.dir");
                     }
                     break;
                 }
-                case 12: {
+                case 13: {
                     if (sections.contains(PATHS)) {
                         nameKey = Vocabulary.Keys.DataDirectory;
                         value = System.getenv(DataDirectory.ENV);
@@ -357,21 +366,21 @@ fill:   for (int i=0; ; i++) {
                     }
                     break;
                 }
-                case 13: {
+                case 14: {
                     if (sections.contains(PATHS)) {
                         nameKey = Vocabulary.Keys.TemporaryFiles;
                         value = getProperty("java.io.tmpdir");
                     }
                     break;
                 }
-                case 14: {
+                case 15: {
                     if (sections.contains(PATHS)) {
                         nameKey = Vocabulary.Keys.JavaHome;
                         value = javaHome = getProperty("java.home");
                     }
                     break;
                 }
-                case 15: {
+                case 16: {
                     newSection = LIBRARIES;
                     if (sections.contains(LIBRARIES)) {
                         nameKey = Vocabulary.Keys.JavaExtensions;
@@ -379,7 +388,7 @@ fill:   for (int i=0; ; i++) {
                     }
                     break;
                 }
-                case 16: {
+                case 17: {
                     if (sections.contains(LIBRARIES)) {
                         nameKey = Vocabulary.Keys.Classpath;
                         value = classpath(getProperty("java.class.path"), false);
@@ -546,7 +555,7 @@ pathTree:   for (int j=0; ; j++) {
         for (final Map.Entry<File,CharSequence> entry : files.entrySet()) {
             CharSequence title = entry.getValue();
             if (title != null) {
-                continue; // This file has already been processed by a recursive method invocation.
+                continue;               // This file has already been processed by a recursive method invocation.
             }
             final File file = entry.getKey();
             if (file.isFile() && file.canRead()) {
@@ -570,7 +579,7 @@ pathTree:   for (int j=0; ; j++) {
                             if (classpath(attributes.getValue(Attributes.Name.CLASS_PATH),
                                     file.getParentFile(), false, files))
                             {
-                                break; // Necessary for avoiding ConcurrentModificationException.
+                                break;          // Necessary for avoiding ConcurrentModificationException.
                             }
                         }
                     }
@@ -607,7 +616,7 @@ pathTree:   for (int j=0; ; j++) {
             if (s1 >= 0) {
                 final int s0 = CharSequences.lastIndexOf(name, File.separatorChar, 0, s1) + 1;
                 final StringBuilder buffer = new StringBuilder(s2 - s0).append(name, s0, s2);
-                buffer.setCharAt(s1-s0, '-');
+                buffer.setCharAt(s1 - s0, '-');
                 if (CharSequences.regionMatches(name, s2+1, buffer)) {
                     buffer.setLength(0);
                     node.setValue(NAME, buffer.append(name, 0, s0).append("(…)").append(name, s2, length));
