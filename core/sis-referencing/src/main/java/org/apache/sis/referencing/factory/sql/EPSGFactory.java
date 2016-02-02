@@ -55,14 +55,19 @@ import java.nio.file.Path;
  * when first needed using the {@link DataSource} specified at construction time. The geodetic objects are cached
  * for reuse and the idle connections are closed after a timeout.
  *
- * <div class="section">EPSG dataset creation</div>
- * This class tries to automatically detect in which database schema are located the EPSG tables
- * (see {@link SQLTranslator} for information on the search process). If the tables are not found,
+ * <p>If no data source has been specified to the constructor, then {@code EPSGFactory} searches for a
+ * default data source in JNDI, or in the directory given by the {@code SIS_DATA} environment variable,
+ * or in the directory given by the {@code "derby​.system​.home"} property, in that order.
+ * See the {@linkplain org.apache.sis.referencing.factory.sql package documentation} for more information.</p>
+ *
+ * <div class="section">EPSG dataset installation</div>
+ * This class tries to automatically detect the schema that contains the EPSG tables
+ * (see {@link SQLTranslator} for examples of tables to look for). If the tables are not found,
  * then the {@link #install(Connection)} method will be invoked for creating the EPSG schema.
  * The {@code install(…)} method can perform its work only if the definition files are reachable
  * on the classpath, or if the directory containing the files have been specified.
  *
- * <div class="section">Note for subclasses</div>
+ * <div class="section">Data Access Object (DAO)</div>
  * If there is no cached object for a given code, then {@code EPSGFactory} creates an {@link EPSGDataAccess} instance
  * for performing the actual creation work. Developers who need to customize the geodetic object creation can override
  * the {@link #newDataAccess(Connection, SQLTranslator)} method in order to return their own {@link EPSGDataAccess}
@@ -72,6 +77,9 @@ import java.nio.file.Path;
  * @since   0.7
  * @version 0.7
  * @module
+ *
+ * @see EPSGDataAccess
+ * @see SQLTranslator
  */
 public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> implements CRSAuthorityFactory,
         CSAuthorityFactory, DatumAuthorityFactory, CoordinateOperationAuthorityFactory, Localized
@@ -124,7 +132,22 @@ public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> impl
     protected final MathTransformFactory mtFactory;
 
     /**
-     * The database schema where the EPSG tables are located, or {@code null} if no schema.
+     * The name of the catalog that contains the EPSG tables, or {@code null} or an empty string.
+     * <ul>
+     *   <li>The {@code ""} value retrieves the EPSG schema without a catalog.</li>
+     *   <li>The {@code null} value means that the catalog name should not be used to narrow the search.</li>
+     * </ul>
+     */
+    private final String catalog;
+
+    /**
+     * The name of the schema that contains the EPSG tables, or {@code null} or an empty string.
+     * <ul>
+     *   <li>The {@code ""} value retrieves the EPSG tables without a schema.
+     *       In such case, table names are prefixed by {@value SQLTranslator#TABLE_PREFIX}.</li>
+     *   <li>The {@code null} value means that the schema name should not be used to narrow the search.
+     *       In such case, {@link SQLTranslator} will tries to automatically detect the schema.</li>
+     * </ul>
      */
     private final String schema;
 
@@ -170,37 +193,51 @@ public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> impl
      *  </tr><tr>
      *   <td>{@code datumFactory}</td>
      *   <td>{@link DatumAuthorityFactory}</td>
-     *   <td>The factory to use for creating {@link Datum} instances.</td>
+     *   <td>The factory to use for creating {@link org.opengis.referencing.datum.Datum} instances.</td>
      *  </tr><tr>
      *   <td>{@code csFactory}</td>
      *   <td>{@link CSAuthorityFactory}</td>
-     *   <td>The factory to use for creating {@link CoordinateSystem} instances.</td>
+     *   <td>The factory to use for creating {@link org.opengis.referencing.cs.CoordinateSystem} instances.</td>
      *  </tr><tr>
      *   <td>{@code crsFactory}</td>
      *   <td>{@link CRSAuthorityFactory}</td>
-     *   <td>The factory to use for creating {@link CoordinateReferenceSystem} instances.</td>
+     *   <td>The factory to use for creating {@link org.opengis.referencing.crs.CoordinateReferenceSystem} instances.</td>
      *  </tr><tr>
      *   <td>{@code copFactory}</td>
      *   <td>{@link CoordinateOperationAuthorityFactory}</td>
-     *   <td>The factory to use for creating {@link CoordinateOperation} instances.</td>
+     *   <td>The factory to use for creating {@link org.opengis.referencing.operation.CoordinateOperation} instances.</td>
      *  </tr><tr>
      *   <td>{@code mtFactory}</td>
      *   <td>{@link MathTransformFactory}</td>
-     *   <td>The factory to use for creating {@link MathTransform} instances.</td>
+     *   <td>The factory to use for creating {@link org.opengis.referencing.operation.MathTransform} instances.</td>
+     *  </tr><tr>
+     *   <td>{@code catalog}</td>
+     *   <td>{@link String}</td>
+     *   <td>The database catalog that contains the EPSG schema (see {@linkplain #install install}).</td>
      *  </tr><tr>
      *   <td>{@code schema}</td>
      *   <td>{@link String}</td>
-     *   <td>The database schema where the EPSG tables are located (see {@linkplain #install install}).</td>
+     *   <td>The database schema that contains the EPSG tables (see {@linkplain #install install}).</td>
      *  </tr><tr>
      *   <td>{@code scriptDirectory}</td>
      *   <td>{@link java.nio.file.Path}, {@link java.io.File} or {@link java.net.URL}</td>
-     *   <td>The directory where the EPSG definition files are located (see {@linkplain #install install}).</td>
+     *   <td>The directory that contains the EPSG definition files (see {@linkplain #install install}).</td>
      *  </tr><tr>
      *   <td>{@code locale}</td>
      *   <td>{@link Locale}</td>
      *   <td>The locale for producing error messages on a <cite>best effort</cite> basis.</td>
      *  </tr>
      * </table>
+     *
+     * <p>Default values</p>
+     * <ul>
+     *   <li>If no {@code dataSource} is specified, this constructor defaults to the search algorithm described
+     *       in the {@linkplain org.apache.sis.referencing.factory.sql package documentation}.</li>
+     *   <li>If no {@code catalog} or {@code schema} is specified, {@link SQLTranslator} will try to auto-detect
+     *       the schema that contains the EPSG tables.</li>
+     *   <li>If no {@code locale} is specified, this constructor defaults to the
+     *       {@linkplain Locale#getDefault(Locale.Category) display locale}.</li>
+     * </ul>
      *
      * @param  properties The data source, authority factories and other configuration properties,
      *                    or {@code null} for the default values.
@@ -214,17 +251,14 @@ public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> impl
             properties = Collections.emptyMap();
         }
         DataSource ds   = (DataSource) properties.get("dataSource");
-        Locale locale   = ObjectConverters.convert(properties.get("locale"), Locale.class);
-        String schema   = ObjectConverters.convert(properties.get("schema"), String.class);
+        Locale locale   = ObjectConverters.convert(properties.get("locale"),  Locale.class);
+        schema          = ObjectConverters.convert(properties.get("schema"),  String.class);
+        catalog         = ObjectConverters.convert(properties.get("catalog"), String.class);
         scriptDirectory = ObjectConverters.convert(properties.get("scriptDirectory"), Path.class);
         if (locale == null) {
             locale = Locale.getDefault(Locale.Category.DISPLAY);
         }
-        if (schema == null && !properties.containsKey("schema")) {
-            schema = Constants.EPSG;
-        }
         this.locale = locale;
-        this.schema = schema;
         if (ds == null) try {
             ds = Initializer.getDataSource();
             if (ds == null) {
@@ -281,12 +315,22 @@ public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> impl
      * {@linkplain #EPSGFactory(Map) construction time}:</p>
      *
      * <ul class="verbose">
+     *   <li><b>{@code catalog}:</b><br>
+     *     a {@link String} giving the name of the database catalog where to create the EPSG schema.
+     *     If non-null, that catalog shall exist prior this method call (this method does not create any catalog).
+     *     If no catalog is specified or if the catalog is an empty string,
+     *     then the EPSG schema will be created without catalog.
+     *     If the database does not {@linkplain DatabaseMetaData#supportsCatalogsInTableDefinitions() support
+     *     catalogs in table definitions} or in {@linkplain DatabaseMetaData#supportsCatalogsInDataManipulation()
+     *     data manipulation}, then this property is ignored.</li>
+     *
      *   <li><b>{@code schema}:</b><br>
-     *     a {@link String} giving the name of the database schema where to create the tables.
-     *     That schema shall not exist prior this method call as it will be created by this {@code install(…)} method.
-     *     If no schema is specified or if the schema is null, then the tables will be created without schema.
+     *     a {@link String} giving the name of the database schema where to create the EPSG tables.
+     *     That schema shall <strong>not</strong> exist prior this method call;
+     *     the schema will be created by this {@code install(…)} method.
+     *     If no schema is specified or if the schema an empty string, then the tables will be created without schema.
      *     If the database does not {@linkplain DatabaseMetaData#supportsSchemasInTableDefinitions() support
-     *     schema in table definitions} or in {@linkplain DatabaseMetaData#supportsSchemasInDataManipulation()
+     *     schemas in table definitions} or in {@linkplain DatabaseMetaData#supportsSchemasInDataManipulation()
      *     data manipulation}, then this property is ignored.</li>
      *
      *   <li><b>{@code scriptDirectory}:</b><br>
@@ -367,11 +411,11 @@ public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> impl
                 synchronized (this) {
                     tr = translator;
                     if (tr == null) {
-                        tr = new SQLTranslator(connection.getMetaData());
+                        tr = new SQLTranslator(connection.getMetaData(), catalog, schema);
                         try {
-                            if (!tr.isSchemaFound()) {
+                            if (!tr.isTableFound()) {
                                 install(connection);
-                                tr.setSchemaFound(connection.getMetaData());   // Set only on success.
+                                tr.setup(connection.getMetaData());   // Set only on success.
                             }
                         } finally {
                             translator = tr;        // Set only after installation in order to block other threads.
@@ -379,7 +423,7 @@ public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> impl
                     }
                 }
             }
-            if (tr.isSchemaFound()) {
+            if (tr.isTableFound()) {
                 return newDataAccess(connection, tr);
             }
             connection.close();
@@ -391,7 +435,7 @@ public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> impl
             }
             throw new UnavailableFactoryException(e.getLocalizedMessage(), e);
         }
-        throw new UnavailableFactoryException(SQLTranslator.schemaNotFound(locale));
+        throw new UnavailableFactoryException(SQLTranslator.tableNotFound(locale));
     }
 
     /**

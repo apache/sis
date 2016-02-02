@@ -18,7 +18,6 @@ package org.apache.sis.referencing.factory.sql;
 
 import java.util.Map;
 import java.util.HashMap;
-import java.util.Collections;
 import java.util.Locale;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
@@ -56,7 +55,7 @@ import java.util.function.Function;
  *   <li>{@code SELECT * FROM "Coordinate Reference System"}</li>
  *   <li>{@code SELECT * FROM epsg_coordinatereferencesystem} (in the default schema)</li>
  *   <li>{@code SELECT * FROM epsg.coordinatereferencesystem} (in the {@code "epsg"} schema)</li>
- *   <li>{@code SELECT * FROM "EPSG"."Coordinate Reference System"}</li>
+ *   <li>{@code SELECT * FROM epsg."Coordinate Reference System"}</li>
  * </ul></div>
  *
  * In addition to the MS-Access format, EPSG also provides the dataset as <cite>Data Description Language</cite> (DDL)
@@ -87,8 +86,8 @@ import java.util.function.Function;
  *   <tr><td>Column</td> <td>{@code ORDER}</td>                                 <td>{@code coord_axis_order}</td></tr>
  * </table>
  *
- * This class auto-detects the schema where the EPSG database seems to be located and whether the table names
- * are the ones used by EPSG in the MS-Access version or the PostgreSQL, MySQL or Oracle version of the database.
+ * By default this class auto-detects the schema that contains the EPSG tables and whether the table names are
+ * the ones used by EPSG in the MS-Access version or the PostgreSQL, MySQL or Oracle version of the database.
  * Consequently it is legal to use the MS-Access table names, which are more readable, in a PostgreSQL database.
  *
  * <div class="section">Thread safety</div>
@@ -128,11 +127,32 @@ public class SQLTranslator implements Function<String,String> {
     static final String TABLE_PREFIX = "epsg_";
 
     /**
-     * The name of the schema where the tables are located, or {@code null} if none.
-     * In the later case, table names are prefixed by {@value #TABLE_PREFIX}.
+     * The name of the catalog that contains the EPSG tables, or {@code null} or an empty string.
+     * <ul>
+     *   <li>The {@code ""} value retrieves the EPSG schema without a catalog.</li>
+     *   <li>The {@code null} value means that the catalog name should not be used to narrow the search.</li>
+     * </ul>
      *
      * <p><b>Consider this field as final.</b> This field is non-final only for construction convenience,
      * or for updating after the {@link EPSGInstaller} class created the database.</p>
+     *
+     * @see #getCatalog()
+     */
+    private String catalog;
+
+    /**
+     * The name of the schema that contains the EPSG tables, or {@code null} or an empty string.
+     * <ul>
+     *   <li>The {@code ""} value retrieves the EPSG tables without a schema.
+     *       In such case, table names are prefixed by {@value #TABLE_PREFIX}.</li>
+     *   <li>The {@code null} value means that the schema name should not be used to narrow the search.
+     *       In such case, {@code SQLTranslator} will tries to automatically detect the schema.</li>
+     * </ul>
+     *
+     * <p><b>Consider this field as final.</b> This field is non-final only for construction convenience,
+     * or for updating after the {@link EPSGInstaller} class created the database.</p>
+     *
+     * @see #getSchema()
      */
     private String schema;
 
@@ -162,103 +182,138 @@ public class SQLTranslator implements Function<String,String> {
     private final String quote;
 
     /**
-     * {@code true} if the tables exist. If {@code false}, then {@link EPSGInstaller} needs to be run.
+     * {@code true} if one of the {@link #SENTINEL} tables exist.
+     * If {@code false}, then {@link EPSGInstaller} needs to be run.
+     *
+     * @see #isTableFound()
      */
-    private boolean isSchemaFound;
+    private boolean isTableFound;
 
     /**
-     * Creates a new adapter for the database described by the given metadata.
-     * This constructor:
+     * Creates a new SQL translator for the database described by the given metadata.
+     * This constructor detects automatically the dialect: the characters to use for quoting identifiers, and whether
+     * the table names are the ones used in the MS-Access database or in the Data Definition Language (DDL) scripts.
      *
-     * <ul>
-     *   <li>gets the characters to use for quoting identifiers,</li>
-     *   <li>finds the schema where are located the EPSG tables,</li>
-     *   <li>detects if the table names are the ones used in MS-Access database or in the DDL scripts.</li>
-     * </ul>
+     * <p>If the given catalog or schema name is non-null, then the {@linkplain DatabaseMetaData#getTables
+     * search for EPSG tables} will be restricted to the catalog or schema of that name.
+     * An empty string ({@code ""}) means to search for tables without catalog or schema.
+     * A {@code null} value means that the catalog or schema should not be used to narrow the search.</p>
      *
-     * <div class="note"><b>API design note:</b>
-     * this constructor is for sub-classing only. Otherwise, instances of {@code SQLTranslator} should not need to be
-     * created explicitely since instantiations are performed automatically by {@link EPSGFactory} when first needed.</div>
-     *
-     * @param  md Information about the database.
+     * @param  md      Information about the database.
+     * @param  catalog The catalog where to look for EPSG schema, or {@code null} if any.
+     * @param  schema  The schema where to look for EPSG tables, or {@code null} if any.
      * @throws SQLException if an error occurred while querying the database metadata.
      */
-    protected SQLTranslator(final DatabaseMetaData md) throws SQLException {
+    public SQLTranslator(final DatabaseMetaData md, final String catalog, final String schema) throws SQLException {
         ArgumentChecks.ensureNonNull("md", md);
-        quote = md.getIdentifierQuoteString();
-        findSchema(md);
-        /*
-         * Initialize the 'accessToAnsi' map. This map translates the table and column names used in the SQL
-         * statements into the names used by the database. Two conventions are understood: the names used in
-         * the MS-Access database or the names used in the SQL scripts. Both of them are distributed by EPSG.
-         */
-        if (quoteTableNames) {
-            /*
-             * MS-Access database uses a column named "ORDER" in the "Coordinate Axis" table.
-             * This column has been renamed "coord_axis_order" in DLL scripts.
-             * We need to check which name our current database uses.
-             */
-            try (ResultSet result = md.getColumns(null, schema, "Coordinate Axis", "ORDER")) {
-                if (result.next()) {
-                    accessToAnsi = Collections.emptyMap();
-                } else {
-                    accessToAnsi = Collections.singletonMap("ORDER", "coord_axis_order");
-                }
-            }
-        } else {
-            accessToAnsi = new HashMap<>(4);
-            accessToAnsi.put("ORDER",                "coord_axis_order");     // A column, not a table.
-            accessToAnsi.put("Coordinate_Operation", "coordoperation");
-            accessToAnsi.put("Parameter",            "param");
-        }
-    };
+        quote = md.getIdentifierQuoteString().trim();
+        accessToAnsi = new HashMap<>(4);
+        this.catalog = catalog;
+        this.schema  = schema;
+        setup(md);
+    }
 
     /**
-     * Finds the schema where the EPSG tables seem to be located. If there is more than one schema containing the
-     * tables, give precedence to the schema named "EPSG" if one is found. If there is no schema named "EPSG",
-     * take an arbitrary schema. It may be null if the tables are not located in a schema.
+     * Sets the value of all non-final fields. This method performs two steps:
+     *
+     * <ol class="verbose">
+     *   <li>Finds the schema that seems to contain the EPSG tables. If there is more than one schema containing the
+     *       tables, gives precedence to the schema named "EPSG" if one is found. If there is no schema named "EPSG",
+     *       takes an arbitrary schema. It may be the empty string if the tables are not contained in a schema.</li>
+     *
+     *   <li>Fills the {@link #accessToAnsi} map. That map translates the table and column names used in the SQL
+     *       statements into the names used by the database. Two conventions are understood: the names used in
+     *       the MS-Access database or the names used in the SQL scripts. Both of them are distributed by EPSG.</li>
+     * </ol>
      */
-    private void findSchema(final DatabaseMetaData md) throws SQLException {
+    final void setup(final DatabaseMetaData md) throws SQLException {
         final boolean toUpperCase = md.storesUpperCaseIdentifiers();
         for (int i = SENTINEL.length; --i >= 0;) {
             String table = SENTINEL[i];
             if (toUpperCase && i != MIXED_CASE) {
                 table = table.toUpperCase(Locale.US);
             }
-            try (ResultSet result = md.getTables(null, null, table, null)) {
+            try (ResultSet result = md.getTables(catalog, schema, table, null)) {
                 if (result.next()) {
-                    isSchemaFound = true;
+                    isTableFound    = true;
                     quoteTableNames = (i == MIXED_CASE);
                     do {
-                        schema = result.getString("TABLE_SCHEM");
+                        catalog = result.getString("TABLE_CAT");
+                        schema  = result.getString("TABLE_SCHEM");
                     } while (!Constants.EPSG.equalsIgnoreCase(schema) && result.next());
+                    if (schema == null) schema = "";
                     break;
                 }
             }
         }
+        /*
+         * At this point the catalog and schema have been found or confirmed, or are still null
+         * if we did not found them. Now fill the 'accessToAnsi' map.
+         */
+        boolean translateColumns = true;
+        accessToAnsi.clear();
+        if (quoteTableNames) {
+            /*
+             * MS-Access database uses a column named "ORDER" in the "Coordinate Axis" table.
+             * This column has been renamed "coord_axis_order" in DLL scripts.
+             * We need to check which name our current database uses.
+             */
+            try (ResultSet result = md.getColumns(catalog, schema, "Coordinate Axis", "ORDER")) {
+                translateColumns = !result.next();
+            }
+        } else {
+            accessToAnsi.put("Coordinate_Operation", "coordoperation");
+            accessToAnsi.put("Parameter", "param");
+        }
+        if (translateColumns) {
+            accessToAnsi.put("ORDER", "coord_axis_order");
+        }
+    };
+
+    /**
+     * Returns the catalog that contains the EPSG schema. This is the catalog specified at construction time
+     * if it was non-null, or the catalog discovered by the constructor otherwise.
+     * Note that this method may still return {@code null} if the EPSG tables were not found or if the database
+     * does not {@linkplain DatabaseMetaData#supportsCatalogsInDataManipulation() supports catalogs}.
+     *
+     * @return The catalog that contains the EPSG schema, or {@code null}.
+     */
+    public String getCatalog() {
+        return catalog;
     }
 
     /**
-     * Returns {@code true} if the constructor has found the EPSG schema.
+     * Returns the schema that contains the EPSG tables. This is the schema specified at construction time
+     * if it was non-null, or the schema discovered by the constructor otherwise.
+     * Note that this method may still return {@code null} if the EPSG tables were not found or if the database
+     * does not {@linkplain DatabaseMetaData#supportsSchemasInDataManipulation() supports schemas}.
+     *
+     * @return The schema that contains the EPSG tables, or {@code null}.
      */
-    final boolean isSchemaFound() {
-        return isSchemaFound;
+    public String getSchema() {
+        return schema;
     }
 
     /**
-     * Declares that the EPSG schema should exists now.
-     * This method is invoked after {@link EPSGInstaller} execution.
+     * Returns whether the EPSG tables have been found.
+     * If {@code false}, then {@link EPSGInstaller} needs to be run.
      */
-    final void setSchemaFound(final DatabaseMetaData md) throws SQLException {
-        findSchema(md);
-        isSchemaFound = true;
+    final boolean isTableFound() {
+        return isTableFound;
     }
 
     /**
-     * Returns the error message for the exception to throw if the EPSG schema is not found and we can not create it.
+     * Returns the error message for the exception to throw if the EPSG tables are not found and we can not create them.
      */
-    static String schemaNotFound(final Locale locale) {
+    static String tableNotFound(final Locale locale) {
         return Errors.getResources(locale).getString(Errors.Keys.TableNotFound_1, SENTINEL[MIXED_CASE]);
+    }
+
+    /**
+     * If the given string is empty, returns {@code null} instead.
+     */
+    private static String nonEmpty(final String s) {
+        return (s != null && !s.isEmpty()) ? s : null;
     }
 
     /**
@@ -270,7 +325,9 @@ public class SQLTranslator implements Function<String,String> {
      */
     @Override
     public String apply(final String sql) {
-        if (schema == null && accessToAnsi.isEmpty() && quote.trim().isEmpty()) {
+        final String catalog = nonEmpty(this.catalog);
+        final String schema  = nonEmpty(this.schema);
+        if (quote.isEmpty() && accessToAnsi.isEmpty() && schema == null && catalog == null) {
             return sql;
         }
         final StringBuilder ansi = new StringBuilder(sql.length() + 16);
@@ -295,6 +352,9 @@ public class SQLTranslator implements Function<String,String> {
             if (CharSequences.isUpperCase(name)) {
                 ansi.append(accessToAnsi.getOrDefault(name, name));
             } else {
+                if (catalog != null) {
+                    ansi.append(quote).append(catalog).append(quote).append('.');
+                }
                 if (schema != null) {
                     ansi.append(quote).append(schema).append(quote).append('.');
                 }

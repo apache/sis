@@ -139,7 +139,12 @@ public class ScriptRunner implements AutoCloseable {
     protected final boolean isEnumTypeSupported;
 
     /**
-     * {@code true} if the database supports schema.
+     * {@code true} if the database supports catalogs.
+     */
+    protected final boolean isCatalogSupported;
+
+    /**
+     * {@code true} if the database supports schemas.
      */
     protected final boolean isSchemaSupported;
 
@@ -231,11 +236,13 @@ public class ScriptRunner implements AutoCloseable {
         ArgumentChecks.ensureNonNull("encoding", encoding);
         ArgumentChecks.ensurePositive("maxRowsPerInsert", maxRowsPerInsert);
         final DatabaseMetaData metadata = connection.getMetaData();
-        this.encoding          = encoding;
-        this.dialect           = Dialect.guess(metadata);
-        this.identifierQuote   = metadata.getIdentifierQuoteString();
-        this.isSchemaSupported = metadata.supportsSchemasInTableDefinitions() &&
-                                 metadata.supportsSchemasInDataManipulation();
+        this.encoding           = encoding;
+        this.dialect            = Dialect.guess(metadata);
+        this.identifierQuote    = metadata.getIdentifierQuoteString();
+        this.isSchemaSupported  = metadata.supportsSchemasInTableDefinitions() &&
+                                  metadata.supportsSchemasInDataManipulation();
+        this.isCatalogSupported = metadata.supportsCatalogsInTableDefinitions() &&
+                                  metadata.supportsCatalogsInDataManipulation();
         switch (dialect) {
             default: {
                 isEnumTypeSupported      = false;
