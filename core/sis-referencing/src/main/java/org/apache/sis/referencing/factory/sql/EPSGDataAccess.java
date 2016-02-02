@@ -128,7 +128,7 @@ import static org.apache.sis.internal.referencing.ServicesForMetadata.CONNECTION
  *
  * <div class="section">Life cycle and caching</div>
  * {@code EPSGDataAccess} instances should be short-lived since they may hold a significant amount of JDBC resources.
- * Those instances are created on the fly by {@link EPSGFactory} and closed after a relatively short
+ * {@code EPSGDataAccess} instances are created on the fly by {@link EPSGFactory} and closed after a relatively short
  * {@linkplain EPSGFactory#getTimeout timeout}.
  * In addition {@code EPSGFactory} caches the most recently created objects, which reduce greatly
  * the amount of {@code EPSGDataAccess} instantiations (and consequently the amount of database accesses)
@@ -297,21 +297,21 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
      * by the {@link EPSGFactory#newDataAccess(Connection, SQLTranslator)} method of a corresponding custom
      * {@code EPSGFactory} subclass.</div>
      *
-     * @param parent      The {@code EPSGFactory} which is creating this Data Access Object (DAO).
+     * @param owner       The {@code EPSGFactory} which is creating this Data Access Object (DAO).
      * @param connection  The connection to the underlying EPSG database.
      * @param translator  The translator from the SQL statements using MS-Access dialect
      *                    to SQL statements using the dialect of the actual database.
      *
      * @see EPSGFactory#newDataAccess(Connection, SQLTranslator)
      */
-    protected EPSGDataAccess(final EPSGFactory parent, final Connection connection, final SQLTranslator translator) {
+    protected EPSGDataAccess(final EPSGFactory owner, final Connection connection, final SQLTranslator translator) {
         ArgumentChecks.ensureNonNull("connection", connection);
         ArgumentChecks.ensureNonNull("translator", translator);
-        this.owner     = parent;
+        this.owner      = owner;
         this.connection = connection;
         this.translator = translator;
-        this.namespace  = parent.nameFactory.createNameSpace(
-                          parent.nameFactory.createLocalName(null, Constants.IOGP), null);
+        this.namespace  = owner.nameFactory.createNameSpace(
+                          owner.nameFactory.createLocalName(null, Constants.IOGP), null);
     }
 
     /**
