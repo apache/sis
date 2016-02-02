@@ -136,6 +136,9 @@ final class EPSGInstaller extends ScriptRunner {
              * Mapping from the table names used in the SQL scripts to the original names used in the MS-Access database.
              * We use those original names because they are easier to read than the names in SQL scripts.
              */
+            replace(SQLTranslator.TABLE_PREFIX + "alias",                      "Alias");
+            replace(SQLTranslator.TABLE_PREFIX + "area",                       "Area");
+            replace(SQLTranslator.TABLE_PREFIX + "change",                     "Change");
             replace(SQLTranslator.TABLE_PREFIX + "coordinateaxis",             "Coordinate Axis");
             replace(SQLTranslator.TABLE_PREFIX + "coordinateaxisname",         "Coordinate Axis Name");
             replace(SQLTranslator.TABLE_PREFIX + "coordoperation",             "Coordinate_Operation");
@@ -146,10 +149,15 @@ final class EPSGInstaller extends ScriptRunner {
             replace(SQLTranslator.TABLE_PREFIX + "coordoperationpath",         "Coordinate_Operation Path");
             replace(SQLTranslator.TABLE_PREFIX + "coordinatereferencesystem",  "Coordinate Reference System");
             replace(SQLTranslator.TABLE_PREFIX + "coordinatesystem",           "Coordinate System");
+            replace(SQLTranslator.TABLE_PREFIX + "datum",                      "Datum");
+            replace(SQLTranslator.TABLE_PREFIX + "deprecation",                "Deprecation");
+            replace(SQLTranslator.TABLE_PREFIX + "ellipsoid",                  "Ellipsoid");
             replace(SQLTranslator.TABLE_PREFIX + "namingsystem",               "Naming System");
             replace(SQLTranslator.TABLE_PREFIX + "primemeridian",              "Prime Meridian");
+            replace(SQLTranslator.TABLE_PREFIX + "supersession",               "Supersession");
             replace(SQLTranslator.TABLE_PREFIX + "unitofmeasure",              "Unit of Measure");
             replace(SQLTranslator.TABLE_PREFIX + "versionhistory",             "Version History");
+            modifyReplacements((String key, String value) -> schema + '.' + identifierQuote + value + identifierQuote);
         }
     }
 

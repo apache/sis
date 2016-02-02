@@ -397,7 +397,11 @@ public abstract class Initializer {
             try {
                 ds.getConnection().close();     // Does the actual shutdown.
             } catch (SQLException e) {          // This is the expected exception.
-                final LogRecord record = new LogRecord(Level.CONFIG, e.getLocalizedMessage());      // Not WARNING.
+                Level level = Level.CONFIG;
+                if (e.getErrorCode() != 45000 || !"08006".equals(e.getSQLState())) {
+                    level = Level.WARNING;
+                }
+                final LogRecord record = new LogRecord(level, e.getLocalizedMessage());
                 record.setLoggerName(Loggers.SQL);
                 Logging.log(Initializer.class, "shutdown", record);
             }

@@ -19,6 +19,7 @@ package org.apache.sis.internal.metadata.sql;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Locale;
+import java.util.function.BiFunction;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -318,6 +319,16 @@ public class ScriptRunner implements AutoCloseable {
     }
 
     /**
+     * For every entries in the replacements map, replace the entry value by the value returned by
+     * {@code function(key, value)}.
+     *
+     * @param function The function that modify the replacement mapping.
+     */
+    protected final void modifyReplacements(final BiFunction<String,String,String> function) {
+        replacements.replaceAll(function);
+    }
+
+    /**
      * Runs the given SQL script.
      * Lines are read and grouped up to the terminal {@value #END_OF_STATEMENT} character, then sent to the database.
      *
@@ -476,7 +487,7 @@ parseLine:  while (pos < length) {
                         if (!isInsideIdentifier) {
                             if (!isInsideText) {
                                 isInsideText = true;
-                            } else if ((pos += n) >= length || buffer.codePointAt(pos) == QUOTE) {
+                            } else if ((pos += n) >= length || buffer.codePointAt(pos) != QUOTE) {
                                 isInsideText = false;
                                 continue;   // Because we already skipped the ' character.
                             } // else found a double ' character, which means to escape it.
