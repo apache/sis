@@ -73,7 +73,7 @@ public final strictfp class GIGS2001 extends org.opengis.test.referencing.gigs.G
     @BeforeClass
     public static void createFactory() throws FactoryException {
         if (INSTANCE == null) try {
-            INSTANCE = new EPSGFactory();
+            INSTANCE = new EPSGFactory(null);
         } catch (UnavailableFactoryException e) {
             final String message = e.toString();
             if (!message.equals(failure)) {
