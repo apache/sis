@@ -28,8 +28,13 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import javax.naming.Context;
 import javax.naming.InitialContext;
-import javax.naming.spi.NamingManager;
+import javax.naming.NamingException;
 import javax.naming.NameNotFoundException;
+import javax.naming.spi.NamingManager;
+import javax.naming.event.EventContext;
+import javax.naming.event.NamingEvent;
+import javax.naming.event.NamingExceptionEvent;
+import javax.naming.event.ObjectChangeListener;
 import org.apache.sis.internal.system.DataDirectory;
 import org.apache.sis.internal.system.Shutdown;
 import org.apache.sis.internal.system.Loggers;
@@ -44,7 +49,7 @@ import java.nio.file.Paths;
 
 
 /**
- * Manages the unique {@link DataSource} instances to the {@code $SIS_DATA/Databases/SpatialMetadata} database.
+ * Manages the unique {@link DataSource} instance to the {@code $SIS_DATA/Databases/SpatialMetadata} database.
  * This includes initialization of a new database if none existed. The schemas will be created by subclasses of
  * this {@code Initializer} class, which must be registered in the following file:
  *
@@ -70,6 +75,20 @@ public abstract class Initializer {
     private static final String HOME_KEY = "derby.system.home";
 
     /**
+     * Name of the JNDI resource to lookup in the {@code "java:comp/env"} context.
+     */
+    public static final String JNDI = "jdbc/" + DATABASE;
+
+    /**
+     * The class loader for JavaDB (i.e. the Derby database distributed with the JDK), created when first needed.
+     * This field is never reset to {@code null} even if the classpath changed because this class loader is for
+     * a JAR file the JDK installation directory, and we presume that the JDK installation do not change.
+     *
+     * @see #forJavaDB(String)
+     */
+    private static URLClassLoader javadbLoader;
+
+    /**
      * The unique, SIS-wide, data source to the {@code $SIS_DATA/Databases/SpatialMetadata} database.
      * Created when first needed, and cleared on shutdown.
      *
@@ -90,6 +109,93 @@ public abstract class Initializer {
      * @throws SQLException if an error occurred while populating the database.
      */
     protected abstract void createSchema(Connection connection) throws SQLException;
+
+    /**
+     * Invoked when the JNDI data source associated to {@code "jdbc/SpatialMetadata"} changed.
+     */
+    protected abstract void dataSourceChanged();
+
+    /**
+     * A JNDI listener for being informed of changes in the {@link DataSource} associated to {@code "jdbc/SpatialMetadata"}.
+     * This listener clears the {@link Initializer#source} field, so the next call to {@link Initializer#getDataSource()}
+     * will fetch a new one.
+     */
+    private static final class Listener implements ObjectChangeListener, Callable<Object> {
+        /**
+         * The context where this listener has been registered.
+         * Used for unregistering the listener after the data source has been cleared.
+         */
+        private final EventContext context;
+
+        /**
+         * Creates a new listener for the given JNDI context.
+         */
+        private Listener(final EventContext context) {
+            this.context = context;
+        }
+
+        /**
+         * Registers a new listener for the given JNDI context.
+         */
+        static void register(final EventContext context) throws NamingException {
+            final Listener listener = new Listener(context);
+            context.addNamingListener(JNDI, EventContext.OBJECT_SCOPE, listener);
+            Shutdown.register(listener);
+        }
+
+        /**
+         * Invoked when the JVM is shutting down, or when the Servlet or OSGi bundle is uninstalled.
+         * This method unregisters the listener from the JNDI context.
+         */
+        @Override
+        public Object call() throws NamingException {
+            synchronized (Initializer.class) {
+                // Do not clear the DataSource - the shutdown hook for Derby needs it.
+                context.removeNamingListener(this);
+            }
+            return null;
+        }
+
+        /**
+         * Invoked when the data source associated to {@code "jdbc/SpatialMetadata"} changed.
+         * This method clears the {@link Initializer#source}, unregisters this listener
+         * and notifies other SIS modules.
+         *
+         * @param event Ignored. May be null.
+         */
+        @Override
+        public void objectChanged(NamingEvent event) {
+            try {
+                synchronized (Initializer.class) {
+                    source = null;
+                    Shutdown.unregister(this);
+                    context.removeNamingListener(this);
+                }
+            } catch (NamingException e) {
+                /*
+                 * Not a fatal error since the listener may be unregistered anyway, or may be unregistered
+                 * automatically by other kinds of JNDI events. Even if the listener is not unregistered,
+                 * it will hurt to badly: the DataSource would only be fetched more often than necessary.
+                 */
+                Logging.recoverableException(Logging.getLogger(Loggers.SYSTEM), Listener.class, "objectChanged", e);
+            }
+            for (Initializer init : ServiceLoader.load(Initializer.class)) {
+                init.dataSourceChanged();
+            }
+        }
+
+        /**
+         * Invoked if JNDI lost connection to the server while preparing the {@code NamingEvent}.
+         * Clears the data source anyway. In the worst case scenario, the application will fetch
+         * it again from a the JNDI context.
+         */
+        @Override
+        public void namingExceptionThrown(NamingExceptionEvent event) {
+            Logging.unexpectedException(Logging.getLogger(Loggers.SYSTEM),
+                    Listener.class, "namingExceptionThrown", event.getException());
+            objectChanged(null);
+        }
+    }
 
     /**
      * Returns the data source for the SIS-wide "SpatialMetadata" database.
@@ -120,18 +226,76 @@ public abstract class Initializer {
         if (source == null) {
             if (hasJNDI()) try {
                 final Context env = (Context) InitialContext.doLookup("java:comp/env");
-                return source = (DataSource) env.lookup("jdbc/" + DATABASE);
+                source = (DataSource) env.lookup(JNDI);
+                if (env instanceof EventContext) {
+                    Listener.register((EventContext) env);
+                }
+                return source;
             } catch (NameNotFoundException e) {
                 final LogRecord record = Messages.getResources(null).getLogRecord(
-                        Level.CONFIG, Messages.Keys.JNDINotSpecified_1, "jdbc/" + DATABASE);
+                        Level.CONFIG, Messages.Keys.JNDINotSpecified_1, JNDI);
                 record.setLoggerName(Loggers.SQL);
                 Logging.log(Initializer.class, "getDataSource", record);
             }
+            /*
+             * At this point we determined that there is no JNDI context or no object binded to "jdbc/SpatialMetadata".
+             * As a fallback, try to open the Derby database located in $SIS_DATA/Databases/SpatialMetadata directory.
+             */
+            boolean create = false;
+            final String home = System.getProperty(HOME_KEY);
             final Path dir = DataDirectory.DATABASES.getDirectory();
             if (dir != null) {
-                source = forJavaDB(dir.resolve(DATABASE));
-            } else if (System.getProperty(HOME_KEY) != null) {
+                Path path = dir.resolve(DATABASE);
+                if (home != null) try {
+                    /*
+                     * If a "derby.system.home" property is set, we may be able to get a shorter path by making it
+                     * relative to Derby home. The intend is to have a nicer URL like "jdbc:derby:SpatialMetadata"
+                     * instead than "jdbc:derby:/a/long/path/to/SIS/Data/Databases/SpatialMetadata". In addition
+                     * to making loggings and EPSGDataAccess.getAuthority() output nicer, it also reduces the risk
+                     * of encoding issues if the path contains spaces or non-ASCII characters.
+                     */
+                    path = Paths.get(home).relativize(path);
+                } catch (IllegalArgumentException | SecurityException e) {
+                    // The path can not be relativized. This is okay.
+                    Logging.recoverableException(Logging.getLogger(Loggers.SQL), Initializer.class, "getDataSource", e);
+                }
+                /*
+                 * Create the Derby data source using the context class loader if possible,
+                 * or otherwise a URL class loader to the JavaDB distributed with the JDK.
+                 */
+                path   = path.normalize();
+                create = !Files.exists(path);
+                source = forJavaDB(path.toString());
+            } else if (home != null) {
                 source = forJavaDB(DATABASE);
+            } else {
+                return null;
+            }
+            /*
+             * Register the shutdown hook before to attempt any operation on the database in order to close
+             * it properly if the schemas creation below fail.
+             */
+            Shutdown.register(new Callable<Object>() {
+                @Override public Object call() throws ReflectiveOperationException {
+                    shutdown();
+                    return null;
+                }
+            });
+            /*
+             * If the database does not exist, create it. We allow creation only if we are inside
+             * the $SIS_DATA directory. The Java code creating the schemas is provided in other
+             * SIS modules. For example sis-referencing may create the EPSG dataset.
+             */
+            if (create) {
+                final Method m = source.getClass().getMethod("setCreateDatabase", String.class);
+                m.invoke(source, "create");
+                try (Connection c = source.getConnection()) {
+                    for (Initializer init : ServiceLoader.load(Initializer.class)) {
+                        init.createSchema(c);
+                    }
+                } finally {
+                    m.invoke(source, "no");     // Any value other than "create".
+                }
             }
         }
         return source;
@@ -168,56 +332,6 @@ public abstract class Initializer {
     }
 
     /**
-     * Creates a data source for a Derby database at the given {@code $SIS_DATA/Databases/SpatialMetadata} location.
-     * If the database does not exist, it will be created.
-     *
-     * @param  path  The {@code $SIS_DATA/Databases/SpatialMetadata} directory.
-     * @return The data source.
-     * @throws Exception if the data source can not be created.
-     */
-    private static DataSource forJavaDB(Path path) throws Exception {
-        /*
-         * If a "derby.system.home" property is set, we may be able to get a shorter path by making it
-         * relative to Derby home. The intend is to have a nicer URL like "jdbc:derby:SpatialMetadata"
-         * instead than "jdbc:derby:/a/long/path/to/SIS/Data/Databases/SpatialMetadata". In addition
-         * to making loggings and EPSGDataAccess.getAuthority() output nicer, it also reduces the risk
-         * of encoding issues if the path contains spaces or non-ASCII characters.
-         */
-        try {
-            final String home = System.getProperty(HOME_KEY);
-            if (home != null) {
-                path = Paths.get(home).relativize(path);
-            }
-        } catch (IllegalArgumentException | SecurityException e) {
-            // The path can not be relativized. This is okay. Use the public method as the logging source.
-            Logging.recoverableException(Logging.getLogger(Loggers.SQL), Initializer.class, "getDataSource", e);
-        }
-        /*
-         * Create the Derby data source using the context class loader if possible,
-         * or otherwise a URL class loader to the JavaDB distributed with the JDK.
-         */
-        path = path.normalize();
-        final DataSource ds = forJavaDB(path.toString());
-        /*
-         * If the database does not exist, create it. We allow creation only here because we are inside
-         * the $SIS_DATA directory. The Java code creating the schemas is provided in other SIS modules.
-         * For example sis-referencing may create the EPSG dataset.
-         */
-        if (!Files.exists(path)) {
-            final Method m = ds.getClass().getMethod("setCreateDatabase", String.class);
-            m.invoke(ds, "create");
-            try (Connection c = ds.getConnection()) {
-                for (Initializer init : ServiceLoader.load(Initializer.class)) {
-                    init.createSchema(c);
-                }
-            } finally {
-                m.invoke(ds, "no");     // Any value other than "create".
-            }
-        }
-        return ds;
-    }
-
-    /**
      * Creates a data source for a Derby database at the given location. The location may be either the
      * {@code $SIS_DATA/Databases/SpatialMetadata} directory, or the {@code SpatialMetadata} database
      * in the directory given by the {@code derby.system.home} property.
@@ -225,29 +339,39 @@ public abstract class Initializer {
      * <p>This method does <strong>not</strong> create the database if it does not exist, because this
      * method does not know if we are inside the {@code $SIS_DATA} directory.</p>
      *
+     * <p>It is caller's responsibility to shutdown the Derby database after usage.</p>
+     *
      * @param  path  Relative or absolute path to the database.
      * @return The data source.
      * @throws Exception if the data source can not be created.
      */
-    private static DataSource forJavaDB(final String path) throws Exception {
+    public static DataSource forJavaDB(final String path) throws Exception {
         try {
             return forJavaDB(path, Thread.currentThread().getContextClassLoader());
         } catch (ClassNotFoundException e) {
-            final String home = System.getProperty("java.home");
-            if (home != null) {
-                final Path file = Paths.get(home).resolveSibling("db/lib/derby.jar");
-                if (Files.isRegularFile(file)) {
-                    return forJavaDB(path, new URLClassLoader(new URL[] {file.toUri().toURL()}));
+            URLClassLoader loader;
+            synchronized (Initializer.class) {
+                loader = javadbLoader;
+                if (loader == null) {
+                    final String home = System.getProperty("java.home");
+                    if (home != null) {
+                        final Path file = Paths.get(home).resolveSibling("db/lib/derby.jar");
+                        if (Files.isRegularFile(file)) {
+                            javadbLoader = loader = new URLClassLoader(new URL[] {file.toUri().toURL()});
+                        }
+                    }
                 }
             }
-            throw e;
+            if (loader == null) {
+                throw e;
+            }
+            return forJavaDB(path, loader);
         }
     }
 
     /**
-     * Creates a data source for the given path using the given class loader.
-     * If this method succeed in creating a data source, then it registers a shutdown hook
-     * for shutting down the database at JVM shutdown time of Servlet/OSGi bundle uninstall time.
+     * Creates a Derby data source for the given path using the given class loader.
+     * It is caller's responsibility to shutdown the Derby database after usage.
      *
      * @throws ClassNotFoundException if Derby is not on the classpath.
      */
@@ -257,12 +381,6 @@ public abstract class Initializer {
         final Class<?>[] args = {String.class};
         c.getMethod("setDatabaseName", args).invoke(ds, path);
         c.getMethod("setDataSourceName", args).invoke(ds, "Apache SIS spatial metadata");
-        Shutdown.register(new Callable<Object>() {
-            @Override public Object call() throws ReflectiveOperationException {
-                shutdown();
-                return null;
-            }
-        });
         return ds;
     }
 
@@ -281,7 +399,11 @@ public abstract class Initializer {
             try {
                 ds.getConnection().close();     // Does the actual shutdown.
             } catch (SQLException e) {          // This is the expected exception.
-                final LogRecord record = new LogRecord(Level.CONFIG, e.getLocalizedMessage());  // Not WARNING.
+                Level level = Level.CONFIG;
+                if (e.getErrorCode() != 45000 || !"08006".equals(e.getSQLState())) {
+                    level = Level.WARNING;
+                }
+                final LogRecord record = new LogRecord(level, e.getLocalizedMessage());
                 record.setLoggerName(Loggers.SQL);
                 Logging.log(Initializer.class, "shutdown", record);
             }

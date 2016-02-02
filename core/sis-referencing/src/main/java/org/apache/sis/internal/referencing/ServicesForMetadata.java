@@ -19,10 +19,12 @@ package org.apache.sis.internal.referencing;
 import java.util.Map;
 import java.util.Iterator;
 import java.util.Collection;
+import java.util.Locale;
 import javax.measure.unit.Unit;
 import javax.measure.quantity.Length;
 
 import org.opengis.util.FactoryException;
+import org.opengis.util.InternationalString;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.IdentifiedObject;
@@ -44,6 +46,9 @@ import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.SingleOperation;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.CoordinateOperationFactory;
+import org.opengis.metadata.citation.Citation;
+import org.opengis.metadata.citation.OnLineFunction;
+import org.opengis.metadata.citation.OnlineResource;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.metadata.extent.GeographicExtent;
 import org.opengis.metadata.extent.VerticalExtent;
@@ -76,8 +81,11 @@ import org.apache.sis.internal.metadata.AxisDirections;
 import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.internal.referencing.provider.Affine;
 import org.apache.sis.internal.system.DefaultFactories;
+import org.apache.sis.internal.util.Constants;
 import org.apache.sis.util.collection.Containers;
+import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.Utilities;
 
 
@@ -86,10 +94,15 @@ import org.apache.sis.util.Utilities;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5
- * @version 0.6
+ * @version 0.7
  * @module
  */
 public final class ServicesForMetadata extends ReferencingServices {
+    /**
+     * Name of an {@link OnLineFunction} code list value, used for transferring information about the EPSG database.
+     */
+    public static final String CONNECTION = "CONNECTION";
+
     /**
      * Creates a new instance. This constructor is invoked by reflection only.
      */
@@ -649,5 +662,46 @@ public final class ServicesForMetadata extends ReferencingServices {
     @Override
     public boolean isHeuristicMatchForName(final IdentifiedObject object, final String name) {
         return IdentifiedObjects.isHeuristicMatchForName(object, name);
+    }
+
+    /**
+     * Returns information about the Apache SIS configuration.
+     * See super-class for a list of keys.
+     *
+     * @param  key A key identifying the information to return.
+     * @param  locale Language to use if possible.
+     * @return The information, or {@code null} if none.
+     */
+    @Override
+    public String getInformation(final String key, final Locale locale) {
+        switch (key) {
+            /*
+             * Get the version of the EPSG database and the version of the database software.
+             * This operation can be relatively costly as it may open a JDBC connection.
+             */
+            case Constants.EPSG: {
+                final Citation authority;
+                try {
+                    authority = CRS.getAuthorityFactory(Constants.EPSG).getAuthority();
+                } catch (FactoryException e) {
+                    final String msg = Exceptions.getLocalizedMessage(e, locale);
+                    return (msg != null) ? msg : e.toString();
+                }
+                if (authority != null) {
+                    final OnLineFunction f = OnLineFunction.valueOf(CONNECTION);
+                    for (final OnlineResource res : authority.getOnlineResources()) {
+                        if (f.equals(res.getFunction())) {
+                            final InternationalString i18n = res.getDescription();
+                            if (i18n != null) return i18n.toString(locale);
+                        }
+                    }
+                    final InternationalString i18n = authority.getTitle();
+                    if (i18n != null) return i18n.toString(locale);
+                }
+                return Vocabulary.getResources(locale).getString(Vocabulary.Keys.Untitled);
+            }
+            // More cases may be added in future SIS versions.
+        }
+        return super.getInformation(key, locale);
     }
 }

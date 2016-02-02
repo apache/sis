@@ -152,6 +152,13 @@
       </fileset>
     </concat>
 
+    <!-- Initializer implementations to be loaded by ServiceLoader. -->
+    <concat destfile="${build.classes.dir}/META-INF/services/org.apache.sis.internal.metadata.sql.Initializer" encoding="UTF-8" fixlastline="yes">
+      <fileset dir="${project.root}">
+        <include name="*/*/src/main/resources/META-INF/services/org.apache.sis.internal.metadata.sql.Initializer"/>
+      </fileset>
+    </concat>
+
     <!-- DataStoreProvider implementations to be loaded by ServiceLoader. -->
     <concat destfile="${build.classes.dir}/META-INF/services/org.apache.sis.storage.DataStoreProvider" encoding="UTF-8" fixlastline="yes">
       <fileset dir="${project.root}">

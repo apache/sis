@@ -219,6 +219,22 @@ public final class JDK8 {
     }
 
     /**
+     * Replaces the values for all entries in the given map.
+     *
+     * @param  <K>      The type of keys.
+     * @param  <V>      The type of values.
+     * @param  map      The map from where to replace the values.
+     * @param  function The function performing the value replacements.
+     *
+     * @since 0.7
+     */
+    public static <K,V> void replaceAll(final Map<K,V> map, BiFunction<? super K, ? super V, ? extends V> function) {
+        for (final Map.Entry<K,V> entry : map.entrySet()) {
+            entry.setValue(function.apply(entry.getKey(), entry.getValue()));
+        }
+    }
+
+    /**
      * Atomically computes and stores the value for the given key. This is a substitute for
      * {@link ConcurrentMap#compute(java.lang.Object, java.util.function.BiFunction)}
      * on pre-JDK8 branches.
