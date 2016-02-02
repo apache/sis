@@ -106,7 +106,7 @@ final class AuthorityFactories<T extends AuthorityFactory> extends LazySet<T> {
         synchronized (EPSG) {
             AuthorityFactory factory = EPSG[0];
             if (factory == null) try {
-                factory = new EPSGFactory();
+                factory = new EPSGFactory(null);
             } catch (FactoryException e) {
                 final LogRecord record = new LogRecord(Level.CONFIG, e.getLocalizedMessage());
                 record.setLoggerName(Loggers.CRS_FACTORY);

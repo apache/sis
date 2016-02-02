@@ -55,6 +55,13 @@ import java.nio.file.Path;
  * when first needed using the {@link DataSource} specified at construction time. The geodetic objects are cached
  * for reuse and the idle connections are closed after a timeout.
  *
+ * <div class="section">EPSG dataset creation</div>
+ * This class tries to automatically detect in which database schema are located the EPSG tables
+ * (see {@link SQLTranslator} for information on the search process). If the tables are not found,
+ * then the {@link #install(Connection)} method will be invoked for creating the EPSG schema.
+ * The {@code install(…)} method can perform its work only if the definition files are reachable
+ * on the classpath, or if the directory containing the files have been specified.
+ *
  * <div class="section">Note for subclasses</div>
  * If there is no cached object for a given code, then {@code EPSGFactory} creates an {@link EPSGDataAccess} instance
  * for performing the actual creation work. Developers who need to customize the geodetic object creation can override
@@ -117,6 +124,17 @@ public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> impl
     protected final MathTransformFactory mtFactory;
 
     /**
+     * The database schema where the EPSG tables are located, or {@code null} if no schema.
+     */
+    private final String schema;
+
+    /**
+     * The path where to search for EPSG definition files if {@code EPSGFactory} needs to create the database,
+     * or {@code null} for searching in the {@linkplain Class#getResource(String) resources} instead.
+     */
+    private final Path scriptDirectory;
+
+    /**
      * The translator from the SQL statements using MS-Access dialect to SQL statements using the dialect
      * of the actual database. If null, will be created when first needed.
      */
@@ -127,72 +145,110 @@ public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> impl
      *
      * @see #getLocale()
      */
-    private volatile Locale locale;
+    private final Locale locale;
 
     /**
-     * Creates a factory using the default data source and object factories.
-     * Invoking this constructor is equivalent to invoking the constructor below with a all arguments set to null.
-     *
-     * @throws FactoryException if the data source can not be obtained.
-     */
-    public EPSGFactory() throws FactoryException {
-        this(null, null, null, null, null, null, null);
-    }
-
-    /**
-     * Creates a factory using the given data source and object factories.
-     *
-     * <div class="section">Default argument values</div>
-     * Any or all arguments given to this constructor can be {@code null}, in which case default values are used.
+     * Creates a factory using the given configuration. The properties recognized by this constructor
+     * are listed in the table below. Any property not listed below will be ignored by this constructor.
+     * All properties are optional and can {@code null} or omitted, in which case default values are used.
      * Those default values are implementation-specific and may change in any future SIS version.
      *
-     * @param dataSource    The factory to use for creating {@link Connection}s to the EPSG database.
-     * @param nameFactory   The factory to use for creating {@link org.opengis.util.GenericName} instances.
-     * @param datumFactory  The factory to use for creating {@link Datum} instances.
-     * @param csFactory     The factory to use for creating {@link CoordinateSystem} instances.
-     * @param crsFactory    The factory to use for creating {@link CoordinateReferenceSystem} instances.
-     * @param copFactory    The factory to use for creating {@link CoordinateOperation} instances.
-     * @param mtFactory     The factory to use for creating {@link MathTransform} instances.
+     * <table class="sis">
+     *  <caption>Recognized properties</caption>
+     *  <tr>
+     *   <th>Key</th>
+     *   <th>Value class</th>
+     *   <th>Description</th>
+     *  </tr><tr>
+     *   <td>{@code dataSource}</td>
+     *   <td>{@link DataSource}</td>
+     *   <td>The factory to use for creating {@link Connection}s to the EPSG database.</td>
+     *  </tr><tr>
+     *   <td>{@code nameFactory}</td>
+     *   <td>{@link NameFactory}</td>
+     *   <td>The factory to use for creating {@link org.opengis.util.GenericName} instances.</td>
+     *  </tr><tr>
+     *   <td>{@code datumFactory}</td>
+     *   <td>{@link DatumAuthorityFactory}</td>
+     *   <td>The factory to use for creating {@link Datum} instances.</td>
+     *  </tr><tr>
+     *   <td>{@code csFactory}</td>
+     *   <td>{@link CSAuthorityFactory}</td>
+     *   <td>The factory to use for creating {@link CoordinateSystem} instances.</td>
+     *  </tr><tr>
+     *   <td>{@code crsFactory}</td>
+     *   <td>{@link CRSAuthorityFactory}</td>
+     *   <td>The factory to use for creating {@link CoordinateReferenceSystem} instances.</td>
+     *  </tr><tr>
+     *   <td>{@code copFactory}</td>
+     *   <td>{@link CoordinateOperationAuthorityFactory}</td>
+     *   <td>The factory to use for creating {@link CoordinateOperation} instances.</td>
+     *  </tr><tr>
+     *   <td>{@code mtFactory}</td>
+     *   <td>{@link MathTransformFactory}</td>
+     *   <td>The factory to use for creating {@link MathTransform} instances.</td>
+     *  </tr><tr>
+     *   <td>{@code schema}</td>
+     *   <td>{@link String}</td>
+     *   <td>The database schema where the EPSG tables are located (see {@linkplain #install install}).</td>
+     *  </tr><tr>
+     *   <td>{@code scriptDirectory}</td>
+     *   <td>{@link java.nio.file.Path}, {@link java.io.File} or {@link java.net.URL}</td>
+     *   <td>The directory where the EPSG definition files are located (see {@linkplain #install install}).</td>
+     *  </tr><tr>
+     *   <td>{@code locale}</td>
+     *   <td>{@link Locale}</td>
+     *   <td>The locale for producing error messages on a <cite>best effort</cite> basis.</td>
+     *  </tr>
+     * </table>
+     *
+     * @param  properties The data source, authority factories and other configuration properties,
+     *                    or {@code null} for the default values.
+     * @throws ClassCastException if a property value is not of the expected class.
+     * @throws IllegalArgumentException if a property value is invalid.
      * @throws FactoryException if an error occurred while creating the EPSG factory.
      */
-    public EPSGFactory(final DataSource                 dataSource,
-                       final NameFactory                nameFactory,
-                       final DatumFactory               datumFactory,
-                       final CSFactory                  csFactory,
-                       final CRSFactory                 crsFactory,
-                       final CoordinateOperationFactory copFactory,
-                       final MathTransformFactory       mtFactory)
-            throws FactoryException
-    {
+    public EPSGFactory(Map<String,?> properties) throws FactoryException {
         super(EPSGDataAccess.class);
-        if (dataSource != null) {
-            this.dataSource = dataSource;
-        } else try {
-            this.dataSource = Initializer.getDataSource();
-            if (this.dataSource == null) {
-                throw new UnavailableFactoryException(Initializer.unspecified(null));
+        if (properties == null) {
+            properties = Collections.emptyMap();
+        }
+        DataSource ds   = (DataSource) properties.get("dataSource");
+        Locale locale   = ObjectConverters.convert(properties.get("locale"), Locale.class);
+        String schema   = ObjectConverters.convert(properties.get("schema"), String.class);
+        scriptDirectory = ObjectConverters.convert(properties.get("scriptDirectory"), Path.class);
+        if (locale == null) {
+            locale = Locale.getDefault(Locale.Category.DISPLAY);
+        }
+        if (schema == null && !properties.containsKey("schema")) {
+            schema = Constants.EPSG;
+        }
+        this.locale = locale;
+        this.schema = schema;
+        if (ds == null) try {
+            ds = Initializer.getDataSource();
+            if (ds == null) {
+                throw new UnavailableFactoryException(Initializer.unspecified(locale));
             }
         } catch (Exception e) {
             throw new UnavailableFactoryException(e.getLocalizedMessage(), e);
         }
-        this.nameFactory  = factory(NameFactory.class, nameFactory);
-        this.datumFactory = factory(DatumFactory.class, datumFactory);
-        this.csFactory    = factory(CSFactory.class, csFactory);
-        this.crsFactory   = factory(CRSFactory.class, crsFactory);
-        this.copFactory   = factory(CoordinateOperationFactory.class, copFactory);
-        this.mtFactory    = factory(MathTransformFactory.class, mtFactory);
-        this.locale       = Locale.getDefault(Locale.Category.DISPLAY);
+        dataSource   = ds;
+        nameFactory  = factory(NameFactory.class,                "nameFactory",  properties);
+        datumFactory = factory(DatumFactory.class,               "datumFactory", properties);
+        csFactory    = factory(CSFactory.class,                  "csFactory",    properties);
+        crsFactory   = factory(CRSFactory.class,                 "crsFactory",   properties);
+        copFactory   = factory(CoordinateOperationFactory.class, "copFactory",   properties);
+        mtFactory    = factory(MathTransformFactory.class,       "mtFactory",    properties);
         super.setTimeout(10, TimeUnit.SECONDS);
     }
 
     /**
-     * Returns the given factory if non-null, or the default factory instance otherwise.
+     * Returns the factory for the given key if it exists, or the default factory instance otherwise.
      */
-    private static <F> F factory(final Class<F> type, F factory) {
-        if (factory == null) {
-            factory = DefaultFactories.forBuildin(type);
-        }
-        return factory;
+    private static <F> F factory(final Class<F> type, final String key, final Map<String,?> properties) {
+        final F factory = type.cast(properties.get(key));
+        return (factory != null) ? factory : DefaultFactories.forBuildin(type);
     }
 
     /**
@@ -217,27 +273,15 @@ public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> impl
     }
 
     /**
-     * Sets the locale to use for producing error messages.
-     * The given locale will be honored on a <cite>best effort</cite> basis.
-     * It does not change the way data are read from the EPSG database.
-     *
-     * @param locale The new locale to use for error message.
-     */
-    public void setLocale(final Locale locale) {
-        ArgumentChecks.ensureNonNull("locale", locale);
-        this.locale = locale;
-    }
-
-    /**
      * Creates the EPSG schema in the database and populates the tables with geodetic definitions.
      * This method is invoked automatically when {@link #newDataAccess()} detects that the EPSG dataset is not installed.
-     * Users can also invoke this method explicitely if they wish to install the dataset with custom properties.
+     * Users can also invoke this method explicitely if they wish to force the dataset installation.
      *
-     * <p>The {@code properties} map is optional.
-     * If non-null, the following properties are recognized (all other properties are ignored):</p>
+     * <p>This method uses the following properties from the map specified at
+     * {@linkplain #EPSGFactory(Map) construction time}:</p>
      *
      * <ul class="verbose">
-     *   <li><b>{@code schema}:</b>
+     *   <li><b>{@code schema}:</b><br>
      *     a {@link String} giving the name of the database schema where to create the tables.
      *     That schema shall not exist prior this method call as it will be created by this {@code install(…)} method.
      *     If no schema is specified or if the schema is null, then the tables will be created without schema.
@@ -245,7 +289,7 @@ public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> impl
      *     schema in table definitions} or in {@linkplain DatabaseMetaData#supportsSchemasInDataManipulation()
      *     data manipulation}, then this property is ignored.</li>
      *
-     *   <li><b>{@code scriptDirectory}:</b>
+     *   <li><b>{@code scriptDirectory}:</b><br>
      *     a {@link java.nio.file.Path}, {@link java.io.File} or {@link java.net.URL} to a directory containing
      *     the SQL scripts to execute. If non-null, that directory shall contain at least files matching the
      *     {@code *Tables*.sql}, {@code *Data*.sql} and {@code *FKeys*.sql} patterns (those files are provided by EPSG).
@@ -262,17 +306,11 @@ public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> impl
      * See <a href="https://issues.apache.org/jira/browse/LEGAL-183">LEGAL-183</a> for more information.</p>
      *
      * @param  connection Connection to the database where to create the EPSG schema.
-     * @param  properties Properties controlling the schema name and location of SQL scripts, or {@code null} if none.
      * @throws IOException if the SQL script can not be found or an I/O error occurred while reading them.
      * @throws SQLException if an error occurred while writing to the database.
      */
-    public synchronized void install(final Connection connection, Map<?,?> properties) throws IOException, SQLException {
+    public synchronized void install(final Connection connection) throws IOException, SQLException {
         ArgumentChecks.ensureNonNull("connection", connection);
-        if (properties == null) {
-            properties = Collections.emptyMap();
-        }
-        final String schema = ObjectConverters.convert(properties.get("schema"), String.class);
-        final Path scriptDirectory = ObjectConverters.convert(properties.get("scriptDirectory"), Path.class);
         try (EPSGInstaller installer = new EPSGInstaller(connection)) {
             final boolean ac = connection.getAutoCommit();
             if (ac) {
@@ -310,7 +348,7 @@ public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> impl
      * <ol>
      *   <li>Gets a new connection from the {@link #dataSource}.</li>
      *   <li>If this method is invoked for the first time, verifies if the EPSG tables exists.
-     *       If the tables are not found, invokes {@link #install(Connection, Map)}.</li>
+     *       If the tables are not found, invokes {@link #install(Connection)}.</li>
      *   <li>Delegates to {@link #newDataAccess(Connection, SQLTranslator)}, which provides an easier
      *       overriding point for subclasses wanting to return a custom {@link EPSGDataAccess} instance.</li>
      * </ol>
@@ -332,7 +370,7 @@ public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> impl
                         tr = new SQLTranslator(connection.getMetaData());
                         try {
                             if (!tr.isSchemaFound()) {
-                                install(connection, Collections.singletonMap("schema", Constants.EPSG));
+                                install(connection);
                                 tr.setSchemaFound(connection.getMetaData());   // Set only on success.
                             }
                         } finally {
