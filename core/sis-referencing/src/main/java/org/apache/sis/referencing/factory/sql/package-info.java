@@ -38,7 +38,7 @@
  * A widely-used factory is the <a href="http://www.epsg.org">EPSG geodetic dataset</a>.
  * EPSG codes are numerical identifiers.
  * For example {@code "EPSG::4326"} is the EPSG identifier for the <cite>"WGS 84"</cite> geographic CRS.
- * However, the Apache SIS implementation accepts names as well as numeric identifiers.
+ * As an extension, the Apache SIS implementation accepts names as well as numeric identifiers.
  * For example {@code createProjectedCRS("NTF (Paris) / Lambert zone II")} and {@code createProjectedCRS("27572")}
  * both fetch the same object. However names may be ambiguous since the same name may be used for more than one object.
  * This is the case of <cite>"WGS 84"</cite> for example. If such an ambiguity is found, an exception will be thrown.
