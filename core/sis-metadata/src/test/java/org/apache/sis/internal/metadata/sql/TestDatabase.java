@@ -18,6 +18,7 @@ package org.apache.sis.internal.metadata.sql;
 
 import java.sql.SQLException;
 import javax.sql.DataSource;
+import org.apache.sis.util.Debug;
 import org.apache.sis.internal.system.DataDirectory;
 
 import static org.junit.Assume.*;
@@ -37,6 +38,17 @@ import java.nio.file.Path;
  * @module
  */
 public final strictfp class TestDatabase {
+    /**
+     * Data source to an alternative database to use for testing purpose.
+     * If {@code null}, an in-memory Derby or JavaDB database will be used.
+     *
+     * This field is occasionally set to a non-null value (e.g. a connection to a PostgreSQL database) only for
+     * debugging purpose. In such case, it is developer responsibility to ensure that the appropriate driver is
+     * registered in his development environment (we may not declare them in the {@code pom.xml} file).
+     */
+    @Debug
+    private static final DataSource TEST_DATABASE = null;
+
     /**
      * Do not allow (for now) instantiation of this class.
      */
@@ -67,6 +79,9 @@ public final strictfp class TestDatabase {
      * @throws Exception if an error occurred while creating the database.
      */
     public static DataSource create(final String name) throws Exception {
+        if (TEST_DATABASE != null) {
+            return TEST_DATABASE;
+        }
         final DataSource ds;
         try {
             ds = Initializer.forJavaDB("memory:" + name);
@@ -85,12 +100,15 @@ public final strictfp class TestDatabase {
      * @throws Exception if an error occurred while dropping the database.
      */
     public static void drop(final DataSource ds) throws Exception {
+        if (ds == TEST_DATABASE) {
+            return;
+        }
         ds.getClass().getMethod("setCreateDatabase", String.class).invoke(ds, "no");
         ds.getClass().getMethod("setConnectionAttributes", String.class).invoke(ds, "drop=true");
         try {
             ds.getConnection();
         } catch (SQLException e) {          // This is the expected exception.
-            if (e.getErrorCode() != 45000 || !"08006".equals(e.getSQLState())) {
+            if (!Initializer.isNormalShutdown(e)) {
                 throw e;
             }
         }

@@ -46,7 +46,7 @@ public final strictfp class EPSGInstallerTest extends TestCase {
      */
     @Test
     public void testCreationOnDerby() throws Exception {
-        final Path scripts = TestDatabase.directory("Scripts");
+        final Path scripts = TestDatabase.directory("ExternalSources");
         final DataSource ds = TestDatabase.create("test");
         try (Connection c = ds.getConnection()) {
             try (EPSGInstaller installer = new EPSGInstaller(c)) {

@@ -415,7 +415,7 @@ public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> impl
                         try {
                             if (!tr.isTableFound()) {
                                 install(connection);
-                                tr.setup(connection.getMetaData());   // Set only on success.
+                                tr.setup(connection.getMetaData());         // Set only on success.
                             }
                         } finally {
                             translator = tr;        // Set only after installation in order to block other threads.

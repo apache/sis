@@ -19,7 +19,6 @@ package org.apache.sis.internal.metadata.sql;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Locale;
-import java.util.function.BiFunction;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -34,6 +33,9 @@ import org.apache.sis.util.Debug;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.resources.Errors;
+
+// Branch-specific imports
+import java.util.function.BiFunction;
 
 
 /**
