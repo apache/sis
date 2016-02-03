@@ -41,6 +41,7 @@ import org.apache.sis.util.logging.PerformanceLevel;
 // Branch-specific imports
 import java.nio.file.Files;
 import java.nio.file.Path;
+import org.apache.sis.util.CharSequences;
 
 
 /**
@@ -169,6 +170,14 @@ final class EPSGInstaller extends ScriptRunner {
      */
     @Override
     protected int execute(final StringBuilder sql) throws SQLException, IOException {
+        /*
+         * The SQL scripts provided by EPSG contains some lines with only a "COMMIT" statement.
+         * This statement is not understood by all databases, and interferes with our calls to
+         * setAutoCommit(false) ... commit() / rollback().
+         */
+        if (CharSequences.equalsIgnoreCase(sql, "COMMIT")) {
+            return 0;
+        }
         if (statementToSkip != null && statementToSkip.reset(sql).matches()) {
             return 0;
         }

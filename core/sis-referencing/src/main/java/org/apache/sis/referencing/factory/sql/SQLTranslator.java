@@ -58,13 +58,15 @@ import java.util.function.Function;
  *   <li>{@code SELECT * FROM epsg."Coordinate Reference System"}</li>
  * </ul></div>
  *
- * In addition to the MS-Access format, EPSG also provides the dataset as <cite>Data Description Language</cite> (DDL)
- * scripts for PostgreSQL, MySQL and Oracle databases. But the table names and some column names in those scripts differ
- * from the ones used in the MS-Access database. The following table summarizes the name changes:
+ * In addition to the file in MS-Access format, EPSG also provides the dataset as SQL files for PostgreSQL,
+ * MySQL and Oracle databases. Those SQL files are used as both <cite>Data Description Language</cite> (DDL)
+ * and <cite>Data Manipulation Language</cite> (DML).
+ * But the table names and some column names in those scripts differ from the ones used in the MS-Access database.
+ * The following table summarizes the name changes:
  *
  * <table class="sis">
  *   <caption>Table and column names</caption>
- *   <tr><th>Element</th><th>Name in MS-Access database</th>                    <th>Name in DDL scripts</th></tr>
+ *   <tr><th>Element</th><th>Name in MS-Access database</th>                    <th>Name in SQL scripts</th></tr>
  *   <tr><td>Table</td>  <td>{@code Alias}</td>                                 <td>{@code epsg_alias}</td></tr>
  *   <tr><td>Table</td>  <td>{@code Area}</td>                                  <td>{@code epsg_area}</td></tr>
  *   <tr><td>Table</td>  <td>{@code Coordinate Axis}</td>                       <td>{@code epsg_coordinateaxis}</td></tr>
@@ -191,8 +193,8 @@ public class SQLTranslator implements Function<String,String> {
 
     /**
      * Creates a new SQL translator for the database described by the given metadata.
-     * This constructor detects automatically the dialect: the characters to use for quoting identifiers, and whether
-     * the table names are the ones used in the MS-Access database or in the Data Definition Language (DDL) scripts.
+     * This constructor detects automatically the dialect: the characters to use for quoting identifiers,
+     * and whether the table names are the ones used in the MS-Access database or in the SQL scripts.
      *
      * <p>If the given catalog or schema name is non-null, then the {@linkplain DatabaseMetaData#getTables
      * search for EPSG tables} will be restricted to the catalog or schema of that name.
