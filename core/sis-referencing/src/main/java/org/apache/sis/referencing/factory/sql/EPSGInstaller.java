@@ -33,6 +33,7 @@ import org.apache.sis.util.StringBuilders;
 import org.apache.sis.internal.metadata.sql.ScriptRunner;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.util.Constants;
+import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Messages;
 import org.apache.sis.util.logging.Logging;
@@ -158,12 +159,19 @@ final class EPSGInstaller extends ScriptRunner {
             replace(SQLTranslator.TABLE_PREFIX + "supersession",               "Supersession");
             replace(SQLTranslator.TABLE_PREFIX + "unitofmeasure",              "Unit of Measure");
             replace(SQLTranslator.TABLE_PREFIX + "versionhistory",             "Version History");
-            modifyReplacements(new BiFunction<String,String,String>() {
-                @Override public String apply(String key, String value) {
-                    return schema + '.' + identifierQuote + value + identifierQuote;
-                }
-            });
+            prependNamespace(schema);
         }
+    }
+
+    /**
+     * Prepends the given schema or catalog to all table names.
+     */
+    final void prependNamespace(final String schema) {
+        modifyReplacements(new BiFunction<String,String,String>() {
+            @Override public String apply(String key, String value) {
+                return schema + '.' + identifierQuote + value + identifierQuote;
+            }
+        });
     }
 
     /**
@@ -174,6 +182,14 @@ final class EPSGInstaller extends ScriptRunner {
      */
     @Override
     protected int execute(final StringBuilder sql) throws SQLException, IOException {
+        /*
+         * The SQL scripts provided by EPSG contains some lines with only a "COMMIT" statement.
+         * This statement is not understood by all databases, and interferes with our calls to
+         * setAutoCommit(false) ... commit() / rollback().
+         */
+        if (CharSequences.equalsIgnoreCase(sql, "COMMIT")) {
+            return 0;
+        }
         if (statementToSkip != null && statementToSkip.reset(sql).matches()) {
             return 0;
         }

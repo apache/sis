@@ -328,7 +328,8 @@ public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> impl
      *     a {@link String} giving the name of the database schema where to create the EPSG tables.
      *     That schema shall <strong>not</strong> exist prior this method call;
      *     the schema will be created by this {@code install(…)} method.
-     *     If no schema is specified or if the schema an empty string, then the tables will be created without schema.
+     *     If the schema is an empty string, then the tables will be created without schema.
+     *     If no schema is specified, then the default schema is {@code "EPSG"}.
      *     If the database does not {@linkplain DatabaseMetaData#supportsSchemasInTableDefinitions() support
      *     schemas in table definitions} or in {@linkplain DatabaseMetaData#supportsSchemasInDataManipulation()
      *     data manipulation}, then this property is ignored.</li>
@@ -362,8 +363,11 @@ public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> impl
             }
             boolean success = false;
             try {
-                if (schema != null) {
-                    installer.setSchema(schema);
+                if (!"".equals(schema)) {                                               // Schema may be null.
+                    installer.setSchema(schema != null ? schema : Constants.EPSG);
+                    if (catalog != null && !catalog.isEmpty()) {
+                        installer.prependNamespace(catalog);
+                    }
                 }
                 installer.run(scriptDirectory);
                 success = true;
@@ -415,7 +419,7 @@ public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> impl
                         try {
                             if (!tr.isTableFound()) {
                                 install(connection);
-                                tr.setup(connection.getMetaData());   // Set only on success.
+                                tr.setup(connection.getMetaData());         // Set only on success.
                             }
                         } finally {
                             translator = tr;        // Set only after installation in order to block other threads.
