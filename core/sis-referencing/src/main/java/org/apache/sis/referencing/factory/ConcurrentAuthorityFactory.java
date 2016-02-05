@@ -503,7 +503,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
 
     /**
      * Confirms that the given factories can be closed. If any factory is still in use,
-     * it will be removed from that {@cod factories} list and re-injected in the {@link #availableDAOs} queue.
+     * it will be removed from that {@code factories} list and re-injected in the {@link #availableDAOs} queue.
      */
     private void confirmClose(final List<DAO> factories) {
         assert !Thread.holdsLock(availableDAOs);

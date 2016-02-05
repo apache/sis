@@ -114,7 +114,7 @@ public enum DataDirectory {
     public static synchronized Path getRootDirectory() {
         if (rootDirectory == null) try {
             final String dir = System.getenv(ENV);
-            if (dir == null) {
+            if (dir == null || dir.isEmpty()) {
                 warning("getRootDirectory", null, Messages.Keys.DataDirectoryNotSpecified_1, ENV);
             } else try {
                 final Path path = Paths.get(dir);

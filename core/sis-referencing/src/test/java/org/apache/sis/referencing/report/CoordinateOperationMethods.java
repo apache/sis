@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.referencing.provider;
+package org.apache.sis.referencing.report;
 
 import java.util.Map;
 import java.util.HashMap;
@@ -35,18 +35,19 @@ import org.opengis.referencing.crs.GeneralDerivedCRS;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.util.PatchedUnitFormat;
+import org.apache.sis.internal.referencing.provider.Affine;
+import org.apache.sis.internal.referencing.provider.LambertConformal2SP;
 import org.apache.sis.measure.Range;
 import org.apache.sis.measure.Latitude;
 import org.apache.sis.measure.Longitude;
 import org.apache.sis.measure.RangeFormat;
-import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.parameter.Parameters;
-import org.apache.sis.referencing.CRS;
+import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.referencing.operation.DefaultOperationMethod;
+import org.apache.sis.referencing.CRS;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Characters;
 import org.apache.sis.util.Numbers;
-import org.apache.sis.test.HTMLGenerator;
 
 // Branch-dependent imports
 import org.apache.sis.internal.jdk8.JDK8;
@@ -65,10 +66,10 @@ import org.apache.sis.internal.jdk8.JDK8;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.6
- * @version 0.6
+ * @version 0.7
  * @module
  */
-public final strictfp class CoordinateOperationMethodsHTML extends HTMLGenerator {
+public strictfp class CoordinateOperationMethods extends HTMLGenerator {
     /**
      * Generates the HTML report.
      *
@@ -94,7 +95,7 @@ public final strictfp class CoordinateOperationMethodsHTML extends HTMLGenerator
                 return c;
             }
         });
-        final CoordinateOperationMethodsHTML writer = new CoordinateOperationMethodsHTML();
+        final CoordinateOperationMethods writer = new CoordinateOperationMethods();
         try {
             writer.writeIndex(methods);
             for (final OperationMethod method : methods) {
@@ -118,9 +119,8 @@ public final strictfp class CoordinateOperationMethodsHTML extends HTMLGenerator
      * @todo Not yet completed.
      */
     private final GeneralParameterDescriptor defaultToLatitudeOfOrigin[] = {
-//      AlbersEqualArea        .PARAMETERS.descriptor("Latitude of 1st standard parallel"),
-        LambertConformal2SP    .PARAMETERS.descriptor("Latitude of 1st standard parallel"),
-        LambertConformalBelgium.PARAMETERS.descriptor("Latitude of 1st standard parallel")
+//      AlbersEqualArea    .PARAMETERS.descriptor("Latitude of 1st standard parallel"),
+        LambertConformal2SP.STANDARD_PARALLEL_1
     };
 
     /**
@@ -130,9 +130,8 @@ public final strictfp class CoordinateOperationMethodsHTML extends HTMLGenerator
      * @todo Not yet completed.
      */
     private final GeneralParameterDescriptor defaultToStandardParallel1[] = {
-//      AlbersEqualArea        .PARAMETERS.descriptor("Latitude of 2nd standard parallel"),
-        LambertConformal2SP    .PARAMETERS.descriptor("Latitude of 2nd standard parallel"),
-        LambertConformalBelgium.PARAMETERS.descriptor("Latitude of 2nd standard parallel")
+//      AlbersEqualArea    .PARAMETERS.descriptor("Latitude of 2nd standard parallel"),
+        LambertConformal2SP.STANDARD_PARALLEL_2
     };
 
     /**
@@ -165,9 +164,9 @@ public final strictfp class CoordinateOperationMethodsHTML extends HTMLGenerator
      *
      * @throws IOException if an error occurred while writing to the file.
      */
-    public CoordinateOperationMethodsHTML() throws IOException {
+    public CoordinateOperationMethods() throws IOException {
         super("CoordinateOperationMethods.html", "Apache SIS Coordinate Operation Methods");
-        domainOfValidity = Collections.emptyMap(); // TODO: not yet available.
+        domainOfValidity = Collections.emptyMap();      // TODO: not yet available.
         rangeFormat = new RangeFormat(LOCALE);
         final int header = openTag("header");
         println("h1", "Apache SIS™ Coordinate Operation Methods");
@@ -330,7 +329,7 @@ public final strictfp class CoordinateOperationMethodsHTML extends HTMLGenerator
         println("th class=\"sep\"", "Remarks");
         println("th class=\"sep\" colspan=\"3\"", "Value domain");
         println("th class=\"sep\"", "Default");
-        final Map<String, Integer> footnotes = new LinkedHashMap<String, Integer>();
+        final Map<String,Integer> footnotes = new LinkedHashMap<String,Integer>();
         for (final GeneralParameterDescriptor gp : group.descriptors()) {
             if (isDeprecated(gp)) {
                 continue;   // Hide deprecated parameters.
@@ -420,8 +419,7 @@ public final strictfp class CoordinateOperationMethodsHTML extends HTMLGenerator
     public static Map<String, DefaultGeographicBoundingBox> computeUnionOfAllDomainOfValidity(
             final CRSAuthorityFactory factory) throws FactoryException
     {
-        final Map<String, DefaultGeographicBoundingBox> domainOfValidity =
-                new HashMap<String, DefaultGeographicBoundingBox>();
+        final Map<String, DefaultGeographicBoundingBox> domainOfValidity = new HashMap<String, DefaultGeographicBoundingBox>();
         for (final String code : factory.getAuthorityCodes(GeneralDerivedCRS.class)) {
             final CoordinateReferenceSystem crs;
             try {

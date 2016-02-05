@@ -201,6 +201,7 @@ import org.junit.BeforeClass;
     org.apache.sis.referencing.factory.IdentifiedObjectFinderTest.class,
     org.apache.sis.referencing.factory.MultiAuthoritiesFactoryTest.class,
     org.apache.sis.referencing.factory.sql.EPSGFactoryTest.class,
+    org.apache.sis.referencing.factory.sql.EPSGInstallerTest.class,
     org.apache.sis.referencing.EPSGFactoryFallbackTest.class,
     org.apache.sis.referencing.AuthorityFactoriesTest.class,
     org.apache.sis.referencing.CRSTest.class,
@@ -217,7 +218,7 @@ import org.junit.BeforeClass;
     org.apache.sis.geometry.CurveExtremumTest.class,
     org.apache.sis.geometry.EnvelopesTest.class,
 
-    org.apache.sis.distance.LatLonPointRadiusTest.class, // Pending refactoring in a geometry package.
+    org.apache.sis.distance.LatLonPointRadiusTest.class,        // Pending refactoring in a geometry package.
 
     org.apache.sis.referencing.operation.builder.LinearTransformBuilderTest.class,
     org.apache.sis.internal.referencing.ServicesForMetadataTest.class,
