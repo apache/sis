@@ -206,6 +206,11 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final short EllipsoidalHeight = 18;
 
         /**
+         * Geodetic dataset
+         */
+        public static final short GeodeticDataset = 95;
+
+        /**
          * Height
          */
         public static final short Height = 69;
