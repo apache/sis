@@ -398,7 +398,7 @@ public abstract class Initializer {
                 ds.getConnection().close();     // Does the actual shutdown.
             } catch (SQLException e) {          // This is the expected exception.
                 final LogRecord record = new LogRecord(Level.CONFIG, e.getLocalizedMessage());
-                if (!isNormalShutdown(e)) {
+                if (!isSuccessfulShutdown(e)) {
                     record.setLevel(Level.WARNING);
                     record.setThrown(e);
                 }
@@ -409,12 +409,12 @@ public abstract class Initializer {
     }
 
     /**
-     * Returns {@code true} if the given exception is the one that we expect in a normal shutdown of a Derby database.
+     * Returns {@code true} if the given exception is the one that we expect in successful shutdown of a Derby database.
      *
      * @param e The exception thrown by Derby.
      * @return {@code true} if the exception indicates a successful shutdown.
      */
-    static boolean isNormalShutdown(final SQLException e) {
+    static boolean isSuccessfulShutdown(final SQLException e) {
         return e.getErrorCode() == 45000 && "08006".equals(e.getSQLState());
     }
 }
