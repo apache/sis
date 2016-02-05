@@ -106,9 +106,9 @@ public final strictfp class TestDatabase {
         ds.getClass().getMethod("setCreateDatabase", String.class).invoke(ds, "no");
         ds.getClass().getMethod("setConnectionAttributes", String.class).invoke(ds, "drop=true");
         try {
-            ds.getConnection();
+            ds.getConnection().close();
         } catch (SQLException e) {          // This is the expected exception.
-            if (!Initializer.isNormalShutdown(e)) {
+            if (!Initializer.isSuccessfulShutdown(e)) {
                 throw e;
             }
         }

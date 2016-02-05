@@ -581,7 +581,7 @@ parseLine:  while (pos < length) {
                             }
                         }
                         // The remaining of the statement to be executed.
-                        int end = CharSequences.skipTrailingWhitespaces(sql, begin, sql.length());
+                        int end = CharSequences.skipTrailingWhitespaces(subSQL, begin, subSQL.length());
                         subSQL = (end > begin) ? sql.append(subSQL, begin, end).toString() : null;
                     }
                 }

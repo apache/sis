@@ -158,8 +158,15 @@ final class EPSGInstaller extends ScriptRunner {
             replace(SQLTranslator.TABLE_PREFIX + "supersession",               "Supersession");
             replace(SQLTranslator.TABLE_PREFIX + "unitofmeasure",              "Unit of Measure");
             replace(SQLTranslator.TABLE_PREFIX + "versionhistory",             "Version History");
-            modifyReplacements((String key, String value) -> schema + '.' + identifierQuote + value + identifierQuote);
+            prependNamespace(schema);
         }
+    }
+
+    /**
+     * Prepends the given schema or catalog to all table names.
+     */
+    final void prependNamespace(final String schema) {
+        modifyReplacements((key, value) -> schema + '.' + identifierQuote + value + identifierQuote);
     }
 
     /**
