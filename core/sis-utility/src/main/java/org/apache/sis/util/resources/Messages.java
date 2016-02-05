@@ -67,6 +67,11 @@ public final class Messages extends IndexedResourceBundle {
         public static final short AmbiguousEllipsoid_1 = 30;
 
         /**
+         * Can not create the {0} schema in database.
+         */
+        public static final short CanNotCreateSchema_1 = 41;
+
+        /**
          * Can not instantiate the object of type ‘{0}’ identified by “{1}”. Reason is:{2}
          */
         public static final short CanNotInstantiateForIdentifier_3 = 35;
@@ -111,6 +116,11 @@ public final class Messages extends IndexedResourceBundle {
          * Created an instance of ‘{0}’ named “{1}”.
          */
         public static final short CreatedNamedObject_2 = 16;
+
+        /**
+         * Creating {0} schema in the “{1}” database.
+         */
+        public static final short CreatingSchema_2 = 39;
 
         /**
          * {0} dataset version {1} on “{2}” version {3}.
@@ -191,6 +201,11 @@ public final class Messages extends IndexedResourceBundle {
          * Parsing of “{0}” done, but some elements were ignored.
          */
         public static final short IncompleteParsing_1 = 14;
+
+        /**
+         * Inserted {0} records in {1} seconds.
+         */
+        public static final short InsertDuration_2 = 40;
 
         /**
          * No object associated to the “{0}” JNDI name.

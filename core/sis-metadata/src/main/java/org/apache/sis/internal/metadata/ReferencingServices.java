@@ -18,6 +18,7 @@ package org.apache.sis.internal.metadata;
 
 import java.util.Map;
 import java.util.Collections;
+import java.util.Locale;
 import javax.measure.unit.Unit;
 import javax.measure.quantity.Length;
 import org.opengis.geometry.Envelope;
@@ -596,5 +597,24 @@ public class ReferencingServices extends OptionalDependency {
             return method;
         }
         throw new NoSuchIdentifierException(Errors.format(Errors.Keys.NoSuchOperationMethod_1, identifier), identifier);
+    }
+
+    /**
+     * Returns information about the Apache SIS configuration to be reported in {@link org.apache.sis.setup.About}.
+     * This method is invoked only for aspects that depends on other modules than {@code sis-utility}.
+     *
+     * <p>Current keys are:</p>
+     * <ul>
+     *   <li>{@code "EPSG"}: version of EPSG database.</li>
+     * </ul>
+     *
+     * @param  key A key identifying the information to return.
+     * @param  locale Language to use if possible.
+     * @return The information, or {@code null} if none.
+     *
+     * @see org.apache.sis.internal.util.MetadataServices#getInformation(String)
+     */
+    public String getInformation(String key, Locale locale) {
+        return null;
     }
 }

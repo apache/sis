@@ -276,6 +276,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final short EmptyProperty_1 = 23;
 
         /**
+         * An error occurred in file “{0}” at Line {1}.
+         */
+        public static final short ErrorInFileAtLine_2 = 216;
+
+        /**
          * Error in “{0}”: {1}
          */
         public static final short ErrorIn_2 = 190;

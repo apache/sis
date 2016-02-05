@@ -25,6 +25,7 @@ import java.io.OutputStreamWriter;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.RandomAccessFile;
 import java.nio.channels.ByteChannel;
 import java.nio.charset.Charset;
@@ -121,6 +122,20 @@ public final class Files {
      */
     public static boolean exists(final Path path) {
         return path.exists();
+    }
+
+    /**
+     * Creates a new input stream. The input stream is intentionally not buffered;
+     * it is caller's responsibility to provide buffering.
+     *
+     * @param path The path of the file to read.
+     * @return The input stream.
+     * @throws IOException if an error occurred while creating the input stream.
+     *
+     * @since 0.7
+     */
+    public static InputStream newInputStream(final Path path) throws IOException {
+        return new FileInputStream(path);
     }
 
     /**
