@@ -345,7 +345,7 @@ public abstract class Initializer {
      * @return The data source.
      * @throws Exception if the data source can not be created.
      */
-    public static DataSource forJavaDB(final String path) throws Exception {
+    static DataSource forJavaDB(final String path) throws Exception {
         try {
             return forJavaDB(path, Thread.currentThread().getContextClassLoader());
         } catch (ClassNotFoundException e) {
@@ -399,14 +399,24 @@ public abstract class Initializer {
             try {
                 ds.getConnection().close();     // Does the actual shutdown.
             } catch (SQLException e) {          // This is the expected exception.
-                Level level = Level.CONFIG;
-                if (e.getErrorCode() != 45000 || !"08006".equals(e.getSQLState())) {
-                    level = Level.WARNING;
+                final LogRecord record = new LogRecord(Level.CONFIG, e.getLocalizedMessage());
+                if (!isSuccessfulShutdown(e)) {
+                    record.setLevel(Level.WARNING);
+                    record.setThrown(e);
                 }
-                final LogRecord record = new LogRecord(level, e.getLocalizedMessage());
                 record.setLoggerName(Loggers.SQL);
                 Logging.log(Initializer.class, "shutdown", record);
             }
         }
+    }
+
+    /**
+     * Returns {@code true} if the given exception is the one that we expect in successful shutdown of a Derby database.
+     *
+     * @param e The exception thrown by Derby.
+     * @return {@code true} if the exception indicates a successful shutdown.
+     */
+    static boolean isSuccessfulShutdown(final SQLException e) {
+        return e.getErrorCode() == 45000 && "08006".equals(e.getSQLState());
     }
 }
