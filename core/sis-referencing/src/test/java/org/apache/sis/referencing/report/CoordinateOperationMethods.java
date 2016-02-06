@@ -25,7 +25,6 @@ import java.util.Collections;
 import java.io.IOException;
 import org.opengis.util.FactoryException;
 import org.opengis.util.GenericName;
-import org.opengis.metadata.Identifier;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.parameter.*;
 import org.opengis.referencing.operation.*;
@@ -48,6 +47,9 @@ import org.apache.sis.referencing.CRS;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Characters;
 import org.apache.sis.util.Numbers;
+
+// Branch-dependent imports
+import org.opengis.metadata.Identifier;
 
 
 /**
