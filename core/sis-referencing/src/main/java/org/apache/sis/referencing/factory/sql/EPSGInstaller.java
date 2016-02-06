@@ -33,6 +33,7 @@ import org.apache.sis.util.StringBuilders;
 import org.apache.sis.internal.metadata.sql.ScriptRunner;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.util.Constants;
+import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Messages;
 import org.apache.sis.util.logging.Logging;
@@ -41,7 +42,6 @@ import org.apache.sis.util.logging.PerformanceLevel;
 // Branch-specific imports
 import java.nio.file.Files;
 import java.nio.file.Path;
-import org.apache.sis.util.CharSequences;
 
 
 /**
@@ -60,6 +60,11 @@ final class EPSGInstaller extends ScriptRunner {
     private static final String[] SCRIPTS = {
         "Tables", "Data", "Patches", "FKeys", "Indexes", "Grant"         // "Grant" must be last.
     };
+
+    /**
+     * The encoding used in the SQL scripts.
+     */
+    static final String ENCODING = "ISO-8859-1";
 
     /**
      * The pattern for an {@code "UPDATE … SET … REPLACE"} instruction.
@@ -94,7 +99,7 @@ final class EPSGInstaller extends ScriptRunner {
      * @throws SQLException if an error occurred while executing a SQL statement.
      */
     public EPSGInstaller(final Connection connection) throws SQLException {
-        super(connection, "ISO-8859-1", 100);
+        super(connection, ENCODING, 100);
         boolean isReplaceSupported = false;
         final DatabaseMetaData metadata = connection.getMetaData();
         final String functions = metadata.getStringFunctions();
