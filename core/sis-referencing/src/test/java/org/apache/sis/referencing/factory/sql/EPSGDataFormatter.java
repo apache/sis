@@ -77,8 +77,7 @@ import org.apache.sis.internal.metadata.sql.TestDatabase;
  *       <li>In the statement creating the {@code change} table,
  *           remove the {@code UNIQUE} constraint on the {@code change_id} column
  *           and add a {@code CONSTRAINT pk_change PRIMARY KEY (change_id)} line instead.</li>
- *       <li>Suppress trailing spaces, format the statement as in the previous version
- *           for reducing the amount of difference and save.</li>
+ *       <li>Suppress trailing spaces and save.</li>
  *     </ul>
  *     <p>Usually this results in no change at all compared to the previous script (ignoring white spaces),
  *        in which case the maintainer can just revert the changes in order to preserve the formatting.</p>
