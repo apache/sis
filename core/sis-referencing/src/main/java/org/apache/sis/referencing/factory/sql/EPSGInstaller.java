@@ -75,7 +75,7 @@ final class EPSGInstaller extends ScriptRunner {
      *     SET datum_name = replace(datum_name, CHAR(182), CHAR(10));
      * }
      */
-    private static final String REPLACE_STATEMENT =
+    static final String REPLACE_STATEMENT =
             "\\s*UPDATE\\s+[\\w\\.\" ]+\\s+SET\\s+(\\w+)\\s*=\\s*replace\\s*\\(\\s*\\1\\W+.*";
 
     /**
@@ -171,7 +171,8 @@ final class EPSGInstaller extends ScriptRunner {
      * Prepends the given schema or catalog to all table names.
      */
     final void prependNamespace(final String schema) {
-        modifyReplacements((key, value) -> schema + '.' + identifierQuote + value + identifierQuote);
+        modifyReplacements((key, value) -> key.startsWith(SQLTranslator.TABLE_PREFIX)
+                ? schema + '.' + identifierQuote + value + identifierQuote : value);
     }
 
     /**
@@ -222,10 +223,7 @@ final class EPSGInstaller extends ScriptRunner {
      */
     public void run(final Path scriptDirectory) throws SQLException, IOException {
         long time = System.nanoTime();
-        if (scriptDirectory == null) {
-            log(Messages.getResources(null).getLogRecord(Level.INFO, Messages.Keys.CreatingSchema_2,
-                    Constants.EPSG, getConnection().getMetaData().getURL()));
-        }
+        log(Messages.getResources(null).getLogRecord(Level.INFO, Messages.Keys.CreatingSchema_2, Constants.EPSG, getURL()));
         int numScripts = SCRIPTS.length;
         if (!isGrantOnTableSupported) {
             numScripts--;
@@ -249,6 +247,17 @@ final class EPSGInstaller extends ScriptRunner {
         log(Messages.getResources(null).getLogRecord(
                 PerformanceLevel.forDuration(time, TimeUnit.NANOSECONDS),
                 Messages.Keys.InsertDuration_2, numRows, time / 1E9f));
+    }
+
+    /**
+     * Returns a simplified form of the URL (truncated before the first ? or ; character),
+     * for logging purpose only.
+     */
+    private String getURL() throws SQLException {
+        String url = getConnection().getMetaData().getURL();
+        int s1 = url.indexOf('?'); if (s1 < 0) s1 = url.length();
+        int s2 = url.indexOf(';'); if (s2 < 0) s2 = url.length();
+        return url.substring(0, Math.min(s1, s2));
     }
 
     /**
