@@ -455,16 +455,16 @@ public final strictfp class EPSGFactoryTest extends TestCase {
         final List<CoordinateReferenceSystem> components = crs.getComponents();
         assertEquals("components.size()", 2, components.size());
         assertEpsgNameAndIdentifierEqual("NTF (Paris)",      4807, components.get(0));
-        assertEpsgNameAndIdentifierEqual("NGF IGN69 height", 5720, components.get(1));
+        assertEpsgNameAndIdentifierEqual("NGF-IGN69 height", 5720, components.get(1));
 
         assertAxisDirectionsEqual("(no EPSG code)", crs.getCoordinateSystem(),
                 AxisDirection.NORTH, AxisDirection.EAST, AxisDirection.UP);
 
         final GeographicBoundingBox bbox = CRS.getGeographicBoundingBox(crs);
         assertNotNull("No bounding box. Maybe an older EPSG database is used?", bbox);
-        assertEquals("southBoundLatitude", 42.25, bbox.getSouthBoundLatitude(), STRICT);
-        assertEquals("northBoundLatitude", 51.10, bbox.getNorthBoundLatitude(), STRICT);
-        assertEquals("westBoundLongitude", -5.20, bbox.getWestBoundLongitude(), STRICT);
+        assertEquals("southBoundLatitude", 42.33, bbox.getSouthBoundLatitude(), STRICT);
+        assertEquals("northBoundLatitude", 51.14, bbox.getNorthBoundLatitude(), STRICT);
+        assertEquals("westBoundLongitude", -4.87, bbox.getWestBoundLongitude(), STRICT);
         assertEquals("eastBoundLongitude",  8.23, bbox.getEastBoundLongitude(), STRICT);
 
         assertSame("CRS shall be cached", crs, factory.createCoordinateReferenceSystem("7400"));
@@ -590,7 +590,7 @@ public final strictfp class EPSGFactoryTest extends TestCase {
 
         final Set<String> ellipsoids = factory.getAuthorityCodes(Ellipsoid.class);
         assertFalse("Ellipsoid not found.",       ellipsoids.isEmpty());
-        assertTrue ("Check size() consistency.",  ellipsoids.size() >= 49);
+        assertTrue ("Check size() consistency.",  ellipsoids.size() >= 48);
         assertTrue ("Shall contain WGS84.",       ellipsoids.contains("7030"));
         assertTrue ("Shall contain GRS 1980.",    ellipsoids.contains("7019"));
 

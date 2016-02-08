@@ -17,22 +17,35 @@
 package org.apache.sis.referencing.factory.sql;
 
 import java.util.Map;
+import java.util.Set;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.regex.Pattern;
+import javax.sql.DataSource;
 import java.sql.Connection;
+import java.sql.Statement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import javax.sql.DataSource;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.crs.GeographicCRS;
+import org.opengis.referencing.crs.ProjectedCRS;
 import org.apache.sis.referencing.CommonCRS;
-import org.apache.sis.internal.metadata.sql.TestDatabase;
+import org.apache.sis.internal.system.Loggers;
+import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Utilities;
+
+// Test dependencies
+import org.apache.sis.internal.metadata.sql.TestDatabase;
+import org.apache.sis.test.LoggingWatcher;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
+import org.junit.Ignore;
+import org.junit.Rule;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
+import static org.junit.Assume.*;
 
 // Branch-dependent imports
 import java.nio.file.Path;
@@ -54,13 +67,59 @@ import java.nio.file.Path;
 @DependsOn(EPSGFactoryTest.class)
 public final strictfp class EPSGInstallerTest extends TestCase {
     /**
+     * A JUnit rule for listening to log events emitted during execution of tests.
+     * This rule verifies that the log message contains the expected information.
+     *
+     * <p>This field is public because JUnit requires us to do so, but should be considered
+     * as an implementation details (it should have been a private field).</p>
+     */
+    @Rule
+    public final LoggingWatcher listener = new LoggingWatcher(Logging.getLogger(Loggers.CRS_FACTORY)) {
+        @Override protected void verifyMessage(final String message) {
+            log = message;      // Verified later by the tests in the enclosing class.
+        }
+    };
+
+    /**
+     * The logging message caught by the {@link #listener}.
+     */
+    private String log;
+
+    /**
+     * Tests the {@link EPSGInstaller#REPLACE_STATEMENT} pattern.
+     */
+    @Test
+    public void testReplacePattern() {
+        // Statement as in the EPSG scripts since EPSG version 7.06.
+        assertTrue(Pattern.matches(EPSGInstaller.REPLACE_STATEMENT,
+                "UPDATE epsg_datum\n" +
+                "SET datum_name = replace(datum_name, CHR(182), CHR(10))"));
+
+        // Statement as in the EPSG scripts prior to EPSG version 7.06.
+        assertTrue(Pattern.matches(EPSGInstaller.REPLACE_STATEMENT,
+                "UPDATE epsg_datum\n" +
+                "SET datum_name = replace(datum_name, CHAR(182), CHAR(10))"));
+
+        // Modified statement with MS-Access table name in a schema.
+        assertTrue(Pattern.matches(EPSGInstaller.REPLACE_STATEMENT,
+                "UPDATE epsg.\"Alias\"\n" +
+                "SET object_table_name = replace(object_table_name, CHR(182), CHR(10))"));
+
+        // Like above, but the table name contains a space.
+        assertTrue(Pattern.matches(EPSGInstaller.REPLACE_STATEMENT,
+                "UPDATE epsg.\"Coordinate Axis\"\n" +
+                "SET coord_axis_orientation = replace(coord_axis_orientation, CHR(182), CHR(10))"));
+    }
+
+    /**
      * Tests the creation of an EPSG database on Derby.
-     * This test is skipped if no Derby or JavaDB driver has been found.
+     * This test is skipped if Derby/JavaDB is not found, or if the SQL scripts are not found.
      *
      * @throws Exception if an error occurred while creating the database.
      */
     @Test
     public void testCreationOnDerby() throws Exception {
+        assumeTrue("Slow test skipped in non-extensive test mode.", RUN_EXTENSIVE_TESTS);
         final Path scripts = TestDatabase.directory("ExternalSources");
         final DataSource ds = TestDatabase.create("test");
         try {
@@ -68,22 +127,79 @@ public final strictfp class EPSGInstallerTest extends TestCase {
         } finally {
             TestDatabase.drop(ds);
         }
+        assertTrue(log, log.contains("EPSG"));
+        assertTrue(log, log.contains("jdbc:derby:memory:test"));
     }
 
     /**
-     * Requests the WGS84 coordinate reference system from the EPSG database at the given source.
-     * It should trig the creation of the EPSG database.
+     * Tests the creation of an EPSG database on HSQLDB.
+     * This test is skipped if the SQL scripts are not found.
+     *
+     * <p>This test is skipped by default because HSQLDB changes the {@code java.util.logging} configuration,
+     * which causes failures in all Apache SIS tests that verify the logging messages after execution of this
+     * test. This impact this {@code EPSGInstallerTest} class, but also other test classes.</p>
+     *
+     * @throws Exception if an error occurred while creating the database.
      */
-    private static void createAndTest(final DataSource ds, final Path scripts) throws SQLException, FactoryException {
+    @Test
+    @Ignore("Skipped for protecting java.util.logging configuration against changes.")
+    public void testCreationOnHSQLDB() throws Exception {
+        final Path scripts = TestDatabase.directory("ExternalSources");
+        final DataSource ds = (DataSource) Class.forName("org.hsqldb.jdbc.JDBCDataSource").newInstance();
+        ds.getClass().getMethod("setURL", String.class).invoke(ds, "jdbc:hsqldb:mem:test");
+        try {
+            createAndTest(ds, scripts);
+        } finally {
+            try (Connection c = ds.getConnection(); Statement s = c.createStatement()) {
+                s.execute("SHUTDOWN");
+            }
+        }
+        assertTrue(log, log.contains("EPSG"));
+        assertTrue(log, log.contains("jdbc:hsqldb:mem:test"));
+    }
+
+    /**
+     * Requests the "WGS84" and the "WGS72 / UTM zone 15N" coordinate reference systems from the EPSG database
+     * at the given {@code DataSource}. Those requests should trig the creation of the EPSG database.
+     */
+    private void createAndTest(final DataSource ds, final Path scripts) throws SQLException, FactoryException {
+        listener.maximumLogCount = 100;
         final Map<String,Object> properties = new HashMap<>();
         assertNull(properties.put("dataSource", ds));
         assertNull(properties.put("scriptDirectory", scripts));
         assertEquals("Should not contain EPSG tables before we created them.", 0, countCRSTables(ds));
+        assertEquals("Should not yet have logged anything at this point.", 100, listener.maximumLogCount);
         try (EPSGFactory factory = new EPSGFactory(properties)) {
+            /*
+             * Fetch the "WGS 84" coordinate reference system.
+             */
             final GeographicCRS crs = factory.createGeographicCRS("4326");
             assertTrue(Utilities.deepEquals(CommonCRS.WGS84.geographic(), crs, ComparisonMode.DEBUG));
+            /*
+             * Fetch the "WGS 72 / UTM zone 15" coordinate system.
+             * This implies the creation of a coordinate operation.
+             */
+            final ProjectedCRS p = factory.createProjectedCRS("EPSG:32215");
+            assertTrue(Utilities.deepEquals(CommonCRS.WGS72.UTM(1, -93), p, ComparisonMode.DEBUG));
+            /*
+             * Get the authority codes. We choose a type that implies an SQL statement
+             * with both "DEPRECATED" and "SHOW_CRS" conditions in their "WHERE" clause.
+             */
+            Set<String> codes = factory.getAuthorityCodes(GeographicCRS.class);
+            assertTrue("4979", codes.contains("4979"));     // A non-deprecated code.
+            assertTrue("4329", codes.contains("4329"));     // A deprecated code.
+            /*
+             * Following forces the authority factory to iterate over all codes.
+             * Since the iterator returns only non-deprecated codes, EPSG:4329
+             * should not be included. The intend is to verify that the fields
+             * of type BOOLEAN have been properly handled.
+             */
+            codes = new HashSet<>(codes);
+            assertTrue ("4979", codes.contains("4979"));
+            assertFalse("4329", codes.contains("4329"));
         }
         assertEquals("Should contain EPSG tables after we created them.", 1, countCRSTables(ds));
+        assertEquals("Should have logged a message about the database creation.", 99, listener.maximumLogCount);
     }
 
     /**
