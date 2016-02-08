@@ -16,6 +16,8 @@
  */
 package org.apache.sis.referencing.factory.sql;
 
+import java.util.Map;
+import java.util.HashMap;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -70,13 +72,15 @@ import org.apache.sis.internal.metadata.sql.TestDatabase;
  *
  *   <li><p>Open the {@code Tables.sql} file for edition:</p>
  *     <ul>
- *       <li>In the statement creating the {@code epsg_datum} table,
- *           change the type of the {@code realization_epoch} column to {@code SMALLINT}.</li>
  *       <li>In the statement creating the {@code coordinateaxis} table,
  *           add the {@code NOT NULL} constraint to the {@code coord_axis_code} column.</li>
  *       <li>In the statement creating the {@code change} table,
  *           remove the {@code UNIQUE} constraint on the {@code change_id} column
  *           and add a {@code CONSTRAINT pk_change PRIMARY KEY (change_id)} line instead.</li>
+ *       <li>In the statement creating the {@code epsg_datum} table,
+ *           change the type of the {@code realization_epoch} column to {@code SMALLINT}.</li>
+ *       <li>Change the type of {@code show_crs}, {@code show_operation} and all {@code deprecated} fields
+ *           from {@code SMALLINT} to {@code BOOLEAN}.</li>
  *       <li>Suppress trailing spaces and save.</li>
  *     </ul>
  *     <p>Usually this results in no change at all compared to the previous script (ignoring white spaces),
@@ -135,6 +139,16 @@ public final class EPSGDataFormatter extends ScriptRunner {
     }
 
     /**
+     * The {@value} keywords.
+     */
+    private static final String INSERT_INTO = "INSERT INTO";
+
+    /**
+     * The {@value} keywords.
+     */
+    private static final String VALUES = "VALUES";
+
+    /**
      * The output stream, or {@code null} if closed or not yet created.
      */
     private Writer out;
@@ -151,6 +165,17 @@ public final class EPSGDataFormatter extends ScriptRunner {
     private boolean insertDatum;
 
     /**
+     * Number of columns to change from type SMALLINT to type BOOLEAN.
+     * All those columns must be last.
+     */
+    private int numBooleanColumns;
+
+    /**
+     * The {@link #numBooleanColumns} value for each table.
+     */
+    private final Map<String,Integer> numBooleanColumnsForTables;
+
+    /**
      * Creates a new instance.
      *
      * @param  c A dummy connection. Will be used for fetching metadata.
@@ -158,6 +183,28 @@ public final class EPSGDataFormatter extends ScriptRunner {
      */
     private EPSGDataFormatter(final Connection c) throws SQLException {
         super(c, EPSGInstaller.ENCODING, Integer.MAX_VALUE);
+        numBooleanColumnsForTables = new HashMap<>();
+        numBooleanColumnsForTables.put("epsg_alias",                     0);
+        numBooleanColumnsForTables.put("epsg_area",                      1);
+        numBooleanColumnsForTables.put("epsg_change",                    0);
+        numBooleanColumnsForTables.put("epsg_coordinateaxis",            0);
+        numBooleanColumnsForTables.put("epsg_coordinateaxisname",        1);
+        numBooleanColumnsForTables.put("epsg_coordinatereferencesystem", 2);
+        numBooleanColumnsForTables.put("epsg_coordinatesystem",          1);
+        numBooleanColumnsForTables.put("epsg_coordoperation",            2);
+        numBooleanColumnsForTables.put("epsg_coordoperationmethod",      1);
+        numBooleanColumnsForTables.put("epsg_coordoperationparam",       1);
+        numBooleanColumnsForTables.put("epsg_coordoperationparamusage",  0);
+        numBooleanColumnsForTables.put("epsg_coordoperationparamvalue",  0);
+        numBooleanColumnsForTables.put("epsg_coordoperationpath",        0);
+        numBooleanColumnsForTables.put("epsg_datum",                     1);
+        numBooleanColumnsForTables.put("epsg_deprecation",               0);
+        numBooleanColumnsForTables.put("epsg_ellipsoid",                 1);
+        numBooleanColumnsForTables.put("epsg_namingsystem",              1);
+        numBooleanColumnsForTables.put("epsg_primemeridian",             1);
+        numBooleanColumnsForTables.put("epsg_supersession",              0);
+        numBooleanColumnsForTables.put("epsg_unitofmeasure",             1);
+        numBooleanColumnsForTables.put("epsg_versionhistory",            0);
     }
 
     /**
@@ -200,20 +247,22 @@ public final class EPSGDataFormatter extends ScriptRunner {
      * @param  sql The SQL statement to compact.
      * @return The number of rows added.
      * @throws IOException if an I/O operation failed.
+     * @throws SQLException if a syntax error happens.
      */
     @Override
-    protected int execute(final StringBuilder sql) throws IOException {
+    protected int execute(final StringBuilder sql) throws IOException, SQLException {
         removeLF(sql);
         String line = CharSequences.trimWhitespaces(sql).toString();
         if (insertStatement != null) {
             if (line.startsWith(insertStatement)) {
                 // The previous instruction was already an INSERT INTO the same table.
                 line = CharSequences.trimWhitespaces(line, insertStatement.length(), line.length()).toString();
+                line = replaceIntegerByBoolean(line);
                 line = removeUselessExponents(line);
                 if (insertDatum) {
                     line = removeRealizationEpochQuotes(line);
                 }
-                out.append(",\n"); // Really want Unix EOL, not the platform-specific one.
+                out.append(",\n");      // Really want Unix EOL, not the platform-specific one.
                 writeValues(line);
                 return 1;
             }
@@ -221,23 +270,29 @@ public final class EPSGDataFormatter extends ScriptRunner {
             // We now have a new instruction. Append the pending cariage return.
             out.append(";\n");
         }
-        if (line.startsWith("INSERT INTO")) {
-            insertDatum = line.startsWith("INSERT INTO EPSG_DATUM VALUES");
-            int valuesStart = line.indexOf("VALUES", 11);
-            if (valuesStart >= 0) {
-                // We are beginning insertions in a new table.
-                valuesStart += 6; // Move to the end of "VALUES".
-                insertStatement = CharSequences.trimWhitespaces(line, 0, valuesStart).toString();
-                line = CharSequences.trimWhitespaces(line, insertStatement.length(), line.length()).toString();
-                line = removeUselessExponents(line);
-                if (insertDatum) {
-                    line = removeRealizationEpochQuotes(line);
-                }
-                out.append(insertStatement);
-                out.append('\n');
-                writeValues(line);
-                return 1;
+        if (line.startsWith(INSERT_INTO)) {
+            int valuesStart = line.indexOf(VALUES, INSERT_INTO.length());
+            if (valuesStart < 0) {
+                throw new SQLException("This simple program wants VALUES on the same line than INSERT INTO.");
             }
+            final String table = CharSequences.trimWhitespaces(line, INSERT_INTO.length(), valuesStart).toString();
+            numBooleanColumns = numBooleanColumnsForTables.get(table);
+            insertDatum = table.equals("epsg_datum");
+            /*
+             * We are beginning insertions in a new table.
+             */
+            valuesStart += VALUES.length();     // Move to the end of "VALUES".
+            insertStatement = CharSequences.trimWhitespaces(line, 0, valuesStart).toString();
+            line = CharSequences.trimWhitespaces(line, insertStatement.length(), line.length()).toString();
+            line = replaceIntegerByBoolean(line);
+            line = removeUselessExponents(line);
+            if (insertDatum) {
+                line = removeRealizationEpochQuotes(line);
+            }
+            out.append(insertStatement);
+            out.append('\n');
+            writeValues(line);
+            return 1;
         }
         insertStatement = null;
         if (!omit(line)) {
@@ -259,6 +314,30 @@ public final class EPSGDataFormatter extends ScriptRunner {
         } else {
             out.append(values);
         }
+    }
+
+    /**
+     * Replaces the last {@code SMALLINT} types by {@code BOOLEAN}.
+     * This is for consistency with the table type documented in the class javadoc.
+     */
+    private String replaceIntegerByBoolean(final String line) throws SQLException {
+        final StringBuilder buffer = new StringBuilder(line);
+        int end = line.length();
+        for (int n = 0; n < numBooleanColumns; n++) {
+            end = line.lastIndexOf(',', end - 1);
+            final int p = CharSequences.skipLeadingWhitespaces(line, end+1, line.length());
+            final boolean value;
+            switch (line.charAt(p)) {
+                case '0': value = false; break;
+                case '1': value = true;  break;
+                default: throw new SQLException("Unexpected boolean value at position " + p + " in:\n" + line);
+            }
+            if (line.charAt(p+1) != (n == 0 ? ' ' : ',')) {
+                throw new SQLException("Unexpected character at position " + (p+1) + " in:\n" + line);
+            }
+            buffer.replace(p, p+1, String.valueOf(value));
+        }
+        return buffer.toString();
     }
 
     /**

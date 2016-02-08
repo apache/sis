@@ -22,6 +22,7 @@ import java.util.Locale;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Types;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
@@ -129,6 +130,15 @@ public class SQLTranslator implements Function<String,String> {
     static final String TABLE_PREFIX = "epsg_";
 
     /**
+     * The columns that may be of {@code BOOLEAN} type instead of {@code SMALLINT}.
+     */
+    private static final String[] BOOLEAN_FIELDS = {
+        "SHOW_CRS",
+        "SHOW_OPERATION",
+        "DEPRECATED"
+    };
+
+    /**
      * The name of the catalog that contains the EPSG tables, or {@code null} or an empty string.
      * <ul>
      *   <li>The {@code ""} value retrieves the EPSG schema without a catalog.</li>
@@ -182,6 +192,12 @@ public class SQLTranslator implements Function<String,String> {
      * This information is provided by {@link DatabaseMetaData#getIdentifierQuoteString()}.
      */
     private final String quote;
+
+    /**
+     * {@code true} if the database uses the {@code BOOLEAN} type instead than {@code SMALLINT}
+     * for the {@code show_crs}, {@code show_operation} and all {@code deprecated} fields.
+     */
+    private boolean useBoolean;
 
     /**
      * {@code true} if one of the {@link #SENTINEL} tables exist.
@@ -269,6 +285,22 @@ public class SQLTranslator implements Function<String,String> {
         }
         if (translateColumns) {
             accessToAnsi.put("ORDER", "coord_axis_order");
+        }
+        /*
+         * Detect if the database uses boolean types where applicable.
+         * We arbitrarily use the Datum table as a representative value.
+         */
+        String deprecated = "DEPRECATED";
+        if (md.storesLowerCaseIdentifiers()) {
+            deprecated = deprecated.toLowerCase(Locale.US);
+        }
+        try (ResultSet result = md.getColumns(catalog, schema, null, deprecated)) {
+            while (result.next()) {
+                if (CharSequences.endsWith(result.getString("TABLE_NAME"), "Datum", true)) {
+                    useBoolean = result.getInt("DATA_TYPE") == Types.BOOLEAN;
+                    break;
+                }
+            }
         }
     };
 
@@ -375,6 +407,38 @@ public class SQLTranslator implements Function<String,String> {
                 }
             }
         }
-        return ansi.append(sql, end, sql.length()).toString();
+        ansi.append(sql, end, sql.length());
+        /*
+         * If the database use the BOOLEAN type instead of SMALLINT, replaces "deprecated=0' by "deprecated=false".
+         */
+        if (useBoolean) {
+            int w = ansi.indexOf("WHERE");
+            w += 5;
+            if (w >= 0) {
+                for (final String field : BOOLEAN_FIELDS) {
+                    int p = ansi.indexOf(field, w);
+                    if (p >= 0) {
+                        p += field.length();
+                        if (!replaceIfEquals(ansi, p, "=0", "=FALSE")) {
+                            replaceIfEquals(ansi, p, "<>0", "=TRUE");
+                        }
+                    }
+                }
+            }
+        }
+        return ansi.toString();
+    }
+
+    /**
+     * Replaces the text at the given position in the buffer if it is equals to the {@code expected} text.
+     */
+    private static boolean replaceIfEquals(final StringBuilder ansi, final int pos,
+            final String expected, final String replacement)
+    {
+        if (CharSequences.regionMatches(ansi, pos, expected)) {
+            ansi.replace(pos, pos + expected.length(), replacement);
+            return true;
+        }
+        return false;
     }
 }

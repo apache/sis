@@ -1566,7 +1566,7 @@ addURIs:    for (int i=0; ; i++) {
                       " COORD_OP_METHOD_CODE," +
                       " TARGET_CRS_CODE" +
                 " FROM [Coordinate_Operation]" +
-               " WHERE DEPRECATED=0" +
+               " WHERE DEPRECATED=0" +           // Do not put spaces around "=" - SQLTranslator searches for this exact match.
                  " AND TARGET_CRS_CODE = "       + BursaWolfInfo.TARGET_CRS +
                  " AND COORD_OP_METHOD_CODE >= " + BursaWolfInfo.MIN_METHOD_CODE +
                  " AND COORD_OP_METHOD_CODE <= " + BursaWolfInfo.MAX_METHOD_CODE +
@@ -2913,7 +2913,7 @@ addURIs:    for (int i=0; ; i++) {
             }
             buffer.append(getSearchDomain() == Domain.ALL_DATASET
                           ? " ORDER BY ABS(DEPRECATED), "
-                          : " AND DEPRECATED=0 ORDER BY ");
+                          : " AND DEPRECATED=0 ORDER BY ");     // Do not put spaces around "=" - SQLTranslator searches for this exact match.
             if (isFloat) {
                 buffer.append("ABS(").append(select).append("-?), ");
             }
@@ -3023,7 +3023,8 @@ addURIs:    for (int i=0; ; i++) {
                       " FROM [Coordinate_Operation] AS CO" +
                 " INNER JOIN [Coordinate Reference System] AS SRC ON SRC.COORD_REF_SYS_CODE = CO.SOURCE_CRS_CODE" +
                 " INNER JOIN [Coordinate Reference System] AS TGT ON TGT.COORD_REF_SYS_CODE = CO.TARGET_CRS_CODE" +
-                      " WHERE CO.DEPRECATED = 0 AND COORD_OP_METHOD_CODE = ?";
+                      " WHERE CO.DEPRECATED=0 AND COORD_OP_METHOD_CODE = ?";
+                // Do not put spaces in "DEPRECATED=0" - SQLTranslator searches for this exact match.
             } else {
                 key = "DerivedDimensions";
                 sql = "SELECT DISTINCT SRC.COORD_SYS_CODE," +
@@ -3031,7 +3032,7 @@ addURIs:    for (int i=0; ; i++) {
                       " FROM [Coordinate Reference System] AS TGT" +
                 " INNER JOIN [Coordinate Reference System] AS SRC ON TGT.SOURCE_GEOGCRS_CODE = SRC.COORD_REF_SYS_CODE" +
                 " INNER JOIN [Coordinate_Operation] AS CO ON TGT.PROJECTION_CONV_CODE = CO.COORD_OP_CODE" +
-                      " WHERE CO.DEPRECATED = 0 AND COORD_OP_METHOD_CODE = ?";
+                      " WHERE CO.DEPRECATED=0 AND COORD_OP_METHOD_CODE = ?";
             }
             try (ResultSet result = executeQuery(key, sql, method)) {
                 while (result.next()) {

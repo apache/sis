@@ -275,10 +275,10 @@ public class ScriptRunner implements AutoCloseable {
                  * In addition, we must declare explicitly that we want the tables to be cached on disk. Finally,
                  * HSQL expects "CHR" to be spelled "CHAR".
                  */
-                replace("UNIQUE", "");
-                replace("CHR", "CHAR");
-                replace("CREATE", MORE_WORDS);
-                replace("CREATE TABLE", "CREATE CACHED TABLE");
+                addReplacement("UNIQUE", "");
+                addReplacement("CHR", "CHAR");
+                addReplacement("CREATE", MORE_WORDS);
+                addReplacement("CREATE TABLE", "CREATE CACHED TABLE");
                 break;
             }
         }
@@ -314,10 +314,21 @@ public class ScriptRunner implements AutoCloseable {
      * @param inScript The word in the script which need to be replaced.
      * @param replacement The word to use instead.
      */
-    protected final void replace(final String inScript, final String replacement) {
+    protected final void addReplacement(final String inScript, final String replacement) {
         if (replacements.put(inScript, replacement) != null) {
             throw new IllegalArgumentException(inScript);
         }
+    }
+
+    /**
+     * Returns the word to use instead than the given one.
+     * If there is no replacement, then {@code inScript} is returned.
+     *
+     * @param inScript The word in the script which need to be replaced.
+     * @return The word to use instead.
+     */
+    protected final String getReplacement(final String inScript) {
+        return replacements.getOrDefault(inScript, inScript);
     }
 
     /**
@@ -373,8 +384,8 @@ public class ScriptRunner implements AutoCloseable {
      * @throws SQLException if an error occurred while executing a SQL statement.
      */
     private int run(final LineNumberReader in) throws IOException, SQLException {
-        int     statementCount     = 0;
-        boolean isInsideText       = false;
+        int     statementCount     = 0;         // For informative purpose only.
+        int     posOpeningQuote    = -1;        // -1 if we are not inside a text.
         boolean isInsideIdentifier = false;
         final StringBuilder buffer = new StringBuilder();
         String line;
@@ -423,7 +434,7 @@ public class ScriptRunner implements AutoCloseable {
 parseLine:  while (pos < length) {
                 int c = buffer.codePointAt(pos);
                 int n = Character.charCount(c);
-                if (!isInsideText && !isInsideIdentifier) {
+                if (posOpeningQuote < 0 && !isInsideIdentifier) {
                     int start = pos;
                     while (Character.isUnicodeIdentifierStart(c)) {
                         /*
@@ -474,7 +485,7 @@ parseLine:  while (pos < length) {
                      * replace the standard quote character by the database-specific one.
                      */
                     case IDENTIFIER_QUOTE: {
-                        if (!isInsideText) {
+                        if (posOpeningQuote < 0) {
                             isInsideIdentifier = !isInsideIdentifier;
                             length = buffer.replace(pos, pos + n, identifierQuote).length();
                             n = identifierQuote.length();
@@ -487,10 +498,12 @@ parseLine:  while (pos < length) {
                      */
                     case QUOTE: {
                         if (!isInsideIdentifier) {
-                            if (!isInsideText) {
-                                isInsideText = true;
+                            if (posOpeningQuote < 0) {
+                                posOpeningQuote = pos;
                             } else if ((pos += n) >= length || buffer.codePointAt(pos) != QUOTE) {
-                                isInsideText = false;
+                                editText(buffer, posOpeningQuote, pos);
+                                pos -= length - (length = buffer.length());
+                                posOpeningQuote = -1;
                                 continue;   // Because we already skipped the ' character.
                             } // else found a double ' character, which means to escape it.
                         }
@@ -501,7 +514,7 @@ parseLine:  while (pos < length) {
                      * since SQL statement in JDBC are not expected to contain it.
                      */
                     case END_OF_STATEMENT: {
-                        if (!isInsideText && !isInsideIdentifier) {
+                        if (posOpeningQuote < 0 && !isInsideIdentifier) {
                             if (CharSequences.skipLeadingWhitespaces(buffer, pos + n, length) >= length) {
                                 buffer.setLength(pos);
                             }
@@ -520,6 +533,19 @@ parseLine:  while (pos < length) {
             throw new EOFException(Errors.format(Errors.Keys.UnexpectedEndOfString_1, line));
         }
         return statementCount;
+    }
+
+    /**
+     * Invoked for each text found in a SQL statement. The text, <em>including its quote characters</em>,
+     * is the {@code sql} substring from index {@code lower} inclusive to {@code upper} exclusive.
+     * Subclasses can override this method if they wish to modify the text content.
+     * Modifications are applied directly in the given {@code sql} buffer.
+     *
+     * @param sql   The whole SQL statement.
+     * @param lower Index of the opening quote character ({@code '}) of the text in {@code sql}.
+     * @param upper Index after the closing quote character ({@code '}) of the text in {@code sql}.
+     */
+    protected void editText(final StringBuilder sql, final int lower, final int upper) {
     }
 
     /**
@@ -574,7 +600,7 @@ parseLine:  while (pos < length) {
                                 if (subSQL.charAt(end - 1) == ',') {
                                     end--;
                                 }
-                                count += statement.executeUpdate(sql.append(subSQL, begin, end).toString());
+                                count += statement.executeUpdate(currentSQL = sql.append(subSQL, begin, end).toString());
                                 sql.setLength(startOfValues);       // Prepare for next INSERT INTO statement.
                                 nrows = maxRowsPerInsert;
                                 begin = endOfLine + 1;
@@ -582,7 +608,7 @@ parseLine:  while (pos < length) {
                         }
                         // The remaining of the statement to be executed.
                         int end = CharSequences.skipTrailingWhitespaces(subSQL, begin, subSQL.length());
-                        subSQL = (end > begin) ? sql.append(subSQL, begin, end).toString() : null;
+                        currentSQL = subSQL = (end > begin) ? sql.append(subSQL, begin, end).toString() : null;
                     }
                 }
             }

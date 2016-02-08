@@ -17,7 +17,9 @@
 package org.apache.sis.referencing.factory.sql;
 
 import java.util.Map;
+import java.util.Set;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.regex.Pattern;
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -168,11 +170,33 @@ public final strictfp class EPSGInstallerTest extends TestCase {
         assertEquals("Should not contain EPSG tables before we created them.", 0, countCRSTables(ds));
         assertEquals("Should not yet have logged anything at this point.", 100, listener.maximumLogCount);
         try (EPSGFactory factory = new EPSGFactory(properties)) {
+            /*
+             * Fetch the "WGS 84" coordinate reference system.
+             */
             final GeographicCRS crs = factory.createGeographicCRS("4326");
             assertTrue(Utilities.deepEquals(CommonCRS.WGS84.geographic(), crs, ComparisonMode.DEBUG));
-
-            final ProjectedCRS p = factory.createProjectedCRS("EPSG:32215");    // UTM zone 15.
+            /*
+             * Fetch the "WGS 72 / UTM zone 15" coordinate system.
+             * This implies the creation of a coordinate operation.
+             */
+            final ProjectedCRS p = factory.createProjectedCRS("EPSG:32215");
             assertTrue(Utilities.deepEquals(CommonCRS.WGS72.UTM(1, -93), p, ComparisonMode.DEBUG));
+            /*
+             * Get the authority codes. We choose a type that implies an SQL statement
+             * with both "DEPRECATED" and "SHOW_CRS" conditions in their "WHERE" clause.
+             */
+            Set<String> codes = factory.getAuthorityCodes(GeographicCRS.class);
+            assertTrue("4979", codes.contains("4979"));     // A non-deprecated code.
+            assertTrue("4329", codes.contains("4329"));     // A deprecated code.
+            /*
+             * Following forces the authority factory to iterate over all codes.
+             * Since the iterator returns only non-deprecated codes, EPSG:4329
+             * should not be included. The intend is to verify that the fields
+             * of type BOOLEAN have been properly handled.
+             */
+            codes = new HashSet<>(codes);
+            assertTrue ("4979", codes.contains("4979"));
+            assertFalse("4329", codes.contains("4329"));
         }
         assertEquals("Should contain EPSG tables after we created them.", 1, countCRSTables(ds));
         assertEquals("Should have logged a message about the database creation.", 99, listener.maximumLogCount);
