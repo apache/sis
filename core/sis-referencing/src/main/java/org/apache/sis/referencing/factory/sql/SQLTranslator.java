@@ -413,14 +413,19 @@ public class SQLTranslator implements Function<String,String> {
          */
         if (useBoolean) {
             int w = ansi.indexOf("WHERE");
-            w += 5;
             if (w >= 0) {
+                w += 5;
                 for (final String field : BOOLEAN_FIELDS) {
                     int p = ansi.indexOf(field, w);
                     if (p >= 0) {
                         p += field.length();
-                        if (!replaceIfEquals(ansi, p, "=0", "=FALSE")) {
-                            replaceIfEquals(ansi, p, "<>0", "=TRUE");
+                        if (!replaceIfEquals(ansi, p, "=0", "=FALSE") &&
+                            !replaceIfEquals(ansi, p, "<>0", "=TRUE"))
+                        {
+                            // Remove "ABS" in "ABS(DEPRECATED)" or "ABS(CO.DEPRECATED)".
+                            if ((p = ansi.lastIndexOf("(", p)) > w) {
+                                replaceIfEquals(ansi, p-3, "ABS", "");
+                            }
                         }
                     }
                 }
