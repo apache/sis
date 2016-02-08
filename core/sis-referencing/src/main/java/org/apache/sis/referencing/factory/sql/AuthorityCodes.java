@@ -160,7 +160,9 @@ final class AuthorityCodes extends AbstractMap<String,String> implements Seriali
         final int conditionStart = buffer.length();
         if (table.showColumn != null) {
             buffer.append(table.showColumn).append("<>0 AND ");
+            // Do not put spaces around "<>" - SQLTranslator searches for this exact match.
         }
+        // Do not put spaces around "=" - SQLTranslator searches for this exact match.
         buffer.append("DEPRECATED=0 ORDER BY ").append(table.codeColumn);
         sql[ALL] = factory.translator.apply(buffer.toString());
         /*
