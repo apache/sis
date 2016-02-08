@@ -142,27 +142,27 @@ final class EPSGInstaller extends ScriptRunner {
              * Mapping from the table names used in the SQL scripts to the original names used in the MS-Access database.
              * We use those original names because they are easier to read than the names in SQL scripts.
              */
-            replace(SQLTranslator.TABLE_PREFIX + "alias",                      "Alias");
-            replace(SQLTranslator.TABLE_PREFIX + "area",                       "Area");
-            replace(SQLTranslator.TABLE_PREFIX + "change",                     "Change");
-            replace(SQLTranslator.TABLE_PREFIX + "coordinateaxis",             "Coordinate Axis");
-            replace(SQLTranslator.TABLE_PREFIX + "coordinateaxisname",         "Coordinate Axis Name");
-            replace(SQLTranslator.TABLE_PREFIX + "coordoperation",             "Coordinate_Operation");
-            replace(SQLTranslator.TABLE_PREFIX + "coordoperationmethod",       "Coordinate_Operation Method");
-            replace(SQLTranslator.TABLE_PREFIX + "coordoperationparam",        "Coordinate_Operation Parameter");
-            replace(SQLTranslator.TABLE_PREFIX + "coordoperationparamusage",   "Coordinate_Operation Parameter Usage");
-            replace(SQLTranslator.TABLE_PREFIX + "coordoperationparamvalue",   "Coordinate_Operation Parameter Value");
-            replace(SQLTranslator.TABLE_PREFIX + "coordoperationpath",         "Coordinate_Operation Path");
-            replace(SQLTranslator.TABLE_PREFIX + "coordinatereferencesystem",  "Coordinate Reference System");
-            replace(SQLTranslator.TABLE_PREFIX + "coordinatesystem",           "Coordinate System");
-            replace(SQLTranslator.TABLE_PREFIX + "datum",                      "Datum");
-            replace(SQLTranslator.TABLE_PREFIX + "deprecation",                "Deprecation");
-            replace(SQLTranslator.TABLE_PREFIX + "ellipsoid",                  "Ellipsoid");
-            replace(SQLTranslator.TABLE_PREFIX + "namingsystem",               "Naming System");
-            replace(SQLTranslator.TABLE_PREFIX + "primemeridian",              "Prime Meridian");
-            replace(SQLTranslator.TABLE_PREFIX + "supersession",               "Supersession");
-            replace(SQLTranslator.TABLE_PREFIX + "unitofmeasure",              "Unit of Measure");
-            replace(SQLTranslator.TABLE_PREFIX + "versionhistory",             "Version History");
+            addReplacement(SQLTranslator.TABLE_PREFIX + "alias",                      "Alias");
+            addReplacement(SQLTranslator.TABLE_PREFIX + "area",                       "Area");
+            addReplacement(SQLTranslator.TABLE_PREFIX + "change",                     "Change");
+            addReplacement(SQLTranslator.TABLE_PREFIX + "coordinateaxis",             "Coordinate Axis");
+            addReplacement(SQLTranslator.TABLE_PREFIX + "coordinateaxisname",         "Coordinate Axis Name");
+            addReplacement(SQLTranslator.TABLE_PREFIX + "coordoperation",             "Coordinate_Operation");
+            addReplacement(SQLTranslator.TABLE_PREFIX + "coordoperationmethod",       "Coordinate_Operation Method");
+            addReplacement(SQLTranslator.TABLE_PREFIX + "coordoperationparam",        "Coordinate_Operation Parameter");
+            addReplacement(SQLTranslator.TABLE_PREFIX + "coordoperationparamusage",   "Coordinate_Operation Parameter Usage");
+            addReplacement(SQLTranslator.TABLE_PREFIX + "coordoperationparamvalue",   "Coordinate_Operation Parameter Value");
+            addReplacement(SQLTranslator.TABLE_PREFIX + "coordoperationpath",         "Coordinate_Operation Path");
+            addReplacement(SQLTranslator.TABLE_PREFIX + "coordinatereferencesystem",  "Coordinate Reference System");
+            addReplacement(SQLTranslator.TABLE_PREFIX + "coordinatesystem",           "Coordinate System");
+            addReplacement(SQLTranslator.TABLE_PREFIX + "datum",                      "Datum");
+            addReplacement(SQLTranslator.TABLE_PREFIX + "deprecation",                "Deprecation");
+            addReplacement(SQLTranslator.TABLE_PREFIX + "ellipsoid",                  "Ellipsoid");
+            addReplacement(SQLTranslator.TABLE_PREFIX + "namingsystem",               "Naming System");
+            addReplacement(SQLTranslator.TABLE_PREFIX + "primemeridian",              "Prime Meridian");
+            addReplacement(SQLTranslator.TABLE_PREFIX + "supersession",               "Supersession");
+            addReplacement(SQLTranslator.TABLE_PREFIX + "unitofmeasure",              "Unit of Measure");
+            addReplacement(SQLTranslator.TABLE_PREFIX + "versionhistory",             "Version History");
             prependNamespace(schema);
         }
     }
@@ -173,6 +173,34 @@ final class EPSGInstaller extends ScriptRunner {
     final void prependNamespace(final String schema) {
         modifyReplacements((key, value) -> key.startsWith(SQLTranslator.TABLE_PREFIX)
                 ? schema + '.' + identifierQuote + value + identifierQuote : value);
+    }
+
+    /**
+     * Invoked for each text found in a SQL statement. This method replaces {@code ''} by {@code Null}.
+     * The intend is to consistently use the null value for meaning "no information", which is not the
+     * same than "information is an empty string". This replacement is okay in this particular case
+     * since there is no field in the EPSG database for which we really want an empty string.
+     *
+     * @param sql   The whole SQL statement.
+     * @param lower Index of the first character of the text in {@code sql}.
+     * @param upper Index after the last character of the text in {@code sql}.
+     */
+    @Override
+    protected void editText(final StringBuilder sql, final int lower, final int upper) {
+        final String replacement;
+        switch (upper - lower) {
+            default: {
+                return;
+            }
+            /*
+             * Replace '' by Null for every table.
+             */
+            case 2: {
+                replacement = "Null";
+                break;
+            }
+        }
+        sql.replace(lower, upper, replacement);
     }
 
     /**
