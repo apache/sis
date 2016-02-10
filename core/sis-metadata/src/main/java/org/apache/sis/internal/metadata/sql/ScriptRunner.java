@@ -21,8 +21,7 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.io.EOFException;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.BufferedReader;
 import java.io.LineNumberReader;
 import java.io.StringReader;
 import java.sql.Statement;
@@ -95,12 +94,6 @@ public class ScriptRunner implements AutoCloseable {
      * {@linkplain Character#isUnicodeIdentifierPart(int) Unicode identifier part}.</p>
      */
     private static final String ESCAPE = "$BODY$";
-
-    /**
-     * The character encoding of SQL scripts. Typical values are {@code "UTF-8"} or {@code "ISO-8859-1"}.
-     * For SQL scripts provided by the EPSG, the encoding shall be {@code "ISO-8859-1"}.
-     */
-    private final String encoding;
 
     /**
      * The presumed dialect spoken by the database.
@@ -229,17 +222,13 @@ public class ScriptRunner implements AutoCloseable {
      * </ul>
      *
      * @param connection        The connection to the database.
-     * @param encoding          The encoding of SQL scripts. Typical values are {@code "UTF-8"} or {@code "ISO-8859-1"}.
-     *                          For SQL scripts provided by the EPSG authority, the encoding shall be {@code "ISO-8859-1"}.
      * @param maxRowsPerInsert  Maximum number of rows per {@code "INSERT INTO"} statement.
      * @throws SQLException if an error occurred while creating a SQL statement.
      */
-    protected ScriptRunner(final Connection connection, final String encoding, int maxRowsPerInsert) throws SQLException {
+    protected ScriptRunner(final Connection connection, int maxRowsPerInsert) throws SQLException {
         ArgumentChecks.ensureNonNull("connection", connection);
-        ArgumentChecks.ensureNonNull("encoding", encoding);
         ArgumentChecks.ensurePositive("maxRowsPerInsert", maxRowsPerInsert);
         final DatabaseMetaData metadata = connection.getMetaData();
-        this.encoding           = encoding;
         this.dialect            = Dialect.guess(metadata);
         this.identifierQuote    = metadata.getIdentifierQuoteString();
         this.isSchemaSupported  = metadata.supportsSchemasInTableDefinitions() &&
@@ -351,39 +340,22 @@ public class ScriptRunner implements AutoCloseable {
      * @throws SQLException if an error occurred while executing a SQL statement.
      */
     public final int run(final String statement) throws IOException, SQLException {
-        return run(new LineNumberReader(new StringReader(statement)));
-    }
-
-    /**
-     * Runs the SQL script from the given input stream, which will be closed.
-     * Lines are read and grouped up to the terminal {@value #END_OF_STATEMENT} character, then sent to the database.
-     *
-     * @param  filename Name of the SQL script being executed. This is used only for error reporting.
-     * @param  in The stream to read. <strong>This stream will be closed</strong> at the end.
-     * @return The number of rows added or modified as a result of the script execution.
-     * @throws IOException if an error occurred while reading the input.
-     * @throws SQLException if an error occurred while executing a SQL statement.
-     */
-    public final int run(final String filename, final InputStream in) throws IOException, SQLException {
-        currentFile = filename;
-        final int count;
-        try (LineNumberReader reader = new LineNumberReader(new InputStreamReader(in, encoding))) {
-            count = run(reader);
-        }
-        currentFile = null;
-        return count;
+        return run(null, new LineNumberReader(new StringReader(statement)));
     }
 
     /**
      * Run the script from the given reader. Lines are read and grouped up to the
      * terminal {@value #END_OF_STATEMENT} character, then sent to the database.
      *
+     * @param  filename Name of the SQL script being executed. This is used only for error reporting.
      * @param  in The stream to read. It is caller's responsibility to close this reader.
      * @return The number of rows added or modified as a result of the script execution.
      * @throws IOException if an error occurred while reading the input.
      * @throws SQLException if an error occurred while executing a SQL statement.
      */
-    private int run(final LineNumberReader in) throws IOException, SQLException {
+    public final int run(final String filename, final BufferedReader in) throws IOException, SQLException {
+        currentFile = filename;
+        currentLine = 0;
         int     statementCount     = 0;         // For informative purpose only.
         int     posOpeningQuote    = -1;        // -1 if we are not inside a text.
         boolean isInsideIdentifier = false;
@@ -398,7 +370,9 @@ public class ScriptRunner implements AutoCloseable {
                 if (s >= line.length() || line.regionMatches(s, COMMENT, 0, COMMENT.length())) {
                     continue;
                 }
-                currentLine = in.getLineNumber();
+                if (in instanceof LineNumberReader) {
+                    currentLine = ((LineNumberReader) in).getLineNumber();
+                }
             } else {
                 buffer.append('\n');
             }
@@ -532,6 +506,7 @@ parseLine:  while (pos < length) {
         if (!line.isEmpty() && !line.startsWith(COMMENT)) {
             throw new EOFException(Errors.format(Errors.Keys.UnexpectedEndOfString_1, line));
         }
+        currentFile = null;
         return statementCount;
     }
 
@@ -642,7 +617,8 @@ parseLine:  while (pos < length) {
     public String status(final Locale locale) {
         String position = null;
         if (currentFile != null) {
-            position = Errors.getResources(locale).getString(Errors.Keys.ErrorInFileAtLine_2, currentFile, currentLine);
+            position = Errors.getResources(locale).getString(Errors.Keys.ErrorInFileAtLine_2, currentFile,
+                    (currentLine != 0) ? currentLine : '?');
         }
         if (currentSQL != null) {
             final StringBuilder buffer = new StringBuilder();

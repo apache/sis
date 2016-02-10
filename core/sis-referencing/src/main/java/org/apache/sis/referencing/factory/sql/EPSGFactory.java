@@ -44,10 +44,6 @@ import org.apache.sis.referencing.factory.ConcurrentAuthorityFactory;
 import org.apache.sis.referencing.factory.UnavailableFactoryException;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Localized;
-import org.apache.sis.util.ObjectConverters;
-
-// Branch-dependent imports
-import java.nio.file.Path;
 
 
 /**
@@ -152,10 +148,10 @@ public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> impl
     private final String schema;
 
     /**
-     * The path where to search for EPSG definition files if {@code EPSGFactory} needs to create the database,
-     * or {@code null} for searching in the {@linkplain Class#getResource(String) resources} instead.
+     * A provider of SQL scripts to use if {@code EPSGFactory} needs to create the database,
+     * or {@code null} for the default mechanism.
      */
-    private final Path scriptDirectory;
+    private final InstallationScriptProvider scriptProvider;
 
     /**
      * The translator from the SQL statements using MS-Access dialect to SQL statements using the dialect
@@ -219,9 +215,9 @@ public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> impl
      *   <td>{@link String}</td>
      *   <td>The database schema that contains the EPSG tables (see {@linkplain #install install}).</td>
      *  </tr><tr>
-     *   <td>{@code scriptDirectory}</td>
-     *   <td>{@link java.nio.file.Path}, {@link java.io.File} or {@link java.net.URL}</td>
-     *   <td>The directory that contains the EPSG definition files (see {@linkplain #install install}).</td>
+     *   <td>{@code scriptProvider}</td>
+     *   <td>{@link InstallationScriptProvider}</td>
+     *   <td>A provider of SQL scripts to use if {@code EPSGFactory} needs to create the database.</td>
      *  </tr><tr>
      *   <td>{@code locale}</td>
      *   <td>{@link Locale}</td>
@@ -250,11 +246,11 @@ public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> impl
         if (properties == null) {
             properties = Collections.emptyMap();
         }
-        DataSource ds   = (DataSource) properties.get("dataSource");
-        Locale locale   = ObjectConverters.convert(properties.get("locale"),  Locale.class);
-        schema          = ObjectConverters.convert(properties.get("schema"),  String.class);
-        catalog         = ObjectConverters.convert(properties.get("catalog"), String.class);
-        scriptDirectory = ObjectConverters.convert(properties.get("scriptDirectory"), Path.class);
+        DataSource ds  = (DataSource)                 properties.get("dataSource");
+        Locale locale  = (Locale)                     properties.get("locale");
+        schema         = (String)                     properties.get("schema");
+        catalog        = (String)                     properties.get("catalog");
+        scriptProvider = (InstallationScriptProvider) properties.get("scriptProvider");
         if (locale == null) {
             locale = Locale.getDefault(Locale.Category.DISPLAY);
         }
@@ -334,14 +330,11 @@ public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> impl
      *     schemas in table definitions} or in {@linkplain DatabaseMetaData#supportsSchemasInDataManipulation()
      *     data manipulation}, then this property is ignored.</li>
      *
-     *   <li><b>{@code scriptDirectory}:</b><br>
-     *     a {@link java.nio.file.Path}, {@link java.io.File} or {@link java.net.URL} to a directory containing
-     *     the SQL scripts to execute. If non-null, that directory shall contain at least files matching the
-     *     {@code *Tables*.sql}, {@code *Data*.sql} and {@code *FKeys*.sql} patterns (those files are provided by EPSG).
-     *     Files matching the {@code *Patches*.sql}, {@code *Indexes*.sql} and {@code *Grant*.sql} patterns
-     *     (provided by Apache SIS) are optional but recommended.
-     *     If no directory is specified, then this method will search for resources provided by the
-     *     {@code geotk-epsg.jar} bundle.</li>
+     *   <li><b>{@code scriptProvider}:</b><br>
+     *     an {@link InstallationScriptProvider} giving the SQL scripts to execute for creating the EPSG database.
+     *     If no provider is specified, then this method will search for
+     *     {@code "EPSG_Tables.sql"}, {@code "EPSG_Data.sql"} and {@code "EPSG_FKeys.sql"} files in the
+     *     {@code $SIS_DATA/Databases/ExternalSources} directory.</li>
      * </ul>
      *
      * <p><b>Legal constraint:</b>
@@ -369,7 +362,7 @@ public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> impl
                         installer.prependNamespace(catalog);
                     }
                 }
-                installer.run(scriptDirectory);
+                installer.run(scriptProvider);
                 success = true;
             } finally {
                 if (ac) {
