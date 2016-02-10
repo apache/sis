@@ -27,21 +27,15 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.io.FileNotFoundException;
-import java.io.InputStream;
+import java.io.BufferedReader;
 import org.apache.sis.util.StringBuilders;
 import org.apache.sis.internal.metadata.sql.ScriptRunner;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.util.CharSequences;
-import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Messages;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.logging.PerformanceLevel;
-
-// Branch-specific imports
-import java.nio.file.Files;
-import java.nio.file.Path;
 
 
 /**
@@ -53,19 +47,6 @@ import java.nio.file.Path;
  * @module
  */
 final class EPSGInstaller extends ScriptRunner {
-    /**
-     * The embedded SQL scripts to execute for creating the EPSG database, in that order.
-     * The {@code ".sql"} suffix is omitted. The {@code "Grant"} script must be last.
-     */
-    private static final String[] SCRIPTS = {
-        "Tables", "Data", "Patches", "FKeys", "Indexes", "Grant"         // "Grant" must be last.
-    };
-
-    /**
-     * The encoding used in the SQL scripts.
-     */
-    static final String ENCODING = "ISO-8859-1";
-
     /**
      * The pattern for an {@code "UPDATE … SET … REPLACE"} instruction.
      * Example:
@@ -99,7 +80,7 @@ final class EPSGInstaller extends ScriptRunner {
      * @throws SQLException if an error occurred while executing a SQL statement.
      */
     public EPSGInstaller(final Connection connection) throws SQLException {
-        super(connection, ENCODING, 100);
+        super(connection, 100);
         boolean isReplaceSupported = false;
         final DatabaseMetaData metadata = connection.getMetaData();
         final String functions = metadata.getStringFunctions();
@@ -219,6 +200,9 @@ final class EPSGInstaller extends ScriptRunner {
         if (CharSequences.equalsIgnoreCase(sql, "COMMIT")) {
             return 0;
         }
+        if (!isGrantOnTableSupported && CharSequences.regionMatches(sql, 0, "GRANT")) {
+            return 0;
+        }
         if (statementToSkip != null && statementToSkip.reset(sql).matches()) {
             return 0;
         }
@@ -229,47 +213,23 @@ final class EPSGInstaller extends ScriptRunner {
     }
 
     /**
-     * Processes to the creation of the EPSG database using the files in the given directory.
-     * The given directory should contain at least files similar to the following ones
-     * (files without {@code ".sql"} extension are ignored):
-     *
-     * <ul>
-     *   <li>{@code EPSG_v8_18.mdb_Tables_PostgreSQL.sql}</li>
-     *   <li>{@code EPSG_v6_18.mdb_Data_PostgreSQL.sql}</li>
-     *   <li>{@code EPSG_v6_18.mdb_FKeys_PostgreSQL.sql}</li>
-     *   <li>Optional but recommended: {@code EPSG_v6_18.mdb_Indexes_PostgreSQL.sql}.</li>
-     * </ul>
-     *
-     * The suffix may be different (for example {@code "_MySQL.sql"} instead of {@code "_PostgreSQL.sql"})
-     * and the version number may be different.
-     *
-     * <p>If the given directory is {@code null}, then the scripts will be read from the resources.
-     * If no resources is found, then an exception will be thrown.
+     * Processes to the creation of the EPSG database using the SQL scripts from the given provider.
      *
      * @throws IOException if an error occurred while reading an input.
      * @throws SQLException if an error occurred while executing a SQL statement.
      */
-    public void run(final Path scriptDirectory) throws SQLException, IOException {
+    public void run(InstallationScriptProvider scriptProvider) throws SQLException, IOException {
         long time = System.nanoTime();
         log(Messages.getResources(null).getLogRecord(Level.INFO, Messages.Keys.CreatingSchema_2, Constants.EPSG, getURL()));
-        int numScripts = SCRIPTS.length;
-        if (!isGrantOnTableSupported) {
-            numScripts--;
+        if (scriptProvider == null) {
+            scriptProvider = new InstallationScriptProvider.Default();
         }
+        final String[] scripts = scriptProvider.getScriptNames();
         int numRows = 0;
-        for (int i=0; i<numScripts; i++) {
-            final String script = SCRIPTS[i] + ".sql";
-            final InputStream in;
-            if (scriptDirectory != null) {
-                in = Files.newInputStream(scriptDirectory.resolve(script));
-            } else {
-                in = EPSGInstaller.class.getResourceAsStream(script);
-                if (in == null) {
-                    throw new FileNotFoundException(Errors.format(Errors.Keys.FileNotFound_1, script));
-                }
+        for (int i=0; i<scripts.length; i++) {
+            try (BufferedReader in = scriptProvider.getScriptContent(i)) {
+                numRows += run(scripts[i], in);
             }
-            numRows += run(script, in);
-            // The stream will be closed by the run method.
         }
         time = System.nanoTime() - time;
         log(Messages.getResources(null).getLogRecord(
