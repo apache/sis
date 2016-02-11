@@ -50,13 +50,17 @@ import java.nio.file.Path;
  * }
  *
  * <div class="section">How this interface is used</div>
- * The first time that an {@link EPSGDataAccess} needs to be instantiated, {@link EPSGFactory} verifies if the
- * EPSG database exists.  If it does not, then the {@link EPSGFactory#install(Connection)} method searches for
- * the first {@code InstallationScriptProvider} instance for which {@link #getAuthority} returns {@code "EPSG"}.
- * The {@linkplain #getLicense license} may be shown to the user if the application allows that (for example when
- * running as a {@linkplain org.apache.sis.console console application}). If the installation process is allowed
- * to continue, it will iterate over all readers provided by {@link #getScriptContent(int)} and execute the SQL
- * statements (not necessarily verbatim; the installation process may adapt to the target database).
+ * The first time that an {@link EPSGDataAccess} needs to be instantiated, {@link EPSGFactory} verifies
+ * if the EPSG database exists. If it does not, then:
+ * <ol>
+ *   <li>{@link EPSGFactory#install(Connection)} searches for the first {@code InstallationScriptProvider} instance
+ *       for which {@link #getAuthority()} returns {@code "EPSG"}.</li>
+ *   <li>The {@linkplain #getLicense license} may be shown to the user if the application allows that
+ *       (for example when running as a {@linkplain org.apache.sis.console console application}).</li>
+ *   <li>If the installation process is allowed to continue, it will iterate over all readers provided by
+ *       {@link #getScriptContent(int)} and execute the SQL statements (not necessarily verbatim;
+ *       the installation process may adapt to the target database).</li>
+ * </ol>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.7
@@ -287,7 +291,7 @@ public abstract class InstallationScriptProvider {
          * Opens the input stream for the SQL script of the given name.
          *
          * @param  name Name of the script file to open.
-         * @return An input stream opened of the given script file.
+         * @return An input stream opened of the given script file, or {@code null} if the resource was not found.
          * @throws IOException if an error occurred while opening the file.
          */
         @Override

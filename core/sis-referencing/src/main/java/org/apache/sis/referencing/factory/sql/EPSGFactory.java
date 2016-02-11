@@ -332,7 +332,9 @@ public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> impl
      *
      *   <li><b>{@code scriptProvider}:</b><br>
      *     an {@link InstallationScriptProvider} giving the SQL scripts to execute for creating the EPSG database.
-     *     If no provider is specified, then this method will search for
+     *     If no provider is specified, then this method will search on the classpath (with {@link java.util.ServiceLoader})
+     *     for user-provided implementations of {@code InstallationScriptProvider}.
+     *     If no user-specified provider is found, then this method will search for
      *     {@code "EPSG_Tables.sql"}, {@code "EPSG_Data.sql"} and {@code "EPSG_FKeys.sql"} files in the
      *     {@code $SIS_DATA/Databases/ExternalSources} directory.</li>
      * </ul>
