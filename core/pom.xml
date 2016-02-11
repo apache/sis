@@ -67,6 +67,17 @@
       </roles>
     </developer>
     <developer>
+      <name>Rémi Maréchal</name>
+      <id>rmarechal</id>
+      <email>remi.marechal@geomatys.com</email>
+      <organization>Geomatys</organization>
+      <organizationUrl>http://www.geomatys.com/</organizationUrl>
+      <timezone>+1</timezone>
+      <roles>
+        <role>developer</role>
+      </roles>
+    </developer>
+    <developer>
       <name>Travis L. Pinney</name>
       <id>tlpinney</id>
       <email>travis.pinney@gmail.com</email>
