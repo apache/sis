@@ -17,6 +17,7 @@
 package org.apache.sis.referencing.factory.sql;
 
 import java.util.Locale;
+import java.util.ServiceLoader;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -220,9 +221,9 @@ final class EPSGInstaller extends ScriptRunner {
      */
     public void run(InstallationScriptProvider scriptProvider) throws SQLException, IOException {
         long time = System.nanoTime();
-        log(Messages.getResources(null).getLogRecord(Level.INFO, Messages.Keys.CreatingSchema_2, Constants.EPSG, getURL()));
+        log(Messages.getResources(null).getLogRecord(Level.INFO, Messages.Keys.CreatingSchema_2, Constants.EPSG, getSimplifiedURL()));
         if (scriptProvider == null) {
-            scriptProvider = new InstallationScriptProvider.Default();
+            scriptProvider = lookupProvider();
         }
         final String[] scripts = scriptProvider.getScriptNames();
         int numRows = 0;
@@ -238,10 +239,22 @@ final class EPSGInstaller extends ScriptRunner {
     }
 
     /**
+     * Searches for a SQL script provider on the classpath before to fallback on the default provider.
+     */
+    private static InstallationScriptProvider lookupProvider() {
+        for (final InstallationScriptProvider p : ServiceLoader.load(InstallationScriptProvider.class)) {
+            if (Constants.EPSG.equals(p.getAuthority())) {
+                return p;
+            }
+        }
+        return new InstallationScriptProvider.Default();
+    }
+
+    /**
      * Returns a simplified form of the URL (truncated before the first ? or ; character),
      * for logging purpose only.
      */
-    private String getURL() throws SQLException {
+    private String getSimplifiedURL() throws SQLException {
         String url = getConnection().getMetaData().getURL();
         int s1 = url.indexOf('?'); if (s1 < 0) s1 = url.length();
         int s2 = url.indexOf(';'); if (s2 < 0) s2 = url.length();
