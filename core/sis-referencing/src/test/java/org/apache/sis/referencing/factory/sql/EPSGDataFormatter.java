@@ -21,10 +21,11 @@ import java.util.HashMap;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.LineNumberReader;
+import java.io.InputStreamReader;
 import java.io.Writer;
 import java.io.BufferedWriter;
 import java.io.OutputStreamWriter;
-import java.io.InputStream;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -34,6 +35,9 @@ import java.util.regex.Pattern;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.internal.metadata.sql.ScriptRunner;
 import org.apache.sis.internal.metadata.sql.TestDatabase;
+
+// Branch-dependent imports
+import java.nio.charset.StandardCharsets;
 
 
 /**
@@ -182,7 +186,7 @@ public final class EPSGDataFormatter extends ScriptRunner {
      * @throws SQLException if an error occurred while fetching metadata.
      */
     private EPSGDataFormatter(final Connection c) throws SQLException {
-        super(c, EPSGInstaller.ENCODING, Integer.MAX_VALUE);
+        super(c, Integer.MAX_VALUE);
         numBooleanColumnsForTables = new HashMap<>();
         numBooleanColumnsForTables.put("epsg_alias",                     0);
         numBooleanColumnsForTables.put("epsg_area",                      1);
@@ -231,8 +235,10 @@ public final class EPSGDataFormatter extends ScriptRunner {
         if (inputFile.equals(outputFile)) {
             throw new IllegalArgumentException("Input and output files are the same.");
         }
-        out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(outputFile), EPSGInstaller.ENCODING));
-        try (final InputStream in = new FileInputStream(inputFile)) {
+        out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(outputFile), StandardCharsets.ISO_8859_1));
+        try (final LineNumberReader in = new LineNumberReader(
+                new InputStreamReader(new FileInputStream(inputFile), StandardCharsets.ISO_8859_1)))
+        {
             run(inputFile.getName(), in);
         } finally {
             out.close();

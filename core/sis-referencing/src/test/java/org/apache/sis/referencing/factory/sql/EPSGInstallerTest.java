@@ -47,9 +47,6 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 import static org.junit.Assume.*;
 
-// Branch-dependent imports
-import java.nio.file.Path;
-
 
 /**
  * Tests {@link EPSGInstaller} indirectly, through {@link EPSGFactory#install(Connection)}.
@@ -112,6 +109,17 @@ public final strictfp class EPSGInstallerTest extends TestCase {
     }
 
     /**
+     * Returns the SQL scripts needed for testing the database creation,
+     * or skip the JUnit test if those scripts are not found.
+     */
+    private static InstallationScriptProvider getScripts() {
+        final InstallationScriptProvider scripts = new InstallationScriptProvider.Default();
+        assumeTrue("EPSG scripts not found in Databases/ExternalSources directory.",
+                scripts.getAuthority().equals("EPSG"));
+        return scripts;
+    }
+
+    /**
      * Tests the creation of an EPSG database on Derby.
      * This test is skipped if Derby/JavaDB is not found, or if the SQL scripts are not found.
      *
@@ -119,8 +127,7 @@ public final strictfp class EPSGInstallerTest extends TestCase {
      */
     @Test
     public void testCreationOnDerby() throws Exception {
-        assumeTrue("Slow test skipped in non-extensive test mode.", RUN_EXTENSIVE_TESTS);
-        final Path scripts = TestDatabase.directory("ExternalSources");
+        final InstallationScriptProvider scripts = getScripts();            // Needs to be invoked first.
         final DataSource ds = TestDatabase.create("test");
         try {
             createAndTest(ds, scripts);
@@ -144,7 +151,7 @@ public final strictfp class EPSGInstallerTest extends TestCase {
     @Test
     @Ignore("Skipped for protecting java.util.logging configuration against changes.")
     public void testCreationOnHSQLDB() throws Exception {
-        final Path scripts = TestDatabase.directory("ExternalSources");
+        final InstallationScriptProvider scripts = getScripts();            // Needs to be invoked first.
         final DataSource ds = (DataSource) Class.forName("org.hsqldb.jdbc.JDBCDataSource").newInstance();
         ds.getClass().getMethod("setURL", String.class).invoke(ds, "jdbc:hsqldb:mem:test");
         try {
@@ -162,11 +169,13 @@ public final strictfp class EPSGInstallerTest extends TestCase {
      * Requests the "WGS84" and the "WGS72 / UTM zone 15N" coordinate reference systems from the EPSG database
      * at the given {@code DataSource}. Those requests should trig the creation of the EPSG database.
      */
-    private void createAndTest(final DataSource ds, final Path scripts) throws SQLException, FactoryException {
+    private void createAndTest(final DataSource ds, final InstallationScriptProvider scriptProvider)
+            throws SQLException, FactoryException
+    {
         listener.maximumLogCount = 100;
         final Map<String,Object> properties = new HashMap<>();
         assertNull(properties.put("dataSource", ds));
-        assertNull(properties.put("scriptDirectory", scripts));
+        assertNull(properties.put("scriptProvider", scriptProvider));
         assertEquals("Should not contain EPSG tables before we created them.", 0, countCRSTables(ds));
         assertEquals("Should not yet have logged anything at this point.", 100, listener.maximumLogCount);
         try (EPSGFactory factory = new EPSGFactory(properties)) {
