@@ -5,18 +5,6 @@
 
 
 --
--- For the "Scale factor at natural origin" parameter (EPSG:8805), replace the wrong "m" units (EPSG:9001)
--- by the dimensionless unit (EPSG:9201). This change is a no-op on version 8.8 of EPSG dataset, but was
--- affecting the following deprecated CRS in version 7.9:
---
---   * EPSG:3143    Fiji 1986 / Fiji Map Grid
---   * EPSG:3774    NAD27 / Alberta 3TM ref merid 120 W
---   * EPSG:3778    NAD83 / Alberta 3TM ref merid 120 W
---   * EPSG:3782    NAD83(CSRS) / Alberta 3TM ref merid 120 W
---
-UPDATE epsg_coordoperationparamvalue SET uom_code = 9201 WHERE parameter_code = 8805 AND uom_code = 9001;
-
---
 -- Additional indexes for the EPSG database. Those indexes are not declared
 -- in the SQL scripts distributed by EPSG. They are not required for proper
 -- working of the EPSG factory, but can significantly improve performances.
