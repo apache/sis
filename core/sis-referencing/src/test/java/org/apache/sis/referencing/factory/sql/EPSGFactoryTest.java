@@ -130,29 +130,11 @@ public final strictfp class EPSGFactoryTest extends TestCase {
     }
 
     /**
-     * Words that we expect to find in each log messages to be emitted.
-     */
-    private String[][] expectedLogWords;
-
-    /**
-     * A JUnit {@linkplain Rule rule} for listening to log events. This field is public
-     * because JUnit requires us to do so, but should be considered as an implementation
-     * details (it should have been a private field).
+     * A JUnit {@link Rule} for listening to log events. This field is public because JUnit requires us to
+     * do so, but should be considered as an implementation details (it should have been a private field).
      */
     @Rule
-    public final LoggingWatcher listener = new LoggingWatcher(Logging.getLogger(Loggers.CRS_FACTORY)) {
-        /**
-         * Ensures that the logging message contains some expected words.
-         */
-        @Override
-        protected void verifyMessage(final String message) {
-            if (expectedLogWords != null) {
-                for (final String word : expectedLogWords[expectedLogWords.length - (maximumLogCount + 1)]) {
-                    assertTrue(message, message.contains(word));
-                }
-            }
-        }
-    };
+    public final LoggingWatcher loggings = new LoggingWatcher(Loggers.CRS_FACTORY);
 
     /**
      * Tests {@link EPSGDataAccess#tableMatches(String, String)}.
@@ -161,6 +143,7 @@ public final strictfp class EPSGFactoryTest extends TestCase {
     public void testTableMatches() {
         assertTrue(EPSGDataAccess.tableMatches("Coordinate_Operation",          "epsg_coordoperation"));
         assertTrue(EPSGDataAccess.tableMatches("[Coordinate Reference System]", "epsg_coordinatereferencesystem"));
+        loggings.assertNoUnexpectedLogging(0);
     }
 
     /**
@@ -181,6 +164,7 @@ public final strictfp class EPSGFactoryTest extends TestCase {
 
         assertSame("CRS shall be cached", crs, factory.createCoordinateReferenceSystem("4326"));
         assertSame("Shall accept \"::\"", crs, factory.createGeographicCRS("EPSG::4326"));
+        loggings.assertNoUnexpectedLogging(0);
     }
 
     /**
@@ -201,6 +185,7 @@ public final strictfp class EPSGFactoryTest extends TestCase {
         assertTrue("Expected a transformation to WGS84.", bwp.length >= 1);
 
         assertSame("CRS shall be cached", crs, factory.createCoordinateReferenceSystem("4274"));
+        loggings.assertNoUnexpectedLogging(0);
     }
 
     /**
@@ -219,6 +204,7 @@ public final strictfp class EPSGFactoryTest extends TestCase {
                 AxisDirection.NORTH, AxisDirection.EAST, AxisDirection.UP);
 
         assertSame("CRS shall be cached", crs, factory.createCoordinateReferenceSystem("4993"));
+        loggings.assertNoUnexpectedLogging(0);
     }
 
     /**
@@ -236,6 +222,7 @@ public final strictfp class EPSGFactoryTest extends TestCase {
                 AxisDirection.GEOCENTRIC_X, AxisDirection.GEOCENTRIC_Y, AxisDirection.GEOCENTRIC_Z);
 
         assertSame("CRS shall be cached", crs, factory.createCoordinateReferenceSystem("4915"));
+        loggings.assertNoUnexpectedLogging(0);
     }
 
     /**
@@ -257,6 +244,7 @@ public final strictfp class EPSGFactoryTest extends TestCase {
         verifyTransverseMercatorParmeters(crs.getConversionFromBase().getParameterValues(), -93);
 
         assertSame("CRS shall be cached", crs, factory.createCoordinateReferenceSystem("2027"));
+        loggings.assertNoUnexpectedLogging(0);
     }
 
     /**
@@ -302,6 +290,7 @@ public final strictfp class EPSGFactoryTest extends TestCase {
         assertEquals("false_northing",         0, parameters.parameter("false_northing"    ).doubleValue(), STRICT);
 
         assertSame("CRS shall be cached", crs, factory.createCoordinateReferenceSystem("2442"));
+        loggings.assertNoUnexpectedLogging(0);
     }
 
     /**
@@ -340,6 +329,7 @@ public final strictfp class EPSGFactoryTest extends TestCase {
 
         assertNotDeepEquals(crs.getConversionFromBase(), variant.getConversionFromBase());
         assertNotDeepEquals(crs, variant);
+        loggings.assertNoUnexpectedLogging(0);
     }
 
     /**
@@ -369,6 +359,7 @@ public final strictfp class EPSGFactoryTest extends TestCase {
         assertSame(crs, factory.createObject("NTF (Paris) / Lambert zone I"));
         assertSame(crs, factory.createProjectedCRS("NTF Paris Lambert zone I"));
         assertSame(crs, factory.createObject("NTF Paris Lambert zone I"));
+        loggings.assertNoUnexpectedLogging(0);
     }
 
     /**
@@ -390,6 +381,7 @@ public final strictfp class EPSGFactoryTest extends TestCase {
         // TODO: test axis directions.
 
         assertSame("CRS shall be cached", crs, factory.createCoordinateReferenceSystem("3408"));
+        loggings.assertNoUnexpectedLogging(0);
     }
 
     /**
@@ -408,6 +400,7 @@ public final strictfp class EPSGFactoryTest extends TestCase {
         assertAxisDirectionsEqual("EPSG::4499", crs.getCoordinateSystem(), AxisDirection.EAST, AxisDirection.NORTH);
 
         assertSame("CRS shall be cached", crs, factory.createCoordinateReferenceSystem("3857"));
+        loggings.assertNoUnexpectedLogging(0);
     }
 
     /**
@@ -423,6 +416,7 @@ public final strictfp class EPSGFactoryTest extends TestCase {
         assertEpsgNameAndIdentifierEqual("Barcelona", 9301, crs.getDatum());
         assertAxisDirectionsEqual("EPSG::4500", crs.getCoordinateSystem(), AxisDirection.NORTH, AxisDirection.EAST);
         assertSame("CRS shall be cached", crs, factory.createCoordinateReferenceSystem("5801"));
+        loggings.assertNoUnexpectedLogging(0);
     }
 
     /**
@@ -438,6 +432,7 @@ public final strictfp class EPSGFactoryTest extends TestCase {
         assertEpsgNameAndIdentifierEqual("Black Sea", 5134, crs.getDatum());
         assertSame("CRS shall be cached", crs, factory.createCoordinateReferenceSystem("5735"));
         assertAxisDirectionsEqual("EPSG::6499", crs.getCoordinateSystem(), AxisDirection.UP);
+        loggings.assertNoUnexpectedLogging(0);
     }
 
     /**
@@ -469,6 +464,7 @@ public final strictfp class EPSGFactoryTest extends TestCase {
         assertEquals("eastBoundLongitude",  8.23, bbox.getEastBoundLongitude(), STRICT);
 
         assertSame("CRS shall be cached", crs, factory.createCoordinateReferenceSystem("7400"));
+        loggings.assertNoUnexpectedLogging(0);
     }
 
     /**
@@ -482,17 +478,14 @@ public final strictfp class EPSGFactoryTest extends TestCase {
     public void testDeprecatedGeographic() throws FactoryException {
         assumeNotNull(factory);
 
-        listener.maximumLogCount = 2;
-        expectedLogWords = new String[][] {
-            {"EPSG:6405"},                      // Coordinate System 6405 is no longer supported by EPSG
-            {"EPSG:63266405", "4326"}           // EPSG no longer support codes in the 60000000 series.
-        };
-
         final GeographicCRS crs = factory.createGeographicCRS("63266405");
         assertEpsgNameAndIdentifierEqual("WGS 84 (deg)", 63266405, crs);
         assertAxisDirectionsEqual(null, crs.getCoordinateSystem(), AxisDirection.NORTH, AxisDirection.EAST);
-
         assertSame("CRS shall be cached", crs, factory.createCoordinateReferenceSystem("63266405"));
+
+        loggings.assertLoggingContains(0, "EPSG:6405");                 // Coordinate System 6405 is no longer supported by EPSG
+        loggings.assertLoggingContains(1, "EPSG:63266405", "4326");     // EPSG no longer support codes in the 60000000 series.
+        loggings.assertNoUnexpectedLogging(2);
     }
 
     /**
@@ -506,18 +499,15 @@ public final strictfp class EPSGFactoryTest extends TestCase {
     public void testDeprecatedProjected() throws FactoryException {
         assumeNotNull(factory);
 
-        listener.maximumLogCount = 3;
-        expectedLogWords = new String[][] {
-            {"EPSG:9823",  "1029"},              // Operation method 9823 has been replaced by 1029
-            {"EPSG:19968", "4086"},              // Coordinate Operation 19968 has been replaced by 4086
-            {"EPSG:3786",  "4088"}               // Coordinate Reference System 3786 has been replaced by 4088
-        };
-
         final ProjectedCRS crs = factory.createProjectedCRS("3786");
         assertEpsgNameAndIdentifierEqual("World Equidistant Cylindrical (Sphere)", 3786, crs);
         assertEpsgNameAndIdentifierEqual("Equidistant Cylindrical (Spherical)", 9823, crs.getConversionFromBase().getMethod());
         assertAxisDirectionsEqual("EPSG::4499", crs.getCoordinateSystem(), AxisDirection.EAST, AxisDirection.NORTH);
-        assertEquals("All warnings should have been logged at this point.", 0, listener.maximumLogCount);
+
+        loggings.assertLoggingContains(0, "EPSG:9823",  "1029");    // Operation method 9823 has been replaced by 1029
+        loggings.assertLoggingContains(1, "EPSG:19968", "4086");    // Coordinate Operation 19968 has been replaced by 4086
+        loggings.assertLoggingContains(2, "EPSG:3786",  "4088");    // Coordinate Reference System 3786 has been replaced by 4088
+        loggings.assertNoUnexpectedLogging(3);
 
         final ProjectedCRS replacement = factory.createProjectedCRS("4088");
         assertEpsgNameAndIdentifierEqual("World Equidistant Cylindrical (Sphere)", 4088, replacement);
@@ -528,6 +518,8 @@ public final strictfp class EPSGFactoryTest extends TestCase {
 
         assertSame("CRS shall be cached", crs, factory.createCoordinateReferenceSystem("3786"));
         assertSame("CRS shall be cached", replacement, factory.createCoordinateReferenceSystem("4088"));
+
+        loggings.assertNoUnexpectedLogging(3);
     }
 
     /**
@@ -560,6 +552,7 @@ public final strictfp class EPSGFactoryTest extends TestCase {
             // This is the expected exception.
             assertEquals("WGS83", e.getAuthorityCode());
         }
+        loggings.assertNoUnexpectedLogging(0);
     }
 
     /**
@@ -726,6 +719,8 @@ public final strictfp class EPSGFactoryTest extends TestCase {
         @SuppressWarnings({"unchecked","rawtypes"})
         final Class<? extends IdentifiedObject> wrong = (Class) String.class;
         assertTrue("Dummy type", factory.getAuthorityCodes(wrong).isEmpty());
+
+        loggings.assertNoUnexpectedLogging(0);
     }
 
     /**
@@ -742,6 +737,7 @@ public final strictfp class EPSGFactoryTest extends TestCase {
         assertEquals("NTF (Paris) / Nord France",  factory.getDescriptionText("27591").toString(Locale.US));
         assertEquals("NTF (Paris) / France II",    factory.getDescriptionText("27582").toString(Locale.US));
         assertEquals("Ellipsoidal height",         factory.getDescriptionText(   "84").toString(Locale.US));
+        loggings.assertNoUnexpectedLogging(0);
     }
 
     /**
@@ -798,6 +794,7 @@ public final strictfp class EPSGFactoryTest extends TestCase {
             factory.printCacheContent(out);
             throw error;
         }
+        loggings.assertNoUnexpectedLogging(0);
     }
 
     /**
@@ -811,8 +808,9 @@ public final strictfp class EPSGFactoryTest extends TestCase {
         assumeNotNull(factory);
         final CoordinateOperation operation = factory.createCoordinateOperation("1764");
         assertEpsgNameAndIdentifierEqual("NTF (Paris) to NTF (2)", 1764, operation);
-        assertInstanceOf("EPSG::1764", Transformation.class, operation);
+        assertInstanceOf("EPSG:1764", Transformation.class, operation);
         assertSame("Operation shall be cached", operation, factory.createCoordinateOperation("1764"));
+        loggings.assertNoUnexpectedLogging(0);
     }
 
     /**
@@ -830,6 +828,7 @@ public final strictfp class EPSGFactoryTest extends TestCase {
         assertEpsgNameAndIdentifierEqual("BD72 to WGS 84 (1)", 1609, operation);
         assertEquals(1.0, ((AbstractCoordinateOperation) operation).getLinearAccuracy(), STRICT);
         assertSame("Operation shall be cached", operation, factory.createCoordinateOperation("1609"));
+        loggings.assertNoUnexpectedLogging(0);
     }
 
     /**
@@ -894,7 +893,6 @@ public final strictfp class EPSGFactoryTest extends TestCase {
         assertTrue("contains(“EPSG::1989”)", all.contains(operation3));
 
         int count = 0;
-        listener.maximumLogCount = all.size();              // Ignore log message for unsupported operation methods.
         for (final CoordinateOperation tr : all) {
             assertSame("sourceCRS", sourceCRS, tr.getSourceCRS());
             assertSame("targetCRS", targetCRS, tr.getTargetCRS());
@@ -951,6 +949,7 @@ public final strictfp class EPSGFactoryTest extends TestCase {
          */
         finder.setSearchDomain(IdentifiedObjectFinder.Domain.DECLARATION);
         assertSame("The CRS should still in the cache.", found, finder.findSingleton(crs));
+        loggings.assertNoUnexpectedLogging(0);
     }
 
     /**
@@ -1005,5 +1004,6 @@ public final strictfp class EPSGFactoryTest extends TestCase {
         assertEpsgNameAndIdentifierEqual("Beijing 1954 / 3-degree Gauss-Kruger CM 135E",  2442, it.next());
         assertEpsgNameAndIdentifierEqual("Beijing 1954 / Gauss-Kruger CM 135E", 21463, it.next());
         assertFalse("Expected no more element.", it.hasNext());
+        loggings.assertNoUnexpectedLogging(0);
     }
 }

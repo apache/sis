@@ -36,21 +36,11 @@ import static org.apache.sis.test.Assert.*;
  */
 public final strictfp class DefaultScopeDescriptionTest extends TestCase {
     /**
-     * A JUnit {@linkplain Rule rule} for listening to log events. This field is public
-     * because JUnit requires us to do so, but should be considered as an implementation
-     * details (it should have been a private field).
+     * A JUnit {@link Rule} for listening to log events. This field is public because JUnit requires us to
+     * do so, but should be considered as an implementation details (it should have been a private field).
      */
     @Rule
-    public final LoggingWatcher listener = new LoggingWatcher(Context.LOGGER) {
-        /**
-         * Ensures that the logging message contains the name of the exclusive properties.
-         */
-        @Override
-        protected void verifyMessage(final String message) {
-            assertTrue(message.contains("dataset"));
-            assertTrue(message.contains("other"));
-        }
-    };
+    public final LoggingWatcher loggings = new LoggingWatcher(Context.LOGGER);
 
     /**
      * Tests the various setter methods. Since they are exclusive properties,
@@ -61,11 +51,13 @@ public final strictfp class DefaultScopeDescriptionTest extends TestCase {
         final DefaultScopeDescription metadata = new DefaultScopeDescription();
         metadata.setDataset("A dataset");
         assertEquals("dataset", "A dataset", metadata.getDataset());
+        loggings.assertNoUnexpectedLogging(0);
 
-        listener.maximumLogCount = 1;
         metadata.setOther(new SimpleInternationalString("Other value"));
         assertEquals("other", "Other value", String.valueOf(metadata.getOther()));
         assertNull("dataset", metadata.getDataset());
+        loggings.assertLoggingContains(0, "dataset", "other");
+        loggings.assertNoUnexpectedLogging(1);
 
         metadata.setDataset(null); // Expected to be a no-op.
         assertEquals("other", "Other value", String.valueOf(metadata.getOther()));
@@ -74,5 +66,6 @@ public final strictfp class DefaultScopeDescriptionTest extends TestCase {
         metadata.setOther(null);
         assertNull("other",   metadata.getOther());
         assertNull("dataset", metadata.getDataset());
+        loggings.assertNoUnexpectedLogging(1);
     }
 }

@@ -24,7 +24,6 @@ import org.opengis.referencing.crs.CRSAuthorityFactory;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.apache.sis.util.ComparisonMode;
-import org.apache.sis.util.logging.Logging;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.referencing.crs.HardCodedCRS;
@@ -51,27 +50,11 @@ import static org.apache.sis.test.Assert.*;
  */
 public final strictfp class AuthorityFactoriesTest extends TestCase {
     /**
-     * A JUnit {@linkplain Rule rule} for listening to log events. This field is public because JUnit requires
-     * us to do so, but should be considered as an implementation details (it should have been a private field).
+     * A JUnit {@link Rule} for listening to log events. This field is public because JUnit requires us to
+     * do so, but should be considered as an implementation details (it should have been a private field).
      */
     @Rule
-    public final LoggingWatcher listener = new Listener();
-
-    /**
-     * Implementation of the {@link AuthorityFactoriesTest#listener} rule.
-     */
-    private static final class Listener extends LoggingWatcher {
-        /** The logged message. */
-        String message;
-
-        /** Creates a new log listener. */
-        Listener() {super(Logging.getLogger(Loggers.CRS_FACTORY));}
-
-        /** Stores the log message. */
-        @Override protected void verifyMessage(final String message) {
-            this.message = message;
-        }
-    }
+    public final LoggingWatcher loggings = new LoggingWatcher(Loggers.CRS_FACTORY);
 
     /**
      * Tests creation of {@code CRS:84} from various codes.
@@ -96,6 +79,7 @@ public final strictfp class AuthorityFactoriesTest extends TestCase {
         assertSame(crs, CRS.forCode("OGC:CRS84"));
 
         assertNotDeepEquals(crs, CRS.forCode("CRS:83"));
+        loggings.assertNoUnexpectedLogging(0);
     }
 
     /**
@@ -108,25 +92,25 @@ public final strictfp class AuthorityFactoriesTest extends TestCase {
     public void testVersionedEPSG() throws FactoryException {
         final CRSAuthorityFactory factory = AuthorityFactories.ALL;
         final GeographicCRS crs = factory.createGeographicCRS("EPSG:4326");
+        loggings.assertNoUnexpectedLogging(0);
 
-        listener.maximumLogCount = 1;
         assertSame(crs, factory.createGeographicCRS("urn:ogc:def:crs:EPSG:6.11.2:4326"));
         assertSame(crs, factory.createGeographicCRS("urn:ogc:def:crs:EPSG:6.11.2:4326"));
-        String message = ((Listener) listener).message;
-        assertTrue(message, message.contains("6.11.2"));
+        loggings.assertLoggingContains(0, "6.11.2");
+        loggings.assertNoUnexpectedLogging(1);
 
-        listener.maximumLogCount = 1;
+        loggings.messages.clear();
         assertSame(crs, factory.createGeographicCRS("urn:ogc:def:crs:EPSG:7.04:4326"));
-        message = ((Listener) listener).message;
-        assertTrue(message, message.contains("7.04"));
+        loggings.assertLoggingContains(0, "7.04");
+        loggings.assertNoUnexpectedLogging(1);
 
-        listener.maximumLogCount = 1;
+        loggings.messages.clear();
         assertSame(crs, factory.createGeographicCRS("urn:ogc:def:crs:EPSG:7.10:4326"));
-        message = ((Listener) listener).message;
-        assertTrue(message, message.contains("7.10"));
+        loggings.assertLoggingContains(0, "7.10");
+        loggings.assertNoUnexpectedLogging(1);
 
-        assertEquals(0, listener.maximumLogCount);
         assertSame(crs, factory.createGeographicCRS("urn:ogc:def:crs:EPSG::4326"));
+        loggings.assertNoUnexpectedLogging(1);
     }
 
     /**
@@ -171,6 +155,7 @@ public final strictfp class AuthorityFactoriesTest extends TestCase {
             // This is the expected exception.
             assertEquals("FOO", exception.getAuthority());
         }
+        loggings.assertNoUnexpectedLogging(0);
     }
 
     /**
@@ -207,6 +192,7 @@ public final strictfp class AuthorityFactoriesTest extends TestCase {
         } catch (NoSuchAuthorityCodeException e) {
             assertNotNull(e.getMessage());
         }
+        loggings.assertNoUnexpectedLogging(0);
     }
 
     /**
@@ -221,6 +207,7 @@ public final strictfp class AuthorityFactoriesTest extends TestCase {
         assertFalse(codes.isEmpty());
         assertTrue(codes.contains("CRS:84"));
         assertTrue(codes.contains("AUTO:42001") || codes.contains("AUTO2:42001"));
+        loggings.assertNoUnexpectedLogging(0);
     }
 
     /**
@@ -236,5 +223,6 @@ public final strictfp class AuthorityFactoriesTest extends TestCase {
         assertNotNull("With scan allowed, should find the CRS.", find);
         assertTrue(HardCodedCRS.WGS84.equals(find, ComparisonMode.DEBUG));
         assertSame(factory.createCoordinateReferenceSystem("CRS:84"), find);
+        loggings.assertNoUnexpectedLogging(0);
     }
 }

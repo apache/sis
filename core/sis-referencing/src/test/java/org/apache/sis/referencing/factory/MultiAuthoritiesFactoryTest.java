@@ -39,7 +39,6 @@ import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.referencing.datum.HardCodedDatum;
-import org.apache.sis.util.logging.Logging;
 import org.apache.sis.test.LoggingWatcher;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
@@ -61,29 +60,11 @@ import static org.apache.sis.test.Assert.*;
 @DependsOn(AuthorityFactoryProxyTest.class)
 public final strictfp class MultiAuthoritiesFactoryTest extends TestCase {
     /**
-     * A JUnit {@linkplain Rule rule} for listening to log events. This field is public because JUnit requires
-     * us to do so, but should be considered as an implementation details (it should have been a private field).
+     * A JUnit {@link Rule} for listening to log events. This field is public because JUnit requires us to
+     * do so, but should be considered as an implementation details (it should have been a private field).
      */
     @Rule
-    public final LoggingWatcher listener = new Listener();
-
-    /**
-     * Implementation of the {@link MultiAuthoritiesFactoryTest#listener} rule.
-     */
-    private static final class Listener extends LoggingWatcher {
-        /** Expected keywords in the log message. */
-        String[] expectedKeywords;
-
-        /** Creates a new log listener. */
-        Listener() {super(Logging.getLogger(Loggers.CRS_FACTORY));}
-
-        /** Verifies the log message. */
-        @Override protected void verifyMessage(final String message) {
-            for (final String keyword : expectedKeywords) {
-                assertTrue(message, message.contains(keyword));
-            }
-        }
-    }
+    public final LoggingWatcher loggings = new LoggingWatcher(Loggers.CRS_FACTORY);
 
     /**
      * Tests consistency of the mock factory used by other tests in this class.
@@ -110,6 +91,7 @@ public final strictfp class MultiAuthoritiesFactoryTest extends TestCase {
                 assertInstanceOf(code, type, factory.createObject(code));
             }
         }
+        loggings.assertNoUnexpectedLogging(0);
     }
 
     /**
@@ -124,6 +106,7 @@ public final strictfp class MultiAuthoritiesFactoryTest extends TestCase {
                 Arrays.asList(mock1, mock2), null,
                 Arrays.asList(mock1, mock3), null);
         assertSetEquals(Arrays.asList("MOCK1", "MOCK2", "MOCK3"), factory.getCodeSpaces());
+        loggings.assertNoUnexpectedLogging(0);
     }
 
     /**
@@ -161,6 +144,7 @@ public final strictfp class MultiAuthoritiesFactoryTest extends TestCase {
             assertTrue(message, message.contains("MOCK1"));
             assertTrue(message, message.contains("9.9"));
         }
+        loggings.assertNoUnexpectedLogging(0);
     }
 
     /**
@@ -182,20 +166,21 @@ public final strictfp class MultiAuthoritiesFactoryTest extends TestCase {
 
         assertSame("MOCK1", mock1, factory.getAuthorityFactory(CRSAuthorityFactory.class, "mock1", null));
         assertSame("MOCK1", mock1, factory.getAuthorityFactory(CRSAuthorityFactory.class, "mock1", "2.3"));
+        loggings.assertNoUnexpectedLogging(0);
 
-        listener.maximumLogCount = 1;
-        ((Listener) listener).expectedKeywords = new String[] {"CRSAuthorityFactory", "AuthorityFactoryMock", "MOCK1", "2.3"};
         assertSame("MOCK3", mock3, factory.getAuthorityFactory(CRSAuthorityFactory.class, "mock3", null));
-        assertEquals("Expected a warning about the extraneous MOCK1 factory.", 0, listener.maximumLogCount);
+        loggings.assertLoggingContains(0, "CRSAuthorityFactory", "AuthorityFactoryMock", "MOCK1", "2.3");
+        loggings.assertNoUnexpectedLogging(1);
 
-        listener.maximumLogCount = 1;
-        ((Listener) listener).expectedKeywords = new String[] {"CRSAuthorityFactory", "AuthorityFactoryMock", "MOCK3"};
+        loggings.messages.clear();
         assertSame("MOCK5", mock5, factory.getAuthorityFactory(CRSAuthorityFactory.class, "mock5", null));
-        assertEquals("Expected a warning about the extraneous MOCK3 factory.", 0, listener.maximumLogCount);
+        loggings.assertLoggingContains(0, "CRSAuthorityFactory", "AuthorityFactoryMock", "MOCK3");
+        loggings.assertNoUnexpectedLogging(1);
 
         // Ask again the same factories. No logging should be emitted now, because we already logged.
         assertSame("MOCK3", mock3, factory.getAuthorityFactory(CRSAuthorityFactory.class, "mock3", null));
         assertSame("MOCK5", mock5, factory.getAuthorityFactory(CRSAuthorityFactory.class, "mock5", null));
+        loggings.assertNoUnexpectedLogging(1);
     }
 
     /**
@@ -226,6 +211,7 @@ public final strictfp class MultiAuthoritiesFactoryTest extends TestCase {
             final String message = e.getMessage();
             assertTrue(message, message.contains("MOCK2"));
         }
+        loggings.assertNoUnexpectedLogging(0);
     }
 
     /**
@@ -255,6 +241,7 @@ public final strictfp class MultiAuthoritiesFactoryTest extends TestCase {
             assertTrue(message, message.contains("datum"));
             assertTrue(message, message.contains("GeographicCRS"));
         }
+        loggings.assertNoUnexpectedLogging(0);
     }
 
     /**
@@ -281,6 +268,7 @@ public final strictfp class MultiAuthoritiesFactoryTest extends TestCase {
             assertTrue(message, message.contains("crs"));
             assertTrue(message, message.contains("Datum"));
         }
+        loggings.assertNoUnexpectedLogging(0);
     }
 
     /**
@@ -304,6 +292,7 @@ public final strictfp class MultiAuthoritiesFactoryTest extends TestCase {
         assertFalse("MOCK:6326", codes.contains("MOCK:6326"));      // A geodetic datum.
         assertFalse("isEmpty()", codes.isEmpty());
         assertArrayEquals(new String[] {"MOCK:4979", "MOCK:84", "MOCK:4326", "MOCK:5714", "MOCK:9905"}, codes.toArray());
+        loggings.assertNoUnexpectedLogging(0);
     }
 
     /**
@@ -325,10 +314,9 @@ public final strictfp class MultiAuthoritiesFactoryTest extends TestCase {
         /*
          * Following should log a warning telling that the authority factories do not match.
          */
-        listener.maximumLogCount = 1;
-        ((Listener) listener).expectedKeywords = new String[] {"MOCK:4326", "MOCK:2.3:84"};
         assertTrue(factory.createFromCoordinateReferenceSystemCodes("MOCK:4326", "MOCK:2.3:84").isEmpty());
-        assertEquals("Expected a warning about mismatched factories.", 0, listener.maximumLogCount);
+        loggings.assertLoggingContains(0, "MOCK:4326", "MOCK:2.3:84");
+        loggings.assertNoUnexpectedLogging(1);
     }
 
     /**
@@ -344,5 +332,6 @@ public final strictfp class MultiAuthoritiesFactoryTest extends TestCase {
         final MultiAuthoritiesFactory factory = new MultiAuthoritiesFactory(mock, null, mock, null);
         final IdentifiedObjectFinder finder = factory.newIdentifiedObjectFinder();
         assertSame(HardCodedDatum.WGS72, finder.findSingleton(HardCodedDatum.WGS72));
+        loggings.assertNoUnexpectedLogging(0);
     }
 }

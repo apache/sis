@@ -33,7 +33,6 @@ import org.apache.sis.internal.referencing.GeodeticObjectBuilder;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.io.wkt.Convention;
-import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.LenientComparable;
 
@@ -64,19 +63,15 @@ import static org.apache.sis.test.ReferencingAssert.*;
 public final strictfp class DefaultProjectedCRSTest extends XMLTestCase {
     /**
      * A JUnit rule for listening to log events emitted during execution of {@link #testWKT1_WithExplicitAxisLength()}.
-     * This rule verifies that the message logged contains the expected information. The expected message is something
-     * like "Parameter semi_minor could have been omitted but got a value that does not match the WGS84 ellipsoid".
+     * This rule is used by the test methods for verifying that the logged messages contain the expected information.
+     * The expected message is something like "Parameter semi_minor could have been omitted but got a value that does
+     * not match the WGS84 ellipsoid".
      *
      * <p>This field is public because JUnit requires us to do so, but should be considered as an implementation details
      * (it should have been a private field).</p>
      */
     @Rule
-    public final LoggingWatcher listener = new LoggingWatcher(Logging.getLogger(Loggers.COORDINATE_OPERATION)) {
-        @Override protected void verifyMessage(final String message) {
-            assertTrue(message, message.contains("semi_minor"));
-            assertTrue(message, message.contains("WGS84"));
-        }
-    };
+    public final LoggingWatcher loggings = new LoggingWatcher(Loggers.COORDINATE_OPERATION);
 
     /**
      * An XML file in this package containing a projected CRS definition.
@@ -132,6 +127,8 @@ public final strictfp class DefaultProjectedCRSTest extends XMLTestCase {
                 "  AXIS[“Northing”, NORTH],\n" +
                 "  AUTHORITY[“EPSG”, “27572”]]",
                 crs);
+
+        loggings.assertNoUnexpectedLogging(0);
     }
 
     /**
@@ -163,6 +160,8 @@ public final strictfp class DefaultProjectedCRSTest extends XMLTestCase {
                 "  AXIS[“Northing”, NORTH],\n" +
                 "  AUTHORITY[“EPSG”, “27572”]]",
                 crs);
+
+        loggings.assertNoUnexpectedLogging(0);
     }
 
     /**
@@ -197,6 +196,8 @@ public final strictfp class DefaultProjectedCRSTest extends XMLTestCase {
                 "  AXIS[“Northing”, NORTH],\n" +
                 "  AUTHORITY[“EPSG”, “27572”]]",
                 crs);
+
+        loggings.assertNoUnexpectedLogging(0);
     }
 
     /**
@@ -234,6 +235,8 @@ public final strictfp class DefaultProjectedCRSTest extends XMLTestCase {
                 "    Unit[“metre”, 1, Id[“EPSG”, 9001]],\n" +
                 "  Id[“EPSG”, 27572]]",
                 crs);
+
+        loggings.assertNoUnexpectedLogging(0);
     }
 
     /**
@@ -265,6 +268,8 @@ public final strictfp class DefaultProjectedCRSTest extends XMLTestCase {
                 "    Unit[“metre”, 1],\n" +
                 "  Id[“EPSG”, 27572, URI[“urn:ogc:def:crs:EPSG::27572”]]]",
                 crs);
+
+        loggings.assertNoUnexpectedLogging(0);
         /*
          * Try again, but with mixed units. It should force the formatter to add explicit
          * unit declaration in PrimeMeridian[…] and some Parameter[…] elements.
@@ -290,6 +295,8 @@ public final strictfp class DefaultProjectedCRSTest extends XMLTestCase {
                 "    Unit[“metre”, 1],\n" +
                 "  Id[“EPSG”, 27572, URI[“urn:ogc:def:crs:EPSG::27572”]]]",
                 crs);
+
+        loggings.assertNoUnexpectedLogging(0);
     }
 
     /**
@@ -322,6 +329,8 @@ public final strictfp class DefaultProjectedCRSTest extends XMLTestCase {
                 "  ID[“EPSG”, 27572, URI[“urn:ogc:def:crs:EPSG::27572”]]]",
                 crs);
 
+        loggings.assertNoUnexpectedLogging(0);
+
         assertWktEquals(Convention.WKT2_SIMPLIFIED,
                 "ProjectedCRS[“NTF (Paris) / Lambert zone II”,\n" +
                 "  BaseGeodCRS[“NTF (Paris)”,\n" +
@@ -342,6 +351,8 @@ public final strictfp class DefaultProjectedCRSTest extends XMLTestCase {
                 "    Unit[“metre”, 1],\n" +
                 "  Id[“EPSG”, 27572, URI[“urn:ogc:def:crs:EPSG::27572”]]]",
                 crs);
+
+        loggings.assertNoUnexpectedLogging(0);
     }
 
     /**
@@ -356,7 +367,6 @@ public final strictfp class DefaultProjectedCRSTest extends XMLTestCase {
     @Test
     @DependsOnMethod("testWKT1")
     public void testWKT1_WithExplicitAxisLength() throws FactoryException {
-        listener.maximumLogCount = 1;
         final ProjectedCRS crs = new GeodeticObjectBuilder()
                 .setConversionMethod("Mercator (variant A)")
                 .setConversionName("Popular Visualisation Pseudo-Mercator")
@@ -386,7 +396,8 @@ public final strictfp class DefaultProjectedCRSTest extends XMLTestCase {
                 "  AXIS[“Northing”, NORTH]]",
                 crs);
 
-        assertEquals("A warning should have been logged.", 0, listener.maximumLogCount);
+        loggings.assertLoggingContains(0, "semi_minor", "WGS84");
+        loggings.assertNoUnexpectedLogging(1);
     }
 
     /**
@@ -424,6 +435,8 @@ public final strictfp class DefaultProjectedCRSTest extends XMLTestCase {
                 "    Axis[“Northing (N)”, north],\n" +
                 "    Unit[“metre”, 1]]",
                 crs);
+
+        loggings.assertNoUnexpectedLogging(0);
     }
 
     /**
@@ -459,6 +472,8 @@ public final strictfp class DefaultProjectedCRSTest extends XMLTestCase {
          */
         assertMarshalEqualsFile(XML_FILE, crs, STRICT, new String[] {"gml:name"},
                 new String[] {"xmlns:*", "xsi:schemaLocation", "gml:id"});
+
+        loggings.assertNoUnexpectedLogging(0);
     }
 
     /**
@@ -478,5 +493,6 @@ public final strictfp class DefaultProjectedCRSTest extends XMLTestCase {
         assertTrue ("IGNORE_METADATA", ((LenientComparable) standard).equals(normalized, ComparisonMode.IGNORE_METADATA));
         assertTrue ("APPROXIMATIVE",   ((LenientComparable) standard).equals(normalized, ComparisonMode.APPROXIMATIVE));
         assertTrue ("ALLOW_VARIANT",   ((LenientComparable) standard).equals(normalized, ComparisonMode.ALLOW_VARIANT));
+        loggings.assertNoUnexpectedLogging(0);
     }
 }
