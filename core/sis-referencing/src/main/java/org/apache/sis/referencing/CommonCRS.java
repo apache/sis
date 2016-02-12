@@ -57,6 +57,7 @@ import org.apache.sis.referencing.crs.DefaultTemporalCRS;
 import org.apache.sis.referencing.crs.DefaultVerticalCRS;
 import org.apache.sis.referencing.crs.DefaultGeographicCRS;
 import org.apache.sis.referencing.crs.DefaultGeocentricCRS;
+import org.apache.sis.referencing.factory.UnavailableFactoryException;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.internal.referencing.provider.TransverseMercator;
 import org.apache.sis.internal.referencing.Formulas;
@@ -1537,6 +1538,9 @@ public enum CommonCRS {
      * After invoking this method, the caller will fallback on hard-coded values.
      */
     static void failure(final Object caller, final String method, final FactoryException e) {
+        if (e instanceof UnavailableFactoryException) {
+            AuthorityFactories.failure((UnavailableFactoryException) e);
+        }
         Logging.unexpectedException(Logging.getLogger(Loggers.CRS_FACTORY), caller.getClass(), method, e);
     }
 }

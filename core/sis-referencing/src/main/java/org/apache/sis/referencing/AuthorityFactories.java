@@ -142,6 +142,22 @@ final class AuthorityFactories<T extends AuthorityFactory> extends LazySet<T> {
     }
 
     /**
+     * Notifies that a factory is unavailable, but without giving a fallback and without logging.
+     * The caller is responsible for logging a warning and to provide its own fallback.
+     */
+    static void failure(final UnavailableFactoryException e) {
+        if (!(e.getCause() instanceof SQLTransientException)) {
+            final AuthorityFactory unavailable = e.getUnavailableFactory();
+            synchronized (EPSG) {
+                if (unavailable == EPSG[0]) {
+                    ALL.reload();
+                    EPSG[0] = EPSGFactoryFallback.INSTANCE;
+                }
+            }
+        }
+    }
+
+    /**
      * Logs the given exception at the given level. This method pretends that the logging come from
      * {@link CRS#getAuthorityFactory(String)}, which is the public facade for {@link #EPSG()}.
      */
