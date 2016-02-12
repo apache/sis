@@ -781,8 +781,8 @@ addURIs:    for (int i=0; ; i++) {
      * @return The boolean at the specified column, or {@code null}.
      * @throws SQLException if an error occurred while querying the database.
      */
-    private static boolean getOptionalBoolean(final ResultSet result, final int columnIndex) throws SQLException {
-        return result.getInt(columnIndex) != 0;
+    private boolean getOptionalBoolean(final ResultSet result, final int columnIndex) throws SQLException {
+        return translator.useBoolean() ? result.getBoolean(columnIndex) : (result.getInt(columnIndex) != 0);
     }
 
     /**
