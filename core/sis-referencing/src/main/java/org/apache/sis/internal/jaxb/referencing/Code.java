@@ -116,7 +116,7 @@ public final class Code {
              * an EPSG code has the "EPSG" codespace. Example:
              *
              *    - XML: <gml:identifier codeSpace="IOGP">urn:ogc:def:crs:EPSG::4326</gml:identifier>
-             *    - ISO: For "EPSG::4326", Identifier.codeSpace = "EPSG" and Identifier.code = "4326".
+             *    - ISO: For "EPSG:4326", Identifier.codeSpace = "EPSG" and Identifier.code = "4326".
              *
              * Apache SIS attempts to organize this apparent contradiction by considering IOGP as the codespace of
              * the EPSG codespace, but this interpretation is not likely to be widely used by libraries other than

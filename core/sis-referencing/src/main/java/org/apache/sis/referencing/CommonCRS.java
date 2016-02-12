@@ -505,7 +505,7 @@ public enum CommonCRS {
                         failure(this, "geographic", e);
                     }
                     /*
-                     * All constants defined in this enumeration use the same coordinate system, EPSG::6422.
+                     * All constants defined in this enumeration use the same coordinate system, EPSG:6422.
                      * We will arbitrarily create this CS only for the most frequently created CRS,
                      * and share that CS instance for all other constants.
                      */
@@ -562,7 +562,7 @@ public enum CommonCRS {
                         }
                     }
                     /*
-                     * All constants defined in this enumeration use the same coordinate system, EPSG::6423.
+                     * All constants defined in this enumeration use the same coordinate system, EPSG:6423.
                      * We will arbitrarily create this CS only for the most frequently created CRS,
                      * and share that CS instance for all other constants.
                      */
@@ -620,7 +620,7 @@ public enum CommonCRS {
                         }
                     }
                     /*
-                     * All constants defined in this enumeration use the same coordinate system, EPSG::6500.
+                     * All constants defined in this enumeration use the same coordinate system, EPSG:6500.
                      * We will arbitrarily create this CS only for the most frequently created CRS,
                      * and share that CS instance for all other constants.
                      */
@@ -883,7 +883,7 @@ public enum CommonCRS {
                 }
             }
             /*
-             * All constants defined in this enumeration use the same coordinate system, EPSG::4400.
+             * All constants defined in this enumeration use the same coordinate system, EPSG:4400.
              * We will arbitrarily create this CS only for a frequently created CRS, and share that
              * CS instance for all other constants.
              */
