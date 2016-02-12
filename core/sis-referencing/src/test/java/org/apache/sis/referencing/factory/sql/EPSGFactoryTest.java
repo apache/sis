@@ -164,7 +164,7 @@ public final strictfp class EPSGFactoryTest extends TestCase {
     }
 
     /**
-     * Tests the "WGS 84" geographic CRS (EPSG::4326).
+     * Tests the "WGS 84" geographic CRS (EPSG:4326).
      *
      * @throws FactoryException if an error occurred while querying the factory.
      */
@@ -174,16 +174,17 @@ public final strictfp class EPSGFactoryTest extends TestCase {
         final GeographicCRS crs = factory.createGeographicCRS("EPSG:4326");
         assertEpsgNameAndIdentifierEqual("WGS 84", 4326, crs);
         assertEpsgNameAndIdentifierEqual("World Geodetic System 1984", 6326, crs.getDatum());
-        assertAxisDirectionsEqual("EPSG::6422", crs.getCoordinateSystem(), AxisDirection.NORTH, AxisDirection.EAST);
+        assertAxisDirectionsEqual("EPSG:6422", crs.getCoordinateSystem(), AxisDirection.NORTH, AxisDirection.EAST);
 
         final BursaWolfParameters[] bwp = ((DefaultGeodeticDatum) crs.getDatum()).getBursaWolfParameters();
         assertEquals("Expected no Bursa-Wolf parameters.", 0, bwp.length);
 
         assertSame("CRS shall be cached", crs, factory.createCoordinateReferenceSystem("4326"));
+        assertSame("Shall accept \"::\"", crs, factory.createGeographicCRS("EPSG::4326"));
     }
 
     /**
-     * Tests the "Datum 73" geographic CRS (EPSG::4274), which has a datum different than the WGS84 one.
+     * Tests the "Datum 73" geographic CRS (EPSG:4274), which has a datum different than the WGS84 one.
      *
      * @throws FactoryException if an error occurred while querying the factory.
      */
@@ -203,7 +204,7 @@ public final strictfp class EPSGFactoryTest extends TestCase {
     }
 
     /**
-     * Tests the "Lao 1997" geographic CRS (EPSG::4993) with an ellipsoidal height.
+     * Tests the "Lao 1997" geographic CRS (EPSG:4993) with an ellipsoidal height.
      *
      * @throws FactoryException if an error occurred while querying the factory.
      */
@@ -221,7 +222,7 @@ public final strictfp class EPSGFactoryTest extends TestCase {
     }
 
     /**
-     * Tests the "ITRF93" geocentric CRS (EPSG::4915).
+     * Tests the "ITRF93" geocentric CRS (EPSG:4915).
      *
      * @throws FactoryException if an error occurred while querying the factory.
      */
@@ -238,7 +239,7 @@ public final strictfp class EPSGFactoryTest extends TestCase {
     }
 
     /**
-     * Tests the "NAD27(76) / UTM zone 15N" projected CRS (EPSG::2027).
+     * Tests the "NAD27(76) / UTM zone 15N" projected CRS (EPSG:2027).
      *
      * @throws FactoryException if an error occurred while querying the factory.
      */
@@ -274,7 +275,7 @@ public final strictfp class EPSGFactoryTest extends TestCase {
     }
 
     /**
-     * Tests the "Beijing 1954 / 3-degree Gauss-Kruger CM 135E" projected CRS (EPSG::2442).
+     * Tests the "Beijing 1954 / 3-degree Gauss-Kruger CM 135E" projected CRS (EPSG:2442).
      * This projected CRS has (North, East) axis orientations instead of (East, North).
      *
      * @throws FactoryException if an error occurred while querying the factory.
@@ -410,7 +411,7 @@ public final strictfp class EPSGFactoryTest extends TestCase {
     }
 
     /**
-     * Tests the "Barcelona Grid B1" engineering CRS (EPSG::5801).
+     * Tests the "Barcelona Grid B1" engineering CRS (EPSG:5801).
      *
      * @throws FactoryException if an error occurred while querying the factory.
      */
@@ -744,7 +745,7 @@ public final strictfp class EPSGFactoryTest extends TestCase {
     }
 
     /**
-     * Tests the "UTM zone 10N" conversion (EPSG::16010).
+     * Tests the "UTM zone 10N" conversion (EPSG:16010).
      *
      * @throws FactoryException if an error occurred while querying the factory.
      */
@@ -790,7 +791,7 @@ public final strictfp class EPSGFactoryTest extends TestCase {
         } catch (AssertionError error) {
             out.println("The following contains more information about a JUnit test failure.");
             out.println("See the JUnit report for the stack trace. Below is a cache dump.");
-            out.println("See the operation method EPSG::9807 and compare with:");
+            out.println("See the operation method EPSG:9807 and compare with:");
             out.print  ("  - Method obtained directly:   "); out.println(System.identityHashCode(copMethod));
             out.print  ("  - Method obtained indirectly: "); out.println(System.identityHashCode(crsMethod));
             out.println("Content of EPSGFactory cache:");
@@ -800,7 +801,7 @@ public final strictfp class EPSGFactoryTest extends TestCase {
     }
 
     /**
-     * Tests longitude rotation (EPSG::1764). This is a very simple case for checking
+     * Tests longitude rotation (EPSG:1764). This is a very simple case for checking
      * that this part is okay before to try more complex transformations.
      *
      * @throws FactoryException if an error occurred while querying the factory.
@@ -815,8 +816,8 @@ public final strictfp class EPSGFactoryTest extends TestCase {
     }
 
     /**
-     * Tests "BD72 to WGS 84 (1)" (EPSG::1609) transformation. This one has an unusual unit for the
-     * "Scale difference" parameter (EPSG::8611). The value is 0.999999 and the unit is "unity" (EPSG::9201)
+     * Tests "BD72 to WGS 84 (1)" (EPSG:1609) transformation. This one has an unusual unit for the
+     * "Scale difference" parameter (EPSG:8611). The value is 0.999999 and the unit is "unity" (EPSG:9201)
      * instead of the usual "parts per million" (EPSG:9202).
      *
      * @throws FactoryException if an error occurred while querying the factory.
@@ -925,7 +926,7 @@ public final strictfp class EPSGFactoryTest extends TestCase {
                 "  AXIS[“Geodetic longitude”, EAST]]");
         /*
          * First, search for a CRS with axis order that does not match the ones in the EPSG database.
-         * IdentifiedObjectFinder should not accept EPSG::4326 as a match for the given CRS.
+         * IdentifiedObjectFinder should not accept EPSG:4326 as a match for the given CRS.
          */
         assertEquals("Full scan should be enabled by default.",
                 IdentifiedObjectFinder.Domain.VALID_DATASET, finder.getSearchDomain());

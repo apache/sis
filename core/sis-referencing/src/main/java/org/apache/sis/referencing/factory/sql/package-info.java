@@ -42,7 +42,7 @@
  * <div class="section">The EPSG dataset</div>
  * A widely-used factory is the <a href="http://www.epsg.org">EPSG geodetic dataset</a>.
  * EPSG codes are numerical identifiers.
- * For example {@code "EPSG::4326"} is the EPSG identifier for the <cite>"WGS 84"</cite> geographic CRS.
+ * For example {@code "EPSG:4326"} is the EPSG identifier for the <cite>"WGS 84"</cite> geographic CRS.
  * As an extension, the Apache SIS implementation accepts names as well as numeric identifiers.
  * For example the two following method calls fetch the same object:
  *
