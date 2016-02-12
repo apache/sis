@@ -196,6 +196,8 @@ public class SQLTranslator implements Function<String,String> {
     /**
      * {@code true} if the database uses the {@code BOOLEAN} type instead than {@code SMALLINT}
      * for the {@code show_crs}, {@code show_operation} and all {@code deprecated} fields.
+     *
+     * @see #useBoolean()
      */
     private boolean useBoolean;
 
@@ -297,7 +299,8 @@ public class SQLTranslator implements Function<String,String> {
         try (ResultSet result = md.getColumns(catalog, schema, null, deprecated)) {
             while (result.next()) {
                 if (CharSequences.endsWith(result.getString("TABLE_NAME"), "Datum", true)) {
-                    useBoolean = result.getInt("DATA_TYPE") == Types.BOOLEAN;
+                    final int type = result.getInt("DATA_TYPE");
+                    useBoolean = (type == Types.BOOLEAN) || (type == Types.BIT);
                     break;
                 }
             }
@@ -341,6 +344,14 @@ public class SQLTranslator implements Function<String,String> {
      */
     static String tableNotFound(final Locale locale) {
         return Errors.getResources(locale).getString(Errors.Keys.TableNotFound_1, SENTINEL[MIXED_CASE]);
+    }
+
+    /**
+     * Returns {@code true} if the database uses the {@code BOOLEAN} type instead than {@code SMALLINT}
+     * for the {@code show_crs}, {@code show_operation} and all {@code deprecated} fields.
+     */
+    final boolean useBoolean() {
+        return useBoolean;
     }
 
     /**
