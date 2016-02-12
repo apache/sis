@@ -42,21 +42,11 @@ import static org.apache.sis.test.Assert.*;
 @DependsOn(DefaultRepresentativeFractionTest.class)
 public final strictfp class DefaultResolutionTest extends TestCase {
     /**
-     * A JUnit {@linkplain Rule rule} for listening to log events. This field is public
-     * because JUnit requires us to do so, but should be considered as an implementation
-     * details (it should have been a private field).
+     * A JUnit {@link Rule} for listening to log events. This field is public because JUnit requires us to
+     * do so, but should be considered as an implementation details (it should have been a private field).
      */
     @Rule
-    public final LoggingWatcher listener = new LoggingWatcher(Context.LOGGER) {
-        /**
-         * Ensures that the logging message contains the name of the exclusive properties.
-         */
-        @Override
-        protected void verifyMessage(final String message) {
-            assertTrue(message.contains("distance"));
-            assertTrue(message.contains("equivalentScale"));
-        }
-    };
+    public final LoggingWatcher loggings = new LoggingWatcher(Context.LOGGER);
 
     /**
      * Tests the {@link DefaultResolution#DefaultResolution(RepresentativeFraction)} constructor.
@@ -71,6 +61,7 @@ public final strictfp class DefaultResolutionTest extends TestCase {
         scale.setDenominator(100);
         final DefaultResolution metadata = new DefaultResolution(scale);
         assertSame(scale, metadata.getEquivalentScale());
+        loggings.assertNoUnexpectedLogging(0);
     }
 
     /**
@@ -86,11 +77,13 @@ public final strictfp class DefaultResolutionTest extends TestCase {
         metadata.setDistance(2.0);
         assertEquals("distance", Double.valueOf(2.0), metadata.getDistance());
         assertNull("equivalentScale", metadata.getEquivalentScale());
+        loggings.assertNoUnexpectedLogging(0);
 
-        listener.maximumLogCount = 1;
         metadata.setEquivalentScale(scale);
         assertSame("equivalentScale", scale, metadata.getEquivalentScale());
         assertNull("distance", metadata.getDistance());
+        loggings.assertLoggingContains(0, "distance", "equivalentScale");
+        loggings.assertNoUnexpectedLogging(1);
 
         metadata.setDistance(null); // Expected to be a no-op.
         assertSame("equivalentScale", scale, metadata.getEquivalentScale());
@@ -99,6 +92,7 @@ public final strictfp class DefaultResolutionTest extends TestCase {
         metadata.setEquivalentScale(null);
         assertNull("equivalentScale", metadata.getEquivalentScale());
         assertNull("distance", metadata.getDistance());
+        loggings.assertNoUnexpectedLogging(1);
     }
 
     /**
@@ -161,5 +155,6 @@ public final strictfp class DefaultResolutionTest extends TestCase {
          * Should not be a problem neither.
          */
         assertEquals(resolution, XML.unmarshal(xml));
+        loggings.assertNoUnexpectedLogging(0);
     }
 }

@@ -16,6 +16,8 @@
  */
 package org.apache.sis.test;
 
+import java.util.List;
+import java.util.ArrayList;
 import java.util.logging.Filter;
 import java.util.logging.Logger;
 import java.util.logging.LogRecord;
@@ -27,44 +29,39 @@ import static org.junit.Assert.*;
 
 
 /**
- * Watches the logs sent to the given logger. Logs will be allowed only if the test was
- * expected to cause some logging events to occur, otherwise a test failure will occurs.
- *
- * <div class="note">Usage example</div>
- * Create a rule in the JUnit test class like below:
+ * Watches the logs sent to the given logger.
+ * For using, create a rule in the JUnit test class like below:
  *
  * {@preformat java
  *     &#64;Rule
- *     public final LoggingWatcher listener = new LoggingWatcher(Logging.getLogger(Loggers.XML)) {
- *         &#64;Override protected void verifyMessage(final String message) {
- *             assertTrue(message.contains("An expected word in the logging message"));
- *         }
- *     };
+ *     public final LoggingWatcher loggings = new LoggingWatcher(Logging.getLogger(Loggers.XML));
  * }
  *
- * Then, <em>only</em> in the test which are expected to emit a warning, add the following line
+ * In every tests that do not expect loggings, invoke the following method last:
+ *
+ * {@preformat java
+ *     loggings.assertNoUnexpectedLogging(0);
+ * }
+ *
+ * In tests that are expected to emit warnings, add the following lines
  * (replace 1 by a higher value if more than one logging is expected):
  *
  * {@preformat java
- *     listener.maximumLogCount = 1;
+ *     // Do the test here.
+ *     loggings.assertLoggingContains(0, "Some keywords that are expected to be found in the message");
+ *     loggings.assertNoUnexpectedLogging(1);
  * }
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.6
- * @version 0.6
+ * @version 0.7
  * @module
  */
-public strictfp class LoggingWatcher extends TestWatcher implements Filter {
+public final strictfp class LoggingWatcher extends TestWatcher implements Filter {
     /**
-     * The maximal number of logs expected by the test. If this value is positive, then it is
-     * decremented when {@link #isLoggable(LogRecord)} is invoked until the value reach zero.
-     * If the value is zero and {@code isLoggable(LogRecord)} is invoked, then a test failure
-     * occurs.
-     *
-     * <p>The initial value of this field is 0. Test cases shall set this field to a non-zero
-     * value in order to allow log events.</p>
+     * The logged messages.
      */
-    public int maximumLogCount;
+    public final List<String> messages = new ArrayList<>();
 
     /**
      * The logger to watch.
@@ -87,6 +84,15 @@ public strictfp class LoggingWatcher extends TestWatcher implements Filter {
     }
 
     /**
+     * Creates a new watcher for the given logger.
+     *
+     * @param logger The name of logger to watch.
+     */
+    public LoggingWatcher(final String logger) {
+        this.logger = Logger.getLogger(logger);
+    }
+
+    /**
      * Invoked when a test is about to start. This method installs this {@link Filter}
      * for the log messages before the tests are run. This installation will cause the
      * {@link #isLoggable(LogRecord)} method to be invoked when a message is logged.
@@ -99,7 +105,6 @@ public strictfp class LoggingWatcher extends TestWatcher implements Filter {
     protected final void starting(final Description description) {
         assertNull(logger.getFilter());
         logger.setFilter(this);
-        maximumLogCount = 0;
     }
 
     /**
@@ -114,26 +119,42 @@ public strictfp class LoggingWatcher extends TestWatcher implements Filter {
     }
 
     /**
-     * Invoked (indirectly) when a tested method has emitted a log message. This method verifies
-     * if we were expecting a log message, then decrements the {@link #maximumLogCount} value.
+     * Invoked (indirectly) when a tested method has emitted a log message.
+     * This method adds the logging message to the {@link #messages} list.
      */
     @Override
     public final boolean isLoggable(final LogRecord record) {
-        if (maximumLogCount <= 0) {
-            fail("Unexpected logging:\n" + formatter.format(record));
-        }
-        maximumLogCount--;
-        verifyMessage(formatter.formatMessage(record));
+        messages.add(formatter.formatMessage(record));
         return TestCase.VERBOSE;
     }
 
     /**
-     * Invoked by {@link #isLoggable(LogRecord)} when a tested method has emitted a log message.
-     * The default implementation does nothing. Subclasses can override this method in order to
-     * perform additional check.
+     * Verifies that a logging message exists at the given index and contains the given keywords.
      *
-     * @param message The logging message.
+     * @param index    Index of the logging message to verify.
+     * @param keywords The keywords that we are expected to find in the logging message.
      */
-    protected void verifyMessage(final String message) {
+    public void assertLoggingContains(final int index, final String... keywords) {
+        final int size = messages.size();
+        if (index >= size) {
+            fail("Expected at least " + (index + 1) + " logging messages but got " + size);
+        }
+        final String message = messages.get(index);
+        for (final String word : keywords) {
+            if (!message.contains(word)) {
+                fail("Expected the logging message to contains the “"+ word + "” word but got:\n" + message);
+            }
+        }
+    }
+
+    /**
+     * Verifies that no more than {@code maxCount} messages have been logged.
+     *
+     * @param maxCount The maximum number of logging messages.
+     */
+    public void assertNoUnexpectedLogging(final int maxCount) {
+        if (messages.size() > maxCount) {
+            fail("Unexpected logging message: " + messages.get(maxCount));
+        }
     }
 }

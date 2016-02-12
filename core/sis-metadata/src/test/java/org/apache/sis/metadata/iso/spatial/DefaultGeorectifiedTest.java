@@ -37,21 +37,11 @@ import static org.apache.sis.test.Assert.*;
  */
 public final strictfp class DefaultGeorectifiedTest extends TestCase {
     /**
-     * A JUnit {@linkplain Rule rule} for listening to log events. This field is public
-     * because JUnit requires us to do so, but should be considered as an implementation
-     * details (it should have been a private field).
+     * A JUnit {@link Rule} for listening to log events. This field is public because JUnit requires us to
+     * do so, but should be considered as an implementation details (it should have been a private field).
      */
     @Rule
-    public final LoggingWatcher listener = new LoggingWatcher(Context.LOGGER) {
-        /**
-         * Ensures that the logging message contains the name of the exclusive properties.
-         */
-        @Override
-        protected void verifyMessage(final String message) {
-            assertTrue(message.contains("checkPointAvailability"));
-            assertTrue(message.contains("checkPointDescription"));
-        }
-    };
+    public final LoggingWatcher loggings = new LoggingWatcher(Context.LOGGER);
 
     /**
      * Tests {@link DefaultGeorectified#isCheckPointAvailable()} and
@@ -66,14 +56,17 @@ public final strictfp class DefaultGeorectifiedTest extends TestCase {
         // Setting the description shall set automatically the availability.
         metadata.setCheckPointDescription(description);
         assertTrue("checkPointAvailability", metadata.isCheckPointAvailable());
+        loggings.assertNoUnexpectedLogging(0);
 
         // Setting the availability flag shall hide the description and logs a message.
-        listener.maximumLogCount = 1;
         metadata.setCheckPointAvailable(false);
         assertNull("checkPointDescription", metadata.getCheckPointDescription());
+        loggings.assertLoggingContains(0, "checkPointDescription", "checkPointAvailability");
+        loggings.assertNoUnexpectedLogging(1);
 
         // Setting the availability flag shall bring back the description.
         metadata.setCheckPointAvailable(true);
         assertSame("checkPointDescription", description, metadata.getCheckPointDescription());
+        loggings.assertNoUnexpectedLogging(1);
     }
 }

@@ -31,7 +31,6 @@ import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.ProjectedCRS;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.internal.system.Loggers;
-import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Utilities;
 
@@ -65,22 +64,13 @@ import static org.junit.Assume.*;
 public final strictfp class EPSGInstallerTest extends TestCase {
     /**
      * A JUnit rule for listening to log events emitted during execution of tests.
-     * This rule verifies that the log message contains the expected information.
+     * This rule is used by tests that verifies the log message content.
      *
      * <p>This field is public because JUnit requires us to do so, but should be considered
      * as an implementation details (it should have been a private field).</p>
      */
     @Rule
-    public final LoggingWatcher listener = new LoggingWatcher(Logging.getLogger(Loggers.CRS_FACTORY)) {
-        @Override protected void verifyMessage(final String message) {
-            log = message;      // Verified later by the tests in the enclosing class.
-        }
-    };
-
-    /**
-     * The logging message caught by the {@link #listener}.
-     */
-    private String log;
+    public final LoggingWatcher loggings = new LoggingWatcher(Loggers.CRS_FACTORY);
 
     /**
      * Tests the {@link EPSGInstaller#REPLACE_STATEMENT} pattern.
@@ -106,6 +96,8 @@ public final strictfp class EPSGInstallerTest extends TestCase {
         assertTrue(Pattern.matches(EPSGInstaller.REPLACE_STATEMENT,
                 "UPDATE epsg.\"Coordinate Axis\"\n" +
                 "SET coord_axis_orientation = replace(coord_axis_orientation, CHR(182), CHR(10))"));
+
+        loggings.assertNoUnexpectedLogging(0);
     }
 
     /**
@@ -134,8 +126,8 @@ public final strictfp class EPSGInstallerTest extends TestCase {
         } finally {
             TestDatabase.drop(ds);
         }
-        assertTrue(log, log.contains("EPSG"));
-        assertTrue(log, log.contains("jdbc:derby:memory:test"));
+        loggings.assertLoggingContains(0, "EPSG", "jdbc:derby:memory:test");
+        loggings.assertNoUnexpectedLogging(1);
     }
 
     /**
@@ -161,8 +153,8 @@ public final strictfp class EPSGInstallerTest extends TestCase {
                 s.execute("SHUTDOWN");
             }
         }
-        assertTrue(log, log.contains("EPSG"));
-        assertTrue(log, log.contains("jdbc:hsqldb:mem:test"));
+        loggings.assertLoggingContains(0, "EPSG", "jdbc:hsqldb:mem:test");
+        loggings.assertNoUnexpectedLogging(1);
     }
 
     /**
@@ -172,12 +164,12 @@ public final strictfp class EPSGInstallerTest extends TestCase {
     private void createAndTest(final DataSource ds, final InstallationScriptProvider scriptProvider)
             throws SQLException, FactoryException
     {
-        listener.maximumLogCount = 100;
         final Map<String,Object> properties = new HashMap<>();
         assertNull(properties.put("dataSource", ds));
         assertNull(properties.put("scriptProvider", scriptProvider));
         assertEquals("Should not contain EPSG tables before we created them.", 0, countCRSTables(ds));
-        assertEquals("Should not yet have logged anything at this point.", 100, listener.maximumLogCount);
+        loggings.assertNoUnexpectedLogging(0);  // Should not yet have logged anything at this point.
+
         try (EPSGFactory factory = new EPSGFactory(properties)) {
             /*
              * Fetch the "WGS 84" coordinate reference system.
@@ -208,7 +200,6 @@ public final strictfp class EPSGInstallerTest extends TestCase {
             assertFalse("4329", codes.contains("4329"));
         }
         assertEquals("Should contain EPSG tables after we created them.", 1, countCRSTables(ds));
-        assertEquals("Should have logged a message about the database creation.", 99, listener.maximumLogCount);
     }
 
     /**
