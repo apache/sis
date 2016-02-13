@@ -220,7 +220,7 @@ public enum CommonCRS {
      *   <tr><th>Semi-minor axis length:</th>  <td>6356752 <i>(approximative)</i></td></tr>
      *   <tr><th>Inverse flattening:</th>      <td>298.257222101 <i>(definitive)</i></td></tr>
      *   <tr><th>Ellipsoid axes unit:</th>     <td>{@link SI#METRE}</td></tr>
-     *   <tr><th>UTM zones:</th>               <td>28 to 38 in the North hemisphere</td></tr>
+     *   <tr><th>UTM zones:</th>               <td>28 to 37 in the North hemisphere</td></tr>
      * </table></blockquote>
      *
      * <div class="note"><b>Note:</b>
@@ -229,7 +229,7 @@ public enum CommonCRS {
      * while the {@code "IGNF:MILLER"} authority code uses the GRS80 datum.</div>
      */
     ETRS89((short) 4258, (short) 4937, (short) 4936, (short) 6258, (short) 7019,    // Geodetic info
-           (short) 25800, (short) 0, (byte) 28, (byte) 38),                         // UTM info
+           (short) 25800, (short) 0, (byte) 28, (byte) 37),                         // UTM info
 
     /**
      * European Datum 1950.

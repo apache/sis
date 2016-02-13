@@ -16,8 +16,9 @@
  */
 package org.apache.sis.test;
 
-import java.util.List;
-import java.util.ArrayList;
+import java.util.Queue;
+import java.util.LinkedList;
+import java.util.ConcurrentModificationException;
 import java.util.logging.Filter;
 import java.util.logging.Logger;
 import java.util.logging.LogRecord;
@@ -37,19 +38,21 @@ import static org.junit.Assert.*;
  *     public final LoggingWatcher loggings = new LoggingWatcher(Logging.getLogger(Loggers.XML));
  * }
  *
- * In every tests that do not expect loggings, invoke the following method last:
+ * Recommended but not mandatory, ensure that there is no unexpected logging in any tests:
  *
  * {@preformat java
- *     loggings.assertNoUnexpectedLogging(0);
+ *     &#64;After
+ *     public void assertNoUnexpectedLog() {
+ *         loggings.assertNoUnexpectedLog();
+ *     }
  * }
  *
- * In tests that are expected to emit warnings, add the following lines
- * (replace 1 by a higher value if more than one logging is expected):
+ * In tests that are expected to emit warnings, add the following lines:
  *
  * {@preformat java
  *     // Do the test here.
- *     loggings.assertLoggingContains(0, "Some keywords that are expected to be found in the message");
- *     loggings.assertNoUnexpectedLogging(1);
+ *     loggings.assertNextLogContains("Some keywords", "that are expected", "to be found in the message");
+ *     loggings.assertNoUnexpectedLog();
  * }
  *
  * @author  Martin Desruisseaux (Geomatys)
@@ -61,7 +64,7 @@ public final strictfp class LoggingWatcher extends TestWatcher implements Filter
     /**
      * The logged messages.
      */
-    public final List<String> messages = new ArrayList<>();
+    private final Queue<String> messages = new LinkedList<>();
 
     /**
      * The logger to watch.
@@ -129,17 +132,38 @@ public final strictfp class LoggingWatcher extends TestWatcher implements Filter
     }
 
     /**
-     * Verifies that a logging message exists at the given index and contains the given keywords.
+     * Skips the next log messages if it contains all the given keywords.
+     * This method is used instead of {@link #assertNextLogContains(String...)} when a log message may or
+     * may not be emitted during a test, depending on circumstances that the test method does not control.
      *
-     * @param index    Index of the logging message to verify.
-     * @param keywords The keywords that we are expected to find in the logging message.
+     * @param keywords The keywords that are expected to exist in the next log message
+     *        if that log message has been emitted.
      */
-    public void assertLoggingContains(final int index, final String... keywords) {
-        final int size = messages.size();
-        if (index >= size) {
-            fail("Expected at least " + (index + 1) + " logging messages but got " + size);
+    public void skipNextLogIfContains(final String... keywords) {
+        final String message = messages.peek();
+        if (message != null) {
+            for (final String word : keywords) {
+                if (!message.contains(word)) {
+                    return;
+                }
+            }
+            if (messages.remove() != message) {
+                throw new ConcurrentModificationException();
+            }
         }
-        final String message = messages.get(index);
+    }
+
+    /**
+     * Verifies that the next logging message contains the given keywords.
+     * Each call of this method advances to the next log message.
+     *
+     * @param keywords The keywords that are expected to exist in the next log message.
+     */
+    public void assertNextLogContains(final String... keywords) {
+        if (messages.isEmpty()) {
+            fail("Expected a logging messages but got no more.");
+        }
+        final String message = messages.remove();
         for (final String word : keywords) {
             if (!message.contains(word)) {
                 fail("Expected the logging message to contains the “"+ word + "” word but got:\n" + message);
@@ -148,13 +172,19 @@ public final strictfp class LoggingWatcher extends TestWatcher implements Filter
     }
 
     /**
-     * Verifies that no more than {@code maxCount} messages have been logged.
-     *
-     * @param maxCount The maximum number of logging messages.
+     * Verifies that there is no more log message.
      */
-    public void assertNoUnexpectedLogging(final int maxCount) {
-        if (messages.size() > maxCount) {
-            fail("Unexpected logging message: " + messages.get(maxCount));
+    public void assertNoUnexpectedLog() {
+        final String message = messages.peek();
+        if (message != null) {
+            fail("Unexpected logging message: " + message);
         }
+    }
+
+    /**
+     * Discards all logging messages.
+     */
+    public void clear() {
+        messages.clear();
     }
 }

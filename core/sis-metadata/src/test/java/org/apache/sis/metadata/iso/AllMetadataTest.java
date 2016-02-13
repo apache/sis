@@ -219,7 +219,11 @@ public final strictfp class AllMetadataTest extends MetadataTestCase {
     @Override
     public void testPropertyValues() {
         super.testPropertyValues();
-        loggings.assertNoUnexpectedLogging(4);
+        loggings.assertNextLogContains("angularDistance", "distance");
+        loggings.assertNextLogContains("distance", "equivalentScale");
+        loggings.assertNextLogContains("equivalentScale", "levelOfDetail");
+        loggings.assertNextLogContains("levelOfDetail", "vertical");
+        loggings.assertNoUnexpectedLog();
     }
 
     /**

@@ -20,6 +20,7 @@ import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.test.LoggingWatcher;
 import org.apache.sis.test.TestCase;
+import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -43,6 +44,14 @@ public final strictfp class DefaultScopeDescriptionTest extends TestCase {
     public final LoggingWatcher loggings = new LoggingWatcher(Context.LOGGER);
 
     /**
+     * Verifies that no unexpected warning has been emitted in any test defined in this class.
+     */
+    @After
+    public void assertNoUnexpectedLog() {
+        loggings.assertNoUnexpectedLog();
+    }
+
+    /**
      * Tests the various setter methods. Since they are exclusive properties,
      * we expect any new property to replace the old one.
      */
@@ -51,21 +60,20 @@ public final strictfp class DefaultScopeDescriptionTest extends TestCase {
         final DefaultScopeDescription metadata = new DefaultScopeDescription();
         metadata.setDataset("A dataset");
         assertEquals("dataset", "A dataset", metadata.getDataset());
-        loggings.assertNoUnexpectedLogging(0);
+        loggings.assertNoUnexpectedLog();
 
         metadata.setOther(new SimpleInternationalString("Other value"));
         assertEquals("other", "Other value", String.valueOf(metadata.getOther()));
         assertNull("dataset", metadata.getDataset());
-        loggings.assertLoggingContains(0, "dataset", "other");
-        loggings.assertNoUnexpectedLogging(1);
+        loggings.assertNextLogContains("dataset", "other");
+        loggings.assertNoUnexpectedLog();
 
-        metadata.setDataset(null); // Expected to be a no-op.
+        metadata.setDataset(null);                  // Expected to be a no-op.
         assertEquals("other", "Other value", String.valueOf(metadata.getOther()));
         assertNull("dataset", metadata.getDataset());
 
         metadata.setOther(null);
         assertNull("other",   metadata.getOther());
         assertNull("dataset", metadata.getDataset());
-        loggings.assertNoUnexpectedLogging(1);
     }
 }
