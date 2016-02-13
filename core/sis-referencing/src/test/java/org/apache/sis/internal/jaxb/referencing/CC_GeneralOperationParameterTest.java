@@ -31,6 +31,7 @@ import org.apache.sis.test.XMLTestCase;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.LoggingWatcher;
+import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -59,6 +60,14 @@ public final strictfp class CC_GeneralOperationParameterTest extends XMLTestCase
      */
     @Rule
     public final LoggingWatcher loggings = new LoggingWatcher(Loggers.XML);
+
+    /**
+     * Verifies that no unexpected warning has been emitted in any test defined in this class.
+     */
+    @After
+    public void assertNoUnexpectedLog() {
+        loggings.assertNoUnexpectedLog();
+    }
 
     /**
      * Creates a parameter descriptor as unmarshalled by JAXB, without {@code valueClass}.
@@ -133,8 +142,6 @@ public final strictfp class CC_GeneralOperationParameterTest extends XMLTestCase
 
         provided = unmarshal("Optional parameter", "More details here.");
         assertSame("With same remark.", complete, CC_GeneralOperationParameter.merge(provided, complete));
-
-        loggings.assertNoUnexpectedLogging(0);
     }
 
     /**
@@ -168,7 +175,6 @@ public final strictfp class CC_GeneralOperationParameterTest extends XMLTestCase
         assertEquals ("maximumOccurs",     1,                     merged.getMaximumOccurs());
         assertEquals ("valueClass",        Integer.class,         merged.getValueClass());
         assertSame   ("remarks",           provided.getRemarks(), merged.getRemarks());
-        loggings.assertNoUnexpectedLogging(0);
     }
 
     /**
@@ -195,7 +201,6 @@ public final strictfp class CC_GeneralOperationParameterTest extends XMLTestCase
                 create("Parameter D", "Remarks D.", false, 6));
 
         assertSame(complete, CC_GeneralOperationParameter.merge(provided, complete));
-        loggings.assertNoUnexpectedLogging(0);
     }
 
     /**
@@ -237,7 +242,6 @@ public final strictfp class CC_GeneralOperationParameterTest extends XMLTestCase
         verifyParameter(itc.next(), itm.next(), false, "Remarks C.");   // Not same because different remarks.
         assertTrue ("Missing descriptor.",    itc.hasNext());
         assertFalse("Unexpected descriptor.", itm.hasNext());
-        loggings.assertNoUnexpectedLogging(0);
     }
 
     /**
@@ -280,7 +284,6 @@ public final strictfp class CC_GeneralOperationParameterTest extends XMLTestCase
         verifyParameter(itc.next(), itm.next(), true, null);
         assertFalse("Unexpected descriptor.", itc.hasNext());
         assertFalse("Unexpected descriptor.", itm.hasNext());
-        loggings.assertNoUnexpectedLogging(0);
     }
 
     /**
@@ -305,7 +308,7 @@ public final strictfp class CC_GeneralOperationParameterTest extends XMLTestCase
                 create("Parameter A", "Remarks A.", false, 3),
                 create("Parameter C", "Remarks C.", false, 4));
 
-        loggings.assertNoUnexpectedLogging(0);
+        loggings.assertNoUnexpectedLog();
         final ParameterDescriptorGroup merged =
                 (ParameterDescriptorGroup) CC_GeneralOperationParameter.merge(provided, complete);
         assertNotSame(complete, provided);
@@ -313,8 +316,8 @@ public final strictfp class CC_GeneralOperationParameterTest extends XMLTestCase
         assertSame   ("remarks",       complete.getRemarks(), merged.getRemarks());
         assertEquals ("minimumOccurs", 1,                     merged.getMinimumOccurs());
         assertEquals ("maximumOccurs", 2,                     merged.getMaximumOccurs());
-        loggings.assertLoggingContains(0, "Parameter B", "Group");
-        loggings.assertNoUnexpectedLogging(1);
+        loggings.assertNextLogContains("Parameter B", "Group");
+        loggings.assertNoUnexpectedLog();
 
         final Iterator<GeneralParameterDescriptor> itc = complete.descriptors().iterator();
         final Iterator<GeneralParameterDescriptor> itm = merged  .descriptors().iterator();
@@ -327,7 +330,6 @@ public final strictfp class CC_GeneralOperationParameterTest extends XMLTestCase
         verifyParameter(itc.next(), itm.next(), true, "Remarks C.");
         assertFalse("Unexpected descriptor.", itc.hasNext());
         assertFalse("Unexpected descriptor.", itm.hasNext());
-        loggings.assertNoUnexpectedLogging(1);
     }
 
     /**

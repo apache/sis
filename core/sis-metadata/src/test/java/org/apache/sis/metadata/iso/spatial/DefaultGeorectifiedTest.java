@@ -21,6 +21,7 @@ import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.test.LoggingWatcher;
 import org.apache.sis.test.TestCase;
+import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -44,6 +45,14 @@ public final strictfp class DefaultGeorectifiedTest extends TestCase {
     public final LoggingWatcher loggings = new LoggingWatcher(Context.LOGGER);
 
     /**
+     * Verifies that no unexpected warning has been emitted in any test defined in this class.
+     */
+    @After
+    public void assertNoUnexpectedLog() {
+        loggings.assertNoUnexpectedLog();
+    }
+
+    /**
      * Tests {@link DefaultGeorectified#isCheckPointAvailable()} and
      * {@link DefaultGeorectified#setCheckPointAvailable(boolean)}.
      */
@@ -56,17 +65,16 @@ public final strictfp class DefaultGeorectifiedTest extends TestCase {
         // Setting the description shall set automatically the availability.
         metadata.setCheckPointDescription(description);
         assertTrue("checkPointAvailability", metadata.isCheckPointAvailable());
-        loggings.assertNoUnexpectedLogging(0);
+        loggings.assertNoUnexpectedLog();
 
         // Setting the availability flag shall hide the description and logs a message.
         metadata.setCheckPointAvailable(false);
         assertNull("checkPointDescription", metadata.getCheckPointDescription());
-        loggings.assertLoggingContains(0, "checkPointDescription", "checkPointAvailability");
-        loggings.assertNoUnexpectedLogging(1);
+        loggings.assertNextLogContains("checkPointDescription", "checkPointAvailability");
+        loggings.assertNoUnexpectedLog();
 
         // Setting the availability flag shall bring back the description.
         metadata.setCheckPointAvailable(true);
         assertSame("checkPointDescription", description, metadata.getCheckPointDescription());
-        loggings.assertNoUnexpectedLogging(1);
     }
 }

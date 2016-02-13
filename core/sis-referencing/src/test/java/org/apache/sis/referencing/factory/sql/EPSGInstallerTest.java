@@ -39,6 +39,7 @@ import org.apache.sis.internal.metadata.sql.TestDatabase;
 import org.apache.sis.test.LoggingWatcher;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
+import org.junit.After;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
@@ -73,6 +74,14 @@ public final strictfp class EPSGInstallerTest extends TestCase {
     public final LoggingWatcher loggings = new LoggingWatcher(Loggers.CRS_FACTORY);
 
     /**
+     * Verifies that no unexpected warning has been emitted in any test defined in this class.
+     */
+    @After
+    public void assertNoUnexpectedLog() {
+        loggings.assertNoUnexpectedLog();
+    }
+
+    /**
      * Tests the {@link EPSGInstaller#REPLACE_STATEMENT} pattern.
      */
     @Test
@@ -96,8 +105,6 @@ public final strictfp class EPSGInstallerTest extends TestCase {
         assertTrue(Pattern.matches(EPSGInstaller.REPLACE_STATEMENT,
                 "UPDATE epsg.\"Coordinate Axis\"\n" +
                 "SET coord_axis_orientation = replace(coord_axis_orientation, CHR(182), CHR(10))"));
-
-        loggings.assertNoUnexpectedLogging(0);
     }
 
     /**
@@ -126,8 +133,8 @@ public final strictfp class EPSGInstallerTest extends TestCase {
         } finally {
             TestDatabase.drop(ds);
         }
-        loggings.assertLoggingContains(0, "EPSG", "jdbc:derby:memory:test");
-        loggings.assertNoUnexpectedLogging(1);
+        loggings.assertNextLogContains("EPSG", "jdbc:derby:memory:test");
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -153,8 +160,8 @@ public final strictfp class EPSGInstallerTest extends TestCase {
                 s.execute("SHUTDOWN");
             }
         }
-        loggings.assertLoggingContains(0, "EPSG", "jdbc:hsqldb:mem:test");
-        loggings.assertNoUnexpectedLogging(1);
+        loggings.assertNextLogContains("EPSG", "jdbc:hsqldb:mem:test");
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -168,7 +175,7 @@ public final strictfp class EPSGInstallerTest extends TestCase {
         assertNull(properties.put("dataSource", ds));
         assertNull(properties.put("scriptProvider", scriptProvider));
         assertEquals("Should not contain EPSG tables before we created them.", 0, countCRSTables(ds));
-        loggings.assertNoUnexpectedLogging(0);  // Should not yet have logged anything at this point.
+        loggings.assertNoUnexpectedLog();       // Should not yet have logged anything at this point.
 
         try (EPSGFactory factory = new EPSGFactory(properties)) {
             /*
