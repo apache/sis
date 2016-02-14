@@ -92,6 +92,8 @@ public final strictfp class CoordinateReferenceSystems extends AuthorityCodesRep
      */
     private static final Map<String,String> SECTION_TITLES = new HashMap<>();
     static {
+        rd("American Samoa 1962",                                         "American Samoa");
+        rd("American Samoa Vertical Datum of 2002",                       "American Samoa");
         rd("Arc 1950",                                                    "Arc");
         rd("Arc 1960",                                                    "Arc");
         rd("Ancienne Triangulation Francaise (Paris)",                    "Ancienne Triangulation Française");
@@ -114,6 +116,8 @@ public final strictfp class CoordinateReferenceSystems extends AuthorityCodesRep
         rd("CH1903",                                                      "Bern / CH1903");
         rd("CH1903+",                                                     "Bern / CH1903");
         rd("CH1903 (Bern)",                                               "Bern / CH1903");
+        rd("Canadian Geodetic Vertical Datum of 1928",                    "Canadian Geodetic Vertical Datum");
+        rd("Canadian Geodetic Vertical Datum of 2013",                    "Canadian Geodetic Vertical Datum");
         rd("Chatham Islands Datum 1971",                                  "Chatham Islands Datum");
         rd("Chatham Islands Datum 1979",                                  "Chatham Islands Datum");
         rd("Corrego Alegre 1961",                                         "Corrego Alegre");
@@ -237,6 +241,7 @@ public final strictfp class CoordinateReferenceSystems extends AuthorityCodesRep
         rd("Naparima 1972",                                               "Naparima");
         rd("Nivellement General de la Corse 1948",                        "Nivellement Général Corse / France / Nouvelle-Calédonie / Polynésie Française / Luxembourd / Guyanais");
         rd("Nivellement General de la France - IGN69",                    "Nivellement Général Corse / France / Nouvelle-Calédonie / Polynésie Française / Luxembourd / Guyanais");
+        rd("Nivellement General de la France - IGN78",                    "Nivellement Général Corse / France / Nouvelle-Calédonie / Polynésie Française / Luxembourd / Guyanais");
         rd("Nivellement General de la France - Lallemand",                "Nivellement Général Corse / France / Nouvelle-Calédonie / Polynésie Française / Luxembourd / Guyanais");
         rd("Nivellement General de Nouvelle Caledonie",                   "Nivellement Général Corse / France / Nouvelle-Calédonie / Polynésie Française / Luxembourd / Guyanais");
         rd("Nivellement General de Polynesie Francaise",                  "Nivellement Général Corse / France / Nouvelle-Calédonie / Polynésie Française / Luxembourd / Guyanais");
@@ -251,6 +256,8 @@ public final strictfp class CoordinateReferenceSystems extends AuthorityCodesRep
         rd("Nord de Guerre (Paris)",                                      "Ancienne Triangulation Française");
         rd("Nouvelle Triangulation Francaise",                            "Nouvelle Triangulation Française");
         rd("Nouvelle Triangulation Francaise (Paris)",                    "Nouvelle Triangulation Française");
+        rd("Norway Normal Null 1954",                                     "Norway Normal Null");
+        rd("Norway Normal Null 2000",                                     "Norway Normal Null");
         rd("Ordnance Datum Newlyn (Orkney Isles)",                        "Ordnance Datum Newlyn");
         rd("OSGB 1936",                                                   "OSGB");
         rd("OSGB 1970 (SN)",                                              "OSGB");
@@ -264,6 +271,7 @@ public final strictfp class CoordinateReferenceSystems extends AuthorityCodesRep
         rd("Posiciones Geodesicas Argentinas 1994",                       "Posiciones Geodesicas Argentinas");
         rd("Posiciones Geodesicas Argentinas 1998",                       "Posiciones Geodesicas Argentinas");
         rd("Posiciones Geodesicas Argentinas 2007",                       "Posiciones Geodesicas Argentinas");
+        rd("Puerto Rico Vertical Datum of 2002",                          "Puerto Rico");
         rd("Qatar 1948",                                                  "Qatar");
         rd("Qatar 1974",                                                  "Qatar");
         rd("Qatar National Datum 1995",                                   "Qatar");
@@ -321,8 +329,9 @@ public final strictfp class CoordinateReferenceSystems extends AuthorityCodesRep
     }
 
     /**
-     * The keywords before which to cut the CRS names. The main intend here is to preserve the
-     * "far west", "west", "central west", "central", "central east", "east", "far east" order.
+     * The keywords before which to cut the CRS names when sorting by alphabetical order.
+     * The main intend here is to preserve the "far west", "west", "central west", "central",
+     * "central east", "east", "far east" order.
      */
     private static final String[] CUT_BEFORE = {
         " far west",        // "MAGNA-SIRGAS / Colombia Far West zone"
@@ -336,7 +345,7 @@ public final strictfp class CoordinateReferenceSystems extends AuthorityCodesRep
     };
 
     /**
-     * The keywords after which to cut the CRS names.
+     * The keywords after which to cut the CRS names when sorting by alphabetical order.
      *
      * Note: alphabetical sorting of Roman numbers work for zones from I to VIII inclusive.
      * If there is more zones (for example with "JGD2000 / Japan Plane Rectangular"), then
@@ -379,7 +388,7 @@ public final strictfp class CoordinateReferenceSystems extends AuthorityCodesRep
         properties.setProperty("PRODUCT.URL",     "http://sis.apache.org");
         properties.setProperty("JAVADOC.GEOAPI",  "http://www.geoapi.org/snapshot/javadoc");
         properties.setProperty("FACTORY.NAME",    "EPSG");
-        properties.setProperty("FACTORY.VERSION", "7.9");
+        properties.setProperty("FACTORY.VERSION", "8.8");
         properties.setProperty("FACTORY.VERSION.SUFFIX", ", together with other sources");
         properties.setProperty("DESCRIPTION", "<p><b>Notation:</b></p>\n" +
                 "<ul>\n" +
