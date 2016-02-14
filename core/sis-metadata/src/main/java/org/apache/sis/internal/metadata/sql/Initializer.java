@@ -72,7 +72,7 @@ public abstract class Initializer {
     /**
      * The property name for the home of Derby databases.
      */
-    private static final String HOME_KEY = "derby.system.home";
+    private static final String DERBY_HOME_KEY = "derby.system.home";
 
     /**
      * Name of the JNDI resource to lookup in the {@code "java:comp/env"} context.
@@ -241,8 +241,8 @@ public abstract class Initializer {
              * At this point we determined that there is no JNDI context or no object binded to "jdbc/SpatialMetadata".
              * As a fallback, try to open the Derby database located in $SIS_DATA/Databases/SpatialMetadata directory.
              */
-            boolean create = false;
-            final String home = System.getProperty(HOME_KEY);
+            final boolean create;
+            final String home = System.getProperty(DERBY_HOME_KEY);
             final Path dir = DataDirectory.DATABASES.getDirectory();
             if (dir != null) {
                 Path path = dir.resolve(DATABASE);
@@ -267,6 +267,8 @@ public abstract class Initializer {
                 create = !Files.exists(path);
                 source = forJavaDB(path.toString());
             } else if (home != null) {
+                final Path path = Paths.get(home);
+                create = !Files.exists(path.resolve(DATABASE)) && Files.isDirectory(path);
                 source = forJavaDB(DATABASE);
             } else {
                 return null;
