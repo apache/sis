@@ -70,7 +70,7 @@ public final class Units extends Static {
     public static final Unit<Duration> MILLISECOND = SI.MetricPrefix.MILLI(SI.SECOND);
 
     /**
-     * The EPSG::1029 definition of year.
+     * The EPSG:1029 definition of year.
      */
     private static final Unit<Duration> YEAR = SI.SECOND.divide(31556925.445);
 
@@ -593,8 +593,8 @@ public final class Units extends Static {
      *
      * <p>The same unit may be represented by different EPSG codes depending on the context:</p>
      * <ul>
-     *   <li>EPSG::9102 – <cite>degree</cite> – is used for prime meridian and coordinate operation parameters.</li>
-     *   <li>EPSG::9122 – <cite>degree (supplier to define representation)</cite> – is used for coordinate system axes.</li>
+     *   <li>EPSG:9102 – <cite>degree</cite> – is used for prime meridian and coordinate operation parameters.</li>
+     *   <li>EPSG:9122 – <cite>degree (supplier to define representation)</cite> – is used for coordinate system axes.</li>
      * </ul>
      *
      * When such choice exists, the code to return is determined by the {@code inAxis} argument,
