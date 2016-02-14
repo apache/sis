@@ -402,6 +402,7 @@ public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> impl
      */
     @Override
     protected EPSGDataAccess newDataAccess() throws FactoryException {
+        UnavailableFactoryException exception;
         Connection connection = null;
         try {
             connection = dataSource.getConnection();
@@ -424,17 +425,20 @@ public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> impl
             }
             if (tr.isTableFound()) {
                 return newDataAccess(connection, tr);
+            } else {
+                connection.close();
+                exception = new UnavailableFactoryException(SQLTranslator.tableNotFound(locale));
             }
-            connection.close();
         } catch (Exception e) {                     // Really want to catch all exceptions here.
             if (connection != null) try {
                 connection.close();
             } catch (SQLException e2) {
                 e.addSuppressed(e2);
             }
-            throw new UnavailableFactoryException(e.getLocalizedMessage(), e);
+            exception = new UnavailableFactoryException(e.getLocalizedMessage(), e);
         }
-        throw new UnavailableFactoryException(SQLTranslator.tableNotFound(locale));
+        exception.setUnavailableFactory(this);
+        throw exception;
     }
 
     /**

@@ -17,8 +17,12 @@
 package org.apache.sis.referencing.factory;
 
 import org.opengis.util.FactoryException;
+import org.apache.sis.internal.system.Loggers;
 
 // Test imports
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
@@ -26,6 +30,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.junit.runners.MethodSorters;
 import org.apache.sis.test.DependsOn;
+import org.apache.sis.test.LoggingWatcher;
 
 
 /**
@@ -49,6 +54,13 @@ import org.apache.sis.test.DependsOn;
 @RunWith(JUnit4.class)
 @FixMethodOrder(MethodSorters.JVM)      // Intentionally want some randomness
 public final strictfp class GIGS2006 extends org.opengis.test.referencing.gigs.GIGS2006 {
+    /**
+     * A JUnit {@link Rule} for listening to log events. This field is public because JUnit requires us to
+     * do so, but should be considered as an implementation details (it should have been a private field).
+     */
+    @Rule
+    public final LoggingWatcher loggings = new LoggingWatcher(Loggers.CRS_FACTORY);
+
     /**
      * Creates a new test using the default authority factory.
      */
@@ -74,5 +86,33 @@ public final strictfp class GIGS2006 extends org.opengis.test.referencing.gigs.G
     @AfterClass
     public static void close() throws FactoryException {
         GIGS2001.close();
+    }
+
+    /**
+     * Overrides the GeoAPI test for verifying the log messages emitted during the construction of deprecated objects.
+     *
+     * @throws FactoryException if an error occurred while creating the object.
+     */
+    @Test
+    @Override
+    public void testNAD27_Michigan() throws FactoryException {
+        super.testNAD27_Michigan();
+        loggings.skipNextLogIfContains("EPSG:6268");     // Datum replaced by 6267
+        loggings.skipNextLogIfContains("EPSG:7009");     // Ellipsoid replaced by 7008
+        loggings.skipNextLogIfContains("EPSG:4268");     // CRS replaced by 4267
+        loggings.assertNextLogContains("EPSG:12111");
+        loggings.assertNextLogContains("EPSG:26811");    // ProjectedCRS (no replacement).
+        loggings.skipNextLogIfContains("EPSG:12112");    // Conversion replaced by 6198
+        loggings.assertNextLogContains("EPSG:26812");    // ProjectedCRS replaced by 6201
+        loggings.skipNextLogIfContains("EPSG:12113");    // Conversion replaced by 6199
+        loggings.assertNextLogContains("EPSG:26813");    // ProjectedCRS replaced by 6202
+    }
+
+    /**
+     * Verifies that no unexpected warning has been emitted in this test.
+     */
+    @After
+    public void assertNoUnexpectedLog() {
+        loggings.assertNoUnexpectedLog();
     }
 }

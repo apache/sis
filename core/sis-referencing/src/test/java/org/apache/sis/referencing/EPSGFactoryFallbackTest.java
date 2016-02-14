@@ -125,9 +125,6 @@ public final strictfp class EPSGFactoryFallbackTest extends TestCase {
             final ArrayList<String> codes = new ArrayList<>(EPSGFactoryFallback.INSTANCE.getAuthorityCodes(CoordinateReferenceSystem.class));
             Collections.shuffle(codes, TestUtilities.createRandomNumberGenerator());
             for (final String code : codes) {
-                if (!EPSGFactoryFallback.PENDING_NEXT_EPSG && code.equals("5715")) {
-                    continue;
-                }
                 final CoordinateReferenceSystem crs = EPSGFactoryFallback.INSTANCE.createCoordinateReferenceSystem(code);
                 final CoordinateReferenceSystem expected = EPSG.createCoordinateReferenceSystem(code);
                 assertTrue(code, Utilities.deepEquals(expected, crs, ComparisonMode.DEBUG));

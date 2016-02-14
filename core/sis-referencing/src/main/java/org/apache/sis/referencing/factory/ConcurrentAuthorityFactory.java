@@ -389,8 +389,10 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
                 if (usage == null) {
                     final DAO factory = newDataAccess();
                     if (factory == null) {
-                        throw new UnavailableFactoryException(Errors.format(
+                        UnavailableFactoryException e = new UnavailableFactoryException(Errors.format(
                                 Errors.Keys.FactoryNotFound_1, GeodeticAuthorityFactory.class));
+                        e.setUnavailableFactory(this);
+                        throw e;
                     }
                     usage = new DataAccessRef<>(factory);
                 }

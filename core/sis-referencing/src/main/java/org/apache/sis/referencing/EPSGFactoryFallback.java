@@ -59,12 +59,6 @@ final class EPSGFactoryFallback extends GeodeticAuthorityFactory implements CRSA
     static final boolean FORCE_HARDCODED = false;
 
     /**
-     * A temporary flag for tests that need to be revisited after the upgrade to the next EPSG database version.
-     */
-    @Debug
-    static final boolean PENDING_NEXT_EPSG = false;
-
-    /**
      * The singleton instance.
      */
     static final CRSAuthorityFactory INSTANCE = new EPSGFactoryFallback();

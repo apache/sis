@@ -1842,7 +1842,7 @@ addURIs:    for (int i=0; ; i++) {
                 DefaultGeographicBoundingBox bbox = null;
                 if (!Double.isNaN(ymin) || !Double.isNaN(ymax) || !Double.isNaN(xmin) || !Double.isNaN(xmax)) {
                     /*
-                     * Fix an error found in EPSG::3790 New Zealand - South Island - Mount Pleasant mc
+                     * Fix an error found in EPSG:3790 New Zealand - South Island - Mount Pleasant mc
                      * for older database (this error is fixed in EPSG database 8.2).
                      *
                      * Do NOT apply anything similar for the x axis, because xmin > xmax is not error:
@@ -2168,7 +2168,7 @@ addURIs:    for (int i=0; ; i++) {
      * Current implementation first checks if {@link Units#valueOfEPSG(int)} can provide a hard-coded unit
      * for the given code before to try to parse the information found in the database. This is done that
      * way for better support of non-straightforward units like <cite>sexagesimal degrees</cite>
-     * (EPSG::9110 and 9111).
+     * (EPSG:9110 and 9111).
      *
      * <div class="note"><b>Example:</b>
      * some EPSG codes for units are:
@@ -2778,7 +2778,7 @@ addURIs:    for (int i=0; ; i++) {
             } while ((searchTransformations = !searchTransformations) == true);
             /*
              * Search finished. We may have a lot of coordinate operations
-             * (e.g. about 40 for "ED50" (EPSG::4230) to "WGS 84" (EPSG::4326)).
+             * (e.g. about 40 for "ED50" (EPSG:4230) to "WGS 84" (EPSG:4326)).
              * Alter the ordering using the information supplied in the supersession table.
              */
             final String[] codes = set.getAuthorityCodes();
