@@ -30,6 +30,7 @@ import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.lang.reflect.Modifier;
+import javax.measure.unit.Unit;
 import org.opengis.util.CodeList;
 import org.opengis.util.ControlledVocabulary;
 import org.opengis.util.InternationalString;
@@ -41,6 +42,7 @@ import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.internal.system.Loggers;
+import org.apache.sis.internal.util.PatchedUnitFormat;
 
 
 /**
@@ -70,7 +72,7 @@ import org.apache.sis.internal.system.Loggers;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.3
- * @version 0.6
+ * @version 0.7
  * @module
  */
 public class IndexedResourceBundle extends ResourceBundle implements Localized {
@@ -411,12 +413,14 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
                 replacement = Classes.getShortName(getPublicType((Class<?>) element));
             } else if (element instanceof ControlledVocabulary) {
                 replacement = Types.getCodeTitle((ControlledVocabulary) element).toString(getLocale());
+            } else if (element instanceof Unit<?>) {
+                replacement = PatchedUnitFormat.toString((Unit<?>) element);
             }
             // No need to check for Numbers or Dates instances, since they are
             // properly formatted in the ResourceBundle locale by MessageFormat.
             if (replacement != element) {
                 if (array == arguments) {
-                    array = array.clone(); // Protect the user-provided array from change.
+                    array = array.clone();                  // Protect the user-provided array from change.
                 }
                 array[i] = replacement;
             }
