@@ -18,7 +18,7 @@ package org.apache.sis.internal.jdk8;
 
 
 /**
- * Placeholder for the {@link ava.util.function.LongConsumer} interface.
+ * Placeholder for the {@link java.util.function.LongConsumer} interface.
  */
 public interface LongConsumer {
     /**
