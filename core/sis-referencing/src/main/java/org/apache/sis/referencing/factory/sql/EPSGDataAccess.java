@@ -156,6 +156,38 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
         CSAuthorityFactory, DatumAuthorityFactory, CoordinateOperationAuthorityFactory, Localized, AutoCloseable
 {
     /**
+     * The deprecated ellipsoidal coordinate systems and their replacements. Those coordinate systems are deprecated
+     * because they use a unit of measurement which is no longer supported by OGC (for example degree-minute-second).
+     * Those replacements can be used only if the ellipsoidal CS is used for the base geographic CRS of a derived or
+     * projected CRS, because the units of measurement of the base CRS do not impact the units of measurements of the
+     * derived CRS.
+     *
+     * <p>We perform those replacements for avoiding a "Unit conversion from “DMS” to “°” is non-linear" exception
+     * at projected CRS creation time.</p>
+     *
+     * @see #replaceDeprecatedCS
+     */
+    private static final Map<Integer,Integer> DEPRECATED_CS;
+    static {
+        final Map<Integer,Integer> m = new HashMap<>(24);
+
+        // Ellipsoidal 2D CS. Axes: latitude, longitude. Orientations: north, east. UoM: degree
+        Integer replacement = 6422;
+        m.put(6402, replacement);
+        for (int code = 6405; code <= 6412; code++) {
+            m.put(code, replacement);
+        }
+
+        // Ellipsoidal 3D CS. Axes: latitude, longitude, ellipsoidal height. Orientations: north, east, up. UoM: degree, degree, metre.
+        replacement = 6423;
+        m.put(6401, replacement);
+        for (int code = 6413; code <= 6420; code++) {
+            m.put(code, replacement);
+        }
+        DEPRECATED_CS = m;
+    }
+
+    /**
      * The namespace of EPSG names and codes. This namespace is needed by all {@code createFoo(String)} methods.
      * The {@code EPSGDataAccess} constructor relies on the {@link EPSGFactory#nameFactory} caching mechanism
      * for giving us the same {@code NameSpace} instance than the one used by previous {@code EPSGDataAccess}
@@ -264,8 +296,18 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
      * {@code true} for disabling the logging of warnings when this factory creates deprecated objects.
      * This flag should be always {@code false}, except during {@link Finder#find(IdentifiedObject)}
      * execution since that method may temporarily creates deprecated objects which are later discarded.
+     * May also be {@code false} when creating base CRS of deprecated projected or derived CRS.
      */
     private transient boolean quiet;
+
+    /**
+     * {@code true} if {@link #createCoordinateReferenceSystem(String)} is allowed to replace deprecated
+     * coordinate system at CRS creation time. This flag should be set to {@code true} only when creating
+     * the base CRS of a projected or derived CRS.
+     *
+     * @see #DEPRECATED_CS
+     */
+    private transient boolean replaceDeprecatedCS;
 
     /**
      * The {@code ConcurrentAuthorityFactory} that created this Data Access Object (DAO).
@@ -944,16 +986,14 @@ addURIs:    for (int i=0; ; i++) {
     }
 
     /**
-     * Logs a warning saying that the given code is deprecated and returns a message proposing a replacement.
+     * Logs a warning saying that the given code is deprecated and returns the code of the proposed replacement.
      *
      * @param  table  The table of the deprecated code.
      * @param  code   The deprecated code.
      * @param  locale The locale for logging messages.
-     * @return A message proposing a replacement, or {@code null} if none.
+     * @return The proposed replacement (may be the "(none)" text).
      */
-    private InternationalString getSupersession(final String table, final Integer code, final Locale locale)
-            throws SQLException
-    {
+    private String getSupersession(final String table, final Integer code, final Locale locale) throws SQLException {
         String reason = null;
         Object replacedBy = null;
         try (ResultSet result = executeQuery("Deprecation",
@@ -991,7 +1031,7 @@ addURIs:    for (int i=0; ; i++) {
             record.setLoggerName(Loggers.CRS_FACTORY);
             Logging.log(EPSGDataAccess.class, method, record);
         }
-        return Vocabulary.formatInternational(Vocabulary.Keys.SupersededBy_1, replacedBy);
+        return (String) replacedBy;
     }
 
     /**
@@ -1029,7 +1069,10 @@ addURIs:    for (int i=0; ; i++) {
             final String codeString = code.toString();
             final ImmutableIdentifier identifier;
             if (deprecated) {
-                identifier = new DeprecatedCode(authority, Constants.EPSG, codeString, version, getSupersession(table, code, locale));
+                final String replacedBy = getSupersession(table, code, locale);
+                identifier = new DeprecatedCode(authority, Constants.EPSG, codeString, version,
+                        Character.isDigit(replacedBy.charAt(0)) ? replacedBy : null,
+                        Vocabulary.formatInternational(Vocabulary.Keys.SupersededBy_1, replacedBy));
                 properties.put(AbstractIdentifiedObject.DEPRECATED_KEY, Boolean.TRUE);
             } else {
                 identifier = new ImmutableIdentifier(authority, Constants.EPSG, codeString, version,
@@ -1260,7 +1303,11 @@ addURIs:    for (int i=0; ; i++) {
                      * ---------------------------------------------------------------------- */
                     case "geographic 2d":
                     case "geographic 3d": {
-                        final EllipsoidalCS cs = owner.createEllipsoidalCS(getString(code, result, 8));
+                        Integer csCode = getInteger(code, result, 8);
+                        if (replaceDeprecatedCS) {
+                            csCode = DEPRECATED_CS.getOrDefault(csCode, csCode);
+                        }
+                        final EllipsoidalCS cs = owner.createEllipsoidalCS(csCode.toString());
                         final String datumCode = getOptionalString(result, 9);
                         final GeodeticDatum datum;
                         if (datumCode != null) {
@@ -1292,8 +1339,18 @@ addURIs:    for (int i=0; ; i++) {
                         result.close();      // Must be closed before call to createFoo(String)
                         ensureNoCycle(ProjectedCRS.class, epsg);
                         try {
-                            final CartesianCS   cs       = owner.createCartesianCS(csCode);
-                            final GeographicCRS baseCRS  = owner.createGeographicCRS(geoCode);
+                            final CartesianCS cs = owner.createCartesianCS(csCode);
+                            final GeographicCRS baseCRS;
+                            if (deprecated) try {
+                                quiet = true;
+                                replaceDeprecatedCS = true;
+                                baseCRS = createGeographicCRS(geoCode);                 // Do not cache that CRS.
+                            } finally {
+                                quiet = false;
+                                replaceDeprecatedCS = false;
+                            } else {
+                                baseCRS = owner.createGeographicCRS(geoCode);
+                            }
                             final CoordinateOperation op = owner.createCoordinateOperation(opCode);
                             if (op instanceof Conversion) {
                                 crs = crsFactory.createProjectedCRS(createProperties("Coordinate Reference System",

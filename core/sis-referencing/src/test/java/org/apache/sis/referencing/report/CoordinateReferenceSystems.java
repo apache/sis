@@ -16,8 +16,11 @@
  */
 package org.apache.sis.referencing.report;
 
+import java.util.Arrays;
 import java.util.Locale;
+import java.util.Set;
 import java.util.Map;
+import java.util.HashSet;
 import java.util.HashMap;
 import java.util.TreeMap;
 import java.io.File;
@@ -43,6 +46,7 @@ import org.opengis.referencing.datum.VerticalDatumType;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.test.report.AuthorityCodesReport;
 import org.apache.sis.metadata.iso.citation.Citations;
+import org.apache.sis.internal.referencing.DeprecatedCode;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.IdentifiedObjects;
@@ -100,10 +104,11 @@ public final strictfp class CoordinateReferenceSystems extends AuthorityCodesRep
         rd("Australian Geodetic Datum 1966",                              "Australian Geodetic Datum");
         rd("Australian Geodetic Datum 1984",                              "Australian Geodetic Datum");
         rd("Australian Height Datum (Tasmania)",                          "Australian Height Datum");
-        rd("Azores Central Islands 1948",                                 "Azores Central Islands");
-        rd("Azores Central Islands 1995",                                 "Azores Central Islands");
-        rd("Azores Oriental Islands 1940",                                "Azores Oriental Islands");
-        rd("Azores Oriental Islands 1995",                                "Azores Oriental Islands");
+        rd("Azores Central Islands 1948",                                 "Azores Islands");
+        rd("Azores Central Islands 1995",                                 "Azores Islands");
+        rd("Azores Occidental Islands 1939",                              "Azores Islands");
+        rd("Azores Oriental Islands 1940",                                "Azores Islands");
+        rd("Azores Oriental Islands 1995",                                "Azores Islands");
         rd("Baltic 1980",                                                 "Baltic");
         rd("Baltic 1982",                                                 "Baltic");
         rd("Baltic Sea",                                                  "Baltic");
@@ -113,6 +118,14 @@ public final strictfp class CoordinateReferenceSystems extends AuthorityCodesRep
         rd("Bogota 1975 (Bogota)",                                        "Bogota 1975");
         rd("Carthage (Paris)",                                            "Carthage");
         rd("Bern 1938",                                                   "Bern / CH1903");
+        rd("Cais da Figueirinha - Angra do Heroismo",                     "Cais");
+        rd("Cais da Madalena",                                            "Cais");
+        rd("Cais da Pontinha - Funchal",                                  "Cais");
+        rd("Cais da Vila - Porto Santo",                                  "Cais");
+        rd("Cais da Vila do Porto",                                       "Cais");
+        rd("Cais das Velas",                                              "Cais");
+        rd("Cayman Brac Vertical Datum 1961",                             "Cayman Islands");
+        rd("Cayman Islands Geodetic Datum 2011",                          "Cayman Islands");
         rd("CH1903",                                                      "Bern / CH1903");
         rd("CH1903+",                                                     "Bern / CH1903");
         rd("CH1903 (Bern)",                                               "Bern / CH1903");
@@ -146,16 +159,25 @@ public final strictfp class CoordinateReferenceSystems extends AuthorityCodesRep
         rd("European Vertical Reference Frame 2007",                      "European Vertical Reference Frame");
         rd("Fahud Height Datum",                                          "Fahud");
         rd("Fao 1979",                                                    "Fao");
+        rd("Fehmarnbelt Datum 2010",                                      "Fehmarnbelt");
+        rd("Fehmarnbelt Vertical Reference 2010",                         "Fehmarnbelt");
         rd("Faroe Datum 1954",                                            "Faroe Islands");
         rd("Faroe Islands Vertical Reference 2009",                       "Faroe Islands");
         rd("fk89",                                                        "Faroe Islands");
         rd("Fiji 1956",                                                   "Fiji");
         rd("Fiji Geodetic Datum 1986",                                    "Fiji");
+        rd("Gan 1970",                                                    "Gandajika");
+        rd("Gandajika 1970",                                              "Gandajika");
+        rd("Grand Cayman Geodetic Datum 1959",                            "Grand Cayman");
+        rd("Grand Cayman Vertical Datum 1954",                            "Grand Cayman");
         rd("Greek (Athens)",                                              "Greek");
         rd("Greek Geodetic Reference System 1987",                        "Greek");
         rd("Guadeloupe 1948",                                             "Guadeloupe");
         rd("Guadeloupe 1951",                                             "Guadeloupe");
         rd("Guadeloupe 1988",                                             "Guadeloupe");
+        rd("Guam 1963",                                                   "Guam");
+        rd("Guam Vertical Datum of 1963",                                 "Guam");
+        rd("Guam Vertical Datum of 2004",                                 "Guam");
         rd("Gunung Segara (Jakarta)",                                     "Gunung Segara");
         rd("Guyane Francaise",                                            "Centre Spatial Guyanais 1967");   // For a deprecated CRS.
         rd("Hong Kong 1963",                                              "Hong Kong");
@@ -227,6 +249,13 @@ public final strictfp class CoordinateReferenceSystems extends AuthorityCodesRep
         rd("Martinique 1987",                                             "Martinique");
         rd("Maupiti 83",                                                  "Maupiti");
         rd("Maupiti SAU 2001",                                            "Maupiti");
+        rd("Mean High Water",                                             "Mean Sea Level");
+        rd("Mean High Water Spring Tides",                                "Mean Sea Level");
+        rd("Mean Higher High Water",                                      "Mean Sea Level");
+        rd("Mean Low Water",                                              "Mean Sea Level");
+        rd("Mean Low Water Spring Tide",                                  "Mean Sea Level");
+        rd("Mean Lower Low Water",                                        "Mean Sea Level");
+        rd("Mean Lower Low Water Spring Tides",                           "Mean Sea Level");
         rd("Missao Hidrografico Angola y Sao Tome 1951",                  "Missao Hidrografico Angola y Sao Tome");
         rd("Mhast",                                                       "Missao Hidrografico Angola y Sao Tome");
         rd("Mhast (offshore)",                                            "Missao Hidrografico Angola y Sao Tome");
@@ -298,7 +327,6 @@ public final strictfp class CoordinateReferenceSystems extends AuthorityCodesRep
         rd("Sri Lanka Datum 1999",                                        "Sri Lanka");
         rd("Sri Lanka Vertical Datum",                                    "Sri Lanka");
         rd("Stockholm 1938 (Stockholm)",                                  "Stockholm 1938");
-        rd("Sudan",                                                       "Adindan");            // For a deprecated CRS.
         rd("System Jednotne Trigonometricke Site Katastralni (Ferro)",    "System Jednotne Trigonometricke Site Katastralni");
         rd("System Jednotne Trigonometricke Site Katastralni/05",         "System Jednotne Trigonometricke Site Katastralni");
         rd("System Jednotne Trigonometricke Site Katastralni/05 (Ferro)", "System Jednotne Trigonometricke Site Katastralni");
@@ -319,6 +347,16 @@ public final strictfp class CoordinateReferenceSystems extends AuthorityCodesRep
         rd("Yellow Sea 1956",                                             "Yellow Sea");
         rd("Yellow Sea 1985",                                             "Yellow Sea");
     }
+
+    /**
+     * Words to ignore in a datum name in order to detect if a CRS name is the acronym of the datum name.
+     */
+    private static final Set<String> DATUM_WORDS_TO_IGNORE = new HashSet<>(Arrays.asList(
+            "of",           // VIVD: Virgin Islands Vertical Datum of 2009
+            "de",           // RRAF: Reseau de Reference des Antilles Francaises
+            "des",          // RGAF: Reseau Geodesique des Antilles Francaises
+            "la",           // RGR:  Reseau Geodesique de la Reunion
+            "Tides"));      // MLWS: Mean Low Water Spring Tides
 
     /**
      * Shortcut for {@link #SECTION_TITLES} initialization.
@@ -473,6 +511,66 @@ public final strictfp class CoordinateReferenceSystems extends AuthorityCodesRep
     }
 
     /**
+     * Omits the trailing number, if any.
+     * For example if the given name is "Abidjan 1987", then this method returns "Abidjan".
+     */
+    private static String omitTrailingNumber(String name) {
+        int i = CharSequences.skipTrailingWhitespaces(name, 0, name.length());
+        while (i != 0) {
+            final char c = name.charAt(--i);
+            if (c < '0' || c > '9') {
+                name = name.substring(0, CharSequences.skipTrailingWhitespaces(name, 0, i+1));
+                break;
+            }
+        }
+        return name;
+    }
+
+    /**
+     * If the first word of the CRS name seems to be an acronym of the datum name,
+     * puts that acronym in a {@code <abbr title="datum name">...</abbr>} element.
+     */
+    static String insertAbbreviationTitle(final String crsName, final String datumName) {
+        int s = crsName.indexOf(' ');
+        if (s < 0) s = crsName.length();
+        int p = crsName.indexOf('(');
+        if (p >= 0 && p < s) s = p;
+        p = datumName.indexOf('(');
+        if (p < 0) p = datumName.length();
+        final String acronym = crsName.substring(0, s);
+        final String ar = omitTrailingNumber(acronym);
+        final String dr = omitTrailingNumber(datumName.substring(0, p));
+        if (dr.startsWith(ar)) {
+            return crsName;                                 // Avoid redudancy between CRS name and datum name.
+        }
+        /*
+         * If the first CRS word does not seem to be an acronym of the datum name, verify
+         * if there is some words that we should ignore in the datum name and try again.
+         */
+        if (!CharSequences.isAcronymForWords(ar, dr)) {
+            final String[] words = (String[]) CharSequences.split(dr, ' ');
+            int n = 0;
+            for (final String word : words) {
+                if (!DATUM_WORDS_TO_IGNORE.contains(word)) {
+                    words[n++] = word;
+                }
+            }
+            if (n == words.length || n < 2) {
+                return crsName;
+            }
+            final StringBuilder b = new StringBuilder();
+            for (int i=0; i<n; i++) {
+                if (i != 0) b.append(' ');
+                b.append(words[i]);
+            }
+            if (!CharSequences.isAcronymForWords(ar, b)) {
+                return crsName;
+            }
+        }
+        return "<abbr title=\"" + datumName + "\">" + acronym + "</abbr>" + crsName.substring(s);
+    }
+
+    /**
      * Invoked when a CRS has been successfully created. This method modifies the default
      * {@link org.opengis.test.report.AuthorityCodesReport.Row} attribute values created
      * by GeoAPI.
@@ -483,36 +581,49 @@ public final strictfp class CoordinateReferenceSystems extends AuthorityCodesRep
      */
     @Override
     protected Row createRow(final String code, final IdentifiedObject object) {
-        if (code.equals("EPSG:5804")) {
-            System.out.println("");
-        }
         final Row row = super.createRow(code, object);
         final CoordinateReferenceSystem crs = (CoordinateReferenceSystem) object;
         final CoordinateReferenceSystem crsXY = AbstractCRS.castOrCopy(crs).forConvention(AxesConvention.RIGHT_HANDED);
         if (!Utilities.deepEquals(crs.getCoordinateSystem(), crsXY.getCoordinateSystem(), ComparisonMode.IGNORE_METADATA)) {
             row.annotation = YX_ORDER;
         }
+        CoordinateReferenceSystem replacement = crs;
         row.remark = getRemark(crs);
+        /*
+         * If the object is deprecated, find the replacement.
+         * We do not take the whole comment because it may be pretty long.
+         */
         if (object instanceof Deprecable) {
             row.isDeprecated = ((Deprecable) object).isDeprecated();
-        }
-        /*
-         * If the object is deprecated, try to find the reason.
-         * Don't take the whole comment, because it may be pretty long.
-         */
-        if (row.isDeprecated) {
-            InternationalString i18n = object.getRemarks();
-            for (final Identifier id : object.getIdentifiers()) {
-                if (id instanceof Deprecable && ((Deprecable) id).isDeprecated()) {
-                    i18n = ((Deprecable) id).getRemarks();
-                    break;
+            if (row.isDeprecated) {
+                String replacedBy = null;
+                InternationalString i18n = object.getRemarks();
+                for (final Identifier id : object.getIdentifiers()) {
+                    if (id instanceof Deprecable && ((Deprecable) id).isDeprecated()) {
+                        i18n = ((Deprecable) id).getRemarks();
+                        if (id instanceof DeprecatedCode) {
+                            replacedBy = ((DeprecatedCode) id).replacedBy;
+                        }
+                        break;
+                    }
+                }
+                if (i18n != null) {
+                    row.remark = i18n.toString(getLocale());
+                }
+                /*
+                 * If a replacement exists for a deprecated CRS, use the datum of the replacement instead than
+                 * the datum of the deprecated CRS for determining in which section to put the CRS. The reason
+                 * is that some CRS are deprecated because they were associated to the wrong datum, in which
+                 * case the deprecated CRS would appear in the wrong section if we do not apply this correction.
+                 */
+                if (replacedBy != null) try {
+                    replacement = factory.createCoordinateReferenceSystem("EPSG:" + replacedBy);
+                } catch (FactoryException e) {
+                    // Ignore - keep the datum of the deprecated object.
                 }
             }
-            if (i18n != null) {
-                row.remark = i18n.toString(getLocale());
-            }
         }
-        ((ByName) row).setup(CRS.getSingleComponents(crs).get(0).getDatum());
+        ((ByName) row).setup(CRS.getSingleComponents(replacement).get(0).getDatum());
         return row;
     }
 
@@ -540,12 +651,7 @@ public final strictfp class CoordinateReferenceSystems extends AuthorityCodesRep
             row.remark = "Projected";
             ((ByName) row).setup(CommonCRS.WGS84.datum());
         } else {
-            String message = exception.getMessage();
-            if (message.contains("Unable to format units in UCUM")) {
-                // Simplify a very long and badly formatted message.
-                message = "Unable to format units in UCUM";
-            }
-            row.remark = message;
+            row.remark = exception.getMessage();
             ((ByName) row).setup(null);
         }
         return row;
@@ -560,6 +666,9 @@ public final strictfp class CoordinateReferenceSystems extends AuthorityCodesRep
     protected Row newRow() {
         return new ByName();
     }
+
+
+
 
     /**
      * A row with an natural ordering that use the first part of the name before to use the authority code.
@@ -596,19 +705,18 @@ public final strictfp class CoordinateReferenceSystems extends AuthorityCodesRep
          * Computes the {@link #reducedName} field value.
          */
         final void setup(final Datum datum) {
+            final String datumName;
             if (datum != null) {
-                section = datum.getName().getCode();
+                datumName = datum.getName().getCode();
             } else {
                 // Temporary patch (TODO: remove after we implemented the missing methods in SIS)
-                if (name.startsWith("NSIDC EASE-Grid")) {
-                    section = "Unspecified datum";
-                } else if (code.equals("EPSG:2163")) {
-                    section = "Unspecified datum";
-                } else if (code.equals("EPSG:5818")) {
-                    section = "Seismic bin grid datum";
+                if (code.equals("EPSG:5818")) {
+                    datumName = "Seismic bin grid datum";
+                } else {
+                    datumName = "Unspecified datum";
                 }
             }
-            section = SECTION_TITLES.getOrDefault(section, section);
+            section = SECTION_TITLES.getOrDefault(datumName, datumName);
             /*
              * Get a copy of the name in all lower case.
              */
@@ -637,11 +745,13 @@ public final strictfp class CoordinateReferenceSystems extends AuthorityCodesRep
             if (s != 0) b.setLength(s);
             uniformizeZoneNumber(b);
             reducedName = b.toString();
+            name = insertAbbreviationTitle(name, datumName);
         }
 
         /**
          * If the string ends with a number optionally followed by "N" or "S", replaces the hemisphere
          * symbol by a sign and makes sure that the number uses at least 3 digits (e.g. "2N" → "+002").
+         * This string will be used for better sorting order.
          */
         private static void uniformizeZoneNumber(final StringBuilder b) {
             if (b.indexOf("/") < 0) {
