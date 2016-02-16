@@ -167,8 +167,8 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
      *
      * @see #replaceDeprecatedCS
      */
-    private static final Map<Integer,Integer> DEPRECATED_CS;
-    static {
+    private static final Map<Integer,Integer> DEPRECATED_CS = deprecatedCS();
+    static Map<Integer,Integer> deprecatedCS() {
         final Map<Integer,Integer> m = new HashMap<>(24);
 
         // Ellipsoidal 2D CS. Axes: latitude, longitude. Orientations: north, east. UoM: degree
@@ -184,7 +184,7 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
         for (int code = 6413; code <= 6420; code++) {
             m.put(code, replacement);
         }
-        DEPRECATED_CS = m;
+        return m;
     }
 
     /**
@@ -691,7 +691,7 @@ addURIs:    for (int i=0; ; i++) {
                     statements.put(KEY, statement);
                     lastTableForName = table;
                 }
-                statement.setString(1, SQLUtilities.toLikePattern(code));
+                statement.setString(1, toLikePattern(code));
                 Integer resolved = null;
                 try (ResultSet result = statement.executeQuery()) {
                     while (result.next()) {
@@ -1045,45 +1045,21 @@ addURIs:    for (int i=0; ; i++) {
      * @return The name together with a set of properties.
      */
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
-    private Map<String,Object> createProperties(final String table, final String name, final Integer code,
+    private Map<String,Object> createProperties(final String table, String name, final Integer code,
             String remarks, final boolean deprecated) throws SQLException, FactoryDataException
     {
-        properties.clear();
-        GenericName gn = null;
-        final Locale locale = getLocale();
-        final Citation authority = owner.getAuthority();
-        final InternationalString edition = authority.getEdition();
-        final String version = (edition != null) ? edition.toString() : null;
-        if (name != null) {
-            gn = owner.nameFactory.createGenericName(namespace, Constants.EPSG, name);
-            properties.put("name", gn);
-            properties.put(NamedIdentifier.CODE_KEY,      name);
-            properties.put(NamedIdentifier.VERSION_KEY,   version);
-            properties.put(NamedIdentifier.AUTHORITY_KEY, authority);
-            properties.put(AbstractIdentifiedObject.LOCALE_KEY, locale);
-            final NamedIdentifier id = new NamedIdentifier(properties);
-            properties.clear();
-            properties.put(IdentifiedObject.NAME_KEY, id);
-        }
-        if (code != null) {
-            final String codeString = code.toString();
-            final ImmutableIdentifier identifier;
-            if (deprecated) {
-                final String replacedBy = getSupersession(table, code, locale);
-                identifier = new DeprecatedCode(authority, Constants.EPSG, codeString, version,
-                        Character.isDigit(replacedBy.charAt(0)) ? replacedBy : null,
-                        Vocabulary.formatInternational(Vocabulary.Keys.SupersededBy_1, replacedBy));
-                properties.put(AbstractIdentifiedObject.DEPRECATED_KEY, Boolean.TRUE);
-            } else {
-                identifier = new ImmutableIdentifier(authority, Constants.EPSG, codeString, version,
-                                    (gn != null) ? gn.toInternationalString() : null);
-            }
-            properties.put(IdentifiedObject.IDENTIFIERS_KEY, identifier);
-        }
-        properties.put(IdentifiedObject.REMARKS_KEY, remarks);
         /*
          * Search for aliases. Note that searching for the object code is not sufficient. We also need to check if the
          * record is really from the table we are looking for since different tables may have objects with the same ID.
+         *
+         * Some aliases are identical to the name except that some letters are replaced by their accented letters.
+         * For example "Reseau Geodesique Francais" → "Réseau Géodésique Français". If we find such alias, replace
+         * the name by the alias so we have proper display in user interface. Notes:
+         *
+         *   - WKT formatting will still be compliant with ISO 19162 because the WKT formatter replaces accented
+         *     letters by ASCII ones.
+         *   - We do not perform this replacement directly in our EPSG database because ASCII letters are more
+         *     convenient for implementing accent-insensitive searches.
          */
         final List<GenericName> aliases = new ArrayList<>();
         try (ResultSet result = executeQuery("Alias",
@@ -1105,13 +1081,53 @@ addURIs:    for (int i=0; ; i++) {
                             namingSystems.put(naming, ns);
                         }
                     }
-                    aliases.add(owner.nameFactory.createLocalName(ns, alias));
+                    if (CharSequences.toASCII(alias).toString().equals(name)) {
+                        name = alias;
+                    } else {
+                        aliases.add(owner.nameFactory.createLocalName(ns, alias));
+                    }
                 }
             }
+        }
+        /*
+         * At this point we can fill the properties map.
+         */
+        properties.clear();
+        GenericName gn = null;
+        final Locale locale = getLocale();
+        final Citation authority = owner.getAuthority();
+        final InternationalString edition = authority.getEdition();
+        final String version = (edition != null) ? edition.toString() : null;
+        if (name != null) {
+            gn = owner.nameFactory.createGenericName(namespace, Constants.EPSG, name);
+            properties.put("name", gn);
+            properties.put(NamedIdentifier.CODE_KEY,      name);
+            properties.put(NamedIdentifier.VERSION_KEY,   version);
+            properties.put(NamedIdentifier.AUTHORITY_KEY, authority);
+            properties.put(AbstractIdentifiedObject.LOCALE_KEY, locale);
+            final NamedIdentifier id = new NamedIdentifier(properties);
+            properties.clear();
+            properties.put(IdentifiedObject.NAME_KEY, id);
         }
         if (!aliases.isEmpty()) {
             properties.put(IdentifiedObject.ALIAS_KEY, aliases.toArray(new GenericName[aliases.size()]));
         }
+        if (code != null) {
+            final String codeString = code.toString();
+            final ImmutableIdentifier identifier;
+            if (deprecated) {
+                final String replacedBy = getSupersession(table, code, locale);
+                identifier = new DeprecatedCode(authority, Constants.EPSG, codeString, version,
+                        Character.isDigit(replacedBy.charAt(0)) ? replacedBy : null,
+                        Vocabulary.formatInternational(Vocabulary.Keys.SupersededBy_1, replacedBy));
+                properties.put(AbstractIdentifiedObject.DEPRECATED_KEY, Boolean.TRUE);
+            } else {
+                identifier = new ImmutableIdentifier(authority, Constants.EPSG, codeString, version,
+                                    (gn != null) ? gn.toInternationalString() : null);
+            }
+            properties.put(IdentifiedObject.IDENTIFIERS_KEY, identifier);
+        }
+        properties.put(IdentifiedObject.REMARKS_KEY, remarks);
         properties.put(AbstractIdentifiedObject.LOCALE_KEY, locale);
         properties.put(ReferencingServices.MT_FACTORY, owner.mtFactory);
         return properties;
@@ -1138,6 +1154,16 @@ addURIs:    for (int i=0; ; i++) {
         }
         properties.put(Datum.SCOPE_KEY, scope);
         return properties;
+    }
+
+    /**
+     * Returns a string like the given string but with accented letters replaced by ASCII letters
+     * and all characters that are not letter or digit replaced by the wildcard % character.
+     *
+     * @see SQLUtilities#toLikePattern(String)
+     */
+    private static String toLikePattern(final String name) {
+        return SQLUtilities.toLikePattern(CharSequences.toASCII(name).toString());
     }
 
     /**
@@ -1191,7 +1217,7 @@ addURIs:    for (int i=0; ; i++) {
                     if (isPrimaryKey) {
                         stmt.setInt(1, pk);
                     } else {
-                        stmt.setString(1, SQLUtilities.toLikePattern(code));
+                        stmt.setString(1, toLikePattern(code));
                     }
                     Integer present = null;
                     try (ResultSet result = stmt.executeQuery()) {
