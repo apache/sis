@@ -167,7 +167,6 @@ public final strictfp class CoordinateReferenceSystems extends AuthorityCodesRep
         rd("Fiji 1956",                                                   "Fiji");
         rd("Fiji Geodetic Datum 1986",                                    "Fiji");
         rd("Gan 1970",                                                    "Gandajika");
-        rd("Gandajika 1970",                                              "Gandajika");
         rd("Grand Cayman Geodetic Datum 1959",                            "Grand Cayman");
         rd("Grand Cayman Vertical Datum 1954",                            "Grand Cayman");
         rd("Greek (Athens)",                                              "Greek");
@@ -179,7 +178,6 @@ public final strictfp class CoordinateReferenceSystems extends AuthorityCodesRep
         rd("Guam Vertical Datum of 1963",                                 "Guam");
         rd("Guam Vertical Datum of 2004",                                 "Guam");
         rd("Gunung Segara (Jakarta)",                                     "Gunung Segara");
-        rd("Guyane Francaise",                                            "Centre Spatial Guyanais 1967");   // For a deprecated CRS.
         rd("Hong Kong 1963",                                              "Hong Kong");
         rd("Hong Kong 1963(67)",                                          "Hong Kong");
         rd("Hong Kong 1980",                                              "Hong Kong");
@@ -200,7 +198,6 @@ public final strictfp class CoordinateReferenceSystems extends AuthorityCodesRep
         rd("IGN63 Hiva Oa",                                               "IGN");
         rd("IGN72 Grande Terre",                                          "IGN");
         rd("IGN72 Nuku Hiva",                                             "IGN");
-        rd("IGN78 Corsica",                                               "IGN");
         rd("Indian 1954",                                                 "Indian");
         rd("Indian 1960",                                                 "Indian");
         rd("Indian 1975",                                                 "Indian");
@@ -248,8 +245,6 @@ public final strictfp class CoordinateReferenceSystems extends AuthorityCodesRep
         rd("Lisbon 1937 (Lisbon)",                                        "Lisbon");
         rd("Lower Low Water Large Tide", "Low Water");
         rd("Lowest Astronomic Tide", "Low Water");
-        rd("Cote d'Ivoire",                                               "Locodjo 1965");   // For a deprecated CRS.
-        rd("Madeira 1936",                                                "Porto Santo");    // For a deprecated CRS.
         rd("Makassar (Jakarta)",                                          "Makassar");
         rd("Manoca 1962",                                                 "Manoca");
         rd("Martinique 1938",                                             "Martinique");
@@ -265,7 +260,6 @@ public final strictfp class CoordinateReferenceSystems extends AuthorityCodesRep
         rd("Mean Lower Low Water",                                        "Mean Sea Level");
         rd("Mean Lower Low Water Spring Tides",                           "Mean Sea Level");
         rd("Missao Hidrografico Angola y Sao Tome 1951",                  "Missao Hidrografico Angola y Sao Tome");
-        rd("Mhast",                                                       "Missao Hidrografico Angola y Sao Tome");
         rd("Mhast (offshore)",                                            "Missao Hidrografico Angola y Sao Tome");
         rd("Mhast (onshore)",                                             "Missao Hidrografico Angola y Sao Tome");
         rd("Militar-Geographische Institut (Ferro)",                      "Militar-Geographische Institut");
@@ -289,8 +283,6 @@ public final strictfp class CoordinateReferenceSystems extends AuthorityCodesRep
         rd("NAD83 (High Accuracy Reference Network)",                     "North American Datum 1983 — High Accuracy Reference Network");
         rd("NAD83 (National Spatial Reference System 2007)",              "North American Datum 1983 — National Spatial Reference System 2007");
         rd("NAD83 Canadian Spatial Reference System",                     "North American Datum 1983 — Canadian Spatial Reference System");
-        rd("Nord Sahara 1959 (Paris)",                                    "Nord Sahara 1959");
-        rd("Nord de Guerre (Paris)",                                      "Ancienne Triangulation Française");
         rd("Nouvelle Triangulation Francaise",                            "Nouvelle Triangulation Française");
         rd("Nouvelle Triangulation Francaise (Paris)",                    "Nouvelle Triangulation Française");
         rd("NAD83 (Continuously Operating Reference Station 1996)",       "North American Datum 1983 — Continuously Operating Reference Station 1996");       // For better sort order.
@@ -327,8 +319,6 @@ public final strictfp class CoordinateReferenceSystems extends AuthorityCodesRep
         rd("Rikets hojdsystem 1900",                                      "Rikets hojdsystem");
         rd("Rikets hojdsystem 1970",                                      "Rikets hojdsystem");
         rd("Rikets hojdsystem 2000",                                      "Rikets hojdsystem");
-        rd("Samboja",                                                     "Gunung Segara");      // For a deprecated CRS.
-        rd("Segora",                                                      "Gunung Segara");      // For a deprecated CRS.
         rd("Sierra Leone 1968",                                           "Sierra Leone");
         rd("Sierra Leone Colony 1924",                                    "Sierra Leone");
         rd("SIRGAS-Chile",                                                "SIRGAS");
@@ -351,7 +341,6 @@ public final strictfp class CoordinateReferenceSystems extends AuthorityCodesRep
         rd("Tananarive 1925 (Paris)",                                     "Tananarive 1925");
         rd("Tokyo 1892",                                                  "Tokyo");
         rd("Viti Levu 1912",                                              "Viti Levu");
-        rd("Viti Levu 1916",                                              "Viti Levu");          // For a deprecated CRS.
         rd("Voirol 1875",                                                 "Voirol");
         rd("Voirol 1875 (Paris)",                                         "Voirol");
         rd("Voirol 1879",                                                 "Voirol");
@@ -359,6 +348,21 @@ public final strictfp class CoordinateReferenceSystems extends AuthorityCodesRep
         rd("WGS 72 Transit Broadcast Ephemeris",                          "World Geodetic System 1972 — Transit Broadcast Ephemeris");
         rd("Yellow Sea 1956",                                             "Yellow Sea");
         rd("Yellow Sea 1985",                                             "Yellow Sea");
+    }
+
+    /**
+     * The datums from the above list which are deprecated, but that we do not want to replace by the non-deprecated
+     * datum. We disable some replacements when they allow better sorting of deprecated CRS.
+     */
+    private static final Set<String> KEEP_DEPRECATED_DATUM = new HashSet<>(Arrays.asList(
+        "Dealul Piscului 1970"));           // Datum does not exist but is an alias for S-42 in Romania.
+
+    /**
+     * Shortcut for {@link #SECTION_TITLES} initialization.
+     * {@code "rd"} stands for "rename datum".
+     */
+    private static void rd(final String datum, final String display) {
+        assertNull(datum, SECTION_TITLES.put(datum, display));
     }
 
     /**
@@ -374,14 +378,6 @@ public final strictfp class CoordinateReferenceSystems extends AuthorityCodesRep
             "del",          // SIRGAS: Sistema de Referencia Geocentrico para America del Sur 1995
             "las",          // SIRGAS: Sistema de Referencia Geocentrico para las AmericaS 2000
             "Tides"));      // MLWS:   Mean Low Water Spring Tides
-
-    /**
-     * Shortcut for {@link #SECTION_TITLES} initialization.
-     * {@code "rd"} stands for "rename datum".
-     */
-    private static void rd(final String datum, final String display) {
-        assertNull(datum, SECTION_TITLES.put(datum, display));
-    }
 
     /**
      * The keywords before which to cut the CRS names when sorting by alphabetical order.
@@ -480,7 +476,7 @@ public final strictfp class CoordinateReferenceSystems extends AuthorityCodesRep
             System.out.println();
             System.out.println("WARNING: the following datums were expected but not found. Maybe their spelling changed?");
             for (final String name : writer.unusedDatumMapping) {
-                System.out.print("    ");
+                System.out.print("  - ");
                 System.out.println(name);
             }
         }
@@ -648,10 +644,12 @@ public final strictfp class CoordinateReferenceSystems extends AuthorityCodesRep
                  * is that some CRS are deprecated because they were associated to the wrong datum, in which
                  * case the deprecated CRS would appear in the wrong section if we do not apply this correction.
                  */
-                if (replacedBy != null) try {
-                    replacement = factory.createCoordinateReferenceSystem("EPSG:" + replacedBy);
-                } catch (FactoryException e) {
-                    // Ignore - keep the datum of the deprecated object.
+                if (!KEEP_DEPRECATED_DATUM.contains(CRS.getSingleComponents(crs).get(0).getDatum().getName().getCode())) {
+                    if (replacedBy != null) try {
+                        replacement = factory.createCoordinateReferenceSystem("EPSG:" + replacedBy);
+                    } catch (FactoryException e) {
+                        // Ignore - keep the datum of the deprecated object.
+                    }
                 }
             }
         }
