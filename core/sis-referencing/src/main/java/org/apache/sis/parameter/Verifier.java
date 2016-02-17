@@ -26,6 +26,7 @@ import org.opengis.metadata.Identifier;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.GeneralParameterDescriptor;
 import org.opengis.parameter.InvalidParameterValueException;
+import org.apache.sis.internal.referencing.EPSGParameterDomain;
 import org.apache.sis.measure.Range;
 import org.apache.sis.measure.Units;
 import org.apache.sis.util.Numbers;
@@ -40,7 +41,7 @@ import org.apache.sis.util.resources.Vocabulary;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4
- * @version 0.4
+ * @version 0.7
  * @module
  */
 final class Verifier {
@@ -106,10 +107,13 @@ final class Verifier {
         UnitConverter converter = null;
         Object convertedValue = value;
         if (unit != null) {
-            final Unit<?> def = descriptor.getUnit();
+            Unit<?> def = descriptor.getUnit();
             if (def == null) {
-                final String name = getDisplayName(descriptor);
-                throw new InvalidParameterValueException(Errors.format(Errors.Keys.UnitlessParameter_1, name), name, unit);
+                def = getCompatibleUnit(Parameters.getValueDomain(descriptor), unit);
+                if (def == null) {
+                    final String name = getDisplayName(descriptor);
+                    throw new InvalidParameterValueException(Errors.format(Errors.Keys.UnitlessParameter_1, name), name, unit);
+                }
             }
             if (!unit.equals(def)) {
                 final short expectedID = getUnitMessageID(def);
@@ -161,7 +165,7 @@ final class Verifier {
                         componentType = Numbers.primitiveToWrapper(componentType);
                         for (int i=0; i<length; i++) {
                             Number n = (Number) Array.get(value, i);
-                            n = converter.convert(n.doubleValue()); // Value in units that we can compare.
+                            n = converter.convert(n.doubleValue());         // Value in units that we can compare.
                             try {
                                 n = Numbers.cast(n, componentType.asSubclass(Number.class));
                             } catch (IllegalArgumentException e) {
@@ -287,6 +291,22 @@ final class Verifier {
             arguments[1] = minimumValue;
             arguments[2] = maximumValue;
         }
+    }
+
+    /**
+     * If the given domain of values accepts units of incompatible dimensions, return the unit which is compatible
+     * with the given units. This is a non-public mechanism handling a few parameters in the EPSG database, like
+     * <cite>Ordinate 1 of evaluation point</cite> (EPSG:8617).
+     */
+    private static Unit<?> getCompatibleUnit(final Range<?> valueDomain, final Unit<?> unit) {
+        if (valueDomain instanceof EPSGParameterDomain) {
+            for (final Unit<?> valid : ((EPSGParameterDomain) valueDomain).units) {
+                if (unit.isCompatible(valid)) {
+                    return valid;
+                }
+            }
+        }
+        return null;
     }
 
     /**

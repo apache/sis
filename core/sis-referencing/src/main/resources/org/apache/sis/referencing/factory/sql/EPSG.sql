@@ -5,6 +5,21 @@
 
 
 --
+-- Corrections to some deprecated Coordinate Reference Systems (CRS).  The errors that we fix here are known to EPSG,
+-- but were fixed by deprecating the erroneous CRS and creating a new one. This approach allows reproductive behavior
+-- of applications that used the erroneous CRS. However in a few cases, Apache SIS can not instantiate the deprecated
+-- object without some minimal corrections. The following UPDATEs perform the minimal amount of changes needed by SIS.
+--
+
+-- "Scale factor at natural origin" (EPSG:8805) shall be dimensionless (EPSG:9201), not in "m" units (EPSG:9001).
+UPDATE epsg_coordoperationparamvalue SET uom_code = 9201 WHERE parameter_code = 8805 AND uom_code = 9001;
+
+-- Value 44°87′ is illegal for DMS units (EPSG:9110). A value equivalent to the erroneous DMS value is 45°27′.
+UPDATE epsg_coordoperationparamvalue SET parameter_value = 45.27 WHERE parameter_value = 44.87 AND uom_code = 9110;
+
+
+
+--
 -- Additional indexes for the EPSG database. Those indexes are not declared
 -- in the SQL scripts distributed by EPSG. They are not required for proper
 -- working of the EPSG factory, but can significantly improve performances.

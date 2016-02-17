@@ -684,8 +684,11 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
     public void setValue(final double value, final Unit<?> unit) throws InvalidParameterValueException {
         try {
             setValue(wrap(value, descriptor.getValueClass()), unit);
+        } catch (InvalidParameterValueException e) {
+            throw e;        // Need to be thrown explicitely because it is a subclass of IllegalArgumentException.
         } catch (IllegalArgumentException e) {
-            throw new InvalidParameterValueException(e.getLocalizedMessage(), Verifier.getDisplayName(descriptor), value);
+            throw (InvalidParameterValueException) new InvalidParameterValueException(
+                    e.getLocalizedMessage(), Verifier.getDisplayName(descriptor), value).initCause(e);
         }
     }
 
