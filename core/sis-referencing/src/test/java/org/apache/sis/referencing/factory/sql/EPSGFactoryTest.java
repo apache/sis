@@ -469,6 +469,7 @@ public final strictfp class EPSGFactoryTest extends TestCase {
      */
     @Test
     public void testDeprecatedCoordinateSystems() throws FactoryException {
+        assumeNotNull(factory);
         for (final Map.Entry<Integer,Integer> entry : EPSGDataAccess.deprecatedCS().entrySet()) {
             final CoordinateSystem expected = factory.createEllipsoidalCS(entry.getValue().toString());
             loggings.assertNoUnexpectedLog();
