@@ -17,7 +17,9 @@
 package org.apache.sis.referencing.factory;
 
 import org.opengis.util.FactoryException;
+import org.opengis.referencing.IdentifiedObject;
 import org.apache.sis.internal.system.Loggers;
+import org.apache.sis.util.CharSequences;
 
 // Test imports
 import org.junit.Rule;
@@ -87,6 +89,17 @@ public final strictfp class GIGS2004 extends org.opengis.test.referencing.gigs.G
     @AfterClass
     public static void close() throws FactoryException {
         GIGS2001.close();
+    }
+
+    /**
+     * Removes the accented characters from the object name, so it can be compared against the expected name.
+     *
+     * @param object The object from which to get a name than can be verified against the expected name.
+     * @return The name of the given object, eventually modified in order to match the expected name.
+     */
+    @Override
+    protected String getVerifiableName(final IdentifiedObject object) {
+        return CharSequences.toASCII(super.getVerifiableName(object)).toString();
     }
 
     /**

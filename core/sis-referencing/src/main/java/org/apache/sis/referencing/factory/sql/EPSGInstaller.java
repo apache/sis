@@ -31,6 +31,7 @@ import java.util.regex.Pattern;
 import java.io.BufferedReader;
 import org.apache.sis.util.StringBuilders;
 import org.apache.sis.internal.metadata.sql.ScriptRunner;
+import org.apache.sis.internal.metadata.sql.SQLUtilities;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.util.CharSequences;
@@ -226,7 +227,8 @@ final class EPSGInstaller extends ScriptRunner {
      */
     public void run(InstallationScriptProvider scriptProvider) throws SQLException, IOException {
         long time = System.nanoTime();
-        log(Messages.getResources(null).getLogRecord(Level.INFO, Messages.Keys.CreatingSchema_2, Constants.EPSG, getSimplifiedURL()));
+        log(Messages.getResources(null).getLogRecord(Level.INFO, Messages.Keys.CreatingSchema_2, Constants.EPSG,
+                SQLUtilities.getSimplifiedURL(getConnection().getMetaData())));
         if (scriptProvider == null) {
             scriptProvider = lookupProvider();
         }
@@ -253,17 +255,6 @@ final class EPSGInstaller extends ScriptRunner {
             }
         }
         return new InstallationScriptProvider.Default();
-    }
-
-    /**
-     * Returns a simplified form of the URL (truncated before the first ? or ; character),
-     * for logging purpose only.
-     */
-    private String getSimplifiedURL() throws SQLException {
-        String url = getConnection().getMetaData().getURL();
-        int s1 = url.indexOf('?'); if (s1 < 0) s1 = url.length();
-        int s2 = url.indexOf(';'); if (s2 < 0) s2 = url.length();
-        return url.substring(0, Math.min(s1, s2));
     }
 
     /**
