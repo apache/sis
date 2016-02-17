@@ -118,7 +118,7 @@ public final strictfp class EPSGFactoryTest extends TestCase {
     }
 
     /**
-     * Force releases of JDBC connections after the tests in this class.
+     * Forces release of JDBC connections after the tests in this class.
      *
      * @throws FactoryException if an error occurred while closing the connections.
      */
@@ -463,13 +463,53 @@ public final strictfp class EPSGFactoryTest extends TestCase {
     }
 
     /**
+     * Tests creation of deprecated coordinate systems.
+     *
+     * @throws FactoryException if an error occurred while querying the factory.
+     */
+    @Test
+    public void testDeprecatedCoordinateSystems() throws FactoryException {
+        assumeNotNull(factory);
+        for (final Map.Entry<Integer,Integer> entry : EPSGDataAccess.deprecatedCS().entrySet()) {
+            final CoordinateSystem expected = factory.createEllipsoidalCS(entry.getValue().toString());
+            loggings.assertNoUnexpectedLog();
+            final String code = entry.getKey().toString();
+            final CoordinateSystem deprecated;
+            try {
+                deprecated = factory.createEllipsoidalCS(code);
+            } catch (FactoryException e) {
+                final String m = e.getMessage();
+                if (m.contains("9115") || m.contains("9116") || m.contains("9117") ||
+                    m.contains("9118") || m.contains("9119") || m.contains("9120"))
+                {
+                    // Unit "9116" to "9120" are known to be unsupported.
+                    continue;
+                }
+                throw e;
+            }
+            loggings.assertNextLogContains(code);
+            final int dimension = expected.getDimension();
+            assertEquals("dimension", dimension, deprecated.getDimension());
+            for (int i=0; i<dimension; i++) {
+                final CoordinateSystemAxis ref  = expected.getAxis(i);
+                final CoordinateSystemAxis axis = deprecated.getAxis(i);
+                assertEquals("name",         ref.getName(),         axis.getName());
+                assertEquals("alias",        ref.getAlias(),        axis.getAlias());
+                assertEquals("direction",    ref.getDirection(),    axis.getDirection());
+                assertEquals("rangeMeaning", ref.getRangeMeaning(), axis.getRangeMeaning());
+                assertEquals("unit",         ref.getUnit().toSI(),  axis.getUnit().toSI());
+            }
+        }
+    }
+
+    /**
      * Tests a legacy geographic CRS (no longer supported by EPSG).
      * This test verifies that the expected warnings are logged.
      *
      * @throws FactoryException if an error occurred while querying the factory.
      */
     @Test
-    @DependsOnMethod("testGeographic2D")
+    @DependsOnMethod({"testGeographic2D", "testDeprecatedCoordinateSystems"})
     public void testDeprecatedGeographic() throws FactoryException {
         assumeNotNull(factory);
 
@@ -478,7 +518,7 @@ public final strictfp class EPSGFactoryTest extends TestCase {
         assertAxisDirectionsEqual(null, crs.getCoordinateSystem(), AxisDirection.NORTH, AxisDirection.EAST);
         assertSame("CRS shall be cached", crs, factory.createCoordinateReferenceSystem("63266405"));
 
-        loggings.assertNextLogContains("EPSG:6405");                 // Coordinate System 6405 is no longer supported by EPSG
+        loggings.skipNextLogIfContains("EPSG:6405");                 // Coordinate System 6405 is no longer supported by EPSG
         loggings.assertNextLogContains("EPSG:63266405", "4326");     // EPSG no longer support codes in the 60000000 series.
         loggings.assertNoUnexpectedLog();
     }
@@ -490,7 +530,7 @@ public final strictfp class EPSGFactoryTest extends TestCase {
      * @throws FactoryException if an error occurred while querying the factory.
      */
     @Test
-    @DependsOnMethod("testDeprecatedGeographic")
+    @DependsOnMethod({"testDeprecatedGeographic", "testDeprecatedCoordinateSystems"})
     public void testDeprecatedProjected() throws FactoryException {
         assumeNotNull(factory);
 
