@@ -47,12 +47,12 @@ import java.nio.charset.StandardCharsets;
  *
  * <ol class="verbose">
  *   <li><p>Download the latest SQL scripts for PostgreSQL from <a href="http://www.epsg.org">http://www.epsg.org</a>.</p></li>
- *   <li><p>Unzip in the directory of your choice (replace "8.8" by the appropriate version number in the ZIP filename),
+ *   <li><p>Unzip in the directory of your choice (replace "8_9" by the appropriate version number in the ZIP filename),
  *          and remember the path to that directory:</p>
  *
  *          {@preformat text
- *            unzip epsg-v8_8sql-PostgreSQL.zip
- *            cd epsg-v8_8sql-PostgreSQL
+ *            unzip epsg-v8_9sql-PostgreSQL.zip
+ *            cd epsg-v8_9sql-PostgreSQL
  *            export EPSG_SCRIPTS=$PWD
  *          }
  *   </li>
@@ -120,7 +120,7 @@ public final class EPSGDataFormatter extends ScriptRunner {
      * The values of those arguments are typically:
      *
      * <ol>
-     *   <li>{@code EPSG_vX.mdb_Data_MySQL.sql}</li>
+     *   <li>{@code EPSG_vX.mdb_Data_PostgreSQL.sql}</li>
      *   <li>{@code core/sis-referencing/src/main/resources/org/apache/sis/referencing/factory/sql/Data.sql}</li>
      * </ol>
      *

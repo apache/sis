@@ -88,7 +88,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      *   │  └─ Function ……………………………………… Browse
      *   └─ Online resource (2 of 2)
      *      ├─ Linkage ………………………………………… jdbc:derby:/my/path/to/SIS_DATA/Databases/SpatialMetadata
-     *      ├─ Description ……………………………… EPSG dataset version 8.8 on “Apache Derby Embedded JDBC Driver” version 10.12.
+     *      ├─ Description ……………………………… EPSG dataset version 8.9 on “Apache Derby Embedded JDBC Driver” version 10.12.
      *      └─ Function ……………………………………… Connection
      * }
      *
@@ -1189,7 +1189,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
                     final int n = code.indexOf(DefaultNameSpace.DEFAULT_SEPARATOR, s + 1);
                     if (n >= 0) {
                         /*
-                         * The separator sometime appears twice, as in "EPSG::4326" or "EPSG:8.8:4326".
+                         * The separator sometime appears twice, as in "EPSG::4326" or "EPSG:8.9:4326".
                          * The part between the two separators is the verion number, which we ignore in
                          * this simple version.
                          */

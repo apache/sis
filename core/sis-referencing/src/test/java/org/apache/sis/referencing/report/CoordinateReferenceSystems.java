@@ -135,8 +135,12 @@ public final strictfp class CoordinateReferenceSystems extends AuthorityCodesRep
         rd("Chatham Islands Datum 1979",                                  "Chatham Islands Datum");
         rd("Corrego Alegre 1961",                                         "Corrego Alegre");
         rd("Corrego Alegre 1970-72",                                      "Corrego Alegre");
+        rd("Danger 1950",                                                 "Saint Pierre et Miquelon 1950");
+        rd("Dansk Normal Nul",                                            "Dansk");
+        rd("Dansk Vertikal Reference 1990",                               "Dansk");
         rd("Dealul Piscului 1930",                                        "Dealul Piscului");
         rd("Dealul Piscului 1970",                                        "Dealul Piscului");
+        rd("Deutsches Haupthoehennetz 1912",                              "Deutsches Haupthoehennetz");
         rd("Deutsches Haupthoehennetz 1985",                              "Deutsches Haupthoehennetz");
         rd("Deutsches Haupthoehennetz 1992",                              "Deutsches Haupthoehennetz");
         rd("Douala 1948",                                                 "Douala");
@@ -239,12 +243,14 @@ public final strictfp class CoordinateReferenceSystems extends AuthorityCodesRep
         rd("Kuwait Utility",                                              "Kuwait Oil Company / Kuwait Utility");
         rd("Lao 1993",                                                    "Lao");
         rd("Lao National Datum 1997",                                     "Lao");
+        rd("Latvia 1992",                                                 "Latvia");
+        rd("Latvian Height System 2000",                                  "Latvia");
         rd("Lisbon 1890",                                                 "Lisbon");
         rd("Lisbon 1890 (Lisbon)",                                        "Lisbon");
         rd("Lisbon 1937",                                                 "Lisbon");
         rd("Lisbon 1937 (Lisbon)",                                        "Lisbon");
-        rd("Lower Low Water Large Tide", "Low Water");
-        rd("Lowest Astronomic Tide", "Low Water");
+        rd("Lower Low Water Large Tide",                                  "Low Water");
+        rd("Lowest Astronomic Tide",                                      "Low Water");
         rd("Makassar (Jakarta)",                                          "Makassar");
         rd("Manoca 1962",                                                 "Manoca");
         rd("Martinique 1938",                                             "Martinique");
@@ -319,6 +325,8 @@ public final strictfp class CoordinateReferenceSystems extends AuthorityCodesRep
         rd("Rikets hojdsystem 1900",                                      "Rikets hojdsystem");
         rd("Rikets hojdsystem 1970",                                      "Rikets hojdsystem");
         rd("Rikets hojdsystem 2000",                                      "Rikets hojdsystem");
+        rd("Santa Cruz da Graciosa",                                      "Santa Cruz");
+        rd("Santa Cruz das Flores",                                       "Santa Cruz");
         rd("Sierra Leone 1968",                                           "Sierra Leone");
         rd("Sierra Leone Colony 1924",                                    "Sierra Leone");
         rd("SIRGAS-Chile",                                                "SIRGAS");
@@ -446,7 +454,7 @@ public final strictfp class CoordinateReferenceSystems extends AuthorityCodesRep
         properties.setProperty("PRODUCT.URL",     "http://sis.apache.org");
         properties.setProperty("JAVADOC.GEOAPI",  "http://www.geoapi.org/snapshot/javadoc");
         properties.setProperty("FACTORY.NAME",    "EPSG");
-        properties.setProperty("FACTORY.VERSION", "8.8");
+        properties.setProperty("FACTORY.VERSION", "8.9");
         properties.setProperty("FACTORY.VERSION.SUFFIX", ", together with other sources");
         properties.setProperty("DESCRIPTION", "<p><b>Notation:</b></p>\n" +
                 "<ul>\n" +

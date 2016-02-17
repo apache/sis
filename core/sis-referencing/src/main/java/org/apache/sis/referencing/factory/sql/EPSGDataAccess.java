@@ -71,6 +71,7 @@ import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.internal.metadata.TransformationAccuracy;
 import org.apache.sis.internal.metadata.sql.SQLUtilities;
 import org.apache.sis.internal.referencing.DeprecatedCode;
+import org.apache.sis.internal.referencing.EPSGParameterDomain;
 import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.util.Constants;
@@ -107,6 +108,7 @@ import org.apache.sis.util.Localized;
 import org.apache.sis.util.Version;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.measure.MeasurementRange;
+import org.apache.sis.measure.NumberRange;
 import org.apache.sis.measure.Units;
 
 import static org.apache.sis.internal.referencing.ServicesForMetadata.CONNECTION;
@@ -395,7 +397,7 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
      *   │  └─ Function ……………………………………… Browse
      *   └─ Online resource (2 of 2)
      *      ├─ Linkage ………………………………………… jdbc:derby:/my/path/to/SIS_DATA/Databases/SpatialMetadata
-     *      ├─ Description ……………………………… EPSG dataset version 8.8 on “Apache Derby Embedded JDBC Driver” version 10.12.
+     *      ├─ Description ……………………………… EPSG dataset version 8.9 on “Apache Derby Embedded JDBC Driver” version 10.12.
      *      └─ Function ……………………………………… Connection
      * }
      */
@@ -434,7 +436,7 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
              *
              *    Linkage:      jdbc:derby:/my/path/to/SIS_DATA/Databases/SpatialMetadata
              *    Function:     Connection
-             *    Description:  EPSG dataset version 8.8 on “Apache Derby Embedded JDBC Driver” version 10.12.
+             *    Description:  EPSG dataset version 8.9 on “Apache Derby Embedded JDBC Driver” version 10.12.
              *
              * TODO: A future version should use Citations.EPSG as a template.
              *       See the "EPSG" case in ServiceForUtility.createCitation(String).
@@ -460,7 +462,7 @@ addURIs:    for (int i=0; ; i++) {
                 }
                 final DefaultOnlineResource r = new DefaultOnlineResource();
                 try {
-                    r.setLinkage(new URI(url));
+                    r.setLinkage(new URI(SQLUtilities.getSimplifiedURL(metadata)));
                 } catch (URISyntaxException exception) {
                     unexpectedException("getAuthority", exception);
                 }
@@ -2359,37 +2361,61 @@ addURIs:    for (int i=0; ; i++) {
                 final String  name       = getString   (code, result, 2);
                 final String  remarks    = getOptionalString (result, 3);
                 final boolean deprecated = getOptionalBoolean(result, 4);
-                MeasurementRange<?> valueDomain = null;
-                final Class<?> type;
+                Class<?> type = Double.class;
                 /*
-                 * Search for units. We will choose the most commonly used one in parameter values.
                  * If the parameter appears to have at least one non-null value in the "Parameter File Name" column,
                  * then the type is assumed to be URI as a string. Otherwise, the type is a floating point number.
                  */
-                try (ResultSet resultUnits = executeQuery("ParameterUnit",
-                        "SELECT MIN(UOM_CODE) AS UOM," +
-                              " MIN(PARAM_VALUE_FILE_REF) AS PARAM_FILE" +
-                            " FROM [Coordinate_Operation Parameter Value]" +
+                try (ResultSet r = executeQuery("ParameterType",
+                        "SELECT PARAM_VALUE_FILE_REF FROM [Coordinate_Operation Parameter Value]" +
+                        " WHERE (PARAMETER_CODE = ?) AND PARAM_VALUE_FILE_REF IS NOT NULL", epsg))
+                {
+                    while (r.next()) {
+                        String element = getOptionalString(r, 1);
+                        if (element != null && !element.isEmpty()) {
+                            type = String.class;
+                            break;
+                        }
+                    }
+                }
+                /*
+                 * Search for units.   We typically have many different units but all of the same dimension
+                 * (for example metres, kilometres, feet, etc.). In such case, the units Set will have only
+                 * one element and that element will be the most frequently used unit.  But some parameters
+                 * accept units of different dimensions.   For example the "Ordinate 1 of evaluation point"
+                 * (EPSG:8617) parameter value may be in metres or in degrees.   In such case the units Set
+                 * will have two elements.
+                 */
+                final Set<Unit<?>> units = new LinkedHashSet<>();
+                try (ResultSet r = executeQuery("ParameterUnit",
+                        "SELECT UOM_CODE FROM [Coordinate_Operation Parameter Value]" +
                         " WHERE (PARAMETER_CODE = ?)" +
                         " GROUP BY UOM_CODE" +
                         " ORDER BY COUNT(UOM_CODE) DESC", epsg))
                 {
-                    if (resultUnits.next()) {
-                        String element = getOptionalString(resultUnits, 2);
-                        type = (element != null) ? String.class : Double.class;
-                        element = getOptionalString(resultUnits, 1);
-                        if (element != null) {
-                            valueDomain = MeasurementRange.create(Double.NEGATIVE_INFINITY, false,
-                                    Double.POSITIVE_INFINITY, false,
-                                    owner.createUnit(element));
+next:               while (r.next()) {
+                        final String c = getOptionalString(r, 1);
+                        if (c != null) {
+                            final Unit<?> candidate = owner.createUnit(c);
+                            for (final Unit<?> e : units) {
+                                if (candidate.isCompatible(e)) {
+                                    continue next;
+                                }
+                            }
+                            units.add(candidate);
                         }
-                    } else {
-                        type = Double.class;
                     }
                 }
                 /*
                  * Now creates the parameter descriptor.
                  */
+                final NumberRange<?> valueDomain;
+                switch (units.size()) {
+                    case 0:  valueDomain = null; break;
+                    default: valueDomain = new EPSGParameterDomain(units); break;
+                    case 1:  valueDomain = MeasurementRange.create(Double.NEGATIVE_INFINITY, false,
+                                    Double.POSITIVE_INFINITY, false, CollectionsExt.first(units)); break;
+                }
                 final ParameterDescriptor<?> descriptor = new DefaultParameterDescriptor<>(
                         createProperties("Coordinate_Operation Parameter", name, epsg, remarks, deprecated),
                         1, 1, type, valueDomain, null, null);

@@ -277,8 +277,9 @@ class SexagesimalConverter extends UnitConverter { // Intentionally not final.
          * @param  unit  The vocabulary key for the field (minutes or seconds).
          * @return The exception to throw.
          */
-        private static IllegalArgumentException illegalField(final double value, final double field, final int unit) {
-            return new IllegalArgumentException(Errors.format(Errors.Keys.IllegalArgumentField_4, "angle", value, unit, field));
+        private static IllegalArgumentException illegalField(final double value, final double field, final short unit) {
+            return new IllegalArgumentException(Errors.format(Errors.Keys.IllegalArgumentField_4,
+                    "angle", value, Vocabulary.format(unit), field));
         }
     }
 }
