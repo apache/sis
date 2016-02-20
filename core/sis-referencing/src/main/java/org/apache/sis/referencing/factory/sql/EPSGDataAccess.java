@@ -2077,8 +2077,8 @@ addURIs:    for (int i=0; ; i++) {
                         }
                         break;
                     }
-                    case "time":            // Was used in older ISO-19111 versions.
-                    case "temporal": {
+                    case "time":
+                    case "temporal": {      // Was used in older ISO-19111 versions.
                         switch (dimension) {
                             case 1: cs = csFactory.createTimeCS(properties, axes[0]); break;
                         }
