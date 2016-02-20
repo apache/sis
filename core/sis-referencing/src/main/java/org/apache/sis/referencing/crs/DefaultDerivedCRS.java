@@ -672,7 +672,7 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
                     conversionFromBase, derivedCS);
         }
 
-        /** Returns the WKT keyword for this derived CRS type.*/
+        /** Returns the WKT keyword for this derived CRS type. */
         @Override String keyword(final Formatter formatter) {
             return formatter.shortOrLong(WKTKeywords.GeodCRS, WKTKeywords.GeodeticCRS);
         }
@@ -725,7 +725,7 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
                     conversionFromBase, (VerticalCS) derivedCS);
         }
 
-        /** Returns the WKT keyword for this derived CRS type.*/
+        /** Returns the WKT keyword for this derived CRS type. */
         @Override String keyword(final Formatter formatter) {
             return formatter.shortOrLong(WKTKeywords.VertCRS, WKTKeywords.VerticalCRS);
         }
@@ -778,7 +778,7 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
                     conversionFromBase, (TimeCS) derivedCS);
         }
 
-        /** Returns the WKT keyword for this derived CRS type.*/
+        /** Returns the WKT keyword for this derived CRS type. */
         @Override String keyword(final Formatter formatter) {
             return WKTKeywords.TimeCRS;
         }
@@ -828,7 +828,7 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
             return new Engineering(properties, (EngineeringCRS) conversionFromBase.getSourceCRS(), conversionFromBase, derivedCS);
         }
 
-        /** Returns the WKT keyword for this derived CRS type.*/
+        /** Returns the WKT keyword for this derived CRS type. */
         @Override String keyword(final Formatter formatter) {
             return formatter.shortOrLong(WKTKeywords.EngCRS, WKTKeywords.EngineeringCRS);
         }
