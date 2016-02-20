@@ -37,7 +37,6 @@ import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.crs.EngineeringCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.cs.CoordinateSystem;
-import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.cs.VerticalCS;
 import org.opengis.referencing.cs.TimeCS;
 import org.opengis.referencing.operation.Conversion;
@@ -288,9 +287,9 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
         if (baseCRS != null && derivedCS != null) {
             final String type = getType(baseCRS, derivedCS);
             if (type != null) switch (type) {
-                case WKTKeywords.GeodeticCRS: return new Geodetic(properties, (GeodeticCRS) baseCRS, conversion, (EllipsoidalCS) derivedCS);
-                case WKTKeywords.VerticalCRS: return new Vertical(properties, (VerticalCRS) baseCRS, conversion,    (VerticalCS) derivedCS);
-                case WKTKeywords.TimeCRS:     return new Temporal(properties, (TemporalCRS) baseCRS, conversion,        (TimeCS) derivedCS);
+                case WKTKeywords.GeodeticCRS: return new Geodetic(properties, (GeodeticCRS) baseCRS, conversion,              derivedCS);
+                case WKTKeywords.VerticalCRS: return new Vertical(properties, (VerticalCRS) baseCRS, conversion, (VerticalCS) derivedCS);
+                case WKTKeywords.TimeCRS:     return new Temporal(properties, (TemporalCRS) baseCRS, conversion,     (TimeCS) derivedCS);
                 case WKTKeywords.EngineeringCRS: {
                     /*
                      * This case may happen for baseCRS of kind GeodeticCRS, ProjectedCRS or EngineeringCRS.
@@ -341,9 +340,9 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
         if (baseCRS != null && derivedCS != null) {
             final String type = getType(baseCRS, derivedCS);
             if (type != null) switch (type) {
-                case WKTKeywords.GeodeticCRS: return new Geodetic(properties, (GeodeticCRS) baseCRS, interpolationCRS, method, baseToDerived, (EllipsoidalCS) derivedCS);
-                case WKTKeywords.VerticalCRS: return new Vertical(properties, (VerticalCRS) baseCRS, interpolationCRS, method, baseToDerived,    (VerticalCS) derivedCS);
-                case WKTKeywords.TimeCRS:     return new Temporal(properties, (TemporalCRS) baseCRS, interpolationCRS, method, baseToDerived,        (TimeCS) derivedCS);
+                case WKTKeywords.GeodeticCRS: return new Geodetic(properties, (GeodeticCRS) baseCRS, interpolationCRS, method, baseToDerived,              derivedCS);
+                case WKTKeywords.VerticalCRS: return new Vertical(properties, (VerticalCRS) baseCRS, interpolationCRS, method, baseToDerived, (VerticalCS) derivedCS);
+                case WKTKeywords.TimeCRS:     return new Temporal(properties, (TemporalCRS) baseCRS, interpolationCRS, method, baseToDerived,     (TimeCS) derivedCS);
                 case WKTKeywords.EngineeringCRS: {
                     if (baseCRS instanceof EngineeringCRS) {
                         // See the comment in create(Map, SingleCRS, Conversion, CoordinateSystem)
@@ -650,13 +649,13 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
         }
 
         /** Creates a new geodetic CRS from the given properties. */
-        Geodetic(Map<String,?> properties, GeodeticCRS baseCRS, Conversion conversion, EllipsoidalCS derivedCS) {
+        Geodetic(Map<String,?> properties, GeodeticCRS baseCRS, Conversion conversion, CoordinateSystem derivedCS) {
             super(properties, baseCRS, conversion, derivedCS);
         }
 
         /** Creates a new geodetic CRS from the given properties. */
         Geodetic(Map<String,?> properties, GeodeticCRS baseCRS, CoordinateReferenceSystem interpolationCRS,
-                OperationMethod method, MathTransform baseToDerived, EllipsoidalCS derivedCS)
+                OperationMethod method, MathTransform baseToDerived, CoordinateSystem derivedCS)
         {
             super(properties, baseCRS, interpolationCRS, method, baseToDerived, derivedCS);
         }
@@ -666,16 +665,11 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
             return (GeodeticDatum) super.getDatum();
         }
 
-        /** Returns the coordinate system given at construction time. */
-        @Override public EllipsoidalCS getCoordinateSystem() {
-            return (EllipsoidalCS) super.getCoordinateSystem();
-        }
-
         /** Returns a coordinate reference system of the same type than this CRS but with different axes. */
         @Override AbstractCRS createSameType(final Map<String,?> properties, final CoordinateSystem derivedCS) {
             final Conversion conversionFromBase = getConversionFromBase();
             return new Geodetic(properties, (GeodeticCRS) conversionFromBase.getSourceCRS(),
-                    conversionFromBase, (EllipsoidalCS) derivedCS);
+                    conversionFromBase, derivedCS);
         }
 
         /** Returns the WKT keyword for this derived CRS type.*/
