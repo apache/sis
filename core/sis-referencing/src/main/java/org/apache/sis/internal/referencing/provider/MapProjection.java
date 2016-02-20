@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.NoSuchElementException;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.measure.unit.SI;
+import javax.measure.unit.Unit;
 import org.opengis.util.FactoryException;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.Identifier;
@@ -142,7 +143,11 @@ public abstract class MapProjection extends AbstractProvider {
     }
 
     /**
-     * Validates the given parameter value.
+     * Validates the given parameter value. This method duplicates the verification already
+     * done by {@link org.apache.sis.parameter.DefaultParameterValue#setValue(Object, Unit)}.
+     * But we check again because we have no guarantee that the parameters given by the user
+     * were instances of {@code DefaultParameterValue}, or that the descriptor associated to
+     * the user-specified {@code ParameterValue} has sufficient information.
      *
      * @param  descriptor The descriptor that specify the parameter to validate.
      * @param  value The parameter value in the units given by the descriptor.

@@ -91,7 +91,7 @@ public class UnmodifiableArrayList<E> extends AbstractList<E> implements Checked
      *
      * @param array The array to wrap.
      */
-    protected UnmodifiableArrayList(final E[] array) { // NOT "E..." - see javadoc.
+    protected UnmodifiableArrayList(final E[] array) {                          // NOT "E..." - see javadoc.
         this.array = Objects.requireNonNull(array);
     }
 
@@ -115,7 +115,7 @@ public class UnmodifiableArrayList<E> extends AbstractList<E> implements Checked
      * @return The given array wrapped in an unmodifiable list, or {@code null} if the given
      *         array was null.
      */
-    public static <E> UnmodifiableArrayList<E> wrap(final E[] array) { // NOT "E..." - see javadoc.
+    public static <E> UnmodifiableArrayList<E> wrap(final E[] array) {          // NOT "E..." - see javadoc.
         return (array != null) ? new UnmodifiableArrayList<>(array) : null;
     }
 

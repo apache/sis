@@ -227,21 +227,27 @@ final class Initializer {
      */
     final double getAndStore(final ParameterDescriptor<? extends Number> descriptor) {
         if (descriptor == null) {
-            return 0;   // Default value for all parameters except scale factor.
+            return 0;                           // Default value for all parameters except scale factor.
         }
+        /*
+         * Get the parameter value, or its default value if the parameter was not set. That default value
+         * (which is specified by the descriptor of the user-supplied parameters) is not necessarily the
+         * same than the default value of the map projection implementation (which is specified by the
+         * descriptor given in argument to this method).
+         */
         final double value = parameters.doubleValue(descriptor);    // Apply a unit conversion if needed.
         final Number defaultValue = descriptor.getDefaultValue();
         if (defaultValue == null || !defaultValue.equals(value)) {
             MapProjection.validate(descriptor, value);
-            context.getOrCreate(descriptor).setValue(value);
+            context.parameter(descriptor.getName().getCode()).setValue(value);
         }
         return value;
     }
 
     /**
-     * Same as {@link #getAndStore(Parameters, ParameterDescriptor)}, but returns the given default value
-     * if the parameter is not specified.  This method shall be used only for parameters having a default
-     * value more complex than what we can represent in {@link ParameterDescriptor#getDefaultValue()}.
+     * Same as {@link #getAndStore(ParameterDescriptor)}, but returns the given default value if the parameter
+     * is not specified.  This method shall be used only for parameters having a default value more complex than
+     * what we can represent in {@link ParameterDescriptor#getDefaultValue()}.
      */
     final double getAndStore(final ParameterDescriptor<Double> descriptor, final double defaultValue) {
         final Double value = parameters.getValue(descriptor);   // Apply a unit conversion if needed.

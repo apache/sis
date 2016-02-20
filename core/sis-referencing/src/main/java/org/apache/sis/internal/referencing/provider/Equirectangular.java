@@ -224,6 +224,8 @@ public final class Equirectangular extends AbstractProvider {
 
     /**
      * Gets a parameter value identified by the given descriptor and stores it only if different than zero.
+     * This method performs the same work than {@code Initializer.getAndStore(ParameterDescriptor)} in the
+     * {@link org.apache.sis.referencing.operation.projection} package.
      *
      * @param  source     The parameters from which to read the value.
      * @param  target     Where to store the parameter values.
@@ -235,7 +237,7 @@ public final class Equirectangular extends AbstractProvider {
             final ParameterDescriptor<Double> descriptor) throws IllegalArgumentException
     {
         final double value = source.doubleValue(descriptor);    // Apply a unit conversion if needed.
-        MapProjection.validate(descriptor, value);              // Unconditional validation for semi-axes.
+        MapProjection.validate(descriptor, value);              // Unconditional validation for all parameters.
         if (value != 0) {                                       // All default values in this class are zero.
             target.parameter(descriptor.getName().getCode()).setValue(value);
         }
