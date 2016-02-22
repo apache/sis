@@ -974,6 +974,9 @@ addURIs:    for (int i=0; ; i++) {
      * The given {@code name} may be prefixed by {@code "epsg_"} and may contain abbreviations of the full name.
      * For example {@code "epsg_coordoperation"} is considered as a match for {@code "Coordinate_Operation"}.
      *
+     * <p>The table name should be one of the values enumerated in the {@code epsg_table_name} type of the
+     * {@code EPSG_Prepare.sql} file.</p>
+     *
      * @param  expected  The expected table name (e.g. {@code "Coordinate_Operation"}).
      * @param  name      The actual table name.
      * @return Whether the given {@code name} is considered to match the expected name.
@@ -1320,6 +1323,9 @@ addURIs:    for (int i=0; ; i++) {
                 /*
                  * Note: Do not invoke 'createProperties' now, even if we have all required informations,
                  *       because the 'properties' map is going to overwritten by calls to 'createDatum', etc.
+                 *
+                 * The following switch statement should have a case for all "epsg_crs_kind" values enumerated
+                 * in the "EPSG_Prepare.sql" file, except that the values in this Java code are in lower cases.
                  */
                 final CRSFactory crsFactory = owner.crsFactory;
                 final CoordinateReferenceSystem crs;
@@ -1596,6 +1602,10 @@ addURIs:    for (int i=0; ; i++) {
                 } catch (NumberFormatException exception) {
                     unexpectedException("createDatum", exception);          // Not a fatal error.
                 }
+                /*
+                 * The following switch statement should have a case for all "epsg_datum_kind" values enumerated
+                 * in the "EPSG_Prepare.sql" file, except that the values in this Java code are in lower cases.
+                 */
                 final DatumFactory datumFactory = owner.datumFactory;
                 final Datum datum;
                 switch (type.toLowerCase(Locale.US)) {
@@ -2047,6 +2057,10 @@ addURIs:    for (int i=0; ; i++) {
                 final boolean deprecated = getOptionalBoolean(result, 6);
                 final CoordinateSystemAxis[] axes = createCoordinateSystemAxes(epsg, dimension);
                 final Map<String,Object> properties = createProperties("Coordinate System", name, epsg, remarks, deprecated);   // Must be after axes.
+                /*
+                 * The following switch statement should have a case for all "epsg_cs_kind" values enumerated
+                 * in the "EPSG_Prepare.sql" file, except that the values in this Java code are in lower cases.
+                 */
                 final CSFactory csFactory = owner.csFactory;
                 CoordinateSystem cs = null;
                 switch (type.toLowerCase(Locale.US)) {

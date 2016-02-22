@@ -77,7 +77,7 @@ import java.nio.charset.StandardCharsets;
  *
  *   <li><p>Open the {@code Tables.sql} file for edition:</p>
  *     <ul>
- *       <li>Keep the comments and enumerated values that existed in the overwritten file.</li>
+ *       <li>Keep the header comments that existed in the overwritten file.</li>
  *       <li>In the statement creating the {@code coordinateaxis} table,
  *           add the {@code NOT NULL} constraint to the {@code coord_axis_code} column.</li>
  *       <li>In the statement creating the {@code change} table,

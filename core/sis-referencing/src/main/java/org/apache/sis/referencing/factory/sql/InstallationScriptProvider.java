@@ -69,12 +69,20 @@ import java.nio.file.Path;
  */
 public abstract class InstallationScriptProvider {
     /**
+     * A sentinel value for the content of the script to execute before the official EPSG scripts.
+     * This is an Apache SIS build-in script for constraining the values of some {@code VARCHAR} columns
+     * to enumerations of values recognized by {@link EPSGDataAccess}. Those enumerations are not required
+     * for proper working of {@link EPSGFactory}, but can improve data integrity.
+     */
+    protected static final String PREPARE = "Prepare";
+
+    /**
      * A sentinel value for the content of the script to execute after the official EPSG scripts.
      * This is an Apache SIS build-in script for creating indexes or performing any other manipulation
      * that help SIS to use the EPSG dataset. Those indexes are not required for proper working of
      * {@link EPSGFactory}, but can significantly improve performances.
      */
-    protected static final String POST_CREATE = "(post create)";
+    protected static final String FINISH = "Finish";
 
     /**
      * The names of the SQL scripts to read.
@@ -90,7 +98,7 @@ public abstract class InstallationScriptProvider {
      * (potentially completed with EPSG dataset version and database software name):</p>
      *
      * <blockquote><code>
-     *   "EPSG_Tables.sql", "EPSG_Data.sql", "EPSG_FKeys.sql", {@linkplain #POST_CREATE}
+     *   {@linkplain #PREPARE}, "EPSG_Tables.sql", "EPSG_Data.sql", "EPSG_FKeys.sql", {@linkplain #FINISH}
      * </code></blockquote>
      *
      * @param names Names of the SQL scripts to read.
@@ -176,8 +184,8 @@ public abstract class InstallationScriptProvider {
         String name = names[index];
         final Charset charset;
         final InputStream in;
-        if (POST_CREATE.equals(name)) {
-            name = authority.concat(".sql");
+        if (PREPARE.equals(name) || FINISH.equals(name)) {
+            name = authority + '_' + name + ".sql";
             in = InstallationScriptProvider.class.getResourceAsStream(name);
             charset = StandardCharsets.UTF_8;
         } else {
@@ -193,7 +201,7 @@ public abstract class InstallationScriptProvider {
     /**
      * Opens the input stream for the SQL script of the given name.
      * This method is invoked by the default implementation of {@link #getScriptContent(int)}
-     * for all scripts except {@link #POST_CREATE}.
+     * for all scripts except {@link #PREPARE} and {@link #FINISH}.
      *
      * <div class="note"><b>Examples:</b>
      * If this {@code InstallationScriptProvider} instance gets the SQL scripts from files in a well-known directory
@@ -250,10 +258,11 @@ public abstract class InstallationScriptProvider {
          * Creates a default provider.
          */
         public Default() {
-            super("EPSG_Tables.sql",
+            super(PREPARE,
+                  "EPSG_Tables.sql",
                   "EPSG_Data.sql",
                   "EPSG_FKeys.sql",
-                  POST_CREATE);
+                  FINISH);
 
             Path dir = DataDirectory.DATABASES.getDirectory();
             if (dir != null) {
