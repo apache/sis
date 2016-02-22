@@ -44,6 +44,8 @@ import org.apache.sis.internal.jdk8.BiFunction;
 /**
  * Runs the SQL scripts for creating an EPSG database.
  *
+ * See {@code EPSGDataFormatter} in the test directory for more information about how the scripts are formatted.
+ *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.7
  * @version 0.7
@@ -147,7 +149,19 @@ final class EPSGInstaller extends ScriptRunner {
             addReplacement(SQLTranslator.TABLE_PREFIX + "supersession",               "Supersession");
             addReplacement(SQLTranslator.TABLE_PREFIX + "unitofmeasure",              "Unit of Measure");
             addReplacement(SQLTranslator.TABLE_PREFIX + "versionhistory",             "Version History");
+            if (isEnumTypeSupported) {
+                addReplacement(SQLTranslator.TABLE_PREFIX + "datum_kind",             "Datum Kind");
+                addReplacement(SQLTranslator.TABLE_PREFIX + "crs_kind",               "CRS Kind");
+                addReplacement(SQLTranslator.TABLE_PREFIX + "cs_kind",                "CS Kind");
+                addReplacement(SQLTranslator.TABLE_PREFIX + "table_name",             "Table Name");
+            }
             prependNamespace(schema);
+        }
+        if (!isEnumTypeSupported) {
+            addReplacement(SQLTranslator.TABLE_PREFIX + "datum_kind", "VARCHAR(24)");
+            addReplacement(SQLTranslator.TABLE_PREFIX + "crs_kind",   "VARCHAR(24)");
+            addReplacement(SQLTranslator.TABLE_PREFIX + "cs_kind",    "VARCHAR(24)");
+            addReplacement(SQLTranslator.TABLE_PREFIX + "table_name", "VARCHAR(80)");
         }
     }
 
@@ -209,6 +223,12 @@ final class EPSGInstaller extends ScriptRunner {
         }
         if (!isGrantOnTableSupported && CharSequences.regionMatches(sql, 0, "GRANT")) {
             return 0;
+        }
+        if (!isEnumTypeSupported && CharSequences.regionMatches(sql, 0, "CREATE")) {
+            final String t = CharSequences.trimWhitespaces(sql, 6, 12).toString();
+            if (t.equals("TYPE") || t.equals("CAST")) {
+                return 0;
+            }
         }
         if (statementToSkip != null && statementToSkip.reset(sql).matches()) {
             return 0;

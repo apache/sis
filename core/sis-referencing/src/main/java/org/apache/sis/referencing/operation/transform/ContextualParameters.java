@@ -603,19 +603,18 @@ public class ContextualParameters extends Parameters implements Serializable {
             throw parameterNotFound(name);
         }
         /*
-         * Search for existing parameter instance. This implementation does not scale,
-         * but should be okay since the amount of parameters is typically very small
-         * (rarely more than 6 parameters in map projections).
+         * Search for existing parameter instance. This implementation does not scale, but should be okay since
+         * the amount of parameters is typically very small (rarely more than 6 parameters in map projections).
          */
         for (int i=0; i < values.length; i++) {
             ParameterValue<?> p = values[i];
             if (p == null) {
-                p = ((ParameterDescriptor<?>) desc).createValue();
-                values[i] = p;
-            } else if (p.getDescriptor() != desc) {  // Identity comparison should be okay here.
-                continue;
+                values[i] = p = new ContextualParameter<>((ParameterDescriptor<?>) desc);
+                return p;
             }
-            return p;   // Found or created a parameter.
+            if (p.getDescriptor() == desc) {                    // Identity comparison should be okay here.
+                return p;
+            }
         }
         /*
          * We may reach this point if map projection construction is completed (i.e. 'completeTransform(…)' has

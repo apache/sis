@@ -74,6 +74,7 @@ import org.apache.sis.internal.referencing.DeprecatedCode;
 import org.apache.sis.internal.referencing.EPSGParameterDomain;
 import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.internal.system.Loggers;
+import org.apache.sis.internal.system.Semaphores;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.metadata.iso.ImmutableIdentifier;
@@ -976,6 +977,9 @@ addURIs:    for (int i=0; ; i++) {
      * The given {@code name} may be prefixed by {@code "epsg_"} and may contain abbreviations of the full name.
      * For example {@code "epsg_coordoperation"} is considered as a match for {@code "Coordinate_Operation"}.
      *
+     * <p>The table name should be one of the values enumerated in the {@code epsg_table_name} type of the
+     * {@code EPSG_Prepare.sql} file.</p>
+     *
      * @param  expected  The expected table name (e.g. {@code "Coordinate_Operation"}).
      * @param  name      The actual table name.
      * @return Whether the given {@code name} is considered to match the expected name.
@@ -1322,6 +1326,9 @@ addURIs:    for (int i=0; ; i++) {
                 /*
                  * Note: Do not invoke 'createProperties' now, even if we have all required informations,
                  *       because the 'properties' map is going to overwritten by calls to 'createDatum', etc.
+                 *
+                 * The following switch statement should have a case for all "epsg_crs_kind" values enumerated
+                 * in the "EPSG_Prepare.sql" file, except that the values in this Java code are in lower cases.
                  */
                 final CRSFactory crsFactory = owner.crsFactory;
                 final CoordinateReferenceSystem crs;
@@ -1371,23 +1378,65 @@ addURIs:    for (int i=0; ; i++) {
                         ensureNoCycle(ProjectedCRS.class, epsg);
                         try {
                             final CartesianCS cs = owner.createCartesianCS(csCode);
-                            final GeographicCRS baseCRS;
-                            if (deprecated) try {
-                                quiet = true;
-                                replaceDeprecatedCS = true;
-                                baseCRS = createGeographicCRS(geoCode);                 // Do not cache that CRS.
-                            } finally {
-                                quiet = false;
-                                replaceDeprecatedCS = false;
-                            } else {
-                                baseCRS = owner.createGeographicCRS(geoCode);
+                            final Conversion op;
+                            try {
+                                op = (Conversion) owner.createCoordinateOperation(opCode);
+                            } catch (ClassCastException e) {
+                                // Should never happen in a well-formed EPSG database.
+                                // If happen anyway, the ClassCastException cause will give more hints than just the message.
+                                throw (NoSuchAuthorityCodeException) noSuchAuthorityCode(Projection.class, opCode).initCause(e);
                             }
-                            final CoordinateOperation op = owner.createCoordinateOperation(opCode);
-                            if (op instanceof Conversion) {
-                                crs = crsFactory.createProjectedCRS(createProperties("Coordinate Reference System",
-                                        name, epsg, area, scope, remarks, deprecated), baseCRS, (Conversion) op, cs);
+                            final CoordinateReferenceSystem baseCRS;
+                            final boolean resumeParamChecks;
+                            if (!deprecated) {
+                                baseCRS = owner.createCoordinateReferenceSystem(geoCode);
+                                resumeParamChecks = false;
                             } else {
-                                throw noSuchAuthorityCode(Projection.class, opCode);
+                                /*
+                                 * If the ProjectedCRS is deprecated, one reason among others may be that it uses one of
+                                 * the deprecated coordinate systems. Those deprecated CS used non-linear units like DMS.
+                                 * Apache SIS can not instantiate a ProjectedCRS when the baseCRS uses such units, so we
+                                 * set a flag asking to replace the deprecated CS by a supported one. Since that baseCRS
+                                 * would not be exactly as defined by EPSG, we must not cache it because we do not want
+                                 * 'owner.createGeographicCRS(geoCode)' to return that modified CRS. Since the same CRS
+                                 * may be recreated every time a deprecated ProjectedCRS is created, we temporarily
+                                 * shutdown the loggings in order to avoid the same warning to be logged many time.
+                                 */
+                                try {
+                                    quiet = true;
+                                    replaceDeprecatedCS = true;
+                                    baseCRS = createCoordinateReferenceSystem(geoCode);         // Do not cache that CRS.
+                                } finally {
+                                    replaceDeprecatedCS = false;
+                                    quiet = false;
+                                }
+                                /*
+                                 * The crsFactory method calls will indirectly create a parameterized MathTransform.
+                                 * Their constructor will try to verify the parameter validity. But some deprecated
+                                 * CRS had invalid parameter values (they were deprecated precisely for that reason).
+                                 * If and only if we are creating a deprecated CRS, temporarily suspend the parameter
+                                 * checks.
+                                 */
+                                resumeParamChecks = !Semaphores.queryAndSet(Semaphores.SUSPEND_PARAMETER_CHECK);
+                                // Try block must be immediately after above line (do not insert any code between).
+                            }
+                            try {
+                                /*
+                                 * For a ProjectedCRS, the baseCRS is always geographic. So in theory we would not
+                                 * need the 'instanceof' check. However the EPSG dataset version 8.9 also uses the
+                                 * "projected" type for CRS that are actually derived CRS. See EPSG:5820 and 5821.
+                                 */
+                                final Map<String, Object> properties = createProperties("Coordinate Reference System",
+                                                                        name, epsg, area, scope, remarks, deprecated);
+                                if (baseCRS instanceof GeographicCRS) {
+                                    crs = crsFactory.createProjectedCRS(properties, (GeographicCRS) baseCRS, op, cs);
+                                } else {
+                                    crs = crsFactory.createDerivedCRS(properties, baseCRS, op, cs);
+                                }
+                            } finally {
+                                if (resumeParamChecks) {
+                                    Semaphores.clear(Semaphores.SUSPEND_PARAMETER_CHECK);
+                                }
                             }
                         } finally {
                             endOfRecursivity(ProjectedCRS.class, epsg);
@@ -1556,6 +1605,10 @@ addURIs:    for (int i=0; ; i++) {
                 } catch (NumberFormatException exception) {
                     unexpectedException("createDatum", exception);          // Not a fatal error.
                 }
+                /*
+                 * The following switch statement should have a case for all "epsg_datum_kind" values enumerated
+                 * in the "EPSG_Prepare.sql" file, except that the values in this Java code are in lower cases.
+                 */
                 final DatumFactory datumFactory = owner.datumFactory;
                 final Datum datum;
                 switch (type.toLowerCase(Locale.US)) {
@@ -2007,6 +2060,10 @@ addURIs:    for (int i=0; ; i++) {
                 final boolean deprecated = getOptionalBoolean(result, 6);
                 final CoordinateSystemAxis[] axes = createCoordinateSystemAxes(epsg, dimension);
                 final Map<String,Object> properties = createProperties("Coordinate System", name, epsg, remarks, deprecated);   // Must be after axes.
+                /*
+                 * The following switch statement should have a case for all "epsg_cs_kind" values enumerated
+                 * in the "EPSG_Prepare.sql" file, except that the values in this Java code are in lower cases.
+                 */
                 final CSFactory csFactory = owner.csFactory;
                 CoordinateSystem cs = null;
                 switch (type.toLowerCase(Locale.US)) {
@@ -2037,8 +2094,8 @@ addURIs:    for (int i=0; ; i++) {
                         }
                         break;
                     }
-                    case "time":            // Was used in older ISO-19111 versions.
-                    case "temporal": {
+                    case "time":
+                    case "temporal": {      // Was used in older ISO-19111 versions.
                         switch (dimension) {
                             case 1: cs = csFactory.createTimeCS(properties, axes[0]); break;
                         }
@@ -2503,14 +2560,14 @@ next:               while (r.next()) {
                     param = parameters.parameter(name);
                 } catch (ParameterNotFoundException exception) {
                     /*
-                     * Wraps the unchecked ParameterNotFoundException into the checked NoSuchIdentifierException,
+                     * Wrap the unchecked ParameterNotFoundException into the checked NoSuchIdentifierException,
                      * which is a FactoryException subclass.  Note that in principle, NoSuchIdentifierException is for
                      * MathTransforms rather than parameters. However we are close in spirit here since we are setting
                      * up MathTransform's parameters. Using NoSuchIdentifierException allows CoordinateOperationSet to
-                     * know that the failure is probably caused by a MathTransform not yet supported in Apache SIS (or
-                     * only partially supported) rather than some more serious failure in the database side. Callers
-                     * can use this information in order to determine if they should try the next coordinate operation
-                     * or propagate the exception.
+                     * know that the failure is probably caused by a MathTransform not yet supported in Apache SIS
+                     * (or only partially supported) rather than some more serious failure in the database side.
+                     * Callers can use this information in order to determine if they should try the next coordinate
+                     * operation or propagate the exception.
                      */
                     final NoSuchIdentifierException e = new NoSuchIdentifierException(error()
                             .getString(Errors.Keys.CanNotSetParameterValue_1, name), name);

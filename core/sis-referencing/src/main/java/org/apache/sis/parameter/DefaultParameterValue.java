@@ -120,7 +120,7 @@ import java.nio.file.Path;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4
- * @version 0.6
+ * @version 0.7
  * @module
  *
  * @see DefaultParameterDescriptor
@@ -152,16 +152,20 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
     /**
      * The value, or {@code null} if undefined.
      * Except for the constructors, the {@link #equals(Object)} and the {@link #hashCode()} methods,
-     * this field shall be read only by {@link #getValue()} and written by {@link #setValue(Object, Unit)}.
+     * this field should be read only by {@link #getValue()} and written only by {@link #setValue(Object, Unit)}.
+     *
+     * @since 0.7
      */
-    private T value;
+    protected T value;
 
     /**
      * The unit of measure for the value, or {@code null} if it does not apply.
      * Except for the constructors, the {@link #equals(Object)} and the {@link #hashCode()} methods,
-     * this field shall be read only by {@link #getUnit()} and written by {@link #setValue(Object, Unit)}.
+     * this field should be read only by {@link #getUnit()} and written only by {@link #setValue(Object, Unit)}.
+     *
+     * @since 0.7
      */
-    private Unit<?> unit;
+    protected Unit<?> unit;
 
     /**
      * Creates a parameter value from the specified descriptor.
@@ -724,17 +728,19 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      * @param  unit  The unit associated to the new parameter value, or {@code null}.
      * @throws InvalidParameterValueException if the type of {@code value} is inappropriate for this parameter,
      *         or if the value is illegal for some other reason (for example the value is numeric and out of range).
+     *
+     * @see #validate(Object)
      */
     @SuppressWarnings("unchecked")
     protected void setValue(final Object value, final Unit<?> unit) throws InvalidParameterValueException {
         final T convertedValue = Verifier.ensureValidValue(descriptor, value, unit);
         if (value != null) {
             validate(convertedValue);
-            this.value = (T) value; // Type has been verified by Verifier.ensureValidValue(…).
+            this.value = (T) value;                 // Type has been verified by Verifier.ensureValidValue(…).
         } else {
             this.value = descriptor.getDefaultValue();
         }
-        this.unit = unit; // Assign only on success.
+        this.unit = unit;                           // Assign only on success.
     }
 
     /**

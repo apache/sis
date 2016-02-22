@@ -36,6 +36,8 @@ import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.ParameterNotFoundException;
+import org.opengis.parameter.InvalidParameterNameException;
+import org.opengis.parameter.InvalidParameterValueException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.EllipsoidalCS;
@@ -627,11 +629,17 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
          * The intend is to make sure that we have room for the parameters that {@code setEllipsoids(…)}
          * may write.
          *
+         * <p>A side effect of this method is that the copy operation may perform a check of
+         * parameter value validity. This may result in an {@link InvalidParameterNameException}
+         * or {@link InvalidParameterValueException} to be thrown.</p>
+         *
          * @param writable {@code true} if this method should also check that the parameters group is not
          *        an instance of {@link UnmodifiableParameterValueGroup}. Current implementation assumes
          *        that modifiable parameters are instances of {@link DefaultParameterValueGroup}.
+         * @throws IllegalArgumentException if the copy can not be performed because a parameter has
+         *         a unrecognized name or an illegal value.
          */
-        private void ensureCompatibleParameters(final boolean writable) {
+        private void ensureCompatibleParameters(final boolean writable) throws IllegalArgumentException {
             final ParameterDescriptorGroup expected = provider.getParameters();
             if (parameters.getDescriptor() != expected ||
                     (writable &&  (parameters instanceof Parameters)
@@ -784,8 +792,10 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
          * @return The exception if the operation failed, or {@code null} if none. This exception is not thrown now
          *         because the caller may succeed in creating the transform anyway, or otherwise may produce a more
          *         informative exception.
+         * @throws IllegalArgumentException if the operation fails because a parameter has a unrecognized name or an
+         *         illegal value.
          */
-        final RuntimeException setEllipsoids(final OperationMethod method) {
+        final RuntimeException setEllipsoids(final OperationMethod method) throws IllegalArgumentException {
             ensureCompatibleParameters(false);
             int n;
             if (method instanceof AbstractProvider) {
@@ -908,21 +918,21 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
                         Errors.Keys.UnsupportedImplementation_1, Classes.getClass(method)), methodName);
             }
             /*
-             * If the user's parameters do not contain semi-major and semi-minor axis lengths, infer
-             * them from the ellipsoid. We have to do that because those parameters are often omitted,
-             * since the standard place where to provide this information is in the ellipsoid object.
-             */
-            if (context != null) {
-                context.provider   = method;
-                context.parameters = parameters;
-                failure = context.setEllipsoids(method);
-                parameters = context.parameters;
-            }
-            /*
-             * Catch only exceptions which may be the result of improper parameter usage (e.g. a value out of range).
-             * Do not catch exception caused by programming errors (e.g. null pointer exception).
+             * Will catch only exceptions that may be the result of improper parameter usage (e.g. a value out
+             * of range). Do not catch exceptions caused by programming errors (e.g. null pointer exception).
              */
             try {
+                /*
+                 * If the user's parameters do not contain semi-major and semi-minor axis lengths, infer
+                 * them from the ellipsoid. We have to do that because those parameters are often omitted,
+                 * since the standard place where to provide this information is in the ellipsoid object.
+                 */
+                if (context != null) {
+                    context.provider   = method;
+                    context.parameters = parameters;
+                    failure = context.setEllipsoids(method);
+                    parameters = context.parameters;
+                }
                 transform = ((MathTransformProvider) method).createMathTransform(this, parameters);
             } catch (IllegalArgumentException | IllegalStateException exception) {
                 throw new InvalidGeodeticParameterException(exception.getLocalizedMessage(), exception);
