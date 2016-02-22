@@ -32,6 +32,7 @@ import java.sql.SQLException;
 import javax.sql.DataSource;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.apache.sis.util.Workaround;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.internal.metadata.sql.ScriptRunner;
 import org.apache.sis.internal.metadata.sql.TestDatabase;
@@ -76,6 +77,7 @@ import java.nio.charset.StandardCharsets;
  *
  *   <li><p>Open the {@code Tables.sql} file for edition:</p>
  *     <ul>
+ *       <li>Keep the header comments that existed in the overwritten file.</li>
  *       <li>In the statement creating the {@code coordinateaxis} table,
  *           add the {@code NOT NULL} constraint to the {@code coord_axis_code} column.</li>
  *       <li>In the statement creating the {@code change} table,
@@ -85,6 +87,10 @@ import java.nio.charset.StandardCharsets;
  *           change the type of the {@code realization_epoch} column to {@code SMALLINT}.</li>
  *       <li>Change the type of {@code show_crs}, {@code show_operation} and all {@code deprecated} fields
  *           from {@code SMALLINT} to {@code BOOLEAN}.</li>
+ *       <li>Change the type of every {@code table_name} columns from {@code VARCHAR(80)} to {@code epsg_table_name}.</li>
+ *       <li>Change the type of {@code coord_ref_sys_kind} column from {@code VARCHAR(24)} to {@code epsg_crs_kind}.</li>
+ *       <li>Change the type of {@code coord_sys_type} column from {@code VARCHAR(24)} to {@code epsg_cs_kind}.</li>
+ *       <li>Change the type of {@code datum_type} column from {@code VARCHAR(24)} to {@code epsg_datum_kind}.</li>
  *       <li>Suppress trailing spaces and save.</li>
  *     </ul>
  *     <p>Usually this results in no change at all compared to the previous script (ignoring white spaces),
@@ -239,10 +245,30 @@ public final class EPSGDataFormatter extends ScriptRunner {
         try (final LineNumberReader in = new LineNumberReader(
                 new InputStreamReader(new FileInputStream(inputFile), StandardCharsets.ISO_8859_1)))
         {
+            out.write("---\n" +
+                      "---    Copyright International Association of Oil and Gas Producers (IOGP)\n" +
+                      "---    See  http://www.epsg.org/TermsOfUse  (a copy is in ./LICENSE.txt).\n" +
+                      "---\n" +
+                      "---    This file has been reformatted (without any change in the data) for the needs of Apache SIS project.\n" +
+                      "---    See org.apache.sis.referencing.factory.sql.EPSGDataFormatter.\n" +
+                      "---\n" +
+                      "\n");
             run(inputFile.getName(), in);
         } finally {
             out.close();
             out = null;
+        }
+    }
+
+    /**
+     * EPSG scripts version 8.9 seems to have 2 errors where the {@code OBJECT_TABLE_NAME} column contains
+     * {@code "AxisName"} instead of {@code "Coordinate Axis Name"}.
+     */
+    @Override
+    @Workaround(library="EPSG", version="8.9")
+    protected void editText(final StringBuilder sql, int lower, final int upper) {
+        if (upper - lower == 10 && CharSequences.regionMatches(sql, ++lower, "AxisName")) {
+            sql.replace(lower, upper-1, "Coordinate Axis Name");
         }
     }
 
@@ -259,6 +285,35 @@ public final class EPSGDataFormatter extends ScriptRunner {
     protected int execute(final StringBuilder sql) throws IOException, SQLException {
         removeLF(sql);
         String line = CharSequences.trimWhitespaces(sql).toString();
+        if (line.startsWith("UPDATE ")) {
+            /*
+             * Some EPSG tables have a "table_name" field which will contain the names of other EPSG tables.
+             * In the EPSG scripts, the values are initially the table names used in the MS-Access database.
+             * Then the MS-Access table names are replaced by statements like below:
+             *
+             *    UPDATE epsg_alias SET object_table_name = 'epsg_coordinateaxis' WHERE object_table_name = 'Coordinate Axis';
+             *    UPDATE epsg_deprecation SET object_table_name = 'epsg_alias' WHERE object_table_name = 'Alias';
+             *    etc.
+             *
+             * For Apache SIS, we keep the original table names as defined in MS-Access database,
+             * for consistency with the table names that we actually use in our EPSG schema.
+             */
+            if (line.contains("object_table_name")) {
+                return 0;
+            }
+            /*
+             * Following statements do not make sense anymore on enumerated values:
+             *
+             *    UPDATE epsg_coordinatereferencesystem SET coord_ref_sys_kind = replace(coord_ref_sys_kind, CHR(182), CHR(10));
+             *    UPDATE epsg_coordinatesystem SET coord_sys_type = replace(coord_sys_type, CHR(182), CHR(10));
+             *    UPDATE epsg_datum SET datum_type = replace(datum_type, CHR(182), CHR(10));
+             */
+            if (line.contains("replace")) {
+                if (line.contains("coord_ref_sys_kind") || line.contains("coord_sys_type") || line.contains("datum_type")) {
+                    return 0;
+                }
+            }
+        }
         if (insertStatement != null) {
             if (line.startsWith(insertStatement)) {
                 // The previous instruction was already an INSERT INTO the same table.

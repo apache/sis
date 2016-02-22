@@ -288,7 +288,6 @@ public final strictfp class CoordinateReferenceSystems extends AuthorityCodesRep
         rd("Nivellement General du Luxembourg",                           "Nivellement Général Corse / France / Nouvelle-Calédonie / Polynésie Française / Luxembourd / Guyanais");
         rd("Nivellement General Guyanais 1977",                           "Nivellement Général Corse / France / Nouvelle-Calédonie / Polynésie Française / Luxembourd / Guyanais");
         rd("NGO 1948 (Oslo)",                                             "NGO 1948");
-        rd("NAD27 Michigan",                                              "North American Datum 1927 — Michigan");
         rd("NAD83 (High Accuracy Reference Network)",                     "North American Datum 1983 — High Accuracy Reference Network");
         rd("NAD83 (National Spatial Reference System 2007)",              "North American Datum 1983 — National Spatial Reference System 2007");
         rd("NAD83 Canadian Spatial Reference System",                     "North American Datum 1983 — Canadian Spatial Reference System");
