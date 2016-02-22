@@ -16,9 +16,12 @@
  */
 
 /**
- * Factories for geodetic objects defined in a SQL database.
+ * Factories for geodetic objects defined in a SQL database, typically the EPSG dataset.
  * The main class in this package is {@link org.apache.sis.referencing.factory.sql.EPSGFactory},
  * which requires a {@link javax.sql.DataSource} providing connections to an EPSG database.
+ *
+ *
+ * <div class="section">Connection to the database</div>
  * By default Apache SIS used Apache Derby (a.k.a. JavaDB), but the database can also be PostgreSQL or MS-Access.
  * The connection is obtained by the first of the following data sources which is found:
  *
@@ -39,22 +42,25 @@
  * <div class="section">The EPSG dataset</div>
  * A widely-used factory is the <a href="http://www.epsg.org">EPSG geodetic dataset</a>.
  * EPSG codes are numerical identifiers.
- * For example {@code "EPSG::4326"} is the EPSG identifier for the <cite>"WGS 84"</cite> geographic CRS.
+ * For example {@code "EPSG:4326"} is the EPSG identifier for the <cite>"WGS 84"</cite> geographic CRS.
  * As an extension, the Apache SIS implementation accepts names as well as numeric identifiers.
  * For example the two following method calls fetch the same object:
  *
  * <ul>
- *   <li>{@code createProjectedCRS("NTF (Paris) / Lambert zone II")}</li>
  *   <li>{@code createProjectedCRS("27572")}</li>
+ *   <li>{@code createProjectedCRS("NTF (Paris) / Lambert zone II")}</li>
  * </ul>
  *
- * However names may be ambiguous since the same name may be used for more than one object.
+ * <div class="note"><b>Note:</b> names may be ambiguous since the same name may be used for more than one object.
  * This is the case of <cite>"WGS 84"</cite> for example. If such an ambiguity is found, an exception will be thrown.
+ * For more determinism, the numerical codes are preferred.</div>
  *
- * <p>When an error is discovered in a Coordinate Reference System (CRS) definition, the EPSG group does not apply the
+ *
+ * <div class="section">How deprecated entries are handled</div>
+ * When an error is discovered in a Coordinate Reference System (CRS) definition, the EPSG group does not apply the
  * correction directly on the erroneous object (unless the correction is very minor).
  * Instead, the erroneous object is deprecated and a new one is created.
- * Apache SIS handles deprecated objects as below:</p>
+ * Apache SIS handles deprecated objects as below:
  *
  * <ul>
  *   <li>Deprecated objects are not listed in the collection returned by the

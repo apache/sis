@@ -19,6 +19,7 @@ package org.apache.sis.referencing;
 import java.util.ServiceLoader;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
+import java.sql.SQLTransientException;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.AuthorityFactory;
 import org.opengis.referencing.cs.CSAuthorityFactory;
@@ -30,6 +31,7 @@ import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.system.SystemListener;
 import org.apache.sis.referencing.factory.MultiAuthoritiesFactory;
+import org.apache.sis.referencing.factory.UnavailableFactoryException;
 import org.apache.sis.referencing.factory.sql.EPSGFactory;
 import org.apache.sis.util.logging.Logging;
 
@@ -108,9 +110,7 @@ final class AuthorityFactories<T extends AuthorityFactory> extends LazySet<T> {
             if (factory == null) try {
                 factory = new EPSGFactory(null);
             } catch (FactoryException e) {
-                final LogRecord record = new LogRecord(Level.CONFIG, e.getLocalizedMessage());
-                record.setLoggerName(Loggers.CRS_FACTORY);
-                Logging.log(CRS.class, "getAuthorityFactory", record);
+                log(Level.CONFIG, e);
                 factory = EPSGFactoryFallback.INSTANCE;
             }
             EPSG[0] = factory;
@@ -119,13 +119,65 @@ final class AuthorityFactories<T extends AuthorityFactory> extends LazySet<T> {
     }
 
     /**
-     * Returns the EPSG factory. This method tries to instantiate an {@link EPSGFactory} if possible,
-     * or an {@link EPSGFactoryFallback} otherwise.
+     * Returns the fallback to use if the authority factory is not available. Unless the problem may be temporary,
+     * this method replaces the {@link EPSGFactory} instance by {@link EPSGFactoryFallback} in order to prevent
+     * the same exception to be thrown and logged on every calls to {@link CRS#forCode(String)}.
+     */
+    static CRSAuthorityFactory fallback(final UnavailableFactoryException e) throws UnavailableFactoryException {
+        final boolean isTransient = (e.getCause() instanceof SQLTransientException);
+        final AuthorityFactory unavailable = e.getUnavailableFactory();
+        final CRSAuthorityFactory factory;
+        synchronized (EPSG) {
+            if (unavailable != EPSG[0]) {
+                throw e;                                // Exception did not come from a factory that we control.
+            }
+            factory = EPSGFactoryFallback.INSTANCE;
+            if (!isTransient) {
+                ALL.reload();
+                EPSG[0] = factory;
+            }
+        }
+        log(Level.WARNING, e);
+        return factory;
+    }
+
+    /**
+     * Notifies that a factory is unavailable, but without giving a fallback and without logging.
+     * The caller is responsible for logging a warning and to provide its own fallback.
+     */
+    static void failure(final UnavailableFactoryException e) {
+        if (!(e.getCause() instanceof SQLTransientException)) {
+            final AuthorityFactory unavailable = e.getUnavailableFactory();
+            synchronized (EPSG) {
+                if (unavailable == EPSG[0]) {
+                    ALL.reload();
+                    EPSG[0] = EPSGFactoryFallback.INSTANCE;
+                }
+            }
+        }
+    }
+
+    /**
+     * Logs the given exception at the given level. This method pretends that the logging come from
+     * {@link CRS#getAuthorityFactory(String)}, which is the public facade for {@link #EPSG()}.
+     */
+    private static void log(final Level level, final Exception e) {
+        final LogRecord record = new LogRecord(level, e.getLocalizedMessage());
+        record.setLoggerName(Loggers.CRS_FACTORY);
+        Logging.log(CRS.class, "getAuthorityFactory", record);
+    }
+
+    /**
+     * Invoked by {@link LazySet} for adding the EPSG factory before any other factory fetched by {@code ServiceLoader}.
+     * We put the EPSG factory first because it is often used anyway even for {@code CRS} and {@code AUTO} namespaces.
+     *
+     * <p>This method tries to instantiate an {@link EPSGFactory} if possible,
+     * or an {@link EPSGFactoryFallback} otherwise.</p>
      */
     @Override
     @SuppressWarnings("unchecked")
     protected T[] initialValues() {
-        EPSG();                         // Force creation of EPSG factory if not already done.
+        EPSG();                         // Force EPSGFactory instantiation if not already done.
         return (T[]) EPSG;
     }
 }

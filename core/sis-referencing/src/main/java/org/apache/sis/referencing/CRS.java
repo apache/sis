@@ -51,6 +51,7 @@ import org.apache.sis.referencing.crs.DefaultGeographicCRS;
 import org.apache.sis.referencing.crs.DefaultVerticalCRS;
 import org.apache.sis.referencing.crs.DefaultCompoundCRS;
 import org.apache.sis.metadata.iso.extent.Extents;
+import org.apache.sis.referencing.factory.UnavailableFactoryException;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.Static;
@@ -148,7 +149,11 @@ public final class CRS extends Static {
             throws NoSuchAuthorityCodeException, FactoryException
     {
         ArgumentChecks.ensureNonNull("code", code);
-        return AuthorityFactories.ALL.createCoordinateReferenceSystem(code);
+        try {
+            return AuthorityFactories.ALL.createCoordinateReferenceSystem(code);
+        } catch (UnavailableFactoryException e) {
+            return AuthorityFactories.fallback(e).createCoordinateReferenceSystem(code);
+        }
     }
 
     /**

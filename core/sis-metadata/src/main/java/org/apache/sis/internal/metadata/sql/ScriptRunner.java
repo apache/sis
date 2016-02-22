@@ -21,8 +21,7 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.io.EOFException;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.BufferedReader;
 import java.io.LineNumberReader;
 import java.io.StringReader;
 import java.sql.Statement;
@@ -98,12 +97,6 @@ public class ScriptRunner {
      * {@linkplain Character#isUnicodeIdentifierPart(int) Unicode identifier part}.</p>
      */
     private static final String ESCAPE = "$BODY$";
-
-    /**
-     * The character encoding of SQL scripts. Typical values are {@code "UTF-8"} or {@code "ISO-8859-1"}.
-     * For SQL scripts provided by the EPSG, the encoding shall be {@code "ISO-8859-1"}.
-     */
-    private final String encoding;
 
     /**
      * The presumed dialect spoken by the database.
@@ -232,17 +225,13 @@ public class ScriptRunner {
      * </ul>
      *
      * @param connection        The connection to the database.
-     * @param encoding          The encoding of SQL scripts. Typical values are {@code "UTF-8"} or {@code "ISO-8859-1"}.
-     *                          For SQL scripts provided by the EPSG authority, the encoding shall be {@code "ISO-8859-1"}.
      * @param maxRowsPerInsert  Maximum number of rows per {@code "INSERT INTO"} statement.
      * @throws SQLException if an error occurred while creating a SQL statement.
      */
-    protected ScriptRunner(final Connection connection, final String encoding, int maxRowsPerInsert) throws SQLException {
+    protected ScriptRunner(final Connection connection, int maxRowsPerInsert) throws SQLException {
         ArgumentChecks.ensureNonNull("connection", connection);
-        ArgumentChecks.ensureNonNull("encoding", encoding);
         ArgumentChecks.ensurePositive("maxRowsPerInsert", maxRowsPerInsert);
         final DatabaseMetaData metadata = connection.getMetaData();
-        this.encoding           = encoding;
         this.dialect            = Dialect.guess(metadata);
         this.identifierQuote    = metadata.getIdentifierQuoteString();
         this.isSchemaSupported  = metadata.supportsSchemasInTableDefinitions() &&
@@ -278,10 +267,10 @@ public class ScriptRunner {
                  * In addition, we must declare explicitly that we want the tables to be cached on disk. Finally,
                  * HSQL expects "CHR" to be spelled "CHAR".
                  */
-                replace("UNIQUE", "");
-                replace("CHR", "CHAR");
-                replace("CREATE", MORE_WORDS);
-                replace("CREATE TABLE", "CREATE CACHED TABLE");
+                addReplacement("UNIQUE", "");
+                addReplacement("CHR", "CHAR");
+                addReplacement("CREATE", MORE_WORDS);
+                addReplacement("CREATE TABLE", "CREATE CACHED TABLE");
                 break;
             }
         }
@@ -317,10 +306,21 @@ public class ScriptRunner {
      * @param inScript The word in the script which need to be replaced.
      * @param replacement The word to use instead.
      */
-    protected final void replace(final String inScript, final String replacement) {
+    protected final void addReplacement(final String inScript, final String replacement) {
         if (replacements.put(inScript, replacement) != null) {
             throw new IllegalArgumentException(inScript);
         }
+    }
+
+    /**
+     * Returns the word to use instead than the given one.
+     * If there is no replacement, then {@code inScript} is returned.
+     *
+     * @param inScript The word in the script which need to be replaced.
+     * @return The word to use instead.
+     */
+    protected final String getReplacement(final String inScript) {
+        return JDK8.getOrDefault(replacements, inScript, inScript);
     }
 
     /**
@@ -343,44 +343,24 @@ public class ScriptRunner {
      * @throws SQLException if an error occurred while executing a SQL statement.
      */
     public final int run(final String statement) throws IOException, SQLException {
-        return run(new LineNumberReader(new StringReader(statement)));
-    }
-
-    /**
-     * Runs the SQL script from the given input stream, which will be closed.
-     * Lines are read and grouped up to the terminal {@value #END_OF_STATEMENT} character, then sent to the database.
-     *
-     * @param  filename Name of the SQL script being executed. This is used only for error reporting.
-     * @param  in The stream to read. <strong>This stream will be closed</strong> at the end.
-     * @return The number of rows added or modified as a result of the script execution.
-     * @throws IOException if an error occurred while reading the input.
-     * @throws SQLException if an error occurred while executing a SQL statement.
-     */
-    public final int run(final String filename, final InputStream in) throws IOException, SQLException {
-        currentFile = filename;
-        final int count;
-        LineNumberReader reader = new LineNumberReader(new InputStreamReader(in, encoding));
-        try {
-            count = run(reader);
-        } finally {
-            reader.close();
-        }
-        currentFile = null;
-        return count;
+        return run(null, new LineNumberReader(new StringReader(statement)));
     }
 
     /**
      * Run the script from the given reader. Lines are read and grouped up to the
      * terminal {@value #END_OF_STATEMENT} character, then sent to the database.
      *
+     * @param  filename Name of the SQL script being executed. This is used only for error reporting.
      * @param  in The stream to read. It is caller's responsibility to close this reader.
      * @return The number of rows added or modified as a result of the script execution.
      * @throws IOException if an error occurred while reading the input.
      * @throws SQLException if an error occurred while executing a SQL statement.
      */
-    private int run(final LineNumberReader in) throws IOException, SQLException {
-        int     statementCount     = 0;
-        boolean isInsideText       = false;
+    public final int run(final String filename, final BufferedReader in) throws IOException, SQLException {
+        currentFile = filename;
+        currentLine = 0;
+        int     statementCount     = 0;         // For informative purpose only.
+        int     posOpeningQuote    = -1;        // -1 if we are not inside a text.
         boolean isInsideIdentifier = false;
         final StringBuilder buffer = new StringBuilder();
         String line;
@@ -393,7 +373,9 @@ public class ScriptRunner {
                 if (s >= line.length() || line.regionMatches(s, COMMENT, 0, COMMENT.length())) {
                     continue;
                 }
-                currentLine = in.getLineNumber();
+                if (in instanceof LineNumberReader) {
+                    currentLine = ((LineNumberReader) in).getLineNumber();
+                }
             } else {
                 buffer.append('\n');
             }
@@ -429,7 +411,7 @@ public class ScriptRunner {
 parseLine:  while (pos < length) {
                 int c = buffer.codePointAt(pos);
                 int n = Character.charCount(c);
-                if (!isInsideText && !isInsideIdentifier) {
+                if (posOpeningQuote < 0 && !isInsideIdentifier) {
                     int start = pos;
                     while (Character.isUnicodeIdentifierStart(c)) {
                         /*
@@ -480,7 +462,7 @@ parseLine:  while (pos < length) {
                      * replace the standard quote character by the database-specific one.
                      */
                     case IDENTIFIER_QUOTE: {
-                        if (!isInsideText) {
+                        if (posOpeningQuote < 0) {
                             isInsideIdentifier = !isInsideIdentifier;
                             length = buffer.replace(pos, pos + n, identifierQuote).length();
                             n = identifierQuote.length();
@@ -493,10 +475,12 @@ parseLine:  while (pos < length) {
                      */
                     case QUOTE: {
                         if (!isInsideIdentifier) {
-                            if (!isInsideText) {
-                                isInsideText = true;
+                            if (posOpeningQuote < 0) {
+                                posOpeningQuote = pos;
                             } else if ((pos += n) >= length || buffer.codePointAt(pos) != QUOTE) {
-                                isInsideText = false;
+                                editText(buffer, posOpeningQuote, pos);
+                                pos -= length - (length = buffer.length());
+                                posOpeningQuote = -1;
                                 continue;   // Because we already skipped the ' character.
                             } // else found a double ' character, which means to escape it.
                         }
@@ -507,7 +491,7 @@ parseLine:  while (pos < length) {
                      * since SQL statement in JDBC are not expected to contain it.
                      */
                     case END_OF_STATEMENT: {
-                        if (!isInsideText && !isInsideIdentifier) {
+                        if (posOpeningQuote < 0 && !isInsideIdentifier) {
                             if (CharSequences.skipLeadingWhitespaces(buffer, pos + n, length) >= length) {
                                 buffer.setLength(pos);
                             }
@@ -525,7 +509,21 @@ parseLine:  while (pos < length) {
         if (!line.isEmpty() && !line.startsWith(COMMENT)) {
             throw new EOFException(Errors.format(Errors.Keys.UnexpectedEndOfString_1, line));
         }
+        currentFile = null;
         return statementCount;
+    }
+
+    /**
+     * Invoked for each text found in a SQL statement. The text, <em>including its quote characters</em>,
+     * is the {@code sql} substring from index {@code lower} inclusive to {@code upper} exclusive.
+     * Subclasses can override this method if they wish to modify the text content.
+     * Modifications are applied directly in the given {@code sql} buffer.
+     *
+     * @param sql   The whole SQL statement.
+     * @param lower Index of the opening quote character ({@code '}) of the text in {@code sql}.
+     * @param upper Index after the closing quote character ({@code '}) of the text in {@code sql}.
+     */
+    protected void editText(final StringBuilder sql, final int lower, final int upper) {
     }
 
     /**
@@ -580,7 +578,7 @@ parseLine:  while (pos < length) {
                                 if (subSQL.charAt(end - 1) == ',') {
                                     end--;
                                 }
-                                count += statement.executeUpdate(sql.append(subSQL, begin, end).toString());
+                                count += statement.executeUpdate(currentSQL = sql.append(subSQL, begin, end).toString());
                                 sql.setLength(startOfValues);       // Prepare for next INSERT INTO statement.
                                 nrows = maxRowsPerInsert;
                                 begin = endOfLine + 1;
@@ -588,7 +586,7 @@ parseLine:  while (pos < length) {
                         }
                         // The remaining of the statement to be executed.
                         int end = CharSequences.skipTrailingWhitespaces(subSQL, begin, subSQL.length());
-                        subSQL = (end > begin) ? sql.append(subSQL, begin, end).toString() : null;
+                        currentSQL = subSQL = (end > begin) ? sql.append(subSQL, begin, end).toString() : null;
                     }
                 }
             }
@@ -621,7 +619,8 @@ parseLine:  while (pos < length) {
     public String status(final Locale locale) {
         String position = null;
         if (currentFile != null) {
-            position = Errors.getResources(locale).getString(Errors.Keys.ErrorInFileAtLine_2, currentFile, currentLine);
+            position = Errors.getResources(locale).getString(Errors.Keys.ErrorInFileAtLine_2, currentFile,
+                    (currentLine != 0) ? currentLine : '?');
         }
         if (currentSQL != null) {
             final StringBuilder buffer = new StringBuilder();

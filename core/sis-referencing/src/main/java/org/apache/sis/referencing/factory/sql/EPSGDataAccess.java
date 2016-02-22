@@ -71,8 +71,10 @@ import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.internal.metadata.TransformationAccuracy;
 import org.apache.sis.internal.metadata.sql.SQLUtilities;
 import org.apache.sis.internal.referencing.DeprecatedCode;
+import org.apache.sis.internal.referencing.EPSGParameterDomain;
 import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.internal.system.Loggers;
+import org.apache.sis.internal.system.Semaphores;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.metadata.iso.ImmutableIdentifier;
@@ -107,6 +109,7 @@ import org.apache.sis.util.Localized;
 import org.apache.sis.util.Version;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.measure.MeasurementRange;
+import org.apache.sis.measure.NumberRange;
 import org.apache.sis.measure.Units;
 
 import static org.apache.sis.internal.referencing.ServicesForMetadata.CONNECTION;
@@ -161,6 +164,38 @@ import org.apache.sis.internal.jdk7.AutoCloseable;
 public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAuthorityFactory,
         CSAuthorityFactory, DatumAuthorityFactory, CoordinateOperationAuthorityFactory, Localized
 {
+    /**
+     * The deprecated ellipsoidal coordinate systems and their replacements. Those coordinate systems are deprecated
+     * because they use a unit of measurement which is no longer supported by OGC (for example degree-minute-second).
+     * Those replacements can be used only if the ellipsoidal CS is used for the base geographic CRS of a derived or
+     * projected CRS, because the units of measurement of the base CRS do not impact the units of measurements of the
+     * derived CRS.
+     *
+     * <p>We perform those replacements for avoiding a "Unit conversion from “DMS” to “°” is non-linear" exception
+     * at projected CRS creation time.</p>
+     *
+     * @see #replaceDeprecatedCS
+     */
+    private static final Map<Integer,Integer> DEPRECATED_CS = deprecatedCS();
+    static Map<Integer,Integer> deprecatedCS() {
+        final Map<Integer,Integer> m = new HashMap<Integer,Integer>(24);
+
+        // Ellipsoidal 2D CS. Axes: latitude, longitude. Orientations: north, east. UoM: degree
+        Integer replacement = 6422;
+        m.put(6402, replacement);
+        for (int code = 6405; code <= 6412; code++) {
+            m.put(code, replacement);
+        }
+
+        // Ellipsoidal 3D CS. Axes: latitude, longitude, ellipsoidal height. Orientations: north, east, up. UoM: degree, degree, metre.
+        replacement = 6423;
+        m.put(6401, replacement);
+        for (int code = 6413; code <= 6420; code++) {
+            m.put(code, replacement);
+        }
+        return m;
+    }
+
     /**
      * The namespace of EPSG names and codes. This namespace is needed by all {@code createFoo(String)} methods.
      * The {@code EPSGDataAccess} constructor relies on the {@link EPSGFactory#nameFactory} caching mechanism
@@ -270,8 +305,18 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
      * {@code true} for disabling the logging of warnings when this factory creates deprecated objects.
      * This flag should be always {@code false}, except during {@link Finder#find(IdentifiedObject)}
      * execution since that method may temporarily creates deprecated objects which are later discarded.
+     * May also be {@code false} when creating base CRS of deprecated projected or derived CRS.
      */
     private transient boolean quiet;
+
+    /**
+     * {@code true} if {@link #createCoordinateReferenceSystem(String)} is allowed to replace deprecated
+     * coordinate system at CRS creation time. This flag should be set to {@code true} only when creating
+     * the base CRS of a projected or derived CRS.
+     *
+     * @see #DEPRECATED_CS
+     */
+    private transient boolean replaceDeprecatedCS;
 
     /**
      * The {@code ConcurrentAuthorityFactory} that created this Data Access Object (DAO).
@@ -359,7 +404,7 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
      *   │  └─ Function ……………………………………… Browse
      *   └─ Online resource (2 of 2)
      *      ├─ Linkage ………………………………………… jdbc:derby:/my/path/to/SIS_DATA/Databases/SpatialMetadata
-     *      ├─ Description ……………………………… EPSG dataset version 8.8 on “Apache Derby Embedded JDBC Driver” version 10.12.
+     *      ├─ Description ……………………………… EPSG dataset version 8.9 on “Apache Derby Embedded JDBC Driver” version 10.12.
      *      └─ Function ……………………………………… Connection
      * }
      */
@@ -401,7 +446,7 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
              *
              *    Linkage:      jdbc:derby:/my/path/to/SIS_DATA/Databases/SpatialMetadata
              *    Function:     Connection
-             *    Description:  EPSG dataset version 8.8 on “Apache Derby Embedded JDBC Driver” version 10.12.
+             *    Description:  EPSG dataset version 8.9 on “Apache Derby Embedded JDBC Driver” version 10.12.
              *
              * TODO: A future version should use Citations.EPSG as a template.
              *       See the "EPSG" case in ServiceForUtility.createCitation(String).
@@ -427,7 +472,7 @@ addURIs:    for (int i=0; ; i++) {
                 }
                 final DefaultOnlineResource r = new DefaultOnlineResource();
                 try {
-                    r.setLinkage(new URI(url));
+                    r.setLinkage(new URI(SQLUtilities.getSimplifiedURL(metadata)));
                 } catch (URISyntaxException exception) {
                     unexpectedException("getAuthority", exception);
                 }
@@ -658,7 +703,7 @@ addURIs:    for (int i=0; ; i++) {
                     statements.put(KEY, statement);
                     lastTableForName = table;
                 }
-                statement.setString(1, SQLUtilities.toLikePattern(code));
+                statement.setString(1, toLikePattern(code));
                 Integer resolved = null;
                 final ResultSet result = statement.executeQuery();
                 try {
@@ -790,8 +835,8 @@ addURIs:    for (int i=0; ; i++) {
      * @return The boolean at the specified column, or {@code null}.
      * @throws SQLException if an error occurred while querying the database.
      */
-    private static boolean getOptionalBoolean(final ResultSet result, final int columnIndex) throws SQLException {
-        return result.getInt(columnIndex) != 0;
+    private boolean getOptionalBoolean(final ResultSet result, final int columnIndex) throws SQLException {
+        return translator.useBoolean() ? result.getBoolean(columnIndex) : (result.getInt(columnIndex) != 0);
     }
 
     /**
@@ -941,6 +986,9 @@ addURIs:    for (int i=0; ; i++) {
      * The given {@code name} may be prefixed by {@code "epsg_"} and may contain abbreviations of the full name.
      * For example {@code "epsg_coordoperation"} is considered as a match for {@code "Coordinate_Operation"}.
      *
+     * <p>The table name should be one of the values enumerated in the {@code epsg_table_name} type of the
+     * {@code EPSG_Prepare.sql} file.</p>
+     *
      * @param  expected  The expected table name (e.g. {@code "Coordinate_Operation"}).
      * @param  name      The actual table name.
      * @return Whether the given {@code name} is considered to match the expected name.
@@ -956,16 +1004,14 @@ addURIs:    for (int i=0; ; i++) {
     }
 
     /**
-     * Logs a warning saying that the given code is deprecated and returns a message proposing a replacement.
+     * Logs a warning saying that the given code is deprecated and returns the code of the proposed replacement.
      *
      * @param  table  The table of the deprecated code.
      * @param  code   The deprecated code.
      * @param  locale The locale for logging messages.
-     * @return A message proposing a replacement, or {@code null} if none.
+     * @return The proposed replacement (may be the "(none)" text).
      */
-    private InternationalString getSupersession(final String table, final Integer code, final Locale locale)
-            throws SQLException
-    {
+    private String getSupersession(final String table, final Integer code, final Locale locale) throws SQLException {
         String reason = null;
         Object replacedBy = null;
         final ResultSet result = executeQuery("Deprecation",
@@ -1005,7 +1051,7 @@ addURIs:    for (int i=0; ; i++) {
             record.setLoggerName(Loggers.CRS_FACTORY);
             Logging.log(EPSGDataAccess.class, method, record);
         }
-        return Vocabulary.formatInternational(Vocabulary.Keys.SupersededBy_1, replacedBy);
+        return (String) replacedBy;
     }
 
     /**
@@ -1019,42 +1065,21 @@ addURIs:    for (int i=0; ; i++) {
      * @return The name together with a set of properties.
      */
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
-    private Map<String,Object> createProperties(final String table, final String name, final Integer code,
+    private Map<String,Object> createProperties(final String table, String name, final Integer code,
             String remarks, final boolean deprecated) throws SQLException, FactoryDataException
     {
-        properties.clear();
-        GenericName gn = null;
-        final Locale locale = getLocale();
-        final Citation authority = owner.getAuthority();
-        final InternationalString edition = authority.getEdition();
-        final String version = (edition != null) ? edition.toString() : null;
-        if (name != null) {
-            gn = owner.nameFactory.createGenericName(namespace, Constants.EPSG, name);
-            properties.put("name", gn);
-            properties.put(NamedIdentifier.CODE_KEY,      name);
-            properties.put(NamedIdentifier.VERSION_KEY,   version);
-            properties.put(NamedIdentifier.AUTHORITY_KEY, authority);
-            properties.put(AbstractIdentifiedObject.LOCALE_KEY, locale);
-            final NamedIdentifier id = new NamedIdentifier(properties);
-            properties.clear();
-            properties.put(IdentifiedObject.NAME_KEY, id);
-        }
-        if (code != null) {
-            final String codeString = code.toString();
-            final ImmutableIdentifier identifier;
-            if (deprecated) {
-                identifier = new DeprecatedCode(authority, Constants.EPSG, codeString, version, getSupersession(table, code, locale));
-                properties.put(AbstractIdentifiedObject.DEPRECATED_KEY, Boolean.TRUE);
-            } else {
-                identifier = new ImmutableIdentifier(authority, Constants.EPSG, codeString, version,
-                                    (gn != null) ? gn.toInternationalString() : null);
-            }
-            properties.put(IdentifiedObject.IDENTIFIERS_KEY, identifier);
-        }
-        properties.put(IdentifiedObject.REMARKS_KEY, remarks);
         /*
          * Search for aliases. Note that searching for the object code is not sufficient. We also need to check if the
          * record is really from the table we are looking for since different tables may have objects with the same ID.
+         *
+         * Some aliases are identical to the name except that some letters are replaced by their accented letters.
+         * For example "Reseau Geodesique Francais" → "Réseau Géodésique Français". If we find such alias, replace
+         * the name by the alias so we have proper display in user interface. Notes:
+         *
+         *   - WKT formatting will still be compliant with ISO 19162 because the WKT formatter replaces accented
+         *     letters by ASCII ones.
+         *   - We do not perform this replacement directly in our EPSG database because ASCII letters are more
+         *     convenient for implementing accent-insensitive searches.
          */
         final List<GenericName> aliases = new ArrayList<GenericName>();
         final ResultSet result = executeQuery("Alias",
@@ -1076,15 +1101,55 @@ addURIs:    for (int i=0; ; i++) {
                             namingSystems.put(naming, ns);
                         }
                     }
-                    aliases.add(owner.nameFactory.createLocalName(ns, alias));
+                    if (CharSequences.toASCII(alias).toString().equals(name)) {
+                        name = alias;
+                    } else {
+                        aliases.add(owner.nameFactory.createLocalName(ns, alias));
+                    }
                 }
             }
         } finally {
             result.close();
         }
+        /*
+         * At this point we can fill the properties map.
+         */
+        properties.clear();
+        GenericName gn = null;
+        final Locale locale = getLocale();
+        final Citation authority = owner.getAuthority();
+        final InternationalString edition = authority.getEdition();
+        final String version = (edition != null) ? edition.toString() : null;
+        if (name != null) {
+            gn = owner.nameFactory.createGenericName(namespace, Constants.EPSG, name);
+            properties.put("name", gn);
+            properties.put(NamedIdentifier.CODE_KEY,      name);
+            properties.put(NamedIdentifier.VERSION_KEY,   version);
+            properties.put(NamedIdentifier.AUTHORITY_KEY, authority);
+            properties.put(AbstractIdentifiedObject.LOCALE_KEY, locale);
+            final NamedIdentifier id = new NamedIdentifier(properties);
+            properties.clear();
+            properties.put(IdentifiedObject.NAME_KEY, id);
+        }
         if (!aliases.isEmpty()) {
             properties.put(IdentifiedObject.ALIAS_KEY, aliases.toArray(new GenericName[aliases.size()]));
         }
+        if (code != null) {
+            final String codeString = code.toString();
+            final ImmutableIdentifier identifier;
+            if (deprecated) {
+                final String replacedBy = getSupersession(table, code, locale);
+                identifier = new DeprecatedCode(authority, Constants.EPSG, codeString, version,
+                        Character.isDigit(replacedBy.charAt(0)) ? replacedBy : null,
+                        Vocabulary.formatInternational(Vocabulary.Keys.SupersededBy_1, replacedBy));
+                properties.put(AbstractIdentifiedObject.DEPRECATED_KEY, Boolean.TRUE);
+            } else {
+                identifier = new ImmutableIdentifier(authority, Constants.EPSG, codeString, version,
+                                    (gn != null) ? gn.toInternationalString() : null);
+            }
+            properties.put(IdentifiedObject.IDENTIFIERS_KEY, identifier);
+        }
+        properties.put(IdentifiedObject.REMARKS_KEY, remarks);
         properties.put(AbstractIdentifiedObject.LOCALE_KEY, locale);
         properties.put(ReferencingServices.MT_FACTORY, owner.mtFactory);
         return properties;
@@ -1111,6 +1176,16 @@ addURIs:    for (int i=0; ; i++) {
         }
         properties.put(Datum.SCOPE_KEY, scope);
         return properties;
+    }
+
+    /**
+     * Returns a string like the given string but with accented letters replaced by ASCII letters
+     * and all characters that are not letter or digit replaced by the wildcard % character.
+     *
+     * @see SQLUtilities#toLikePattern(String)
+     */
+    private static String toLikePattern(final String name) {
+        return SQLUtilities.toLikePattern(CharSequences.toASCII(name).toString());
     }
 
     /**
@@ -1165,7 +1240,7 @@ addURIs:    for (int i=0; ; i++) {
                     if (isPrimaryKey) {
                         stmt.setInt(1, pk);
                     } else {
-                        stmt.setString(1, SQLUtilities.toLikePattern(code));
+                        stmt.setString(1, toLikePattern(code));
                     }
                     Integer present = null;
                     final ResultSet result = stmt.executeQuery();
@@ -1272,6 +1347,9 @@ addURIs:    for (int i=0; ; i++) {
                 /*
                  * Note: Do not invoke 'createProperties' now, even if we have all required informations,
                  *       because the 'properties' map is going to overwritten by calls to 'createDatum', etc.
+                 *
+                 * The following switch statement should have a case for all "epsg_crs_kind" values enumerated
+                 * in the "EPSG_Prepare.sql" file, except that the values in this Java code are in lower cases.
                  */
                 final CRSFactory crsFactory = owner.crsFactory;
                 final CoordinateReferenceSystem crs;
@@ -1285,7 +1363,11 @@ addURIs:    for (int i=0; ; i++) {
                     if (type.equalsIgnoreCase("geographic 2d") ||
                         type.equalsIgnoreCase("geographic 3d"))
                     {
-                        final EllipsoidalCS cs = owner.createEllipsoidalCS(getString(code, result, 8));
+                        Integer csCode = getInteger(code, result, 8);
+                        if (replaceDeprecatedCS) {
+                            csCode = JDK8.getOrDefault(DEPRECATED_CS, csCode, csCode);
+                        }
+                        final EllipsoidalCS cs = owner.createEllipsoidalCS(csCode.toString());
                         final String datumCode = getOptionalString(result, 9);
                         final GeodeticDatum datum;
                         if (datumCode != null) {
@@ -1316,14 +1398,66 @@ addURIs:    for (int i=0; ; i++) {
                         result.close();      // Must be closed before call to createFoo(String)
                         ensureNoCycle(ProjectedCRS.class, epsg);
                         try {
-                            final CartesianCS   cs       = owner.createCartesianCS(csCode);
-                            final GeographicCRS baseCRS  = owner.createGeographicCRS(geoCode);
-                            final CoordinateOperation op = owner.createCoordinateOperation(opCode);
-                            if (op instanceof Conversion) {
-                                crs = crsFactory.createProjectedCRS(createProperties("Coordinate Reference System",
-                                        name, epsg, area, scope, remarks, deprecated), baseCRS, (Conversion) op, cs);
+                            final CartesianCS cs = owner.createCartesianCS(csCode);
+                            final Conversion op;
+                            try {
+                                op = (Conversion) owner.createCoordinateOperation(opCode);
+                            } catch (ClassCastException e) {
+                                // Should never happen in a well-formed EPSG database.
+                                // If happen anyway, the ClassCastException cause will give more hints than just the message.
+                                throw (NoSuchAuthorityCodeException) noSuchAuthorityCode(Projection.class, opCode).initCause(e);
+                            }
+                            final CoordinateReferenceSystem baseCRS;
+                            final boolean resumeParamChecks;
+                            if (!deprecated) {
+                                baseCRS = owner.createCoordinateReferenceSystem(geoCode);
+                                resumeParamChecks = false;
                             } else {
-                                throw noSuchAuthorityCode(Projection.class, opCode);
+                                /*
+                                 * If the ProjectedCRS is deprecated, one reason among others may be that it uses one of
+                                 * the deprecated coordinate systems. Those deprecated CS used non-linear units like DMS.
+                                 * Apache SIS can not instantiate a ProjectedCRS when the baseCRS uses such units, so we
+                                 * set a flag asking to replace the deprecated CS by a supported one. Since that baseCRS
+                                 * would not be exactly as defined by EPSG, we must not cache it because we do not want
+                                 * 'owner.createGeographicCRS(geoCode)' to return that modified CRS. Since the same CRS
+                                 * may be recreated every time a deprecated ProjectedCRS is created, we temporarily
+                                 * shutdown the loggings in order to avoid the same warning to be logged many time.
+                                 */
+                                try {
+                                    quiet = true;
+                                    replaceDeprecatedCS = true;
+                                    baseCRS = createCoordinateReferenceSystem(geoCode);         // Do not cache that CRS.
+                                } finally {
+                                    replaceDeprecatedCS = false;
+                                    quiet = false;
+                                }
+                                /*
+                                 * The crsFactory method calls will indirectly create a parameterized MathTransform.
+                                 * Their constructor will try to verify the parameter validity. But some deprecated
+                                 * CRS had invalid parameter values (they were deprecated precisely for that reason).
+                                 * If and only if we are creating a deprecated CRS, temporarily suspend the parameter
+                                 * checks.
+                                 */
+                                resumeParamChecks = !Semaphores.queryAndSet(Semaphores.SUSPEND_PARAMETER_CHECK);
+                                // Try block must be immediately after above line (do not insert any code between).
+                            }
+                            try {
+                                /*
+                                 * For a ProjectedCRS, the baseCRS is always geographic. So in theory we would not
+                                 * need the 'instanceof' check. However the EPSG dataset version 8.9 also uses the
+                                 * "projected" type for CRS that are actually derived CRS. See EPSG:5820 and 5821.
+                                 */
+                                final Map<String, Object> properties = createProperties("Coordinate Reference System",
+                                                                        name, epsg, area, scope, remarks, deprecated);
+                                if (baseCRS instanceof GeographicCRS) {
+                                    crs = crsFactory.createProjectedCRS(properties, (GeographicCRS) baseCRS, op, cs);
+                                } else {
+                                    crs = crsFactory.createDerivedCRS(properties, baseCRS, op, cs);
+                                }
+                            } finally {
+                                if (resumeParamChecks) {
+                                    Semaphores.clear(Semaphores.SUSPEND_PARAMETER_CHECK);
+                                }
                             }
                         } finally {
                             endOfRecursivity(ProjectedCRS.class, epsg);
@@ -1493,6 +1627,10 @@ addURIs:    for (int i=0; ; i++) {
                 } catch (NumberFormatException exception) {
                     unexpectedException("createDatum", exception);          // Not a fatal error.
                 }
+                /*
+                 * The following switch statement should have a case for all "epsg_datum_kind" values enumerated
+                 * in the "EPSG_Prepare.sql" file, except that the values in this Java code are in lower cases.
+                 */
                 final DatumFactory datumFactory = owner.datumFactory;
                 final Datum datum;
                 {   // On the JDK7 branch, this is a switch on strings.
@@ -1593,7 +1731,7 @@ addURIs:    for (int i=0; ; i++) {
                       " COORD_OP_METHOD_CODE," +
                       " TARGET_CRS_CODE" +
                 " FROM [Coordinate_Operation]" +
-               " WHERE DEPRECATED=0" +
+               " WHERE DEPRECATED=0" +           // Do not put spaces around "=" - SQLTranslator searches for this exact match.
                  " AND TARGET_CRS_CODE = "       + BursaWolfInfo.TARGET_CRS +
                  " AND COORD_OP_METHOD_CODE >= " + BursaWolfInfo.MIN_METHOD_CODE +
                  " AND COORD_OP_METHOD_CODE <= " + BursaWolfInfo.MAX_METHOD_CODE +
@@ -1888,7 +2026,7 @@ addURIs:    for (int i=0; ; i++) {
                 DefaultGeographicBoundingBox bbox = null;
                 if (!Double.isNaN(ymin) || !Double.isNaN(ymax) || !Double.isNaN(xmin) || !Double.isNaN(xmax)) {
                     /*
-                     * Fix an error found in EPSG::3790 New Zealand - South Island - Mount Pleasant mc
+                     * Fix an error found in EPSG:3790 New Zealand - South Island - Mount Pleasant mc
                      * for older database (this error is fixed in EPSG database 8.2).
                      *
                      * Do NOT apply anything similar for the x axis, because xmin > xmax is not error:
@@ -1976,6 +2114,10 @@ addURIs:    for (int i=0; ; i++) {
                 final boolean deprecated = getOptionalBoolean(result, 6);
                 final CoordinateSystemAxis[] axes = createCoordinateSystemAxes(epsg, dimension);
                 final Map<String,Object> properties = createProperties("Coordinate System", name, epsg, remarks, deprecated);   // Must be after axes.
+                /*
+                 * The following switch statement should have a case for all "epsg_cs_kind" values enumerated
+                 * in the "EPSG_Prepare.sql" file, except that the values in this Java code are in lower cases.
+                 */
                 final CSFactory csFactory = owner.csFactory;
                 CoordinateSystem cs = null;
                 {   // On the JDK7 branch, this is a switch on strings.
@@ -2231,7 +2373,7 @@ addURIs:    for (int i=0; ; i++) {
      * Current implementation first checks if {@link Units#valueOfEPSG(int)} can provide a hard-coded unit
      * for the given code before to try to parse the information found in the database. This is done that
      * way for better support of non-straightforward units like <cite>sexagesimal degrees</cite>
-     * (EPSG::9110 and 9111).
+     * (EPSG:9110 and 9111).
      *
      * <div class="note"><b>Example:</b>
      * some EPSG codes for units are:
@@ -2340,51 +2482,77 @@ addURIs:    for (int i=0; ; i++) {
         ResultSet result = null;
         try {
             result = executeQuery("Coordinate_Operation Parameter", "PARAMETER_CODE", "PARAMETER_NAME",
-                "SELECT PARAMETER_CODE," +
-                      " PARAMETER_NAME," +
-                      " DESCRIPTION," +
-                      " DEPRECATED" +
-                " FROM [Coordinate_Operation Parameter]" +
-                " WHERE PARAMETER_CODE = ?", code);
+                    "SELECT PARAMETER_CODE," +
+                          " PARAMETER_NAME," +
+                          " DESCRIPTION," +
+                          " DEPRECATED" +
+                    " FROM [Coordinate_Operation Parameter]" +
+                    " WHERE PARAMETER_CODE = ?", code);
 
             while (result.next()) {
                 final Integer epsg       = getInteger  (code, result, 1);
                 final String  name       = getString   (code, result, 2);
                 final String  remarks    = getOptionalString (result, 3);
                 final boolean deprecated = getOptionalBoolean(result, 4);
-                MeasurementRange<?> valueDomain = null;
-                final Class<?> type;
+                Class<?> type = Double.class;
                 /*
-                 * Search for units. We will choose the most commonly used one in parameter values.
                  * If the parameter appears to have at least one non-null value in the "Parameter File Name" column,
                  * then the type is assumed to be URI as a string. Otherwise, the type is a floating point number.
                  */
-                final ResultSet resultUnits = executeQuery("ParameterUnit",
-                        "SELECT MIN(UOM_CODE) AS UOM," +
-                              " MIN(PARAM_VALUE_FILE_REF) AS PARAM_FILE" +
-                            " FROM [Coordinate_Operation Parameter Value]" +
+                ResultSet r = executeQuery("ParameterType",
+                        "SELECT PARAM_VALUE_FILE_REF FROM [Coordinate_Operation Parameter Value]" +
+                        " WHERE (PARAMETER_CODE = ?) AND PARAM_VALUE_FILE_REF IS NOT NULL", epsg);
+                try {
+                    while (r.next()) {
+                        String element = getOptionalString(r, 1);
+                        if (element != null && !element.isEmpty()) {
+                            type = String.class;
+                            break;
+                        }
+                    }
+                } finally {
+                    r.close();
+                }
+                /*
+                 * Search for units.   We typically have many different units but all of the same dimension
+                 * (for example metres, kilometres, feet, etc.). In such case, the units Set will have only
+                 * one element and that element will be the most frequently used unit.  But some parameters
+                 * accept units of different dimensions.   For example the "Ordinate 1 of evaluation point"
+                 * (EPSG:8617) parameter value may be in metres or in degrees.   In such case the units Set
+                 * will have two elements.
+                 */
+                final Set<Unit<?>> units = new LinkedHashSet<Unit<?>>();
+                r = executeQuery("ParameterUnit",
+                        "SELECT UOM_CODE FROM [Coordinate_Operation Parameter Value]" +
                         " WHERE (PARAMETER_CODE = ?)" +
                         " GROUP BY UOM_CODE" +
                         " ORDER BY COUNT(UOM_CODE) DESC", epsg);
                 try {
-                    if (resultUnits.next()) {
-                        String element = getOptionalString(resultUnits, 2);
-                        type = (element != null) ? String.class : Double.class;
-                        element = getOptionalString(resultUnits, 1);
-                        if (element != null) {
-                            valueDomain = MeasurementRange.create(Double.NEGATIVE_INFINITY, false,
-                                    Double.POSITIVE_INFINITY, false,
-                                    owner.createUnit(element));
+next:               while (r.next()) {
+                        final String c = getOptionalString(r, 1);
+                        if (c != null) {
+                            final Unit<?> candidate = owner.createUnit(c);
+                            for (final Unit<?> e : units) {
+                                if (candidate.isCompatible(e)) {
+                                    continue next;
+                                }
+                            }
+                            units.add(candidate);
                         }
-                    } else {
-                        type = Double.class;
                     }
                 } finally {
-                    resultUnits.close();
+                    r.close();
                 }
                 /*
                  * Now creates the parameter descriptor.
                  */
+                final NumberRange<?> valueDomain;
+                switch (units.size()) {
+                    case 0:  valueDomain = null; break;
+                    default: valueDomain = new EPSGParameterDomain(units); break;
+                    case 1:  valueDomain = MeasurementRange.create(Double.NEGATIVE_INFINITY, false,
+                                    Double.POSITIVE_INFINITY, false, CollectionsExt.first(units)); break;
+                }
                 @SuppressWarnings({"unchecked", "rawtypes"})
                 final ParameterDescriptor<?> descriptor = new DefaultParameterDescriptor(
                         createProperties("Coordinate_Operation Parameter", name, epsg, remarks, deprecated),
@@ -2478,14 +2646,14 @@ addURIs:    for (int i=0; ; i++) {
                     param = parameters.parameter(name);
                 } catch (ParameterNotFoundException exception) {
                     /*
-                     * Wraps the unchecked ParameterNotFoundException into the checked NoSuchIdentifierException,
+                     * Wrap the unchecked ParameterNotFoundException into the checked NoSuchIdentifierException,
                      * which is a FactoryException subclass.  Note that in principle, NoSuchIdentifierException is for
                      * MathTransforms rather than parameters. However we are close in spirit here since we are setting
                      * up MathTransform's parameters. Using NoSuchIdentifierException allows CoordinateOperationSet to
-                     * know that the failure is probably caused by a MathTransform not yet supported in Apache SIS (or
-                     * only partially supported) rather than some more serious failure in the database side. Callers
-                     * can use this information in order to determine if they should try the next coordinate operation
-                     * or propagate the exception.
+                     * know that the failure is probably caused by a MathTransform not yet supported in Apache SIS
+                     * (or only partially supported) rather than some more serious failure in the database side.
+                     * Callers can use this information in order to determine if they should try the next coordinate
+                     * operation or propagate the exception.
                      */
                     final NoSuchIdentifierException e = new NoSuchIdentifierException(error()
                             .getString(Errors.Keys.CanNotSetParameterValue_1, name), name);
@@ -2880,7 +3048,7 @@ addURIs:    for (int i=0; ; i++) {
             } while ((searchTransformations = !searchTransformations) == true);
             /*
              * Search finished. We may have a lot of coordinate operations
-             * (e.g. about 40 for "ED50" (EPSG::4230) to "WGS 84" (EPSG::4326)).
+             * (e.g. about 40 for "ED50" (EPSG:4230) to "WGS 84" (EPSG:4326)).
              * Alter the ordering using the information supplied in the supersession table.
              */
             final String[] codes = set.getAuthorityCodes();
@@ -3018,7 +3186,7 @@ addURIs:    for (int i=0; ; i++) {
             }
             buffer.append(getSearchDomain() == Domain.ALL_DATASET
                           ? " ORDER BY ABS(DEPRECATED), "
-                          : " AND DEPRECATED=0 ORDER BY ");
+                          : " AND DEPRECATED=0 ORDER BY ");     // Do not put spaces around "=" - SQLTranslator searches for this exact match.
             if (isFloat) {
                 buffer.append("ABS(").append(select).append("-?), ");
             }
@@ -3136,7 +3304,8 @@ addURIs:    for (int i=0; ; i++) {
                       " FROM [Coordinate_Operation] AS CO" +
                 " INNER JOIN [Coordinate Reference System] AS SRC ON SRC.COORD_REF_SYS_CODE = CO.SOURCE_CRS_CODE" +
                 " INNER JOIN [Coordinate Reference System] AS TGT ON TGT.COORD_REF_SYS_CODE = CO.TARGET_CRS_CODE" +
-                      " WHERE CO.DEPRECATED = 0 AND COORD_OP_METHOD_CODE = ?";
+                      " WHERE CO.DEPRECATED=0 AND COORD_OP_METHOD_CODE = ?";
+                // Do not put spaces in "DEPRECATED=0" - SQLTranslator searches for this exact match.
             } else {
                 key = "DerivedDimensions";
                 sql = "SELECT DISTINCT SRC.COORD_SYS_CODE," +
@@ -3144,7 +3313,7 @@ addURIs:    for (int i=0; ; i++) {
                       " FROM [Coordinate Reference System] AS TGT" +
                 " INNER JOIN [Coordinate Reference System] AS SRC ON TGT.SOURCE_GEOGCRS_CODE = SRC.COORD_REF_SYS_CODE" +
                 " INNER JOIN [Coordinate_Operation] AS CO ON TGT.PROJECTION_CONV_CODE = CO.COORD_OP_CODE" +
-                      " WHERE CO.DEPRECATED = 0 AND COORD_OP_METHOD_CODE = ?";
+                      " WHERE CO.DEPRECATED=0 AND COORD_OP_METHOD_CODE = ?";
             }
             final ResultSet result = executeQuery(key, sql, method);
             try {

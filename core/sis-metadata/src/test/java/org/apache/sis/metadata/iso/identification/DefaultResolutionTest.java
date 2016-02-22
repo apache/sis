@@ -25,6 +25,7 @@ import org.apache.sis.internal.jaxb.Schemas;
 import org.apache.sis.test.LoggingWatcher;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
+import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -36,27 +37,25 @@ import static org.apache.sis.test.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.6
+ * @version 0.7
  * @module
  */
 @DependsOn(DefaultRepresentativeFractionTest.class)
 public final strictfp class DefaultResolutionTest extends TestCase {
     /**
-     * A JUnit {@linkplain Rule rule} for listening to log events. This field is public
-     * because JUnit requires us to do so, but should be considered as an implementation
-     * details (it should have been a private field).
+     * A JUnit {@link Rule} for listening to log events. This field is public because JUnit requires us to
+     * do so, but should be considered as an implementation details (it should have been a private field).
      */
     @Rule
-    public final LoggingWatcher listener = new LoggingWatcher(Context.LOGGER) {
-        /**
-         * Ensures that the logging message contains the name of the exclusive properties.
-         */
-        @Override
-        protected void verifyMessage(final String message) {
-            assertTrue(message.contains("distance"));
-            assertTrue(message.contains("equivalentScale"));
-        }
-    };
+    public final LoggingWatcher loggings = new LoggingWatcher(Context.LOGGER);
+
+    /**
+     * Verifies that no unexpected warning has been emitted in any test defined in this class.
+     */
+    @After
+    public void assertNoUnexpectedLog() {
+        loggings.assertNoUnexpectedLog();
+    }
 
     /**
      * Tests the {@link DefaultResolution#DefaultResolution(RepresentativeFraction)} constructor.
@@ -86,11 +85,13 @@ public final strictfp class DefaultResolutionTest extends TestCase {
         metadata.setDistance(2.0);
         assertEquals("distance", Double.valueOf(2.0), metadata.getDistance());
         assertNull("equivalentScale", metadata.getEquivalentScale());
+        loggings.assertNoUnexpectedLog();
 
-        listener.maximumLogCount = 1;
         metadata.setEquivalentScale(scale);
         assertSame("equivalentScale", scale, metadata.getEquivalentScale());
         assertNull("distance", metadata.getDistance());
+        loggings.assertNextLogContains("distance", "equivalentScale");
+        loggings.assertNoUnexpectedLog();
 
         metadata.setDistance(null); // Expected to be a no-op.
         assertSame("equivalentScale", scale, metadata.getEquivalentScale());
