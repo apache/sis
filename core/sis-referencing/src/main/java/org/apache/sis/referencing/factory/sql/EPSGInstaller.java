@@ -149,10 +149,10 @@ final class EPSGInstaller extends ScriptRunner {
             addReplacement(SQLTranslator.TABLE_PREFIX + "unitofmeasure",              "Unit of Measure");
             addReplacement(SQLTranslator.TABLE_PREFIX + "versionhistory",             "Version History");
             if (isEnumTypeSupported) {
-                addReplacement(SQLTranslator.TABLE_PREFIX + "datum_kind",             "Datum kind");
-                addReplacement(SQLTranslator.TABLE_PREFIX + "crs_kind",               "CRS kind");
-                addReplacement(SQLTranslator.TABLE_PREFIX + "cs_kind",                "CS kind");
-                addReplacement(SQLTranslator.TABLE_PREFIX + "table_name",             "Table name");
+                addReplacement(SQLTranslator.TABLE_PREFIX + "datum_kind",             "Datum Kind");
+                addReplacement(SQLTranslator.TABLE_PREFIX + "crs_kind",               "CRS Kind");
+                addReplacement(SQLTranslator.TABLE_PREFIX + "cs_kind",                "CS Kind");
+                addReplacement(SQLTranslator.TABLE_PREFIX + "table_name",             "Table Name");
             }
             prependNamespace(schema);
         }
