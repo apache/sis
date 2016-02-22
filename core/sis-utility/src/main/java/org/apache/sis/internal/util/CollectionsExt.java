@@ -76,7 +76,7 @@ public final class CollectionsExt extends Static {
     public static <T> T first(final Iterable<T> collection) {
         if (collection != null) {
             final Iterator<T> it = collection.iterator();
-            if (it != null && it.hasNext()) { // This check for null is paranoiac.
+            if (it != null && it.hasNext()) {                       // This check for null is paranoiac.
                 return it.next();
             }
         }

@@ -57,6 +57,7 @@ import org.apache.sis.referencing.crs.DefaultTemporalCRS;
 import org.apache.sis.referencing.crs.DefaultVerticalCRS;
 import org.apache.sis.referencing.crs.DefaultGeographicCRS;
 import org.apache.sis.referencing.crs.DefaultGeocentricCRS;
+import org.apache.sis.referencing.factory.UnavailableFactoryException;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.internal.referencing.provider.TransverseMercator;
 import org.apache.sis.internal.referencing.Formulas;
@@ -222,7 +223,7 @@ public enum CommonCRS {
      *   <tr><th>Semi-minor axis length:</th>  <td>6356752 <i>(approximative)</i></td></tr>
      *   <tr><th>Inverse flattening:</th>      <td>298.257222101 <i>(definitive)</i></td></tr>
      *   <tr><th>Ellipsoid axes unit:</th>     <td>{@link SI#METRE}</td></tr>
-     *   <tr><th>UTM zones:</th>               <td>28 to 38 in the North hemisphere</td></tr>
+     *   <tr><th>UTM zones:</th>               <td>28 to 37 in the North hemisphere</td></tr>
      * </table></blockquote>
      *
      * <div class="note"><b>Note:</b>
@@ -231,7 +232,7 @@ public enum CommonCRS {
      * while the {@code "IGNF:MILLER"} authority code uses the GRS80 datum.</div>
      */
     ETRS89((short) 4258, (short) 4937, (short) 4936, (short) 6258, (short) 7019,    // Geodetic info
-           (short) 25800, (short) 0, (byte) 28, (byte) 38),                         // UTM info
+           (short) 25800, (short) 0, (byte) 28, (byte) 37),                         // UTM info
 
     /**
      * European Datum 1950.
@@ -507,7 +508,7 @@ public enum CommonCRS {
                         failure(this, "geographic", e);
                     }
                     /*
-                     * All constants defined in this enumeration use the same coordinate system, EPSG::6422.
+                     * All constants defined in this enumeration use the same coordinate system, EPSG:6422.
                      * We will arbitrarily create this CS only for the most frequently created CRS,
                      * and share that CS instance for all other constants.
                      */
@@ -564,7 +565,7 @@ public enum CommonCRS {
                         }
                     }
                     /*
-                     * All constants defined in this enumeration use the same coordinate system, EPSG::6423.
+                     * All constants defined in this enumeration use the same coordinate system, EPSG:6423.
                      * We will arbitrarily create this CS only for the most frequently created CRS,
                      * and share that CS instance for all other constants.
                      */
@@ -622,7 +623,7 @@ public enum CommonCRS {
                         }
                     }
                     /*
-                     * All constants defined in this enumeration use the same coordinate system, EPSG::6500.
+                     * All constants defined in this enumeration use the same coordinate system, EPSG:6500.
                      * We will arbitrarily create this CS only for the most frequently created CRS,
                      * and share that CS instance for all other constants.
                      */
@@ -885,7 +886,7 @@ public enum CommonCRS {
                 }
             }
             /*
-             * All constants defined in this enumeration use the same coordinate system, EPSG::4400.
+             * All constants defined in this enumeration use the same coordinate system, EPSG:4400.
              * We will arbitrarily create this CS only for a frequently created CRS, and share that
              * CS instance for all other constants.
              */
@@ -1540,6 +1541,9 @@ public enum CommonCRS {
      * After invoking this method, the caller will fallback on hard-coded values.
      */
     static void failure(final Object caller, final String method, final FactoryException e) {
+        if (e instanceof UnavailableFactoryException) {
+            AuthorityFactories.failure((UnavailableFactoryException) e);
+        }
         Logging.unexpectedException(Logging.getLogger(Loggers.CRS_FACTORY), caller.getClass(), method, e);
     }
 }

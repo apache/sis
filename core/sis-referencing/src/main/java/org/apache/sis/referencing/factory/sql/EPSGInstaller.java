@@ -17,6 +17,7 @@
 package org.apache.sis.referencing.factory.sql;
 
 import java.util.Locale;
+import java.util.ServiceLoader;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -27,26 +28,25 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.io.FileNotFoundException;
-import java.io.InputStream;
+import java.io.BufferedReader;
 import org.apache.sis.util.StringBuilders;
 import org.apache.sis.internal.metadata.sql.ScriptRunner;
+import org.apache.sis.internal.metadata.sql.SQLUtilities;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.util.CharSequences;
-import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Messages;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.logging.PerformanceLevel;
 
 // Branch-specific imports
-import org.apache.sis.internal.jdk7.Files;
-import org.apache.sis.internal.jdk7.Path;
 import org.apache.sis.internal.jdk8.BiFunction;
 
 
 /**
  * Runs the SQL scripts for creating an EPSG database.
+ *
+ * See {@code EPSGDataFormatter} in the test directory for more information about how the scripts are formatted.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.7
@@ -54,14 +54,6 @@ import org.apache.sis.internal.jdk8.BiFunction;
  * @module
  */
 final class EPSGInstaller extends ScriptRunner {
-    /**
-     * The embedded SQL scripts to execute for creating the EPSG database, in that order.
-     * The {@code ".sql"} suffix is omitted. The {@code "Grant"} script must be last.
-     */
-    private static final String[] SCRIPTS = {
-        "Tables", "Data", "Patches", "FKeys", "Indexes", "Grant"         // "Grant" must be last.
-    };
-
     /**
      * The pattern for an {@code "UPDATE … SET … REPLACE"} instruction.
      * Example:
@@ -71,7 +63,7 @@ final class EPSGInstaller extends ScriptRunner {
      *     SET datum_name = replace(datum_name, CHAR(182), CHAR(10));
      * }
      */
-    private static final String REPLACE_STATEMENT =
+    static final String REPLACE_STATEMENT =
             "\\s*UPDATE\\s+[\\w\\.\" ]+\\s+SET\\s+(\\w+)\\s*=\\s*replace\\s*\\(\\s*\\1\\W+.*";
 
     /**
@@ -95,7 +87,7 @@ final class EPSGInstaller extends ScriptRunner {
      * @throws SQLException if an error occurred while executing a SQL statement.
      */
     public EPSGInstaller(final Connection connection) throws SQLException {
-        super(connection, "ISO-8859-1", 100);
+        super(connection, 100);
         boolean isReplaceSupported = false;
         final DatabaseMetaData metadata = connection.getMetaData();
         final String functions = metadata.getStringFunctions();
@@ -138,28 +130,40 @@ final class EPSGInstaller extends ScriptRunner {
              * Mapping from the table names used in the SQL scripts to the original names used in the MS-Access database.
              * We use those original names because they are easier to read than the names in SQL scripts.
              */
-            replace(SQLTranslator.TABLE_PREFIX + "alias",                      "Alias");
-            replace(SQLTranslator.TABLE_PREFIX + "area",                       "Area");
-            replace(SQLTranslator.TABLE_PREFIX + "change",                     "Change");
-            replace(SQLTranslator.TABLE_PREFIX + "coordinateaxis",             "Coordinate Axis");
-            replace(SQLTranslator.TABLE_PREFIX + "coordinateaxisname",         "Coordinate Axis Name");
-            replace(SQLTranslator.TABLE_PREFIX + "coordoperation",             "Coordinate_Operation");
-            replace(SQLTranslator.TABLE_PREFIX + "coordoperationmethod",       "Coordinate_Operation Method");
-            replace(SQLTranslator.TABLE_PREFIX + "coordoperationparam",        "Coordinate_Operation Parameter");
-            replace(SQLTranslator.TABLE_PREFIX + "coordoperationparamusage",   "Coordinate_Operation Parameter Usage");
-            replace(SQLTranslator.TABLE_PREFIX + "coordoperationparamvalue",   "Coordinate_Operation Parameter Value");
-            replace(SQLTranslator.TABLE_PREFIX + "coordoperationpath",         "Coordinate_Operation Path");
-            replace(SQLTranslator.TABLE_PREFIX + "coordinatereferencesystem",  "Coordinate Reference System");
-            replace(SQLTranslator.TABLE_PREFIX + "coordinatesystem",           "Coordinate System");
-            replace(SQLTranslator.TABLE_PREFIX + "datum",                      "Datum");
-            replace(SQLTranslator.TABLE_PREFIX + "deprecation",                "Deprecation");
-            replace(SQLTranslator.TABLE_PREFIX + "ellipsoid",                  "Ellipsoid");
-            replace(SQLTranslator.TABLE_PREFIX + "namingsystem",               "Naming System");
-            replace(SQLTranslator.TABLE_PREFIX + "primemeridian",              "Prime Meridian");
-            replace(SQLTranslator.TABLE_PREFIX + "supersession",               "Supersession");
-            replace(SQLTranslator.TABLE_PREFIX + "unitofmeasure",              "Unit of Measure");
-            replace(SQLTranslator.TABLE_PREFIX + "versionhistory",             "Version History");
+            addReplacement(SQLTranslator.TABLE_PREFIX + "alias",                      "Alias");
+            addReplacement(SQLTranslator.TABLE_PREFIX + "area",                       "Area");
+            addReplacement(SQLTranslator.TABLE_PREFIX + "change",                     "Change");
+            addReplacement(SQLTranslator.TABLE_PREFIX + "coordinateaxis",             "Coordinate Axis");
+            addReplacement(SQLTranslator.TABLE_PREFIX + "coordinateaxisname",         "Coordinate Axis Name");
+            addReplacement(SQLTranslator.TABLE_PREFIX + "coordoperation",             "Coordinate_Operation");
+            addReplacement(SQLTranslator.TABLE_PREFIX + "coordoperationmethod",       "Coordinate_Operation Method");
+            addReplacement(SQLTranslator.TABLE_PREFIX + "coordoperationparam",        "Coordinate_Operation Parameter");
+            addReplacement(SQLTranslator.TABLE_PREFIX + "coordoperationparamusage",   "Coordinate_Operation Parameter Usage");
+            addReplacement(SQLTranslator.TABLE_PREFIX + "coordoperationparamvalue",   "Coordinate_Operation Parameter Value");
+            addReplacement(SQLTranslator.TABLE_PREFIX + "coordoperationpath",         "Coordinate_Operation Path");
+            addReplacement(SQLTranslator.TABLE_PREFIX + "coordinatereferencesystem",  "Coordinate Reference System");
+            addReplacement(SQLTranslator.TABLE_PREFIX + "coordinatesystem",           "Coordinate System");
+            addReplacement(SQLTranslator.TABLE_PREFIX + "datum",                      "Datum");
+            addReplacement(SQLTranslator.TABLE_PREFIX + "deprecation",                "Deprecation");
+            addReplacement(SQLTranslator.TABLE_PREFIX + "ellipsoid",                  "Ellipsoid");
+            addReplacement(SQLTranslator.TABLE_PREFIX + "namingsystem",               "Naming System");
+            addReplacement(SQLTranslator.TABLE_PREFIX + "primemeridian",              "Prime Meridian");
+            addReplacement(SQLTranslator.TABLE_PREFIX + "supersession",               "Supersession");
+            addReplacement(SQLTranslator.TABLE_PREFIX + "unitofmeasure",              "Unit of Measure");
+            addReplacement(SQLTranslator.TABLE_PREFIX + "versionhistory",             "Version History");
+            if (isEnumTypeSupported) {
+                addReplacement(SQLTranslator.TABLE_PREFIX + "datum_kind",             "Datum Kind");
+                addReplacement(SQLTranslator.TABLE_PREFIX + "crs_kind",               "CRS Kind");
+                addReplacement(SQLTranslator.TABLE_PREFIX + "cs_kind",                "CS Kind");
+                addReplacement(SQLTranslator.TABLE_PREFIX + "table_name",             "Table Name");
+            }
             prependNamespace(schema);
+        }
+        if (!isEnumTypeSupported) {
+            addReplacement(SQLTranslator.TABLE_PREFIX + "datum_kind", "VARCHAR(24)");
+            addReplacement(SQLTranslator.TABLE_PREFIX + "crs_kind",   "VARCHAR(24)");
+            addReplacement(SQLTranslator.TABLE_PREFIX + "cs_kind",    "VARCHAR(24)");
+            addReplacement(SQLTranslator.TABLE_PREFIX + "table_name", "VARCHAR(80)");
         }
     }
 
@@ -169,9 +173,38 @@ final class EPSGInstaller extends ScriptRunner {
     final void prependNamespace(final String schema) {
         modifyReplacements(new BiFunction<String,String,String>() {
             @Override public String apply(String key, String value) {
-                return schema + '.' + identifierQuote + value + identifierQuote;
+                return key.startsWith(SQLTranslator.TABLE_PREFIX) ?
+                        schema + '.' + identifierQuote + value + identifierQuote : value;
             }
         });
+    }
+
+    /**
+     * Invoked for each text found in a SQL statement. This method replaces {@code ''} by {@code Null}.
+     * The intend is to consistently use the null value for meaning "no information", which is not the
+     * same than "information is an empty string". This replacement is okay in this particular case
+     * since there is no field in the EPSG database for which we really want an empty string.
+     *
+     * @param sql   The whole SQL statement.
+     * @param lower Index of the first character of the text in {@code sql}.
+     * @param upper Index after the last character of the text in {@code sql}.
+     */
+    @Override
+    protected void editText(final StringBuilder sql, final int lower, final int upper) {
+        final String replacement;
+        switch (upper - lower) {
+            default: {
+                return;
+            }
+            /*
+             * Replace '' by Null for every table.
+             */
+            case 2: {
+                replacement = "Null";
+                break;
+            }
+        }
+        sql.replace(lower, upper, replacement);
     }
 
     /**
@@ -190,6 +223,15 @@ final class EPSGInstaller extends ScriptRunner {
         if (CharSequences.equalsIgnoreCase(sql, "COMMIT")) {
             return 0;
         }
+        if (!isGrantOnTableSupported && CharSequences.regionMatches(sql, 0, "GRANT")) {
+            return 0;
+        }
+        if (!isEnumTypeSupported && CharSequences.regionMatches(sql, 0, "CREATE")) {
+            final String t = CharSequences.trimWhitespaces(sql, 6, 12).toString();
+            if (t.equals("TYPE") || t.equals("CAST")) {
+                return 0;
+            }
+        }
         if (statementToSkip != null && statementToSkip.reset(sql).matches()) {
             return 0;
         }
@@ -200,55 +242,44 @@ final class EPSGInstaller extends ScriptRunner {
     }
 
     /**
-     * Processes to the creation of the EPSG database using the files in the given directory.
-     * The given directory should contain at least files similar to the following ones
-     * (files without {@code ".sql"} extension are ignored):
-     *
-     * <ul>
-     *   <li>{@code EPSG_v8_18.mdb_Tables_PostgreSQL.sql}</li>
-     *   <li>{@code EPSG_v6_18.mdb_Data_PostgreSQL.sql}</li>
-     *   <li>{@code EPSG_v6_18.mdb_FKeys_PostgreSQL.sql}</li>
-     *   <li>Optional but recommended: {@code EPSG_v6_18.mdb_Indexes_PostgreSQL.sql}.</li>
-     * </ul>
-     *
-     * The suffix may be different (for example {@code "_MySQL.sql"} instead of {@code "_PostgreSQL.sql"})
-     * and the version number may be different.
-     *
-     * <p>If the given directory is {@code null}, then the scripts will be read from the resources.
-     * If no resources is found, then an exception will be thrown.
+     * Processes to the creation of the EPSG database using the SQL scripts from the given provider.
      *
      * @throws IOException if an error occurred while reading an input.
      * @throws SQLException if an error occurred while executing a SQL statement.
      */
-    public void run(final Path scriptDirectory) throws SQLException, IOException {
+    public void run(InstallationScriptProvider scriptProvider) throws SQLException, IOException {
         long time = System.nanoTime();
-        if (scriptDirectory == null) {
-            log(Messages.getResources(null).getLogRecord(Level.INFO, Messages.Keys.CreatingSchema_2,
-                    Constants.EPSG, getConnection().getMetaData().getURL()));
+        log(Messages.getResources(null).getLogRecord(Level.INFO, Messages.Keys.CreatingSchema_2, Constants.EPSG,
+                SQLUtilities.getSimplifiedURL(getConnection().getMetaData())));
+        if (scriptProvider == null) {
+            scriptProvider = lookupProvider();
         }
-        int numScripts = SCRIPTS.length;
-        if (!isGrantOnTableSupported) {
-            numScripts--;
-        }
+        final String[] scripts = scriptProvider.getScriptNames();
         int numRows = 0;
-        for (int i=0; i<numScripts; i++) {
-            final String script = SCRIPTS[i] + ".sql";
-            final InputStream in;
-            if (scriptDirectory != null) {
-                in = Files.newInputStream(scriptDirectory.resolve(script));
-            } else {
-                in = EPSGInstaller.class.getResourceAsStream(script);
-                if (in == null) {
-                    throw new FileNotFoundException(Errors.format(Errors.Keys.FileNotFound_1, script));
-                }
+        for (int i=0; i<scripts.length; i++) {
+            final BufferedReader in = scriptProvider.getScriptContent(i);
+            try {
+                numRows += run(scripts[i], in);
+            } finally {
+                in.close();
             }
-            numRows += run(script, in);
-            // The stream will be closed by the run method.
         }
         time = System.nanoTime() - time;
         log(Messages.getResources(null).getLogRecord(
                 PerformanceLevel.forDuration(time, TimeUnit.NANOSECONDS),
                 Messages.Keys.InsertDuration_2, numRows, time / 1E9f));
+    }
+
+    /**
+     * Searches for a SQL script provider on the classpath before to fallback on the default provider.
+     */
+    private static InstallationScriptProvider lookupProvider() {
+        for (final InstallationScriptProvider p : ServiceLoader.load(InstallationScriptProvider.class)) {
+            if (Constants.EPSG.equals(p.getAuthority())) {
+                return p;
+            }
+        }
+        return new InstallationScriptProvider.Default();
     }
 
     /**

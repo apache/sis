@@ -64,7 +64,7 @@ import org.apache.sis.internal.jdk8.JDK8;
  * {@code IdentifiedObjectSet} can be used as the set returned by implementations of the
  * {@link GeodeticAuthorityFactory#createFromCoordinateReferenceSystemCodes(String, String)} method.
  * Deferred creation can have great performance impact since some set may contain as much as 40 entries
- * (e.g. transformations from <cite>"ED50"</cite> (EPSG::4230) to <cite>"WGS 84"</cite> (EPSG::4326))
+ * (e.g. transformations from <cite>"ED50"</cite> (EPSG:4230) to <cite>"WGS 84"</cite> (EPSG:4326))
  * while some users only want to look for the first entry.
  *
  * <div class="section">Exception handling</div>

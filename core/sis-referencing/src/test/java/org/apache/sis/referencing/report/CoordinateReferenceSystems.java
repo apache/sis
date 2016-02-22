@@ -16,8 +16,11 @@
  */
 package org.apache.sis.referencing.report;
 
+import java.util.Arrays;
 import java.util.Locale;
+import java.util.Set;
 import java.util.Map;
+import java.util.HashSet;
 import java.util.HashMap;
 import java.util.TreeMap;
 import java.io.File;
@@ -43,6 +46,7 @@ import org.opengis.referencing.datum.VerticalDatumType;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.test.report.AuthorityCodesReport;
 import org.apache.sis.metadata.iso.citation.Citations;
+import org.apache.sis.internal.referencing.DeprecatedCode;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.IdentifiedObjects;
@@ -95,16 +99,19 @@ public final strictfp class CoordinateReferenceSystems extends AuthorityCodesRep
      */
     private static final Map<String,String> SECTION_TITLES = new HashMap<String,String>();
     static {
+        rd("American Samoa 1962",                                         "American Samoa");
+        rd("American Samoa Vertical Datum of 2002",                       "American Samoa");
         rd("Arc 1950",                                                    "Arc");
         rd("Arc 1960",                                                    "Arc");
         rd("Ancienne Triangulation Francaise (Paris)",                    "Ancienne Triangulation Française");
         rd("Australian Geodetic Datum 1966",                              "Australian Geodetic Datum");
         rd("Australian Geodetic Datum 1984",                              "Australian Geodetic Datum");
         rd("Australian Height Datum (Tasmania)",                          "Australian Height Datum");
-        rd("Azores Central Islands 1948",                                 "Azores Central Islands");
-        rd("Azores Central Islands 1995",                                 "Azores Central Islands");
-        rd("Azores Oriental Islands 1940",                                "Azores Oriental Islands");
-        rd("Azores Oriental Islands 1995",                                "Azores Oriental Islands");
+        rd("Azores Central Islands 1948",                                 "Azores Islands");
+        rd("Azores Central Islands 1995",                                 "Azores Islands");
+        rd("Azores Occidental Islands 1939",                              "Azores Islands");
+        rd("Azores Oriental Islands 1940",                                "Azores Islands");
+        rd("Azores Oriental Islands 1995",                                "Azores Islands");
         rd("Baltic 1980",                                                 "Baltic");
         rd("Baltic 1982",                                                 "Baltic");
         rd("Baltic Sea",                                                  "Baltic");
@@ -114,15 +121,29 @@ public final strictfp class CoordinateReferenceSystems extends AuthorityCodesRep
         rd("Bogota 1975 (Bogota)",                                        "Bogota 1975");
         rd("Carthage (Paris)",                                            "Carthage");
         rd("Bern 1938",                                                   "Bern / CH1903");
+        rd("Cais da Figueirinha - Angra do Heroísmo",                     "Cais");
+        rd("Cais da Madalena",                                            "Cais");
+        rd("Cais da Pontinha - Funchal",                                  "Cais");
+        rd("Cais da Vila - Porto Santo",                                  "Cais");
+        rd("Cais da Vila do Porto",                                       "Cais");
+        rd("Cais das Velas",                                              "Cais");
+        rd("Cayman Brac Vertical Datum 1961",                             "Cayman Islands");
+        rd("Cayman Islands Geodetic Datum 2011",                          "Cayman Islands");
         rd("CH1903",                                                      "Bern / CH1903");
         rd("CH1903+",                                                     "Bern / CH1903");
         rd("CH1903 (Bern)",                                               "Bern / CH1903");
+        rd("Canadian Geodetic Vertical Datum of 1928",                    "Canadian Geodetic Vertical Datum");
+        rd("Canadian Geodetic Vertical Datum of 2013",                    "Canadian Geodetic Vertical Datum");
         rd("Chatham Islands Datum 1971",                                  "Chatham Islands Datum");
         rd("Chatham Islands Datum 1979",                                  "Chatham Islands Datum");
         rd("Corrego Alegre 1961",                                         "Corrego Alegre");
         rd("Corrego Alegre 1970-72",                                      "Corrego Alegre");
+        rd("Danger 1950",                                                 "Saint Pierre et Miquelon 1950");
+        rd("Dansk Normal Nul",                                            "Dansk");
+        rd("Dansk Vertikal Reference 1990",                               "Dansk");
         rd("Dealul Piscului 1930",                                        "Dealul Piscului");
         rd("Dealul Piscului 1970",                                        "Dealul Piscului");
+        rd("Deutsches Haupthoehennetz 1912",                              "Deutsches Haupthoehennetz");
         rd("Deutsches Haupthoehennetz 1985",                              "Deutsches Haupthoehennetz");
         rd("Deutsches Haupthoehennetz 1992",                              "Deutsches Haupthoehennetz");
         rd("Douala 1948",                                                 "Douala");
@@ -145,18 +166,25 @@ public final strictfp class CoordinateReferenceSystems extends AuthorityCodesRep
         rd("European Vertical Reference Frame 2007",                      "European Vertical Reference Frame");
         rd("Fahud Height Datum",                                          "Fahud");
         rd("Fao 1979",                                                    "Fao");
+        rd("Fehmarnbelt Datum 2010",                                      "Fehmarnbelt");
+        rd("Fehmarnbelt Vertical Reference 2010",                         "Fehmarnbelt");
         rd("Faroe Datum 1954",                                            "Faroe Islands");
         rd("Faroe Islands Vertical Reference 2009",                       "Faroe Islands");
         rd("fk89",                                                        "Faroe Islands");
         rd("Fiji 1956",                                                   "Fiji");
         rd("Fiji Geodetic Datum 1986",                                    "Fiji");
+        rd("Gan 1970",                                                    "Gandajika");
+        rd("Grand Cayman Geodetic Datum 1959",                            "Grand Cayman");
+        rd("Grand Cayman Vertical Datum 1954",                            "Grand Cayman");
         rd("Greek (Athens)",                                              "Greek");
         rd("Greek Geodetic Reference System 1987",                        "Greek");
         rd("Guadeloupe 1948",                                             "Guadeloupe");
         rd("Guadeloupe 1951",                                             "Guadeloupe");
         rd("Guadeloupe 1988",                                             "Guadeloupe");
+        rd("Guam 1963",                                                   "Guam");
+        rd("Guam Vertical Datum of 1963",                                 "Guam");
+        rd("Guam Vertical Datum of 2004",                                 "Guam");
         rd("Gunung Segara (Jakarta)",                                     "Gunung Segara");
-        rd("Guyane Francaise",                                            "Centre Spatial Guyanais 1967");   // For a deprecated CRS.
         rd("Hong Kong 1963",                                              "Hong Kong");
         rd("Hong Kong 1963(67)",                                          "Hong Kong");
         rd("Hong Kong 1980",                                              "Hong Kong");
@@ -177,10 +205,10 @@ public final strictfp class CoordinateReferenceSystems extends AuthorityCodesRep
         rd("IGN63 Hiva Oa",                                               "IGN");
         rd("IGN72 Grande Terre",                                          "IGN");
         rd("IGN72 Nuku Hiva",                                             "IGN");
-        rd("IGN78 Corsica",                                               "IGN");
         rd("Indian 1954",                                                 "Indian");
         rd("Indian 1960",                                                 "Indian");
         rd("Indian 1975",                                                 "Indian");
+        rd("Indian Spring Low Water",                                     "Indian");
         rd("International Great Lakes Datum 1955",                        "International Great Lakes Datum");
         rd("International Great Lakes Datum 1985",                        "International Great Lakes Datum");
         rd("International Terrestrial Reference Frame 1988",              "International Terrestrial Reference Frame");
@@ -200,12 +228,17 @@ public final strictfp class CoordinateReferenceSystems extends AuthorityCodesRep
         rd("Jamaica 1875",                                                "Jamaica");
         rd("Jamaica 1969",                                                "Jamaica");
         rd("Jamaica 2001",                                                "Jamaica");
+        rd("Japanese Geodetic Datum 2011 (vertical)",                     "Japanese Geodetic Datum 2011");
+        rd("Japanese Standard Levelling Datum 1969",                      "Japanese Standard Levelling Datum");
+        rd("Japanese Standard Levelling Datum 1972",                      "Japanese Standard Levelling Datum");
         rd("Kalianpur 1880",                                              "Kalianpur");
         rd("Kalianpur 1937",                                              "Kalianpur");
         rd("Kalianpur 1962",                                              "Kalianpur");
         rd("Kalianpur 1975",                                              "Kalianpur");
         rd("Kertau (RSO)",                                                "Kertau");
         rd("Kertau 1968",                                                 "Kertau");
+        rd("KOC Construction Datum",                                      "KOC Construction Datum / Well Datum");
+        rd("KOC Well Datum",                                              "KOC Construction Datum / Well Datum");
         rd("Korean Datum 1985",                                           "Korean Datum");
         rd("Korean Datum 1995",                                           "Korean Datum");
         rd("Kuwait Oil Company",                                          "Kuwait Oil Company / Kuwait Utility");
@@ -213,12 +246,14 @@ public final strictfp class CoordinateReferenceSystems extends AuthorityCodesRep
         rd("Kuwait Utility",                                              "Kuwait Oil Company / Kuwait Utility");
         rd("Lao 1993",                                                    "Lao");
         rd("Lao National Datum 1997",                                     "Lao");
+        rd("Latvia 1992",                                                 "Latvia");
+        rd("Latvian Height System 2000",                                  "Latvia");
         rd("Lisbon 1890",                                                 "Lisbon");
         rd("Lisbon 1890 (Lisbon)",                                        "Lisbon");
         rd("Lisbon 1937",                                                 "Lisbon");
         rd("Lisbon 1937 (Lisbon)",                                        "Lisbon");
-        rd("Cote d'Ivoire",                                               "Locodjo 1965");   // For a deprecated CRS.
-        rd("Madeira 1936",                                                "Porto Santo");    // For a deprecated CRS.
+        rd("Lower Low Water Large Tide",                                  "Low Water");
+        rd("Lowest Astronomic Tide",                                      "Low Water");
         rd("Makassar (Jakarta)",                                          "Makassar");
         rd("Manoca 1962",                                                 "Manoca");
         rd("Martinique 1938",                                             "Martinique");
@@ -226,8 +261,14 @@ public final strictfp class CoordinateReferenceSystems extends AuthorityCodesRep
         rd("Martinique 1987",                                             "Martinique");
         rd("Maupiti 83",                                                  "Maupiti");
         rd("Maupiti SAU 2001",                                            "Maupiti");
+        rd("Mean High Water",                                             "Mean Sea Level");
+        rd("Mean High Water Spring Tides",                                "Mean Sea Level");
+        rd("Mean Higher High Water",                                      "Mean Sea Level");
+        rd("Mean Low Water",                                              "Mean Sea Level");
+        rd("Mean Low Water Spring Tides",                                 "Mean Sea Level");
+        rd("Mean Lower Low Water",                                        "Mean Sea Level");
+        rd("Mean Lower Low Water Spring Tides",                           "Mean Sea Level");
         rd("Missao Hidrografico Angola y Sao Tome 1951",                  "Missao Hidrografico Angola y Sao Tome");
-        rd("Mhast",                                                       "Missao Hidrografico Angola y Sao Tome");
         rd("Mhast (offshore)",                                            "Missao Hidrografico Angola y Sao Tome");
         rd("Mhast (onshore)",                                             "Missao Hidrografico Angola y Sao Tome");
         rd("Militar-Geographische Institut (Ferro)",                      "Militar-Geographische Institut");
@@ -240,20 +281,24 @@ public final strictfp class CoordinateReferenceSystems extends AuthorityCodesRep
         rd("Naparima 1972",                                               "Naparima");
         rd("Nivellement General de la Corse 1948",                        "Nivellement Général Corse / France / Nouvelle-Calédonie / Polynésie Française / Luxembourd / Guyanais");
         rd("Nivellement General de la France - IGN69",                    "Nivellement Général Corse / France / Nouvelle-Calédonie / Polynésie Française / Luxembourd / Guyanais");
+        rd("Nivellement General de la France - IGN78",                    "Nivellement Général Corse / France / Nouvelle-Calédonie / Polynésie Française / Luxembourd / Guyanais");
         rd("Nivellement General de la France - Lallemand",                "Nivellement Général Corse / France / Nouvelle-Calédonie / Polynésie Française / Luxembourd / Guyanais");
         rd("Nivellement General de Nouvelle Caledonie",                   "Nivellement Général Corse / France / Nouvelle-Calédonie / Polynésie Française / Luxembourd / Guyanais");
         rd("Nivellement General de Polynesie Francaise",                  "Nivellement Général Corse / France / Nouvelle-Calédonie / Polynésie Française / Luxembourd / Guyanais");
         rd("Nivellement General du Luxembourg",                           "Nivellement Général Corse / France / Nouvelle-Calédonie / Polynésie Française / Luxembourd / Guyanais");
         rd("Nivellement General Guyanais 1977",                           "Nivellement Général Corse / France / Nouvelle-Calédonie / Polynésie Française / Luxembourd / Guyanais");
         rd("NGO 1948 (Oslo)",                                             "NGO 1948");
-        rd("NAD27 Michigan",                                              "North American Datum 1927 — Michigan");
         rd("NAD83 (High Accuracy Reference Network)",                     "North American Datum 1983 — High Accuracy Reference Network");
         rd("NAD83 (National Spatial Reference System 2007)",              "North American Datum 1983 — National Spatial Reference System 2007");
         rd("NAD83 Canadian Spatial Reference System",                     "North American Datum 1983 — Canadian Spatial Reference System");
-        rd("Nord Sahara 1959 (Paris)",                                    "Nord Sahara 1959");
-        rd("Nord de Guerre (Paris)",                                      "Ancienne Triangulation Française");
         rd("Nouvelle Triangulation Francaise",                            "Nouvelle Triangulation Française");
         rd("Nouvelle Triangulation Francaise (Paris)",                    "Nouvelle Triangulation Française");
+        rd("NAD83 (Continuously Operating Reference Station 1996)",       "North American Datum 1983 — Continuously Operating Reference Station 1996");       // For better sort order.
+        rd("NAD83 (National Spatial Reference System 2011)",              "North American Datum 1983 — National Spatial Reference System 2011");
+        rd("NAD83 (National Spatial Reference System MA11)",              "North American Datum 1983 — National Spatial Reference System MA11 / PA11");
+        rd("NAD83 (National Spatial Reference System PA11)",              "North American Datum 1983 — National Spatial Reference System MA11 / PA11");
+        rd("Norway Normal Null 1954",                                     "Norway Normal Null");
+        rd("Norway Normal Null 2000",                                     "Norway Normal Null");
         rd("Ordnance Datum Newlyn (Orkney Isles)",                        "Ordnance Datum Newlyn");
         rd("OSGB 1936",                                                   "OSGB");
         rd("OSGB 1970 (SN)",                                              "OSGB");
@@ -264,9 +309,10 @@ public final strictfp class CoordinateReferenceSystems extends AuthorityCodesRep
         rd("Pitcairn 2006",                                               "Pitcairn");
         rd("Porto Santo 1936",                                            "Porto Santo");
         rd("Porto Santo 1995",                                            "Porto Santo");
-        rd("Posiciones Geodesicas Argentinas 1994",                       "Posiciones Geodesicas Argentinas");
-        rd("Posiciones Geodesicas Argentinas 1998",                       "Posiciones Geodesicas Argentinas");
-        rd("Posiciones Geodesicas Argentinas 2007",                       "Posiciones Geodesicas Argentinas");
+        rd("Posiciones Geodésicas Argentinas 1994",                       "Posiciones Geodésicas Argentinas");
+        rd("Posiciones Geodésicas Argentinas 1998",                       "Posiciones Geodésicas Argentinas");
+        rd("Posiciones Geodésicas Argentinas 2007",                       "Posiciones Geodésicas Argentinas");
+        rd("Puerto Rico Vertical Datum of 2002",                          "Puerto Rico");
         rd("Qatar 1948",                                                  "Qatar");
         rd("Qatar 1974",                                                  "Qatar");
         rd("Qatar National Datum 1995",                                   "Qatar");
@@ -281,8 +327,8 @@ public final strictfp class CoordinateReferenceSystems extends AuthorityCodesRep
         rd("Rikets hojdsystem 1900",                                      "Rikets hojdsystem");
         rd("Rikets hojdsystem 1970",                                      "Rikets hojdsystem");
         rd("Rikets hojdsystem 2000",                                      "Rikets hojdsystem");
-        rd("Samboja",                                                     "Gunung Segara");      // For a deprecated CRS.
-        rd("Segora",                                                      "Gunung Segara");      // For a deprecated CRS.
+        rd("Santa Cruz da Graciosa",                                      "Santa Cruz");
+        rd("Santa Cruz das Flores",                                       "Santa Cruz");
         rd("Sierra Leone 1968",                                           "Sierra Leone");
         rd("Sierra Leone Colony 1924",                                    "Sierra Leone");
         rd("SIRGAS-Chile",                                                "SIRGAS");
@@ -293,10 +339,9 @@ public final strictfp class CoordinateReferenceSystems extends AuthorityCodesRep
         rd("Sri Lanka Datum 1999",                                        "Sri Lanka");
         rd("Sri Lanka Vertical Datum",                                    "Sri Lanka");
         rd("Stockholm 1938 (Stockholm)",                                  "Stockholm 1938");
-        rd("Sudan",                                                       "Adindan");            // For a deprecated CRS.
-        rd("System Jednotne Trigonometricke Site Katastralni (Ferro)",    "System Jednotne Trigonometricke Site Katastralni");
-        rd("System Jednotne Trigonometricke Site Katastralni/05",         "System Jednotne Trigonometricke Site Katastralni");
-        rd("System Jednotne Trigonometricke Site Katastralni/05 (Ferro)", "System Jednotne Trigonometricke Site Katastralni");
+        rd("Systém Jednotné Trigonometrické Síte Katastrální (Ferro)",    "Systém Jednotné Trigonometrické Síte Katastrální");
+        rd("Systém Jednotné Trigonometrické Síte Katastrální/05",         "Systém Jednotné Trigonometrické Síte Katastrální");
+        rd("Systém Jednotné Trigonometrické Síte Katastrální/05 (Ferro)", "Systém Jednotné Trigonometrické Síte Katastrální");
         rd("Tahaa 54",                                                    "Tahaa");
         rd("Tahaa SAU 2001",                                              "Tahaa");
         rd("Tahiti 52",                                                   "Tahiti");
@@ -304,8 +349,8 @@ public final strictfp class CoordinateReferenceSystems extends AuthorityCodesRep
         rd("Taiwan Datum 1967",                                           "Taiwan Datum");
         rd("Taiwan Datum 1997",                                           "Taiwan Datum");
         rd("Tananarive 1925 (Paris)",                                     "Tananarive 1925");
+        rd("Tokyo 1892",                                                  "Tokyo");
         rd("Viti Levu 1912",                                              "Viti Levu");
-        rd("Viti Levu 1916",                                              "Viti Levu");          // For a deprecated CRS.
         rd("Voirol 1875",                                                 "Voirol");
         rd("Voirol 1875 (Paris)",                                         "Voirol");
         rd("Voirol 1879",                                                 "Voirol");
@@ -316,6 +361,13 @@ public final strictfp class CoordinateReferenceSystems extends AuthorityCodesRep
     }
 
     /**
+     * The datums from the above list which are deprecated, but that we do not want to replace by the non-deprecated
+     * datum. We disable some replacements when they allow better sorting of deprecated CRS.
+     */
+    private static final Set<String> KEEP_DEPRECATED_DATUM = new HashSet<String>(Arrays.asList(
+        "Dealul Piscului 1970"));           // Datum does not exist but is an alias for S-42 in Romania.
+
+    /**
      * Shortcut for {@link #SECTION_TITLES} initialization.
      * {@code "rd"} stands for "rename datum".
      */
@@ -324,8 +376,23 @@ public final strictfp class CoordinateReferenceSystems extends AuthorityCodesRep
     }
 
     /**
-     * The keywords before which to cut the CRS names. The main intend here is to preserve the
-     * "far west", "west", "central west", "central", "central east", "east", "far east" order.
+     * Words to ignore in a datum name in order to detect if a CRS name is the acronym of the datum name.
+     */
+    private static final Set<String> DATUM_WORDS_TO_IGNORE = new HashSet<String>(Arrays.asList(
+            "of",           // VIVD:   Virgin Islands Vertical Datum of 2009
+            "de",           // RRAF:   Reseau de Reference des Antilles Francaises
+            "des",          // RGAF:   Reseau Geodesique des Antilles Francaises
+            "la",           // RGR:    Reseau Geodesique de la Reunion
+            "et",           // RGSPM:  Reseau Geodesique de Saint Pierre et Miquelon
+            "para",         // SIRGAS: Sistema de Referencia Geocentrico para America del Sur 1995
+            "del",          // SIRGAS: Sistema de Referencia Geocentrico para America del Sur 1995
+            "las",          // SIRGAS: Sistema de Referencia Geocentrico para las AmericaS 2000
+            "Tides"));      // MLWS:   Mean Low Water Spring Tides
+
+    /**
+     * The keywords before which to cut the CRS names when sorting by alphabetical order.
+     * The main intend here is to preserve the "far west", "west", "central west", "central",
+     * "central east", "east", "far east" order.
      */
     private static final String[] CUT_BEFORE = {
         " far west",        // "MAGNA-SIRGAS / Colombia Far West zone"
@@ -339,7 +406,7 @@ public final strictfp class CoordinateReferenceSystems extends AuthorityCodesRep
     };
 
     /**
-     * The keywords after which to cut the CRS names.
+     * The keywords after which to cut the CRS names when sorting by alphabetical order.
      *
      * Note: alphabetical sorting of Roman numbers work for zones from I to VIII inclusive.
      * If there is more zones (for example with "JGD2000 / Japan Plane Rectangular"), then
@@ -372,17 +439,24 @@ public final strictfp class CoordinateReferenceSystems extends AuthorityCodesRep
     private final CRSAuthorityFactory factory;
 
     /**
+     * The datum from the {@link #SECTION_TITLES} that we didn't found after we processed all codes.
+     * Used for verification purpose only.
+     */
+    private final Set<String> unusedDatumMapping;
+
+    /**
      * Creates a new instance.
      */
     private CoordinateReferenceSystems() throws FactoryException {
         super(null);
+        unusedDatumMapping = new HashSet<String>(SECTION_TITLES.keySet());
         properties.setProperty("TITLE",           "Apache SIS™ Coordinate Reference System (CRS) codes");
         properties.setProperty("PRODUCT.NAME",    "Apache SIS™");
         properties.setProperty("PRODUCT.VERSION", getVersion());
         properties.setProperty("PRODUCT.URL",     "http://sis.apache.org");
         properties.setProperty("JAVADOC.GEOAPI",  "http://www.geoapi.org/snapshot/javadoc");
         properties.setProperty("FACTORY.NAME",    "EPSG");
-        properties.setProperty("FACTORY.VERSION", "7.9");
+        properties.setProperty("FACTORY.VERSION", "8.9");
         properties.setProperty("FACTORY.VERSION.SUFFIX", ", together with other sources");
         properties.setProperty("DESCRIPTION", "<p><b>Notation:</b></p>\n" +
                 "<ul>\n" +
@@ -408,6 +482,14 @@ public final strictfp class CoordinateReferenceSystems extends AuthorityCodesRep
         final CoordinateReferenceSystems writer = new CoordinateReferenceSystems();
         final File file = writer.write(new File("CoordinateReferenceSystems.html"));
         System.out.println("Created " + file.getAbsolutePath());
+        if (!writer.unusedDatumMapping.isEmpty()) {
+            System.out.println();
+            System.out.println("WARNING: the following datums were expected but not found. Maybe their spelling changed?");
+            for (final String name : writer.unusedDatumMapping) {
+                System.out.print("  - ");
+                System.out.println(name);
+            }
+        }
     }
 
     /**
@@ -467,6 +549,66 @@ public final strictfp class CoordinateReferenceSystems extends AuthorityCodesRep
     }
 
     /**
+     * Omits the trailing number, if any.
+     * For example if the given name is "Abidjan 1987", then this method returns "Abidjan".
+     */
+    private static String omitTrailingNumber(String name) {
+        int i = CharSequences.skipTrailingWhitespaces(name, 0, name.length());
+        while (i != 0) {
+            final char c = name.charAt(--i);
+            if (c < '0' || c > '9') {
+                name = name.substring(0, CharSequences.skipTrailingWhitespaces(name, 0, i+1));
+                break;
+            }
+        }
+        return name;
+    }
+
+    /**
+     * If the first word of the CRS name seems to be an acronym of the datum name,
+     * puts that acronym in a {@code <abbr title="datum name">...</abbr>} element.
+     */
+    static String insertAbbreviationTitle(final String crsName, final String datumName) {
+        int s = crsName.indexOf(' ');
+        if (s < 0) s = crsName.length();
+        int p = crsName.indexOf('(');
+        if (p >= 0 && p < s) s = p;
+        p = datumName.indexOf('(');
+        if (p < 0) p = datumName.length();
+        final String acronym = crsName.substring(0, s);
+        final String ar = omitTrailingNumber(acronym);
+        final String dr = omitTrailingNumber(datumName.substring(0, p));
+        if (dr.startsWith(ar)) {
+            return crsName;                                 // Avoid redudancy between CRS name and datum name.
+        }
+        /*
+         * If the first CRS word does not seem to be an acronym of the datum name, verify
+         * if there is some words that we should ignore in the datum name and try again.
+         */
+        if (!CharSequences.isAcronymForWords(ar, dr)) {
+            final String[] words = (String[]) CharSequences.split(dr, ' ');
+            int n = 0;
+            for (final String word : words) {
+                if (!DATUM_WORDS_TO_IGNORE.contains(word)) {
+                    words[n++] = word;
+                }
+            }
+            if (n == words.length || n < 2) {
+                return crsName;
+            }
+            final StringBuilder b = new StringBuilder();
+            for (int i=0; i<n; i++) {
+                if (i != 0) b.append(' ');
+                b.append(words[i]);
+            }
+            if (!CharSequences.isAcronymForWords(ar, b)) {
+                return crsName;
+            }
+        }
+        return "<abbr title=\"" + datumName + "\">" + acronym + "</abbr>" + crsName.substring(s);
+    }
+
+    /**
      * Invoked when a CRS has been successfully created. This method modifies the default
      * {@link org.opengis.test.report.AuthorityCodesReport.Row} attribute values created
      * by GeoAPI.
@@ -477,36 +619,51 @@ public final strictfp class CoordinateReferenceSystems extends AuthorityCodesRep
      */
     @Override
     protected Row createRow(final String code, final IdentifiedObject object) {
-        if (code.equals("EPSG:5804")) {
-            System.out.println("");
-        }
         final Row row = super.createRow(code, object);
         final CoordinateReferenceSystem crs = (CoordinateReferenceSystem) object;
         final CoordinateReferenceSystem crsXY = AbstractCRS.castOrCopy(crs).forConvention(AxesConvention.RIGHT_HANDED);
         if (!Utilities.deepEquals(crs.getCoordinateSystem(), crsXY.getCoordinateSystem(), ComparisonMode.IGNORE_METADATA)) {
             row.annotation = YX_ORDER;
         }
+        CoordinateReferenceSystem replacement = crs;
         row.remark = getRemark(crs);
+        /*
+         * If the object is deprecated, find the replacement.
+         * We do not take the whole comment because it may be pretty long.
+         */
         if (object instanceof Deprecable) {
             row.isDeprecated = ((Deprecable) object).isDeprecated();
-        }
-        /*
-         * If the object is deprecated, try to find the reason.
-         * Don't take the whole comment, because it may be pretty long.
-         */
-        if (row.isDeprecated) {
-            InternationalString i18n = object.getRemarks();
-            for (final Identifier id : object.getIdentifiers()) {
-                if (id instanceof Deprecable && ((Deprecable) id).isDeprecated()) {
-                    i18n = ((Deprecable) id).getRemarks();
-                    break;
+            if (row.isDeprecated) {
+                String replacedBy = null;
+                InternationalString i18n = object.getRemarks();
+                for (final Identifier id : object.getIdentifiers()) {
+                    if (id instanceof Deprecable && ((Deprecable) id).isDeprecated()) {
+                        i18n = ((Deprecable) id).getRemarks();
+                        if (id instanceof DeprecatedCode) {
+                            replacedBy = ((DeprecatedCode) id).replacedBy;
+                        }
+                        break;
+                    }
+                }
+                if (i18n != null) {
+                    row.remark = i18n.toString(getLocale());
+                }
+                /*
+                 * If a replacement exists for a deprecated CRS, use the datum of the replacement instead than
+                 * the datum of the deprecated CRS for determining in which section to put the CRS. The reason
+                 * is that some CRS are deprecated because they were associated to the wrong datum, in which
+                 * case the deprecated CRS would appear in the wrong section if we do not apply this correction.
+                 */
+                if (!KEEP_DEPRECATED_DATUM.contains(CRS.getSingleComponents(crs).get(0).getDatum().getName().getCode())) {
+                    if (replacedBy != null) try {
+                        replacement = factory.createCoordinateReferenceSystem("EPSG:" + replacedBy);
+                    } catch (FactoryException e) {
+                        // Ignore - keep the datum of the deprecated object.
+                    }
                 }
             }
-            if (i18n != null) {
-                row.remark = i18n.toString(getLocale());
-            }
         }
-        ((ByName) row).setup(CRS.getSingleComponents(crs).get(0).getDatum());
+        ((ByName) row).setup(CRS.getSingleComponents(replacement).get(0).getDatum(), unusedDatumMapping);
         return row;
     }
 
@@ -532,15 +689,10 @@ public final strictfp class CoordinateReferenceSystems extends AuthorityCodesRep
             // because those authority codes need parameters.
             row.hasError = false;
             row.remark = "Projected";
-            ((ByName) row).setup(CommonCRS.WGS84.datum());
+            ((ByName) row).setup(CommonCRS.WGS84.datum(), unusedDatumMapping);
         } else {
-            String message = exception.getMessage();
-            if (message.contains("Unable to format units in UCUM")) {
-                // Simplify a very long and badly formatted message.
-                message = "Unable to format units in UCUM";
-            }
-            row.remark = message;
-            ((ByName) row).setup(null);
+            row.remark = exception.getMessage();
+            ((ByName) row).setup(null, unusedDatumMapping);
         }
         return row;
     }
@@ -554,6 +706,9 @@ public final strictfp class CoordinateReferenceSystems extends AuthorityCodesRep
     protected Row newRow() {
         return new ByName();
     }
+
+
+
 
     /**
      * A row with an natural ordering that use the first part of the name before to use the authority code.
@@ -589,20 +744,24 @@ public final strictfp class CoordinateReferenceSystems extends AuthorityCodesRep
         /**
          * Computes the {@link #reducedName} field value.
          */
-        final void setup(final Datum datum) {
+        final void setup(final Datum datum, final Set<String> unusedDatumMapping) {
+            final String datumName;
             if (datum != null) {
-                section = datum.getName().getCode();
+                datumName = datum.getName().getCode();
             } else {
                 // Temporary patch (TODO: remove after we implemented the missing methods in SIS)
                 if (name.startsWith("NSIDC EASE-Grid")) {
-                    section = "Unspecified datum";
+                    datumName = "Unspecified datum";
                 } else if (code.equals("EPSG:2163")) {
-                    section = "Unspecified datum";
+                    datumName = "Unspecified datum";
                 } else if (code.equals("EPSG:5818")) {
-                    section = "Seismic bin grid datum";
+                    datumName = "Seismic bin grid datum";
+                } else {
+                    datumName = null;       // Keep ordering based on the name.
                 }
             }
-            section = JDK8.getOrDefault(SECTION_TITLES, section, section);
+            section = JDK8.getOrDefault(SECTION_TITLES, datumName, datumName);
+            unusedDatumMapping.remove(datumName);
             /*
              * Get a copy of the name in all lower case.
              */
@@ -631,11 +790,15 @@ public final strictfp class CoordinateReferenceSystems extends AuthorityCodesRep
             if (s != 0) b.setLength(s);
             uniformizeZoneNumber(b);
             reducedName = b.toString();
+            if (datumName != null) {
+                name = insertAbbreviationTitle(name, datumName);
+            }
         }
 
         /**
          * If the string ends with a number optionally followed by "N" or "S", replaces the hemisphere
          * symbol by a sign and makes sure that the number uses at least 3 digits (e.g. "2N" → "+002").
+         * This string will be used for better sorting order.
          */
         private static void uniformizeZoneNumber(final StringBuilder b) {
             if (b.indexOf("/") < 0) {

@@ -84,13 +84,7 @@ public final strictfp class CRSTest extends TestCase {
         verifyForCode(CommonCRS.WGS72 .geographic3D(), "EPSG:4985");
         verifyForCode(CommonCRS.ETRS89.geographic3D(), "EPSG:4937");
         verifyForCode(CommonCRS.Vertical.MEAN_SEA_LEVEL.crs(), "EPSG:5714");
-        /*
-         * Following test is skipped when using the EPSG factory because EPSG uses
-         * the "Gravity-related depth" axis name while ISO 19111 mandates "Depth".
-         */
-        if (EPSGFactoryFallback.PENDING_NEXT_EPSG) {
-            verifyForCode(CommonCRS.Vertical.DEPTH.crs(), "EPSG:5715");
-        }
+        verifyForCode(CommonCRS.Vertical.DEPTH.crs(), "EPSG:5715");
     }
 
     /**

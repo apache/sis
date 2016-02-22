@@ -24,7 +24,7 @@ package org.apache.sis.internal.system;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5
- * @version 0.6
+ * @version 0.7
  * @module
  */
 public final class Semaphores {
@@ -51,6 +51,16 @@ public final class Semaphores {
      * a XML document with JAXB, when we want to omit empty XML blocks.
      */
     public static final byte NULL_COLLECTION = 4;
+
+    /**
+     * A flag to indicate that a parameter value outside its domain of validity should not cause an exception
+     * to be thrown. This flag is set only when creating a deprecated operation from the EPSG database.
+     * Typically the operation is deprecated precisely because it used invalid parameter values,
+     * but SIS should still be able to create those deprecated objects if a user request them.
+     *
+     * <p><b>Example:</b> EPSG:3752 was a Mercator (variant A) projection but set the latitude of origin to 41°S.</p>
+     */
+    public static final byte SUSPEND_PARAMETER_CHECK = 8;
 
     /**
      * The flags per running thread.

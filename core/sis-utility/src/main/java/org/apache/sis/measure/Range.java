@@ -22,6 +22,7 @@ import java.util.FormattableFlags;
 import java.io.Serializable;
 import javax.measure.unit.Unit;
 import org.apache.sis.internal.util.Utilities;
+import org.apache.sis.internal.util.PatchedUnitFormat;
 import org.apache.sis.util.collection.CheckedContainer;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Emptiable;
@@ -676,9 +677,13 @@ public class Range<E extends Comparable<? super E>> implements CheckedContainer<
         }
         final Unit<?> unit = unit();
         if (unit != null) {
-            // No need to check if we should omit the space because Unit.toString()
-            // uses UCUM format, so we will never have symbol like the ° one.
-            buffer.append(' ').append(unit);
+            final String symbol = PatchedUnitFormat.toString(unit);
+            if (!symbol.isEmpty()) {
+                if (Character.isLetterOrDigit(symbol.codePointAt(0))) {
+                    buffer.append(' ');
+                }
+                buffer.append(symbol);
+            }
         }
         return buffer.toString();
     }
