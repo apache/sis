@@ -87,6 +87,8 @@ public final strictfp class EPSGFactoryFallbackTest extends TestCase {
         verifyCreate(CommonCRS.WGS84 .geocentric(),            "4978");
         verifyCreate(CommonCRS.WGS72 .geocentric(),            "4984");
         verifyCreate(CommonCRS.ETRS89.geocentric(),            "4936");
+        verifyCreate(CommonCRS.WGS84 .geographic(),       "EPSG:4326");
+        verifyCreate(CommonCRS.WGS72 .geographic(),      "EPSG::4322");
         verifyCreate(CommonCRS.WGS84 .geographic3D(),          "4979");
         verifyCreate(CommonCRS.WGS72 .geographic3D(),          "4985");
         verifyCreate(CommonCRS.ETRS89.geographic3D(),          "4937");
