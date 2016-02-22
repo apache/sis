@@ -35,7 +35,9 @@ import org.apache.sis.referencing.factory.GeodeticAuthorityFactory;
 import org.apache.sis.internal.referencing.provider.TransverseMercator;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.util.iso.SimpleInternationalString;
+import org.apache.sis.util.iso.DefaultNameSpace;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Debug;
 
 
@@ -150,7 +152,16 @@ final class EPSGFactoryFallback extends GeodeticAuthorityFactory implements CRSA
     public IdentifiedObject createObject(final String code) throws NoSuchAuthorityCodeException {
         NumberFormatException cause = null;
         try {
-            final int n = Integer.parseInt(code);
+            /*
+             * Parse the value after the last ':'. We do not bother to verify if the part before ':' is legal
+             * (e.g. "EPSG:4326", "EPSG::4326", "urn:ogc:def:crs:epsg::4326", etc.) because this analysis has
+             * already be done by MultiAuthoritiesFactory. We nevertheless skip the prefix in case this factory
+             * is used directly (not through MultiAuthoritiesFactory), which should be rare. The main case is
+             * when using the factory returned by AuthorityFactories.fallback(…).
+             */
+            final int n = Integer.parseInt(CharSequences.trimWhitespaces(code,
+                            code.lastIndexOf(DefaultNameSpace.DEFAULT_SEPARATOR) + 1,
+                            code.length()).toString());
             for (final CommonCRS crs : CommonCRS.values()) {
                 if (n == crs.geographic) return crs.geographic();
                 if (n == crs.geocentric) return crs.geocentric();
