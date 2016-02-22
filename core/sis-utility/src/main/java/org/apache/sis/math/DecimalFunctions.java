@@ -441,8 +441,10 @@ public final class DecimalFunctions extends Static {
      *   <li>Otherwise this method returns {@code fractionDigits}.</li>
      * </ul>
      *
-     * Examples:
+     * <div class="note"><b>Note:</b>
+     * The threshold of 4 trailing fraction digits is arbitrary and may change in any future SIS version.</div>
      *
+     * <div class="note"><b>Examples:</b>
      * <ul>
      *   <li>{@code fractionDigitsForValue(179.12499999999824)} returns 14,
      *       the amount of digits after the decimal separator.</li>
@@ -455,9 +457,7 @@ public final class DecimalFunctions extends Static {
      *   <li>{@code fractionDigitsForValue(179.12499997999999, 3)} returns 14 because rounding the 3 last digits
      *       results in 179.12499997000. The condition for 4 trailing zero fraction digits is not meet.</li>
      * </ul>
-     *
-     * <div class="note"><b>Note:</b>
-     * The threshold of 4 trailing fraction digits is arbitrary and may change in any future SIS version.</div>
+     * </div>
      *
      * @param  value The value for which to get the number of significant fraction fraction digits minus rounding error.
      * @param  uncertainDigits Number of trailing fraction digits which may be rounding error artefacts.

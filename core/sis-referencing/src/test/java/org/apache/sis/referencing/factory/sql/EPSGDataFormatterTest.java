@@ -14,17 +14,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.jdk8;
+package org.apache.sis.referencing.factory.sql;
+
+import org.apache.sis.test.TestCase;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
 
 
 /**
- * Placeholder for the {@link java.util.function.LongConsumer} interface.
+ * Tests {@link EPSGDataFormatter}.
+ *
+ * @author  Martin Desruisseaux (IRD, Geomatys)
+ * @since   0.7
+ * @version 0.7
+ * @module
  */
-public interface LongConsumer {
+public final strictfp class EPSGDataFormatterTest extends TestCase {
     /**
-     * Process the given value.
-     *
-     * @param value The input value.
+     * Tests the {@link EPSGDataFormatter#removeLF(StringBuilder)} method.
      */
-    void accept(long value);
+    @Test
+    public void testRemoveLF() {
+        final StringBuilder buffer = new StringBuilder(" \nOne,\nTwo, \n Three Four\nFive \nSix \n");
+        EPSGDataFormatter.removeLF(buffer);
+        assertEquals("One,Two,Three Four Five Six", buffer.toString());
+    }
 }

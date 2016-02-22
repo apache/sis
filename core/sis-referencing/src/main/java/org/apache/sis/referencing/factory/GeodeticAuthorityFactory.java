@@ -88,7 +88,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      *   │  └─ Function ……………………………………… Browse
      *   └─ Online resource (2 of 2)
      *      ├─ Linkage ………………………………………… jdbc:derby:/my/path/to/SIS_DATA/Databases/SpatialMetadata
-     *      ├─ Description ……………………………… EPSG dataset version 8.8 on “Apache Derby Embedded JDBC Driver” version 10.12.
+     *      ├─ Description ……………………………… EPSG dataset version 8.9 on “Apache Derby Embedded JDBC Driver” version 10.12.
      *      └─ Function ……………………………………… Connection
      * }
      *
@@ -103,7 +103,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
 
     /**
      * Returns all namespaces recognized by this factory. Those namespaces can appear before codes in
-     * calls to {@code createFoo(String)} methods, for example {@code "EPSG"} in {@code "EPSG::4326"}.
+     * calls to {@code createFoo(String)} methods, for example {@code "EPSG"} in {@code "EPSG:4326"}.
      * Namespaces are case-insensitive.
      *
      * <p>The namespaces are closely related to the {@linkplain #getAuthority() authority}. Often the namespace is
@@ -115,7 +115,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      *   <li>The {@link org.apache.sis.referencing.factory.sql.EPSGFactory} authority identifier is {@code "EPSG"}
      *       and its {@code getCodeSpaces()} method returns a set containing {@code "EPSG"}. So in this example,
      *       authority and namespace match. That namespace value means that {@code EPSGFactory.createFoo(String)}
-     *       methods accept both {@code "EPSG::4326"} (case-insensitive) and {@code "4326"} codes as argument.</li>
+     *       methods accept both {@code "EPSG:4326"} (case-insensitive) and {@code "4326"} codes as argument.</li>
      *
      *   <li>The {@link org.apache.sis.referencing.factory.sql.EPSGDataAccess} authority identifier is {@code "EPSG"}
      *       but its {@code getCodeSpaces()} method returns an empty set. This means that despite the EPSG authority,
@@ -198,15 +198,15 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * Two frequently used authorities are "CRS" and "EPSG", which include the following codes:
      *
      * <table class="sis" summary="Authority codes examples">
-     *   <tr><th>Code</th>       <th>Type</th>          <th>Description</th></tr>
-     *   <tr><td>CRS:84</td>     <td>Geographic</td>    <td>Like EPSG::4326 except for (<var>longitude</var>, <var>latitude</var>) axis order</td></tr>
-     *   <tr><td>EPSG::4326</td> <td>Geographic</td>    <td>World Geodetic System 1984</td></tr>
-     *   <tr><td>EPSG::4979</td> <td>Geographic 3D</td> <td>World Geodetic System 1984</td></tr>
-     *   <tr><td>EPSG::4978</td> <td>Geocentric</td>    <td>World Geodetic System 1984</td></tr>
-     *   <tr><td>EPSG::3395</td> <td>Projected</td>     <td>WGS 84 / World Mercator</td></tr>
-     *   <tr><td>EPSG::5714</td> <td>Vertical</td>      <td>Mean Sea Level height</td></tr>
-     *   <tr><td>EPSG::6349</td> <td>Compound</td>      <td>NAD83(2011) + NAVD88 height</td></tr>
-     *   <tr><td>EPSG::5800</td> <td>Engineering</td>   <td>Astra Minas Grid</td></tr>
+     *   <tr><th>Code</th>       <th>Type</th>         <th>Description</th></tr>
+     *   <tr><td>CRS:84</td>     <td>Geographic</td>   <td>Like EPSG:4326 except for (<var>longitude</var>, <var>latitude</var>) axis order</td></tr>
+     *   <tr><td>EPSG:4326</td> <td>Geographic</td>    <td>World Geodetic System 1984</td></tr>
+     *   <tr><td>EPSG:4979</td> <td>Geographic 3D</td> <td>World Geodetic System 1984</td></tr>
+     *   <tr><td>EPSG:4978</td> <td>Geocentric</td>    <td>World Geodetic System 1984</td></tr>
+     *   <tr><td>EPSG:3395</td> <td>Projected</td>     <td>WGS 84 / World Mercator</td></tr>
+     *   <tr><td>EPSG:5714</td> <td>Vertical</td>      <td>Mean Sea Level height</td></tr>
+     *   <tr><td>EPSG:6349</td> <td>Compound</td>      <td>NAD83(2011) + NAVD88 height</td></tr>
+     *   <tr><td>EPSG:5800</td> <td>Engineering</td>   <td>Astra Minas Grid</td></tr>
      * </table></div>
      *
      * <div class="section">Default implementation</div>
@@ -238,20 +238,20 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * Two frequently used authorities are "CRS" and "EPSG", which include the following codes:
      *
      * <table class="sis" summary="Authority codes examples">
-     *   <tr><th>Code</th>       <th>Type</th>          <th>Description</th></tr>
-     *   <tr><td>CRS:27</td>     <td>Geographic</td>    <td>Like EPSG::4267 except for (<var>longitude</var>, <var>latitude</var>) axis order</td></tr>
-     *   <tr><td>CRS:83</td>     <td>Geographic</td>    <td>Like EPSG::4269 except for (<var>longitude</var>, <var>latitude</var>) axis order</td></tr>
-     *   <tr><td>CRS:84</td>     <td>Geographic</td>    <td>Like EPSG::4326 except for (<var>longitude</var>, <var>latitude</var>) axis order</td></tr>
-     *   <tr><td>EPSG::4322</td> <td>Geographic</td>    <td>World Geodetic System 1972</td></tr>
-     *   <tr><td>EPSG::4985</td> <td>Geographic 3D</td> <td>World Geodetic System 1972</td></tr>
-     *   <tr><td>EPSG::4326</td> <td>Geographic</td>    <td>World Geodetic System 1984</td></tr>
-     *   <tr><td>EPSG::4979</td> <td>Geographic 3D</td> <td>World Geodetic System 1984</td></tr>
-     *   <tr><td>EPSG::4267</td> <td>Geographic</td>    <td>North American Datum 1927</td></tr>
-     *   <tr><td>EPSG::4269</td> <td>Geographic</td>    <td>North American Datum 1983</td></tr>
-     *   <tr><td>EPSG::4230</td> <td>Geographic</td>    <td>European Datum 1950</td></tr>
-     *   <tr><td>EPSG::4258</td> <td>Geographic</td>    <td>European Terrestrial Reference Frame 1989</td></tr>
-     *   <tr><td>EPSG::4937</td> <td>Geographic 3D</td> <td>European Terrestrial Reference Frame 1989</td></tr>
-     *   <tr><td>EPSG::4047</td> <td>Geographic</td>    <td>GRS 1980 Authalic Sphere</td></tr>
+     *   <tr><th>Code</th>      <th>Type</th>          <th>Description</th></tr>
+     *   <tr><td>CRS:27</td>    <td>Geographic</td>    <td>Like EPSG:4267 except for (<var>longitude</var>, <var>latitude</var>) axis order</td></tr>
+     *   <tr><td>CRS:83</td>    <td>Geographic</td>    <td>Like EPSG:4269 except for (<var>longitude</var>, <var>latitude</var>) axis order</td></tr>
+     *   <tr><td>CRS:84</td>    <td>Geographic</td>    <td>Like EPSG:4326 except for (<var>longitude</var>, <var>latitude</var>) axis order</td></tr>
+     *   <tr><td>EPSG:4322</td> <td>Geographic</td>    <td>World Geodetic System 1972</td></tr>
+     *   <tr><td>EPSG:4985</td> <td>Geographic 3D</td> <td>World Geodetic System 1972</td></tr>
+     *   <tr><td>EPSG:4326</td> <td>Geographic</td>    <td>World Geodetic System 1984</td></tr>
+     *   <tr><td>EPSG:4979</td> <td>Geographic 3D</td> <td>World Geodetic System 1984</td></tr>
+     *   <tr><td>EPSG:4267</td> <td>Geographic</td>    <td>North American Datum 1927</td></tr>
+     *   <tr><td>EPSG:4269</td> <td>Geographic</td>    <td>North American Datum 1983</td></tr>
+     *   <tr><td>EPSG:4230</td> <td>Geographic</td>    <td>European Datum 1950</td></tr>
+     *   <tr><td>EPSG:4258</td> <td>Geographic</td>    <td>European Terrestrial Reference Frame 1989</td></tr>
+     *   <tr><td>EPSG:4937</td> <td>Geographic 3D</td> <td>European Terrestrial Reference Frame 1989</td></tr>
+     *   <tr><td>EPSG:4047</td> <td>Geographic</td>    <td>GRS 1980 Authalic Sphere</td></tr>
      * </table></div>
      *
      * <div class="section">Default implementation</div>
@@ -282,10 +282,10 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * A frequently used authority is "EPSG", which includes the following codes:
      *
      * <table class="sis" summary="Authority codes examples">
-     *   <tr><th>Code</th>       <th>Description</th></tr>
-     *   <tr><td>EPSG::4936</td> <td>European Terrestrial Reference Frame 1989</td></tr>
-     *   <tr><td>EPSG::4978</td> <td>World Geodetic System 1984</td></tr>
-     *   <tr><td>EPSG::4984</td> <td>World Geodetic System 1972</td></tr>
+     *   <tr><th>Code</th>      <th>Description</th></tr>
+     *   <tr><td>EPSG:4936</td> <td>European Terrestrial Reference Frame 1989</td></tr>
+     *   <tr><td>EPSG:4978</td> <td>World Geodetic System 1984</td></tr>
+     *   <tr><td>EPSG:4984</td> <td>World Geodetic System 1972</td></tr>
      * </table></div>
      *
      * <div class="section">Default implementation</div>
@@ -317,10 +317,10 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * Some of them are:
      *
      * <table class="sis" summary="Authority codes examples">
-     *   <tr><th>Code</th>       <th>Description</th></tr>
-     *   <tr><td>EPSG::3034</td> <td>ETRS89 / Lambert Conic Conformal Europe</td></tr>
-     *   <tr><td>EPSG::3395</td> <td>WGS 84 / World Mercator</td></tr>
-     *   <tr><td>EPSG::6350</td> <td>NAD83(2011) / Conus Albers Equal Area</td></tr>
+     *   <tr><th>Code</th>      <th>Description</th></tr>
+     *   <tr><td>EPSG:3034</td> <td>ETRS89 / Lambert Conic Conformal Europe</td></tr>
+     *   <tr><td>EPSG:3395</td> <td>WGS 84 / World Mercator</td></tr>
+     *   <tr><td>EPSG:6350</td> <td>NAD83(2011) / Conus Albers Equal Area</td></tr>
      * </table></div>
      *
      * <div class="section">Default implementation</div>
@@ -349,9 +349,9 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * A frequently used authority is "EPSG", which includes the following codes:
      *
      * <table class="sis" summary="Authority codes examples">
-     *   <tr><th>Code</th>       <th>Description</th></tr>
-     *   <tr><td>EPSG::5715</td> <td>Mean Sea Level depth</td></tr>
-     *   <tr><td>EPSG::5714</td> <td>Mean Sea Level height</td></tr>
+     *   <tr><th>Code</th>      <th>Description</th></tr>
+     *   <tr><td>EPSG:5715</td> <td>Mean Sea Level depth</td></tr>
+     *   <tr><td>EPSG:5714</td> <td>Mean Sea Level height</td></tr>
      * </table></div>
      *
      * <div class="section">Default implementation</div>
@@ -398,9 +398,9 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * A frequently used authority is "EPSG", which includes the following codes:
      *
      * <table class="sis" summary="Authority codes examples">
-     *   <tr><th>Code</th>       <th>Description</th></tr>
-     *   <tr><td>EPSG::6349</td> <td>NAD83(2011) + NAVD88 height</td></tr>
-     *   <tr><td>EPSG::7423</td> <td>ETRS89 + EVRF2007 height</td></tr>
+     *   <tr><th>Code</th>      <th>Description</th></tr>
+     *   <tr><td>EPSG:6349</td> <td>NAD83(2011) + NAVD88 height</td></tr>
+     *   <tr><td>EPSG:7423</td> <td>ETRS89 + EVRF2007 height</td></tr>
      * </table></div>
      *
      * <div class="section">Default implementation</div>
@@ -446,8 +446,8 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * A frequently used authority is "EPSG", which includes the following codes:
      *
      * <table class="sis" summary="Authority codes examples">
-     *   <tr><th>Code</th>       <th>Description</th></tr>
-     *   <tr><td>EPSG::5800</td> <td>Astra Minas Grid</td></tr>
+     *   <tr><th>Code</th>      <th>Description</th></tr>
+     *   <tr><td>EPSG:5800</td> <td>Astra Minas Grid</td></tr>
      * </table></div>
      *
      * <div class="section">Default implementation</div>
@@ -496,12 +496,12 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * A frequently used authority is "EPSG", which contains hundred of datum. Some of them are:
      *
      * <table class="sis" summary="Authority codes examples">
-     *   <tr><th>Code</th>       <th>Type</th>        <th>Description</th></tr>
-     *   <tr><td>EPSG::6326</td> <td>Geodetic</td>    <td>World Geodetic System 1984</td></tr>
-     *   <tr><td>EPSG::6322</td> <td>Geodetic</td>    <td>World Geodetic System 1972</td></tr>
-     *   <tr><td>EPSG::1027</td> <td>Vertical</td>    <td>EGM2008 geoid</td></tr>
-     *   <tr><td>EPSG::5100</td> <td>Vertical</td>    <td>Mean Sea Level</td></tr>
-     *   <tr><td>EPSG::9315</td> <td>Engineering</td> <td>Seismic bin grid datum</td></tr>
+     *   <tr><th>Code</th>      <th>Type</th>        <th>Description</th></tr>
+     *   <tr><td>EPSG:6326</td> <td>Geodetic</td>    <td>World Geodetic System 1984</td></tr>
+     *   <tr><td>EPSG:6322</td> <td>Geodetic</td>    <td>World Geodetic System 1972</td></tr>
+     *   <tr><td>EPSG:1027</td> <td>Vertical</td>    <td>EGM2008 geoid</td></tr>
+     *   <tr><td>EPSG:5100</td> <td>Vertical</td>    <td>Mean Sea Level</td></tr>
+     *   <tr><td>EPSG:9315</td> <td>Engineering</td> <td>Seismic bin grid datum</td></tr>
      * </table></div>
      *
      * <div class="section">Default implementation</div>
@@ -530,11 +530,11 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * A frequently used authority is "EPSG", which contains hundred of datum. Some of them are:
      *
      * <table class="sis" summary="Authority codes examples">
-     *   <tr><th>Code</th>       <th>Description</th></tr>
-     *   <tr><td>EPSG::6326</td> <td>World Geodetic System 1984</td></tr>
-     *   <tr><td>EPSG::6322</td> <td>World Geodetic System 1972</td></tr>
-     *   <tr><td>EPSG::6269</td> <td>North American Datum 1983</td></tr>
-     *   <tr><td>EPSG::6258</td> <td>European Terrestrial Reference System 1989</td></tr>
+     *   <tr><th>Code</th>      <th>Description</th></tr>
+     *   <tr><td>EPSG:6326</td> <td>World Geodetic System 1984</td></tr>
+     *   <tr><td>EPSG:6322</td> <td>World Geodetic System 1972</td></tr>
+     *   <tr><td>EPSG:6269</td> <td>North American Datum 1983</td></tr>
+     *   <tr><td>EPSG:6258</td> <td>European Terrestrial Reference System 1989</td></tr>
      * </table></div>
      *
      * <div class="section">Default implementation</div>
@@ -564,11 +564,11 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * A frequently used authority is "EPSG", which includes the following codes:
      *
      * <table class="sis" summary="Authority codes examples">
-     *   <tr><th>Code</th>       <th>Description</th></tr>
-     *   <tr><td>EPSG::5100</td> <td>Mean Sea Level</td></tr>
-     *   <tr><td>EPSG::1027</td> <td>EGM2008 geoid</td></tr>
-     *   <tr><td>EPSG::1131</td> <td>Japanese Geodetic Datum 2011 (vertical)</td></tr>
-     *   <tr><td>EPSG::5215</td> <td>European Vertical Reference Frame 2007</td></tr>
+     *   <tr><th>Code</th>      <th>Description</th></tr>
+     *   <tr><td>EPSG:5100</td> <td>Mean Sea Level</td></tr>
+     *   <tr><td>EPSG:1027</td> <td>EGM2008 geoid</td></tr>
+     *   <tr><td>EPSG:1131</td> <td>Japanese Geodetic Datum 2011 (vertical)</td></tr>
+     *   <tr><td>EPSG:5215</td> <td>European Vertical Reference Frame 2007</td></tr>
      * </table></div>
      *
      * <div class="section">Default implementation</div>
@@ -617,9 +617,9 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * A frequently used authority is "EPSG", which includes the following codes:
      *
      * <table class="sis" summary="Authority codes examples">
-     *   <tr><th>Code</th>       <th>Description</th></tr>
-     *   <tr><td>EPSG::9315</td> <td>Seismic bin grid datum</td></tr>
-     *   <tr><td>EPSG::9300</td> <td>Astra Minas</td></tr>
+     *   <tr><th>Code</th>      <th>Description</th></tr>
+     *   <tr><td>EPSG:9315</td> <td>Seismic bin grid datum</td></tr>
+     *   <tr><td>EPSG:9300</td> <td>Astra Minas</td></tr>
      * </table></div>
      *
      * <div class="section">Default implementation</div>
@@ -667,10 +667,10 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * A frequently used authority is "EPSG", which includes the following codes:
      *
      * <table class="sis" summary="Authority codes examples">
-     *   <tr><th>Code</th>       <th>Description</th></tr>
-     *   <tr><td>EPSG::7030</td> <td>WGS 84</td></tr>
-     *   <tr><td>EPSG::7034</td> <td>Clarke 1880</td></tr>
-     *   <tr><td>EPSG::7048</td> <td>GRS 1980 Authalic Sphere</td></tr>
+     *   <tr><th>Code</th>      <th>Description</th></tr>
+     *   <tr><td>EPSG:7030</td> <td>WGS 84</td></tr>
+     *   <tr><td>EPSG:7034</td> <td>Clarke 1880</td></tr>
+     *   <tr><td>EPSG:7048</td> <td>GRS 1980 Authalic Sphere</td></tr>
      * </table></div>
      *
      * <div class="section">Default implementation</div>
@@ -698,12 +698,12 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * A frequently used authority is "EPSG", which includes the following codes:
      *
      * <table class="sis" summary="Authority codes examples">
-     *   <tr><th>Code</th>       <th>Description</th></tr>
-     *   <tr><td>EPSG::8901</td> <td>Greenwich</td></tr>
-     *   <tr><td>EPSG::8903</td> <td>Paris</td></tr>
-     *   <tr><td>EPSG::8904</td> <td>Bogota</td></tr>
-     *   <tr><td>EPSG::8905</td> <td>Madrid</td></tr>
-     *   <tr><td>EPSG::8906</td> <td>Rome</td></tr>
+     *   <tr><th>Code</th>      <th>Description</th></tr>
+     *   <tr><td>EPSG:8901</td> <td>Greenwich</td></tr>
+     *   <tr><td>EPSG:8903</td> <td>Paris</td></tr>
+     *   <tr><td>EPSG:8904</td> <td>Bogota</td></tr>
+     *   <tr><td>EPSG:8905</td> <td>Madrid</td></tr>
+     *   <tr><td>EPSG:8906</td> <td>Rome</td></tr>
      * </table></div>
      *
      * <div class="section">Default implementation</div>
@@ -731,9 +731,9 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * A frequently used authority is "EPSG", which includes the following codes:
      *
      * <table class="sis" summary="Authority codes examples">
-     *   <tr><th>Code</th>       <th>Description</th></tr>
-     *   <tr><td>EPSG::1262</td> <td>World</td></tr>
-     *   <tr><td>EPSG::3391</td> <td>World - between 80°S and 84°N</td></tr>
+     *   <tr><th>Code</th>      <th>Description</th></tr>
+     *   <tr><td>EPSG:1262</td> <td>World</td></tr>
+     *   <tr><td>EPSG:3391</td> <td>World - between 80°S and 84°N</td></tr>
      * </table></div>
      *
      * <div class="section">Default implementation</div>
@@ -763,12 +763,12 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * A frequently used authority is "EPSG", which includes the following codes:
      *
      * <table class="sis" summary="Authority codes examples">
-     *   <tr><th>Code</th>       <th>Type</th>              <th>Axes</th>                                    <th>Orientations</th>    <th>Unit</th></tr>
-     *   <tr><td>EPSG::4496</td> <td>Cartesian 2D CS</td>   <td>easting, northing (E,N)</td>                 <td>east, north</td>     <td>metre</td></tr>
-     *   <tr><td>EPSG::6422</td> <td>Ellipsoidal 2D CS</td> <td>latitude, longitude</td>                     <td>north, east</td>     <td>degree</td></tr>
-     *   <tr><td>EPSG::6423</td> <td>Ellipsoidal 3D CS</td> <td>latitude, longitude, ellipsoidal height</td> <td>north, east, up</td> <td>degree, degree, metre</td></tr>
-     *   <tr><td>EPSG::6404</td> <td>Spherical 3D CS</td>   <td>latitude, longitude, radius</td>             <td>north, east, up</td> <td>degree, degree, metre</td></tr>
-     *   <tr><td>EPSG::6499</td> <td>Vertical CS</td>       <td>height (H)</td>                              <td>up</td>              <td>metre</td></tr>
+     *   <tr><th>Code</th>      <th>Type</th>              <th>Axes</th>                                    <th>Orientations</th>    <th>Unit</th></tr>
+     *   <tr><td>EPSG:4496</td> <td>Cartesian 2D CS</td>   <td>easting, northing (E,N)</td>                 <td>east, north</td>     <td>metre</td></tr>
+     *   <tr><td>EPSG:6422</td> <td>Ellipsoidal 2D CS</td> <td>latitude, longitude</td>                     <td>north, east</td>     <td>degree</td></tr>
+     *   <tr><td>EPSG:6423</td> <td>Ellipsoidal 3D CS</td> <td>latitude, longitude, ellipsoidal height</td> <td>north, east, up</td> <td>degree, degree, metre</td></tr>
+     *   <tr><td>EPSG:6404</td> <td>Spherical 3D CS</td>   <td>latitude, longitude, radius</td>             <td>north, east, up</td> <td>degree, degree, metre</td></tr>
+     *   <tr><td>EPSG:6499</td> <td>Vertical CS</td>       <td>height (H)</td>                              <td>up</td>              <td>metre</td></tr>
      * </table></div>
      *
      * <div class="section">Default implementation</div>
@@ -796,11 +796,11 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * A frequently used authority is "EPSG", which includes the following codes:
      *
      * <table class="sis" summary="Authority codes examples">
-     *   <tr><th>Code</th>       <th>Axes</th>                                    <th>Orientations</th>    <th>Unit</th></tr>
-     *   <tr><td>EPSG::6422</td> <td>latitude, longitude</td>                     <td>north, east</td>     <td>degree</td></tr>
-     *   <tr><td>EPSG::6424</td> <td>longitude, latitude</td>                     <td>east, north</td>     <td>degree</td></tr>
-     *   <tr><td>EPSG::6429</td> <td>longitude, latitude</td>                     <td>east, north</td>     <td>radian</td></tr>
-     *   <tr><td>EPSG::6423</td> <td>latitude, longitude, ellipsoidal height</td> <td>north, east, up</td> <td>degree, degree, metre</td></tr>
+     *   <tr><th>Code</th>      <th>Axes</th>                                    <th>Orientations</th>    <th>Unit</th></tr>
+     *   <tr><td>EPSG:6422</td> <td>latitude, longitude</td>                     <td>north, east</td>     <td>degree</td></tr>
+     *   <tr><td>EPSG:6424</td> <td>longitude, latitude</td>                     <td>east, north</td>     <td>degree</td></tr>
+     *   <tr><td>EPSG:6429</td> <td>longitude, latitude</td>                     <td>east, north</td>     <td>radian</td></tr>
+     *   <tr><td>EPSG:6423</td> <td>latitude, longitude, ellipsoidal height</td> <td>north, east, up</td> <td>degree, degree, metre</td></tr>
      * </table></div>
      *
      * <div class="section">Default implementation</div>
@@ -827,9 +827,9 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * A frequently used authority is "EPSG", which includes the following codes:
      *
      * <table class="sis" summary="Authority codes examples">
-     *   <tr><th>Code</th>       <th>Axes</th>       <th>Orientations</th> <th>Unit</th></tr>
-     *   <tr><td>EPSG::6498</td> <td>depth (D)</td>  <td>down</td>         <td>metre</td></tr>
-     *   <tr><td>EPSG::6499</td> <td>height (H)</td> <td>up</td>           <td>metre</td></tr>
+     *   <tr><th>Code</th>      <th>Axes</th>       <th>Orientations</th> <th>Unit</th></tr>
+     *   <tr><td>EPSG:6498</td> <td>depth (D)</td>  <td>down</td>         <td>metre</td></tr>
+     *   <tr><td>EPSG:6499</td> <td>height (H)</td> <td>up</td>           <td>metre</td></tr>
      * </table></div>
      *
      * <div class="section">Default implementation</div>
@@ -876,11 +876,11 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * A frequently used authority is "EPSG", which includes the following codes:
      *
      * <table class="sis" summary="Authority codes examples">
-     *   <tr><th>Code</th>       <th>Axes</th>                    <th>Orientations</th> <th>Unit</th></tr>
-     *   <tr><td>EPSG::4406</td> <td>easting, northing (E,N)</td> <td>east, north</td>  <td>kilometre</td></tr>
-     *   <tr><td>EPSG::4496</td> <td>easting, northing (E,N)</td> <td>east, north</td>  <td>metre</td></tr>
-     *   <tr><td>EPSG::4500</td> <td>northing, easting (N,E)</td> <td>north, east</td>  <td>metre</td></tr>
-     *   <tr><td>EPSG::4491</td> <td>westing, northing (W,N)</td> <td>west, north</td>  <td>metre</td></tr>
+     *   <tr><th>Code</th>      <th>Axes</th>                    <th>Orientations</th> <th>Unit</th></tr>
+     *   <tr><td>EPSG:4406</td> <td>easting, northing (E,N)</td> <td>east, north</td>  <td>kilometre</td></tr>
+     *   <tr><td>EPSG:4496</td> <td>easting, northing (E,N)</td> <td>east, north</td>  <td>metre</td></tr>
+     *   <tr><td>EPSG:4500</td> <td>northing, easting (N,E)</td> <td>north, east</td>  <td>metre</td></tr>
+     *   <tr><td>EPSG:4491</td> <td>westing, northing (W,N)</td> <td>west, north</td>  <td>metre</td></tr>
      * </table></div>
      *
      * <div class="section">Default implementation</div>
@@ -908,8 +908,8 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * A frequently used authority is "EPSG", which includes the following codes:
      *
      * <table class="sis" summary="Authority codes examples">
-     *   <tr><th>Code</th>       <th>Axes</th>                        <th>Orientations</th>    <th>Unit</th></tr>
-     *   <tr><td>EPSG::6404</td> <td>latitude, longitude, radius</td> <td>north, east, up</td> <td>degree, degree, metre</td></tr>
+     *   <tr><th>Code</th>      <th>Axes</th>                        <th>Orientations</th>    <th>Unit</th></tr>
+     *   <tr><td>EPSG:6404</td> <td>latitude, longitude, radius</td> <td>north, east, up</td> <td>degree, degree, metre</td></tr>
      * </table></div>
      *
      * <div class="section">Default implementation</div>
@@ -974,11 +974,11 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * A frequently used authority is "EPSG", which includes the following codes:
      *
      * <table class="sis" summary="Authority codes examples">
-     *   <tr><th>Code</th>       <th>Description</th>   <th>Unit</th></tr>
-     *   <tr><td>EPSG::106</td>  <td>Latitude (φ)</td>  <td>degree</td></tr>
-     *   <tr><td>EPSG::107</td>  <td>Longitude (λ)</td> <td>degree</td></tr>
-     *   <tr><td>EPSG::1</td>    <td>Easting (E)</td>   <td>metre</td></tr>
-     *   <tr><td>EPSG::2</td>    <td>Northing (N)</td>  <td>metre</td></tr>
+     *   <tr><th>Code</th>      <th>Description</th>   <th>Unit</th></tr>
+     *   <tr><td>EPSG:106</td>  <td>Latitude (φ)</td>  <td>degree</td></tr>
+     *   <tr><td>EPSG:107</td>  <td>Longitude (λ)</td> <td>degree</td></tr>
+     *   <tr><td>EPSG:1</td>    <td>Easting (E)</td>   <td>metre</td></tr>
+     *   <tr><td>EPSG:2</td>    <td>Northing (N)</td>  <td>metre</td></tr>
      * </table></div>
      *
      * <div class="section">Default implementation</div>
@@ -1007,12 +1007,12 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * A frequently used authority is "EPSG", which includes the following codes:
      *
      * <table class="sis" summary="Authority codes examples">
-     *   <tr><th>Code</th>       <th>Description</th></tr>
-     *   <tr><td>EPSG::9002</td> <td>decimal degree</td></tr>
-     *   <tr><td>EPSG::9001</td> <td>metre</td></tr>
-     *   <tr><td>EPSG::9030</td> <td>kilometre</td></tr>
-     *   <tr><td>EPSG::1040</td> <td>second</td></tr>
-     *   <tr><td>EPSG::1029</td> <td>year</td></tr>
+     *   <tr><th>Code</th>      <th>Description</th></tr>
+     *   <tr><td>EPSG:9002</td> <td>decimal degree</td></tr>
+     *   <tr><td>EPSG:9001</td> <td>metre</td></tr>
+     *   <tr><td>EPSG:9030</td> <td>kilometre</td></tr>
+     *   <tr><td>EPSG:1040</td> <td>second</td></tr>
+     *   <tr><td>EPSG:1029</td> <td>year</td></tr>
      * </table>
      *
      * See {@link org.apache.sis.measure.Units#valueOfEPSG(int)} for a more complete list of codes.</div>
@@ -1041,12 +1041,12 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * A frequently used authority is "EPSG", which includes the following codes:
      *
      * <table class="sis" summary="EPSG codes examples">
-     *   <tr><th>Code</th>       <th>Description</th></tr>
-     *   <tr><td>EPSG::8801</td> <td>Latitude of natural origin</td></tr>
-     *   <tr><td>EPSG::8802</td> <td>Longitude of natural origin</td></tr>
-     *   <tr><td>EPSG::8805</td> <td>Scale factor at natural origin</td></tr>
-     *   <tr><td>EPSG::8806</td> <td>False easting</td></tr>
-     *   <tr><td>EPSG::8807</td> <td>False northing</td></tr>
+     *   <tr><th>Code</th>      <th>Description</th></tr>
+     *   <tr><td>EPSG:8801</td> <td>Latitude of natural origin</td></tr>
+     *   <tr><td>EPSG:8802</td> <td>Longitude of natural origin</td></tr>
+     *   <tr><td>EPSG:8805</td> <td>Scale factor at natural origin</td></tr>
+     *   <tr><td>EPSG:8806</td> <td>False easting</td></tr>
+     *   <tr><td>EPSG:8807</td> <td>False northing</td></tr>
      * </table></div>
      *
      * <div class="section">Default implementation</div>
@@ -1104,11 +1104,11 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * A frequently used authority is "EPSG", which includes the following codes:
      *
      * <table class="sis" summary="EPSG codes examples">
-     *   <tr><th>Code</th>       <th>Description</th></tr>
-     *   <tr><td>EPSG::1133</td> <td>ED50 to WGS 84 (1)</td></tr>
-     *   <tr><td>EPSG::1241</td> <td>NAD27 to NAD83 (1)</td></tr>
-     *   <tr><td>EPSG::1173</td> <td>NAD27 to WGS 84 (4)</td></tr>
-     *   <tr><td>EPSG::6326</td> <td>NAD83(2011) to NAVD88 height (1)</td></tr>
+     *   <tr><th>Code</th>      <th>Description</th></tr>
+     *   <tr><td>EPSG:1133</td> <td>ED50 to WGS 84 (1)</td></tr>
+     *   <tr><td>EPSG:1241</td> <td>NAD27 to NAD83 (1)</td></tr>
+     *   <tr><td>EPSG:1173</td> <td>NAD27 to WGS 84 (4)</td></tr>
+     *   <tr><td>EPSG:6326</td> <td>NAD83(2011) to NAVD88 height (1)</td></tr>
      * </table></div>
      *
      * <div class="section">Default implementation</div>
@@ -1189,7 +1189,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
                     final int n = code.indexOf(DefaultNameSpace.DEFAULT_SEPARATOR, s + 1);
                     if (n >= 0) {
                         /*
-                         * The separator sometime appears twice, as in "EPSG::4326" or "EPSG:8.8:4326".
+                         * The separator sometime appears twice, as in "EPSG::4326" or "EPSG:8.9:4326".
                          * The part between the two separators is the verion number, which we ignore in
                          * this simple version.
                          */

@@ -33,7 +33,6 @@ import org.apache.sis.internal.referencing.GeodeticObjectBuilder;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.io.wkt.Convention;
-import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.LenientComparable;
 
@@ -43,6 +42,7 @@ import org.apache.sis.test.LoggingWatcher;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.XMLTestCase;
+import org.junit.After;
 import org.junit.Test;
 import org.junit.Rule;
 
@@ -64,19 +64,23 @@ import static org.apache.sis.test.ReferencingAssert.*;
 public final strictfp class DefaultProjectedCRSTest extends XMLTestCase {
     /**
      * A JUnit rule for listening to log events emitted during execution of {@link #testWKT1_WithExplicitAxisLength()}.
-     * This rule verifies that the message logged contains the expected information. The expected message is something
-     * like "Parameter semi_minor could have been omitted but got a value that does not match the WGS84 ellipsoid".
+     * This rule is used by the test methods for verifying that the logged messages contain the expected information.
+     * The expected message is something like "Parameter semi_minor could have been omitted but got a value that does
+     * not match the WGS84 ellipsoid".
      *
      * <p>This field is public because JUnit requires us to do so, but should be considered as an implementation details
      * (it should have been a private field).</p>
      */
     @Rule
-    public final LoggingWatcher listener = new LoggingWatcher(Logging.getLogger(Loggers.COORDINATE_OPERATION)) {
-        @Override protected void verifyMessage(final String message) {
-            assertTrue(message, message.contains("semi_minor"));
-            assertTrue(message, message.contains("WGS84"));
-        }
-    };
+    public final LoggingWatcher loggings = new LoggingWatcher(Loggers.COORDINATE_OPERATION);
+
+    /**
+     * Verifies that no unexpected warning has been emitted in any test defined in this class.
+     */
+    @After
+    public void assertNoUnexpectedLog() {
+        loggings.assertNoUnexpectedLog();
+    }
 
     /**
      * An XML file in this package containing a projected CRS definition.
@@ -356,7 +360,6 @@ public final strictfp class DefaultProjectedCRSTest extends XMLTestCase {
     @Test
     @DependsOnMethod("testWKT1")
     public void testWKT1_WithExplicitAxisLength() throws FactoryException {
-        listener.maximumLogCount = 1;
         final ProjectedCRS crs = new GeodeticObjectBuilder()
                 .setConversionMethod("Mercator (variant A)")
                 .setConversionName("Popular Visualisation Pseudo-Mercator")
@@ -386,7 +389,8 @@ public final strictfp class DefaultProjectedCRSTest extends XMLTestCase {
                 "  AXIS[“Northing”, NORTH]]",
                 crs);
 
-        assertEquals("A warning should have been logged.", 0, listener.maximumLogCount);
+        loggings.assertNextLogContains("semi_minor", "WGS84");
+        loggings.assertNoUnexpectedLog();
     }
 
     /**

@@ -26,7 +26,7 @@
                 xmlns:xlink        = "http://www.w3.org/1999/xlink"
                 gml:id             = "WorldMercator">
 
-  <gml:identifier codeSpace="test">3395</gml:identifier>  <!-- Not the real EPSG::3395 -->
+  <gml:identifier codeSpace="test">3395</gml:identifier>                    <!-- Not the real EPSG:3395 -->
   <gml:name>World Mercator</gml:name>
   <gml:domainOfValidity>
     <gmd:EX_Extent>
@@ -64,7 +64,7 @@
   </gml:coordinateOperationAccuracy>
   <gml:method>
     <gml:OperationMethod gml:id="Mercator">
-      <gml:identifier codeSpace="test">19883</gml:identifier>  <!-- Not the real EPSG::19883 -->
+      <gml:identifier codeSpace="test">19883</gml:identifier>               <!-- Not the real EPSG:19883 -->
       <gml:name>Mercator (1SP)</gml:name>
       <gml:formula>See EPSG guide.</gml:formula>
       <gml:sourceDimensions>2</gml:sourceDimensions>

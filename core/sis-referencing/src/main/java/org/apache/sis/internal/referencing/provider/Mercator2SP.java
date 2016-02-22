@@ -77,7 +77,7 @@ public final class Mercator2SP extends AbstractMercator {
          * projection according EPSG. But we declare them as optional parameters because they are sometime used in
          * Well Known Text (WKT).
          */
-        builder.setRequired(false); // Will apply to all remaining parameters.
+        builder.setRequired(false);         // Will apply to all remaining parameters.
         final InternationalString remarks = notFormalParameter("Mercator (variant A)");
         final ParameterDescriptor<Double> latitudeOfOrigin = createZeroConstant(builder
                 .addNamesAndIdentifiers(Mercator1SP.LATITUDE_OF_ORIGIN)

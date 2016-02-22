@@ -363,8 +363,13 @@ public abstract class Transliterator implements Serializable {
                     }
                 }
             } else {
-                if      (abbreviation.equalsIgnoreCase("Lat" )) abbreviation = "B";
-                else if (abbreviation.equalsIgnoreCase("Long")) abbreviation = "L";
+                if (abbreviation.equalsIgnoreCase("Lat")) {
+                    abbreviation = "B";
+                } else if (abbreviation.regionMatches(true, 0, "Long", 0,
+                        Math.min(3, Math.max(4, abbreviation.length()))))   // Accept "Lon" or "Long".
+                {
+                    abbreviation = "L";
+                }
             }
         }
         return abbreviation;

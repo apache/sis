@@ -50,16 +50,20 @@ import org.apache.sis.referencing.cs.DefaultVerticalCS;
 import org.apache.sis.referencing.crs.DefaultVerticalCRS;
 import org.apache.sis.internal.jaxb.metadata.replace.ReferenceSystemMetadata;
 import org.apache.sis.internal.jaxb.gmx.Anchor;
+import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.xml.MarshallerPool;
 import org.apache.sis.xml.IdentifierSpace;
+import org.apache.sis.test.LoggingWatcher;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.XMLComparator;
 import org.apache.sis.test.XMLTestCase;
 import org.apache.sis.test.DependsOn;
+import org.junit.After;
+import org.junit.Rule;
 import org.junit.Test;
 
 import static org.apache.sis.test.Assert.*;
@@ -85,6 +89,21 @@ import org.apache.sis.internal.geoapi.evolution.UnsupportedCodeList;
  */
 @DependsOn(ReferencingInMetadataTest.class)
 public strictfp class DefaultMetadataTest extends XMLTestCase {
+    /**
+     * A JUnit {@link Rule} for listening to log events. This field is public because JUnit requires us to
+     * do so, but should be considered as an implementation details (it should have been a private field).
+     */
+    @Rule
+    public final LoggingWatcher loggings = new LoggingWatcher(Loggers.XML);
+
+    /**
+     * Verifies that no unexpected warning has been emitted in any test defined in this class.
+     */
+    @After
+    public void assertNoUnexpectedLog() {
+        loggings.assertNoUnexpectedLog();
+    }
+
     /**
      * Sets the temporal extent. The current implementation does nothing, because {@code sis-metadata} does not have
      * any dependency to {@code sis-temporal}. However a future version or an other module may implement this method.
@@ -415,5 +434,6 @@ public strictfp class DefaultMetadataTest extends XMLTestCase {
         pool.recycle(unmarshaller);
         final DefaultMetadata expected = createHardCoded();
         assertTrue(metadata.equals(expected, ComparisonMode.DEBUG));
+        loggings.skipNextLogIfContains("sis-temporal");
     }
 }

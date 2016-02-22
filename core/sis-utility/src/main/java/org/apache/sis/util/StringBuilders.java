@@ -41,8 +41,7 @@ import static java.lang.Character.*;
  */
 public final class StringBuilders extends Static {
     /**
-     * Letters in the range 00C0 (192) to 00FF (255) inclusive with their accent removed,
-     * when possible.
+     * Letters in the range 00C0 (192) to 00FF (255) inclusive with their accent removed, when possible.
      */
     private static final String ASCII = "AAAAAAÆCEEEEIIIIDNOOOOO*OUUUUYÞsaaaaaaæceeeeiiiionooooo/ouuuuyþy";
     // Original letters (with accent) = "ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþÿ";

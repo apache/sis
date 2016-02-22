@@ -50,10 +50,13 @@
     </copy>
     -->
 
-    <!-- Following are classical properties resources files. -->
+    <!-- Resources (properties files, SQL scripts). -->
     <copy todir="${build.classes.dir}">
       <fileset dir="${project.root}/core/sis-utility/src/main/resources">
         <include name="**/*.properties"/>
+      </fileset>
+      <fileset dir="${project.root}/core/sis-referencing/src/main/resources">
+        <include name="**/*.sql"/>
       </fileset>
       <fileset dir="${project.root}/application/sis-console/src/main/resources">
         <include name="**/*.properties"/>
