@@ -31,7 +31,7 @@ import org.apache.sis.test.XMLTestCase;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.LoggingWatcher;
-import org.apache.sis.util.logging.Logging;
+import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -52,19 +52,22 @@ import static org.junit.Assert.*;
 public final strictfp class CC_GeneralOperationParameterTest extends XMLTestCase {
     /**
      * A JUnit rule for listening to log events emitted during execution of {@link #testGroupMergeBecauseExtraParameter()}.
-     * This rule verifies that the log message contains the expected information. The expected message is something like
-     * "No parameter named "Parameter B" was found".
+     * This rule is used by test methods for verifying that the log message contains the expected information.
+     * The expected message is something like "No parameter named "Parameter B" was found".
      *
      * <p>This field is public because JUnit requires us to do so, but should be considered as an implementation details
      * (it should have been a private field).</p>
      */
     @Rule
-    public final LoggingWatcher listener = new LoggingWatcher(Logging.getLogger(Loggers.XML)) {
-        @Override protected void verifyMessage(final String message) {
-            assertTrue(message, message.contains("Parameter B"));
-            assertTrue(message, message.contains("Group"));
-        }
-    };
+    public final LoggingWatcher loggings = new LoggingWatcher(Loggers.XML);
+
+    /**
+     * Verifies that no unexpected warning has been emitted in any test defined in this class.
+     */
+    @After
+    public void assertNoUnexpectedLog() {
+        loggings.assertNoUnexpectedLog();
+    }
 
     /**
      * Creates a parameter descriptor as unmarshalled by JAXB, without {@code valueClass}.
@@ -305,7 +308,7 @@ public final strictfp class CC_GeneralOperationParameterTest extends XMLTestCase
                 create("Parameter A", "Remarks A.", false, 3),
                 create("Parameter C", "Remarks C.", false, 4));
 
-        listener.maximumLogCount = 1;
+        loggings.assertNoUnexpectedLog();
         final ParameterDescriptorGroup merged =
                 (ParameterDescriptorGroup) CC_GeneralOperationParameter.merge(provided, complete);
         assertNotSame(complete, provided);
@@ -313,6 +316,8 @@ public final strictfp class CC_GeneralOperationParameterTest extends XMLTestCase
         assertSame   ("remarks",       complete.getRemarks(), merged.getRemarks());
         assertEquals ("minimumOccurs", 1,                     merged.getMinimumOccurs());
         assertEquals ("maximumOccurs", 2,                     merged.getMaximumOccurs());
+        loggings.assertNextLogContains("Parameter B", "Group");
+        loggings.assertNoUnexpectedLog();
 
         final Iterator<GeneralParameterDescriptor> itc = complete.descriptors().iterator();
         final Iterator<GeneralParameterDescriptor> itm = merged  .descriptors().iterator();

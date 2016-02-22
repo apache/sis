@@ -650,7 +650,7 @@ public abstract class Builder<B extends Builder<B>> {
     private void addIdentifier(final Citation authority, final String codeSpace, final String identifier, final String version) {
         final ReferenceIdentifier id;
         if (isDeprecated()) {
-            id = new DeprecatedCode(authority, codeSpace, identifier, version, getRemarks());
+            id = new DeprecatedCode(authority, codeSpace, identifier, version, null, getRemarks());
         } else {
             id = new ImmutableIdentifier(authority, codeSpace, identifier, version, getDescription());
         }

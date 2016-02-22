@@ -68,7 +68,7 @@ import org.opengis.util.NoSuchIdentifierException;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.6
+ * @version 0.7
  * @module
  */
 public class ReferencingServices extends OptionalDependency {
@@ -613,6 +613,8 @@ public class ReferencingServices extends OptionalDependency {
      * @return The information, or {@code null} if none.
      *
      * @see org.apache.sis.internal.util.MetadataServices#getInformation(String)
+     *
+     * @since 0.7
      */
     public String getInformation(String key, Locale locale) {
         return null;

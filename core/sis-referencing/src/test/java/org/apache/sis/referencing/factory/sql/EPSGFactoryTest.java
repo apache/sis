@@ -63,6 +63,7 @@ import org.apache.sis.referencing.factory.UnavailableFactoryException;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.Ignore;
+import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.apache.sis.test.TestCase;
@@ -116,7 +117,7 @@ public final strictfp class EPSGFactoryTest extends TestCase {
     }
 
     /**
-     * Force releases of JDBC connections after the tests in this class.
+     * Forces release of JDBC connections after the tests in this class.
      *
      * @throws FactoryException if an error occurred while closing the connections.
      */
@@ -129,29 +130,19 @@ public final strictfp class EPSGFactoryTest extends TestCase {
     }
 
     /**
-     * Words that we expect to find in each log messages to be emitted.
-     */
-    private String[][] expectedLogWords;
-
-    /**
-     * A JUnit {@linkplain Rule rule} for listening to log events. This field is public
-     * because JUnit requires us to do so, but should be considered as an implementation
-     * details (it should have been a private field).
+     * A JUnit {@link Rule} for listening to log events. This field is public because JUnit requires us to
+     * do so, but should be considered as an implementation details (it should have been a private field).
      */
     @Rule
-    public final LoggingWatcher listener = new LoggingWatcher(Logging.getLogger(Loggers.CRS_FACTORY)) {
-        /**
-         * Ensures that the logging message contains some expected words.
-         */
-        @Override
-        protected void verifyMessage(final String message) {
-            if (expectedLogWords != null) {
-                for (final String word : expectedLogWords[expectedLogWords.length - (maximumLogCount + 1)]) {
-                    assertTrue(message, message.contains(word));
-                }
-            }
-        }
-    };
+    public final LoggingWatcher loggings = new LoggingWatcher(Loggers.CRS_FACTORY);
+
+    /**
+     * Verifies that no unexpected warning has been emitted in any test defined in this class.
+     */
+    @After
+    public void assertNoUnexpectedLog() {
+        loggings.assertNoUnexpectedLog();
+    }
 
     /**
      * Tests {@link EPSGDataAccess#tableMatches(String, String)}.
@@ -163,7 +154,7 @@ public final strictfp class EPSGFactoryTest extends TestCase {
     }
 
     /**
-     * Tests the "WGS 84" geographic CRS (EPSG::4326).
+     * Tests the "WGS 84" geographic CRS (EPSG:4326).
      *
      * @throws FactoryException if an error occurred while querying the factory.
      */
@@ -173,16 +164,17 @@ public final strictfp class EPSGFactoryTest extends TestCase {
         final GeographicCRS crs = factory.createGeographicCRS("EPSG:4326");
         assertEpsgNameAndIdentifierEqual("WGS 84", 4326, crs);
         assertEpsgNameAndIdentifierEqual("World Geodetic System 1984", 6326, crs.getDatum());
-        assertAxisDirectionsEqual("EPSG::6422", crs.getCoordinateSystem(), AxisDirection.NORTH, AxisDirection.EAST);
+        assertAxisDirectionsEqual("EPSG:6422", crs.getCoordinateSystem(), AxisDirection.NORTH, AxisDirection.EAST);
 
         final BursaWolfParameters[] bwp = ((DefaultGeodeticDatum) crs.getDatum()).getBursaWolfParameters();
         assertEquals("Expected no Bursa-Wolf parameters.", 0, bwp.length);
 
         assertSame("CRS shall be cached", crs, factory.createCoordinateReferenceSystem("4326"));
+        assertSame("Shall accept \"::\"", crs, factory.createGeographicCRS("EPSG::4326"));
     }
 
     /**
-     * Tests the "Datum 73" geographic CRS (EPSG::4274), which has a datum different than the WGS84 one.
+     * Tests the "Datum 73" geographic CRS (EPSG:4274), which has a datum different than the WGS84 one.
      *
      * @throws FactoryException if an error occurred while querying the factory.
      */
@@ -202,7 +194,7 @@ public final strictfp class EPSGFactoryTest extends TestCase {
     }
 
     /**
-     * Tests the "Lao 1997" geographic CRS (EPSG::4993) with an ellipsoidal height.
+     * Tests the "Lao 1997" geographic CRS (EPSG:4993) with an ellipsoidal height.
      *
      * @throws FactoryException if an error occurred while querying the factory.
      */
@@ -220,7 +212,7 @@ public final strictfp class EPSGFactoryTest extends TestCase {
     }
 
     /**
-     * Tests the "ITRF93" geocentric CRS (EPSG::4915).
+     * Tests the "ITRF93" geocentric CRS (EPSG:4915).
      *
      * @throws FactoryException if an error occurred while querying the factory.
      */
@@ -237,7 +229,7 @@ public final strictfp class EPSGFactoryTest extends TestCase {
     }
 
     /**
-     * Tests the "NAD27(76) / UTM zone 15N" projected CRS (EPSG::2027).
+     * Tests the "NAD27(76) / UTM zone 15N" projected CRS (EPSG:2027).
      *
      * @throws FactoryException if an error occurred while querying the factory.
      */
@@ -273,7 +265,7 @@ public final strictfp class EPSGFactoryTest extends TestCase {
     }
 
     /**
-     * Tests the "Beijing 1954 / 3-degree Gauss-Kruger CM 135E" projected CRS (EPSG::2442).
+     * Tests the "Beijing 1954 / 3-degree Gauss-Kruger CM 135E" projected CRS (EPSG:2442).
      * This projected CRS has (North, East) axis orientations instead of (East, North).
      *
      * @throws FactoryException if an error occurred while querying the factory.
@@ -409,7 +401,7 @@ public final strictfp class EPSGFactoryTest extends TestCase {
     }
 
     /**
-     * Tests the "Barcelona Grid B1" engineering CRS (EPSG::5801).
+     * Tests the "Barcelona Grid B1" engineering CRS (EPSG:5801).
      *
      * @throws FactoryException if an error occurred while querying the factory.
      */
@@ -454,19 +446,59 @@ public final strictfp class EPSGFactoryTest extends TestCase {
         final List<CoordinateReferenceSystem> components = crs.getComponents();
         assertEquals("components.size()", 2, components.size());
         assertEpsgNameAndIdentifierEqual("NTF (Paris)",      4807, components.get(0));
-        assertEpsgNameAndIdentifierEqual("NGF IGN69 height", 5720, components.get(1));
+        assertEpsgNameAndIdentifierEqual("NGF-IGN69 height", 5720, components.get(1));
 
         assertAxisDirectionsEqual("(no EPSG code)", crs.getCoordinateSystem(),
                 AxisDirection.NORTH, AxisDirection.EAST, AxisDirection.UP);
 
         final GeographicBoundingBox bbox = CRS.getGeographicBoundingBox(crs);
         assertNotNull("No bounding box. Maybe an older EPSG database is used?", bbox);
-        assertEquals("southBoundLatitude", 42.25, bbox.getSouthBoundLatitude(), STRICT);
-        assertEquals("northBoundLatitude", 51.10, bbox.getNorthBoundLatitude(), STRICT);
-        assertEquals("westBoundLongitude", -5.20, bbox.getWestBoundLongitude(), STRICT);
+        assertEquals("southBoundLatitude", 42.33, bbox.getSouthBoundLatitude(), STRICT);
+        assertEquals("northBoundLatitude", 51.14, bbox.getNorthBoundLatitude(), STRICT);
+        assertEquals("westBoundLongitude", -4.87, bbox.getWestBoundLongitude(), STRICT);
         assertEquals("eastBoundLongitude",  8.23, bbox.getEastBoundLongitude(), STRICT);
 
         assertSame("CRS shall be cached", crs, factory.createCoordinateReferenceSystem("7400"));
+    }
+
+    /**
+     * Tests creation of deprecated coordinate systems.
+     *
+     * @throws FactoryException if an error occurred while querying the factory.
+     */
+    @Test
+    public void testDeprecatedCoordinateSystems() throws FactoryException {
+        assumeNotNull(factory);
+        for (final Map.Entry<Integer,Integer> entry : EPSGDataAccess.deprecatedCS().entrySet()) {
+            final CoordinateSystem expected = factory.createEllipsoidalCS(entry.getValue().toString());
+            loggings.assertNoUnexpectedLog();
+            final String code = entry.getKey().toString();
+            final CoordinateSystem deprecated;
+            try {
+                deprecated = factory.createEllipsoidalCS(code);
+            } catch (FactoryException e) {
+                final String m = e.getMessage();
+                if (m.contains("9115") || m.contains("9116") || m.contains("9117") ||
+                    m.contains("9118") || m.contains("9119") || m.contains("9120"))
+                {
+                    // Unit "9116" to "9120" are known to be unsupported.
+                    continue;
+                }
+                throw e;
+            }
+            loggings.assertNextLogContains(code);
+            final int dimension = expected.getDimension();
+            assertEquals("dimension", dimension, deprecated.getDimension());
+            for (int i=0; i<dimension; i++) {
+                final CoordinateSystemAxis ref  = expected.getAxis(i);
+                final CoordinateSystemAxis axis = deprecated.getAxis(i);
+                assertEquals("name",         ref.getName(),         axis.getName());
+                assertEquals("alias",        ref.getAlias(),        axis.getAlias());
+                assertEquals("direction",    ref.getDirection(),    axis.getDirection());
+                assertEquals("rangeMeaning", ref.getRangeMeaning(), axis.getRangeMeaning());
+                assertEquals("unit",         ref.getUnit().toSI(),  axis.getUnit().toSI());
+            }
+        }
     }
 
     /**
@@ -476,21 +508,18 @@ public final strictfp class EPSGFactoryTest extends TestCase {
      * @throws FactoryException if an error occurred while querying the factory.
      */
     @Test
-    @DependsOnMethod("testGeographic2D")
+    @DependsOnMethod({"testGeographic2D", "testDeprecatedCoordinateSystems"})
     public void testDeprecatedGeographic() throws FactoryException {
         assumeNotNull(factory);
-
-        listener.maximumLogCount = 2;
-        expectedLogWords = new String[][] {
-            {"EPSG:6405"},                      // Coordinate System 6405 is no longer supported by EPSG
-            {"EPSG:63266405", "4326"}           // EPSG no longer support codes in the 60000000 series.
-        };
 
         final GeographicCRS crs = factory.createGeographicCRS("63266405");
         assertEpsgNameAndIdentifierEqual("WGS 84 (deg)", 63266405, crs);
         assertAxisDirectionsEqual(null, crs.getCoordinateSystem(), AxisDirection.NORTH, AxisDirection.EAST);
-
         assertSame("CRS shall be cached", crs, factory.createCoordinateReferenceSystem("63266405"));
+
+        loggings.skipNextLogIfContains("EPSG:6405");                 // Coordinate System 6405 is no longer supported by EPSG
+        loggings.assertNextLogContains("EPSG:63266405", "4326");     // EPSG no longer support codes in the 60000000 series.
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -500,22 +529,19 @@ public final strictfp class EPSGFactoryTest extends TestCase {
      * @throws FactoryException if an error occurred while querying the factory.
      */
     @Test
-    @DependsOnMethod("testDeprecatedGeographic")
+    @DependsOnMethod({"testDeprecatedGeographic", "testDeprecatedCoordinateSystems"})
     public void testDeprecatedProjected() throws FactoryException {
         assumeNotNull(factory);
-
-        listener.maximumLogCount = 3;
-        expectedLogWords = new String[][] {
-            {"EPSG:9823",  "1029"},              // Operation method 9823 has been replaced by 1029
-            {"EPSG:19968", "4086"},              // Coordinate Operation 19968 has been replaced by 4086
-            {"EPSG:3786",  "4088"}               // Coordinate Reference System 3786 has been replaced by 4088
-        };
 
         final ProjectedCRS crs = factory.createProjectedCRS("3786");
         assertEpsgNameAndIdentifierEqual("World Equidistant Cylindrical (Sphere)", 3786, crs);
         assertEpsgNameAndIdentifierEqual("Equidistant Cylindrical (Spherical)", 9823, crs.getConversionFromBase().getMethod());
         assertAxisDirectionsEqual("EPSG::4499", crs.getCoordinateSystem(), AxisDirection.EAST, AxisDirection.NORTH);
-        assertEquals("All warnings should have been logged at this point.", 0, listener.maximumLogCount);
+
+        loggings.assertNextLogContains("EPSG:9823",  "1029");    // Operation method 9823 has been replaced by 1029
+        loggings.assertNextLogContains("EPSG:19968", "4086");    // Coordinate Operation 19968 has been replaced by 4086
+        loggings.assertNextLogContains("EPSG:3786",  "4088");    // Coordinate Reference System 3786 has been replaced by 4088
+        loggings.assertNoUnexpectedLog();
 
         final ProjectedCRS replacement = factory.createProjectedCRS("4088");
         assertEpsgNameAndIdentifierEqual("World Equidistant Cylindrical (Sphere)", 4088, replacement);
@@ -589,7 +615,7 @@ public final strictfp class EPSGFactoryTest extends TestCase {
 
         final Set<String> ellipsoids = factory.getAuthorityCodes(Ellipsoid.class);
         assertFalse("Ellipsoid not found.",       ellipsoids.isEmpty());
-        assertTrue ("Check size() consistency.",  ellipsoids.size() >= 49);
+        assertTrue ("Check size() consistency.",  ellipsoids.size() >= 48);
         assertTrue ("Shall contain WGS84.",       ellipsoids.contains("7030"));
         assertTrue ("Shall contain GRS 1980.",    ellipsoids.contains("7019"));
 
@@ -743,7 +769,7 @@ public final strictfp class EPSGFactoryTest extends TestCase {
     }
 
     /**
-     * Tests the "UTM zone 10N" conversion (EPSG::16010).
+     * Tests the "UTM zone 10N" conversion (EPSG:16010).
      *
      * @throws FactoryException if an error occurred while querying the factory.
      */
@@ -789,7 +815,7 @@ public final strictfp class EPSGFactoryTest extends TestCase {
         } catch (AssertionError error) {
             out.println("The following contains more information about a JUnit test failure.");
             out.println("See the JUnit report for the stack trace. Below is a cache dump.");
-            out.println("See the operation method EPSG::9807 and compare with:");
+            out.println("See the operation method EPSG:9807 and compare with:");
             out.print  ("  - Method obtained directly:   "); out.println(System.identityHashCode(copMethod));
             out.print  ("  - Method obtained indirectly: "); out.println(System.identityHashCode(crsMethod));
             out.println("Content of EPSGFactory cache:");
@@ -799,7 +825,7 @@ public final strictfp class EPSGFactoryTest extends TestCase {
     }
 
     /**
-     * Tests longitude rotation (EPSG::1764). This is a very simple case for checking
+     * Tests longitude rotation (EPSG:1764). This is a very simple case for checking
      * that this part is okay before to try more complex transformations.
      *
      * @throws FactoryException if an error occurred while querying the factory.
@@ -809,13 +835,13 @@ public final strictfp class EPSGFactoryTest extends TestCase {
         assumeNotNull(factory);
         final CoordinateOperation operation = factory.createCoordinateOperation("1764");
         assertEpsgNameAndIdentifierEqual("NTF (Paris) to NTF (2)", 1764, operation);
-        assertInstanceOf("EPSG::1764", Transformation.class, operation);
+        assertInstanceOf("EPSG:1764", Transformation.class, operation);
         assertSame("Operation shall be cached", operation, factory.createCoordinateOperation("1764"));
     }
 
     /**
-     * Tests "BD72 to WGS 84 (1)" (EPSG::1609) transformation. This one has an unusual unit for the
-     * "Scale difference" parameter (EPSG::8611). The value is 0.999999 and the unit is "unity" (EPSG::9201)
+     * Tests "BD72 to WGS 84 (1)" (EPSG:1609) transformation. This one has an unusual unit for the
+     * "Scale difference" parameter (EPSG:8611). The value is 0.999999 and the unit is "unity" (EPSG:9201)
      * instead of the usual "parts per million" (EPSG:9202).
      *
      * @throws FactoryException if an error occurred while querying the factory.
@@ -892,7 +918,6 @@ public final strictfp class EPSGFactoryTest extends TestCase {
         assertTrue("contains(“EPSG::1989”)", all.contains(operation3));
 
         int count = 0;
-        listener.maximumLogCount = all.size();              // Ignore log message for unsupported operation methods.
         for (final CoordinateOperation tr : all) {
             assertSame("sourceCRS", sourceCRS, tr.getSourceCRS());
             assertSame("targetCRS", targetCRS, tr.getTargetCRS());
@@ -902,6 +927,7 @@ public final strictfp class EPSGFactoryTest extends TestCase {
             count++;
         }
         assertEquals(count, all.size());        // Size may have been modified after above loop.
+        loggings.clear();                       // Too installation-dependent for testing them.
     }
 
     /**
@@ -924,7 +950,7 @@ public final strictfp class EPSGFactoryTest extends TestCase {
                 "  AXIS[“Geodetic longitude”, EAST]]");
         /*
          * First, search for a CRS with axis order that does not match the ones in the EPSG database.
-         * IdentifiedObjectFinder should not accept EPSG::4326 as a match for the given CRS.
+         * IdentifiedObjectFinder should not accept EPSG:4326 as a match for the given CRS.
          */
         assertEquals("Full scan should be enabled by default.",
                 IdentifiedObjectFinder.Domain.VALID_DATASET, finder.getSearchDomain());

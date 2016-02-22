@@ -16,6 +16,8 @@
  */
 package org.apache.sis.internal.metadata.sql;
 
+import java.sql.SQLException;
+import java.sql.DatabaseMetaData;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.Characters;
 import org.apache.sis.util.CharSequences;
@@ -39,6 +41,21 @@ public final class SQLUtilities extends Static {
      * Do not allow instantiation of this class.
      */
     private SQLUtilities() {
+    }
+
+    /**
+     * Returns a simplified form of the URL (truncated before the first {@code ?} or {@code ;} character),
+     * for logging or informative purpose only.
+     *
+     * @param  metadata The metadata of the database.
+     * @return A simplified version of database URL.
+     * @throws SQLException if an error occurred while fetching the URL.
+     */
+    public static String getSimplifiedURL(final DatabaseMetaData metadata) throws SQLException {
+        String url = metadata.getURL();
+        int s1 = url.indexOf('?'); if (s1 < 0) s1 = url.length();
+        int s2 = url.indexOf(';'); if (s2 < 0) s2 = url.length();
+        return url.substring(0, Math.min(s1, s2));
     }
 
     /**

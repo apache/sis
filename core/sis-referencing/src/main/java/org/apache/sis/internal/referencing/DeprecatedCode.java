@@ -44,18 +44,26 @@ public final class DeprecatedCode extends ImmutableIdentifier implements Depreca
     private static final long serialVersionUID = 357222258307746767L;
 
     /**
+     * The replacement for the deprecated object, or {@code null} if none.
+     */
+    public final String replacedBy;
+
+    /**
      * Creates a deprecated identifier.
      *
      * @param authority  Organization or party responsible for definition and maintenance of the code space or code.
      * @param codeSpace  Name or identifier of the person or organization responsible for namespace.
      * @param code       Identifier code or name, optionally from a controlled list or pattern defined by a code space.
      * @param version    The version of the associated code space or code as specified by the code authority, or {@code null} if none.
+     * @param replacedBy The replacement for the deprecated object, or {@code null} if none.
      * @param remarks    Comments on or information about why this identifier is deprecated, or {@code null} if none.
      */
     public DeprecatedCode(final Citation authority, final String codeSpace,
-            final String code, final String version, final InternationalString remarks)
+            final String code, final String version, final String replacedBy,
+            InternationalString remarks)
     {
         super(authority, codeSpace, code, version, remarks);
+        this.replacedBy = replacedBy;
     }
 
     /**
