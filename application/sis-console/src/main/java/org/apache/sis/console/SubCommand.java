@@ -38,7 +38,7 @@ import org.apache.sis.internal.util.X364;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.3
+ * @version 0.7
  * @module
  */
 abstract class SubCommand {
@@ -278,6 +278,13 @@ abstract class SubCommand {
         }
         err.println(Errors.format(key, expected, size));
         return true;
+    }
+
+    /**
+     * Returns {@code true} if the command should use the standard input.
+     */
+    final boolean useStandardInput() {
+        return files.isEmpty() && System.console() == null;
     }
 
     /**

@@ -26,7 +26,7 @@ import org.junit.BeforeClass;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.5
+ * @version 0.7
  * @module
  */
 @Suite.SuiteClasses({
@@ -40,6 +40,8 @@ import org.junit.BeforeClass;
     org.apache.sis.internal.storage.xml.MimeTypeDetectorTest.class,
     org.apache.sis.internal.storage.xml.XMLStoreProviderTest.class,
     org.apache.sis.internal.storage.xml.XMLStoreTest.class,
+    org.apache.sis.internal.storage.wkt.StoreProviderTest.class,
+    org.apache.sis.internal.storage.wkt.StoreTest.class,
     org.apache.sis.storage.DataStoresTest.class,
     org.apache.sis.index.GeoHashCoderTest.class
 })

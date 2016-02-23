@@ -55,7 +55,7 @@ import static java.util.Collections.singleton;
  * @version 0.4
  * @module
  */
-public class XMLStore extends DataStore {
+final class XMLStore extends DataStore {
     /**
      * The file name.
      */
@@ -171,8 +171,8 @@ public class XMLStore extends DataStore {
      */
     @Override
     public Metadata getMetadata() throws DataStoreException {
-        unmarshal();
         if (metadata == null) {
+            unmarshal();
             if (object instanceof Metadata) {
                 metadata = (Metadata) object;
             } else if (object instanceof ReferenceSystem) {

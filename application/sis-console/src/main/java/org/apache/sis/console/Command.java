@@ -38,6 +38,7 @@ import org.apache.sis.util.logging.MonolineFormatter;
  * <tr><td>{@code about}    </td><td>Show information about Apache SIS and system configuration.</td></tr>
  * <tr><td>{@code mime-type}</td><td>Show MIME type for the given file.</td></tr>
  * <tr><td>{@code metadata} </td><td>Show metadata information for the given file.</td></tr>
+ * <tr><td>{@code crs}      </td><td>Show Coordinate Reference System information for the given file or code.</td></tr>
  * </table></blockquote>
  *
  * Each command can accepts an arbitrary amount of the following options:
@@ -60,11 +61,11 @@ import org.apache.sis.util.logging.MonolineFormatter;
  *
  * <div class="section">SIS installation on remote machines</div>
  * Some sub-commands can operate on SIS installation on remote machines, provided that remote access has been enabled
- * at the Java Virtual Machine startup time. See {@link org.apache.sis.console} package javadoc for more information.
+ * at the Java Virtual Machine startup time. See {@linkplain org.apache.sis.console package javadoc} for more information.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.6
+ * @version 0.7
  * @module
  */
 public final class Command {
