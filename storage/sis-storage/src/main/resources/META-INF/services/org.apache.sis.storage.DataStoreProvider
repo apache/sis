@@ -1,1 +1,2 @@
 org.apache.sis.internal.storage.xml.XMLStoreProvider
+org.apache.sis.internal.storage.wkt.StoreProvider
