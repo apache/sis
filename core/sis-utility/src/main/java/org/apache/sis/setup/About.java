@@ -368,19 +368,26 @@ fill:   for (int i=0; ; i++) {
                 }
                 case 14: {
                     if (sections.contains(PATHS)) {
+                        nameKey = Vocabulary.Keys.DataBase;
+                        value = MetadataServices.getInstance().getInformation("DataSource", locale);
+                    }
+                    break;
+                }
+                case 15: {
+                    if (sections.contains(PATHS)) {
                         nameKey = Vocabulary.Keys.TemporaryFiles;
                         value = getProperty("java.io.tmpdir");
                     }
                     break;
                 }
-                case 15: {
+                case 16: {
                     if (sections.contains(PATHS)) {
                         nameKey = Vocabulary.Keys.JavaHome;
                         value = javaHome = getProperty("java.home");
                     }
                     break;
                 }
-                case 16: {
+                case 17: {
                     newSection = LIBRARIES;
                     if (sections.contains(LIBRARIES)) {
                         nameKey = Vocabulary.Keys.JavaExtensions;
@@ -388,7 +395,7 @@ fill:   for (int i=0; ; i++) {
                     }
                     break;
                 }
-                case 17: {
+                case 18: {
                     if (sections.contains(LIBRARIES)) {
                         nameKey = Vocabulary.Keys.Classpath;
                         value = classpath(getProperty("java.class.path"), false);
