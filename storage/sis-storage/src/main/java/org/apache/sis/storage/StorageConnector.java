@@ -369,6 +369,11 @@ public class StorageConnector implements Serializable {
         if (views != null) {
             final Object view = views.get(type);
             if (view != null) {
+                if (view == storage && view instanceof InputStream) try {
+                    resetInputStream();
+                } catch (IOException e) {
+                    throw new DataStoreException(Errors.format(Errors.Keys.CanNotRead_1, getStorageName()), e);
+                }
                 return (view != Void.TYPE) ? type.cast(view) : null;
             }
         } else {
@@ -388,7 +393,7 @@ public class StorageConnector implements Serializable {
             } else if (type == DataInput.class) {
                 createDataInput();
                 done = true;
-            } else if (type == ChannelDataInput.class) { // Undocumented case (SIS internal)
+            } else if (type == ChannelDataInput.class) {                // Undocumented case (SIS internal)
                 createChannelDataInput(false);
                 done = true;
             }
@@ -416,6 +421,19 @@ public class StorageConnector implements Serializable {
     }
 
     /**
+     * Assuming that {@link #storage} is an instance of {@link InputStream}, resets its position. This method
+     * is the converse of the marks performed at the beginning of {@link #createChannelDataInput(boolean)}.
+     */
+    private void resetInputStream() throws IOException {
+        final ChannelDataInput channel = getView(ChannelDataInput.class);
+        if (channel != null) {
+            ((InputStream) storage).reset();        // May throw an exception if mark is unsupported.
+            channel.buffer.limit(0);                // Must be after storage.reset().
+            channel.setStreamPosition(0);           // Must be after buffer.limit(0).
+        }
+    }
+
+    /**
      * Creates a view for the input as a {@link ChannelDataInput} if possible.
      * If the view can not be created, remember that fact in order to avoid new attempts.
      *
@@ -423,8 +441,22 @@ public class StorageConnector implements Serializable {
      * @throws IOException If an error occurred while opening a channel for the input.
      */
     private void createChannelDataInput(final boolean asImageInputStream) throws IOException {
+        /*
+         * Before to try to open an InputStream, mark its position so we can rewind if the user asks for
+         * the InputStream directly. We need to reset because ChannelDataInput may have read some bytes.
+         * Note that if mark is unsupported, the default InputStream.mark() implementation does nothing.
+         * See above 'resetInputStream()' method.
+         */
+        if (storage instanceof InputStream) {
+            ((InputStream) storage).mark(DEFAULT_BUFFER_SIZE);
+        }
+        /*
+         * Following method call recognizes ReadableByteChannel, InputStream (with special case for FileInputStream),
+         * URL, URI, File, Path or other types that may be added in future SIS versions.
+         */
         final ReadableByteChannel channel = IOUtilities.open(storage,
                 getOption(OptionKey.URL_ENCODING), getOption(OptionKey.OPEN_OPTIONS));
+
         ChannelDataInput asDataInput = null;
         if (channel != null) {
             addViewToClose(channel, storage);
@@ -475,7 +507,7 @@ public class StorageConnector implements Serializable {
                 // No call to 'addViewToClose' because the instance already exists.
             } else {
                 asDataInput = new ChannelImageInputStream(c);
-                if (views.put(ChannelDataInput.class, asDataInput) != c) { // Replace the previous instance.
+                if (views.put(ChannelDataInput.class, asDataInput) != c) {          // Replace the previous instance.
                     throw new ConcurrentModificationException();
                 }
                 addViewToClose(asDataInput, c.channel);
@@ -595,13 +627,19 @@ public class StorageConnector implements Serializable {
             final DataInput input = getStorageAs(DataInput.class);
             return (input instanceof ImageInputStream) ? input : null;
         }
+        /*
+         * If the user asked an InputStream, we may return the storage as-is if it was already an InputStream.
+         * However before doing so, we may need to reset the InputStream position if the stream has been used
+         * by a ChannelDataInput.
+         */
         if (type == InputStream.class) {
             if (storage instanceof InputStream) {
+                resetInputStream();
                 return storage;
             }
             final DataInput input = getStorageAs(DataInput.class);
             if (input instanceof InputStream) {
-                return (InputStream) input;
+                return input;
             }
             if (input instanceof ImageInputStream) {
                 final InputStream c = new InputStreamAdapter((ImageInputStream) input);

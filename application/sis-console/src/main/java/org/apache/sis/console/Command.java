@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.logging.MonolineFormatter;
 
@@ -51,6 +52,7 @@ import org.apache.sis.util.logging.MonolineFormatter;
  * <tr><td>{@code --colors}   </td><td>Whether colorized output shall be enabled.</td></tr>
  * <tr><td>{@code --brief}    </td><td>Whether the output should contains only brief information.</td></tr>
  * <tr><td>{@code --verbose}  </td><td>Whether the output should contains more detailed information.</td></tr>
+ * <tr><td>{@code --debug}    </td><td>Prints full stack trace in case of failure.</td></tr>
  * <tr><td>{@code --help}     </td><td>Lists the options available for a specific command.</td></tr>
  * </table></blockquote>
  *
@@ -212,16 +214,28 @@ public final class Command {
     /**
      * Prints the message of the given exception. This method is invoked only when the error occurred before
      * the {@link SubCommand} has been built, otherwise the {@link SubCommand#err} printer shall be used.
+     *
+     * @param args The command line arguments, used only for detecting if the {@code --debug} option was present.
      */
-    private static void error(final Exception e) {
+    private static void error(final String[] args, final Exception e) {
+        final boolean debug = ArraysExt.containsIgnoreCase(args, Option.PREFIX + "debug");
         final Console console = System.console();
         if (console != null) {
             final PrintWriter err = console.writer();
-            err.println(e.getLocalizedMessage());
+            if (debug) {
+                e.printStackTrace(err);
+            } else {
+                err.println(e.getLocalizedMessage());
+            }
             err.flush();
         } else {
+            @SuppressWarnings("UseOfSystemOutOrSystemErr")
             final PrintStream err = System.err;
-            err.println(e.getLocalizedMessage());
+            if (debug) {
+                e.printStackTrace(err);
+            } else {
+                err.println(e.getLocalizedMessage());
+            }
             err.flush();
         }
     }
@@ -254,11 +268,11 @@ public final class Command {
         try {
             c = new Command(args);
         } catch (InvalidCommandException e) {
-            error(e);
+            error(args, e);
             System.exit(INVALID_COMMAND_EXIT_CODE);
             return;
         } catch (InvalidOptionException e) {
-            error(e);
+            error(args, e);
             System.exit(INVALID_OPTION_EXIT_CODE);
             return;
         }

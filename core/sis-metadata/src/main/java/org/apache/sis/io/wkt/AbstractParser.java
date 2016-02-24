@@ -36,6 +36,7 @@ import org.opengis.util.InternationalString;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.util.StandardDateFormat;
 import org.apache.sis.measure.Units;
+import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
@@ -165,7 +166,7 @@ abstract class AbstractParser implements Parser {
         this.unitFormat  = unitFormat;
         this.errorLocale = errorLocale;
         if (Symbols.SCIENTIFIC_NOTATION && numberFormat instanceof DecimalFormat) {
-            final DecimalFormat decimalFormat = (DecimalFormat) ((DecimalFormat) numberFormat).clone();
+            final DecimalFormat decimalFormat = (DecimalFormat) numberFormat.clone();
             exponentSymbol = decimalFormat.getDecimalFormatSymbols().getExponentSeparator();
             String pattern = decimalFormat.toPattern();
             if (!pattern.contains("E0")) {
@@ -236,6 +237,7 @@ abstract class AbstractParser implements Parser {
     public Object parseObject(final String text, final ParsePosition position) throws ParseException {
         warnings = null;
         ignoredElements.clear();
+        ArgumentChecks.ensureNonEmpty("text", text);
         final Element element = new Element("<root>", new Element(this, text, position, null));
         final Object object = parseObject(element);
         element.close(ignoredElements);
