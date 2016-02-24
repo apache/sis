@@ -19,6 +19,7 @@ package org.apache.sis.internal.metadata;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Locale;
+import javax.sql.DataSource;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Role;
 import org.opengis.metadata.citation.Citation;
@@ -27,12 +28,17 @@ import org.opengis.metadata.citation.ResponsibleParty;
 import org.apache.sis.internal.simple.CitationConstant;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.util.MetadataServices;
+import org.apache.sis.internal.metadata.sql.Initializer;
+import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.metadata.iso.ImmutableIdentifier;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.citation.DefaultOrganisation;
 import org.apache.sis.metadata.iso.citation.DefaultResponsibleParty;
+import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.iso.Types;
+import org.apache.sis.util.Exceptions;
+import org.apache.sis.util.Classes;
 
 import static java.util.Collections.singleton;
 
@@ -200,6 +206,37 @@ public final class ServicesForUtility extends MetadataServices {
      */
     @Override
     public String getInformation(final String key, final Locale locale) {
+        /* switch (key) */ {
+            if (key.equals("DataSource")) {
+                Object server = null, database = null;
+                try {
+                    final DataSource ds = Initializer.getDataSource();
+                    if (ds != null) {
+                        final Class<?> type = ds.getClass();
+                        database = type.getMethod("getDatabaseName", (Class[]) null).invoke(ds, (Object[]) null);
+                        server   = type.getMethod("getServerName", (Class[]) null).invoke(ds, (Object[]) null);
+                    }
+                } catch (NoSuchMethodException e) {
+                    Logging.recoverableException(Logging.getLogger(Loggers.SYSTEM),
+                            MetadataServices.class, "getInformation", e);
+                } catch (Exception e) {
+                    // Leave the message alone if it contains at least 2 words.
+                    String message = Exceptions.getLocalizedMessage(e, locale);
+                    if (message == null || message.indexOf(' ') < 0) {
+                        message = Classes.getShortClassName(e) + ": " + message;
+                    }
+                    return message;
+                }
+                if (database != null) {
+                    if (server != null) {
+                        database = "//" + server + '/' + database;
+                    }
+                    return database.toString();
+                }
+                return null;
+            }
+            // More cases may be added in future SIS versions.
+        }
         return ReferencingServices.getInstance().getInformation(key, locale);
     }
 }

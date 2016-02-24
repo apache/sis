@@ -24,6 +24,7 @@ import org.opengis.metadata.identification.CharacterSet;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -32,14 +33,15 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
 
 
 /**
- * Tests {@link XMLStore}.
+ * Tests {@link Store}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.5
+ * @version 0.7
  * @module
  */
-public final strictfp class XMLStoreTest extends TestCase {
+@DependsOn(org.apache.sis.storage.StorageConnectorTest.class)
+public final strictfp class StoreTest extends TestCase {
     /**
      * The metadata to unmarshal.
      */
@@ -82,14 +84,14 @@ public final strictfp class XMLStoreTest extends TestCase {
             "</gmd:MD_Metadata>\n";
 
     /**
-     * Tests {@link XMLStore#getMetadata()}.
+     * Tests {@link Store#getMetadata()}.
      *
-     * @throws DataStoreException If an error occurred while reading the metadata.
+     * @throws DataStoreException if en error occurred while reading the XML.
      */
     @Test
     public void testMetadata() throws DataStoreException {
         final Metadata metadata;
-        final XMLStore store = new XMLStore(new StorageConnector(new StringReader(XML)));
+        final Store store = new Store(new StorageConnector(new StringReader(XML)));
         try {
             metadata = store.getMetadata();
             assertSame("Expected cached value.", metadata, store.getMetadata());

@@ -78,11 +78,11 @@ public final class NTv2 extends AbstractProvider {
     private static final long serialVersionUID = -4027618007780159180L;
 
     /**
-     * Warns the user that the parameter type will be changed from {@link File}
+     * Warns the user that the parameter type will change from {@link File}
      * to {@link java.nio.file.Path} when Apache SIS will upgrade to Java 7.
      */
     static final InternationalString WARNING = new SimpleInternationalString(
-            "The parameter type will be changed from ‘java.io.File’ to ‘java.nio.file.Path’ " +
+            "The parameter type will change from ‘java.io.File’ to ‘java.nio.file.Path’ " +
             "when Apache SIS will upgrade to Java 7.");
 
     /**

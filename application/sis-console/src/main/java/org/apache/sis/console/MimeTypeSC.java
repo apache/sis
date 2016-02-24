@@ -48,7 +48,7 @@ final class MimeTypeSC extends SubCommand {
      * Creates the {@code "mime-type"} sub-command.
      */
     MimeTypeSC(final int commandIndex, final String... args) throws InvalidOptionException {
-        super(commandIndex, args, EnumSet.of(Option.ENCODING, Option.HELP));
+        super(commandIndex, args, EnumSet.of(Option.ENCODING, Option.HELP, Option.DEBUG));
     }
 
     /**
