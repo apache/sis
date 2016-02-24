@@ -588,8 +588,8 @@ public class TableAppender extends Appender implements Flushable {
      * row with the specified character. The subsequent writing operations will occur on a new
      * row.
      *
-     * <p>Calling {@code nextLine('-')} from the first column of a row is a convenient way
-     * to fill this row with a line separator.</p>
+     * <p>Calling {@code nextLine('-')} or {@code nextLine('═')} from the first column of a row
+     * is a convenient way to fill this row with a line separator.</p>
      *
      * @param fill Character filling the rest of the line (default to whitespace).
      *             This character may be use as a row separator.

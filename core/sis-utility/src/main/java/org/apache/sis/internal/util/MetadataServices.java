@@ -120,6 +120,7 @@ public class MetadataServices extends OptionalDependency {
      * <p>Current keys are:</p>
      * <ul>
      *   <li>{@code "EPSG"}: version of EPSG database.</li>
+     *   <li>{@code "DataSource"}: URL to the data source, or error message.</li>
      * </ul>
      *
      * @param  key A key identifying the information to return.

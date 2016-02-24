@@ -185,13 +185,13 @@ public final class Warnings implements Localized, Serializable {
     final void add(final InternationalString message, final Exception cause, final String[] source) {
         assert (message != null) || (cause != null);
         if (messages == null) {
-            messages = new ArrayList<>(4);  // We expect few items.
+            messages = new ArrayList<>(4);                          // We expect few items.
         }
         messages.add(message);
         messages.add(cause);
         if (cause != null) {
             if (exceptionSources == null) {
-                exceptionSources = new LinkedHashMap<>(4);  // We expect few items.
+                exceptionSources = new LinkedHashMap<>(4);          // We expect few items.
             }
             exceptionSources.put(cause, source);
         }

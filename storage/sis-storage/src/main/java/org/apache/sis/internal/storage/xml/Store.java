@@ -52,10 +52,10 @@ import static java.util.Collections.singleton;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.4
+ * @version 0.7
  * @module
  */
-public class XMLStore extends DataStore {
+final class Store extends DataStore {
     /**
      * The file name.
      */
@@ -83,7 +83,7 @@ public class XMLStore extends DataStore {
      * @param  connector Information about the storage (URL, stream, <i>etc</i>).
      * @throws DataStoreException If an error occurred while opening the stream.
      */
-    public XMLStore(final StorageConnector connector) throws DataStoreException {
+    public Store(final StorageConnector connector) throws DataStoreException {
         name = connector.getStorageName();
         final InputStream in = connector.getStorageAs(InputStream.class);
         if (in != null) {
@@ -171,8 +171,8 @@ public class XMLStore extends DataStore {
      */
     @Override
     public Metadata getMetadata() throws DataStoreException {
-        unmarshal();
         if (metadata == null) {
+            unmarshal();
             if (object instanceof Metadata) {
                 metadata = (Metadata) object;
             } else if (object instanceof ReferenceSystem) {

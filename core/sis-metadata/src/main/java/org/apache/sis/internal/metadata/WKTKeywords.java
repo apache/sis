@@ -163,6 +163,7 @@ public final class WKTKeywords extends Static {
      * Related to {@link org.apache.sis.referencing.operation.AbstractCoordinateOperation}.
      */
     public static final String
+            BoundCRS            = "BoundCRS",
             Method              = "Method",
             Formula             = "Formula",
             Projection          = "Projection",

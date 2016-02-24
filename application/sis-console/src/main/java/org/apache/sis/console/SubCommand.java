@@ -38,7 +38,7 @@ import org.apache.sis.internal.util.X364;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.3
+ * @version 0.7
  * @module
  */
 abstract class SubCommand {
@@ -88,6 +88,11 @@ abstract class SubCommand {
     protected final boolean colors;
 
     /**
+     * {@code true} for printing the full stack trace in case of failure.
+     */
+    protected final boolean debug;
+
+    /**
      * Output stream to the console. This output stream uses the encoding
      * specified by the {@code "--encoding"} argument, if presents.
      */
@@ -124,6 +129,7 @@ abstract class SubCommand {
         this.timezone     = parent.timezone;
         this.encoding     = parent.encoding;
         this.colors       = parent.colors;
+        this.debug        = parent.debug;
         this.out          = parent.out;
         this.err          = parent.err;
         this.outputBuffer = parent.outputBuffer;
@@ -141,6 +147,7 @@ abstract class SubCommand {
      * @param  validOptions The command-line options allowed by this sub-command.
      * @throws InvalidOptionException If an illegal option has been provided, or the option has an illegal value.
      */
+    @SuppressWarnings("UseOfSystemOutOrSystemErr")
     protected SubCommand(final int commandIndex, final String[] arguments, final EnumSet<Option> validOptions)
             throws InvalidOptionException
     {
@@ -188,6 +195,8 @@ abstract class SubCommand {
         final Console console;
         final boolean explicitEncoding;
         try {
+            debug = options.containsKey(option = Option.DEBUG);
+
             value = options.get(option = Option.LOCALE);
             locale = (value != null) ? Locales.parse(value) : Locale.getDefault(Locale.Category.DISPLAY);
 
@@ -202,7 +211,7 @@ abstract class SubCommand {
             console = System.console();
             colors = (value != null) ? Option.COLORS.parseBoolean(value) : (console != null) && X364.isAnsiSupported();
         } catch (RuntimeException e) {
-            @SuppressWarnings("null") // 'option' has been assigned in 'get' argument.
+            @SuppressWarnings("null")                                   // 'option' has been assigned in 'get' argument.
             final String name = option.name().toLowerCase(Locale.US);
             throw new InvalidOptionException(Errors.format(Errors.Keys.IllegalOptionValue_2, name, value), name);
         }
@@ -281,6 +290,13 @@ abstract class SubCommand {
     }
 
     /**
+     * Returns {@code true} if the command should use the standard input.
+     */
+    final boolean useStandardInput() {
+        return files.isEmpty() && System.console() == null;
+    }
+
+    /**
      * Prints the <cite>"Can not open …"</cite> error message followed by the message in the given exception.
      *
      * @param fileIndex Index in the {@link #files} list of the file that can not be opened.
@@ -298,7 +314,11 @@ abstract class SubCommand {
      */
     final void error(final String message, final Exception e) {
         out.flush();
-        err.println(Exceptions.formatChainedMessages(locale, message, e));
+        if (debug) {
+            e.printStackTrace(err);
+        } else {
+            err.println(Exceptions.formatChainedMessages(locale, message, e));
+        }
     }
 
     /**
