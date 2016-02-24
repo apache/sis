@@ -60,25 +60,29 @@ public final strictfp class StoreProviderTest extends TestCase {
     @Test
     public void testProbeContentFromReader() throws DataStoreException {
         final StoreProvider p = new StoreProvider();
-        testProbeContentFromReader(true,  p, StoreTest.WKT);
-        testProbeContentFromReader(true,  p, "GeodeticCRS[…]");
-        testProbeContentFromReader(true,  p, "GeodeticCRS(…)");
-        testProbeContentFromReader(true,  p, "Vert_CS[…]");
-        testProbeContentFromReader(false, p, "DummyCS[…]");
-        testProbeContentFromReader(true,  p, "   GeodeticCRS  […]");
-        testProbeContentFromReader(false, p, "   DummyCS  […]");
-        testProbeContentFromReader(false, p, "Geodetic");
+        testProbeContentFromReader(true,  1, p, StoreTest.WKT);
+        testProbeContentFromReader(true,  2, p, "GeodeticCRS[…]");
+        testProbeContentFromReader(true,  2, p, "GeodeticCRS(…)");
+        testProbeContentFromReader(true,  1, p, "Vert_CS[…]");
+        testProbeContentFromReader(false, 1, p, "DummyCS[…]");
+        testProbeContentFromReader(true,  2, p, "   GeodeticCRS  […]");
+        testProbeContentFromReader(false, 1, p, "   DummyCS  […]");
+        testProbeContentFromReader(false, 0, p, "Geodetic");
     }
 
     /**
      * Implementation of {@link #testProbeContentFromReader()}.
      */
-    private static void testProbeContentFromReader(final boolean supported,
+    private static void testProbeContentFromReader(final boolean isSupported, final int version,
             final StoreProvider p, final String wkt) throws DataStoreException
     {
         final StorageConnector c = new StorageConnector(new StringReader(wkt));
         final ProbeResult r = p.probeContent(c);
         c.closeAllExcept(null);
-        assertEquals("isSupported()", supported, r.isSupported());
+        assertEquals("isSupported", isSupported, r.isSupported());
+        if (isSupported) {
+            assertEquals("mimeType", "application/wkt", r.getMimeType());
+            assertEquals("version", version, r.getVersion().getMajor());
+        }
     }
 }
