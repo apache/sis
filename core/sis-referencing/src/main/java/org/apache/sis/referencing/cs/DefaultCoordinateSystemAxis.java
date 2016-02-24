@@ -54,6 +54,7 @@ import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.io.wkt.ElementKind;
 import org.apache.sis.io.wkt.Transliterator;
 import org.apache.sis.io.wkt.FormattableObject;
+import org.apache.sis.io.wkt.UnformattableObjectException;
 
 import static java.lang.Double.doubleToLongBits;
 import static java.lang.Double.NEGATIVE_INFINITY;
@@ -92,7 +93,7 @@ import java.util.Objects;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4
- * @version 0.6
+ * @version 0.7
  * @module
  *
  * @see AbstractCS
@@ -772,9 +773,13 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
          * if the direction is of the kind "South along 90°N" for instance.
          */
         DirectionAlongMeridian meridian = null;
-        if (!isWKT1 && AxisDirections.isUserDefined(dir)) {
+        if (AxisDirections.isUserDefined(dir)) {
             meridian = DirectionAlongMeridian.parse(dir);
             if (meridian != null) {
+                if (isWKT1) {
+                    throw new UnformattableObjectException(Errors.format(
+                            Errors.Keys.CanNotRepresentInFormat_2, "WKT 1", meridian));
+                }
                 dir = meridian.baseDirection;
             }
         }

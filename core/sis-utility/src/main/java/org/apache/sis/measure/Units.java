@@ -415,21 +415,22 @@ public final class Units extends Static {
              */
             if (uom.equals("°")                      || equalsIgnorePlural(uom, "decimal_degree")) return NonSI.DEGREE_ANGLE;
             if (uom.equalsIgnoreCase("arcsec"))                                                    return NonSI.SECOND_ANGLE;
-            if (equalsIgnorePlural(uom, "grade"))                                                  return NonSI.GRADE;
             if (uom.equalsIgnoreCase("rad")          || equalsIgnorePlural(uom, "radian"))         return SI.RADIAN;
-            if (equalsIgnorePlural(uom, "kilometer") || equalsIgnorePlural(uom, "kilometre"))      return SI.KILOMETRE;
             if (equalsIgnorePlural(uom, "meter")     || equalsIgnorePlural(uom, "metre"))          return SI.METRE;
-            if (equalsIgnorePlural(uom, "week"))   return NonSI.WEEK;
-            if (equalsIgnorePlural(uom, "day"))    return NonSI.DAY;
-            if (equalsIgnorePlural(uom, "hour"))   return NonSI.HOUR;
-            if (equalsIgnorePlural(uom, "minute")) return NonSI.MINUTE;
-            if (equalsIgnorePlural(uom, "second")) return SI   .SECOND;
-            if (equalsIgnorePlural(uom, "pixel"))  return NonSI.PIXEL;
-            if (isCelsius(uom))                    return SI.CELSIUS;
-            if (uom.isEmpty())                     return Unit.ONE;
-            if (uom.equalsIgnoreCase("ppm"))       return PPM;
-            if (uom.equalsIgnoreCase("psu"))       return PSU;
-            if (uom.equalsIgnoreCase("sigma"))     return SIGMA;
+            if (equalsIgnorePlural(uom, "kilometer") || equalsIgnorePlural(uom, "kilometre"))      return SI.KILOMETRE;
+            if (equalsIgnorePlural(uom, "week"))        return NonSI.WEEK;
+            if (equalsIgnorePlural(uom, "day"))         return NonSI.DAY;
+            if (equalsIgnorePlural(uom, "hour"))        return NonSI.HOUR;
+            if (equalsIgnorePlural(uom, "minute"))      return NonSI.MINUTE;
+            if (equalsIgnorePlural(uom, "second"))      return SI   .SECOND;
+            if (equalsIgnorePlural(uom, "pixel"))       return NonSI.PIXEL;
+            if (equalsIgnorePlural(uom, "grade"))       return NonSI.GRADE;
+            if (isCelsius(uom))                         return SI.CELSIUS;
+            if (uom.isEmpty())                          return Unit.ONE;
+            if (uom.equalsIgnoreCase("US survey foot")) return NonSI.FOOT_SURVEY_US;
+            if (uom.equalsIgnoreCase("ppm"))            return PPM;
+            if (uom.equalsIgnoreCase("psu"))            return PSU;
+            if (uom.equalsIgnoreCase("sigma"))          return SIGMA;
         }
         final Unit<?> unit;
         try {
