@@ -20,6 +20,7 @@ import java.io.StringReader;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.ProbeResult;
+import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -27,26 +28,27 @@ import static org.junit.Assert.*;
 
 
 /**
- * Tests {@link XMLStoreProvider}.
+ * Tests {@link StoreProvider}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.4
+ * @version 0.7
  * @module
  */
-public final strictfp class XMLStoreProviderTest extends TestCase {
+@DependsOn(org.apache.sis.storage.StorageConnectorTest.class)
+public final strictfp class StoreProviderTest extends TestCase {
     /**
-     * Tests {@link XMLStoreProvider#probeContent(StorageConnector)} method from a {@link Reader} object.
+     * Tests {@link StoreProvider#probeContent(StorageConnector)} method from a {@link Reader} object.
      *
-     * @throws DataStoreException Should never happen.
+     * @throws DataStoreException if en error occurred while reading the XML.
      */
     @Test
     public void testProbeContentFromReader() throws DataStoreException {
-        final XMLStoreProvider p = new XMLStoreProvider();
-        final StorageConnector c = new StorageConnector(new StringReader(XMLStoreTest.XML));
+        final StoreProvider    p = new StoreProvider();
+        final StorageConnector c = new StorageConnector(new StringReader(StoreTest.XML));
         final ProbeResult      r = p.probeContent(c);
         c.closeAllExcept(null);
-        assertTrue  ("isSupported()", r.isSupported());
-        assertEquals("getMimeType()", "application/vnd.iso.19139+xml", r.getMimeType());
+        assertTrue  ("isSupported", r.isSupported());
+        assertEquals("mimeType", "application/vnd.iso.19139+xml", r.getMimeType());
     }
 }

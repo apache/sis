@@ -27,14 +27,14 @@ import org.apache.sis.storage.ProbeResult;
 
 
 /**
- * The provider of {@link XMLStore} instances.
+ * The provider of {@link Store} instances.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.4
+ * @version 0.7
  * @module
  */
-public class XMLStoreProvider extends DataStoreProvider {
+public class StoreProvider extends DataStoreProvider {
     /**
      * The {@value} MIME type, used only of {@link #probeContent(StorageConnector)} can not determine
      * a more accurate type.
@@ -55,11 +55,11 @@ public class XMLStoreProvider extends DataStoreProvider {
     /**
      * Creates a new provider.
      */
-    public XMLStoreProvider() {
+    public StoreProvider() {
     }
 
     /**
-     * Returns {@link ProbeResult#SUPPORTED} if the given storage appears to be supported by {@link XMLStore}.
+     * Returns {@link ProbeResult#SUPPORTED} if the given storage appears to be supported by {@link Store}.
      * Returning {@code SUPPORTED} from this method does not guarantee that reading or writing will succeed,
      * only that there appears to be a reasonable chance of success based on a brief inspection of the storage
      * header.
@@ -127,7 +127,7 @@ public class XMLStoreProvider extends DataStoreProvider {
     }
 
     /**
-     * Returns a {@link XMLStore} implementation associated with this provider.
+     * Returns a {@link Store} implementation associated with this provider.
      *
      * @param  storage Information about the storage (URL, stream, <i>etc</i>).
      * @return A data store implementation associated with this provider for the given storage.
@@ -135,6 +135,6 @@ public class XMLStoreProvider extends DataStoreProvider {
      */
     @Override
     public DataStore open(final StorageConnector storage) throws DataStoreException {
-        return new XMLStore(storage);
+        return new Store(storage);
     }
 }

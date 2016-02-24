@@ -298,7 +298,7 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
                     if (ex == null) ex = e;
                 }
                 if (verticalElements != null) {
-                    warning(Errors.formatInternational(Errors.Keys.CanNotAssignUnitToDimension_2,
+                    warning(null, null, Errors.formatInternational(Errors.Keys.CanNotAssignUnitToDimension_2,
                             WKTKeywords.VerticalExtent, verticalElements.unit), ex);
                 }
             }
@@ -410,7 +410,7 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
      * This include elements like {@code "SCOPE"}, {@code "ID"} (WKT 2) or {@code "AUTHORITY"} (WKT 1).
      * This WKT 1 element has the following pattern:
      *
-     * {@preformat text
+     * {@preformat wkt
      *     AUTHORITY["<name>", "<code>"]
      * }
      *
@@ -434,8 +434,8 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
         Element element;
         while ((element = parent.pullElement(OPTIONAL, ID_KEYWORDS)) != null) {
             final String   codeSpace = element.pullString("codeSpace");
-            final String   code      = element.pullObject("code").toString();   // Accepts Integer as well as String.
-            final Object   version   = element.pullOptional(Object.class);      // Accepts Number as well as String.
+            final String   code      = element.pullObject("code").toString();       // Accepts Integer as well as String.
+            final Object   version   = element.pullOptional(Object.class);          // Accepts Number as well as String.
             final Element  citation  = element.pullElement(OPTIONAL, WKTKeywords.Citation);
             final String   authority;
             if (citation != null) {
@@ -504,8 +504,11 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
             while ((element = parent.pullElement(OPTIONAL, WKTKeywords.Area)) != null) {
                 final String area = element.pullString("area");
                 element.close(ignoredElements);
-                if (extent == null) extent = new DefaultExtent();
-                extent.getGeographicElements().add(new DefaultGeographicDescription(area));
+                if (extent == null) {
+                    extent = new DefaultExtent(area, null, null, null);
+                } else {
+                    extent.getGeographicElements().add(new DefaultGeographicDescription(area));
+                }
             }
             /*
              * Example: BBOX[51.43, 2.54, 55.77, 6.40]
@@ -548,7 +551,7 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
                     element.pullString("startTime");
                     element.pullString("endTime");
                     element.close(ignoredElements);
-                    warning(Errors.formatInternational(Errors.Keys.UnsupportedType_1, "TimeExtent[String,String]"), null);
+                    warning(parent, element, Errors.formatInternational(Errors.Keys.UnsupportedType_1, "TimeExtent[String,String]"), null);
                 } else {
                     final Date startTime = element.pullDate("startTime");
                     final Date endTime   = element.pullDate("endTime");
@@ -559,9 +562,12 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
                         if (extent == null) extent = new DefaultExtent();
                         extent.getTemporalElements().add(t);
                     } catch (UnsupportedOperationException e) {
-                        warning(parent, element, e);
+                        warning(parent, element, null, e);
                     }
                 }
+            }
+            if (extent != null) {
+                properties.put(ReferenceSystem.DOMAIN_OF_VALIDITY_KEY, extent);
             }
             /*
              * Example: REMARK["Замечание на русском языке"]
@@ -594,7 +600,7 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
      * Parses an optional {@code "UNIT"} element of a known dimension.
      * This element has the following pattern:
      *
-     * {@preformat text
+     * {@preformat wkt
      *     UNIT["<name>", <conversion factor> {,<authority>}]
      * }
      *
@@ -626,7 +632,7 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
             if (baseUnit.toSI().equals(unit.toSI())) {
                 return (Unit<Q>) unit;
             } else {
-                warning(Errors.formatInternational(Errors.Keys.IllegalUnitFor_2, keyword, unit), null);
+                warning(parent, element, Errors.formatInternational(Errors.Keys.IllegalUnitFor_2, keyword, unit), null);
             }
         }
         return Units.multiply(baseUnit, factor);
@@ -636,7 +642,7 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
      * Parses a {@code "CS"} element followed by all {@code "AXIS"} elements.
      * This element has the following pattern (simplified):
      *
-     * {@preformat text
+     * {@preformat wkt
      *     CS["<type>", dimension],
      *     AXIS["<name>", NORTH | SOUTH | EAST | WEST | UP | DOWN | OTHER],
      *     UNIT["<name>", <conversion factor>],
@@ -932,7 +938,7 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
                 return referencing.createAbstractCS(csProperties, axes);
             }
             else {
-                warning(Errors.formatInternational(Errors.Keys.UnknownType_1, type), null);
+                warning(parent, null, Errors.formatInternational(Errors.Keys.UnknownType_1, type), null);
                 return referencing.createAbstractCS(csProperties, axes);
             }
         }
@@ -945,8 +951,14 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
      * Parses an {@code "AXIS"} element.
      * This element has the following pattern (simplified):
      *
-     * {@preformat text
+     * {@preformat wkt
      *     AXIS["<name (abbr.)>", NORTH | SOUTH | EAST | WEST | UP | DOWN | OTHER, ORDER[n], UNIT[…], ID[…]]
+     * }
+     *
+     * Abbreviation may be specified between parenthesis. Nested parenthesis are possible, as for example:
+     *
+     * {@preformat wkt
+     *     AXIS["Easting (E(X))", EAST]
      * }
      *
      * @param  mode        {@link #FIRST}, {@link #OPTIONAL} or {@link #MANDATORY}.
@@ -997,8 +1009,18 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
          * have to guess one since abbreviation is a mandatory part of axis.
          */
         String abbreviation;
-        final int start, end = name.length() - 1;
+        int start, end = name.length() - 1;
         if (end > 1 && name.charAt(end) == ')' && (start = name.lastIndexOf('(', end-1)) >= 0) {
+            // Abbreviation may have nested parenthesis (e.g. "Easting (E(X))").
+            for (int np = end; (--np >= 0) && name.charAt(np) == ')';) {
+                final int c = name.lastIndexOf('(', start - 1);
+                if (c < 0) {
+                    warning(parent, element, Errors.formatInternational(
+                            Errors.Keys.NonEquilibratedParenthesis_2, '(', name), null);
+                    break;
+                }
+                start = c;
+            }
             abbreviation = CharSequences.trimWhitespaces(name.substring(start + 1, end));
             name = CharSequences.trimWhitespaces(name.substring(0, start));
             if (name.isEmpty()) {
@@ -1072,7 +1094,7 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
      *
      * The legacy WKT 1 pattern was:
      *
-     * {@preformat text
+     * {@preformat wkt
      *     PRIMEM["<name>", <longitude> {,<authority>}]
      * }
      *
@@ -1114,7 +1136,7 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
      * Parses an <strong>optional</strong> {@code "TOWGS84"} element.
      * This element is specific to WKT 1 and has the following pattern:
      *
-     * {@preformat text
+     * {@preformat wkt
      *     TOWGS84[<dx>, <dy>, <dz>, <ex>, <ey>, <ez>, <ppm>]
      * }
      *
@@ -1146,7 +1168,7 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
      *
      * The legacy WKT 1 pattern was:
      *
-     * {@preformat text
+     * {@preformat wkt
      *     SPHEROID["<name>", <semi-major axis>, <inverse flattening> {,<authority>}]
      * }
      *
@@ -1237,7 +1259,7 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
      *
      * The legacy WKT 1 specification was:
      *
-     * {@preformat text
+     * {@preformat wkt
      *     PROJECTION["<name>" {,<authority>}]
      * }
      *
@@ -1311,7 +1333,7 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
      *
      * The legacy WKT 1 pattern was:
      *
-     * {@preformat text
+     * {@preformat wkt
      *     DATUM["<name>", <spheroid> {,<to wgs84>} {,<authority>}]
      * }
      *
@@ -1351,7 +1373,7 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
      *
      * The legacy WKT 1 pattern was:
      *
-     * {@preformat text
+     * {@preformat wkt
      *     VERT_DATUM["<name>", <datum type> {,<authority>}]
      * }
      *
@@ -1389,7 +1411,7 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
     /**
      * Parses a {@code "TimeDatum"} element. This element has the following pattern:
      *
-     * {@preformat text
+     * {@preformat wkt
      *     TimeDatum["<name>", TimeOrigin[<time origin>] {,<authority>}]
      * }
      *
@@ -1420,7 +1442,7 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
      *
      * The legacy WKT 1 pattern was:
      *
-     * {@preformat text
+     * {@preformat wkt
      *     LOCAL_DATUM["<name>", <datum type> {,<authority>}]
      * }
      *
@@ -1481,7 +1503,7 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
      *
      * The legacy WKT 1 pattern was:
      *
-     * {@preformat text
+     * {@preformat wkt
      *     LOCAL_CS["<name>", <local datum>, <unit>, <axis>, {,<axis>}* {,<authority>}]
      * }
      *
@@ -1575,8 +1597,8 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
         try {
             cs = parseCoordinateSystem(element, WKTKeywords.Cartesian, 2, false, unit, datum);
             final Map<String,?> properties = parseMetadataAndClose(element, name, datum);
-            if (cs instanceof CartesianCS) {
-                return crsFactory.createImageCRS(properties, datum, (CartesianCS) cs);
+            if (cs instanceof AffineCS) {
+                return crsFactory.createImageCRS(properties, datum, (AffineCS) cs);
             }
         } catch (FactoryException exception) {
             throw element.parseFailed(exception);
@@ -1590,13 +1612,13 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
      *
      * The legacy WKT 1 specification had two elements for this:
      *
-     * {@preformat text
+     * {@preformat wkt
      *     GEOGCS["<name>", <datum>, <prime meridian>, <angular unit>  {,<twin axes>} {,<authority>}]
      * }
      *
      * and
      *
-     * {@preformat text
+     * {@preformat wkt
      *     GEOCCS["<name>", <datum>, <prime meridian>, <linear unit> {,<axis> ,<axis> ,<axis>} {,<authority>}]
      * }
      *
@@ -1759,7 +1781,7 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
      *
      * The legacy WKT 1 pattern was:
      *
-     * {@preformat text
+     * {@preformat wkt
      *     VERT_CS["<name>", <vert datum>, <linear unit>, {<axis>,} {,<authority>}]
      * }
      *
@@ -1806,7 +1828,7 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
                 baseCRS = parseVerticalCRS(MANDATORY, element, true);
             }
         }
-        if (baseCRS == null) {  // The most usual case.
+        if (baseCRS == null) {                                                              // The most usual case.
             datum = parseVerticalDatum(MANDATORY, element, isWKT1);
         }
         final CoordinateSystem cs;
@@ -1910,7 +1932,7 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
      *
      * The legacy WKT 1 specification was:
      *
-     * {@preformat text
+     * {@preformat wkt
      *     PROJCS["<name>", <geographic cs>, <projection>, {<parameter>,}*,
      *            <linear unit> {,<twin axes>}{,<authority>}]
      * }
@@ -1992,7 +2014,7 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
      *
      * The legacy WKT 1 specification was:
      *
-     * {@preformat text
+     * {@preformat wkt
      *     COMPD_CS["<name>", <head cs>, <tail cs> {,<authority>}]
      * }
      *
@@ -2024,7 +2046,7 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
      * Parses a {@code "FITTED_CS"} element.
      * This element has the following pattern:
      *
-     * {@preformat text
+     * {@preformat wkt
      *     FITTED_CS["<name>", <to base>, <base cs>]
      * }
      *

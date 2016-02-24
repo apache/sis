@@ -16,13 +16,11 @@
  */
 
 /**
- * {@link org.apache.sis.storage.DataStore} implementation for XML files.
- * The kind of objects recognized by this package is listed in the
- * {@link org.apache.sis.internal.storage.xml.Store} class.
+ * {@link org.apache.sis.storage.DataStore} implementation for Well Known Text.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.4
+ * @since   0.7
  * @version 0.7
  * @module
  */
-package org.apache.sis.internal.storage.xml;
+package org.apache.sis.internal.storage.wkt;

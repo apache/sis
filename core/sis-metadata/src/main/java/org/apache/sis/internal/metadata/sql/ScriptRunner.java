@@ -347,7 +347,7 @@ public class ScriptRunner {
     }
 
     /**
-     * Run the script from the given reader. Lines are read and grouped up to the
+     * Runs the script from the given reader. Lines are read and grouped up to the
      * terminal {@value #END_OF_STATEMENT} character, then sent to the database.
      *
      * @param  filename Name of the SQL script being executed. This is used only for error reporting.
