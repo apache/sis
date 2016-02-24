@@ -273,7 +273,7 @@ abstract class MimeTypeDetector {
             if (insufficientBytes) {
                 return ProbeResult.INSUFFICIENT_BYTES;
             }
-            mimeType = XMLStoreProvider.MIME_TYPE;
+            mimeType = StoreProvider.MIME_TYPE;
         }
         return new ProbeResult(true, mimeType, null);
     }

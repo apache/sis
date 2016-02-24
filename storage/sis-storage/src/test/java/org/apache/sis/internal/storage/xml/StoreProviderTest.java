@@ -27,23 +27,23 @@ import static org.junit.Assert.*;
 
 
 /**
- * Tests {@link XMLStoreProvider}.
+ * Tests {@link StoreProvider}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.4
+ * @version 0.7
  * @module
  */
-public final strictfp class XMLStoreProviderTest extends TestCase {
+public final strictfp class StoreProviderTest extends TestCase {
     /**
-     * Tests {@link XMLStoreProvider#probeContent(StorageConnector)} method from a {@link Reader} object.
+     * Tests {@link StoreProvider#probeContent(StorageConnector)} method from a {@link Reader} object.
      *
      * @throws DataStoreException Should never happen.
      */
     @Test
     public void testProbeContentFromReader() throws DataStoreException {
-        final XMLStoreProvider p = new XMLStoreProvider();
-        final StorageConnector c = new StorageConnector(new StringReader(XMLStoreTest.XML));
+        final StoreProvider    p = new StoreProvider();
+        final StorageConnector c = new StorageConnector(new StringReader(StoreTest.XML));
         final ProbeResult      r = p.probeContent(c);
         c.closeAllExcept(null);
         assertTrue  ("isSupported", r.isSupported());
