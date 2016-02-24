@@ -203,7 +203,7 @@ class MathTransformParser extends AbstractParser {
         final Element element = parent.pullElement(OPTIONAL, ID_KEYWORDS);
         if (element != null) {
             final String codeSpace = element.pullString("codeSpace");
-            final Object code      = element.pullObject("code");   // Accepts Integer as well as String.
+            final Object code      = element.pullObject("code");            // Accepts Integer as well as String.
             element.close(ignoredElements);
             if (Constants.EPSG.equalsIgnoreCase(codeSpace)) try {
                 final int n;

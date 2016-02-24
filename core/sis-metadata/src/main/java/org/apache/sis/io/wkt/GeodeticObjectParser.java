@@ -435,8 +435,8 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
         Element element;
         while ((element = parent.pullElement(OPTIONAL, ID_KEYWORDS)) != null) {
             final String   codeSpace = element.pullString("codeSpace");
-            final String   code      = element.pullObject("code").toString();   // Accepts Integer as well as String.
-            final Object   version   = element.pullOptional(Object.class);      // Accepts Number as well as String.
+            final String   code      = element.pullObject("code").toString();       // Accepts Integer as well as String.
+            final Object   version   = element.pullOptional(Object.class);          // Accepts Number as well as String.
             final Element  citation  = element.pullElement(OPTIONAL, WKTKeywords.Citation);
             final String   authority;
             if (citation != null) {

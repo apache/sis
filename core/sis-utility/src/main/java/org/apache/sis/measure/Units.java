@@ -415,6 +415,7 @@ public final class Units extends Static {
              */
             if (uom.equals("°")                      || equalsIgnorePlural(uom, "decimal_degree")) return NonSI.DEGREE_ANGLE;
             if (uom.equalsIgnoreCase("arcsec"))                                                    return NonSI.SECOND_ANGLE;
+            if (equalsIgnorePlural(uom, "grade"))                                                  return NonSI.GRADE;
             if (uom.equalsIgnoreCase("rad")          || equalsIgnorePlural(uom, "radian"))         return SI.RADIAN;
             if (equalsIgnorePlural(uom, "kilometer") || equalsIgnorePlural(uom, "kilometre"))      return SI.KILOMETRE;
             if (equalsIgnorePlural(uom, "meter")     || equalsIgnorePlural(uom, "metre"))          return SI.METRE;
