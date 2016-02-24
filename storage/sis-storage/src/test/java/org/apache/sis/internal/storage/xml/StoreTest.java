@@ -34,14 +34,14 @@ import java.nio.charset.StandardCharsets;
 
 
 /**
- * Tests {@link XMLStore}.
+ * Tests {@link Store}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.5
+ * @version 0.7
  * @module
  */
-public final strictfp class XMLStoreTest extends TestCase {
+public final strictfp class StoreTest extends TestCase {
     /**
      * The metadata to unmarshal.
      */
@@ -84,14 +84,14 @@ public final strictfp class XMLStoreTest extends TestCase {
             "</gmd:MD_Metadata>\n";
 
     /**
-     * Tests {@link XMLStore#getMetadata()}.
+     * Tests {@link Store#getMetadata()}.
      *
      * @throws DataStoreException If an error occurred while reading the metadata.
      */
     @Test
     public void testMetadata() throws DataStoreException {
         final Metadata metadata;
-        try (XMLStore store = new XMLStore(new StorageConnector(new StringReader(XML)))) {
+        try (Store store = new Store(new StorageConnector(new StringReader(XML)))) {
             metadata = store.getMetadata();
             assertSame("Expected cached value.", metadata, store.getMetadata());
         }
