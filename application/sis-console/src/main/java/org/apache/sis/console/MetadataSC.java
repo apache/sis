@@ -46,7 +46,7 @@ import org.apache.sis.xml.XML;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.4
+ * @version 0.7
  * @module
  */
 final class MetadataSC extends SubCommand {
@@ -71,7 +71,7 @@ final class MetadataSC extends SubCommand {
      */
     MetadataSC(final boolean isCRS, final int commandIndex, final String... args) throws InvalidOptionException {
         super(commandIndex, args, EnumSet.of(Option.FORMAT, Option.LOCALE, Option.TIMEZONE, Option.ENCODING,
-                Option.COLORS, Option.HELP));
+                Option.COLORS, Option.HELP, Option.DEBUG));
         this.isCRS = isCRS;
     }
 
@@ -83,6 +83,7 @@ final class MetadataSC extends SubCommand {
      * @throws IOException Should never happen, since we are appending to a print writer.
      */
     @Override
+    @SuppressWarnings("UseOfSystemOutOrSystemErr")
     public int run() throws InvalidOptionException, DataStoreException, JAXBException, IOException {
         /*
          * Output format can be either "text" (the default) or "xml".
@@ -112,24 +113,31 @@ final class MetadataSC extends SubCommand {
         }
         /*
          * Read metadata from the data storage.
-         * If we are executing the "crs" sub-command, extract the first CRS.
          */
-        if (hasUnexpectedFileCount(1, 1)) {
-            return Command.INVALID_ARGUMENT_EXIT_CODE;
-        }
-        final Metadata metadata;
-        try (DataStore store = DataStores.open(files.get(0))) {
-            metadata = store.getMetadata();
+        Object metadata;
+        if (useStandardInput()) {
+            try (DataStore store = DataStores.open(System.in)) {
+                metadata = store.getMetadata();
+            }
+        } else {
+            if (hasUnexpectedFileCount(1, 1)) {
+                return Command.INVALID_ARGUMENT_EXIT_CODE;
+            }
+            try (DataStore store = DataStores.open(files.get(0))) {
+                metadata = store.getMetadata();
+            }
         }
         if (metadata == null) {
             return 0;
         }
-        Object object = metadata;
-        if (isCRS) {
+        /*
+         * If we are executing the "crs" sub-command, extract the first CRS.
+         */
+        if (isCRS && (metadata instanceof Metadata)) {
             boolean found = false;
-            for (final ReferenceSystem rs : metadata.getReferenceSystemInfo()) {
+            for (final ReferenceSystem rs : ((Metadata) metadata).getReferenceSystemInfo()) {
                 if (rs instanceof CoordinateReferenceSystem) {
-                    object = (CoordinateReferenceSystem) rs;
+                    metadata = rs;
                     found = true;
                     break;
                 }
@@ -158,7 +166,7 @@ final class MetadataSC extends SubCommand {
                 if (colors) {
                     f.setColors(Colors.DEFAULT);
                 }
-                f.format(object, out);
+                f.format(metadata, out);
                 out.println();
                 break;
             }
@@ -169,11 +177,11 @@ final class MetadataSC extends SubCommand {
                 marshaller.setProperty(XML.LOCALE,   locale);
                 marshaller.setProperty(XML.TIMEZONE, timezone);
                 if (isConsole()) {
-                    marshaller.marshal(object, out);
+                    marshaller.marshal(metadata, out);
                 } else {
                     out.flush();
                     marshaller.setProperty(Marshaller.JAXB_ENCODING, encoding.name());
-                    marshaller.marshal(object, System.out); // Use OutputStream instead than Writer.
+                    marshaller.marshal(metadata, System.out);   // Intentionally use OutputStream instead than Writer.
                     System.out.flush();
                 }
                 break;
@@ -190,7 +198,7 @@ final class MetadataSC extends SubCommand {
      * {@code Writer} and let the marshaller apply the encoding itself.
      */
     private boolean isConsole() {
-        if (outputBuffer != null) return true; // Special case for JUnit tests only.
+        if (outputBuffer != null) return true;                      // Special case for JUnit tests only.
         final Console console = System.console();
         return (console != null) && console.writer() == out;
     }

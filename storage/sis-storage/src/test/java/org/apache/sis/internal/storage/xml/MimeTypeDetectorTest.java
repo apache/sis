@@ -44,7 +44,7 @@ public final strictfp class MimeTypeDetectorTest extends TestCase {
      */
     @Test
     public void testGMDFromString() throws IOException {
-        final StringReader in = new StringReader(XMLStoreTest.XML);
+        final StringReader in = new StringReader(StoreTest.XML);
         assertEquals('<', in.read());
         assertEquals('?', in.read());
         final MimeTypeDetector detector = new MimeTypeDetector() {

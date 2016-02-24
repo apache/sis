@@ -60,7 +60,7 @@ import org.opengis.util.Factory;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.6
- * @version 0.6
+ * @version 0.7
  * @module
  */
 @DependsOn({
@@ -629,24 +629,16 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
                      "    DATUM[“Nouvelle Triangulation Française (Paris)”," +
                      "      SPHEROID[“Clarke 1880 (IGN)”, 6378249.2, 293.4660212936269]," +
                      "      TOWGS84[-168,-60,320,0,0,0,0]]," +
-                     "    PRIMEM[“Paris”, 2.5969213, AUTHORITY[“EPSG”, “8903”]]," +  // In grads.
+                     "    PRIMEM[“Paris”, 2.5969213, AUTHORITY[“EPSG”, “8903”]]," +  // In grades.
                      "    UNIT[“grad”, 0.01570796326794897]]," +
                      "  PROJECTION[“Lambert Conformal Conic (1SP)”]," +  // Intentional swapping of "Conformal" and "Conic".
-                     "  PARAMETER[“latitude_of_origin”, 52.0]," +        // In grads.
+                     "  PARAMETER[“latitude_of_origin”, 52.0]," +        // In grades.
                      "  PARAMETER[“scale_factor”, 0.99987742]," +
                      "  PARAMETER[“false_easting”, 600.0]," +
                      "  PARAMETER[“false_northing”, 2200.0]," +
-                     "  UNIT[“metre”,1000]]";
+                     "  UNIT[“km”,1000]]";
 
-        ProjectedCRS crs = parse(ProjectedCRS.class, wkt);
-        assertNameAndIdentifierEqual("NTF (Paris) / Lambert zone II", 0, crs);
-        verifyProjectedCS(crs.getCoordinateSystem(), SI.KILOMETRE);
-        PrimeMeridian pm = verifyNTF(crs.getDatum(), true);
-        assertEquals("angularUnit", NonSI.GRADE, pm.getAngularUnit());
-        assertEquals("greenwichLongitude", 2.5969213, pm.getGreenwichLongitude(), STRICT);
-        ParameterValue<?> param = verifyNTF(crs.getConversionFromBase().getParameterValues());
-        assertEquals("angularUnit", NonSI.GRADE, param.getUnit());
-        assertEquals("latitude_of_origin",  52.0, param.doubleValue(), STRICT);
+        validateParisFranceII(parse(ProjectedCRS.class, wkt), 0, true);
         /*
          * Parse again using Convention.WKT1_COMMON_UNITS and ignoring AXIS[…] elements.
          * See the comment in 'testGeographicWithParisMeridian' method for a discussion.
@@ -658,15 +650,66 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
         wkt = wkt.replace("600.0",     "600000");           // Convert unit in “false_easting” parameter.
         wkt = wkt.replace("2200.0",    "2200000");          // Convert unit in “false_northing” parameter.
         newParser(Convention.WKT1_IGNORE_AXES);
-        crs = parse(ProjectedCRS.class, wkt);
+        final ProjectedCRS crs = parse(ProjectedCRS.class, wkt);
         assertNameAndIdentifierEqual("NTF (Paris) / Lambert zone II", 0, crs);
         verifyProjectedCS(crs.getCoordinateSystem(), SI.KILOMETRE);
-        pm = verifyNTF(crs.getDatum(), true);
+        final PrimeMeridian pm = verifyNTF(crs.getDatum(), true);
         assertEquals("angularUnit", NonSI.DEGREE_ANGLE, pm.getAngularUnit());
         assertEquals("greenwichLongitude", 2.33722917, pm.getGreenwichLongitude(), STRICT);
-        param = verifyNTF(crs.getConversionFromBase().getParameterValues());
+        final ParameterValue<?> param = verifyNTF(crs.getConversionFromBase().getParameterValues());
         assertEquals("angularUnit", NonSI.DEGREE_ANGLE, param.getUnit());
         assertEquals("latitude_of_origin",  46.8, param.doubleValue(), STRICT);
+    }
+
+    /**
+     * Tests the same CRS than {@link #testProjectedWithGradUnits()}, but from a WKT 2 definition
+     * (except for inclusion of accented characters).
+     *
+     * @throws ParseException if the parsing failed.
+     *
+     * @see <a href="https://issues.apache.org/jira/browse/SIS-309">SIS-309</a>
+     * @see <a href="https://issues.apache.org/jira/browse/SIS-310">SIS-310</a>
+     */
+    @Test
+    @DependsOnMethod("testProjectedWithGradUnits")
+    public void testProjectedFromWKT2() throws ParseException {
+        String wkt = "ProjectedCRS[“NTF (Paris) / Lambert zone II”,\n" +
+                     "  BaseGeodCRS[“NTF (Paris)”,\n" +
+                     "    Datum[“Nouvelle Triangulation Française (Paris)”,\n" +
+                     "      Ellipsoid[“Clarke 1880 (IGN)”, 6378249.2, 293.4660212936269]],\n" +
+                     "      PrimeMeridian[“Paris”, 2.5969213, Unit[“grade”, 0.015707963267948967], Id[“EPSG”, 8903]],\n" +
+                     "    AngleUnit[“degree”, 0.017453292519943295]],\n" +
+                     "  Conversion[“Lambert zone II”,\n" +
+                     "    Method[“Lambert Conic Conformal (1SP)”],\n" +
+                     "    Parameter[“Latitude of natural origin”, 52.0, AngleUnit[“grade”, 0.015707963267948967]],\n" +
+                     "    Parameter[“Longitude of natural origin”, 0.0],\n" +
+                     "    Parameter[“Scale factor at natural origin”, 0.99987742],\n" +
+                     "    Parameter[“False easting”, 600.0],\n" +
+                     "    Parameter[“False northing”, 2200.0]],\n" +
+                     "  CS[Cartesian, 2],\n" +
+                     "    Axis[“Easting (E)”, east],\n" +
+                     "    Axis[“Northing (N)”, north],\n" +
+                     "    LengthUnit[“km”, 1000],\n" +
+                     "  Scope[“Large and medium scale topographic mapping and engineering survey.”],\n" +
+                     "  Id[“EPSG”, 27572, URI[“urn:ogc:def:crs:EPSG::27572”]]]";
+
+        final ProjectedCRS crs = parse(ProjectedCRS.class, wkt);
+        validateParisFranceII(crs, 27572, false);
+        assertNull("Identifier shall not have a version.", getSingleton(crs.getIdentifiers()).getVersion());
+    }
+
+    /**
+     * Verifies the parameters of a “NTF (Paris) / Lambert zone II” projection.
+     */
+    private static void validateParisFranceII(final ProjectedCRS crs, final int identifier, final boolean hasToWGS84) {
+        assertNameAndIdentifierEqual("NTF (Paris) / Lambert zone II", identifier, crs);
+        verifyProjectedCS(crs.getCoordinateSystem(), SI.KILOMETRE);
+        final PrimeMeridian pm = verifyNTF(crs.getDatum(), hasToWGS84);
+        assertEquals("angularUnit", NonSI.GRADE, pm.getAngularUnit());
+        assertEquals("greenwichLongitude", 2.5969213, pm.getGreenwichLongitude(), STRICT);
+        final ParameterValue<?> param = verifyNTF(crs.getConversionFromBase().getParameterValues());
+        assertEquals("angularUnit", NonSI.GRADE, param.getUnit());
+        assertEquals("latitude_of_origin",  52.0, param.doubleValue(), STRICT);
     }
 
     /**

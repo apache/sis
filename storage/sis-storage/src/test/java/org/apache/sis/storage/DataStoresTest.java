@@ -17,7 +17,7 @@
 package org.apache.sis.storage;
 
 import java.io.StringReader;
-import org.apache.sis.internal.storage.xml.XMLStoreTest;
+import org.apache.sis.internal.storage.xml.StoreTest;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
@@ -30,10 +30,10 @@ import static org.junit.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.4
+ * @version 0.7
  * @module
  */
-@DependsOn(XMLStoreTest.class)
+@DependsOn(StoreTest.class)
 public final strictfp class DataStoresTest extends TestCase {
     /**
      * Tests {@link DataStores#probeContentType(Object)}.
@@ -42,7 +42,7 @@ public final strictfp class DataStoresTest extends TestCase {
      */
     @Test
     public void testProbeContentType() throws DataStoreException {
-        final String type = DataStores.probeContentType(new StringReader(XMLStoreTest.XML));
+        final String type = DataStores.probeContentType(new StringReader(StoreTest.XML));
         assertEquals("application/vnd.iso.19139+xml", type);
     }
 
@@ -53,7 +53,7 @@ public final strictfp class DataStoresTest extends TestCase {
      */
     @Test
     public void testOpen() throws DataStoreException {
-        final DataStore store = DataStores.open(new StringReader(XMLStoreTest.XML));
+        final DataStore store = DataStores.open(new StringReader(StoreTest.XML));
         assertFalse(store.getMetadata().getContacts().isEmpty());
     }
 }

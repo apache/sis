@@ -36,6 +36,7 @@ import org.opengis.util.InternationalString;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.util.StandardDateFormat;
 import org.apache.sis.measure.Units;
+import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
@@ -165,7 +166,7 @@ abstract class AbstractParser implements Parser {
         this.unitFormat  = unitFormat;
         this.errorLocale = errorLocale;
         if (Symbols.SCIENTIFIC_NOTATION && numberFormat instanceof DecimalFormat) {
-            final DecimalFormat decimalFormat = (DecimalFormat) ((DecimalFormat) numberFormat).clone();
+            final DecimalFormat decimalFormat = (DecimalFormat) numberFormat.clone();
             exponentSymbol = decimalFormat.getDecimalFormatSymbols().getExponentSeparator();
             String pattern = decimalFormat.toPattern();
             if (!pattern.contains("E0")) {
@@ -236,6 +237,7 @@ abstract class AbstractParser implements Parser {
     public Object parseObject(final String text, final ParsePosition position) throws ParseException {
         warnings = null;
         ignoredElements.clear();
+        ArgumentChecks.ensureNonEmpty("text", text);
         final Element element = new Element("<root>", new Element(this, text, position, null));
         final Object object = parseObject(element);
         element.close(ignoredElements);
@@ -292,7 +294,7 @@ abstract class AbstractParser implements Parser {
     final Unit<?> parseUnit(final String text) throws ParseException {
         if (unitFormat == null) {
             if (symbols.getLocale() == Locale.ROOT) {
-                return Units.valueOf(text); // Most common case, avoid the convolved code below.
+                return Units.valueOf(text);             // Most common case, avoid the convolved code below.
             }
             unitFormat = UnitFormat.getInstance(symbols.getLocale());
         }
@@ -314,28 +316,17 @@ abstract class AbstractParser implements Parser {
     /**
      * Reports a non-fatal warning that occurred while parsing a WKT.
      *
-     * @param parent  The parent element.
-     * @param element The element that we can not parse.
-     * @param ex      The non-fatal exception that occurred while parsing the element.
-     */
-    final void warning(final Element parent, final Element element, final Exception ex) {
-        if (warnings == null) {
-            warnings = new Warnings(errorLocale, true, ignoredElements);
-        }
-        warnings.add(null, ex, new String[] {parent.keyword, element.keyword});
-    }
-
-    /**
-     * Reports a non-fatal warning that occurred while parsing a WKT.
-     *
-     * @param message The message. Can not be {@code null}.
+     * @param parent  The parent element, or {@code null} if unknown.
+     * @param element The element that we can not parse, or {@code null} if unknown.
+     * @param message The message. Can be {@code null} only if {@code ex} is non-null.
      * @param ex      The non-fatal exception that occurred while parsing the element, or {@code null}.
      */
-    final void warning(final InternationalString message, final Exception ex) {
+    final void warning(final Element parent, final Element element, final InternationalString message, final Exception ex) {
         if (warnings == null) {
             warnings = new Warnings(errorLocale, true, ignoredElements);
         }
-        warnings.add(message, ex, null);
+        warnings.add(message, ex, (parent != null && element != null)
+                ? new String[] {parent.keyword, element.keyword} : null);
     }
 
     /**
