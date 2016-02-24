@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.logging.MonolineFormatter;
 
@@ -38,6 +39,7 @@ import org.apache.sis.util.logging.MonolineFormatter;
  * <tr><td>{@code about}    </td><td>Show information about Apache SIS and system configuration.</td></tr>
  * <tr><td>{@code mime-type}</td><td>Show MIME type for the given file.</td></tr>
  * <tr><td>{@code metadata} </td><td>Show metadata information for the given file.</td></tr>
+ * <tr><td>{@code crs}      </td><td>Show Coordinate Reference System information for the given file or code.</td></tr>
  * </table></blockquote>
  *
  * Each command can accepts an arbitrary amount of the following options:
@@ -50,6 +52,7 @@ import org.apache.sis.util.logging.MonolineFormatter;
  * <tr><td>{@code --colors}   </td><td>Whether colorized output shall be enabled.</td></tr>
  * <tr><td>{@code --brief}    </td><td>Whether the output should contains only brief information.</td></tr>
  * <tr><td>{@code --verbose}  </td><td>Whether the output should contains more detailed information.</td></tr>
+ * <tr><td>{@code --debug}    </td><td>Prints full stack trace in case of failure.</td></tr>
  * <tr><td>{@code --help}     </td><td>Lists the options available for a specific command.</td></tr>
  * </table></blockquote>
  *
@@ -60,11 +63,11 @@ import org.apache.sis.util.logging.MonolineFormatter;
  *
  * <div class="section">SIS installation on remote machines</div>
  * Some sub-commands can operate on SIS installation on remote machines, provided that remote access has been enabled
- * at the Java Virtual Machine startup time. See {@link org.apache.sis.console} package javadoc for more information.
+ * at the Java Virtual Machine startup time. See {@linkplain org.apache.sis.console package javadoc} for more information.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.6
+ * @version 0.7
  * @module
  */
 public final class Command {
@@ -209,16 +212,28 @@ public final class Command {
     /**
      * Prints the message of the given exception. This method is invoked only when the error occurred before
      * the {@link SubCommand} has been built, otherwise the {@link SubCommand#err} printer shall be used.
+     *
+     * @param args The command line arguments, used only for detecting if the {@code --debug} option was present.
      */
-    private static void error(final Exception e) {
+    private static void error(final String[] args, final Exception e) {
+        final boolean debug = ArraysExt.containsIgnoreCase(args, Option.PREFIX + "debug");
         final Console console = System.console();
         if (console != null) {
             final PrintWriter err = console.writer();
-            err.println(e.getLocalizedMessage());
+            if (debug) {
+                e.printStackTrace(err);
+            } else {
+                err.println(e.getLocalizedMessage());
+            }
             err.flush();
         } else {
+            @SuppressWarnings("UseOfSystemOutOrSystemErr")
             final PrintStream err = System.err;
-            err.println(e.getLocalizedMessage());
+            if (debug) {
+                e.printStackTrace(err);
+            } else {
+                err.println(e.getLocalizedMessage());
+            }
             err.flush();
         }
     }
@@ -251,11 +266,11 @@ public final class Command {
         try {
             c = new Command(args);
         } catch (InvalidCommandException e) {
-            error(e);
+            error(args, e);
             System.exit(INVALID_COMMAND_EXIT_CODE);
             return;
         } catch (InvalidOptionException e) {
-            error(e);
+            error(args, e);
             System.exit(INVALID_OPTION_EXIT_CODE);
             return;
         }

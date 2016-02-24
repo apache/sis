@@ -151,6 +151,11 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final short CycleOmitted = 12;
 
         /**
+         * Database
+         */
+        public static final short DataBase = 96;
+
+        /**
          * Data directory
          */
         public static final short DataDirectory = 88;

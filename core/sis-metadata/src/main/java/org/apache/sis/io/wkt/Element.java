@@ -179,7 +179,7 @@ final class Element implements Serializable {
         final int length = text.length();
         int lower = skipLeadingWhitespaces(text, offset, length);
         { // This block is for keeping some variables local.
-            int c = text.codePointAt(lower);
+            int c = (lower < length) ? text.codePointAt(lower) : 0;
             if (!Character.isUnicodeIdentifierStart(c)) {
                 keyword = text;
                 position.setErrorIndex(lower);
@@ -637,7 +637,7 @@ final class Element implements Serializable {
         final Iterator<Object> iterator = list.iterator();
         while (iterator.hasNext()) {
             final Object object = iterator.next();
-            if (object != null) {
+            if (object != null && !(object instanceof Element)) {
                 iterator.remove();
                 return object;
             }
@@ -723,7 +723,7 @@ final class Element implements Serializable {
         final Iterator<Object> iterator = list.iterator();
         while (iterator.hasNext()) {
             final Object object = iterator.next();
-            if (type.isInstance(object)) {
+            if (type.isInstance(object) && !(object instanceof Element)) {
                 iterator.remove();
                 return (T) object;
             }
