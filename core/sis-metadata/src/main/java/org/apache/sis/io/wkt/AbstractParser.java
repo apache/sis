@@ -294,7 +294,7 @@ abstract class AbstractParser implements Parser {
     final Unit<?> parseUnit(final String text) throws ParseException {
         if (unitFormat == null) {
             if (symbols.getLocale() == Locale.ROOT) {
-                return Units.valueOf(text); // Most common case, avoid the convolved code below.
+                return Units.valueOf(text);             // Most common case, avoid the convolved code below.
             }
             unitFormat = UnitFormat.getInstance(symbols.getLocale());
         }

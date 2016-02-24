@@ -633,7 +633,7 @@ final class Element implements Serializable {
         final Iterator<Object> iterator = list.iterator();
         while (iterator.hasNext()) {
             final Object object = iterator.next();
-            if (object != null) {
+            if (object != null && !(object instanceof Element)) {
                 iterator.remove();
                 return object;
             }
@@ -719,7 +719,7 @@ final class Element implements Serializable {
         final Iterator<Object> iterator = list.iterator();
         while (iterator.hasNext()) {
             final Object object = iterator.next();
-            if (type.isInstance(object)) {
+            if (type.isInstance(object) && !(object instanceof Element)) {
                 iterator.remove();
                 return (T) object;
             }
