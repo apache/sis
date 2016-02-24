@@ -224,7 +224,8 @@ import org.junit.BeforeClass;
     org.apache.sis.referencing.operation.builder.LinearTransformBuilderTest.class,
     org.apache.sis.internal.referencing.ServicesForMetadataTest.class,
     org.apache.sis.test.integration.DatumShiftTest.class,
-    org.apache.sis.test.integration.MetadataTest.class
+    org.apache.sis.test.integration.MetadataTest.class,
+    org.apache.sis.test.integration.ConsistencyTest.class
 })
 public final strictfp class ReferencingTestSuite extends TestSuite {
     /**
