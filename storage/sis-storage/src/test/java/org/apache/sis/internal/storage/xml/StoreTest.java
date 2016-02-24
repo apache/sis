@@ -23,6 +23,7 @@ import org.opengis.metadata.citation.*;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -41,6 +42,7 @@ import java.nio.charset.StandardCharsets;
  * @version 0.7
  * @module
  */
+@DependsOn(org.apache.sis.storage.StorageConnectorTest.class)
 public final strictfp class StoreTest extends TestCase {
     /**
      * The metadata to unmarshal.
@@ -86,7 +88,7 @@ public final strictfp class StoreTest extends TestCase {
     /**
      * Tests {@link Store#getMetadata()}.
      *
-     * @throws DataStoreException If an error occurred while reading the metadata.
+     * @throws DataStoreException if en error occurred while reading the XML.
      */
     @Test
     public void testMetadata() throws DataStoreException {

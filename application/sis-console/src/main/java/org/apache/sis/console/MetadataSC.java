@@ -71,7 +71,7 @@ final class MetadataSC extends SubCommand {
      */
     MetadataSC(final boolean isCRS, final int commandIndex, final String... args) throws InvalidOptionException {
         super(commandIndex, args, EnumSet.of(Option.FORMAT, Option.LOCALE, Option.TIMEZONE, Option.ENCODING,
-                Option.COLORS, Option.HELP));
+                Option.COLORS, Option.HELP, Option.DEBUG));
         this.isCRS = isCRS;
     }
 

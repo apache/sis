@@ -25,7 +25,7 @@ import org.apache.sis.util.resources.Errors;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.3
+ * @version 0.7
  * @module
  */
 enum Option {
@@ -65,6 +65,12 @@ enum Option {
      * This option expects no value.
      */
     VERBOSE(false),
+
+    /**
+     * Whether to print the full stack trace in case of error.
+     * This option expects no value.
+     */
+    DEBUG(false),
 
     /**
      * Lists the options accepted by a command.

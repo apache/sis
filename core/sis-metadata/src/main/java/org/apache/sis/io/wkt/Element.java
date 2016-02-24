@@ -175,7 +175,7 @@ final class Element implements Serializable {
         final int length = text.length();
         int lower = skipLeadingWhitespaces(text, offset, length);
         { // This block is for keeping some variables local.
-            int c = text.codePointAt(lower);
+            int c = (lower < length) ? text.codePointAt(lower) : 0;
             if (!Character.isUnicodeIdentifierStart(c)) {
                 keyword = text;
                 position.setErrorIndex(lower);

@@ -20,6 +20,7 @@ import java.io.StringReader;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.ProbeResult;
+import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -34,6 +35,7 @@ import static org.junit.Assert.*;
  * @version 0.7
  * @module
  */
+@DependsOn(org.apache.sis.storage.StorageConnectorTest.class)
 public final strictfp class StoreProviderTest extends TestCase {
     /**
      * Verifies validity of {@code StoreProvider.MIN_LENGTH} and {@code StoreProvider.MAX_LENGTH} constants
@@ -55,7 +57,7 @@ public final strictfp class StoreProviderTest extends TestCase {
     /**
      * Tests {@link StoreProvider#probeContent(StorageConnector)} method from a {@link Reader} object.
      *
-     * @throws DataStoreException Should never happen.
+     * @throws DataStoreException if en error occurred while reading the WKT.
      */
     @Test
     public void testProbeContentFromReader() throws DataStoreException {
