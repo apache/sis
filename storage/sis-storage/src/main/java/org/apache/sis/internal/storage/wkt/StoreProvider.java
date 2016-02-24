@@ -27,6 +27,7 @@ import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.ProbeResult;
 import org.apache.sis.internal.metadata.WKTKeywords;
+import org.apache.sis.util.Version;
 
 
 /**
@@ -38,6 +39,11 @@ import org.apache.sis.internal.metadata.WKTKeywords;
  * @module
  */
 public class StoreProvider extends DataStoreProvider {
+    /**
+     * The {@value} MIME type.
+     */
+    public static final String MIME_TYPE = "application/wkt";
+
     /**
      * The read-ahead limit when reading the WKT from a {@link Reader}.
      */
@@ -77,6 +83,7 @@ public class StoreProvider extends DataStoreProvider {
         s.add(WKTKeywords.ProjCRS);
         s.add(WKTKeywords.ProjCS);
         s.add(WKTKeywords.Fitted_CS);
+        s.add(WKTKeywords.BoundCRS);
         return s;
     }
 
@@ -177,14 +184,17 @@ public class StoreProvider extends DataStoreProvider {
         }
         /*
          * At this point we got the first keyword. Change the case to match the one used in the KEYWORDS map,
-         * then verify if the keyword that we found is one of the known WKT keywords.
+         * then verify if the keyword that we found is one of the known WKT keywords. Keywords with the "CRS"
+         * suffix are WKT 2 while keywords with the "CS" suffix are WKT 1.
          */
         final int length = pos;
         if (pos >= MIN_LENGTH) {
-            keyword[       0] &= ~0x20;         // Make upper-case (valid only for characters in the a-z range).
+            int version = 1;
+            keyword[    0] &= ~0x20;         // Make upper-case (valid only for characters in the a-z range).
             keyword[--pos] &= ~0x20;
             if ((keyword[--pos] &= ~0x20) == 'R') {
                 keyword[--pos] &= ~0x20;     // Make "CRS" suffix in upper case (otherwise, was "CS" suffix)
+                version = 2;
             }
             while (--pos != 0) {
                 if (keyword[pos] != '_') {
@@ -192,7 +202,7 @@ public class StoreProvider extends DataStoreProvider {
                 }
             }
             if (KEYWORDS.contains(String.valueOf(keyword, 0, length))) {
-                return ProbeResult.SUPPORTED;
+                return new ProbeResult(true, MIME_TYPE, Version.valueOf(version));
             }
         }
         return ProbeResult.UNSUPPORTED_STORAGE;
