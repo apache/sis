@@ -63,8 +63,8 @@ public class Version implements CharSequence, Comparable<Version>, Serializable 
     public static final Version SIS = new Version(MAJOR_VERSION + "." + MINOR_VERSION + "-SNAPSHOT");
 
     /**
-     * A few commonly used version numbers. This list is based on SIS needs, e.g. in {@code DataStore}
-     * implementations. New constants are likely to be added in any future SIS versions.
+     * A few commonly used version numbers. This list is based on SIS needs, e.g. in {@code DataStore} implementations.
+     * New constants are likely to be added in any future SIS versions.
      *
      * @see #valueOf(int[])
      */
@@ -127,7 +127,7 @@ public class Version implements CharSequence, Comparable<Version>, Serializable 
         final int major = components[0];
         if (components.length == 1) {
             if (major >= 1 && major <= CONSTANTS.length) {
-                return CONSTANTS[major-1];
+                return CONSTANTS[major - 1];
             } else {
                 version = new Version(Integer.toString(major));
             }

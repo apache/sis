@@ -68,7 +68,7 @@ final class AboutSC extends SubCommand {
      */
     AboutSC(final int commandIndex, final String... args) throws InvalidOptionException {
         super(commandIndex, args, EnumSet.of(Option.LOCALE, Option.TIMEZONE, Option.ENCODING,
-                Option.BRIEF, Option.VERBOSE, Option.HELP));
+                Option.BRIEF, Option.VERBOSE, Option.HELP, Option.DEBUG));
     }
 
     /**
