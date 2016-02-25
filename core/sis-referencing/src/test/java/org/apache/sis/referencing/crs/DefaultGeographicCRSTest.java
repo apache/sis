@@ -38,11 +38,12 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.6
+ * @version 0.7
  * @module
  */
 @DependsOn({
-    DefaultGeodeticCRSTest.class
+    DefaultGeodeticCRSTest.class,
+    DefaultVerticalCRSTest.class
 })
 public final strictfp class DefaultGeographicCRSTest extends TestCase {
     /**
@@ -166,6 +167,33 @@ public final strictfp class DefaultGeographicCRSTest extends TestCase {
     }
 
     /**
+     * Tests WKT 2 formatting of a three-dimensional CRS.
+     *
+     * <p>This CRS used in this test is equivalent to {@code EPSG:4979} except for axis order,
+     * since EPSG puts latitude before longitude.</p>
+     *
+     * @since 0.7
+     *
+     * @see #testWKT1_For3D()
+     */
+    @Test
+    @DependsOnMethod("testWKT2")
+    public void testWKT2_For3D() {
+        assertWktEquals(Convention.WKT2,
+                "GEODCRS[“WGS 84 (3D)”,\n" +
+                "  DATUM[“World Geodetic System 1984”,\n" +
+                "    ELLIPSOID[“WGS84”, 6378137.0, 298.257223563, LENGTHUNIT[“metre”, 1]]],\n" +
+                "    PRIMEM[“Greenwich”, 0.0, ANGLEUNIT[“degree”, 0.017453292519943295]],\n" +
+                "  CS[ellipsoidal, 3],\n" +
+                "    AXIS[“Longitude (L)”, east, ORDER[1], ANGLEUNIT[“degree”, 0.017453292519943295]],\n" +
+                "    AXIS[“Latitude (B)”, north, ORDER[2], ANGLEUNIT[“degree”, 0.017453292519943295]],\n" +
+                "    AXIS[“Ellipsoidal height (h)”, up, ORDER[3], LENGTHUNIT[“metre”, 1]],\n" +
+                "  AREA[“World”],\n" +
+                "  BBOX[-90.00, -180.00, 90.00, 180.00]]",
+                HardCodedCRS.WGS84_3D);
+    }
+
+    /**
      * Tests WKT 2 simplified formatting.
      */
     @Test
@@ -207,7 +235,7 @@ public final strictfp class DefaultGeographicCRSTest extends TestCase {
     }
 
     /**
-     * Tests WKT 2 formatting on a CRS using a prime meridian other than Greenwich.
+     * Tests WKT 2 formatting of a CRS using a prime meridian other than Greenwich.
      *
      * <p>This CRS used in this test is equivalent to {@code EPSG:4807} except for axis order,
      * since EPSG defines (<var>latitude</var>, <var>longitude</var>) in grades.</p>
@@ -264,5 +292,34 @@ public final strictfp class DefaultGeographicCRSTest extends TestCase {
                 "  AXIS[“Longitude”, EAST],\n" +
                 "  AXIS[“Latitude”, NORTH]]",
                 HardCodedCRS.NTF);
+    }
+
+    /**
+     * Tests WKT 1 formatting of a three-dimensional CRS. Such CRS can not be represented directly in WKT 1 format.
+     * Consequently, the formatter will need to split the three-dimensional geographic CRS into a two-dimensional
+     * geographic CRS followed by an ellipsoidal height. Such construction is illegal according ISO 19111, so this
+     * split shall be done on-the-fly only for formatting purpose.
+     *
+     * @since 0.7
+     *
+     * @see #testWKT2_For3D()
+     */
+    @Test
+    @DependsOnMethod("testWKT1")
+    public void testWKT1_For3D() {
+        assertWktEquals(Convention.WKT1,
+                "COMPD_CS[“WGS 84 (3D)”,\n" +
+                "  GEOGCS[“WGS 84”,\n" +
+                "    DATUM[“World Geodetic System 1984”,\n" +
+                "      SPHEROID[“WGS84”, 6378137.0, 298.257223563]],\n" +
+                "      PRIMEM[“Greenwich”, 0.0],\n" +
+                "    UNIT[“degree”, 0.017453292519943295],\n" +
+                "    AXIS[“Longitude”, EAST],\n" +
+                "    AXIS[“Latitude”, NORTH]],\n" +
+                "  VERT_CS[“Ellipsoidal height”,\n" +
+                "    VERT_DATUM[“Ellipsoid”, 2002],\n" +
+                "    UNIT[“metre”, 1],\n" +
+                "    AXIS[“Ellipsoidal height”, UP]]]",
+                HardCodedCRS.WGS84_3D);
     }
 }

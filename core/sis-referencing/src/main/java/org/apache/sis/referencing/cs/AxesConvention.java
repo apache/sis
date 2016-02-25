@@ -20,7 +20,7 @@ import javax.measure.unit.Unit;
 import javax.measure.unit.SI;
 import javax.measure.unit.NonSI;
 import org.opengis.referencing.cs.AxisDirection;
-import org.opengis.referencing.cs.CoordinateSystem; // For javadoc
+import org.opengis.referencing.cs.CoordinateSystem;                 // For javadoc
 import org.apache.sis.internal.metadata.AxisDirections;
 import org.apache.sis.measure.Units;
 

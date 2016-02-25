@@ -16,13 +16,17 @@
  */
 package org.apache.sis.internal.referencing;
 
+import java.util.Map;
+import java.util.HashMap;
 import java.util.Collection;
 import javax.measure.unit.Unit;
 import javax.measure.quantity.Angle;
 import org.opengis.annotation.UML;
 import org.opengis.annotation.Specification;
+import org.opengis.metadata.Identifier;
 import org.opengis.referencing.cs.*;
 import org.opengis.referencing.crs.*;
+import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.datum.PrimeMeridian;
 import org.apache.sis.util.Static;
@@ -31,6 +35,7 @@ import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.referencing.CommonCRS;
+import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.datum.DefaultPrimeMeridian;
 import org.apache.sis.referencing.crs.DefaultGeographicCRS;
 import org.apache.sis.referencing.cs.AxesConvention;
@@ -47,7 +52,7 @@ import static java.util.Collections.singletonMap;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.5
- * @version 0.6
+ * @version 0.7
  * @module
  */
 public final class ReferencingUtilities extends Static {
@@ -236,6 +241,48 @@ public final class ReferencingUtilities extends Static {
             }
         }
         return null;
+    }
+
+    /**
+     * Returns the properties of the given object but potentially with a modified name.
+     * Current implement truncates the name at the first non-white character which is not
+     * a valid Unicode identifier part.
+     *
+     * <div class="note"><b>Example:</b><ul>
+     *   <li><cite>"WGS 84 (3D)"</cite> is truncated as <cite>"WGS 84"</cite>.</li>
+     *   <li><cite>"Ellipsoidal 2D CS. Axes: latitude, longitude. Orientations: north, east. UoM: degree"</cite>
+     *       is truncated as <cite>"Ellipsoidal 2D CS"</cite>.</li>
+     * </ul></div>
+     *
+     * @param  object The identified object to view as a properties map.
+     * @param  excludes The keys of properties to exclude from the map.
+     * @return A view of the identified object properties.
+     *
+     * @see IdentifiedObjects#getProperties(IdentifiedObject, String...)
+     *
+     * @since 0.7
+     */
+    public static Map<String,?> getPropertiesForModifiedCRS(final IdentifiedObject object, final String... excludes) {
+        final Map<String,?> properties = IdentifiedObjects.getProperties(object, excludes);
+        final Identifier id = (Identifier) properties.get(IdentifiedObject.NAME_KEY);
+        if (id != null) {
+            String name = id.getCode();
+            if (name != null) {
+                for (int i=0; i < name.length();) {
+                    final int c = name.codePointAt(i);
+                    if (!Character.isUnicodeIdentifierPart(c) && !Character.isSpaceChar(c)) {
+                        name = CharSequences.trimWhitespaces(name, 0, i).toString();
+                        if (!name.isEmpty()) {
+                            final Map<String,Object> copy = new HashMap<>(properties);
+                            copy.put(IdentifiedObject.NAME_KEY, name);
+                            return copy;
+                        }
+                    }
+                    i += Character.charCount(c);
+                }
+            }
+        }
+        return properties;
     }
 
     /**
