@@ -296,6 +296,8 @@ public final class ReferencingUtilities extends Static {
      * @param  type The interface or classes for which to get the XML property name.
      * @return The XML property name for the given class or interface, or {@code null} if none.
      *
+     * @see WKTUtilities#toType(Class, Class)
+     *
      * @since 0.6
      */
     public static StringBuilder toPropertyName(final Class<?> base, final Class<?> type) {
@@ -314,37 +316,6 @@ public final class ReferencingUtilities extends Static {
                 final StringBuilder name = toPropertyName(base, c);
                 if (name != null) {
                     return name;
-                }
-            }
-        }
-        return null;
-    }
-
-    /**
-     * Returns the WKT type of the given interface.
-     *
-     * For {@link CoordinateSystem} base type, the returned value shall be one of
-     * {@code affine}, {@code Cartesian}, {@code cylindrical}, {@code ellipsoidal}, {@code linear},
-     * {@code parametric}, {@code polar}, {@code spherical}, {@code temporal} or {@code vertical}.
-     *
-     * @param  base The abstract base interface.
-     * @param  type The interface or classes for which to get the WKT type.
-     * @return The WKT type for the given class or interface, or {@code null} if none.
-     */
-    public static String toWKTType(final Class<?> base, final Class<?> type) {
-        if (type != base) {
-            final StringBuilder name = toPropertyName(base, type);
-            if (name != null) {
-                int end = name.length() - 2;
-                if (CharSequences.regionMatches(name, end, "CS")) {
-                    name.setLength(end);
-                    if ("time".contentEquals(name)) {
-                        return "temporal";
-                    }
-                    if (CharSequences.regionMatches(name, 0, "cartesian")) {
-                        name.setCharAt(0, 'C');     // "Cartesian"
-                    }
-                    return name.toString();
                 }
             }
         }

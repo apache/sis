@@ -33,7 +33,7 @@ import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
-import org.apache.sis.internal.referencing.ReferencingUtilities;
+import org.apache.sis.internal.referencing.WKTUtilities;
 import org.apache.sis.internal.metadata.AxisDirections;
 import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.io.wkt.ElementKind;
@@ -457,7 +457,7 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
      */
     @Override
     protected String formatTo(final Formatter formatter) {
-        final String type = ReferencingUtilities.toWKTType(CoordinateSystem.class, getInterface());
+        final String type = WKTUtilities.toType(CoordinateSystem.class, getInterface());
         if (type == null) {
             formatter.setInvalidWKT(this, null);
         }
