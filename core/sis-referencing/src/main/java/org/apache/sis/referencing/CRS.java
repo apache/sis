@@ -83,7 +83,7 @@ import static java.util.Collections.singletonMap;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.3
- * @version 0.6
+ * @version 0.7
  * @module
  */
 public final class CRS extends Static {
@@ -290,27 +290,26 @@ public final class CRS extends Static {
      * @category information
      */
     public static SingleCRS getHorizontalComponent(final CoordinateReferenceSystem crs) {
-        if (isHorizontalCRS(crs)) {
-            return (SingleCRS) crs;
-        }
         if (crs instanceof GeodeticCRS) {
             CoordinateSystem cs = crs.getCoordinateSystem();
-            if (cs instanceof EllipsoidalCS) {  // See comment in isHorizontalCRS(…) method.
+            if (cs instanceof EllipsoidalCS) {                          // See comment in isHorizontalCRS(…) method.
                 final int i = AxisDirections.indexOfColinear(cs, AxisDirection.UP);
-                if (i >= 0) {
-                    final CoordinateSystemAxis xAxis = cs.getAxis(i > 0 ? 0 : 1);
-                    final CoordinateSystemAxis yAxis = cs.getAxis(i > 1 ? 1 : 2);
-                    cs = CommonCRS.DEFAULT.geographic().getCoordinateSystem();
-                    if (!Utilities.equalsIgnoreMetadata(cs.getAxis(0), xAxis) ||
-                        !Utilities.equalsIgnoreMetadata(cs.getAxis(1), yAxis))
-                    {
-                        // We can not reuse the name of the existing CS, because it typically
-                        // contains text about axes including the axis that we just dropped.
-                        cs = new DefaultEllipsoidalCS(singletonMap(EllipsoidalCS.NAME_KEY, "Ellipsoidal 2D"), xAxis, yAxis);
-                    }
-                    return new DefaultGeographicCRS(IdentifiedObjects.getProperties(crs),
-                            ((GeodeticCRS) crs).getDatum(), (EllipsoidalCS) cs);
+                if (i < 0) {
+                    return (SingleCRS) crs;
                 }
+                final CoordinateSystemAxis xAxis = cs.getAxis(i > 0 ? 0 : 1);
+                final CoordinateSystemAxis yAxis = cs.getAxis(i > 1 ? 1 : 2);
+                cs = CommonCRS.DEFAULT.geographic().getCoordinateSystem();
+                if (!Utilities.equalsIgnoreMetadata(cs.getAxis(0), xAxis) ||
+                    !Utilities.equalsIgnoreMetadata(cs.getAxis(1), yAxis))
+                {
+                    // We can not reuse the name of the existing CS, because it typically
+                    // contains text about axes including the axis that we just dropped.
+                    cs = new DefaultEllipsoidalCS(singletonMap(EllipsoidalCS.NAME_KEY, "Ellipsoidal 2D"), xAxis, yAxis);
+                }
+                return new DefaultGeographicCRS(
+                        ReferencingUtilities.getPropertiesForModifiedCRS(crs, CoordinateReferenceSystem.IDENTIFIERS_KEY),
+                        ((GeodeticCRS) crs).getDatum(), (EllipsoidalCS) cs);
             }
         }
         if (crs instanceof CompoundCRS) {
@@ -322,7 +321,7 @@ public final class CRS extends Static {
                 }
             }
         }
-        return null;
+        return isHorizontalCRS(crs) ? (SingleCRS) crs : null;
     }
 
     /**
@@ -375,7 +374,7 @@ public final class CRS extends Static {
         }
         if (allowCreateEllipsoidal && crs instanceof GeodeticCRS) {
             final CoordinateSystem cs = crs.getCoordinateSystem();
-            if (cs instanceof EllipsoidalCS) {  // See comment in isHorizontalCRS(…) method.
+            if (cs instanceof EllipsoidalCS) {                          // See comment in isHorizontalCRS(…) method.
                 final int i = AxisDirections.indexOfColinear(cs, AxisDirection.UP);
                 if (i >= 0) {
                     final CoordinateSystemAxis axis = cs.getAxis(i);

@@ -103,7 +103,7 @@ public final class IdentifiedObjects extends Static {
      *
      * @param  object The identified object to view as a properties map.
      * @param  excludes The keys of properties to exclude from the map.
-     * @return An view of the identified object as an immutable map.
+     * @return A view of the identified object properties as an immutable map.
      */
     public static Map<String,?> getProperties(final IdentifiedObject object, final String... excludes) {
         ArgumentChecks.ensureNonNull("object", object);

@@ -22,6 +22,7 @@ import org.opengis.referencing.cs.*;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.datum.PrimeMeridian;
+import org.opengis.referencing.IdentifiedObject;
 import org.apache.sis.referencing.datum.HardCodedDatum;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.internal.metadata.WKTKeywords;
@@ -38,7 +39,7 @@ import static org.apache.sis.internal.referencing.ReferencingUtilities.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5 (derived from 0.4)
- * @version 0.6
+ * @version 0.7
  * @module
  */
 public final strictfp class ReferencingUtilitiesTest extends TestCase {
@@ -81,6 +82,17 @@ public final strictfp class ReferencingUtilitiesTest extends TestCase {
         assertNormalizedEqualsWGS84("Shall build a the 2D component.", true,  HardCodedCRS.WGS84_3D);
         assertNormalizedEqualsWGS84("Shall normalize axis order.",     true,  HardCodedCRS.WGS84_φλ);
         assertNull(toNormalizedGeographicCRS(null));
+    }
+
+    /**
+     * Tests {@link ReferencingUtilities#getPropertiesForModifiedCRS(IdentifiedObject, String...)}.
+     *
+     * @since 0.7
+     */
+    @Test
+    public void testGetPropertiesForModifiedCRS() {
+        assertEquals("WGS 84", getPropertiesForModifiedCRS(HardCodedCRS.WGS84_3D).get(IdentifiedObject.NAME_KEY));
+        assertEquals("WGS 84", getPropertiesForModifiedCRS(HardCodedCRS.GEOID_4D).get(IdentifiedObject.NAME_KEY));
     }
 
     /**

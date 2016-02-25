@@ -54,7 +54,6 @@ import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.io.wkt.ElementKind;
 import org.apache.sis.io.wkt.Transliterator;
 import org.apache.sis.io.wkt.FormattableObject;
-import org.apache.sis.io.wkt.UnformattableObjectException;
 
 import static java.lang.Double.doubleToLongBits;
 import static java.lang.Double.NEGATIVE_INFINITY;
@@ -776,11 +775,10 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
         if (AxisDirections.isUserDefined(dir)) {
             meridian = DirectionAlongMeridian.parse(dir);
             if (meridian != null) {
-                if (isWKT1) {
-                    throw new UnformattableObjectException(Errors.format(
-                            Errors.Keys.CanNotRepresentInFormat_2, "WKT 1", meridian));
-                }
                 dir = meridian.baseDirection;
+                if (isWKT1) {
+                    formatter.setInvalidWKT(this, null);
+                }
             }
         }
         formatter.append(dir);

@@ -1070,14 +1070,24 @@ public class Formatter implements Localized {
      * Appends an enumeration or code list value.
      * The {@linkplain Symbols#getSeparator() element separator} will be written before the code list if needed.
      *
+     * <p>For the WKT 2 format, this method uses the {@linkplain Types#getCodeName ISO name if available}
+     * (for example {@code "northEast"}).
+     * For the WKT 1 format, this method uses the programmatic name instead (for example {@code "NORTH_EAST"}).</p>
+     *
      * @param code The code list to append to the WKT, or {@code null} if none.
      */
     public void append(final ControlledVocabulary code) {
         if (code != null) {
             appendSeparator();
-            setColor(ElementKind.CODE_LIST);
-            buffer.append(convention.majorVersion() == 1 ? code.name() : Types.getCodeName(code));
-            resetColor();
+            final String name = convention.majorVersion() == 1 ? code.name() : Types.getCodeName(code);
+            if (CharSequences.isUnicodeIdentifier(name)) {
+                setColor(ElementKind.CODE_LIST);
+                buffer.append(name);
+                resetColor();
+            } else {
+                quote(name, ElementKind.CODE_LIST);
+                setInvalidWKT(code.getClass(), null);
+            }
         }
     }
 
