@@ -31,7 +31,7 @@ import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.jaxb.LegacyNamespaces;
 import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.internal.metadata.VerticalDatumTypes;
-import org.apache.sis.internal.referencing.ReferencingUtilities;
+import org.apache.sis.internal.metadata.MetadataUtilities;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
@@ -347,7 +347,7 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
         if (type == null) {
             type = t;
         } else {
-            ReferencingUtilities.propertyAlreadySet(DefaultVerticalDatum.class, "setTypeElement", "verticalDatumType");
+            MetadataUtilities.propertyAlreadySet(DefaultVerticalDatum.class, "setTypeElement", "verticalDatumType");
         }
     }
 }

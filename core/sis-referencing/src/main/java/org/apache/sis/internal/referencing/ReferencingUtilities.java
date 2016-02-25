@@ -32,8 +32,6 @@ import org.opengis.referencing.datum.PrimeMeridian;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.CharSequences;
-import org.apache.sis.util.resources.Errors;
-import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.datum.DefaultPrimeMeridian;
@@ -320,34 +318,5 @@ public final class ReferencingUtilities extends Static {
             }
         }
         return null;
-    }
-
-    /**
-     * Invoked by private setter methods (themselves invoked by JAXB at unmarshalling time)
-     * when an element is already set. Invoking this method from those setter methods serves
-     * three purposes:
-     *
-     * <ul>
-     *   <li>Make sure that a singleton property is not defined twice in the XML document.</li>
-     *   <li>Protect ourselves against changes in immutable objects outside unmarshalling. It should
-     *       not be necessary since the setter methods shall not be public, but we are paranoiac.</li>
-     *   <li>Be a central point where we can trace all setter methods, in case we want to improve
-     *       warning or error messages in future SIS versions.</li>
-     * </ul>
-     *
-     * @param  classe The caller class, used only in case of warning message to log.
-     * @param  method The caller method, used only in case of warning message to log.
-     * @param  name   The property name, used only in case of error message to format.
-     * @throws IllegalStateException If {@code isDefined} is {@code true} and we are not unmarshalling an object.
-     */
-    public static void propertyAlreadySet(final Class<?> classe, final String method, final String name)
-            throws IllegalStateException
-    {
-        final Context context = Context.current();
-        if (context != null) {
-            Context.warningOccured(context, classe, method, Errors.class, Errors.Keys.ElementAlreadyPresent_1, name);
-        } else {
-            throw new IllegalStateException(Errors.format(Errors.Keys.ElementAlreadyPresent_1, name));
-        }
     }
 }
