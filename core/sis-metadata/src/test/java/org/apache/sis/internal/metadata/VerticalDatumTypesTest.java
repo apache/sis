@@ -30,7 +30,7 @@ import static org.junit.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.6
+ * @version 0.7
  * @module
  */
 public final strictfp class VerticalDatumTypesTest extends TestCase {
@@ -49,9 +49,9 @@ public final strictfp class VerticalDatumTypesTest extends TestCase {
      */
     @Test
     public void testToLegacy() {
-        assertEquals(2002, VerticalDatumTypes.toLegacy(VerticalDatumTypes.ELLIPSOIDAL.ordinal()));
-        assertEquals(2005, VerticalDatumTypes.toLegacy(VerticalDatumType .GEOIDAL    .ordinal()));
-        assertEquals(2006, VerticalDatumTypes.toLegacy(VerticalDatumType .DEPTH      .ordinal()));
+        assertEquals(2002, VerticalDatumTypes.toLegacy(VerticalDatumTypes.ELLIPSOIDAL));
+        assertEquals(2005, VerticalDatumTypes.toLegacy(VerticalDatumType .GEOIDAL));
+        assertEquals(2006, VerticalDatumTypes.toLegacy(VerticalDatumType .DEPTH));
     }
 
     /**
