@@ -34,6 +34,7 @@ import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.referencing.datum.PrimeMeridian;
 import org.apache.sis.internal.referencing.Legacy;
 import org.apache.sis.internal.metadata.AxisDirections;
+import org.apache.sis.internal.metadata.MetadataUtilities;
 import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.internal.referencing.WKTUtilities;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
@@ -299,7 +300,7 @@ class DefaultGeodeticCRS extends AbstractCRS implements GeodeticCRS { // If made
         if (datum == null) {
             datum = value;
         } else {
-            ReferencingUtilities.propertyAlreadySet(DefaultGeodeticCRS.class, "setDatum", "geodeticDatum");
+            MetadataUtilities.propertyAlreadySet(DefaultGeodeticCRS.class, "setDatum", "geodeticDatum");
         }
     }
 

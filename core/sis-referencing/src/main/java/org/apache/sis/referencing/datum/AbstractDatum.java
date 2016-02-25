@@ -35,7 +35,6 @@ import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.internal.util.Citations;
 import org.apache.sis.internal.metadata.MetadataUtilities;
-import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.io.wkt.ElementKind;
 import org.apache.sis.io.wkt.Formatter;
 
@@ -489,7 +488,7 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
         if (anchorDefinition == null) {
             anchorDefinition = value;
         } else {
-            ReferencingUtilities.propertyAlreadySet(AbstractDatum.class, "setAnchorPoint", "anchorDefinition");
+            MetadataUtilities.propertyAlreadySet(AbstractDatum.class, "setAnchorPoint", "anchorDefinition");
         }
     }
 
@@ -502,7 +501,7 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
         if (realizationEpoch == Long.MIN_VALUE) {
             realizationEpoch = value.getTime();
         } else {
-            ReferencingUtilities.propertyAlreadySet(AbstractDatum.class, "setRealizationEpoch", "realizationEpoch");
+            MetadataUtilities.propertyAlreadySet(AbstractDatum.class, "setRealizationEpoch", "realizationEpoch");
         }
     }
 
@@ -515,7 +514,7 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
         if (domainOfValidity == null) {
             domainOfValidity = value;
         } else {
-            ReferencingUtilities.propertyAlreadySet(AbstractDatum.class, "setDomainOfValidity", "domainOfValidity");
+            MetadataUtilities.propertyAlreadySet(AbstractDatum.class, "setDomainOfValidity", "domainOfValidity");
         }
     }
 
@@ -528,7 +527,7 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
         if (scope == null) {
             scope = value;
         } else {
-            ReferencingUtilities.propertyAlreadySet(AbstractDatum.class, "setScope", "scope");
+            MetadataUtilities.propertyAlreadySet(AbstractDatum.class, "setScope", "scope");
         }
     }
 }

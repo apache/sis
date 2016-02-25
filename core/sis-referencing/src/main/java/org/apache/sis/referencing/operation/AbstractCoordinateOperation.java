@@ -55,6 +55,7 @@ import org.apache.sis.internal.referencing.PositionalAccuracyConstant;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.referencing.WKTUtilities;
 import org.apache.sis.internal.metadata.WKTKeywords;
+import org.apache.sis.internal.metadata.MetadataUtilities;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.internal.system.Semaphores;
@@ -924,7 +925,7 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
         if (sourceCRS == null) {
             sourceCRS = crs;
         } else {
-            ReferencingUtilities.propertyAlreadySet(AbstractCoordinateOperation.class, "setSource", "sourceCRS");
+            MetadataUtilities.propertyAlreadySet(AbstractCoordinateOperation.class, "setSource", "sourceCRS");
         }
     }
 
@@ -943,7 +944,7 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
         if (targetCRS == null) {
             targetCRS = crs;
         } else {
-            ReferencingUtilities.propertyAlreadySet(AbstractCoordinateOperation.class, "setTarget", "targetCRS");
+            MetadataUtilities.propertyAlreadySet(AbstractCoordinateOperation.class, "setTarget", "targetCRS");
         }
     }
 
@@ -964,7 +965,7 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
         if (coordinateOperationAccuracy == null) {
             coordinateOperationAccuracy = UnmodifiableArrayList.wrap(values);
         } else {
-            ReferencingUtilities.propertyAlreadySet(AbstractCoordinateOperation.class, "setAccuracy", "coordinateOperationAccuracy");
+            MetadataUtilities.propertyAlreadySet(AbstractCoordinateOperation.class, "setAccuracy", "coordinateOperationAccuracy");
         }
     }
 
@@ -977,7 +978,7 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
         if (operationVersion == null) {
             operationVersion = value;
         } else {
-            ReferencingUtilities.propertyAlreadySet(AbstractCoordinateOperation.class, "setOperationVersion", "operationVersion");
+            MetadataUtilities.propertyAlreadySet(AbstractCoordinateOperation.class, "setOperationVersion", "operationVersion");
         }
     }
 
@@ -990,7 +991,7 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
         if (domainOfValidity == null) {
             domainOfValidity = value;
         } else {
-            ReferencingUtilities.propertyAlreadySet(AbstractCoordinateOperation.class, "setDomainOfValidity", "domainOfValidity");
+            MetadataUtilities.propertyAlreadySet(AbstractCoordinateOperation.class, "setDomainOfValidity", "domainOfValidity");
         }
     }
 
@@ -1003,7 +1004,7 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
         if (scope == null) {
             scope = value;
         } else {
-            ReferencingUtilities.propertyAlreadySet(AbstractCoordinateOperation.class, "setScope", "scope");
+            MetadataUtilities.propertyAlreadySet(AbstractCoordinateOperation.class, "setScope", "scope");
         }
     }
 }

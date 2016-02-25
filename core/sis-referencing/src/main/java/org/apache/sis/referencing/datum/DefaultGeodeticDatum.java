@@ -35,9 +35,9 @@ import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.NoninvertibleMatrixException;
 import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.internal.metadata.WKTKeywords;
+import org.apache.sis.internal.metadata.MetadataUtilities;
 import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.internal.referencing.ExtentSelector;
-import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.util.logging.Logging;
@@ -622,7 +622,7 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
         if (ellipsoid == null) {
             ellipsoid = value;
         } else {
-            ReferencingUtilities.propertyAlreadySet(DefaultGeodeticDatum.class, "setEllipsoid", "ellipsoid");
+            MetadataUtilities.propertyAlreadySet(DefaultGeodeticDatum.class, "setEllipsoid", "ellipsoid");
         }
     }
 
@@ -635,7 +635,7 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
         if (primeMeridian == null) {
             primeMeridian = value;
         } else {
-            ReferencingUtilities.propertyAlreadySet(DefaultGeodeticDatum.class, "setPrimeMeridian", "primeMeridian");
+            MetadataUtilities.propertyAlreadySet(DefaultGeodeticDatum.class, "setPrimeMeridian", "primeMeridian");
         }
     }
 }
