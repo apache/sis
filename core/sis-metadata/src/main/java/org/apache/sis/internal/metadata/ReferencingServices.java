@@ -595,7 +595,8 @@ public class ReferencingServices extends OptionalDependency {
      * @since 0.6
      */
     public boolean isHeuristicMatchForName(final IdentifiedObject object, final String name) {
-        return NameToIdentifier.isHeuristicMatchForName(object.getName(), object.getAlias(), name);
+        return NameToIdentifier.isHeuristicMatchForName(object.getName(), object.getAlias(), name,
+                NameToIdentifier.Simplifier.DEFAULT);
     }
 
     /**

@@ -22,16 +22,24 @@ import java.io.IOException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.JAXBException;
 import org.opengis.metadata.Metadata;
+import org.opengis.metadata.Identifier;
+import org.opengis.util.FactoryException;
+import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.opengis.referencing.ReferenceSystem;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.apache.sis.io.TableAppender;
 import org.apache.sis.io.wkt.WKTFormat;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.io.wkt.Colors;
 import org.apache.sis.metadata.MetadataStandard;
 import org.apache.sis.metadata.ValueExistencePolicy;
+import org.apache.sis.referencing.IdentifiedObjects;
+import org.apache.sis.referencing.CRS;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStores;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.util.ComparisonMode;
+import org.apache.sis.util.Utilities;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.collection.TreeTableFormat;
@@ -41,7 +49,7 @@ import org.apache.sis.xml.XML;
 
 
 /**
- * The "metadata" and "crs" subcommands.
+ * The "metadata", "crs" and "identifier" subcommands.
  * CRS are considered as a kind of metadata here.
  *
  * @author  Martin Desruisseaux (Geomatys)
@@ -51,6 +59,13 @@ import org.apache.sis.xml.XML;
  */
 final class MetadataSC extends SubCommand {
     /**
+     * The desired information.
+     */
+    static enum Info {
+        METADATA, CRS, IDENTIFIER
+    }
+
+    /**
      * The output format.
      */
     private static enum Format {
@@ -58,51 +73,50 @@ final class MetadataSC extends SubCommand {
     }
 
     /**
-     * {@code true} for the {@code "crs"} sub-command,
-     * or {@code false} for the {@code "metadata"} sub-command.
+     * The sub-command: {@code "metadata"}, {@code "crs"} or {@code "identifier"}.
      */
-    private final boolean isCRS;
+    private final Info command;
 
     /**
-     * Creates the {@code "metadata"} or {@code "crs"} sub-command.
-     *
-     * @param isCRS {@code true} for the {@code "crs"} sub-command,
-     *        or {@code false} for the {@code "metadata"} sub-command.
+     * The output format.
      */
-    MetadataSC(final boolean isCRS, final int commandIndex, final String... args) throws InvalidOptionException {
+    private Format outputFormat;
+
+    /**
+     * The WKT convention, or {@code null} if it does not apply.
+     */
+    private Convention convention;
+
+    /**
+     * Creates the {@code "metadata"}, {@code "crs"} or {@code "identifier"} sub-command.
+     */
+    MetadataSC(final Info command, final int commandIndex, final String... args) throws InvalidOptionException {
         super(commandIndex, args, EnumSet.of(Option.FORMAT, Option.LOCALE, Option.TIMEZONE, Option.ENCODING,
                 Option.COLORS, Option.HELP, Option.DEBUG));
-        this.isCRS = isCRS;
+        this.command = command;
     }
 
     /**
-     * Prints metadata or CRS information.
-     *
-     * @throws DataStoreException If an error occurred while reading the file.
-     * @throws JAXBException If an error occurred while producing the XML output.
-     * @throws IOException Should never happen, since we are appending to a print writer.
+     * Parses the command-line arguments and initializes the {@link #outputFormat} and {@link #convention} fields
+     * accordingly. This method verifies the parameter validity.
      */
-    @Override
-    @SuppressWarnings("UseOfSystemOutOrSystemErr")
-    public int run() throws InvalidOptionException, DataStoreException, JAXBException, IOException {
+    private void parseArguments() throws InvalidOptionException {
         /*
          * Output format can be either "text" (the default) or "xml".
          * In the case of "crs" sub-command, we accept also WKT variants.
          */
-        Convention convention = null;
-        final Format outputFormat;
         final String format = options.get(Option.FORMAT);
         if (format == null || format.equalsIgnoreCase("text")) {
-            if (isCRS) {
+            if (command == Info.CRS) {
                 outputFormat = Format.WKT;
                 convention = Convention.WKT2_SIMPLIFIED;
             } else {
                 outputFormat = Format.TEXT;
             }
-        } else if (isCRS && (format.equalsIgnoreCase("wkt") || format.equalsIgnoreCase("wkt2"))) {
+        } else if (format.equalsIgnoreCase("wkt") || format.equalsIgnoreCase("wkt2")) {
             outputFormat = Format.WKT;
             convention = Convention.WKT2;
-        } else if (isCRS && format.equalsIgnoreCase("wkt1")) {
+        } else if (format.equalsIgnoreCase("wkt1")) {
             outputFormat = Format.WKT;
             convention = Convention.WKT1;
         } else if (format.equalsIgnoreCase("xml")) {
@@ -111,10 +125,44 @@ final class MetadataSC extends SubCommand {
             throw new InvalidOptionException(Errors.format(
                     Errors.Keys.IllegalOptionValue_2, "format", format), format);
         }
+        final boolean isFormatCompatible;
+        switch (command) {
+            case CRS: {
+                isFormatCompatible = true;
+                break;
+            }
+            case IDENTIFIER: {
+                isFormatCompatible = (outputFormat == Format.TEXT);
+                break;
+            }
+            default: {
+                isFormatCompatible = (convention == null);
+                break;
+            }
+        }
+        if (!isFormatCompatible) {
+            throw new InvalidOptionException(Errors.format(Errors.Keys.IncompatibleFormat_2,
+                    command.name().toLowerCase(locale), format), format);
+        }
+    }
+
+    /**
+     * Prints metadata or CRS information.
+     *
+     * @throws DataStoreException if an error occurred while reading the file.
+     * @throws JAXBException if an error occurred while producing the XML output.
+     * @throws FactoryException if an error occurred while looking for a CRS identifier.
+     * @throws IOException should never happen, since we are appending to a print writer.
+     */
+    @Override
+    @SuppressWarnings("UseOfSystemOutOrSystemErr")
+    public int run() throws InvalidOptionException, DataStoreException, JAXBException, FactoryException, IOException {
+        parseArguments();
         /*
-         * Read metadata from the data storage.
+         * Read metadata from the data storage only aftr we verified that the arguments are valid.
+         * The input can be a file given on the command line, or the standard input stream.
          */
-        Object metadata;
+        final Metadata metadata;
         if (useStandardInput()) {
             try (DataStore store = DataStores.open(System.in)) {
                 metadata = store.getMetadata();
@@ -131,18 +179,28 @@ final class MetadataSC extends SubCommand {
             return 0;
         }
         /*
-         * If we are executing the "crs" sub-command, extract the first CRS.
+         * If we are executing the "identifier" sub-command, then show the metadata identifier (if any)
+         * and the identifier of all referencing systems found. Otherwise if we are executing the "crs"
+         * sub-command, extract only the first CRS. That CRS will be displayed after the switch statement.
          */
-        if (isCRS && (metadata instanceof Metadata)) {
-            boolean found = false;
-            for (final ReferenceSystem rs : ((Metadata) metadata).getReferenceSystemInfo()) {
-                if (rs instanceof CoordinateReferenceSystem) {
-                    metadata = rs;
-                    found = true;
-                    break;
+        Object object = metadata;
+choice: switch (command) {
+            case IDENTIFIER: {
+                final TableAppender table = new TableAppender(out, "    ");
+                appendIdentifier(table, metadata);
+                for (final ReferenceSystem rs : metadata.getReferenceSystemInfo()) {
+                    appendIdentifier(table, rs);
                 }
+                table.flush();
+                return 0;
             }
-            if (!found) {
+            case CRS: {
+                for (final ReferenceSystem rs : metadata.getReferenceSystemInfo()) {
+                    if (rs instanceof CoordinateReferenceSystem) {
+                        object = rs;
+                        break choice;
+                    }
+                }
                 return 0;
             }
         }
@@ -151,7 +209,7 @@ final class MetadataSC extends SubCommand {
          */
         switch (outputFormat) {
             case TEXT: {
-                final TreeTable tree = MetadataStandard.ISO_19115.asTreeTable(metadata, ValueExistencePolicy.NON_EMPTY);
+                final TreeTable tree = MetadataStandard.ISO_19115.asTreeTable(object, ValueExistencePolicy.NON_EMPTY);
                 final TreeTableFormat tf = new TreeTableFormat(locale, timezone);
                 tf.setColumns(TableColumn.NAME, TableColumn.VALUE);
                 tf.format(tree, out);
@@ -166,7 +224,7 @@ final class MetadataSC extends SubCommand {
                 if (colors) {
                     f.setColors(Colors.DEFAULT);
                 }
-                f.format(metadata, out);
+                f.format(object, out);
                 out.println();
                 break;
             }
@@ -177,11 +235,11 @@ final class MetadataSC extends SubCommand {
                 marshaller.setProperty(XML.LOCALE,   locale);
                 marshaller.setProperty(XML.TIMEZONE, timezone);
                 if (isConsole()) {
-                    marshaller.marshal(metadata, out);
+                    marshaller.marshal(object, out);
                 } else {
                     out.flush();
                     marshaller.setProperty(Marshaller.JAXB_ENCODING, encoding.name());
-                    marshaller.marshal(metadata, System.out);   // Intentionally use OutputStream instead than Writer.
+                    marshaller.marshal(object, System.out);     // Intentionally use OutputStream instead than Writer.
                     System.out.flush();
                 }
                 break;
@@ -201,5 +259,78 @@ final class MetadataSC extends SubCommand {
         if (outputBuffer != null) return true;                      // Special case for JUnit tests only.
         final Console console = System.console();
         return (console != null) && console.writer() == out;
+    }
+
+    /**
+     * Append a row to the given table provided that the identifier is non-null.
+     * If the given identifier is {@code null}, then this method does nothing.
+     */
+    private static void appendRow(final TableAppender table, final CharSequence identifier,
+            final char separator, final CharSequence legend)
+    {
+        if (identifier != null) {
+            table.append(identifier).nextColumn();
+            if (legend != null) {
+                table.append(separator).append(' ').append(legend);
+            }
+            table.nextLine();
+        }
+    }
+
+    /**
+     * Appends the metadata identifier to the given table.
+     */
+    private void appendIdentifier(final TableAppender table, final Metadata metadata) {
+        final Identifier id = metadata.getMetadataIdentifier();
+        if (id != null) {
+            CharSequence desc = id.getDescription();
+            if (desc != null && !files.isEmpty()) desc = files.get(0);
+            appendRow(table, IdentifiedObjects.toString(id), '-', desc);
+        }
+    }
+
+    /**
+     * Append the CRS identifier to the given table.
+     * This method gives precedence to {@code "urn:ogc:def:"} identifiers if possible.
+     */
+    private static void appendIdentifier(final TableAppender table, final ReferenceSystem rs) throws FactoryException {
+        char separator;
+        String legend;
+        String identifier = IdentifiedObjects.lookupURN(rs, null);
+        if (identifier != null) {
+            separator = '-';
+            legend = rs.getName().getCode();
+        } else {
+            for (final Identifier id : rs.getIdentifiers()) {
+                final String c = IdentifiedObjects.toURN(rs.getClass(), id);
+                if (c != null) {
+                    identifier = c;
+                    break;                                          // Stop at the first "urn:ogc:def:…".
+                }
+                if (identifier == null) {
+                    identifier = IdentifiedObjects.toString(id);    // "AUTHORITY:CODE" as a fallback if no URN.
+                }
+            }
+            if (identifier == null) {
+                return;                                             // No identifier found.
+            }
+            /*
+             * The CRS provided by the user contains identifier, but the 'lookupURN' operation above failed to
+             * find it. The most likely cause is that the user-provided CRS does not use the same axis order.
+             */
+            try {
+                separator = '!';
+                final ReferenceSystem def = CRS.forCode(identifier);
+                if (Utilities.deepEquals(def, rs, ComparisonMode.ALLOW_VARIANT)) {
+                    legend = "Axis order does not match the definition.";
+                } else {
+                    legend = "Apparently wrong identifier!";
+                }
+            } catch (NoSuchAuthorityCodeException e) {
+                separator = '?';
+                legend = "Exactness of this identifier has not been verified.";
+            }
+        }
+        appendRow(table, identifier, separator, legend);
     }
 }

@@ -46,8 +46,8 @@ public final class IO extends Static {
      * of wrappers defined in this package around a flushable object, invokes the
      * {@link Flushable#flush() flush()} method on that object. Otherwise do nothing.
      *
-     * <p>Chains of wrappers are followed until a {@code Flushable}
-     * instance is found, if any. The search stops at the first occurrence found.</p>
+     * <p>Chains of wrappers are followed until a {@code Flushable} instance is found, if any.
+     * The search stops at the first occurrence found.</p>
      *
      * @param  out The stream or buffer to flush, or {@code null}.
      * @throws IOException if an error occurred while flushing the given stream.
@@ -67,10 +67,10 @@ public final class IO extends Static {
      * of wrappers defined in this package around a closeable object, invokes the
      * {@link Closeable#close() close()} method on that object. Otherwise do nothing.
      *
-     * <p>Chains of wrappers are followed until a {@code Closeable}
-     * instance is found, if any. The first {@link Flushable} instance found <em>before</em> the
-     * {@code Closeable} one, if any, is {@linkplain Flushable#flush() flushed}. The search stops
-     * at the first {@code Closeable} occurrence found.</p>
+     * <p>Chains of wrappers are followed until a {@code Closeable} instance is found, if any.
+     * The first {@link Flushable} instance found <em>before</em> the {@code Closeable} one,
+     * if any, is {@linkplain Flushable#flush() flushed}.
+     * The search stops at the first {@code Closeable} occurrence found.</p>
      *
      * @param  out The stream or buffer to close, or {@code null}.
      * @throws IOException if an error occurred while closing the given stream.
