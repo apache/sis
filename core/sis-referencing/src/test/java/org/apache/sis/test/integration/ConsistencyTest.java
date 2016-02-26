@@ -18,13 +18,10 @@ package org.apache.sis.test.integration;
 
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.Locale;
 import java.util.Set;
-import java.util.TimeZone;
 import java.text.ParseException;
 import org.opengis.util.FactoryException;
 import org.opengis.util.NoSuchIdentifierException;
-import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.referencing.factory.FactoryDataException;
 import org.apache.sis.referencing.CRS;
@@ -73,10 +70,14 @@ public final strictfp class ConsistencyTest extends TestCase {
     @Test
     public void testCoordinateReferenceSystems() throws FactoryException {
         assumeTrue("Extensive tests not enabled.", RUN_EXTENSIVE_TESTS);
-        final WKTFormat v1 = new WKTFormat(Locale.US, TimeZone.getTimeZone("UTC"));
-        final WKTFormat v2 = new WKTFormat(Locale.US, TimeZone.getTimeZone("UTC"));
-        v1.setConvention(Convention.WKT1);
-        v2.setConvention(Convention.WKT2);
+        final WKTFormat v1  = new WKTFormat(null, null);
+        final WKTFormat v1c = new WKTFormat(null, null);
+        final WKTFormat v2  = new WKTFormat(null, null);
+        final WKTFormat v2s = new WKTFormat(null, null);
+        v1 .setConvention(Convention.WKT1);
+        v1c.setConvention(Convention.WKT1_COMMON_UNITS);
+        v2 .setConvention(Convention.WKT2);
+        v2s.setConvention(Convention.WKT2_SIMPLIFIED);
         for (final String code : CRS.getAuthorityFactory(null).getAuthorityCodes(CoordinateReferenceSystem.class)) {
             if (!EXCLUDES.contains(code)) {
                 final CoordinateReferenceSystem crs;
@@ -86,20 +87,20 @@ public final strictfp class ConsistencyTest extends TestCase {
                     print(code, "WARNING", e.getLocalizedMessage());
                     continue;
                 }
-                parseAndFormat(v2, code, crs);
+                parseAndFormat(v2,  code, crs);
+                parseAndFormat(v2s, code, crs);
                 /*
                  * There is more information lost in WKT 1 than in WKT 2, so we can not test everything.
                  * For example we can not format fully three-dimensional geographic CRS because the unit
                  * is not the same for all axes. We can not format neither some axis directions.
                  */
-                if (crs.getCoordinateSystem().getDimension() == 3 && (crs instanceof GeographicCRS)) {
-                    continue;
-                }
                 try {
                     parseAndFormat(v1, code, crs);
                 } catch (UnformattableObjectException e) {
                     print(code, "WARNING", e.getLocalizedMessage());
+                    continue;
                 }
+                parseAndFormat(v1c, code, crs);
             }
         }
     }
