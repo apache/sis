@@ -450,13 +450,17 @@ public class ReferencingServices extends OptionalDependency {
                     /*
                      * At this point we have the horizontal and vertical components. The horizontal component
                      * begins at 'axisPosition', which is almost always zero. Create the three-dimensional CRS.
+                     * If the result is the CRS to be returned directly by this method (components.length == 2),
+                     * use the properties given in argument. Otherwise we need to use other properties; current
+                     * implementation recycles the properties of the existing two-dimensional CRS.
                      */
                     final CoordinateSystemAxis[] axes = new CoordinateSystemAxis[3];
                     axes[axisPosition++   ] = cs.getAxis(0);
                     axes[axisPosition++   ] = cs.getAxis(1);
                     axes[axisPosition %= 3] = vertical.getCoordinateSystem().getAxis(0);
                     cs = csFactory.createEllipsoidalCS(getProperties(cs), axes[0], axes[1], axes[2]);
-                    crs = crsFactory.createGeographicCRS(getProperties(crs), ((GeodeticCRS) crs).getDatum(), cs);
+                    crs = crsFactory.createGeographicCRS((components.length == 2) ? properties : getProperties(crs),
+                            ((GeodeticCRS) crs).getDatum(), cs);
                     /*
                      * Remove the VerticalCRS and store the three-dimensional GeographicCRS in place of the previous
                      * two-dimensional GeographicCRS. Then let the loop continues in case there is other CRS to merge
