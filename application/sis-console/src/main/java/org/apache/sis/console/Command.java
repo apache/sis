@@ -35,11 +35,12 @@ import org.apache.sis.util.logging.MonolineFormatter;
  * Command line interface for Apache SIS. The {@link #main(String[])} method accepts the following actions:
  *
  * <blockquote><table class="compact" summary="Supported command-line actions.">
- * <tr><td>{@code help}     </td><td>Show a help overview.</td></tr>
- * <tr><td>{@code about}    </td><td>Show information about Apache SIS and system configuration.</td></tr>
- * <tr><td>{@code mime-type}</td><td>Show MIME type for the given file.</td></tr>
- * <tr><td>{@code metadata} </td><td>Show metadata information for the given file.</td></tr>
- * <tr><td>{@code crs}      </td><td>Show Coordinate Reference System information for the given file or code.</td></tr>
+ * <tr><td>{@code help}       </td><td>Show a help overview.</td></tr>
+ * <tr><td>{@code about}      </td><td>Show information about Apache SIS and system configuration.</td></tr>
+ * <tr><td>{@code mime-type}  </td><td>Show MIME type for the given file.</td></tr>
+ * <tr><td>{@code metadata}   </td><td>Show metadata information for the given file.</td></tr>
+ * <tr><td>{@code crs}        </td><td>Show Coordinate Reference System information for the given file or code.</td></tr>
+ * <tr><td>{@code identifier} </td><td>Show identifiers for metadata and referencing systems in the given file.</td></tr>
  * </table></blockquote>
  *
  * Each command can accepts an arbitrary amount of the following options:
@@ -156,11 +157,12 @@ public final class Command {
         } else {
             commandName = commandName.toLowerCase(Locale.US);
             switch (commandName) {
-                case "help":      command = new HelpSC    (       commandIndex, args); break;
-                case "about":     command = new AboutSC   (       commandIndex, args); break;
-                case "mime-type": command = new MimeTypeSC(       commandIndex, args); break;
-                case "metadata":  command = new MetadataSC(false, commandIndex, args); break;
-                case "crs":       command = new MetadataSC(true,  commandIndex, args); break;
+                case "help":       command = new HelpSC    (commandIndex, args); break;
+                case "about":      command = new AboutSC   (commandIndex, args); break;
+                case "mime-type":  command = new MimeTypeSC(commandIndex, args); break;
+                case "identifier": command = new MetadataSC(MetadataSC.Info.IDENTIFIER, commandIndex, args); break;
+                case "metadata":   command = new MetadataSC(MetadataSC.Info.METADATA,   commandIndex, args); break;
+                case "crs":        command = new MetadataSC(MetadataSC.Info.CRS,        commandIndex, args); break;
                 default: throw new InvalidCommandException(Errors.format(
                             Errors.Keys.UnknownCommand_1, commandName), commandName);
             }

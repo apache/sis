@@ -408,7 +408,18 @@ public final class IdentifiedObjects extends Static {
         String urn = null;
         if (object != null) {
             for (final IdentifiedObject candidate : newFinder(null).find(object)) {
-                final String c = toURN(candidate.getClass(), getIdentifier(candidate, authority));
+                String c = toURN(candidate.getClass(), getIdentifier(candidate, authority));
+                if (c == null && authority == null) {
+                    /*
+                     * If 'authority' was null, then getIdentifier(candidate, authority) returned the identifier
+                     * for the first authority.  But not all authorities can be formatted as a URN. So try other
+                     * authorities.
+                     */
+                    for (final Identifier id : candidate.getIdentifiers()) {
+                        c = toURN(candidate.getClass(), id);
+                        if (c != null) break;
+                    }
+                }
                 if (c != null) {
                     if (urn != null && !urn.equals(c)) {
                         return null;
@@ -543,7 +554,7 @@ public final class IdentifiedObjects extends Static {
      *
      * @param  object The object for which to check the name or alias.
      * @param  name The name to compare with the object name or aliases.
-     * @return {@code true} if the primary name of at least one alias matches the specified {@code name}.
+     * @return {@code true} if the primary name or at least one alias matches the specified {@code name}.
      *
      * @see AbstractIdentifiedObject#isHeuristicMatchForName(String)
      */
@@ -554,7 +565,8 @@ public final class IdentifiedObjects extends Static {
             return ((AbstractIdentifiedObject) object).isHeuristicMatchForName(name);
         } else {
             ArgumentChecks.ensureNonNull("object", object);
-            return NameToIdentifier.isHeuristicMatchForName(object.getName(), object.getAlias(), name);
+            return NameToIdentifier.isHeuristicMatchForName(object.getName(), object.getAlias(), name,
+                    NameToIdentifier.Simplifier.DEFAULT);
         }
     }
 

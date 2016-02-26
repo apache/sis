@@ -474,6 +474,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final short IncompatibleDatum_2 = 186;
 
         /**
+         * Can not use the “{1}” format with “{0}”.
+         */
+        public static final short IncompatibleFormat_2 = 217;
+
+        /**
          * Property “{0}” has an incompatible value.
          */
         public static final short IncompatiblePropertyValue_1 = 45;

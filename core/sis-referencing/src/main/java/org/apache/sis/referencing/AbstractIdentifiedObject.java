@@ -494,7 +494,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      */
     @Override
     public Collection<GenericName> getAlias() {
-        return nonNull(alias); // Needs to be null-safe because we may have a null value on unmarshalling.
+        return nonNull(alias);          // Needs to be null-safe because we may have a null value on unmarshalling.
     }
 
     /**
@@ -507,7 +507,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      */
     @Override
     public Set<Identifier> getIdentifiers() {
-        return nonNull(identifiers); // Needs to be null-safe because we may have a null value on unmarshalling.
+        return nonNull(identifiers);    // Needs to be null-safe because we may have a null value on unmarshalling.
     }
 
     /**
@@ -599,9 +599,12 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      *   <li>{@linkplain org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis#isHeuristicMatchForName(String)
      *       Comparisons of coordinate system axis names} consider {@code "Lat"}, {@code "Latitude"} and
      *       {@code "Geodetic latitude"} as synonymous, and likewise for longitude.</li>
-     *   <li>{@linkplain org.apache.sis.referencing.datum.DefaultGeodeticDatum#isHeuristicMatchForName(String)
-     *       Comparisons of geodetic datum names} ignore the {@code "D_"} prefix, if any.
+     *   <li>{@linkplain org.apache.sis.referencing.datum.AbstractDatum#isHeuristicMatchForName(String)
+     *       Comparisons of datum names} ignore the {@code "D_"} prefix, if any.
      *       This prefix appears in ESRI datum name (e.g. {@code "D_WGS_1984"}).</li>
+     *   <li>{@linkplain org.apache.sis.referencing.datum.DefaultGeodeticDatum#isHeuristicMatchForName(String)
+     *       Comparisons of geodetic datum names} may ignore the prime meridian name, if any.
+     *       Example: <cite>"(Paris)"</cite> in <cite>"Nouvelle Triangulation Française (Paris)"</cite>.</li>
      * </ul>
      *
      * <div class="section">Future evolutions</div>
@@ -612,13 +615,13 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * gained while working with more data producers.
      *
      * @param  name The name to compare with the object name or aliases.
-     * @return {@code true} if the primary name of at least one alias matches the specified {@code name}.
+     * @return {@code true} if the primary name or at least one alias matches the specified {@code name}.
      *
      * @see IdentifiedObjects#isHeuristicMatchForName(IdentifiedObject, String)
      * @see org.apache.sis.util.Characters.Filter#LETTERS_AND_DIGITS
      */
     public boolean isHeuristicMatchForName(final String name) {
-        return NameToIdentifier.isHeuristicMatchForName(this.name, alias, name);
+        return NameToIdentifier.isHeuristicMatchForName(this.name, alias, name, NameToIdentifier.Simplifier.DEFAULT);
     }
 
     /**
