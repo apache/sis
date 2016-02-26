@@ -61,10 +61,13 @@ import org.apache.sis.util.Debug;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.Localized;
+import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.Characters;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.resources.Vocabulary;
+import org.apache.sis.internal.util.X364;
 import org.apache.sis.internal.util.Citations;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.util.PatchedUnitFormat;
@@ -94,7 +97,7 @@ import org.apache.sis.metadata.iso.extent.Extents;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4
- * @version 0.6
+ * @version 0.7
  * @module
  *
  * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html">WKT 2 specification</a>
@@ -179,8 +182,16 @@ public class Formatter implements Localized {
      * {@link Transliterator#IDENTITY} for preserving non-ASCII characters. The default value is
      * {@link Transliterator#DEFAULT}, which causes replacements like "é" → "e" in all elements
      * except {@code REMARKS["…"]}. May also be a user-supplied transliterator.
+     *
+     * @see #getTransliterator()
      */
     Transliterator transliterator;
+
+    /**
+     * {@code true} if this {@code Formatter} should verify the validity of characters in quoted texts.
+     * ISO 19162 restricts quoted texts to ASCII characters with addition of degree symbol (°).
+     */
+    boolean verifyCharacterValidity = true;
 
     /**
      * The enclosing WKT element being formatted.
@@ -1015,25 +1026,27 @@ public class Formatter implements Localized {
         final int base = buffer.appendCodePoint(symbols.getOpeningQuote(0)).length();
         if (type != ElementKind.REMARKS) {
             text = transliterator.filter(text);
-            int startAt = 0; // Index of the last space character.
-            final int length = text.length();
-            for (int i = 0; i < length;) {
-                int c = text.codePointAt(i);
-                int n = Character.charCount(c);
-                if (!Characters.isValidWKT(c)) {
-                    final String illegal = text.substring(i, i+n);
-                    while ((i += n) < length) {
-                        c = text.codePointAt(i);
-                        n = Character.charCount(c);
-                        if (c == ' ' || c == '_') break;
+            if (verifyCharacterValidity) {
+                int startAt = 0;                                        // Index of the last space character.
+                final int length = text.length();
+                for (int i = 0; i < length;) {
+                    int c = text.codePointAt(i);
+                    int n = Character.charCount(c);
+                    if (!Characters.isValidWKT(c)) {
+                        final String illegal = text.substring(i, i+n);
+                        while ((i += n) < length) {
+                            c = text.codePointAt(i);
+                            n = Character.charCount(c);
+                            if (c == ' ' || c == '_') break;
+                        }
+                        warnings().add(Errors.formatInternational(Errors.Keys.IllegalCharacterForFormat_3,
+                                "Well-Known Text", text.substring(startAt, i), illegal), null, null);
+                        break;
                     }
-                    warnings().add(Errors.formatInternational(Errors.Keys.IllegalCharacterForFormat_3,
-                            "Well-Known Text", text.substring(startAt, i), illegal), null, null);
-                    break;
-                }
-                i += n;
-                if (c == ' ' || c == '_') {
-                    startAt = i;
+                    i += n;
+                    if (c == ' ' || c == '_') {
+                        startAt = i;
+                    }
                 }
             }
         }
@@ -1604,6 +1617,35 @@ public class Formatter implements Localized {
      */
     final Warnings getWarnings() {
         return warnings;
+    }
+
+    /**
+     * Appends the warnings after the WKT string. If there is no warnings, then this method does nothing.
+     * If this method is invoked, then it shall be the last method before {@link #toWKT()}.
+     */
+    final void appendWarnings() {
+        final Warnings warnings = this.warnings;                    // Protect against accidental changes.
+        if (warnings != null) {
+            final StringBuffer buffer = this.buffer;
+            final String ln = System.lineSeparator();
+            buffer.append(ln).append(ln);
+            if (colors != null) {
+                buffer.append(X364.BACKGROUND_RED.sequence()).append(X364.BOLD.sequence()).append(' ');
+            }
+            buffer.append(Vocabulary.getResources(locale).getLabel(Vocabulary.Keys.Warnings));
+            if (colors != null) {
+                buffer.append(' ').append(X364.RESET.sequence()).append(X364.FOREGROUND_RED.sequence());
+            }
+            buffer.append(ln);
+            final int n = warnings.getNumMessages();
+            for (int i=0; i<n; i++) {
+                String message = Exceptions.getLocalizedMessage(warnings.getException(i), locale);
+                if (message == null) {
+                    message = warnings.getMessage(i);
+                }
+                buffer.append("  • ").append(message).append(ln);
+            }
+        }
     }
 
     /**

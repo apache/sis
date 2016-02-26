@@ -29,6 +29,7 @@ import org.opengis.util.InternationalString;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.quality.PositionalAccuracy;
+import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.crs.GeneralDerivedCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.CoordinateOperation;
@@ -844,7 +845,14 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
         append(formatter, getSourceCRS(), WKTKeywords.SourceCRS);
         append(formatter, getTargetCRS(), WKTKeywords.TargetCRS);
         formatter.append(DefaultOperationMethod.castOrCopy(getMethod()));
-        final ParameterValueGroup parameters = getParameterValues();
+        ParameterValueGroup parameters;
+        try {
+            parameters = getParameterValues();
+        } catch (UnsupportedOperationException e) {
+            final IdentifiedObject c = getParameterDescriptors();
+            formatter.setInvalidWKT(c != null ? c : this, e);
+            parameters = null;
+        }
         if (parameters != null) {
             formatter.newLine();
             for (final GeneralParameterValue param : parameters.values()) {
