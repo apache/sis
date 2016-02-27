@@ -35,7 +35,7 @@ import java.nio.file.FileSystemNotFoundException;
 /**
  * The "mime-type" subcommand.
  * This sub-command reproduces the functionality of the following Unix command,
- * except that {@code MimeTypeSC} uses the SIS detection mechanism instead than the OS one.
+ * except that {@code MimeTypeCommand} uses the SIS detection mechanism instead than the OS one.
  *
  * {@preformat shell
  *   file --mime-type <files>
@@ -49,11 +49,11 @@ import java.nio.file.FileSystemNotFoundException;
  * @see Files#probeContentType(Path)
  * @see DataStores#probeContentType(Object)
  */
-final class MimeTypeSC extends SubCommand {
+final class MimeTypeCommand extends CommandRunner {
     /**
      * Creates the {@code "mime-type"} sub-command.
      */
-    MimeTypeSC(final int commandIndex, final String... args) throws InvalidOptionException {
+    MimeTypeCommand(final int commandIndex, final String... args) throws InvalidOptionException {
         super(commandIndex, args, EnumSet.of(Option.ENCODING, Option.HELP, Option.DEBUG));
     }
 
