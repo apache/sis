@@ -41,7 +41,7 @@ import org.apache.sis.internal.util.X364;
  * @version 0.7
  * @module
  */
-abstract class SubCommand {
+abstract class CommandRunner {
     /**
      * Special value for {@code arguments[commandIndex]} meaning that this sub-command is created
      * for JUnit test purpose.
@@ -122,7 +122,7 @@ abstract class SubCommand {
      * Copies the configuration of the given sub-command. This constructor is used
      * only when a command needs to delegates part of its work to an other command.
      */
-    SubCommand(final SubCommand parent) {
+    CommandRunner(final CommandRunner parent) {
         this.validOptions = parent.validOptions;
         this.options      = parent.options;
         this.locale       = parent.locale;
@@ -148,7 +148,7 @@ abstract class SubCommand {
      * @throws InvalidOptionException If an illegal option has been provided, or the option has an illegal value.
      */
     @SuppressWarnings("UseOfSystemOutOrSystemErr")
-    protected SubCommand(final int commandIndex, final String[] arguments, final EnumSet<Option> validOptions)
+    protected CommandRunner(final int commandIndex, final String[] arguments, final EnumSet<Option> validOptions)
             throws InvalidOptionException
     {
         boolean isTest = false;
@@ -328,7 +328,7 @@ abstract class SubCommand {
      * @param commandName The command name converted to lower cases.
      */
     protected void help(final String commandName) {
-        new HelpSC(this).help(false, new String[] {commandName}, validOptions);
+        new HelpCommand(this).help(false, new String[] {commandName}, validOptions);
     }
 
     /**

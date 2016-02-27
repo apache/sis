@@ -54,7 +54,7 @@ import org.apache.sis.xml.XML;
  * @version 0.7
  * @module
  */
-final class MetadataSC extends SubCommand {
+final class MetadataCommand extends CommandRunner {
     /**
      * The desired information.
      */
@@ -87,7 +87,7 @@ final class MetadataSC extends SubCommand {
     /**
      * Creates the {@code "metadata"}, {@code "crs"} or {@code "identifier"} sub-command.
      */
-    MetadataSC(final Info command, final int commandIndex, final String... args) throws InvalidOptionException {
+    MetadataCommand(final Info command, final int commandIndex, final String... args) throws InvalidOptionException {
         super(commandIndex, args, EnumSet.of(Option.FORMAT, Option.LOCALE, Option.TIMEZONE, Option.ENCODING,
                 Option.COLORS, Option.HELP, Option.DEBUG));
         this.command = command;

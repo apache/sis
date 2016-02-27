@@ -62,11 +62,11 @@ import org.apache.sis.internal.util.X364;
  * @version 0.7
  * @module
  */
-final class AboutSC extends SubCommand {
+final class AboutCommand extends CommandRunner {
     /**
      * Creates the {@code "about"} sub-command.
      */
-    AboutSC(final int commandIndex, final String... args) throws InvalidOptionException {
+    AboutCommand(final int commandIndex, final String... args) throws InvalidOptionException {
         super(commandIndex, args, EnumSet.of(Option.LOCALE, Option.TIMEZONE, Option.ENCODING,
                 Option.BRIEF, Option.VERBOSE, Option.HELP, Option.DEBUG));
     }

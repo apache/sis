@@ -24,15 +24,15 @@ import static org.junit.Assert.*;
 
 
 /**
- * Tests the {@link HelpSC} sub-command.
+ * Tests the {@link HelpCommand} sub-command.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
  * @version 0.3
  * @module
  */
-@DependsOn(SubCommandTest.class)
-public final strictfp class HelpSCTest extends TestCase {
+@DependsOn(CommandRunnerTest.class)
+public final strictfp class HelpCommandTest extends TestCase {
     /**
      * Tests the sub-command without option.
      *
@@ -40,7 +40,7 @@ public final strictfp class HelpSCTest extends TestCase {
      */
     @Test
     public void testDefault() throws InvalidOptionException {
-        final HelpSC test = new HelpSC(0, SubCommand.TEST);
+        final HelpCommand test = new HelpCommand(0, CommandRunner.TEST);
         test.run();
         final String result = test.outputBuffer.toString();
         assertTrue("Apache SIS", result.startsWith("Apache SIS"));
@@ -60,7 +60,7 @@ public final strictfp class HelpSCTest extends TestCase {
      */
     @Test
     public void testHelp() throws InvalidOptionException {
-        final HelpSC test = new HelpSC(0, SubCommand.TEST, "--help");
+        final HelpCommand test = new HelpCommand(0, CommandRunner.TEST, "--help");
         test.help("help");
         final String result = test.outputBuffer.toString();
         assertTrue ("help",       result.startsWith("help"));
@@ -79,7 +79,7 @@ public final strictfp class HelpSCTest extends TestCase {
      */
     @Test
     public void testEnglishLocale() throws InvalidOptionException {
-        final HelpSC test = new HelpSC(0, SubCommand.TEST, "--help", "--locale", "en");
+        final HelpCommand test = new HelpCommand(0, CommandRunner.TEST, "--help", "--locale", "en");
         test.help("help");
         final String result = test.outputBuffer.toString();
         assertTrue(result, result.contains("Show a help overview."));
@@ -93,7 +93,7 @@ public final strictfp class HelpSCTest extends TestCase {
      */
     @Test
     public void testFrenchLocale() throws InvalidOptionException {
-        final HelpSC test = new HelpSC(0, SubCommand.TEST, "--help", "--locale", "fr");
+        final HelpCommand test = new HelpCommand(0, CommandRunner.TEST, "--help", "--locale", "fr");
         test.help("help");
         final String result = test.outputBuffer.toString();
         assertTrue(result, result.contains("Affiche un écran d’aide."));

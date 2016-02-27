@@ -119,7 +119,7 @@ public final class Command {
     /**
      * The sub-command to execute.
      */
-    private final SubCommand command;
+    private final CommandRunner command;
 
     /**
      * Creates a new command for the given arguments. The first value in the given array which is
@@ -153,16 +153,16 @@ public final class Command {
             }
         }
         if (commandName == null) {
-            command = new HelpSC(-1, args);
+            command = new HelpCommand(-1, args);
         } else {
             commandName = commandName.toLowerCase(Locale.US);
             switch (commandName) {
-                case "help":       command = new HelpSC    (commandIndex, args); break;
-                case "about":      command = new AboutSC   (commandIndex, args); break;
-                case "mime-type":  command = new MimeTypeSC(commandIndex, args); break;
-                case "identifier": command = new MetadataSC(MetadataSC.Info.IDENTIFIER, commandIndex, args); break;
-                case "metadata":   command = new MetadataSC(MetadataSC.Info.METADATA,   commandIndex, args); break;
-                case "crs":        command = new MetadataSC(MetadataSC.Info.CRS,        commandIndex, args); break;
+                case "help":       command = new HelpCommand    (commandIndex, args); break;
+                case "about":      command = new AboutCommand   (commandIndex, args); break;
+                case "mime-type":  command = new MimeTypeCommand(commandIndex, args); break;
+                case "identifier": command = new MetadataCommand(MetadataCommand.Info.IDENTIFIER, commandIndex, args); break;
+                case "metadata":   command = new MetadataCommand(MetadataCommand.Info.METADATA,   commandIndex, args); break;
+                case "crs":        command = new MetadataCommand(MetadataCommand.Info.CRS,        commandIndex, args); break;
                 default: throw new InvalidCommandException(Errors.format(
                             Errors.Keys.UnknownCommand_1, commandName), commandName);
             }
@@ -215,7 +215,7 @@ public final class Command {
 
     /**
      * Prints the message of the given exception. This method is invoked only when the error occurred before
-     * the {@link SubCommand} has been built, otherwise the {@link SubCommand#err} printer shall be used.
+     * the {@link CommandRunner} has been built, otherwise the {@link CommandRunner#err} printer shall be used.
      *
      * @param args The command line arguments, used only for detecting if the {@code --debug} option was present.
      */
