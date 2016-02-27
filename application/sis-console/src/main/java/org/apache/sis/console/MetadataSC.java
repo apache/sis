@@ -16,6 +16,8 @@
  */
 package org.apache.sis.console;
 
+import java.util.List;
+import java.util.ArrayList;
 import java.util.EnumSet;
 import java.io.Console;
 import java.io.IOException;
@@ -24,22 +26,17 @@ import javax.xml.bind.JAXBException;
 import org.opengis.metadata.Metadata;
 import org.opengis.metadata.Identifier;
 import org.opengis.util.FactoryException;
-import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.opengis.referencing.ReferenceSystem;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.apache.sis.io.TableAppender;
 import org.apache.sis.io.wkt.WKTFormat;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.io.wkt.Colors;
 import org.apache.sis.metadata.MetadataStandard;
 import org.apache.sis.metadata.ValueExistencePolicy;
 import org.apache.sis.referencing.IdentifiedObjects;
-import org.apache.sis.referencing.CRS;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStores;
 import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.util.ComparisonMode;
-import org.apache.sis.util.Utilities;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.collection.TreeTableFormat;
@@ -186,12 +183,17 @@ final class MetadataSC extends SubCommand {
         Object object = metadata;
 choice: switch (command) {
             case IDENTIFIER: {
-                final TableAppender table = new TableAppender(out, "    ");
-                appendIdentifier(table, metadata);
-                for (final ReferenceSystem rs : metadata.getReferenceSystemInfo()) {
-                    appendIdentifier(table, rs);
+                final List<IdentifierRow> rows = new ArrayList<>();
+                final Identifier id = metadata.getMetadataIdentifier();
+                if (id != null) {
+                    CharSequence desc = id.getDescription();
+                    if (desc != null && !files.isEmpty()) desc = files.get(0);
+                    rows.add(new IdentifierRow(IdentifierRow.State.VALID, IdentifiedObjects.toString(id), desc));
                 }
-                table.flush();
+                for (final ReferenceSystem rs : metadata.getReferenceSystemInfo()) {
+                    rows.add(IdentifierRow.create(rs));
+                }
+                IdentifierRow.print(rows, out, locale, colors);
                 return 0;
             }
             case CRS: {
@@ -259,78 +261,5 @@ choice: switch (command) {
         if (outputBuffer != null) return true;                      // Special case for JUnit tests only.
         final Console console = System.console();
         return (console != null) && console.writer() == out;
-    }
-
-    /**
-     * Append a row to the given table provided that the identifier is non-null.
-     * If the given identifier is {@code null}, then this method does nothing.
-     */
-    private static void appendRow(final TableAppender table, final CharSequence identifier,
-            final char separator, final CharSequence legend)
-    {
-        if (identifier != null) {
-            table.append(identifier).nextColumn();
-            if (legend != null) {
-                table.append(separator).append(' ').append(legend);
-            }
-            table.nextLine();
-        }
-    }
-
-    /**
-     * Appends the metadata identifier to the given table.
-     */
-    private void appendIdentifier(final TableAppender table, final Metadata metadata) {
-        final Identifier id = metadata.getMetadataIdentifier();
-        if (id != null) {
-            CharSequence desc = id.getDescription();
-            if (desc != null && !files.isEmpty()) desc = files.get(0);
-            appendRow(table, IdentifiedObjects.toString(id), '-', desc);
-        }
-    }
-
-    /**
-     * Append the CRS identifier to the given table.
-     * This method gives precedence to {@code "urn:ogc:def:"} identifiers if possible.
-     */
-    private static void appendIdentifier(final TableAppender table, final ReferenceSystem rs) throws FactoryException {
-        char separator;
-        String legend;
-        String identifier = IdentifiedObjects.lookupURN(rs, null);
-        if (identifier != null) {
-            separator = '-';
-            legend = rs.getName().getCode();
-        } else {
-            for (final Identifier id : rs.getIdentifiers()) {
-                final String c = IdentifiedObjects.toURN(rs.getClass(), id);
-                if (c != null) {
-                    identifier = c;
-                    break;                                          // Stop at the first "urn:ogc:def:…".
-                }
-                if (identifier == null) {
-                    identifier = IdentifiedObjects.toString(id);    // "AUTHORITY:CODE" as a fallback if no URN.
-                }
-            }
-            if (identifier == null) {
-                return;                                             // No identifier found.
-            }
-            /*
-             * The CRS provided by the user contains identifier, but the 'lookupURN' operation above failed to
-             * find it. The most likely cause is that the user-provided CRS does not use the same axis order.
-             */
-            try {
-                separator = '!';
-                final ReferenceSystem def = CRS.forCode(identifier);
-                if (Utilities.deepEquals(def, rs, ComparisonMode.ALLOW_VARIANT)) {
-                    legend = "Axis order does not match the definition.";
-                } else {
-                    legend = "Apparently wrong identifier!";
-                }
-            } catch (NoSuchAuthorityCodeException e) {
-                separator = '?';
-                legend = "Exactness of this identifier has not been verified.";
-            }
-        }
-        appendRow(table, identifier, separator, legend);
     }
 }

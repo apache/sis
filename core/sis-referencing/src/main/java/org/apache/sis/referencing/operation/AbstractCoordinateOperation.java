@@ -798,10 +798,13 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
                         MathTransform tr1 = this.getMathTransform();
                         MathTransform tr2 = that.getMathTransform();
                         if (mode == ComparisonMode.ALLOW_VARIANT) try {
-                            final MathTransform swap = MathTransforms.linear(
+                            final MathTransform before = MathTransforms.linear(
                                     CoordinateSystems.swapAndScaleAxes(crs1.getCoordinateSystem(),
                                                                        crs2.getCoordinateSystem()));
-                            tr2 = MathTransforms.concatenate(swap, tr2);
+                            final MathTransform after = MathTransforms.linear(
+                                    CoordinateSystems.swapAndScaleAxes(that.getTargetCRS().getCoordinateSystem(),
+                                                                       this.getTargetCRS().getCoordinateSystem()));
+                            tr2 = MathTransforms.concatenate(before, tr2, after);
                         } catch (ConversionException | RuntimeException e) {
                             Logging.recoverableException(Logging.getLogger(Loggers.COORDINATE_OPERATION),
                                     AbstractCoordinateOperation.class, "equals", e);
