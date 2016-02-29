@@ -37,9 +37,9 @@ import java.nio.file.Path;
 
 
 /**
- * Provides SQL scripts needed for creating a copy of the EPSG dataset. This interface allows Apache SIS
- * users to bundle the EPSG dataset in their own product for automatic installation when first needed.
- * That dataset is not included directly in Apache SIS for
+ * Provides SQL scripts needed for creating a local copy of a dataset. This interface allows Apache SIS users
+ * to bundle the EPSG or other datasets in their own product for automatic installation when first needed.
+ * Some datasets can not included directly in Apache SIS for
  * <a href="https://issues.apache.org/jira/browse/LEGAL-183">licensing reasons</a>.
  *
  * <p>Implementations of this interface can be declared in the following file for automatic discovery
@@ -69,7 +69,7 @@ import java.nio.file.Path;
  */
 public abstract class InstallationScriptProvider {
     /**
-     * A sentinel value for the content of the script to execute before the official EPSG scripts.
+     * A sentinel value for the content of the script to execute before the SQL scripts provided by the authority.
      * This is an Apache SIS build-in script for constraining the values of some {@code VARCHAR} columns
      * to enumerations of values recognized by {@link EPSGDataAccess}. Those enumerations are not required
      * for proper working of {@link EPSGFactory}, but can improve data integrity.
@@ -77,10 +77,10 @@ public abstract class InstallationScriptProvider {
     protected static final String PREPARE = "Prepare";
 
     /**
-     * A sentinel value for the content of the script to execute after the official EPSG scripts.
-     * This is an Apache SIS build-in script for creating indexes or performing any other manipulation
-     * that help SIS to use the EPSG dataset. Those indexes are not required for proper working of
-     * {@link EPSGFactory}, but can significantly improve performances.
+     * A sentinel value for the content of the script to execute after the SQL scripts provided by the authority.
+     * This is an Apache SIS build-in script for creating indexes or performing any other manipulation that help
+     * SIS to use the dataset. Those indexes are not required for proper working of {@link EPSGFactory},
+     * but can significantly improve performances.
      */
     protected static final String FINISH = "Finish";
 
@@ -94,12 +94,16 @@ public abstract class InstallationScriptProvider {
      * The given names are often filenames, but not necessarily
      * (it is okay to use those names only as labels).
      *
-     * <p>For the EPSG dataset, the {@code names} argument is usually
-     * (potentially completed with EPSG dataset version and database software name):</p>
-     *
-     * <blockquote><code>
-     *   {@linkplain #PREPARE}, "EPSG_Tables.sql", "EPSG_Data.sql", "EPSG_FKeys.sql", {@linkplain #FINISH}
-     * </code></blockquote>
+     * <table class="sis">
+     *   <caption>Typical argument values</caption>
+     *   <tr>
+     *     <th>Authority</th>
+     *     <th>Argument</th>
+     *   </tr><tr>
+     *     <td>{@code EPSG}</td>
+     *     <td><code>{@linkplain #PREPARE}, "EPSG_Tables.sql", "EPSG_Data.sql", "EPSG_FKeys.sql", {@linkplain #FINISH}</code></td>
+     *   </tr>
+     * </table>
      *
      * @param names Names of the SQL scripts to read.
      *
@@ -112,32 +116,35 @@ public abstract class InstallationScriptProvider {
     }
 
     /**
-     * Returns the identifier of the dataset installed by the SQL scripts, or {@code "unavailable"}
-     * if the SQL scripts are not available.
+     * Returns the identifier of the dataset installed by the SQL scripts.
+     * The values recognized by SIS are:
      *
-     * <p>Currently, the only allowed return values are {@code "EPSG"} and {@code "unavailable"}.
-     * This list may be expanded in future SIS versions if more authorities are supported.</p>
+     * <ul>
+     *   <li>{@code "EPSG"}</li>
+     * </ul>
      *
-     * @return {@code "EPSG"} if the SQL scripts for installing the EPSG dataset are available,
-     *         or {@code "unavailable"} otherwise.
+     * The above list may be expanded in future SIS versions if more authorities are supported.
+     *
+     * @return {@code "EPSG"} or other authority acronym.
      */
     public abstract String getAuthority();
 
     /**
-     * Returns the terms of use of the dataset, or {@code null} if presumed already accepted.
+     * Returns the terms of use of the dataset, or {@code null} if none.
      * The terms of use can be returned in either plain text or HTML.
      *
      * <p>For the EPSG dataset, this method should return the content of the
      * <a href="http://www.epsg.org/TermsOfUse">http://www.epsg.org/TermsOfUse</a> page.</p>
      *
      * @param  mimeType Either {@code "text/plain"} or {@code "text/html"}.
-     * @return The terms of use in plain text or HTML, or {@code null} if the license is presumed already accepted.
+     * @return The terms of use in plain text or HTML, or {@code null} if none.
      * @throws IOException if an error occurred while reading the license file.
      */
     public abstract InternationalString getLicense(String mimeType) throws IOException;
 
     /**
      * Returns the names of all SQL scripts to execute.
+     * This is a copy of the array of names given to the constructor.
      * Those names are often filenames, but not necessarily (they may be just labels).
      *
      * @return The names of all SQL scripts to execute.
@@ -158,17 +165,18 @@ public abstract class InstallationScriptProvider {
      * The fourth file is provided by Apache SIS.
      *
      * <ol>
+     *   <li>Content of {@link #PREPARE}, an optional data definition script that define the enumerations expected by {@link EPSGDataAccess}.</li>
      *   <li>Content of {@code "EPSG_<version>.mdb_Tables_<product>.sql"}, a data definition script that create empty tables.</li>
      *   <li>Content of {@code "EPSG_<version>.mdb_Data_<product>.sql"}, a data manipulation script that populate the tables.</li>
      *   <li>Content of {@code "EPSG_<version>.mdb_FKeys_<product>.sql"}, a data definition script that create foreigner key constraints.</li>
-     *   <li>Content of {@link #POST_CREATE}, a data definition and data control script that create indexes and set permissions.</li>
+     *   <li>Content of {@link #FINISH}, an optional data definition and data control script that create indexes and set permissions.</li>
      * </ol>
      *
      * Implementors are free to return a different set of scripts with equivalent content.
      *
      * <div class="section">Default implementation</div>
-     * The default implementation invokes {@link #open(String)} – except for {@link #POST_CREATE} in which case
-     * an Apache SIS build-in script is used – and wrap the result in a {@link LineNumberReader}.
+     * The default implementation invokes {@link #open(String)} – except for {@link #PREPARE} and {@link #FINISH}
+     * in which case an Apache SIS build-in script is used – and wrap the result in a {@link LineNumberReader}.
      *
      * @param  index Index of the SQL script to read, from 0 inclusive to
      *         <code>{@linkplain #getScriptNames()}.length</code> exclusive.
@@ -203,8 +211,8 @@ public abstract class InstallationScriptProvider {
      * This method is invoked by the default implementation of {@link #getScriptContent(int)}
      * for all scripts except {@link #PREPARE} and {@link #FINISH}.
      *
-     * <div class="note"><b>Examples:</b>
-     * If this {@code InstallationScriptProvider} instance gets the SQL scripts from files in a well-known directory
+     * <div class="note"><b>Example 1:</b>
+     * if this {@code InstallationScriptProvider} instance gets the SQL scripts from files in a well-known directory
      * and if the names given at {@linkplain #InstallationScriptProvider(String...) construction time} are the
      * filenames in that directory, then this method can be implemented as below:
      *
@@ -213,8 +221,10 @@ public abstract class InstallationScriptProvider {
      *        return Files.newInputStream(directory.resolve(name));
      *    }
      * }
+     * </div>
      *
-     * If this {@code InstallationScriptProvider} instance rather gets the SQL scripts from resources bundled
+     * <div class="note"><b>Example 2:</b>
+     * if this {@code InstallationScriptProvider} instance rather gets the SQL scripts from resources bundled
      * in the same JAR files than and in the same package, then this method can be implemented as below:
      *
      * {@preformat java
