@@ -38,6 +38,7 @@ import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.resources.Messages;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.logging.PerformanceLevel;
+import org.apache.sis.internal.util.Fallback;
 
 
 /**
@@ -265,12 +266,16 @@ final class EPSGInstaller extends ScriptRunner {
      * Searches for a SQL script provider on the classpath before to fallback on the default provider.
      */
     private static InstallationScriptProvider lookupProvider() {
-        for (final InstallationScriptProvider p : ServiceLoader.load(InstallationScriptProvider.class)) {
-            if (Constants.EPSG.equals(p.getAuthority())) {
-                return p;
+        InstallationScriptProvider fallback = null;
+        for (final InstallationScriptProvider provider : ServiceLoader.load(InstallationScriptProvider.class)) {
+            if (Constants.EPSG.equals(provider.getAuthority())) {
+                if (provider.getClass().isAnnotationPresent(Fallback.class)) {
+                    return provider;
+                }
+                fallback = provider;
             }
         }
-        return new InstallationScriptProvider.Default();
+        return (fallback != null) ? fallback : new InstallationScriptProvider.Default();
     }
 
     /**
