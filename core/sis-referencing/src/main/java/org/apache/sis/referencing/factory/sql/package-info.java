@@ -17,15 +17,18 @@
 
 /**
  * Factories for geodetic objects defined in a SQL database, typically the EPSG dataset.
+ * This package provides support for all codes prefixed by {@code "EPSG:"} in the Apache SIS's
+ * <a href="http://sis.apache.org/book/tables/CoordinateReferenceSystems.html">list of authority codes</a>.
  * The main class in this package is {@link org.apache.sis.referencing.factory.sql.EPSGFactory},
  * which requires a {@link javax.sql.DataSource} providing connections to an EPSG database.
  *
  *
  * <div class="section">Connection to the database</div>
- * By default Apache SIS used Apache Derby (a.k.a. JavaDB), but the database can also be PostgreSQL or MS-Access.
- * The connection is obtained by the first of the following data sources which is found:
+ * By default Apache SIS uses Apache Derby (a.k.a. JavaDB in Oracle JDK),
+ * but the database can also be PostgreSQL or MS-Access.
+ * The database connection is obtained by the first of the following data sources which is found:
  *
- * <ol class="verbose">
+ * <ol>
  *   <li>If a {@linkplain javax.naming.InitialContext JNDI context} exists,
  *       the {@link javax.sql.DataSource} registered under the {@code "java:comp/env/jdbc/SpatialMetadata"} name.</li>
  *   <li>If the {@code SIS_DATA} {@linkplain System#getenv(String) environment variable} is defined,

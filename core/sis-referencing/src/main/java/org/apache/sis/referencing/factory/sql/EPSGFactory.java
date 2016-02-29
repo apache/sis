@@ -76,6 +76,7 @@ import org.apache.sis.util.Localized;
  *
  * @see EPSGDataAccess
  * @see SQLTranslator
+ * @see <a href="http://sis.apache.org/book/tables/CoordinateReferenceSystems.html">List of authority codes</a>
  */
 public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> implements CRSAuthorityFactory,
         CSAuthorityFactory, DatumAuthorityFactory, CoordinateOperationAuthorityFactory, Localized

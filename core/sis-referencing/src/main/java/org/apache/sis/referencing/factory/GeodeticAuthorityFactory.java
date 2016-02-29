@@ -44,10 +44,13 @@ import org.apache.sis.util.Debug;
 /**
  * Creates geodetic objects from codes defined by an authority.
  * An <cite>authority</cite> is an organization that maintains definitions of authority codes.
- * An <cite>authority code</cite> is a compact string defined by an authority to reference a particular
- * spatial reference object. For example the <a href="http://www.epsg.org">EPSG geodetic dataset</a> maintains
- * a database of coordinate systems, and other spatial referencing objects, where each object has a code number ID.
- * For example, the EPSG code for a WGS84 Lat/Lon coordinate system is {@code "4326"}.
+ * An <cite>authority code</cite> is a compact string defined by an authority to reference a particular spatial reference object.
+ * A frequently used set of authority codes is the <a href="http://www.epsg.org">EPSG geodetic dataset</a>,
+ * a database of coordinate systems and other spatial referencing objects where each object has a code number ID.
+ *
+ * <div class="note"><b>Example:</b>
+ * the EPSG code for a <cite>World Geodetic System 1984</cite> (WGS84) coordinate reference system
+ * with latitude and longitude axes is {@code "4326"}.</div>
  *
  * <p>This class defines a default implementation for most methods defined in the {@link DatumAuthorityFactory},
  * {@link CSAuthorityFactory} and {@link CRSAuthorityFactory} interfaces. However, those interfaces do not appear

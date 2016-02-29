@@ -237,6 +237,7 @@ final class EPSGInstaller extends ScriptRunner {
     /**
      * Processes to the creation of the EPSG database using the SQL scripts from the given provider.
      *
+     * @param  scriptProvider User-provided scripts, or {@code null} for automatic lookup.
      * @throws IOException if an error occurred while reading an input.
      * @throws SQLException if an error occurred while executing a SQL statement.
      */
