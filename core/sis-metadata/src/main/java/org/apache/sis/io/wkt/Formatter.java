@@ -479,9 +479,14 @@ public class Formatter implements Localized {
             if (colorApplied == 0) {
                 final String color = colors.getAnsiSequence(type);
                 if (color == null) {
-                    return; // Do not increment 'colorApplied' for giving a chance to children to apply their colors.
+                    // Do not increment 'colorApplied' for giving a chance to children to apply their colors.
+                    return;
                 }
+                final boolean isStart = (buffer.length() == elementStart);
                 buffer.append(color);
+                if (isStart) {
+                    elementStart = buffer.length();
+                }
             }
             colorApplied++;
         }

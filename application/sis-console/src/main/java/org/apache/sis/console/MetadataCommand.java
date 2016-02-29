@@ -18,7 +18,11 @@ package org.apache.sis.console;
 
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.EnumSet;
+import java.util.HashSet;
+import java.util.Set;
 import java.io.Console;
 import java.io.IOException;
 import javax.xml.bind.Marshaller;
@@ -33,7 +37,9 @@ import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.io.wkt.Colors;
 import org.apache.sis.metadata.MetadataStandard;
 import org.apache.sis.metadata.ValueExistencePolicy;
+import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.referencing.IdentifiedObjects;
+import org.apache.sis.referencing.CRS;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStores;
 import org.apache.sis.storage.DataStoreException;
@@ -55,6 +61,18 @@ import org.apache.sis.xml.XML;
  * @module
  */
 final class MetadataCommand extends CommandRunner {
+    /**
+     * The protocol part of the filename to be recognized as a CRS authority.
+     * In such case, this class will delegate to {@link CRS#forCode(String)}
+     * instead of opening the file.
+     */
+    static final Set<String> AUTHORITIES = new HashSet<>(Arrays.asList("URN", "EPSG", "CRS", "AUTO", "AUTO2"));
+
+    /**
+     * Length of the longest authority name declared in {@link #AUTHORITIES}.
+     */
+    static final int MAX_AUTHORITY_LENGTH = 5;
+
     /**
      * The desired information.
      */
@@ -144,6 +162,40 @@ final class MetadataCommand extends CommandRunner {
     }
 
     /**
+     * If the given argument begins with one of the known authorities ("URN", "EPSG", "CRS", "AUTO", <i>etc.</i>),
+     * delegates to {@link CRS#forCode(String)} and wraps in a metadata object. Otherwise returns {@code null}.
+     */
+    private static Metadata fromDatabase(final String code) throws FactoryException {
+        final char[] authority = new char[MAX_AUTHORITY_LENGTH];
+        final int length = code.length();
+        int p = 0, i = 0;
+        while (i < length) {
+            final int c = code.codePointAt(i);
+            if (c == ':') {
+                if (!AUTHORITIES.contains(new String(authority, 0, p))) {
+                    break;
+                }
+                final DefaultMetadata metadata = new DefaultMetadata();
+                metadata.setReferenceSystemInfo(Collections.singleton(CRS.forCode(code)));
+                return metadata;
+            }
+            if (!Character.isWhitespace(c)) {
+                if (p >= MAX_AUTHORITY_LENGTH || !Character.isLetterOrDigit(c)) {
+                    break;
+                }
+                /*
+                 * Casting to char is okay because AUTHORITIES contains only ASCII values.
+                 * If 'c' was a supplemental Unicode value, then the result of the cast
+                 * will not match any AUTHORITIES value anyway.
+                 */
+                authority[p++] = (char) Character.toUpperCase(c);
+            }
+            i += Character.charCount(c);
+        }
+        return null;
+    }
+
+    /**
      * Prints metadata or CRS information.
      *
      * @throws DataStoreException if an error occurred while reading the file.
@@ -156,10 +208,10 @@ final class MetadataCommand extends CommandRunner {
     public int run() throws InvalidOptionException, DataStoreException, JAXBException, FactoryException, IOException {
         parseArguments();
         /*
-         * Read metadata from the data storage only aftr we verified that the arguments are valid.
+         * Read metadata from the data storage only after we verified that the arguments are valid.
          * The input can be a file given on the command line, or the standard input stream.
          */
-        final Metadata metadata;
+        Metadata metadata;
         if (useStandardInput()) {
             try (DataStore store = DataStores.open(System.in)) {
                 metadata = store.getMetadata();
@@ -168,8 +220,12 @@ final class MetadataCommand extends CommandRunner {
             if (hasUnexpectedFileCount(1, 1)) {
                 return Command.INVALID_ARGUMENT_EXIT_CODE;
             }
-            try (DataStore store = DataStores.open(files.get(0))) {
-                metadata = store.getMetadata();
+            final String file = files.get(0);
+            metadata = fromDatabase(file);
+            if (metadata == null) {
+                try (DataStore store = DataStores.open(file)) {
+                    metadata = store.getMetadata();
+                }
             }
         }
         if (metadata == null) {
