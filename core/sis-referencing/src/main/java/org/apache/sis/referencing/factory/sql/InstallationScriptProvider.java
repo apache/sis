@@ -16,6 +16,7 @@
  */
 package org.apache.sis.referencing.factory.sql;
 
+import java.util.Locale;
 import java.sql.Connection;
 import java.io.BufferedReader;
 import java.io.LineNumberReader;
@@ -24,11 +25,11 @@ import java.io.InputStreamReader;
 import java.io.IOException;
 import java.io.FileNotFoundException;
 import java.nio.charset.Charset;
-import org.opengis.util.InternationalString;
-import org.apache.sis.internal.util.Constants;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.setup.InstallationResources;
 import org.apache.sis.internal.system.DataDirectory;
+import org.apache.sis.internal.util.Constants;
 
 // Branch-dependent imports
 import java.nio.charset.StandardCharsets;
@@ -49,7 +50,7 @@ import java.nio.file.Path;
  *     META-INF/services/org.apache.sis.referencing.factory.sql.InstallationScriptProvider
  * }
  *
- * <div class="section">How this interface is used</div>
+ * <div class="section">How this class is used</div>
  * The first time that an {@link EPSGDataAccess} needs to be instantiated, {@link EPSGFactory} verifies
  * if the EPSG database exists. If it does not, then:
  * <ol>
@@ -67,7 +68,7 @@ import java.nio.file.Path;
  * @version 0.7
  * @module
  */
-public abstract class InstallationScriptProvider {
+public abstract class InstallationScriptProvider extends InstallationResources {
     /**
      * A sentinel value for the content of the script to execute before the SQL scripts provided by the authority.
      * This is an Apache SIS build-in script for constraining the values of some {@code VARCHAR} columns
@@ -98,10 +99,12 @@ public abstract class InstallationScriptProvider {
      *   <caption>Typical argument values</caption>
      *   <tr>
      *     <th>Authority</th>
-     *     <th>Argument</th>
+     *     <th class="sep">Argument values</th>
      *   </tr><tr>
      *     <td>{@code EPSG}</td>
-     *     <td><code>{@linkplain #PREPARE}, "EPSG_Tables.sql", "EPSG_Data.sql", "EPSG_FKeys.sql", {@linkplain #FINISH}</code></td>
+     *     <td class="sep"><code>
+     *       {{@linkplain #PREPARE}, "EPSG_Tables.sql", "EPSG_Data.sql", "EPSG_FKeys.sql", {@linkplain #FINISH}}
+     *     </code></td>
      *   </tr>
      * </table>
      *
@@ -117,15 +120,19 @@ public abstract class InstallationScriptProvider {
 
     /**
      * Returns the identifier of the dataset installed by the SQL scripts.
-     * The values recognized by SIS are:
+     * The values recognized by SIS are listed below
+     * (note that this list may be expanded in future SIS versions if more authorities are supported):
      *
      * <ul>
      *   <li>{@code "EPSG"}</li>
      * </ul>
      *
-     * The above list may be expanded in future SIS versions if more authorities are supported.
+     * SIS will ignore any {@code InstallationScriptProvider} instance
+     * for which {@code getAuthority()} returns a value not present in the above list.
+     * It is okay for example to return {@code "unavailable"} if the provider does not
+     * have the resources or the permission for returning the installation scripts.
      *
-     * @return {@code "EPSG"} or other authority acronym.
+     * @return {@code "EPSG"} or other value.
      */
     public abstract String getAuthority();
 
@@ -140,7 +147,8 @@ public abstract class InstallationScriptProvider {
      * @return The terms of use in plain text or HTML, or {@code null} if none.
      * @throws IOException if an error occurred while reading the license file.
      */
-    public abstract InternationalString getLicense(String mimeType) throws IOException;
+    @Override
+    public abstract String getLicense(Locale locale, String mimeType) throws IOException;
 
     /**
      * Returns the names of all SQL scripts to execute.
@@ -148,8 +156,9 @@ public abstract class InstallationScriptProvider {
      * Those names are often filenames, but not necessarily (they may be just labels).
      *
      * @return The names of all SQL scripts to execute.
+     * @throws IOException if fetching the script names required an I/O operation and that operation failed.
      */
-    public String[] getScriptNames() {
+    public String[] getScriptNames() throws IOException {
         return names.clone();
     }
 
@@ -302,7 +311,7 @@ public abstract class InstallationScriptProvider {
          * @return The terms of use in plain text or HTML, or {@code null} if the license is presumed already accepted.
          */
         @Override
-        public InternationalString getLicense(String mimeType) {
+        public String getLicense(Locale locale, String mimeType) {
             return null;
         }
 

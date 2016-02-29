@@ -31,9 +31,9 @@
  * <ol>
  *   <li>If a {@linkplain javax.naming.InitialContext JNDI context} exists,
  *       the {@link javax.sql.DataSource} registered under the {@code "java:comp/env/jdbc/SpatialMetadata"} name.</li>
- *   <li>If the {@code SIS_DATA} {@linkplain System#getenv(String) environment variable} is defined,
+ *   <li>If the {@code SIS_DATA} {@linkplain java.lang.System#getenv(String) environment variable} is defined,
  *       a JDBC connection for the {@code "jdbc:derby:$SIS_DATA/Databases/SpatialMetadata"} URL.</li>
- *   <li>If the {@code "derby.system.home"} {@linkplain System#getProperty(String) property} is defined,
+ *   <li>If the {@code "derby.system.home"} {@linkplain java.lang.System#getProperty(String) property} is defined,
  *       a JDBC connection for the {@code "jdbc:derby:SpatialMetadata"} URL.</li>
  * </ol>
  *
@@ -67,10 +67,10 @@
  *
  * <ul>
  *   <li>Deprecated objects are not listed in the collection returned by the
- *       {@link org.apache.sis.referencing.factory.sql.EPSGDataAccess#getAuthorityCodes getAuthorityCodes(…)} method.</li>
+ *       {@link org.apache.sis.referencing.factory.sql.EPSGDataAccess#getAuthorityCodes EPSGDataAccess.getAuthorityCodes(…)} method.</li>
  *   <li>All method expecting an EPSG code in argument accept also the codes of deprecated objects.</li>
- *   <li>If a deprecated object is created by a call to {@code createFoo(…)}, a warning will be logged
- *       with a message proposing a replacement.</li>
+ *   <li>If a deprecated object is created by a call to {@code EPSGDataAccess.createFoo(…)},
+ *       a warning will be logged with a message proposing a replacement.</li>
  * </ul>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
