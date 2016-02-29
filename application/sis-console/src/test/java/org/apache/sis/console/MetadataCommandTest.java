@@ -31,11 +31,24 @@ import static org.junit.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.6
+ * @version 0.7
  * @module
  */
 @DependsOn(CommandRunnerTest.class)
 public final strictfp class MetadataCommandTest extends TestCase {
+    /**
+     * Verifies the {@link MetadataCommand#MAX_AUTHORITY_LENGTH} value.
+     */
+    @Test
+    public void verifyMaxAuthorityLength() {
+        int length = 0;
+        for (final String authority : MetadataCommand.AUTHORITIES) {
+            final int c = authority.length();
+            if (c > length) length = c;
+        }
+        assertEquals("MAX_AUTHORITY_LENGTH", length, MetadataCommand.MAX_AUTHORITY_LENGTH);
+    }
+
     /**
      * Tests the sub-command on a NetCDF file.
      *
