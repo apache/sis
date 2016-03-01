@@ -16,23 +16,31 @@
  */
 package org.apache.sis.console;
 
+import java.util.Set;
+import java.util.Map;
+import java.util.HashMap;
 import java.util.Collections;
 import java.util.Locale;
-import java.util.Set;
+import java.util.ResourceBundle;
+import java.util.ServiceLoader;
+import java.net.URLClassLoader;
+import java.net.URL;
 import java.io.Console;
 import java.io.IOException;
 import java.io.BufferedReader;
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.util.ServiceLoader;
 import java.io.FileNotFoundException;
-import java.nio.file.AccessDeniedException;
 import java.sql.Connection;                             // For javadoc.
+import org.apache.sis.internal.system.DataDirectory;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.internal.util.X364;
 import org.apache.sis.internal.util.Fallback;
 import org.apache.sis.setup.InstallationResources;
 
 import static org.apache.sis.internal.util.Constants.EPSG;
+
+// Branch-dependent imports
+import java.nio.file.AccessDeniedException;
+import java.nio.file.Path;
 
 
 /**
@@ -50,7 +58,7 @@ import static org.apache.sis.internal.util.Constants.EPSG;
  * @module
  */
 @Fallback
-public class LicensedDataProvider extends InstallationResources {
+public class ResourcesDownloader extends InstallationResources {
     /**
      * Where to download the EPSG scripts after user has approved the terms of use.
      *
@@ -58,6 +66,12 @@ public class LicensedDataProvider extends InstallationResources {
      * This temporary link is provided in order to allow experimentations by other SIS developers.
      */
     private static final String DOWNLOAD_URL = "http://home.apache.org/~desruisseaux/Temporary/geotk-epsg-4.0-SNAPSHOT.jar";
+
+    /**
+     * Estimation of the EPSG database size after installation, in mega-bytes.
+     * This is for information purpose only.
+     */
+    private static final int DATABASE_SIZE = 20;
 
     /**
      * The console to use for printing EPSG terms of use and asking for agreement, or {@code null} if none.
@@ -70,9 +84,25 @@ public class LicensedDataProvider extends InstallationResources {
     private final Locale locale;
 
     /**
+     * {@code true} if colors can be applied for ANSI X3.64 compliant terminal.
+     */
+    private final boolean colors;
+
+    /**
      * The provider to use for fetching the actual licensed data after we got user's agreement.
      */
     private InstallationResources provider;
+
+    /**
+     * The target directory where to install the database.
+     */
+    private final Path directory;
+
+    /**
+     * The localized answers expected from the users. Keys are words like "Yes" or "No"
+     * and boolean values are the meaning of the keys.
+     */
+    private final Map<String,Boolean> answers = new HashMap<>();
 
     /**
      * {@code true} if the user has accepted the EPSG terms of use, {@code false} if (s)he refused,
@@ -83,14 +113,22 @@ public class LicensedDataProvider extends InstallationResources {
     /**
      * Creates a new installation scripts provider.
      */
-    public LicensedDataProvider() {
-        console = System.console();
-        locale = Locale.getDefault();
+    public ResourcesDownloader() {
+        final CommandRunner command = CommandRunner.instance;
+        if (command != null) {
+            locale = command.locale;
+            colors = command.colors;
+        } else {
+            locale = Locale.getDefault();
+            colors = false;
+        }
+        console   = System.console();
+        directory = DataDirectory.DATABASES.getDirectory();
     }
 
     /**
      * Returns the name of the authority who provides data under non-Apache terms of use.
-     * If this {@code LicensedDataProvider} can not ask user's agreement because there is
+     * If this {@code ResourcesDownloader} can not ask user's agreement because there is
      * no {@link Console} attached to the current Java virtual machine, then this method
      * returns an empty set.
      *
@@ -98,7 +136,7 @@ public class LicensedDataProvider extends InstallationResources {
      */
     @Override
     public Set<String> getAuthorities() {
-        return (console != null) ? Collections.singleton(EPSG) : Collections.emptySet();
+        return (console != null && directory != null) ? Collections.singleton(EPSG) : Collections.emptySet();
     }
 
     /**
@@ -129,28 +167,51 @@ public class LicensedDataProvider extends InstallationResources {
         if (!EPSG.equals(authority)) {
             throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalArgumentValue_2, "authority", authority));
         }
+        final ResourceBundle resources = ResourceBundle.getBundle("org.apache.sis.console.Messages", locale);
+        if (answers.isEmpty()) {
+            for (final String r : resources.getString("yes").split("\\|")) answers.put(r, Boolean.TRUE);
+            for (final String r : resources.getString("no" ).split("\\|")) answers.put(r, Boolean.FALSE);
+        }
+        final String textColor, infoColor, actionColor, resetColor;
+        if (colors) {
+            textColor   = X364.FOREGROUND_YELLOW .sequence();
+            infoColor   = X364.FOREGROUND_GRAY   .sequence();
+            actionColor = X364.FOREGROUND_GREEN  .sequence();
+            resetColor  = X364.FOREGROUND_DEFAULT.sequence();
+        } else {
+            textColor = infoColor = actionColor = resetColor = "";
+        }
+        /*
+         * Start the download if the user accepts. We need to begin the download in order to get the
+         * license text bundled in the JAR file. We will not necessarily ask for user agreement here.
+         */
         if (provider == null) {
             if (console == null) {
                 throw new IllegalStateException();
             }
-            console.format("%nInstallation of EPSG geodetic dataset is recommended for this operation.%n");
-            if (!accept("Download and install now? (Yes/No) ")) {
+            console.format(resources.getString("install"), textColor, DATABASE_SIZE, infoColor, directory, textColor, resetColor);
+            if (!accept(resources.getString("download"), textColor, resetColor)) {
                 console.format("%n");
                 throw new AccessDeniedException(null);
             }
-            console.format("Downloading...%n");
+            console.format(resources.getString("downloading"), actionColor, resetColor);
             provider = download();
         }
+        /*
+         * If there is a need to ask for user agreement and we didn't asked yet, ask now.
+         */
         if (requireAgreement && accepted == null) {
             final String license = getLicense(authority, locale, "text/plain");
-            if (license != null) {
+            if (license == null) {
+                accepted = Boolean.TRUE;
+            } else {
                 console.format("%n").writer().write(license);
+                console.format("%n");
+                accepted = accept(resources.getString("accept"), textColor, resetColor);
+                if (accepted) {
+                    console.format(resources.getString("installing"), actionColor, resetColor);
+                }
             }
-            accepted = accept("%nAccept License Agreement? (Yes/No) ");
-            if (accepted) {
-                console.format("Installing...");
-            }
-            console.format("%n");
         }
         if (accepted != null && !accepted) {
             throw new AccessDeniedException(null);
@@ -159,20 +220,18 @@ public class LicensedDataProvider extends InstallationResources {
     }
 
     /**
-     * Asks the user to answer by "Yes" or "No".
+     * Asks the user to answer by "Yes" or "No". Callers is responsible for ensuring
+     * that the {@link #answers} map is non-empty before to invoke this method.
      *
      * @param prompt Message to show to the user.
      * @return The user's answer.
      */
-    private boolean accept(final String prompt) {
-        String line;
+    private boolean accept(final String prompt, final Object... arguments) {
+        Boolean answer;
         do {
-            line = console.readLine(prompt);
-            if (line.equalsIgnoreCase("n") || line.equalsIgnoreCase("no")) {
-                return false;
-            }
-        } while (!line.equalsIgnoreCase("y") && !line.equalsIgnoreCase("yes"));
-        return true;
+            answer = answers.get(console.readLine(prompt, arguments).toLowerCase(locale));
+        } while (answer == null);
+        return answer;
     }
 
     /**

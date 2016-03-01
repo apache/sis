@@ -51,6 +51,13 @@ abstract class CommandRunner {
     static final String TEST = "TEST";
 
     /**
+     * The instance, used by {@link ResourcesDownloader} only.
+     * We use this static field as a workaround for the fact that {@code ResourcesDownloader} is not
+     * instantiated by us, so we can not pass the {@code CommandRunner} instance to its constructor.
+     */
+    static CommandRunner instance;
+
+    /**
      * The set of legal options for this command.
      *
      * @see #help(String)

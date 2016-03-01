@@ -110,7 +110,7 @@ final class AuthorityFactories<T extends AuthorityFactory> extends LazySet<T> {
             if (factory == null) try {
                 factory = new EPSGFactory(null);
             } catch (FactoryException e) {
-                log(Level.CONFIG, e);
+                log(Level.CONFIG, e, false);
                 factory = EPSGFactoryFallback.INSTANCE;
             }
             EPSG[0] = factory;
@@ -137,7 +137,12 @@ final class AuthorityFactories<T extends AuthorityFactory> extends LazySet<T> {
                 EPSG[0] = factory;
             }
         }
-        log(Level.WARNING, e);
+        /*
+         * We do not log at Level.WARNING because the UnavailableFactoryException message is usually
+         * not very informative, and a more informative warning has already been logged by EPSGFactory.
+         * However the stack trace may have some interest.
+         */
+        log(Level.FINE, e, true);
         return factory;
     }
 
@@ -161,9 +166,14 @@ final class AuthorityFactories<T extends AuthorityFactory> extends LazySet<T> {
      * Logs the given exception at the given level. This method pretends that the logging come from
      * {@link CRS#getAuthorityFactory(String)}, which is the public facade for {@link #EPSG()}.
      */
-    private static void log(final Level level, final Exception e) {
-        final LogRecord record = new LogRecord(level, e.getLocalizedMessage());
+    private static void log(final Level level, final Exception e, final boolean trace) {
+        String message = e.getLocalizedMessage();
+        if (message == null) {
+            message = e.toString();
+        }
+        final LogRecord record = new LogRecord(level, message);
         record.setLoggerName(Loggers.CRS_FACTORY);
+        if (trace) record.setThrown(e);
         Logging.log(CRS.class, "getAuthorityFactory", record);
     }
 
