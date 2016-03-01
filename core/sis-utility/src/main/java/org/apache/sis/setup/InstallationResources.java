@@ -16,8 +16,10 @@
  */
 package org.apache.sis.setup;
 
+import java.util.Set;
 import java.util.Locale;
 import java.io.IOException;
+import java.io.BufferedReader;
 
 
 /**
@@ -36,6 +38,15 @@ import java.io.IOException;
  * are more restrictive than the Apache license and require that we inform the users about those conditions.</p>
  * </div>
  *
+ * Some classes that depend on installation resources are:
+ * {@link org.apache.sis.referencing.factory.sql.EPSGFactory}.
+ * In order to allow those classes to discover which resources are available,
+ * {@code InstallationResources} implementations shall be declared in the following file:
+ *
+ * {@preformat text
+ *     META-INF/services/org.apache.sis.setup.InstallationResources
+ * }
+ *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.7
  * @version 0.7
@@ -49,13 +60,68 @@ public abstract class InstallationResources {
     }
 
     /**
-     * Returns the terms of use of the resources, or {@code null} if none.
+     * Returns identifiers of the resources provided by this instance.
+     * The values recognized by SIS are listed below
+     * (note that this list may be expanded in any future SIS versions):
+     *
+     * <ul>
+     *   <li>{@code "EPSG"} for the EPSG geodetic dataset.</li>
+     * </ul>
+     *
+     * This method may return an empty set if this {@code InstallationResources} instance did not find the
+     * resources (for example because of files not found) or does not have the permission to distribute them.
+     *
+     * @return Identifiers of resources that this instance can distribute.
+     */
+    public abstract Set<String> getAuthorities();
+
+    /**
+     * Returns the terms of use of the resources distributed by the specified authority, or {@code null} if none.
      * The terms of use can be returned in either plain text or HTML.
      *
-     * @param  locale The preferred locale for the terms of use.
-     * @param  mimeType Either {@code "text/plain"} or {@code "text/html"}.
+     * <div class="note"><b>Example:</b>
+     * For the {@code "EPSG"} authority, this method may return a copy of the
+     * <a href="http://www.epsg.org/TermsOfUse">http://www.epsg.org/TermsOfUse</a> page.
+     * </div>
+     *
+     * @param  authority One of the values returned by {@link #getAuthorities()}.
+     * @param  locale    The preferred locale for the terms of use.
+     * @param  mimeType  Either {@code "text/plain"} or {@code "text/html"}.
      * @return The terms of use in plain text or HTML, or {@code null} if none.
+     * @throws IllegalArgumentException if the given {@code authority} argument is not one of the expected values.
      * @throws IOException if an error occurred while reading the license file.
      */
-    public abstract String getLicense(Locale locale, String mimeType) throws IOException;
+    public abstract String getLicense(String authority, Locale locale, String mimeType) throws IOException;
+
+    /**
+     * Returns the names of all resources of the specified authority that are distributed by this instance.
+     * The resources will be used in the order they appear in the array.
+     *
+     * <div class="note"><b>Example:</b>
+     * for the {@code "EPSG"} authority, this method may return the filenames of all SQL scripts to execute.
+     * One of the first script creates tables, followed by a script that populates tables with data,
+     * followed by a script that creates foreigner keys.
+     * </div>
+     *
+     * @param  authority One of the values returned by {@link #getAuthorities()}.
+     * @return The names of all resources of the given authority that are distributed by this instance.
+     * @throws IllegalArgumentException if the given {@code authority} argument is not one of the expected values.
+     * @throws IOException if fetching the resource names required an I/O operation and that operation failed.
+     */
+    public abstract String[] getResourceNames(String authority) throws IOException;
+
+    /**
+     * Returns a reader for the resources at the given index.
+     * The resource may be a SQL script or any other resources readable as a text.
+     * The returned {@link BufferedReader} instance shall be closed by the caller.
+     *
+     * @param  authority One of the values returned by {@link #getAuthorities()}.
+     * @param  resource Index of the script to open, from 0 inclusive to
+     *         <code>{@linkplain #getResourceNames(String) getResourceNames}(authority).length</code> exclusive.
+     * @return A reader for the installation script content.
+     * @throws IllegalArgumentException if the given {@code authority} argument is not one of the expected values.
+     * @throws IndexOutOfBoundsException if the given {@code resource} argument is out of bounds.
+     * @throws IOException if an error occurred while creating the reader.
+     */
+    public abstract BufferedReader openScript(String authority, int resource) throws IOException;
 }

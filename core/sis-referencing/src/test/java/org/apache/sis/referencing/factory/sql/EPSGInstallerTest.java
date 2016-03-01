@@ -115,7 +115,7 @@ public final strictfp class EPSGInstallerTest extends TestCase {
     private static InstallationScriptProvider getScripts() {
         final InstallationScriptProvider scripts = new InstallationScriptProvider.Default();
         assumeTrue("EPSG scripts not found in Databases/ExternalSources directory.",
-                Constants.EPSG.equals(scripts.getAuthority()));
+                scripts.getAuthorities().contains(Constants.EPSG));
         return scripts;
     }
 

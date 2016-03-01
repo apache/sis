@@ -33,12 +33,14 @@ import org.apache.sis.util.StringBuilders;
 import org.apache.sis.internal.metadata.sql.ScriptRunner;
 import org.apache.sis.internal.metadata.sql.SQLUtilities;
 import org.apache.sis.internal.system.Loggers;
-import org.apache.sis.internal.util.Constants;
+import org.apache.sis.internal.util.Fallback;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.resources.Messages;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.logging.PerformanceLevel;
-import org.apache.sis.internal.util.Fallback;
+import org.apache.sis.setup.InstallationResources;
+
+import static org.apache.sis.internal.util.Constants.EPSG;
 
 
 /**
@@ -242,17 +244,17 @@ final class EPSGInstaller extends ScriptRunner {
      * @throws IOException if an error occurred while reading an input.
      * @throws SQLException if an error occurred while executing a SQL statement.
      */
-    public void run(InstallationScriptProvider scriptProvider) throws SQLException, IOException {
+    public void run(InstallationResources scriptProvider) throws SQLException, IOException {
         long time = System.nanoTime();
-        log(Messages.getResources(null).getLogRecord(Level.INFO, Messages.Keys.CreatingSchema_2, Constants.EPSG,
+        log(Messages.getResources(null).getLogRecord(Level.INFO, Messages.Keys.CreatingSchema_2, EPSG,
                 SQLUtilities.getSimplifiedURL(getConnection().getMetaData())));
         if (scriptProvider == null) {
             scriptProvider = lookupProvider();
         }
-        final String[] scripts = scriptProvider.getScriptNames();
+        final String[] scripts = scriptProvider.getResourceNames(EPSG);
         int numRows = 0;
         for (int i=0; i<scripts.length; i++) {
-            try (BufferedReader in = scriptProvider.getScriptContent(i)) {
+            try (BufferedReader in = scriptProvider.openScript(EPSG, i)) {
                 numRows += run(scripts[i], in);
             }
         }
@@ -265,10 +267,10 @@ final class EPSGInstaller extends ScriptRunner {
     /**
      * Searches for a SQL script provider on the classpath before to fallback on the default provider.
      */
-    private static InstallationScriptProvider lookupProvider() {
-        InstallationScriptProvider fallback = null;
-        for (final InstallationScriptProvider provider : ServiceLoader.load(InstallationScriptProvider.class)) {
-            if (Constants.EPSG.equals(provider.getAuthority())) {
+    private static InstallationResources lookupProvider() {
+        InstallationResources fallback = null;
+        for (final InstallationResources provider : ServiceLoader.load(InstallationResources.class)) {
+            if (provider.getAuthorities().contains(EPSG)) {
                 if (provider.getClass().isAnnotationPresent(Fallback.class)) {
                     return provider;
                 }
@@ -282,7 +284,7 @@ final class EPSGInstaller extends ScriptRunner {
      * Logs a message reporting the failure to create EPSG database.
      */
     final void logFailure(final Locale locale) {
-        String message = Messages.getResources(locale).getString(Messages.Keys.CanNotCreateSchema_1, Constants.EPSG);
+        String message = Messages.getResources(locale).getString(Messages.Keys.CanNotCreateSchema_1, EPSG);
         String status = status(locale);
         if (status != null) {
             message = message + ' ' + status;
