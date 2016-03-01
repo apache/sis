@@ -168,6 +168,7 @@ public final class Command {
             }
         }
         this.commandName = commandName;
+        CommandRunner.instance = command;       // For ResourcesDownloader only.
     }
 
     /**

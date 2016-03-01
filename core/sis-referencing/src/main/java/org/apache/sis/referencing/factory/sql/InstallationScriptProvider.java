@@ -136,8 +136,8 @@ public abstract class InstallationScriptProvider extends InstallationResources {
      * if that authority was {@code null}. An empty set means that the provider does not have all
      * needed resources or does not have permission to distribute the installation scripts.
      *
-      * @return Identifiers of SQL scripts that this instance can distribute.
-    */
+     * @return Identifiers of SQL scripts that this instance can distribute.
+     */
     @Override
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
     public Set<String> getAuthorities() {
@@ -193,7 +193,7 @@ public abstract class InstallationScriptProvider extends InstallationResources {
      * <div class="section">Default implementation</div>
      * The default implementation invokes {@link #openStream(String)} – except for {@link #PREPARE} and {@link #FINISH}
      * in which case an Apache SIS build-in script is used – and wrap the result in a {@link LineNumberReader}.
-     * The scripts are opened with ISO LATIN-1 encoding.
+     * The file encoding is ISO LATIN-1 (the encoding used in the scripts distributed by EPSG).
      *
      * @param  authority The value given at construction time (e.g. {@code "EPSG"}).
      * @param  resource Index of the SQL script to read, from 0 inclusive to
