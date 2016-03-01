@@ -17,7 +17,9 @@
 package org.apache.sis.io.wkt;
 
 import java.util.Map;
+import java.util.Set;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -1643,12 +1645,15 @@ public class Formatter implements Localized {
             }
             buffer.append(ln);
             final int n = warnings.getNumMessages();
+            final Set<String> done = new HashSet<>();
             for (int i=0; i<n; i++) {
                 String message = Exceptions.getLocalizedMessage(warnings.getException(i), locale);
                 if (message == null) {
                     message = warnings.getMessage(i);
                 }
-                buffer.append("  • ").append(message).append(ln);
+                if (done.add(message)) {
+                    buffer.append("  • ").append(message).append(ln);
+                }
             }
         }
     }
