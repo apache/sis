@@ -552,19 +552,24 @@ public final class IdentifiedObjects extends Static {
      *       projection or parameter name.</li>
      * </ul>
      *
-     * @param  object The object for which to check the name or alias.
+     * If the {@code object} argument is {@code null}, then this method returns {@code false}.
+     *
+     * @param  object The object for which to check the name or alias, or {@code null}.
      * @param  name The name to compare with the object name or aliases.
      * @return {@code true} if the primary name or at least one alias matches the specified {@code name}.
      *
      * @see AbstractIdentifiedObject#isHeuristicMatchForName(String)
      */
     public static boolean isHeuristicMatchForName(final IdentifiedObject object, final String name) {
+        ArgumentChecks.ensureNonNull("name", name);
+        if (object == null) {
+            return false;
+        }
         if (object instanceof AbstractIdentifiedObject) {
             // DefaultCoordinateSystemAxis overrides this method.
             // We really need to delegate to the overridden method.
             return ((AbstractIdentifiedObject) object).isHeuristicMatchForName(name);
         } else {
-            ArgumentChecks.ensureNonNull("object", object);
             return NameToIdentifier.isHeuristicMatchForName(object.getName(), object.getAlias(), name,
                     NameToIdentifier.Simplifier.DEFAULT);
         }
