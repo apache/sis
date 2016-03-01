@@ -16,10 +16,11 @@
  */
 package org.apache.sis.console;
 
+import java.util.Collections;
 import java.util.Locale;
+import java.util.Set;
 import java.io.Console;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.BufferedReader;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -27,14 +28,21 @@ import java.util.ServiceLoader;
 import java.io.FileNotFoundException;
 import java.nio.file.AccessDeniedException;
 import java.sql.Connection;                             // For javadoc.
-import org.apache.sis.internal.util.Constants;
-import org.apache.sis.referencing.factory.sql.InstallationScriptProvider;
+import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.util.Fallback;
+import org.apache.sis.setup.InstallationResources;
+
+import static org.apache.sis.internal.util.Constants.EPSG;
 
 
 /**
  * A provider for data licensed under different terms of use than the Apache license.
- * This class is in charge of asking user's agreement before to install those data.
+ * This class is in charge of downloading the data if necessary and asking user's agreement
+ * before to install them. Authorities managed by the current implementation are:
+ *
+ * <ul>
+ *   <li>{@code "EPSG"} for the EPSG geodetic dataset.</li>
+ * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.7
@@ -42,7 +50,7 @@ import org.apache.sis.internal.util.Fallback;
  * @module
  */
 @Fallback
-public class LicensedDataProvider extends InstallationScriptProvider {
+public class LicensedDataProvider extends InstallationResources {
     /**
      * Where to download the EPSG scripts after user has approved the terms of use.
      *
@@ -64,7 +72,7 @@ public class LicensedDataProvider extends InstallationScriptProvider {
     /**
      * The provider to use for fetching the actual licensed data after we got user's agreement.
      */
-    private InstallationScriptProvider provider;
+    private InstallationResources provider;
 
     /**
      * {@code true} if the user has accepted the EPSG terms of use, {@code false} if (s)he refused,
@@ -84,23 +92,23 @@ public class LicensedDataProvider extends InstallationScriptProvider {
      * Returns the name of the authority who provides data under non-Apache terms of use.
      * If this {@code LicensedDataProvider} can not ask user's agreement because there is
      * no {@link Console} attached to the current Java virtual machine, then this method
-     * returns {@code "unavailable"}.
+     * returns an empty set.
      *
-     * @return {@code "EPSG"} or {@code "unavailable"}.
+     * @return {@code "EPSG"} or an empty set.
      */
     @Override
-    public String getAuthority() {
-        return (console != null) ? Constants.EPSG : "unavailable";
+    public Set<String> getAuthorities() {
+        return (console != null) ? Collections.singleton(EPSG) : Collections.emptySet();
     }
 
     /**
      * Downloads the provider to use for fetching the actual licensed data after we got user's agreement.
      */
-    private static InstallationScriptProvider download() throws IOException {
-        for (final InstallationScriptProvider c : ServiceLoader.load(InstallationScriptProvider.class,
+    private static InstallationResources download() throws IOException {
+        for (final InstallationResources c : ServiceLoader.load(InstallationResources.class,
                 new URLClassLoader(new URL[] {new URL(DOWNLOAD_URL)})))
         {
-            if (!c.getClass().isAnnotationPresent(Fallback.class)) {
+            if (!c.getClass().isAnnotationPresent(Fallback.class) && c.getAuthorities().contains(EPSG)) {
                 return c;
             }
         }
@@ -115,7 +123,12 @@ public class LicensedDataProvider extends InstallationScriptProvider {
      * @throws AccessDeniedException if the user does not accept to install the EPSG dataset.
      * @throws IOException if an error occurred while reading the {@link #DOWNLOAD_URL}.
      */
-    private synchronized InstallationScriptProvider provider(final boolean requireAgreement) throws IOException {
+    private synchronized InstallationResources provider(final String authority, final boolean requireAgreement)
+            throws IOException
+    {
+        if (!EPSG.equals(authority)) {
+            throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalArgumentValue_2, "authority", authority));
+        }
         if (provider == null) {
             if (console == null) {
                 throw new IllegalStateException();
@@ -129,7 +142,7 @@ public class LicensedDataProvider extends InstallationScriptProvider {
             provider = download();
         }
         if (requireAgreement && accepted == null) {
-            final String license = getLicense(locale, "text/plain");
+            final String license = getLicense(authority, locale, "text/plain");
             if (license != null) {
                 console.format("%n").writer().write(license);
             }
@@ -163,60 +176,56 @@ public class LicensedDataProvider extends InstallationScriptProvider {
     }
 
     /**
-     * Returns the terms of use of the dataset, or {@code null} if none.
+     * Returns the terms of use of the dataset provided by the given authority, or {@code null} if none.
      * The terms of use can be returned in either plain text or HTML.
      *
+     * @param  authority One of the values returned by {@link #getAuthorities()}.
      * @param  mimeType Either {@code "text/plain"} or {@code "text/html"}.
      * @return The terms of use in plain text or HTML, or {@code null} if none.
+     * @throws IllegalArgumentException if the given {@code authority} argument is not one of the expected values.
      * @throws IOException if an error occurred while reading the license file.
      */
     @Override
-    public String getLicense(Locale locale, String mimeType) throws IOException {
-        return provider(false).getLicense(locale, mimeType);
+    public String getLicense(String authority, Locale locale, String mimeType) throws IOException {
+        return provider(authority, false).getLicense(authority, locale, mimeType);
     }
 
     /**
-     * Returns the names of all SQL scripts to execute.
+     * Returns the names of installation scripts provided by the given authority.
      * This method is invoked by {@link org.apache.sis.referencing.factory.sql.EPSGFactory#install(Connection)}
      * for listing the SQL scripts to execute during EPSG dataset installation.
      *
      * <p>If that question has not already been asked, this method asks to the user if (s)he accepts
      * EPSG terms of use. If (s)he refuses, an {@link AccessDeniedException} will be thrown.</p>
      *
+     * @param  authority One of the values returned by {@link #getAuthorities()}.
      * @return The names of all SQL scripts to execute.
+     * @throws IllegalArgumentException if the given {@code authority} argument is not one of the expected values.
      * @throws IOException if an error occurred while fetching the script names.
      */
     @Override
-    public String[] getScriptNames() throws IOException {
-        return provider(true).getScriptNames();
+    public String[] getResourceNames(final String authority) throws IOException {
+        return provider(authority, true).getResourceNames(authority);
     }
 
     /**
-     * Returns a reader for the SQL script at the given index.
+     * Returns a reader for the installation script at the given index.
      * This method is invoked by {@link org.apache.sis.referencing.factory.sql.EPSGFactory#install(Connection)}
      * for getting the SQL scripts to execute during EPSG dataset installation.
      *
      * <p>If that question has not already been asked, this method asks to the user if (s)he accepts
      * EPSG terms of use. If (s)he refuses, an {@link AccessDeniedException} will be thrown.</p>
      *
-     * @param  index Index of the SQL script to read, from 0 inclusive to
-     *         <code>{@linkplain #getScriptNames()}.length</code> exclusive.
-     * @return A reader for the content of SQL script to execute.
+     * @param  authority One of the values returned by {@link #getAuthorities()}.
+     * @param  resource Index of the script to open, from 0 inclusive to
+     *         <code>{@linkplain #getResourceNames(String) getResourceNames}(authority).length</code> exclusive.
+     * @return A reader for the installation script content.
+     * @throws IllegalArgumentException if the given {@code authority} argument is not one of the expected values.
+     * @throws IndexOutOfBoundsException if the given {@code resource} argument is out of bounds.
      * @throws IOException if an error occurred while creating the reader.
      */
     @Override
-    public BufferedReader getScriptContent(final int index) throws IOException {
-        return provider(true).getScriptContent(index);
-    }
-
-    /**
-     * Unsupported operation.
-     *
-     * @param name Ignored.
-     * @return {@code null}.
-     */
-    @Override
-    protected InputStream open(String name) {
-        return null;
+    public BufferedReader openScript(final String authority, final int resource) throws IOException {
+        return provider(authority, true).openScript(authority, resource);
     }
 }

@@ -302,7 +302,7 @@ public final class IdentifiedObjects extends Static {
      * @return A string representation of the first identifier or name, or {@code null} if none.
      *
      * @see #getIdentifier(IdentifiedObject, Citation)
-     * @see #searchIdentifierCode(IdentifiedObject, boolean)
+     * @see #lookupURN(IdentifiedObject, Citation)
      */
     public static String getIdentifierOrName(final IdentifiedObject object) {
         if (object != null) {
@@ -512,6 +512,8 @@ public final class IdentifiedObjects extends Static {
      * @return A finder to use for looking up unidentified objects.
      * @throws FactoryException if the finder can not be created.
      *
+     * @see #lookupEPSG(IdentifiedObject)
+     * @see #lookupURN(IdentifiedObject, Citation)
      * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#newIdentifiedObjectFinder()
      * @see IdentifiedObjectFinder#find(IdentifiedObject)
      */
