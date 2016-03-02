@@ -181,6 +181,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final short CanNotTransformEnvelopeToGeodetic = 174;
 
         /**
+         * Can not use the {0} geodetic parameters: {1}
+         */
+        public static final short CanNotUseGeodeticParameters_2 = 218;
+
+        /**
          * Circular reference.
          */
         public static final short CircularReference = 52;
