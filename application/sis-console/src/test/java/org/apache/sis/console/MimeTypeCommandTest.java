@@ -26,15 +26,15 @@ import static org.junit.Assert.*;
 
 
 /**
- * Tests the {@link MimeTypeSC} sub-command.
+ * Tests the {@link MimeTypeCommand} sub-command.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
  * @version 0.4
  * @module
  */
-@DependsOn(SubCommandTest.class)
-public final strictfp class MimeTypeSCTest extends TestCase {
+@DependsOn(CommandRunnerTest.class)
+public final strictfp class MimeTypeCommandTest extends TestCase {
     /**
      * Tests the sub-command on a metadata file.
      *
@@ -44,7 +44,7 @@ public final strictfp class MimeTypeSCTest extends TestCase {
     public void testWithMetadataXML() throws Exception {
         final URL url = DefaultExtentTest.getResource("Extent.xml");
         assertNotNull("Extent.xml", url);
-        final MimeTypeSC test = new MimeTypeSC(0, SubCommand.TEST, url.toString());
+        final MimeTypeCommand test = new MimeTypeCommand(0, CommandRunner.TEST, url.toString());
         test.run();
         final String output = test.outputBuffer.toString().trim();
         assertTrue(output, output.endsWith("org/apache/sis/metadata/iso/extent/Extent.xml: application/vnd.iso.19139+xml"));

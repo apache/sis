@@ -76,6 +76,7 @@ import org.apache.sis.util.Localized;
  *
  * @see EPSGDataAccess
  * @see SQLTranslator
+ * @see <a href="http://sis.apache.org/book/tables/CoordinateReferenceSystems.html">List of authority codes</a>
  */
 public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> implements CRSAuthorityFactory,
         CSAuthorityFactory, DatumAuthorityFactory, CoordinateOperationAuthorityFactory, Localized
@@ -348,6 +349,8 @@ public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> impl
      * @param  connection Connection to the database where to create the EPSG schema.
      * @throws IOException if the SQL script can not be found or an I/O error occurred while reading them.
      * @throws SQLException if an error occurred while writing to the database.
+     *
+     * @see InstallationScriptProvider
      */
     public synchronized void install(final Connection connection) throws IOException, SQLException {
         ArgumentChecks.ensureNonNull("connection", connection);

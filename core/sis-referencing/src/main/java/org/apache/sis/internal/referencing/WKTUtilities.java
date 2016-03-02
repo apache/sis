@@ -40,6 +40,7 @@ import org.apache.sis.io.wkt.ElementKind;
 import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.util.Static;
+import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.resources.Vocabulary;
 
 
@@ -53,7 +54,7 @@ import org.apache.sis.util.resources.Vocabulary;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.6
+ * @version 0.7
  * @module
  */
 public final class WKTUtilities extends Static {
@@ -218,5 +219,38 @@ public final class WKTUtilities extends Static {
             formatter.append((FormattableObject) parameter);
             formatter.newLine();
         }
+    }
+
+    /**
+     * Returns the WKT type of the given interface.
+     *
+     * For {@link CoordinateSystem} base type, the returned value shall be one of
+     * {@code affine}, {@code Cartesian}, {@code cylindrical}, {@code ellipsoidal}, {@code linear},
+     * {@code parametric}, {@code polar}, {@code spherical}, {@code temporal} or {@code vertical}.
+     *
+     * @param  base The abstract base interface.
+     * @param  type The interface or classes for which to get the WKT type.
+     * @return The WKT type for the given class or interface, or {@code null} if none.
+     *
+     * @see ReferencingUtilities#toPropertyName(Class, Class)
+     */
+    public static String toType(final Class<?> base, final Class<?> type) {
+        if (type != base) {
+            final StringBuilder name = ReferencingUtilities.toPropertyName(base, type);
+            if (name != null) {
+                int end = name.length() - 2;
+                if (CharSequences.regionMatches(name, end, "CS")) {
+                    name.setLength(end);
+                    if ("time".contentEquals(name)) {
+                        return "temporal";
+                    }
+                    if (CharSequences.regionMatches(name, 0, "cartesian")) {
+                        name.setCharAt(0, 'C');     // "Cartesian"
+                    }
+                    return name.toString();
+                }
+            }
+        }
+        return null;
     }
 }

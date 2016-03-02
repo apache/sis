@@ -28,6 +28,7 @@ import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.metadata.iso.ImmutableIdentifier;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.internal.util.Constants;
+import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -42,7 +43,7 @@ import static org.apache.sis.test.MetadataAssert.*;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4
- * @version 0.6
+ * @version 0.7
  * @module
  */
 @DependsOn(org.apache.sis.referencing.AbstractIdentifiedObjectTest.class)
@@ -314,7 +315,7 @@ public final strictfp class DefaultParameterDescriptorTest extends TestCase {
         final DefaultParameterDescriptor<Double> descriptor = create("Real number", 4, 8, 5, SI.METRE);
         assertWktEquals("PARAMETER[“Integer param”, 5]", create("Integer param", 4, 8, 5));
         assertWktEquals("PARAMETER[“Real number”, 5.0, LENGTHUNIT[“metre”, 1]]", descriptor);
-        assertEquals("Parameter[\"Real number\", 5.0, Unit[\"metre\", 1]]", descriptor.toString());
+        assertWktEquals(Convention.WKT2_SIMPLIFIED, "Parameter[“Real number”, 5.0, Unit[“metre”, 1]]", descriptor);
     }
 
     /**

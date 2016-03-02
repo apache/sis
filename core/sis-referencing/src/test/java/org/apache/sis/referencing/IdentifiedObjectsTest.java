@@ -59,6 +59,7 @@ public final strictfp class IdentifiedObjectsTest extends TestCase {
         assertFalse(isHeuristicMatchForName(object, "testmyCode"));
         assertFalse(isHeuristicMatchForName(object, "other:myCode"));
         assertFalse(isHeuristicMatchForName(object, "test"));
+        assertFalse(isHeuristicMatchForName(null,   "myCode"));
 
         // Test the alias.
         assertTrue (isHeuristicMatchForName(object, "myName"));

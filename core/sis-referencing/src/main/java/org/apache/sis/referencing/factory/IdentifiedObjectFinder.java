@@ -62,7 +62,7 @@ import org.apache.sis.util.Utilities;
  * @module
  *
  * @see GeodeticAuthorityFactory#newIdentifiedObjectFinder()
- * @see IdentifiedObjects#lookupIdentifier(IdentifiedObject, boolean)
+ * @see IdentifiedObjects#newFinder(String)
  */
 public class IdentifiedObjectFinder {
     /**

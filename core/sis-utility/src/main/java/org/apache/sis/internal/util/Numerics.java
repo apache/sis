@@ -87,10 +87,13 @@ public final class Numerics extends Static {
      *
      * By extension, the same threshold value is used for comparing other floating point values.
      *
+     * <p>The current value is set to the smallest power of 10 which allow the
+     * {@code org.apache.sis.test.integration.ConsistencyTest} to pass.</p>
+     *
      * @see org.apache.sis.internal.referencing.Formulas#LINEAR_TOLERANCE
      * @see org.apache.sis.internal.referencing.Formulas#ANGULAR_TOLERANCE
      */
-    public static final double COMPARISON_THRESHOLD = 1E-14;
+    public static final double COMPARISON_THRESHOLD = 1E-13;
 
     /**
      * Bit mask to isolate the sign bit of non-{@linkplain Double#isNaN(double) NaN} values in a

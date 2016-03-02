@@ -16,21 +16,24 @@
  */
 package org.apache.sis.internal.referencing;
 
+import java.util.Map;
+import java.util.HashMap;
 import java.util.Collection;
 import javax.measure.unit.Unit;
 import javax.measure.quantity.Angle;
 import org.opengis.annotation.UML;
 import org.opengis.annotation.Specification;
+import org.opengis.metadata.Identifier;
 import org.opengis.referencing.cs.*;
 import org.opengis.referencing.crs.*;
+import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.datum.PrimeMeridian;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.CharSequences;
-import org.apache.sis.util.resources.Errors;
-import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.referencing.CommonCRS;
+import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.datum.DefaultPrimeMeridian;
 import org.apache.sis.referencing.crs.DefaultGeographicCRS;
 import org.apache.sis.referencing.cs.AxesConvention;
@@ -47,7 +50,7 @@ import static java.util.Collections.singletonMap;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.5
- * @version 0.6
+ * @version 0.7
  * @module
  */
 public final class ReferencingUtilities extends Static {
@@ -239,6 +242,48 @@ public final class ReferencingUtilities extends Static {
     }
 
     /**
+     * Returns the properties of the given object but potentially with a modified name.
+     * Current implement truncates the name at the first non-white character which is not
+     * a valid Unicode identifier part.
+     *
+     * <div class="note"><b>Example:</b><ul>
+     *   <li><cite>"WGS 84 (3D)"</cite> is truncated as <cite>"WGS 84"</cite>.</li>
+     *   <li><cite>"Ellipsoidal 2D CS. Axes: latitude, longitude. Orientations: north, east. UoM: degree"</cite>
+     *       is truncated as <cite>"Ellipsoidal 2D CS"</cite>.</li>
+     * </ul></div>
+     *
+     * @param  object The identified object to view as a properties map.
+     * @param  excludes The keys of properties to exclude from the map.
+     * @return A view of the identified object properties.
+     *
+     * @see IdentifiedObjects#getProperties(IdentifiedObject, String...)
+     *
+     * @since 0.7
+     */
+    public static Map<String,?> getPropertiesForModifiedCRS(final IdentifiedObject object, final String... excludes) {
+        final Map<String,?> properties = IdentifiedObjects.getProperties(object, excludes);
+        final Identifier id = (Identifier) properties.get(IdentifiedObject.NAME_KEY);
+        if (id != null) {
+            String name = id.getCode();
+            if (name != null) {
+                for (int i=0; i < name.length();) {
+                    final int c = name.codePointAt(i);
+                    if (!Character.isUnicodeIdentifierPart(c) && !Character.isSpaceChar(c)) {
+                        name = CharSequences.trimWhitespaces(name, 0, i).toString();
+                        if (!name.isEmpty()) {
+                            final Map<String,Object> copy = new HashMap<>(properties);
+                            copy.put(IdentifiedObject.NAME_KEY, name);
+                            return copy;
+                        }
+                    }
+                    i += Character.charCount(c);
+                }
+            }
+        }
+        return properties;
+    }
+
+    /**
      * Returns the XML property name of the given interface.
      *
      * For {@link CoordinateSystem} base type, the returned value shall be one of
@@ -248,6 +293,8 @@ public final class ReferencingUtilities extends Static {
      * @param  base The abstract base interface.
      * @param  type The interface or classes for which to get the XML property name.
      * @return The XML property name for the given class or interface, or {@code null} if none.
+     *
+     * @see WKTUtilities#toType(Class, Class)
      *
      * @since 0.6
      */
@@ -271,65 +318,5 @@ public final class ReferencingUtilities extends Static {
             }
         }
         return null;
-    }
-
-    /**
-     * Returns the WKT type of the given interface.
-     *
-     * For {@link CoordinateSystem} base type, the returned value shall be one of
-     * {@code affine}, {@code Cartesian}, {@code cylindrical}, {@code ellipsoidal}, {@code linear},
-     * {@code parametric}, {@code polar}, {@code spherical}, {@code temporal} or {@code vertical}.
-     *
-     * @param  base The abstract base interface.
-     * @param  type The interface or classes for which to get the WKT type.
-     * @return The WKT type for the given class or interface, or {@code null} if none.
-     */
-    public static String toWKTType(final Class<?> base, final Class<?> type) {
-        if (type != base) {
-            final StringBuilder name = toPropertyName(base, type);
-            if (name != null) {
-                int end = name.length() - 2;
-                if (CharSequences.regionMatches(name, end, "CS")) {
-                    name.setLength(end);
-                    if ("time".contentEquals(name)) {
-                        return "temporal";
-                    }
-                    if (CharSequences.regionMatches(name, 0, "cartesian")) {
-                        name.setCharAt(0, 'C');     // "Cartesian"
-                    }
-                    return name.toString();
-                }
-            }
-        }
-        return null;
-    }
-
-    /**
-     * Invoked by private setter methods (themselves invoked by JAXB at unmarshalling time)
-     * when an element is already set. Invoking this method from those setter methods serves
-     * three purposes:
-     *
-     * <ul>
-     *   <li>Make sure that a singleton property is not defined twice in the XML document.</li>
-     *   <li>Protect ourselves against changes in immutable objects outside unmarshalling. It should
-     *       not be necessary since the setter methods shall not be public, but we are paranoiac.</li>
-     *   <li>Be a central point where we can trace all setter methods, in case we want to improve
-     *       warning or error messages in future SIS versions.</li>
-     * </ul>
-     *
-     * @param  classe The caller class, used only in case of warning message to log.
-     * @param  method The caller method, used only in case of warning message to log.
-     * @param  name   The property name, used only in case of error message to format.
-     * @throws IllegalStateException If {@code isDefined} is {@code true} and we are not unmarshalling an object.
-     */
-    public static void propertyAlreadySet(final Class<?> classe, final String method, final String name)
-            throws IllegalStateException
-    {
-        final Context context = Context.current();
-        if (context != null) {
-            Context.warningOccured(context, classe, method, Errors.class, Errors.Keys.ElementAlreadyPresent_1, name);
-        } else {
-            throw new IllegalStateException(Errors.format(Errors.Keys.ElementAlreadyPresent_1, name));
-        }
     }
 }
