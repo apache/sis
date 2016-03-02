@@ -16,6 +16,9 @@
  */
 package org.apache.sis.referencing.factory.sql;
 
+import java.util.Set;
+import java.util.Locale;
+import java.util.Collections;
 import java.sql.Connection;
 import java.io.BufferedReader;
 import java.io.LineNumberReader;
@@ -24,11 +27,12 @@ import java.io.InputStreamReader;
 import java.io.IOException;
 import java.io.FileNotFoundException;
 import java.nio.charset.Charset;
-import org.opengis.util.InternationalString;
-import org.apache.sis.internal.util.Constants;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.setup.InstallationResources;
 import org.apache.sis.internal.system.DataDirectory;
+import org.apache.sis.internal.util.CollectionsExt;
+import org.apache.sis.internal.util.Constants;
 
 // Branch-dependent imports
 import org.apache.sis.internal.jdk7.StandardCharsets;
@@ -37,28 +41,24 @@ import org.apache.sis.internal.jdk7.Path;
 
 
 /**
- * Provides SQL scripts needed for creating a copy of the EPSG dataset. This interface allows Apache SIS
- * users to bundle the EPSG dataset in their own product for automatic installation when first needed.
- * That dataset is not included directly in Apache SIS for
- * <a href="https://issues.apache.org/jira/browse/LEGAL-183">licensing reasons</a>.
- *
- * <p>Implementations of this interface can be declared in the following file for automatic discovery
- * by {@link EPSGFactory} (see {@link java.util.ServiceLoader} for more information):</p>
+ * Provides SQL scripts needed for creating a local copy of a dataset. This class allows Apache SIS users
+ * to bundle the EPSG or other datasets in their own product for automatic installation when first needed.
+ * Implementations of this class can be declared in the following file for automatic discovery by {@link EPSGFactory}:
  *
  * {@preformat text
- *     META-INF/services/org.apache.sis.referencing.factory.sql.InstallationScriptProvider
+ *     META-INF/services/org.apache.sis.setup.InstallationResources
  * }
  *
- * <div class="section">How this interface is used</div>
- * The first time that an {@link EPSGDataAccess} needs to be instantiated, {@link EPSGFactory} verifies
- * if the EPSG database exists. If it does not, then:
+ * <div class="section">How this class is used</div>
+ * The first time that an {@link EPSGDataAccess} needs to be instantiated,
+ * {@link EPSGFactory} verifies if the EPSG database exists. If it does not, then:
  * <ol>
- *   <li>{@link EPSGFactory#install(Connection)} searches for the first {@code InstallationScriptProvider} instance
- *       for which {@link #getAuthority()} returns {@code "EPSG"}.</li>
+ *   <li>{@link EPSGFactory#install(Connection)} searches for the first instance of {@link InstallationResources}
+ *       (the parent of this class) for which the {@linkplain #getAuthorities() set of authorities} contains {@code "EPSG"}.</li>
  *   <li>The {@linkplain #getLicense license} may be shown to the user if the application allows that
  *       (for example when running as a {@linkplain org.apache.sis.console console application}).</li>
  *   <li>If the installation process is allowed to continue, it will iterate over all readers provided by
- *       {@link #getScriptContent(int)} and execute the SQL statements (not necessarily verbatim;
+ *       {@link #openScript(String, int)} and execute the SQL statements (not necessarily verbatim;
  *       the installation process may adapt to the target database).</li>
  * </ol>
  *
@@ -67,9 +67,9 @@ import org.apache.sis.internal.jdk7.Path;
  * @version 0.7
  * @module
  */
-public abstract class InstallationScriptProvider {
+public abstract class InstallationScriptProvider extends InstallationResources {
     /**
-     * A sentinel value for the content of the script to execute before the official EPSG scripts.
+     * A sentinel value for the content of the script to execute before the SQL scripts provided by the authority.
      * This is an Apache SIS build-in script for constraining the values of some {@code VARCHAR} columns
      * to enumerations of values recognized by {@link EPSGDataAccess}. Those enumerations are not required
      * for proper working of {@link EPSGFactory}, but can improve data integrity.
@@ -77,73 +77,96 @@ public abstract class InstallationScriptProvider {
     protected static final String PREPARE = "Prepare";
 
     /**
-     * A sentinel value for the content of the script to execute after the official EPSG scripts.
-     * This is an Apache SIS build-in script for creating indexes or performing any other manipulation
-     * that help SIS to use the EPSG dataset. Those indexes are not required for proper working of
-     * {@link EPSGFactory}, but can significantly improve performances.
+     * A sentinel value for the content of the script to execute after the SQL scripts provided by the authority.
+     * This is an Apache SIS build-in script for creating indexes or performing any other manipulation that help
+     * SIS to use the dataset. Those indexes are not required for proper working of {@link EPSGFactory},
+     * but can significantly improve performances.
      */
     protected static final String FINISH = "Finish";
 
     /**
+     * The authorities to be returned by {@link #getAuthorities()}.
+     */
+    private final Set<String> authorities;
+
+    /**
      * The names of the SQL scripts to read.
      */
-    private final String[] names;
+    private final String[] resources;
 
     /**
      * Creates a new provider which will read script files of the given names in that order.
      * The given names are often filenames, but not necessarily
      * (it is okay to use those names only as labels).
      *
-     * <p>For the EPSG dataset, the {@code names} argument is usually
-     * (potentially completed with EPSG dataset version and database software name):</p>
+     * <table class="sis">
+     *   <caption>Typical argument values</caption>
+     *   <tr>
+     *     <th>Authority</th>
+     *     <th class="sep">Argument values</th>
+     *   </tr><tr>
+     *     <td>{@code EPSG}</td>
+     *     <td class="sep"><code>
+     *       {{@linkplain #PREPARE}, "EPSG_Tables.sql", "EPSG_Data.sql", "EPSG_FKeys.sql", {@linkplain #FINISH}}
+     *     </code></td>
+     *   </tr>
+     * </table>
      *
-     * <blockquote><code>
-     *   {@linkplain #PREPARE}, "EPSG_Tables.sql", "EPSG_Data.sql", "EPSG_FKeys.sql", {@linkplain #FINISH}
-     * </code></blockquote>
+     * @param authority The authority (typically {@code "EPSG"}), or {@code null} if not available.
+     * @param resources Names of the SQL scripts to read.
      *
-     * @param names Names of the SQL scripts to read.
-     *
-     * @see #getScriptNames()
-     * @see #open(String)
+     * @see #getResourceNames(String)
+     * @see #openStream(String)
      */
-    protected InstallationScriptProvider(final String... names) {
-        ArgumentChecks.ensureNonNull("filenames", names);
-        this.names = names;
+    protected InstallationScriptProvider(final String authority, final String... resources) {
+        ArgumentChecks.ensureNonNull("resources", resources);
+        authorities = CollectionsExt.singletonOrEmpty(authority);
+        this.resources = resources;
     }
 
     /**
-     * Returns the identifier of the dataset installed by the SQL scripts, or {@code "unavailable"}
-     * if the SQL scripts are not available.
+     * Returns the identifiers of the dataset installed by the SQL scripts.
+     * The values currently recognized by SIS are:
      *
-     * <p>Currently, the only allowed return values are {@code "EPSG"} and {@code "unavailable"}.
-     * This list may be expanded in future SIS versions if more authorities are supported.</p>
+     * <ul>
+     *   <li>{@code "EPSG"} for the EPSG geodetic dataset.</li>
+     * </ul>
      *
-     * @return {@code "EPSG"} if the SQL scripts for installing the EPSG dataset are available,
-     *         or {@code "unavailable"} otherwise.
+     * The default implementation returns the authority given at construction time, or an empty set
+     * if that authority was {@code null}. An empty set means that the provider does not have all
+     * needed resources or does not have permission to distribute the installation scripts.
+     *
+     * @return Identifiers of SQL scripts that this instance can distribute.
      */
-    public abstract String getAuthority();
+    @Override
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
+    public Set<String> getAuthorities() {
+        return authorities;
+    }
 
     /**
-     * Returns the terms of use of the dataset, or {@code null} if presumed already accepted.
-     * The terms of use can be returned in either plain text or HTML.
-     *
-     * <p>For the EPSG dataset, this method should return the content of the
-     * <a href="http://www.epsg.org/TermsOfUse">http://www.epsg.org/TermsOfUse</a> page.</p>
-     *
-     * @param  mimeType Either {@code "text/plain"} or {@code "text/html"}.
-     * @return The terms of use in plain text or HTML, or {@code null} if the license is presumed already accepted.
-     * @throws IOException if an error occurred while reading the license file.
+     * Verifies that the given authority is one of the expected values.
      */
-    public abstract InternationalString getLicense(String mimeType) throws IOException;
+    private void verifyAuthority(final String authority) {
+        if (!authorities.contains(authority)) {
+            throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalArgumentValue_2, "authority", authority));
+        }
+    }
 
     /**
      * Returns the names of all SQL scripts to execute.
+     * This is a copy of the array of names given to the constructor.
      * Those names are often filenames, but not necessarily (they may be just labels).
      *
+     * @param  authority The value given at construction time (e.g. {@code "EPSG"}).
      * @return The names of all SQL scripts to execute.
+     * @throws IllegalArgumentException if the given {@code authority} argument is not the expected value.
+     * @throws IOException if fetching the script names required an I/O operation and that operation failed.
      */
-    public String[] getScriptNames() {
-        return names.clone();
+    @Override
+    public String[] getResourceNames(String authority) throws IOException {
+        verifyAuthority(authority);
+        return resources.clone();
     }
 
     /**
@@ -154,34 +177,40 @@ public abstract class InstallationScriptProvider {
      * <div class="section">EPSG case</div>
      * In the EPSG dataset case, the iterator should return {@code BufferedReader} instances for the following files
      * (replace {@code <version>} by the EPSG version number and {@code <product>} by the target database) in same order.
-     * The first 3 files can be downloaded from <a href="http://www.epsg.org/">http://www.epsg.org/</a>.
-     * The fourth file is provided by Apache SIS.
+     * The first and last files are provided by Apache SIS.
+     * All other files can be downloaded from <a href="http://www.epsg.org/">http://www.epsg.org/</a>.
      *
      * <ol>
+     *   <li>Content of {@link #PREPARE}, an optional data definition script that define the enumerations expected by {@link EPSGDataAccess}.</li>
      *   <li>Content of {@code "EPSG_<version>.mdb_Tables_<product>.sql"}, a data definition script that create empty tables.</li>
      *   <li>Content of {@code "EPSG_<version>.mdb_Data_<product>.sql"}, a data manipulation script that populate the tables.</li>
      *   <li>Content of {@code "EPSG_<version>.mdb_FKeys_<product>.sql"}, a data definition script that create foreigner key constraints.</li>
-     *   <li>Content of {@link #POST_CREATE}, a data definition and data control script that create indexes and set permissions.</li>
+     *   <li>Content of {@link #FINISH}, an optional data definition and data control script that create indexes and set permissions.</li>
      * </ol>
      *
      * Implementors are free to return a different set of scripts with equivalent content.
      *
      * <div class="section">Default implementation</div>
-     * The default implementation invokes {@link #open(String)} – except for {@link #POST_CREATE} in which case
-     * an Apache SIS build-in script is used – and wrap the result in a {@link LineNumberReader}.
+     * The default implementation invokes {@link #openStream(String)} – except for {@link #PREPARE} and {@link #FINISH}
+     * in which case an Apache SIS build-in script is used – and wrap the result in a {@link LineNumberReader}.
+     * The file encoding is ISO LATIN-1 (the encoding used in the scripts distributed by EPSG).
      *
-     * @param  index Index of the SQL script to read, from 0 inclusive to
+     * @param  authority The value given at construction time (e.g. {@code "EPSG"}).
+     * @param  resource Index of the SQL script to read, from 0 inclusive to
      *         <code>{@linkplain #getScriptNames()}.length</code> exclusive.
      * @return A reader for the content of SQL script to execute.
+     * @throws IllegalArgumentException if the given {@code authority} argument is not the expected value.
+     * @throws IndexOutOfBoundsException if the given {@code resource} argument is out of bounds.
      * @throws IOException if an error occurred while creating the reader.
      */
-    public BufferedReader getScriptContent(final int index) throws IOException {
-        ArgumentChecks.ensureValidIndex(names.length, index);
-        final String authority = getAuthority();
+    @Override
+    public BufferedReader openScript(final String authority, final int resource) throws IOException {
+        verifyAuthority(authority);
+        ArgumentChecks.ensureValidIndex(resources.length, resource);
         if (!Constants.EPSG.equals(authority)) {
             throw new IllegalStateException(Errors.format(Errors.Keys.UnknownAuthority_1, authority));
         }
-        String name = names[index];
+        String name = resources[resource];
         final Charset charset;
         final InputStream in;
         if (PREPARE.equals(name) || FINISH.equals(name)) {
@@ -189,7 +218,7 @@ public abstract class InstallationScriptProvider {
             in = InstallationScriptProvider.class.getResourceAsStream(name);
             charset = StandardCharsets.UTF_8;
         } else {
-            in = open(name);
+            in = openStream(name);
             charset = StandardCharsets.ISO_8859_1;
         }
         if (in == null) {
@@ -200,35 +229,37 @@ public abstract class InstallationScriptProvider {
 
     /**
      * Opens the input stream for the SQL script of the given name.
-     * This method is invoked by the default implementation of {@link #getScriptContent(int)}
+     * This method is invoked by the default implementation of {@link #openScript(String, int)}
      * for all scripts except {@link #PREPARE} and {@link #FINISH}.
      *
-     * <div class="note"><b>Examples:</b>
-     * If this {@code InstallationScriptProvider} instance gets the SQL scripts from files in a well-known directory
+     * <div class="note"><b>Example 1:</b>
+     * if this {@code InstallationScriptProvider} instance gets the SQL scripts from files in a well-known directory
      * and if the names given at {@linkplain #InstallationScriptProvider(String...) construction time} are the
      * filenames in that directory, then this method can be implemented as below:
      *
      * {@preformat java
-     *    protected InputStream open(String name) throws IOException {
+     *    protected InputStream openStream(String name) throws IOException {
      *        return Files.newInputStream(directory.resolve(name));
      *    }
      * }
+     * </div>
      *
-     * If this {@code InstallationScriptProvider} instance rather gets the SQL scripts from resources bundled
+     * <div class="note"><b>Example 2:</b>
+     * if this {@code InstallationScriptProvider} instance rather gets the SQL scripts from resources bundled
      * in the same JAR files than and in the same package, then this method can be implemented as below:
      *
      * {@preformat java
-     *    protected InputStream open(String name) {
+     *    protected InputStream openStream(String name) {
      *        return MyClass.getResourceAsStream(name);
      *    }
      * }
      * </div>
      *
-     * @param  name Name of the script file to open.
+     * @param  name Name of the script file to open. Can be {@code null} if the resource is not found.
      * @return An input stream opened of the given script file.
      * @throws IOException if an error occurred while opening the file.
      */
-    protected abstract InputStream open(final String name) throws IOException;
+    protected abstract InputStream openStream(final String name) throws IOException;
 
 
 
@@ -257,12 +288,13 @@ public abstract class InstallationScriptProvider {
         /**
          * Creates a default provider.
          */
-        public Default() {
-            super(PREPARE,
-                  "EPSG_Tables.sql",
-                  "EPSG_Data.sql",
-                  "EPSG_FKeys.sql",
-                  FINISH);
+        Default() {
+            super(Constants.EPSG,
+                    PREPARE,
+                    "EPSG_Tables.sql",
+                    "EPSG_Data.sql",
+                    "EPSG_FKeys.sql",
+                    FINISH);
 
             Path dir = DataDirectory.DATABASES.getDirectory();
             if (dir != null) {
@@ -282,8 +314,8 @@ public abstract class InstallationScriptProvider {
          *         or {@code "unavailable"} otherwise.
          */
         @Override
-        public String getAuthority() {
-            return (directory != null) ? Constants.EPSG : "unavailable";
+        public Set<String> getAuthorities() {
+            return (directory != null) ? super.getAuthorities() : Collections.<String>emptySet();
         }
 
         /**
@@ -292,7 +324,7 @@ public abstract class InstallationScriptProvider {
          * @return The terms of use in plain text or HTML, or {@code null} if the license is presumed already accepted.
          */
         @Override
-        public InternationalString getLicense(String mimeType) {
+        public String getLicense(String authority, Locale locale, String mimeType) {
             return null;
         }
 
@@ -304,7 +336,7 @@ public abstract class InstallationScriptProvider {
          * @throws IOException if an error occurred while opening the file.
          */
         @Override
-        protected InputStream open(final String name) throws IOException {
+        protected InputStream openStream(final String name) throws IOException {
             return Files.newInputStream(directory.resolve(name));
         }
     }

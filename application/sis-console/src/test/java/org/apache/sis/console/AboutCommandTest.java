@@ -27,15 +27,15 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
 
 
 /**
- * Tests the {@link AboutSC} sub-command.
+ * Tests the {@link AboutCommand} sub-command.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
  * @version 0.4
  * @module
  */
-@DependsOn(SubCommandTest.class)
-public final strictfp class AboutSCTest extends TestCase {
+@DependsOn(CommandRunnerTest.class)
+public final strictfp class AboutCommandTest extends TestCase {
     /**
      * Tests the sub-command without option.
      *
@@ -43,7 +43,7 @@ public final strictfp class AboutSCTest extends TestCase {
      */
     @Test
     public void testDefault() throws Exception {
-        final AboutSC test = new AboutSC(0, SubCommand.TEST);
+        final AboutCommand test = new AboutCommand(0, CommandRunner.TEST);
         test.run();
         verify(test.outputBuffer.toString());
     }
@@ -72,7 +72,7 @@ public final strictfp class AboutSCTest extends TestCase {
      */
     @Test
     public void testBrief() throws Exception {
-        final AboutSC test = new AboutSC(0, SubCommand.TEST, "--brief");
+        final AboutCommand test = new AboutCommand(0, CommandRunner.TEST, "--brief");
         test.run();
         final String result = getSingleton(CharSequences.splitOnEOL(test.outputBuffer.toString().trim())).toString();
         assertTrue(result, result.contains(Version.SIS.toString()));
@@ -85,7 +85,7 @@ public final strictfp class AboutSCTest extends TestCase {
      */
     @Test
     public void testVerbose() throws Exception {
-        final AboutSC test = new AboutSC(0, SubCommand.TEST, "--verbose");
+        final AboutCommand test = new AboutCommand(0, CommandRunner.TEST, "--verbose");
         test.run();
         final String result = test.outputBuffer.toString();
         verify(result);
@@ -95,15 +95,15 @@ public final strictfp class AboutSCTest extends TestCase {
     }
 
     /**
-     * Tests the {@link AboutSC#toRemoteURL(String)} method.
+     * Tests the {@link AboutCommand#toRemoteURL(String)} method.
      */
     @Test
     public void testToRemoteURL() {
-        assertEquals("service:jmx:rmi:///jndi/rmi://myhost:9999/jmxrmi",    AboutSC.toRemoteURL("myhost:9999"));
-        assertEquals("service:jmx:rmi:///jndi/rmi://myhost:1099/jmxrmi",    AboutSC.toRemoteURL("myhost"));
-        assertEquals("service:jmx:rmi:///jndi/rmi://:9999/jmxrmi",          AboutSC.toRemoteURL("localhost:9999"));
-        assertEquals("service:jmx:rmi:///jndi/rmi://:1099/jmxrmi",          AboutSC.toRemoteURL("localhost"));
-        assertEquals("service:jmx:rmi:///jndi/rmi://:9999/jmxrmi",          AboutSC.toRemoteURL(":9999"));
-        assertEquals("service:jmx:rmi:///jndi/rmi://localhosx:1099/jmxrmi", AboutSC.toRemoteURL("localhosx"));
+        assertEquals("service:jmx:rmi:///jndi/rmi://myhost:9999/jmxrmi",    AboutCommand.toRemoteURL("myhost:9999"));
+        assertEquals("service:jmx:rmi:///jndi/rmi://myhost:1099/jmxrmi",    AboutCommand.toRemoteURL("myhost"));
+        assertEquals("service:jmx:rmi:///jndi/rmi://:9999/jmxrmi",          AboutCommand.toRemoteURL("localhost:9999"));
+        assertEquals("service:jmx:rmi:///jndi/rmi://:1099/jmxrmi",          AboutCommand.toRemoteURL("localhost"));
+        assertEquals("service:jmx:rmi:///jndi/rmi://:9999/jmxrmi",          AboutCommand.toRemoteURL(":9999"));
+        assertEquals("service:jmx:rmi:///jndi/rmi://localhosx:1099/jmxrmi", AboutCommand.toRemoteURL("localhosx"));
     }
 }

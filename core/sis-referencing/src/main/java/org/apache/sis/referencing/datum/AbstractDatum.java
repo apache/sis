@@ -32,10 +32,11 @@ import org.opengis.referencing.ReferenceIdentifier;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.util.iso.Types;
+import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.internal.util.Citations;
+import org.apache.sis.internal.metadata.NameToIdentifier;
 import org.apache.sis.internal.metadata.MetadataUtilities;
-import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.io.wkt.ElementKind;
 import org.apache.sis.io.wkt.Formatter;
 
@@ -335,12 +336,14 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
      * Returns {@code true} if either the {@linkplain #getName() primary name} or at least
      * one {@linkplain #getAlias() alias} matches the given string according heuristic rules.
      * This method performs the comparison documented in the
-     * {@link AbstractIdentifiedObject#isHeuristicMatchForName(String) super-class},
+     * {@linkplain AbstractIdentifiedObject#isHeuristicMatchForName(String) super-class},
      * with the following additional flexibility:
      *
      * <ul>
      *   <li>The {@code "D_"} prefix (used in ESRI datum names), if presents in the given name or in this datum name,
      *       is ignored.</li>
+     *   <li>If this datum is an instance of {@link DefaultGeodeticDatum}, then the prime meridian name may also
+     *       be ignored.</li>
      * </ul>
      *
      * <div class="section">Future evolutions</div>
@@ -349,20 +352,33 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
      * gained while working with more data producers.
      *
      * @param  name The name to compare.
-     * @return {@code true} if the primary name of at least one alias matches the specified {@code name}.
+     * @return {@code true} if the primary name or at least one alias matches the specified {@code name}.
      */
     @Override
     public boolean isHeuristicMatchForName(final String name) {
-        if (name.startsWith((ESRI_PREFIX))) {
-            if (super.isHeuristicMatchForName(name.substring(ESRI_PREFIX.length()))) {
-                return true;
+        return NameToIdentifier.isHeuristicMatchForName(super.getName(), super.getAlias(), name, Simplifier.INSTANCE);
+    }
+
+    /**
+     * A function for simplifying a {@link Datum} name before comparison.
+     *
+     * @since 0.7
+     */
+    static class Simplifier extends NameToIdentifier.Simplifier {
+        /** The singleton simplifier for non-geodetic datum. */
+        static final Simplifier INSTANCE = new Simplifier();
+
+        /** For subclasses and default instance only. */
+        Simplifier() {}
+
+        /** Simplify the given datum name. */
+        @Override protected CharSequence apply(CharSequence name) {
+            name = super.apply(name);
+            if (CharSequences.startsWith(name, ESRI_PREFIX, false)) {
+                name = name.subSequence(ESRI_PREFIX.length(), name.length());
             }
-        } else if (getName().getCode().startsWith(ESRI_PREFIX)) {
-            if (super.isHeuristicMatchForName(ESRI_PREFIX.concat(name))) {
-                return true;
-            }
+            return name;
         }
-        return super.isHeuristicMatchForName(name);
     }
 
     /**
@@ -489,7 +505,7 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
         if (anchorDefinition == null) {
             anchorDefinition = value;
         } else {
-            ReferencingUtilities.propertyAlreadySet(AbstractDatum.class, "setAnchorPoint", "anchorDefinition");
+            MetadataUtilities.propertyAlreadySet(AbstractDatum.class, "setAnchorPoint", "anchorDefinition");
         }
     }
 
@@ -502,7 +518,7 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
         if (realizationEpoch == Long.MIN_VALUE) {
             realizationEpoch = value.getTime();
         } else {
-            ReferencingUtilities.propertyAlreadySet(AbstractDatum.class, "setRealizationEpoch", "realizationEpoch");
+            MetadataUtilities.propertyAlreadySet(AbstractDatum.class, "setRealizationEpoch", "realizationEpoch");
         }
     }
 
@@ -515,7 +531,7 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
         if (domainOfValidity == null) {
             domainOfValidity = value;
         } else {
-            ReferencingUtilities.propertyAlreadySet(AbstractDatum.class, "setDomainOfValidity", "domainOfValidity");
+            MetadataUtilities.propertyAlreadySet(AbstractDatum.class, "setDomainOfValidity", "domainOfValidity");
         }
     }
 
@@ -528,7 +544,7 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
         if (scope == null) {
             scope = value;
         } else {
-            ReferencingUtilities.propertyAlreadySet(AbstractDatum.class, "setScope", "scope");
+            MetadataUtilities.propertyAlreadySet(AbstractDatum.class, "setScope", "scope");
         }
     }
 }

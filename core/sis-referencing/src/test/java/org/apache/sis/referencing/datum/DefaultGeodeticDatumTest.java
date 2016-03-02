@@ -45,13 +45,13 @@ import static org.apache.sis.referencing.GeodeticObjectVerifier.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.4
+ * @version 0.7
  * @module
  */
 @DependsOn({
-  DefaultPrimeMeridianTest.class,
-  DefaultEllipsoidTest.class,
-  BursaWolfParametersTest.class
+    DefaultPrimeMeridianTest.class,
+    DefaultEllipsoidTest.class,
+    BursaWolfParametersTest.class
 })
 public final strictfp class DefaultGeodeticDatumTest extends XMLTestCase {
     /**
@@ -104,13 +104,21 @@ public final strictfp class DefaultGeodeticDatumTest extends XMLTestCase {
      */
     @Test
     public void testIsHeuristicMatchForName() {
-        final DefaultGeodeticDatum datum = new DefaultGeodeticDatum(GeodeticDatumMock.WGS84);
+        DefaultGeodeticDatum datum = new DefaultGeodeticDatum(GeodeticDatumMock.WGS84);
         assertFalse(datum.isHeuristicMatchForName("WGS72"));
         assertTrue (datum.isHeuristicMatchForName("WGS84"));
         assertTrue (datum.isHeuristicMatchForName("WGS 84"));
         assertTrue (datum.isHeuristicMatchForName("WGS_84"));
         assertTrue (datum.isHeuristicMatchForName("D_WGS_84"));
         assertFalse(datum.isHeuristicMatchForName("E_WGS_84"));
+
+        datum = HardCodedDatum.NTF;
+        assertFalse(datum.isHeuristicMatchForName("WGS84"));
+        assertTrue (datum.isHeuristicMatchForName("Nouvelle Triangulation Française"));
+        assertTrue (datum.isHeuristicMatchForName("Nouvelle Triangulation Francaise"));
+        assertTrue (datum.isHeuristicMatchForName("Nouvelle Triangulation Française (Paris)"));
+        assertTrue (datum.isHeuristicMatchForName("Nouvelle Triangulation Francaise (Paris)"));
+        assertFalse(datum.isHeuristicMatchForName("Nouvelle Triangulation Francaise (Greenwich)"));
     }
 
     /**

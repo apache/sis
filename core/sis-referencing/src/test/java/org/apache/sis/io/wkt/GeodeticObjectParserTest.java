@@ -1000,6 +1000,40 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
     }
 
     /**
+     * Tests the parsing of a compound CRS from a WKT 1 string with ellipsoidal height and its conversion
+     * to a three-dimensional geographic CRS.
+     *
+     * @throws ParseException if the parsing failed.
+     *
+     * @see <a href="https://issues.apache.org/jira/browse/SIS-317">SIS-317</a>
+     *
+     * @since 0.7
+     */
+    @Test
+    @DependsOnMethod("testCompoundCRS")
+    public void testCompoundWKT1() throws ParseException {
+        final GeographicCRS crs = parse(GeographicCRS.class,
+                "COMPD_CS[“WGS 84 (3D)”,\n" +
+                "  GEOGCS[“WGS 84”,\n" +
+                "    DATUM[“World Geodetic System 1984”,\n" +
+                "      SPHEROID[“WGS84”, 6378137.0, 298.257223563]],\n" +
+                "      PRIMEM[“Greenwich”, 0.0],\n" +
+                "    UNIT[“degree”, 0.017453292519943295],\n" +
+                "    AXIS[“Longitude”, EAST],\n" +
+                "    AXIS[“Latitude”, NORTH]],\n" +
+                "  VERT_CS[“Ellipsoidal height”,\n" +
+                "    VERT_DATUM[“Ellipsoid”, 2002],\n" +
+                "    UNIT[“metre”, 1],\n" +
+                "    AXIS[“Ellipsoidal height”, UP]]]");
+
+        final CoordinateSystem cs = crs.getCoordinateSystem();
+        assertEquals("dimension", 3, cs.getDimension());
+        assertLongitudeAxisEquals(cs.getAxis(0));
+        assertLatitudeAxisEquals (cs.getAxis(1));
+        assertUnboundedAxisEquals("Ellipsoidal height", "h", AxisDirection.UP, SI.METRE, cs.getAxis(2));
+    }
+
+    /**
      * Tests the production of a warning messages when the WKT contains unknown elements.
      *
      * @throws ParseException if the parsing failed.

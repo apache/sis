@@ -819,14 +819,14 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
                     direction = AxisDirection.UP;
                     if (datum instanceof VerticalDatum) {
                         final VerticalDatumType vt = ((VerticalDatum) datum).getVerticalDatumType();
-                        if (VerticalDatumType.GEOIDAL.equals(vt)) {
+                        if (vt == VerticalDatumType.GEOIDAL) {
                             nz = AxisNames.GRAVITY_RELATED_HEIGHT;
                             z  = "H";
-                        } else if (VerticalDatumType.DEPTH.equals(vt)) {
+                        } else if (vt == VerticalDatumType.DEPTH) {
                             direction = AxisDirection.DOWN;
                             nz = AxisNames.DEPTH;
                             z  = "D";
-                        } else if (VerticalDatumTypes.ELLIPSOIDAL.equals(vt)) {
+                        } else if (vt == VerticalDatumTypes.ELLIPSOIDAL) {
                             // Not allowed by ISO 19111 as a standalone axis, but SIS is
                             // tolerant to this case since it is sometime hard to avoid.
                             nz = AxisNames.ELLIPSOIDAL_HEIGHT;
@@ -2020,12 +2020,15 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
      *     COMPD_CS["<name>", <head cs>, <tail cs> {,<authority>}]
      * }
      *
+     * In the particular case where there is a geographic CRS and an ellipsoidal height,
+     * this method rather build a three-dimensional geographic CRS.
+     *
      * @param  mode {@link #FIRST}, {@link #OPTIONAL} or {@link #MANDATORY}.
      * @param  parent The parent element.
      * @return The {@code "CompoundCRS"} element as a {@link CompoundCRS} object.
      * @throws ParseException if the {@code "CompoundCRS"} element can not be parsed.
      */
-    private CompoundCRS parseCompoundCRS(final int mode, final Element parent) throws ParseException {
+    private CoordinateReferenceSystem parseCompoundCRS(final int mode, final Element parent) throws ParseException {
         final Element element = parent.pullElement(mode, WKTKeywords.CompoundCRS, WKTKeywords.Compd_CS);
         if (element == null) {
             return null;
@@ -2037,7 +2040,7 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
             components.add(crs);
         }
         try {
-            return crsFactory.createCompoundCRS(parseMetadataAndClose(element, name, null),
+            return referencing.createCompoundCRS(crsFactory, csFactory, parseMetadataAndClose(element, name, null),
                     components.toArray(new CoordinateReferenceSystem[components.size()]));
         } catch (FactoryException exception) {
             throw element.parseFailed(exception);

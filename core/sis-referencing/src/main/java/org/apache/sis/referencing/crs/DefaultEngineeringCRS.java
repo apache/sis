@@ -26,7 +26,7 @@ import org.opengis.referencing.crs.EngineeringCRS;
 import org.opengis.referencing.datum.EngineeringDatum;
 import org.apache.sis.referencing.cs.*;
 import org.apache.sis.referencing.AbstractReferenceSystem;
-import org.apache.sis.internal.referencing.ReferencingUtilities;
+import org.apache.sis.internal.metadata.MetadataUtilities;
 import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.io.wkt.Formatter;
 
@@ -293,7 +293,7 @@ public class DefaultEngineeringCRS extends AbstractCRS implements EngineeringCRS
         if (datum == null) {
             datum = value;
         } else {
-            ReferencingUtilities.propertyAlreadySet(DefaultEngineeringCRS.class, "setDatum", "engineeringDatum");
+            MetadataUtilities.propertyAlreadySet(DefaultEngineeringCRS.class, "setDatum", "engineeringDatum");
         }
     }
 

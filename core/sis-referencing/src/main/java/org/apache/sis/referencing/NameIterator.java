@@ -159,9 +159,9 @@ final class NameIterator implements Iterator<ReferenceIdentifier> {
              */
             if (identifiers != null) {
                 for (final ReferenceIdentifier identifier : identifiers) {
-                    if (appendUnicodeIdentifier(id, '-', identifier.getCodeSpace(), ":", true) |    // Really |, not ||
-                        appendUnicodeIdentifier(id, '-', NameMeaning.toObjectType(object.getClass()), ":", false) |
-                        appendUnicodeIdentifier(id, '-', identifier.getCode(), ":", true))
+                    if (appendUnicodeIdentifier(id, '-', identifier.getCodeSpace(), "", true) |    // Really |, not ||
+                        appendUnicodeIdentifier(id, '-', NameMeaning.toObjectType(object.getClass()), "", false) |
+                        appendUnicodeIdentifier(id, '-', identifier.getCode(), "", true))
                     {
                         /*
                          * Check for ID uniqueness. If the ID is rejected, then we just need to clear
@@ -179,10 +179,10 @@ final class NameIterator implements Iterator<ReferenceIdentifier> {
              * In last ressort, use the name or an alias. The name will be used without codespace since
              * names are often verbose. If that name is also used, append a number until we find a free ID.
              */
-            if (isUnnamed(name) || !appendUnicodeIdentifier(id, '-', name.getCode(), ":", false)) {
+            if (isUnnamed(name) || !appendUnicodeIdentifier(id, '-', name.getCode(), "", false)) {
                 if (alias != null) {
                     for (final GenericName a : alias) {
-                        if (appendUnicodeIdentifier(id, '-', a.toString(), ":", false)) {
+                        if (appendUnicodeIdentifier(id, '-', a.toString(), "", false)) {
                             break;
                         }
                     }

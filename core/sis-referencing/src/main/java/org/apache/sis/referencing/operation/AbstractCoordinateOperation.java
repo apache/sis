@@ -28,6 +28,7 @@ import org.opengis.util.InternationalString;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.quality.PositionalAccuracy;
+import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.crs.GeneralDerivedCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.CoordinateOperation;
@@ -54,6 +55,7 @@ import org.apache.sis.internal.referencing.PositionalAccuracyConstant;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.referencing.WKTUtilities;
 import org.apache.sis.internal.metadata.WKTKeywords;
+import org.apache.sis.internal.metadata.MetadataUtilities;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.internal.system.Semaphores;
@@ -795,10 +797,13 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
                         MathTransform tr1 = this.getMathTransform();
                         MathTransform tr2 = that.getMathTransform();
                         if (mode == ComparisonMode.ALLOW_VARIANT) try {
-                            final MathTransform swap = MathTransforms.linear(
+                            final MathTransform before = MathTransforms.linear(
                                     CoordinateSystems.swapAndScaleAxes(crs1.getCoordinateSystem(),
                                                                        crs2.getCoordinateSystem()));
-                            tr2 = MathTransforms.concatenate(swap, tr2);
+                            final MathTransform after = MathTransforms.linear(
+                                    CoordinateSystems.swapAndScaleAxes(that.getTargetCRS().getCoordinateSystem(),
+                                                                       this.getTargetCRS().getCoordinateSystem()));
+                            tr2 = MathTransforms.concatenate(before, tr2, after);
                         } catch (Exception e) {    // (ConversionException | RuntimeException) on the JDK7 branch.
                             Logging.recoverableException(Logging.getLogger(Loggers.COORDINATE_OPERATION),
                                     AbstractCoordinateOperation.class, "equals", e);
@@ -842,7 +847,14 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
         append(formatter, getSourceCRS(), WKTKeywords.SourceCRS);
         append(formatter, getTargetCRS(), WKTKeywords.TargetCRS);
         formatter.append(DefaultOperationMethod.castOrCopy(getMethod()));
-        final ParameterValueGroup parameters = getParameterValues();
+        ParameterValueGroup parameters;
+        try {
+            parameters = getParameterValues();
+        } catch (UnsupportedOperationException e) {
+            final IdentifiedObject c = getParameterDescriptors();
+            formatter.setInvalidWKT(c != null ? c : this, e);
+            parameters = null;
+        }
         if (parameters != null) {
             formatter.newLine();
             for (final GeneralParameterValue param : parameters.values()) {
@@ -923,7 +935,7 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
         if (sourceCRS == null) {
             sourceCRS = crs;
         } else {
-            ReferencingUtilities.propertyAlreadySet(AbstractCoordinateOperation.class, "setSource", "sourceCRS");
+            MetadataUtilities.propertyAlreadySet(AbstractCoordinateOperation.class, "setSource", "sourceCRS");
         }
     }
 
@@ -942,7 +954,7 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
         if (targetCRS == null) {
             targetCRS = crs;
         } else {
-            ReferencingUtilities.propertyAlreadySet(AbstractCoordinateOperation.class, "setTarget", "targetCRS");
+            MetadataUtilities.propertyAlreadySet(AbstractCoordinateOperation.class, "setTarget", "targetCRS");
         }
     }
 
@@ -963,7 +975,7 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
         if (coordinateOperationAccuracy == null) {
             coordinateOperationAccuracy = UnmodifiableArrayList.wrap(values);
         } else {
-            ReferencingUtilities.propertyAlreadySet(AbstractCoordinateOperation.class, "setAccuracy", "coordinateOperationAccuracy");
+            MetadataUtilities.propertyAlreadySet(AbstractCoordinateOperation.class, "setAccuracy", "coordinateOperationAccuracy");
         }
     }
 
@@ -976,7 +988,7 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
         if (operationVersion == null) {
             operationVersion = value;
         } else {
-            ReferencingUtilities.propertyAlreadySet(AbstractCoordinateOperation.class, "setOperationVersion", "operationVersion");
+            MetadataUtilities.propertyAlreadySet(AbstractCoordinateOperation.class, "setOperationVersion", "operationVersion");
         }
     }
 
@@ -989,7 +1001,7 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
         if (domainOfValidity == null) {
             domainOfValidity = value;
         } else {
-            ReferencingUtilities.propertyAlreadySet(AbstractCoordinateOperation.class, "setDomainOfValidity", "domainOfValidity");
+            MetadataUtilities.propertyAlreadySet(AbstractCoordinateOperation.class, "setDomainOfValidity", "domainOfValidity");
         }
     }
 
@@ -1002,7 +1014,7 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
         if (scope == null) {
             scope = value;
         } else {
-            ReferencingUtilities.propertyAlreadySet(AbstractCoordinateOperation.class, "setScope", "scope");
+            MetadataUtilities.propertyAlreadySet(AbstractCoordinateOperation.class, "setScope", "scope");
         }
     }
 }

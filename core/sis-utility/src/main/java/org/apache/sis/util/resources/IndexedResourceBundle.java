@@ -439,7 +439,7 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
     private static Class<?> getPublicType(Class<?> c) {
         while (!Modifier.isPublic(c.getModifiers())) {
             for (final Class<?> type : c.getInterfaces()) {
-                if (Modifier.isPublic(type.getModifiers())) {
+                if (Modifier.isPublic(type.getModifiers()) && !type.getName().startsWith("java")) {
                     return type;
                 }
             }

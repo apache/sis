@@ -33,7 +33,7 @@ import org.apache.sis.util.resources.Errors;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.3
- * @version 0.3
+ * @version 0.7
  * @module
  *
  * @see <a href="http://en.wikipedia.org/wiki/ANSI_escape_code">Wikipedia: ANSI escape codes</a>
@@ -44,6 +44,8 @@ public enum X364 {
     /** Normal intensity (not {@link #BOLD}).        */ NORMAL              ((byte) 22, null),
     /** Bold intensity.                              */ BOLD                ((byte)  1, null),
     /** Faint intensity.                             */ FAINT               ((byte)  2, null),
+    /** Single underline.                            */ UNDERLINE           ((byte)  4, null),
+    /** No underline.                                */ NO_UNDERLINE        ((byte) 24, null),
     /** Red foreground color, normal intensity.      */ FOREGROUND_RED      ((byte) 31, "red"),
     /** Green foreground color, normal intensity.    */ FOREGROUND_GREEN    ((byte) 32, "green"),
     /** Yellow foreground color, normal intensity.   */ FOREGROUND_YELLOW   ((byte) 33, "yellow"),
@@ -69,7 +71,7 @@ public enum X364 {
      */
     private static final X364[] NAMED;
     static {
-        NAMED = Arrays.copyOfRange(values(), 4, 11);
+        NAMED = Arrays.copyOfRange(values(), 6, 13);
     }
 
     /**

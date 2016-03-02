@@ -40,7 +40,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.internal.metadata.AxisNames;
 import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.internal.metadata.AxisDirections;
-import org.apache.sis.internal.referencing.ReferencingUtilities;
+import org.apache.sis.internal.metadata.MetadataUtilities;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.measure.Longitude;
@@ -54,7 +54,6 @@ import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.io.wkt.ElementKind;
 import org.apache.sis.io.wkt.Transliterator;
 import org.apache.sis.io.wkt.FormattableObject;
-import org.apache.sis.io.wkt.UnformattableObjectException;
 
 import static java.lang.Double.doubleToLongBits;
 import static java.lang.Double.NEGATIVE_INFINITY;
@@ -776,11 +775,10 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
         if (AxisDirections.isUserDefined(dir)) {
             meridian = DirectionAlongMeridian.parse(dir);
             if (meridian != null) {
-                if (isWKT1) {
-                    throw new UnformattableObjectException(Errors.format(
-                            Errors.Keys.CanNotRepresentInFormat_2, "WKT 1", meridian));
-                }
                 dir = meridian.baseDirection;
+                if (isWKT1) {
+                    formatter.setInvalidWKT(this, null);
+                }
             }
         }
         formatter.append(dir);
@@ -900,7 +898,7 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
         if (abbreviation == null) {
             abbreviation = value;
         } else {
-            ReferencingUtilities.propertyAlreadySet(DefaultCoordinateSystemAxis.class, "setAbbreviation", "abbreviation");
+            MetadataUtilities.propertyAlreadySet(DefaultCoordinateSystemAxis.class, "setAbbreviation", "abbreviation");
         }
     }
 
@@ -913,7 +911,7 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
         if (direction == null) {
             direction = value;
         } else {
-            ReferencingUtilities.propertyAlreadySet(DefaultCoordinateSystemAxis.class, "setDirection", "direction");
+            MetadataUtilities.propertyAlreadySet(DefaultCoordinateSystemAxis.class, "setDirection", "direction");
         }
     }
 
@@ -926,7 +924,7 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
         if (unit == null) {
             unit = value;
         } else {
-            ReferencingUtilities.propertyAlreadySet(DefaultCoordinateSystemAxis.class, "setUnit", "unit");
+            MetadataUtilities.propertyAlreadySet(DefaultCoordinateSystemAxis.class, "setUnit", "unit");
         }
     }
 
@@ -939,7 +937,7 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
         if (rangeMeaning == null) {
             rangeMeaning = value;
         } else {
-            ReferencingUtilities.propertyAlreadySet(DefaultCoordinateSystemAxis.class, "setRangeMeaning", "rangeMeaning");
+            MetadataUtilities.propertyAlreadySet(DefaultCoordinateSystemAxis.class, "setRangeMeaning", "rangeMeaning");
         }
     }
 
@@ -965,7 +963,7 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
                 outOfRange("minimumValue", value);
             }
         } else {
-            ReferencingUtilities.propertyAlreadySet(DefaultCoordinateSystemAxis.class, "setMinimum", "minimumValue");
+            MetadataUtilities.propertyAlreadySet(DefaultCoordinateSystemAxis.class, "setMinimum", "minimumValue");
         }
     }
 
@@ -991,7 +989,7 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
                 outOfRange("maximumValue", value);
             }
         } else {
-            ReferencingUtilities.propertyAlreadySet(DefaultCoordinateSystemAxis.class, "setMaximum", "maximumValue");
+            MetadataUtilities.propertyAlreadySet(DefaultCoordinateSystemAxis.class, "setMaximum", "maximumValue");
         }
     }
 }

@@ -32,18 +32,18 @@ import org.apache.sis.internal.jdk7.StandardCharsets;
 
 
 /**
- * Tests the {@link SubCommand} base class.
+ * Tests the {@link CommandRunner} base class.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
  * @version 0.3
  * @module
  */
-public final strictfp class SubCommandTest extends TestCase {
+public final strictfp class CommandRunnerTest extends TestCase {
     /**
      * A dummy sub-command for testing purpose.
      */
-    private static final class Dummy extends SubCommand {
+    private static final class Dummy extends CommandRunner {
         /**
          * Creates a new sub-command for the given arguments and option values.
          *
@@ -70,7 +70,7 @@ public final strictfp class SubCommandTest extends TestCase {
      */
     @Test
     public void testLocale() throws InvalidOptionException {
-        final SubCommand c = new Dummy(EnumSet.allOf(Option.class), SubCommand.TEST, "--locale", "ja");
+        final CommandRunner c = new Dummy(EnumSet.allOf(Option.class), CommandRunner.TEST, "--locale", "ja");
         assertEquals(Option.LOCALE, getSingleton(c.options.keySet()));
         assertSame("locale", Locale.JAPANESE, c.locale);
         assertTrue("files.isEmpty()", c.files.isEmpty());
@@ -83,7 +83,7 @@ public final strictfp class SubCommandTest extends TestCase {
      */
     @Test
     public void testTimeZone() throws InvalidOptionException {
-        final SubCommand c = new Dummy(EnumSet.allOf(Option.class), SubCommand.TEST, "--timezone", "JST");
+        final CommandRunner c = new Dummy(EnumSet.allOf(Option.class), CommandRunner.TEST, "--timezone", "JST");
         assertEquals(Option.TIMEZONE, getSingleton(c.options.keySet()));
         assertEquals("timezone", TimeZone.getTimeZone("JST"), c.timezone);
         assertEquals("rawoffset", TimeUnit.HOURS.toMillis(9), c.timezone.getRawOffset());
@@ -97,7 +97,7 @@ public final strictfp class SubCommandTest extends TestCase {
      */
     @Test
     public void testEncoding() throws InvalidOptionException {
-        final SubCommand c = new Dummy(EnumSet.allOf(Option.class), SubCommand.TEST, "--encoding", "UTF-16");
+        final CommandRunner c = new Dummy(EnumSet.allOf(Option.class), CommandRunner.TEST, "--encoding", "UTF-16");
         assertEquals(Option.ENCODING, getSingleton(c.options.keySet()));
         assertEquals("encoding", StandardCharsets.UTF_16, c.encoding);
         assertTrue("files.isEmpty()", c.files.isEmpty());
@@ -111,7 +111,7 @@ public final strictfp class SubCommandTest extends TestCase {
     @Test
     @DependsOnMethod({"testLocale", "testTimeZone", "testEncoding"})
     public void testOptionMix() throws InvalidOptionException {
-        final SubCommand c = new Dummy(EnumSet.allOf(Option.class), SubCommand.TEST,
+        final CommandRunner c = new Dummy(EnumSet.allOf(Option.class), CommandRunner.TEST,
                 "--brief", "--locale", "ja", "--verbose", "--timezone", "JST");
         assertEquals("options", EnumSet.of(
                 Option.BRIEF, Option.LOCALE, Option.VERBOSE, Option.TIMEZONE), c.options.keySet());
@@ -130,10 +130,10 @@ public final strictfp class SubCommandTest extends TestCase {
     @Test
     @DependsOnMethod("testLocale")
     public void testMissingOptionValue() throws InvalidOptionException {
-        final SubCommand c = new Dummy(EnumSet.allOf(Option.class), SubCommand.TEST, "--brief"); // Should not comply.
+        final CommandRunner c = new Dummy(EnumSet.allOf(Option.class), CommandRunner.TEST, "--brief"); // Should not comply.
         assertEquals(Option.BRIEF, getSingleton(c.options.keySet()));
         try {
-            new Dummy(EnumSet.allOf(Option.class), SubCommand.TEST, "--brief", "--locale");
+            new Dummy(EnumSet.allOf(Option.class), CommandRunner.TEST, "--brief", "--locale");
             fail("Expected InvalidOptionException");
         } catch (InvalidOptionException e) {
             final String message = e.getMessage();
@@ -149,7 +149,7 @@ public final strictfp class SubCommandTest extends TestCase {
     @Test
     public void testUnexpectedOption() throws InvalidOptionException {
         try {
-            new Dummy(EnumSet.of(Option.HELP, Option.BRIEF), SubCommand.TEST, "--brief", "--verbose", "--help");
+            new Dummy(EnumSet.of(Option.HELP, Option.BRIEF), CommandRunner.TEST, "--brief", "--verbose", "--help");
             fail("Expected InvalidOptionException");
         } catch (InvalidOptionException e) {
             final String message = e.getMessage();
@@ -158,13 +158,13 @@ public final strictfp class SubCommandTest extends TestCase {
     }
 
     /**
-     * Tests {@link SubCommand#hasContradictoryOptions(Option[])}.
+     * Tests {@link CommandRunner#hasContradictoryOptions(Option[])}.
      *
      * @throws InvalidOptionException Should never happen.
      */
     @Test
     public void testHasContradictoryOptions() throws InvalidOptionException {
-        final SubCommand c = new Dummy(EnumSet.allOf(Option.class), SubCommand.TEST, "--brief", "--verbose");
+        final CommandRunner c = new Dummy(EnumSet.allOf(Option.class), CommandRunner.TEST, "--brief", "--verbose");
         assertTrue(c.hasContradictoryOptions(Option.BRIEF, Option.VERBOSE));
         final String message = c.outputBuffer.toString();
         assertTrue(message.contains("brief"));
@@ -172,13 +172,13 @@ public final strictfp class SubCommandTest extends TestCase {
     }
 
     /**
-     * Tests {@link SubCommand#hasUnexpectedFileCount(int,int)}.
+     * Tests {@link CommandRunner#hasUnexpectedFileCount(int, int)}.
      *
      * @throws InvalidOptionException Should never happen.
      */
     @Test
     public void testHasUnexpectedFileCount() throws InvalidOptionException {
-        final SubCommand c = new Dummy(EnumSet.allOf(Option.class), SubCommand.TEST, "MyFile.txt");
+        final CommandRunner c = new Dummy(EnumSet.allOf(Option.class), CommandRunner.TEST, "MyFile.txt");
         assertFalse(c.hasUnexpectedFileCount(0, 1));
         assertEquals("", c.outputBuffer.toString());
         assertFalse(c.hasUnexpectedFileCount(1, 2));
