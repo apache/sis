@@ -1,0 +1,4 @@
+This directory contains the sis.jar file together with optional dependencies.
+Recognized optional dependencies are:
+
+  - UCAR NetCDF library

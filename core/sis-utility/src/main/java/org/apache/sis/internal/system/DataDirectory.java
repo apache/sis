@@ -153,7 +153,7 @@ public enum DataDirectory {
                     else buffer.setCharAt(i, Character.toLowerCase(c));
                 }
                 final String name = buffer.toString();
-                final Path dir = root.resolve(name);
+                final Path dir = root.resolve(name).normalize();
                 try {
                     if (Files.isDirectory(dir)) {
                         directory = dir;
