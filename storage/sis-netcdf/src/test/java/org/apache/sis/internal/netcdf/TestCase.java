@@ -46,8 +46,7 @@ public abstract strictfp class TestCase extends IOTestCase {
     /**
      * A dummy list of listeners which can be given to the {@link Decoder} constructor.
      */
-    public static EmptyWarningListeners<Decoder> LISTENERS =
-            new EmptyWarningListeners<Decoder>(Modules.NETCDF);
+    public static EmptyWarningListeners<Decoder> LISTENERS = new EmptyWarningListeners<Decoder>(null, Modules.NETCDF);
 
     /**
      * The {@code searchPath} argument value to be given to the {@link Decoder#setSearchPath(String[])}

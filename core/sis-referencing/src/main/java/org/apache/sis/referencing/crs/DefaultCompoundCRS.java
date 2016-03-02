@@ -49,13 +49,11 @@ import org.apache.sis.internal.jaxb.referencing.SC_CRS;
 import org.apache.sis.util.collection.CheckedContainer;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ComparisonMode;
+import org.apache.sis.util.Utilities;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.io.wkt.Convention;
-
-import static org.apache.sis.util.ArgumentChecks.*;
-import static org.apache.sis.util.Utilities.deepEquals;
-import static org.apache.sis.internal.referencing.WKTUtilities.toFormattable;
 
 
 /**
@@ -204,7 +202,7 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
     private static CoordinateSystem createCoordinateSystem(final Map<String,?> properties,
             final CoordinateReferenceSystem[] components)
     {
-        ensureNonNull("components", components);
+        ArgumentChecks.ensureNonNull("components", components);
         if (components.length < 2) {
             throw new IllegalArgumentException(Errors.getResources(properties).getString(
                     Errors.Keys.TooFewArguments_2, 2, components.length));
@@ -212,7 +210,7 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
         final CoordinateSystem[] cs = new CoordinateSystem[components.length];
         for (int i=0; i<components.length; i++) {
             final CoordinateReferenceSystem crs = components[i];
-            ensureNonNullElement("components", i, crs);
+            ArgumentChecks.ensureNonNullElement("components", i, crs);
             cs[i] = crs.getCoordinateSystem();
         }
         return new DefaultCompoundCS(cs);
@@ -438,7 +436,7 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
      */
     @Override
     public synchronized DefaultCompoundCRS forConvention(final AxesConvention convention) {
-        ensureNonNull("convention", convention);
+        ArgumentChecks.ensureNonNull("convention", convention);
         DefaultCompoundCRS crs = (DefaultCompoundCRS) getCached(convention);
         if (crs == null) {
             crs = this;
@@ -494,7 +492,7 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
                     return components.equals(((DefaultCompoundCRS) object).components);
                 }
                 default: {
-                    return deepEquals(getComponents(), ((CompoundCRS) object).getComponents(), mode);
+                    return Utilities.deepEquals(getComponents(), ((CompoundCRS) object).getComponents(), mode);
                 }
             }
         }
@@ -539,16 +537,16 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
         final boolean isWKT1 = convention.majorVersion() == 1;
         if (isWKT1 || convention == Convention.INTERNAL) {
             crs = getComponents();
-            isStandardCompliant = true;    // WKT 1 does not put any restriction.
+            isStandardCompliant = true;                     // WKT 1 does not put any restriction.
         } else {
             crs = getSingleComponents();
             isStandardCompliant = isStandardCompliant(crs);
         }
         for (final CoordinateReferenceSystem element : crs) {
             formatter.newLine();
-            formatter.append(toFormattable(element));
+            formatter.append(WKTUtilities.toFormattable(element));
         }
-        formatter.newLine();    // For writing the ID[…] element on its own line.
+        formatter.newLine();                                // For writing the ID[…] element on its own line.
         if (!isStandardCompliant) {
             formatter.setInvalidWKT(this, null);
         }

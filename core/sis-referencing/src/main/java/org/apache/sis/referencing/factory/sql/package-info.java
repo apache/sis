@@ -17,20 +17,23 @@
 
 /**
  * Factories for geodetic objects defined in a SQL database, typically the EPSG dataset.
+ * This package provides support for all codes prefixed by {@code "EPSG:"} in the Apache SIS's
+ * <a href="http://sis.apache.org/book/tables/CoordinateReferenceSystems.html">list of authority codes</a>.
  * The main class in this package is {@link org.apache.sis.referencing.factory.sql.EPSGFactory},
  * which requires a {@link javax.sql.DataSource} providing connections to an EPSG database.
  *
  *
  * <div class="section">Connection to the database</div>
- * By default Apache SIS used Apache Derby (a.k.a. JavaDB), but the database can also be PostgreSQL or MS-Access.
- * The connection is obtained by the first of the following data sources which is found:
+ * By default Apache SIS uses Apache Derby (a.k.a. JavaDB in Oracle JDK),
+ * but the database can also be PostgreSQL or MS-Access.
+ * The database connection is obtained by the first of the following data sources which is found:
  *
- * <ol class="verbose">
+ * <ol>
  *   <li>If a {@linkplain javax.naming.InitialContext JNDI context} exists,
  *       the {@link javax.sql.DataSource} registered under the {@code "java:comp/env/jdbc/SpatialMetadata"} name.</li>
- *   <li>If the {@code SIS_DATA} {@linkplain System#getenv(String) environment variable} is defined,
+ *   <li>If the {@code SIS_DATA} {@linkplain java.lang.System#getenv(String) environment variable} is defined,
  *       a JDBC connection for the {@code "jdbc:derby:$SIS_DATA/Databases/SpatialMetadata"} URL.</li>
- *   <li>If the {@code "derby.system.home"} {@linkplain System#getProperty(String) property} is defined,
+ *   <li>If the {@code "derby.system.home"} {@linkplain java.lang.System#getProperty(String) property} is defined,
  *       a JDBC connection for the {@code "jdbc:derby:SpatialMetadata"} URL.</li>
  * </ol>
  *
@@ -64,10 +67,10 @@
  *
  * <ul>
  *   <li>Deprecated objects are not listed in the collection returned by the
- *       {@link org.apache.sis.referencing.factory.sql.EPSGDataAccess#getAuthorityCodes getAuthorityCodes(…)} method.</li>
+ *       {@link org.apache.sis.referencing.factory.sql.EPSGDataAccess#getAuthorityCodes EPSGDataAccess.getAuthorityCodes(…)} method.</li>
  *   <li>All method expecting an EPSG code in argument accept also the codes of deprecated objects.</li>
- *   <li>If a deprecated object is created by a call to {@code createFoo(…)}, a warning will be logged
- *       with a message proposing a replacement.</li>
+ *   <li>If a deprecated object is created by a call to {@code EPSGDataAccess.createFoo(…)},
+ *       a warning will be logged with a message proposing a replacement.</li>
  * </ul>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)

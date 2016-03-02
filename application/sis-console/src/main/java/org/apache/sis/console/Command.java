@@ -35,11 +35,12 @@ import org.apache.sis.util.logging.MonolineFormatter;
  * Command line interface for Apache SIS. The {@link #main(String[])} method accepts the following actions:
  *
  * <blockquote><table class="compact" summary="Supported command-line actions.">
- * <tr><td>{@code help}     </td><td>Show a help overview.</td></tr>
- * <tr><td>{@code about}    </td><td>Show information about Apache SIS and system configuration.</td></tr>
- * <tr><td>{@code mime-type}</td><td>Show MIME type for the given file.</td></tr>
- * <tr><td>{@code metadata} </td><td>Show metadata information for the given file.</td></tr>
- * <tr><td>{@code crs}      </td><td>Show Coordinate Reference System information for the given file or code.</td></tr>
+ * <tr><td>{@code help}       </td><td>Show a help overview.</td></tr>
+ * <tr><td>{@code about}      </td><td>Show information about Apache SIS and system configuration.</td></tr>
+ * <tr><td>{@code mime-type}  </td><td>Show MIME type for the given file.</td></tr>
+ * <tr><td>{@code metadata}   </td><td>Show metadata information for the given file.</td></tr>
+ * <tr><td>{@code crs}        </td><td>Show Coordinate Reference System information for the given file or code.</td></tr>
+ * <tr><td>{@code identifier} </td><td>Show identifiers for metadata and referencing systems in the given file.</td></tr>
  * </table></blockquote>
  *
  * Each command can accepts an arbitrary amount of the following options:
@@ -118,7 +119,7 @@ public final class Command {
     /**
      * The sub-command to execute.
      */
-    private final SubCommand command;
+    private final CommandRunner command;
 
     /**
      * Creates a new command for the given arguments. The first value in the given array which is
@@ -152,18 +153,20 @@ public final class Command {
             }
         }
         if (commandName == null) {
-            command = new HelpSC(-1, args);
+            command = new HelpCommand(-1, args);
         } else {
             commandName = commandName.toLowerCase(Locale.US);
-                 if (commandName.equals("about"))     command = new AboutSC   (       commandIndex, args);
-            else if (commandName.equals("help"))      command = new HelpSC    (       commandIndex, args);
-            else if (commandName.equals("mime-type")) command = new MimeTypeSC(       commandIndex, args);
-            else if (commandName.equals("metadata"))  command = new MetadataSC(false, commandIndex, args);
-            else if (commandName.equals("crs"))       command = new MetadataSC(true,  commandIndex, args);
+                 if (commandName.equals("help"))       command = new HelpCommand    (commandIndex, args);
+            else if (commandName.equals("about"))      command = new AboutCommand   (commandIndex, args);
+            else if (commandName.equals("mime-type"))  command = new MimeTypeCommand(commandIndex, args);
+            else if (commandName.equals("identifier")) command = new MetadataCommand(MetadataCommand.Info.IDENTIFIER, commandIndex, args);
+            else if (commandName.equals("metadata"))   command = new MetadataCommand(MetadataCommand.Info.METADATA,   commandIndex, args);
+            else if (commandName.equals("crs"))        command = new MetadataCommand(MetadataCommand.Info.CRS,        commandIndex, args);
             else throw new InvalidCommandException(Errors.format(
                         Errors.Keys.UnknownCommand_1, commandName), commandName);
         }
         this.commandName = commandName;
+        CommandRunner.instance = command;       // For ResourcesDownloader only.
     }
 
     /**
@@ -211,7 +214,7 @@ public final class Command {
 
     /**
      * Prints the message of the given exception. This method is invoked only when the error occurred before
-     * the {@link SubCommand} has been built, otherwise the {@link SubCommand#err} printer shall be used.
+     * the {@link CommandRunner} has been built, otherwise the {@link CommandRunner#err} printer shall be used.
      *
      * @param args The command line arguments, used only for detecting if the {@code --debug} option was present.
      */

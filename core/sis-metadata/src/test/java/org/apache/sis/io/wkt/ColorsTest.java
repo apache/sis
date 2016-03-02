@@ -40,7 +40,7 @@ public final strictfp class ColorsTest extends TestCase {
         final Colors colors = Colors.DEFAULT;
         assertEquals("cyan",  colors.getName(ElementKind.CODE_LIST));
         assertEquals("green", colors.getName(ElementKind.METHOD));
-        assertEquals("blue",  colors.getName(ElementKind.DATUM));
+        assertEquals("red",   colors.getName(ElementKind.IDENTIFIER));
         assertEquals("red",   colors.getName(ElementKind.ERROR));
     }
 

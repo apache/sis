@@ -27,17 +27,21 @@ import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.referencing.cs.SphericalCS;
 import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.cs.CoordinateSystem;
+import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.crs.GeodeticCRS;
+import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.referencing.datum.PrimeMeridian;
 import org.apache.sis.internal.referencing.Legacy;
 import org.apache.sis.internal.metadata.AxisDirections;
+import org.apache.sis.internal.metadata.MetadataUtilities;
 import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.internal.referencing.WKTUtilities;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.referencing.AbstractReferenceSystem;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.io.wkt.Formatter;
+import org.apache.sis.referencing.CRS;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
@@ -161,21 +165,43 @@ class DefaultGeodeticCRS extends AbstractCRS implements GeodeticCRS { // If made
     @Override
     protected String formatTo(final Formatter formatter) {
         WKTUtilities.appendName(this, formatter, null);
+        CoordinateSystem cs = getCoordinateSystem();
         final Convention convention = formatter.getConvention();
         final boolean isWKT1 = (convention.majorVersion() == 1);
-        CoordinateSystem cs = getCoordinateSystem();
+        final boolean isGeographicWKT1 = isWKT1 && (cs instanceof EllipsoidalCS);
+        if (isGeographicWKT1 && cs.getDimension() == 3) {
+            /*
+             * Version 1 of WKT format did not have three-dimensional GeographicCRS. Instead, such CRS were formatted
+             * as a CompoundCRS made of a two-dimensional GeographicCRS with a VerticalCRS for the ellipsoidal height.
+             * Note that such compound is illegal in WKT 2 and ISO 19111 standard, as ellipsoidal height shall not be
+             * separated from the geographic component. So we perform this separation only at WKT 1 formatting time.
+             */
+            SingleCRS first  = CRS.getHorizontalComponent(this);
+            SingleCRS second = CRS.getVerticalComponent(this, true);
+            if (first != null && second != null) {                      // Should not be null, but we are paranoiac.
+                if (AxisDirection.UP.equals(AxisDirections.absolute(cs.getAxis(0).getDirection()))) {
+                    // It is very unusual to have VerticalCRS first, but our code tries to be robust.
+                    final SingleCRS t = first;
+                    first = second; second = t;
+                }
+                formatter.newLine(); formatter.append(WKTUtilities.toFormattable(first));
+                formatter.newLine(); formatter.append(WKTUtilities.toFormattable(second));
+                formatter.newLine();
+                return WKTKeywords.Compd_CS;
+            }
+        }
         /*
          * Unconditionally format the datum element, followed by the prime meridian.
          * The prime meridian is part of datum according ISO 19111, but is formatted
          * as a sibling (rather than a child) element in WKT for historical reasons.
          */
-        final GeodeticDatum datum = getDatum();     // Gives subclasses a chance to override.
+        final GeodeticDatum datum = getDatum();             // Gives subclasses a chance to override.
         formatter.newLine();
         formatter.append(WKTUtilities.toFormattable(datum));
         formatter.newLine();
         final PrimeMeridian pm = datum.getPrimeMeridian();
         final Unit<Angle> angularUnit = AxisDirections.getAngularUnit(cs, null);
-        if (convention != Convention.WKT2_SIMPLIFIED ||   // Really this specific enum, not Convention.isSimplified().
+        if (convention != Convention.WKT2_SIMPLIFIED ||     // Really this specific enum, not Convention.isSimplified().
                 ReferencingUtilities.getGreenwichLongitude(pm, NonSI.DEGREE_ANGLE) != 0)
         {
             final Unit<Angle> oldUnit = formatter.addContextualUnit(angularUnit);
@@ -196,11 +222,11 @@ class DefaultGeodeticCRS extends AbstractCRS implements GeodeticCRS { // If made
          */
         final boolean isBaseCRS;
         if (isWKT1) {
-            if (!(cs instanceof EllipsoidalCS)) { // Tested first because this is the most common case.
+            if (!isGeographicWKT1) {                        // If not geographic, then presumed geocentric.
                 if (cs instanceof CartesianCS) {
                     cs = Legacy.forGeocentricCRS((CartesianCS) cs, true);
                 } else {
-                    formatter.setInvalidWKT(cs, null);  // SphericalCS was not supported in WKT 1.
+                    formatter.setInvalidWKT(cs, null);      // SphericalCS was not supported in WKT 1.
                 }
             }
             isBaseCRS = false;
@@ -230,7 +256,7 @@ class DefaultGeodeticCRS extends AbstractCRS implements GeodeticCRS { // If made
          * have a GeodeticCRS. We need to make the choice in this base class. The CS type is a sufficient criterion.
          */
         if (isWKT1) {
-            return (cs instanceof EllipsoidalCS) ? WKTKeywords.GeogCS : WKTKeywords.GeocCS;
+            return isGeographicWKT1 ? WKTKeywords.GeogCS : WKTKeywords.GeocCS;
         } else {
             return isBaseCRS ? WKTKeywords.BaseGeodCRS
                    : formatter.shortOrLong(WKTKeywords.GeodCRS, WKTKeywords.GeodeticCRS);
@@ -274,7 +300,7 @@ class DefaultGeodeticCRS extends AbstractCRS implements GeodeticCRS { // If made
         if (datum == null) {
             datum = value;
         } else {
-            ReferencingUtilities.propertyAlreadySet(DefaultGeodeticCRS.class, "setDatum", "geodeticDatum");
+            MetadataUtilities.propertyAlreadySet(DefaultGeodeticCRS.class, "setDatum", "geodeticDatum");
         }
     }
 

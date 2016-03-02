@@ -51,21 +51,12 @@ public final strictfp class EmptyWarningListeners<S> extends WarningListeners<S>
      * Creates a new instance for the given locale and logger.
      *
      * @param locale The locale to be returned by {@link #getLocale()}. Can be {@code null}.
-     * @param logger The logger to be returned by {@link #getLogger()}.
-     */
-    public EmptyWarningListeners(final Locale locale, final Logger logger) {
-        ArgumentChecks.ensureNonNull("logger", logger);
-        this.locale = locale;
-        this.logger = logger;
-    }
-
-    /**
-     * Convenience constructor for an instance with null locale and the logger of the given name.
-     *
      * @param logger The name of the logger to be returned by {@link #getLogger()}.
      */
-    public EmptyWarningListeners(final String logger) {
-        this(null, Logging.getLogger(logger));
+    public EmptyWarningListeners(final Locale locale, final String logger) {
+        ArgumentChecks.ensureNonNull("logger", logger);
+        this.locale = locale;
+        this.logger = Logging.getLogger(logger);
     }
 
     /** Returns the value given at construction time. */ @Override public Locale getLocale() {return locale;}
