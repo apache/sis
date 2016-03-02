@@ -33,6 +33,8 @@ import org.xml.sax.SAXException;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ComparisonMode;
+import org.apache.sis.util.Exceptions;
+import org.apache.sis.util.Classes;
 
 // Branch-dependent imports
 import org.apache.sis.internal.jdk7.Objects;
@@ -97,6 +99,35 @@ public strictfp class Assert extends org.opengis.test.Assert {
         assertTrue("Shall be approximatively equals",       Utilities.deepEquals(expected, actual, ComparisonMode.DEBUG));
         assertTrue("DEBUG inconsistent with APPROXIMATIVE", Utilities.deepEquals(expected, actual, ComparisonMode.APPROXIMATIVE));
         assertTrue("Shall be equal, ignoring metadata",     Utilities.deepEquals(expected, actual, ComparisonMode.IGNORE_METADATA));
+    }
+
+    /**
+     * Asserts that the two given arrays contains objects that are equal ignoring metadata.
+     * See {@link ComparisonMode#IGNORE_METADATA} for more information.
+     *
+     * @param expected  The expected objects (array can be {@code null}).
+     * @param actual    The actual objects (array can be {@code null}).
+     *
+     * @since 0.7
+     */
+    public static void assertArrayEqualsIgnoreMetadata(final Object[] expected, final Object[] actual) {
+        if (expected != actual) {
+            if (expected == null) {
+                assertNull("Expected null array.", actual);
+            } else {
+                assertNotNull("Expected non-null array.", actual);
+                final int length = StrictMath.min(expected.length, actual.length);
+                for (int i=0; i<length; i++) try {
+                    assertEqualsIgnoreMetadata(expected[i], actual[i]);
+                } catch (AssertionError e) {
+                    final AssertionError ne = new AssertionError(Exceptions.formatChainedMessages(null,
+                            "Comparison failure at index " + i + " (a " + Classes.getShortClassName(actual[i]) + ").", e));
+                    ne.initCause(e);
+                    throw ne;
+                }
+                assertEquals("Unexpected array length.", expected.length, actual.length);
+            }
+        }
     }
 
     /**

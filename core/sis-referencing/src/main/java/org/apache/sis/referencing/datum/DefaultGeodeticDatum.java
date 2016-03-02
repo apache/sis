@@ -35,13 +35,15 @@ import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.NoninvertibleMatrixException;
 import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.internal.metadata.WKTKeywords;
+import org.apache.sis.internal.metadata.NameToIdentifier;
+import org.apache.sis.internal.metadata.MetadataUtilities;
 import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.internal.referencing.ExtentSelector;
-import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.ComparisonMode;
+import org.apache.sis.util.CharSequences;
 import org.apache.sis.io.wkt.Formatter;
 
 import static org.apache.sis.util.Utilities.deepEquals;
@@ -466,6 +468,57 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
     }
 
     /**
+     * Returns {@code true} if either the {@linkplain #getName() primary name} or at least
+     * one {@linkplain #getAlias() alias} matches the given string according heuristic rules.
+     * This method implements the flexibility documented in the
+     * {@linkplain AbstractDatum#isHeuristicMatchForName(String) super-class}. In particular,
+     * this method ignores the prime meridian name if that name is found between parenthesis in the datum name.
+     * The meridian can be safely ignored in the datum name because the {@link PrimeMeridian} object is already
+     * compared by the {@link #equals(Object)} method.
+     *
+     * <div class="note"><b>Example:</b>
+     * if the datum name is <cite>"Nouvelle Triangulation Française (Paris)"</cite> and the prime meridian name is
+     * <cite>"Paris"</cite>, then this method compares only the <cite>"Nouvelle Triangulation Française"</cite> part.
+     * </div>
+     *
+     * <div class="section">Future evolutions</div>
+     * This method implements heuristic rules learned from experience while trying to provide inter-operability
+     * with different data producers. Those rules may be adjusted in any future SIS version according experience
+     * gained while working with more data producers.
+     *
+     * @param  name The name to compare.
+     * @return {@code true} if the primary name or at least one alias matches the specified {@code name}.
+     *
+     * @since 0.7
+     */
+    @Override
+    public boolean isHeuristicMatchForName(final String name) {
+        final String meridian = primeMeridian.getName().getCode();
+        return NameToIdentifier.isHeuristicMatchForName(super.getName(), super.getAlias(), name, new Simplifier() {
+            @Override protected CharSequence apply(CharSequence name) {
+                name = super.apply(name);
+                int lower = CharSequences.indexOf(name, meridian, 0, name.length()) - 1;
+                if (lower >= 0 && name.charAt(lower) == '(') {
+                    int upper = lower + meridian.length() + 1;
+                    if (upper < name.length() && name.charAt(upper) == ')') {
+                        lower = CharSequences.skipTrailingWhitespaces(name, 0, lower);
+                        while (lower > 0) {
+                            final int c = Character.codePointBefore(name, lower);
+                            if (Character.isLetterOrDigit(c)) {
+                                // Remove the meridian name only if it is not at the beginning of the name.
+                                name = new StringBuilder(name).delete(lower, upper+1).toString();
+                                break;
+                            }
+                            lower -= Character.charCount(c);
+                        }
+                    }
+                }
+                return name;
+            }
+        });
+    }
+
+    /**
      * Compare this datum with the specified object for equality.
      *
      * @param  object The object to compare to {@code this}.
@@ -622,7 +675,7 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
         if (ellipsoid == null) {
             ellipsoid = value;
         } else {
-            ReferencingUtilities.propertyAlreadySet(DefaultGeodeticDatum.class, "setEllipsoid", "ellipsoid");
+            MetadataUtilities.propertyAlreadySet(DefaultGeodeticDatum.class, "setEllipsoid", "ellipsoid");
         }
     }
 
@@ -635,7 +688,7 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
         if (primeMeridian == null) {
             primeMeridian = value;
         } else {
-            ReferencingUtilities.propertyAlreadySet(DefaultGeodeticDatum.class, "setPrimeMeridian", "primeMeridian");
+            MetadataUtilities.propertyAlreadySet(DefaultGeodeticDatum.class, "setPrimeMeridian", "primeMeridian");
         }
     }
 }

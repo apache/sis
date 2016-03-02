@@ -29,7 +29,7 @@ import org.opengis.referencing.crs.TemporalCRS;
 import org.opengis.referencing.datum.TemporalDatum;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.AbstractReferenceSystem;
-import org.apache.sis.internal.referencing.ReferencingUtilities;
+import org.apache.sis.internal.metadata.MetadataUtilities;
 import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.measure.Units;
@@ -347,7 +347,7 @@ public class DefaultTemporalCRS extends AbstractCRS implements TemporalCRS {
         if (datum == null) {
             datum = value;
         } else {
-            ReferencingUtilities.propertyAlreadySet(DefaultVerticalCRS.class, "setDatum", "temporalDatum");
+            MetadataUtilities.propertyAlreadySet(DefaultVerticalCRS.class, "setDatum", "temporalDatum");
         }
     }
 

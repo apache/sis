@@ -29,7 +29,7 @@ import org.apache.sis.util.Workaround;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.internal.jaxb.metadata.EX_Extent;
-import org.apache.sis.internal.referencing.ReferencingUtilities;
+import org.apache.sis.internal.metadata.MetadataUtilities;
 
 import static org.apache.sis.util.Utilities.deepEquals;
 import static org.apache.sis.util.collection.Containers.property;
@@ -287,7 +287,7 @@ public class AbstractReferenceSystem extends AbstractIdentifiedObject implements
         if (domainOfValidity == null) {
             domainOfValidity = value;
         } else {
-            ReferencingUtilities.propertyAlreadySet(AbstractReferenceSystem.class, "setDomainOfValidity", "domainOfValidity");
+            MetadataUtilities.propertyAlreadySet(AbstractReferenceSystem.class, "setDomainOfValidity", "domainOfValidity");
         }
     }
 
@@ -300,7 +300,7 @@ public class AbstractReferenceSystem extends AbstractIdentifiedObject implements
         if (scope == null) {
             scope = value;
         } else {
-            ReferencingUtilities.propertyAlreadySet(AbstractReferenceSystem.class, "setScope", "scope");
+            MetadataUtilities.propertyAlreadySet(AbstractReferenceSystem.class, "setScope", "scope");
         }
     }
 }

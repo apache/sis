@@ -39,7 +39,7 @@ import org.apache.sis.util.Characters;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4
- * @version 0.6
+ * @version 0.7
  * @module
  */
 public final class VerticalDatumTypes implements CodeList.Filter {
@@ -108,12 +108,19 @@ public final class VerticalDatumTypes implements CodeList.Filter {
 
     /**
      * Returns the legacy code for the datum type, or 0 if unknown.
+     * This method is used for WKT 1 formatting.
      *
-     * @param  ordinal The {@linkplain CodeList#ordinal() ordinal} value of the {@link VerticalDatumType}.
+     * @param  type The vertical datum type, or {@code null} if unknown.
      * @return The legacy code for the given datum type, or 0 if unknown.
      */
-    public static int toLegacy(final int ordinal) {
-        return (ordinal >= 0 && ordinal < LEGACY_CODES.length) ? LEGACY_CODES[ordinal] : 0;
+    public static int toLegacy(final VerticalDatumType type) {
+        if (type != null) {
+            final int ordinal = type.ordinal();
+            if (ordinal >= 0 && ordinal < LEGACY_CODES.length) {
+                return LEGACY_CODES[ordinal];
+            }
+        }
+        return 0;
     }
 
     /**
@@ -219,6 +226,8 @@ public final class VerticalDatumTypes implements CodeList.Filter {
      * We do not test the characters following the prefix because the word may be incomplete
      * (e.g. {@code "geoid"} versus {@code "geoidal"}).
      *
+     * <p>This method is public as an implementation side-effect and should be ignored.</p>
+     *
      * @param code The code to test.
      * @return {@code true} if the code matches the criterion.
       */
@@ -230,6 +239,7 @@ public final class VerticalDatumTypes implements CodeList.Filter {
 
     /**
      * Returns {@code null} for disabling the creation of new code list elements.
+     * This method is public as an implementation side-effect and should be ignored.
      *
      * @return {@code null}.
      */

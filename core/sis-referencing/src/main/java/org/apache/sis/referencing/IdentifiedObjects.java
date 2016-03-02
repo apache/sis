@@ -103,7 +103,7 @@ public final class IdentifiedObjects extends Static {
      *
      * @param  object The identified object to view as a properties map.
      * @param  excludes The keys of properties to exclude from the map.
-     * @return An view of the identified object as an immutable map.
+     * @return A view of the identified object properties as an immutable map.
      */
     public static Map<String,?> getProperties(final IdentifiedObject object, final String... excludes) {
         ArgumentChecks.ensureNonNull("object", object);
@@ -302,7 +302,7 @@ public final class IdentifiedObjects extends Static {
      * @return A string representation of the first identifier or name, or {@code null} if none.
      *
      * @see #getIdentifier(IdentifiedObject, Citation)
-     * @see #searchIdentifierCode(IdentifiedObject, boolean)
+     * @see #lookupURN(IdentifiedObject, Citation)
      */
     public static String getIdentifierOrName(final IdentifiedObject object) {
         if (object != null) {
@@ -408,7 +408,18 @@ public final class IdentifiedObjects extends Static {
         String urn = null;
         if (object != null) {
             for (final IdentifiedObject candidate : newFinder(null).find(object)) {
-                final String c = toURN(candidate.getClass(), getIdentifier(candidate, authority));
+                String c = toURN(candidate.getClass(), getIdentifier(candidate, authority));
+                if (c == null && authority == null) {
+                    /*
+                     * If 'authority' was null, then getIdentifier(candidate, authority) returned the identifier
+                     * for the first authority.  But not all authorities can be formatted as a URN. So try other
+                     * authorities.
+                     */
+                    for (final Identifier id : candidate.getIdentifiers()) {
+                        c = toURN(candidate.getClass(), id);
+                        if (c != null) break;
+                    }
+                }
                 if (c != null) {
                     if (urn != null && !urn.equals(c)) {
                         return null;
@@ -501,6 +512,8 @@ public final class IdentifiedObjects extends Static {
      * @return A finder to use for looking up unidentified objects.
      * @throws FactoryException if the finder can not be created.
      *
+     * @see #lookupEPSG(IdentifiedObject)
+     * @see #lookupURN(IdentifiedObject, Citation)
      * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#newIdentifiedObjectFinder()
      * @see IdentifiedObjectFinder#find(IdentifiedObject)
      */
@@ -541,20 +554,26 @@ public final class IdentifiedObjects extends Static {
      *       projection or parameter name.</li>
      * </ul>
      *
-     * @param  object The object for which to check the name or alias.
+     * If the {@code object} argument is {@code null}, then this method returns {@code false}.
+     *
+     * @param  object The object for which to check the name or alias, or {@code null}.
      * @param  name The name to compare with the object name or aliases.
-     * @return {@code true} if the primary name of at least one alias matches the specified {@code name}.
+     * @return {@code true} if the primary name or at least one alias matches the specified {@code name}.
      *
      * @see AbstractIdentifiedObject#isHeuristicMatchForName(String)
      */
     public static boolean isHeuristicMatchForName(final IdentifiedObject object, final String name) {
+        ArgumentChecks.ensureNonNull("name", name);
+        if (object == null) {
+            return false;
+        }
         if (object instanceof AbstractIdentifiedObject) {
             // DefaultCoordinateSystemAxis overrides this method.
             // We really need to delegate to the overridden method.
             return ((AbstractIdentifiedObject) object).isHeuristicMatchForName(name);
         } else {
-            ArgumentChecks.ensureNonNull("object", object);
-            return NameToIdentifier.isHeuristicMatchForName(object.getName(), object.getAlias(), name);
+            return NameToIdentifier.isHeuristicMatchForName(object.getName(), object.getAlias(), name,
+                    NameToIdentifier.Simplifier.DEFAULT);
         }
     }
 

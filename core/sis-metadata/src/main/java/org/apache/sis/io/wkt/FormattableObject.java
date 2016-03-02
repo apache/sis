@@ -108,11 +108,13 @@ public abstract class FormattableObject {
 
     /**
      * Returns a <cite>Well Known Text</cite> (WKT) or an alternative text representation for this object.
-     * If this object can not be represented in a standard way, then this method fallbacks on a non-standard
-     * representation.
+     * If this object can not be represented in a standard way, then this method may fallback on non-standard
+     * representation, or leave unformattable elements empty and append warnings after the WKT.
      *
      * <p>By default this method formats this object according the {@link Convention#WKT2_SIMPLIFIED} rules,
-     * except that Unicode characters are kept <i>as-is</i> (they are not converted to ASCII).</p>
+     * except that Unicode characters are kept <i>as-is</i> (they are not converted to ASCII).
+     * Consequently the WKT is not guaranteed to be ISO 19162 compliant.
+     * For stricter conformance, use {@link #toWKT()} instead.</p>
      *
      * @return The Well Known Text (WKT) or an alternative representation of this object.
      */
@@ -124,6 +126,10 @@ public abstract class FormattableObject {
     /**
      * Returns a <cite>Well Known Text</cite> (WKT) for this object using the specified convention.
      * Unicode characters are kept <i>as-is</i> (they are not converted to ASCII).
+     * The returned string may contain non-standard elements or warnings
+     * if this object can not be formatted according the given convention.
+     *
+     * <p>For stricter conformance to ISO 19162 standard, use {@link #toWKT()} or {@link WKTFormat} instead.</p>
      *
      * @param  convention The WKT convention to use.
      * @return The Well Known Text (WKT) or a pseudo-WKT representation of this object.
@@ -157,6 +163,7 @@ public abstract class FormattableObject {
     /**
      * Returns a WKT for this object using the specified convention.
      * If {@code strict} is true, then an exception is thrown if the WKT is not standard-compliant.
+     * If {@code strict} if false, then warnings are appended after the WKT instead.
      *
      * @param  convention  The convention for choosing WKT element names.
      * @param  colorize    {@code true} for applying syntax coloring, or {@code false} otherwise.
@@ -183,6 +190,7 @@ public abstract class FormattableObject {
         if (!strict) {
             formatter.transliterator = Transliterator.IDENTITY;
         }
+        formatter.verifyCharacterValidity = strict;
         final String wkt;
         try {
             formatter.append(this);
@@ -197,6 +205,7 @@ public abstract class FormattableObject {
                     throw new UnformattableObjectException(warnings.getMessage(n), warnings.getException(n));
                 }
             }
+            formatter.appendWarnings();
             wkt = formatter.toWKT();
         } finally {
             formatter.clear();

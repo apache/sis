@@ -31,6 +31,7 @@ import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.crs.GeneralDerivedCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
+import org.apache.sis.internal.metadata.MetadataUtilities;
 import org.apache.sis.referencing.AbstractReferenceSystem;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.cs.AxesConvention;
@@ -536,7 +537,7 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
             if (name == null) {
                 name = String.valueOf(ReferencingUtilities.toPropertyName(CoordinateSystem.class, cs.getClass()));
             }
-            ReferencingUtilities.propertyAlreadySet(AbstractCRS.class, "setCoordinateSystem", name);
+            MetadataUtilities.propertyAlreadySet(AbstractCRS.class, "setCoordinateSystem", name);
         }
     }
 }

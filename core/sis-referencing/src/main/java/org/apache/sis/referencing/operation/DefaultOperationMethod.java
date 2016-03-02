@@ -48,7 +48,7 @@ import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.internal.jaxb.gco.StringAdapter;
 import org.apache.sis.internal.jaxb.referencing.CC_OperationMethod;
 import org.apache.sis.internal.referencing.NilReferencingObject;
-import org.apache.sis.internal.referencing.ReferencingUtilities;
+import org.apache.sis.internal.metadata.MetadataUtilities;
 import org.apache.sis.parameter.DefaultParameterDescriptorGroup;
 import org.apache.sis.parameter.Parameterized;
 import org.apache.sis.referencing.NamedIdentifier;
@@ -798,7 +798,7 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
         if (sourceDimensions == null) {
             sourceDimensions = value;
         } else {
-            ReferencingUtilities.propertyAlreadySet(DefaultOperationMethod.class, "setSourceDimensions", "sourceDimensions");
+            MetadataUtilities.propertyAlreadySet(DefaultOperationMethod.class, "setSourceDimensions", "sourceDimensions");
         }
     }
 
@@ -811,7 +811,7 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
         if (targetDimensions == null) {
             targetDimensions = value;
         } else {
-            ReferencingUtilities.propertyAlreadySet(DefaultOperationMethod.class, "setTargetDimensions", "targetDimensions");
+            MetadataUtilities.propertyAlreadySet(DefaultOperationMethod.class, "setTargetDimensions", "targetDimensions");
         }
     }
 
@@ -845,7 +845,7 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
             formula = (formula == null) ? new DefaultFormula(citation)
                       : new DefaultFormula(formula.getFormula(), citation);
         } else {
-            ReferencingUtilities.propertyAlreadySet(DefaultOperationMethod.class, "setFormulaCitation", "formulaCitation");
+            MetadataUtilities.propertyAlreadySet(DefaultOperationMethod.class, "setFormulaCitation", "formulaCitation");
         }
     }
 
@@ -857,7 +857,7 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
             formula = (formula == null) ? new DefaultFormula(description)
                       : new DefaultFormula(new SimpleInternationalString(description), formula.getCitation());
         } else {
-            ReferencingUtilities.propertyAlreadySet(DefaultOperationMethod.class, "setFormulaDescription", "formula");
+            MetadataUtilities.propertyAlreadySet(DefaultOperationMethod.class, "setFormulaDescription", "formula");
         }
     }
 
@@ -922,7 +922,7 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
         if (parameters == null) {
             parameters = CC_OperationMethod.group(super.getName(), descriptors);
         } else {
-            ReferencingUtilities.propertyAlreadySet(DefaultOperationMethod.class, "setDescriptors", "parameter");
+            MetadataUtilities.propertyAlreadySet(DefaultOperationMethod.class, "setDescriptors", "parameter");
         }
     }
 
