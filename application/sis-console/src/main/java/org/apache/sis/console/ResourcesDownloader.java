@@ -172,14 +172,15 @@ public class ResourcesDownloader extends InstallationResources {
             for (final String r : resources.getString("yes").split("\\|")) answers.put(r, Boolean.TRUE);
             for (final String r : resources.getString("no" ).split("\\|")) answers.put(r, Boolean.FALSE);
         }
-        final String textColor, infoColor, actionColor, resetColor;
+        final String textColor, linkColor, linkOff, actionColor, resetColor;
         if (colors) {
             textColor   = X364.FOREGROUND_YELLOW .sequence();
-            infoColor   = X364.FOREGROUND_GRAY   .sequence();
+            linkColor   = X364.UNDERLINE         .sequence();
+            linkOff     = X364.NO_UNDERLINE      .sequence();
             actionColor = X364.FOREGROUND_GREEN  .sequence();
             resetColor  = X364.FOREGROUND_DEFAULT.sequence();
         } else {
-            textColor = infoColor = actionColor = resetColor = "";
+            textColor = linkColor = linkOff = actionColor = resetColor = "";
         }
         /*
          * Start the download if the user accepts. We need to begin the download in order to get the
@@ -189,7 +190,7 @@ public class ResourcesDownloader extends InstallationResources {
             if (console == null) {
                 throw new IllegalStateException();
             }
-            console.format(resources.getString("install"), textColor, DATABASE_SIZE, infoColor, directory, textColor, resetColor);
+            console.format(resources.getString("install"), textColor, DATABASE_SIZE, linkColor, directory, linkOff, resetColor);
             if (!accept(resources.getString("download"), textColor, resetColor)) {
                 console.format("%n");
                 throw new AccessDeniedException(null);
