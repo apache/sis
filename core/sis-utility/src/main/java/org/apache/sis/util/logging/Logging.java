@@ -170,6 +170,9 @@ public final class Logging extends Static {
         String name = classe.getName();
         final int separator = name.lastIndexOf('.');
         name = (separator >= 1) ? name.substring(0, separator) : "";
+        if (name.startsWith("org.apache.sis.internal.")) {
+            name = "org.apache.sis" + name.substring(23);       // Remove the "internal" part from SIS package name.
+        }
         return getLogger(name);
     }
 

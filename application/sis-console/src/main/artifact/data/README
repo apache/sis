@@ -1,0 +1,10 @@
+This directory is the default location of Apache SIS data.
+If desired, an alternative location can be defined with the
+SIS_DATA environment variable. Example:
+
+    export SIS_DATA=/my/data/directory
+
+The following sub-directories will be created when first needed:
+
+  - Databases
+  - DatumChanges
