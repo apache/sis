@@ -108,7 +108,7 @@ import org.apache.sis.util.Debug;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.4
+ * @version 0.7
  * @module
  *
  * @see SimpleFormatter
@@ -539,6 +539,7 @@ loop:   for (int i=0; ; i++) {
     /**
      * Returns the {@link #colors} map, creating it if needed.
      */
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
     private SortedMap<Level,X364> colors() {
         if (colors == null) {
             colors = new TreeMap<>(COMPARATOR);
@@ -637,19 +638,17 @@ loop:   for (int i=0; ; i++) {
              * This level will be formatted with a colorized background if ANSI escape sequences are enabled.
              */
             int margin = buffer.length();
+            String levelColor = "", levelReset = "";
             if (SHOW_LEVEL) {
                 if (colors) {
-                    buffer.append(colorAt(level));
+                    levelColor = colorAt(level);
+                    levelReset = X364.BACKGROUND_DEFAULT.sequence();
                 }
-                final int offset = buffer.length();
+                final int offset = buffer.append(levelColor).length();
                 buffer.append(level.getLocalizedName())
                       .append(CharSequences.spaces(levelWidth - (buffer.length() - offset)));
                 margin += buffer.length() - offset;
-                if (colors) {
-                    buffer.append(X364.BACKGROUND_DEFAULT.sequence());
-                }
-                buffer.append(' ');
-                margin++;
+                buffer.append(levelReset).append(' ');
             }
             /*
              * Appends the logger name or source class name, in long of short form.
@@ -687,8 +686,8 @@ loop:   for (int i=0; ; i++) {
              */
             String bodyLineSeparator = writer.getLineSeparator();
             final String lineSeparator = System.lineSeparator();
-            if (bodyLineSeparator.length() != lineSeparator.length() + margin) {
-                bodyLineSeparator = lineSeparator + CharSequences.spaces(margin);
+            if (bodyLineSeparator.length() != lineSeparator.length() + margin + 1) {
+                bodyLineSeparator = lineSeparator + levelColor + CharSequences.spaces(margin) + levelReset + ' ';
                 writer.setLineSeparator(bodyLineSeparator);
             }
             if (colors && !emphase) {

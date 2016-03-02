@@ -17,6 +17,8 @@
 # ------------------------------------------------------------------------
 
 BASE_DIR="`dirname $0`/.."
+SIS_DATA="${SIS_DATA:-$BASE_DIR/data}"
+export SIS_DATA
 
 # Unpack the JAR file when first needed.
 if [ ! -f $BASE_DIR/lib/sis.jar ]
