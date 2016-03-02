@@ -288,7 +288,10 @@ final class EPSGInstaller extends ScriptRunner {
     }
 
     /**
-     * Logs a message reporting the failure to create EPSG database.
+     * Logs a message reporting the failure to create EPSG database. This method is invoked when {@link EPSGFactory}
+     * caught an exception. This log completes rather than replaces the exception message since {@code EPSGFactory}
+     * lets the exception propagate. Another code (for example {@link org.apache.sis.referencing.CRS#forCode(String)})
+     * may catch that exception and log another record with the exception message.
      */
     final void logFailure(final Locale locale) {
         String message = Messages.getResources(locale).getString(Messages.Keys.CanNotCreateSchema_1, EPSG);
