@@ -31,6 +31,7 @@ import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.ProjectedCRS;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.internal.system.Loggers;
+import org.apache.sis.internal.util.Constants;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Utilities;
 
@@ -113,7 +114,7 @@ public final strictfp class EPSGInstallerTest extends TestCase {
      */
     private static InstallationScriptProvider getScripts() {
         final InstallationScriptProvider scripts = new InstallationScriptProvider.Default();
-        assumeTrue(scripts.getAuthority().equals("EPSG"));
+        assumeTrue(scripts.getAuthorities().contains(Constants.EPSG));
         return scripts;
     }
 

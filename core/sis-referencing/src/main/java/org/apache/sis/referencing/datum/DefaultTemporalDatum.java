@@ -30,7 +30,6 @@ import org.opengis.referencing.datum.TemporalDatum;
 import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.internal.jaxb.gml.UniversalTimeAdapter;
 import org.apache.sis.internal.metadata.MetadataUtilities;
-import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.io.wkt.FormattableObject;
@@ -341,7 +340,7 @@ public class DefaultTemporalDatum extends AbstractDatum implements TemporalDatum
         if (origin == Long.MIN_VALUE) {
             origin = value.getTime();
         } else {
-            ReferencingUtilities.propertyAlreadySet(DefaultTemporalDatum.class, "setOrigin", "origin");
+            MetadataUtilities.propertyAlreadySet(DefaultTemporalDatum.class, "setOrigin", "origin");
         }
     }
 }

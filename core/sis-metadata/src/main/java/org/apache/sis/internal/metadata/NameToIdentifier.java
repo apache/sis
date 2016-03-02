@@ -45,7 +45,7 @@ import org.apache.sis.internal.jdk7.Objects;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.6
+ * @version 0.7
  * @module
  */
 public final class NameToIdentifier implements ReferenceIdentifier {
@@ -204,19 +204,20 @@ public final class NameToIdentifier implements ReferenceIdentifier {
      * primary name} or one of the given aliases matches the given name. The comparison ignores case, some Latin
      * diacritical signs and any characters that are not letters or digits.
      *
-     * @param  name     The name of the {@code IdentifiedObject} to check.
-     * @param  aliases  The list of alias in the {@code IdentifiedObject} (may be {@code null}). This method will never
-     *                  modify that list. Consequently, the given list can be a direct reference to an internal list.
-     * @param  toSearch The name for which to check for equality.
+     * @param  name       The name of the {@code IdentifiedObject} to check.
+     * @param  aliases    The list of aliases in the {@code IdentifiedObject} (may be {@code null}). This method will never
+     *                    modify that list. Consequently, the given list can be a direct reference to an internal list.
+     * @param  toSearch   The name for which to check for equality.
+     * @param  simplifier A function for simplifying the names before comparison.
      * @return {@code true} if the primary name or at least one alias matches the given {@code name}.
      */
     public static boolean isHeuristicMatchForName(final Identifier name, final Collection<GenericName> aliases,
-            CharSequence toSearch)
+            CharSequence toSearch, final Simplifier simplifier)
     {
-        toSearch = CharSequences.toASCII(toSearch);
-        if (name != null) { // Paranoiac check.
-            final CharSequence code = CharSequences.toASCII(name.getCode());
-            if (code != null) { // Paranoiac check.
+        toSearch = simplifier.apply(toSearch);
+        if (name != null) {                                                                 // Paranoiac check.
+            final CharSequence code = simplifier.apply(name.getCode());
+            if (code != null) {                                                             // Paranoiac check.
                 if (CharSequences.equalsFiltered(toSearch, code, LETTERS_AND_DIGITS, true)) {
                     return true;
                 }
@@ -224,8 +225,8 @@ public final class NameToIdentifier implements ReferenceIdentifier {
         }
         if (aliases != null) {
             for (final GenericName alias : aliases) {
-                if (alias != null) { // Paranoiac check.
-                    final CharSequence tip = CharSequences.toASCII(alias.tip().toString());
+                if (alias != null) {                                                        // Paranoiac check.
+                    final CharSequence tip = simplifier.apply(alias.tip().toString());
                     if (CharSequences.equalsFiltered(toSearch, tip, LETTERS_AND_DIGITS, true)) {
                         return true;
                     }
@@ -239,5 +240,34 @@ public final class NameToIdentifier implements ReferenceIdentifier {
             }
         }
         return false;
+    }
+
+    /**
+     * A function for simplifying an {@link IdentifiedObject} name before comparison with
+     * {@link NameToIdentifier#isHeuristicMatchForName(Identifier, Collection, CharSequence, Simplifier)}.
+     *
+     * @since 0.7
+     */
+    public static class Simplifier {
+        /**
+         * The default instance, which replaces some non-ASCII characters by ASCII ones.
+         */
+        public static final Simplifier DEFAULT = new Simplifier();
+
+        /**
+         * For subclasses and default instance only.
+         */
+        protected Simplifier() {
+        }
+
+        /**
+         * Simplifies the given name.
+         *
+         * @param name The object name (may be {@code null}).
+         * @return The name to use for comparison purpose, or {@code null}.
+         */
+        protected CharSequence apply(final CharSequence name) {
+            return CharSequences.toASCII(name);
+        }
     }
 }

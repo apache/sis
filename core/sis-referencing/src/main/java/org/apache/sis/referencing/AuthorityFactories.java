@@ -162,7 +162,11 @@ final class AuthorityFactories<T extends AuthorityFactory> extends LazySet<T> {
      * {@link CRS#getAuthorityFactory(String)}, which is the public facade for {@link #EPSG()}.
      */
     private static void log(final Level level, final Exception e) {
-        final LogRecord record = new LogRecord(level, e.getLocalizedMessage());
+        String message = e.getLocalizedMessage();
+        if (message == null) {
+            message = e.toString();
+        }
+        final LogRecord record = new LogRecord(level, message);
         record.setLoggerName(Loggers.CRS_FACTORY);
         Logging.log(CRS.class, "getAuthorityFactory", record);
     }

@@ -278,7 +278,7 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
             if (matrix2 != null) {
                 final Matrix matrix = Matrices.multiply(matrix2, matrix1);
                 if (Matrices.isIdentity(matrix, IDENTITY_TOLERANCE)) {
-                    return MathTransforms.identity(matrix.getNumRow() - 1);     // Returns a cached instance.
+                    return MathTransforms.identity(matrix.getNumRow() - 1);         // Returns a cached instance.
                 }
                 /*
                  * NOTE: It is quite tempting to "fix rounding errors" in the matrix before to create the transform.
@@ -322,7 +322,7 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
         if (areInverse(tr1, tr2) || areInverse(tr2, tr1)) {
             assert tr1.getSourceDimensions() == tr2.getTargetDimensions();
             assert tr1.getTargetDimensions() == tr2.getSourceDimensions();
-            return MathTransforms.identity(tr1.getSourceDimensions());      // Returns a cached instance.
+            return MathTransforms.identity(tr1.getSourceDimensions());          // Returns a cached instance.
         }
         /*
          * Gives a chance to AbstractMathTransform to returns an optimized object.
@@ -921,7 +921,7 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
      */
     @Override
     public boolean equals(final Object object, final ComparisonMode mode) {
-        if (object == this) { // Slight optimization
+        if (object == this) {                                                   // Slight optimization
             return true;
         }
         /*

@@ -29,10 +29,10 @@ import org.apache.sis.util.resources.Vocabulary;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.4
+ * @version 0.7
  * @module
  */
-final class HelpSC extends SubCommand {
+final class HelpCommand extends CommandRunner {
     /**
      * The commands, in the order to be shown.
      */
@@ -41,21 +41,22 @@ final class HelpSC extends SubCommand {
         "about",
         "mime-type",
         "metadata",
-        "crs"
+        "crs",
+        "identifier"
     };
 
     /**
      * Copies the configuration of the given sub-command. This constructor is used
      * for printing help about an other command.
      */
-    HelpSC(final SubCommand parent) {
+    HelpCommand(final CommandRunner parent) {
         super(parent);
     }
 
     /**
      * Creates the {@code "help"} sub-command.
      */
-    HelpSC(final int commandIndex, final String... args) throws InvalidOptionException {
+    HelpCommand(final int commandIndex, final String... args) throws InvalidOptionException {
         super(commandIndex, args, EnumSet.of(Option.LOCALE, Option.ENCODING, Option.HELP, Option.DEBUG));
     }
 
@@ -72,7 +73,7 @@ final class HelpSC extends SubCommand {
     }
 
     /**
-     * Implementation of {@link #run()}, also shared by {@link SubCommand#help(String)}.
+     * Implementation of {@link #run()}, also shared by {@link CommandRunner#help(String)}.
      *
      * @param showHeader   {@code true} for printing the "Apache SIS" header.
      * @param commandNames The names of the commands to list.

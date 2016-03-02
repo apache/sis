@@ -30,7 +30,7 @@ import org.opengis.parameter.GeneralParameterDescriptor;
 import org.opengis.parameter.ParameterNotFoundException;
 import org.opengis.parameter.InvalidParameterNameException;
 import org.apache.sis.internal.jaxb.referencing.CC_OperationParameterGroup;
-import org.apache.sis.internal.referencing.ReferencingUtilities;
+import org.apache.sis.internal.metadata.MetadataUtilities;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.util.resources.Errors;
@@ -453,7 +453,7 @@ public class DefaultParameterDescriptorGroup extends AbstractParameterDescriptor
             verifyNames(null, parameters);
             descriptors = asList(parameters);
         } else {
-            ReferencingUtilities.propertyAlreadySet(DefaultParameterValue.class, "setDescriptors", "parameter");
+            MetadataUtilities.propertyAlreadySet(DefaultParameterValue.class, "setDescriptors", "parameter");
         }
     }
 

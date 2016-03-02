@@ -69,7 +69,7 @@ import org.apache.sis.xml.XML;
  * This factory serves two purposes:
  *
  * <ul>
- *   <li><b>For users</b>, allows the creation of complex objects that can not be created by the authority factory,
+ *   <li><b>For users</b>, allows the creation of complex objects that can not be created by the authority factories,
  *       without explicit dependency to Apache SIS (when using the GeoAPI interfaces implemented by this class).</li>
  *   <li><b>For providers</b>, allows <cite>inversion of control</cite> by overriding methods in this class,
  *       then specifying the customized instance to other services that consume {@code CRSFactory} (for example
@@ -78,8 +78,8 @@ import org.apache.sis.xml.XML;
  *
  * This {@code GeodeticObjectFactory} class is not easy to use directly.
  * Users are encouraged to use an authority factory instead
- * (or the {@link CRS#forCode(String)} convenience method) when the CRS object to construct can be identified
- * by a code in the namespace of an authority (typically EPSG).
+ * (or the {@link org.apache.sis.referencing.CRS#forCode(String)} convenience method)
+ * when the CRS object to construct can be identified by a code in the namespace of an authority (typically EPSG).
  *
  * <div class="section">Object properties</div>
  * Most factory methods expect a {@link Map Map&lt;String,?&gt;} argument, often followed by explicit arguments.

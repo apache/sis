@@ -20,22 +20,35 @@ import java.net.URL;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
-import org.junit.Test;
 import org.junit.Ignore;
+import org.junit.Test;
 
 import static org.junit.Assert.*;
 
 
 /**
- * Tests the {@link MetadataSC} sub-command.
+ * Tests the {@link MetadataCommand} sub-command.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.6
+ * @version 0.7
  * @module
  */
-@DependsOn(SubCommandTest.class)
-public final strictfp class MetadataSCTest extends TestCase {
+@DependsOn(CommandRunnerTest.class)
+public final strictfp class MetadataCommandTest extends TestCase {
+    /**
+     * Verifies the {@link MetadataCommand#MAX_AUTHORITY_LENGTH} value.
+     */
+    @Test
+    public void verifyMaxAuthorityLength() {
+        int length = 0;
+        for (final String authority : MetadataCommand.AUTHORITIES) {
+            final int c = authority.length();
+            if (c > length) length = c;
+        }
+        assertEquals("MAX_AUTHORITY_LENGTH", length, MetadataCommand.MAX_AUTHORITY_LENGTH);
+    }
+
     /**
      * Tests the sub-command on a NetCDF file.
      *
@@ -44,9 +57,9 @@ public final strictfp class MetadataSCTest extends TestCase {
     @Test
     @Ignore("Requires GeoAPI 3.1")
     public void testNetCDF() throws Exception {
-        final URL url = MetadataSCTest.class.getResource("NCEP-SST.nc");
+        final URL url = MetadataCommandTest.class.getResource("NCEP-SST.nc");
         assertNotNull("NCEP-SST.nc", url);
-        final MetadataSC test = new MetadataSC(false, 0, SubCommand.TEST, url.toString());
+        final MetadataCommand test = new MetadataCommand(MetadataCommand.Info.METADATA, 0, CommandRunner.TEST, url.toString());
         test.run();
         verifyNetCDF("Metadata", test.outputBuffer.toString());
     }
@@ -72,8 +85,9 @@ public final strictfp class MetadataSCTest extends TestCase {
     @Ignore("Requires GeoAPI 3.1")
     @DependsOnMethod("testNetCDF")
     public void testFormatXML() throws Exception {
-        final URL url = MetadataSCTest.class.getResource("NCEP-SST.nc");
-        final MetadataSC test = new MetadataSC(false, 0, SubCommand.TEST, url.toString(), "--format", "XML");
+        final URL url = MetadataCommandTest.class.getResource("NCEP-SST.nc");
+        final MetadataCommand test = new MetadataCommand(MetadataCommand.Info.METADATA,
+                0, CommandRunner.TEST, url.toString(), "--format", "XML");
         test.run();
         verifyNetCDF("<?xml", test.outputBuffer.toString());
     }

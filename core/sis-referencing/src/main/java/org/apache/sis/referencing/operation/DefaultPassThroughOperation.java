@@ -29,6 +29,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.CompoundCRS;
 import org.apache.sis.referencing.operation.transform.PassThroughTransform;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
+import org.apache.sis.internal.metadata.MetadataUtilities;
 import org.apache.sis.util.UnsupportedImplementationException;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ComparisonMode;
@@ -316,7 +317,7 @@ public class DefaultPassThroughOperation extends AbstractCoordinateOperation imp
         if (operation == null) {
             operation = op;
         } else {
-            ReferencingUtilities.propertyAlreadySet(DefaultPassThroughOperation.class, "setOperation", "coordOperation");
+            MetadataUtilities.propertyAlreadySet(DefaultPassThroughOperation.class, "setOperation", "coordOperation");
         }
     }
 

@@ -31,7 +31,7 @@ import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.jaxb.LegacyNamespaces;
 import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.internal.metadata.VerticalDatumTypes;
-import org.apache.sis.internal.referencing.ReferencingUtilities;
+import org.apache.sis.internal.metadata.MetadataUtilities;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
@@ -238,6 +238,12 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
     /**
      * Returns the type of this vertical datum.
      *
+     * <div class="note"><b>Historical note:</b>
+     * this property was defined in the ISO 19111 specification published in 2003,
+     * but removed from the revision published 2007.
+     * This property provides an information similar to the {@linkplain #getAnchorPoint() anchor definition},
+     * but in a programmatic way more suitable to coordinate transformation engines.</div>
+     *
      * @return The type of this vertical datum.
      */
     @Override
@@ -257,7 +263,7 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
     @Override
     public boolean equals(final Object object, final ComparisonMode mode) {
         if (object == this) {
-            return true; // Slight optimization.
+            return true;                                                    // Slight optimization.
         }
         if (!super.equals(object, mode)) {
             return false;
@@ -266,8 +272,17 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
             case STRICT: {
                 return type().equals(((DefaultVerticalDatum) object).type());
             }
-            default: {
+            case BY_CONTRACT: {
                 return Objects.equals(getVerticalDatumType(), ((VerticalDatum) object).getVerticalDatumType());
+            }
+            default: {
+                /*
+                 * VerticalDatumType is considered as metadata because it is related to the anchor definition,
+                 * which is itself considered as metadata. Furthermore GeodeticObjectParser and EPSGDataAccess
+                 * do not always set this property to the same value: the former uses the information provided
+                 * by the coordinate system axis while the other does not.
+                 */
+                return true;
             }
         }
     }
@@ -301,7 +316,7 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
     protected String formatTo(final Formatter formatter) {
         super.formatTo(formatter);
         if (formatter.getConvention().majorVersion() == 1) {
-            formatter.append(VerticalDatumTypes.toLegacy(type().ordinal()));
+            formatter.append(VerticalDatumTypes.toLegacy(type()));
             return WKTKeywords.Vert_Datum;
         }
         return formatter.shortOrLong(WKTKeywords.VDatum, WKTKeywords.VerticalDatum);
@@ -347,7 +362,7 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
         if (type == null) {
             type = t;
         } else {
-            ReferencingUtilities.propertyAlreadySet(DefaultVerticalDatum.class, "setTypeElement", "verticalDatumType");
+            MetadataUtilities.propertyAlreadySet(DefaultVerticalDatum.class, "setTypeElement", "verticalDatumType");
         }
     }
 }
