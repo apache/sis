@@ -91,7 +91,7 @@ enum Option {
     private static final String[] BOOLEAN_VALUES = {
         "false", "true",
         "off",   "on",
-        "yes",   "no"
+        "no",    "yes"
     };
 
     /**

@@ -1559,9 +1559,6 @@ addURIs:    for (int i=0; ; i++) {
      * @return The datum for the given code.
      * @throws NoSuchAuthorityCodeException if the specified {@code code} was not found.
      * @throws FactoryException if the object creation failed for some other reason.
-     *
-     * @todo Current implementation maps all "vertical" datum to {@link VerticalDatumType#GEOIDAL}.
-     *       We do not know yet how to maps the exact vertical datum type from the EPSG database.
      */
     @Override
     public synchronized Datum createDatum(final String code) throws NoSuchAuthorityCodeException, FactoryException {
@@ -1629,7 +1626,10 @@ addURIs:    for (int i=0; ; i++) {
                         break;
                     }
                     /*
-                     * Vertical datum type is hard-coded to geoidal for now. See @todo in method javadoc.
+                     * Vertical datum type is hard-coded to geoidal. It would be possible to infer other
+                     * types by looking at the coordinate system, but it could result in different datum
+                     * associated to the same EPSG code.  Since vertical datum type is no longer part of
+                     * ISO 19111:2007, it is probably not worth to handle such cases.
                      */
                     case "vertical": {
                         datum = datumFactory.createVerticalDatum(properties, VerticalDatumType.GEOIDAL);
@@ -3276,7 +3276,7 @@ next:               while (r.next()) {
                 return iteration != 0;
             }
         }
-        while (++iteration < 15);      // Arbitrary limit for avoiding never-ending loop.
+        while (++iteration < Formulas.MAXIMUM_ITERATIONS);      // Arbitrary limit for avoiding never-ending loop.
         return true;
     }
 

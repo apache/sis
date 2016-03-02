@@ -40,7 +40,7 @@ import org.apache.sis.io.wkt.ElementKind;
 import org.apache.sis.internal.jaxb.gml.Measure;
 import org.apache.sis.internal.jaxb.gml.MeasureList;
 import org.apache.sis.internal.referencing.WKTUtilities;
-import org.apache.sis.internal.referencing.ReferencingUtilities;
+import org.apache.sis.internal.metadata.MetadataUtilities;
 import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.internal.util.PatchedUnitFormat;
 import org.apache.sis.internal.util.Numerics;
@@ -1157,7 +1157,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
                 value = (T) xmlValue;
             }
         } else {
-            ReferencingUtilities.propertyAlreadySet(DefaultParameterValue.class, "setXmlValue", "value");
+            MetadataUtilities.propertyAlreadySet(DefaultParameterValue.class, "setXmlValue", "value");
         }
     }
 }

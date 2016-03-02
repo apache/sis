@@ -34,7 +34,7 @@ import org.opengis.parameter.GeneralParameterValue;
 import org.opengis.parameter.GeneralParameterDescriptor;
 import org.opengis.parameter.ParameterNotFoundException;
 import org.opengis.parameter.InvalidParameterCardinalityException;
-import org.apache.sis.internal.referencing.ReferencingUtilities;
+import org.apache.sis.internal.metadata.MetadataUtilities;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.util.LenientComparable;
 import org.apache.sis.util.ComparisonMode;
@@ -534,7 +534,7 @@ scan:   for (final GeneralParameterValue param : actual.values()) {
         if (values == null) {
             values = new ParameterValueList(descriptor);
         } else {
-            ReferencingUtilities.propertyAlreadySet(DefaultParameterValue.class, "setDescriptor", "group");
+            MetadataUtilities.propertyAlreadySet(DefaultParameterValue.class, "setDescriptor", "group");
         }
     }
 

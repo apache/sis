@@ -98,7 +98,7 @@ public final class Legacy implements AxisFilter {
 
     /**
      * Returns the coordinate system of a geocentric CRS using axes in the given unit of measurement.
-     * This method presume that the given {@code cs} uses {@link SI#METRE} (this is not verified).
+     * This method presumes that the given {@code cs} uses {@link SI#METRE} (this is not verified).
      *
      * @param  cs The coordinate system for which to perform the unit replacement.
      * @param  unit The unit of measurement for the geocentric CRS axes.
@@ -113,17 +113,25 @@ public final class Legacy implements AxisFilter {
         return cs;
     }
 
+
+
+
+    // -----------------------------------------------------------------
+    //         AxisFilter implementation for internal usage only
+    // -----------------------------------------------------------------
+
+    /**
+     * The value to be returned by {@link #getUnitReplacement(Unit)},
+     * or {@code null} if no replacement should be done.
+     */
+    private final Unit<?> replacement;
+
     /**
      * For internal usage by {@link #replaceUnit(CartesianCS, Unit)} only.
      */
     private Legacy(final Unit<?> unit) {
-        this.unit = unit;
+        replacement = unit;
     }
-
-    /**
-     * The value to be returned by {@link #getUnitReplacement(Unit)}.
-     */
-    private final Unit<?> unit;
 
     /**
      * For internal usage by {@link #replaceUnit(CartesianCS, Unit)} only.
@@ -133,7 +141,7 @@ public final class Legacy implements AxisFilter {
      */
     @Override
     public Unit<?> getUnitReplacement(final Unit<?> unit) {
-        return this.unit;
+        return replacement;
     }
 
     /**

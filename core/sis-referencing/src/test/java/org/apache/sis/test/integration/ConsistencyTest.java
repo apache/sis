@@ -17,23 +17,25 @@
 package org.apache.sis.test.integration;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
-import java.util.Locale;
 import java.util.Set;
-import java.util.TimeZone;
 import java.text.ParseException;
+import org.opengis.metadata.Identifier;
 import org.opengis.util.FactoryException;
 import org.opengis.util.NoSuchIdentifierException;
-import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.referencing.factory.FactoryDataException;
+import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.io.wkt.Warnings;
 import org.apache.sis.io.wkt.WKTFormat;
 import org.apache.sis.io.TableAppender;
 import org.apache.sis.io.wkt.UnformattableObjectException;
+import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.CharSequences;
+import org.apache.sis.util.Utilities;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -66,6 +68,15 @@ public final strictfp class ConsistencyTest extends TestCase {
     ));
 
     /**
+     * Codes to exclude from the {@link #lookup(CoordinateReferenceSystem, CoordinateReferenceSystem)} test.
+     * The reason why those tests are excluded now is related to the way JSR-275 parse units. We may resolve
+     * those issues when we will replace JSR-275 by another library.
+     */
+    private static final Set<String> LOOKUP_EXCLUDES = Collections.singleton(
+            "EPSG:5754"         // Poolbeg height. Uses British foot (1936).
+    );
+
+    /**
      * Verifies the WKT consistency of all CRS instances.
      *
      * @throws FactoryException if an error other than "unsupported operation method" occurred.
@@ -73,10 +84,14 @@ public final strictfp class ConsistencyTest extends TestCase {
     @Test
     public void testCoordinateReferenceSystems() throws FactoryException {
         assumeTrue("Extensive tests not enabled.", RUN_EXTENSIVE_TESTS);
-        final WKTFormat v1 = new WKTFormat(Locale.US, TimeZone.getTimeZone("UTC"));
-        final WKTFormat v2 = new WKTFormat(Locale.US, TimeZone.getTimeZone("UTC"));
-        v1.setConvention(Convention.WKT1);
-        v2.setConvention(Convention.WKT2);
+        final WKTFormat v1  = new WKTFormat(null, null);
+        final WKTFormat v1c = new WKTFormat(null, null);
+        final WKTFormat v2  = new WKTFormat(null, null);
+        final WKTFormat v2s = new WKTFormat(null, null);
+        v1 .setConvention(Convention.WKT1);
+        v1c.setConvention(Convention.WKT1_COMMON_UNITS);
+        v2 .setConvention(Convention.WKT2);
+        v2s.setConvention(Convention.WKT2_SIMPLIFIED);
         for (final String code : CRS.getAuthorityFactory(null).getAuthorityCodes(CoordinateReferenceSystem.class)) {
             if (!EXCLUDES.contains(code)) {
                 final CoordinateReferenceSystem crs;
@@ -86,20 +101,20 @@ public final strictfp class ConsistencyTest extends TestCase {
                     print(code, "WARNING", e.getLocalizedMessage());
                     continue;
                 }
-                parseAndFormat(v2, code, crs);
+                lookup(parseAndFormat(v2,  code, crs), crs);
+                lookup(parseAndFormat(v2s, code, crs), crs);
                 /*
                  * There is more information lost in WKT 1 than in WKT 2, so we can not test everything.
                  * For example we can not format fully three-dimensional geographic CRS because the unit
                  * is not the same for all axes. We can not format neither some axis directions.
                  */
-                if (crs.getCoordinateSystem().getDimension() == 3 && (crs instanceof GeographicCRS)) {
-                    continue;
-                }
                 try {
                     parseAndFormat(v1, code, crs);
                 } catch (UnformattableObjectException e) {
                     print(code, "WARNING", e.getLocalizedMessage());
+                    continue;
                 }
+                parseAndFormat(v1c, code, crs);
             }
         }
     }
@@ -117,14 +132,17 @@ public final strictfp class ConsistencyTest extends TestCase {
     }
 
     /**
-     * Format the given CRS using the given formatter, parses it and reformat again.
+     * Formats the given CRS using the given formatter, parses it and reformat again.
      * Then the two WKT are compared.
      *
-     * @param f    The formatter to use.
-     * @param code The authority code, used only in case of errors.
-     * @param crs  The CRS to test.
+     * @param  f    The formatter to use.
+     * @param  code The authority code, used only in case of errors.
+     * @param  crs  The CRS to test.
+     * @return The parsed CRS.
      */
-    private static void parseAndFormat(final WKTFormat f, final String code, final CoordinateReferenceSystem crs) {
+    private static CoordinateReferenceSystem parseAndFormat(final WKTFormat f,
+            final String code, final CoordinateReferenceSystem crs)
+    {
         String wkt = f.format(crs);
         final Warnings warnings = f.getWarnings();
         if (warnings != null && !warnings.getExceptions().isEmpty()) {
@@ -139,7 +157,7 @@ public final strictfp class ConsistencyTest extends TestCase {
             out.println();
             e.printStackTrace(out);
             fail(e.getLocalizedMessage());
-            return;
+            return null;
         }
         final String again = f.format(parsed);
         final CharSequence[] expectedLines = CharSequences.splitOnEOL(wkt);
@@ -199,5 +217,30 @@ public final strictfp class ConsistencyTest extends TestCase {
             throw e;
         }
         assertEquals("Unexpected number of lines.", expectedLines.length, actualLines.length);
+        return parsed;
+    }
+
+    /**
+     * Verifies that {@code IdentifiedObjects.lookupURN(…)} on the parsed CRS can find back the original CRS.
+     */
+    private static void lookup(final CoordinateReferenceSystem parsed, final CoordinateReferenceSystem crs)
+            throws FactoryException
+    {
+        final Identifier id = IdentifiedObjects.getIdentifier(crs, null);
+        if (LOOKUP_EXCLUDES.contains(IdentifiedObjects.toString(id))) {
+            return;
+        }
+        /*
+         * Lookup operation is not going to work if the CRS are not approximatively equal.
+         */
+        final String urn = IdentifiedObjects.toURN(crs.getClass(), id);
+        assertNotNull(crs.getName().getCode(), urn);
+        assertTrue(urn, Utilities.deepEquals(crs, parsed, ComparisonMode.DEBUG));
+        /*
+         * Now test the lookup operation. Since the parsed CRS has an identifier,
+         * that lookup operation should not do a lot of work actually.
+         */
+        final String lookup = IdentifiedObjects.lookupURN(parsed, null);
+        assertEquals("Failed to lookup the parsed CRS.", urn, lookup);
     }
 }

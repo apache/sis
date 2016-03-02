@@ -31,6 +31,7 @@ import org.opengis.referencing.crs.GeneralDerivedCRS;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.util.PatchedUnitFormat;
+import org.apache.sis.internal.metadata.MetadataUtilities;
 import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.internal.jaxb.gml.Measure;
 import org.apache.sis.internal.util.Numerics;
@@ -444,7 +445,7 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
                 }
             }
         } else {
-            ReferencingUtilities.propertyAlreadySet(DefaultPrimeMeridian.class, "setGreenwichMeasure", "greenwichLongitude");
+            MetadataUtilities.propertyAlreadySet(DefaultPrimeMeridian.class, "setGreenwichMeasure", "greenwichLongitude");
         }
     }
 }

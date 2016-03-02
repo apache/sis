@@ -36,7 +36,7 @@ import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.geometry.MismatchedDimensionException;
 import org.apache.sis.referencing.operation.DefaultConversion;
 import org.apache.sis.internal.jaxb.referencing.CC_Conversion;
-import org.apache.sis.internal.referencing.ReferencingUtilities;
+import org.apache.sis.internal.metadata.MetadataUtilities;
 import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.system.Semaphores;
@@ -296,7 +296,7 @@ abstract class AbstractDerivedCRS<C extends Conversion> extends AbstractCRS impl
         if (conversionFromBase == null) {
             conversionFromBase = conversion;
         } else {
-            ReferencingUtilities.propertyAlreadySet(AbstractDerivedCRS.class, "setConversionFromBase", "conversion");
+            MetadataUtilities.propertyAlreadySet(AbstractDerivedCRS.class, "setConversionFromBase", "conversion");
         }
     }
 
@@ -319,7 +319,7 @@ abstract class AbstractDerivedCRS<C extends Conversion> extends AbstractCRS impl
             final SingleCRS previous = CC_Conversion.setBaseCRS(conversionFromBase, baseCRS);
             if (previous != null) {
                 CC_Conversion.setBaseCRS(conversionFromBase, previous);   // Temporary location.
-                ReferencingUtilities.propertyAlreadySet(AbstractDerivedCRS.class, "setBaseCRS", name);
+                MetadataUtilities.propertyAlreadySet(AbstractDerivedCRS.class, "setBaseCRS", name);
             }
         } else {
             throw new IllegalStateException(Errors.format(Errors.Keys.MissingComponentInElement_2, getInterface(), "conversion"));

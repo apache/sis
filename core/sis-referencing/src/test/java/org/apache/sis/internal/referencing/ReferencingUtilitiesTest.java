@@ -22,9 +22,9 @@ import org.opengis.referencing.cs.*;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.datum.PrimeMeridian;
+import org.opengis.referencing.IdentifiedObject;
 import org.apache.sis.referencing.datum.HardCodedDatum;
 import org.apache.sis.referencing.crs.HardCodedCRS;
-import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
@@ -38,7 +38,7 @@ import static org.apache.sis.internal.referencing.ReferencingUtilities.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5 (derived from 0.4)
- * @version 0.6
+ * @version 0.7
  * @module
  */
 public final strictfp class ReferencingUtilitiesTest extends TestCase {
@@ -84,7 +84,20 @@ public final strictfp class ReferencingUtilitiesTest extends TestCase {
     }
 
     /**
+     * Tests {@link ReferencingUtilities#getPropertiesForModifiedCRS(IdentifiedObject, String...)}.
+     *
+     * @since 0.7
+     */
+    @Test
+    public void testGetPropertiesForModifiedCRS() {
+        assertEquals("WGS 84", getPropertiesForModifiedCRS(HardCodedCRS.WGS84_3D).get(IdentifiedObject.NAME_KEY));
+        assertEquals("WGS 84", getPropertiesForModifiedCRS(HardCodedCRS.GEOID_4D).get(IdentifiedObject.NAME_KEY));
+    }
+
+    /**
      * Tests {@link ReferencingUtilities#toPropertyName(Class, Class)}.
+     *
+     * @see WKTUtilitiesTest#testToType()
      *
      * @since 0.6
      */
@@ -101,23 +114,5 @@ public final strictfp class ReferencingUtilitiesTest extends TestCase {
         assertEquals("sphericalCS",      toPropertyName(CoordinateSystem.class, SphericalCS     .class).toString());
         assertEquals("timeCS",           toPropertyName(CoordinateSystem.class, TimeCS          .class).toString());
         assertEquals("verticalCS",       toPropertyName(CoordinateSystem.class, VerticalCS      .class).toString());
-    }
-
-    /**
-     * Tests {@link ReferencingUtilities#toWKTType(Class, Class)}.
-     */
-    @Test
-    public void testType() {
-        assertNull  (                         toWKTType(CoordinateSystem.class, CoordinateSystem.class));
-        assertEquals(WKTKeywords.affine,      toWKTType(CoordinateSystem.class, AffineCS        .class));
-        assertEquals(WKTKeywords.Cartesian,   toWKTType(CoordinateSystem.class, CartesianCS     .class));
-        assertEquals(WKTKeywords.cylindrical, toWKTType(CoordinateSystem.class, CylindricalCS   .class));
-        assertEquals(WKTKeywords.ellipsoidal, toWKTType(CoordinateSystem.class, EllipsoidalCS   .class));
-        assertEquals(WKTKeywords.linear,      toWKTType(CoordinateSystem.class, LinearCS        .class));
-//      assertEquals(WKTKeywords.parametric,  toWKTType(CoordinateSystem.class, ParametricCS    .class));
-        assertEquals(WKTKeywords.polar,       toWKTType(CoordinateSystem.class, PolarCS         .class));
-        assertEquals(WKTKeywords.spherical,   toWKTType(CoordinateSystem.class, SphericalCS     .class));
-        assertEquals(WKTKeywords.temporal,    toWKTType(CoordinateSystem.class, TimeCS          .class));
-        assertEquals(WKTKeywords.vertical,    toWKTType(CoordinateSystem.class, VerticalCS      .class));
     }
 }

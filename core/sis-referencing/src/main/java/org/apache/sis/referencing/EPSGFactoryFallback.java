@@ -34,6 +34,7 @@ import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.referencing.factory.GeodeticAuthorityFactory;
 import org.apache.sis.internal.referencing.provider.TransverseMercator;
 import org.apache.sis.internal.util.Constants;
+import org.apache.sis.internal.util.Fallback;
 import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.util.iso.DefaultNameSpace;
 import org.apache.sis.util.resources.Errors;
@@ -51,6 +52,7 @@ import org.apache.sis.util.Debug;
  * @version 0.7
  * @module
  */
+@Fallback
 final class EPSGFactoryFallback extends GeodeticAuthorityFactory implements CRSAuthorityFactory {
     /**
      * Whether to disallow {@code CommonCRS} to use {@link org.apache.sis.referencing.factory.sql.EPSGFactory}

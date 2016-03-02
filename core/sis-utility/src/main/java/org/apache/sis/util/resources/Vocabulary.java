@@ -266,6 +266,11 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final short Latitude = 26;
 
         /**
+         * Legend
+         */
+        public static final short Legend = 97;
+
+        /**
          * Level
          */
         public static final short Level = 94;
