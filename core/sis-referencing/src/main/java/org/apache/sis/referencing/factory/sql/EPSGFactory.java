@@ -43,7 +43,10 @@ import org.apache.sis.internal.util.Constants;
 import org.apache.sis.referencing.factory.ConcurrentAuthorityFactory;
 import org.apache.sis.referencing.factory.UnavailableFactoryException;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.Classes;
+import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.Localized;
+import org.apache.sis.util.resources.Errors;
 
 
 /**
@@ -262,7 +265,7 @@ public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> impl
                 throw new UnavailableFactoryException(Initializer.unspecified(locale));
             }
         } catch (Exception e) {
-            throw new UnavailableFactoryException(e.getLocalizedMessage(), e);
+            throw new UnavailableFactoryException(message(e), e);
         }
         dataSource   = ds;
         nameFactory  = factory(NameFactory.class,                "nameFactory",  properties);
@@ -280,6 +283,17 @@ public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> impl
     private static <F> F factory(final Class<F> type, final String key, final Map<String,?> properties) {
         final F factory = type.cast(properties.get(key));
         return (factory != null) ? factory : DefaultFactories.forBuildin(type);
+    }
+
+    /**
+     * Returns the message to put in an {@link UnavailableFactoryException} having the given exception as its cause.
+     */
+    private String message(final Exception e) {
+        String message = Exceptions.getLocalizedMessage(e, locale);
+        if (message == null) {
+            message = Classes.getShortClassName(e);
+        }
+        return Errors.getResources(locale).getString(Errors.Keys.CanNotUseGeodeticParameters_2, Constants.EPSG, message);
     }
 
     /**
@@ -438,7 +452,7 @@ public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> impl
             } catch (SQLException e2) {
                 e.addSuppressed(e2);
             }
-            exception = new UnavailableFactoryException(e.getLocalizedMessage(), e);
+            exception = new UnavailableFactoryException(message(e), e);
         }
         exception.setUnavailableFactory(this);
         throw exception;
