@@ -32,11 +32,9 @@ import java.io.BufferedReader;
 import org.apache.sis.util.StringBuilders;
 import org.apache.sis.internal.metadata.sql.ScriptRunner;
 import org.apache.sis.internal.metadata.sql.SQLUtilities;
-import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.util.Fallback;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.resources.Messages;
-import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.logging.PerformanceLevel;
 import org.apache.sis.setup.InstallationResources;
 
@@ -244,12 +242,12 @@ final class EPSGInstaller extends ScriptRunner {
      * @throws IOException if an error occurred while reading an input.
      * @throws SQLException if an error occurred while executing a SQL statement.
      */
-    public void run(InstallationResources scriptProvider) throws SQLException, IOException {
+    public void run(InstallationResources scriptProvider, final Locale locale) throws SQLException, IOException {
         long time = System.nanoTime();
-        log(Messages.getResources(null).getLogRecord(Level.INFO, Messages.Keys.CreatingSchema_2, EPSG,
-                SQLUtilities.getSimplifiedURL(getConnection().getMetaData())));
+        InstallationScriptProvider.log(Messages.getResources(locale).getLogRecord(Level.INFO,
+                Messages.Keys.CreatingSchema_2, EPSG, SQLUtilities.getSimplifiedURL(getConnection().getMetaData())));
         if (scriptProvider == null) {
-            scriptProvider = lookupProvider();
+            scriptProvider = lookupProvider(locale);
         }
         final String[] scripts = scriptProvider.getResourceNames(EPSG);
         int numRows = 0;
@@ -259,7 +257,7 @@ final class EPSGInstaller extends ScriptRunner {
             }
         }
         time = System.nanoTime() - time;
-        log(Messages.getResources(null).getLogRecord(
+        InstallationScriptProvider.log(Messages.getResources(locale).getLogRecord(
                 PerformanceLevel.forDuration(time, TimeUnit.NANOSECONDS),
                 Messages.Keys.InsertDuration_2, numRows, time / 1E9f));
     }
@@ -267,7 +265,7 @@ final class EPSGInstaller extends ScriptRunner {
     /**
      * Searches for a SQL script provider on the classpath before to fallback on the default provider.
      */
-    private static InstallationResources lookupProvider() {
+    private static InstallationResources lookupProvider(final Locale locale) throws IOException {
         InstallationResources fallback = null;
         for (final InstallationResources provider : ServiceLoader.load(InstallationResources.class)) {
             if (provider.getAuthorities().contains(EPSG)) {
@@ -277,7 +275,7 @@ final class EPSGInstaller extends ScriptRunner {
                 fallback = provider;
             }
         }
-        return (fallback != null) ? fallback : new InstallationScriptProvider.Default();
+        return (fallback != null) ? fallback : new InstallationScriptProvider.Default(locale);
     }
 
     /**
@@ -292,15 +290,6 @@ final class EPSGInstaller extends ScriptRunner {
         if (status != null) {
             message = message + ' ' + status;
         }
-        log(new LogRecord(Level.WARNING, message));
-    }
-
-    /**
-     * Logs the given record. This method pretend that the record has been logged by
-     * {@code EPSGFactory.install(…)} because it is the public API using this class.
-     */
-    private static void log(final LogRecord record) {
-        record.setLoggerName(Loggers.CRS_FACTORY);
-        Logging.log(EPSGFactory.class, "install", record);
+        InstallationScriptProvider.log(new LogRecord(Level.WARNING, message));
     }
 }
