@@ -107,6 +107,7 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Localized;
 import org.apache.sis.util.Version;
+import org.apache.sis.util.Workaround;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.measure.NumberRange;
@@ -170,6 +171,7 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
      *
      * @see #replaceDeprecatedCS
      */
+    @Workaround(library = "EPSG:6401-6420", version = "8.9")        // Deprecated in 2002 but still present in 2016.
     private static final Map<Integer,Integer> DEPRECATED_CS = deprecatedCS();
     static Map<Integer,Integer> deprecatedCS() {
         final Map<Integer,Integer> m = new HashMap<>(24);

@@ -16,6 +16,8 @@
  */
 package org.apache.sis.internal.system;
 
+import org.apache.sis.util.Workaround;
+
 
 /**
  * Thread-local booleans that need to be shared across different packages. Each thread has its own set of booleans.
@@ -60,6 +62,7 @@ public final class Semaphores {
      *
      * <p><b>Example:</b> EPSG:3752 was a Mercator (variant A) projection but set the latitude of origin to 41°S.</p>
      */
+    @Workaround(library = "EPSG:3752", version = "8.9")        // Deprecated in 2007 but still present in 2016.
     public static final byte SUSPEND_PARAMETER_CHECK = 8;
 
     /**
