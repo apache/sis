@@ -27,8 +27,9 @@ import org.apache.sis.util.Debug;
  * A NetCDF variable created by {@link Decoder}.
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @author  Johann Sorel (Geomatys)
  * @since   0.3
- * @version 0.5
+ * @version 0.7
  * @module
  */
 public abstract class Variable {
@@ -151,7 +152,7 @@ public abstract class Variable {
      * @return {@code true} if the variable can be considered a coverage.
      */
     public final boolean isCoverage(final int minSpan) {
-        int numVectors = 0; // Number of dimension having more than 1 value.
+        int numVectors = 0;                                     // Number of dimension having more than 1 value.
         for (final int length : getGridEnvelope()) {
             if (Integer.toUnsignedLong(length) >= minSpan) {
                 numVectors++;
@@ -164,9 +165,8 @@ public abstract class Variable {
     }
 
     /**
-     * Returns {@code true} if this variable seems to be a coordinate system axis instead than
-     * the actual data. By NetCDF convention, coordinate system axes have the name of one of the
-     * dimensions defined in the NetCDF header.
+     * Returns {@code true} if this variable seems to be a coordinate system axis instead than the actual data.
+     * By NetCDF convention, coordinate system axes have the name of one of the dimensions defined in the NetCDF header.
      *
      * @return {@code true} if this variable seems to be a coordinate system axis.
      */
@@ -206,10 +206,29 @@ public abstract class Variable {
      * Reads all the data for this variable and returns them as an array of a Java primitive type.
      *
      * @return The data as an array of a Java primitive type.
-     * @throws IOException If an error occurred while reading the data.
-     * @throws DataStoreException If a logical error occurred.
+     * @throws IOException if an error occurred while reading the data.
+     * @throws DataStoreException if a logical error occurred.
      */
     public abstract Object read() throws IOException, DataStoreException;
+
+    /**
+     * Reads a sub-sampled sub-area of the variable.
+     * Constraints on the argument values are:
+     *
+     * <ul>
+     *   <li>All arrays length shall be equal to the length of the {@link #getGridEnvelope()} array.</li>
+     *   <li>For each index <var>i</var>, value of {@code area[i]} shall be in the range from 0 inclusive
+     *       to {@code Integer.toUnsignedLong(getGridEnvelope()[i])} exclusive.</li>
+     * </ul>
+     *
+     * @param  areaLower   Index of the first value to read along each dimension.
+     * @param  areaUpper   Index after the last value to read along each dimension.
+     * @param  subsampling Sub-sampling along each dimension. 1 means no sub-sampling.
+     * @return The data as an array of a Java primitive type.
+     * @throws IOException if an error occurred while reading the data.
+     * @throws DataStoreException if a logical error occurred.
+     */
+    public abstract Object read(int[] areaLower, int[] areaUpper, int[] subsampling) throws IOException, DataStoreException;
 
     /**
      * Returns a string representation of this variable for debugging purpose.

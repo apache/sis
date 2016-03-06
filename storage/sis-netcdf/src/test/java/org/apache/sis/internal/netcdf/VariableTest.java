@@ -57,10 +57,11 @@ public strictfp class VariableTest extends TestCase {
      *   <li>{@link Variable#isUnsigned()}</li>
      * </ul>
      *
-     * @throws IOException If an error occurred while reading the NetCDF file.
+     * @throws IOException if an I/O error occurred while opening the file.
+     * @throws DataStoreException if a logical error occurred.
      */
     @Test
-    public void testBasicProperties() throws IOException {
+    public void testBasicProperties() throws IOException, DataStoreException {
         assertBasicPropertiesEqual(new Object[] {
         // __name______________description_________________________________datatype____dim__axis?__raster?
             "reftime",        "reference time",                            double.class, 1, false, false,
@@ -122,10 +123,11 @@ public strictfp class VariableTest extends TestCase {
      * Tests {@link Variable#getGridDimensionNames()} and {@link Variable#getGridEnvelope()}.
      * Current implementation tests on the {@code "SST"} variable.
      *
-     * @throws IOException If an error occurred while reading the NetCDF file.
+     * @throws IOException if an I/O error occurred while opening the file.
+     * @throws DataStoreException if a logical error occurred.
      */
     @Test
-    public void testGridDimensions() throws IOException {
+    public void testGridDimensions() throws IOException, DataStoreException {
         final Variable variable = selectDataset(NCEP).getVariables()[21];
         assertEquals("SST", variable.getName());
 
@@ -141,10 +143,11 @@ public strictfp class VariableTest extends TestCase {
     /**
      * Tests {@link Variable#getAttributeValues(String, boolean)}.
      *
-     * @throws IOException If an error occurred while reading the NetCDF file.
+     * @throws IOException if an I/O error occurred while opening the file.
+     * @throws DataStoreException if a logical error occurred.
      */
     @Test
-    public void testGetAttributes() throws IOException {
+    public void testGetAttributes() throws IOException, DataStoreException {
         final Variable[] variables = selectDataset(NCEP).getVariables();
         Variable variable = variables[9];
         assertEquals("grid_number", variable.getName());

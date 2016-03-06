@@ -18,6 +18,7 @@ package org.apache.sis.internal.netcdf;
 
 import java.util.Date;
 import java.io.IOException;
+import org.apache.sis.storage.DataStoreException;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -40,10 +41,11 @@ public strictfp class DecoderTest extends TestCase {
     /**
      * Tests {@link Decoder#stringValue(String)} with global attributes.
      *
-     * @throws IOException If an error occurred while reading the NetCDF file.
+     * @throws IOException if an I/O error occurred while opening the file.
+     * @throws DataStoreException if a logical error occurred.
      */
     @Test
-    public void testStringValue() throws IOException {
+    public void testStringValue() throws IOException, DataStoreException {
         selectDataset(NCEP);
         assertAttributeEquals("Sea Surface Temperature Analysis Model",      TITLE);
         assertAttributeEquals("NCEP SST Global 5.0 x 2.5 degree model data", SUMMARY);
@@ -63,10 +65,11 @@ public strictfp class DecoderTest extends TestCase {
     /**
      * Tests {@link Decoder#numericValue(String)} with global attributes.
      *
-     * @throws IOException If an error occurred while reading the NetCDF file.
+     * @throws IOException if an I/O error occurred while opening the file.
+     * @throws DataStoreException if a logical error occurred.
      */
     @Test
-    public void testNumericValue() throws IOException {
+    public void testNumericValue() throws IOException, DataStoreException {
         selectDataset(NCEP);
         assertAttributeEquals(Double.valueOf( -90), LATITUDE .MINIMUM);
         assertAttributeEquals(Double.valueOf( +90), LATITUDE .MAXIMUM);
@@ -80,10 +83,11 @@ public strictfp class DecoderTest extends TestCase {
     /**
      * Tests {@link Decoder#dateValue(String)} with global attributes.
      *
-     * @throws IOException If an error occurred while reading the NetCDF file.
+     * @throws IOException if an I/O error occurred while opening the file.
+     * @throws DataStoreException if a logical error occurred.
      */
     @Test
-    public void testDateValue() throws IOException {
+    public void testDateValue() throws IOException, DataStoreException {
         selectDataset(NCEP);
         assertAttributeEquals(date("2005-09-22 00:00:00"), DATE_CREATED);
         assertAttributeEquals((Date) null,                 DATE_MODIFIED);
@@ -92,10 +96,11 @@ public strictfp class DecoderTest extends TestCase {
     /**
      * Tests {@link Decoder#numberToDate(String, Number[])}.
      *
-     * @throws IOException If an error occurred while reading the NetCDF file.
+     * @throws IOException if an I/O error occurred while opening the file.
+     * @throws DataStoreException if a logical error occurred.
      */
     @Test
-    public void testNumberToDate() throws IOException {
+    public void testNumberToDate() throws IOException, DataStoreException {
         final Decoder decoder = selectDataset(NCEP);
         assertArrayEquals(new Date[] {
             date("2005-09-22 00:00:00")

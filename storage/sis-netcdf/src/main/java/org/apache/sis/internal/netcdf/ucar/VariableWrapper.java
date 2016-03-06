@@ -19,18 +19,22 @@ package org.apache.sis.internal.netcdf.ucar;
 import java.util.List;
 import java.io.IOException;
 import ucar.ma2.Array;
+import ucar.ma2.Section;
+import ucar.ma2.InvalidRangeException;
 import ucar.nc2.Attribute;
 import ucar.nc2.Dimension;
 import ucar.nc2.VariableIF;
 import org.apache.sis.internal.netcdf.Variable;
+import org.apache.sis.storage.DataStoreException;
 
 
 /**
  * A {@link Variable} backed by the UCAR NetCDF library.
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @author  Johann Sorel (Geomatys)
  * @since   0.3
- * @version 0.5
+ * @version 0.7
  * @module
  */
 final class VariableWrapper extends Variable {
@@ -179,6 +183,31 @@ final class VariableWrapper extends Variable {
     @Override
     public Object read() throws IOException {
         final Array array = variable.read();
+        return array.get1DJavaArray(array.getElementType());
+    }
+
+    /**
+     * Reads a sub-sampled sub-area of the variable.
+     *
+     * @param  areaLower   Index of the first value to read along each dimension.
+     * @param  areaUpper   Index after the last value to read along each dimension.
+     * @param  subsampling Sub-sampling along each dimension. 1 means no sub-sampling.
+     * @return The data as an array of a Java primitive type.
+     */
+    @Override
+    public Object read(final int[] areaLower, final int[] areaUpper, final int[] subsampling)
+            throws IOException, DataStoreException
+    {
+        final int[] size = new int[areaUpper.length];
+        for (int i=0; i<size.length; i++) {
+            size[i] = areaUpper[i] - areaLower[i];
+        }
+        final Array array;
+        try {
+            array = variable.read(new Section(areaLower, size, subsampling));
+        } catch (InvalidRangeException e) {
+            throw new DataStoreException(e);
+        }
         return array.get1DJavaArray(array.getElementType());
     }
 }

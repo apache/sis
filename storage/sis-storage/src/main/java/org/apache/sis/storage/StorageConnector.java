@@ -39,6 +39,7 @@ import javax.sql.DataSource;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.ObjectConverters;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.storage.IOUtilities;
 import org.apache.sis.internal.storage.ChannelDataInput;
@@ -673,7 +674,7 @@ public class StorageConnector implements Serializable {
             }
             return null;
         }
-        throw new IllegalArgumentException(Errors.format(Errors.Keys.UnknownType_1, type));
+        return ObjectConverters.convert(storage, type);
     }
 
     /**

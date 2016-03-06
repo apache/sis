@@ -57,6 +57,7 @@ public final class HyperRectangleReader {
             throws DataStoreException
     {
         switch (dataType) {
+            case Numbers.BYTE:      reader = input.new BytesReader  (null); break;
             case Numbers.CHARACTER: reader = input.new CharsReader  (null); break;
             case Numbers.SHORT:     reader = input.new ShortsReader (null); break;
             case Numbers.INTEGER:   reader = input.new IntsReader   (null); break;
