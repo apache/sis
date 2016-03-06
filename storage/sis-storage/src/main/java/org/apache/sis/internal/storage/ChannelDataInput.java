@@ -596,7 +596,7 @@ public class ChannelDataInput extends ChannelData {
          * @param  length   The number of characters to read.
          * @throws IOException if an error (including EOF) occurred while reading the stream.
          */
-        final void readFully(Buffer view, int offset, int length) throws IOException {
+        void readFully(Buffer view, int offset, int length) throws IOException {
             final int dataSizeShift = dataSizeShift();
             ensureBufferContains(Math.min(length << dataSizeShift, buffer.capacity()));
             if (view == null) {
@@ -625,8 +625,30 @@ public class ChannelDataInput extends ChannelData {
     }
 
     /**
-     * Reads characters from the enclosing stream using the given view,
-     * and stores them into the given destination array.
+     * Reads bytes from the enclosing stream and stores them into the given destination array. This implementation
+     * actually redirects the reading process to {@link ChannelDataInput#readFully(byte[], int, int)} because this
+     * specialization does not need a view. This implementation is useless for {@code ChannelDataInput}, but avoid
+     * the need to implement special cases in other classes like {@link HyperRectangleReader}.
+     */
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
+    final class BytesReader extends ArrayReader {
+        /** The array where to store the values. */ private byte[] dest;
+        BytesReader(final byte[] dest) {this.dest = dest;}
+
+        @Override int    dataSizeShift()        {return 0;}
+        @Override Object dataArray()            {return dest;}
+        @Override Buffer view()                 {return buffer;}
+        @Override Buffer createView()           {return buffer;}
+        @Override void   createDataArray(int n) {dest = new byte[n];}
+        @Override void   transfer(int p, int n) {buffer.get(dest, p, n);}
+        @Override void   setDest(Object array)  {dest = (byte[]) array;};
+        @Override void readFully(Buffer view, int offset, int length) throws IOException {
+            ChannelDataInput.this.readFully(dest, offset, length);
+        }
+    };
+
+    /**
+     * Reads characters from the enclosing stream and stores them into the given destination array.
      */
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
     final class CharsReader extends ArrayReader {
@@ -644,8 +666,7 @@ public class ChannelDataInput extends ChannelData {
     };
 
     /**
-     * Reads short integers from the enclosing stream using the given view,
-     * and stores them into the given destination array.
+     * Reads short integers from the enclosing stream and stores them into the given destination array.
      */
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
     final class ShortsReader extends ArrayReader {
@@ -663,8 +684,7 @@ public class ChannelDataInput extends ChannelData {
     };
 
     /**
-     * Reads integers from the enclosing stream using the given view,
-     * and stores them into the given destination array.
+     * Reads integers from the enclosing stream and stores them into the given destination array.
      */
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
     final class IntsReader extends ArrayReader {
@@ -682,8 +702,7 @@ public class ChannelDataInput extends ChannelData {
     };
 
     /**
-     * Reads long integers from the enclosing stream using the given view,
-     * and stores them into the given destination array.
+     * Reads long integers from the enclosing stream and stores them into the given destination array.
      */
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
     final class LongsReader extends ArrayReader {
@@ -701,8 +720,7 @@ public class ChannelDataInput extends ChannelData {
     };
 
     /**
-     * Reads float values from the enclosing stream using the given view,
-     * and stores them into the given destination array.
+     * Reads float values from the enclosing stream and stores them into the given destination array.
      */
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
     final class FloatsReader extends ArrayReader {
@@ -720,8 +738,7 @@ public class ChannelDataInput extends ChannelData {
     };
 
     /**
-     * Reads double values from the enclosing stream using the given view,
-     * and stores them into the given destination array.
+     * Reads double values from the enclosing stream and stores them into the given destination array.
      */
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
     final class DoublesReader extends ArrayReader {
