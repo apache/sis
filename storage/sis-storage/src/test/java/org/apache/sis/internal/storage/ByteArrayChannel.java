@@ -32,7 +32,7 @@ import java.nio.channels.SeekableByteChannel;
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5
- * @version 0.5
+ * @version 0.7
  * @module
  *
  * @see ChannelDataOutputTest
@@ -64,9 +64,14 @@ final strictfp class ByteArrayChannel implements SeekableByteChannel {
      * Creates a channel which will store all written data in the given array.
      *
      * @param data Bytes array where to write the data. The length of this array is the capacity.
+     * @param isContentValid {@code true} if the channel should be initialized with all the {@code data} elements,
+     *        or {@code false} if the channel should be considered initially empty.
      */
-    ByteArrayChannel(final byte[] data) {
+    ByteArrayChannel(final byte[] data, final boolean isDataValid) {
         this.data = data;
+        if (isDataValid) {
+            limit = data.length;
+        }
     }
 
     /**
@@ -80,6 +85,7 @@ final strictfp class ByteArrayChannel implements SeekableByteChannel {
         }
         final int length = StrictMath.min(dst.remaining(), limit - position);
         dst.put(data, position, length);
+        position += length;
         return length;
     }
 

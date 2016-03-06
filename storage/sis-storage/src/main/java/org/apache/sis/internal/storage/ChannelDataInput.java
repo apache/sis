@@ -602,6 +602,12 @@ public class ChannelDataInput extends ChannelData {
             if (view == null) {
                 view = createView();                                    // Must be after ensureBufferContains(int).
             } else {
+                // Buffer position must be a multiple of the data size.
+                // If not, fix that by shifting the content to index 0.
+                if ((buffer.position() & ((1 << dataSizeShift) - 1)) != 0) {
+                    bufferOffset += buffer.position();
+                    buffer.compact().flip();
+                }
                 view.limit   (buffer.limit()    >> dataSizeShift)
                     .position(buffer.position() >> dataSizeShift);      // See assumption documented in Javadoc.
             }
