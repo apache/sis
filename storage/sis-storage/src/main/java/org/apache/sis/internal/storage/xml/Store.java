@@ -178,9 +178,9 @@ final class Store extends DataStore {
             if (object instanceof Metadata) {
                 metadata = (Metadata) object;
             } else if (object instanceof ReferenceSystem) {
-                final DefaultMetadata d = new DefaultMetadata();
-                d.setReferenceSystemInfo(singleton((ReferenceSystem) object));
-                metadata = d;
+                final DefaultMetadata md = new DefaultMetadata();
+                md.setReferenceSystemInfo(singleton((ReferenceSystem) object));
+                metadata = md;
             }
         }
         return metadata;
