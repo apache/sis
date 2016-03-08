@@ -642,7 +642,7 @@ public class ChannelDataInput extends ChannelData {
         @Override void   createDataArray(int n) {dest = new byte[n];}
         @Override void   transfer(int p, int n) {buffer.get(dest, p, n);}
         @Override void   setDest(Object array)  {dest = (byte[]) array;};
-        @Override void readFully(Buffer view, int offset, int length) throws IOException {
+        @Override void   readFully(Buffer view, int offset, int length) throws IOException {
             ChannelDataInput.this.readFully(dest, offset, length);
         }
     };
