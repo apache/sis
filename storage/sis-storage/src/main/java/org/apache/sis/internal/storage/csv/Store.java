@@ -18,9 +18,9 @@ package org.apache.sis.internal.storage.csv;
 
 import java.util.List;
 import java.util.ArrayList;
-import java.util.Map;
-import java.util.LinkedHashMap;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.Date;
 import java.util.Locale;
 import java.util.logging.Level;
@@ -39,6 +39,7 @@ import javax.measure.quantity.Duration;
 import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
 import org.opengis.feature.PropertyType;
+import org.opengis.feature.AttributeType;
 import org.opengis.metadata.Metadata;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -51,13 +52,14 @@ import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.internal.referencing.GeodeticObjectBuilder;
 import org.apache.sis.internal.storage.MetadataHelper;
 import org.apache.sis.geometry.GeneralEnvelope;
-import org.apache.sis.measure.Units;
 import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.CharSequences;
+import org.apache.sis.util.ObjectConverter;
+import org.apache.sis.util.ObjectConverters;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.IndexedResourceBundle;
 
@@ -120,41 +122,6 @@ public final class Store extends DataStore {
     private final DefaultMetadata metadata;
 
     /**
-     * Values for {@link #order} specifying the appearing order of trajectories.
-     */
-    private static final byte ORDER_TIME = 1, ORDER_SEQUENTIAL = 2;
-
-    /**
-     * Appearing order of trajectories: 0 = undefined, 1 = ordered by time,
-     * 2 = elements which are parts of one track are ordered by time.
-     *
-     * @see #parseFoliation(List)
-     */
-    private final byte order;
-
-    /**
-     * Values for {@link #timeEncoding} specifying how time is encoded in the CSV file.
-     */
-    private static final byte TIME_RELATIVE = 1, TIME_ABSOLUTE = 2;
-
-    /**
-     * A code for the time encoding: 0 = no time, 1 = relative time, 2 = absolute time.
-     * Relative times are formatted as number of seconds or minutes since an epoch.
-     * Absolute times are formatted as ISO dates.
-     */
-    private byte timeEncoding;
-
-    /**
-     * Date of value zero on the time axis, in milliseconds since January 1st 1970 at midnight UTC.
-     */
-    private long timeOrigin;
-
-    /**
-     * Number of milliseconds between two consecutive integer values on the time axis.
-     */
-    private double timeInterval;
-
-    /**
      * The three- or four-dimensional envelope together with the CRS.
      * This envelope contains a vertical component if the feature trajectories are 3D,
      * and a temporal component if the CSV file contains a start time and end time.
@@ -175,7 +142,24 @@ public final class Store extends DataStore {
      *
      * @todo We should not keep them in memory, but instead use some kind of iterator or stream.
      */
-    private final Map<String,Feature> features;
+    private final List<Feature> features;
+
+    /**
+     * {@code true} if {@link #featureType} contains a trajectory column.
+     */
+    private boolean hasTrajectories;
+
+    /**
+     * Appearing order of trajectories, or {@code null} if unspecified.
+     *
+     * @see #parseFoliation(List)
+     */
+    private final Foliation foliation;
+
+    /**
+     * Specifies how time is encoded in the CSV file, or {@code null} if there is no time.
+     */
+    private TimeEncoding timeEncoding;
 
     /**
      * Creates a new CSV store from the given file, URL or stream.
@@ -196,7 +180,7 @@ public final class Store extends DataStore {
         source = (r instanceof BufferedReader) ? (BufferedReader) r : new LineNumberReader(r);
         GeneralEnvelope envelope    = null;
         FeatureType     featureType = null;
-        byte            order       = 0;
+        Foliation       foliation   = null;
         try {
             final List<String> elements = new ArrayList<>();
             source.mark(1024);
@@ -222,13 +206,16 @@ public final class Store extends DataStore {
                             throw new DataStoreException(duplicated("@columns"));
                         }
                         featureType = parseFeatureType(elements);
+                        if (foliation == null) {
+                            foliation = Foliation.TIME;
+                        }
                         break;
                     }
                     case "@foliation": {
-                        if (order != 0) {
+                        if (foliation != null) {
                             throw new DataStoreException(duplicated("@foliation"));
                         }
-                        order = parseFoliation(elements);
+                        foliation = parseFoliation(elements);
                         break;
                     }
                     default: {
@@ -248,9 +235,9 @@ public final class Store extends DataStore {
         }
         this.envelope    = envelope;
         this.featureType = featureType;
-        this.order       = order;
+        this.foliation   = foliation;
         this.metadata    = MetadataHelper.createForTextFile(connector);
-        this.features    = new LinkedHashMap<>();
+        this.features    = new ArrayList<>();
     }
 
     /**
@@ -284,8 +271,8 @@ public final class Store extends DataStore {
                         case "second":   /* Already SI.SECOND. */ break;
                         case "minute":   timeUnit = NonSI.MINUTE; break;
                         case "hour":     timeUnit = NonSI.HOUR;   break;
-                        case "absolute": isTimeAbsolute = true;   // Fall through
                         case "day":      timeUnit = NonSI.DAY;    break;
+                        case "absolute": isTimeAbsolute = true;   break;
                         default: throw new DataStoreException(errors().getString(Errors.Keys.UnknownUnit_1, unit));
                     }
                     // Fall through
@@ -328,27 +315,15 @@ public final class Store extends DataStore {
             }
             final GeodeticObjectBuilder builder = new GeodeticObjectBuilder();
             if (startTime != null) {
-                TemporalCRS temporal = null;
+                final TemporalCRS temporal;
                 if (isTimeAbsolute) {
-                    /*
-                     * If time is absolute (i.e. is formatted as an ISO date), then the origin does not matter.
-                     * In such case we favor the first pre-defined TemporalCRS with same unit of measurement.
-                     */
-                    for (final CommonCRS.Temporal c : CommonCRS.Temporal.values()) {
-                        final TemporalCRS candidate = c.crs();
-                        if (timeUnit.equals(candidate.getCoordinateSystem().getAxis(0).getUnit())) {
-                            temporal = candidate;
-                            break;
-                        }
-                    }
-                }
-                if (temporal == null) {
+                    temporal = TimeEncoding.DEFAULT.crs();
+                    timeEncoding = TimeEncoding.ABSOLUTE;
+                } else {
                     temporal = builder.createTemporalCRS(Date.from(startTime), timeUnit);
+                    timeEncoding = new TimeEncoding(temporal.getDatum(), timeUnit);
                 }
                 components[count++] = temporal;
-                timeOrigin   = temporal.getDatum().getOrigin().getTime();
-                timeInterval = timeUnit.getConverterTo(Units.MILLISECOND).convert(1);
-                timeEncoding = isTimeAbsolute ? TIME_ABSOLUTE : TIME_RELATIVE;
             }
             crs = builder.addName(name).createCompoundCRS(ArraysExt.resize(components, count));
             /*
@@ -369,8 +344,8 @@ public final class Store extends DataStore {
                 }
             }
             if (startTime != null && endTime != null) {
-                envelope.setRange(spatialDimension, (startTime.toEpochMilli() - timeOrigin) / timeInterval,
-                                                      (endTime.toEpochMilli() - timeOrigin) / timeInterval);
+                envelope.setRange(spatialDimension, timeEncoding.toCRS(startTime.toEpochMilli()),
+                                                    timeEncoding.toCRS(endTime.toEpochMilli()));
             }
         }
         return envelope;
@@ -427,8 +402,10 @@ public final class Store extends DataStore {
                     case 1: minOccurrence = 1; break;
                     case 2: {
                         if (name.equalsIgnoreCase("trajectory")) {
-                            if (timeEncoding != 0) {
-                                properties.add(createProperty("time", long[].class, 1));
+                            hasTrajectories = true;
+                            if (timeEncoding != null) {
+                                properties.add(createProperty("startTime", Instant.class, 1));
+                                properties.add(createProperty(  "endTime", Instant.class, 1));
                             }
                             type = double[].class;
                             minOccurrence = 1;
@@ -462,16 +439,11 @@ public final class Store extends DataStore {
      * @param  elements The line elements. The first elements should be {@code "@foliation"}.
      * @return The foliation metadata.
      */
-    private byte parseFoliation(final List<String> elements) throws DataStoreException {
+    private Foliation parseFoliation(final List<String> elements) {
         if (elements.size() >= 2) {
-            final String value = elements.get(1);
-            switch (value.toLowerCase(Locale.US)) {
-                case "time":       break;
-                case "sequential": return ORDER_SEQUENTIAL;
-                default: throw new DataStoreException(errors().getString(Errors.Keys.UnknownEnumValue_2, "order", value));
-            }
+            return Foliation.valueOf(elements.get(1).toUpperCase(Locale.US));
         }
-        return ORDER_TIME;      // Default value.
+        return Foliation.TIME;      // Default value.
     }
 
     /**
@@ -491,6 +463,104 @@ public final class Store extends DataStore {
             metadata.freeze();
         }
         return metadata;
+    }
+
+    /**
+     * Returns an iterator over the features.
+     *
+     * @todo THIS IS AN EXPERIMENTAL API. We may change the return type to {@link java.util.stream.Stream} later.
+     * @todo Current implementation is inefficient. We should not parse all features immediately.
+     *
+     * @return An iterator over all features in the CSV file.
+     * @throws DataStoreException if an error occurred while creating the iterator.
+     */
+    @SuppressWarnings({"unchecked", "rawtypes", "fallthrough"})
+    public Iterator<Feature> getFeatures() throws DataStoreException {
+        if (features.isEmpty()) try {
+            final Collection<? extends PropertyType> properties = featureType.getProperties(false);
+            final ObjectConverter<String,?>[] converters = new ObjectConverter[properties.size()];
+            final String[]     propertyNames   = new String[converters.length];
+            final boolean      hasTrajectories = this.hasTrajectories;
+            final TimeEncoding timeEncoding    = this.timeEncoding;
+            final List<String> values          = new ArrayList<>();
+            int i = -1;
+            for (final PropertyType p : properties) {
+                propertyNames[++i] = p.getName().tip().toString();
+                switch (i) {    // This switch shall follow the same cases than the swith in the loop.
+                    case 1:
+                    case 2: if (timeEncoding != null) continue;     // else fall through
+                    case 3: if (hasTrajectories) continue;
+                }
+                converters[i] = ObjectConverters.find(String.class, ((AttributeType) p).getValueClass());
+            }
+            /*
+             * Above lines prepared the constants. Now parse all lines.
+             * TODO: We should move the code below this point in a custom Iterator implementation.
+             */
+            String line;
+            while ((line = source.readLine()) != null) {
+                split(line, values);
+                final int length = Math.min(propertyNames.length, values.size());
+                if (length != 0) {
+                    final Feature feature = featureType.newInstance();
+                    for (i=0; i<length; i++) {
+                        final String text = values.get(i);
+                        final String name = propertyNames[i];
+                        final Object value;
+                        /*
+                         * According Moving Features specification:
+                         *   Column 0 is the feature identifier (mfidref). There is nothing special to do here.
+                         *   Column 1 is the start time.
+                         *   Column 2 is the end time.
+                         *   Column 3 is the trajectory.
+                         *   Columns 4+ are custum attributes.
+                         *
+                         * TODO: we should replace that switch case by custom ObjectConverter.
+                         */
+                        switch (i) {
+                            case 1:
+                            case 2: {
+                                if (timeEncoding != null) {
+                                    if (timeEncoding == TimeEncoding.ABSOLUTE) {
+                                        value = Instant.parse(text).toEpochMilli();
+                                    } else {
+                                        value = Instant.ofEpochMilli(timeEncoding.toMillis(Double.parseDouble(text)));
+                                    }
+                                    break;
+                                }
+                                /*
+                                 * If there is no time columns, then this column may the trajectory (note that allowing
+                                 * CSV files without time is obviously a departure from Moving Features specification.
+                                 * The intend is to have a CSV format applicable to other features than moving ones).
+                                 * Fall through in order to process trajectory.
+                                 */
+                            }
+                            case 3: {
+                                if (hasTrajectories) {
+                                    value = CharSequences.parseDoubles(text, ORDINATE_SEPARATOR);
+                                    break;
+                                }
+                                /*
+                                 * If there is no trajectory columns, than this column is a custum attribute.
+                                 * CSV files without trajectories are not compliant with Moving Feature spec.,
+                                 * but we try to keep this reader a little bit more generic.
+                                 */
+                            }
+                            default: {
+                                value = converters[i].apply(text);
+                                break;
+                            }
+                        }
+                        feature.setPropertyValue(name, value);
+                    }
+                    features.add(feature);
+                }
+                values.clear();
+            }
+        } catch (IOException | IllegalArgumentException | DateTimeException e) {
+            throw new DataStoreException(errors().getString(Errors.Keys.CanNotParseFile_2, "CSV", name), e);
+        }
+        return features.iterator();
     }
 
     /**
@@ -518,7 +588,7 @@ public final class Store extends DataStore {
                 }
                 case SEPARATOR: {
                     if (!isQuoting) {
-                        elements.add(extract(line, startAt, i, hasQuotes));
+                        elements.add(decode(line, startAt, i, hasQuotes));
                         startAt = i+1;
                         hasQuotes = false;
                     }
@@ -526,13 +596,17 @@ public final class Store extends DataStore {
                 }
             }
         }
-        elements.add(extract(line, startAt, length, hasQuotes));
+        elements.add(decode(line, startAt, length, hasQuotes));
     }
 
     /**
      * Extracts a substring from the given line and replaces double quotes by single quotes.
+     *
+     * @todo Needs also to check escape characters {@code \s \t \b &lt; &gt; &amp; &quot; &apos;}.
+     * @todo Should modify double quote policy: process only if the text had quotes at the beginning and end.
+     *       Those "todo" should be done only when we detected that the CSV file is a moving features file.
      */
-    private static String extract(CharSequence text, final int lower, final int upper, final boolean hasQuotes) {
+    private static String decode(CharSequence text, final int lower, final int upper, final boolean hasQuotes) {
         if (hasQuotes) {
             final StringBuilder buffer = new StringBuilder(upper - lower).append(text, lower, upper);
             for (int i=0; i<buffer.length(); i++) {

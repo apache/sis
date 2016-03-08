@@ -16,7 +16,9 @@
  */
 package org.apache.sis.internal.storage.csv;
 
+import java.util.Iterator;
 import java.io.StringReader;
+import org.opengis.feature.Feature;
 import org.opengis.metadata.Metadata;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.metadata.extent.SpatialTemporalExtent;
@@ -71,5 +73,34 @@ public final class StoreTest extends TestCase {
         assertEquals("northBoundLatitude",  9.27, bbox.getNorthBoundLatitude(), STRICT);
         assertNull("Should not have a vertical extent.", extent.getVerticalExtent());
         assertNotNull("Should have a temporal extent", extent.getExtent());
+    }
+
+    /**
+     * Tests {@link Store#getFeatures()}.
+     *
+     * @throws DataStoreException if an error occurred while parsing the data.
+     */
+    @Test
+    public void testGetFeatures() throws DataStoreException {
+        try (Store store = new Store(new StorageConnector(new StringReader(TEST_DATA)))) {
+            final Iterator<Feature> it = store.getFeatures();
+            assertFeatureEquals(it.next(), "a", new double[] {11, 2, 12, 3},        "walking", 1);
+            assertFeatureEquals(it.next(), "b", new double[] {10, 2, 11, 3},        "walking", 2);
+            assertFeatureEquals(it.next(), "a", new double[] {12, 3, 10, 3},        "walking", 2);
+            assertFeatureEquals(it.next(), "c", new double[] {12, 1, 10, 2, 11, 3}, "vehicle", 1);
+            assertFalse(it.hasNext());
+        }
+    }
+
+    /**
+     * Asserts that the given feature has the given properties.
+     */
+    private static void assertFeatureEquals(final Feature f, final String mfidref,
+            final double[] trajectory, final String state, final int typeCode)
+    {
+        assertEquals     ("mfidref",    mfidref,  f.getPropertyValue("mfidref"));
+        assertEquals     ("state",      state,    f.getPropertyValue("state"));
+        assertEquals     ("typeCode",   typeCode, f.getPropertyValue("\"type\" code"));
+        assertArrayEquals("trajectory", trajectory, (double[]) f.getPropertyValue("trajectory"), STRICT);
     }
 }
