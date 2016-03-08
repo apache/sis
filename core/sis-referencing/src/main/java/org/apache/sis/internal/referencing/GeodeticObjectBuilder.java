@@ -16,24 +16,38 @@
  */
 package org.apache.sis.internal.referencing;
 
+import java.util.Map;
+import java.util.Date;
+import java.util.Collections;
 import javax.measure.unit.Unit;
+import javax.measure.quantity.Duration;
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterNotFoundException;
 import org.opengis.parameter.InvalidParameterValueException;
+import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.crs.CRSFactory;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.ProjectedCRS;
+import org.opengis.referencing.crs.TemporalCRS;
+import org.opengis.referencing.cs.AxisDirection;
+import org.opengis.referencing.cs.CSFactory;
 import org.opengis.referencing.cs.CartesianCS;
+import org.opengis.referencing.cs.TimeCS;
+import org.opengis.referencing.datum.DatumFactory;
+import org.opengis.referencing.datum.TemporalDatum;
 import org.opengis.referencing.operation.CoordinateOperationFactory;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.Conversion;
+import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.referencing.provider.TransverseMercator;
 import org.apache.sis.measure.Latitude;
 import org.apache.sis.referencing.Builder;
+import org.apache.sis.referencing.CommonCRS;
 
 
 /**
@@ -69,12 +83,22 @@ public class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> {
     private ParameterValueGroup parameters;
 
     /**
-     * The factor for Coordinate Reference System objects, fetched when first needed.
+     * The factory for Coordinate Reference System objects, fetched when first needed.
      */
     private CRSFactory crsFactory;
 
     /**
-     * The factor for Coordinate Operation objects, fetched when first needed.
+     * The factory for Coordinate System objects, fetched when first needed.
+     */
+    private CSFactory csFactory;
+
+    /**
+     * The factory for Datum objects, fetched when first needed.
+     */
+    private DatumFactory datumFactory;
+
+    /**
+     * The factory for Coordinate Operation objects, fetched when first needed.
      */
     private CoordinateOperationFactory copFactory;
 
@@ -92,6 +116,26 @@ public class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> {
             crsFactory = DefaultFactories.forBuildin(CRSFactory.class);
         }
         return crsFactory;
+    }
+
+    /**
+     * Returns the factory for Coordinate System objects. This method fetches the factory when first needed.
+     */
+    private CSFactory getCSFactory() {
+        if (csFactory == null) {
+            csFactory = DefaultFactories.forBuildin(CSFactory.class);
+        }
+        return csFactory;
+    }
+
+    /**
+     * Returns the factory for Datum objects. This method fetches the factory when first needed.
+     */
+    private DatumFactory getDatumFactory() {
+        if (datumFactory == null) {
+            datumFactory = DefaultFactories.forBuildin(DatumFactory.class);
+        }
+        return datumFactory;
     }
 
     /**
@@ -263,5 +307,88 @@ public class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> {
         } finally {
             onCreate(true);
         }
+    }
+
+    /**
+     * Creates a temporal CRS from the given origin and temporal unit. For this method, the CRS name is optional:
+     * if no {@code addName(…)} method has been invoked, then a default name will be used.
+     *
+     * @param  origin The epoch in milliseconds since January 1st, 1970 at midnight UTC.
+     * @param  unit The unit of measurement.
+     * @return A temporal CRS using the given origin and units.
+     * @throws FactoryException if an error occurred while building the temporal CRS.
+     */
+    public TemporalCRS createTemporalCRS(final Date origin, final Unit<Duration> unit) throws FactoryException {
+        /*
+         * Try to use one of the pre-defined datum and coordinate system if possible.
+         * This not only saves a little bit of memory, but also provides better names.
+         */
+        TimeCS cs = null;
+        TemporalDatum datum = null;
+        for (final CommonCRS.Temporal c : CommonCRS.Temporal.values()) {
+            if (datum == null) {
+                final TemporalDatum candidate = c.datum();
+                if (origin.equals(candidate.getOrigin())) {
+                    datum = candidate;
+                }
+            }
+            if (cs == null) {
+                final TemporalCRS crs = c.crs();
+                final TimeCS candidate = crs.getCoordinateSystem();
+                if (unit.equals(candidate.getAxis(0).getUnit())) {
+                    if (datum == candidate && properties.isEmpty()) {
+                        return crs;
+                    }
+                    cs = candidate;
+                }
+            }
+        }
+        /*
+         * Create the datum and coordinate system before the CRS if we were not able to use a pre-defined object.
+         * In the datum case, we will use the same metadata than the CRS (domain of validity, scope, etc.) except
+         * the identifier and the remark.
+         */
+        onCreate(false);
+        try {
+            if (cs == null) {
+                final CSFactory csFactory = getCSFactory();
+                cs = CommonCRS.Temporal.JAVA.crs().getCoordinateSystem();   // To be used as a template, except for units.
+                cs = csFactory.createTimeCS(name(cs),
+                     csFactory.createCoordinateSystemAxis(name(cs.getAxis(0)), "t", AxisDirection.FUTURE, unit));
+            }
+            if (properties.get(TemporalCRS.NAME_KEY) == null) {
+                properties.putAll(name(cs));
+            }
+            if (datum == null) {
+                final Object remarks    = properties.remove(TemporalCRS.REMARKS_KEY);
+                final Object identifier = properties.remove(TemporalCRS.IDENTIFIERS_KEY);
+                datum = getDatumFactory().createTemporalDatum(properties, origin);
+                properties.put(TemporalCRS.IDENTIFIERS_KEY, identifier);
+                properties.put(TemporalCRS.REMARKS_KEY,     remarks);
+                properties.put(TemporalCRS.NAME_KEY, datum.getName());      // Share the Identifier instance.
+            }
+            return getCRSFactory().createTemporalCRS(properties, datum, cs);
+        } finally {
+            onCreate(true);
+        }
+    }
+
+    /**
+     * Creates a compound CRS, but we special processing for (two-dimensional Geographic + ellipsoidal heights) tupples.
+     * If any such tupple is found, a three-dimensional geographic CRS is created instead than the compound CRS.
+     *
+     * @param  components ordered array of {@code CoordinateReferenceSystem} objects.
+     * @return The coordinate reference system for the given properties.
+     * @throws FactoryException if the object creation failed.
+     */
+    public CoordinateReferenceSystem createCompoundCRS(final CoordinateReferenceSystem... components) throws FactoryException {
+        return ReferencingServices.getInstance().createCompoundCRS(getCRSFactory(), getCSFactory(), properties, components);
+    }
+
+    /**
+     * Creates a map of properties containing only the name of the given object.
+     */
+    private static Map<String,Object> name(final IdentifiedObject template) {
+        return Collections.singletonMap(IdentifiedObject.NAME_KEY, template.getName());
     }
 }

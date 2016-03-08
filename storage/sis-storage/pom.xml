@@ -121,6 +121,11 @@ Provides the interfaces and base classes to be implemented by various storage fo
            Dependencies
        =========================================================== -->
   <dependencies>
+    <dependency>
+      <groupId>org.apache.sis.core</groupId>
+      <artifactId>sis-feature</artifactId>
+      <version>${project.version}</version>
+    </dependency>
     <!-- Test dependencies -->
     <dependency>
       <groupId>org.apache.sis.core</groupId>
