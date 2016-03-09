@@ -26,6 +26,8 @@ import java.util.logging.Logger;
 import java.util.logging.LogRecord;
 import java.util.concurrent.atomic.AtomicReference;
 import java.lang.reflect.Constructor;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import javax.measure.unit.Unit;
 import javax.measure.quantity.Angle;
 import javax.measure.quantity.Length;
@@ -186,8 +188,9 @@ import org.apache.sis.xml.XML;
  * since localizations are applied by the {@link InternationalString#toString(Locale)} method.</p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
+ * @author  Guilhem Legal (Geomatys)
  * @since   0.6
- * @version 0.6
+ * @version 0.7
  * @module
  */
 public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory, CSFactory, DatumFactory, Parser {
@@ -1524,7 +1527,11 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
             if (c == null) {
                 c = Class.forName("org.apache.sis.io.wkt.GeodeticObjectParser").asSubclass(Parser.class)
                          .getConstructor(Map.class, ObjectFactory.class, MathTransformFactory.class);
-                c.setAccessible(true);
+                final Constructor<? extends Parser> cp = c;     // For allowing use in inner class.
+                AccessController.doPrivileged((PrivilegedAction<Void>) () -> {
+                    cp.setAccessible(true);
+                    return null;
+                });
                 parserConstructor = c;
             }
             p = c.newInstance(defaultProperties, this, getMathTransformFactory());

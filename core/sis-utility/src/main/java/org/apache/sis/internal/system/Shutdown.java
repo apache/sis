@@ -19,6 +19,8 @@ package org.apache.sis.internal.system;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.concurrent.Callable;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import org.apache.sis.util.logging.Logging;
 
 // Branch-dependent imports
@@ -29,6 +31,7 @@ import java.util.Objects;
  * A central place where to manage SIS shutdown process.
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @author  Guilhem Legal (Geomatys)
  * @since   0.3
  * @version 0.7
  * @module
@@ -115,7 +118,10 @@ public final class Shutdown extends Thread {
             resources.add(resource);
             if (hook == null && container == null) {
                 hook = new Shutdown();
-                Runtime.getRuntime().addShutdownHook(hook);
+                AccessController.doPrivileged((PrivilegedAction<Void>) () -> {
+                    Runtime.getRuntime().addShutdownHook(hook);
+                    return null;
+                });
             }
         }
     }
@@ -126,7 +132,10 @@ public final class Shutdown extends Thread {
     private static void removeShutdownHook() {
         assert Thread.holdsLock(resources);
         if (hook != null) {
-            Runtime.getRuntime().removeShutdownHook(hook);
+            AccessController.doPrivileged((PrivilegedAction<Void>) () -> {
+                Runtime.getRuntime().removeShutdownHook(hook);
+                return null;
+            });
             hook = null;
         }
     }
