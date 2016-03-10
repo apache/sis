@@ -29,6 +29,7 @@ import org.apache.sis.storage.DataStoreException;
  * The data can be stored in an existing array, or a new array can be created.
  * This class does not handle compression; it is rather designed for efficient reading of uncompressed data.
  *
+ * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.7
  * @version 0.7

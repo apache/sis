@@ -22,6 +22,8 @@ import java.net.URLClassLoader;
 import java.util.ServiceLoader;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.lang.reflect.Method;
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -242,7 +244,11 @@ public abstract class Initializer {
              * As a fallback, try to open the Derby database located in $SIS_DATA/Databases/SpatialMetadata directory.
              */
             final boolean create;
-            final String home = System.getProperty(DERBY_HOME_KEY);
+            final String home = AccessController.doPrivileged(new PrivilegedAction<String>() {
+                @Override public String run() {
+                    return System.getProperty(DERBY_HOME_KEY);
+                }
+            });
             final Path dir = DataDirectory.DATABASES.getDirectory();
             if (dir != null) {
                 Path path = dir.resolve(DATABASE);
@@ -310,7 +316,11 @@ public abstract class Initializer {
      */
     public static boolean hasJNDI() {
         return NamingManager.hasInitialContextFactoryBuilder() ||
-               System.getProperty(Context.INITIAL_CONTEXT_FACTORY) != null;
+                AccessController.doPrivileged(new PrivilegedAction<Boolean>() {
+                    @Override public Boolean run() {
+                        return System.getProperty(Context.INITIAL_CONTEXT_FACTORY) != null;
+                    }
+                });
     }
 
     /**
