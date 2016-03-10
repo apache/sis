@@ -70,7 +70,7 @@ public final class Supervisor extends StandardMBean implements SupervisorMBean {
      * The JMX object name, created when the {@link #register()} is first invoked.
      * {@link ObjectName#WILDCARD} is used as a sentinel value if the registration failed.
      */
-    private static ObjectName name;
+    private static volatile ObjectName name;
 
     /**
      * Registers the {@code Supervisor} instance, if not already done.
@@ -84,19 +84,23 @@ public final class Supervisor extends StandardMBean implements SupervisorMBean {
     public static synchronized void register() {
         if (name == null) {
             name = ObjectName.WILDCARD;                         // In case of failure.
+            final LogRecord record;
             try {
                 final MBeanServer server = ManagementFactory.getPlatformMBeanServer();
                 final ObjectName n = new ObjectName(NAME);
                 server.registerMBean(new Supervisor(), n);
-                name = n; // Store only on success.
+                name = n;                                    // Store only on success.
+                return;
             } catch (InstanceAlreadyExistsException e) {
-                final LogRecord record = Messages.getResources(null)
-                        .getLogRecord(Level.CONFIG, Messages.Keys.AlreadyRegistered_2, "MBean", NAME);
-                record.setLoggerName(Loggers.SYSTEM);
-                Logging.log(Supervisor.class, "register", record);
-            } catch (SecurityException | JMException e) {
-                Logging.unexpectedException(Logging.getLogger(Loggers.SYSTEM), Supervisor.class, "register", e);
+                record = Messages.getResources(null).getLogRecord(Level.CONFIG, Messages.Keys.AlreadyRegistered_2, "MBean", NAME);
+            } catch (JMException e) {
+                record = new LogRecord(Level.WARNING, e.toString());
+                record.setThrown(e);
+            } catch (SecurityException e) {
+                record = new LogRecord(Level.CONFIG, e.toString());
             }
+            record.setLoggerName(Loggers.SYSTEM);
+            Logging.log(Supervisor.class, "register", record);
         }
     }
 

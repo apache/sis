@@ -355,9 +355,7 @@ fill:   for (int i=0; ; i++) {
                     if (sections.contains(PATHS)) {
                         nameKey = Vocabulary.Keys.DataDirectory;
                         try {
-                            value = AccessController.doPrivileged((PrivilegedAction<String>) () -> {
-                                return System.getenv(DataDirectory.ENV);
-                            });
+                            value = AccessController.doPrivileged((PrivilegedAction<String>) () -> System.getenv(DataDirectory.ENV));
                         } catch (SecurityException e) {
                             value = e.toString();
                         }
