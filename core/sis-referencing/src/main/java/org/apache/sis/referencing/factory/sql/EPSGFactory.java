@@ -350,8 +350,9 @@ public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> impl
      *     If no provider is specified, then this method will search on the classpath (with {@link java.util.ServiceLoader})
      *     for user-provided implementations of {@code InstallationScriptProvider}.
      *     If no user-specified provider is found, then this method will search for
-     *     {@code "EPSG_Tables.sql"}, {@code "EPSG_Data.sql"} and {@code "EPSG_FKeys.sql"} files in the
-     *     {@code $SIS_DATA/Databases/ExternalSources} directory.</li>
+     *     {@code "EPSG_*Tables.sql"}, {@code "EPSG_*Data.sql"} and {@code "EPSG_*FKeys.sql"} files in the
+     *     {@code $SIS_DATA/Databases/ExternalSources} directory where {@code *} stands for any characters
+     *     provided that there is no ambiguity.</li>
      * </ul>
      *
      * <p><b>Legal constraint:</b>
@@ -381,7 +382,7 @@ public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> impl
                         installer.prependNamespace(catalog);
                     }
                 }
-                installer.run(scriptProvider);
+                installer.run(scriptProvider, locale);
                 success = true;
             } finally {
                 if (ac) {
