@@ -1244,7 +1244,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
             if (c == null) {
                 c = Class.forName("org.apache.sis.io.wkt.MathTransformParser").asSubclass(Parser.class)
                          .getConstructor(MathTransformFactory.class);
-                final Constructor<? extends Parser> cp = c;     // For allowing use in inner class.
+                final Constructor<?> cp = c;     // For allowing use in inner class or lambda expression.
                 AccessController.doPrivileged((PrivilegedAction<Void>) () -> {
                     cp.setAccessible(true);
                     return null;

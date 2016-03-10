@@ -103,7 +103,7 @@ public final class DefaultFactories extends SystemListener {
                     }
                 }
                 return (prefered != null) ? prefered : fallback;
-            }, null, new FilePermission("<<ALL FILES>>", "read"));       // For reading META-INF/services/ files.
+            }, null, new FilePermission("<<ALL FILES>>", "read"));      // For reading META-INF/services/* files.
             /*
              * Verifies if the factory that we just selected is the same implementation than an existing instance.
              * The main case for this test is org.apache.sis.referencing.factory.GeodeticObjectFactory, where the

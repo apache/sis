@@ -38,6 +38,8 @@ import java.text.Format;
 import java.text.DateFormat;
 import java.text.FieldPosition;
 import java.nio.charset.Charset;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Version;
@@ -352,7 +354,13 @@ fill:   for (int i=0; ; i++) {
                 case 13: {
                     if (sections.contains(PATHS)) {
                         nameKey = Vocabulary.Keys.DataDirectory;
-                        value = System.getenv(DataDirectory.ENV);
+                        try {
+                            value = AccessController.doPrivileged((PrivilegedAction<String>) () -> {
+                                return System.getenv(DataDirectory.ENV);
+                            });
+                        } catch (SecurityException e) {
+                            value = e.toString();
+                        }
                         if (value == null) {
                             value = Messages.getResources(locale).getString(Messages.Keys.DataDirectoryNotSpecified_1, DataDirectory.ENV);
                         } else {
