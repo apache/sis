@@ -58,6 +58,13 @@ public final class StandardDateFormat extends SimpleDateFormat {
     public static final String SHORT_PATTERN = "yyyy-MM-dd";
 
     /**
+     * Creates a new format for a default locale in the UTC timezone.
+     */
+    public StandardDateFormat() {
+        this(Locale.CANADA);        // Canada locale symbols are close to the ISO ones.
+    }
+
+    /**
      * Creates a new format for the given locale in the UTC timezone.
      *
      * @param locale The locale of the format to create.
