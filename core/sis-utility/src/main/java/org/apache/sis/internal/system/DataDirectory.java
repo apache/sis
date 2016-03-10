@@ -115,9 +115,7 @@ public enum DataDirectory {
      */
     public static synchronized Path getRootDirectory() {
         if (rootDirectory == null) try {
-            final String dir = AccessController.doPrivileged((PrivilegedAction<String>) () -> {
-                return System.getenv(ENV);
-            });
+            final String dir = AccessController.doPrivileged((PrivilegedAction<String>) () -> System.getenv(ENV));
             if (dir == null || dir.isEmpty()) {
                 warning("getRootDirectory", null, Messages.Keys.DataDirectoryNotSpecified_1, ENV);
             } else try {
