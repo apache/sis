@@ -27,6 +27,7 @@ package org.apache.sis.internal.storage;
  * <p>This class assumes that the values are stored in a sequence (array or uncompressed file)
  * where index at dimension 0 varies fastest, followed by index at dimension 1, <i>etc</i>.</p>
  *
+ * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.7
  * @version 0.7

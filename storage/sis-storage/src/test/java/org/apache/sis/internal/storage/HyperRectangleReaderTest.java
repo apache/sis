@@ -36,6 +36,7 @@ import static org.junit.Assert.*;
 /**
  * Tests {@link HyperRectangleReader}.
  *
+ * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.7
  * @version 0.7
