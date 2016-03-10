@@ -40,7 +40,6 @@ import java.sql.ResultSetMetaData;
 import java.sql.Statement;
 import java.sql.SQLException;
 import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.text.ParseException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -114,6 +113,9 @@ import org.apache.sis.measure.NumberRange;
 import org.apache.sis.measure.Units;
 
 import static org.apache.sis.internal.referencing.ServicesForMetadata.CONNECTION;
+
+// Branch-dependent imports
+import org.apache.sis.internal.util.StandardDateFormat;
 
 
 /**
@@ -1644,7 +1646,7 @@ addURIs:    for (int i=0; ; i++) {
                             throw new FactoryDataException(error().getString(Errors.Keys.DatumOriginShallBeDate));
                         }
                         if (dateFormat == null) {
-                            dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.CANADA);
+                            dateFormat = new StandardDateFormat();
                             dateFormat.setCalendar(getCalendar());          // Use UTC timezone.
                         }
                         try {

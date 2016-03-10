@@ -30,8 +30,6 @@ import java.io.BufferedReader;
 import java.io.LineNumberReader;
 import java.io.IOException;
 import java.net.URI;
-import java.time.Instant;
-import java.time.DateTimeException;
 import javax.measure.unit.Unit;
 import javax.measure.unit.SI;
 import javax.measure.unit.NonSI;
@@ -62,6 +60,10 @@ import org.apache.sis.util.ObjectConverter;
 import org.apache.sis.util.ObjectConverters;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.IndexedResourceBundle;
+
+// Branch-dependent imports
+import java.time.Instant;
+import java.time.DateTimeException;
 
 
 /**
