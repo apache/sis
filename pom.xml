@@ -416,7 +416,7 @@ Apache SIS is a free software, Java language library for developing geospatial a
          The last properties in this list depend on the Apache SIS branch.
        =================================================================== -->
   <properties>
-    <netcdf.version>4.6.3</netcdf.version>
+    <netcdf.version>4.6.4</netcdf.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <website.encoding>UTF-8</website.encoding>
     <website.locale>en</website.locale>
@@ -574,7 +574,7 @@ Apache SIS is a free software, Java language library for developing geospatial a
       <plugin>
         <groupId>org.apache.felix</groupId>
         <artifactId>maven-bundle-plugin</artifactId>
-        <version>2.5.4</version>
+        <version>3.0.1</version>
         <extensions>true</extensions>
         <configuration>
           <excludeDependencies>true</excludeDependencies>
@@ -723,7 +723,7 @@ Apache SIS is a free software, Java language library for developing geospatial a
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>findbugs-maven-plugin</artifactId>
-        <version>2.5.3</version>
+        <version>3.0.3</version>
         <dependencies>
           <dependency>
             <groupId>org.apache.sis.core</groupId>
@@ -740,7 +740,7 @@ Apache SIS is a free software, Java language library for developing geospatial a
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>build-helper-maven-plugin</artifactId>
-          <version>1.9.1</version>
+          <version>1.10</version>
         </plugin>
         <plugin>
           <groupId>org.eclipse.jetty</groupId>

@@ -35,6 +35,7 @@ import org.junit.BeforeClass;
     org.apache.sis.internal.storage.ChannelDataOutputTest.class,
     org.apache.sis.internal.storage.ChannelImageInputStreamTest.class,
     org.apache.sis.internal.storage.ChannelImageOutputStreamTest.class,
+    org.apache.sis.internal.storage.HyperRectangleReaderTest.class,
     org.apache.sis.storage.ProbeResultTest.class,
     org.apache.sis.storage.StorageConnectorTest.class,
     org.apache.sis.internal.storage.xml.MimeTypeDetectorTest.class,
@@ -42,6 +43,7 @@ import org.junit.BeforeClass;
     org.apache.sis.internal.storage.xml.StoreTest.class,
     org.apache.sis.internal.storage.wkt.StoreProviderTest.class,
     org.apache.sis.internal.storage.wkt.StoreTest.class,
+    org.apache.sis.internal.storage.csv.StoreTest.class,
     org.apache.sis.storage.DataStoresTest.class,
     org.apache.sis.index.GeoHashCoderTest.class
 })

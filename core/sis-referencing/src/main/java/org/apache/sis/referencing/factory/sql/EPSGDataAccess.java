@@ -40,7 +40,6 @@ import java.sql.ResultSetMetaData;
 import java.sql.Statement;
 import java.sql.SQLException;
 import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.text.ParseException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -107,6 +106,7 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Localized;
 import org.apache.sis.util.Version;
+import org.apache.sis.util.Workaround;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.measure.NumberRange;
@@ -116,6 +116,7 @@ import static org.apache.sis.internal.referencing.ServicesForMetadata.CONNECTION
 
 // Branch-dependent imports
 import org.apache.sis.internal.jdk8.JDK8;
+import org.apache.sis.internal.util.StandardDateFormat;
 
 
 /**
@@ -173,6 +174,7 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
      *
      * @see #replaceDeprecatedCS
      */
+    @Workaround(library = "EPSG:6401-6420", version = "8.9")        // Deprecated in 2002 but still present in 2016.
     private static final Map<Integer,Integer> DEPRECATED_CS = deprecatedCS();
     static Map<Integer,Integer> deprecatedCS() {
         final Map<Integer,Integer> m = new HashMap<>(24);
@@ -1645,7 +1647,7 @@ addURIs:    for (int i=0; ; i++) {
                             throw new FactoryDataException(error().getString(Errors.Keys.DatumOriginShallBeDate));
                         }
                         if (dateFormat == null) {
-                            dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.CANADA);
+                            dateFormat = new StandardDateFormat();
                             dateFormat.setCalendar(getCalendar());          // Use UTC timezone.
                         }
                         try {

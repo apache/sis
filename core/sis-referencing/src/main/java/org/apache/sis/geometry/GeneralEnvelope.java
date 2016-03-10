@@ -1034,9 +1034,7 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
         try {
             Field field = ordinatesField;
             if (field == null) {
-                field = ArrayEnvelope.class.getDeclaredField("ordinates");
-                field.setAccessible(true);
-                ordinatesField = field;
+                ordinatesField = field = GeneralDirectPosition.getOrdinatesField(ArrayEnvelope.class);
             }
             GeneralEnvelope e = (GeneralEnvelope) super.clone();
             field.set(e, ordinates.clone());

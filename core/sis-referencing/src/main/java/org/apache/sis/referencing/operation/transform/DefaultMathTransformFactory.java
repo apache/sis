@@ -26,6 +26,8 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.lang.reflect.Constructor;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.io.Serializable;
 import javax.measure.quantity.Length;
 import javax.measure.unit.SI;
@@ -1233,7 +1235,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      *
      * @param  text Math transform encoded in Well-Known Text format.
      * @return The math transform (never {@code null}).
-     * @throws FactoryException if the Well-Known Text can't be parsed,
+     * @throws FactoryException if the Well-Known Text can not be parsed,
      *         or if the math transform creation failed from some other reason.
      */
     @Override
@@ -1245,7 +1247,13 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
             if (c == null) {
                 c = Class.forName("org.apache.sis.io.wkt.MathTransformParser").asSubclass(Parser.class)
                          .getConstructor(MathTransformFactory.class);
-                c.setAccessible(true);
+                final Constructor<?> cp = c;     // For allowing use in inner class or lambda expression.
+                AccessController.doPrivileged(new PrivilegedAction<Void>() {
+                    @Override public Void run() {
+                        cp.setAccessible(true);
+                        return null;
+                    }
+                });
                 parserConstructor = c;
             }
             p = c.newInstance(this);

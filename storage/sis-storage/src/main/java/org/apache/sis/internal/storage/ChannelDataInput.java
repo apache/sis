@@ -60,7 +60,7 @@ import java.nio.channels.SeekableByteChannel;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.5
+ * @version 0.7
  * @module
  */
 public class ChannelDataInput extends ChannelData {
@@ -265,7 +265,7 @@ public class ChannelDataInput extends ChannelData {
      * The implementation is as below:
      *
      * {@preformat java
-     *     return readByte() & 0xFF;
+     *     return Byte.toUnsignedInt(readByte());
      * }
      *
      * @return The value of the next unsigned byte from the stream.
@@ -293,7 +293,7 @@ public class ChannelDataInput extends ChannelData {
      * The implementation is as below:
      *
      * {@preformat java
-     *     return readShort() & 0xFFFF;
+     *     return Short.toUnsignedInt(readShort());
      * }
      *
      * @return The value of the next unsigned short from the stream.
@@ -334,7 +334,7 @@ public class ChannelDataInput extends ChannelData {
      * The implementation is as below:
      *
      * {@preformat java
-     *     return readInt() & 0xFFFFFFFFL;
+     *     return Integer.toUnsignedLong(readInt());
      * }
      *
      * @return The value of the next unsigned integer from the stream.
@@ -519,7 +519,35 @@ public class ChannelDataInput extends ChannelData {
      * Helper class for the {@code readFully(…)} methods,
      * in order to avoid duplicating almost identical code many times.
      */
-    private abstract class ArrayReader {
+    abstract class ArrayReader {
+        /**
+         * Returns the size of the Java primitive type which is the element of the array.
+         * The size is expressed as the number of bits to shift.
+         */
+        abstract int dataSizeShift();
+
+        /**
+         * Returns the data as a {@code char[]}, {@code short[]}, {@code int[]}, {@code long[]},
+         * {@code float[]} or {@code double[]} array. This is either the array given in argument
+         * to the subclass constructor, or the array created by {@link #createArray(int)}.
+         */
+        abstract Object dataArray();
+
+        /**
+         * Creates a destination array of the given length.
+         */
+        abstract void createDataArray(int length);
+
+        /**
+         * Sets the destination to the given data array, which may be {@code null}.
+         */
+        abstract void setDest(Object array) throws ClassCastException;
+
+        /**
+         * Returns the view created by the last call to {@link #createView()}, or {@code null} if none.
+         */
+        abstract Buffer view();
+
         /**
          * Creates a new buffer of the type required by the array to fill.
          * This method is guaranteed to be invoked exactly once, after the
@@ -535,6 +563,19 @@ public class ChannelDataInput extends ChannelData {
         abstract void transfer(int offset, int n);
 
         /**
+         * For subclass constructors only.
+         */
+        ArrayReader() {
+        }
+
+        /**
+         * Returns the enclosing data input.
+         */
+        final ChannelDataInput input() {
+            return ChannelDataInput.this;
+        }
+
+        /**
          * Skips the given amount of bytes in the buffer. It is caller responsibility to ensure
          * that there is enough bytes remaining in the buffer.
          */
@@ -546,26 +587,173 @@ public class ChannelDataInput extends ChannelData {
          * Reads {@code length} characters from the stream, and stores them into the array
          * known to subclass, starting at index {@code offset}.
          *
-         * @param  dataSize The size of the Java primitive type which is the element of the array.
+         * <p>If a non-null {@code Buffer} is given in argument to this method, then it must be a view over
+         * the full content of {@link ChannelDataInput#buffer} (i.e. the view element at index 0 shall be
+         * defined by the buffer elements starting at index 0).</p>
+         *
+         * @param  view     Existing buffer to use as a view over {@link ChannelDataInput#buffer}, or {@code null}.
          * @param  offset   The starting position within {@code dest} to write.
          * @param  length   The number of characters to read.
-         * @throws IOException If an error (including EOF) occurred while reading the stream.
+         * @throws IOException if an error (including EOF) occurred while reading the stream.
          */
-        final void readFully(final int dataSize, int offset, int length) throws IOException {
-            ensureBufferContains(Math.min(length * dataSize, buffer.capacity()));
-            final Buffer view = createView(); // Must be after ensureBufferContains
+        void readFully(Buffer view, int offset, int length) throws IOException {
+            final int dataSizeShift = dataSizeShift();
+            ensureBufferContains(Math.min(length << dataSizeShift, buffer.capacity()));
+            if (view == null) {
+                view = createView();                                    // Must be after ensureBufferContains(int).
+            } else {
+                // Buffer position must be a multiple of the data size.
+                // If not, fix that by shifting the content to index 0.
+                if ((buffer.position() & ((1 << dataSizeShift) - 1)) != 0) {
+                    bufferOffset += buffer.position();
+                    buffer.compact().flip();
+                }
+                view.limit   (buffer.limit()    >> dataSizeShift)
+                    .position(buffer.position() >> dataSizeShift);      // See assumption documented in Javadoc.
+            }
             int n = Math.min(view.remaining(), length);
             transfer(offset, n);
-            skipInBuffer(n * dataSize);
+            skipInBuffer(n << dataSizeShift);
             while ((length -= n) != 0) {
                 offset += n;
-                ensureBufferContains(dataSize); // Actually read as much data as possible.
-                view.rewind().limit(buffer.remaining() / dataSize);
+                ensureBufferContains(1 << dataSizeShift);               // Actually read as much data as possible.
+                view.rewind().limit(buffer.remaining() >> dataSizeShift);
                 transfer(offset, n = Math.min(view.remaining(), length));
-                skipInBuffer(n * dataSize);
+                skipInBuffer(n << dataSizeShift);
             }
         }
     }
+
+    /**
+     * Reads bytes from the enclosing stream and stores them into the given destination array. This implementation
+     * actually redirects the reading process to {@link ChannelDataInput#readFully(byte[], int, int)} because this
+     * specialization does not need a view. This implementation is useless for {@code ChannelDataInput}, but avoid
+     * the need to implement special cases in other classes like {@link HyperRectangleReader}.
+     */
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
+    final class BytesReader extends ArrayReader {
+        /** The array where to store the values. */ private byte[] dest;
+        BytesReader(final byte[] dest) {this.dest = dest;}
+
+        @Override int    dataSizeShift()        {return 0;}
+        @Override Object dataArray()            {return dest;}
+        @Override Buffer view()                 {return buffer;}
+        @Override Buffer createView()           {return buffer;}
+        @Override void   createDataArray(int n) {dest = new byte[n];}
+        @Override void   transfer(int p, int n) {buffer.get(dest, p, n);}
+        @Override void   setDest(Object array)  {dest = (byte[]) array;};
+        @Override void   readFully(Buffer view, int offset, int length) throws IOException {
+            ChannelDataInput.this.readFully(dest, offset, length);
+        }
+    };
+
+    /**
+     * Reads characters from the enclosing stream and stores them into the given destination array.
+     */
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
+    final class CharsReader extends ArrayReader {
+        /** A view over the enclosing byte buffer. */ private CharBuffer view;
+        /** The array where to store the values.   */ private char[] dest;
+        CharsReader(final char[] dest) {this.dest = dest;}
+
+        @Override int    dataSizeShift()        {return 1;}
+        @Override Object dataArray()            {return dest;}
+        @Override Buffer view()                 {return view;}
+        @Override Buffer createView()           {return view = buffer.asCharBuffer();}
+        @Override void   createDataArray(int n) {dest = new char[n];}
+        @Override void   transfer(int p, int n) {view.get(dest, p, n);}
+        @Override void   setDest(Object array)  {dest = (char[]) array;};
+    };
+
+    /**
+     * Reads short integers from the enclosing stream and stores them into the given destination array.
+     */
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
+    final class ShortsReader extends ArrayReader {
+        /** A view over the enclosing byte buffer. */ private ShortBuffer view;
+        /** The array where to store the values.   */ private short[] dest;
+        ShortsReader(final short[] dest) {this.dest = dest;}
+
+        @Override int    dataSizeShift()        {return 1;}
+        @Override Object dataArray()            {return dest;}
+        @Override Buffer view()                 {return view;}
+        @Override Buffer createView()           {return view = buffer.asShortBuffer();}
+        @Override void   createDataArray(int n) {dest = new short[n];}
+        @Override void   transfer(int p, int n) {view.get(dest, p, n);}
+        @Override void   setDest(Object array)  {dest = (short[]) array;};
+    };
+
+    /**
+     * Reads integers from the enclosing stream and stores them into the given destination array.
+     */
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
+    final class IntsReader extends ArrayReader {
+        /** A view over the enclosing byte buffer. */ private IntBuffer view;
+        /** The array where to store the values.   */ private int[] dest;
+        IntsReader(final int[] dest) {this.dest = dest;}
+
+        @Override int    dataSizeShift()        {return 2;}
+        @Override Object dataArray()            {return dest;}
+        @Override Buffer view()                 {return view;}
+        @Override Buffer createView()           {return view = buffer.asIntBuffer();}
+        @Override void   createDataArray(int n) {dest = new int[n];}
+        @Override void   transfer(int p, int n) {view.get(dest, p, n);}
+        @Override void   setDest(Object array)  {dest = (int[]) array;};
+    };
+
+    /**
+     * Reads long integers from the enclosing stream and stores them into the given destination array.
+     */
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
+    final class LongsReader extends ArrayReader {
+        /** A view over the enclosing byte buffer. */ private LongBuffer view;
+        /** The array where to store the values.   */ private long[] dest;
+        LongsReader(final long[] dest) {this.dest = dest;}
+
+        @Override int    dataSizeShift()        {return 3;}
+        @Override Object dataArray()            {return dest;}
+        @Override Buffer view()                 {return view;}
+        @Override Buffer createView()           {return view = buffer.asLongBuffer();}
+        @Override void   createDataArray(int n) {dest = new long[n];}
+        @Override void   transfer(int p, int n) {view.get(dest, p, n);}
+        @Override void   setDest(Object array)  {dest = (long[]) array;};
+    };
+
+    /**
+     * Reads float values from the enclosing stream and stores them into the given destination array.
+     */
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
+    final class FloatsReader extends ArrayReader {
+        /** A view over the enclosing byte buffer. */ private FloatBuffer view;
+        /** The array where to store the values.   */ private float[] dest;
+        FloatsReader(final float[] dest) {this.dest = dest;}
+
+        @Override int    dataSizeShift()        {return 2;}
+        @Override Object dataArray()            {return dest;}
+        @Override Buffer view()                 {return view;}
+        @Override Buffer createView()           {return view = buffer.asFloatBuffer();}
+        @Override void   createDataArray(int n) {dest = new float[n];}
+        @Override void   transfer(int p, int n) {view.get(dest, p, n);}
+        @Override void   setDest(Object array)  {dest = (float[]) array;};
+    };
+
+    /**
+     * Reads double values from the enclosing stream and stores them into the given destination array.
+     */
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
+    final class DoublesReader extends ArrayReader {
+        /** A view over the enclosing byte buffer. */ private DoubleBuffer view;
+        /** The array where to store the values.   */ private double[] dest;
+        DoublesReader(final double[] dest) {this.dest = dest;}
+
+        @Override int    dataSizeShift()        {return 3;}
+        @Override Object dataArray()            {return dest;}
+        @Override Buffer view()                 {return view;}
+        @Override Buffer createView()           {return view = buffer.asDoubleBuffer();}
+        @Override void   createDataArray(int n) {dest = new double[n];}
+        @Override void   transfer(int p, int n) {view.get(dest, p, n);}
+        @Override void   setDest(Object array)  {dest = (double[]) array;};
+    };
 
     /**
      * Reads {@code length} characters from the stream, and stores them into
@@ -577,11 +765,7 @@ public class ChannelDataInput extends ChannelData {
      * @throws IOException If an error (including EOF) occurred while reading the stream.
      */
     public final void readFully(final char[] dest, final int offset, final int length) throws IOException {
-        new ArrayReader() {
-            private CharBuffer view;
-            @Override Buffer createView() {return view = buffer.asCharBuffer();}
-            @Override void transfer(int offset, int n) {view.get(dest, offset, n);}
-        }.readFully(Character.SIZE / Byte.SIZE, offset, length);
+        new CharsReader(dest).readFully(null, offset, length);
     }
 
     /**
@@ -594,11 +778,7 @@ public class ChannelDataInput extends ChannelData {
      * @throws IOException If an error (including EOF) occurred while reading the stream.
      */
     public final void readFully(final short[] dest, final int offset, final int length) throws IOException {
-        new ArrayReader() {
-            private ShortBuffer view;
-            @Override Buffer createView() {return view = buffer.asShortBuffer();}
-            @Override void transfer(int offset, int n) {view.get(dest, offset, n);}
-        }.readFully(Short.SIZE / Byte.SIZE, offset, length);
+        new ShortsReader(dest).readFully(null, offset, length);
     }
 
     /**
@@ -611,11 +791,7 @@ public class ChannelDataInput extends ChannelData {
      * @throws IOException If an error (including EOF) occurred while reading the stream.
      */
     public final void readFully(final int[] dest, final int offset, final int length) throws IOException {
-        new ArrayReader() {
-            private IntBuffer view;
-            @Override Buffer createView() {return view = buffer.asIntBuffer();}
-            @Override void transfer(int offset, int n) {view.get(dest, offset, n);}
-        }.readFully(Integer.SIZE / Byte.SIZE, offset, length);
+        new IntsReader(dest).readFully(null, offset, length);
     }
 
     /**
@@ -628,11 +804,7 @@ public class ChannelDataInput extends ChannelData {
      * @throws IOException If an error (including EOF) occurred while reading the stream.
      */
     public final void readFully(final long[] dest, final int offset, final int length) throws IOException {
-        new ArrayReader() {
-            private LongBuffer view;
-            @Override Buffer createView() {return view = buffer.asLongBuffer();}
-            @Override void transfer(int offset, int n) {view.get(dest, offset, n);}
-        }.readFully(Long.SIZE / Byte.SIZE, offset, length);
+        new LongsReader(dest).readFully(null, offset, length);
     }
 
     /**
@@ -645,11 +817,7 @@ public class ChannelDataInput extends ChannelData {
      * @throws IOException If an error (including EOF) occurred while reading the stream.
      */
     public final void readFully(final float[] dest, final int offset, final int length) throws IOException {
-        new ArrayReader() {
-            private FloatBuffer view;
-            @Override Buffer createView() {return view = buffer.asFloatBuffer();}
-            @Override void transfer(int offset, int n) {view.get(dest, offset, n);}
-        }.readFully(Float.SIZE / Byte.SIZE, offset, length);
+        new FloatsReader(dest).readFully(null, offset, length);
     }
 
     /**
@@ -662,11 +830,7 @@ public class ChannelDataInput extends ChannelData {
      * @throws IOException If an error (including EOF) occurred while reading the stream.
      */
     public final void readFully(final double[] dest, final int offset, final int length) throws IOException {
-        new ArrayReader() {
-            private DoubleBuffer view;
-            @Override Buffer createView() {return view = buffer.asDoubleBuffer();}
-            @Override void transfer(int offset, int n) {view.get(dest, offset, n);}
-        }.readFully(Double.SIZE / Byte.SIZE, offset, length);
+        new DoublesReader(dest).readFully(null, offset, length);
     }
 
     /**
