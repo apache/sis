@@ -19,6 +19,7 @@ package org.apache.sis.referencing.operation;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Collections;
+import java.util.List;
 import org.opengis.util.FactoryException;
 import org.opengis.util.NoSuchIdentifierException;
 import org.opengis.parameter.ParameterValueGroup;
@@ -28,11 +29,13 @@ import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.ProjectedCRS;
+import org.opengis.referencing.crs.SingleCRS;
+import org.opengis.referencing.datum.Datum;
 import org.apache.sis.internal.referencing.MergedProperties;
 import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.util.CollectionsExt;
-import org.apache.sis.internal.util.Utilities;
+import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.factory.InvalidGeodeticParameterException;
 import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
 import org.apache.sis.util.collection.WeakHashSet;
@@ -42,6 +45,7 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.NullArgumentException;
+import org.apache.sis.util.Utilities;
 
 
 /**
@@ -68,7 +72,7 @@ import org.apache.sis.util.NullArgumentException;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.6
- * @version 0.6
+ * @version 0.7
  * @module
  */
 public class DefaultCoordinateOperationFactory extends AbstractFactory implements CoordinateOperationFactory {
@@ -149,7 +153,7 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
      *
      * @return The underlying math transform factory.
      */
-    private MathTransformFactory getMathTransformFactory() {
+    final MathTransformFactory getMathTransformFactory() {
         MathTransformFactory factory = mtFactory;
         if (factory == null) {
             mtFactory = factory = DefaultFactories.forBuildin(MathTransformFactory.class);
@@ -314,6 +318,39 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
     }
 
     /**
+     * Returns {@code true} if the given CRS are using equivalent (ignoring metadata) datum.
+     * If the CRS are {@link CompoundCRS}, then this method verifies that all datum in the
+     * target CRS exists in the source CRS, but not necessarily in the same order.
+     * The target CRS may have less datum than the source CRS.
+     *
+     * @param sourceCRS The target CRS.
+     * @param targetCRS The source CRS.
+     * @return {@code true} if all datum in the {@code targetCRS} exists in the {@code sourceCRS}.
+     */
+    private static boolean isConversion(final CoordinateReferenceSystem sourceCRS,
+                                        final CoordinateReferenceSystem targetCRS)
+    {
+        List<SingleCRS> components = CRS.getSingleComponents(sourceCRS);
+        int n = components.size();                      // Number of remaining datum from sourceCRS to verify.
+        final Datum[] datum = new Datum[n];
+        for (int i=0; i<n; i++) {
+            datum[i] = components.get(i).getDatum();
+        }
+        components = CRS.getSingleComponents(targetCRS);
+next:   for (int i=components.size(); --i >= 0;) {
+            final Datum d = components.get(i).getDatum();
+            for (int j=n; --j >= 0;) {
+                if (Utilities.equalsIgnoreMetadata(d, datum[j])) {
+                    System.arraycopy(datum, j+1, datum, j, --n - j);  // Remove the datum from the list.
+                    continue next;
+                }
+            }
+            return false;                               // Datum from 'targetCRS' not found in 'sourceCRS'.
+        }
+        return true;
+    }
+
+    /**
      * Creates a transformation or conversion from the given properties.
      * This method infers by itself if the operation to create is a
      * {@link Transformation}, a {@link Conversion} or a {@link Projection} sub-type
@@ -424,7 +461,7 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
          * could be different, which we want to allow.
          */
         if (baseType == SingleOperation.class) {
-            if (OperationPathFinder.isConversion(sourceCRS, targetCRS)) {
+            if (isConversion(sourceCRS, targetCRS)) {
                 if (interpolationCRS == null && sourceCRS instanceof GeographicCRS
                                              && targetCRS instanceof ProjectedCRS)
                 {
@@ -571,7 +608,7 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
             return delegate;
         }
         for (final CoordinateOperationFactory factory : java.util.ServiceLoader.load(CoordinateOperationFactory.class)) {
-            if (!Utilities.isSIS(factory.getClass())) {
+            if (!org.apache.sis.internal.util.Utilities.isSIS(factory.getClass())) {
                 delegate = factory;
                 return factory;
             }
