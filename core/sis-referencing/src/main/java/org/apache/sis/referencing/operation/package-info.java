@@ -53,6 +53,43 @@
  *     for converting the longitude axis of source and target CRS to degrees before this operation is applied.</li>
  * </ul>
  *
+ * <div class="section"><cite>Early binding</cite> versus <cite>late binding</cite> implementations</div>
+ * There is sometime multiple ways of transforming coordinates for a given pair of source and target CRS.
+ * For example the {@linkplain org.apache.sis.referencing.datum.BursaWolfParameters Bursa-Wolf parameters}
+ * may vary depending on the area of interest, like in the transformations from NAD27 to NAD83.
+ * Even for a fixed set of Bursa-Wolf parameter, there is various ways to use them (<cite>Molodensky</cite>,
+ * <cite>Abridged Molodensky</cite>, <cite>Geocentric translation</cite>, <cite>etc.</cite>).
+ *
+ * <p>EPSG identifies two approaches for addressing this multiplicity problem.
+ * Quoting the GIGS guideline:</p>
+ *
+ * <blockquote>
+ * <ul class="verbose">
+ *   <li><b>Early binding:</b>
+ *     A priori association of a coordinate transformation with a geodetic CRS.
+ *     The association is usually made at start-up of the session or project, as that is defined in the software,
+ *     but always before any data is associated with the ‘CRS’. In general the ‘coordinate transformation’ specified
+ *     uses the ‘CRS’ of the data as the source ‘CRS’ and WGS 84 as the target ‘CRS’.</li>
+ *
+ *   <li><b>Late binding:</b>
+ *     Association at run time of a coordinate transformation with a CRS.
+ *     Late binding allows the user to select the appropriate transformation upon import of ‘geospatial data’
+ *     or merge of two geospatial datasets. This means that, in cases where there are multiple existing transformations,
+ *     the user can choose the appropriate one, possibly aided by additional information.</li>
+ * </ul>
+ * <p style="text-align:right; font-size:small"><b>Source:</b>
+ * <u>Geospatial Integrity of Geoscience Software Part 1 – GIGS guidelines.</u>
+ * <i>OGP publication, Report No. 430-1, September 2011</i></p>
+ * </blockquote>
+ *
+ * Apache SIS is a <cite>late binding</cite> implementation, while a little trace for <cite>early binding</cite>
+ * exists in the form of the {@link org.apache.sis.referencing.datum.DefaultGeodeticDatum#getBursaWolfParameters()}
+ * method for those who really need it. This means that when searching for a coordinate operation between a given
+ * pair of CRS, Apache SIS will query {@link org.apache.sis.referencing.factory.sql.EPSGFactory} before to try to
+ * {@linkplain org.apache.sis.referencing.operation.CoordinateOperationInference infer the operation path by itelf}.
+ * The {@link org.apache.sis.referencing.operation.CoordinateOperationContext} can be used for further refinements,
+ * for example by specifying the area of interest.
+ *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.7
  * @since   0.6

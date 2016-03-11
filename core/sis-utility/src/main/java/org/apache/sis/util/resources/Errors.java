@@ -206,6 +206,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final short ColinearAxisDirections_2 = 14;
 
         /**
+         * Coordinate conversion of transformation from system “{0}” to “{1}” has not been found.
+         */
+        public static final short CoordinateOperationNotFound_2 = 219;
+
+        /**
          * Database error while creating a ‘{0}’ object for code “{1}”.
          */
         public static final short DatabaseError_2 = 209;

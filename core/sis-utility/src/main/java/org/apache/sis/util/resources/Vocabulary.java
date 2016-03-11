@@ -86,6 +86,11 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final short Attributes = 4;
 
         /**
+         * Axis changes
+         */
+        public static final short AxisChanges = 98;
+
+        /**
          * Barometric altitude
          */
         public static final short BarometricAltitude = 5;
@@ -161,6 +166,16 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final short DataDirectory = 88;
 
         /**
+         * Datum
+         */
+        public static final short Datum = 99;
+
+        /**
+         * Datum shift
+         */
+        public static final short DatumShift = 100;
+
+        /**
          * Daylight time
          */
         public static final short DaylightTime = 13;
@@ -206,9 +221,29 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final short Ellipsoid = 70;
 
         /**
+         * Ellipsoid change
+         */
+        public static final short EllipsoidChange = 101;
+
+        /**
          * Ellipsoidal height
          */
         public static final short EllipsoidalHeight = 18;
+
+        /**
+         * Geocentric
+         */
+        public static final short Geocentric = 102;
+
+        /**
+         * Geocentric conversion
+         */
+        public static final short GeocentricConversion = 103;
+
+        /**
+         * Geocentric radius
+         */
+        public static final short GeocentricRadius = 104;
 
         /**
          * Geodetic dataset
@@ -224,6 +259,11 @@ public final class Vocabulary extends IndexedResourceBundle {
          * Identifier
          */
         public static final short Identifier = 20;
+
+        /**
+         * Identity
+         */
+        public static final short Identity = 105;
 
         /**
          * Implementation
@@ -244,6 +284,11 @@ public final class Vocabulary extends IndexedResourceBundle {
          * Invalid
          */
         public static final short Invalid = 89;
+
+        /**
+         * Inverse operation
+         */
+        public static final short InverseOperation = 106;
 
         /**
          * Java extensions
