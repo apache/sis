@@ -20,8 +20,6 @@ import java.util.Map;
 import java.util.IdentityHashMap;
 import java.util.ServiceLoader;
 import java.util.ServiceConfigurationError;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import org.apache.sis.internal.util.Utilities;
 
 
@@ -88,22 +86,20 @@ public final class DefaultFactories extends SystemListener {
     public static synchronized <T> T forClass(final Class<T> type) {
         T factory = type.cast(FACTORIES.get(type));
         if (factory == null && !FACTORIES.containsKey(type)) {
-            factory = AccessController.doPrivileged(new PrivilegedAction<T>() {
-            @Override public T run() {  // No indentation for easier merges from the JDK8 branch (which use lambda).
-                T prefered = null;
-                T fallback = null;
-                for (final T candidate : ServiceLoader.load(type)) {
-                    if (Utilities.isSIS(candidate.getClass())) {
-                        if (prefered != null) {
-                            throw new ServiceConfigurationError("Found two implementations of " + type);
-                        }
-                        prefered = candidate;
-                    } else if (fallback == null) {
-                        fallback = candidate;
+            T fallback = null;
+            for (final T candidate : ServiceLoader.load(type)) {
+                if (Utilities.isSIS(candidate.getClass())) {
+                    if (factory != null) {
+                        throw new ServiceConfigurationError("Found two implementations of " + type);
                     }
+                    factory = candidate;
+                } else if (fallback == null) {
+                    fallback = candidate;
                 }
-                return (prefered != null) ? prefered : fallback;
-            }});
+            }
+            if (factory == null) {
+                factory = fallback;
+            }
             /*
              * Verifies if the factory that we just selected is the same implementation than an existing instance.
              * The main case for this test is org.apache.sis.referencing.factory.GeodeticObjectFactory, where the
