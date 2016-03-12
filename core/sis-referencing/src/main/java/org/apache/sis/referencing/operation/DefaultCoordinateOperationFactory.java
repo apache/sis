@@ -565,29 +565,16 @@ next:   for (int i=components.size(); --i >= 0;) {
     }
 
     /**
-     * Not yet implemented.
+     * Finds or creates an operation for conversion or transformation between two coordinate reference systems.
+     * If an operation exists, it is returned. If more than one operation exists, the operation having the widest
+     * domain of validity is returned. If no operation exists, then an exception is thrown.
      *
-     * @param  sourceCRS Input coordinate reference system.
-     * @param  targetCRS Output coordinate reference system.
-     * @param  method the algorithmic method for conversion or transformation.
-     * @return A coordinate operation from {@code sourceCRS} to {@code targetCRS}.
-     * @throws FactoryException if the operation creation failed.
-     */
-    @Override
-    public CoordinateOperation createOperation(final CoordinateReferenceSystem sourceCRS,
-                                               final CoordinateReferenceSystem targetCRS,
-                                               final OperationMethod method)
-            throws FactoryException
-    {
-        return delegate().createOperation(sourceCRS, targetCRS, method);
-    }
-
-    /**
-     * Not yet implemented.
+     * <p>The default implementation delegates to <code>{@linkplain #createOperation(CoordinateReferenceSystem,
+     * CoordinateReferenceSystem, CoordinateOperationContext) createOperation}(sourceCRS, targetCRS, null)}</code>.</p>
      *
-     * @param  sourceCRS Input coordinate reference system.
-     * @param  targetCRS Output coordinate reference system.
-     * @return A coordinate operation from {@code sourceCRS} to {@code targetCRS}.
+     * @param  sourceCRS  input coordinate reference system.
+     * @param  targetCRS  output coordinate reference system.
+     * @return a coordinate operation from {@code sourceCRS} to {@code targetCRS}.
      * @throws OperationNotFoundException if no operation path was found from {@code sourceCRS} to {@code targetCRS}.
      * @throws FactoryException if the operation creation failed for some other reason.
      */
@@ -596,26 +583,69 @@ next:   for (int i=components.size(); --i >= 0;) {
                                                final CoordinateReferenceSystem targetCRS)
             throws OperationNotFoundException, FactoryException
     {
-        return delegate().createOperation(sourceCRS, targetCRS);
+        return createOperation(sourceCRS, targetCRS, (CoordinateOperationContext) null);
     }
 
     /**
-     * Temporarily returns a third-party factory for operation not yet implemented by this class.
-     * This method will be removed when the missing implementation will have been ported to SIS.
+     * Finds or creates an operation for conversion or transformation between two coordinate reference systems.
+     * If an operation exists, it is returned. If more than one operation exists, then the operation having the
+     * widest intersection between its {@linkplain AbstractCoordinateOperation#getDomainOfValidity() domain of
+     * validity} and the {@linkplain CoordinateOperationContext#getAreaOfInterest() area of interest} is returned.
+     *
+     * <p>The default implementation is as below:</p>
+     *
+     * {@preformat java
+     *   return new CoordinateOperationInference(this, context).createOperation(sourceCRS, targetCRS);
+     * }
+     *
+     * Subclasses can override this method if they need, for example, to use a custom
+     * {@link CoordinateOperationInference} implementation.
+     *
+     * @param  sourceCRS  input coordinate reference system.
+     * @param  targetCRS  output coordinate reference system.
+     * @param  context    area of interest and desired accuracy, or {@code null}.
+     * @return a coordinate operation from {@code sourceCRS} to {@code targetCRS}.
+     * @throws OperationNotFoundException if no operation path was found from {@code sourceCRS} to {@code targetCRS}.
+     * @throws FactoryException if the operation creation failed for some other reason.
+     *
+     * @see CoordinateOperationInference
+     *
+     * @since 0.7
      */
-    private synchronized CoordinateOperationFactory delegate() throws FactoryException {
-        if (delegate != null) {
-            return delegate;
-        }
-        for (final CoordinateOperationFactory factory : java.util.ServiceLoader.load(CoordinateOperationFactory.class)) {
-            if (!org.apache.sis.internal.util.Utilities.isSIS(factory.getClass())) {
-                delegate = factory;
-                return factory;
-            }
-        }
-        throw new FactoryException(Errors.format(Errors.Keys.MissingRequiredModule_1, "geotk-referencing")); // This is temporary.
+    public CoordinateOperation createOperation(final CoordinateReferenceSystem sourceCRS,
+                                               final CoordinateReferenceSystem targetCRS,
+                                               final CoordinateOperationContext context)
+            throws OperationNotFoundException, FactoryException
+    {
+        return new CoordinateOperationInference(this, context).createOperation(sourceCRS, targetCRS);
     }
 
-    /** Temporary, to be deleted in a future SIS version. */
-    private transient CoordinateOperationFactory delegate;
+    /**
+     * Returns an operation using a particular method for conversion or transformation between
+     * two coordinate reference systems. If an operation exists using the given method, then it
+     * is returned. If no operation using the given method is found, then the implementation has
+     * the option of inferring the operation from the argument objects.
+     *
+     * <p>Current implementation ignores the {@code method} argument.
+     * This behavior may change in a future Apache SIS version.</p>
+     *
+     * @param  sourceCRS  input coordinate reference system.
+     * @param  targetCRS  output coordinate reference system.
+     * @param  method     the algorithmic method for conversion or transformation.
+     * @return a coordinate operation from {@code sourceCRS} to {@code targetCRS}.
+     * @throws OperationNotFoundException if no operation path was found from {@code sourceCRS} to {@code targetCRS}.
+     * @throws FactoryException if the operation creation failed for some other reason.
+     *
+     * @deprecated Replaced by {@link #createOperation(CoordinateReferenceSystem, CoordinateReferenceSystem, CoordinateOperationContext)}.
+     */
+    @Override
+    @Deprecated
+    public CoordinateOperation createOperation(final CoordinateReferenceSystem sourceCRS,
+                                               final CoordinateReferenceSystem targetCRS,
+                                               final OperationMethod method)
+            throws FactoryException
+    {
+        ArgumentChecks.ensureNonNull("method", method);     // As a matter of principle.
+        return createOperation(sourceCRS, targetCRS, (CoordinateOperationContext) null);
+    }
 }
