@@ -43,12 +43,15 @@ import org.apache.sis.measure.Units;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.parameter.Parameterized;
+import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.referencing.datum.BursaWolfParameters;
+import org.apache.sis.referencing.datum.DefaultGeodeticDatum;
 import org.apache.sis.referencing.operation.matrix.Matrices;
+import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Classes;
@@ -269,7 +272,7 @@ public class CoordinateOperationInference {
         if (sourceCRS instanceof GeocentricCRS) {
             final GeocentricCRS source = (GeocentricCRS) sourceCRS;
             if (targetCRS instanceof GeocentricCRS) {
-//              return createOperationStep(source, (GeocentricCRS) targetCRS);
+                return createOperationStep(source, (GeocentricCRS) targetCRS);
             }
             if (targetCRS instanceof GeographicCRS) {
 //              return createOperationStep(source, (GeographicCRS) targetCRS);
@@ -298,6 +301,70 @@ public class CoordinateOperationInference {
             }
         }
         throw new OperationNotFoundException(notFoundMessage(sourceCRS, targetCRS));
+    }
+
+    /**
+     * Creates an operation between two geocentric coordinate reference systems.
+     * The default implementation can adjust for axis order, orientation and units of measurement.
+     * If the datums are not the equal but {@linkplain DefaultGeodeticDatum#getBursaWolfParameters()
+     * Bursa-Wolf parameters exists} between the two datum in the area of interest, then this method
+     * will also perform a datum shift.
+     *
+     * @param  sourceCRS  input coordinate reference system.
+     * @param  targetCRS  output coordinate reference system.
+     * @return a coordinate operation from {@code sourceCRS} to {@code targetCRS}.
+     * @throws FactoryException if the operation can not be constructed.
+     *
+     * @todo Rotation of prime meridian not yet implemented.
+     * @todo Conversion between Cartesian and spherical CS not yet implemented.
+     */
+    protected CoordinateOperation createOperationStep(final GeocentricCRS sourceCRS,
+                                                      final GeocentricCRS targetCRS)
+            throws FactoryException
+    {
+        final GeodeticDatum sourceDatum = sourceCRS.getDatum();
+        final GeodeticDatum targetDatum = targetCRS.getDatum();
+        final CoordinateSystem sourceCS = sourceCRS.getCoordinateSystem();
+        final CoordinateSystem targetCS = targetCRS.getCoordinateSystem();
+        if (Utilities.equalsIgnoreMetadata(sourceDatum, targetDatum)) {
+            /*
+             * If both CRS use the same datum and the same prime meridian, then the coordinate operation is just
+             * an axis swapping and unit conversion except if the coordinate systems are not of the same kind.
+             */
+            final Matrix matrix = swapAndScaleAxes(sourceCS, targetCS);
+            return createFromAffineTransform(AXIS_CHANGES, sourceCRS, targetCRS, matrix);
+        }
+        if (!isGreenwichLongitudeEquals(sourceDatum.getPrimeMeridian(), targetDatum.getPrimeMeridian())) {
+            throw new OperationNotFoundException("Rotation of prime meridian not yet implemented");
+        }
+        /*
+         * Transform between differents ellipsoids using Bursa Wolf parameters.
+         * The Bursa Wolf parameters are used with "standard" geocentric CS, i.e.
+         * with x axis towards the prime meridian, y axis towards East and z axis
+         * toward North. The following steps are applied:
+         *
+         *     source CRS                      →
+         *     standard CRS with source datum  →
+         *     standard CRS with target datum  →
+         *     target CRS
+         */
+        Matrix datumShift = null;
+        Identifier identifier = DATUM_SHIFT;
+        MatrixSIS matrix;
+        final CartesianCS standard = (CartesianCS) CommonCRS.WGS84.geocentric().getCoordinateSystem();
+        final Matrix normalizeSource = swapAndScaleAxes(sourceCS, standard);
+        final Matrix normalizeTarget = swapAndScaleAxes(standard, targetCS);
+        /*
+         * Since all steps are matrices, we can multiply them and get a single matrix.
+         * MatrixSIS.multiply(Matrix) is equivalent to AffineTransform.concatenate(…):
+         * First transform by the supplied transform and then transform the result by
+         * the original transform. So we compute;
+         *
+         *     matrix = normalizeTarget × datumShift × normalizeSource
+         */
+        matrix = Matrices.multiply(normalizeTarget, datumShift);
+        matrix = matrix.multiply(normalizeSource);
+        return createFromAffineTransform(identifier, sourceCRS, targetCRS, matrix);
     }
 
     /**

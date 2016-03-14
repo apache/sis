@@ -51,6 +51,7 @@ import org.apache.sis.referencing.datum.DefaultGeodeticDatum;
 import org.apache.sis.referencing.datum.DefaultVerticalDatum;
 import org.apache.sis.referencing.cs.DefaultVerticalCS;
 import org.apache.sis.referencing.cs.DefaultCartesianCS;
+import org.apache.sis.referencing.cs.DefaultSphericalCS;
 import org.apache.sis.referencing.cs.DefaultEllipsoidalCS;
 import org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis;
 import org.apache.sis.referencing.crs.DefaultGeographicCRS;
@@ -311,12 +312,14 @@ final class StandardDefinitions {
     @SuppressWarnings("fallthrough")
     static CoordinateSystem createCoordinateSystem(final short code) {
         final String name;
-        final int dim;  // Number of dimension.
-        short axisCode; // Code of first axis + dim (or code after the last axis).
+        final int dim;                  // Number of dimension.
+        short axisCode;                 // Code of first axis + dim (or code after the last axis).
         boolean isCartesian = false;
+        boolean isSpherical = false;
         switch (code) {
             case 6422: name = "Ellipsoidal 2D"; dim = 2; axisCode = 108; break;
             case 6423: name = "Ellipsoidal 3D"; dim = 3; axisCode = 111; break;
+            case 6404: name = "Spherical 3D";   dim = 3; axisCode =  63; isSpherical = true; break;
             case 6500: name = "Earth centred";  dim = 3; axisCode = 118; isCartesian = true; break;
             case 4400: name = "Cartesian 2D";   dim = 2; axisCode =   3; isCartesian = true; break;
             default:   throw new AssertionError(code);
@@ -336,6 +339,8 @@ final class StandardDefinitions {
             } else {
                 return new DefaultCartesianCS(properties, xAxis, yAxis);
             }
+        } else if (isSpherical) {
+            return new DefaultSphericalCS(properties, xAxis, yAxis, zAxis);
         } else {
             if (zAxis != null) {
                 return new DefaultEllipsoidalCS(properties, xAxis, yAxis, zAxis);
@@ -368,6 +373,28 @@ final class StandardDefinitions {
                        abrv = "N";
                        unit = SI.METRE;
                        dir  = AxisDirection.NORTH;
+                       break;
+            case 60:   name = "Spherical latitude";
+                       abrv = "φ′";
+                       unit = NonSI.DEGREE_ANGLE;
+                       dir  = AxisDirection.NORTH;
+                       min  = Latitude.MIN_VALUE;
+                       max  = Latitude.MAX_VALUE;
+                       rm   = RangeMeaning.EXACT;
+                       break;
+            case 61:   name = "Spherical longitude";
+                       abrv = "θ";
+                       unit = NonSI.DEGREE_ANGLE;
+                       dir  = AxisDirection.EAST;
+                       min  = Longitude.MIN_VALUE;
+                       max  = Longitude.MAX_VALUE;
+                       rm   = RangeMeaning.WRAPAROUND;
+                       break;
+            case 62:   name = "Geocentric radius";
+                       abrv = "r";
+                       unit = SI.METRE;
+                       dir  = AxisDirection.UP;
+                       min  = 0;
                        break;
             case 108:  // Used in Ellipsoidal 3D.
             case 106:  name = AxisNames.GEODETIC_LATITUDE;

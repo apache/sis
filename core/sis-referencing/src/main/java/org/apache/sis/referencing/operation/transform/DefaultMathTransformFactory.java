@@ -1122,6 +1122,25 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
     }
 
     /**
+     * Creates a math transform that represent a change of coordinate system.
+     *
+     * @param source the source coordinate system.
+     * @param target the target coordinate system.
+     * @return a conversion from the given source to the given target coordinate system.
+     * @throws FactoryException if the conversion can not be created.
+     *
+     * @since 0.7
+     */
+    public MathTransform createCoordinateSystemChange(final CoordinateSystem source, final CoordinateSystem target)
+            throws FactoryException
+    {
+        ArgumentChecks.ensureNonNull("source", source);
+        ArgumentChecks.ensureNonNull("target", target);
+        return CoordinateSystemTransform.create(this, source, target);
+        // No need to use unique(…) here.
+    }
+
+    /**
      * Creates an affine transform from a matrix. If the transform input dimension is {@code M},
      * and output dimension is {@code N}, then the matrix will have size {@code [N+1][M+1]}. The
      * +1 in the matrix dimensions allows the matrix to do a shift, as well as a rotation. The
