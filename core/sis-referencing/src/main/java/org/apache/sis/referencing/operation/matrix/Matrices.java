@@ -735,7 +735,7 @@ public final class Matrices extends Static {
      */
     public static MatrixSIS multiply(final Matrix m1, final Matrix m2) throws MismatchedMatrixSizeException {
         if (m1 instanceof MatrixSIS) {
-            return ((MatrixSIS) m1).multiply(m2);  // Maybe the subclass override that method.
+            return ((MatrixSIS) m1).multiply(m2);           // Maybe the subclass overrides that method.
         }
         final int nc = m2.getNumCol();
         MatrixSIS.ensureNumRowMatch(m1.getNumCol(), m2.getNumRow(), nc);
