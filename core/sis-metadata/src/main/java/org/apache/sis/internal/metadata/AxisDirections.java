@@ -16,6 +16,8 @@
  */
 package org.apache.sis.internal.metadata;
 
+import java.util.Map;
+import java.util.HashMap;
 import javax.measure.unit.Unit;
 import javax.measure.quantity.Angle;
 import org.opengis.referencing.cs.AxisDirection;
@@ -36,7 +38,7 @@ import static org.apache.sis.util.CharSequences.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.6
+ * @version 0.7
  * @module
  */
 public final class AxisDirections extends Static {
@@ -59,9 +61,26 @@ public final class AxisDirections extends Static {
     public static final int DISPLAY_COUNT = 4;
 
     /**
-     * For each direction, the opposite direction.
+     * Direction of geographic angles (azimuths).
+     * Specified in ISO 19162 but not yet in ISO 19111.
+     *
+     * @since 0.7
      */
-    private static final AxisDirection[] OPPOSITES = new AxisDirection[DISPLAY_DOWN.ordinal() + 1];
+    public static final AxisDirection CLOCKWISE = AxisDirection.valueOf("CLOCKWISE");
+
+    /**
+     * Direction of arithmetic angles. Used in polar coordinate systems.
+     * Specified in ISO 19162 but not yet in ISO 19111.
+     *
+     * @since 0.7
+     */
+    public static final AxisDirection COUNTERCLOCKWISE = AxisDirection.valueOf("COUNTERCLOCKWISE");
+
+    /**
+     * For each direction, the opposite direction.
+     * This map shall be immutable after construction.
+     */
+    private static final Map<AxisDirection,AxisDirection> OPPOSITES = new HashMap<>(20);
     static {
         put(OTHER,            OTHER);
         put(NORTH,            SOUTH);
@@ -78,14 +97,15 @@ public final class AxisDirections extends Static {
         put(ROW_POSITIVE,     ROW_NEGATIVE);
         put(DISPLAY_RIGHT,    DISPLAY_LEFT);
         put(DISPLAY_UP,       DISPLAY_DOWN);
+        put(COUNTERCLOCKWISE, CLOCKWISE);
     }
 
     /**
      * Stores the given directions in the {@link #OPPOSITES} array.
      */
     private static void put(final AxisDirection dir, final AxisDirection opposite) {
-        OPPOSITES[dir.ordinal()] = opposite;
-        OPPOSITES[opposite.ordinal()] = dir;
+        OPPOSITES.put(dir, opposite);
+        OPPOSITES.put(opposite, dir);
     }
 
     /**
@@ -114,24 +134,25 @@ public final class AxisDirections extends Static {
      *     <th style="width: 50%">Direction</th>
      *     <th style="width: 50%">Absolute value</th>
      *   </tr>
-     *   <tr><td>{@code NORTH}</td> <td>{@code NORTH}</td> </tr>
-     *   <tr><td>{@code SOUTH}</td> <td>{@code NORTH}</td> </tr>
-     *   <tr><td>{@code EAST}</td>  <td>{@code EAST}</td>  </tr>
-     *   <tr><td>{@code WEST}</td>  <td>{@code EAST}</td>  </tr>
-     *   <tr><td>{@code UP}</td>    <td>{@code UP}</td>    </tr>
-     *   <tr><td>{@code DOWN}</td>  <td>{@code UP}</td>    </tr>
+     *   <tr><td>{@code NORTH}</td> <td>{@code NORTH}</td></tr>
+     *   <tr><td>{@code SOUTH}</td> <td>{@code NORTH}</td></tr>
+     *   <tr><td>{@code EAST}</td>  <td>{@code EAST}</td></tr>
+     *   <tr><td>{@code WEST}</td>  <td>{@code EAST}</td></tr>
+     *   <tr><td>{@code UP}</td>    <td>{@code UP}</td></tr>
+     *   <tr><td>{@code DOWN}</td>  <td>{@code UP}</td></tr>
      * </table></td>
      * <td><table class="sis" summary="Other directions">
      *   <tr>
      *     <th style="width: 50%">Direction</th>
      *     <th style="width: 50%">Absolute value</th>
      *   </tr>
-     *   <tr><td>{@code DISPLAY_RIGHT}</td> <td>{@code DISPLAY_RIGHT}</td> </tr>
-     *   <tr><td>{@code DISPLAY_LEFT}</td>  <td>{@code DISPLAY_RIGHT}</td> </tr>
-     *   <tr><td>{@code DISPLAY_UP}</td>    <td>{@code DISPLAY_UP}</td>    </tr>
-     *   <tr><td>{@code DISPLAY_DOWN}</td>  <td>{@code DISPLAY_UP}</td>    </tr>
-     *   <tr><td>{@code FUTURE}</td>        <td>{@code FUTURE}</td>        </tr>
-     *   <tr><td>{@code PAST}</td>          <td>{@code FUTURE}</td>        </tr>
+     *   <tr><td>{@code DISPLAY_RIGHT}</td> <td>{@code DISPLAY_RIGHT}</td></tr>
+     *   <tr><td>{@code DISPLAY_LEFT}</td>  <td>{@code DISPLAY_RIGHT}</td></tr>
+     *   <tr><td>{@code DISPLAY_UP}</td>    <td>{@code DISPLAY_UP}</td></tr>
+     *   <tr><td>{@code DISPLAY_DOWN}</td>  <td>{@code DISPLAY_UP}</td></tr>
+     *   <tr><td>{@code FUTURE}</td>        <td>{@code FUTURE}</td></tr>
+     *   <tr><td>{@code PAST}</td>          <td>{@code FUTURE}</td></tr>
+     *   <tr><td>{@code CLOCKWISE}</td>     <td>{@code COUNTERCLOCKWISE}</td></tr>
      * </table></td></tr>
      *   <tr align="center"><td>{@code OTHER}</td><td>{@code OTHER}</td></tr>
      * </table>
@@ -159,13 +180,7 @@ public final class AxisDirections extends Static {
      * @return The opposite direction, or {@code null} if none or unknown.
      */
     public static AxisDirection opposite(AxisDirection dir) {
-        if (dir != null) {
-            final int ordinal = dir.ordinal();
-            if (ordinal >= 0 && ordinal < OPPOSITES.length) {
-                dir = OPPOSITES[ordinal];
-            }
-        }
-        return dir;
+        return OPPOSITES.get(dir);
     }
 
     /**
@@ -291,7 +306,7 @@ public final class AxisDirections extends Static {
             final int tgt = target.ordinal() - base;
             if (tgt >= 0 && tgt < GEOCENTRIC_COUNT) {
                 int n = (tgt - src);
-                n -= GEOCENTRIC_COUNT * (n/2); // If -2 add 3.  If +2 subtract 3.  Otherwise do nothing.
+                n -= GEOCENTRIC_COUNT * (n/2);      // If -2 add 3.  If +2 subtract 3.  Otherwise do nothing.
                 return n;
             }
         }
@@ -376,12 +391,12 @@ public final class AxisDirections extends Static {
         if (cs != null) {
             for (int i = cs.getDimension(); --i>=0;) {
                 final CoordinateSystemAxis axis = cs.getAxis(i);
-                if (axis != null) {  // Paranoiac check.
+                if (axis != null) {                                                     // Paranoiac check.
                     final Unit<?> candidate = axis.getUnit();
                     if (Units.isAngular(candidate)) {
                         unit = candidate.asType(Angle.class);
                         if (AxisDirection.EAST.equals(absolute(axis.getDirection()))) {
-                            break; // Found the longitude axis.
+                            break;                                                      // Found the longitude axis.
                         }
                     }
                 }
@@ -434,7 +449,7 @@ public final class AxisDirections extends Static {
             if (dim + i > cs.getDimension()) {
                 return -1;
             }
-            while (--i > 0) { // Intentionally exclude 0.
+            while (--i > 0) {               // Intentionally exclude 0.
                 if (!absolute(subCS.getAxis(i).getDirection()).equals(
                      absolute(cs.getAxis(i + dim).getDirection())))
                 {
@@ -505,12 +520,12 @@ public final class AxisDirections extends Static {
                 int s = name.indexOf('/', d);
                 if (s < 0) {
                     if (equalsIgnoreCase(name, d, length, "north pole")) {
-                        return GEOCENTRIC_Z; // "Geocentre > north pole"
+                        return GEOCENTRIC_Z;                                // "Geocentre > north pole"
                     }
                 } else if (equalsIgnoreCase(name, d, skipTrailingWhitespaces(name, d, s), "equator")) {
                     s = skipLeadingWhitespaces(name, s+1, length);
                     if (equalsIgnoreCase(name, s, length, "PM")) {
-                        return GEOCENTRIC_X; // "Geocentre > equator/PM"
+                        return GEOCENTRIC_X;                                // "Geocentre > equator/PM"
                     }
                     /*
                      * At this point, the name may be "Geocentre > equator/0°E",
@@ -527,8 +542,8 @@ public final class AxisDirections extends Static {
                             i = skipLeadingWhitespaces(name, i, length);
                             if (equalsIgnoreCase(name, i, length, "°E") || equalsIgnoreCase(name, i, length, "dE")) {
                                 switch (n) {
-                                    case  0: return GEOCENTRIC_X; // "Geocentre > equator/0°E"
-                                    case 90: return GEOCENTRIC_Y; // "Geocentre > equator/90°E"
+                                    case  0: return GEOCENTRIC_X;           // "Geocentre > equator/0°E"
+                                    case 90: return GEOCENTRIC_Y;           // "Geocentre > equator/90°E"
                                 }
                             }
                             break;
@@ -569,7 +584,7 @@ public final class AxisDirections extends Static {
      */
     public static String suggestAbbreviation(final String name, final AxisDirection direction, final Unit<?> unit) {
         if (name.length() == 1) {
-            return name;  // Most common cases are "x", "y", "z", "t", "i" and "j".
+            return name;                    // Most common cases are "x", "y", "z", "t", "i" and "j".
         }
         if (isCompass(direction)) {
             /*
@@ -612,7 +627,7 @@ public final class AxisDirections extends Static {
             } else if (DISPLAY_UP.equals(a)) {
                 return "y";
             } else if (OTHER.equals(a)) {
-                return "z";  // Arbitrary abbreviation, may change in any future SIS version.
+                return "z";                     // Arbitrary abbreviation, may change in any future SIS version.
             }
         }
         final String id = direction.identifier();   // UML identifier, or null if none.
