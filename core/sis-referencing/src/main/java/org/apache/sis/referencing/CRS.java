@@ -149,10 +149,6 @@ public final class CRS extends Static {
             throws NoSuchAuthorityCodeException, FactoryException
     {
         ArgumentChecks.ensureNonNull("code", code);
-        if (code.startsWith(NonStandardCRS.PREFIX)) {       // Internal to SIS.
-            final CoordinateReferenceSystem crs = NonStandardCRS.forCode(code);
-            if (crs != null) return crs;
-        }
         try {
             return AuthorityFactories.ALL.createCoordinateReferenceSystem(code);
         } catch (UnavailableFactoryException e) {

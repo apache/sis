@@ -38,8 +38,10 @@ import org.opengis.referencing.crs.CRSAuthorityFactory;
 import org.opengis.referencing.cs.TimeCS;
 import org.opengis.referencing.cs.VerticalCS;
 import org.opengis.referencing.cs.CartesianCS;
+import org.opengis.referencing.cs.SphericalCS;
 import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.cs.AxisDirection;
+import org.opengis.referencing.cs.CSAuthorityFactory;
 import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.referencing.datum.PrimeMeridian;
@@ -276,6 +278,11 @@ public enum CommonCRS {
     static final CommonCRS DEFAULT = WGS84;
 
     /**
+     * Properties to exclude when using an other object as a template.
+     */
+    private static final String[] EXCLUDE = new String[] {IdentifiedObject.IDENTIFIERS_KEY};
+
+    /**
      * The EPSG code of the two-dimensional geographic CRS.
      */
     final short geographic;
@@ -334,11 +341,18 @@ public enum CommonCRS {
     private transient volatile GeographicCRS cachedGeo3D;
 
     /**
-     * The geocentric CRS, created when first needed.
+     * The geocentric CRS using Cartesian coordinate system, created when first needed.
      *
      * @see #geocentric()
      */
     private transient volatile GeocentricCRS cachedGeocentric;
+
+    /**
+     * The geocentric CRS using spherical coordinate system, created when first needed.
+     *
+     * @see #spherical()
+     */
+    private transient volatile GeocentricCRS cachedSpherical;
 
     /**
      * The Universal Transverse Mercator projections, created when first needed.
@@ -634,6 +648,56 @@ public enum CommonCRS {
                     final GeographicCRS base = geographic();
                     object = new DefaultGeocentricCRS(properties(base, geocentric), base.getDatum(), cs);
                     cachedGeocentric = object;
+                }
+            }
+        }
+        return object;
+    }
+
+    /**
+     * Returns the geocentric CRS using a spherical coordinate system. Axes are:
+     *
+     * <ol>
+     *   <li>Spherical latitude in degrees oriented toward {@linkplain AxisDirection#NORTH north}.</li>
+     *   <li>Spherical longitude in degrees oriented toward {@linkplain AxisDirection#EAST east}.</li>
+     *   <li>Geocentric radius in metres oriented toward {@linkplain AxisDirection#UP up}.</li>
+     * </ol>
+     *
+     * @return The geocentric CRS associated to this enum.
+     *
+     * @see DefaultGeocentricCRS
+     *
+     * @since 0.7
+     */
+    public GeocentricCRS spherical() {
+        GeocentricCRS object = cachedSpherical;
+        if (object == null) {
+            synchronized (this) {
+                object = cachedSpherical;
+                if (object == null) {
+                    /*
+                     * All constants defined in this enumeration use the same coordinate system, EPSG:6404.
+                     * We will arbitrarily create this CS only for the most frequently created CRS,
+                     * and share that CS instance for all other constants.
+                     */
+                    SphericalCS cs = null;
+                    if (this == DEFAULT) {
+                        final CSAuthorityFactory factory = csFactory();
+                        if (factory != null) try {
+                            cs = factory.createSphericalCS("6404");
+                        } catch (FactoryException e) {
+                            failure(this, "spherical", e);
+                        }
+                        if (cs == null) {
+                            cs = (SphericalCS) StandardDefinitions.createCoordinateSystem((short) 6404);
+                        }
+                    } else {
+                        cs = (SphericalCS) DEFAULT.spherical().getCoordinateSystem();
+                    }
+                    // Use same name and datum than the geographic CRS.
+                    final GeographicCRS base = geographic();
+                    object = new DefaultGeocentricCRS(IdentifiedObjects.getProperties(base, EXCLUDE), base.getDatum(), cs);
+                    cachedSpherical = object;
                 }
             }
         }
@@ -1133,7 +1197,7 @@ public enum CommonCRS {
                             object = StandardDefinitions.createVerticalCRS(crs, datum());
                         } else {
                             final VerticalCS cs = cs();
-                            object = new DefaultVerticalCRS(IdentifiedObjects.getProperties(cs), datum(), cs);
+                            object = new DefaultVerticalCRS(IdentifiedObjects.getProperties(cs, EXCLUDE), datum(), cs);
                         }
                         cached = object;
                     }
@@ -1371,7 +1435,7 @@ public enum CommonCRS {
                     object = crs(cached);
                     if (object == null) {
                         final TemporalDatum datum = datum();
-                        object = new DefaultTemporalCRS(IdentifiedObjects.getProperties(datum), datum, cs());
+                        object = new DefaultTemporalCRS(IdentifiedObjects.getProperties(datum, EXCLUDE), datum, cs());
                         cached = object;
                     }
                 }
@@ -1399,8 +1463,8 @@ public enum CommonCRS {
                 case UNIX: {
                     // Share the NamedIdentifier created for Java time.
                     final TimeCS share = JAVA.crs().getCoordinateSystem();
-                    cs   = IdentifiedObjects.getProperties(share);
-                    axis = IdentifiedObjects.getProperties(share.getAxis(0));
+                    cs   = IdentifiedObjects.getProperties(share, EXCLUDE);
+                    axis = IdentifiedObjects.getProperties(share.getAxis(0), EXCLUDE);
                     break;
                 }
                 case JAVA: {
@@ -1500,7 +1564,7 @@ public enum CommonCRS {
      * Returns the same properties than the given object, except for the identifier which is set to the given code.
      */
     private static Map<String,?> properties(final IdentifiedObject template, final short code) {
-        final Map<String,Object> properties = new HashMap<>(IdentifiedObjects.getProperties(template));
+        final Map<String,Object> properties = new HashMap<>(IdentifiedObjects.getProperties(template, EXCLUDE));
         properties.put(GeographicCRS.IDENTIFIERS_KEY, new NamedIdentifier(Citations.EPSG, String.valueOf(code)));
         return properties;
     }
@@ -1514,6 +1578,20 @@ public enum CommonCRS {
             final AuthorityFactory factory = AuthorityFactories.EPSG();
             if (!(factory instanceof EPSGFactoryFallback)) {
                 return (CRSAuthorityFactory) factory;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Returns the EPSG factory to use for creating coordinate systems, or {@code null} if none.
+     * If this method returns {@code null}, then the caller will silently fallback on hard-coded values.
+     */
+    static CSAuthorityFactory csFactory() {
+        if (!EPSGFactoryFallback.FORCE_HARDCODED) {
+            final AuthorityFactory factory = AuthorityFactories.EPSG();
+            if (!(factory instanceof EPSGFactoryFallback)) {
+                return (CSAuthorityFactory) factory;
             }
         }
         return null;

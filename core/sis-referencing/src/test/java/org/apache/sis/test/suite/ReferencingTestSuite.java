@@ -123,6 +123,7 @@ import org.junit.BeforeClass;
     org.apache.sis.referencing.operation.transform.MolodenskyTransformTest.class,
     org.apache.sis.referencing.operation.transform.SphericalToCartesianTest.class,
     org.apache.sis.referencing.operation.transform.CartesianToSphericalTest.class,
+    org.apache.sis.referencing.operation.transform.CoordinateSystemTransformTest.class,
     org.apache.sis.referencing.operation.DefaultFormulaTest.class,
     org.apache.sis.referencing.operation.DefaultOperationMethodTest.class,
     org.apache.sis.referencing.operation.AbstractSingleOperationTest.class,

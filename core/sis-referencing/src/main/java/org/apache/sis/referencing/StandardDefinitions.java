@@ -319,7 +319,7 @@ final class StandardDefinitions {
         switch (code) {
             case 6422: name = "Ellipsoidal 2D"; dim = 2; axisCode = 108; break;
             case 6423: name = "Ellipsoidal 3D"; dim = 3; axisCode = 111; break;
-            case 6404: name = "Spherical 3D";   dim = 3; axisCode =  63; isSpherical = true; break;
+            case 6404: name = "Spherical";      dim = 3; axisCode =  63; isSpherical = true; break;
             case 6500: name = "Earth centred";  dim = 3; axisCode = 118; isCartesian = true; break;
             case 4400: name = "Cartesian 2D";   dim = 2; axisCode =   3; isCartesian = true; break;
             default:   throw new AssertionError(code);
@@ -375,7 +375,7 @@ final class StandardDefinitions {
                        dir  = AxisDirection.NORTH;
                        break;
             case 60:   name = "Spherical latitude";
-                       abrv = "φ′";
+                       abrv = "φ′";                         // See HardCodedAxes.SPHERICAL_LATITUDE in tests.
                        unit = NonSI.DEGREE_ANGLE;
                        dir  = AxisDirection.NORTH;
                        min  = Latitude.MIN_VALUE;
@@ -383,7 +383,7 @@ final class StandardDefinitions {
                        rm   = RangeMeaning.EXACT;
                        break;
             case 61:   name = "Spherical longitude";
-                       abrv = "θ";
+                       abrv = "θ";                          // See HardCodedAxes.SPHERICAL_LONGITUDE in tests.
                        unit = NonSI.DEGREE_ANGLE;
                        dir  = AxisDirection.EAST;
                        min  = Longitude.MIN_VALUE;
@@ -391,7 +391,7 @@ final class StandardDefinitions {
                        rm   = RangeMeaning.WRAPAROUND;
                        break;
             case 62:   name = "Geocentric radius";
-                       abrv = "r";
+                       abrv = "r";                          // See HardCodedAxes.GEOCENTRIC_RADIUS in tests.
                        unit = SI.METRE;
                        dir  = AxisDirection.UP;
                        min  = 0;
