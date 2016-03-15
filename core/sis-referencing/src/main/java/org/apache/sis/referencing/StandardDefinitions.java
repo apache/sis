@@ -394,6 +394,7 @@ final class StandardDefinitions {
                        abrv = "r";                          // See HardCodedAxes.GEOCENTRIC_RADIUS in tests.
                        unit = SI.METRE;
                        dir  = AxisDirection.UP;
+                       rm   = RangeMeaning.EXACT;
                        min  = 0;
                        break;
             case 108:  // Used in Ellipsoidal 3D.

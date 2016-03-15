@@ -150,7 +150,7 @@ public final strictfp class StandardDefinitionsTest extends TestCase {
      */
     @Test
     public void testCreateAxis() {
-        for (final short code : new short[] {1, 2, 106, 107, 110, 114, 113}) {
+        for (final short code : new short[] {1, 2, 60, 61, 62, 106, 107, 110, 114, 113}) {
             final CoordinateSystemAxis actual = StandardDefinitions.createAxis(code);
             Validators.validate(actual);
             switch (code) {

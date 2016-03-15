@@ -191,7 +191,7 @@ class GeneralMatrix extends MatrixSIS implements ExtendedPrecisionMatrix {
      */
     static int indexOfErrors(final int numRow, final int numCol, final double[] elements) {
         assert elements.length % (numRow * numCol) == 0;
-        return (numRow * numCol) % elements.length; // A % B is for getting 0 without branching if A == B.
+        return (numRow * numCol) % elements.length;         // A % B is for getting 0 without branching if A == B.
     }
 
     /**
@@ -337,7 +337,7 @@ class GeneralMatrix extends MatrixSIS implements ExtendedPrecisionMatrix {
                 if (copy) {
                     elements = elements.clone();
                 }
-                return elements; // Internal array already uses extended precision.
+                return elements;                                // Internal array already uses extended precision.
             } else {
                 elements = Arrays.copyOf(elements, length);
             }
@@ -415,7 +415,7 @@ class GeneralMatrix extends MatrixSIS implements ExtendedPrecisionMatrix {
      * @see Matrices#create(int, int, Number[])
      */
     final boolean setElements(final Number[] newValues) {
-        final int numRow = this.numRow; // Protection against accidental changes.
+        final int numRow = this.numRow;                         // Protection against accidental changes.
         final int numCol = this.numCol;
         final int length = numRow * numCol;
         if (newValues.length != length) {
@@ -494,9 +494,18 @@ class GeneralMatrix extends MatrixSIS implements ExtendedPrecisionMatrix {
      */
     @Override
     public final boolean isAffine() {
-        final int numRow = this.numRow; // Protection against accidental changes.
+        return isAffine(true);
+    }
+
+    /**
+     * Implementation of {@link #isAffine()} with control on whether we require the matrix to be square.
+     *
+     * @param square {@code true} if the matrix must be square, or {@code false} for allowing non-square matrices.
+     */
+    final boolean isAffine(final boolean square) {
+        final int numRow = this.numRow;                     // Protection against accidental changes.
         final int numCol = this.numCol;
-        if (numRow == numCol) {
+        if (numRow == numCol || !square) {
             int i = numRow * numCol;
             if (elements[--i] == 1) {
                 final int base = (numRow - 1) * numCol;
@@ -526,7 +535,7 @@ class GeneralMatrix extends MatrixSIS implements ExtendedPrecisionMatrix {
      */
     @Override
     public final boolean isIdentity() {
-        final int numRow = this.numRow; // Protection against accidental changes.
+        final int numRow = this.numRow;                     // Protection against accidental changes.
         final int numCol = this.numCol;
         if (numRow != numCol) {
             return false;
@@ -553,9 +562,9 @@ class GeneralMatrix extends MatrixSIS implements ExtendedPrecisionMatrix {
      */
     @Override
     public void transpose() {
-        final int numRow = this.numRow; // Protection against accidental changes.
+        final int numRow = this.numRow;                                 // Protection against accidental changes.
         final int numCol = this.numCol;
-        final int errors = indexOfErrors(numRow, numCol, elements); // Where error values start, or 0 if none.
+        final int errors = indexOfErrors(numRow, numCol, elements);     // Where error values start, or 0 if none.
         for (int j=0; j<numRow; j++) {
             for (int i=0; i<j; i++) {
                 final int lo = j*numCol + i;
@@ -574,7 +583,7 @@ class GeneralMatrix extends MatrixSIS implements ExtendedPrecisionMatrix {
      * The matrix sizes much match - this is not verified unless assertions are enabled.
      */
     final void setToProduct(final Matrix A, final Matrix B) {
-        final int numRow = this.numRow; // Protection against accidental changes.
+        final int numRow = this.numRow;         // Protection against accidental changes.
         final int numCol = this.numCol;
         final int nc = A.getNumCol();
         assert B.getNumRow() == nc;
@@ -597,20 +606,20 @@ class GeneralMatrix extends MatrixSIS implements ExtendedPrecisionMatrix {
             for (int i=0; i<numCol; i++) {
                 sum.clear();
                 double max = 0;
-                int iB = i;       // Index of values in a single column of B.
-                int iA = j * nc;  // Index of values in a single row of A.
+                int iB = i;                                 // Index of values in a single column of B.
+                int iA = j * nc;                            // Index of values in a single row of A.
                 final int nextRow = iA + nc;
                 while (iA < nextRow) {
                     dot.setFrom (eltA, iA, errA);
                     dot.multiply(eltB, iB, errB);
                     sum.add(dot);
-                    iB += numCol; // Move to next row of B.
-                    iA++;         // Move to next column of A.
+                    iB += numCol;                           // Move to next row of B.
+                    iA++;                                   // Move to next column of A.
                     final double value = Math.abs(dot.value);
                     if (value > max) max = value;
                 }
                 if (Math.abs(sum.value) < Math.ulp(max) * ZERO_THRESHOLD) {
-                    sum.clear(); // Sum is not significant according double arithmetic.
+                    sum.clear();                            // Sum is not significant according double arithmetic.
                 }
                 sum.storeTo(elements, k++, errorOffset);
             }
