@@ -2259,7 +2259,8 @@ addURIs:    for (int i=0; ; i++) {
                     throw new FactoryDataException(exception.getLocalizedMessage(), exception);
                 }
                 final AxisName an = getAxisName(nameCode);
-                final CoordinateSystemAxis axis = owner.csFactory.createCoordinateSystemAxis(createProperties("Coordinate Axis", an.name, epsg, an.description, false),
+                final CoordinateSystemAxis axis = owner.csFactory.createCoordinateSystemAxis(
+                        createProperties("Coordinate Axis", an.name, epsg, an.description, false),
                         abbreviation, direction, owner.createUnit(unit));
                 returnValue = ensureSingleton(axis, returnValue, code);
             }
@@ -2736,7 +2737,7 @@ next:               while (r.next()) {
                         sourceDimensions = sourceCRS.getCoordinateSystem().getDimension();
                     } else {
                         sourceCRS = null;
-                        sourceDimensions = 2;       // Acceptable default for projections only.
+                        sourceDimensions = 2;           // Acceptable default for projections only.
                         isDimensionKnown = false;
                     }
                     if (targetCode != null) {
@@ -2744,7 +2745,7 @@ next:               while (r.next()) {
                         targetDimensions = targetCRS.getCoordinateSystem().getDimension();
                     } else {
                         targetCRS = null;
-                        targetDimensions = 2;       // Acceptable default for projections only.
+                        targetDimensions = 2;           // Acceptable default for projections only.
                         isDimensionKnown = false;
                     }
                     /*
@@ -2796,7 +2797,7 @@ next:               while (r.next()) {
                          * we are going to invoke this method recursively in the following lines.
                          */
                         result.close();
-                        opProperties = new HashMap<>(opProperties);     // Because this class uses a shared map.
+                        opProperties = new HashMap<>(opProperties);         // Because this class uses a shared map.
                         final List<String> codes = new ArrayList<>();
                         try (ResultSet cr = executeQuery("Coordinate_Operation Path",
                                 "SELECT SINGLE_OPERATION_CODE" +

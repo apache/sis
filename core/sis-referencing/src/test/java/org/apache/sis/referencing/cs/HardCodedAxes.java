@@ -166,6 +166,9 @@ public final strictfp class HardCodedAxes {
      * Increasing ordinates values go {@linkplain AxisDirection#UP up} and units are {@linkplain SI#METRE metres}.
      * The ISO 19111 name is <cite>"geocentric radius"</cite> and the abbreviation is lower case <cite>"r"</cite>.
      *
+     * <div class="note"><b>Note:</b> EPSG dataset 8.9 uses upper-case <cite>"R"</cite>.
+     * In this class, we use the ISO 19111 abbreviation instead.</div>
+     *
      * <p>This axis is usually part of a {@link #SPHERICAL_LONGITUDE}, {@link #SPHERICAL_LATITUDE},
      * {@link #GEOCENTRIC_RADIUS} set.</p>
      *
@@ -185,7 +188,8 @@ public final strictfp class HardCodedAxes {
      * The ISO 19111 name is <cite>"spherical longitude"</cite> and the abbreviation is "θ" (theta).
      *
      * <p>This axis is close to the definition found in the EPSG database, except for the "long" abbreviation which
-     * is replaced by "θ". Note that other conventions exist, in which the meaning of φ and θ are interchanged.</p>
+     * is replaced by "θ". Note that other conventions exist, in which the meaning of φ and θ are interchanged.
+     * ISO mentions also the symbol Ω, but it is not clear if it applies to longitude or latitude.</p>
      *
      * <p>This axis is usually part of a {@link #SPHERICAL_LONGITUDE}, {@link #SPHERICAL_LATITUDE},
      * {@link #GEOCENTRIC_RADIUS} set.</p>
@@ -208,7 +212,8 @@ public final strictfp class HardCodedAxes {
      *
      * <p>This axis is close to the definition found in the EPSG database, except for the "lat" abbreviation
      * which is replaced by "φ′". Note that other conventions exist, in which the meaning of φ and θ are
-     * interchanged or in which this axis is named "elevation" and is oriented toward "Up".</p>
+     * interchanged or in which this axis is named "elevation" and is oriented toward "Up".
+     * Other conventions use symbol Ψ or Ω.</p>
      *
      * <p>This axis is usually part of a {@link #SPHERICAL_LONGITUDE}, {@link #SPHERICAL_LATITUDE},
      * {@link #GEOCENTRIC_RADIUS} set.</p>

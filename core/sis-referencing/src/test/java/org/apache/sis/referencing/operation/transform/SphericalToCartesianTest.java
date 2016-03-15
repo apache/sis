@@ -18,6 +18,8 @@ package org.apache.sis.referencing.operation.transform;
 
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.TransformException;
+
+// Test dependencies
 import org.opengis.test.referencing.TransformTestCase;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestUtilities;

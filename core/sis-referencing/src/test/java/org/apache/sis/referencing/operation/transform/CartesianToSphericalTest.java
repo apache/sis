@@ -18,6 +18,8 @@ package org.apache.sis.referencing.operation.transform;
 
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.TransformException;
+
+// Test dependencies
 import org.opengis.test.referencing.TransformTestCase;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
@@ -74,7 +76,7 @@ public final strictfp class CartesianToSphericalTest extends TransformTestCase {
     public void testConsistency() throws FactoryException, TransformException {
         transform = CartesianToSpherical.INSTANCE.completeTransform();
         derivativeDeltas = new double[] {1E-6, 1E-6, 1E-6};
-        tolerance = 1E-7;
+        tolerance = 2E-7;
         verifyInDomain(new double[] {-100, -100, -100},      // Minimal coordinates
                        new double[] {+100, +100, +100},      // Maximal coordinates
                        new int[]    {  10,   10,   10},

@@ -18,13 +18,14 @@ package org.apache.sis.referencing.operation.transform;
 
 import java.util.Arrays;
 import java.io.Serializable;
+import org.opengis.referencing.cs.SphericalCS;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
-import org.opengis.util.FactoryException;
-import org.apache.sis.referencing.operation.matrix.Matrix3;
 import org.apache.sis.referencing.CommonCRS;
-import org.apache.sis.referencing.CRS;
+import org.apache.sis.referencing.cs.AxesConvention;
+import org.apache.sis.referencing.crs.DefaultGeocentricCRS;
+import org.apache.sis.referencing.operation.matrix.Matrix3;
 
 import static java.lang.Math.*;
 
@@ -65,6 +66,12 @@ final class SphericalToCartesian extends CoordinateSystemTransform implements Se
     private static final long serialVersionUID = 8001536207920751506L;
 
     /**
+     * The source coordinate system.
+     */
+    static final SphericalCS SOURCE = (SphericalCS) DefaultGeocentricCRS.castOrCopy(CommonCRS.WGS84.spherical())
+            .forConvention(AxesConvention.RIGHT_HANDED).getCoordinateSystem();
+
+    /**
      * The singleton instance expecting input coordinates in radians.
      * For the instance expecting input coordinates in degrees, use {@link #completeTransform()} instead.
      */
@@ -99,8 +106,8 @@ final class SphericalToCartesian extends CoordinateSystemTransform implements Se
      * Angular units shall be degrees.
      */
     @Override
-    final CoordinateSystem getSourceCS() throws FactoryException {
-        return CRS.forCode("SIS:6404").getCoordinateSystem();
+    final CoordinateSystem getSourceCS() {
+        return SOURCE;
     }
 
     /**
@@ -109,7 +116,7 @@ final class SphericalToCartesian extends CoordinateSystemTransform implements Se
      */
     @Override
     final CoordinateSystem getTargetCS() {
-        return CommonCRS.WGS84.geocentric().getCoordinateSystem();
+        return CartesianToSpherical.SOURCE;
     }
 
     /**

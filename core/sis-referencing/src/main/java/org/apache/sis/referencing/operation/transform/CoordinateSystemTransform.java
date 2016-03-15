@@ -26,7 +26,6 @@ import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.SphericalCS;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
-import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.OperationNotFoundException;
 import org.apache.sis.internal.referencing.WKTUtilities;
 import org.apache.sis.internal.system.DefaultFactories;
@@ -50,11 +49,6 @@ import org.apache.sis.util.resources.Errors;
  */
 abstract class CoordinateSystemTransform extends AbstractMathTransform {
     /**
-     * Number of input and output dimensions.
-     */
-    private final int dimension;
-
-    /**
      * An empty contextual parameter, used only for representing conversion from degrees to radians.
      */
     final transient ContextualParameters context;
@@ -70,7 +64,6 @@ abstract class CoordinateSystemTransform extends AbstractMathTransform {
      * or {@link ContextualParameters#denormalizeGeographicOutputs(double)} after this constructor.
      */
     CoordinateSystemTransform(final String method, final int dimension) {
-        this.dimension = dimension;
         final Map<String,?> properties = Collections.singletonMap(DefaultOperationMethod.NAME_KEY,
                 new ImmutableIdentifier(Citations.SIS, Constants.SIS, method));
         context = new ContextualParameters(new DefaultOperationMethod(properties, dimension, dimension,
@@ -93,13 +86,13 @@ abstract class CoordinateSystemTransform extends AbstractMathTransform {
      * Returns the source coordinate system of the complete math transform.
      * Angular units shall be degrees.
      */
-    abstract CoordinateSystem getSourceCS() throws FactoryException;
+    abstract CoordinateSystem getSourceCS();
 
     /**
      * Returns the target coordinate system of the complete math transform.
      * Angular units shall be degrees.
      */
-    abstract CoordinateSystem getTargetCS() throws FactoryException;
+    abstract CoordinateSystem getTargetCS();
 
     /**
      * Returns the number of dimensions in the source coordinate points.
@@ -107,7 +100,7 @@ abstract class CoordinateSystemTransform extends AbstractMathTransform {
      */
     @Override
     public final int getSourceDimensions() {
-        return dimension;
+        return getSourceCS().getDimension();
     }
 
     /**
@@ -116,7 +109,7 @@ abstract class CoordinateSystemTransform extends AbstractMathTransform {
      */
     @Override
     public final int getTargetDimensions() {
-        return dimension;
+        return getTargetCS().getDimension();
     }
 
     /**
@@ -156,17 +149,19 @@ abstract class CoordinateSystemTransform extends AbstractMathTransform {
             }
         }
         Exception cause = null;
-        if (tr != null && tr.getSourceDimensions() == source.getDimension()
-                       && tr.getTargetDimensions() == target.getDimension())
-        {
-            try {
-                final Matrix before = CoordinateSystems.swapAndScaleAxes(source, tr.getSourceCS());
-                final Matrix after = CoordinateSystems.swapAndScaleAxes(tr.getTargetCS(), target);
-                return MathTransforms.concatenate(
-                        MathTransforms.linear(before), tr.completeTransform(), MathTransforms.linear(after));
-            } catch (IllegalArgumentException | ConversionException e) {
-                cause = e;
+        try {
+            if (tr == null) {
+                return factory.createAffineTransform(CoordinateSystems.swapAndScaleAxes(source, target));
+            } else if (tr.getSourceDimensions() == source.getDimension() &&
+                       tr.getTargetDimensions() == target.getDimension())
+            {
+                final MathTransform before = factory.createAffineTransform(CoordinateSystems.swapAndScaleAxes(source, tr.getSourceCS()));
+                final MathTransform after  = factory.createAffineTransform(CoordinateSystems.swapAndScaleAxes(tr.getTargetCS(), target));
+                return factory.createConcatenatedTransform(before,
+                       factory.createConcatenatedTransform(tr.completeTransform(), after));
             }
+        } catch (IllegalArgumentException | ConversionException e) {
+            cause = e;
         }
         throw new OperationNotFoundException(Errors.format(Errors.Keys.CoordinateOperationNotFound_2,
                 WKTUtilities.toType(CoordinateSystem.class, source.getClass()),

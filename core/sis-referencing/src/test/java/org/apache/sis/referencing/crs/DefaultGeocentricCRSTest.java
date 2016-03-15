@@ -18,12 +18,16 @@ package org.apache.sis.referencing.crs;
 
 import javax.measure.unit.SI;
 import org.opengis.referencing.cs.CartesianCS;
+import org.opengis.referencing.cs.CoordinateSystem;
+import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.referencing.IdentifiedObjects;
+import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.internal.referencing.Legacy;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
+import org.opengis.test.Validators;
 import org.junit.Test;
 
 import static org.apache.sis.test.MetadataAssert.*;
@@ -34,13 +38,55 @@ import static org.apache.sis.test.MetadataAssert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.6
+ * @version 0.7
  * @module
  */
 @DependsOn({
     DefaultGeodeticCRSTest.class
 })
 public final strictfp class DefaultGeocentricCRSTest extends TestCase {
+    /**
+     * Tests the {@link DefaultGeocentricCRS#forConvention(AxesConvention)} method
+     * for {@link AxesConvention#RIGHT_HANDED}.
+     *
+     * @since 0.7
+     */
+    @Test
+    public void testRightHanded() {
+        final DefaultGeocentricCRS crs = DefaultGeocentricCRS.castOrCopy(HardCodedCRS.SPHERICAL);
+        final DefaultGeocentricCRS normalized = crs.forConvention(AxesConvention.RIGHT_HANDED);
+        assertNotSame(crs, normalized);
+        final CoordinateSystem cs = normalized.getCoordinateSystem();
+        final CoordinateSystem ref = crs.getCoordinateSystem();
+        assertSame("longitude", ref.getAxis(1), cs.getAxis(0));
+        assertSame("latitude",  ref.getAxis(0), cs.getAxis(1));
+        assertSame("height",    ref.getAxis(2), cs.getAxis(2));
+    }
+
+    /**
+     * Tests the {@link DefaultGeocentricCRS#forConvention(AxesConvention)} method
+     * for {@link AxesConvention#POSITIVE_RANGE}.
+     *
+     * @since 0.7
+     */
+    @Test
+    public void testShiftLongitudeRange() {
+        final DefaultGeocentricCRS crs = HardCodedCRS.SPHERICAL;
+        CoordinateSystemAxis axis = crs.getCoordinateSystem().getAxis(1);
+        assertEquals("longitude.minimumValue", -180.0, axis.getMinimumValue(), STRICT);
+        assertEquals("longitude.maximumValue", +180.0, axis.getMaximumValue(), STRICT);
+
+        final DefaultGeocentricCRS shifted =  crs.forConvention(AxesConvention.POSITIVE_RANGE);
+        assertNotSame("Expected a new CRS.", crs, shifted);
+        Validators.validate(shifted);
+
+        axis = shifted.getCoordinateSystem().getAxis(1);
+        assertEquals("longitude.minimumValue",      0.0, axis.getMinimumValue(), STRICT);
+        assertEquals("longitude.maximumValue",    360.0, axis.getMaximumValue(), STRICT);
+        assertSame("Expected a no-op.",         shifted, shifted.forConvention(AxesConvention.POSITIVE_RANGE));
+        assertSame("Expected cached instance.", shifted, crs    .forConvention(AxesConvention.POSITIVE_RANGE));
+    }
+
     /**
      * Tests WKT 1 formatting.
      * Axis directions Geocentric X, Y and Z shall be replaced be Other, East and North respectively,

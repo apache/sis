@@ -87,8 +87,7 @@ public final strictfp class HardCodedCS {
      * A three-dimensional spherical CS with
      * <var>{@linkplain HardCodedAxes#SPHERICAL_LATITUDE latitude}</var>,
      * <var>{@linkplain HardCodedAxes#SPHERICAL_LONGITUDE longitude}</var>,
-     * <var>{@linkplain HardCodedAxes#GEOCENTRIC_RADIUS radius}</var>
-     * axes.
+     * <var>{@linkplain HardCodedAxes#GEOCENTRIC_RADIUS radius}</var> axes.
      * This axis order is the one of EPSG:6404.
      * Note that this is not a right-handed system.
      */
