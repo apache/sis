@@ -23,6 +23,7 @@ import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.referencing.cs.CoordinateSystem;
+import org.opengis.referencing.cs.CylindricalCS;
 import org.opengis.referencing.cs.SphericalCS;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
@@ -33,6 +34,8 @@ import org.apache.sis.internal.util.Constants;
 import org.apache.sis.metadata.iso.ImmutableIdentifier;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.parameter.DefaultParameterDescriptorGroup;
+import org.apache.sis.referencing.cs.AbstractCS;
+import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.referencing.operation.DefaultOperationMethod;
 import org.apache.sis.util.resources.Errors;
@@ -63,10 +66,10 @@ abstract class CoordinateSystemTransform extends AbstractMathTransform {
      * Subclasses may need to invoke {@link ContextualParameters#normalizeGeographicInputs(double)}
      * or {@link ContextualParameters#denormalizeGeographicOutputs(double)} after this constructor.
      */
-    CoordinateSystemTransform(final String method, final int dimension) {
+    CoordinateSystemTransform(final String method) {
         final Map<String,?> properties = Collections.singletonMap(DefaultOperationMethod.NAME_KEY,
                 new ImmutableIdentifier(Citations.SIS, Constants.SIS, method));
-        context = new ContextualParameters(new DefaultOperationMethod(properties, dimension, dimension,
+        context = new ContextualParameters(new DefaultOperationMethod(properties, 3, 3,
                 new DefaultParameterDescriptorGroup(properties, 1, 1)));
     }
 
@@ -83,24 +86,12 @@ abstract class CoordinateSystemTransform extends AbstractMathTransform {
     }
 
     /**
-     * Returns the source coordinate system of the complete math transform.
-     * Angular units shall be degrees.
-     */
-    abstract CoordinateSystem getSourceCS();
-
-    /**
-     * Returns the target coordinate system of the complete math transform.
-     * Angular units shall be degrees.
-     */
-    abstract CoordinateSystem getTargetCS();
-
-    /**
      * Returns the number of dimensions in the source coordinate points.
      * Shall be equals to {@code getSourceCS().getDimension()}.
      */
     @Override
     public final int getSourceDimensions() {
-        return getSourceCS().getDimension();
+        return 3;
     }
 
     /**
@@ -109,7 +100,7 @@ abstract class CoordinateSystemTransform extends AbstractMathTransform {
      */
     @Override
     public final int getTargetDimensions() {
-        return getTargetCS().getDimension();
+        return 3;
     }
 
     /**
@@ -142,10 +133,16 @@ abstract class CoordinateSystemTransform extends AbstractMathTransform {
         if (source instanceof CartesianCS) {
             if (target instanceof SphericalCS) {
                 tr = CartesianToSpherical.INSTANCE;
+            } else if (target instanceof CylindricalCS) {
+                tr = CartesianToCylindrical.INSTANCE;
             }
         } else if (source instanceof SphericalCS) {
             if (target instanceof CartesianCS) {
                 tr = SphericalToCartesian.INSTANCE;
+            }
+        } else if (source instanceof CylindricalCS) {
+            if (target instanceof CartesianCS) {
+                tr = CylindricalToCartesian.INSTANCE;
             }
         }
         Exception cause = null;
@@ -155,10 +152,8 @@ abstract class CoordinateSystemTransform extends AbstractMathTransform {
             } else if (tr.getSourceDimensions() == source.getDimension() &&
                        tr.getTargetDimensions() == target.getDimension())
             {
-                final MathTransform before = factory.createAffineTransform(CoordinateSystems.swapAndScaleAxes(source, tr.getSourceCS()));
-                final MathTransform after  = factory.createAffineTransform(CoordinateSystems.swapAndScaleAxes(tr.getTargetCS(), target));
-                return factory.createConcatenatedTransform(before,
-                       factory.createConcatenatedTransform(tr.completeTransform(), after));
+                return factory.createConcatenatedTransform(normalize(factory, source, false),
+                       factory.createConcatenatedTransform(tr.completeTransform(), normalize(factory, target, true)));
             }
         } catch (IllegalArgumentException | ConversionException e) {
             cause = e;
@@ -166,5 +161,21 @@ abstract class CoordinateSystemTransform extends AbstractMathTransform {
         throw new OperationNotFoundException(Errors.format(Errors.Keys.CoordinateOperationNotFound_2,
                 WKTUtilities.toType(CoordinateSystem.class, source.getClass()),
                 WKTUtilities.toType(CoordinateSystem.class, target.getClass())), cause);
+    }
+
+    /**
+     * Returns the conversion between the given coordinate system and its normalized form.
+     */
+    private static MathTransform normalize(final MathTransformFactory factory, final CoordinateSystem cs,
+            final boolean inverse) throws FactoryException, ConversionException
+    {
+        AbstractCS source = AbstractCS.castOrCopy(cs);
+        AbstractCS target = source.forConvention(AxesConvention.NORMALIZED);
+        if (inverse) {
+            AbstractCS tmp = source;
+            source = target;
+            target = tmp;
+        }
+        return factory.createAffineTransform(CoordinateSystems.swapAndScaleAxes(source, target));
     }
 }

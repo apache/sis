@@ -21,50 +21,46 @@ import java.io.Serializable;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.apache.sis.referencing.operation.matrix.Matrix3;
+import org.apache.sis.internal.util.DoubleDouble;
 
 import static java.lang.Math.*;
 
 
 /**
- * Conversions from spherical coordinates to three-dimensional Cartesian coordinates.
- * This conversion assumes that there is no datum change. Axis order is:
+ * Conversions from cylindrical coordinates to three-dimensional Cartesian coordinates.
+ * This class is also used for polar conversions by just dropping the <var>z</var> ordinate.
+ * This conversion assumes that there is no datum change. Source axis order is:
  *
  * <ul>
- *   <li>Spherical longitude (θ), also noted Ω or λ.</li>
- *   <li>Spherical latitude (Ω), also noted θ or φ′ (confusing).</li>
- *   <li>Spherical radius (r), also noted <var>r</var> in ISO 19111.</li>
+ *   <li>Radius (r)</li>
+ *   <li>Angle  (θ)</li>
+ *   <li>Height (z)</li>
  * </ul>
- * <div class="note"><b>Note:</b>
- * the spherical latitude is related to geodetic latitude φ by {@literal Ω(φ) = atan((1-ℯ²)⋅tan(φ))}.</div>
  *
- * This order matches the {@link EllipsoidToCentricTransform} axis order.
- * Note that this is <strong>not</strong> the convention used neither in physics (ISO 80000-2:2009) or in mathematics.
+ * Target axis order is:
  *
- * <div class="note"><b>Relationship with the convention used in physics</b>
- * The ISO 80000-2 convention is (r,Ω,φ) where φ is like the spherical longitude, and Ω is measured from
- * the Z axis (North pole) instead than from the equator plane. The consequence in the formulas is that
- * {@code sin(Ω)} needs to be replaced by {@code cos(Ω)} and conversely.</div>
+ * <ul>
+ *   <li><var>x</var> in the direction of θ = 0°</li>
+ *   <li><var>y</var> in the direction of θ = 90°</li>
+ *   <li><var>z</var> in the some direction than the source</li>
+ * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.7
  * @version 0.7
  * @module
- *
- * @see CartesianToSpherical
- * @see EllipsoidToCentricTransform
- * @see <a href="https://en.wikipedia.org/wiki/Spherical_coordinate_system">Spherical coordinate system on Wikipedia</a>
  */
-final class SphericalToCartesian extends CoordinateSystemTransform implements Serializable {
+final class CylindricalToCartesian extends CoordinateSystemTransform implements Serializable {
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = 8001536207920751506L;
+    private static final long serialVersionUID = 3447323620543409532L;
 
     /**
      * The singleton instance expecting input coordinates in radians.
      * For the instance expecting input coordinates in degrees, use {@link #completeTransform()} instead.
      */
-    static final SphericalToCartesian INSTANCE = new SphericalToCartesian();
+    static final CylindricalToCartesian INSTANCE = new CylindricalToCartesian();
 
     /**
      * Returns the singleton instance on deserialization.
@@ -77,9 +73,10 @@ final class SphericalToCartesian extends CoordinateSystemTransform implements Se
      * Creates the singleton instance.
      * Input coordinates are in radians.
      */
-    private SphericalToCartesian() {
-        super("Spherical to Cartesian");
-        context.normalizeGeographicInputs(0);                   // Convert (θ,Ω) from degrees to radians.
+    private CylindricalToCartesian() {
+        super("Cylindrical to Cartesian");
+        context.getMatrix(ContextualParameters.MatrixRole.NORMALIZATION)
+               .convertBefore(1, DoubleDouble.createDegreesToRadians(), null);
     }
 
     /**
@@ -87,7 +84,7 @@ final class SphericalToCartesian extends CoordinateSystemTransform implements Se
      */
     @Override
     public MathTransform inverse() {
-        return CartesianToSpherical.INSTANCE;
+        return CartesianToCylindrical.INSTANCE;
     }
 
     /**
@@ -98,28 +95,22 @@ final class SphericalToCartesian extends CoordinateSystemTransform implements Se
                             final double[] dstPts, final int dstOff,
                             final boolean derivate)
     {
-        final double θ = srcPts[srcOff  ];          // Spherical longitude
-        final double Ω = srcPts[srcOff+1];          // Spherical latitude
-        final double r = srcPts[srcOff+2];          // Spherical radius
+        final double r = srcPts[srcOff  ];
+        final double θ = srcPts[srcOff+1];
+        final double z = srcPts[srcOff+2];
         final double cosθ = cos(θ);
         final double sinθ = sin(θ);
-        final double cosΩ = cos(Ω);
-        final double sinΩ = sin(Ω);
-        final double rsinΩ = r * sinΩ;
-        final double rcosΩ = r * cosΩ;
         if (dstPts != null) {
-            dstPts[dstOff  ] = rcosΩ * cosθ;        // X: Toward prime meridian
-            dstPts[dstOff+1] = rcosΩ * sinθ;        // Y: Toward 90° east
-            dstPts[dstOff+2] = rsinΩ;               // Z: Toward north pole
+            dstPts[dstOff  ] = r*cosθ;
+            dstPts[dstOff+1] = r*sinθ;
+            dstPts[dstOff+2] = z;
         }
         if (!derivate) {
             return null;
         }
-        final double dX_dr = cosΩ * cosθ;
-        final double dY_dr = cosΩ * sinθ;
-        return new Matrix3(-r*dY_dr, -rsinΩ*cosθ, dX_dr,       // ∂X/∂θ, ∂X/∂Ω, ∂X/∂r
-                            r*dX_dr, -rsinΩ*sinθ, dY_dr,       // ∂Y/∂θ, ∂Y/∂Ω, ∂Y/∂r
-                                  0,  rcosΩ,      sinΩ);       // ∂Z/∂θ, ∂Z/∂Ω, ∂Z/∂r
+        return new Matrix3(cosθ, -r*sinθ,  0,
+                           sinθ,  r*cosθ,  0,
+                              0,       0,  1);
     }
 
     /**
@@ -151,13 +142,12 @@ final class SphericalToCartesian extends CoordinateSystemTransform implements Se
             }
         }
         while (--numPts >= 0) {
-            final double θ = srcPts[srcOff++];          // Spherical longitude
-            final double Ω = srcPts[srcOff++];          // Spherical latitude
-            final double r = srcPts[srcOff++];          // Spherical radius
-            final double rcosΩ = r * cos(Ω);
-            dstPts[dstOff++] = rcosΩ * cos(θ);          // X: Toward prime meridian
-            dstPts[dstOff++] = rcosΩ * sin(θ);          // Y: Toward 90° east
-            dstPts[dstOff++] = r * sin(Ω);              // Z: Toward north pole
+            final double r = srcPts[srcOff++];
+            final double θ = srcPts[srcOff++];
+            final double z = srcPts[srcOff++];
+            dstPts[dstOff++] = r*cos(θ);
+            dstPts[dstOff++] = r*sin(θ);
+            dstPts[dstOff++] = z;
             srcOff += srcInc;
             dstOff += dstInc;
         }
@@ -167,7 +157,7 @@ final class SphericalToCartesian extends CoordinateSystemTransform implements Se
      * NOTE: we do not bother to override the methods expecting a 'float' array because those methods should
      *       be rarely invoked. Since there is usually LinearTransforms before and after this transform, the
      *       conversion between float and double will be handled by those LinearTransforms.  If nevertheless
-     *       this SphericalToCartesian is at the beginning or the end of a transformation chain,
+     *       this CylindricalToCartesian is at the beginning or the end of a transformation chain,
      *       the methods inherited from the subclass will work (but may be slightly slower).
      */
 }

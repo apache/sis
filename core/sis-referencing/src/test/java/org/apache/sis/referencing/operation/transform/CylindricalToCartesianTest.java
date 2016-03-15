@@ -29,46 +29,39 @@ import org.junit.Test;
 
 
 /**
- * Tests {@link SphericalToCartesian}.
+ * Tests {@link CylindricalToCartesian}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.7
  * @version 0.7
  * @module
  */
-public final strictfp class SphericalToCartesianTest extends TransformTestCase {
+public final strictfp class CylindricalToCartesianTest extends TransformTestCase {
     /**
      * Returns coordinate points in spherical coordinates and their equivalent in Cartesian coordinates.
      */
     static double[][] testData() {
+        final double z     = 20;
         final double r     = 1000;
         final double cos30 = r*sqrt(0.75);      // cos(30°) = √¾
         final double cos60 = r/2;               // cos(60°) =  ½
         final double sin60 = cos30;
         final double sin30 = cos60;
         return new double[][] {
-            new double[] {                      // (θ,Ω,r) coordinates
+            new double[] {                      // (r,θ,z) coordinates
                  0,       0,       0,
-                 0,       0,       r,
-                90,       0,       r,
-               -90,       0,       r,
-                 0,      90,       r,
-                 0,     -90,       r,
-                 0,      60,       r,
-                60,       0,       r,
-                30,       0,       r,
-                30,      60,       r
-            }, new double[] {                   // (X,Y,Z) coordinates
+                 r,       0,       z,
+                 r,      90,       z,
+                 r,     -90,       z,
+                 r,      60,       z,
+                 r,      30,       z
+            }, new double[] {                   // (x,y,z) coordinates
                  0,       0,       0,
-                 r,       0,       0,
-                 0,       r,       0,
-                 0,      -r,       0,
-                 0,       0,       r,
-                 0,       0,      -r,
-                 cos60,   0,       sin60,
-                 cos60,   sin60,   0,
-                 cos30,   sin30,   0,
-                 cos30/2, sin30/2, sin60
+                 r,       0,       z,
+                 0,       r,       z,
+                 0,      -r,       z,
+                 cos60,   sin60,   z,
+                 cos30,   sin30,   z
             }
         };
     }
@@ -81,7 +74,7 @@ public final strictfp class SphericalToCartesianTest extends TransformTestCase {
      */
     @Test
     public void testConversion() throws FactoryException, TransformException {
-        transform = SphericalToCartesian.INSTANCE.completeTransform();
+        transform = CylindricalToCartesian.INSTANCE.completeTransform();
         tolerance = 1E-12;
         final double[][] data = testData();
         verifyTransform(data[0], data[1]);
@@ -95,10 +88,10 @@ public final strictfp class SphericalToCartesianTest extends TransformTestCase {
      */
     @Test
     public void testDerivative() throws FactoryException, TransformException {
-        transform = SphericalToCartesian.INSTANCE.completeTransform();
+        transform = CylindricalToCartesian.INSTANCE.completeTransform();
         derivativeDeltas = new double[] {1E-6, 1E-6, 1E-6};
         tolerance = 1E-7;
-        verifyDerivative(30, 60, 100);
+        verifyDerivative(100, 60, 25);
     }
 
     /**
@@ -110,12 +103,12 @@ public final strictfp class SphericalToCartesianTest extends TransformTestCase {
     @Test
     @DependsOnMethod({"testConversion", "testDerivative"})
     public void testConsistency() throws FactoryException, TransformException {
-        transform = SphericalToCartesian.INSTANCE.completeTransform();
+        transform = CylindricalToCartesian.INSTANCE.completeTransform();
         derivativeDeltas = new double[] {1E-6, 1E-6, 1E-6};
         tolerance = 1E-7;
-        verifyInDomain(new double[] {-180, -90,   0},       // Minimal coordinates
-                       new double[] {+180, +90, 100},       // Maximal coordinates
-                       new int[]    {  10,  10,  10},
+        verifyInDomain(new double[] {  0, -180, -100},      // Minimal coordinates
+                       new double[] {+20, +180, +100},      // Maximal coordinates
+                       new int[]    { 10,   10,   10},
                        TestUtilities.createRandomNumberGenerator());
     }
 }

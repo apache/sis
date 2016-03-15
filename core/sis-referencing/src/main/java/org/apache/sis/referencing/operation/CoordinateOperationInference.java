@@ -350,6 +350,20 @@ public class CoordinateOperationInference {
          */
         Matrix datumShift = null;
         Identifier identifier = DATUM_SHIFT;
+        final GeodeticDatum datum = null;//TemporaryDatum.unwrap(sourceDatum);
+//        if (datum instanceof DefaultGeodeticDatum) {
+//            datumShift = ((DefaultGeodeticDatum) datum).getPositionVectorTransformation(
+//                    TemporaryDatum.unwrap(targetDatum), null);
+//        }
+//        if (datumShift == null) {
+//            if (lenientDatumShift) {
+//                datumShift = new Matrix4(); // Identity transform.
+//                identifier = ELLIPSOID_CHANGE;
+//            } else {
+//                throw new OperationNotFoundException(Errors.format(
+//                            Errors.Keys.BursaWolfParametersRequired));
+//            }
+//        }
         MatrixSIS matrix;
         final CartesianCS standard = (CartesianCS) CommonCRS.WGS84.geocentric().getCoordinateSystem();
         final Matrix normalizeSource = swapAndScaleAxes(sourceCS, standard);

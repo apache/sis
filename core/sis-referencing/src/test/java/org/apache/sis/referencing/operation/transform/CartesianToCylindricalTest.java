@@ -19,60 +19,24 @@ package org.apache.sis.referencing.operation.transform;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.TransformException;
 
-import static java.lang.StrictMath.*;
-
 // Test dependencies
 import org.opengis.test.referencing.TransformTestCase;
+import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestUtilities;
 import org.junit.Test;
 
 
 /**
- * Tests {@link SphericalToCartesian}.
+ * Tests {@link CartesianToCylindrical}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.7
  * @version 0.7
  * @module
  */
-public final strictfp class SphericalToCartesianTest extends TransformTestCase {
-    /**
-     * Returns coordinate points in spherical coordinates and their equivalent in Cartesian coordinates.
-     */
-    static double[][] testData() {
-        final double r     = 1000;
-        final double cos30 = r*sqrt(0.75);      // cos(30°) = √¾
-        final double cos60 = r/2;               // cos(60°) =  ½
-        final double sin60 = cos30;
-        final double sin30 = cos60;
-        return new double[][] {
-            new double[] {                      // (θ,Ω,r) coordinates
-                 0,       0,       0,
-                 0,       0,       r,
-                90,       0,       r,
-               -90,       0,       r,
-                 0,      90,       r,
-                 0,     -90,       r,
-                 0,      60,       r,
-                60,       0,       r,
-                30,       0,       r,
-                30,      60,       r
-            }, new double[] {                   // (X,Y,Z) coordinates
-                 0,       0,       0,
-                 r,       0,       0,
-                 0,       r,       0,
-                 0,      -r,       0,
-                 0,       0,       r,
-                 0,       0,      -r,
-                 cos60,   0,       sin60,
-                 cos60,   sin60,   0,
-                 cos30,   sin30,   0,
-                 cos30/2, sin30/2, sin60
-            }
-        };
-    }
-
+@DependsOn(CylindricalToCartesianTest.class)
+public final strictfp class CartesianToCylindricalTest extends TransformTestCase {
     /**
      * Tests coordinate conversions.
      *
@@ -81,10 +45,10 @@ public final strictfp class SphericalToCartesianTest extends TransformTestCase {
      */
     @Test
     public void testConversion() throws FactoryException, TransformException {
-        transform = SphericalToCartesian.INSTANCE.completeTransform();
+        transform = CartesianToCylindrical.INSTANCE.completeTransform();
         tolerance = 1E-12;
-        final double[][] data = testData();
-        verifyTransform(data[0], data[1]);
+        final double[][] data = CylindricalToCartesianTest.testData();
+        verifyTransform(data[1], data[0]);
     }
 
     /**
@@ -95,7 +59,7 @@ public final strictfp class SphericalToCartesianTest extends TransformTestCase {
      */
     @Test
     public void testDerivative() throws FactoryException, TransformException {
-        transform = SphericalToCartesian.INSTANCE.completeTransform();
+        transform = CartesianToCylindrical.INSTANCE.completeTransform();
         derivativeDeltas = new double[] {1E-6, 1E-6, 1E-6};
         tolerance = 1E-7;
         verifyDerivative(30, 60, 100);
@@ -110,12 +74,12 @@ public final strictfp class SphericalToCartesianTest extends TransformTestCase {
     @Test
     @DependsOnMethod({"testConversion", "testDerivative"})
     public void testConsistency() throws FactoryException, TransformException {
-        transform = SphericalToCartesian.INSTANCE.completeTransform();
+        transform = CartesianToCylindrical.INSTANCE.completeTransform();
         derivativeDeltas = new double[] {1E-6, 1E-6, 1E-6};
-        tolerance = 1E-7;
-        verifyInDomain(new double[] {-180, -90,   0},       // Minimal coordinates
-                       new double[] {+180, +90, 100},       // Maximal coordinates
-                       new int[]    {  10,  10,  10},
+        tolerance = 2E-7;
+        verifyInDomain(new double[] {-100, -100, -100},      // Minimal coordinates
+                       new double[] {+100, +100, +100},      // Maximal coordinates
+                       new int[]    {  10,   10,   10},
                        TestUtilities.createRandomNumberGenerator());
     }
 }

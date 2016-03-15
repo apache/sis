@@ -21,32 +21,34 @@ import java.io.Serializable;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.apache.sis.referencing.operation.matrix.Matrix3;
+import org.apache.sis.internal.util.DoubleDouble;
 
 import static java.lang.Math.*;
 
 
 /**
  * Conversions from three-dimensional Cartesian coordinates to spherical coordinates.
+ * This class is also used for polar conversions by just dropping the <var>z</var> ordinate.
  * This conversion assumes that there is no datum change.
  *
- * <p>See {@link SphericalToCartesian} for explanation on axes convention.</p>
+ * <p>See {@link CylindricalToCartesian} for explanation on axes convention.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.7
  * @version 0.7
  * @module
  */
-final class CartesianToSpherical extends CoordinateSystemTransform implements Serializable {
+final class CartesianToCylindrical extends CoordinateSystemTransform implements Serializable {
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = 7174557821232512348L;
+    private static final long serialVersionUID = -2619855017534519721L;
 
     /**
      * The singleton instance computing output coordinates are in radians.
      * For the instance computing output coordinates in degrees, use {@link #completeTransform()} instead.
      */
-    static final CartesianToSpherical INSTANCE = new CartesianToSpherical();
+    static final CartesianToCylindrical INSTANCE = new CartesianToCylindrical();
 
     /**
      * Returns the singleton instance on deserialization.
@@ -59,9 +61,10 @@ final class CartesianToSpherical extends CoordinateSystemTransform implements Se
      * Creates the singleton instance.
      * Output coordinates are in radians.
      */
-    private CartesianToSpherical() {
-        super("Cartesian to spherical");
-        context.denormalizeGeographicOutputs(0);                // Convert (θ,Ω) from radians to degrees.
+    private CartesianToCylindrical() {
+        super("Cartesian to cylindrical");
+        context.getMatrix(ContextualParameters.MatrixRole.DENORMALIZATION)
+               .convertAfter(1, DoubleDouble.createRadiansToDegrees(), null);
     }
 
     /**
@@ -69,7 +72,7 @@ final class CartesianToSpherical extends CoordinateSystemTransform implements Se
      */
     @Override
     public MathTransform inverse() {
-        return SphericalToCartesian.INSTANCE;
+        return CylindricalToCartesian.INSTANCE;
     }
 
     /**
@@ -80,24 +83,22 @@ final class CartesianToSpherical extends CoordinateSystemTransform implements Se
                             final double[] dstPts, final int dstOff,
                             final boolean derivate)
     {
-        final double X  = srcPts[srcOff  ];
-        final double Y  = srcPts[srcOff+1];
-        final double Z  = srcPts[srcOff+2];
-        final double ρ2 = X*X + Y*Y;
-        final double r2 = Z*Z + ρ2;
-        final double r  = sqrt(r2);
+        final double x  = srcPts[srcOff  ];
+        final double y  = srcPts[srcOff+1];
+        final double z  = srcPts[srcOff+2];
+        final double r  = hypot(x, y);
         if (dstPts != null) {
-            dstPts[dstOff  ] = atan2(Y, X);                     // Spherical longitude (θ)
-            dstPts[dstOff+1] = (r == 0) ? Z : asin(Z / r);      // Spherical latitude  (Ω). If (X,Y,Z) is (0,0,0) take the sign of Z.
-            dstPts[dstOff+2] = r;
+            dstPts[dstOff  ] = r;
+            dstPts[dstOff+1] = atan2(y, x);
+            dstPts[dstOff+2] = z;
         }
         if (!derivate) {
             return null;
         }
-        final double d = r2 * sqrt(r2 - Z*Z);
-        return new Matrix3(-Y/ρ2,   X/ρ2,     0,        // ∂θ/∂X, ∂θ/∂Y, ∂θ/∂Z
-                           -X*Z/d, -Y*Z/d, ρ2/d,        // ∂Ω/∂X, ∂Ω/∂Y, ∂Ω/∂Z
-                            X/r,    Y/r,   Z/r);        // ∂r/∂X, ∂r/∂Y, ∂r/∂Z
+        final double r2 = r*r;
+        return new Matrix3(x/r,   y/r,   0,
+                          -y/r2,  x/r2,  0,
+                           0,     0,     1);
     }
 
     /**
@@ -129,13 +130,12 @@ final class CartesianToSpherical extends CoordinateSystemTransform implements Se
             }
         }
         while (--numPts >= 0) {
-            final double X  = srcPts[srcOff++];
-            final double Y  = srcPts[srcOff++];
-            final double Z  = srcPts[srcOff++];
-            final double r  = sqrt(X*X + Y*Y + Z*Z);
-            dstPts[dstOff++] = atan2(Y, X);                     // Spherical longitude (θ)
-            dstPts[dstOff++] = (r == 0) ? Z : asin(Z / r);      // Spherical latitude  (Ω). If (X,Y,Z) is (0,0,0) take the sign of Z.
-            dstPts[dstOff++] = r;
+            final double x  = srcPts[srcOff++];
+            final double y  = srcPts[srcOff++];
+            final double z  = srcPts[srcOff++];
+            dstPts[dstOff++] = hypot(x, y);
+            dstPts[dstOff++] = atan2(y, x);
+            dstPts[dstOff++] = z;
             srcOff += srcInc;
             dstOff += dstInc;
         }
@@ -145,7 +145,7 @@ final class CartesianToSpherical extends CoordinateSystemTransform implements Se
      * NOTE: we do not bother to override the methods expecting a 'float' array because those methods should
      *       be rarely invoked. Since there is usually LinearTransforms before and after this transform, the
      *       conversion between float and double will be handled by those LinearTransforms.  If nevertheless
-     *       this CartesianToSpherical is at the beginning or the end of a transformation chain,
+     *       this CartesianToCylindrical is at the beginning or the end of a transformation chain,
      *       the methods inherited from the subclass will work (but may be slightly slower).
      */
 }

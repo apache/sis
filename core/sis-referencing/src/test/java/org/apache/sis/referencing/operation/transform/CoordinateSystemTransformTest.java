@@ -20,10 +20,14 @@ import javax.measure.unit.SI;
 import javax.measure.unit.Unit;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.cs.CoordinateSystem;
+import org.opengis.referencing.cs.SphericalCS;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.TransformException;
+import org.apache.sis.referencing.crs.DefaultGeocentricCRS;
 import org.apache.sis.referencing.cs.CoordinateSystems;
+import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.cs.AxisFilter;
+import org.apache.sis.referencing.CommonCRS;
 
 // Test dependencies
 import org.opengis.test.referencing.TransformTestCase;
@@ -50,6 +54,11 @@ import org.junit.Test;
 })
 public final strictfp class CoordinateSystemTransformTest extends TransformTestCase {
     /**
+     * A right-handed spherical coordinate system.
+     */
+    private static SphericalCS spherical;
+
+    /**
      * The factory to use for creating the affine transforms and concatenated transforms.
      */
     private static MathTransformFactory factory;
@@ -61,6 +70,8 @@ public final strictfp class CoordinateSystemTransformTest extends TransformTestC
     @BeforeClass
     public static void createFactory() {
         factory = new DefaultMathTransformFactory();
+        spherical = (SphericalCS) DefaultGeocentricCRS.castOrCopy(CommonCRS.WGS84.spherical())
+                            .forConvention(AxesConvention.RIGHT_HANDED).getCoordinateSystem();
     }
 
     /**
@@ -68,6 +79,7 @@ public final strictfp class CoordinateSystemTransformTest extends TransformTestC
      */
     @AfterClass
     public static void disposeFactory() {
+        spherical = null;
         factory = null;
     }
 
@@ -108,7 +120,7 @@ public final strictfp class CoordinateSystemTransformTest extends TransformTestC
      */
     @Test
     public void testSphericalToSpherical() throws FactoryException, TransformException {
-        transform = CoordinateSystemTransform.create(factory, HardCodedCS.SPHERICAL, SphericalToCartesian.SOURCE);
+        transform = CoordinateSystemTransform.create(factory, HardCodedCS.SPHERICAL, spherical);
         tolerance = 0;
         final double[][] data = SphericalToCartesianTest.testData();
         final double[] source = data[0];
