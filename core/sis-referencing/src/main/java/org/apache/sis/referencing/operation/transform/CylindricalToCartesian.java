@@ -28,7 +28,6 @@ import static java.lang.Math.*;
 
 /**
  * Conversions from cylindrical coordinates to three-dimensional Cartesian coordinates.
- * This class is also used for polar conversions by just dropping the <var>z</var> ordinate.
  * This conversion assumes that there is no datum change. Source axis order is:
  *
  * <ul>

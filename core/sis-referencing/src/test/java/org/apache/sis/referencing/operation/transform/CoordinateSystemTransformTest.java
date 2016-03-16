@@ -29,6 +29,7 @@ import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.cs.AxisFilter;
 import org.apache.sis.referencing.CommonCRS;
+import org.apache.sis.measure.Units;
 
 // Test dependencies
 import org.opengis.test.referencing.TransformTestCase;
@@ -85,12 +86,12 @@ public final strictfp class CoordinateSystemTransformTest extends TransformTestC
     }
 
     /**
-     * Returns {@link HardCodedCS#GEOCENTRIC} but with axes in centimetres instead of metres.
+     * Returns the given coordinate system but with linear axes in centimetres instead of metres.
      */
-    private static CoordinateSystem geocentricInCentimetres() {
-        return CoordinateSystems.replaceAxes(HardCodedCS.GEOCENTRIC, new AxisFilter() {
-            @Override public Unit<?> getUnitReplacement(CoordinateSystemAxis axis, Unit<?> ignored) {
-                return SI.CENTIMETRE;
+    private static CoordinateSystem toCentimetres(final CoordinateSystem cs) {
+        return CoordinateSystems.replaceAxes(cs, new AxisFilter() {
+            @Override public Unit<?> getUnitReplacement(CoordinateSystemAxis axis, Unit<?> unit) {
+                return Units.isLinear(unit) ? SI.CENTIMETRE : unit;
             }
         });
     }
@@ -142,8 +143,8 @@ public final strictfp class CoordinateSystemTransformTest extends TransformTestC
      */
     @Test
     public void testSphericalToCartesian() throws FactoryException, TransformException {
-        transform = CoordinateSystemTransform.create(factory, HardCodedCS.SPHERICAL, geocentricInCentimetres());
         tolerance = 1E-9;
+        transform = CoordinateSystemTransform.create(factory, HardCodedCS.SPHERICAL, toCentimetres(HardCodedCS.GEOCENTRIC));
         final double[][] data = sphericalTestData();
         verifyTransform(data[0], data[1]);
     }
@@ -157,9 +158,56 @@ public final strictfp class CoordinateSystemTransformTest extends TransformTestC
      */
     @Test
     public void testCartesianToSpherical() throws FactoryException, TransformException {
-        transform = CoordinateSystemTransform.create(factory, geocentricInCentimetres(), HardCodedCS.SPHERICAL);
         tolerance = 1E-9;
+        transform = CoordinateSystemTransform.create(factory, toCentimetres(HardCodedCS.GEOCENTRIC), HardCodedCS.SPHERICAL);
         final double[][] data = sphericalTestData();
+        verifyTransform(data[1], data[0]);
+    }
+
+    /**
+     * Returns {@link CylindricalToCartesianTest#testData()} modified for the source and target
+     * coordinate systems used in this class.
+     */
+    private static double[][] cylindricalTestData() {
+        final double[][] data = CylindricalToCartesianTest.testData();
+        final double[] source = data[0];
+        for (int i=1; i<source.length; i += 3) {
+            source[i] = -source[i];                 // Change counterclockwise direction into clockwise direction.
+        }
+        final double[] target = data[1];
+        for (int i=0; i<target.length; i++) {
+            target[i] *= 100;
+        }
+        return data;
+    }
+
+    /**
+     * Tests {@link CoordinateSystemTransform#create(MathTransformFactory, CoordinateSystem, CoordinateSystem)}.
+     * for a conversion from cylindrical to Cartesian coordinates.
+     *
+     * @throws FactoryException if an error occurred while creating the transform.
+     * @throws TransformException if an error occurred while transforming the test point.
+     */
+    @Test
+    public void testCylindricalToCartesian() throws FactoryException, TransformException {
+        tolerance = 1E-9;
+        transform = CoordinateSystemTransform.create(factory, HardCodedCS.CYLINDRICAL, toCentimetres(HardCodedCS.CARTESIAN_3D));
+        final double[][] data = cylindricalTestData();
+        verifyTransform(data[0], data[1]);
+    }
+
+    /**
+     * Tests {@link CoordinateSystemTransform#create(MathTransformFactory, CoordinateSystem, CoordinateSystem)}.
+     * for a conversion from Cartesian to cylindrical coordinates.
+     *
+     * @throws FactoryException if an error occurred while creating the transform.
+     * @throws TransformException if an error occurred while transforming the test point.
+     */
+    @Test
+    public void testCartesianToCylindrical() throws FactoryException, TransformException {
+        tolerance = 1E-9;
+        transform = CoordinateSystemTransform.create(factory, toCentimetres(HardCodedCS.CARTESIAN_3D), HardCodedCS.CYLINDRICAL);
+        final double[][] data = cylindricalTestData();
         verifyTransform(data[1], data[0]);
     }
 }
