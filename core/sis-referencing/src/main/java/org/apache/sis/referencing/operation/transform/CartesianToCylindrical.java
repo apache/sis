@@ -28,7 +28,6 @@ import static java.lang.Math.*;
 
 /**
  * Conversions from three-dimensional Cartesian coordinates to spherical coordinates.
- * This class is also used for polar conversions by just dropping the <var>z</var> ordinate.
  * This conversion assumes that there is no datum change.
  *
  * <p>See {@link CylindricalToCartesian} for explanation on axes convention.
