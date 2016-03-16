@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.HashMap;
 import javax.measure.unit.Unit;
 import javax.measure.quantity.Angle;
+import org.opengis.annotation.UML;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
@@ -30,6 +31,8 @@ import org.apache.sis.util.iso.Types;
 import org.apache.sis.measure.Units;
 
 import static org.opengis.referencing.cs.AxisDirection.*;
+import static org.opengis.annotation.Obligation.CONDITIONAL;
+import static org.opengis.annotation.Specification.ISO_19162;
 import static org.apache.sis.util.CharSequences.*;
 
 
@@ -66,6 +69,7 @@ public final class AxisDirections extends Static {
      *
      * @since 0.7
      */
+    @UML(identifier="clockwise", obligation=CONDITIONAL, specification=ISO_19162)
     public static final AxisDirection CLOCKWISE = AxisDirection.valueOf("CLOCKWISE");
 
     /**
@@ -74,6 +78,7 @@ public final class AxisDirections extends Static {
      *
      * @since 0.7
      */
+    @UML(identifier="counterclockwise", obligation=CONDITIONAL, specification=ISO_19162)
     public static final AxisDirection COUNTERCLOCKWISE = AxisDirection.valueOf("COUNTERCLOCKWISE");
 
     /**
@@ -160,11 +165,16 @@ public final class AxisDirections extends Static {
      * @param  dir The direction for which to return the absolute direction, or {@code null}.
      * @return The direction from the above table, or {@code null} if the given direction was null.
      */
-    public static AxisDirection absolute(final AxisDirection dir) {
+    public static AxisDirection absolute(AxisDirection dir) {
         final AxisDirection opposite = opposite(dir);
         if (opposite != null) {
             if (opposite.ordinal() < dir.ordinal()) {
-                return opposite;
+                dir = opposite;
+            }
+            // Below is a temporary patch pending integration of code list values into GeoAPI.
+            // We need this patch because we can not rely on ordinal() value for custom codes.
+            if (dir == CLOCKWISE) {
+                dir = COUNTERCLOCKWISE;
             }
         }
         return dir;
@@ -564,10 +574,14 @@ public final class AxisDirections extends Static {
     }
 
     /**
-     * Returns {@code true} if the given name starts with the given keyword, ignoring case.
+     * Returns {@code true} if the given name starts or ends with the given keyword, ignoring case.
+     *
+     * @param start {@code false} if the given keyword is expected at the beggining of the name,
+     *        or {@code end} if expected at the end.
      */
-    private static boolean startsWith(final String name, final String keyword) {
-        return name.regionMatches(true, 0, keyword, 0, keyword.length());
+    private static boolean contains(final String name, final String keyword, final boolean end) {
+        final int length = keyword.length();
+        return name.regionMatches(true, end ? name.length() - length : 0, keyword, 0, length);
     }
 
     /**
@@ -588,12 +602,18 @@ public final class AxisDirections extends Static {
         }
         if (isCompass(direction)) {
             /*
+             * Radius at θ = 0° may be oriented toward North, but we do not want the "N" abbreviation.
+             */
+            if (contains(name, "radius", true)) {
+                return "r";
+            }
+            /*
              * NORTH, EAST, SOUTH, WEST and all intercardinal directions (SOUTH_SOUTH_WEST, etc.):
              * we will use the acronym (e.g. "SE" for SOUTH_EAST), unless the axis is likely to be
              * a longitude or latitude axis. We detect those later cases by the unit of measurement.
              */
             if (!isIntercardinal(direction) && Units.isAngular(unit)) {
-                if (startsWith(name, "Spherical")) {
+                if (contains(name, "Spherical", false)) {
                     return NORTH.equals(absolute(direction)) ? "φ′" : "θ";
                 } else {
                     return NORTH.equals(absolute(direction)) ? "φ" : "λ";
@@ -607,7 +627,7 @@ public final class AxisDirections extends Static {
              * use "h" as the fallback for unknown vertical axis.
              */
             if (UP.equals(direction)) {
-                return startsWith(name, "Gravity") ? "H" : startsWith(name, "Geocentric") ? "r": "h";
+                return contains(name, "Gravity", false) ? "H" : contains(name, "Geocentric", false) ? "r": "h";
             } else if (DOWN.equals(direction)) {
                 return "D"; // "Depth"
             } else if (isGeocentric(direction)) {
@@ -628,6 +648,8 @@ public final class AxisDirections extends Static {
                 return "y";
             } else if (OTHER.equals(a)) {
                 return "z";                     // Arbitrary abbreviation, may change in any future SIS version.
+            } else if (COUNTERCLOCKWISE.equals(a)) {
+                return "θ";
             }
         }
         final String id = direction.identifier();   // UML identifier, or null if none.

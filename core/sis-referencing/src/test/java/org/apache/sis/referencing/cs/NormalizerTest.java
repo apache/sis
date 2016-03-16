@@ -36,7 +36,7 @@ import static org.apache.sis.test.ReferencingAssert.*;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4
- * @version 0.6
+ * @version 0.7
  * @module
  */
 @DependsOn({
@@ -70,8 +70,8 @@ public final strictfp class NormalizerTest extends TestCase {
 
         // A plausible CS.
         assertOrdered(new AxisDirection[] {
-            AxisDirection.EAST,    // Right handed-rule
-            AxisDirection.NORTH,   // Right handed-rule
+            AxisDirection.EAST,                 // Right handed-rule
+            AxisDirection.NORTH,                // Right handed-rule
             AxisDirection.UP
         }, new AxisDirection[] {
             AxisDirection.NORTH,
@@ -82,8 +82,8 @@ public final strictfp class NormalizerTest extends TestCase {
         // A very dummy CS just for testing. The order of
         // any non-compass direction should be unchanged.
         assertOrdered(new AxisDirection[] {
-            AxisDirection.NORTH_EAST,        // Right handed-rule
-            AxisDirection.NORTH_NORTH_WEST,  // Right handed-rule
+            AxisDirection.NORTH_EAST,           // Right handed-rule
+            AxisDirection.NORTH_NORTH_WEST,     // Right handed-rule
             AxisDirection.GEOCENTRIC_X,
             AxisDirection.GEOCENTRIC_Y,
             AxisDirection.PAST
@@ -97,8 +97,8 @@ public final strictfp class NormalizerTest extends TestCase {
 
         // An other plausible CS.
         assertOrdered(new AxisDirection[] {
-            AxisDirection.WEST,   // Right handed-rule
-            AxisDirection.SOUTH,  // Right handed-rule
+            AxisDirection.WEST,                 // Right handed-rule
+            AxisDirection.SOUTH,                // Right handed-rule
             AxisDirection.DOWN
         }, new AxisDirection[] {
             AxisDirection.SOUTH,
@@ -108,8 +108,8 @@ public final strictfp class NormalizerTest extends TestCase {
 
         // An other plausible CS.
         assertOrdered(new AxisDirection[] {
-            AxisDirection.SOUTH,  // Right handed-rule
-            AxisDirection.EAST,   // Right handed-rule
+            AxisDirection.SOUTH,                // Right handed-rule
+            AxisDirection.EAST,                 // Right handed-rule
             AxisDirection.DOWN
         }, new AxisDirection[] {
             AxisDirection.SOUTH,
@@ -136,7 +136,7 @@ public final strictfp class NormalizerTest extends TestCase {
                                       final CoordinateSystemAxis[] actual)
     {
         final boolean changeExpected = !Arrays.equals(actual, expected);
-        assertEquals(changeExpected, Normalizer.sort(actual));
+        assertEquals(changeExpected, Normalizer.sort(actual, 0));
         assertArrayEquals(expected, actual);
     }
 
@@ -171,10 +171,12 @@ public final strictfp class NormalizerTest extends TestCase {
         assertSame(HardCodedAxes.NORTHING,           Normalizer.normalize(HardCodedAxes.NORTHING, changes));
         assertSame(HardCodedAxes.ALTITUDE,           Normalizer.normalize(HardCodedAxes.ALTITUDE, changes));
         assertSame(HardCodedAxes.TIME,               Normalizer.normalize(HardCodedAxes.TIME, changes));
+        assertSame("Radius orientation should not be changed from South to North because it does not allow negative values.",
+                HardCodedAxes.RADIUS, Normalizer.normalize(HardCodedAxes.RADIUS, changes));
     }
 
     /**
-     * Tests {@link Normalizer#normalize(CoordinateSystemAxis)}.
+     * Tests {@link Normalizer#normalize(CoordinateSystemAxis, AxisFilter)}.
      */
     @Test
     public void testNormalizeAxis() {
@@ -185,15 +187,15 @@ public final strictfp class NormalizerTest extends TestCase {
          * Test a change of unit from centimetre to metre.
          */
         assertSame(HardCodedAxes.HEIGHT_cm, Normalizer.normalize(HardCodedAxes.HEIGHT_cm,
-                AxesConvention.CONVENTIONALLY_ORIENTED));   // Do not change unit.
+                AxesConvention.CONVENTIONALLY_ORIENTED));                                   // Do not change unit.
         assertAxisEquals("Height", "h", AxisDirection.UP,
-            Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, SI.METRE, null,
-            Normalizer.normalize(HardCodedAxes.HEIGHT_cm, AxesConvention.NORMALIZED));
+                Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, SI.METRE, null,
+                Normalizer.normalize(HardCodedAxes.HEIGHT_cm, AxesConvention.NORMALIZED));
         /*
          * Test a change of direction from West to East.
          */
         assertAxisEquals(Vocabulary.format(Vocabulary.Keys.Unnamed), "E",
-            AxisDirection.EAST, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, SI.METRE, null,
-            Normalizer.normalize(HardCodedAxes.WESTING, AxesConvention.NORMALIZED));
+                AxisDirection.EAST, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, SI.METRE, null,
+                Normalizer.normalize(HardCodedAxes.WESTING, AxesConvention.NORMALIZED));
     }
 }

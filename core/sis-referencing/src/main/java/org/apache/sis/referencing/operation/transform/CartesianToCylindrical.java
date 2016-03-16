@@ -31,7 +31,8 @@ import static java.lang.Math.*;
  * This class is also used for polar conversions by just dropping the <var>z</var> ordinate.
  * This conversion assumes that there is no datum change.
  *
- * <p>See {@link CylindricalToCartesian} for explanation on axes convention.</p>
+ * <p>See {@link CylindricalToCartesian} for explanation on axes convention.
+ * Axis order shall match the order defined by {@code Normalizer} in {@link org.apache.sis.referencing.cs} package.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.7

@@ -42,6 +42,7 @@ import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.cs.CSFactory;
 import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.referencing.cs.AxisDirection;
+import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.datum.DatumFactory;
 import org.opengis.referencing.datum.EngineeringDatum;
 import org.apache.sis.internal.referencing.GeodeticObjectBuilder;
@@ -634,7 +635,7 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
             }
             if (!SI.METRE.equals(unit)) {
                 cs = (CartesianCS) CoordinateSystems.replaceAxes(cs, new AxisFilter() {
-                    @Override public Unit<?> getUnitReplacement(Unit<?> ignored) {
+                    @Override public Unit<?> getUnitReplacement(CoordinateSystemAxis axis, Unit<?> ignored) {
                         assert SI.METRE.equals(ignored) : ignored;
                         return unit;
                     }
