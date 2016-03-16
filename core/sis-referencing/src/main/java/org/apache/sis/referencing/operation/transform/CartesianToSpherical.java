@@ -29,7 +29,8 @@ import static java.lang.Math.*;
  * Conversions from three-dimensional Cartesian coordinates to spherical coordinates.
  * This conversion assumes that there is no datum change.
  *
- * <p>See {@link SphericalToCartesian} for explanation on axes convention.</p>
+ * <p>See {@link SphericalToCartesian} for explanation on axes convention.
+ * Axis order shall match the order defined by {@code Normalizer} in {@link org.apache.sis.referencing.cs} package.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.7

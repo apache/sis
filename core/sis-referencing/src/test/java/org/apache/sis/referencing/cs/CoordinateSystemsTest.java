@@ -286,7 +286,7 @@ public final strictfp class CoordinateSystemsTest extends TestCase {
             }
 
             @Override
-            public Unit<?> getUnitReplacement(Unit<?> unit) {
+            public Unit<?> getUnitReplacement(CoordinateSystemAxis axis, Unit<?> unit) {
                 if (Units.isAngular(unit)) {
                     unit = NonSI.GRADE;
                 }

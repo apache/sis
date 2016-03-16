@@ -45,6 +45,8 @@ import static java.lang.Math.*;
  *   <li><var>z</var> in the some direction than the source</li>
  * </ul>
  *
+ * Axis order shall match the order defined by {@code Normalizer} in {@link org.apache.sis.referencing.cs} package.
+ *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.7
  * @version 0.7

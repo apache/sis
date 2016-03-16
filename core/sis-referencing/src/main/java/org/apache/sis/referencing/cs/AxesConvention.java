@@ -21,6 +21,7 @@ import javax.measure.unit.SI;
 import javax.measure.unit.NonSI;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystem;                 // For javadoc
+import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.apache.sis.internal.metadata.AxisDirections;
 import org.apache.sis.measure.Units;
 
@@ -107,7 +108,7 @@ import org.apache.sis.measure.Units;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.6
+ * @version 0.7
  * @module
  *
  * @see AbstractCS#forConvention(AxesConvention)
@@ -147,7 +148,7 @@ public enum AxesConvention implements AxisFilter {
      */
     NORMALIZED {
         @Override
-        public Unit<?> getUnitReplacement(Unit<?> unit) {
+        public Unit<?> getUnitReplacement(final CoordinateSystemAxis axis, Unit<?> unit) {
             if (Units.isLinear(unit)) {
                 unit = SI.METRE;
             } else if (Units.isAngular(unit)) {
@@ -158,18 +159,29 @@ public enum AxesConvention implements AxisFilter {
             return unit;
         }
 
-        /*
-         * Same policy than AxesConvention.CONVENTIONALLY_ORIENTATED.
-         */
         @Override
-        public AxisDirection getDirectionReplacement(final AxisDirection direction) {
-            return AxisDirections.isIntercardinal(direction) ? direction : AxisDirections.absolute(direction);
+        public AxisDirection getDirectionReplacement(final CoordinateSystemAxis axis, final AxisDirection direction) {
+            /*
+             * For now we do not touch to inter-cardinal directions (e.g. "North-East")
+             * because it is not clear which normalization policy would match common usage.
+             */
+            if (!AxisDirections.isIntercardinal(direction)) {
+                /*
+                 * Change the direction only if the axis allows negative values.
+                 * If the axis accepts only positive values, then the direction
+                 * is considered non-invertible.
+                 */
+                if (axis == null || axis.getMinimumValue() < 0) {
+                    return AxisDirections.absolute(direction);
+                }
+            }
+            return direction;
         }
     },
 
     /**
      * Axes are oriented toward conventional directions and ordered for a {@linkplain #RIGHT_HANDED right-handed}
-     * coordinate system. Ranges of ordinate values and units of measurement are unchanged.
+     * coordinate system. Units of measurement are unchanged.
      *
      * <p>More specifically, directions opposites to the following ones are replaced by their "forward" counterpart
      * (e.g. {@code SOUTH} → {@code NORTH}):</p>
@@ -215,13 +227,8 @@ public enum AxesConvention implements AxisFilter {
      * @since 0.5
      */
     CONVENTIONALLY_ORIENTED {
-        /*
-         * For now we do not touch to inter-cardinal directions (e.g. "North-East")
-         * because it is not clear which normalization policy would match common usage.
-         */
-        @Override
-        public AxisDirection getDirectionReplacement(final AxisDirection direction) {
-            return AxisDirections.isIntercardinal(direction) ? direction : AxisDirections.absolute(direction);
+        @Override public AxisDirection getDirectionReplacement(CoordinateSystemAxis axis, AxisDirection direction) {
+            return NORMALIZED.getDirectionReplacement(axis, direction);
         }
     },
 

@@ -20,6 +20,7 @@ import javax.measure.unit.SI;
 import javax.measure.unit.Unit;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.cs.CoordinateSystem;
+import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.cs.SphericalCS;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.TransformException;
@@ -88,7 +89,7 @@ public final strictfp class CoordinateSystemTransformTest extends TransformTestC
      */
     private static CoordinateSystem geocentricInCentimetres() {
         return CoordinateSystems.replaceAxes(HardCodedCS.GEOCENTRIC, new AxisFilter() {
-            @Override public Unit<?> getUnitReplacement(Unit<?> ignored) {
+            @Override public Unit<?> getUnitReplacement(CoordinateSystemAxis axis, Unit<?> ignored) {
                 return SI.CENTIMETRE;
             }
         });

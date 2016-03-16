@@ -31,7 +31,7 @@ import static org.apache.sis.referencing.IdentifiedObjects.getProperties;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.4
+ * @version 0.7
  * @module
  */
 public final strictfp class HardCodedCS {
@@ -109,6 +109,21 @@ public final strictfp class HardCodedCS {
             HardCodedAxes.GEOCENTRIC_X,
             HardCodedAxes.GEOCENTRIC_Y,
             HardCodedAxes.GEOCENTRIC_Z);
+
+    /**
+     * A three-dimensional cylindrical CS with
+     * <var>{@linkplain HardCodedAxes#RADIUS radius} (oriented toward south)</var>,
+     * <var>{@linkplain HardCodedAxes#AZIMUTH azimuth}</var>,
+     * <var>{@linkplain HardCodedAxes#Z z}</var> axes.
+     * Note that this is not a right-handed system.
+     *
+     * @since 0.7
+     */
+    public static final DefaultCylindricalCS CYLINDRICAL = new DefaultCylindricalCS(
+            singletonMap(NAME_KEY, "Cylindrical"),
+            HardCodedAxes.RADIUS,
+            HardCodedAxes.AZIMUTH,
+            HardCodedAxes.Z);
 
     /**
      * A two-dimensional Cartesian CS with

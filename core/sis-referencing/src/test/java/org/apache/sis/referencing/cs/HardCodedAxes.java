@@ -24,6 +24,7 @@ import javax.measure.unit.NonSI;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.RangeMeaning;
 import org.apache.sis.internal.metadata.AxisNames;
+import org.apache.sis.internal.metadata.AxisDirections;
 
 
 /**
@@ -31,7 +32,7 @@ import org.apache.sis.internal.metadata.AxisNames;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.6
+ * @version 0.7
  * @module
  */
 public final strictfp class HardCodedAxes {
@@ -189,7 +190,8 @@ public final strictfp class HardCodedAxes {
      *
      * <p>This axis is close to the definition found in the EPSG database, except for the "long" abbreviation which
      * is replaced by "θ". Note that other conventions exist, in which the meaning of φ and θ are interchanged.
-     * ISO mentions also the symbol Ω, but it is not clear if it applies to longitude or latitude.</p>
+     * ISO mentions also the symbol Ω, but it is not clear if it applies to longitude or latitude.
+     * See {@link AxisNames#SPHERICAL_LONGITUDE} for other information.</p>
      *
      * <p>This axis is usually part of a {@link #SPHERICAL_LONGITUDE}, {@link #SPHERICAL_LATITUDE},
      * {@link #GEOCENTRIC_RADIUS} set.</p>
@@ -213,7 +215,8 @@ public final strictfp class HardCodedAxes {
      * <p>This axis is close to the definition found in the EPSG database, except for the "lat" abbreviation
      * which is replaced by "φ′". Note that other conventions exist, in which the meaning of φ and θ are
      * interchanged or in which this axis is named "elevation" and is oriented toward "Up".
-     * Other conventions use symbol Ψ or Ω.</p>
+     * Other conventions use symbol Ψ or Ω.
+     * See {@link AxisNames#SPHERICAL_LATITUDE} for other information.</p>
      *
      * <p>This axis is usually part of a {@link #SPHERICAL_LONGITUDE}, {@link #SPHERICAL_LATITUDE},
      * {@link #GEOCENTRIC_RADIUS} set.</p>
@@ -366,14 +369,26 @@ public final strictfp class HardCodedAxes {
     /**
      * An axis with North-East orientation.
      */
-    static final DefaultCoordinateSystemAxis NORTH_EAST = create("NORTH_EAST", "NE",
+    public static final DefaultCoordinateSystemAxis NORTH_EAST = create("North-East", "NE",
             AxisDirection.NORTH_EAST, SI.METRE, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, null);
 
     /**
      * An axis with South-East orientation.
      */
-    static final DefaultCoordinateSystemAxis SOUTH_EAST = create("SOUTH_EAST", "SE",
+    public static final DefaultCoordinateSystemAxis SOUTH_EAST = create("South-East", "SE",
             AxisDirection.SOUTH_EAST, SI.METRE, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, null);
+
+    /**
+     * An axis for a radius oriented toward South.
+     */
+    public static final DefaultCoordinateSystemAxis RADIUS = create("Radius", "r",
+            AxisDirection.SOUTH, SI.METRE, 0, Double.POSITIVE_INFINITY, RangeMeaning.EXACT);
+
+    /**
+     * An axis with clockwise orientation.
+     */
+    public static final DefaultCoordinateSystemAxis AZIMUTH = create("Azimuth", "θ",
+            AxisDirections.CLOCKWISE, NonSI.DEGREE_ANGLE, -180, +180, RangeMeaning.WRAPAROUND);
 
     /**
      * Axis for time values in a {@linkplain org.apache.sis.referencing.cs.DefaultTimeCS time CS}.

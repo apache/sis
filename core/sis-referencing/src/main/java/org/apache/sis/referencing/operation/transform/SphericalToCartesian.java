@@ -38,6 +38,7 @@ import static java.lang.Math.*;
  * the spherical latitude is related to geodetic latitude φ by {@literal Ω(φ) = atan((1-ℯ²)⋅tan(φ))}.</div>
  *
  * This order matches the {@link EllipsoidToCentricTransform} axis order.
+ * It shall also match the order defined by {@code Normalizer} in {@link org.apache.sis.referencing.cs} package.
  * Note that this is <strong>not</strong> the convention used neither in physics (ISO 80000-2:2009) or in mathematics.
  *
  * <div class="note"><b>Relationship with the convention used in physics</b>

@@ -26,11 +26,16 @@ import org.opengis.referencing.cs.RangeMeaning;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
+import org.opengis.referencing.cs.EllipsoidalCS;
+import org.opengis.referencing.cs.SphericalCS;
+import org.opengis.referencing.cs.CylindricalCS;
+import org.opengis.referencing.cs.PolarCS;
 import org.apache.sis.internal.metadata.AxisDirections;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArraysExt;
+import org.apache.sis.measure.Units;
 
 import static java.util.Collections.singletonMap;
 import static org.opengis.referencing.IdentifiedObject.NAME_KEY;
@@ -50,12 +55,39 @@ import static org.apache.sis.internal.referencing.NilReferencingObject.UNNAMED;
  * The main usage for this class is to reorder the axes in some fixed order like
  * (<var>x</var>, <var>y</var>, <var>z</var>) or (<var>longitude</var>, <var>latitude</var>).
  *
+ * <p>The normalization performed by this class shall be compatible with axis order expected by various
+ * {@code MathTransform} implementations in the {@link org.apache.sis.referencing.operation.transform} package.
+ * In particular:</p>
+ *
+ * <ul>
+ *   <li>{@code EllipsoidToCentricTransform} input:<ol>
+ *     <li>Geodetic longitude (λ) in degrees</li>
+ *     <li>Geodetic latitude (φ) in degrees</li>
+ *     <li>Height in units of semi-axes</li>
+ *   </ol></li>
+ *   <li>{@code SphericalToCartesian} input:<ol>
+ *     <li>Spherical longitude in degrees</li>
+ *     <li>Spherical latitude in degrees</li>
+ *     <li>Spherical radius (r) in any units</li>
+ *   </ol></li>
+ *   <li>{@code CartesianToSpherical} input:<ol>
+ *     <li>X in units of the above radius</li>
+ *     <li>Y in units of the above radius</li>
+ *     <li>Z in units of the above radius</li>
+ *   </ol></li>
+ *   <li>{@code CylindricalToCartesian} input:<ol>
+ *     <li>Radius (r) in any units</li>
+ *     <li>Angle (θ) in degrees</li>
+ *     <li>Height (z) in any units</li>
+ *   </ol></li>
+ * </ul>
+ *
  * <p>This class implements {@link Comparable} for opportunist reasons.
  * This should be considered as an implementation details.</p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4
- * @version 0.5
+ * @version 0.7
  * @module
  */
 final class Normalizer implements Comparable<Normalizer> {
@@ -78,10 +110,19 @@ final class Normalizer implements Comparable<Normalizer> {
     private final DirectionAlongMeridian meridian;
 
     /**
+     * Angular units order relative to other units.
+     * A value of -1 means that angular units should be first.
+     * A value of +1 means than angular units should be last.
+     * A value of 0 means to not use this criterion.
+     */
+    private final int unitOrder;
+
+    /**
      * For internal usage by {@link #sort(CoordinateSystemAxis[])} only.
      */
-    private Normalizer(final CoordinateSystemAxis axis) {
+    private Normalizer(final CoordinateSystemAxis axis, final int angularUnitOrder) {
         this.axis = axis;
+        unitOrder = Units.isAngular(axis.getUnit()) ? angularUnitOrder : 0;
         final AxisDirection dir = axis.getDirection();
         meridian = AxisDirections.isUserDefined(dir) ? DirectionAlongMeridian.parse(dir) : null;
     }
@@ -92,6 +133,10 @@ final class Normalizer implements Comparable<Normalizer> {
      */
     @Override
     public int compareTo(final Normalizer that) {
+        final int d = unitOrder - that.unitOrder;
+        if (d != 0) {
+            return d;
+        }
         final AxisDirection d1 = this.axis.getDirection();
         final AxisDirection d2 = that.axis.getDirection();
         final int compass = AxisDirections.angleForCompass(d2, d1);
@@ -113,18 +158,21 @@ final class Normalizer implements Comparable<Normalizer> {
      * Sorts the specified axis in an attempt to create a right-handed system.
      * The sorting is performed in place. This method returns {@code true} if
      * at least one axis moved as result of this method call.
+     *
+     * @param axes The axes to sort.
+     * @param angularUnitOrder -1 for sorting angular units first, +1 for sorting them last, or 0 if neutral.
      */
-    static boolean sort(final CoordinateSystemAxis[] axis) {
-        final Normalizer[] wrappers = new Normalizer[axis.length];
-        for (int i=0; i<axis.length; i++) {
-            wrappers[i] = new Normalizer(axis[i]);
+    static boolean sort(final CoordinateSystemAxis[] axes, final int angularUnitOrder) {
+        final Normalizer[] wrappers = new Normalizer[axes.length];
+        for (int i=0; i<axes.length; i++) {
+            wrappers[i] = new Normalizer(axes[i], angularUnitOrder);
         }
         Arrays.sort(wrappers);
         boolean changed = false;
-        for (int i=0; i<axis.length; i++) {
+        for (int i=0; i<axes.length; i++) {
             final CoordinateSystemAxis a = wrappers[i].axis;
-            changed |= (axis[i] != a);
-            axis[i] = a;
+            changed |= (axes[i] != a);
+            axes[i] = a;
         }
         return changed;
     }
@@ -140,8 +188,8 @@ final class Normalizer implements Comparable<Normalizer> {
     static CoordinateSystemAxis normalize(final CoordinateSystemAxis axis, final AxisFilter changes) {
         final Unit<?>       unit      = axis.getUnit();
         final AxisDirection direction = axis.getDirection();
-        final Unit<?>       newUnit   = changes.getUnitReplacement(unit);
-        final AxisDirection newDir    = changes.getDirectionReplacement(direction);
+        final Unit<?>       newUnit   = changes.getUnitReplacement(axis, unit);
+        final AxisDirection newDir    = changes.getDirectionReplacement(axis, direction);
         /*
          * Reuse some properties (name, remarks, etc.) from the existing axis. If the direction changed,
          * then the axis name may need change too (e.g. "Westing" → "Easting"). The new axis name may be
@@ -176,18 +224,30 @@ final class Normalizer implements Comparable<Normalizer> {
             properties.put(NAME_KEY, UNNAMED);
         }
         /*
-         * Converts the axis range and build the new axis.
+         * Convert the axis range and build the new axis. The axis range will be converted only if
+         * the axis direction is the same or the opposite, otherwise we do not know what should be
+         * the new values. In the particular case of opposite axis direction, we need to reverse the
+         * sign of minimum and maximum values.
          */
-        final UnitConverter c;
-        try {
-            c = unit.getConverterToAny(newUnit);
-        } catch (ConversionException e) {
-            // Use IllegalStateException because the public API is an AbstractCS member method.
-            throw new IllegalStateException(Errors.format(Errors.Keys.IllegalUnitFor_2, "axis", unit), e);
+        if (sameDirection || newDir.equals(AxisDirections.opposite(direction))) {
+            final UnitConverter c;
+            try {
+                c = unit.getConverterToAny(newUnit);
+            } catch (ConversionException e) {
+                // Use IllegalStateException because the public API is an AbstractCS member method.
+                throw new IllegalStateException(Errors.format(Errors.Keys.IllegalUnitFor_2, "axis", unit), e);
+            }
+            double minimum = c.convert(axis.getMinimumValue());
+            double maximum = c.convert(axis.getMaximumValue());
+            if (!sameDirection) {
+                final double tmp = minimum;
+                minimum = -maximum;
+                maximum = -tmp;
+            }
+            properties.put(DefaultCoordinateSystemAxis.MINIMUM_VALUE_KEY, minimum);
+            properties.put(DefaultCoordinateSystemAxis.MAXIMUM_VALUE_KEY, maximum);
+            properties.put(DefaultCoordinateSystemAxis.RANGE_MEANING_KEY, axis.getRangeMeaning());
         }
-        properties.put(DefaultCoordinateSystemAxis.MINIMUM_VALUE_KEY, c.convert(axis.getMinimumValue()));
-        properties.put(DefaultCoordinateSystemAxis.MAXIMUM_VALUE_KEY, c.convert(axis.getMaximumValue()));
-        properties.put(DefaultCoordinateSystemAxis.RANGE_MEANING_KEY, axis.getRangeMeaning());
         return new DefaultCoordinateSystemAxis(properties, newAbbr, newDir, newUnit);
     }
 
@@ -221,7 +281,26 @@ final class Normalizer implements Comparable<Normalizer> {
          * If nothing changed, return the given Coordinate System as-is.
          */
         if (reorder) {
-            changed |= sort(axes);
+            int angularUnitOrder = 0;
+            if  (cs instanceof EllipsoidalCS || cs instanceof SphericalCS) angularUnitOrder = -1;      // (λ,φ,h) order
+            else if (cs instanceof CylindricalCS || cs instanceof PolarCS) angularUnitOrder = +1;      // (r,θ) order
+            changed |= sort(axes, angularUnitOrder);
+            if (angularUnitOrder == 1) {                            // Cylindrical or polar
+                /*
+                 * Change (r,z,θ) to (r,θ,z) order in CylindricalCS. The check on unit of
+                 * measurements should be always true, but we verify as a paranoiac check.
+                 */
+                if (axes.length == 3 && isLengthAndAngle(axes, 1)) {
+                    ArraysExt.swap(axes, 1, 2);
+                }
+                /*
+                 * If we were not allowed to normalize the axis direction, we may have a
+                 * left-handed coordinate system here. Is so, make it right-handed.
+                 */
+                if (AxisDirections.CLOCKWISE.equals(axes[1].getDirection()) && isLengthAndAngle(axes, 0)) {
+                    ArraysExt.swap(axes, 0, 1);
+                }
+            }
         }
         if (!changed && n == dimension) {
             return null;
@@ -233,6 +312,14 @@ final class Normalizer implements Comparable<Normalizer> {
         final AbstractCS impl = castOrCopy(cs);
         final StringBuilder buffer = (StringBuilder) CharSequences.camelCaseToSentence(impl.getInterface().getSimpleName());
         return impl.createForAxes(singletonMap(AbstractCS.NAME_KEY, AxisDirections.appendTo(buffer, axes)), axes);
+    }
+
+    /**
+     * Returns {@code true} if the units of measurement at the given position is a linear unit,
+     * followed by an angular unit on the next axis.
+     */
+    private static boolean isLengthAndAngle(final CoordinateSystemAxis[] axes, final int p) {
+        return Units.isLinear(axes[p].getUnit()) && Units.isAngular(axes[p+1].getUnit());
     }
 
     /**

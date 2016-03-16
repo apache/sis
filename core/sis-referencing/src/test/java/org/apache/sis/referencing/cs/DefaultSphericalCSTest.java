@@ -17,12 +17,12 @@
 package org.apache.sis.referencing.cs;
 
 import java.util.Collections;
+import org.opengis.referencing.cs.AxisDirection;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOn;
 import org.junit.Test;
 
-import static org.apache.sis.test.Assert.*;
-import static org.apache.sis.referencing.cs.HardCodedCS.*;
+import static org.opengis.test.Assert.*;
 
 
 /**
@@ -30,23 +30,29 @@ import static org.apache.sis.referencing.cs.HardCodedCS.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.5
+ * @version 0.7
  * @module
  */
 @DependsOn(AbstractCSTest.class)
 public final strictfp class DefaultSphericalCSTest extends TestCase {
     /**
-     * Tests the conventional orientation of a coordinate system.
+     * Tests {@link DefaultSphericalCS#forConvention(AxesConvention)} with a change of axis order.
      */
     @Test
-    public void testConventionalOrientation() {
-        final AbstractCS normalized = SPHERICAL.forConvention(AxesConvention.CONVENTIONALLY_ORIENTED);
-        assertNotSame(SPHERICAL, normalized);
+    public void testChangeAxisOrder() {
+        final DefaultSphericalCS cs = HardCodedCS.SPHERICAL;
+        final DefaultSphericalCS normalized = cs.forConvention(AxesConvention.CONVENTIONALLY_ORIENTED);
+        assertNotSame("Should create a new CoordinateSystem.", cs, normalized);
+        assertAxisDirectionsEqual("Normalized", normalized,
+                AxisDirection.EAST,
+                AxisDirection.NORTH,
+                AxisDirection.UP);
+
         assertEquals(new DefaultSphericalCS(
-            Collections.singletonMap(AbstractCS.NAME_KEY, "Spherical CS: East (°), North (°), Up (m)."),
-            HardCodedAxes.SPHERICAL_LONGITUDE,
-            HardCodedAxes.SPHERICAL_LATITUDE,
-            HardCodedAxes.GEOCENTRIC_RADIUS
+                Collections.singletonMap(AbstractCS.NAME_KEY, "Spherical CS: East (°), North (°), Up (m)."),
+                HardCodedAxes.SPHERICAL_LONGITUDE,
+                HardCodedAxes.SPHERICAL_LATITUDE,
+                HardCodedAxes.GEOCENTRIC_RADIUS
         ), normalized);
     }
 }

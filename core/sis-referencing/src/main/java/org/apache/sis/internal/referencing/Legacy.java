@@ -20,6 +20,7 @@ import javax.measure.unit.SI;
 import javax.measure.unit.Unit;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CartesianCS;
+import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.cs.AxisFilter;
 import org.apache.sis.referencing.cs.CoordinateSystems;
@@ -120,7 +121,7 @@ public final class Legacy implements AxisFilter {
     // -----------------------------------------------------------------
 
     /**
-     * The value to be returned by {@link #getUnitReplacement(Unit)},
+     * The value to be returned by {@link #getUnitReplacement(CoordinateSystemAxis, Unit)},
      * or {@code null} if no replacement should be done.
      */
     private final Unit<?> replacement;
@@ -135,11 +136,12 @@ public final class Legacy implements AxisFilter {
     /**
      * For internal usage by {@link #replaceUnit(CartesianCS, Unit)} only.
      *
+     * @param  axis ignored.
      * @param  unit ignored.
      * @return The unit of the new coordinate system.
      */
     @Override
-    public Unit<?> getUnitReplacement(final Unit<?> unit) {
+    public Unit<?> getUnitReplacement(CoordinateSystemAxis axis, final Unit<?> unit) {
         return replacement;
     }
 }
