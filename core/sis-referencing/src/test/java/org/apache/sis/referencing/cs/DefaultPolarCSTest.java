@@ -29,32 +29,31 @@ import static org.opengis.test.Assert.*;
 
 
 /**
- * Tests {@link DefaultCylindricalCS}.
+ * Tests {@link DefaultPolarCS}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.7
  * @version 0.7
  * @module
  */
-@DependsOn(DefaultPolarCSTest.class)
-public final strictfp class DefaultCylindricalCSTest extends TestCase {
+@DependsOn(AbstractCSTest.class)
+public final strictfp class DefaultPolarCSTest extends TestCase {
     /**
-     * Tests {@link DefaultCylindricalCS#forConvention(AxesConvention)}
+     * Tests {@link DefaultPolarCS#forConvention(AxesConvention)}
      * with a change from clockwise to counterclockwise axis orientation.
      */
     @Test
     public void testChangeClockwiseOrientation() {
-        final DefaultCylindricalCS cs = HardCodedCS.CYLINDRICAL;
-        final DefaultCylindricalCS normalized = cs.forConvention(AxesConvention.CONVENTIONALLY_ORIENTED);
+        final DefaultPolarCS cs = HardCodedCS.POLAR;
+        final DefaultPolarCS normalized = cs.forConvention(AxesConvention.CONVENTIONALLY_ORIENTED);
         assertNotSame("Should create a new CoordinateSystem.", cs, normalized);
         assertAxisDirectionsEqual("Normalized", normalized,
                 AxisDirections.AWAY_FROM,
-                AxisDirections.COUNTER_CLOCKWISE,
-                AxisDirection.UP);
+                AxisDirections.COUNTER_CLOCKWISE);
     }
 
     /**
-     * Tests {@link DefaultCylindricalCS#forConvention(AxesConvention)} with a change of axis order.
+     * Tests {@link DefaultPolarCS#forConvention(AxesConvention)} with a change of axis order.
      * This test uses a (r) axis oriented toward South instead than "awayFrom".
      */
     @Test
@@ -62,24 +61,21 @@ public final strictfp class DefaultCylindricalCSTest extends TestCase {
         final DefaultCoordinateSystemAxis radius = HardCodedAxes.create("Radius", "r",
                 AxisDirection.SOUTH, SI.METRE, 0, Double.POSITIVE_INFINITY, RangeMeaning.EXACT);
 
-        final DefaultCylindricalCS cs = new DefaultCylindricalCS(
-                Collections.singletonMap(DefaultCylindricalCS.NAME_KEY, "Cylindrical"),
+        final DefaultPolarCS cs = new DefaultPolarCS(
+                Collections.singletonMap(DefaultPolarCS.NAME_KEY, "Polar"),
                 HardCodedAxes.BEARING,
-                HardCodedAxes.Z,
                 radius);
 
-        DefaultCylindricalCS normalized = cs.forConvention(AxesConvention.RIGHT_HANDED);
+        DefaultPolarCS normalized = cs.forConvention(AxesConvention.RIGHT_HANDED);
         assertNotSame("Should create a new CoordinateSystem.", cs, normalized);
         assertAxisDirectionsEqual("Right-handed", normalized,
                 AxisDirections.CLOCKWISE,                       // Interchanged (r,θ) order for making right handed.
-                AxisDirection.SOUTH,
-                AxisDirection.UP);
+                AxisDirection.SOUTH);
 
         normalized = cs.forConvention(AxesConvention.NORMALIZED);
         assertNotSame("Should create a new CoordinateSystem.", cs, normalized);
         assertAxisDirectionsEqual("Normalized", normalized,
                 AxisDirection.SOUTH,                            // Not modified to North because radius can not be negative.
-                AxisDirections.COUNTER_CLOCKWISE,
-                AxisDirection.UP);
+                AxisDirections.COUNTER_CLOCKWISE);
     }
 }

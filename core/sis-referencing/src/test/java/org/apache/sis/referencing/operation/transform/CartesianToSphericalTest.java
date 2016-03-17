@@ -45,7 +45,7 @@ public final strictfp class CartesianToSphericalTest extends TransformTestCase {
      */
     @Test
     public void testConversion() throws FactoryException, TransformException {
-        transform = CartesianToSpherical.INSTANCE.completeTransform();
+        transform = CartesianToSpherical.INSTANCE.completeTransform(SphericalToCartesianTest.factory());
         tolerance = 1E-12;
         final double[][] data = SphericalToCartesianTest.testData();
         verifyTransform(data[1], data[0]);
@@ -59,7 +59,7 @@ public final strictfp class CartesianToSphericalTest extends TransformTestCase {
      */
     @Test
     public void testDerivative() throws FactoryException, TransformException {
-        transform = CartesianToSpherical.INSTANCE.completeTransform();
+        transform = CartesianToSpherical.INSTANCE.completeTransform(SphericalToCartesianTest.factory());
         derivativeDeltas = new double[] {1E-6, 1E-6, 1E-6};
         tolerance = 1E-7;
         verifyDerivative(30, 60, 100);
@@ -74,7 +74,7 @@ public final strictfp class CartesianToSphericalTest extends TransformTestCase {
     @Test
     @DependsOnMethod({"testConversion", "testDerivative"})
     public void testConsistency() throws FactoryException, TransformException {
-        transform = CartesianToSpherical.INSTANCE.completeTransform();
+        transform = CartesianToSpherical.INSTANCE.completeTransform(SphericalToCartesianTest.factory());
         derivativeDeltas = new double[] {1E-6, 1E-6, 1E-6};
         tolerance = 1E-6;
         verifyInDomain(new double[] {-100, -100, -100},      // Minimal coordinates

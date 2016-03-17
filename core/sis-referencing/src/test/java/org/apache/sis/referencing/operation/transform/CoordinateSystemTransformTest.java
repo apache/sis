@@ -165,13 +165,14 @@ public final strictfp class CoordinateSystemTransformTest extends TransformTestC
     }
 
     /**
-     * Returns {@link CylindricalToCartesianTest#testData()} modified for the source and target
+     * Returns {@link PolarToCartesianTest#testData(boolean)} modified for the source and target
      * coordinate systems used in this class.
      */
-    private static double[][] cylindricalTestData() {
-        final double[][] data = CylindricalToCartesianTest.testData();
+    private static double[][] polarTestData(final boolean withHeight) {
+        final int dimension = withHeight ? 3 : 2;
+        final double[][] data = PolarToCartesianTest.testData(withHeight);
         final double[] source = data[0];
-        for (int i=1; i<source.length; i += 3) {
+        for (int i=1; i<source.length; i += dimension) {
             source[i] = -source[i];                 // Change counterclockwise direction into clockwise direction.
         }
         final double[] target = data[1];
@@ -192,7 +193,7 @@ public final strictfp class CoordinateSystemTransformTest extends TransformTestC
     public void testCylindricalToCartesian() throws FactoryException, TransformException {
         tolerance = 1E-9;
         transform = CoordinateSystemTransform.create(factory, HardCodedCS.CYLINDRICAL, toCentimetres(HardCodedCS.CARTESIAN_3D));
-        final double[][] data = cylindricalTestData();
+        final double[][] data = polarTestData(true);
         verifyTransform(data[0], data[1]);
     }
 
@@ -207,7 +208,37 @@ public final strictfp class CoordinateSystemTransformTest extends TransformTestC
     public void testCartesianToCylindrical() throws FactoryException, TransformException {
         tolerance = 1E-9;
         transform = CoordinateSystemTransform.create(factory, toCentimetres(HardCodedCS.CARTESIAN_3D), HardCodedCS.CYLINDRICAL);
-        final double[][] data = cylindricalTestData();
+        final double[][] data = polarTestData(true);
+        verifyTransform(data[1], data[0]);
+    }
+
+    /**
+     * Tests {@link CoordinateSystemTransform#create(MathTransformFactory, CoordinateSystem, CoordinateSystem)}.
+     * for a conversion from polar to Cartesian coordinates.
+     *
+     * @throws FactoryException if an error occurred while creating the transform.
+     * @throws TransformException if an error occurred while transforming the test point.
+     */
+    @Test
+    public void testPolarToCartesian() throws FactoryException, TransformException {
+        tolerance = 1E-9;
+        transform = CoordinateSystemTransform.create(factory, HardCodedCS.POLAR, toCentimetres(HardCodedCS.CARTESIAN_2D));
+        final double[][] data = polarTestData(false);
+        verifyTransform(data[0], data[1]);
+    }
+
+    /**
+     * Tests {@link CoordinateSystemTransform#create(MathTransformFactory, CoordinateSystem, CoordinateSystem)}.
+     * for a conversion from Cartesian to polar coordinates.
+     *
+     * @throws FactoryException if an error occurred while creating the transform.
+     * @throws TransformException if an error occurred while transforming the test point.
+     */
+    @Test
+    public void testCartesianToPolar() throws FactoryException, TransformException {
+        tolerance = 1E-9;
+        transform = CoordinateSystemTransform.create(factory, toCentimetres(HardCodedCS.CARTESIAN_2D), HardCodedCS.POLAR);
+        final double[][] data = polarTestData(false);
         verifyTransform(data[1], data[0]);
     }
 }
