@@ -391,7 +391,7 @@ final class StandardDefinitions {
                        rm   = RangeMeaning.WRAPAROUND;
                        break;
             case 62:   name = "Geocentric radius";
-                       abrv = "r";                          // See HardCodedAxes.GEOCENTRIC_RADIUS in tests.
+                       abrv = "R";                          // See HardCodedAxes.GEOCENTRIC_RADIUS in tests.
                        unit = SI.METRE;
                        dir  = AxisDirection.UP;
                        rm   = RangeMeaning.EXACT;

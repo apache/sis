@@ -99,6 +99,30 @@ final class Normalizer implements Comparable<Normalizer> {
     };
 
     /**
+     * Number of bits by which to shift the {@link AxisDirection#ordinal()} value in order to make room for
+     * inserting intermediate values between them. A shift of 2 make room for {@literal 1 << 2} intermediate
+     * values. Those intermediate values are declared in the {@link #ORDER} map.
+     *
+     * @see #order(AxisDirection)
+     */
+    private static final int SHIFT = 2;
+
+    /**
+     * Custom code list values to handle as if the where defined between two GeoAPI values.
+     *
+     * @see #order(AxisDirection)
+     */
+    private static final Map<AxisDirection,Integer> ORDER = new HashMap<>();
+    static {
+        final Map<AxisDirection,Integer> m = ORDER;
+        // Get ordinal of last compass direction defined by GeoAPI. We will continue on the horizontal plane.
+        final int horizontal = (AxisDirection.NORTH.ordinal() + (AxisDirections.COMPASS_COUNT - 1)) << SHIFT;
+        m.put(AxisDirections.AWAY_FROM,         horizontal + 1);
+        m.put(AxisDirections.COUNTER_CLOCKWISE, horizontal + 2);
+        m.put(AxisDirections.CLOCKWISE,         horizontal + 3);
+    }
+
+    /**
      * The axis to be compared by {@link #compareTo(Normalizer)}.
      */
     private final CoordinateSystemAxis axis;
@@ -128,30 +152,39 @@ final class Normalizer implements Comparable<Normalizer> {
     }
 
     /**
+     * Returns the order of the given axis direction.
+     */
+    private static int order(final AxisDirection dir) {
+        final Integer p = ORDER.get(dir);
+        return (p != null) ? p : (dir.ordinal() << SHIFT);
+    }
+
+    /**
      * Compares two axis for an order that try to favor right-handed coordinate systems.
      * Compass directions like North and East are first. Vertical directions like Up or Down are next.
      */
     @Override
     public int compareTo(final Normalizer that) {
-        final int d = unitOrder - that.unitOrder;
-        if (d != 0) {
-            return d;
-        }
-        final AxisDirection d1 = this.axis.getDirection();
-        final AxisDirection d2 = that.axis.getDirection();
-        final int compass = AxisDirections.angleForCompass(d2, d1);
-        if (compass != Integer.MIN_VALUE) {
-            return compass;
-        }
-        if (meridian != null) {
-            if (that.meridian != null) {
-                return meridian.compareTo(that.meridian);
+        int d = unitOrder - that.unitOrder;
+        if (d == 0) {
+            final AxisDirection d1 = this.axis.getDirection();
+            final AxisDirection d2 = that.axis.getDirection();
+            d = AxisDirections.angleForCompass(d2, d1);
+            if (d == Integer.MIN_VALUE) {
+                if (meridian != null) {
+                    if (that.meridian != null) {
+                        d = meridian.compareTo(that.meridian);
+                    } else {
+                        d = -1;
+                    }
+                } else if (that.meridian != null) {
+                    d = +1;
+                } else {
+                    d = order(d1) - order(d2);
+                }
             }
-            return -1;
-        } else if (that.meridian != null) {
-            return +1;
         }
-        return d1.ordinal() - d2.ordinal();
+        return d;
     }
 
     /**
@@ -201,22 +234,8 @@ final class Normalizer implements Comparable<Normalizer> {
             return axis;
         }
         final String abbreviation = axis.getAbbreviation();
-        String newAbbr = abbreviation;
-        if (!sameDirection) {
-            if (AxisDirections.isCompass(direction)) {
-                if (CharSequences.isAcronymForWords(abbreviation, direction.name())) {
-                    if (newDir.equals(AxisDirection.EAST)) {
-                        newAbbr = "E";
-                    } else if (newDir.equals(AxisDirection.NORTH)) {
-                        newAbbr = "N";
-                    }
-                }
-            } else if (newDir.equals(AxisDirection.UP)) {
-                newAbbr = "z";
-            } else if (newDir.equals(AxisDirection.FUTURE)) {
-                newAbbr = "t";
-            }
-        }
+        final String newAbbr = sameDirection ? abbreviation :
+                AxisDirections.suggestAbbreviation(axis.getName().getCode(), newDir, newUnit);
         final Map<String,Object> properties = new HashMap<>();
         if (newAbbr.equals(abbreviation)) {
             properties.putAll(IdentifiedObjects.getProperties(axis, EXCLUDES));
@@ -287,12 +306,6 @@ final class Normalizer implements Comparable<Normalizer> {
             changed |= sort(axes, angularUnitOrder);
             if (angularUnitOrder == 1) {                            // Cylindrical or polar
                 /*
-                 * Direction "awayFrom" (r) should be first.
-                 */
-                if (AxisDirections.AWAY_FROM.equals(axes[1].getDirection()) && Units.isLinear(axes[0].getUnit())) {
-                    ArraysExt.swap(axes, 0, 1);
-                }
-                /*
                  * Change (r,z,θ) to (r,θ,z) order in CylindricalCS. The check on unit of
                  * measurements should be always true, but we verify as a paranoiac check.
                  */
@@ -301,7 +314,7 @@ final class Normalizer implements Comparable<Normalizer> {
                 }
                 /*
                  * If we were not allowed to normalize the axis direction, we may have a
-                 * left-handed coordinate system here. Is so, make it right-handed.
+                 * left-handed coordinate system here. If so, make it right-handed.
                  */
                 if (AxisDirections.CLOCKWISE.equals(axes[1].getDirection()) && isLengthAndAngle(axes, 0)) {
                     ArraysExt.swap(axes, 0, 1);

@@ -626,13 +626,14 @@ public final class AxisDirections extends Static {
         if (name.length() == 1) {
             return name;                    // Most common cases are "x", "y", "z", "t", "i" and "j".
         }
+        /*
+         * Direction may be both "compass" (e.g. North) or "non-compass" (e.g. away from).
+         * Even if the radius at θ = 0° is oriented toward North, but we do not want the "N" abbreviation.
+         */
+        if (contains(name, "radius", true)) {
+            return contains(name, "Geocentric", false) ? "R" : "r";
+        }
         if (isCompass(direction)) {
-            /*
-             * Radius at θ = 0° may be oriented toward North, but we do not want the "N" abbreviation.
-             */
-            if (contains(name, "radius", true)) {
-                return "r";
-            }
             /*
              * NORTH, EAST, SOUTH, WEST and all intercardinal directions (SOUTH_SOUTH_WEST, etc.):
              * we will use the acronym (e.g. "SE" for SOUTH_EAST), unless the axis is likely to be
@@ -653,7 +654,10 @@ public final class AxisDirections extends Static {
              * use "h" as the fallback for unknown vertical axis.
              */
             if (UP.equals(direction)) {
-                return contains(name, "Gravity", false) ? "H" : contains(name, "Geocentric", false) ? "r": "h";
+                if (contains(name, "Gravity",    false)) return "H";
+                if (contains(name, "Elevation",  false)) return "φ";
+                if (contains(name, "Geocentric", false)) return "r";
+                return "h";
             } else if (DOWN.equals(direction)) {
                 return "D";                         // "Depth"
             } else if (isGeocentric(direction)) {

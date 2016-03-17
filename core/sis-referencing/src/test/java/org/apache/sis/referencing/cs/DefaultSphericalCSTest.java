@@ -18,6 +18,7 @@ package org.apache.sis.referencing.cs;
 
 import java.util.Collections;
 import org.opengis.referencing.cs.AxisDirection;
+import org.apache.sis.internal.metadata.AxisDirections;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOn;
 import org.junit.Test;
@@ -36,11 +37,20 @@ import static org.opengis.test.Assert.*;
 @DependsOn(AbstractCSTest.class)
 public final strictfp class DefaultSphericalCSTest extends TestCase {
     /**
-     * Tests {@link DefaultSphericalCS#forConvention(AxesConvention)} with a change of axis order.
+     * Tests a spherical CRS conforms to EPSG:8.9:6404 definition.
+     * Expected axes are:
+     *
+     * <ol>
+     *   <li>Spherical latitude (φ′)</li>
+     *   <li>Spherical longitude (θ)</li>
+     *   <li>Geocentric radius (R)</li>
+     * </ol>
      */
     @Test
-    public void testChangeAxisOrder() {
+    public void testGeodetic() {
         final DefaultSphericalCS cs = HardCodedCS.SPHERICAL;
+        assertEquals("EPSG abbreviation for geocentric radius should be upper-case", "R", cs.getAxis(2).getAbbreviation());
+
         final DefaultSphericalCS normalized = cs.forConvention(AxesConvention.CONVENTIONALLY_ORIENTED);
         assertNotSame("Should create a new CoordinateSystem.", cs, normalized);
         assertAxisDirectionsEqual("Normalized", normalized,
@@ -52,7 +62,32 @@ public final strictfp class DefaultSphericalCSTest extends TestCase {
                 Collections.singletonMap(AbstractCS.NAME_KEY, "Spherical CS: East (°), North (°), Up (m)."),
                 HardCodedAxes.SPHERICAL_LONGITUDE,
                 HardCodedAxes.SPHERICAL_LATITUDE,
-                HardCodedAxes.GEOCENTRIC_RADIUS
-        ), normalized);
+                HardCodedAxes.GEOCENTRIC_RADIUS), normalized);
+    }
+
+    /**
+     * Tests a spherical CRS conforms to the example given in ISO 19162.
+     * Expected axes are:
+     *
+     * <ol>
+     *   <li>Distance (r)</li>
+     *   <li>Longitude</li>
+     *   <li>Elevation</li>
+     * </ol>
+     *
+     * This order is not exactly the usual engineering axis order.
+     * But this is the order expected by the {@code SphericalToCartesian} transform.
+     */
+    @Test
+    public void testEngineering() {
+        final DefaultSphericalCS cs = HardCodedCS.SPHERICAL_ENGINEERING;
+        assertEquals("Abbreviation for distance should be lower-case", "r", cs.getAxis(0).getAbbreviation());
+
+        final DefaultSphericalCS normalized = cs.forConvention(AxesConvention.NORMALIZED);
+        assertNotSame("Should create a new CoordinateSystem.", cs, normalized);
+        assertAxisDirectionsEqual("Normalized", normalized,
+                AxisDirections.COUNTER_CLOCKWISE,
+                AxisDirection.UP,
+                AxisDirections.AWAY_FROM);
     }
 }

@@ -54,7 +54,8 @@ public final class AxisNames {
 
     /**
      * The ISO 19111 <cite>"spherical longitude"</cite> name. Abbreviation used by SIS is "θ" (theta)
-     * for consistency with the EPSG "long" abbreviation, but some other conventions use "φ" instead.
+     * for consistency with ISO 19162 <cite>Axis name and abbreviation</cite> section,
+     * but some other conventions use φ or Ω instead.
      * Direction in the EPSG database is "East", but "counterClockwise" may also be used.
      *
      * @see <a href="http://en.wikipedia.org/wiki/Spherical_coordinate_system">Spherical coordinate system on Wikipedia</a>
@@ -64,7 +65,8 @@ public final class AxisNames {
 
     /**
      * The ISO 19111 <cite>"spherical latitude"</cite> name. Abbreviation used by SIS is "φ′" (phi prime)
-     * for consistency with the EPSG "lat" abbreviation, but some other conventions use "θ" instead.
+     * for consistency with ISO 19162 <cite>Axis name and abbreviation</cite> section,
+     * but some other conventions use θ, Ω or Ψ instead.
      * Direction in the EPSG database is "North", but the "Up" direction may also be used with a similar
      * axis named "elevation".
      */
@@ -101,7 +103,11 @@ public final class AxisNames {
     public static final String GEOCENTRIC_Z = "Geocentric Z";
 
     /**
-     * The ISO 19111 <cite>"geocentric radius"</cite> name. Abbreviation is lower case <cite>"r"</cite>.
+     * The ISO 19111 <cite>"geocentric radius"</cite> name. Abbreviation is upper case <cite>"R"</cite>
+     * for consistency with EPSG database.
+     *
+     * <div class="note"><b>Note:</b>Lower case <cite>"r"</cite> is used for non-geocentric radius
+     * or axes named "distance" with "awayFrom" direction.</div>
      */
     public static final String GEOCENTRIC_RADIUS = "Geocentric radius";
 
