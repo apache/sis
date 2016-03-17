@@ -17,7 +17,9 @@
 package org.apache.sis.referencing.cs;
 
 import java.util.Collections;
+import javax.measure.unit.SI;
 import org.opengis.referencing.cs.AxisDirection;
+import org.opengis.referencing.cs.RangeMeaning;
 import org.apache.sis.internal.metadata.AxisDirections;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOn;
@@ -46,27 +48,38 @@ public final strictfp class DefaultCylindricalCSTest extends TestCase {
         final DefaultCylindricalCS normalized = cs.forConvention(AxesConvention.CONVENTIONALLY_ORIENTED);
         assertNotSame("Should create a new CoordinateSystem.", cs, normalized);
         assertAxisDirectionsEqual("Normalized", normalized,
-                AxisDirection.SOUTH,                        // Not modified to North because radius can not be negative.
-                AxisDirections.COUNTERCLOCKWISE,
+                AxisDirections.AWAY_FROM,
+                AxisDirections.COUNTER_CLOCKWISE,
                 AxisDirection.UP);
     }
 
     /**
      * Tests {@link DefaultCylindricalCS#forConvention(AxesConvention)} with a change of axis order.
+     * This test uses a (r) axis oriented toward South instead than "awayFrom".
      */
     @Test
     public void testChangeAxisOrder() {
+        final DefaultCoordinateSystemAxis radius = HardCodedAxes.create("Radius", "r",
+                AxisDirection.SOUTH, SI.METRE, 0, Double.POSITIVE_INFINITY, RangeMeaning.EXACT);
+
         final DefaultCylindricalCS cs = new DefaultCylindricalCS(
                 Collections.singletonMap(DefaultCylindricalCS.NAME_KEY, "Cylindrical"),
-                HardCodedAxes.AZIMUTH,
+                HardCodedAxes.BEARING,
                 HardCodedAxes.Z,
-                HardCodedAxes.RADIUS);
+                radius);
 
-        final DefaultCylindricalCS normalized = cs.forConvention(AxesConvention.RIGHT_HANDED);
+        DefaultCylindricalCS normalized = cs.forConvention(AxesConvention.RIGHT_HANDED);
         assertNotSame("Should create a new CoordinateSystem.", cs, normalized);
-        assertAxisDirectionsEqual("Normalized", normalized,
+        assertAxisDirectionsEqual("Right-handed", normalized,
                 AxisDirections.CLOCKWISE,                       // Interchanged (r,θ) order for making right handed.
                 AxisDirection.SOUTH,
+                AxisDirection.UP);
+
+        normalized = cs.forConvention(AxesConvention.NORMALIZED);
+        assertNotSame("Should create a new CoordinateSystem.", cs, normalized);
+        assertAxisDirectionsEqual("Normalized", normalized,
+                AxisDirection.SOUTH,                            // Not modified to North because radius can not be negative.
+                AxisDirections.COUNTER_CLOCKWISE,
                 AxisDirection.UP);
     }
 }

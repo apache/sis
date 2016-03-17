@@ -75,7 +75,7 @@ final class CylindricalToCartesian extends CoordinateSystemTransform implements 
      * Input coordinates are in radians.
      */
     private CylindricalToCartesian() {
-        super("Cylindrical to Cartesian");
+        super("Cylindrical to Cartesian", 3);
         context.getMatrix(ContextualParameters.MatrixRole.NORMALIZATION)
                .convertBefore(1, DoubleDouble.createDegreesToRadians(), null);
     }

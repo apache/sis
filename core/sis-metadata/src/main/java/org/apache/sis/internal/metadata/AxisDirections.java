@@ -64,7 +64,22 @@ public final class AxisDirections extends Static {
     public static final int DISPLAY_COUNT = 4;
 
     /**
-     * Direction of geographic angles (azimuths).
+     * Ordinal of the last element in the {@link AxisDirection} code list.
+     * This is used for differentiating the standard codes from the user-defined ones.
+     */
+    private static final int LAST_ORDINAL = DISPLAY_DOWN.ordinal();
+
+    /**
+     * Distance from the origin in a polar coordinate system.
+     * Specified in ISO 19162 but not yet in ISO 19111.
+     *
+     * @since 0.7
+     */
+    @UML(identifier="awayFrom", obligation=CONDITIONAL, specification=ISO_19162)
+    public static final AxisDirection AWAY_FROM = AxisDirection.valueOf("AWAY_FROM");
+
+    /**
+     * Direction of geographic angles (bearing).
      * Specified in ISO 19162 but not yet in ISO 19111.
      *
      * @since 0.7
@@ -78,8 +93,8 @@ public final class AxisDirections extends Static {
      *
      * @since 0.7
      */
-    @UML(identifier="counterclockwise", obligation=CONDITIONAL, specification=ISO_19162)
-    public static final AxisDirection COUNTERCLOCKWISE = AxisDirection.valueOf("COUNTERCLOCKWISE");
+    @UML(identifier="counterClockwise", obligation=CONDITIONAL, specification=ISO_19162)
+    public static final AxisDirection COUNTER_CLOCKWISE = AxisDirection.valueOf("COUNTER_CLOCKWISE");
 
     /**
      * For each direction, the opposite direction.
@@ -87,22 +102,22 @@ public final class AxisDirections extends Static {
      */
     private static final Map<AxisDirection,AxisDirection> OPPOSITES = new HashMap<>(20);
     static {
-        put(OTHER,            OTHER);
-        put(NORTH,            SOUTH);
-        put(NORTH_NORTH_EAST, SOUTH_SOUTH_WEST);
-        put(NORTH_EAST,       SOUTH_WEST);
-        put(EAST_NORTH_EAST,  WEST_SOUTH_WEST);
-        put(EAST,             WEST);
-        put(EAST_SOUTH_EAST,  WEST_NORTH_WEST);
-        put(SOUTH_EAST,       NORTH_WEST);
-        put(SOUTH_SOUTH_EAST, NORTH_NORTH_WEST);
-        put(UP,               DOWN);
-        put(FUTURE,           PAST);
-        put(COLUMN_POSITIVE,  COLUMN_NEGATIVE);
-        put(ROW_POSITIVE,     ROW_NEGATIVE);
-        put(DISPLAY_RIGHT,    DISPLAY_LEFT);
-        put(DISPLAY_UP,       DISPLAY_DOWN);
-        put(COUNTERCLOCKWISE, CLOCKWISE);
+        put(OTHER,             OTHER);
+        put(NORTH,             SOUTH);
+        put(NORTH_NORTH_EAST,  SOUTH_SOUTH_WEST);
+        put(NORTH_EAST,        SOUTH_WEST);
+        put(EAST_NORTH_EAST,   WEST_SOUTH_WEST);
+        put(EAST,              WEST);
+        put(EAST_SOUTH_EAST,   WEST_NORTH_WEST);
+        put(SOUTH_EAST,        NORTH_WEST);
+        put(SOUTH_SOUTH_EAST,  NORTH_NORTH_WEST);
+        put(UP,                DOWN);
+        put(FUTURE,            PAST);
+        put(COLUMN_POSITIVE,   COLUMN_NEGATIVE);
+        put(ROW_POSITIVE,      ROW_NEGATIVE);
+        put(DISPLAY_RIGHT,     DISPLAY_LEFT);
+        put(DISPLAY_UP,        DISPLAY_DOWN);
+        put(COUNTER_CLOCKWISE, CLOCKWISE);
     }
 
     /**
@@ -114,10 +129,21 @@ public final class AxisDirections extends Static {
     }
 
     /**
-     * Ordinal of the last element in the {@link AxisDirection} code list.
-     * This is used for differentiating the standard codes from the user-defined ones.
+     * Proposed abbreviations for some axis directions.
+     * This map shall be immutable after construction.
      */
-    private static final int LAST_ORDINAL = DISPLAY_DOWN.ordinal();
+    private static final Map<AxisDirection,String> ABBREVIATIONS = new HashMap<>(12);
+    static {
+        final Map<AxisDirection,String> m = ABBREVIATIONS;
+        m.put(FUTURE,            "t");
+        m.put(COLUMN_POSITIVE,   "i");
+        m.put(ROW_POSITIVE,      "j");
+        m.put(DISPLAY_RIGHT,     "x");
+        m.put(DISPLAY_UP,        "y");
+        m.put(OTHER,             "z");      // Arbitrary abbreviation, may change in any future SIS version.
+        m.put(AWAY_FROM,         "r");
+        m.put(COUNTER_CLOCKWISE, "θ");
+    }
 
     /**
      * Do not allow instantiation of this class.
@@ -174,7 +200,7 @@ public final class AxisDirections extends Static {
             // Below is a temporary patch pending integration of code list values into GeoAPI.
             // We need this patch because we can not rely on ordinal() value for custom codes.
             if (dir == CLOCKWISE) {
-                dir = COUNTERCLOCKWISE;
+                dir = COUNTER_CLOCKWISE;
             }
         }
         return dir;
@@ -629,27 +655,15 @@ public final class AxisDirections extends Static {
             if (UP.equals(direction)) {
                 return contains(name, "Gravity", false) ? "H" : contains(name, "Geocentric", false) ? "r": "h";
             } else if (DOWN.equals(direction)) {
-                return "D"; // "Depth"
+                return "D";                         // "Depth"
             } else if (isGeocentric(direction)) {
                 // For GEOCENTRIC_X, GEOCENTRIC_Y or GEOCENTRIC_Z, just take the last letter.
                 final String dir = direction.name();
                 return dir.substring(dir.length() - 1).trim();
             }
-            final AxisDirection a = absolute(direction);
-            if (FUTURE.equals(a)) {
-                return "t";
-            } else if (COLUMN_POSITIVE.equals(a)) {
-                return "i";
-            } else if (ROW_POSITIVE.equals(a)) {
-                return "j";
-            } else if (DISPLAY_RIGHT.equals(a)) {
-                return "x";
-            } else if (DISPLAY_UP.equals(a)) {
-                return "y";
-            } else if (OTHER.equals(a)) {
-                return "z";                     // Arbitrary abbreviation, may change in any future SIS version.
-            } else if (COUNTERCLOCKWISE.equals(a)) {
-                return "θ";
+            final String abbreviation = ABBREVIATIONS.get(absolute(direction));
+            if (abbreviation != null) {
+                return abbreviation;
             }
         }
         final String id = direction.identifier();   // UML identifier, or null if none.

@@ -379,15 +379,17 @@ public final strictfp class HardCodedAxes {
             AxisDirection.SOUTH_EAST, SI.METRE, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, null);
 
     /**
-     * An axis for a radius oriented toward South.
+     * An axis for a distance from an origin.
+     * This is part of a polar coordinate system.
      */
-    public static final DefaultCoordinateSystemAxis RADIUS = create("Radius", "r",
-            AxisDirection.SOUTH, SI.METRE, 0, Double.POSITIVE_INFINITY, RangeMeaning.EXACT);
+    public static final DefaultCoordinateSystemAxis DISTANCE = create("Distance", "r",
+            AxisDirections.AWAY_FROM, SI.METRE, 0, Double.POSITIVE_INFINITY, RangeMeaning.EXACT);
 
     /**
      * An axis with clockwise orientation.
+     * This is part of a polar coordinate system.
      */
-    public static final DefaultCoordinateSystemAxis AZIMUTH = create("Azimuth", "θ",
+    public static final DefaultCoordinateSystemAxis BEARING = create("Bearing", "θ",
             AxisDirections.CLOCKWISE, NonSI.DEGREE_ANGLE, -180, +180, RangeMeaning.WRAPAROUND);
 
     /**
@@ -441,7 +443,7 @@ public final strictfp class HardCodedAxes {
     /**
      * Creates a new axis of the given name, abbreviation, direction and unit.
      */
-    private static DefaultCoordinateSystemAxis create(final String name, final String abbreviation,
+    static DefaultCoordinateSystemAxis create(final String name, final String abbreviation,
             final AxisDirection direction, final Unit<?> unit, final double minimum, final double maximum,
             final RangeMeaning meaning)
     {

@@ -171,8 +171,7 @@ public final strictfp class NormalizerTest extends TestCase {
         assertSame(HardCodedAxes.NORTHING,           Normalizer.normalize(HardCodedAxes.NORTHING, changes));
         assertSame(HardCodedAxes.ALTITUDE,           Normalizer.normalize(HardCodedAxes.ALTITUDE, changes));
         assertSame(HardCodedAxes.TIME,               Normalizer.normalize(HardCodedAxes.TIME, changes));
-        assertSame("Radius orientation should not be changed from South to North because it does not allow negative values.",
-                HardCodedAxes.RADIUS, Normalizer.normalize(HardCodedAxes.RADIUS, changes));
+        assertSame(HardCodedAxes.DISTANCE,           Normalizer.normalize(HardCodedAxes.DISTANCE, changes));
     }
 
     /**
