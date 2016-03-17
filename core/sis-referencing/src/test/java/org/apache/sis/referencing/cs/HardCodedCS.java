@@ -112,8 +112,8 @@ public final strictfp class HardCodedCS {
 
     /**
      * A three-dimensional cylindrical CS with
-     * <var>{@linkplain HardCodedAxes#RADIUS radius} (oriented toward south)</var>,
-     * <var>{@linkplain HardCodedAxes#AZIMUTH azimuth}</var>,
+     * <var>{@linkplain HardCodedAxes#DISTANCE distance}</var>,
+     * <var>{@link HardCodedAxes#BEARING bearing}</var>,
      * <var>{@linkplain HardCodedAxes#Z z}</var> axes.
      * Note that this is not a right-handed system.
      *
@@ -121,8 +121,8 @@ public final strictfp class HardCodedCS {
      */
     public static final DefaultCylindricalCS CYLINDRICAL = new DefaultCylindricalCS(
             singletonMap(NAME_KEY, "Cylindrical"),
-            HardCodedAxes.RADIUS,
-            HardCodedAxes.AZIMUTH,
+            HardCodedAxes.DISTANCE,
+            HardCodedAxes.BEARING,
             HardCodedAxes.Z);
 
     /**

@@ -287,6 +287,12 @@ final class Normalizer implements Comparable<Normalizer> {
             changed |= sort(axes, angularUnitOrder);
             if (angularUnitOrder == 1) {                            // Cylindrical or polar
                 /*
+                 * Direction "awayFrom" (r) should be first.
+                 */
+                if (AxisDirections.AWAY_FROM.equals(axes[1].getDirection()) && Units.isLinear(axes[0].getUnit())) {
+                    ArraysExt.swap(axes, 0, 1);
+                }
+                /*
                  * Change (r,z,θ) to (r,θ,z) order in CylindricalCS. The check on unit of
                  * measurements should be always true, but we verify as a paranoiac check.
                  */

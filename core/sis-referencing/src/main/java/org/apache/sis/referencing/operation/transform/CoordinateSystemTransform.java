@@ -52,6 +52,11 @@ import org.apache.sis.util.resources.Errors;
  */
 abstract class CoordinateSystemTransform extends AbstractMathTransform {
     /**
+     * Number of input and output dimensions.
+     */
+    private final int dimension;
+
+    /**
      * An empty contextual parameter, used only for representing conversion from degrees to radians.
      */
     final transient ContextualParameters context;
@@ -66,10 +71,11 @@ abstract class CoordinateSystemTransform extends AbstractMathTransform {
      * Subclasses may need to invoke {@link ContextualParameters#normalizeGeographicInputs(double)}
      * or {@link ContextualParameters#denormalizeGeographicOutputs(double)} after this constructor.
      */
-    CoordinateSystemTransform(final String method) {
+    CoordinateSystemTransform(final String method, final int dimension) {
+        this.dimension = dimension;
         final Map<String,?> properties = Collections.singletonMap(DefaultOperationMethod.NAME_KEY,
                 new ImmutableIdentifier(Citations.SIS, Constants.SIS, method));
-        context = new ContextualParameters(new DefaultOperationMethod(properties, 3, 3,
+        context = new ContextualParameters(new DefaultOperationMethod(properties, dimension, dimension,
                 new DefaultParameterDescriptorGroup(properties, 1, 1)));
     }
 
@@ -91,7 +97,7 @@ abstract class CoordinateSystemTransform extends AbstractMathTransform {
      */
     @Override
     public final int getSourceDimensions() {
-        return 3;
+        return dimension;
     }
 
     /**
@@ -100,7 +106,7 @@ abstract class CoordinateSystemTransform extends AbstractMathTransform {
      */
     @Override
     public final int getTargetDimensions() {
-        return 3;
+        return dimension;
     }
 
     /**
