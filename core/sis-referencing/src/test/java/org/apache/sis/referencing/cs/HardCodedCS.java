@@ -84,18 +84,32 @@ public final strictfp class HardCodedCS {
             HardCodedAxes.LATITUDE_gon);
 
     /**
-     * A three-dimensional spherical CS with
+     * A three-dimensional spherical CS for geodetic use with
      * <var>{@linkplain HardCodedAxes#SPHERICAL_LATITUDE latitude}</var>,
      * <var>{@linkplain HardCodedAxes#SPHERICAL_LONGITUDE longitude}</var>,
      * <var>{@linkplain HardCodedAxes#GEOCENTRIC_RADIUS radius}</var> axes.
      * This axis order is the one of EPSG:6404.
      * Note that this is not a right-handed system.
+     *
+     * @see #SPHERICAL_ENGINEERING
      */
     public static final DefaultSphericalCS SPHERICAL = new DefaultSphericalCS(
             singletonMap(NAME_KEY, "Spherical"),
             HardCodedAxes.SPHERICAL_LATITUDE,
             HardCodedAxes.SPHERICAL_LONGITUDE,
             HardCodedAxes.GEOCENTRIC_RADIUS);
+
+    /**
+     * A three-dimensional spherical CS for geodetic use with
+     * <var>{@linkplain HardCodedAxes#DISTANCE distance}</var>,
+     * <var>{@linkplain HardCodedAxes#BEARING bearing}</var>,
+     * <var>{@linkplain HardCodedAxes#ELEVATION elevation}</var> axes.
+     */
+    public static final DefaultSphericalCS SPHERICAL_ENGINEERING = new DefaultSphericalCS(
+            singletonMap(NAME_KEY, SPHERICAL.getName()),
+            HardCodedAxes.DISTANCE,
+            HardCodedAxes.BEARING,
+            HardCodedAxes.ELEVATION);
 
     /**
      * A three-dimensional Cartesian CS with geocentric
