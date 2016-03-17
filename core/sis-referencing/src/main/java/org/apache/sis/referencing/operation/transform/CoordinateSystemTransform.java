@@ -25,6 +25,7 @@ import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CylindricalCS;
 import org.opengis.referencing.cs.SphericalCS;
+import org.opengis.referencing.cs.PolarCS;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.OperationNotFoundException;
@@ -63,8 +64,18 @@ abstract class CoordinateSystemTransform extends AbstractMathTransform {
 
     /**
      * The complete transform, including conversion between degrees and radians.
+     *
+     * @see #completeTransform(MathTransformFactory)
      */
-    private volatile MathTransform complete;
+    private transient volatile MathTransform complete;
+
+    /**
+     * The {@link #complete} transform in a {@link PassThroughTransform} with a 1 trailing ordinate.
+     * This is used for supporting the cylindrical case on top the polar case.
+     *
+     * @see #passthrough(MathTransformFactory)
+     */
+    private transient volatile MathTransform passthrough;
 
     /**
      * Creates a new conversion between two types of coordinate system.
@@ -82,11 +93,30 @@ abstract class CoordinateSystemTransform extends AbstractMathTransform {
     /**
      * Returns the complete transform, including conversion between degrees and radians units.
      */
-    final MathTransform completeTransform() throws FactoryException {
+    final MathTransform completeTransform(final MathTransformFactory factory) throws FactoryException {
         MathTransform tr = complete;
         if (tr == null) {
-            // No need to synchronize since DefaultMathTransformFactory returns unique instances.
-            complete = tr = context.completeTransform(DefaultFactories.forBuildin(MathTransformFactory.class), this);
+            tr = context.completeTransform(factory, this);
+            if (DefaultFactories.isDefaultInstance(MathTransformFactory.class, factory)) {
+                // No need to synchronize since DefaultMathTransformFactory returns unique instances.
+                complete = tr;
+            }
+        }
+        return tr;
+    }
+
+    /**
+     * Returns the cylindrical, including conversion between degrees and radians units.
+     * This method is legal only for {@link PolarToCartesian} or {@link CartesianToPolar}.
+     */
+    final MathTransform passthrough(final MathTransformFactory factory) throws FactoryException {
+        MathTransform tr = passthrough;
+        if (tr == null) {
+            tr = factory.createPassThroughTransform(0, completeTransform(factory), 1);
+            if (DefaultFactories.isDefaultInstance(MathTransformFactory.class, factory)) {
+                // No need to synchronize since DefaultMathTransformFactory returns unique instances.
+                passthrough = tr;
+            }
         }
         return tr;
     }
@@ -135,31 +165,39 @@ abstract class CoordinateSystemTransform extends AbstractMathTransform {
     static MathTransform create(final MathTransformFactory factory, final CoordinateSystem source,
             final CoordinateSystem target) throws FactoryException
     {
-        CoordinateSystemTransform tr = null;
+        int passthrough = 0;
+        CoordinateSystemTransform kernel = null;
         if (source instanceof CartesianCS) {
             if (target instanceof SphericalCS) {
-                tr = CartesianToSpherical.INSTANCE;
+                kernel = CartesianToSpherical.INSTANCE;
             } else if (target instanceof CylindricalCS) {
-                tr = CartesianToCylindrical.INSTANCE;
+                passthrough = 1;
+                kernel = CartesianToPolar.INSTANCE;
+            } else if (target instanceof PolarCS) {
+                kernel = CartesianToPolar.INSTANCE;
             }
-        } else if (source instanceof SphericalCS) {
-            if (target instanceof CartesianCS) {
-                tr = SphericalToCartesian.INSTANCE;
-            }
-        } else if (source instanceof CylindricalCS) {
-            if (target instanceof CartesianCS) {
-                tr = CylindricalToCartesian.INSTANCE;
+        } else if (target instanceof CartesianCS) {
+            if (source instanceof SphericalCS) {
+                kernel = SphericalToCartesian.INSTANCE;
+            } else if (source instanceof CylindricalCS) {
+                passthrough = 1;
+                kernel = PolarToCartesian.INSTANCE;
+            } else if (source instanceof PolarCS) {
+                kernel = PolarToCartesian.INSTANCE;
             }
         }
         Exception cause = null;
         try {
-            if (tr == null) {
+            if (kernel == null) {
                 return factory.createAffineTransform(CoordinateSystems.swapAndScaleAxes(source, target));
-            } else if (tr.getSourceDimensions() == source.getDimension() &&
-                       tr.getTargetDimensions() == target.getDimension())
+            } else if (source.getDimension() == kernel.getSourceDimensions() + passthrough &&
+                       target.getDimension() == kernel.getTargetDimensions() + passthrough)
             {
+                final MathTransform tr = (passthrough == 0)
+                        ? kernel.completeTransform(factory)
+                        : kernel.passthrough(factory);
                 return factory.createConcatenatedTransform(normalize(factory, source, false),
-                       factory.createConcatenatedTransform(tr.completeTransform(), normalize(factory, target, true)));
+                       factory.createConcatenatedTransform(tr, normalize(factory, target, true)));
             }
         } catch (IllegalArgumentException | ConversionException e) {
             cause = e;

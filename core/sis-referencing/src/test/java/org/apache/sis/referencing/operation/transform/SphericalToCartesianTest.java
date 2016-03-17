@@ -18,6 +18,8 @@ package org.apache.sis.referencing.operation.transform;
 
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.TransformException;
+import org.opengis.referencing.operation.MathTransformFactory;
+import org.apache.sis.internal.system.DefaultFactories;
 
 import static java.lang.StrictMath.*;
 
@@ -74,6 +76,13 @@ public final strictfp class SphericalToCartesianTest extends TransformTestCase {
     }
 
     /**
+     * Returns the factory to use for testing purpose.
+     */
+    static MathTransformFactory factory() {
+        return DefaultFactories.forBuildin(MathTransformFactory.class);
+    }
+
+    /**
      * Tests coordinate conversions.
      *
      * @throws FactoryException if the transform can not be created.
@@ -81,7 +90,7 @@ public final strictfp class SphericalToCartesianTest extends TransformTestCase {
      */
     @Test
     public void testConversion() throws FactoryException, TransformException {
-        transform = SphericalToCartesian.INSTANCE.completeTransform();
+        transform = SphericalToCartesian.INSTANCE.completeTransform(factory());
         tolerance = 1E-12;
         final double[][] data = testData();
         verifyTransform(data[0], data[1]);
@@ -95,7 +104,7 @@ public final strictfp class SphericalToCartesianTest extends TransformTestCase {
      */
     @Test
     public void testDerivative() throws FactoryException, TransformException {
-        transform = SphericalToCartesian.INSTANCE.completeTransform();
+        transform = SphericalToCartesian.INSTANCE.completeTransform(factory());
         derivativeDeltas = new double[] {1E-6, 1E-6, 1E-6};
         tolerance = 1E-7;
         verifyDerivative(30, 60, 100);
@@ -110,7 +119,7 @@ public final strictfp class SphericalToCartesianTest extends TransformTestCase {
     @Test
     @DependsOnMethod({"testConversion", "testDerivative"})
     public void testConsistency() throws FactoryException, TransformException {
-        transform = SphericalToCartesian.INSTANCE.completeTransform();
+        transform = SphericalToCartesian.INSTANCE.completeTransform(factory());
         derivativeDeltas = new double[] {1E-6, 1E-6, 1E-6};
         tolerance = 1E-7;
         verifyInDomain(new double[] {-180, -90,   0},       // Minimal coordinates

@@ -358,7 +358,7 @@ public class EllipsoidToCentricTransform extends AbstractMathTransform implement
             if (!withHeight) {
                 translate.setElement(3, 2, 1);
             }
-            final MathTransform tr = SphericalToCartesian.INSTANCE.completeTransform();
+            final MathTransform tr = SphericalToCartesian.INSTANCE.completeTransform(factory);
             return factory.createConcatenatedTransform(factory.createAffineTransform(translate), tr);
         }
         EllipsoidToCentricTransform tr = new EllipsoidToCentricTransform(semiMajor, semiMinor, unit, withHeight, target);

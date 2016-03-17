@@ -20,35 +20,41 @@ import java.util.Arrays;
 import java.io.Serializable;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
-import org.apache.sis.referencing.operation.matrix.Matrix3;
+import org.apache.sis.referencing.operation.matrix.Matrix2;
 import org.apache.sis.internal.util.DoubleDouble;
 
 import static java.lang.Math.*;
 
 
 /**
- * Conversions from three-dimensional Cartesian coordinates to spherical coordinates.
+ * Conversions from two-dimensional Cartesian coordinates to polar coordinates.
  * This conversion assumes that there is no datum change.
  *
- * <p>See {@link CylindricalToCartesian} for explanation on axes convention.
+ * <p>See {@link PolarToCartesian} for explanation on axes convention.
  * Axis order shall match the order defined by {@code Normalizer} in {@link org.apache.sis.referencing.cs} package.</p>
+ *
+ * <div class="note"><b>Note:</b>
+ * We do not provide explicit {@code CartesianToCylindrical} implementation.  Instead, the cylindrical case is
+ * implemented by the polar case with a {@link PassThroughTransform} for the height. This allows Apache SIS to
+ * use the optimization implemented by {@code PassThroughTransform} when for example a concatenated transform
+ * is dropping the <var>z</var> axis.</div>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.7
  * @version 0.7
  * @module
  */
-final class CartesianToCylindrical extends CoordinateSystemTransform implements Serializable {
+final class CartesianToPolar extends CoordinateSystemTransform implements Serializable {
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = -2619855017534519721L;
+    private static final long serialVersionUID = 7698079127743791414L;
 
     /**
      * The singleton instance computing output coordinates are in radians.
      * For the instance computing output coordinates in degrees, use {@link #completeTransform()} instead.
      */
-    static final CartesianToCylindrical INSTANCE = new CartesianToCylindrical();
+    static final CartesianToPolar INSTANCE = new CartesianToPolar();
 
     /**
      * Returns the singleton instance on deserialization.
@@ -61,8 +67,8 @@ final class CartesianToCylindrical extends CoordinateSystemTransform implements 
      * Creates the singleton instance.
      * Output coordinates are in radians.
      */
-    private CartesianToCylindrical() {
-        super("Cartesian to cylindrical", 3);
+    private CartesianToPolar() {
+        super("Cartesian to polar", 2);
         context.getMatrix(ContextualParameters.MatrixRole.DENORMALIZATION)
                .convertAfter(1, DoubleDouble.createRadiansToDegrees(), null);
     }
@@ -72,7 +78,7 @@ final class CartesianToCylindrical extends CoordinateSystemTransform implements 
      */
     @Override
     public MathTransform inverse() {
-        return CylindricalToCartesian.INSTANCE;
+        return PolarToCartesian.INSTANCE;
     }
 
     /**
@@ -85,20 +91,17 @@ final class CartesianToCylindrical extends CoordinateSystemTransform implements 
     {
         final double x  = srcPts[srcOff  ];
         final double y  = srcPts[srcOff+1];
-        final double z  = srcPts[srcOff+2];
         final double r  = hypot(x, y);
         if (dstPts != null) {
             dstPts[dstOff  ] = r;
             dstPts[dstOff+1] = atan2(y, x);
-            dstPts[dstOff+2] = z;
         }
         if (!derivate) {
             return null;
         }
         final double r2 = r*r;
-        return new Matrix3(x/r,   y/r,   0,
-                          -y/r2,  x/r2,  0,
-                           0,     0,     1);
+        return new Matrix2(x/r,   y/r,
+                          -y/r2,  x/r2);
     }
 
     /**
@@ -111,19 +114,19 @@ final class CartesianToCylindrical extends CoordinateSystemTransform implements 
         int srcInc = 0;
         int dstInc = 0;
         if (srcPts == dstPts) {
-            switch (IterationStrategy.suggest(srcOff, 3, dstOff, 3, numPts)) {
+            switch (IterationStrategy.suggest(srcOff, 2, dstOff, 2, numPts)) {
                 case ASCENDING: {
                     break;
                 }
                 case DESCENDING: {
-                    srcOff += 3 * (numPts - 1);
-                    dstOff += 3 * (numPts - 1);
-                    srcInc = -6;
-                    dstInc = -6;
+                    srcOff += 2 * (numPts - 1);
+                    dstOff += 2 * (numPts - 1);
+                    srcInc = -4;
+                    dstInc = -4;
                     break;
                 }
                 default: {
-                    srcPts = Arrays.copyOfRange(srcPts, srcOff, srcOff + numPts*3);
+                    srcPts = Arrays.copyOfRange(srcPts, srcOff, srcOff + numPts*2);
                     srcOff = 0;
                     break;
                 }
@@ -132,10 +135,8 @@ final class CartesianToCylindrical extends CoordinateSystemTransform implements 
         while (--numPts >= 0) {
             final double x  = srcPts[srcOff++];
             final double y  = srcPts[srcOff++];
-            final double z  = srcPts[srcOff++];
             dstPts[dstOff++] = hypot(x, y);
             dstPts[dstOff++] = atan2(y, x);
-            dstPts[dstOff++] = z;
             srcOff += srcInc;
             dstOff += dstInc;
         }
@@ -145,7 +146,7 @@ final class CartesianToCylindrical extends CoordinateSystemTransform implements 
      * NOTE: we do not bother to override the methods expecting a 'float' array because those methods should
      *       be rarely invoked. Since there is usually LinearTransforms before and after this transform, the
      *       conversion between float and double will be handled by those LinearTransforms.  If nevertheless
-     *       this CartesianToCylindrical is at the beginning or the end of a transformation chain,
+     *       this CartesianToPolar is at the beginning or the end of a transformation chain,
      *       the methods inherited from the subclass will work (but may be slightly slower).
      */
 }

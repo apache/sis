@@ -140,6 +140,19 @@ public final strictfp class HardCodedCS {
             HardCodedAxes.Z);
 
     /**
+     * A three-dimensional polar CS with
+     * <var>{@linkplain HardCodedAxes#DISTANCE distance}</var>,
+     * <var>{@link HardCodedAxes#BEARING bearing}</var> axes.
+     * Note that this is not a right-handed system.
+     *
+     * @since 0.7
+     */
+    public static final DefaultPolarCS POLAR = new DefaultPolarCS(
+            singletonMap(NAME_KEY, "Polar"),
+            HardCodedAxes.DISTANCE,
+            HardCodedAxes.BEARING);
+
+    /**
      * A two-dimensional Cartesian CS with
      * <var>{@linkplain HardCodedAxes#EASTING Easting}</var>,
      * <var>{@linkplain HardCodedAxes#NORTHING Northing}</var>
