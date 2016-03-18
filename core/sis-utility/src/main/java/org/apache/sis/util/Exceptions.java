@@ -22,6 +22,7 @@ import java.util.Locale;
 import java.sql.SQLException;
 import org.apache.sis.internal.util.LocalizedException;
 
+import org.apache.sis.util.resources.Vocabulary;
 import static org.apache.sis.util.CharSequences.trimWhitespaces;
 
 
@@ -30,7 +31,7 @@ import static org.apache.sis.util.CharSequences.trimWhitespaces;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.3
- * @version 0.4
+ * @version 0.7
  * @module
  */
 public final class Exceptions extends Static {
@@ -109,8 +110,8 @@ public final class Exceptions extends Static {
      * Returns a string which contain the given message on the first line, followed by the
      * {@linkplain Throwable#getLocalizedMessage() localized message} of the given exception
      * on the next line. If the exception has a {@linkplain Throwable#getCause() causes}, then
-     * the localized message of the cause is formatted on the next line and the process is
-     * repeated for the whole cause chain, omitting duplicated messages.
+     * the class name and the localized message of the cause are formatted on the next line
+     * and the process is repeated for the whole cause chain, omitting duplicated messages.
      *
      * <p>{@link SQLException} is handled especially in order to process the
      * {@linkplain SQLException#getNextException() next exception} instead than the cause.</p>
@@ -124,16 +125,15 @@ public final class Exceptions extends Static {
      *         and no exception provide a message.
      */
     public static String formatChainedMessages(final Locale locale, String header, Throwable cause) {
-        List<String> previousLines = null;
-        String lineSeparator = null;
+        final List<String> previousLines = new ArrayList<>();
+        final String lineSeparator = System.lineSeparator();
         StringBuilder buffer = null;
+        Vocabulary resources = null;
         while (cause != null) {
             final String message = trimWhitespaces(getLocalizedMessage(cause, locale));
             if (message != null && !message.isEmpty()) {
                 if (buffer == null) {
                     buffer = new StringBuilder(128);
-                    previousLines = new ArrayList<>(4);
-                    lineSeparator = System.lineSeparator();
                     header = trimWhitespaces(header);
                     if (header != null && !header.isEmpty()) {
                         buffer.append(header);
@@ -144,6 +144,10 @@ public final class Exceptions extends Static {
                     previousLines.add(message);
                     if (buffer.length() != 0) {
                         buffer.append(lineSeparator);
+                        if (resources == null) {
+                            resources = Vocabulary.getResources(locale);
+                        }
+                        buffer.append(resources.getString(Vocabulary.Keys.CausedBy_1, cause.getClass())).append(": ");
                     }
                     buffer.append(message);
                 }
@@ -168,8 +172,7 @@ public final class Exceptions extends Static {
      */
     private static boolean contains(final List<String> previousLines, final String message) {
         for (int i=previousLines.size(); --i>=0;) {
-            final int p = previousLines.get(i).indexOf(message);
-            if (p >= 0) {
+            if (previousLines.get(i).contains(message)) {
                 return true;
             }
         }

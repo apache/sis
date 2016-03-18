@@ -510,7 +510,7 @@ next:   for (int i=components.size(); --i >= 0;) {
             op = new AbstractSingleOperation(properties, sourceCRS, targetCRS, interpolationCRS, method, transform);
         }
         if (!baseType.isInstance(op)) {
-            throw new FactoryException(Errors.format(Errors.Keys.CanNotInstantiate_1, baseType));
+            throw new FactoryException(Errors.format(Errors.Keys.CanNotCreateObjectAsInstanceOf_2, baseType, op.getName()));
         }
         return pool.unique(op);
     }

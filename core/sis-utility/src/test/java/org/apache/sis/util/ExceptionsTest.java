@@ -17,6 +17,7 @@
 package org.apache.sis.util;
 
 import java.util.Locale;
+import java.io.IOException;
 import java.io.FileNotFoundException;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
@@ -29,7 +30,7 @@ import static org.junit.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.4
+ * @version 0.7
  * @module
  */
 public final strictfp class ExceptionsTest extends TestCase {
@@ -40,7 +41,7 @@ public final strictfp class ExceptionsTest extends TestCase {
     public void testFormatChainedMessages() {
         final String lineSeparator = System.lineSeparator();
         final FileNotFoundException cause = new FileNotFoundException("MisingFile.txt");
-        cause.initCause(new Exception("Disk is not mounted."));
+        cause.initCause(new IOException("Disk is not mounted."));
         final Exception e = new Exception("Can not find “MisingFile.txt”.", cause);
         /*
          * The actual sequence of messages (with their cause is):
@@ -51,15 +52,17 @@ public final strictfp class ExceptionsTest extends TestCase {
          *
          * But the second line shall be omitted because it duplicates the first line.
          */
+        String message = Exceptions.formatChainedMessages(Locale.ENGLISH, null, e);
         assertEquals("Can not find “MisingFile.txt”." + lineSeparator +
-                     "Disk is not mounted.",
-                     Exceptions.formatChainedMessages(Locale.ENGLISH, null, e));
+                     "Caused by IOException: Disk is not mounted.",
+                     message);
         /*
          * Test again with a header.
          */
+        message = Exceptions.formatChainedMessages(Locale.ENGLISH, "Error while creating the data store.", e);
         assertEquals("Error while creating the data store." + lineSeparator +
-                     "Can not find “MisingFile.txt”." + lineSeparator +
-                     "Disk is not mounted.",
-                     Exceptions.formatChainedMessages(Locale.ENGLISH, "Error while creating the data store.", e));
+                     "Caused by Exception: Can not find “MisingFile.txt”." + lineSeparator +
+                     "Caused by IOException: Disk is not mounted.",
+                     message);
     }
 }

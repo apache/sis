@@ -79,18 +79,14 @@ final class MemoryDataTransfer implements DataTransfer, ReadableByteChannel {
      */
     @Override
     public void seek(long position) throws IOException {
-        assert input().bufferOffset == 0;
-        if (position < 0) {
-            throw new IOException(Errors.format(Errors.Keys.NegativeArgument_2, "position", position));
-        }
         final int dataSizeShift = dataSizeShift();
-        if ((position & ((1 << dataSizeShift) - 1)) != 0) {
+        if (position < 0 || (position & ((1 << dataSizeShift) - 1)) != 0) {
             throw new IOException(Errors.format(Errors.Keys.IllegalArgumentValue_2, "position", position));
         }
         position >>>= dataSizeShift;
         final Buffer data = view();
         if (position > data.limit()) {
-            throw new EOFException(input().eof());
+            throw new EOFException(Errors.format(Errors.Keys.UnexpectedEndOfFile_1, filename()));
         }
         data.position((int) position);
     }
@@ -98,13 +94,13 @@ final class MemoryDataTransfer implements DataTransfer, ReadableByteChannel {
     /**
      * Delegates to the actual implementation.
      */
-    @Override public ChannelDataInput input()                     {return reader.input();}
-    @Override public int              dataSizeShift()             {return reader.dataSizeShift();}
-    @Override public Object           dataArray()                 {return reader.dataArray();}
-    @Override public Buffer           view()                      {return reader.view();}
-    @Override public Buffer           createView()                {return reader.createView();}
-    @Override public void             createDataArray(int length) {reader.createDataArray(length);}
-    @Override public void             setDest(Object array)       {reader.setDest(array);}
+    @Override public String filename()                  {return filename();}
+    @Override public int    dataSizeShift()             {return reader.dataSizeShift();}
+    @Override public Object dataArray()                 {return reader.dataArray();}
+    @Override public Buffer view()                      {return reader.view();}
+    @Override public Buffer createView()                {return reader.createView();}
+    @Override public void   createDataArray(int length) {reader.createDataArray(length);}
+    @Override public void   setDest(Object array)       {reader.setDest(array);}
 
     /**
      * Reads {@code length} values from the buffer and stores them into the array known to subclass,

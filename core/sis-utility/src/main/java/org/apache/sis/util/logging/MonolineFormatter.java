@@ -86,7 +86,7 @@ import org.apache.sis.util.Debug;
  *     #
  *     #  source: If set, writes the source logger name or the source class name.
  *     #          Valid argument values are "none", "logger:short", "logger:long",
- *     #          "class:short" and "class:long".
+ *     #          "class:short", "class:long" and "class.method".
  *     ###########################################################################
  *     org.apache.sis.util.logging.MonolineFormatter.time = HH:mm:ss.SSS
  *     org.apache.sis.util.logging.MonolineFormatter.source = class:short
@@ -120,16 +120,18 @@ public class MonolineFormatter extends Formatter {
     /** Format the source logger only.         */ private static final int LOGGER_LONG  = 2;
     /** Format the class name without package. */ private static final int CLASS_SHORT  = 3;
     /** Format the fully qualified class name. */ private static final int CLASS_LONG   = 4;
+    /** Format the class name and method name. */ private static final int METHOD       = 5;
 
     /**
      * The label to use in the {@code logging.properties} for setting the source format.
      */
-    private static final String[] FORMAT_LABELS = new String[5];
+    private static final String[] FORMAT_LABELS = new String[6];
     static {
         FORMAT_LABELS[LOGGER_SHORT] = "logger:short";
         FORMAT_LABELS[LOGGER_LONG ] = "logger:long";
         FORMAT_LABELS[ CLASS_SHORT] = "class:short";
         FORMAT_LABELS[ CLASS_LONG ] = "class:long";
+        FORMAT_LABELS[METHOD      ] = "class.method";
     }
 
     /**
@@ -234,7 +236,7 @@ public class MonolineFormatter extends Formatter {
 
     /**
      * One of the following constants: {@link #NO_SOURCE}, {@link #LOGGER_SHORT},
-     * {@link #LOGGER_LONG}, {@link #CLASS_SHORT} or {@link #CLASS_LONG}.
+     * {@link #LOGGER_LONG}, {@link #CLASS_SHORT}, {@link #CLASS_LONG} or {@link #METHOD}.
      */
     private int sourceFormat = NO_SOURCE;
 
@@ -373,7 +375,7 @@ loop:   for (int i=0; ; i++) {
      *        or {@code null} if none.
      */
     public void setHeader(String header) {
-        if (header == null) { // See comment in getHeader().
+        if (header == null) {                           // See comment in getHeader().
             header = "";
         }
         synchronized (buffer) {
@@ -452,6 +454,8 @@ loop:   for (int i=0; ; i++) {
      *   <li>{@code "logger:long"}  for the {@linkplain LogRecord#getLoggerName() logger name}</li>
      *   <li>{@code "class:short"}  for the source class name without the package part.</li>
      *   <li>{@code "logger:short"} for the logger name without the package part.</li>
+     *   <li>{@code "class.method"} for the short class name followed by the
+     *       {@linkplain LogRecord#getSourceMethodName() source method name}</li>
      * </ul>
      *
      * The source class name usually contains the logger name since (by convention) logger
@@ -603,7 +607,7 @@ loop:   for (int i=0; ; i++) {
         }
         int i = Arrays.binarySearch(colorLevels, level.intValue());
         if (i < 0) {
-            i = Math.max((~i)-1, 0);  // Really tild, not minus sign.
+            i = Math.max((~i)-1, 0);                    // Really tild, not minus sign.
         }
         return colorSequences[i];
     }
@@ -658,18 +662,23 @@ loop:   for (int i=0; ; i++) {
             switch (sourceFormat) {
                 case LOGGER_SHORT: // Fall through
                 case LOGGER_LONG:  source = record.getLoggerName(); break;
+                case METHOD:       // Fall through
                 case CLASS_SHORT:  // Fall through
                 case CLASS_LONG:   source = record.getSourceClassName(); break;
                 default:           source = null; break;
             }
             if (source != null) {
                 switch (sourceFormat) {
+                    case METHOD:       // Fall through
                     case LOGGER_SHORT: // Fall through
                     case CLASS_SHORT: {
                         // Works even if there is no '.' since we get -1 as index.
                         source = source.substring(source.lastIndexOf('.') + 1);
                         break;
                     }
+                }
+                if (sourceFormat == METHOD) {
+                    source = source + '.' + record.getSourceMethodName();
                 }
                 if (colors && emphase) {
                     buffer.append(X364.BOLD.sequence());
@@ -710,7 +719,7 @@ loop:   for (int i=0; ; i++) {
                 }
                 if (exception != null) {
                     if (message != null) {
-                        writer.append("\nCaused by: "); // LineAppender will replace '\n' by the system EOL.
+                        writer.append("\nCaused by: ");     // LineAppender will replace '\n' by the system EOL.
                     }
                     if (level.intValue() >= LEVEL_THRESHOLD.intValue()) {
                         exception.printStackTrace(printer);
@@ -879,7 +888,7 @@ loop:   for (int i=0; ; i++) {
             if (con) {
                 writer.append(" ...");
             }
-            writer.append('\n'); // LineAppender will replace '\n' by the system EOL.
+            writer.append('\n');                    // LineAppender will replace '\n' by the system EOL.
         }
     }
 
@@ -999,7 +1008,7 @@ loop:   for (int i=0; ; i++) {
             }
             final Handler handler = new ConsoleHandler();
             if (level != null) {
-                handler.setLevel(level); // Shall be before MonolineFormatter creation.
+                handler.setLevel(level);                    // Shall be before MonolineFormatter creation.
             }
             monoline = new MonolineFormatter(handler);
             handler.setFormatter(monoline);

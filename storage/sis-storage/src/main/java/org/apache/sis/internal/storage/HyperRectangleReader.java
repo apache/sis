@@ -22,6 +22,7 @@ import java.io.IOException;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.util.Debug;
 
 
 /**
@@ -83,22 +84,23 @@ public final class HyperRectangleReader {
      * Creates a new reader for the data in an existing buffer.
      * The data will be read from the current buffer position to the buffer limit.
      *
-     * @param name   The data source name, for information purpose only.
+     * @param filename A data source name, for error messages or debugging purpose.
      * @param data A buffer containing the data to read.
      * @throws IOException should never happen.
      */
-    public HyperRectangleReader(final String name, final Buffer data) throws IOException {
-        reader = new MemoryDataTransfer(name, data).reader();
+    public HyperRectangleReader(final String filename, final Buffer data) throws IOException {
+        reader = new MemoryDataTransfer(filename, data).reader();
         origin = 0;
     }
 
     /**
-     * Returns the data input specified at construction time.
+     * Returns a file identifier for error messages or debugging purpose.
      *
-     * @return The input channel together with the buffer.
+     * @return the file identifier.
      */
-    public final ChannelDataInput input() {
-        return reader.input();
+    @Debug
+    public String filename() {
+        return reader.filename();
     }
 
     /**
