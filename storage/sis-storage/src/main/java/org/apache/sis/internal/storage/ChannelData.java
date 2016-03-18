@@ -222,7 +222,7 @@ public abstract class ChannelData {
         final int n = (int) (position - bufferOffset);
         final int p = buffer.position() - n;
         final int r = buffer.limit() - n;
-        flushAndSetPosition(n); // Number of bytes to forget.
+        flushAndSetPosition(n);                             // Number of bytes to forget.
         buffer.compact().position(p).limit(r);
         /*
          * Discard trailing obsolete marks. Note that obsolete marks between valid marks
@@ -242,7 +242,7 @@ public abstract class ChannelData {
     }
 
     /**
-     * Writes (if applicable) the buffer content up to the given position, then set the buffer position
+     * Writes (if applicable) the buffer content up to the given position, then sets the buffer position
      * to the given value. The {@linkplain ByteBuffer#limit() buffer limit} is unchanged, and the buffer
      * offset is incremented by the given value.
      */
@@ -327,6 +327,9 @@ public abstract class ChannelData {
     @Debug
     @Override
     public String toString() {
-        return getClass().getSimpleName() + "[“" + filename + "” at " + getStreamPosition() + ']';
+        final StringBuilder b = new StringBuilder().append(getClass().getSimpleName()).append("[“").append(filename).append('”');
+        // Even if the buffer should not be null, it is useful to keep the toString() method robust.
+        if (buffer != null) b.append(" at ").append(getStreamPosition());
+        return b.append(']').toString();
     }
 }

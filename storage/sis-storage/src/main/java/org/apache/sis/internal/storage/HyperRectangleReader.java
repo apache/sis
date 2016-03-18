@@ -39,7 +39,7 @@ public final class HyperRectangleReader {
     /**
      * The channel from which to read the values, together with a buffer for transferring data.
      */
-    private final ChannelDataInput.ArrayReader reader;
+    private final DataTransfer reader;
 
     /**
      * The {@link #input} position of the first sample (ignoring sub-area and sub-sampling).
@@ -58,13 +58,13 @@ public final class HyperRectangleReader {
             throws DataStoreException
     {
         switch (dataType) {
-            case Numbers.BYTE:      reader = input.new BytesReader  (null); break;
-            case Numbers.CHARACTER: reader = input.new CharsReader  (null); break;
-            case Numbers.SHORT:     reader = input.new ShortsReader (null); break;
-            case Numbers.INTEGER:   reader = input.new IntsReader   (null); break;
-            case Numbers.LONG:      reader = input.new LongsReader  (null); break;
-            case Numbers.FLOAT:     reader = input.new FloatsReader (null); break;
-            case Numbers.DOUBLE:    reader = input.new DoublesReader(null); break;
+            case Numbers.BYTE:      reader = input.new BytesReader  (           null); break;
+            case Numbers.CHARACTER: reader = input.new CharsReader  ((char[])   null); break;
+            case Numbers.SHORT:     reader = input.new ShortsReader ((short[])  null); break;
+            case Numbers.INTEGER:   reader = input.new IntsReader   ((int[])    null); break;
+            case Numbers.LONG:      reader = input.new LongsReader  ((long[])   null); break;
+            case Numbers.FLOAT:     reader = input.new FloatsReader ((float[])  null); break;
+            case Numbers.DOUBLE:    reader = input.new DoublesReader((double[]) null); break;
             default: throw new DataStoreException(Errors.format(Errors.Keys.UnknownType_1, dataType));
         }
         this.origin = origin;
@@ -77,6 +77,19 @@ public final class HyperRectangleReader {
         } finally {
             buffer.limit(lim).position(pos);
         }
+    }
+
+    /**
+     * Creates a new reader for the data in an existing buffer.
+     * The data will be read from the current buffer position to the buffer limit.
+     *
+     * @param name   The data source name, for information purpose only.
+     * @param data A buffer containing the data to read.
+     * @throws IOException should never happen.
+     */
+    public HyperRectangleReader(final String name, final Buffer data) throws IOException {
+        reader = new MemoryDataTransfer(name, data).reader();
+        origin = 0;
     }
 
     /**
@@ -109,10 +122,9 @@ public final class HyperRectangleReader {
         }
         try {
             reader.createDataArray(region.targetLength(region.getDimension()));
-            final ChannelDataInput input = reader.input();
             final Buffer view = reader.view();
 loop:       do {
-                input.seek(streamPosition);
+                reader.seek(streamPosition);
                 assert reader.view() == view;
                 reader.readFully(view, arrayPosition, contiguousDataLength);
                 for (int i=0; i<cursor.length; i++) {
