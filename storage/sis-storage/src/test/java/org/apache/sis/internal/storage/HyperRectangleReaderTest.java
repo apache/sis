@@ -22,6 +22,8 @@ import java.nio.ByteOrder;
 import java.nio.ByteBuffer;
 import java.nio.ShortBuffer;
 import java.io.IOException;
+import java.nio.channels.ReadableByteChannel;
+import java.nio.channels.SeekableByteChannel;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.test.DependsOnMethod;
@@ -83,8 +85,10 @@ public final strictfp class HyperRectangleReaderTest extends TestCase {
      * Sample values are index values encoded in base 10. For example the value at index (4,1,2,3) will be 4123.
      *
      * @param random The random number generator to use for initializing the test.
+     * @param useChannel {@code true} for fetching the data from channel to a small buffer,
+     *        or {@code false} if the data are expected to be fully contained in the buffer.
      */
-    private void initialize(final Random random) throws IOException, DataStoreException {
+    private void initialize(final Random random, final boolean useChannel) throws IOException, DataStoreException {
         /*
          * Compute a random hyper-rectangle size, sub-region and sub-sampling. Each dimension will have a
          * size between 1 to 10, so we will be able to use decimal digits from 0 to 9 in the sample values.
@@ -118,7 +122,7 @@ public final strictfp class HyperRectangleReaderTest extends TestCase {
          * Fill the array with short values using the encoding describes in javadoc.
          * Then wrap the array in a pseudo-channel so we can create the reader to test.
          */
-        ShortBuffer view = ByteBuffer.wrap(array, origin, length*Short.BYTES).order(ByteOrder.nativeOrder()).asShortBuffer();
+        final ShortBuffer view = ByteBuffer.wrap(array, origin, length*Short.BYTES).order(ByteOrder.nativeOrder()).asShortBuffer();
         for (int i3=0; i3<size[3]; i3++) {
             for (int i2=0; i2<size[2]; i2++) {
                 for (int i1=0; i1<size[1]; i1++) {
@@ -129,10 +133,15 @@ public final strictfp class HyperRectangleReaderTest extends TestCase {
             }
         }
         assertEquals(length, view.position());
-        final ByteArrayChannel channel = new ByteArrayChannel(array, true);
-        final ByteBuffer       buffer  = ByteBuffer.allocate(random.nextInt(20) + 20).order(ByteOrder.nativeOrder());
-        final ChannelDataInput input   = new ChannelDataInput("HyperRectangle", channel, buffer, false);
-        reader = new HyperRectangleReader(Numbers.SHORT, input, origin);
+        if (useChannel) {
+            final ByteArrayChannel channel = new ByteArrayChannel(array, true);
+            final ByteBuffer       buffer  = ByteBuffer.allocate(random.nextInt(20) + 20).order(ByteOrder.nativeOrder());
+            final ChannelDataInput input   = new ChannelDataInput("HyperRectangle in channel", channel, buffer, false);
+            reader = new HyperRectangleReader(Numbers.SHORT, input, origin);
+        } else {
+            view.clear();
+            reader = new HyperRectangleReader("HyperRectangle in buffer", view);
+        }
     }
 
     /**
@@ -159,6 +168,21 @@ public final strictfp class HyperRectangleReaderTest extends TestCase {
     }
 
     /**
+     * Asserts that the reader used a channel and has read at least some bytes.
+     *
+     * @param expected {@code true} if the reader should have used a channel,
+     *        or {@code false} if it should have used in-memory data instead.
+     */
+    private void assertUsedChannel(final boolean expected) throws IOException {
+        final ChannelDataInput input = reader.input();
+        final ReadableByteChannel channel = input.channel;
+        assertEquals("(channel instanceof InMemoryInput)", !expected, channel instanceof MemoryDataTransfer);
+        if (expected) {
+            assertTrue(((SeekableByteChannel) channel).position() > input.channelOffset);
+        }
+    }
+
+    /**
      * Tests reading a random part of the hyper-cube without sub-sampling.
      *
      * @throws IOException should never happen.
@@ -166,9 +190,10 @@ public final strictfp class HyperRectangleReaderTest extends TestCase {
      */
     @Test
     public void testSubRegion() throws IOException, DataStoreException {
-        initialize(TestUtilities.createRandomNumberGenerator());
+        initialize(TestUtilities.createRandomNumberGenerator(), true);
         Arrays.fill(subsampling, 0, subsampling.length, 1);
         verifyRegionRead();
+        assertUsedChannel(true);
     }
 
     /**
@@ -179,10 +204,11 @@ public final strictfp class HyperRectangleReaderTest extends TestCase {
      */
     @Test
     public void testSubSampling() throws IOException, DataStoreException {
-        initialize(TestUtilities.createRandomNumberGenerator());
+        initialize(TestUtilities.createRandomNumberGenerator(), true);
         System.arraycopy(size, 0, upper, 0, size.length);
         Arrays.fill(lower, 0, lower.length, 0);
         verifyRegionRead();
+        assertUsedChannel(true);
     }
 
     /**
@@ -194,7 +220,22 @@ public final strictfp class HyperRectangleReaderTest extends TestCase {
     @Test
     @DependsOnMethod({"testSubRegion", "testSubSampling"})
     public void testRandom() throws IOException, DataStoreException {
-        initialize(TestUtilities.createRandomNumberGenerator());
+        initialize(TestUtilities.createRandomNumberGenerator(), true);
         verifyRegionRead();
+        assertUsedChannel(true);
+    }
+
+    /**
+     * Tests reading data in an existing buffer, without channel.
+     *
+     * @throws IOException should never happen.
+     * @throws DataStoreException should never happen.
+     */
+    @Test
+    @DependsOnMethod("testRandom")
+    public void testReadFromBuffer() throws IOException, DataStoreException {
+        initialize(TestUtilities.createRandomNumberGenerator(4), false);
+        verifyRegionRead();
+        assertUsedChannel(false);
     }
 }
