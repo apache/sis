@@ -18,6 +18,7 @@ package org.apache.sis.internal.storage;
 
 import java.io.IOException;
 import java.nio.Buffer;
+import org.apache.sis.util.Debug;
 
 
 /**
@@ -31,9 +32,10 @@ import java.nio.Buffer;
  */
 interface DataTransfer {
     /**
-     * Returns the enclosing data input.
+     * Returns a file identifier for error messages or debugging purpose.
      */
-    ChannelDataInput input();
+    @Debug
+    String filename();
 
     /**
      * Returns the size of the Java primitive type which is the element of the array.

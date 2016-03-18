@@ -20,6 +20,8 @@ import java.util.Map;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import javax.measure.unit.SI;
 import javax.measure.unit.NonSI;
 import javax.measure.unit.Unit;
@@ -67,8 +69,10 @@ import org.apache.sis.internal.system.SystemListener;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.util.resources.Vocabulary;
+import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.Exceptions;
 import org.apache.sis.math.MathFunctions;
 import org.apache.sis.measure.Latitude;
 import org.apache.sis.measure.Units;
@@ -516,7 +520,7 @@ public enum CommonCRS {
                         cached = object = factory.createGeographicCRS(String.valueOf(geographic));
                         return object;
                     } catch (FactoryException e) {
-                        failure(this, "geographic", e);
+                        failure(this, "geographic", e, geographic);
                     }
                     /*
                      * All constants defined in this enumeration use the same coordinate system, EPSG:6422.
@@ -572,7 +576,7 @@ public enum CommonCRS {
                             cachedGeo3D = object = factory.createGeographicCRS(String.valueOf(geo3D));
                             return object;
                         } catch (FactoryException e) {
-                            failure(this, "geographic3D", e);
+                            failure(this, "geographic3D", e, geo3D);
                         }
                     }
                     /*
@@ -630,7 +634,7 @@ public enum CommonCRS {
                             cachedGeocentric = object = factory.createGeocentricCRS(String.valueOf(geocentric));
                             return object;
                         } catch (FactoryException e) {
-                            failure(this, "geocentric", e);
+                            failure(this, "geocentric", e, geocentric);
                         }
                     }
                     /*
@@ -686,7 +690,7 @@ public enum CommonCRS {
                         if (factory != null) try {
                             cs = factory.createSphericalCS("6404");
                         } catch (FactoryException e) {
-                            failure(this, "spherical", e);
+                            failure(this, "spherical", e, (short) 6404);
                         }
                         if (cs == null) {
                             cs = (SphericalCS) StandardDefinitions.createCoordinateSystem((short) 6404);
@@ -736,7 +740,7 @@ public enum CommonCRS {
                         cached = object = factory.createGeodeticDatum(String.valueOf(datum));
                         return object;
                     } catch (FactoryException e) {
-                        failure(this, "datum", e);
+                        failure(this, "datum", e, datum);
                     }
                     object = StandardDefinitions.createGeodeticDatum(datum, ellipsoid(), primeMeridian());
                     cached = object;
@@ -780,7 +784,7 @@ public enum CommonCRS {
                             cached = object = factory.createEllipsoid(String.valueOf(ellipsoid));
                             return object;
                         } catch (FactoryException e) {
-                            failure(this, "ellipsoid", e);
+                            failure(this, "ellipsoid", e, ellipsoid);
                         }
                         object = StandardDefinitions.createEllipsoid(ellipsoid);
                     }
@@ -820,7 +824,7 @@ public enum CommonCRS {
                             cached = object = factory.createPrimeMeridian(StandardDefinitions.GREENWICH);
                             return object;
                         } catch (FactoryException e) {
-                            failure(this, "primeMeridian", e);
+                            failure(this, "primeMeridian", e, (short) 8901);
                         }
                         object = StandardDefinitions.primeMeridian();
                     }
@@ -942,7 +946,7 @@ public enum CommonCRS {
                     if (factory != null) try {
                         return factory.createProjectedCRS(String.valueOf(code));
                     } catch (FactoryException e) {
-                        failure(this, "UTM", e);
+                        failure(this, "UTM", e, code);
                     }
                 }
             }
@@ -1192,7 +1196,7 @@ public enum CommonCRS {
                                 cached = object = factory.createVerticalCRS(String.valueOf(crs));
                                 return object;
                             } catch (FactoryException e) {
-                                failure(this, "crs", e);
+                                failure(this, "crs", e, crs);
                             }
                             object = StandardDefinitions.createVerticalCRS(crs, datum());
                         } else {
@@ -1257,7 +1261,7 @@ public enum CommonCRS {
                                 cached = object = factory.createVerticalDatum(String.valueOf(datum));
                                 return object;
                             } catch (FactoryException e) {
-                                failure(this, "datum", e);
+                                failure(this, "datum", e, datum);
                             }
                             object = StandardDefinitions.createVerticalDatum(datum);
                         } else {
@@ -1615,10 +1619,15 @@ public enum CommonCRS {
      * Invoked when a factory failed to create an object.
      * After invoking this method, the caller will fallback on hard-coded values.
      */
-    static void failure(final Object caller, final String method, final FactoryException e) {
-        if (e instanceof UnavailableFactoryException) {
-            AuthorityFactories.failure((UnavailableFactoryException) e);
+    static void failure(final Object caller, final String method, final FactoryException e, final int code) {
+        String message = Errors.format(Errors.Keys.CanNotInstantiate_1, "EPSG:" + code);
+        message = Exceptions.formatChainedMessages(null, message, e);
+        final LogRecord record = new LogRecord(Level.WARNING, message);
+        if (!(e instanceof UnavailableFactoryException) || !AuthorityFactories.failure((UnavailableFactoryException) e)) {
+            // Append the stack trace only if the exception is the the one we expect when the factory is not available.
+            record.setThrown(e);
         }
-        Logging.unexpectedException(Logging.getLogger(Loggers.CRS_FACTORY), caller.getClass(), method, e);
+        record.setLoggerName(Loggers.CRS_FACTORY);
+        Logging.log(caller.getClass(), method, record);
     }
 }

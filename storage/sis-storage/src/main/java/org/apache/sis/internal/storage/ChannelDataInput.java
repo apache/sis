@@ -28,6 +28,7 @@ import java.nio.FloatBuffer;
 import java.nio.DoubleBuffer;
 import java.nio.channels.ReadableByteChannel;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.Debug;
 
 import static org.apache.sis.util.ArgumentChecks.ensureBetween;
 
@@ -190,7 +191,7 @@ public class ChannelDataInput extends ChannelData {
     /**
      * Returns the "end of file" error message, for {@link EOFException} creations.
      */
-    final String eof() {
+    private String eof() {
         return Errors.format(Errors.Keys.UnexpectedEndOfFile_1, filename);
     }
 
@@ -527,11 +528,12 @@ public class ChannelDataInput extends ChannelData {
         }
 
         /**
-         * Returns the enclosing data input.
+         * Returns a file identifier for error messages or debugging purpose.
          */
+        @Debug
         @Override
-        public final ChannelDataInput input() {
-            return ChannelDataInput.this;
+        public final String filename() {
+            return filename;
         }
 
         /**

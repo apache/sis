@@ -22,8 +22,6 @@ import java.nio.ByteOrder;
 import java.nio.ByteBuffer;
 import java.nio.ShortBuffer;
 import java.io.IOException;
-import java.nio.channels.ReadableByteChannel;
-import java.nio.channels.SeekableByteChannel;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.test.DependsOnMethod;
@@ -168,21 +166,6 @@ public final strictfp class HyperRectangleReaderTest extends TestCase {
     }
 
     /**
-     * Asserts that the reader used a channel and has read at least some bytes.
-     *
-     * @param expected {@code true} if the reader should have used a channel,
-     *        or {@code false} if it should have used in-memory data instead.
-     */
-    private void assertUsedChannel(final boolean expected) throws IOException {
-        final ChannelDataInput input = reader.input();
-        final ReadableByteChannel channel = input.channel;
-        assertEquals("(channel instanceof InMemoryInput)", !expected, channel instanceof MemoryDataTransfer);
-        if (expected) {
-            assertTrue(((SeekableByteChannel) channel).position() > input.channelOffset);
-        }
-    }
-
-    /**
      * Tests reading a random part of the hyper-cube without sub-sampling.
      *
      * @throws IOException should never happen.
@@ -193,7 +176,6 @@ public final strictfp class HyperRectangleReaderTest extends TestCase {
         initialize(TestUtilities.createRandomNumberGenerator(), true);
         Arrays.fill(subsampling, 0, subsampling.length, 1);
         verifyRegionRead();
-        assertUsedChannel(true);
     }
 
     /**
@@ -208,7 +190,6 @@ public final strictfp class HyperRectangleReaderTest extends TestCase {
         System.arraycopy(size, 0, upper, 0, size.length);
         Arrays.fill(lower, 0, lower.length, 0);
         verifyRegionRead();
-        assertUsedChannel(true);
     }
 
     /**
@@ -222,7 +203,6 @@ public final strictfp class HyperRectangleReaderTest extends TestCase {
     public void testRandom() throws IOException, DataStoreException {
         initialize(TestUtilities.createRandomNumberGenerator(), true);
         verifyRegionRead();
-        assertUsedChannel(true);
     }
 
     /**
@@ -236,6 +216,5 @@ public final strictfp class HyperRectangleReaderTest extends TestCase {
     public void testMemoryTransfer() throws IOException, DataStoreException {
         initialize(TestUtilities.createRandomNumberGenerator(), false);
         verifyRegionRead();
-        assertUsedChannel(false);
     }
 }

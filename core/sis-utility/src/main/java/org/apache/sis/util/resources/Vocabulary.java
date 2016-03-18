@@ -101,6 +101,11 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final short Cardinality = 76;
 
         /**
+         * Caused by {0}
+         */
+        public static final short CausedBy_1 = 107;
+
+        /**
          * Character encoding
          */
         public static final short CharacterEncoding = 6;
