@@ -226,15 +226,15 @@ public final strictfp class HyperRectangleReaderTest extends TestCase {
     }
 
     /**
-     * Tests reading data in an existing buffer, without channel.
+     * Tests reading data from an existing buffer, without channel.
      *
      * @throws IOException should never happen.
      * @throws DataStoreException should never happen.
      */
     @Test
     @DependsOnMethod("testRandom")
-    public void testReadFromBuffer() throws IOException, DataStoreException {
-        initialize(TestUtilities.createRandomNumberGenerator(4), false);
+    public void testMemoryTransfer() throws IOException, DataStoreException {
+        initialize(TestUtilities.createRandomNumberGenerator(), false);
         verifyRegionRead();
         assertUsedChannel(false);
     }
