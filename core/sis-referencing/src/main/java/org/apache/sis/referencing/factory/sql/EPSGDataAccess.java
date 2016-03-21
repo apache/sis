@@ -70,6 +70,7 @@ import org.apache.sis.internal.metadata.TransformationAccuracy;
 import org.apache.sis.internal.metadata.sql.SQLUtilities;
 import org.apache.sis.internal.referencing.DeprecatedCode;
 import org.apache.sis.internal.referencing.EPSGParameterDomain;
+import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.system.Semaphores;
@@ -2845,10 +2846,8 @@ next:               while (r.next()) {
                         final MathTransform mt;
                         final MathTransformFactory mtFactory = owner.mtFactory;
                         if (mtFactory instanceof DefaultMathTransformFactory) {
-                            DefaultMathTransformFactory.Context context = new DefaultMathTransformFactory.Context();
-                            context.setSource(sourceCRS);
-                            context.setTarget(targetCRS);
-                            mt = ((DefaultMathTransformFactory) mtFactory).createParameterizedTransform(parameters, context);
+                            mt = ((DefaultMathTransformFactory) mtFactory).createParameterizedTransform(parameters,
+                                    ReferencingUtilities.createTransformContext(sourceCRS, targetCRS, null));
                         } else {
                             // Fallback for non-SIS implementations. Work for map projections but not for Molodensky.
                             mt = mtFactory.createBaseToDerived(sourceCRS, parameters, targetCRS.getCoordinateSystem());
