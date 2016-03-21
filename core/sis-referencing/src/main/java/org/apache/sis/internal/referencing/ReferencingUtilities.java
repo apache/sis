@@ -37,6 +37,7 @@ import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.datum.DefaultPrimeMeridian;
 import org.apache.sis.referencing.crs.DefaultGeographicCRS;
 import org.apache.sis.referencing.cs.AxesConvention;
+import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory.Context;
 
 import static java.util.Collections.singletonMap;
 
@@ -320,5 +321,37 @@ public final class ReferencingUtilities extends Static {
             }
         }
         return null;
+    }
+
+    /**
+     * Sets the source and target ellipsoids and coordinate systems to values inferred from the given CRS.
+     * The ellipsoids will be non-null only if the given CRS is geographic (not geocentric).
+     *
+     * @param sourceCRS The CRS from which to get the source coordinate system and ellipsoid.
+     * @param targetCRS The CRS from which to get the target coordinate system and ellipsoid.
+     * @param context   A pre-allocated context, or {@code null} for creating a new one.
+     * @return The given context if it was non-null, or a new context otherwise.
+     *
+     * @since 0.7
+     */
+    public static Context createTransformContext(final CoordinateReferenceSystem sourceCRS,
+            final CoordinateReferenceSystem targetCRS, Context context)
+    {
+        if (context == null) {
+            context = new Context();
+        }
+        final CoordinateSystem sourceCS = (sourceCRS != null) ? sourceCRS.getCoordinateSystem() : null;
+        final CoordinateSystem targetCS = (targetCRS != null) ? targetCRS.getCoordinateSystem() : null;
+        if (sourceCRS instanceof GeodeticCRS && sourceCS instanceof EllipsoidalCS) {
+            context.setSource((EllipsoidalCS) sourceCS, ((GeodeticCRS) sourceCRS).getDatum().getEllipsoid());
+        } else {
+            context.setSource(sourceCS);
+        }
+        if (targetCRS instanceof GeodeticCRS && targetCS instanceof EllipsoidalCS) {
+            context.setTarget((EllipsoidalCS) targetCS, ((GeodeticCRS) targetCRS).getDatum().getEllipsoid());
+        } else {
+            context.setTarget(targetCS);
+        }
+        return context;
     }
 }

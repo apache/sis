@@ -68,7 +68,7 @@ import java.util.Objects;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4
- * @version 0.6
+ * @version 0.7
  * @module
  *
  * @see org.apache.sis.parameter.TensorParameters
@@ -776,7 +776,6 @@ public final class Matrices extends Static {
      * @return {@code true} if the matrix represents an affine transform.
      *
      * @see MatrixSIS#isAffine()
-     * @see AffineTransforms2D#castOrCopy(Matrix)
      */
     public static boolean isAffine(final Matrix matrix) {
         if (matrix instanceof MatrixSIS) {
@@ -784,6 +783,32 @@ public final class Matrices extends Static {
         } else {
             return MatrixSIS.isAffine(matrix);
         }
+    }
+
+    /**
+     * Returns {@code true} if the given matrix represents a translation.
+     * This method returns {@code true} if the given matrix {@linkplain #isAffine(Matrix) is affine}
+     * and differs from the identity matrix only in the last column.
+     *
+     * @param matrix The matrix to test.
+     * @return {@code true} if the matrix represents a translation.
+     *
+     * @since 0.7
+     */
+    public static boolean isTranslation(final Matrix matrix) {
+        if (!isAffine(matrix)) {
+            return false;
+        }
+        final int numRow = matrix.getNumRow() - 1;      // Excluding translation column.
+        final int numCol = matrix.getNumCol() - 1;      // Excluding last row in affine transform.
+        for (int j=0; j<numRow; j++) {
+            for (int i=0; i<numCol; i++) {
+                if (matrix.getElement(j,i) != ((i == j) ? 1 : 0)) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     /**
