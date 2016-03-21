@@ -65,14 +65,16 @@ public final class ReferencingUtilities extends Static {
      * This method provides the same functionality than {@link DefaultPrimeMeridian#getGreenwichLongitude(Unit)},
      * but on arbitrary implementation.
      *
-     * @param  primeMeridian The prime meridian from which to get the Greenwich longitude.
+     * @param  primeMeridian The prime meridian from which to get the Greenwich longitude, or {@code null}.
      * @param  unit The unit for the prime meridian to return.
-     * @return The prime meridian in the given units.
+     * @return The prime meridian in the given units, or {@code 0} if the given prime meridian was null.
      *
      * @see DefaultPrimeMeridian#getGreenwichLongitude(Unit)
      */
     public static double getGreenwichLongitude(final PrimeMeridian primeMeridian, final Unit<Angle> unit) {
-        if (primeMeridian instanceof DefaultPrimeMeridian) { // Maybe the user overrode some methods.
+        if (primeMeridian == null) {
+            return 0;
+        } else if (primeMeridian instanceof DefaultPrimeMeridian) {         // Maybe the user overrode some methods.
             return ((DefaultPrimeMeridian) primeMeridian).getGreenwichLongitude(unit);
         } else {
             return primeMeridian.getAngularUnit().getConverterTo(unit).convert(primeMeridian.getGreenwichLongitude());

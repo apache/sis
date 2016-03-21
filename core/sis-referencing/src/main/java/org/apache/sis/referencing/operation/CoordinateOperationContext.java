@@ -17,7 +17,11 @@
 package org.apache.sis.referencing.operation;
 
 import java.io.Serializable;
+import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.extent.GeographicBoundingBox;
+import org.apache.sis.metadata.iso.extent.DefaultExtent;
+import org.apache.sis.metadata.iso.extent.Extents;
+import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.util.ArgumentChecks;
 
 
@@ -57,9 +61,14 @@ public class CoordinateOperationContext implements Serializable {
     private static final long serialVersionUID = -6944460471653277973L;
 
     /**
-     * The area of interest, or {@code null} if none.
+     * The spatio-temporal area of interest, or {@code null} if none.
      */
-    private GeographicBoundingBox areaOfInterest;
+    private Extent areaOfInterest;
+
+    /**
+     * The geographic component of the area of interest, computed when first needed.
+     */
+    private transient GeographicBoundingBox bbox;
 
     /**
      * The desired accuracy in metres, or 0 for the best accuracy available.
@@ -80,28 +89,66 @@ public class CoordinateOperationContext implements Serializable {
      * @param accuracy The desired accuracy in metres, or 0 for the best accuracy available.
      * See {@link #getDesiredAccuracy()} for more details about what we mean by <cite>"best accuracy"</cite>.
      */
-    public CoordinateOperationContext(final GeographicBoundingBox area, final double accuracy) {
+    public CoordinateOperationContext(final Extent area, final double accuracy) {
         ArgumentChecks.ensurePositive("accuracy", accuracy);
         areaOfInterest  = area;
         desiredAccuracy = accuracy;
     }
 
     /**
-     * Returns the geographic area of interest, or {@code null} if none.
+     * Returns the spatio-temporal area of interest, or {@code null} if none.
      *
-     * @return The area of interest, or {@code null} if none.
+     * @return The spatio-temporal area of interest, or {@code null} if none.
      */
-    public GeographicBoundingBox getAreaOfInterest() {
+    public Extent getAreaOfInterest() {
         return areaOfInterest;
     }
 
     /**
-     * Sets the geographic area of interest, or {@code null} if none.
+     * Sets the spatio-temporal area of interest, or {@code null} if none.
      *
-     * @param area The area of interest, or {@code null} if none.
+     * @param area The spatio-temporal area of interest, or {@code null} if none.
      */
-    public void setAreaOfInterest(final GeographicBoundingBox area) {
+    public void setAreaOfInterest(final Extent area) {
         areaOfInterest = area;
+    }
+
+    /**
+     * Returns the geographic component of the area of interest, or {@code null} if none.
+     * This convenience method extracts the bounding box from the spatio-temporal {@link Extent}.
+     *
+     * @return The geographic area of interest, or {@code null} if none.
+     */
+    public GeographicBoundingBox getGeographicBoundingBox() {
+        if (bbox == null) {
+            bbox = Extents.getGeographicBoundingBox(areaOfInterest);
+        }
+        return bbox;
+    }
+
+    /**
+     * Sets the geographic component of the area of interest, or {@code null} if none.
+     * This convenience method set the bounding box into the spatio-temporal {@link Extent}.
+     *
+     * @param area The geographic area of interest, or {@code null} if none.
+     */
+    public void setGeographicBoundingBox(final GeographicBoundingBox area) {
+        areaOfInterest = setGeographicBoundingBox(areaOfInterest, area);
+        bbox = area;
+    }
+
+    /**
+     * Sets the given geographic bounding box in the given extent.
+     */
+    static Extent setGeographicBoundingBox(Extent areaOfInterest, final GeographicBoundingBox bbox) {
+        if (areaOfInterest != null) {
+            final DefaultExtent ex = DefaultExtent.castOrCopy(areaOfInterest);
+            ex.setGeographicElements(CollectionsExt.singletonOrEmpty(bbox));
+            areaOfInterest = ex;
+        } else if (bbox != null) {
+            areaOfInterest = new DefaultExtent(null, bbox, null, null);
+        }
+        return areaOfInterest;
     }
 
     /**

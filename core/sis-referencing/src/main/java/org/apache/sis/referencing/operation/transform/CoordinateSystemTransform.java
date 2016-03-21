@@ -35,7 +35,6 @@ import org.apache.sis.internal.util.Constants;
 import org.apache.sis.metadata.iso.ImmutableIdentifier;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.parameter.DefaultParameterDescriptorGroup;
-import org.apache.sis.referencing.cs.AbstractCS;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.referencing.operation.DefaultOperationMethod;
@@ -170,20 +169,20 @@ abstract class CoordinateSystemTransform extends AbstractMathTransform {
         if (source instanceof CartesianCS) {
             if (target instanceof SphericalCS) {
                 kernel = CartesianToSpherical.INSTANCE;
-            } else if (target instanceof CylindricalCS) {
-                passthrough = 1;
-                kernel = CartesianToPolar.INSTANCE;
             } else if (target instanceof PolarCS) {
                 kernel = CartesianToPolar.INSTANCE;
+            } else if (target instanceof CylindricalCS) {
+                kernel = CartesianToPolar.INSTANCE;
+                passthrough = 1;
             }
         } else if (target instanceof CartesianCS) {
             if (source instanceof SphericalCS) {
                 kernel = SphericalToCartesian.INSTANCE;
-            } else if (source instanceof CylindricalCS) {
-                passthrough = 1;
-                kernel = PolarToCartesian.INSTANCE;
             } else if (source instanceof PolarCS) {
                 kernel = PolarToCartesian.INSTANCE;
+            } else if (source instanceof CylindricalCS) {
+                kernel = PolarToCartesian.INSTANCE;
+                passthrough = 1;
             }
         }
         Exception cause = null;
@@ -196,8 +195,14 @@ abstract class CoordinateSystemTransform extends AbstractMathTransform {
                 final MathTransform tr = (passthrough == 0)
                         ? kernel.completeTransform(factory)
                         : kernel.passthrough(factory);
-                return factory.createConcatenatedTransform(normalize(factory, source, false),
-                       factory.createConcatenatedTransform(tr, normalize(factory, target, true)));
+                final MathTransform before = factory.createAffineTransform(
+                        CoordinateSystems.swapAndScaleAxes(source,
+                        CoordinateSystems.replaceAxes(source, AxesConvention.NORMALIZED)));
+                final MathTransform after = factory.createAffineTransform(
+                        CoordinateSystems.swapAndScaleAxes(
+                        CoordinateSystems.replaceAxes(target, AxesConvention.NORMALIZED), target));
+                return factory.createConcatenatedTransform(before,
+                       factory.createConcatenatedTransform(tr, after));
             }
         } catch (IllegalArgumentException | ConversionException e) {
             cause = e;
@@ -205,21 +210,5 @@ abstract class CoordinateSystemTransform extends AbstractMathTransform {
         throw new OperationNotFoundException(Errors.format(Errors.Keys.CoordinateOperationNotFound_2,
                 WKTUtilities.toType(CoordinateSystem.class, source.getClass()),
                 WKTUtilities.toType(CoordinateSystem.class, target.getClass())), cause);
-    }
-
-    /**
-     * Returns the conversion between the given coordinate system and its normalized form.
-     */
-    private static MathTransform normalize(final MathTransformFactory factory, final CoordinateSystem cs,
-            final boolean inverse) throws FactoryException, ConversionException
-    {
-        AbstractCS source = AbstractCS.castOrCopy(cs);
-        AbstractCS target = source.forConvention(AxesConvention.NORMALIZED);
-        if (inverse) {
-            AbstractCS tmp = source;
-            source = target;
-            target = tmp;
-        }
-        return factory.createAffineTransform(CoordinateSystems.swapAndScaleAxes(source, target));
     }
 }

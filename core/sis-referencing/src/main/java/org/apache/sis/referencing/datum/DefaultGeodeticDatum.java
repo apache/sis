@@ -243,6 +243,13 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
      *   </tr>
      * </table>
      *
+     * If Bursa-Wolf parameters are specified, then the prime meridian of their
+     * {@linkplain BursaWolfParameters#getTargetDatum() target datum} shall be either the same than the
+     * {@code primeMeridian} given to this constructor, or Greenwich. This restriction is for avoiding
+     * ambiguity about whether the longitude rotation shall be applied before or after the datum shift.
+     * If the target prime meridian is Greenwich, then the datum shift will be applied in a coordinate
+     * system having Greenwich as the prime meridian.
+     *
      * @param properties    The properties to be given to the identified object.
      * @param ellipsoid     The ellipsoid.
      * @param primeMeridian The prime meridian.
@@ -265,7 +272,7 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
                 BursaWolfParameters param = bursaWolf[i];
                 ensureNonNullElement("bursaWolf", i, param);
                 param = param.clone();
-                param.verify();
+                param.verify(primeMeridian);
                 bursaWolf[i] = param;
             }
         }
@@ -368,12 +375,21 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
      * 1033 – <cite>Position Vector transformation (geocentric domain)</cite>, or
      * 1053 – <cite>Time-dependent Position Vector transformation</cite>.
      *
-     * <p>If this datum and the given {@code targetDatum} do not use the same
-     * {@linkplain #getPrimeMeridian() prime meridian}, then it is caller's responsibility
-     * to apply longitude rotation before to use the matrix returned by this method.</p>
+     * <p>If this datum and the given {@code targetDatum} do not use the same {@linkplain #getPrimeMeridian() prime meridian},
+     * then it is caller's responsibility to to apply longitude rotation before to use the matrix returned by this method.
+     * The target prime meridian should be Greenwich (see {@linkplain #DefaultGeodeticDatum(Map, Ellipsoid, PrimeMeridian)
+     * constructor javadoc}), in which case the datum shift should be applied in a geocentric coordinate system having
+     * Greenwich as the prime meridian.</p>
      *
-     * <div class="section">Search order</div>
-     * This method performs the search in the following order:
+     * <div class="note"><b>Note:</b>
+     * in EPSG dataset version 8.9, all datum shifts that can be represented by this method use Greenwich as the
+     * prime meridian, both in source and target datum.</div>
+     *
+     * <div class="section">Search criterion</div>
+     * If the given {@code areaOfInterest} is non-null and contains at least one geographic bounding box, then this
+     * method ignores any Bursa-Wolf parameters having a {@linkplain BursaWolfParameters#getDomainOfValidity() domain
+     * of validity} that does not intersect the given geographic extent.
+     * This method performs the search among the remaining parameters in the following order:
      * <ol>
      *   <li>If this {@code GeodeticDatum} contains {@code BursaWolfParameters} having the given
      *       {@linkplain BursaWolfParameters#getTargetDatum() target datum} (ignoring metadata),
@@ -449,7 +465,7 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
          * not a subclass of BursaWolfParameters. This optimisation covers the vast majority of cases.
          */
         return bursaWolf.getPositionVectorTransformation(bursaWolf.getClass() != BursaWolfParameters.class ?
-                Extents.getDate(areaOfInterest, 0.5) : null); // 0.5 is for choosing midway instant.
+                Extents.getDate(areaOfInterest, 0.5) : null);       // 0.5 is for choosing midway instant.
     }
 
     /**

@@ -589,6 +589,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final short MismatchedParameterDescriptor_1 = 146;
 
         /**
+         * Expected the “{0}” prime meridian but found “{1}”.
+         */
+        public static final short MismatchedPrimeMeridian_2 = 220;
+
+        /**
          * Mismatched type for “{0}” property.
          */
         public static final short MismatchedPropertyType_1 = 154;

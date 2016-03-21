@@ -965,7 +965,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
 
     /**
      * Given a transform between normalized spaces,
-     * create a transform taking in account axis directions and units of measurement.
+     * creates a transform taking in account axis directions and units of measurement.
      * This method {@linkplain #createConcatenatedTransform concatenates} the given parameterized transform
      * with any other transform required for performing units changes and ordinates swapping.
      *

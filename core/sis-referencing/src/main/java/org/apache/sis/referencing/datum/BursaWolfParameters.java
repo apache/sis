@@ -21,11 +21,13 @@ import java.util.Arrays;
 import java.io.Serializable;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.referencing.datum.GeodeticDatum;
+import org.opengis.referencing.datum.PrimeMeridian;
 import org.opengis.referencing.operation.Matrix;
 import org.apache.sis.referencing.operation.matrix.Matrix4;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.io.wkt.Formatter;
+import org.apache.sis.util.Utilities;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.util.DoubleDouble;
 import org.apache.sis.internal.metadata.WKTKeywords;
@@ -123,7 +125,7 @@ import java.util.Objects;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4
- * @version 0.6
+ * @version 0.7
  * @module
  *
  * @see DefaultGeodeticDatum#getBursaWolfParameters()
@@ -226,15 +228,37 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
 
     /**
      * Verifies parameters validity after initialization of {@link DefaultGeodeticDatum}.
+     * This method requires that the prime meridian of the target datum is either the same
+     * than the enclosing {@code GeodeticDatum}, or Greenwich. We put this restriction for
+     * avoiding ambiguity about whether the longitude rotation should be applied before or
+     * after the datum shift.
+     *
+     * <p>If the target prime meridian is Greenwich, then SIS will assume that the datum shift
+     * needs to be applied in a coordinate system having Greenwich as the prime meridian.</p>
+     *
+     * <p><b>Maintenance note:</b>
+     * if the above policy regarding prime meridians is modified, then some {@code createOperationStep(…)} method
+     * implementations in {@link org.apache.sis.referencing.operation.CoordinateOperationInference} may need to be
+     * revisited. See especially the methods creating a transformation between a pair of {@code GeocentricCRS} or
+     * between a pair of {@code GeographicCRS} (tip: search for {@code DefaultGeodeticDatum}).</p>
+     *
+     * @param pm The prime meridian of the enclosing {@code GeodeticDatum}.
      */
-    void verify() {
+    void verify(final PrimeMeridian pm) throws IllegalArgumentException {
+        if (targetDatum != null) {
+            final PrimeMeridian actual = targetDatum.getPrimeMeridian();
+            if (actual.getGreenwichLongitude() != 0 && !Utilities.equalsIgnoreMetadata(pm, actual)) {
+                throw new IllegalArgumentException(Errors.format(Errors.Keys.MismatchedPrimeMeridian_2,
+                        IdentifiedObjects.getName(pm, null), IdentifiedObjects.getName(actual, null)));
+            }
+        }
         ensureFinite("tX", tX);
         ensureFinite("tY", tY);
         ensureFinite("tZ", tZ);
         ensureFinite("rX", rX);
         ensureFinite("rY", rY);
         ensureFinite("rZ", rZ);
-        ensureBetween("dS", -PPM, PPM, dS); // For preventing zero or negative value on the matrix diagonal.
+        ensureBetween("dS", -PPM, PPM, dS);     // For preventing zero or negative value on the matrix diagonal.
     }
 
     /**
@@ -276,7 +300,7 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
     public double[] getValues() {
         final double[] elements = new double[(dS != 0) ? 7 : (rZ != 0 || rY != 0 || rX != 0) ? 6 : 3];
         switch (elements.length) {
-            default: elements[6] = dS;  // Fallthrough everywhere.
+            default: elements[6] = dS;      // Fallthrough everywhere.
             case 6:  elements[5] = rZ;
                      elements[4] = rY;
                      elements[3] = rX;
@@ -307,7 +331,7 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
     @SuppressWarnings("fallthrough")
     public void setValues(final double... elements) {
         switch (elements.length) {
-            default: dS = elements[6];  // Fallthrough everywhere.
+            default: dS = elements[6];      // Fallthrough everywhere.
             case 6:  rZ = elements[5];
             case 5:  rY = elements[4];
             case 4:  rX = elements[3];
@@ -543,17 +567,17 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
             }
             for (int i = j+1; i < SIZE-1; i++) {
                 S.setFrom(RS);
-                S.inverseDivide(getNumber(matrix, j,i)); // Negative rotation term.
+                S.inverseDivide(getNumber(matrix, j,i));        // Negative rotation term.
                 double value = S.value;
                 double error = S.error;
                 S.setFrom(RS);
-                S.inverseDivide(getNumber(matrix, i,j)); // Positive rotation term.
-                if (!(abs(value + S.value) <= tolerance)) { // We expect r1 ≈ -r2
+                S.inverseDivide(getNumber(matrix, i,j));        // Positive rotation term.
+                if (!(abs(value + S.value) <= tolerance)) {     // We expect r1 ≈ -r2
                     throw new IllegalArgumentException(Errors.format(Errors.Keys.NotASkewSymmetricMatrix));
                 }
                 S.subtract(value, error);
                 S.multiply(0.5, 0);
-                value = S.value; // Average of the two rotation terms.
+                value = S.value;                                // Average of the two rotation terms.
                 switch (j*SIZE + i) {
                     case 1: rZ =  value; break;
                     case 2: rY = -value; break;

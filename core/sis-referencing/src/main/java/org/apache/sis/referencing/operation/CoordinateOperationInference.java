@@ -30,34 +30,38 @@ import org.opengis.referencing.crs.*;
 import org.opengis.referencing.datum.*;
 import org.opengis.referencing.operation.*;
 import org.opengis.metadata.Identifier;
+import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.metadata.quality.PositionalAccuracy;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.apache.sis.internal.metadata.ReferencingServices;
-import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.internal.referencing.PositionalAccuracyConstant;
-import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.referencing.provider.Affine;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.measure.Units;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.parameter.Parameterized;
-import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.CRS;
+import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.NamedIdentifier;
+import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.referencing.datum.BursaWolfParameters;
 import org.apache.sis.referencing.datum.DefaultGeodeticDatum;
+import org.apache.sis.referencing.operation.matrix.Matrix4;
 import org.apache.sis.referencing.operation.matrix.Matrices;
-import org.apache.sis.referencing.operation.matrix.MatrixSIS;
+import org.apache.sis.referencing.operation.transform.MathTransforms;
+import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Classes;
-import org.apache.sis.util.Utilities;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
+
+import static org.apache.sis.util.Utilities.equalsIgnoreMetadata;
+import static org.apache.sis.internal.referencing.ReferencingUtilities.getGreenwichLongitude;
 
 // Branch-dependent imports
 import java.util.Objects;
@@ -138,9 +142,14 @@ public class CoordinateOperationInference {
     private final DefaultCoordinateOperationFactory factorySIS;
 
     /**
-     * The area of interest, or {@code null} if none.
+     * The spatio-temporal area of interest, or {@code null} if none.
      */
-    private GeographicBoundingBox areaOfInterest;
+    private Extent areaOfInterest;
+
+    /**
+     * The geographic component of the area of interest, or {@code null} if none.
+     */
+    private GeographicBoundingBox bbox;
 
     /**
      * The desired accuracy in metres, or 0 for the best accuracy available.
@@ -163,6 +172,7 @@ public class CoordinateOperationInference {
         if (context != null) {
             areaOfInterest  = context.getAreaOfInterest();
             desiredAccuracy = context.getDesiredAccuracy();
+            bbox            = context.getGeographicBoundingBox();
         }
     }
 
@@ -184,6 +194,19 @@ public class CoordinateOperationInference {
     }
 
     /**
+     * If the domain of interest was not set, defines it to the domain of validity of the given CRS.
+     */
+    private void updateDomainOfInterest(final CoordinateReferenceSystem sourceCRS,
+                                        final CoordinateReferenceSystem targetCRS)
+    {
+        if (bbox == null) {
+            bbox = Extents.intersection(CRS.getGeographicBoundingBox(sourceCRS),
+                                        CRS.getGeographicBoundingBox(targetCRS));
+            areaOfInterest = CoordinateOperationContext.setGeographicBoundingBox(areaOfInterest, bbox);
+        }
+    }
+
+    /**
      * Infers an operation for conversion or transformation between two coordinate reference systems.
      * This method inspects the given CRS and delegates the work to one or many {@code createOperationStep(…)} methods.
      * This method fails if no path between the CRS is found.
@@ -200,10 +223,6 @@ public class CoordinateOperationInference {
     {
         ArgumentChecks.ensureNonNull("sourceCRS", sourceCRS);
         ArgumentChecks.ensureNonNull("targetCRS", targetCRS);
-        if (areaOfInterest == null) {
-            areaOfInterest = Extents.intersection(CRS.getGeographicBoundingBox(sourceCRS),
-                                                  CRS.getGeographicBoundingBox(targetCRS));
-        }
         ////////////////////////////////////////////////////////////////////////////////
         ////                                                                        ////
         ////                        Compound  →  various CRS                        ////
@@ -314,71 +333,101 @@ public class CoordinateOperationInference {
      * @param  targetCRS  output coordinate reference system.
      * @return a coordinate operation from {@code sourceCRS} to {@code targetCRS}.
      * @throws FactoryException if the operation can not be constructed.
-     *
-     * @todo Rotation of prime meridian not yet implemented.
-     * @todo Conversion between Cartesian and spherical CS not yet implemented.
      */
     protected CoordinateOperation createOperationStep(final GeocentricCRS sourceCRS,
                                                       final GeocentricCRS targetCRS)
             throws FactoryException
     {
+        updateDomainOfInterest(sourceCRS, targetCRS);
         final GeodeticDatum sourceDatum = sourceCRS.getDatum();
         final GeodeticDatum targetDatum = targetCRS.getDatum();
         final CoordinateSystem sourceCS = sourceCRS.getCoordinateSystem();
         final CoordinateSystem targetCS = targetCRS.getCoordinateSystem();
-        if (Utilities.equalsIgnoreMetadata(sourceDatum, targetDatum)) {
+        CoordinateSystem sourceNormalized = null;
+        CoordinateSystem targetNormalized = null;
+        Matrix           datumShift       = null;       // Those 3 variables will be null or non-null together.
+        /*
+         * If both CRS use the same datum and the same prime meridian, then the coordinate operation is just
+         * an axis swapping, unit conversion or change between spherical and Cartesian coordinate system type.
+         * Otherwise (if the datum are not the same), we need to perform a scale, translation and rotation in
+         * Cartesian space using the Bursa-Wolf parameters.
+         */
+        Identifier identifier;
+        if (equalsIgnoreMetadata(sourceDatum, targetDatum)) {
+            identifier = equalsIgnoreMetadata(sourceCS, targetCS) ? IDENTITY : AXIS_CHANGES;
+        } else {
+            identifier = ELLIPSOID_CHANGE;
+            if (sourceDatum instanceof DefaultGeodeticDatum) {
+                datumShift = ((DefaultGeodeticDatum) sourceDatum).getPositionVectorTransformation(targetDatum, areaOfInterest);
+                if (datumShift != null) {
+                    identifier = DATUM_SHIFT;
+                    sourceNormalized = CommonCRS.WGS84.geocentric().getCoordinateSystem();
+                    targetNormalized = sourceNormalized;
+                }
+            }
             /*
-             * If both CRS use the same datum and the same prime meridian, then the coordinate operation is just
-             * an axis swapping and unit conversion except if the coordinate systems are not of the same kind.
+             * If there is a change of prime meridian, concatenate that change before or after the datum shift.
+             * Actually we do not know if we should concatenate longitude rotation before or after datum shift.
+             * But this ambiguity does not apply to EPSG dataset 8.9 because source and target prime meridians
+             * are always Greenwich. For reducing ambiguity in other cases, the SIS DefaultGeodeticDatum class
+             * ensures that if the prime meridian are not the same, then the target meridian must be Greenwich.
              */
-            final Matrix matrix = swapAndScaleAxes(sourceCS, targetCS);
-            return createFromAffineTransform(AXIS_CHANGES, sourceCRS, targetCRS, matrix);
-        }
-        if (!isGreenwichLongitudeEquals(sourceDatum.getPrimeMeridian(), targetDatum.getPrimeMeridian())) {
-            throw new OperationNotFoundException("Rotation of prime meridian not yet implemented");
+            final double sourceMeridian = getGreenwichLongitude(sourceDatum.getPrimeMeridian(), NonSI.DEGREE_ANGLE);
+            final double targetMeridian = getGreenwichLongitude(targetDatum.getPrimeMeridian(), NonSI.DEGREE_ANGLE);
+            if (sourceMeridian != targetMeridian) {
+                if (sourceNormalized == null) {
+                    sourceNormalized = CoordinateSystems.replaceAxes(sourceCS, AxesConvention.NORMALIZED);
+                    targetNormalized = CoordinateSystems.replaceAxes(targetCS, AxesConvention.NORMALIZED);
+                }
+                final boolean isTargetCartesian = (targetNormalized instanceof CartesianCS);
+                if (!(isTargetCartesian || targetNormalized instanceof SphericalCS)) {
+                    throw new FactoryException(Errors.format(Errors.Keys.IllegalCoordinateSystem_1, targetCS.getClass()));
+                }
+                final Matrix4 rot = new Matrix4();
+                boolean isSource = true;
+                do {                                // Executed exactly twice: once for source, then once for target.
+                    double θ = isSource ? sourceMeridian : -targetMeridian;
+                    if (θ != 0) {
+                        if (isTargetCartesian) {
+                            θ = Math.toRadians(θ);
+                            rot.m00 =   rot.m11 = Math.cos(θ);
+                            rot.m01 = -(rot.m10 = Math.sin(θ));
+                        } else {
+                            rot.m02 = θ;
+                        }
+                        if (datumShift == null) {
+                            datumShift = rot;
+                        } else if (isSource) {
+                            datumShift = Matrices.multiply(datumShift, rot);    // Apply rotation before datum shift.
+                        } else {
+                            datumShift = Matrices.multiply(rot, datumShift);    // Apply rotation after datum shift.
+                        }
+                    }
+                } while ((isSource = !isSource) == false);
+            }
         }
         /*
-         * Transform between differents ellipsoids using Bursa Wolf parameters.
-         * The Bursa Wolf parameters are used with "standard" geocentric CS, i.e.
-         * with x axis towards the prime meridian, y axis towards East and z axis
-         * toward North. The following steps are applied:
+         * Transform between differents datums using Bursa Wolf parameters. The Bursa Wolf parameters are used
+         * with "standard" geocentric CS, i.e. with X axis towards the prime meridian, Y axis towards East and
+         * Z axis toward North. The following steps are applied:
          *
-         *     source CRS                      →
-         *     standard CRS with source datum  →
-         *     standard CRS with target datum  →
+         *     source CRS                        →
+         *     normalized CRS with source datum  →
+         *     normalized CRS with target datum  →
          *     target CRS
          */
-        Matrix datumShift = null;
-        Identifier identifier = DATUM_SHIFT;
-        final GeodeticDatum datum = null;//TemporaryDatum.unwrap(sourceDatum);
-//        if (datum instanceof DefaultGeodeticDatum) {
-//            datumShift = ((DefaultGeodeticDatum) datum).getPositionVectorTransformation(
-//                    TemporaryDatum.unwrap(targetDatum), null);
-//        }
-//        if (datumShift == null) {
-//            if (lenientDatumShift) {
-//                datumShift = new Matrix4(); // Identity transform.
-//                identifier = ELLIPSOID_CHANGE;
-//            } else {
-//                throw new OperationNotFoundException(Errors.format(
-//                            Errors.Keys.BursaWolfParametersRequired));
-//            }
-//        }
-        MatrixSIS matrix;
-        final CartesianCS standard = (CartesianCS) CommonCRS.WGS84.geocentric().getCoordinateSystem();
-        final Matrix normalizeSource = swapAndScaleAxes(sourceCS, standard);
-        final Matrix normalizeTarget = swapAndScaleAxes(standard, targetCS);
-        /*
-         * Since all steps are matrices, we can multiply them and get a single matrix.
-         * MatrixSIS.multiply(Matrix) is equivalent to AffineTransform.concatenate(…):
-         * First transform by the supplied transform and then transform the result by
-         * the original transform. So we compute;
-         *
-         *     matrix = normalizeTarget × datumShift × normalizeSource
-         */
-        matrix = Matrices.multiply(normalizeTarget, datumShift);
-        matrix = matrix.multiply(normalizeSource);
-        return createFromAffineTransform(identifier, sourceCRS, targetCRS, matrix);
+        MathTransform tr;
+        final DefaultMathTransformFactory mtFactory = factorySIS.getDefaultMathTransformFactory();
+        if (datumShift != null) {
+            final MathTransform normalize   = mtFactory.createCoordinateSystemChange(sourceCS, sourceNormalized);
+            final MathTransform denormalize = mtFactory.createCoordinateSystemChange(targetNormalized, targetCS);
+            tr = mtFactory.createAffineTransform(datumShift);
+            tr = mtFactory.createConcatenatedTransform(normalize,
+                 mtFactory.createConcatenatedTransform(tr, denormalize));
+        } else {
+            tr = mtFactory.createCoordinateSystemChange(sourceCS, targetCS);
+        }
+        return createFromMathTransform(properties(identifier), sourceCRS, targetCRS, tr, null, null);
     }
 
     /**
@@ -397,14 +446,20 @@ public class CoordinateOperationInference {
                                                       final VerticalCRS targetCRS)
             throws FactoryException
     {
+        updateDomainOfInterest(sourceCRS, targetCRS);
         final VerticalDatum sourceDatum = sourceCRS.getDatum();
         final VerticalDatum targetDatum = targetCRS.getDatum();
-        if (!Utilities.equalsIgnoreMetadata(sourceDatum, targetDatum)) {
+        if (!equalsIgnoreMetadata(sourceDatum, targetDatum)) {
             throw new OperationNotFoundException(notFoundMessage(sourceDatum, targetDatum));
         }
         final VerticalCS sourceCS = sourceCRS.getCoordinateSystem();
         final VerticalCS targetCS = targetCRS.getCoordinateSystem();
-        final Matrix     matrix   = swapAndScaleAxes(sourceCS, targetCS);
+        final Matrix matrix;
+        try {
+            matrix = CoordinateSystems.swapAndScaleAxes(sourceCS, targetCS);
+        } catch (IllegalArgumentException | ConversionException exception) {
+            throw new OperationNotFoundException(notFoundMessage(sourceCRS, targetCRS), exception);
+        }
         return createFromAffineTransform(AXIS_CHANGES, sourceCRS, targetCRS, matrix);
     }
 
@@ -422,6 +477,7 @@ public class CoordinateOperationInference {
                                                       final TemporalCRS targetCRS)
             throws FactoryException
     {
+        updateDomainOfInterest(sourceCRS, targetCRS);
         final TemporalDatum sourceDatum = sourceCRS.getDatum();
         final TemporalDatum targetDatum = targetCRS.getDatum();
         final TimeCS sourceCS = sourceCRS.getCoordinateSystem();
@@ -445,7 +501,12 @@ public class CoordinateOperationInference {
          *
          * The "epoch shift" previously computed is a translation. Consequently, it is added to element (0,1).
          */
-        final Matrix matrix = swapAndScaleAxes(sourceCS, targetCS);
+        final Matrix matrix;
+        try {
+            matrix = CoordinateSystems.swapAndScaleAxes(sourceCS, targetCS);
+        } catch (IllegalArgumentException | ConversionException exception) {
+            throw new OperationNotFoundException(notFoundMessage(sourceCRS, targetCRS), exception);
+        }
         final int translationColumn = matrix.getNumCol() - 1;           // Paranoiac check: should always be 1.
         final double translation = matrix.getElement(0, translationColumn);
         matrix.setElement(0, translationColumn, translation + epochShift);
@@ -471,36 +532,8 @@ public class CoordinateOperationInference {
                                                           final Matrix                    matrix)
             throws FactoryException
     {
-        final MathTransformFactory mtFactory = factorySIS.getMathTransformFactory();
-        final MathTransform transform  = mtFactory.createAffineTransform(matrix);
-        final Map<String,?> properties = properties(name);
-        final Class<? extends SingleOperation> type =
-                properties.containsKey(CoordinateOperation.COORDINATE_OPERATION_ACCURACY_KEY)
-                ? Transformation.class : Conversion.class;
-        return createFromMathTransform(properties, sourceCRS, targetCRS, transform,
-                   Affine.getProvider(transform.getSourceDimensions(),
-                                      transform.getTargetDimensions(),
-                                      Matrices.isAffine(matrix)), type);
-    }
-
-    /**
-     * Creates a coordinate operation from a math transform.
-     *
-     * @param  name       The identifier for the operation to be created.
-     * @param  sourceCRS  The source coordinate reference system.
-     * @param  targetCRS  The destination coordinate reference system.
-     * @param  transform  The math transform.
-     * @return A coordinate operation using the specified math transform.
-     * @throws FactoryException if the operation can not be constructed.
-     */
-    private CoordinateOperation createFromMathTransform(final Identifier                name,
-                                                        final CoordinateReferenceSystem sourceCRS,
-                                                        final CoordinateReferenceSystem targetCRS,
-                                                        final MathTransform             transform)
-            throws FactoryException
-    {
-        return createFromMathTransform(Collections.singletonMap(CoordinateOperation.NAME_KEY, name),
-                sourceCRS, targetCRS, transform, null, SingleOperation.class);
+        final MathTransform transform  = factorySIS.getMathTransformFactory().createAffineTransform(matrix);
+        return createFromMathTransform(properties(name), sourceCRS, targetCRS, transform, null, null);
     }
 
     /**
@@ -516,6 +549,11 @@ public class CoordinateOperationInference {
      *       and a {@code MathTransform}, but that combination is not forbidden. Since such practice is sometime
      *       convenient for the implementor, Apache SIS allows that.</div></li>
      *
+     *   <li>If the given {@code type} is null, then this method infers the type from whether the given properties
+     *       specify and accuracy or not. If those properties were created by the {@link #properties(Identifier)}
+     *       method, then the operation will be a {@link Transformation} instance instead of {@link Conversion} if
+     *       the {@code name} identifier was {@link #DATUM_SHIFT} or {@link #ELLIPSOID_CHANGE}.</li>
+     *
      *   <li>If the given {@code method} is {@code null}, then infer an operation method by inspecting the given transform.
      *       The transform needs to implement the {@link Parameterized} interface in order to allow operation method discovery.</li>
      *
@@ -528,16 +566,16 @@ public class CoordinateOperationInference {
      * @param  targetCRS  The destination coordinate reference system.
      * @param  transform  The math transform.
      * @param  method     The operation method, or {@code null} if unknown.
-     * @param  type       The required super-class (e.g. <code>{@linkplain Transformation}.class</code>).
+     * @param  type       {@code Conversion.class}, {@code Transformation.class}, or {@code null} if unknown.
      * @return A coordinate operation using the specified math transform.
-     * @throws FactoryException if the operation can't be constructed.
+     * @throws FactoryException if the operation can not be created.
      */
     private CoordinateOperation createFromMathTransform(final Map<String,?>             properties,
                                                         final CoordinateReferenceSystem sourceCRS,
                                                         final CoordinateReferenceSystem targetCRS,
                                                         final MathTransform             transform,
                                                               OperationMethod           method,
-                                                        final Class<? extends CoordinateOperation> type)
+                                                        Class<? extends CoordinateOperation> type)
             throws FactoryException
     {
         /*
@@ -556,21 +594,35 @@ public class CoordinateOperationInference {
             }
         }
         /*
+         * If the operation type was not explicitely specified, infers it from whether an accuracy is specified
+         * or not. In principle, only transformations has an accuracy property; conversions do not. This policy
+         * is applied by the properties(Identifier) method in this class.
+         */
+        if (type == null) {
+            type = properties.containsKey(CoordinateOperation.COORDINATE_OPERATION_ACCURACY_KEY)
+                    ? Transformation.class : Conversion.class;
+        }
+        /*
          * The operation method is mandatory. If the user did not provided one, we need to infer it ourselves.
          * If we fail to infer an OperationMethod, let it to null - the exception will be thrown by the factory.
          */
-        if (method == null && transform instanceof Parameterized) {
-            final ParameterDescriptorGroup descriptor = ((Parameterized) transform).getParameterDescriptors();
-            if (descriptor != null) {
-                final Identifier name = descriptor.getName();
-                if (name != null) {
-                    method = factory.getOperationMethod(name.getCode());
-                }
-                if (method == null) {
-                    method = factory.createOperationMethod(properties,
-                            sourceCRS.getCoordinateSystem().getDimension(),
-                            targetCRS.getCoordinateSystem().getDimension(),
-                            descriptor);
+        if (method == null) {
+            final Matrix matrix = MathTransforms.getMatrix(transform);
+            if (matrix != null) {
+                method = Affine.getProvider(transform.getSourceDimensions(), transform.getTargetDimensions(), Matrices.isAffine(matrix));
+            } else if (transform instanceof Parameterized) {
+                final ParameterDescriptorGroup descriptor = ((Parameterized) transform).getParameterDescriptors();
+                if (descriptor != null) {
+                    final Identifier name = descriptor.getName();
+                    if (name != null) {
+                        method = factory.getOperationMethod(name.getCode());
+                    }
+                    if (method == null) {
+                        method = factory.createOperationMethod(properties,
+                                sourceCRS.getCoordinateSystem().getDimension(),
+                                targetCRS.getCoordinateSystem().getDimension(),
+                                descriptor);
+                    }
                 }
             }
         }
@@ -629,56 +681,6 @@ public class CoordinateOperationInference {
      */
     private static boolean isIdentity(final CoordinateOperation operation) {
         return (operation instanceof Conversion) && operation.getMathTransform().isIdentity();
-    }
-
-    /**
-     * Returns {@code true} if the Greenwich longitude of the {@code actual} prime meridian is equals to the
-     * Greenwich longitude of the {@code expected} prime meridian. The comparison is performed in degrees.
-     *
-     * <p>A {@code null} argument is interpreted as "unknown prime meridian". Consequently this method
-     * unconditionally returns {@code false} if one or both arguments is {@code null}.</p>
-     *
-     * @param expected The expected prime meridian, or {@code null}.
-     * @param actual The actual prime meridian, or {@code null}.
-     * @return {@code true} if both prime meridians have the same Greenwich longitude.
-     */
-    private static boolean isGreenwichLongitudeEquals(final PrimeMeridian expected, final PrimeMeridian actual) {
-        if (expected == null || actual == null) {
-            return false;                               // See method javadoc.
-        }
-        if (expected == actual) {
-            return true;
-        }
-        final double diff = ReferencingUtilities.getGreenwichLongitude(expected, NonSI.DEGREE_ANGLE)
-                          - ReferencingUtilities.getGreenwichLongitude(actual,   NonSI.DEGREE_ANGLE);
-        return Math.abs(diff) <= Formulas.ANGULAR_TOLERANCE;
-    }
-
-    /**
-     * Returns an affine transform between two coordinate systems. Only units and axis order
-     * (e.g. transforming from (NORTH,WEST) to (EAST,NORTH)) are taken in account.
-     *
-     * <p>This method delegates to {@link CoordinateSystems#swapAndScaleAxes(CoordinateSystem, CoordinateSystem)}
-     * and wraps the unchecked exceptions into the checked {@link OperationNotFoundException}.</p>
-     *
-     * @param  sourceCS  the source coordinate system.
-     * @param  targetCS  the target coordinate system.
-     * @return The transformation from {@code sourceCS} to {@code targetCS} as an affine transform.
-     * @throws OperationNotFoundException if the affine transform can't be constructed.
-     *
-     * @see CoordinateSystems#swapAndScaleAxes(CoordinateSystem, CoordinateSystem)
-     */
-    private static Matrix swapAndScaleAxes(final CoordinateSystem sourceCS,
-                                           final CoordinateSystem targetCS)
-            throws OperationNotFoundException
-    {
-        try {
-            return CoordinateSystems.swapAndScaleAxes(sourceCS,targetCS);
-        } catch (IllegalArgumentException | ConversionException exception) {
-            throw new OperationNotFoundException(notFoundMessage(sourceCS, targetCS), exception);
-        }
-        // No attempt to catch ClassCastException since such
-        // exception would indicates a programming error.
     }
 
     /**
