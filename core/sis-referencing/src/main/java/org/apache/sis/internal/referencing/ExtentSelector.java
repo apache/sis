@@ -72,7 +72,7 @@ public final class ExtentSelector<T> {
      */
     public boolean evaluate(final Extent extent, final T object) {
         final double area = Extents.area(Extents.intersection(Extents.getGeographicBoundingBox(extent), areaOfInterest));
-        if (best != null && !(area > largestArea)) { // Use '!' for catching NaN.
+        if (best != null && !(area > largestArea)) {    // Use '!' for catching NaN.
             /*
              * At this point, the given extent is not greater than the previous one.
              * However if the previous object had no extent information at all (i.e.

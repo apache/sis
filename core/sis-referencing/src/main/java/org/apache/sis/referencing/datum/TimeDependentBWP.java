@@ -19,6 +19,7 @@ package org.apache.sis.referencing.datum;
 import java.util.Date;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.referencing.datum.GeodeticDatum;
+import org.opengis.referencing.datum.PrimeMeridian;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.util.DoubleDouble;
 
@@ -132,8 +133,8 @@ public class TimeDependentBWP extends BursaWolfParameters {
      * Verifies parameters validity after initialization.
      */
     @Override
-    void verify() {
-        super.verify();
+    void verify(final PrimeMeridian pm) throws IllegalArgumentException {
+        super.verify(pm);
         ensureFinite("dtX", dtX);
         ensureFinite("dtY", dtY);
         ensureFinite("dtZ", dtZ);

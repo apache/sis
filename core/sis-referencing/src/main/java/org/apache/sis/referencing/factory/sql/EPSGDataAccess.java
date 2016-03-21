@@ -19,7 +19,6 @@ package org.apache.sis.referencing.factory.sql;
 import java.util.Set;
 import java.util.Map;
 import java.util.List;
-import java.util.HashSet;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedHashMap;
@@ -107,11 +106,13 @@ import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Localized;
 import org.apache.sis.util.Version;
 import org.apache.sis.util.Workaround;
+import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.measure.Units;
 
+import static org.apache.sis.util.Utilities.equalsIgnoreMetadata;
 import static org.apache.sis.internal.referencing.ServicesForMetadata.CONNECTION;
 
 // Branch-dependent imports
@@ -1619,7 +1620,7 @@ addURIs:    for (int i=0; ; i++) {
                         properties = new HashMap<>(properties);         // Protect from changes
                         final Ellipsoid ellipsoid    = owner.createEllipsoid    (getString(code, result, 10));
                         final PrimeMeridian meridian = owner.createPrimeMeridian(getString(code, result, 11));
-                        final BursaWolfParameters[] param = createBursaWolfParameters(epsg);
+                        final BursaWolfParameters[] param = createBursaWolfParameters(meridian, epsg);
                         if (param != null) {
                             properties.put(DefaultGeodeticDatum.BURSA_WOLF_KEY, param);
                         }
@@ -1690,10 +1691,13 @@ addURIs:    for (int i=0; ; i++) {
      * That legacy format had a {@code TOWGS84} element which needs the information provided by this method.
      * Note that {@code TOWGS84} is a deprecated element as of WKT 2 (ISO 19162).</p>
      *
-     * @param  code The EPSG code of the {@link GeodeticDatum}.
+     * @param  meridian The source datum prime meridian, used for discarding any target datum using a different meridian.
+     * @param  code The EPSG code of the source {@link GeodeticDatum}.
      * @return an array of Bursa-Wolf parameters, or {@code null}.
      */
-    private BursaWolfParameters[] createBursaWolfParameters(final Integer code) throws SQLException, FactoryException {
+    private BursaWolfParameters[] createBursaWolfParameters(final PrimeMeridian meridian, final Integer code)
+            throws SQLException, FactoryException
+    {
         /*
          * We do not provide TOWGS84 information for WGS84 itself or for any other datum on our list of target datum,
          * in order to avoid infinite recursivity. The 'ensureNonRecursive' call is an extra safety check which should
@@ -1706,7 +1710,8 @@ addURIs:    for (int i=0; ; i++) {
         try (ResultSet result = executeQuery("BursaWolfParametersSet",
                 "SELECT COORD_OP_CODE," +
                       " COORD_OP_METHOD_CODE," +
-                      " TARGET_CRS_CODE" +
+                      " TARGET_CRS_CODE," +
+                      " AREA_OF_USE_CODE"+
                 " FROM [Coordinate_Operation]" +
                " WHERE DEPRECATED=0" +           // Do not put spaces around "=" - SQLTranslator searches for this exact match.
                  " AND TARGET_CRS_CODE = "       + BursaWolfInfo.TARGET_CRS +
@@ -1720,7 +1725,8 @@ addURIs:    for (int i=0; ; i++) {
                 final BursaWolfInfo info = new BursaWolfInfo(
                         getInteger(code, result, 1),                // Operation
                         getInteger(code, result, 2),                // Method
-                        getInteger(code, result, 3));               // Target datum
+                        getInteger(code, result, 3),                // Target datum
+                        getInteger(code, result, 4));               // Domain of validity
                 if (info.target != code) {                          // Paranoiac check.
                     bwInfos.add(info);
                 }
@@ -1739,12 +1745,7 @@ addURIs:    for (int i=0; ; i++) {
             final BursaWolfInfo[] codes = bwInfos.toArray(new BursaWolfInfo[size]);
             sort("Coordinate_Operation", codes);
             bwInfos.clear();
-            final Set<Integer> added = new HashSet<>();
-            for (BursaWolfInfo candidate : codes) {
-                if (added.add(candidate.target)) {
-                    bwInfos.add(candidate);
-                }
-            }
+            BursaWolfInfo.filter(owner, codes, bwInfos);
             size = bwInfos.size();
         }
         /*
@@ -1752,6 +1753,7 @@ addURIs:    for (int i=0; ; i++) {
          */
         final BursaWolfParameters[] parameters = new BursaWolfParameters[size];
         final Locale locale = getLocale();
+        int count = 0;
         for (int i=0; i<size; i++) {
             final BursaWolfInfo info = bwInfos.get(i);
             final GeodeticDatum datum;
@@ -1761,7 +1763,17 @@ addURIs:    for (int i=0; ; i++) {
             } finally {
                 endOfRecursivity(BursaWolfParameters.class, code);
             }
-            final BursaWolfParameters bwp = new BursaWolfParameters(datum, null);
+            /*
+             * Accept only Bursa-Wolf parameters between datum that use the same prime meridian.
+             * This is for avoiding ambiguity about whether longitude rotation should be applied
+             * before or after the datum change. This check is useless for EPSG dataset 8.9 since
+             * all datum seen by this method use Greenwich. But we nevertheless perform this check
+             * as a safety for future evolution or customized EPSG dataset.
+             */
+            if (!equalsIgnoreMetadata(meridian, datum.getPrimeMeridian())) {
+                continue;
+            }
+            final BursaWolfParameters bwp = new BursaWolfParameters(datum, info.getDomainOfValidity(owner));
             try (ResultSet result = executeQuery("BursaWolfParameters",
                 "SELECT PARAMETER_CODE," +
                       " PARAMETER_VALUE," +
@@ -1782,9 +1794,9 @@ addURIs:    for (int i=0; ; i++) {
                 // except for the sign of rotation parameters.
                 bwp.reverseRotation();
             }
-            parameters[i] = bwp;
+            parameters[count++] = bwp;
         }
-        return parameters;
+        return ArraysExt.resize(parameters, count);
     }
 
     /**
