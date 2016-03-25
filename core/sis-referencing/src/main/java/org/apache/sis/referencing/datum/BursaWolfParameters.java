@@ -534,10 +534,14 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
         }
         /*
          * Translation terms, taken "as-is".
+         * If the matrix contains only translation terms (which is often the case), we are done.
          */
         tX = matrix.getElement(0,3);
         tY = matrix.getElement(1,3);
         tZ = matrix.getElement(2,3);
+        if (Matrices.isTranslation(matrix)) {   // Optimization for a common case.
+            return;
+        }
         /*
          * Scale factor: take the average of elements on the diagonal. All those
          * elements should have the same value, but we tolerate slight deviation
