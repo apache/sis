@@ -24,6 +24,10 @@ import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
+import org.opengis.referencing.cs.CartesianCS;
+import org.opengis.referencing.cs.EllipsoidalCS;
+import org.opengis.referencing.cs.CoordinateSystem;
+import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.Transformation;
@@ -65,6 +69,14 @@ public abstract class GeocentricAffine extends AbstractProvider {
      * Serial number for inter-operability with different versions.
      */
     private static final long serialVersionUID = 8291967302538661639L;
+
+    /**
+     * The tolerance factor for comparing the {@link BursaWolfParameters} values.
+     * We use a tolerance of 1E-6 ({@value Formulas#LINEAR_TOLERANCE} / 10000) based on the knowledge
+     * that the translation terms are in metres and the rotation terms have the some order of magnitude.
+     * Actually we could use a value of zero, but we add a small tolerance for rounding errors.
+     */
+    private static final double BURSAWOLF_TOLERANCE = Formulas.LINEAR_TOLERANCE / 10000;
 
     /**
      * The operation parameter descriptor for the <cite>X-axis translation</cite>
@@ -200,6 +212,103 @@ public abstract class GeocentricAffine extends AbstractProvider {
     }
 
     /**
+     * Creates parameter values for a Molodensky, Geocentric Translation or Position Vector transformation.
+     *
+     * @param  descriptor     The {@code PARAMETERS} constant of the subclass describing the operation to create.
+     * @param  parameters     Bursa-Wolf parameters from which to get the values.
+     * @param  isTranslation  {@code true} if the operation contains only translation terms.
+     * @return The operation parameters with their values initialized.
+     */
+    private static Parameters createParameters(final ParameterDescriptorGroup descriptor,
+            final BursaWolfParameters parameters, final boolean isTranslation)
+    {
+        final Parameters values = Parameters.castOrWrap(descriptor.createValue());
+        values.getOrCreate(TX).setValue(parameters.tX);
+        values.getOrCreate(TY).setValue(parameters.tY);
+        values.getOrCreate(TZ).setValue(parameters.tZ);
+        if (!isTranslation) {
+            values.getOrCreate(RX).setValue(parameters.rX);
+            values.getOrCreate(RY).setValue(parameters.rY);
+            values.getOrCreate(RZ).setValue(parameters.rZ);
+            values.getOrCreate(DS).setValue(parameters.dS);
+        }
+        return values;
+    }
+
+    /**
+     * Returns the parameters for creating a datum shift operation.
+     * The operation method will be one of the {@code GeocentricAffine} subclasses.
+     * If no single operation method can be used, then this method returns {@code null}.
+     *
+     * <p>This method does <strong>not</strong> change the coordinate system type.
+     * The source and target coordinate systems can be both {@code EllipsoidalCS} or both {@code CartesianCS}.
+     * Any other type or mix of types (e.g. a {@code EllipsoidalCS} source and {@code CartesianCS} target)
+     * will cause this method to return {@code null}. In such case, it is caller's responsibility to apply
+     * the datum shift itself in Cartesian geocentric coordinates.</p>
+     *
+     * @param sourceCS       The source coordinate system. Only the type and number of dimensions is checked.
+     * @param targetCS       The target coordinate system. Only the type and number of dimensions is checked.
+     * @param datumShift     The datum shift as a matrix.
+     * @param useMolodensky  {@code true} for allowing the use of Molodensky approximation, or {@code false}
+     *                       for using the transformation in geocentric space (which should be more accurate).
+     * @return The parameter values, or {@code null} if no single operation method can be found.
+     */
+    public static ParameterValueGroup createParameters(final CoordinateSystem sourceCS,
+            final CoordinateSystem targetCS, final Matrix datumShift, boolean useMolodensky)
+    {
+        final boolean isEllipsoidal = (sourceCS instanceof EllipsoidalCS);
+        if (!(isEllipsoidal ? targetCS instanceof EllipsoidalCS
+                            : targetCS instanceof CartesianCS && sourceCS instanceof CartesianCS))
+        {
+            return null;        // Coordinate systems are not two EllipsoidalCS or two CartesianCS.
+        }
+        @SuppressWarnings("null")
+        int dimension  = sourceCS.getDimension();
+        if (dimension != targetCS.getDimension()) {
+            dimension  = 0;                             // Sentinal value for mismatched dimensions.
+        }
+        /*
+         * Try to convert the matrix into (tX, tY, tZ, rX, rY, rZ, dS) parameters.
+         * The matrix may not be convertible, in which case we will let the callers
+         * uses the matrix directly in Cartesian geocentric coordinates.
+         */
+        final BursaWolfParameters parameters = new BursaWolfParameters(null, null);
+        try {
+            parameters.setPositionVectorTransformation(datumShift, BURSAWOLF_TOLERANCE);
+        } catch (IllegalArgumentException e) {
+            log(Loggers.COORDINATE_OPERATION, "createParameters", e);
+            return null;
+        }
+        final boolean isTranslation = parameters.isTranslation();
+        final ParameterDescriptorGroup descriptor;
+        /*
+         * Following "if" blocks are ordered from more accurate to less accurate datum shift method
+         * supported by GeocentricAffine subclasses.
+         */
+        if (!isEllipsoidal) {
+            useMolodensky = false;
+            descriptor = isTranslation ? GeocentricTranslation.PARAMETERS
+                                       : PositionVector7Param .PARAMETERS;
+        } else {
+            if (!isTranslation) {
+                useMolodensky = false;
+                descriptor = (dimension >= 3) ? PositionVector7Param3D.PARAMETERS
+                                              : PositionVector7Param2D.PARAMETERS;
+            } else if (!useMolodensky) {
+                descriptor = (dimension >= 3) ? GeocentricTranslation3D.PARAMETERS
+                                              : GeocentricTranslation2D.PARAMETERS;
+            } else {
+                descriptor = Molodensky.PARAMETERS;
+            }
+        }
+        final Parameters values = createParameters(descriptor, parameters, isTranslation);
+        if (useMolodensky && dimension != 0) {
+            values.getOrCreate(Molodensky.DIMENSION).setValue(dimension);
+        }
+        return values;
+    }
+
+    /**
      * Given a transformation chain, conditionally replaces the affine transform elements by an alternative object
      * showing the Bursa-Wolf parameters. The replacement is applied if and only if the affine transform is a scale,
      * translation or rotation in the geocentric domain.
@@ -211,7 +320,7 @@ public abstract class GeocentricAffine extends AbstractProvider {
      *
      * @param transforms The full chain of concatenated transforms.
      */
-    public static void asDatumShift(final List<Object> transforms) throws IllegalArgumentException {
+    public static void asDatumShift(final List<Object> transforms) {
         for (int i=transforms.size() - 2; --i >= 0;) {
             if (isOperation(GeographicToGeocentric.NAME, transforms.get(i)) &&
                 isOperation(GeocentricToGeographic.NAME, transforms.get(i+2)))
@@ -220,31 +329,18 @@ public abstract class GeocentricAffine extends AbstractProvider {
                 if (step instanceof LinearTransform) {
                     final BursaWolfParameters parameters = new BursaWolfParameters(null, null);
                     try {
-                        /*
-                         * We use a 0.01 metre tolerance (Formulas.LINEAR_TOLERANCE) based on the knowledge that the
-                         * translation terms are in metres and the rotation terms have the some order of magnitude.
-                         */
-                        parameters.setPositionVectorTransformation(((LinearTransform) step).getMatrix(), Formulas.LINEAR_TOLERANCE);
+                        parameters.setPositionVectorTransformation(((LinearTransform) step).getMatrix(), BURSAWOLF_TOLERANCE);
                     } catch (IllegalArgumentException e) {
                         /*
                          * Should not occur, except sometime on inverse transform of relatively complex datum shifts
                          * (more than just translation terms). We can fallback on formatting the full matrix.
                          */
-                        Logging.recoverableException(Logging.getLogger(Loggers.WKT), GeocentricAffine.class, "asDatumShift", e);
+                        log(Loggers.WKT, "asDatumShift", e);
                         continue;
                     }
                     final boolean isTranslation = parameters.isTranslation();
-                    final Parameters values = Parameters.castOrWrap(
-                            (isTranslation ? GeocentricTranslation.PARAMETERS : PositionVector7Param.PARAMETERS).createValue());
-                    values.getOrCreate(TX).setValue(parameters.tX);
-                    values.getOrCreate(TY).setValue(parameters.tY);
-                    values.getOrCreate(TZ).setValue(parameters.tZ);
-                    if (!isTranslation) {
-                        values.getOrCreate(RX).setValue(parameters.rX);
-                        values.getOrCreate(RY).setValue(parameters.rY);
-                        values.getOrCreate(RZ).setValue(parameters.rZ);
-                        values.getOrCreate(DS).setValue(parameters.dS);
-                    }
+                    final Parameters values = createParameters(isTranslation ? GeocentricTranslation.PARAMETERS
+                                            : PositionVector7Param.PARAMETERS, parameters, isTranslation);
                     transforms.set(i+1, new FormattableObject() {
                         @Override protected String formatTo(final Formatter formatter) {
                             WKTUtilities.appendParamMT(values, formatter);
@@ -262,5 +358,12 @@ public abstract class GeocentricAffine extends AbstractProvider {
     private static boolean isOperation(final String expected, final Object actual) {
         return (actual instanceof Parameterized) &&
                IdentifiedObjects.isHeuristicMatchForName(((Parameterized) actual).getParameterDescriptors(), expected);
+    }
+
+    /**
+     * Logs a warning about a failure to compute the Bursa-Wolf parameters.
+     */
+    private static void log(final String logger, final String method, final Exception e) {
+        Logging.recoverableException(Logging.getLogger(logger), GeocentricAffine.class, method, e);
     }
 }

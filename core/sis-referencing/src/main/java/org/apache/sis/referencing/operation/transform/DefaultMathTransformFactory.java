@@ -71,7 +71,6 @@ import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.referencing.factory.InvalidGeodeticParameterException;
 import org.apache.sis.referencing.operation.DefaultOperationMethod;
 import org.apache.sis.referencing.operation.matrix.Matrices;
-import org.apache.sis.referencing.operation.matrix.NoninvertibleMatrixException;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Classes;
@@ -636,33 +635,29 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
          */
         @SuppressWarnings("fallthrough")
         public Matrix getMatrix(final ContextualParameters.MatrixRole role) throws FactoryException {
-            final CoordinateSystem source, target;
+            final CoordinateSystem specified;
             boolean inverse = false;
             switch (role) {
-                case INVERSE_NORMALIZATION: inverse = true;         // Fall through
-                case NORMALIZATION: {
-                    source = getSourceCS(); if (source == null) return null;
-                    target = CoordinateSystems.replaceAxes(source, AxesConvention.NORMALIZED);
-                    break;
-                }
-                case INVERSE_DENORMALIZATION: inverse = true;       // Fall through
-                case DENORMALIZATION: {
-                    target = getTargetCS(); if (target == null) return null;
-                    source = CoordinateSystems.replaceAxes(target, AxesConvention.NORMALIZED);
-                    break;
-                }
                 default: throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalArgumentValue_2, "role", role));
+                case INVERSE_NORMALIZATION:   inverse   = true;          // Fall through
+                case NORMALIZATION:           specified = getSourceCS(); break;
+                case INVERSE_DENORMALIZATION: inverse   = true;          // Fall through
+                case DENORMALIZATION:         inverse   = !inverse;
+                                              specified = getTargetCS(); break;
             }
-            Matrix matrix;
+            if (specified == null) {
+                return null;
+            }
+            final CoordinateSystem normalized = CoordinateSystems.replaceAxes(specified, AxesConvention.NORMALIZED);
             try {
-                matrix = CoordinateSystems.swapAndScaleAxes(source, target);
                 if (inverse) {
-                    matrix = Matrices.inverse(matrix);
+                    return CoordinateSystems.swapAndScaleAxes(normalized, specified);
+                } else {
+                    return CoordinateSystems.swapAndScaleAxes(specified, normalized);
                 }
-            } catch (IllegalArgumentException | ConversionException | NoninvertibleMatrixException cause) {
+            } catch (IllegalArgumentException | ConversionException cause) {
                 throw new InvalidGeodeticParameterException(cause.getLocalizedMessage(), cause);
             }
-            return matrix;
         }
 
         /**
@@ -1212,7 +1207,11 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      */
     @Override
     public MathTransform createAffineTransform(final Matrix matrix) throws FactoryException {
-        lastMethod.remove(); // To be strict, we should set the ProjectiveTransform provider.
+        /*
+         * Performance note: we could set lastMethod to the "Affine" operation method provider, but we do not
+         * because setting this value is not free (e.g. it depends on matrix size) and it is rarely needed.
+         */
+        lastMethod.remove();
         return unique(MathTransforms.linear(matrix));
     }
 
