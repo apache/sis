@@ -170,6 +170,7 @@ import org.junit.BeforeClass;
     org.apache.sis.referencing.operation.SingleOperationMarshallingTest.class,
     org.apache.sis.referencing.operation.DefaultPassThroughOperationTest.class,
     org.apache.sis.referencing.operation.DefaultConcatenatedOperationTest.class,
+    org.apache.sis.referencing.operation.CoordinateOperationInferenceTest.class,
     org.apache.sis.referencing.crs.DefaultProjectedCRSTest.class,
     org.apache.sis.referencing.crs.DefaultDerivedCRSTest.class,
     org.apache.sis.referencing.crs.SubTypesTest.class,
