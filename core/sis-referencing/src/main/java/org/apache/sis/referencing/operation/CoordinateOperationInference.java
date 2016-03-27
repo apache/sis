@@ -46,7 +46,6 @@ import org.apache.sis.internal.util.Constants;
 import org.apache.sis.measure.Units;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.metadata.iso.extent.Extents;
-import org.apache.sis.parameter.Parameterized;
 import org.apache.sis.parameter.TensorParameters;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.CommonCRS;
@@ -334,8 +333,9 @@ public class CoordinateOperationInference {
                                                       final GeneralDerivedCRS targetCRS)
             throws FactoryException
     {
-        CoordinateOperation step1 = createOperation(sourceCRS, targetCRS.getBaseCRS());
-        return concatenate(step1, targetCRS.getConversionFromBase());
+        final CoordinateOperation step1 = createOperation(sourceCRS, targetCRS.getBaseCRS());
+        final CoordinateOperation step2 = targetCRS.getConversionFromBase();
+        return concatenate(step1, step2);
     }
 
     /**
@@ -358,16 +358,9 @@ public class CoordinateOperationInference {
                                                       final SingleCRS targetCRS)
             throws FactoryException
     {
-        final SingleCRS base = sourceCRS.getBaseCRS();
-        CoordinateOperation step2 = createOperation(base, targetCRS);
-        CoordinateOperation step1 = sourceCRS.getConversionFromBase();
-        MathTransform transform = step1.getMathTransform();
-        try {
-            transform = transform.inverse();
-        } catch (NoninvertibleTransformException exception) {
-            throw new OperationNotFoundException(notFoundMessage(sourceCRS, base), exception);
-        }
-        step1 = createFromMathTransform(properties(INVERSE_OPERATION), sourceCRS, base, transform, null, null);
+        // Create first the operation that is more at risk to fail.
+        final CoordinateOperation step2 = createOperation(sourceCRS.getBaseCRS(), targetCRS);
+        final CoordinateOperation step1 = inverse(sourceCRS.getConversionFromBase());
         return concatenate(step1, step2);
     }
 
@@ -390,11 +383,11 @@ public class CoordinateOperationInference {
                                                       final GeneralDerivedCRS targetCRS)
             throws FactoryException
     {
-        final SingleCRS sourceBase = sourceCRS.getBaseCRS();
-        final SingleCRS targetBase = targetCRS.getBaseCRS();
-        return concatenate(createOperation(sourceCRS,  sourceBase),
-                           createOperation(sourceBase, targetBase),
-                           createOperation(targetBase, targetCRS));
+        // Create first the operations that are more at risk to fail.
+        final CoordinateOperation step2 = createOperation(sourceCRS.getBaseCRS(), targetCRS.getBaseCRS());
+        final CoordinateOperation step1 = inverse(sourceCRS.getConversionFromBase());
+        final CoordinateOperation step3 = targetCRS.getConversionFromBase();
+        return concatenate(step1, step2, step3);
     }
 
     /**
@@ -661,13 +654,14 @@ public class CoordinateOperationInference {
      *       the {@code name} identifier was {@link #DATUM_SHIFT} or {@link #ELLIPSOID_CHANGE}.</li>
      *
      *   <li>If the given {@code method} is {@code null}, then infer an operation method by inspecting the given transform.
-     *       The transform needs to implement the {@link Parameterized} interface in order to allow operation method discovery.</li>
+     *       The transform needs to implement the {@link org.apache.sis.parameter.Parameterized} interface in order to allow
+     *       operation method discovery.</li>
      *
      *   <li>Delegate to {@link DefaultCoordinateOperationFactory#createSingleOperation
      *       DefaultCoordinateOperationFactory.createSingleOperation(…)}.</li>
      * </ul>
      *
-     * @param  properties The properties to give to the operation.
+     * @param  properties The properties to give to the operation, as a modifiable map.
      * @param  sourceCRS  The source coordinate reference system.
      * @param  targetCRS  The destination coordinate reference system.
      * @param  transform  The math transform.
@@ -676,7 +670,7 @@ public class CoordinateOperationInference {
      * @return A coordinate operation using the specified math transform.
      * @throws FactoryException if the operation can not be created.
      */
-    private CoordinateOperation createFromMathTransform(final Map<String,?>             properties,
+    private CoordinateOperation createFromMathTransform(final Map<String,Object>        properties,
                                                         final CoordinateReferenceSystem sourceCRS,
                                                         final CoordinateReferenceSystem targetCRS,
                                                         final MathTransform             transform,
@@ -716,8 +710,8 @@ public class CoordinateOperationInference {
             final Matrix matrix = MathTransforms.getMatrix(transform);
             if (matrix != null) {
                 method = Affine.getProvider(transform.getSourceDimensions(), transform.getTargetDimensions(), Matrices.isAffine(matrix));
-            } else if (transform instanceof Parameterized) {
-                final ParameterDescriptorGroup descriptor = ((Parameterized) transform).getParameterDescriptors();
+            } else {
+                final ParameterDescriptorGroup descriptor = AbstractCoordinateOperation.getParameterDescriptors(transform);
                 if (descriptor != null) {
                     final Identifier name = descriptor.getName();
                     if (name != null) {
@@ -732,9 +726,24 @@ public class CoordinateOperationInference {
                 }
             }
         }
-        final Map<String,Object> p = new HashMap<>(properties);
-        p.put(ReferencingServices.OPERATION_TYPE_KEY, type);
-        return factorySIS.createSingleOperation(p, sourceCRS, targetCRS, null, method, transform);
+        properties.put(ReferencingServices.OPERATION_TYPE_KEY, type);
+        return factorySIS.createSingleOperation(properties, sourceCRS, targetCRS, null, method, transform);
+    }
+
+    /**
+     * Creates the inverse of the given operation.
+     */
+    private CoordinateOperation inverse(final SingleOperation op) throws FactoryException {
+        final CoordinateReferenceSystem sourceCRS = op.getSourceCRS();
+        final CoordinateReferenceSystem targetCRS = op.getTargetCRS();
+        MathTransform transform = op.getMathTransform();
+        try {
+            transform = transform.inverse();
+        } catch (NoninvertibleTransformException exception) {
+            throw new OperationNotFoundException(notFoundMessage(targetCRS, sourceCRS), exception);
+        }
+        return createFromMathTransform(properties(INVERSE_OPERATION), targetCRS, sourceCRS,
+                transform, InverseOperationMethod.create(op.getMethod()), null);
     }
 
     /**
@@ -770,7 +779,7 @@ public class CoordinateOperationInference {
              * dimensions in order to avoid mismatch with the method's dimensions.
              */
             final MathTransformFactory mtFactory = factorySIS.getMathTransformFactory();
-            return createFromMathTransform(IdentifiedObjects.getProperties(step),
+            return createFromMathTransform(new HashMap<>(IdentifiedObjects.getProperties(step)),
                    sourceCRS, targetCRS, mtFactory.createConcatenatedTransform(mt1, mt2),
                    ((SingleOperation) step).getMethod(), SingleOperation.class);
         }
@@ -822,17 +831,17 @@ public class CoordinateOperationInference {
      * However, we noticed that the EPSG database do not always defines a version neither.
      * Consequently, the Apache SIS implementation relaxes the rule requiring an operation
      * version and we do not try to provide this information here for now.</div>
+     *
+     * @param  name  The name to put in a map.
+     * @return a modifiable map containing the given name. Callers can put other entries in this map.
      */
     private static Map<String,Object> properties(final Identifier name) {
-        final Map<String,Object> properties;
+        final Map<String,Object> properties = new HashMap<>(4);
+        properties.put(CoordinateOperation.NAME_KEY, name);
         if ((name == DATUM_SHIFT) || (name == ELLIPSOID_CHANGE)) {
-            properties = new HashMap<>(4);
-            properties.put(CoordinateOperation.NAME_KEY, name);
             properties.put(CoordinateOperation.COORDINATE_OPERATION_ACCURACY_KEY, new PositionalAccuracy[] {
                       (name == DATUM_SHIFT) ? PositionalAccuracyConstant.DATUM_SHIFT_APPLIED
                                             : PositionalAccuracyConstant.DATUM_SHIFT_OMITTED});
-        } else {
-            properties = Collections.singletonMap(CoordinateOperation.NAME_KEY, name);
         }
         return properties;
     }

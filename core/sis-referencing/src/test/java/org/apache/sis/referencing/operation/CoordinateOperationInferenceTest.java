@@ -76,8 +76,18 @@ public final strictfp class CoordinateOperationInferenceTest extends MathTransfo
      */
     @Test
     public void testIdentityTransform() throws FactoryException {
-        CoordinateReferenceSystem crs = CommonCRS.WGS84.normalizedGeographic();
-        CoordinateOperation operation = factory.createOperation(crs, crs);
+        testIdentityTransform(CommonCRS.WGS84.geographic());
+        testIdentityTransform(CommonCRS.WGS84.geographic3D());
+        testIdentityTransform(CommonCRS.WGS84.geocentric());
+        testIdentityTransform(CommonCRS.WGS84.spherical());
+        testIdentityTransform(CommonCRS.WGS84.UTM(0, 0));
+    }
+
+    /**
+     * Implementation of {@link #testIdentityTransform()} using the given CRS.
+     */
+    private static void testIdentityTransform(final CoordinateReferenceSystem crs) throws FactoryException {
+        final CoordinateOperation operation = factory.createOperation(crs, crs);
         assertSame("sourceCRS",  crs, operation.getSourceCRS());
         assertSame("targetCRS",  crs, operation.getTargetCRS());
         assertTrue("isIdentity", operation.getMathTransform().isIdentity());

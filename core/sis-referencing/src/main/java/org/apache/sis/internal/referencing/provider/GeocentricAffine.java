@@ -177,6 +177,16 @@ public abstract class GeocentricAffine extends AbstractProvider {
     abstract int getType();
 
     /**
+     * The inverse of this operation is the same operation with parameter signs inverted.
+     *
+     * @return {@code true} for all {@code GeocentricAffine}.
+     */
+    @Override
+    public final boolean isInvertible() {
+        return true;
+    }
+
+    /**
      * Creates a math transform from the specified group of parameter values.
      * The default implementation creates an affine transform, but some subclasses
      * will wrap that affine operation into Geographic/Geocentric conversions.
