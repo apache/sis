@@ -651,16 +651,29 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
      * {@linkplain #transform}, if possible. If no descriptor can be inferred from the math transform,
      * then this method fallback on the {@link OperationMethod} parameters.
      */
-    ParameterDescriptorGroup getParameterDescriptors() throws UnsupportedOperationException {
-        MathTransform mt = transform;
-        while (mt != null) {
-            if (mt instanceof Parameterized) {
+    ParameterDescriptorGroup getParameterDescriptors() {
+        ParameterDescriptorGroup descriptor = getParameterDescriptors(transform);
+        if (descriptor == null) {
+            final OperationMethod method = getMethod();
+            if (method != null) {
+                descriptor = method.getParameters();
+            }
+        }
+        return descriptor;
+    }
+
+    /**
+     * Returns the parameter descriptors for the given transform, or {@code null} if unknown.
+     */
+    static ParameterDescriptorGroup getParameterDescriptors(MathTransform transform) {
+        while (transform != null) {
+            if (transform instanceof Parameterized) {
                 final ParameterDescriptorGroup param;
                 if (Semaphores.queryAndSet(Semaphores.ENCLOSED_IN_OPERATION)) {
-                    throw new AssertionError(); // Should never happen.
+                    throw new AssertionError();                                     // Should never happen.
                 }
                 try {
-                    param = ((Parameterized) mt).getParameterDescriptors();
+                    param = ((Parameterized) transform).getParameterDescriptors();
                 } finally {
                     Semaphores.clear(Semaphores.ENCLOSED_IN_OPERATION);
                 }
@@ -668,14 +681,13 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
                     return param;
                 }
             }
-            if (mt instanceof PassThroughTransform) {
-                mt = ((PassThroughTransform) mt).getSubTransform();
+            if (transform instanceof PassThroughTransform) {
+                transform = ((PassThroughTransform) transform).getSubTransform();
             } else {
                 break;
             }
         }
-        final OperationMethod method = getMethod();
-        return (method != null) ? method.getParameters() : null;
+        return null;
     }
 
     /**
@@ -686,13 +698,13 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
      * @throws UnsupportedOperationException if the parameter values can not
      *         be determined for the current math transform implementation.
      */
-    ParameterValueGroup getParameterValues() {
+    ParameterValueGroup getParameterValues() throws UnsupportedOperationException {
         MathTransform mt = transform;
         while (mt != null) {
             if (mt instanceof Parameterized) {
                 final ParameterValueGroup param;
                 if (Semaphores.queryAndSet(Semaphores.ENCLOSED_IN_OPERATION)) {
-                    throw new AssertionError(); // Should never happen.
+                    throw new AssertionError();                                     // Should never happen.
                 }
                 try {
                     param = ((Parameterized) mt).getParameterValues();

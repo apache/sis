@@ -450,7 +450,7 @@ next:   for (int i=components.size(); --i >= 0;) {
         }
         if (method instanceof DefaultOperationMethod) {
             final Class<? extends SingleOperation> c = ((DefaultOperationMethod) method).getOperationType();
-            if (c != null) {  // Paranoiac check (above method should not return null).
+            if (c != null) {                        // Paranoiac check (above method should not return null).
                 if (baseType.isAssignableFrom(c)) {
                     baseType = c;
                 } else if (!c.isAssignableFrom(baseType)) {
