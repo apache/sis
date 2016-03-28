@@ -38,7 +38,7 @@ import org.apache.sis.util.ArraysExt;
  * @module
  */
 @SuppressWarnings("CloneInNonCloneableClass")
-final class Solver implements Matrix { // Not Cloneable, despite the clone() method.
+final class Solver implements Matrix {                          // Not Cloneable, despite the clone() method.
     /**
      * The size of the (i, j, s) tuples used internally by {@link #solve(Matrix, Matrix, double[], int, int)}
      * for storing information about the NaN values.
@@ -143,7 +143,7 @@ final class Solver implements Matrix { // Not Cloneable, despite the clone() met
         if (Y instanceof GeneralMatrix) {
             eltY = ((GeneralMatrix) Y).elements;
             if (eltY.length == size * innerSize) {
-                eltY = null; // Matrix does not contains error terms.
+                eltY = null;                            // Matrix does not contains error terms.
             }
         }
         return solve(X, Y, eltY, size, innerSize, true);
@@ -248,7 +248,7 @@ searchNaN:  for (int flatIndex = (size - 1) * size; --flatIndex >= 0;) {
                     }
                     indexOfNaN[indexCount++] = i;
                     indexOfNaN[indexCount++] = j;
-                    indexOfNaN[indexCount++] = columnOfScale; // May be -1 (while uncommon)
+                    indexOfNaN[indexCount++] = columnOfScale;                   // May be -1 (while uncommon)
                     assert (indexCount % TUPLE_SIZE) == 0;
                 }
             }
@@ -262,7 +262,7 @@ searchNaN:  for (int flatIndex = (size - 1) * size; --flatIndex >= 0;) {
                 final int j = indexOfNaN[k+1];
                 final int flatIndex = j*size + i;
                 LU[flatIndex] = (i == lastRowOrColumn) ? 0 : 1;
-                LU[flatIndex + size*size] = 0; // Error term (see 'errorLU') in next method.
+                LU[flatIndex + size*size] = 0;                      // Error term (see 'errorLU') in next method.
             }
         }
         /*
@@ -280,9 +280,9 @@ searchNaN:  for (int flatIndex = (size - 1) * size; --flatIndex >= 0;) {
             final int s = indexOfNaN[k++];
             if (i != lastRowOrColumn) {
                 // Found a scale factor to set to NaN.
-                matrix.setElement(i, j, Double.NaN); // Note that i,j indices are interchanged.
+                matrix.setElement(i, j, Double.NaN);                      // Note that i,j indices are interchanged.
                 if (matrix.getElement(i, lastRowOrColumn) != 0) {
-                    matrix.setElement(i, lastRowOrColumn, Double.NaN); // = -offset/scale, so 0 stay 0.
+                    matrix.setElement(i, lastRowOrColumn, Double.NaN);    // = -offset/scale, so 0 stay 0.
                 }
             } else if (s >= 0) {
                 // Found a translation factory to set to NaN.
@@ -323,17 +323,17 @@ searchNaN:  for (int flatIndex = (size - 1) * size; --flatIndex >= 0;) {
         for (int j=0; j<size; j++) {
            pivot[j] = j;
         }
-        final double[]  column = new double[size * 2]; // [0 … size-1] : column values; [size … 2*size-1] : error terms.
-        final DoubleDouble acc = new DoubleDouble();   // Temporary variable for sum ("accumulator") and subtraction.
-        final DoubleDouble rat = new DoubleDouble();   // Temporary variable for products and ratios.
+        final double[]  column = new double[size * 2];  // [0 … size-1] : column values; [size … 2*size-1] : error terms.
+        final DoubleDouble acc = new DoubleDouble();    // Temporary variable for sum ("accumulator") and subtraction.
+        final DoubleDouble rat = new DoubleDouble();    // Temporary variable for products and ratios.
         for (int i=0; i<size; i++) {
             /*
              * Make a copy of the i-th column.
              */
             for (int j=0; j<size; j++) {
                 final int k = j*size + i;
-                column[j]        = LU[k];            // Value
-                column[j + size] = LU[k + errorLU];  // Error
+                column[j]        = LU[k];               // Value
+                column[j + size] = LU[k + errorLU];     // Error
             }
             /*
              * Apply previous transformations. This part is equivalent to the following code,
@@ -372,7 +372,7 @@ searchNaN:  for (int flatIndex = (size - 1) * size; --flatIndex >= 0;) {
             if (p != i) {
                 final int pRow = p*size;
                 final int iRow = i*size;
-                for (int k=0; k<size; k++) { // Swap two full rows.
+                for (int k=0; k<size; k++) {                                // Swap two full rows.
                     DoubleDouble.swap(LU, pRow + k, iRow + k, errorLU);
                 }
                 ArraysExt.swap(pivot, p, i);
@@ -435,10 +435,10 @@ searchNaN:  for (int flatIndex = (size - 1) * size; --flatIndex >= 0;) {
          *     elements[loRowOffset + i] -= (elements[rowOffset + i] * LU[luRowOffset + k]);
          */
         for (int k=0; k<size; k++) {
-            final int rowOffset = k*innerSize;          // Offset of row computed by current iteration.
+            final int rowOffset = k*innerSize;              // Offset of row computed by current iteration.
             for (int j=k; ++j < size;) {
-                final int loRowOffset = j*innerSize;    // Offset of some row after the current row.
-                final int luRowOffset = j*size;         // Offset of the corresponding row in the LU matrix.
+                final int loRowOffset = j*innerSize;        // Offset of some row after the current row.
+                final int luRowOffset = j*size;             // Offset of the corresponding row in the LU matrix.
                 for (int i=0; i<innerSize; i++) {
                     acc.setFrom (elements, loRowOffset + i, errorOffset);
                     rat.setFrom (elements, rowOffset   + i, errorOffset);

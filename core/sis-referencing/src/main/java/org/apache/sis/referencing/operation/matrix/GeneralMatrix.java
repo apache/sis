@@ -594,7 +594,7 @@ class GeneralMatrix extends MatrixSIS implements ExtendedPrecisionMatrix {
          */
         final double[] eltA   = getExtendedElements(A, numRow, nc, false);
         final double[] eltB   = getExtendedElements(B, nc, numCol, false);
-        final int errorOffset = numRow * numCol; // Where error terms start.
+        final int errorOffset = numRow * numCol;            // Where error terms start.
         final int errA        = numRow * nc;
         final int errB        = nc * numCol;
         /*
