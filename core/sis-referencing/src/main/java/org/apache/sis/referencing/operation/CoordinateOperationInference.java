@@ -783,11 +783,29 @@ public class CoordinateOperationInference {
         if (step2.getName() == AXIS_CHANGES && mt2.getSourceDimensions() == mt2.getTargetDimensions()) main = step1;
         if (main instanceof SingleOperation) {
             final MathTransform mt = factorySIS.getMathTransformFactory().createConcatenatedTransform(mt1, mt2);
-            return createFromMathTransform(new HashMap<>(IdentifiedObjects.getProperties(main)),
+            main = createFromMathTransform(new HashMap<>(IdentifiedObjects.getProperties(main)),
                    sourceCRS, targetCRS, mt, ((SingleOperation) main).getMethod(),
                    (main instanceof Transformation) ? Transformation.class : SingleOperation.class);
+        } else {
+            main = factory.createConcatenatedOperation(defaultName(sourceCRS, targetCRS), step1, step2);
         }
-        return factory.createConcatenatedOperation(defaultName(sourceCRS, targetCRS), step1, step2);
+        /*
+         * Sometime we get a concatenated operation made of an operation followed by its inverse.
+         * We can identity those case when the associated MathTransform is the identity transform.
+         * In such case, simplify by replacing the ConcatenatedTransform by a SingleTransform.
+         */
+        if (main instanceof ConcatenatedOperation && main.getMathTransform().isIdentity()) {
+            Class<? extends CoordinateOperation> type = null;
+            for (final CoordinateOperation component : ((ConcatenatedOperation) main).getOperations()) {
+                if (component instanceof Transformation) {
+                    type = Transformation.class;
+                    break;
+                }
+            }
+            main = createFromMathTransform(new HashMap<>(IdentifiedObjects.getProperties(main)),
+                    main.getSourceCRS(), main.getTargetCRS(), main.getMathTransform(), null, type);
+        }
+        return main;
     }
 
     /**
