@@ -34,10 +34,13 @@ import javax.measure.unit.UnitFormat;
 import org.opengis.util.FactoryException;
 import org.opengis.util.InternationalString;
 import org.apache.sis.internal.system.Loggers;
+import org.apache.sis.internal.util.LocalizedParseException;
 import org.apache.sis.internal.util.StandardDateFormat;
 import org.apache.sis.measure.Units;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.logging.Logging;
+import org.apache.sis.util.resources.Errors;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
@@ -55,7 +58,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * @author  Rémi Eve (IRD)
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.6
- * @version 0.6
+ * @version 0.7
  * @module
  */
 abstract class AbstractParser implements Parser {
@@ -227,6 +230,20 @@ abstract class AbstractParser implements Parser {
     }
 
     /**
+     * Returns the index after the end of the fragment name starting at the given index.
+     * Current implementation assumes that the fragment name is a Unicode identifier.
+     */
+    static int endOfFragmentName(final String text, int upper) {
+        final int length = text.length();
+        while (upper < length) {
+            final int c = text.codePointAt(upper);
+            if (!Character.isUnicodeIdentifierPart(c)) break;
+            upper += Character.charCount(c);
+        }
+        return upper;
+    }
+
+    /**
      * Parses a <cite>Well Know Text</cite> (WKT).
      *
      * @param  text The text to be parsed.
@@ -238,7 +255,22 @@ abstract class AbstractParser implements Parser {
         warnings = null;
         ignoredElements.clear();
         ArgumentChecks.ensureNonEmpty("text", text);
-        final Element element = new Element("<root>", new Element(this, text, position, null));
+        Element fragment;
+        int lower = CharSequences.skipLeadingWhitespaces(text, position.getIndex(), text.length());
+        if (lower < text.length() && text.charAt(lower) == Symbols.FRAGMENT_VALUE) {
+            final int upper = endOfFragmentName(text, ++lower);
+            final String id = text.substring(lower, upper);
+            fragment = fragments.get(id);
+            if (fragment == null) {
+                position.setErrorIndex(lower);
+                throw new LocalizedParseException(errorLocale, Errors.Keys.NoSuchValue_1, new Object[] {id}, lower);
+            }
+            position.setIndex(upper);
+            fragment = new Element(fragment);
+        } else {
+            fragment = new Element(this, text, position, null);
+        }
+        final Element element = new Element("<root>", fragment);
         final Object object = parseObject(element);
         element.close(ignoredElements);
         return object;

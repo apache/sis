@@ -59,8 +59,22 @@ public final strictfp class EllipsoidToCentricTransformTest extends MathTransfor
      * Convenience method for creating an instance from an ellipsoid.
      */
     private void createGeodeticConversion(final Ellipsoid ellipsoid, boolean is3D) throws FactoryException {
-        transform = EllipsoidToCentricTransform.createGeodeticConversion(
-                DefaultFactories.forBuildin(MathTransformFactory.class), ellipsoid, is3D);
+        final MathTransformFactory factory = DefaultFactories.forBuildin(MathTransformFactory.class);
+        transform = EllipsoidToCentricTransform.createGeodeticConversion(factory, ellipsoid, is3D);
+        /*
+         * If the ellipsoid is a sphere, then EllipsoidToCentricTransform.createGeodeticConversion(…) created a
+         * SphericalToCartesian instance instead than an EllipsoidToCentricTransform instance.  Create manually
+         * the EllipsoidToCentricTransform here and wrap the two transform in a comparator for making sure that
+         * the two implementations are consistent.
+         */
+        if (ellipsoid.isSphere()) {
+            EllipsoidToCentricTransform tr = new EllipsoidToCentricTransform(
+                    ellipsoid.getSemiMajorAxis(),
+                    ellipsoid.getSemiMinorAxis(),
+                    ellipsoid.getAxisUnit(), is3D,
+                    EllipsoidToCentricTransform.TargetType.CARTESIAN);
+            transform = new TransformResultComparator(transform, tr.context.completeTransform(factory, tr), 1E-2);
+        }
     }
 
     /**

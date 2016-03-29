@@ -383,7 +383,7 @@ public abstract class InstallationScriptProvider extends InstallationResources {
          */
         @Override
         protected InputStream openStream(final String name) throws IOException {
-            return Files.newInputStream(directory.resolve(name));
+            return (directory != null) ? Files.newInputStream(directory.resolve(name)) : null;
         }
     }
 }

@@ -23,13 +23,12 @@ import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
-import org.apache.sis.geometry.GeneralDirectPosition;
 
 import static org.opengis.test.Assert.*;
 
 
 /**
- * Compares the projection results of two {@link MathTransform} implementations.
+ * Compares the results of two {@link MathTransform} implementations.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.7
@@ -111,9 +110,9 @@ final strictfp class TransformResultComparator implements MathTransform {
      */
     @Override
     public DirectPosition transform(DirectPosition ptSrc, DirectPosition ptDst) throws TransformException {
-        GeneralDirectPosition clone = new GeneralDirectPosition(ptSrc);
+        final double[] expected = reference.transform(ptSrc, ptDst).getCoordinate();
         final DirectPosition value = tested.transform(ptSrc, ptDst);
-        assertEquals("transform(DirectPosition, …)", reference.transform(clone, null), value);
+        assertArrayEquals("transform(DirectPosition, …)", expected, value.getCoordinate(), tolerance);
         return value;
     }
 

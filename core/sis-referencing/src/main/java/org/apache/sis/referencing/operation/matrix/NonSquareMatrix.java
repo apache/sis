@@ -227,28 +227,39 @@ next:   do {
     }
 
     /**
-     * Inverse a matrix for a transform where target points has more ordinates than source points.
+     * Inverses a matrix for a transform where target points has more ordinates than source points.
      * In other words, the target matrices will be a transform that discard some ordinate values.
      * We will discard the ones for which the row contains only 0 or NaN elements.
+     *
+     * <p>In the special case where the last row is of the form [0 0 … 0 1] as in affine transforms,
+     * this method also omits rows that contain only a translation term. We allow that because if we
+     * do not omit those rows, then the matrix will be non-invertible anyway. This is true only when
+     * the last row contains only zero except in the last column ([0 0 … 0 n] where <var>n</var> can
+     * be any value). We restrict <var>n</var> to 1 for now because a different value may indicate a
+     * matrix created for another purpose than coordinate conversions.</p>
      */
     private MatrixSIS inverseDimensionIncrease() throws NoninvertibleMatrixException {
-        final int numRow = this.numRow; // Protection against accidental changes.
+        final int numRow = this.numRow;                     // Protection against accidental changes.
         final int numCol = this.numCol;
         int j  = numRow;
-        int oi = numRow - numCol; // Initialized to the maximal amount of rows that we may discard.
+        int oi = numRow - numCol;   // Initialized to the maximal amount of rows that we may discard.
         final int[] omitted = new int[oi];
+        final boolean ignoreTranslation = isAffine(false);
+        if (ignoreTranslation) j--;                         // Last row already verified by isAffine().
 next:   do {
             if (--j < 0) {
-                throw nonInvertible(); // Not enough rows that we can omit.
+                throw nonInvertible();                      // Not enough rows that we can omit.
             }
             final int offset = j * numCol;
-            for (int i=offset + numCol; --i >= offset;) {
+            int i = offset + numCol;
+            if (ignoreTranslation) i--;
+            while (--i >= offset) {
                 final double element = elements[i];
                 if (element != 0 && !Double.isNaN(element)) {
                     continue next;
                 }
             }
-            omitted[--oi] = j; // Found a row which contains only 0 or NaN elements.
+            omitted[--oi] = j;                  // Found a row which contains only 0 or NaN elements.
         } while (oi != 0);
         /*
          * Found enough rows containing only zero elements. Create a square matrix omitting those rows,
@@ -258,7 +269,7 @@ next:   do {
         int i = 0;
         for (j=0; j<numRow; j++) {
             if (oi != omitted.length && j == omitted[oi]) oi++;
-            else copyRow(this, j, squareMatrix, i++); // Copy only if not skipped.
+            else copyRow(this, j, squareMatrix, i++);                   // Copy only if not skipped.
         }
         if (indexOfErrors(numRow, numCol, elements) == 0) {
             inferErrors(squareMatrix.elements);
@@ -329,6 +340,7 @@ next:   do {
      * {@inheritDoc}
      */
     @Override
+    @SuppressWarnings("CloneDoesntCallSuperClone")
     public MatrixSIS clone() {
         return new NonSquareMatrix(this);
     }

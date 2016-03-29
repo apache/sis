@@ -349,7 +349,7 @@ public final class CoordinateSystems extends Static {
      *     CoordinateSystem cs = ...;
      *     cs = CoordinateSystems.replaceAxes(cs, new AxisFilter() {
      *         &#64;Override
-     *         public Unit<?> getUnitReplacement(Unit<?> unit) {
+     *         public Unit<?> getUnitReplacement(CoordinateSystemAxis axis, Unit<?> unit) {
      *             if (Units.isAngular(unit)) {
      *                 unit = NonSI.DEGREE_ANGLE;
      *             }

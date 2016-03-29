@@ -374,28 +374,30 @@ public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> impl
             if (ac) {
                 connection.setAutoCommit(false);
             }
-            boolean success = false;
             try {
-                if (!"".equals(schema)) {                                               // Schema may be null.
-                    installer.setSchema(schema != null ? schema : Constants.EPSG);
-                    if (catalog != null && !catalog.isEmpty()) {
-                        installer.prependNamespace(catalog);
+                boolean success = false;
+                try {
+                    if (!"".equals(schema)) {                                           // Schema may be null.
+                        installer.setSchema(schema != null ? schema : Constants.EPSG);
+                        if (catalog != null && !catalog.isEmpty()) {
+                            installer.prependNamespace(catalog);
+                        }
+                    }
+                    installer.run(scriptProvider, locale);
+                    success = true;
+                } finally {
+                    if (ac) {
+                        if (success) {
+                            connection.commit();
+                        } else {
+                            connection.rollback();
+                        }
+                        connection.setAutoCommit(true);
                     }
                 }
-                installer.run(scriptProvider, locale);
-                success = true;
-            } finally {
-                if (ac) {
-                    if (success) {
-                        connection.commit();
-                    } else {
-                        connection.rollback();
-                    }
-                    connection.setAutoCommit(true);
-                }
-                if (!success) {
-                    installer.logFailure(locale);
-                }
+            } catch (IOException | SQLException e) {
+                installer.logFailure(locale, e);
+                throw e;
             }
         }
     }

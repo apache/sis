@@ -316,8 +316,7 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
             }
         }
         /*
-         * If one transform is the inverse of the
-         * other, returns the identity transform.
+         * If one transform is the inverse of the other, return the identity transform.
          */
         if (areInverse(tr1, tr2) || areInverse(tr2, tr1)) {
             assert tr1.getSourceDimensions() == tr2.getTargetDimensions();
@@ -325,7 +324,7 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
             return MathTransforms.identity(tr1.getSourceDimensions());          // Returns a cached instance.
         }
         /*
-         * Gives a chance to AbstractMathTransform to returns an optimized object.
+         * Give a chance to AbstractMathTransform to returns an optimized object.
          * The main use case is Logarithmic vs Exponential transforms.
          */
         if (tr1 instanceof AbstractMathTransform) {
@@ -348,17 +347,17 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
      * Returns a name for the specified math transform.
      */
     private static String getName(final MathTransform transform) {
+        ParameterValueGroup params = null;
         if (transform instanceof AbstractMathTransform) {
-            ParameterValueGroup params;
             params = ((AbstractMathTransform) transform).getContextualParameters();
-            if (params == null) {
-                params = ((AbstractMathTransform) transform).getParameterValues();
-                if (params != null) {
-                    String name = params.getDescriptor().getName().getCode();
-                    if (name != null && !(name = name.trim()).isEmpty()) {
-                        return name;
-                    }
-                }
+        }
+        if (params == null && (transform instanceof Parameterized)) {
+            params = ((Parameterized) transform).getParameterValues();
+        }
+        if (params != null) {
+            String name = params.getDescriptor().getName().getCode();
+            if (name != null && !(name = name.trim()).isEmpty()) {
+                return name;
             }
         }
         return Classes.getShortClassName(transform);

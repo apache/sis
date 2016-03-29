@@ -157,7 +157,7 @@ public class DefaultLinearCS extends AbstractCS implements LinearCS {
         if (!AxisDirections.isSpatialOrUserDefined(direction, false)) {
             return INVALID_DIRECTION;
         }
-        if (!Units.isLinear(unit)) {
+        if (!Units.isLinear(unit) && !Unit.ONE.equals(unit)) {
             return INVALID_UNIT;
         }
         return VALID;
