@@ -32,6 +32,7 @@ import org.opengis.metadata.quality.PositionalAccuracy;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.crs.GeneralDerivedCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.operation.ConcatenatedOperation;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.MathTransform;
@@ -857,32 +858,45 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
     protected String formatTo(final Formatter formatter) {
         super.formatTo(formatter);
         formatter.newLine();
-        append(formatter, getSourceCRS(), WKTKeywords.SourceCRS);
-        append(formatter, getTargetCRS(), WKTKeywords.TargetCRS);
-        formatter.append(DefaultOperationMethod.castOrCopy(getMethod()));
-        ParameterValueGroup parameters;
-        try {
-            parameters = getParameterValues();
-        } catch (UnsupportedOperationException e) {
-            final IdentifiedObject c = getParameterDescriptors();
-            formatter.setInvalidWKT(c != null ? c : this, e);
-            parameters = null;
+        /*
+         * If the WKT is a component of a ConcatenatedOperation, do not format the source and target CRS.
+         * This decision SIS-specific since the WKT 2 specification does not define concatenated operations.
+         * The choice of content to omit may change in any future version.
+         */
+        final boolean isComponent = (formatter.getEnclosingElement(1) instanceof ConcatenatedOperation);
+        if (!isComponent) {
+            append(formatter, getSourceCRS(), WKTKeywords.SourceCRS);
+            append(formatter, getTargetCRS(), WKTKeywords.TargetCRS);
         }
-        if (parameters != null) {
-            formatter.newLine();
-            for (final GeneralParameterValue param : parameters.values()) {
-                WKTUtilities.append(param, formatter);
+        final OperationMethod method = getMethod();
+        if (method != null) {
+            formatter.append(DefaultOperationMethod.castOrCopy(method));
+            ParameterValueGroup parameters;
+            try {
+                parameters = getParameterValues();
+            } catch (UnsupportedOperationException e) {
+                final IdentifiedObject c = getParameterDescriptors();
+                formatter.setInvalidWKT(c != null ? c : this, e);
+                parameters = null;
+            }
+            if (parameters != null) {
+                formatter.newLine();
+                for (final GeneralParameterValue param : parameters.values()) {
+                    WKTUtilities.append(param, formatter);
+                }
             }
         }
-        append(formatter, getInterpolationCRS(), WKTKeywords.InterpolationCRS);
-        final double accuracy = getLinearAccuracy();
-        if (accuracy > 0) {
-            formatter.append(new FormattableObject() {
-                @Override protected String formatTo(final Formatter formatter) {
-                    formatter.append(accuracy);
-                    return WKTKeywords.OperationAccuracy;
-                }
-            });
+        if (!isComponent) {
+            append(formatter, getInterpolationCRS(), WKTKeywords.InterpolationCRS);
+            final double accuracy = getLinearAccuracy();
+            if (accuracy > 0) {
+                formatter.append(new FormattableObject() {
+                    @Override protected String formatTo(final Formatter formatter) {
+                        formatter.append(accuracy);
+                        return WKTKeywords.OperationAccuracy;
+                    }
+                });
+            }
         }
         if (formatter.getConvention().majorVersion() == 1) {
             formatter.setInvalidWKT(this, null);
