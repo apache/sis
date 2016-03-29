@@ -31,7 +31,7 @@ import static org.apache.sis.referencing.IdentifiedObjects.getProperties;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.4
+ * @version 0.7
  * @module
  */
 public final strictfp class HardCodedCS {
@@ -84,19 +84,32 @@ public final strictfp class HardCodedCS {
             HardCodedAxes.LATITUDE_gon);
 
     /**
-     * A three-dimensional spherical CS with
+     * A three-dimensional spherical CS for geodetic use with
      * <var>{@linkplain HardCodedAxes#SPHERICAL_LATITUDE latitude}</var>,
      * <var>{@linkplain HardCodedAxes#SPHERICAL_LONGITUDE longitude}</var>,
-     * <var>{@linkplain HardCodedAxes#GEOCENTRIC_RADIUS radius}</var>
-     * axes.
+     * <var>{@linkplain HardCodedAxes#GEOCENTRIC_RADIUS radius}</var> axes.
      * This axis order is the one of EPSG:6404.
      * Note that this is not a right-handed system.
+     *
+     * @see #SPHERICAL_ENGINEERING
      */
     public static final DefaultSphericalCS SPHERICAL = new DefaultSphericalCS(
             singletonMap(NAME_KEY, "Spherical"),
             HardCodedAxes.SPHERICAL_LATITUDE,
             HardCodedAxes.SPHERICAL_LONGITUDE,
             HardCodedAxes.GEOCENTRIC_RADIUS);
+
+    /**
+     * A three-dimensional spherical CS for geodetic use with
+     * <var>{@linkplain HardCodedAxes#DISTANCE distance}</var>,
+     * <var>{@linkplain HardCodedAxes#BEARING bearing}</var>,
+     * <var>{@linkplain HardCodedAxes#ELEVATION elevation}</var> axes.
+     */
+    public static final DefaultSphericalCS SPHERICAL_ENGINEERING = new DefaultSphericalCS(
+            singletonMap(NAME_KEY, SPHERICAL.getName()),
+            HardCodedAxes.DISTANCE,
+            HardCodedAxes.BEARING,
+            HardCodedAxes.ELEVATION);
 
     /**
      * A three-dimensional Cartesian CS with geocentric
@@ -110,6 +123,34 @@ public final strictfp class HardCodedCS {
             HardCodedAxes.GEOCENTRIC_X,
             HardCodedAxes.GEOCENTRIC_Y,
             HardCodedAxes.GEOCENTRIC_Z);
+
+    /**
+     * A three-dimensional cylindrical CS with
+     * <var>{@linkplain HardCodedAxes#DISTANCE distance}</var>,
+     * <var>{@link HardCodedAxes#BEARING bearing}</var>,
+     * <var>{@linkplain HardCodedAxes#Z z}</var> axes.
+     * Note that this is not a right-handed system.
+     *
+     * @since 0.7
+     */
+    public static final DefaultCylindricalCS CYLINDRICAL = new DefaultCylindricalCS(
+            singletonMap(NAME_KEY, "Cylindrical"),
+            HardCodedAxes.DISTANCE,
+            HardCodedAxes.BEARING,
+            HardCodedAxes.Z);
+
+    /**
+     * A three-dimensional polar CS with
+     * <var>{@linkplain HardCodedAxes#DISTANCE distance}</var>,
+     * <var>{@link HardCodedAxes#BEARING bearing}</var> axes.
+     * Note that this is not a right-handed system.
+     *
+     * @since 0.7
+     */
+    public static final DefaultPolarCS POLAR = new DefaultPolarCS(
+            singletonMap(NAME_KEY, "Polar"),
+            HardCodedAxes.DISTANCE,
+            HardCodedAxes.BEARING);
 
     /**
      * A two-dimensional Cartesian CS with

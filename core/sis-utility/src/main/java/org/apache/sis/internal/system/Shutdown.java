@@ -19,8 +19,6 @@ package org.apache.sis.internal.system;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.concurrent.Callable;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import org.apache.sis.util.logging.Logging;
 
 // Branch-dependent imports
@@ -118,12 +116,7 @@ public final class Shutdown extends Thread {
             resources.add(resource);
             if (hook == null && container == null) {
                 hook = new Shutdown();
-                AccessController.doPrivileged(new PrivilegedAction<Void>() {
-                    @Override public Void run() {
-                        Runtime.getRuntime().addShutdownHook(hook);
-                        return null;
-                    }
-                });
+                Runtime.getRuntime().addShutdownHook(hook);
             }
         }
     }
@@ -134,12 +127,7 @@ public final class Shutdown extends Thread {
     private static void removeShutdownHook() {
         assert Thread.holdsLock(resources);
         if (hook != null) {
-            AccessController.doPrivileged(new PrivilegedAction<Void>() {
-                @Override public Void run() {
-                    Runtime.getRuntime().removeShutdownHook(hook);
-                    return null;
-                }
-            });
+            Runtime.getRuntime().removeShutdownHook(hook);
             hook = null;
         }
     }

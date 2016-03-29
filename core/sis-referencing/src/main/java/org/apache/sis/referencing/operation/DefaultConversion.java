@@ -254,12 +254,12 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
                  * CoordinateReferenceSystem because the targetCRS is typically under construction when this
                  * method in invoked, and attempts to use it can cause NullPointerException.
                  */
-                final DefaultMathTransformFactory.Context context = new DefaultMathTransformFactory.Context();
-                context.setSource(source);
+                final DefaultMathTransformFactory.Context context;
                 if (target instanceof GeneralDerivedCRS) {
+                    context = ReferencingUtilities.createTransformContext(source, null, null);
                     context.setTarget(target.getCoordinateSystem());    // Using 'target' would be unsafe here.
                 } else {
-                    context.setTarget(target);
+                    context = ReferencingUtilities.createTransformContext(source, target, null);
                 }
                 transform = ((DefaultMathTransformFactory) factory).createParameterizedTransform(parameters, context);
                 parameters = Parameters.unmodifiable(context.getCompletedParameters());

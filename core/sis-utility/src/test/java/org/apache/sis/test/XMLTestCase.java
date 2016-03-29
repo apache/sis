@@ -161,15 +161,22 @@ public abstract strictfp class XMLTestCase extends TestCase {
 
     /**
      * Returns the URL to the XML file of the given name.
-     * The file shall be in the same package than the final subclass of {@code this}.
+     * The file shall be in the same package than a subclass of {@code this}.
+     * This method begins the search in the package of {@link #getClass()}.
+     * If the resource is not found in that package, then this method searches in the parent classes.
+     * The intend is to allow some test classes to be overridden in different modules.
      *
      * @param  filename The name of the XML file.
      * @return The URL to the given XML file.
      */
     private URL getResource(final String filename) {
-        final URL resource = getClass().getResource(filename);
-        assertNotNull(filename, resource);
-        return resource;
+        Class<?> c = getClass();
+        do {
+            final URL resource = c.getResource(filename);
+            if (resource != null) return resource;
+            c = c.getSuperclass();
+        } while (!c.equals(XMLTestCase.class));
+        throw new AssertionError("Test resource not found: " + filename);
     }
 
     /**

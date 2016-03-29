@@ -34,6 +34,7 @@ import org.apache.sis.internal.metadata.sql.ScriptRunner;
 import org.apache.sis.internal.metadata.sql.SQLUtilities;
 import org.apache.sis.internal.util.Fallback;
 import org.apache.sis.util.CharSequences;
+import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.resources.Messages;
 import org.apache.sis.util.logging.PerformanceLevel;
 import org.apache.sis.setup.InstallationResources;
@@ -291,12 +292,13 @@ final class EPSGInstaller extends ScriptRunner {
      * lets the exception propagate. Another code (for example {@link org.apache.sis.referencing.CRS#forCode(String)})
      * may catch that exception and log another record with the exception message.
      */
-    final void logFailure(final Locale locale) {
+    final void logFailure(final Locale locale, final Exception cause) {
         String message = Messages.getResources(locale).getString(Messages.Keys.CanNotCreateSchema_1, EPSG);
         String status = status(locale);
         if (status != null) {
             message = message + ' ' + status;
         }
+        message = Exceptions.formatChainedMessages(locale, message, cause);
         InstallationScriptProvider.log(new LogRecord(Level.WARNING, message));
     }
 }

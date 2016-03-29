@@ -179,6 +179,16 @@ public final class Affine extends AbstractProvider {
      */
 
     /**
+     * The inverse of this operation can be described by the same operation with different parameter values.
+     *
+     * @return {@code true} for all {@code Affine}.
+     */
+    @Override
+    public final boolean isInvertible() {
+        return true;
+    }
+
+    /**
      * Creates a projective transform from the specified group of parameter values.
      *
      * @param  factory Ignored (can be null).

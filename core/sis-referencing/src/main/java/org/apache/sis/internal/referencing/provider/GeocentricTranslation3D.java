@@ -40,7 +40,7 @@ public final class GeocentricTranslation3D extends GeocentricAffineBetweenGeogra
     /**
      * The group of all parameters expected by this coordinate operation.
      */
-    private static final ParameterDescriptorGroup PARAMETERS;
+    static final ParameterDescriptorGroup PARAMETERS;
     static {
         PARAMETERS = builder()
                 .addIdentifier("1035")

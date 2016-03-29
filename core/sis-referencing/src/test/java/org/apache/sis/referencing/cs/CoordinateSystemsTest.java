@@ -294,6 +294,19 @@ public final strictfp class CoordinateSystemsTest extends TestCase {
             }
 
             @Override
+            public Unit<?> getUnitReplacement(CoordinateSystemAxis axis, Unit<?> unit) {
+                if (Units.isAngular(unit)) {
+                    unit = NonSI.GRADE;
+                }
+                return unit;
+            }
+
+            @Override
+            public AxisDirection getDirectionReplacement(CoordinateSystemAxis axis, final AxisDirection direction) {
+                return direction;
+            }
+
+            @Override
             public AxisDirection getDirectionReplacement(final AxisDirection direction) {
                 return direction;
             }
@@ -323,6 +336,16 @@ public final strictfp class CoordinateSystemsTest extends TestCase {
 
             @Override
             public AxisDirection getDirectionReplacement(final AxisDirection direction) {
+                return direction;
+            }
+
+            @Override
+            public Unit<?> getUnitReplacement(CoordinateSystemAxis axis, final Unit<?> unit) {
+                return unit;
+            }
+
+            @Override
+            public AxisDirection getDirectionReplacement(CoordinateSystemAxis axis, final AxisDirection direction) {
                 return direction;
             }
         });

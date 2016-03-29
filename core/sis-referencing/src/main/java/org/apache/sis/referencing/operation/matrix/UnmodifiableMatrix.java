@@ -17,6 +17,7 @@
 package org.apache.sis.referencing.operation.matrix;
 
 import org.opengis.referencing.operation.Matrix;
+import org.apache.sis.internal.referencing.ExtendedPrecisionMatrix;
 import org.apache.sis.util.resources.Errors;
 
 
@@ -26,10 +27,10 @@ import org.apache.sis.util.resources.Errors;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.6
- * @version 0.6
+ * @version 0.7
  * @module
  */
-final class UnmodifiableMatrix extends MatrixSIS {
+final class UnmodifiableMatrix extends MatrixSIS implements ExtendedPrecisionMatrix {
     /**
      * For cross-version compatibility.
      */
@@ -88,6 +89,18 @@ final class UnmodifiableMatrix extends MatrixSIS {
             return ((MatrixSIS) matrix).getElements();
         } else {
             return super.getElements();
+        }
+    }
+
+    /**
+     * Returns elements together with their error terms if available, or just the elements otherwise.
+     */
+    @Override
+    public double[] getExtendedElements() {
+        if (matrix instanceof ExtendedPrecisionMatrix) {
+            return ((ExtendedPrecisionMatrix) matrix).getExtendedElements();
+        } else {
+            return getElements();
         }
     }
 

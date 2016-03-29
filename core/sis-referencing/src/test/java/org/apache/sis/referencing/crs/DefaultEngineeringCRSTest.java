@@ -86,7 +86,7 @@ public final strictfp class DefaultEngineeringCRSTest extends XMLTestCase {
                 "  CS[spherical, 3],\n" +
                 "    AXIS[“Spherical latitude (U)”, north, ORDER[1], ANGLEUNIT[“degree”, 0.017453292519943295]],\n" +
                 "    AXIS[“Spherical longitude (V)”, east, ORDER[2], ANGLEUNIT[“degree”, 0.017453292519943295]],\n" +
-                "    AXIS[“Geocentric radius (r)”, up, ORDER[3], LENGTHUNIT[“metre”, 1]]]",
+                "    AXIS[“Geocentric radius (R)”, up, ORDER[3], LENGTHUNIT[“metre”, 1]]]",
                 crs);
     }
 
@@ -102,7 +102,7 @@ public final strictfp class DefaultEngineeringCRSTest extends XMLTestCase {
                 "  CS[spherical, 3],\n" +
                 "    Axis[“Spherical latitude (U)”, north, Unit[“degree”, 0.017453292519943295]],\n" +
                 "    Axis[“Spherical longitude (V)”, east, Unit[“degree”, 0.017453292519943295]],\n" +
-                "    Axis[“Geocentric radius (r)”, up, Unit[“metre”, 1]]]",
+                "    Axis[“Geocentric radius (R)”, up, Unit[“metre”, 1]]]",
                 crs);
     }
 
@@ -192,7 +192,7 @@ public final strictfp class DefaultEngineeringCRSTest extends XMLTestCase {
                 "    <gml:axis>\n" +
                 "      <gml:CoordinateSystemAxis uom=\"urn:ogc:def:uom:EPSG::9001\" gml:id=\"GeocentricRadius\">\n" +
                 "        <gml:name>Geocentric radius</gml:name>\n" +
-                "        <gml:axisAbbrev>r</gml:axisAbbrev>\n" +
+                "        <gml:axisAbbrev>R</gml:axisAbbrev>\n" +
                 "        <gml:axisDirection codeSpace=\"EPSG\">up</gml:axisDirection>\n" +
                 "        <gml:minimumValue>0.0</gml:minimumValue>\n" +
                 "        <gml:rangeMeaning codeSpace=\"EPSG\">exact</gml:rangeMeaning>\n" +
@@ -222,6 +222,6 @@ public final strictfp class DefaultEngineeringCRSTest extends XMLTestCase {
         assertEquals("cs.axis[2].name", "Geocentric radius",   cs.getAxis(2).getName().getCode());
         assertEquals("cs.axis[0].abbreviation", "φ′",          cs.getAxis(0).getAbbreviation());
         assertEquals("cs.axis[1].abbreviation", "θ",           cs.getAxis(1).getAbbreviation());
-        assertEquals("cs.axis[2].abbreviation", "r",           cs.getAxis(2).getAbbreviation());
+        assertEquals("cs.axis[2].abbreviation", "R",           cs.getAxis(2).getAbbreviation());
     }
 }
