@@ -727,6 +727,9 @@ public class CoordinateOperationInference {
             }
         }
         properties.put(ReferencingServices.OPERATION_TYPE_KEY, type);
+        if (Conversion.class.isAssignableFrom(type)) {
+            properties.replace(IdentifiedObject.NAME_KEY, AXIS_CHANGES, IDENTITY);
+        }
         return factorySIS.createSingleOperation(properties, sourceCRS, targetCRS, null, method, transform);
     }
 
@@ -763,25 +766,26 @@ public class CoordinateOperationInference {
                                             final CoordinateOperation step2)
             throws FactoryException
     {
-        if (isIdentity(step1)) return step2;
-        if (isIdentity(step2)) return step1;
         final MathTransform mt1 = step1.getMathTransform();
         final MathTransform mt2 = step2.getMathTransform();
+        if (step1 instanceof Conversion && mt1.isIdentity()) return step2;
+        if (step2 instanceof Conversion && mt2.isIdentity()) return step1;
         final CoordinateReferenceSystem sourceCRS = step1.getSourceCRS();
         final CoordinateReferenceSystem targetCRS = step2.getTargetCRS();
-        CoordinateOperation step = null;
-        if (step1.getName() == AXIS_CHANGES && mt1.getSourceDimensions() == mt1.getTargetDimensions()) step = step2;
-        if (step2.getName() == AXIS_CHANGES && mt2.getSourceDimensions() == mt2.getTargetDimensions()) step = step1;
-        if (step instanceof SingleOperation) {
-            /*
-             * Applies only on operation in order to avoid merging with PassThroughOperation.
-             * Also applies only if the transform to hide has identical source and target
-             * dimensions in order to avoid mismatch with the method's dimensions.
-             */
-            final MathTransformFactory mtFactory = factorySIS.getMathTransformFactory();
-            return createFromMathTransform(new HashMap<>(IdentifiedObjects.getProperties(step)),
-                   sourceCRS, targetCRS, mtFactory.createConcatenatedTransform(mt1, mt2),
-                   ((SingleOperation) step).getMethod(), SingleOperation.class);
+        /*
+         * If one of the transform performs nothing more than a change of axis order or units, do
+         * not expose that conversion in a ConcatenatedTransform.  Instead, merge that conversion
+         * with the "main" operation. The intend is to simplify the operation chain by hidding
+         * trivial operations.
+         */
+        CoordinateOperation main = null;
+        if (step1.getName() == AXIS_CHANGES && mt1.getSourceDimensions() == mt1.getTargetDimensions()) main = step2;
+        if (step2.getName() == AXIS_CHANGES && mt2.getSourceDimensions() == mt2.getTargetDimensions()) main = step1;
+        if (main instanceof SingleOperation) {
+            final MathTransform mt = factorySIS.getMathTransformFactory().createConcatenatedTransform(mt1, mt2);
+            return createFromMathTransform(new HashMap<>(IdentifiedObjects.getProperties(main)),
+                   sourceCRS, targetCRS, mt, ((SingleOperation) main).getMethod(),
+                   (main instanceof Transformation) ? Transformation.class : SingleOperation.class);
         }
         return factory.createConcatenatedOperation(defaultName(sourceCRS, targetCRS), step1, step2);
     }
@@ -818,7 +822,7 @@ public class CoordinateOperationInference {
      * are usually datum shift and must be visible.
      */
     private static boolean isIdentity(final CoordinateOperation operation) {
-        return (operation == null) || ((operation instanceof Conversion) && operation.getMathTransform().isIdentity());
+        return (operation instanceof Conversion) && operation.getMathTransform().isIdentity();
     }
 
     /**

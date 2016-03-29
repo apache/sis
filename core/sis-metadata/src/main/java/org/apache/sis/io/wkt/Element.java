@@ -120,18 +120,18 @@ final class Element implements Serializable {
         keyword = name;
         offset  = singleton.offset;
         locale  = singleton.locale;
-        list    = new LinkedList<>();   // Needs to be a modifiable list.
+        list    = new LinkedList<>();                           // Needs to be a modifiable list.
         list.add(singleton);
     }
 
     /**
      * Creates a modifiable copy of the given element.
      */
-    private Element(final Element toCopy) {
+    Element(final Element toCopy) {
         keyword = toCopy.keyword;
         offset  = toCopy.offset;
         locale  = toCopy.locale;
-        list    = new LinkedList<>(toCopy.list);   // Needs to be a modifiable list.
+        list    = new LinkedList<>(toCopy.list);                // Needs to be a modifiable list.
         final ListIterator<Object> it = list.listIterator();
         while (it.hasNext()) {
             final Object value = it.next();
@@ -226,12 +226,7 @@ final class Element implements Serializable {
                  * to environment variables in Unix. If we find the "$" character, get the identifier behind "$"
                  * and insert the corresponding WKT fragment here.
                  */
-                int upper = ++lower;      // Increment of 1 is okay because FRAGMENT_VALUE is a 'char'.
-                while (upper < length) {
-                    final int c = text.codePointAt(upper);
-                    if (!Character.isUnicodeIdentifierPart(c)) break;
-                    upper += Character.charCount(c);
-                }
+                final int upper = AbstractParser.endOfFragmentName(text, ++lower);
                 final String id = text.substring(lower, upper);
                 Element fragment = parser.fragments.get(id);
                 if (fragment == null) {
@@ -268,7 +263,7 @@ final class Element implements Serializable {
                      * parsed text.
                      */
                     final int n = Character.charCount(closingQuote);
-                    lower += Character.charCount(firstChar) - n;    // This will usually let 'lower' unchanged.
+                    lower += Character.charCount(firstChar) - n;        // This will usually let 'lower' unchanged.
                     CharSequence content = null;
                     do {
                         final int upper = text.indexOf(closingQuote, lower += n);
@@ -276,7 +271,7 @@ final class Element implements Serializable {
                             throw missingCharacter(closingQuote, lower, position);
                         }
                         if (content == null) {
-                            content = text.substring(lower, upper);   // First text fragment, and usually the only one.
+                            content = text.substring(lower, upper);     // First text fragment, and usually the only one.
                         } else {
                             /*
                              * We will enter in this block only if we found at least one double quote.
@@ -309,7 +304,7 @@ final class Element implements Serializable {
                     switch (valueType) {
                         case TEMPORAL: value = parser.parseDate  (text, position); break;
                         case NUMERIC:  value = parser.parseNumber(text, position); break;
-                        default: throw new AssertionError(valueType);  // Should never happen.
+                        default: throw new AssertionError(valueType);                       // Should never happen.
                     }
                     if (value == null) {
                         // Do not update the error index; it is already updated by NumberFormat.
