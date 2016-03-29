@@ -42,6 +42,7 @@ import org.opengis.referencing.crs.EngineeringCRS;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.extent.GeographicBoundingBox;
+import org.opengis.referencing.operation.CoordinateOperation;
 import org.apache.sis.internal.metadata.AxisDirections;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.system.DefaultFactories;
@@ -50,8 +51,12 @@ import org.apache.sis.referencing.cs.DefaultEllipsoidalCS;
 import org.apache.sis.referencing.crs.DefaultGeographicCRS;
 import org.apache.sis.referencing.crs.DefaultVerticalCRS;
 import org.apache.sis.referencing.crs.DefaultCompoundCRS;
-import org.apache.sis.metadata.iso.extent.Extents;
+import org.apache.sis.referencing.operation.CoordinateOperationContext;
+import org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory;
 import org.apache.sis.referencing.factory.UnavailableFactoryException;
+import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
+import org.apache.sis.metadata.iso.extent.Extents;
+import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.Static;
@@ -590,5 +595,44 @@ check:  while (lower != 0 || upper != dimension) {
             return AuthorityFactories.ALL;
         }
         return AuthorityFactories.ALL.getAuthorityFactory(CRSAuthorityFactory.class, authority, null);
+    }
+
+    /**
+     * Finds a mathematical operation that transforms or converts coordinates from the given source to the
+     * given target coordinate reference system. If an estimation of the geographic area containing the points
+     * to transform is known, it can be specified for helping this method to find a better suited operation.
+     *
+     * <p>Note that the area of interest is just one aspect that may affect the coordinate operation.
+     * Other aspects are the time of interest (because some coordinate operations take in account the
+     * plate tectonics movement) or the desired accuracy. For more control on the coordinate operation
+     * to create, see {@link CoordinateOperationContext}.</p>
+     *
+     * @param  sourceCRS      the CRS of source coordinates.
+     * @param  targetCRS      the CRS of target coordinates.
+     * @param  areaOfInterest the area of interest, or {@code null} if none.
+     * @return the mathematical operation from {@code sourceCRS} to {@code targetCRS}.
+     * @throws FactoryException if the operation can not be created.
+     *
+     * @see DefaultCoordinateOperationFactory#createOperation(CoordinateReferenceSystem, CoordinateReferenceSystem, CoordinateOperationContext)
+     *
+     * @since 0.7
+     */
+    public static CoordinateOperation findOperation(final CoordinateReferenceSystem sourceCRS,
+                                                    final CoordinateReferenceSystem targetCRS,
+                                                    final GeographicBoundingBox areaOfInterest)
+            throws FactoryException
+    {
+        ArgumentChecks.ensureNonNull("sourceCRS", sourceCRS);
+        ArgumentChecks.ensureNonNull("targetCRS", targetCRS);
+        CoordinateOperationContext context = null;
+        if (areaOfInterest != null) {
+            final DefaultGeographicBoundingBox bbox = DefaultGeographicBoundingBox.castOrCopy(areaOfInterest);
+            if (bbox.isEmpty()) {
+                throw new IllegalArgumentException(Errors.format(Errors.Keys.EmptyArgument_1, "areaOfInterest"));
+            }
+            context = new CoordinateOperationContext();
+            context.setGeographicBoundingBox(bbox);
+        }
+        return CoordinateOperations.factory.createOperation(sourceCRS, targetCRS, context);
     }
 }
