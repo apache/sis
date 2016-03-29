@@ -105,9 +105,9 @@ final class MathTransformContext extends Context {
             } else {
                 final Double value = rotation;
                 if (inverse) {
-                    cm.convertAfter(0, null, value);            // Longitude is the first axis in normalized CS.
+                    cm.convertBefore(0, null, value);           // Longitude is the first axis in normalized CS.
                 } else {
-                    cm.convertBefore(0, null, value);
+                    cm.convertAfter(0, null, value);
                 }
                 matrix = cm;
             }

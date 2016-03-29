@@ -16,6 +16,7 @@
  */
 package org.apache.sis.referencing.operation;
 
+import java.util.Arrays;
 import java.text.ParseException;
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterValueGroup;
@@ -24,12 +25,14 @@ import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.SingleOperation;
 import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.Projection;
+import org.opengis.referencing.operation.Transformation;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.io.wkt.WKTFormat;
 
 import static org.apache.sis.internal.referencing.Formulas.LINEAR_TOLERANCE;
 import static org.apache.sis.internal.referencing.Formulas.ANGULAR_TOLERANCE;
+import static org.apache.sis.internal.referencing.PositionalAccuracyConstant.DATUM_SHIFT_APPLIED;
 
 // Test dependencies
 import org.apache.sis.referencing.operation.transform.MathTransformTestCase;
@@ -39,7 +42,7 @@ import org.junit.BeforeClass;
 import org.junit.AfterClass;
 import org.junit.Test;
 
-import static org.opengis.test.Assert.*;
+import static org.apache.sis.test.Assert.*;
 
 
 /**
@@ -96,25 +99,18 @@ public final strictfp class CoordinateOperationInferenceTest extends MathTransfo
                 "GEOGCS[“Sphere”,\n" +
                 "  Datum[“Sphere”, Ellipsoid[“Sphere”, 6370997, 0]],\n" +
                 "  CS[ellipsoidal, 2],\n" +
-                "  Axis[“Longitude (λ)”, EAST],\n" +
-                "  Axis[“Latitude (φ)”, NORTH],\n" +
-                "  Unit[“degree”, 0.017453292519943295]]");
+                "    Axis[“Longitude (λ)”, EAST],\n" +
+                "    Axis[“Latitude (φ)”, NORTH],\n" +
+                "    Unit[“degree”, 0.017453292519943295]]");
         /*
-         * NAD27 (EPSG:4267), defined in WKT instead than relying on the CommonCRS.NAD27 constant in order to fix
-         * the TOWGS84[…] parameter to values that we control. Note that TOWGS84[…] is not a legal WKT 2 element.
-         * We could mix WKT 1 and WKT 2 elements (SIS allows that), but we nevertheless use WKT 1 for the whole
-         * string as a matter of principle.
+         * Nouvelle Triangulation Française (Datum of EPSG:4807 CRS).
+         * Use non-Greenwich prime meridian grad units (0.9 grad = 1°).
+         * We use the WKT 1 format because TOWGS84[…] is not a legal WKT 2 element.
          */
-        parser.addFragment("NAD27",
-                "GEOGCS[“Sphere”,\n" +
-                "  DATUM[“North American Datum 1927”,\n" +
-                "    SPHEROID[“Clarke 1866”, 6378206.4, 294.9786982138982],\n" +
-                "    TOWGS84[-10, 158, 187]]," +
-                "    PRIMEM[“Greenwich”, 0.0]," +
-                "  UNIT[“degree”, 0.017453292519943295],\n" +
-                "  AXIS[“Latitude (φ)”, NORTH],\n" +
-                "  AXIS[“Longitude (λ)”, EAST],\n" +
-                "  AUTHORITY[“EPSG”, “4267”]]");
+        parser.addFragment("NTF",
+                "DATUM[“Nouvelle Triangulation Française”,\n" +
+                "  SPHEROID[“Clarke 1880 (IGN)”, 6378249.2, 293.466021293627],\n" +
+                "  TOWGS84[-168, -60, 320]]");
     }
 
     /**
@@ -156,11 +152,12 @@ public final strictfp class CoordinateOperationInferenceTest extends MathTransfo
         assertSame("sourceCRS",  crs, operation.getSourceCRS());
         assertSame("targetCRS",  crs, operation.getTargetCRS());
         assertTrue("isIdentity", operation.getMathTransform().isIdentity());
+        assertTrue("accuracy",   operation.getCoordinateOperationAccuracy().isEmpty());
         assertInstanceOf("operation", Conversion.class, operation);
     }
 
     /**
-     * Tests a transformation that requires a datum shift.
+     * Tests a transformation using the <cite>"Geocentric translations (geog2D domain)"</cite> method.
      *
      * @throws ParseException if a CRS used in this test can not be parsed.
      * @throws FactoryException if the operation can not be created.
@@ -168,12 +165,34 @@ public final strictfp class CoordinateOperationInferenceTest extends MathTransfo
      */
     @Test
     @DependsOnMethod("testIdentityTransform")
-    public void testDatumShift() throws ParseException, FactoryException, TransformException {
-        final CoordinateReferenceSystem sourceCRS = parse("$NAD27");
+    public void testGeocentricTranslationInGeographicDomain() throws ParseException, FactoryException, TransformException {
+        /*
+         * NAD27 (EPSG:4267) defined in WKT instead than relying on the CommonCRS.NAD27 constant in order to fix
+         * the TOWGS84[…] parameter to values that we control. Note that TOWGS84[…] is not a legal WKT 2 element.
+         * We could mix WKT 1 and WKT 2 elements (SIS allows that), but we nevertheless use WKT 1 for the whole
+         * string as a matter of principle.
+         */
+        final CoordinateReferenceSystem sourceCRS = parse(
+                "GEOGCS[“NAD27”,\n" +
+                "  DATUM[“North American Datum 1927”,\n" +
+                "    SPHEROID[“Clarke 1866”, 6378206.4, 294.9786982138982],\n" +
+                "    TOWGS84[-10, 158, 187]]," +
+                "    PRIMEM[“Greenwich”, 0.0]," +
+                "  UNIT[“degree”, 0.017453292519943295],\n" +
+                "  AXIS[“Latitude (φ)”, NORTH],\n" +
+                "  AXIS[“Longitude (λ)”, EAST],\n" +
+                "  AUTHORITY[“EPSG”, “4267”]]");
+
         final CoordinateReferenceSystem targetCRS = CommonCRS.WGS84.geographic();
         final CoordinateOperation operation = factory.createOperation(sourceCRS, targetCRS);
-        assertSame(sourceCRS, operation.getSourceCRS());
-        assertSame(targetCRS, operation.getTargetCRS());
+        assertSame ("sourceCRS",  sourceCRS,  operation.getSourceCRS());
+        assertSame ("targetCRS",  targetCRS,  operation.getTargetCRS());
+        assertFalse("isIdentity", operation.getMathTransform().isIdentity());
+        assertSetEquals(Arrays.asList(DATUM_SHIFT_APPLIED), operation.getCoordinateOperationAccuracy());
+        assertInstanceOf("operation", Transformation.class, operation);
+        assertEquals("method", "Geocentric translations (geog2D domain)",
+                ((SingleOperation) operation).getMethod().getName().getCode());
+
         transform  = operation.getMathTransform();
         tolerance  = ANGULAR_TOLERANCE;
         λDimension = new int[] {1};
@@ -181,9 +200,103 @@ public final strictfp class CoordinateOperationInferenceTest extends MathTransfo
             39,          -85,
             38.26,       -80.58
         }, new double[] {
-            39.00011150, -84.99995603,
-            38.26011883, -80.57981725
+            39.00011150, -84.99995603,      // This is NOT the most accurate NAD27 to NAD83 transformation.
+            38.26011883, -80.57981725       // We use non-optimal TOWGS84[…] for the purpose of this test.
         });
+        validate();
+    }
+
+    /**
+     * Tests a transformation using the <cite>"Geocentric translations (geog2D domain)"</cite> method
+     * together with a longitude rotation and unit conversion. The CRS and sample point are taken from
+     * the GR3DF97A – <cite>Grille de paramètres de transformation de coordonnées</cite> document.
+     *
+     * @throws ParseException if a CRS used in this test can not be parsed.
+     * @throws FactoryException if the operation can not be created.
+     * @throws TransformException if an error occurred while converting the test points.
+     */
+    @Test
+    @DependsOnMethod("testGeocentricTranslationInGeographicDomain")
+    public void testLongitudeRotation() throws ParseException, FactoryException, TransformException {
+        final CoordinateReferenceSystem sourceCRS = parse(
+                "GeodeticCRS[“NTF (Paris)”, $NTF,\n" +
+                "  PrimeMeridian[“Paris”, 2.5969213],\n" +          // in grads, not degrees.
+                "  CS[ellipsoidal, 2],\n" +
+                "    Axis[“Latitude (φ)”, NORTH],\n" +
+                "    Axis[“Longitude (λ)”, EAST],\n" +
+                "    Unit[“grade”, 0.015707963267949],\n" +
+                "  Id[“EPSG”, “4807”]]");
+
+        final CoordinateReferenceSystem targetCRS = CommonCRS.WGS84.geographic();
+        final CoordinateOperation operation = factory.createOperation(sourceCRS, targetCRS);
+        assertSame ("sourceCRS",  sourceCRS,  operation.getSourceCRS());
+        assertSame ("targetCRS",  targetCRS,  operation.getTargetCRS());
+        assertFalse("isIdentity", operation.getMathTransform().isIdentity());
+        assertSetEquals(Arrays.asList(DATUM_SHIFT_APPLIED), operation.getCoordinateOperationAccuracy());
+        assertInstanceOf("operation", Transformation.class, operation);
+        assertEquals("method", "Geocentric translations (geog2D domain)",
+                ((SingleOperation) operation).getMethod().getName().getCode());
+        /*
+         * Same test point than the one used in FranceGeocentricInterpolationTest:
+         *
+         * NTF: 48°50′40.2441″N  2°25′32.4187″E
+         * RGF: 48°50′39.9967″N  2°25′29.8273″E     (close to WGS84)
+         */
+        transform  = operation.getMathTransform();
+        tolerance  = ANGULAR_TOLERANCE;
+        λDimension = new int[] {1};
+        verifyTransform(new double[] {54.271680278,  0.098269657},      // in grads east of Paris
+                        new double[] {48.844443528,  2.424952028});     // in degrees east of Greenwich
+        validate();
+    }
+
+    /**
+     * Tests a transformation using the <cite>"Geocentric translations (geocentric domain)"</cite> method,
+     * together with a longitude rotation and unit conversion. The CRS and sample point are derived from
+     * the GR3DF97A – <cite>Grille de paramètres de transformation de coordonnées</cite> document.
+     *
+     * @throws ParseException if a CRS used in this test can not be parsed.
+     * @throws FactoryException if the operation can not be created.
+     * @throws TransformException if an error occurred while converting the test points.
+     */
+    @Test
+    @DependsOnMethod("testLongitudeRotation")
+    public void testGeocentricTranslationInGeocentricDomain() throws ParseException, FactoryException, TransformException {
+        final CoordinateReferenceSystem sourceCRS = parse(
+                "GeodeticCRS[“NTF (Paris)”, $NTF,\n" +
+                "  PrimeMeridian[“Paris”, 2.33722917],\n" +         // in degrees.
+                "  CS[Cartesian, 3],\n" +
+                "    Axis[“(X)”, geocentricX],\n" +
+                "    Axis[“(Y)”, geocentricY],\n" +
+                "    Axis[“(Z)”, geocentricZ],\n" +
+                "    Unit[“km”, 1000]]");
+
+        final CoordinateReferenceSystem targetCRS = CommonCRS.WGS84.geocentric();
+        final CoordinateOperation operation = factory.createOperation(sourceCRS, targetCRS);
+        assertSame ("sourceCRS",  sourceCRS,  operation.getSourceCRS());
+        assertSame ("targetCRS",  targetCRS,  operation.getTargetCRS());
+        assertFalse("isIdentity", operation.getMathTransform().isIdentity());
+        assertSetEquals(Arrays.asList(DATUM_SHIFT_APPLIED), operation.getCoordinateOperationAccuracy());
+        assertInstanceOf("operation", Transformation.class, operation);
+        assertEquals("method", "Geocentric translations (geocentric domain)",
+                ((SingleOperation) operation).getMethod().getName().getCode());
+        /*
+         * Same test point than the one used in FranceGeocentricInterpolationTest:
+         *
+         * ┌────────────────────────────────────────────┬──────────────────────────────────────────────────────────┐
+         * │         Geographic coordinates (°)         │                  Geocentric coordinates (m)              │
+         * ├────────────────────────────────────────────┼──────────────────────────────────────────────────────────┤
+         * │    NTF: 48°50′40.2441″N  2°25′32.4187″E    │    X = 4201905.725   Y = 177998.072   Z = 4778904.260    │
+         * │    RGF: 48°50′39.9967″N  2°25′29.8273″E    │      ΔX = -168         ΔY = -60          ΔZ = 320        │
+         * └────────────────────────────────────────────┴──────────────────────────────────────────────────────────┘
+         *
+         * The source coordinate below is different than in the above table because the prime meridian is set to the
+         * Paris meridian, so there is a longitude rotation to take in account for X and Y axes.
+         */
+        transform = operation.getMathTransform();
+        tolerance = LINEAR_TOLERANCE;
+        verifyTransform(new double[] {4205.669137,     6.491944,   4778.904260},    // Paris prime meridian
+                        new double[] {4201737.725,   177938.072,   4779224.260});   // Greenwich prime meridian
         validate();
     }
 
@@ -207,9 +320,9 @@ public final strictfp class CoordinateOperationInferenceTest extends MathTransfo
                 "    Parameter[“Latitude of natural origin”, 50],\n" +
                 "    Parameter[“Scale factor at natural origin”, 0.95]],\n" +
                 "  CS[Cartesian, 2],\n" +
-                "  Axis[“x”, EAST],\n" +
-                "  Axis[“y”, NORTH],\n" +
-                "  Unit[“US survey foot”, 0.304800609601219]]");
+                "    Axis[“x”, EAST],\n" +
+                "    Axis[“y”, NORTH],\n" +
+                "    Unit[“US survey foot”, 0.304800609601219]]");
 
         final CoordinateOperation operation = factory.createOperation(sourceCRS, targetCRS);
         assertSame("sourceCRS", sourceCRS, operation.getSourceCRS());
