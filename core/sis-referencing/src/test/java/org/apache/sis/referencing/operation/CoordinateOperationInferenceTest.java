@@ -16,19 +16,29 @@
  */
 package org.apache.sis.referencing.operation;
 
+import java.text.ParseException;
 import org.opengis.util.FactoryException;
+import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.CoordinateOperation;
+import org.opengis.referencing.operation.SingleOperation;
+import org.opengis.referencing.operation.Projection;
+import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.CommonCRS;
+import org.apache.sis.io.wkt.WKTFormat;
+
+import static org.apache.sis.internal.referencing.Formulas.LINEAR_TOLERANCE;
+import static org.apache.sis.internal.referencing.Formulas.ANGULAR_TOLERANCE;
 
 // Test dependencies
 import org.apache.sis.referencing.operation.transform.MathTransformTestCase;
+import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.junit.BeforeClass;
 import org.junit.AfterClass;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.opengis.test.Assert.*;
 
 
 /**
@@ -47,9 +57,24 @@ import static org.junit.Assert.*;
 })
 public final strictfp class CoordinateOperationInferenceTest extends MathTransformTestCase {
     /**
+     * Tolerance threshold for strict comparisons of floating point numbers.
+     * This constant can be used like below, where {@code expected} and {@code actual} are {@code double} values:
+     *
+     * {@preformat java
+     *     assertEquals(expected, actual, STRICT);
+     * }
+     */
+    private static final double STRICT = 0;
+
+    /**
      * The transformation factory to use for testing.
      */
     private static DefaultCoordinateOperationFactory factory;
+
+    /**
+     * The parser to use for WKT strings used in this test.
+     */
+    private static WKTFormat parser;
 
     /**
      * Creates a new {@link DefaultCoordinateOperationFactory} to use for testing purpose.
@@ -58,6 +83,7 @@ public final strictfp class CoordinateOperationInferenceTest extends MathTransfo
     @BeforeClass
     public static void createFactory() {
         factory = new DefaultCoordinateOperationFactory();
+        parser  = new WKTFormat(null, null);
     }
 
     /**
@@ -66,6 +92,14 @@ public final strictfp class CoordinateOperationInferenceTest extends MathTransfo
     @AfterClass
     public static void disposeFactory() {
         factory = null;
+        parser  = null;
+    }
+
+    /**
+     * Returns the CRS for the given Well Known Text.
+     */
+    private static CoordinateReferenceSystem parse(final String wkt) throws ParseException {
+        return (CoordinateReferenceSystem) parser.parseObject(wkt);
     }
 
     /**
@@ -91,5 +125,67 @@ public final strictfp class CoordinateOperationInferenceTest extends MathTransfo
         assertSame("sourceCRS",  crs, operation.getSourceCRS());
         assertSame("targetCRS",  crs, operation.getTargetCRS());
         assertTrue("isIdentity", operation.getMathTransform().isIdentity());
+    }
+
+    /**
+     * Tests conversion from a geographic to a projected CRS without datum of axis changes.
+     *
+     * @throws ParseException if the CRS used in this test can not be parsed.
+     * @throws FactoryException if the operation can not be created.
+     * @throws TransformException if an error occurred while converting the test points.
+     */
+    @Test
+    @DependsOnMethod("testIdentityTransform")
+    public void testGeographicToProjected() throws ParseException, FactoryException, TransformException {
+        /*
+         * The fist keyword in WKT below should be "GeodeticCRS" in WKT 2, but we use the WKT 1 keyword ("GEOGCS")
+         * for allowing inclusion in ProjectedCRS.  SIS is okay with mixed WKT versions, but this is of course not
+         * something to recommend in production.
+         */
+        parser.addFragment("Sphere",
+                "GEOGCS[“Sphere”,\n" +
+                "  Datum[“Sphere”, Ellipsoid[“Sphere”, 6370997, 0]],\n" +
+                "  CS[ellipsoidal, 2],\n" +
+                "  Axis[“Longitude (λ)”, EAST],\n" +
+                "  Axis[“Latitude (φ)”, NORTH],\n" +
+                "  Unit[“degree”, 0.017453292519943295]]");
+
+        final CoordinateReferenceSystem sourceCRS = parse("$Sphere");
+        final CoordinateReferenceSystem targetCRS = parse(
+                "ProjectedCRS[“UTM”,\n" +
+                "  $Sphere,\n" +
+                "  Conversion[“UTM”,\n" +
+                "    Method[“Transverse Mercator”],\n" +
+                "    Parameter[“Longitude of natural origin”, 170],\n" +
+                "    Parameter[“Latitude of natural origin”, 50],\n" +
+                "    Parameter[“Scale factor at natural origin”, 0.95]],\n" +
+                "  CS[Cartesian, 2],\n" +
+                "  Axis[“x”, EAST],\n" +
+                "  Axis[“y”, NORTH],\n" +
+                "  Unit[“US survey foot”, 0.304800609601219]]");
+
+        final CoordinateOperation operation = factory.createOperation(sourceCRS, targetCRS);
+        assertSame("sourceCRS", sourceCRS, operation.getSourceCRS());
+        assertSame("targetCRS", targetCRS, operation.getTargetCRS());
+        assertInstanceOf("operation", Projection.class, operation);
+
+        final ParameterValueGroup param = ((SingleOperation) operation).getParameterValues();
+        assertEquals("semi_major",     6370997, param.parameter("semi_major"        ).doubleValue(), STRICT);
+        assertEquals("semi_minor",     6370997, param.parameter("semi_minor"        ).doubleValue(), STRICT);
+        assertEquals("latitude_of_origin",  50, param.parameter("latitude_of_origin").doubleValue(), STRICT);
+        assertEquals("central_meridian",   170, param.parameter("central_meridian"  ).doubleValue(), STRICT);
+        assertEquals("scale_factor",      0.95, param.parameter("scale_factor"      ).doubleValue(), STRICT);
+        assertEquals("false_easting",        0, param.parameter("false_easting"     ).doubleValue(), STRICT);
+        assertEquals("false_northing",       0, param.parameter("false_northing"    ).doubleValue(), STRICT);
+
+        transform = operation.getMathTransform();
+        tolerance = ANGULAR_TOLERANCE;
+        verifyTransform(new double[] {170, 50}, new double[] {0, 0});
+        validate();
+
+        transform = transform.inverse();
+        tolerance = LINEAR_TOLERANCE;
+        verifyTransform(new double[] {0, 0}, new double[] {170, 50});
+        validate();
     }
 }
