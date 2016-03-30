@@ -56,7 +56,7 @@
  * <div class="section"><cite>Early binding</cite> versus <cite>late binding</cite> implementations</div>
  * There is sometime multiple ways of transforming coordinates for a given pair of source and target CRS.
  * For example the {@linkplain org.apache.sis.referencing.datum.BursaWolfParameters Bursa-Wolf parameters}
- * may vary depending on the area of interest, like in the transformations from NAD27 to NAD83.
+ * may vary depending on the area of interest, like in the transformations from NAD27 to WGS84.
  * Even for a fixed set of Bursa-Wolf parameter, there is various ways to use them (<cite>Molodensky</cite>,
  * <cite>Abridged Molodensky</cite>, <cite>Geocentric translation</cite>, <cite>etc.</cite>).
  *

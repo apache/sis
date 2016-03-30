@@ -151,7 +151,7 @@ public final class ServicesForMetadata extends ReferencingServices {
                 !Utilities.equalsIgnoreMetadata(cs2.getAxis(1), cs1.getAxis(1)))
             {
                 final CoordinateOperation operation;
-                final CoordinateOperationFactory factory = DefaultFactories.forBuildin(CoordinateOperationFactory.class);
+                final CoordinateOperationFactory factory = CoordinateOperations.factory();
                 try {
                     operation = factory.createOperation(crs, normalizedCRS);
                 } catch (FactoryException e) {
@@ -611,7 +611,7 @@ public final class ServicesForMetadata extends ReferencingServices {
         if (factory instanceof DefaultCoordinateOperationFactory) {
             df = (DefaultCoordinateOperationFactory) factory;
         } else {
-            df = DefaultFactories.forBuildin(CoordinateOperationFactory.class, DefaultCoordinateOperationFactory.class);
+            df = CoordinateOperations.factory();
         }
         return df.createSingleOperation(properties, sourceCRS, targetCRS, interpolationCRS, method, null);
     }
@@ -630,7 +630,7 @@ public final class ServicesForMetadata extends ReferencingServices {
     @Override
     public CoordinateOperationFactory getCoordinateOperationFactory(Map<String,?> properties, MathTransformFactory mtFactory) {
         if (Containers.isNullOrEmpty(properties) && DefaultFactories.isDefaultInstance(MathTransformFactory.class, mtFactory)) {
-            return DefaultFactories.forBuildin(CoordinateOperationFactory.class);
+            return CoordinateOperations.factory();
         } else {
             return new DefaultCoordinateOperationFactory(properties, mtFactory);
         }

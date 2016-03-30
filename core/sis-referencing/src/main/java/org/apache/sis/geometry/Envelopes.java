@@ -29,7 +29,6 @@ import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.CoordinateOperation;
-import org.opengis.referencing.operation.CoordinateOperationFactory;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
@@ -42,9 +41,9 @@ import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.operation.transform.AbstractMathTransform;
+import org.apache.sis.internal.referencing.CoordinateOperations;
 import org.apache.sis.internal.referencing.DirectPositionView;
 import org.apache.sis.internal.referencing.Formulas;
-import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.system.Loggers;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
@@ -99,17 +98,6 @@ public final class Envelopes extends Static {
      * Do not allow instantiation of this class.
      */
     private Envelopes() {
-    }
-
-    /**
-     * Returns the coordinate operation factory to be used for transforming the envelope.
-     */
-    private static CoordinateOperationFactory getFactory() throws TransformException {
-        final CoordinateOperationFactory factory = DefaultFactories.forClass(CoordinateOperationFactory.class);
-        if (factory != null) {
-            return factory;
-        }
-        throw new TransformException(Errors.format(Errors.Keys.MissingRequiredModule_1, "geotk-referencing")); // This is temporary.
     }
 
     /**
@@ -184,7 +172,7 @@ public final class Envelopes extends Static {
                 } else {
                     final CoordinateOperation operation;
                     try {
-                        operation = getFactory().createOperation(sourceCRS, targetCRS);
+                        operation = CoordinateOperations.factory().createOperation(sourceCRS, targetCRS);
                     } catch (FactoryException exception) {
                         throw new TransformException(Errors.format(Errors.Keys.CanNotTransformEnvelope), exception);
                     }
@@ -469,7 +457,7 @@ public final class Envelopes extends Static {
                  */
                 final MathTransform mt;
                 try {
-                    mt = getFactory().createOperation(crs, sourceCRS).getMathTransform();
+                    mt = CoordinateOperations.factory().createOperation(crs, sourceCRS).getMathTransform();
                 } catch (FactoryException e) {
                     throw new TransformException(Errors.format(Errors.Keys.CanNotTransformEnvelope), e);
                 }

@@ -45,6 +45,7 @@ import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.apache.sis.internal.metadata.AxisDirections;
 import org.apache.sis.internal.referencing.PositionalAccuracyConstant;
+import org.apache.sis.internal.referencing.CoordinateOperations;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.referencing.cs.DefaultVerticalCS;
@@ -78,19 +79,21 @@ import static java.util.Collections.singletonMap;
  *
  * <div class="section">Usage example</div>
  * The most frequently used methods in this class are {@link #forCode forCode(…)}, {@link #fromWKT fromWKT(…)}
- * and {@link #findOperation findOperation(…)}. An usage example is like below:
+ * and {@link #findOperation findOperation(…)}. An usage example is like below
+ * (see the <a href="http://sis.apache.org/book/tables/CoordinateReferenceSystems.html">Apache SIS™ Coordinate
+ * Reference System (CRS) codes</a> page for the complete list of EPSG codes):
  *
  * {@preformat java
- *   CoordinateReferenceSystem sourceCRS = CRS.forCode("EPSG:4326");        // WGS 84
- *   CoordinateReferenceSystem sourceCRS = CRS.forCode("EPSG:3395");        // WGS 84 / World Mercator
- *   CoordinateOperation operation = CRS.findOperation(sourceCRS, targetCRS, null);
+ *   CoordinateReferenceSystem source = CRS.forCode("EPSG:4326");                   // WGS 84
+ *   CoordinateReferenceSystem target = CRS.forCode("EPSG:3395");                   // WGS 84 / World Mercator
+ *   CoordinateOperation operation = CRS.findOperation(source, target, null);
  *   if (CRS.getLinearAccuracy(operation) < 100) {
  *       // If the accuracy is less than 100 metres (or any other threshold at application choice)
  *       // maybe the operation is not suitable. Decide here what to do (throw an exception, etc).
  *   }
  *   MathTransform mt = operation.getMathTransform();
- *   DirectPosition position = new DirectPosition2D(20, 30);    // 20°N 30°E   (watchout axis order!)
- *   position = operation.transform(position, position);
+ *   DirectPosition position = new DirectPosition2D(20, 30);            // 20°N 30°E   (watch out axis order!)
+ *   position = mt.transform(position, position);
  *   System.out.println(position);
  * }
  *
@@ -122,9 +125,10 @@ public final class CRS extends Static {
     /**
      * Returns the Coordinate Reference System for the given authority code.
      * The set of available codes depends on the {@link CRSAuthorityFactory} instances available on the classpath.
-     * There is many thousands of CRS defined by EPSG authority or by other authorities.
+     * There is many thousands of <a href="http://sis.apache.org/book/tables/CoordinateReferenceSystems.html">CRS
+     * defined by EPSG authority or by other authorities</a>.
      * The following table lists a very small subset of codes which are guaranteed to be available
-     * on any installation of Apache SIS version 0.4 or above:
+     * on any installation of Apache SIS:
      *
      * <blockquote><table class="sis">
      *   <caption>Minimal set of supported authority codes</caption>
@@ -304,7 +308,7 @@ public final class CRS extends Static {
             context = new CoordinateOperationContext();
             context.setGeographicBoundingBox(bbox);
         }
-        return CoordinateOperations.factory.createOperation(sourceCRS, targetCRS, context);
+        return CoordinateOperations.factory().createOperation(sourceCRS, targetCRS, context);
     }
 
     /**

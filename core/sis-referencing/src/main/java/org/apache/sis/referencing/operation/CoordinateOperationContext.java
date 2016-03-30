@@ -38,7 +38,7 @@ import org.apache.sis.util.ArgumentChecks;
  * to choose the most suitable coordinate transformation between two CRS.
  *
  * <div class="note"><b>Example:</b>
- * if a transformation from NAD27 to NAD83 is requested without providing context, then Apache SIS will return the
+ * if a transformation from NAD27 to WGS84 is requested without providing context, then Apache SIS will return the
  * transformation applicable to the widest North American surface. But if the user provides a context saying that
  * he wants to transform coordinates in Texas, then Apache SIS may return another coordinate transformation with
  * different {@linkplain org.apache.sis.referencing.datum.BursaWolfParameters Bursa-Wolf parameters} more suitable
