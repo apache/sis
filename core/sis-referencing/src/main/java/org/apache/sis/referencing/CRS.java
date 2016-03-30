@@ -87,8 +87,8 @@ import static java.util.Collections.singletonMap;
  *   CoordinateReferenceSystem source = CRS.forCode("EPSG:4326");                   // WGS 84
  *   CoordinateReferenceSystem target = CRS.forCode("EPSG:3395");                   // WGS 84 / World Mercator
  *   CoordinateOperation operation = CRS.findOperation(source, target, null);
- *   if (CRS.getLinearAccuracy(operation) < 100) {
- *       // If the accuracy is less than 100 metres (or any other threshold at application choice)
+ *   if (CRS.getLinearAccuracy(operation) > 100) {
+ *       // If the accuracy is coarser than 100 metres (or any other threshold at application choice)
  *       // maybe the operation is not suitable. Decide here what to do (throw an exception, etc).
  *   }
  *   MathTransform mt = operation.getMathTransform();
