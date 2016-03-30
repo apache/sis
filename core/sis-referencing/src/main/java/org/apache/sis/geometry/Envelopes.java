@@ -269,7 +269,7 @@ public final class Envelopes extends Static {
          * ordinate values. This coordinate will be updated in the 'switch' statement inside
          * the 'while' loop.
          */
-        if (sourceDim >= 20) { // Maximal value supported by Formulas.pow3(int) is 19.
+        if (sourceDim >= 20) {          // Maximal value supported by Formulas.pow3(int) is 19.
             throw new IllegalArgumentException(Errors.format(Errors.Keys.ExcessiveNumberOfDimensions_1));
         }
         int             pointIndex            = 0;
@@ -395,12 +395,12 @@ public final class Envelopes extends Static {
                                             for (int ib3 = pointIndex, dim = sourceDim; --dim >= 0; ib3 /= 3) {
                                                 final double ordinate;
                                                 if (dim == i) {
-                                                    ordinate = x; // Position of the extremum.
+                                                    ordinate = x;                         // Position of the extremum.
                                                 } else switch (ib3 % 3) {
                                                     case 0:  ordinate = envelope.getMinimum(dim); break;
                                                     case 1:  ordinate = envelope.getMaximum(dim); break;
                                                     case 2:  ordinate = envelope.getMedian (dim); break;
-                                                    default: throw new AssertionError(ib3); // Should never happen
+                                                    default: throw new AssertionError(ib3);     // Should never happen
                                                 }
                                                 sourcePt[dim] = ordinate;
                                             }
@@ -413,7 +413,7 @@ public final class Envelopes extends Static {
                         }
                     }
                 }
-                derivatives[pointIndex] = null; // Let GC do its job earlier.
+                derivatives[pointIndex] = null;                 // Let GC do its job earlier.
             }
         }
         if (targetPt != null) {
@@ -491,13 +491,13 @@ public final class Envelopes extends Static {
          */
         if (sourceCRS != null) {
             final CoordinateSystem cs = sourceCRS.getCoordinateSystem();
-            if (cs != null) { // Should never be null, but check as a paranoiac safety.
+            if (cs != null) {                           // Should never be null, but check as a paranoiac safety.
                 DirectPosition sourcePt = null;
                 DirectPosition targetPt = null;
                 final int dimension = cs.getDimension();
                 for (int i=0; i<dimension; i++) {
                     final CoordinateSystemAxis axis = cs.getAxis(i);
-                    if (axis == null) { // Should never be null, but check as a paranoiac safety.
+                    if (axis == null) {                 // Should never be null, but check as a paranoiac safety.
                         continue;
                     }
                     final double min = envelope.getMinimum(i);
@@ -579,17 +579,17 @@ public final class Envelopes extends Static {
         AbstractEnvelope generalEnvelope = null;
         DirectPosition sourcePt = null;
         DirectPosition targetPt = null;
-        long includedMinValue = 0; // A bitmask for each dimension.
+        long includedMinValue = 0;              // A bitmask for each dimension.
         long includedMaxValue = 0;
         long isWrapAroundAxis = 0;
         long dimensionBitMask = 1;
         final int dimension = targetCS.getDimension();
         for (int i=0; i<dimension; i++, dimensionBitMask <<= 1) {
             final CoordinateSystemAxis axis = targetCS.getAxis(i);
-            if (axis == null) { // Should never be null, but check as a paranoiac safety.
+            if (axis == null) {                 // Should never be null, but check as a paranoiac safety.
                 continue;
             }
-            boolean testMax = false; // Tells if we are testing the minimal or maximal value.
+            boolean testMax = false;            // Tells if we are testing the minimal or maximal value.
             do {
                 final double extremum = testMax ? axis.getMaximumValue() : axis.getMinimumValue();
                 if (Double.isInfinite(extremum) || Double.isNaN(extremum)) {

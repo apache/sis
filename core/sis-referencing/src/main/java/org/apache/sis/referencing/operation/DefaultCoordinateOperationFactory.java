@@ -19,6 +19,7 @@ package org.apache.sis.referencing.operation;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Collections;
+import java.util.List;
 import org.opengis.util.FactoryException;
 import org.opengis.util.NoSuchIdentifierException;
 import org.opengis.parameter.ParameterValueGroup;
@@ -28,11 +29,13 @@ import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.ProjectedCRS;
+import org.opengis.referencing.crs.SingleCRS;
+import org.opengis.referencing.datum.Datum;
 import org.apache.sis.internal.referencing.MergedProperties;
 import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.util.CollectionsExt;
-import org.apache.sis.internal.util.Utilities;
+import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.factory.InvalidGeodeticParameterException;
 import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
 import org.apache.sis.util.collection.WeakHashSet;
@@ -42,6 +45,7 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.NullArgumentException;
+import org.apache.sis.util.Utilities;
 
 
 /**
@@ -68,7 +72,7 @@ import org.apache.sis.util.NullArgumentException;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.6
- * @version 0.6
+ * @version 0.7
  * @module
  */
 public class DefaultCoordinateOperationFactory extends AbstractFactory implements CoordinateOperationFactory {
@@ -149,12 +153,24 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
      *
      * @return The underlying math transform factory.
      */
-    private MathTransformFactory getMathTransformFactory() {
+    final MathTransformFactory getMathTransformFactory() {
         MathTransformFactory factory = mtFactory;
         if (factory == null) {
             mtFactory = factory = DefaultFactories.forBuildin(MathTransformFactory.class);
         }
         return factory;
+    }
+
+    /**
+     * Returns the Apache SIS implementation of math transform factory.
+     * This method is used only when we need SIS-specific methods.
+     */
+    final DefaultMathTransformFactory getDefaultMathTransformFactory() {
+        MathTransformFactory factory = getMathTransformFactory();
+        if (factory instanceof DefaultMathTransformFactory) {
+            return (DefaultMathTransformFactory) factory;
+        }
+        return DefaultFactories.forBuildin(MathTransformFactory.class, DefaultMathTransformFactory.class);
     }
 
     /**
@@ -312,6 +328,39 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
     }
 
     /**
+     * Returns {@code true} if the given CRS are using equivalent (ignoring metadata) datum.
+     * If the CRS are {@link CompoundCRS}, then this method verifies that all datum in the
+     * target CRS exists in the source CRS, but not necessarily in the same order.
+     * The target CRS may have less datum than the source CRS.
+     *
+     * @param sourceCRS The target CRS.
+     * @param targetCRS The source CRS.
+     * @return {@code true} if all datum in the {@code targetCRS} exists in the {@code sourceCRS}.
+     */
+    private static boolean isConversion(final CoordinateReferenceSystem sourceCRS,
+                                        final CoordinateReferenceSystem targetCRS)
+    {
+        List<SingleCRS> components = CRS.getSingleComponents(sourceCRS);
+        int n = components.size();                      // Number of remaining datum from sourceCRS to verify.
+        final Datum[] datum = new Datum[n];
+        for (int i=0; i<n; i++) {
+            datum[i] = components.get(i).getDatum();
+        }
+        components = CRS.getSingleComponents(targetCRS);
+next:   for (int i=components.size(); --i >= 0;) {
+            final Datum d = components.get(i).getDatum();
+            for (int j=n; --j >= 0;) {
+                if (Utilities.equalsIgnoreMetadata(d, datum[j])) {
+                    System.arraycopy(datum, j+1, datum, j, --n - j);  // Remove the datum from the list.
+                    continue next;
+                }
+            }
+            return false;                               // Datum from 'targetCRS' not found in 'sourceCRS'.
+        }
+        return true;
+    }
+
+    /**
      * Creates a transformation or conversion from the given properties.
      * This method infers by itself if the operation to create is a
      * {@link Transformation}, a {@link Conversion} or a {@link Projection} sub-type
@@ -399,7 +448,7 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
         }
         if (method instanceof DefaultOperationMethod) {
             final Class<? extends SingleOperation> c = ((DefaultOperationMethod) method).getOperationType();
-            if (c != null) {  // Paranoiac check (above method should not return null).
+            if (c != null) {                        // Paranoiac check (above method should not return null).
                 if (baseType.isAssignableFrom(c)) {
                     baseType = c;
                 } else if (!c.isAssignableFrom(baseType)) {
@@ -422,7 +471,7 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
          * could be different, which we want to allow.
          */
         if (baseType == SingleOperation.class) {
-            if (OperationPathFinder.isConversion(sourceCRS, targetCRS)) {
+            if (isConversion(sourceCRS, targetCRS)) {
                 if (interpolationCRS == null && sourceCRS instanceof GeographicCRS
                                              && targetCRS instanceof ProjectedCRS)
                 {
@@ -471,7 +520,7 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
             op = new AbstractSingleOperation(properties, sourceCRS, targetCRS, interpolationCRS, method, transform);
         }
         if (!baseType.isInstance(op)) {
-            throw new FactoryException(Errors.format(Errors.Keys.CanNotInstantiate_1, baseType));
+            throw new FactoryException(Errors.format(Errors.Keys.CanNotCreateObjectAsInstanceOf_2, baseType, op.getName()));
         }
         return pool.unique(op);
     }
@@ -526,29 +575,16 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
     }
 
     /**
-     * Not yet implemented.
+     * Finds or creates an operation for conversion or transformation between two coordinate reference systems.
+     * If an operation exists, it is returned. If more than one operation exists, the operation having the widest
+     * domain of validity is returned. If no operation exists, then an exception is thrown.
      *
-     * @param  sourceCRS Input coordinate reference system.
-     * @param  targetCRS Output coordinate reference system.
-     * @param  method the algorithmic method for conversion or transformation.
-     * @return A coordinate operation from {@code sourceCRS} to {@code targetCRS}.
-     * @throws FactoryException if the operation creation failed.
-     */
-    @Override
-    public CoordinateOperation createOperation(final CoordinateReferenceSystem sourceCRS,
-                                               final CoordinateReferenceSystem targetCRS,
-                                               final OperationMethod method)
-            throws FactoryException
-    {
-        return delegate().createOperation(sourceCRS, targetCRS, method);
-    }
-
-    /**
-     * Not yet implemented.
+     * <p>The default implementation delegates to <code>{@linkplain #createOperation(CoordinateReferenceSystem,
+     * CoordinateReferenceSystem, CoordinateOperationContext) createOperation}(sourceCRS, targetCRS, null)}</code>.</p>
      *
-     * @param  sourceCRS Input coordinate reference system.
-     * @param  targetCRS Output coordinate reference system.
-     * @return A coordinate operation from {@code sourceCRS} to {@code targetCRS}.
+     * @param  sourceCRS  input coordinate reference system.
+     * @param  targetCRS  output coordinate reference system.
+     * @return a coordinate operation from {@code sourceCRS} to {@code targetCRS}.
      * @throws OperationNotFoundException if no operation path was found from {@code sourceCRS} to {@code targetCRS}.
      * @throws FactoryException if the operation creation failed for some other reason.
      */
@@ -557,26 +593,69 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
                                                final CoordinateReferenceSystem targetCRS)
             throws OperationNotFoundException, FactoryException
     {
-        return delegate().createOperation(sourceCRS, targetCRS);
+        return createOperation(sourceCRS, targetCRS, (CoordinateOperationContext) null);
     }
 
     /**
-     * Temporarily returns a third-party factory for operation not yet implemented by this class.
-     * This method will be removed when the missing implementation will have been ported to SIS.
+     * Finds or creates an operation for conversion or transformation between two coordinate reference systems.
+     * If an operation exists, it is returned. If more than one operation exists, then the operation having the
+     * widest intersection between its {@linkplain AbstractCoordinateOperation#getDomainOfValidity() domain of
+     * validity} and the {@linkplain CoordinateOperationContext#getAreaOfInterest() area of interest} is returned.
+     *
+     * <p>The default implementation is as below:</p>
+     *
+     * {@preformat java
+     *   return new CoordinateOperationInference(this, context).createOperation(sourceCRS, targetCRS);
+     * }
+     *
+     * Subclasses can override this method if they need, for example, to use a custom
+     * {@link CoordinateOperationInference} implementation.
+     *
+     * @param  sourceCRS  input coordinate reference system.
+     * @param  targetCRS  output coordinate reference system.
+     * @param  context    area of interest and desired accuracy, or {@code null}.
+     * @return a coordinate operation from {@code sourceCRS} to {@code targetCRS}.
+     * @throws OperationNotFoundException if no operation path was found from {@code sourceCRS} to {@code targetCRS}.
+     * @throws FactoryException if the operation creation failed for some other reason.
+     *
+     * @see CoordinateOperationInference
+     *
+     * @since 0.7
      */
-    private synchronized CoordinateOperationFactory delegate() throws FactoryException {
-        if (delegate != null) {
-            return delegate;
-        }
-        for (final CoordinateOperationFactory factory : java.util.ServiceLoader.load(CoordinateOperationFactory.class)) {
-            if (!Utilities.isSIS(factory.getClass())) {
-                delegate = factory;
-                return factory;
-            }
-        }
-        throw new FactoryException(Errors.format(Errors.Keys.MissingRequiredModule_1, "geotk-referencing")); // This is temporary.
+    public CoordinateOperation createOperation(final CoordinateReferenceSystem sourceCRS,
+                                               final CoordinateReferenceSystem targetCRS,
+                                               final CoordinateOperationContext context)
+            throws OperationNotFoundException, FactoryException
+    {
+        return new CoordinateOperationInference(this, context).createOperation(sourceCRS, targetCRS);
     }
 
-    /** Temporary, to be deleted in a future SIS version. */
-    private transient CoordinateOperationFactory delegate;
+    /**
+     * Returns an operation using a particular method for conversion or transformation between
+     * two coordinate reference systems. If an operation exists using the given method, then it
+     * is returned. If no operation using the given method is found, then the implementation has
+     * the option of inferring the operation from the argument objects.
+     *
+     * <p>Current implementation ignores the {@code method} argument.
+     * This behavior may change in a future Apache SIS version.</p>
+     *
+     * @param  sourceCRS  input coordinate reference system.
+     * @param  targetCRS  output coordinate reference system.
+     * @param  method     the algorithmic method for conversion or transformation.
+     * @return a coordinate operation from {@code sourceCRS} to {@code targetCRS}.
+     * @throws OperationNotFoundException if no operation path was found from {@code sourceCRS} to {@code targetCRS}.
+     * @throws FactoryException if the operation creation failed for some other reason.
+     *
+     * @deprecated Replaced by {@link #createOperation(CoordinateReferenceSystem, CoordinateReferenceSystem, CoordinateOperationContext)}.
+     */
+    @Override
+    @Deprecated
+    public CoordinateOperation createOperation(final CoordinateReferenceSystem sourceCRS,
+                                               final CoordinateReferenceSystem targetCRS,
+                                               final OperationMethod method)
+            throws FactoryException
+    {
+        ArgumentChecks.ensureNonNull("method", method);     // As a matter of principle.
+        return createOperation(sourceCRS, targetCRS, (CoordinateOperationContext) null);
+    }
 }

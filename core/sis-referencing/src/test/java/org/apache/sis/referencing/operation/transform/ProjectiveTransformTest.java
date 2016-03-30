@@ -22,6 +22,7 @@ import org.opengis.referencing.operation.MathTransform1D;
 import org.opengis.referencing.operation.MathTransform2D;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.apache.sis.referencing.operation.matrix.Matrices;
+import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.internal.referencing.provider.Affine;
 import org.apache.sis.parameter.Parameterized;
 
@@ -172,6 +173,35 @@ public strictfp class ProjectiveTransformTest extends TransformTestCase {
     @Test
     @Ignore(MESSAGE)
     public void testDimensionReduction() throws FactoryException, TransformException {
+    }
+
+    /**
+     * Tests {@link ProjectiveTransform#optimize()}. In particular this method verifies that a non-square matrix
+     * that looks like diagonal is not confused with a real diagonal matrix.
+     *
+     * @throws TransformException if a coordinate conversion failed.
+     *
+     * @since 0.7
+     */
+    @Test
+    public void testOptimize() throws TransformException {
+        matrix = Matrices.create(5, 4, new double[] {
+            2, 0, 0, 0,
+            0, 3, 0, 0,
+            0, 0, 4, 0,
+            0, 0, 0, 5,
+            0, 0, 0, 1
+        });
+        transform = new ProjectiveTransform(matrix).optimize();
+        assertInstanceOf("Non-diagonal matrix shall not be handled by ScaleTransform.", ProjectiveTransform.class, transform);
+        verifyConsistency(new float[] {1, 2, 3,   -3, -2, -1});
+        /*
+         * Remove the "problematic" row. The new transform should now be optimizable.
+         */
+        matrix = ((MatrixSIS) matrix).removeRows(3, 4);
+        transform = new ProjectiveTransform(matrix).optimize();
+        assertInstanceOf("Diagonal matrix should be handled by a specialized class.", ScaleTransform.class, transform);
+        verifyConsistency(new float[] {1, 2, 3,   -3, -2, -1});
     }
 
     /**

@@ -121,7 +121,7 @@ public final class Legacy implements AxisFilter {
     // -----------------------------------------------------------------
 
     /**
-     * The value to be returned by {@link #getUnitReplacement(Unit)},
+     * The value to be returned by {@link #getUnitReplacement(CoordinateSystemAxis, Unit)},
      * or {@code null} if no replacement should be done.
      */
     private final Unit<?> replacement;
@@ -133,14 +133,21 @@ public final class Legacy implements AxisFilter {
         replacement = unit;
     }
 
+    @Override
+    @Deprecated
+    public Unit<?> getUnitReplacement(Unit<?> unit) {
+        return getUnitReplacement(null, unit);
+    }
+
     /**
      * For internal usage by {@link #replaceUnit(CartesianCS, Unit)} only.
      *
+     * @param  axis ignored.
      * @param  unit ignored.
      * @return The unit of the new coordinate system.
      */
     @Override
-    public Unit<?> getUnitReplacement(final Unit<?> unit) {
+    public Unit<?> getUnitReplacement(CoordinateSystemAxis axis, final Unit<?> unit) {
         return replacement;
     }
 
@@ -156,7 +163,16 @@ public final class Legacy implements AxisFilter {
      * Returns the given direction unchanged.
      */
     @Override
+    @Deprecated
     public AxisDirection getDirectionReplacement(final AxisDirection direction) {
+        return direction;
+    }
+
+    /**
+     * Returns the given direction unchanged.
+     */
+    @Override
+    public AxisDirection getDirectionReplacement(CoordinateSystemAxis axis, final AxisDirection direction) {
         return direction;
     }
 }

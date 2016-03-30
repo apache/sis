@@ -26,6 +26,8 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.lang.reflect.Constructor;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.io.Serializable;
 import javax.measure.quantity.Length;
 import javax.measure.unit.SI;
@@ -451,12 +453,17 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      * {@link DefaultMathTransformFactory} uses this information for:
      *
      * <ul>
-     *   <li>Complete some parameters if they were not provided. In particular, the {@linkplain #getSourceEllipsoid()
+     *   <li>Completing some parameters if they were not provided. In particular, the {@linkplain #getSourceEllipsoid()
      *       source ellipsoid} can be used for providing values for the {@code "semi_major"} and {@code "semi_minor"}
      *       parameters in map projections.</li>
-     *   <li>{@linkplain CoordinateSystems#swapAndScaleAxes Swap and scale axes} if the source or the target
+     *   <li>{@linkplain CoordinateSystems#swapAndScaleAxes Swapping and scaling axes} if the source or the target
      *       coordinate systems are not {@linkplain AxesConvention#NORMALIZED normalized}.</li>
      * </ul>
+     *
+     * By default this class does <strong>not</strong> handle change of
+     * {@linkplain org.apache.sis.referencing.datum.DefaultGeodeticDatum#getPrimeMeridian() prime meridian}
+     * or anything else related to datum. Datum changes have dedicated {@link OperationMethod},
+     * for example <cite>"Longitude rotation"</cite> (EPSG:9601) for changing the prime meridian.
      *
      * @author  Martin Desruisseaux (Geomatys)
      * @version 0.7
@@ -503,17 +510,6 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
         }
 
         /**
-         * Sets the source ellipsoid to the given value.
-         * The source coordinate system is unconditionally set to {@code null}.
-         *
-         * @param ellipsoid The ellipsoid to set as the source (can be {@code null}).
-         */
-        public void setSource(final Ellipsoid ellipsoid) {
-            sourceEllipsoid = ellipsoid;
-            sourceCS = null;
-        }
-
-        /**
          * Sets the source coordinate system to the given value.
          * The source ellipsoid is unconditionally set to {@code null}.
          *
@@ -525,26 +521,23 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
         }
 
         /**
-         * Sets the source ellipsoid and coordinate system to values inferred from the given CRS.
-         * The source ellipsoid will be non-null only if the given CRS is geographic (not geocentric).
+         * Sets the source coordinate system and its associated ellipsoid to the given value.
          *
-         * @param crs The source coordinate reference system (can be {@code null}).
-         */
-        public void setSource(final CoordinateReferenceSystem crs) {
-            sourceCS = (crs != null) ? crs.getCoordinateSystem() : null;
-            sourceEllipsoid = ReferencingUtilities.getEllipsoidOfGeographicCRS(crs);
-            // Ellipsoid is intentionally null for GeocentricCRS.
-        }
-
-        /**
-         * Sets the target ellipsoid to the given value.
-         * The target coordinate system is unconditionally set to {@code null}.
+         * <div class="note"><b>Design note:</b>
+         * ellipsoidal coordinate systems and ellipsoids are associated indirectly, through a geodetic CRS.
+         * However this method expects those two components to be given explicitely instead than inferring
+         * them from a {@code CoordinateReferenceSystem} for making clear that {@code MathTransformFactory}
+         * does not perform any {@linkplain org.apache.sis.referencing.datum.DefaultGeodeticDatum geodetic
+         * datum} analysis. For coordinate operations that take datum changes in account (including change
+         * of prime meridian), see {@link org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory}.
+         * This policy helps to enforce a separation of concerns.</div>
          *
-         * @param ellipsoid The ellipsoid to set as the target (can be {@code null}).
+         * @param cs The coordinate system to set as the source, or {@code null}.
+         * @param ellipsoid The ellipsoid associated to the given coordinate system, or {@code null}.
          */
-        public void setTarget(final Ellipsoid ellipsoid) {
-            targetEllipsoid = ellipsoid;
-            targetCS = null;
+        public void setSource(final EllipsoidalCS cs, final Ellipsoid ellipsoid) {
+            sourceCS = cs;
+            sourceEllipsoid = ellipsoid;
         }
 
         /**
@@ -559,15 +552,17 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
         }
 
         /**
-         * Sets the target ellipsoid and coordinate system to values inferred from the given CRS.
-         * The target ellipsoid will be non-null only if the given CRS is geographic (not geocentric).
+         * Sets the target coordinate system and its associated ellipsoid to the given value.
          *
-         * @param crs The target coordinate reference system (can be {@code null}).
+         * <div class="note"><b>Design note:</b>
+         * see {@link #setSource(EllipsoidalCS, Ellipsoid)}.</div>
+         *
+         * @param cs The coordinate system to set as the source, or {@code null}.
+         * @param ellipsoid The ellipsoid associated to the given coordinate system, or {@code null}.
          */
-        public void setTarget(final CoordinateReferenceSystem crs) {
-            targetCS = (crs != null) ? crs.getCoordinateSystem() : null;
-            targetEllipsoid = ReferencingUtilities.getEllipsoidOfGeographicCRS(crs);
-            // Ellipsoid is intentionally null for GeocentricCRS.
+        public void setTarget(final EllipsoidalCS cs, final Ellipsoid ellipsoid) {
+            targetCS = cs;
+            targetEllipsoid = ellipsoid;
         }
 
         /**
@@ -606,6 +601,68 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
          */
         public Ellipsoid getTargetEllipsoid() {
             return targetEllipsoid;
+        }
+
+        /**
+         * Returns the matrix that represent the affine transform to concatenate before or after
+         * the parameterized transform. The {@code role} argument specifies which matrix is desired:
+         *
+         * <ul class="verbose">
+         *   <li>{@link org.apache.sis.referencing.operation.transform.ContextualParameters.MatrixRole#NORMALIZATION
+         *       NORMALIZATION} for the conversion from the {@linkplain #getSourceCS() source coordinate system} to
+         *       a {@linkplain AxesConvention#NORMALIZED normalized} coordinate system, usually with
+         *       (<var>longitude</var>, <var>latitude</var>) axis order in degrees or
+         *       (<var>easting</var>, <var>northing</var>) in metres.
+         *       This normalization needs to be applied <em>before</em> the parameterized transform.</li>
+         *
+         *   <li>{@link org.apache.sis.referencing.operation.transform.ContextualParameters.MatrixRole#DENORMALIZATION
+         *       DENORMALIZATION} for the conversion from a normalized coordinate system to the
+         *       {@linkplain #getTargetCS() target coordinate system}, for example with
+         *       (<var>latitude</var>, <var>longitude</var>) axis order.
+         *       This denormalization needs to be applied <em>after</em> the parameterized transform.</li>
+         *
+         *   <li>{@link org.apache.sis.referencing.operation.transform.ContextualParameters.MatrixRole#INVERSE_NORMALIZATION INVERSE_NORMALIZATION} and
+         *       {@link org.apache.sis.referencing.operation.transform.ContextualParameters.MatrixRole#INVERSE_DENORMALIZATION INVERSE_DENORMALIZATION}
+         *       are also supported but rarely used.</li>
+         * </ul>
+         *
+         * This method is invoked by {@link DefaultMathTransformFactory#swapAndScaleAxes(MathTransform, Context)}.
+         * Users an override this method if they need to customize the normalization process.
+         *
+         * @param  role Whether the normalization or denormalization matrix is desired.
+         * @return The requested matrix, or {@code null} if this {@code Context} has no information about the coordinate system.
+         * @throws FactoryException if an error occurred while computing the matrix.
+         *
+         * @see DefaultMathTransformFactory#createAffineTransform(Matrix)
+         * @see DefaultMathTransformFactory#createParameterizedTransform(ParameterValueGroup, Context)
+         */
+        @SuppressWarnings("fallthrough")
+        public Matrix getMatrix(final ContextualParameters.MatrixRole role) throws FactoryException {
+            final CoordinateSystem specified;
+            boolean inverse = false;
+            switch (role) {
+                default: throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalArgumentValue_2, "role", role));
+                case INVERSE_NORMALIZATION:   inverse   = true;          // Fall through
+                case NORMALIZATION:           specified = getSourceCS(); break;
+                case INVERSE_DENORMALIZATION: inverse   = true;          // Fall through
+                case DENORMALIZATION:         inverse   = !inverse;
+                                              specified = getTargetCS(); break;
+            }
+            if (specified == null) {
+                return null;
+            }
+            final CoordinateSystem normalized = CoordinateSystems.replaceAxes(specified, AxesConvention.NORMALIZED);
+            try {
+                if (inverse) {
+                    return CoordinateSystems.swapAndScaleAxes(normalized, specified);
+                } else {
+                    return CoordinateSystems.swapAndScaleAxes(specified, normalized);
+                }
+            } catch (IllegalArgumentException cause) {
+                throw new InvalidGeodeticParameterException(cause.getLocalizedMessage(), cause);
+            } catch (ConversionException cause) {
+                throw new InvalidGeodeticParameterException(cause.getLocalizedMessage(), cause);
+            }
         }
 
         /**
@@ -968,7 +1025,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
 
     /**
      * Given a transform between normalized spaces,
-     * create a transform taking in account axis directions and units of measurement.
+     * creates a transform taking in account axis directions, units of measurement and longitude rotation.
      * This method {@linkplain #createConcatenatedTransform concatenates} the given parameterized transform
      * with any other transform required for performing units changes and ordinates swapping.
      *
@@ -984,6 +1041,10 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      * both of them with ({@linkplain org.opengis.referencing.cs.AxisDirection#EAST East},
      * {@linkplain org.opengis.referencing.cs.AxisDirection#NORTH North}) axis orientations.</div>
      *
+     * <div class="section">Controlling the normalization process</div>
+     * Users who need a different normalized space than the default one way find more convenient to
+     * override the {@link Context#getMatrix Context.getMatrix(ContextualParameters.MatrixRole)} method.
+     *
      * @param  parameterized A transform for normalized input and output coordinates.
      * @param  context Source and target coordinate systems in which the transform is going to be used.
      * @return A transform taking in account unit conversions and axis swapping.
@@ -991,27 +1052,20 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      *
      * @see org.apache.sis.referencing.cs.AxesConvention#NORMALIZED
      * @see org.apache.sis.referencing.operation.DefaultConversion#DefaultConversion(Map, OperationMethod, MathTransform, ParameterValueGroup)
+     *
+     * @since 0.7
      */
     public MathTransform swapAndScaleAxes(final MathTransform parameterized, final Context context) throws FactoryException {
         ArgumentChecks.ensureNonNull("parameterized", parameterized);
         ArgumentChecks.ensureNonNull("context", context);
-        final CoordinateSystem sourceCS = context.getSourceCS();
-        final CoordinateSystem targetCS = context.getTargetCS();
         /*
          * Computes matrix for swapping axis and performing units conversion.
          * There is one matrix to apply before projection on (longitude,latitude)
          * coordinates, and one matrix to apply after projection on (easting,northing)
          * coordinates.
          */
-        final Matrix swap1, swap3;
-        try {
-            swap1 = (sourceCS != null) ? CoordinateSystems.swapAndScaleAxes(sourceCS, CoordinateSystems.replaceAxes(sourceCS, AxesConvention.NORMALIZED)) : null;
-            swap3 = (targetCS != null) ? CoordinateSystems.swapAndScaleAxes(CoordinateSystems.replaceAxes(targetCS, AxesConvention.NORMALIZED), targetCS) : null;
-        } catch (IllegalArgumentException cause) {
-            throw new InvalidGeodeticParameterException(cause.getLocalizedMessage(), cause);
-        } catch (ConversionException cause) {
-            throw new FactoryException(cause);
-        }
+        final Matrix swap1 = context.getMatrix(ContextualParameters.MatrixRole.NORMALIZATION);
+        final Matrix swap3 = context.getMatrix(ContextualParameters.MatrixRole.DENORMALIZATION);
         /*
          * Prepares the concatenation of the matrices computed above and the projection.
          * Note that at this stage, the dimensions between each step may not be compatible.
@@ -1091,8 +1145,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
         ArgumentChecks.ensureNonNull("baseCRS",    baseCRS);
         ArgumentChecks.ensureNonNull("parameters", parameters);
         ArgumentChecks.ensureNonNull("derivedCS",  derivedCS);
-        final Context context = new Context();
-        context.setSource(baseCRS);
+        final Context context = ReferencingUtilities.createTransformContext(baseCRS, null, null);
         context.setTarget(derivedCS);
         return createParameterizedTransform(parameters, context);
     }
@@ -1127,6 +1180,25 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
     }
 
     /**
+     * Creates a math transform that represent a change of coordinate system.
+     *
+     * @param source the source coordinate system.
+     * @param target the target coordinate system.
+     * @return a conversion from the given source to the given target coordinate system.
+     * @throws FactoryException if the conversion can not be created.
+     *
+     * @since 0.7
+     */
+    public MathTransform createCoordinateSystemChange(final CoordinateSystem source, final CoordinateSystem target)
+            throws FactoryException
+    {
+        ArgumentChecks.ensureNonNull("source", source);
+        ArgumentChecks.ensureNonNull("target", target);
+        return CoordinateSystemTransform.create(this, source, target);
+        // No need to use unique(…) here.
+    }
+
+    /**
      * Creates an affine transform from a matrix. If the transform input dimension is {@code M},
      * and output dimension is {@code N}, then the matrix will have size {@code [N+1][M+1]}. The
      * +1 in the matrix dimensions allows the matrix to do a shift, as well as a rotation. The
@@ -1142,7 +1214,11 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      */
     @Override
     public MathTransform createAffineTransform(final Matrix matrix) throws FactoryException {
-        lastMethod.remove(); // To be strict, we should set the ProjectiveTransform provider.
+        /*
+         * Performance note: we could set lastMethod to the "Affine" operation method provider, but we do not
+         * because setting this value is not free (e.g. it depends on matrix size) and it is rarely needed.
+         */
+        lastMethod.remove();
         return unique(MathTransforms.linear(matrix));
     }
 
@@ -1237,7 +1313,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      *
      * @param  text Math transform encoded in Well-Known Text format.
      * @return The math transform (never {@code null}).
-     * @throws FactoryException if the Well-Known Text can't be parsed,
+     * @throws FactoryException if the Well-Known Text can not be parsed,
      *         or if the math transform creation failed from some other reason.
      */
     @Override
@@ -1249,7 +1325,13 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
             if (c == null) {
                 c = Class.forName("org.apache.sis.io.wkt.MathTransformParser").asSubclass(Parser.class)
                          .getConstructor(MathTransformFactory.class);
-                c.setAccessible(true);
+                final Constructor<?> cp = c;     // For allowing use in inner class or lambda expression.
+                AccessController.doPrivileged(new PrivilegedAction<Void>() {
+                    @Override public Void run() {
+                        cp.setAccessible(true);
+                        return null;
+                    }
+                });
                 parserConstructor = c;
             }
             p = c.newInstance(this);

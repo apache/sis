@@ -251,6 +251,8 @@ public abstract class AbstractMathTransform extends FormattableObject
      *   <li>Delegates to the {@link #transform(double[], int, double[], int, boolean)} method.</li>
      * </ul>
      *
+     * This method does not update the associated {@link org.opengis.referencing.crs.CoordinateReferenceSystem} value.
+     *
      * @param  ptSrc the coordinate point to be transformed.
      * @param  ptDst the coordinate point that stores the result of transforming {@code ptSrc}, or {@code null}.
      * @return the coordinate point after transforming {@code ptSrc} and storing the result in {@code ptDst},

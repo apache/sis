@@ -91,6 +91,10 @@ public final class IdentifiedObjects extends Static {
      *       <td>{@link CoordinateOperation#getOperationVersion()}</td></tr>
      *   <tr><td>{@value org.opengis.referencing.operation.CoordinateOperation#COORDINATE_OPERATION_ACCURACY_KEY}</td>
      *       <td>{@link CoordinateOperation#getCoordinateOperationAccuracy()}</td></tr>
+     *   <tr><td>{@value org.opengis.referencing.operation.OperationMethod#FORMULA_KEY}</td>
+     *       <td>{@link org.opengis.referencing.operation.OperationMethod#getFormula()}</td></tr>
+     *   <tr><td>{@value org.apache.sis.referencing.AbstractIdentifiedObject#DEPRECATED_KEY}</td>
+     *       <td>{@link AbstractIdentifiedObject#isDeprecated()}</td></tr>
      * </table>
      *
      * <div class="note"><b>Note:</b>

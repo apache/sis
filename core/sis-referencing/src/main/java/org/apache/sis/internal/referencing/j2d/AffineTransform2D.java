@@ -312,7 +312,7 @@ public class AffineTransform2D extends ImmutableAffineTransform
                     final AffineTransform2D work = new AffineTransform2D(
                             ((ExtendedPrecisionMatrix) Matrices.inverse(matrix)).getExtendedElements());
                     work.inverse = this;
-                    inverse = work; // Set only on success.
+                    inverse = work;                 // Set only on success.
                 }
             }
         }
@@ -332,7 +332,7 @@ public class AffineTransform2D extends ImmutableAffineTransform
      */
     @Override
     public boolean equals(final Object object, final ComparisonMode mode) {
-        if (object == this) { // Slight optimization
+        if (object == this) {                       // Slight optimization
             return true;
         }
         if (mode == ComparisonMode.STRICT) {

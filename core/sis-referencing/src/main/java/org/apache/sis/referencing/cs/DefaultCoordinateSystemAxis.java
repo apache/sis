@@ -323,7 +323,7 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
                 } else if (dir.equals(AxisDirection.EAST)) {
                     min = fromDegrees.convert(Longitude.MIN_VALUE);
                     max = fromDegrees.convert(Longitude.MAX_VALUE);
-                    rm  = RangeMeaning.WRAPAROUND; // 180°E wraps to 180°W
+                    rm  = RangeMeaning.WRAPAROUND;                                  // 180°E wraps to 180°W
                 }
                 if (min > max) {
                     final double t = min;
@@ -697,10 +697,10 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
      */
     private static CoordinateSystem getEnclosingCS(final Formatter formatter) {
         final FormattableObject e = formatter.getEnclosingElement(1);
-        if (e instanceof CoordinateReferenceSystem) {   // This is what we expect in standard WKT.
+        if (e instanceof CoordinateReferenceSystem) {           // This is what we expect in standard WKT.
             return ((CoordinateReferenceSystem) e).getCoordinateSystem();
         }
-        if (e instanceof CoordinateSystem) {    // Not standard WKT, but conceptually the right thing.
+        if (e instanceof CoordinateSystem) {                    // Not standard WKT, but conceptually the right thing.
             return (CoordinateSystem) e;
         }
         return null;

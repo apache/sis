@@ -225,14 +225,14 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
          * ignoring null java.lang.Integer instances.  We do not specify whether the method
          * dimensions should include the interpolation dimensions or not, so we accept both.
          */
-        int isTarget = 0;   // 0 == false: the wrong dimension is the source one.
+        int isTarget = 0;               // 0 == false: the wrong dimension is the source one.
         if (expected == null || (actual == expected) || (actual == expected + interpDim)) {
             actual = transform.getTargetDimensions();
             expected = method.getTargetDimensions();
             if (expected == null || (actual == expected) || (actual == expected + interpDim)) {
                 return;
             }
-            isTarget = 1;   // 1 == true: the wrong dimension is the target one.
+            isTarget = 1;               // 1 == true: the wrong dimension is the target one.
         }
         /*
          * At least one dimension does not match.  In principle this is an error, but we make an exception for the

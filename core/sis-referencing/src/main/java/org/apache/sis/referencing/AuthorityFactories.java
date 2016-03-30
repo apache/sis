@@ -110,7 +110,7 @@ final class AuthorityFactories<T extends AuthorityFactory> extends LazySet<T> {
             if (factory == null) try {
                 factory = new EPSGFactory(null);
             } catch (FactoryException e) {
-                log(Level.CONFIG, e);
+                log(e, false);
                 factory = EPSGFactoryFallback.INSTANCE;
             }
             EPSG[0] = factory;
@@ -137,37 +137,42 @@ final class AuthorityFactories<T extends AuthorityFactory> extends LazySet<T> {
                 EPSG[0] = factory;
             }
         }
-        log(Level.WARNING, e);
+        log(e, true);
         return factory;
     }
 
     /**
      * Notifies that a factory is unavailable, but without giving a fallback and without logging.
      * The caller is responsible for logging a warning and to provide its own fallback.
+     *
+     * @return {@code true} on success, or {@code false} if this method did nothing.
      */
-    static void failure(final UnavailableFactoryException e) {
+    static boolean failure(final UnavailableFactoryException e) {
         if (!(e.getCause() instanceof SQLTransientException)) {
             final AuthorityFactory unavailable = e.getUnavailableFactory();
             synchronized (EPSG) {
                 if (unavailable == EPSG[0]) {
                     ALL.reload();
                     EPSG[0] = EPSGFactoryFallback.INSTANCE;
+                    return true;
                 }
             }
         }
+        return false;
     }
 
     /**
      * Logs the given exception at the given level. This method pretends that the logging come from
      * {@link CRS#getAuthorityFactory(String)}, which is the public facade for {@link #EPSG()}.
      */
-    private static void log(final Level level, final Exception e) {
+    private static void log(final Exception e, final boolean isWarning) {
         String message = e.getLocalizedMessage();
         if (message == null) {
             message = e.toString();
         }
-        final LogRecord record = new LogRecord(level, message);
+        final LogRecord record = new LogRecord(isWarning ? Level.WARNING : Level.CONFIG, message);
         record.setLoggerName(Loggers.CRS_FACTORY);
+        if (isWarning) record.setThrown(e);
         Logging.log(CRS.class, "getAuthorityFactory", record);
     }
 

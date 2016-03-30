@@ -19,6 +19,8 @@ package org.apache.sis.referencing.factory.sql;
 import java.util.Set;
 import java.util.Locale;
 import java.util.Collections;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import java.sql.Connection;
 import java.io.BufferedReader;
 import java.io.LineNumberReader;
@@ -28,14 +30,17 @@ import java.io.IOException;
 import java.io.FileNotFoundException;
 import java.nio.charset.Charset;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.setup.InstallationResources;
 import org.apache.sis.internal.system.DataDirectory;
+import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.util.Constants;
 
 // Branch-dependent imports
 import org.apache.sis.internal.jdk7.StandardCharsets;
+import org.apache.sis.internal.jdk7.DirectoryStream;
 import org.apache.sis.internal.jdk7.Files;
 import org.apache.sis.internal.jdk7.Path;
 
@@ -261,17 +266,27 @@ public abstract class InstallationScriptProvider extends InstallationResources {
      */
     protected abstract InputStream openStream(final String name) throws IOException;
 
+    /**
+     * Logs the given record. This method pretend that the record has been logged by
+     * {@code EPSGFactory.install(…)} because it is the public API using this class.
+     */
+    static void log(final LogRecord record) {
+        record.setLoggerName(Loggers.CRS_FACTORY);
+        Logging.log(EPSGFactory.class, "install", record);
+    }
+
 
 
 
     /**
      * The default implementation which use the scripts in the {@code $SIS_DATA/Databases/ExternalSources}
-     * directory, if present. This class expects the files to have those exact names:
+     * directory, if present. This class expects the files to have those exact names where {@code *} stands
+     * for any characters provided that there is no ambiguity:
      *
      * <ul>
-     *   <li>{@code EPSG_Tables.sql}</li>
-     *   <li>{@code EPSG_Data.sql}</li>
-     *   <li>{@code EPSG_FKeys.sql}</li>
+     *   <li>{@code EPSG_*Tables.sql}</li>
+     *   <li>{@code EPSG_*Data.sql}</li>
+     *   <li>{@code EPSG_*FKeys.sql}</li>
      * </ul>
      *
      * @author  Martin Desruisseaux (Geomatys)
@@ -283,27 +298,61 @@ public abstract class InstallationScriptProvider extends InstallationResources {
         /**
          * The directory containing the scripts, or {@code null} if it does not exist.
          */
-        private final Path directory;
+        private Path directory;
+
+        /**
+         * Index of the first real file in the array given to the constructor.
+         * We set the value to 1 for skipping the {@code PREPARE} pseudo-file.
+         */
+        private static final int FIRST_FILE = 1;
 
         /**
          * Creates a default provider.
          */
-        Default() {
+        Default(final Locale locale) throws IOException {
             super(Constants.EPSG,
                     PREPARE,
-                    "EPSG_Tables.sql",
-                    "EPSG_Data.sql",
-                    "EPSG_FKeys.sql",
+                    "Tables",
+                    "Data",
+                    "FKeys",
                     FINISH);
 
             Path dir = DataDirectory.DATABASES.getDirectory();
             if (dir != null) {
                 dir = dir.resolve("ExternalSources");
-                if (!Files.isRegularFile(dir.resolve("EPSG_Tables.sql"))) {
-                    dir = null;
+                if (Files.isDirectory(dir)) {
+                    final String[] resources = super.resources;
+                    final String[] found = new String[resources.length - FIRST_FILE - 1];
+                    DirectoryStream stream = Files.newDirectoryStream(dir, "EPSG_*.sql");
+                    try {
+                        for (final Path path : stream) {
+                            final String name = path.getFileName().toString();
+                            for (int i=0; i<found.length; i++) {
+                                final String part = resources[FIRST_FILE + i];
+                                if (name.contains(part)) {
+                                    if (found[i] != null) {
+                                        log(Errors.getResources(locale)
+                                                  .getLogRecord(Level.WARNING, Errors.Keys.DuplicatedElement_1, part));
+                                        return;                         // Stop the search because of duplicated file.
+                                    }
+                                    found[i] = name;
+                                }
+                            }
+                        }
+                    } finally {
+                        stream.close();
+                    }
+                    for (int i=0; i<found.length; i++) {
+                        final String file = found[i];
+                        if (file != null) {
+                            resources[FIRST_FILE + i] = file;
+                        } else {
+                            dir = null;
+                        }
+                    }
+                    directory = dir;
                 }
             }
-            directory = dir;
         }
 
         /**
@@ -337,7 +386,7 @@ public abstract class InstallationScriptProvider extends InstallationResources {
          */
         @Override
         protected InputStream openStream(final String name) throws IOException {
-            return Files.newInputStream(directory.resolve(name));
+            return (directory != null) ? Files.newInputStream(directory.resolve(name)) : null;
         }
     }
 }

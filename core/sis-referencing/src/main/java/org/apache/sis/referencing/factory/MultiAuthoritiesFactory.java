@@ -751,7 +751,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
                 if (code == null) {
                     message = Errors.format(Errors.Keys.MissingComponentInElement_2, s, "code");
                 } else {
-                    message = Errors.format(Errors.Keys.CanNotCreateObjectOfType_2, type, uri.type);
+                    message = Errors.format(Errors.Keys.CanNotCreateObjectAsInstanceOf_2, type, uri.type);
                 }
                 throw new NoSuchAuthorityCodeException(message, authority, code, s);
             }

@@ -46,10 +46,11 @@ public final strictfp class ChannelDecoderTest extends DecoderTest {
      * Creates a new decoder for dataset of the given name.
      *
      * @return The decoder for the given name.
-     * @throws IOException If an error occurred while opening the file.
+     * @throws IOException if an I/O error occurred while opening the file.
+     * @throws DataStoreException if a logical error occurred.
      */
     @Override
-    protected Decoder createDecoder(final String name) throws IOException {
+    protected Decoder createDecoder(final String name) throws IOException, DataStoreException {
         return createChannelDecoder(name);
     }
 
@@ -66,18 +67,15 @@ public final strictfp class ChannelDecoderTest extends DecoderTest {
      *
      * @param  name The file name as one of the above-cited constants.
      * @return The decoder for the given name.
-     * @throws IOException If an error occurred while opening the file.
+     * @throws IOException if an I/O error occurred while opening the file.
+     * @throws DataStoreException if a logical error occurred.
      */
-    public static Decoder createChannelDecoder(final String name) throws IOException {
+    public static Decoder createChannelDecoder(final String name) throws IOException, DataStoreException {
         final InputStream in = IOTestCase.class.getResourceAsStream(name);
         assumeNotNull(name, in);
         final ChannelDataInput input = new ChannelDataInput(name,
                 Channels.newChannel(in), ByteBuffer.allocate(4096), false);
-        try {
-            return new ChannelDecoder(LISTENERS, input);
-        } catch (DataStoreException e) {
-            throw new AssertionError(e);
-        }
+        return new ChannelDecoder(LISTENERS, input);
     }
 
     /**

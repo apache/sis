@@ -125,6 +125,18 @@ public final class Files {
     }
 
     /**
+     * Returns an iterable over the content of the given directory.
+     *
+     * @param  dir   The directory.
+     * @param  glob  The pattern to match.
+     * @return Iterable over the given directory.
+     * @throws IOException if an error occurred while creating the iterable.
+     */
+    public static DirectoryStream newDirectoryStream(Path dir, String glob) throws IOException {
+        return new DirectoryStream(dir, glob);
+    }
+
+    /**
      * Creates a new input stream. The input stream is intentionally not buffered;
      * it is caller's responsibility to provide buffering.
      *

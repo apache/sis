@@ -20,6 +20,7 @@ import java.io.IOException;
 import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.internal.netcdf.GridGeometry;
 import org.apache.sis.internal.netcdf.GridGeometryTest;
+import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.test.DependsOn;
 
@@ -40,10 +41,11 @@ public final strictfp class GridGeometryInfoTest extends GridGeometryTest {
      * Creates a new decoder for dataset of the given name.
      *
      * @return The decoder for the given name.
-     * @throws IOException If an error occurred while opening the file.
+     * @throws IOException if an I/O error occurred while opening the file.
+     * @throws DataStoreException if a logical error occurred.
      */
     @Override
-    protected Decoder createDecoder(final String name) throws IOException {
+    protected Decoder createDecoder(final String name) throws IOException, DataStoreException {
         return ChannelDecoderTest.createChannelDecoder(name);
     }
 

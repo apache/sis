@@ -46,6 +46,7 @@ import org.apache.sis.internal.referencing.DirectPositionView;
 import org.apache.sis.internal.referencing.provider.GeocentricToGeographic;
 import org.apache.sis.internal.referencing.provider.GeographicToGeocentric;
 import org.apache.sis.internal.referencing.provider.Geographic3Dto2D;
+import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.parameter.DefaultParameterDescriptorGroup;
 import org.apache.sis.metadata.iso.ImmutableIdentifier;
 import org.apache.sis.referencing.operation.matrix.Matrix3;
@@ -347,6 +348,19 @@ public class EllipsoidToCentricTransform extends AbstractMathTransform implement
             final double semiMajor, final double semiMinor, final Unit<Length> unit,
             final boolean withHeight, final TargetType target) throws FactoryException
     {
+        if (Math.abs(semiMajor - semiMinor) <= semiMajor * (Formulas.LINEAR_TOLERANCE / ReferencingServices.AUTHALIC_RADIUS)) {
+            /*
+             * If semi-major axis length is almost equal to semi-minor axis length, uses spherical equations instead.
+             * We need to add the sphere radius to the elevation before to perform spherical to Cartesian conversion.
+             */
+            final MatrixSIS translate = Matrices.createDiagonal(4, withHeight ? 4 : 3);
+            translate.setElement(2, withHeight ? 3 : 2, semiMajor);
+            if (!withHeight) {
+                translate.setElement(3, 2, 1);
+            }
+            final MathTransform tr = SphericalToCartesian.INSTANCE.completeTransform(factory);
+            return factory.createConcatenatedTransform(factory.createAffineTransform(translate), tr);
+        }
         EllipsoidToCentricTransform tr = new EllipsoidToCentricTransform(semiMajor, semiMinor, unit, withHeight, target);
         return tr.context.completeTransform(factory, tr);
     }
@@ -615,7 +629,7 @@ public class EllipsoidToCentricTransform extends AbstractMathTransform implement
     /*
      * NOTE: we do not bother to override the methods expecting a 'float' array because those methods should
      *       be rarely invoked. Since there is usually LinearTransforms before and after this transform, the
-     *       conversion between float and double will be handle by those LinearTransforms.   If nevertheless
+     *       conversion between float and double will be handled by those LinearTransforms.  If nevertheless
      *       this EllipsoidToCentricTransform is at the beginning or the end of a transformation chain,
      *       the methods inherited from the subclass will work (but may be slightly slower).
      */

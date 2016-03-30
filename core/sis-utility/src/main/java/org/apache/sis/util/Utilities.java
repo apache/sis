@@ -55,7 +55,7 @@ public final class Utilities extends Static {
      *
      *   <li>If the two given objects are
      *       {@linkplain org.apache.sis.referencing.crs.AbstractCRS Coordinate Reference Systems} (CRS), then a call to
-     *       <code>{@linkplain org.apache.sis.referencing.CRS#findOperation findOperation}(crs1, crs2)</code>
+     *       <code>{@linkplain org.apache.sis.referencing.CRS#findOperation findOperation}(crs1, crs2, null)</code>
      *       will return an identity operation.</li>
      * </ul>
      *
@@ -92,7 +92,7 @@ public final class Utilities extends Static {
      *
      *   <li>If the two given objects are
      *       {@linkplain org.apache.sis.referencing.crs.AbstractCRS Coordinate Reference Systems} (CRS), then a call to
-     *       <code>{@linkplain org.apache.sis.referencing.CRS#findOperation findOperation}(crs1, crs2)</code>
+     *       <code>{@linkplain org.apache.sis.referencing.CRS#findOperation findOperation}(crs1, crs2, null)</code>
      *       will return an operation close to identity.</li>
      * </ul>
      *
