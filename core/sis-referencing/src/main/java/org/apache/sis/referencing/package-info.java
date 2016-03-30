@@ -41,16 +41,16 @@
  * a <cite>Universal Transverse Mercator</cite> projection in the zone of the coordinate:
  *
  * {@preformat java
- *   CoordinateReferenceSystem sourceCRS = CommonCRS.WGS84.geographic();
- *   CoordinateReferenceSystem sourceCRS = CommonCRS.WGS84.UTM(20, 30);     // 20°N 30°E   (watchout axis order!)
- *   CoordinateOperation operation = CRS.findOperation(sourceCRS, targetCRS, null);
+ *   GeographicCRS source = CommonCRS.WGS84.geographic();
+ *   ProjectedCRS  target = CommonCRS.WGS84.UTM(20, 30);                        // 20°N 30°E   (watch out axis order!)
+ *   CoordinateOperation operation = CRS.findOperation(source, target, null);
  *   if (CRS.getLinearAccuracy(operation) < 100) {
  *       // If the accuracy is less than 100 metres (or any other threshold at application choice)
  *       // maybe the operation is not suitable. Decide here what to do (throw an exception, etc).
  *   }
  *   MathTransform mt = operation.getMathTransform();
- *   DirectPosition position = new DirectPosition2D(20, 30);                // 20°N 30°E   (watchout axis order!)
- *   position = operation.transform(position, position);
+ *   DirectPosition position = new DirectPosition2D(20, 30);                    // 20°N 30°E   (watch out axis order!)
+ *   position = mt.transform(position, position);
  *   System.out.println(position);
  * }
  *

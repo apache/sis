@@ -176,7 +176,7 @@ public final strictfp class CoordinateOperationInferenceTest extends MathTransfo
                 "GEOGCS[“NAD27”,\n" +
                 "  DATUM[“North American Datum 1927”,\n" +
                 "    SPHEROID[“Clarke 1866”, 6378206.4, 294.9786982138982],\n" +
-                "    TOWGS84[-10, 158, 187]]," +
+                "    TOWGS84[-8, 160, 176]]," +                                     // EPSG:1173
                 "    PRIMEM[“Greenwich”, 0.0]," +
                 "  UNIT[“degree”, 0.017453292519943295],\n" +
                 "  AXIS[“Latitude (φ)”, NORTH],\n" +
@@ -200,8 +200,8 @@ public final strictfp class CoordinateOperationInferenceTest extends MathTransfo
             39,          -85,
             38.26,       -80.58
         }, new double[] {
-            39.00011150, -84.99995603,      // This is NOT the most accurate NAD27 to NAD83 transformation.
-            38.26011883, -80.57981725       // We use non-optimal TOWGS84[…] for the purpose of this test.
+            39.00004480, -84.99993102,      // This is NOT the most accurate NAD27 to WGS84 transformation.
+            38.26005019, -80.57979096       // We use non-optimal TOWGS84[…] for the purpose of this test.
         });
         validate();
     }

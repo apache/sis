@@ -143,7 +143,7 @@ public class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> {
      */
     private CoordinateOperationFactory getCoordinateOperationFactory() {
         if (copFactory == null) {
-            copFactory = DefaultFactories.forBuildin(CoordinateOperationFactory.class);
+            copFactory = CoordinateOperations.factory();
         }
         return copFactory;
     }

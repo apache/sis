@@ -36,12 +36,12 @@ import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
+import org.apache.sis.internal.referencing.CoordinateOperations;
 import org.apache.sis.internal.referencing.PositionalAccuracyConstant;
 import org.apache.sis.internal.referencing.provider.GeographicToGeocentric;
 import org.apache.sis.internal.referencing.provider.GeocentricToGeographic;
 import org.apache.sis.internal.referencing.provider.GeocentricAffine;
 import org.apache.sis.internal.referencing.provider.Affine;
-import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.measure.Units;
 import org.apache.sis.metadata.iso.citation.Citations;
@@ -186,8 +186,8 @@ public class CoordinateOperationInference {
     {
         ArgumentChecks.ensureNonNull("factory", factory);
         this.factory = factory;
-        factorySIS = (factory instanceof DefaultCoordinateOperationFactory) ? (DefaultCoordinateOperationFactory) factory
-                : DefaultFactories.forBuildin(CoordinateOperationFactory.class, DefaultCoordinateOperationFactory.class);
+        factorySIS = (factory instanceof DefaultCoordinateOperationFactory)
+                     ? (DefaultCoordinateOperationFactory) factory : CoordinateOperations.factory();
         if (context != null) {
             areaOfInterest  = context.getAreaOfInterest();
             desiredAccuracy = context.getDesiredAccuracy();
