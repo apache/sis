@@ -20,6 +20,10 @@ import java.util.Arrays;
 import java.text.ParseException;
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterValueGroup;
+import org.opengis.referencing.crs.GeographicCRS;
+import org.opengis.referencing.crs.GeocentricCRS;
+import org.opengis.referencing.crs.VerticalCRS;
+import org.opengis.referencing.crs.TemporalCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.SingleOperation;
@@ -27,6 +31,9 @@ import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.Projection;
 import org.opengis.referencing.operation.Transformation;
 import org.opengis.referencing.operation.TransformException;
+import org.opengis.referencing.operation.OperationNotFoundException;
+import org.apache.sis.referencing.operation.transform.LinearTransform;
+import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.io.wkt.WKTFormat;
 
@@ -142,6 +149,8 @@ public final strictfp class CoordinateOperationInferenceTest extends MathTransfo
         testIdentityTransform(CommonCRS.WGS84.geocentric());
         testIdentityTransform(CommonCRS.WGS84.spherical());
         testIdentityTransform(CommonCRS.WGS84.UTM(0, 0));
+        testIdentityTransform(CommonCRS.Vertical.DEPTH.crs());
+        testIdentityTransform(CommonCRS.Temporal.JULIAN.crs());
     }
 
     /**
@@ -183,7 +192,7 @@ public final strictfp class CoordinateOperationInferenceTest extends MathTransfo
                 "  AXIS[“Longitude (λ)”, EAST],\n" +
                 "  AUTHORITY[“EPSG”, “4267”]]");
 
-        final CoordinateReferenceSystem targetCRS = CommonCRS.WGS84.geographic();
+        final GeographicCRS       targetCRS = CommonCRS.WGS84.geographic();
         final CoordinateOperation operation = factory.createOperation(sourceCRS, targetCRS);
         assertSame ("sourceCRS",  sourceCRS,  operation.getSourceCRS());
         assertSame ("targetCRS",  targetCRS,  operation.getTargetCRS());
@@ -227,7 +236,7 @@ public final strictfp class CoordinateOperationInferenceTest extends MathTransfo
                 "    Unit[“grade”, 0.015707963267949],\n" +
                 "  Id[“EPSG”, “4807”]]");
 
-        final CoordinateReferenceSystem targetCRS = CommonCRS.WGS84.geographic();
+        final GeographicCRS       targetCRS = CommonCRS.WGS84.geographic();
         final CoordinateOperation operation = factory.createOperation(sourceCRS, targetCRS);
         assertSame ("sourceCRS",  sourceCRS,  operation.getSourceCRS());
         assertSame ("targetCRS",  targetCRS,  operation.getTargetCRS());
@@ -271,7 +280,7 @@ public final strictfp class CoordinateOperationInferenceTest extends MathTransfo
                 "    Axis[“(Z)”, geocentricZ],\n" +
                 "    Unit[“km”, 1000]]");
 
-        final CoordinateReferenceSystem targetCRS = CommonCRS.WGS84.geocentric();
+        final GeocentricCRS       targetCRS = CommonCRS.WGS84.geocentric();
         final CoordinateOperation operation = factory.createOperation(sourceCRS, targetCRS);
         assertSame ("sourceCRS",  sourceCRS,  operation.getSourceCRS());
         assertSame ("targetCRS",  targetCRS,  operation.getTargetCRS());
@@ -347,6 +356,123 @@ public final strictfp class CoordinateOperationInferenceTest extends MathTransfo
         tolerance  = LINEAR_TOLERANCE;
         λDimension = new int[] {0};
         verifyTransform(new double[] {0, 0}, new double[] {170, 50});
+        validate();
+    }
+
+    /**
+     * Tests that an exception is thrown on attempt to grab a transformation between incompatible vertical CRS.
+     *
+     * @throws FactoryException if an exception other than the expected one occurred.
+     */
+    @Test
+    @DependsOnMethod("testIdentityTransform")
+    public void testIncompatibleVerticalCRS() throws FactoryException {
+        final VerticalCRS sourceCRS = CommonCRS.Vertical.NAVD88.crs();
+        final VerticalCRS targetCRS = CommonCRS.Vertical.MEAN_SEA_LEVEL.crs();
+        try {
+            factory.createOperation(sourceCRS, targetCRS);
+            fail("The operation should have failed.");
+        } catch (OperationNotFoundException e) {
+            final String message = e.getMessage();
+            assertTrue(message, message.contains("North American Vertical Datum"));
+            assertTrue(message, message.contains("Mean Sea Level"));
+        }
+    }
+
+    /**
+     * Tests a conversion of the temporal axis. We convert 1899-12-31 from a CRS having its epoch at 1970-1-1
+     * to an other CRS having its epoch at 1858-11-17, so the new value shall be approximatively 41 years
+     * after the new epoch. This conversion also implies a change of units from seconds to days.
+     *
+     * @throws FactoryException if the operation can not be created.
+     * @throws TransformException if an error occurred while converting the test points.
+     */
+    @Test
+    @DependsOnMethod("testIdentityTransform")
+    public void testTemporalConversion() throws FactoryException, TransformException {
+        final TemporalCRS sourceCRS = CommonCRS.Temporal.UNIX.crs();
+        final TemporalCRS targetCRS = CommonCRS.Temporal.MODIFIED_JULIAN.crs();
+        final CoordinateOperation operation = factory.createOperation(sourceCRS, targetCRS);
+        assertSame("sourceCRS", sourceCRS, operation.getSourceCRS());
+        assertSame("targetCRS", targetCRS, operation.getTargetCRS());
+        assertInstanceOf("operation", Conversion.class, operation);
+
+        transform = operation.getMathTransform();
+        tolerance = 1E-12;
+        verifyTransform(new double[] {
+            // December 31, 1899 at 12:00 UTC in seconds.
+            CommonCRS.Temporal.DUBLIN_JULIAN.datum().getOrigin().getTime() / 1000
+        }, new double[] {
+            15019.5
+        });
+        validate();
+    }
+
+
+
+
+    //////////////////////////////////////////////////////////////////////////////////
+    ////////////                                                          ////////////
+    ////////////        Tests that change the number of dimensions        ////////////
+    ////////////                                                          ////////////
+    //////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Tests the conversion from a three-dimensional geographic CRS to a two-dimensional geographic CRS.
+     * The vertical dimension is simply dropped.
+     *
+     * @throws FactoryException if the operation can not be created.
+     * @throws TransformException if an error occurred while converting the test points.
+     */
+//  @Test
+    @DependsOnMethod("testIdentityTransform")
+    public void testGeographic3D_to_2D() throws FactoryException, TransformException {
+        final GeographicCRS sourceCRS = CommonCRS.WGS84.geographic3D();
+        final GeographicCRS targetCRS = CommonCRS.WGS84.geographic();
+        final CoordinateOperation operation = factory.createOperation(sourceCRS, targetCRS);
+        assertSame("sourceCRS", sourceCRS, operation.getSourceCRS());
+        assertSame("targetCRS", targetCRS, operation.getTargetCRS());
+        assertInstanceOf("operation", Conversion.class, operation);
+
+        transform = operation.getMathTransform();
+        assertInstanceOf("transform", LinearTransform.class, transform);
+        assertEquals(3, transform.getSourceDimensions());
+        assertEquals(2, transform.getTargetDimensions());
+        assertTrue(Matrices.equals(Matrices.create(3, 4, new double[] {
+            1, 0, 0, 0,
+            0, 1, 0, 0,
+            0, 0, 0, 1
+        }), ((LinearTransform) transform).getMatrix(), STRICT, false));
+        validate();
+    }
+
+    /**
+     * Tests the conversion from a two-dimensional geographic CRS to a three-dimensional geographic CRS.
+     * Ordinate values of the vertical dimension should be set to zero.
+     *
+     * @throws FactoryException if the operation can not be created.
+     * @throws TransformException if an error occurred while converting the test points.
+     */
+//  @Test
+    @DependsOnMethod("testGeographic3D_to_2D")
+    public void testGeographic2D_to_3D() throws Exception {
+        final GeographicCRS sourceCRS = CommonCRS.WGS84.geographic();
+        final GeographicCRS targetCRS = CommonCRS.WGS84.geographic3D();
+        final CoordinateOperation operation = factory.createOperation(sourceCRS, targetCRS);
+        assertSame("sourceCRS", sourceCRS, operation.getSourceCRS());
+        assertSame("targetCRS", targetCRS, operation.getTargetCRS());
+        assertInstanceOf("operation", Conversion.class, operation);
+
+        transform = operation.getMathTransform();
+        assertInstanceOf("transform", LinearTransform.class, transform);
+        assertEquals(2, transform.getSourceDimensions());
+        assertEquals(3, transform.getTargetDimensions());
+        assertTrue(Matrices.equals(Matrices.create(4, 3, new double[] {
+            1, 0, 0,
+            0, 1, 0,
+            0, 0, 0,
+            0, 0, 1
+        }), ((LinearTransform) transform).getMatrix(), STRICT, false));
         validate();
     }
 }
