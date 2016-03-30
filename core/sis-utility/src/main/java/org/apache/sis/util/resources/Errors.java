@@ -121,12 +121,12 @@ public final class Errors extends IndexedResourceBundle {
         public static final short CanNotConvertValue_2 = 4;
 
         /**
-         * Can not create an object of type “{1}” as an instance of ‘{0}’.
+         * Can not create an object “{1}” as an instance of class ‘{0}’.
          */
-        public static final short CanNotCreateObjectOfType_2 = 215;
+        public static final short CanNotCreateObjectAsInstanceOf_2 = 215;
 
         /**
-         * Can not instantiate an object of type ‘{0}’.
+         * Can not instantiate “{0}”.
          */
         public static final short CanNotInstantiate_1 = 5;
 
@@ -204,6 +204,11 @@ public final class Errors extends IndexedResourceBundle {
          * Axis directions {0} and {1} are colinear.
          */
         public static final short ColinearAxisDirections_2 = 14;
+
+        /**
+         * Coordinate conversion of transformation from system “{0}” to “{1}” has not been found.
+         */
+        public static final short CoordinateOperationNotFound_2 = 219;
 
         /**
          * Database error while creating a ‘{0}’ object for code “{1}”.
@@ -582,6 +587,11 @@ public final class Errors extends IndexedResourceBundle {
          * Mismatched descriptor for “{0}” parameter.
          */
         public static final short MismatchedParameterDescriptor_1 = 146;
+
+        /**
+         * Expected the “{0}” prime meridian but found “{1}”.
+         */
+        public static final short MismatchedPrimeMeridian_2 = 220;
 
         /**
          * Mismatched type for “{0}” property.

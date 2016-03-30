@@ -21,6 +21,7 @@ import java.util.Set;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.regex.Pattern;
+import java.io.IOException;
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.Statement;
@@ -112,8 +113,8 @@ public final strictfp class EPSGInstallerTest extends TestCase {
      * Returns the SQL scripts needed for testing the database creation,
      * or skip the JUnit test if those scripts are not found.
      */
-    private static InstallationScriptProvider getScripts() {
-        final InstallationScriptProvider scripts = new InstallationScriptProvider.Default();
+    private static InstallationScriptProvider getScripts() throws IOException {
+        final InstallationScriptProvider scripts = new InstallationScriptProvider.Default(null);
         assumeTrue(scripts.getAuthorities().contains(Constants.EPSG));
         return scripts;
     }

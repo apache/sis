@@ -40,7 +40,7 @@ import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.apache.sis.test.Assert.*;
 import static org.apache.sis.test.TestUtilities.*;
 
 
@@ -100,7 +100,7 @@ public final strictfp class CommonCRSTest extends TestCase {
     public void testGeographic3D() {
         final GeographicCRS crs = CommonCRS.WGS72.geographic3D();
         Validators.validate(crs);
-        assertEquals("WGS 72", crs.getName().getCode());
+        assertEquals ("WGS 72", crs.getName().getCode());
         assertSame   (CommonCRS.WGS72.geographic().getDatum(), crs.getDatum());
         assertNotSame(CommonCRS.WGS84.geographic().getDatum(), crs.getDatum());
 
@@ -108,9 +108,7 @@ public final strictfp class CommonCRSTest extends TestCase {
         final String name = cs.getName().getCode();
         assertTrue(name, name.startsWith("Ellipsoidal 3D"));
         assertEquals("dimension", 3, cs.getDimension());
-        assertEquals(AxisDirection.NORTH, cs.getAxis(0).getDirection());
-        assertEquals(AxisDirection.EAST,  cs.getAxis(1).getDirection());
-        assertEquals(AxisDirection.UP,    cs.getAxis(2).getDirection());
+        assertAxisDirectionsEqual(name, cs, AxisDirection.NORTH, AxisDirection.EAST, AxisDirection.UP);
         assertSame("Cached value", crs, CommonCRS.WGS72.geographic3D());
     }
 
@@ -122,7 +120,7 @@ public final strictfp class CommonCRSTest extends TestCase {
     public void testGeocentric() {
         final GeocentricCRS crs = CommonCRS.WGS72.geocentric();
         Validators.validate(crs);
-        assertEquals("WGS 72", crs.getName().getCode());
+        assertEquals ("WGS 72", crs.getName().getCode());
         assertSame   (CommonCRS.WGS72.geographic().getDatum(), crs.getDatum());
         assertNotSame(CommonCRS.WGS84.geographic().getDatum(), crs.getDatum());
 
@@ -130,10 +128,29 @@ public final strictfp class CommonCRSTest extends TestCase {
         final String name = cs.getName().getCode();
         assertTrue(name, name.startsWith("Earth centred"));
         assertEquals("dimension", 3, cs.getDimension());
-        assertEquals(AxisDirection.GEOCENTRIC_X, cs.getAxis(0).getDirection());
-        assertEquals(AxisDirection.GEOCENTRIC_Y, cs.getAxis(1).getDirection());
-        assertEquals(AxisDirection.GEOCENTRIC_Z, cs.getAxis(2).getDirection());
+        assertAxisDirectionsEqual(name, cs, AxisDirection.GEOCENTRIC_X,
+                AxisDirection.GEOCENTRIC_Y, AxisDirection.GEOCENTRIC_Z);
         assertSame("Cached value", crs, CommonCRS.WGS72.geocentric());
+    }
+
+    /**
+     * Tests the {@link CommonCRS#spherical()} method.
+     */
+    @Test
+    @DependsOnMethod("testGeographic3D")
+    public void testSpherical() {
+        final GeocentricCRS crs = CommonCRS.ETRS89.spherical();
+        Validators.validate(crs);
+        assertEquals ("ETRS89", crs.getName().getCode());
+        assertSame   (CommonCRS.ETRS89.geographic().getDatum(), crs.getDatum());
+        assertNotSame(CommonCRS.WGS84 .geographic().getDatum(), crs.getDatum());
+
+        final CoordinateSystem cs = crs.getCoordinateSystem();
+        final String name = cs.getName().getCode();
+        assertTrue(name, name.startsWith("Spherical"));
+        assertEquals("dimension", 3, cs.getDimension());
+        assertAxisDirectionsEqual(name, cs, AxisDirection.NORTH, AxisDirection.EAST, AxisDirection.UP);
+        assertSame("Cached value", crs, CommonCRS.ETRS89.spherical());
     }
 
     /**

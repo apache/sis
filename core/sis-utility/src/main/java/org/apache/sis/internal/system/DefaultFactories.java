@@ -29,8 +29,9 @@ import org.apache.sis.internal.util.Utilities;
  * A candidate replacement is JSR-330.
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @author  Guilhem Legal (Geomatys)
  * @since   0.3
- * @version 0.6
+ * @version 0.7
  * @module
  *
  * @see <a href="https://jcp.org/en/jsr/detail?id=330">JSR-330</a>

@@ -42,7 +42,7 @@ import javax.measure.unit.Unit;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.6
- * @version 0.6
+ * @version 0.7
  * @module
  *
  * @see CoordinateSystems#replaceAxes(CoordinateSystem, AxisFilter)
@@ -65,7 +65,7 @@ public interface AxisFilter {
      *
      * {@preformat java
      *     &#64;Override
-     *     public getDirectionReplacement(AxisDirection direction) {
+     *     public getDirectionReplacement(CoordinateSystemAxis axis, AxisDirection direction) {
      *         if (direction == AxisDirection.DOWN) {
      *             direction = AxisDirection.UP;
      *         }
@@ -74,9 +74,21 @@ public interface AxisFilter {
      * }
      * </div>
      *
+     * @param  axis The axis for which to change axis direction, if desired.
+     * @param  direction The original axis direction.
+     * @return The new axis direction, or {@code direction} if there is no change.
+     *
+     * @since 0.7
+     */
+    AxisDirection getDirectionReplacement(CoordinateSystemAxis axis, AxisDirection direction);
+
+    /**
+     * @deprecated Use {@link #getDirectionReplacement(CoordinateSystemAxis, AxisDirection)} instead.
+     *
      * @param  direction The original axis direction.
      * @return The new axis direction, or {@code direction} if there is no change.
      */
+    @Deprecated
     AxisDirection getDirectionReplacement(AxisDirection direction);
 
     /**
@@ -88,7 +100,7 @@ public interface AxisFilter {
      *
      * {@preformat java
      *     &#64;Override
-     *     public Unit<?> getUnitReplacement(Unit<?> unit) {
+     *     public Unit<?> getUnitReplacement(CoordinateSystemAxis axis, Unit<?> unit) {
      *         if (Units.isAngular(unit)) {
      *             unit = NonSI.DEGREE_ANGLE;
      *         }
@@ -97,8 +109,20 @@ public interface AxisFilter {
      * }
      * </div>
      *
+     * @param  axis The axis for which to change unit, if desired.
+     * @param  unit The original axis unit.
+     * @return The new axis unit, or {@code unit} if there is no change.
+     *
+     * @since 0.7
+     */
+    Unit<?> getUnitReplacement(CoordinateSystemAxis axis, Unit<?> unit);
+
+    /**
+     * @deprecated Use {@link #getUnitReplacement(CoordinateSystemAxis, Unit)} instead.
+     *
      * @param  unit The original axis unit.
      * @return The new axis unit, or {@code unit} if there is no change.
      */
+    @Deprecated
     Unit<?> getUnitReplacement(Unit<?> unit);
 }

@@ -170,8 +170,8 @@ public final strictfp class DefaultCartesianCSTest extends XMLTestCase {
      * Then ensures that swapping the axes and applying conventional orientation gives back the original CS.
      */
     private static void testConventionalOrientation(final String x, final String y) {
-        assertConventionallyOrientedEquals(x, y, x, y); // Expect no-op.
-        assertConventionallyOrientedEquals(x, y, y, x); // Expect normalization.
+        assertConventionallyOrientedEquals(x, y, x, y);         // Expect no-op.
+        assertConventionallyOrientedEquals(x, y, y, x);         // Expect normalization.
     }
 
     /**

@@ -16,8 +16,11 @@
  */
 package org.apache.sis.internal.metadata;
 
+import java.util.Map;
+import java.util.HashMap;
 import javax.measure.unit.Unit;
 import javax.measure.quantity.Angle;
+import org.opengis.annotation.UML;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
@@ -28,6 +31,8 @@ import org.apache.sis.util.iso.Types;
 import org.apache.sis.measure.Units;
 
 import static org.opengis.referencing.cs.AxisDirection.*;
+import static org.opengis.annotation.Obligation.CONDITIONAL;
+import static org.opengis.annotation.Specification.UNSPECIFIED;
 import static org.apache.sis.util.CharSequences.*;
 
 
@@ -36,7 +41,7 @@ import static org.apache.sis.util.CharSequences.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.6
+ * @version 0.7
  * @module
  */
 public final class AxisDirections extends Static {
@@ -59,40 +64,86 @@ public final class AxisDirections extends Static {
     public static final int DISPLAY_COUNT = 4;
 
     /**
-     * For each direction, the opposite direction.
+     * Ordinal of the last element in the {@link AxisDirection} code list.
+     * This is used for differentiating the standard codes from the user-defined ones.
      */
-    private static final AxisDirection[] OPPOSITES = new AxisDirection[DISPLAY_DOWN.ordinal() + 1];
+    private static final int LAST_ORDINAL = DISPLAY_DOWN.ordinal();
+
+    /**
+     * Distance from the origin in a polar coordinate system.
+     * Specified in ISO 19162 but not yet in ISO 19111.
+     *
+     * @since 0.7
+     */
+    @UML(identifier="awayFrom", obligation=CONDITIONAL, specification=UNSPECIFIED)
+    public static final AxisDirection AWAY_FROM = AxisDirection.valueOf("AWAY_FROM");
+
+    /**
+     * Direction of geographic angles (bearing).
+     * Specified in ISO 19162 but not yet in ISO 19111.
+     *
+     * @since 0.7
+     */
+    @UML(identifier="clockwise", obligation=CONDITIONAL, specification=UNSPECIFIED)
+    public static final AxisDirection CLOCKWISE = AxisDirection.valueOf("CLOCKWISE");
+
+    /**
+     * Direction of arithmetic angles. Used in polar coordinate systems.
+     * Specified in ISO 19162 but not yet in ISO 19111.
+     *
+     * @since 0.7
+     */
+    @UML(identifier="counterClockwise", obligation=CONDITIONAL, specification=UNSPECIFIED)
+    public static final AxisDirection COUNTER_CLOCKWISE = AxisDirection.valueOf("COUNTER_CLOCKWISE");
+
+    /**
+     * For each direction, the opposite direction.
+     * This map shall be immutable after construction.
+     */
+    private static final Map<AxisDirection,AxisDirection> OPPOSITES = new HashMap<AxisDirection,AxisDirection>(20);
     static {
-        put(OTHER,            OTHER);
-        put(NORTH,            SOUTH);
-        put(NORTH_NORTH_EAST, SOUTH_SOUTH_WEST);
-        put(NORTH_EAST,       SOUTH_WEST);
-        put(EAST_NORTH_EAST,  WEST_SOUTH_WEST);
-        put(EAST,             WEST);
-        put(EAST_SOUTH_EAST,  WEST_NORTH_WEST);
-        put(SOUTH_EAST,       NORTH_WEST);
-        put(SOUTH_SOUTH_EAST, NORTH_NORTH_WEST);
-        put(UP,               DOWN);
-        put(FUTURE,           PAST);
-        put(COLUMN_POSITIVE,  COLUMN_NEGATIVE);
-        put(ROW_POSITIVE,     ROW_NEGATIVE);
-        put(DISPLAY_RIGHT,    DISPLAY_LEFT);
-        put(DISPLAY_UP,       DISPLAY_DOWN);
+        put(OTHER,             OTHER);
+        put(NORTH,             SOUTH);
+        put(NORTH_NORTH_EAST,  SOUTH_SOUTH_WEST);
+        put(NORTH_EAST,        SOUTH_WEST);
+        put(EAST_NORTH_EAST,   WEST_SOUTH_WEST);
+        put(EAST,              WEST);
+        put(EAST_SOUTH_EAST,   WEST_NORTH_WEST);
+        put(SOUTH_EAST,        NORTH_WEST);
+        put(SOUTH_SOUTH_EAST,  NORTH_NORTH_WEST);
+        put(UP,                DOWN);
+        put(FUTURE,            PAST);
+        put(COLUMN_POSITIVE,   COLUMN_NEGATIVE);
+        put(ROW_POSITIVE,      ROW_NEGATIVE);
+        put(DISPLAY_RIGHT,     DISPLAY_LEFT);
+        put(DISPLAY_UP,        DISPLAY_DOWN);
+        put(COUNTER_CLOCKWISE, CLOCKWISE);
     }
 
     /**
      * Stores the given directions in the {@link #OPPOSITES} array.
      */
     private static void put(final AxisDirection dir, final AxisDirection opposite) {
-        OPPOSITES[dir.ordinal()] = opposite;
-        OPPOSITES[opposite.ordinal()] = dir;
+        OPPOSITES.put(dir, opposite);
+        OPPOSITES.put(opposite, dir);
     }
 
     /**
-     * Ordinal of the last element in the {@link AxisDirection} code list.
-     * This is used for differentiating the standard codes from the user-defined ones.
+     * Proposed abbreviations for some axis directions.
+     * This map shall be immutable after construction.
      */
-    private static final int LAST_ORDINAL = DISPLAY_DOWN.ordinal();
+    private static final Map<AxisDirection,String> ABBREVIATIONS = new HashMap<AxisDirection,String>(12);
+    static {
+        final Map<AxisDirection,String> m = ABBREVIATIONS;
+        m.put(FUTURE,            "t");
+        m.put(COLUMN_POSITIVE,   "i");
+        m.put(ROW_POSITIVE,      "j");
+        m.put(DISPLAY_RIGHT,     "x");
+        m.put(DISPLAY_UP,        "y");
+        m.put(OTHER,             "z");      // Arbitrary abbreviation, may change in any future SIS version.
+        m.put(AWAY_FROM,         "r");
+        m.put(COUNTER_CLOCKWISE, "θ");
+    }
 
     /**
      * Do not allow instantiation of this class.
@@ -114,24 +165,25 @@ public final class AxisDirections extends Static {
      *     <th style="width: 50%">Direction</th>
      *     <th style="width: 50%">Absolute value</th>
      *   </tr>
-     *   <tr><td>{@code NORTH}</td> <td>{@code NORTH}</td> </tr>
-     *   <tr><td>{@code SOUTH}</td> <td>{@code NORTH}</td> </tr>
-     *   <tr><td>{@code EAST}</td>  <td>{@code EAST}</td>  </tr>
-     *   <tr><td>{@code WEST}</td>  <td>{@code EAST}</td>  </tr>
-     *   <tr><td>{@code UP}</td>    <td>{@code UP}</td>    </tr>
-     *   <tr><td>{@code DOWN}</td>  <td>{@code UP}</td>    </tr>
+     *   <tr><td>{@code NORTH}</td> <td>{@code NORTH}</td></tr>
+     *   <tr><td>{@code SOUTH}</td> <td>{@code NORTH}</td></tr>
+     *   <tr><td>{@code EAST}</td>  <td>{@code EAST}</td></tr>
+     *   <tr><td>{@code WEST}</td>  <td>{@code EAST}</td></tr>
+     *   <tr><td>{@code UP}</td>    <td>{@code UP}</td></tr>
+     *   <tr><td>{@code DOWN}</td>  <td>{@code UP}</td></tr>
      * </table></td>
      * <td><table class="sis" summary="Other directions">
      *   <tr>
      *     <th style="width: 50%">Direction</th>
      *     <th style="width: 50%">Absolute value</th>
      *   </tr>
-     *   <tr><td>{@code DISPLAY_RIGHT}</td> <td>{@code DISPLAY_RIGHT}</td> </tr>
-     *   <tr><td>{@code DISPLAY_LEFT}</td>  <td>{@code DISPLAY_RIGHT}</td> </tr>
-     *   <tr><td>{@code DISPLAY_UP}</td>    <td>{@code DISPLAY_UP}</td>    </tr>
-     *   <tr><td>{@code DISPLAY_DOWN}</td>  <td>{@code DISPLAY_UP}</td>    </tr>
-     *   <tr><td>{@code FUTURE}</td>        <td>{@code FUTURE}</td>        </tr>
-     *   <tr><td>{@code PAST}</td>          <td>{@code FUTURE}</td>        </tr>
+     *   <tr><td>{@code DISPLAY_RIGHT}</td> <td>{@code DISPLAY_RIGHT}</td></tr>
+     *   <tr><td>{@code DISPLAY_LEFT}</td>  <td>{@code DISPLAY_RIGHT}</td></tr>
+     *   <tr><td>{@code DISPLAY_UP}</td>    <td>{@code DISPLAY_UP}</td></tr>
+     *   <tr><td>{@code DISPLAY_DOWN}</td>  <td>{@code DISPLAY_UP}</td></tr>
+     *   <tr><td>{@code FUTURE}</td>        <td>{@code FUTURE}</td></tr>
+     *   <tr><td>{@code PAST}</td>          <td>{@code FUTURE}</td></tr>
+     *   <tr><td>{@code CLOCKWISE}</td>     <td>{@code COUNTERCLOCKWISE}</td></tr>
      * </table></td></tr>
      *   <tr align="center"><td>{@code OTHER}</td><td>{@code OTHER}</td></tr>
      * </table>
@@ -139,11 +191,16 @@ public final class AxisDirections extends Static {
      * @param  dir The direction for which to return the absolute direction, or {@code null}.
      * @return The direction from the above table, or {@code null} if the given direction was null.
      */
-    public static AxisDirection absolute(final AxisDirection dir) {
+    public static AxisDirection absolute(AxisDirection dir) {
         final AxisDirection opposite = opposite(dir);
         if (opposite != null) {
             if (opposite.ordinal() < dir.ordinal()) {
-                return opposite;
+                dir = opposite;
+            }
+            // Below is a temporary patch pending integration of code list values into GeoAPI.
+            // We need this patch because we can not rely on ordinal() value for custom codes.
+            if (dir == CLOCKWISE) {
+                dir = COUNTER_CLOCKWISE;
             }
         }
         return dir;
@@ -159,13 +216,7 @@ public final class AxisDirections extends Static {
      * @return The opposite direction, or {@code null} if none or unknown.
      */
     public static AxisDirection opposite(AxisDirection dir) {
-        if (dir != null) {
-            final int ordinal = dir.ordinal();
-            if (ordinal >= 0 && ordinal < OPPOSITES.length) {
-                dir = OPPOSITES[ordinal];
-            }
-        }
-        return dir;
+        return OPPOSITES.get(dir);
     }
 
     /**
@@ -291,7 +342,7 @@ public final class AxisDirections extends Static {
             final int tgt = target.ordinal() - base;
             if (tgt >= 0 && tgt < GEOCENTRIC_COUNT) {
                 int n = (tgt - src);
-                n -= GEOCENTRIC_COUNT * (n/2); // If -2 add 3.  If +2 subtract 3.  Otherwise do nothing.
+                n -= GEOCENTRIC_COUNT * (n/2);      // If -2 add 3.  If +2 subtract 3.  Otherwise do nothing.
                 return n;
             }
         }
@@ -376,12 +427,12 @@ public final class AxisDirections extends Static {
         if (cs != null) {
             for (int i = cs.getDimension(); --i>=0;) {
                 final CoordinateSystemAxis axis = cs.getAxis(i);
-                if (axis != null) {  // Paranoiac check.
+                if (axis != null) {                                                     // Paranoiac check.
                     final Unit<?> candidate = axis.getUnit();
                     if (Units.isAngular(candidate)) {
                         unit = candidate.asType(Angle.class);
                         if (AxisDirection.EAST.equals(absolute(axis.getDirection()))) {
-                            break; // Found the longitude axis.
+                            break;                                                      // Found the longitude axis.
                         }
                     }
                 }
@@ -434,7 +485,7 @@ public final class AxisDirections extends Static {
             if (dim + i > cs.getDimension()) {
                 return -1;
             }
-            while (--i > 0) { // Intentionally exclude 0.
+            while (--i > 0) {               // Intentionally exclude 0.
                 if (!absolute(subCS.getAxis(i).getDirection()).equals(
                      absolute(cs.getAxis(i + dim).getDirection())))
                 {
@@ -505,12 +556,12 @@ public final class AxisDirections extends Static {
                 int s = name.indexOf('/', d);
                 if (s < 0) {
                     if (equalsIgnoreCase(name, d, length, "north pole")) {
-                        return GEOCENTRIC_Z; // "Geocentre > north pole"
+                        return GEOCENTRIC_Z;                                // "Geocentre > north pole"
                     }
                 } else if (equalsIgnoreCase(name, d, skipTrailingWhitespaces(name, d, s), "equator")) {
                     s = skipLeadingWhitespaces(name, s+1, length);
                     if (equalsIgnoreCase(name, s, length, "PM")) {
-                        return GEOCENTRIC_X; // "Geocentre > equator/PM"
+                        return GEOCENTRIC_X;                                // "Geocentre > equator/PM"
                     }
                     /*
                      * At this point, the name may be "Geocentre > equator/0°E",
@@ -527,8 +578,8 @@ public final class AxisDirections extends Static {
                             i = skipLeadingWhitespaces(name, i, length);
                             if (equalsIgnoreCase(name, i, length, "°E") || equalsIgnoreCase(name, i, length, "dE")) {
                                 switch (n) {
-                                    case  0: return GEOCENTRIC_X; // "Geocentre > equator/0°E"
-                                    case 90: return GEOCENTRIC_Y; // "Geocentre > equator/90°E"
+                                    case  0: return GEOCENTRIC_X;           // "Geocentre > equator/0°E"
+                                    case 90: return GEOCENTRIC_Y;           // "Geocentre > equator/90°E"
                                 }
                             }
                             break;
@@ -549,10 +600,14 @@ public final class AxisDirections extends Static {
     }
 
     /**
-     * Returns {@code true} if the given name starts with the given keyword, ignoring case.
+     * Returns {@code true} if the given name starts or ends with the given keyword, ignoring case.
+     *
+     * @param start {@code false} if the given keyword is expected at the beggining of the name,
+     *        or {@code end} if expected at the end.
      */
-    private static boolean startsWith(final String name, final String keyword) {
-        return name.regionMatches(true, 0, keyword, 0, keyword.length());
+    private static boolean contains(final String name, final String keyword, final boolean end) {
+        final int length = keyword.length();
+        return name.regionMatches(true, end ? name.length() - length : 0, keyword, 0, length);
     }
 
     /**
@@ -569,7 +624,14 @@ public final class AxisDirections extends Static {
      */
     public static String suggestAbbreviation(final String name, final AxisDirection direction, final Unit<?> unit) {
         if (name.length() == 1) {
-            return name;  // Most common cases are "x", "y", "z", "t", "i" and "j".
+            return name;                    // Most common cases are "x", "y", "z", "t", "i" and "j".
+        }
+        /*
+         * Direction may be both "compass" (e.g. North) or "non-compass" (e.g. away from).
+         * Even if the radius at θ = 0° is oriented toward North, but we do not want the "N" abbreviation.
+         */
+        if (contains(name, "radius", true)) {
+            return contains(name, "Geocentric", false) ? "R" : "r";
         }
         if (isCompass(direction)) {
             /*
@@ -578,7 +640,7 @@ public final class AxisDirections extends Static {
              * a longitude or latitude axis. We detect those later cases by the unit of measurement.
              */
             if (!isIntercardinal(direction) && Units.isAngular(unit)) {
-                if (startsWith(name, "Spherical")) {
+                if (contains(name, "Spherical", false)) {
                     return NORTH.equals(absolute(direction)) ? "φ′" : "θ";
                 } else {
                     return NORTH.equals(absolute(direction)) ? "φ" : "λ";
@@ -592,27 +654,20 @@ public final class AxisDirections extends Static {
              * use "h" as the fallback for unknown vertical axis.
              */
             if (UP.equals(direction)) {
-                return startsWith(name, "Gravity") ? "H" : startsWith(name, "Geocentric") ? "r": "h";
+                if (contains(name, "Gravity",    false)) return "H";
+                if (contains(name, "Elevation",  false)) return "φ";
+                if (contains(name, "Geocentric", false)) return "r";
+                return "h";
             } else if (DOWN.equals(direction)) {
-                return "D"; // "Depth"
+                return "D";                         // "Depth"
             } else if (isGeocentric(direction)) {
                 // For GEOCENTRIC_X, GEOCENTRIC_Y or GEOCENTRIC_Z, just take the last letter.
                 final String dir = direction.name();
                 return dir.substring(dir.length() - 1).trim();
             }
-            final AxisDirection a = absolute(direction);
-            if (FUTURE.equals(a)) {
-                return "t";
-            } else if (COLUMN_POSITIVE.equals(a)) {
-                return "i";
-            } else if (ROW_POSITIVE.equals(a)) {
-                return "j";
-            } else if (DISPLAY_RIGHT.equals(a)) {
-                return "x";
-            } else if (DISPLAY_UP.equals(a)) {
-                return "y";
-            } else if (OTHER.equals(a)) {
-                return "z";  // Arbitrary abbreviation, may change in any future SIS version.
+            final String abbreviation = ABBREVIATIONS.get(absolute(direction));
+            if (abbreviation != null) {
+                return abbreviation;
             }
         }
         final String id = direction.identifier();   // UML identifier, or null if none.

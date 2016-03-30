@@ -19,6 +19,8 @@ package org.apache.sis.internal.system;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Messages;
 
@@ -113,7 +115,11 @@ public enum DataDirectory {
      */
     public static synchronized Path getRootDirectory() {
         if (rootDirectory == null) try {
-            final String dir = System.getenv(ENV);
+            final String dir = AccessController.doPrivileged(new PrivilegedAction<String>() {
+                @Override public String run() {
+                    return System.getenv(ENV);
+                }
+            });
             if (dir == null || dir.isEmpty()) {
                 warning("getRootDirectory", null, Messages.Keys.DataDirectoryNotSpecified_1, ENV);
             } else try {

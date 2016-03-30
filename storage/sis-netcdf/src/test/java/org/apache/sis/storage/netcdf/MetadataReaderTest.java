@@ -25,6 +25,7 @@ import org.apache.sis.internal.netcdf.IOTestCase;
 import org.apache.sis.internal.netcdf.ucar.DecoderWrapper;
 import org.apache.sis.internal.netcdf.impl.ChannelDecoderTest;
 import org.apache.sis.metadata.iso.DefaultMetadata;
+import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.test.DependsOn;
 import org.junit.Test;
 
@@ -50,10 +51,11 @@ public final strictfp class MetadataReaderTest extends IOTestCase {
      * Reads the metadata using the NetCDF decoder embedded with SIS,
      * and compares its string representation with the expected one.
      *
-     * @throws IOException Should never happen.
+     * @throws IOException if an I/O error occurred while opening the file.
+     * @throws DataStoreException if a logical error occurred.
      */
     @Test
-    public void testEmbedded() throws IOException {
+    public void testEmbedded() throws IOException, DataStoreException {
         final Metadata metadata;
         final Decoder input = ChannelDecoderTest.createChannelDecoder(NCEP);
         try {

@@ -29,6 +29,7 @@ import org.apache.sis.internal.jdk7.Objects;
  * A central place where to manage SIS shutdown process.
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @author  Guilhem Legal (Geomatys)
  * @since   0.3
  * @version 0.7
  * @module
@@ -149,11 +150,11 @@ public final class Shutdown extends Thread {
     }
 
     /**
-     * Unregister the supervisor MBean, executes the disposal tasks and shutdowns the {@code sis-utility} threads.
+     * Unregisters the supervisor MBean, executes the disposal tasks and shutdowns the {@code sis-utility} threads.
      *
      * @param  caller The class invoking this method, to be used only for logging purpose, or {@code null}
      *         if the logging system is not available anymore (i.e. the JVM itself is shutting down).
-     * @throws Exception If an error occurred during unregistration of the supervisor MBean
+     * @throws Exception if an error occurred during unregistration of the supervisor MBean
      *         or during a resource disposal.
      */
     public static void stop(final Class<?> caller) throws Exception {

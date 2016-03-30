@@ -19,12 +19,14 @@ package org.apache.sis.test;
 import java.util.logging.Logger;
 import java.util.logging.Handler;
 import java.util.logging.ConsoleHandler;
+import java.util.logging.LogManager;
 import java.io.Console;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import org.apache.sis.util.logging.Logging;
+import org.apache.sis.util.logging.MonolineFormatter;
 import org.junit.runner.RunWith;
 
 
@@ -130,6 +132,17 @@ public abstract strictfp class TestCase {
      * Needs to be retained by strong reference.
      */
     static final Logger LOGGER = Logger.getLogger("org.apache.sis");
+
+    /**
+     * Initializes {@link MonolineFormatter} if it has been specified in the {@code logging.properties}
+     * configuration file.
+     */
+    static {
+        final LogManager manager = LogManager.getLogManager();
+        if (MonolineFormatter.class.getName().equals(manager.getProperty(ConsoleHandler.class.getName() + ".formatter"))) {
+            MonolineFormatter.install();
+        }
+    }
 
     /**
      * Sets the encoding of the console logging handler, if an encoding has been specified.

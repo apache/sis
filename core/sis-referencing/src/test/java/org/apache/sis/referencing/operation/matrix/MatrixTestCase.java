@@ -534,7 +534,7 @@ public abstract strictfp class MatrixTestCase extends TestCase {
     /**
      * Tests {@link MatrixSIS#solve(Matrix)}.
      *
-     * @throws NoninvertibleMatrixException Should never happen.
+     * @throws NoninvertibleMatrixException if the matrix can not be inverted.
      */
     @Test
     @DependsOnMethod("testMultiply")
@@ -575,7 +575,7 @@ public abstract strictfp class MatrixTestCase extends TestCase {
      * Tests {@link MatrixSIS#inverse()}.
      * SIS implements the {@code inverse} operation as a special case of the {@code solve} operation.
      *
-     * @throws NoninvertibleMatrixException Should never happen.
+     * @throws NoninvertibleMatrixException if the matrix can not be inverted.
      */
     @Test
     @DependsOnMethod("testSolve")

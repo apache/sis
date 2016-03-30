@@ -20,6 +20,7 @@ import java.util.Queue;
 import java.util.LinkedList;
 import java.util.ConcurrentModificationException;
 import java.util.logging.Filter;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.LogRecord;
 import java.util.logging.SimpleFormatter;
@@ -129,7 +130,9 @@ public final strictfp class LoggingWatcher extends TestWatchman implements Filte
      */
     @Override
     public final boolean isLoggable(final LogRecord record) {
-        messages.add(formatter.formatMessage(record));
+        if (record.getLevel().intValue() >= Level.INFO.intValue()) {
+            messages.add(formatter.formatMessage(record));
+        }
         return TestCase.VERBOSE;
     }
 

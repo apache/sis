@@ -683,6 +683,7 @@ public final class ChannelDecoder extends Decoder {
      * @throws IOException {@inheritDoc}
      */
     @Override
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
     public Variable[] getVariables() throws IOException {
         return variables;
     }
@@ -695,6 +696,7 @@ public final class ChannelDecoder extends Decoder {
      * @throws IOException {@inheritDoc}
      */
     @Override
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
     public GridGeometry[] getGridGeometries() throws IOException {
         if (gridGeometries == null) {
             /*

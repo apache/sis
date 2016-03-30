@@ -1,0 +1,51 @@
+//
+// Security policy for running Apache SIS in a security-constrained environment.
+// The first grant block below contains the permissions that are most likely to
+// be needed for SIS use. Other grant blocks contain permissions needed only if
+// the JavaDB is used or if MBeans monitoring is desired.
+//
+grant {
+  permission java.lang.RuntimePermission   "shutdownHooks";
+  permission java.lang.RuntimePermission   "getenv.SIS_DATA";
+  permission java.util.PropertyPermission  "java.naming.factory.initial", "read";
+  permission java.util.PropertyPermission  "derby.system.home", "read";
+  permission java.lang.RuntimePermission   "getClassLoader";
+
+  // Apache SIS suppresses those checks only for its own classes or fields.
+  permission java.lang.reflect.ReflectPermission  "suppressAccessChecks";
+
+  // Actually only need access to the ${SIS_DATA} directory.
+  // The read and delete actions are needed for Derby and may be omitted if another
+  // database is used (e.g. PostgreSQL). Read operations may also be omitted too if
+  // another database is used and no other files (e.g. datum shift grids) is needed.
+  permission java.io.FilePermission "${user.home}${/}-", "read,write,delete";
+};
+
+
+
+//
+// Optional permissions for using the JavaDB embedded with Oracle JDK.
+// Some or all of those permissions can be omitted if a Derby driver
+// or another database driver (e.g. PostgreSQL) is on the classpath.
+//
+grant {
+  permission java.io.FilePermission        "${user.dir}${/}derby.log", "read,write,delete";
+  permission java.io.FilePermission        "${java.home}${/}..${/}db${/}lib${/}derby.jar", "read";
+  permission java.util.PropertyPermission  "java.home", "read";
+  permission java.util.PropertyPermission  "derby.*", "read";
+  permission java.lang.RuntimePermission   "getClassLoader";
+  permission java.lang.RuntimePermission   "createClassLoader";
+  permission java.lang.RuntimePermission   "setContextClassLoader";
+};
+
+
+
+//
+// Optional permissions. If those permissions are not granted, a message
+// will be logged at Level.CONFIG and JMX monitoring will be disabled.
+//
+grant {
+  permission javax.management.MBeanServerPermission  "createMBeanServer";
+  permission javax.management.MBeanPermission        "org.apache.sis.internal.system.Supervisor#-[org.apache.sis:type=Supervisor]", "registerMBean,unregisterMBean";
+  permission javax.management.MBeanTrustPermission   "register";
+};

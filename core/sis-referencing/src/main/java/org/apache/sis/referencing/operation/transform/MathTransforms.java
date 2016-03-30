@@ -32,9 +32,8 @@ import org.apache.sis.internal.referencing.ExtendedPrecisionMatrix;
 import org.apache.sis.internal.referencing.j2d.AffineTransform2D;
 import org.apache.sis.referencing.operation.matrix.AffineTransforms2D;
 import org.apache.sis.referencing.operation.matrix.Matrices;
+import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Static;
-
-import static org.apache.sis.util.ArgumentChecks.*;
 
 
 /**
@@ -78,7 +77,7 @@ public final class MathTransforms extends Static {
      * @return An identity transform of the specified dimension.
      */
     public static LinearTransform identity(final int dimension) {
-        ensureStrictlyPositive("dimension", dimension);
+        ArgumentChecks.ensureStrictlyPositive("dimension", dimension);
         return IdentityTransform.create(dimension);
     }
 
@@ -113,7 +112,7 @@ public final class MathTransforms extends Static {
      * @see DefaultMathTransformFactory#createAffineTransform(Matrix)
      */
     public static LinearTransform linear(final Matrix matrix) {
-        ensureNonNull("matrix", matrix);
+        ArgumentChecks.ensureNonNull("matrix", matrix);
         final int sourceDimension = matrix.getNumCol() - 1;
         final int targetDimension = matrix.getNumRow() - 1;
         if (sourceDimension == targetDimension) {
@@ -170,12 +169,12 @@ public final class MathTransforms extends Static {
      * @since 0.6
      */
     public static MathTransform compound(final MathTransform... transforms) {
-        ensureNonNull("transforms", transforms);
+        ArgumentChecks.ensureNonNull("transforms", transforms);
         int sum = 0;
         final int[] dimensions = new int[transforms.length];
         for (int i=0; i<transforms.length; i++) {
             final MathTransform tr = transforms[i];
-            ensureNonNullElement("transforms", i, tr);
+            ArgumentChecks.ensureNonNullElement("transforms", i, tr);
             sum += (dimensions[i] = tr.getSourceDimensions());
         }
         MathTransform compound = null;
@@ -209,8 +208,8 @@ public final class MathTransforms extends Static {
     public static MathTransform concatenate(final MathTransform tr1, final MathTransform tr2)
             throws MismatchedDimensionException
     {
-        ensureNonNull("tr1", tr1);
-        ensureNonNull("tr2", tr2);
+        ArgumentChecks.ensureNonNull("tr1", tr1);
+        ArgumentChecks.ensureNonNull("tr2", tr2);
         final MathTransform tr;
         try {
             tr = ConcatenatedTransform.create(tr1, tr2, null);
@@ -269,9 +268,9 @@ public final class MathTransforms extends Static {
     public static MathTransform concatenate(MathTransform tr1, MathTransform tr2, MathTransform tr3)
             throws MismatchedDimensionException
     {
-        ensureNonNull("tr1", tr1);
-        ensureNonNull("tr2", tr2);
-        ensureNonNull("tr3", tr3);
+        ArgumentChecks.ensureNonNull("tr1", tr1);
+        ArgumentChecks.ensureNonNull("tr2", tr2);
+        ArgumentChecks.ensureNonNull("tr3", tr3);
         return concatenate(concatenate(tr1, tr2), tr3);
     }
 

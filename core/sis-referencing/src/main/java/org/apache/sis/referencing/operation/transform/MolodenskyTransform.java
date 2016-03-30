@@ -362,7 +362,7 @@ public class MolodenskyTransform extends MolodenskyFormula {
     /*
      * NOTE: we do not bother to override the methods expecting a 'float' array because those methods should
      *       be rarely invoked. Since there is usually LinearTransforms before and after this transform, the
-     *       conversion between float and double will be handle by those LinearTransforms.   If nevertheless
+     *       conversion between float and double will be handled by those LinearTransforms.  If nevertheless
      *       this MolodenskyTransform is at the beginning or the end of a transformation chain,  the methods
      *       inherited from the subclass will work (but may be slightly slower).
      */

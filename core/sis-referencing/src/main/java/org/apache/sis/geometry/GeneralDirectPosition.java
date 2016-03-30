@@ -24,6 +24,8 @@ package org.apache.sis.geometry;
 import java.util.Arrays;
 import java.io.Serializable;
 import java.lang.reflect.Field;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.MismatchedDimensionException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -63,6 +65,12 @@ public class GeneralDirectPosition extends AbstractDirectPosition implements Ser
      * Serial number for inter-operability with different versions.
      */
     private static final long serialVersionUID = -5524426558018300122L;
+
+    /**
+     * Used for setting the {@link #ordinates} field during a {@link #clone()} operation only.
+     * Will be fetch when first needed.
+     */
+    private static volatile Field ordinatesField;
 
     /**
      * The ordinates of the direct position. The length of this array is the
@@ -273,6 +281,21 @@ public class GeneralDirectPosition extends AbstractDirectPosition implements Ser
     }
 
     /**
+     * Returns the {@code "ordinates"} field of the given class and gives write permission to it.
+     * This method should be invoked only from {@link #clone()} method.
+     */
+    static Field getOrdinatesField(final Class<?> type) throws NoSuchFieldException {
+        final Field field = type.getDeclaredField("ordinates");
+        AccessController.doPrivileged(new PrivilegedAction<Void>() {
+            @Override public Void run() {
+                field.setAccessible(true);
+                return null;
+            }
+        });
+        return field;
+    }
+
+    /**
      * Returns a deep copy of this position.
      *
      * @return A copy of this direct position.
@@ -280,9 +303,11 @@ public class GeneralDirectPosition extends AbstractDirectPosition implements Ser
     @Override
     public GeneralDirectPosition clone() {
         try {
+            Field field = ordinatesField;
+            if (field == null) {
+                ordinatesField = field = getOrdinatesField(GeneralDirectPosition.class);
+            }
             GeneralDirectPosition e = (GeneralDirectPosition) super.clone();
-            final Field field = GeneralDirectPosition.class.getDeclaredField("ordinates");
-            field.setAccessible(true);
             field.set(e, ordinates.clone());
             return e;
         } catch (Exception exception) { // (ReflectiveOperationException | CloneNotSupportedException) on JDK7
