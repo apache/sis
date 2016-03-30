@@ -1458,6 +1458,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * @throws FactoryException if the object creation failed.
      *
      * @see XML#unmarshal(String)
+     * @see org.apache.sis.referencing.CRS#fromXML(String)
      */
     @Override
     public CoordinateReferenceSystem createFromXML(final String xml) throws FactoryException {

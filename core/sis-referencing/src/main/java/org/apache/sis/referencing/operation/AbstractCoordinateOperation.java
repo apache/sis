@@ -558,32 +558,33 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
      *
      * <ul>
      *   <li>If a {@linkplain org.apache.sis.metadata.iso.quality.DefaultQuantitativeResult quantitative result}
-     *     is found with a linear unit, then this accuracy estimate is converted to
-     *     {@linkplain javax.measure.unit.SI#METRE metres} and returned.</li>
+     *       is found with a linear unit, then returns the result value converted to metres.</li>
      *
-     *   <li>Otherwise, if the operation is a {@linkplain DefaultConversion conversion}, then returns 0 since a
-     *     conversion is by definition accurate up to rounding errors.</li>
+     *   <li>Otherwise if the operation is a {@linkplain DefaultConversion conversion},
+     *       then returns 0 since a conversion is by definition accurate up to rounding errors.</li>
      *
-     *   <li>Otherwise, if the operation is a {@linkplain DefaultTransformation transformation}, then checks if
-     *     the datum shift were applied with the help of Bursa-Wolf parameters.
-     *     If a datum shift has been applied, returns 25 meters.
-     *     If a datum shift should have been applied but has been omitted, returns 3000 meters.
+     *   <li>Otherwise if the operation is a {@linkplain DefaultTransformation transformation},
+     *       then checks if the datum shift were applied with the help of Bursa-Wolf parameters.
+     *       If a datum shift has been applied, returns 25 meters.
+     *       If a datum shift should have been applied but has been omitted, returns 3000 meters.
      *
-     *     <div class="note"><b>Note:</b>
-     *     the 3000 meters value is higher than the highest value (999 meters) found in the EPSG
-     *     database version 6.7. The 25 meters value is the next highest value found in the EPSG
-     *     database for a significant number of transformations.</div>
+     *       <div class="note"><b>Note:</b>
+     *       the 3000 meters value is higher than the highest value (999 meters) found in the EPSG
+     *       database version 6.7. The 25 meters value is the next highest value found in the EPSG
+     *       database for a significant number of transformations.</div>
      *
-     *   <li>Otherwise, if the operation is a {@linkplain DefaultConcatenatedOperation concatenated operation},
-     *     returns the sum of the accuracy of all components. This is a conservative scenario where we assume that
-     *     errors cumulate linearly.
+     *   <li>Otherwise if the operation is a {@linkplain DefaultConcatenatedOperation concatenated operation},
+     *       returns the sum of the accuracy of all components.
+     *       This is a conservative scenario where we assume that errors cumulate linearly.
      *
-     *     <div class="note"><b>Note:</b>
-     *     this is not necessarily the "worst case" scenario since the accuracy could be worst if the math transforms
-     *     are highly non-linear.</div></li>
+     *       <div class="note"><b>Note:</b>
+     *       this is not necessarily the "worst case" scenario since the accuracy could be worst
+     *       if the math transforms are highly non-linear.</div></li>
      * </ul>
      *
      * @return The accuracy estimation (always in meters), or NaN if unknown.
+     *
+     * @see org.apache.sis.referencing.CRS#getLinearAccuracy(CoordinateOperation)
      */
     public double getLinearAccuracy() {
         return PositionalAccuracyConstant.getLinearAccuracy(this);
