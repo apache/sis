@@ -1136,7 +1136,8 @@ public final class Errors extends IndexedResourceBundle {
         public static final short UnspecifiedParameterValues = 185;
 
         /**
-         * Can not handle instances of ‘{0}’ because arbitrary implementations are not yet supported.
+         * Can not handle this instance of ‘{0}’ because arbitrary implementations are not yet
+         * supported.
          */
         public static final short UnsupportedImplementation_1 = 127;
 

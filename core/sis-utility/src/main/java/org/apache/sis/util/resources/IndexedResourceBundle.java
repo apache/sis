@@ -431,18 +431,26 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
     /**
      * If the given class is not public, returns the first public interface or the first public super-class.
      * This is for avoiding confusing the user with private class in message like "Value can not be instance
-     * of XYZ". In the worst case (nothing public other than {@code Object}), returns {@code Object.class}.
+     * of XYZ".
+     *
+     * <p>An exception to above rule happen if the first public class is abstract.
+     * In such case, we return the nearest non-abstract child even if non-public.</p>
      */
     private static Class<?> getPublicType(Class<?> c) {
-        while (!Modifier.isPublic(c.getModifiers())) {
+        Class<?> fallback = c;
+        int modifiers;
+        while (!Modifier.isPublic(modifiers = c.getModifiers())) {
             for (final Class<?> type : c.getInterfaces()) {
                 if (Modifier.isPublic(type.getModifiers()) && !type.getName().startsWith("java")) {
                     return type;
                 }
             }
+            if (!Modifier.isAbstract(modifiers)) {
+                fallback = c;
+            }
             c = c.getSuperclass();
         }
-        return c;
+        return Modifier.isAbstract(modifiers) ? fallback : c;
     }
 
     /**
