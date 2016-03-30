@@ -202,7 +202,7 @@ public abstract class InstallationScriptProvider extends InstallationResources {
      *
      * @param  authority The value given at construction time (e.g. {@code "EPSG"}).
      * @param  resource Index of the SQL script to read, from 0 inclusive to
-     *         <code>{@linkplain #getScriptNames()}.length</code> exclusive.
+     *         <code>{@linkplain #getResourceNames getResourceNames}(authority).length</code> exclusive.
      * @return A reader for the content of SQL script to execute.
      * @throws IllegalArgumentException if the given {@code authority} argument is not the expected value.
      * @throws IndexOutOfBoundsException if the given {@code resource} argument is out of bounds.
@@ -239,7 +239,7 @@ public abstract class InstallationScriptProvider extends InstallationResources {
      *
      * <div class="note"><b>Example 1:</b>
      * if this {@code InstallationScriptProvider} instance gets the SQL scripts from files in a well-known directory
-     * and if the names given at {@linkplain #InstallationScriptProvider(String...) construction time} are the
+     * and if the names given at {@linkplain #InstallationScriptProvider(String, String...) construction time} are the
      * filenames in that directory, then this method can be implemented as below:
      *
      * {@preformat java
