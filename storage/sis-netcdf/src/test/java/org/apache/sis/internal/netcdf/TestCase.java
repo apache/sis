@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.io.IOException;
 import java.lang.reflect.UndeclaredThrowableException;
+import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.logging.EmptyWarningListeners;
 import org.apache.sis.internal.netcdf.ucar.DecoderWrapper;
 import org.apache.sis.internal.system.Modules;
@@ -102,9 +103,10 @@ public abstract strictfp class TestCase extends IOTestCase {
      *
      * @param  name The file name as one of the above-cited constants.
      * @return The decoder for the given name.
-     * @throws IOException If an error occurred while opening the file.
+     * @throws IOException if an I/O error occurred while opening the file.
+     * @throws DataStoreException if a logical error occurred.
      */
-    protected Decoder createDecoder(final String name) throws IOException {
+    protected Decoder createDecoder(final String name) throws IOException, DataStoreException {
         return new DecoderWrapper(LISTENERS, new NetcdfDataset(open(name)));
     }
 
@@ -118,9 +120,10 @@ public abstract strictfp class TestCase extends IOTestCase {
      *
      * @param  name The file name as one of the constants enumerated in the {@link #createDecoder(String)} method.
      * @return The decoder for the given name.
-     * @throws IOException If an error occurred while opening the file.
+     * @throws IOException if an I/O error occurred while opening the file.
+     * @throws DataStoreException if a logical error occurred.
      */
-    protected final Decoder selectDataset(final String name) throws IOException {
+    protected final Decoder selectDataset(final String name) throws IOException, DataStoreException {
         synchronized (DECODERS) { // Paranoiac safety, but should not be used in multi-threads environment.
             decoder = DECODERS.get(name);
             if (decoder == null) {
@@ -137,7 +140,7 @@ public abstract strictfp class TestCase extends IOTestCase {
      * Invoked after all tests in a class have been executed.
      * This method closes all NetCDF files.
      *
-     * @throws IOException If an error occurred while closing a file.
+     * @throws IOException if an error occurred while closing a file.
      */
     @AfterClass
     public static void closeAllDecoders() throws IOException {
@@ -183,7 +186,7 @@ public abstract strictfp class TestCase extends IOTestCase {
      *
      * @param  expected      The expected attribute value.
      * @param  attributeName The name of the attribute to test.
-     * @throws IOException   If an error occurred while reading the NetCDF file.
+     * @throws IOException   if an error occurred while reading the NetCDF file.
      */
     protected final void assertAttributeEquals(final String expected, final String attributeName) throws IOException {
         assertEquals(attributeName, expected, decoder.stringValue(attributeName));

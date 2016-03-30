@@ -17,14 +17,21 @@
 package org.apache.sis.referencing.factory.sql;
 
 import java.util.Locale;
+import java.util.List;
+import java.util.Map;
+import java.util.LinkedHashMap;
 import java.sql.ResultSet;
 import javax.measure.unit.Unit;
 import javax.measure.unit.NonSI;
 import javax.measure.unit.SI;
 import javax.measure.converter.ConversionException;
+import org.opengis.util.FactoryException;
+import org.opengis.metadata.extent.Extent;
+import org.apache.sis.internal.referencing.ExtentSelector;
 import org.apache.sis.referencing.datum.BursaWolfParameters;
 import org.apache.sis.referencing.datum.TimeDependentBWP;
 import org.apache.sis.referencing.factory.FactoryDataException;
+import org.apache.sis.referencing.factory.GeodeticAuthorityFactory;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.measure.Units;
 
@@ -123,11 +130,22 @@ final class BursaWolfInfo {
     final int target;
 
     /**
+     * The value of {@code AREA_OF_USE_CODE}.
+     */
+    private final int domainOfValidity;
+
+    /**
+     * The domain of validity as an {@code Extent} object.
+     */
+    private Extent extent;
+
+    /**
      * Fills a structure with the specified values.
      */
-    BursaWolfInfo(final int operation, final int method, final int targetCRS) {
-        this.operation = operation;
-        this.method    = method;
+    BursaWolfInfo(final int operation, final int method, final int targetCRS, final int domainOfValidity) {
+        this.operation        = operation;
+        this.method           = method;
+        this.domainOfValidity = domainOfValidity;
         switch (targetCRS) {
             case TARGET_CRS: target = TARGET_DATUM; break;
             // More codes may be added in future SIS version.
@@ -154,5 +172,45 @@ final class BursaWolfInfo {
     @Override
     public String toString() {
         return String.valueOf(operation);
+    }
+
+    /**
+     * Gets the domain of validity. The result is cached.
+     *
+     * @param factory The factory to use for creating {@code Extent} instances.
+     */
+    Extent getDomainOfValidity(final GeodeticAuthorityFactory factory) throws FactoryException {
+        if (extent == null && domainOfValidity != 0) {
+            extent = factory.createExtent(String.valueOf(domainOfValidity));
+        }
+        return extent;
+    }
+
+    /**
+     * Given an array of {@code BursaWolfInfo} instances, retains only the instances having the largest
+     * domain of validity for each target datum. If two instances have the same domain of validity, the
+     * first one is retained. This presume that the instances have already been sorted for preference order
+     * before to invoke this method.
+     *
+     * @param factory     The factory to use for creating {@code Extent} instances.
+     * @param candidates  The Bursa-Wolf parameters candidates.
+     * @param addTo       Where to add the instances retained by this method.
+     */
+    static void filter(final GeodeticAuthorityFactory factory, final BursaWolfInfo[] candidates,
+            final List<BursaWolfInfo> addTo) throws FactoryException
+    {
+        final Map<Integer,ExtentSelector<BursaWolfInfo>> added = new LinkedHashMap<Integer,ExtentSelector<BursaWolfInfo>>();
+        for (BursaWolfInfo candidate : candidates) {
+            final Integer target = candidate.target;
+            ExtentSelector<BursaWolfInfo> selector = added.get(target);
+            if (selector == null) {
+                selector = new ExtentSelector<BursaWolfInfo>(null);
+                added.put(target, selector);
+            }
+            selector.evaluate(candidate.getDomainOfValidity(factory), candidate);
+        }
+        for (final ExtentSelector<BursaWolfInfo> select : added.values()) {
+            addTo.add(select.best());
+        }
     }
 }

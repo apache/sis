@@ -101,6 +101,16 @@ public class GeographicOffsets extends AbstractProvider {
     }
 
     /**
+     * The inverse of this operation is the same operation with parameter signs inverted.
+     *
+     * @return {@code true} for all {@code GeocentricAffine}.
+     */
+    @Override
+    public final boolean isInvertible() {
+        return true;
+    }
+
+    /**
      * Creates a transform from the specified group of parameter values.
      * The parameter values are unconditionally converted to degrees and metres.
      *

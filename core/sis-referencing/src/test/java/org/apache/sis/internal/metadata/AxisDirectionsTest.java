@@ -32,6 +32,9 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 import static java.lang.StrictMath.abs;
 import static org.opengis.referencing.cs.AxisDirection.*;
+import static org.apache.sis.internal.metadata.AxisDirections.AWAY_FROM;
+import static org.apache.sis.internal.metadata.AxisDirections.CLOCKWISE;
+import static org.apache.sis.internal.metadata.AxisDirections.COUNTER_CLOCKWISE;
 
 
 /**
@@ -63,6 +66,9 @@ public final strictfp class AxisDirectionsTest extends TestCase {
         assertEquals(UP,                AxisDirections.absolute(DOWN));
         assertEquals(FUTURE,            AxisDirections.absolute(FUTURE));
         assertEquals(FUTURE,            AxisDirections.absolute(PAST));
+        assertEquals(AWAY_FROM,         AxisDirections.absolute(AWAY_FROM));
+        assertEquals(COUNTER_CLOCKWISE, AxisDirections.absolute(CLOCKWISE));
+        assertEquals(COUNTER_CLOCKWISE, AxisDirections.absolute(COUNTER_CLOCKWISE));
     }
 
     /**
@@ -82,6 +88,9 @@ public final strictfp class AxisDirectionsTest extends TestCase {
         assertEquals(UP,                AxisDirections.opposite(DOWN));
         assertEquals(PAST,              AxisDirections.opposite(FUTURE));
         assertEquals(FUTURE,            AxisDirections.opposite(PAST));
+        assertEquals(COUNTER_CLOCKWISE, AxisDirections.opposite(CLOCKWISE));
+        assertEquals(CLOCKWISE,         AxisDirections.opposite(COUNTER_CLOCKWISE));
+        assertNull  (                   AxisDirections.opposite(AWAY_FROM));
     }
 
     /**
@@ -381,7 +390,10 @@ public final strictfp class AxisDirectionsTest extends TestCase {
         assertEquals("φ′",  AxisDirections.suggestAbbreviation("Spherical latitude",     NORTH,         NonSI.DEGREE_ANGLE));
         assertEquals("h",   AxisDirections.suggestAbbreviation("Ellipsoidal height",     UP,               SI.METRE));
         assertEquals("H",   AxisDirections.suggestAbbreviation("Gravity-related height", UP,               SI.METRE));
-        assertEquals("r",   AxisDirections.suggestAbbreviation("Geocentric radius",      UP,               SI.METRE));
+        assertEquals("φ",   AxisDirections.suggestAbbreviation("Elevation",              UP,               SI.METRE));
+        assertEquals("R",   AxisDirections.suggestAbbreviation("Geocentric radius",      UP,               SI.METRE));
+        assertEquals("r",   AxisDirections.suggestAbbreviation("Distance",               AWAY_FROM,        SI.METRE));
+        assertEquals("θ",   AxisDirections.suggestAbbreviation("Bearing",                CLOCKWISE,     NonSI.DEGREE_ANGLE));
         assertEquals("X",   AxisDirections.suggestAbbreviation("not needed",             GEOCENTRIC_X,     SI.METRE));
         assertEquals("Y",   AxisDirections.suggestAbbreviation("not needed",             GEOCENTRIC_Y,     SI.METRE));
         assertEquals("Z",   AxisDirections.suggestAbbreviation("not needed",             GEOCENTRIC_Z,     SI.METRE));

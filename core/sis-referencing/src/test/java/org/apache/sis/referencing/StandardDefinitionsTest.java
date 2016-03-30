@@ -150,12 +150,15 @@ public final strictfp class StandardDefinitionsTest extends TestCase {
      */
     @Test
     public void testCreateAxis() {
-        for (final short code : new short[] {1, 2, 106, 107, 110, 114, 113}) {
+        for (final short code : new short[] {1, 2, 60, 61, 62, 106, 107, 110, 114, 113}) {
             final CoordinateSystemAxis actual = StandardDefinitions.createAxis(code);
             Validators.validate(actual);
             switch (code) {
                 case   1: compare(HardCodedAxes.EASTING,                actual); break;
                 case   2: compare(HardCodedAxes.NORTHING,               actual); break;
+                case  60: compare(HardCodedAxes.SPHERICAL_LATITUDE,     actual); break;
+                case  61: compare(HardCodedAxes.SPHERICAL_LONGITUDE,    actual); break;
+                case  62: compare(HardCodedAxes.GEOCENTRIC_RADIUS,      actual); break;
                 case 106: compare(HardCodedAxes.GEODETIC_LATITUDE,      actual); break;
                 case 107: compare(HardCodedAxes.GEODETIC_LONGITUDE,     actual); break;
                 case 110: compare(HardCodedAxes.ELLIPSOIDAL_HEIGHT,     actual); break;

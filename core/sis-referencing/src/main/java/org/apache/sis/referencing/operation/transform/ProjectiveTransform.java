@@ -92,6 +92,9 @@ class ProjectiveTransform extends AbstractLinearTransform implements ExtendedPre
      * Otherwise returns {@code this} unchanged.
      */
     final LinearTransform optimize() {
+        if (numCol < numRow) {
+            return this;
+        }
         final int n = (numRow - 1) * numCol;
         for (int i = 0; i != numCol;) {
             if (elt[n + i] != (++i == numCol ? 1 : 0)) {

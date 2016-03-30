@@ -144,14 +144,14 @@ final class Store extends DataStore {
     public Metadata getMetadata() throws DataStoreException {
         if (metadata == null) {
             parse();
-            DefaultMetadata d = null;
+            DefaultMetadata md = null;
             for (final Object object : objects) {
                 if (object instanceof ReferenceSystem) {
-                    if (d == null) d = new DefaultMetadata();
-                    d.getReferenceSystemInfo().add((ReferenceSystem) object);
+                    if (md == null) md = new DefaultMetadata();
+                    md.getReferenceSystemInfo().add((ReferenceSystem) object);
                 }
             }
-            metadata = d;
+            metadata = md;
         }
         return metadata;
     }

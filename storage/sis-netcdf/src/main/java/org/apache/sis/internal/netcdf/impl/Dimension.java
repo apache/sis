@@ -27,9 +27,8 @@ import org.apache.sis.util.Debug;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.3
+ * @version 0.7
  * @module
- *
  */
 final class Dimension {
     /**
@@ -38,16 +37,26 @@ final class Dimension {
     final String name;
 
     /**
-     * The number of grid cell value along that dimension, as an unsigned number.
+     * The number of grid cell value along this dimension, as an unsigned number.
      */
     final int length;
 
     /**
      * Creates a new dimension of the given name and length.
+     *
+     * @param name   The dimension name.
+     * @param length The number of grid cell value along this dimension, as an unsigned number.
      */
     Dimension(final String name, final int length) {
         this.name   = name;
         this.length = length;
+    }
+
+    /**
+     * Returns the number of grid cell value along this dimension.
+     */
+    final long length() {
+        return length & 0xFFFFFFFFL;
     }
 
     /**
@@ -56,6 +65,6 @@ final class Dimension {
     @Debug
     @Override
     public String toString() {
-        return name + '[' + (length & 0xFFFFFFFFL) + ']';
+        return name + '[' + length() + ']';
     }
 }

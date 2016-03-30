@@ -24,6 +24,7 @@ import javax.measure.unit.NonSI;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.RangeMeaning;
 import org.apache.sis.internal.metadata.AxisNames;
+import org.apache.sis.internal.metadata.AxisDirections;
 
 
 /**
@@ -31,7 +32,7 @@ import org.apache.sis.internal.metadata.AxisNames;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.6
+ * @version 0.7
  * @module
  */
 public final strictfp class HardCodedAxes {
@@ -164,17 +165,24 @@ public final strictfp class HardCodedAxes {
      * Axis for radius in a {@linkplain org.apache.sis.referencing.crs.DefaultGeocentricCRS geocentric CRS}
      * using {@linkplain org.apache.sis.referencing.cs.DefaultSphericalCS spherical CS}.
      * Increasing ordinates values go {@linkplain AxisDirection#UP up} and units are {@linkplain SI#METRE metres}.
-     * The ISO 19111 name is <cite>"geocentric radius"</cite> and the abbreviation is lower case <cite>"r"</cite>.
+     * The ISO 19111 name is <cite>"geocentric radius"</cite> and the abbreviation is upper-case <cite>"R"</cite>.
+     *
+     * <div class="note"><b>Note:</b>
+     * The uses upper-case <cite>"R"</cite> come from EPSG dataset 8.9.
+     * ISO 19111 and 19162 use lower-case <cite>"r"</cite> instead,
+     * but with "awayFrom" direction instead of "geocentricRadius".
+     * In this class, <cite>"r"</cite> is taken by {@link #DISTANCE}.</div>
      *
      * <p>This axis is usually part of a {@link #SPHERICAL_LONGITUDE}, {@link #SPHERICAL_LATITUDE},
      * {@link #GEOCENTRIC_RADIUS} set.</p>
      *
+     * @see #DISTANCE
      * @see #ALTITUDE
      * @see #ELLIPSOIDAL_HEIGHT
      * @see #GRAVITY_RELATED_HEIGHT
      * @see #DEPTH
      */
-    public static final DefaultCoordinateSystemAxis GEOCENTRIC_RADIUS = create(AxisNames.GEOCENTRIC_RADIUS, "r",
+    public static final DefaultCoordinateSystemAxis GEOCENTRIC_RADIUS = create(AxisNames.GEOCENTRIC_RADIUS, "R",
             AxisDirection.UP, SI.METRE, 0, Double.POSITIVE_INFINITY, RangeMeaning.EXACT);
 
     /**
@@ -185,7 +193,10 @@ public final strictfp class HardCodedAxes {
      * The ISO 19111 name is <cite>"spherical longitude"</cite> and the abbreviation is "θ" (theta).
      *
      * <p>This axis is close to the definition found in the EPSG database, except for the "long" abbreviation which
-     * is replaced by "θ". Note that other conventions exist, in which the meaning of φ and θ are interchanged.</p>
+     * is replaced by "θ". Note that other conventions exist, in which the meaning of φ and θ are interchanged.
+     * ISO mentions also the symbol Ω, but it is not clear if it applies to longitude or latitude.
+     * The "θ" abbreviation used here is found in ISO 19162.
+     * See {@link AxisNames#SPHERICAL_LONGITUDE} for other information.</p>
      *
      * <p>This axis is usually part of a {@link #SPHERICAL_LONGITUDE}, {@link #SPHERICAL_LATITUDE},
      * {@link #GEOCENTRIC_RADIUS} set.</p>
@@ -208,7 +219,10 @@ public final strictfp class HardCodedAxes {
      *
      * <p>This axis is close to the definition found in the EPSG database, except for the "lat" abbreviation
      * which is replaced by "φ′". Note that other conventions exist, in which the meaning of φ and θ are
-     * interchanged or in which this axis is named "elevation" and is oriented toward "Up".</p>
+     * interchanged or in which this axis is named "elevation" and is oriented toward "Up".
+     * Other conventions use symbol Ψ or Ω.
+     * The "φ" abbreviation used here is found in ISO 19162.
+     * See {@link AxisNames#SPHERICAL_LATITUDE} for other information.</p>
      *
      * <p>This axis is usually part of a {@link #SPHERICAL_LONGITUDE}, {@link #SPHERICAL_LATITUDE},
      * {@link #GEOCENTRIC_RADIUS} set.</p>
@@ -361,14 +375,40 @@ public final strictfp class HardCodedAxes {
     /**
      * An axis with North-East orientation.
      */
-    static final DefaultCoordinateSystemAxis NORTH_EAST = create("NORTH_EAST", "NE",
+    public static final DefaultCoordinateSystemAxis NORTH_EAST = create("North-East", "NE",
             AxisDirection.NORTH_EAST, SI.METRE, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, null);
 
     /**
      * An axis with South-East orientation.
      */
-    static final DefaultCoordinateSystemAxis SOUTH_EAST = create("SOUTH_EAST", "SE",
+    public static final DefaultCoordinateSystemAxis SOUTH_EAST = create("South-East", "SE",
             AxisDirection.SOUTH_EAST, SI.METRE, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, null);
+
+    /**
+     * An axis for a distance from an origin.
+     * This is part of a polar or engineering spherical coordinate system
+     * (not to be confused with geodetic spherical coordinate system).
+     *
+     * @see #GEOCENTRIC_RADIUS
+     */
+    public static final DefaultCoordinateSystemAxis DISTANCE = create("Distance", "r",
+            AxisDirections.AWAY_FROM, SI.METRE, 0, Double.POSITIVE_INFINITY, RangeMeaning.EXACT);
+
+    /**
+     * An axis with clockwise orientation.
+     * This is part of a polar or engineering spherical coordinate system
+     * (not to be confused with geodetic spherical coordinate system).
+     */
+    public static final DefaultCoordinateSystemAxis BEARING = create("Bearing", "θ",
+            AxisDirections.CLOCKWISE, NonSI.DEGREE_ANGLE, -180, +180, RangeMeaning.WRAPAROUND);
+
+    /**
+     * An axis with for elevation angle.
+     * This is part of an engineering spherical coordinate system
+     * (not to be confused with geodetic spherical coordinate system).
+     */
+    public static final DefaultCoordinateSystemAxis ELEVATION = create("Elevation", "φ",
+            AxisDirection.UP, NonSI.DEGREE_ANGLE, -90, +90, RangeMeaning.WRAPAROUND);
 
     /**
      * Axis for time values in a {@linkplain org.apache.sis.referencing.cs.DefaultTimeCS time CS}.
@@ -421,7 +461,7 @@ public final strictfp class HardCodedAxes {
     /**
      * Creates a new axis of the given name, abbreviation, direction and unit.
      */
-    private static DefaultCoordinateSystemAxis create(final String name, final String abbreviation,
+    static DefaultCoordinateSystemAxis create(final String name, final String abbreviation,
             final AxisDirection direction, final Unit<?> unit, final double minimum, final double maximum,
             final RangeMeaning meaning)
     {

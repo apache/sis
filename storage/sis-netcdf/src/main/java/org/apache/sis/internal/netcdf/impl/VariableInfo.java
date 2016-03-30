@@ -23,8 +23,11 @@ import ucar.nc2.constants.CDM;
 import ucar.nc2.constants._Coordinate;
 import org.apache.sis.internal.netcdf.Variable;
 import org.apache.sis.internal.storage.ChannelDataInput;
+import org.apache.sis.internal.storage.HyperRectangleReader;
+import org.apache.sis.internal.storage.Region;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.Numbers;
 
 
 /**
@@ -33,7 +36,7 @@ import org.apache.sis.util.resources.Errors;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.5
+ * @version 0.7
  * @module
  */
 final class VariableInfo extends Variable {
@@ -49,19 +52,31 @@ final class VariableInfo extends Variable {
     };
 
     /**
-     * The type of data. Number of bits and endianness are same as in the Java language
-     * except {@code CHAR}, which is defined as an unsigned 8-bits value.
+     * The NetCDF type of data. Number of bits and endianness are same as in the Java language except {@code CHAR},
+     * which is defined as an unsigned 8-bits value.
      */
     static final int BYTE=1, CHAR=2, SHORT=3, INT=4, FLOAT=5, DOUBLE=6;
+
+    /**
+     * Mapping from the NetCDF data type to the enumeration used by our {@link Numbers} class.
+     */
+    private static final byte[] NUMBER_TYPES = new byte[] {
+        Numbers.BYTE,
+        Numbers.BYTE,       // NOT Numbers.CHARACTER
+        Numbers.SHORT,
+        Numbers.INTEGER,
+        Numbers.FLOAT,
+        Numbers.DOUBLE,
+    };
 
     /**
      * The size in bytes of the above constants.
      *
      * @see #sizeOf(int)
      */
-    private static final int[] SIZES = new int[] {
+    private static final byte[] SIZES = new byte[] {
         Byte   .SIZE / Byte.SIZE,
-        Byte   .SIZE / Byte.SIZE, // NOT Java char
+        Byte   .SIZE / Byte.SIZE,      // NOT Character.BYTES
         Short  .SIZE / Byte.SIZE,
         Integer.SIZE / Byte.SIZE,
         Float  .SIZE / Byte.SIZE,
@@ -83,11 +98,10 @@ final class VariableInfo extends Variable {
     };
 
     /**
-     * The channel together with a buffer for reading the variable data.
-     *
-     * @see #read()
+     * Helper class for reading a sub-area with a sub-sampling,
+     * or {@code null} if {@code dataType} is not a supported type.
      */
-    private final ChannelDataInput input;
+    private final HyperRectangleReader reader;
 
     /**
      * The variable name.
@@ -95,7 +109,7 @@ final class VariableInfo extends Variable {
     private final String name;
 
     /**
-     * The dimensions of that variable.
+     * The dimensions of this variable.
      */
     final Dimension[] dimensions;
 
@@ -110,15 +124,9 @@ final class VariableInfo extends Variable {
     private final Map<String,Attribute> attributes;
 
     /**
-     * The type of data, as one of the {@code BYTE}, {@code SHORT} and similar constants defined
-     * in {@link ChannelDecoder}.
+     * The type of data, as one of the {@code BYTE}, {@code SHORT} and similar constants defined in this class.
      */
-    private final int datatype;
-
-    /**
-     * The offset where the variable data begins in the NetCDF file.
-     */
-    private final long offset;
+    private final int dataType;
 
     /**
      * The grid geometry associated to this variable,
@@ -128,22 +136,35 @@ final class VariableInfo extends Variable {
 
     /**
      * Creates a new variable.
+     *
+     * @param input         The channel together with a buffer for reading the variable data.
+     * @param name          The variable name.
+     * @param dimensions    The dimensions of this variable.
+     * @param allDimensions All dimensions in the NetCDF files.
+     * @param attributes    The attributes associates to the variable, or an empty map if none.
+     * @param dataType      The type of data, as one of the {@code BYTE} and similar constants defined in this class.
+     * @param size          The variable size, used for verification purpose only.
+     * @param offset        The offset where the variable data begins in the NetCDF file.
      */
     VariableInfo(final ChannelDataInput input, final String name,
             final Dimension[] dimensions, final Dimension[] allDimensions,
-            final Map<String,Attribute> attributes, final int datatype, final int size, final long offset)
+            final Map<String,Attribute> attributes, int dataType, final int size, final long offset)
+            throws DataStoreException
     {
-        this.input         = input;
         this.name          = name;
         this.dimensions    = dimensions;
         this.allDimensions = allDimensions;
         this.attributes    = attributes;
-        this.datatype      = datatype;
-        this.offset        = offset;
+        this.dataType      = dataType;
         /*
          * The 'size' value is provided in the NetCDF files, but doesn't need to be stored since it
          * is redundant with the dimension lengths and is not large enough for big variables anyway.
          */
+        if (--dataType >= 0 && dataType < NUMBER_TYPES.length) {
+            reader = new HyperRectangleReader(NUMBER_TYPES[dataType], input, offset);
+        } else {
+            reader = null;
+        }
     }
 
     /**
@@ -188,7 +209,7 @@ final class VariableInfo extends Variable {
      */
     @Override
     public Class<?> getDataType() {
-        final int i = datatype - 1;
+        final int i = dataType - 1;
         return (i >= 0 && i < TYPES.length) ? TYPES[i] : null;
     }
 
@@ -256,6 +277,8 @@ final class VariableInfo extends Variable {
     /**
      * Returns the length (number of cells) of each grid dimension. In ISO 19123 terminology, this method
      * returns the upper corner of the grid envelope plus one. The lower corner is always (0,0,…,0).
+     *
+     * @return The number of grid cells for each dimension, as unsigned integers.
      */
     @Override
     public int[] getGridEnvelope() {
@@ -285,6 +308,9 @@ final class VariableInfo extends Variable {
      */
     @Override
     public Object read() throws IOException, DataStoreException {
+        if (reader == null) {
+            throw new DataStoreException(unknownType());
+        }
         long length = 1;
         for (final Dimension dimension : dimensions) {
             length *= dimension.length;
@@ -292,14 +318,67 @@ final class VariableInfo extends Variable {
         if (length > Integer.MAX_VALUE) {
             throw new DataStoreException(Errors.format(Errors.Keys.ExcessiveListSize_2, name, length));
         }
-        input.seek(offset);
-        switch (datatype) {
-            case BYTE:   return input.readBytes  ((int) length);
-            case SHORT:  return input.readShorts ((int) length);
-            case INT:    return input.readInts   ((int) length);
-            case FLOAT:  return input.readFloats ((int) length);
-            case DOUBLE: return input.readDoubles((int) length);
-            default: throw new DataStoreException(Errors.format(Errors.Keys.UnknownType_1, datatype));
+        final int dimension = dimensions.length;
+        final long[] size  = new long[dimension];
+        final int [] sub   = new int [dimension];
+        for (int i=0; i<dimension; i++) {
+            sub [i] = 1;
+            size[i] = dimensions[(dimension - 1) - i].length();
         }
+        return reader.read(new Region(size, new long[dimension], size, sub));
+    }
+
+    /**
+     * Reads a sub-sampled sub-area of the variable.
+     *
+     * @param  areaLower   Index of the first value to read along each dimension, as unsigned integers.
+     * @param  areaUpper   Index after the last value to read along each dimension, as unsigned integers.
+     * @param  subsampling Sub-sampling along each dimension. 1 means no sub-sampling.
+     * @return The data as an array of a Java primitive type.
+     */
+    @Override
+    public Object read(int[] areaLower, int[] areaUpper, int[] subsampling) throws IOException, DataStoreException {
+        if (reader == null) {
+            throw new DataStoreException(unknownType());
+        }
+        /*
+         * NetCDF sorts datas in reverse dimension order. Example:
+         *
+         * DIMENSIONS:
+         *   time: 3
+         *   lat : 2
+         *   lon : 4
+         *
+         * VARIABLES:
+         *   temperature (time,lat,lon)
+         *
+         * DATA INDICES:
+         *   (0,0,0) (0,0,1) (0,0,2) (0,0,3)
+         *   (0,1,0) (0,1,1) (0,1,2) (0,1,3)
+         *   (1,0,0) (1,0,1) (1,0,2) (1,0,3)
+         *   (1,1,0) (1,1,1) (1,1,2) (1,1,3)
+         *   (2,0,0) (2,0,1) (2,0,2) (2,0,3)
+         *   (2,1,0) (2,1,1) (2,1,2) (2,1,3)
+         */
+        final int dimension = dimensions.length;
+        final long[] size  = new long[dimension];
+        final long[] lower = new long[dimension];
+        final long[] upper = new long[dimension];
+        final int [] sub   = new int [dimension];
+        for (int i=0; i<dimension; i++) {
+            final int j = (dimension - 1) - i;
+            lower[i] = areaLower[j] & 0xFFFFFFFFL;
+            upper[i] = areaUpper[j] & 0xFFFFFFFFL;
+            sub  [i] = subsampling[j];
+            size [i] = dimensions[j].length();
+        }
+        return reader.read(new Region(size, lower, upper, sub));
+    }
+
+    /**
+     * Returns the error message for an unknown data type.
+     */
+    private String unknownType() {
+        return Errors.format(Errors.Keys.UnknownType_1, "NetCDF:" + dataType);
     }
 }

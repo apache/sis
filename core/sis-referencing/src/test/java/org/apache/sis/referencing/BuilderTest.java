@@ -296,9 +296,9 @@ public final strictfp class BuilderTest extends TestCase {
         assertNull(properties.put(AbstractIdentifiedObject.REMARKS_KEY,     "Some remarks"));
         final BuilderMock builder = new BuilderMock(new AbstractIdentifiedObject(properties));
 
-        assertEquals("Expected only name and remarks.", 2, builder.properties.size());
+        assertEquals("Expected only name, remarks and deprecated status.", 3, builder.properties.size());
         builder.onCreate(false);
-        assertEquals("Expected name, aliases, identifiers and remarks.", 4, builder.properties.size());
+        assertEquals("Expected name, aliases, identifiers and remarks.", 5, builder.properties.size());
 
         assertEquals(AbstractIdentifiedObject.NAME_KEY, "Dummy object",
                 builder.properties.get(AbstractIdentifiedObject.NAME_KEY).toString());
