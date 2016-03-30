@@ -34,10 +34,6 @@ import javax.measure.unit.Unit;
 import javax.measure.unit.SI;
 import javax.measure.unit.NonSI;
 import javax.measure.quantity.Duration;
-import org.opengis.feature.Feature;
-import org.opengis.feature.FeatureType;
-import org.opengis.feature.PropertyType;
-import org.opengis.feature.AttributeType;
 import org.opengis.metadata.Metadata;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -64,6 +60,10 @@ import org.apache.sis.util.resources.IndexedResourceBundle;
 // Branch-dependent imports
 import java.time.Instant;
 import java.time.DateTimeException;
+import org.opengis.feature.Feature;
+import org.opengis.feature.FeatureType;
+import org.opengis.feature.PropertyType;
+import org.opengis.feature.AttributeType;
 
 
 /**
