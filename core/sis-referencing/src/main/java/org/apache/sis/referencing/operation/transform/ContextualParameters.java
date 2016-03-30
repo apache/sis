@@ -462,7 +462,7 @@ public class ContextualParameters extends Parameters implements Serializable {
             offset = new DoubleDouble(-λ0);
             offset.multiply(toRadians);
         }
-        final MatrixSIS normalize = (MatrixSIS) this.normalize;  // Must be the same instance, not a copy.
+        final MatrixSIS normalize = (MatrixSIS) this.normalize;         // Must be the same instance, not a copy.
         normalize.convertBefore(0, toRadians, offset);
         normalize.convertBefore(1, toRadians, null);
         return normalize;
@@ -487,7 +487,7 @@ public class ContextualParameters extends Parameters implements Serializable {
     public synchronized MatrixSIS denormalizeGeographicOutputs(final double λ0) {
         ensureModifiable();
         final DoubleDouble toDegrees = DoubleDouble.createRadiansToDegrees();
-        final MatrixSIS denormalize = (MatrixSIS) this.denormalize;  // Must be the same instance, not a copy.
+        final MatrixSIS denormalize = (MatrixSIS) this.denormalize;         // Must be the same instance, not a copy.
         denormalize.convertAfter(0, toDegrees, (λ0 != 0) ? λ0 : null);
         denormalize.convertAfter(1, toDegrees, null);
         return denormalize;
@@ -552,7 +552,7 @@ public class ContextualParameters extends Parameters implements Serializable {
                 new IdentityHashMap<ParameterDescriptor<?>, ParameterValue<?>>(values.length);
         for (ParameterValue<?> p : values) {
             if (p == null) {
-                break;  // The first null value in the array indicates the end of sequence.
+                break;                      // The first null value in the array indicates the end of sequence.
             }
             p = DefaultParameterValue.unmodifiable(p);
             final ParameterDescriptor<?> desc = p.getDescriptor();

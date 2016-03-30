@@ -214,4 +214,14 @@ public abstract class AbstractProvider extends DefaultOperationMethod implements
     public int getEllipsoidsMask() {
         return 0;
     }
+
+    /**
+     * Returns {@code true} if the inverse of this operation method is the same operation method with some parameter
+     * values changed (typically with sign inverted). The default implementation returns {@code false}.
+     *
+     * @return {@code true} if the inverse of this operation method can be described by the same operation method.
+     */
+    public boolean isInvertible() {
+        return false;
+    }
 }

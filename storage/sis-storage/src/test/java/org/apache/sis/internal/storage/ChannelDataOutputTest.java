@@ -82,7 +82,7 @@ public strictfp class ChannelDataOutputTest extends ChannelDataTestCase {
         referenceStream          = new DataOutputStream(expectedData);
         testedStreamBackingArray = new byte[streamLength];
         testedStream             = new ChannelDataOutput(testName,
-                new ByteArrayChannel(testedStreamBackingArray), ByteBuffer.allocate(bufferLength));
+                new ByteArrayChannel(testedStreamBackingArray, false), ByteBuffer.allocate(bufferLength));
     }
 
     /**

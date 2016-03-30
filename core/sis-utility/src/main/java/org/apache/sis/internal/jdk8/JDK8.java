@@ -220,6 +220,28 @@ public final class JDK8 {
     }
 
     /**
+     * Replaces the value for the given key if the current value is {@code oldValue}.
+     *
+     * @param  <K>      The type of keys.
+     * @param  <V>      The type of values.
+     * @param  map      The map from where to replace the values.
+     * @param  key      The key of value to replace.
+     * @param  oldValue The expected current value.
+     * @param  newValue The new value to store if the current value is the expected one.
+     * @return Whether the replacement has been done.
+     *
+     * @since 0.7
+     */
+    public static <K,V> boolean replace(final Map<K,V> map, final K key, final V oldValue, final V newValue) {
+        final Object c = map.get(key);
+        if (Objects.equals(c, oldValue) && (c != null || map.containsKey(key))) {
+            map.put(key, newValue);
+            return true;
+        }
+        return false;
+    }
+
+    /**
      * Replaces the values for all entries in the given map.
      *
      * @param  <K>      The type of keys.

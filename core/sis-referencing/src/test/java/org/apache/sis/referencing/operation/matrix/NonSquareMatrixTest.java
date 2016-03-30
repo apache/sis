@@ -17,9 +17,11 @@
 package org.apache.sis.referencing.operation.matrix;
 
 import java.util.Random;
+import org.opengis.test.Assert;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestUtilities;
 import org.junit.AfterClass;
+import org.junit.Test;
 
 import static java.lang.Double.NaN;
 import static org.junit.Assert.*;
@@ -37,7 +39,7 @@ import static org.junit.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.4
+ * @version 0.7
  * @module
  */
 @DependsOn(SolverTest.class)
@@ -76,8 +78,9 @@ public final strictfp class NonSquareMatrixTest extends MatrixTestCase {
     /**
      * Tests {@link NonSquareMatrix#inverse()} with a non-square matrix.
      *
-     * @throws NoninvertibleMatrixException Should never happen.
+     * @throws NoninvertibleMatrixException if the matrix can not be inverted.
      */
+    @Test
     @Override
     public void testInverse() throws NoninvertibleMatrixException {
         testDimensionReduction(null, 1, 0);
@@ -85,10 +88,51 @@ public final strictfp class NonSquareMatrixTest extends MatrixTestCase {
     }
 
     /**
+     * Tests inversion of a matrix with a column containing only a translation term.
+     * The purpose is to test the algorithm that selects the rows to omit.
+     *
+     * @throws NoninvertibleMatrixException if the matrix can not be inverted.
+     */
+    @Test
+    public void testInverseWithTranslationTerm() throws NoninvertibleMatrixException {
+        final NonSquareMatrix m = new NonSquareMatrix(5, 3, new double[] {
+            2, 0, 0,
+            0, 0, 0,
+            0, 4, 0,
+            0, 0, 3,
+            0, 0, 1
+        });
+        MatrixSIS inverse = m.inverse();
+        Assert.assertMatrixEquals("Inverse of non-square matrix.", new NonSquareMatrix(3, 5, new double[] {
+            0.5, 0,   0,    0,   0,
+            0,   0,   0.25, 0,   0,
+            0,   0,   0,    0,   1}), inverse, STRICT);
+
+        Assert.assertMatrixEquals("Back to original.", new NonSquareMatrix(5, 3, new double[] {
+            2, 0, 0,
+            0, 0, NaN,
+            0, 4, 0,
+            0, 0, NaN,
+            0, 0, 1}), inverse.inverse(), STRICT);
+        /*
+         * Change the [0 0 3] row into [1 0 3]. The NonSquareMarix class should no longer omit that row.
+         * As a consequence, the matrix can not be inverted anymore.
+         */
+        m.setElement(3, 0, 1);
+        try {
+            m.inverse();
+            fail("Matrix should not be invertible.");
+        } catch (NoninvertibleMatrixException e) {
+            assertNotNull(e.getMessage());
+        }
+    }
+
+    /**
      * Tests {@link NonSquareMatrix#solve(Matrix)} with a non-square matrix.
      *
-     * @throws NoninvertibleMatrixException Should never happen.
+     * @throws NoninvertibleMatrixException if the matrix can not be inverted.
      */
+    @Test
     @Override
     public void testSolve() throws NoninvertibleMatrixException {
         testDimensionReduction(new Matrix3(
@@ -110,7 +154,7 @@ public final strictfp class NonSquareMatrixTest extends MatrixTestCase {
      * @param  Y    The matrix to give to {@code solve(Y)}, {@code null} for testing {@code inverse()}.
      * @param  sf   The scale factor by which to multiply all expected scale elements.
      * @param  uks  Value of unknown scales (O for {@code inverse()}, or NaN for {@code solve(Y)}).
-     * @throws NoninvertibleMatrixException Should never happen.
+     * @throws NoninvertibleMatrixException if the matrix can not be inverted.
      */
     private static void testDimensionReduction(final MatrixSIS Y, final double sf, final double uks)
             throws NoninvertibleMatrixException
@@ -137,7 +181,7 @@ public final strictfp class NonSquareMatrixTest extends MatrixTestCase {
      *
      * @param  Y    The matrix to give to {@code solve(Y)}, {@code null} for testing {@code inverse()}.
      * @param  sf   The scale factor by which to multiply all expected scale elements.
-     * @throws NoninvertibleMatrixException Should never happen.
+     * @throws NoninvertibleMatrixException if the matrix can not be inverted.
      */
     private static void testDimensionIncrease(final MatrixSIS Y, final double sf)
             throws NoninvertibleMatrixException

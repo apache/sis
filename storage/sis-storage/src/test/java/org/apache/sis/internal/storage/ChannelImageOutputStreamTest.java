@@ -48,7 +48,7 @@ public final strictfp class ChannelImageOutputStreamTest extends ChannelDataOutp
         referenceStream          = new MemoryCacheImageOutputStream(expectedData);
         testedStreamBackingArray = new byte[streamLength];
         testedStream             = new ChannelImageOutputStream(fileName,
-                new ByteArrayChannel(testedStreamBackingArray), ByteBuffer.allocate(bufferLength));
+                new ByteArrayChannel(testedStreamBackingArray, false), ByteBuffer.allocate(bufferLength));
     }
 
     /**

@@ -678,7 +678,7 @@ public class TensorParameters<E> implements Serializable {
                 if (++indices[j] < actualSize[j]) {
                     break;
                 }
-                indices[j] = 0; // We have done a full turn at that dimension. Will increment next dimension.
+                indices[j] = 0;         // We have done a full turn at that dimension. Will increment next dimension.
             }
         }
         return parameters;
@@ -736,6 +736,8 @@ public class TensorParameters<E> implements Serializable {
      * @param  properties The properties to be given to the identified object.
      * @param  matrix The matrix to copy in the new parameter group.
      * @return A new parameter group initialized to the given matrix.
+     *
+     * @see #toMatrix(ParameterValueGroup)
      */
     public ParameterValueGroup createValueGroup(final Map<String,?> properties, final Matrix matrix) {
         if (rank() != 2) {
@@ -754,6 +756,8 @@ public class TensorParameters<E> implements Serializable {
      * @param  parameters The group of parameters.
      * @return A matrix constructed from the specified group of parameters.
      * @throws InvalidParameterNameException if a parameter name was not recognized.
+     *
+     * @see #createValueGroup(Map, Matrix)
      */
     public Matrix toMatrix(final ParameterValueGroup parameters) throws InvalidParameterNameException {
         if (rank() != 2) {
@@ -761,7 +765,7 @@ public class TensorParameters<E> implements Serializable {
         }
         ArgumentChecks.ensureNonNull("parameters", parameters);
         if (parameters instanceof TensorValues) {
-            return ((TensorValues) parameters).toMatrix(); // More efficient implementation
+            return ((TensorValues) parameters).toMatrix();              // More efficient implementation
         }
         // Fallback on the general case (others implementations)
         final ParameterValue<?> numRow = parameters.parameter(dimensions[0].getName().getCode());

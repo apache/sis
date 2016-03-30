@@ -640,11 +640,20 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
                         return unit;
                     }
 
+                    @Override public Unit<?> getUnitReplacement(CoordinateSystemAxis axis, Unit<?> ignored) {
+                        assert SI.METRE.equals(ignored) : ignored;
+                        return unit;
+                    }
+
                     @Override public boolean accept(CoordinateSystemAxis axis) {
                         return true;
                     }
 
                     @Override public AxisDirection getDirectionReplacement(AxisDirection direction) {
+                        return direction;
+                    }
+
+                    @Override public AxisDirection getDirectionReplacement(CoordinateSystemAxis axis, AxisDirection direction) {
                         return direction;
                     }
                 });

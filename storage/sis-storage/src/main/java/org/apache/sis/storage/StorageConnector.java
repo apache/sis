@@ -39,6 +39,7 @@ import javax.sql.DataSource;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.ObjectConverters;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.storage.IOUtilities;
 import org.apache.sis.internal.storage.ChannelDataInput;
@@ -361,8 +362,8 @@ public class StorageConnector implements Serializable {
      * @param  type The desired type as one of {@code ByteBuffer}, {@code DataInput}, {@code Connection}
      *         class or other type supported by {@code StorageConnector} subclasses.
      * @return The storage as a view of the given type, or {@code null} if no view can be created for the given type.
-     * @throws IllegalArgumentException If the given {@code type} argument is not a known type.
-     * @throws DataStoreException If an error occurred while opening a stream or database connection.
+     * @throws IllegalArgumentException if the given {@code type} argument is not a supported type.
+     * @throws DataStoreException if an error occurred while opening a stream or database connection.
      *
      * @see #getStorage()
      * @see #closeAllExcept(Object)
@@ -441,7 +442,7 @@ public class StorageConnector implements Serializable {
      * If the view can not be created, remember that fact in order to avoid new attempts.
      *
      * @param  asImageInputStream If the {@code ChannelDataInput} needs to be {@link ChannelImageInputStream} subclass.
-     * @throws IOException If an error occurred while opening a channel for the input.
+     * @throws IOException if an error occurred while opening a channel for the input.
      */
     private void createChannelDataInput(final boolean asImageInputStream) throws IOException {
         /*
@@ -486,7 +487,7 @@ public class StorageConnector implements Serializable {
      * data input may imply creating a {@link ByteBuffer}, in which case the buffer will be stored under
      * the {@code ByteBuffer.class} key together with the {@code DataInput.class} case.
      *
-     * @throws IOException If an error occurred while opening a stream for the input.
+     * @throws IOException if an error occurred while opening a stream for the input.
      */
     private void createDataInput() throws IOException {
         final DataInput asDataInput;
@@ -525,7 +526,7 @@ public class StorageConnector implements Serializable {
      * of bytes read from the input. This amount is not sufficient, it can be increased by a call
      * to {@link #prefetch()}.
      *
-     * @throws IOException If an error occurred while opening a stream for the input.
+     * @throws IOException if an error occurred while opening a stream for the input.
      */
     private void createByteBuffer() throws IOException, DataStoreException {
         /*
@@ -571,7 +572,7 @@ public class StorageConnector implements Serializable {
      * for {@link DataStoreProvider#probeContent(StorageConnector)} purpose.</p>
      *
      * @return {@code true} on success.
-     * @throws DataStoreException If an error occurred while reading more bytes.
+     * @throws DataStoreException if an error occurred while reading more bytes.
      */
     final boolean prefetch() throws DataStoreException {
         try {
@@ -608,8 +609,8 @@ public class StorageConnector implements Serializable {
      *
      * @param  type The type of the view to create.
      * @return The storage as a view of the given type, or {@code null} if no view can be created for the given type.
-     * @throws IllegalArgumentException If the given {@code type} argument is not a known type.
-     * @throws Exception If an error occurred while opening a stream or database connection.
+     * @throws IllegalArgumentException if the given {@code type} argument is not a supported type.
+     * @throws Exception if an error occurred while opening a stream or database connection.
      */
     private Object createView(final Class<?> type) throws IllegalArgumentException, Exception {
         if (type == String.class) {
@@ -676,7 +677,7 @@ public class StorageConnector implements Serializable {
             }
             return null;
         }
-        throw new IllegalArgumentException(Errors.format(Errors.Keys.UnknownType_1, type));
+        return ObjectConverters.convert(storage, type);
     }
 
     /**
@@ -734,7 +735,7 @@ public class StorageConnector implements Serializable {
      * <p>This {@code StorageConnector} instance shall not be used anymore after invocation of this method.</p>
      *
      * @param  view The view to leave open, or {@code null} if none.
-     * @throws DataStoreException If an error occurred while closing the stream or database connection.
+     * @throws DataStoreException if an error occurred while closing the stream or database connection.
      *
      * @see #getStorageAs(Class)
      * @see DataStoreProvider#open(StorageConnector)

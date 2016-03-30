@@ -26,8 +26,10 @@ import org.opengis.referencing.datum.Datum;
 import org.opengis.referencing.ReferenceSystem;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.operation.CoordinateOperation;
+import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.metadata.quality.PositionalAccuracy;
 import org.apache.sis.internal.util.AbstractMap;
+import org.apache.sis.util.Deprecable;
 
 
 /**
@@ -40,7 +42,7 @@ import org.apache.sis.internal.util.AbstractMap;
  *
  * @author  Martin Desruisseaux (IRD)
  * @since   0.4
- * @version 0.4
+ * @version 0.7
  * @module
  */
 final class Properties extends AbstractMap<String,Object> implements Serializable {
@@ -55,14 +57,16 @@ final class Properties extends AbstractMap<String,Object> implements Serializabl
      * of {@link #INDICES}.
      */
     private static final String[] KEYS = {
-        /*[0]*/ IdentifiedObject    .NAME_KEY,
-        /*[1]*/ IdentifiedObject    .IDENTIFIERS_KEY,
-        /*[2]*/ IdentifiedObject    .ALIAS_KEY,
-        /*[3]*/ IdentifiedObject    .REMARKS_KEY,
-        /*[4]*/ CoordinateOperation .SCOPE_KEY,              // same in Datum and ReferenceSystem
-        /*[5]*/ CoordinateOperation .DOMAIN_OF_VALIDITY_KEY, // same in Datum and ReferenceSystem
-        /*[6]*/ CoordinateOperation .OPERATION_VERSION_KEY,
-        /*[7]*/ CoordinateOperation .COORDINATE_OPERATION_ACCURACY_KEY
+        /*[0]*/ IdentifiedObject        .NAME_KEY,
+        /*[1]*/ IdentifiedObject        .IDENTIFIERS_KEY,
+        /*[2]*/ IdentifiedObject        .ALIAS_KEY,
+        /*[3]*/ IdentifiedObject        .REMARKS_KEY,
+        /*[4]*/ CoordinateOperation     .SCOPE_KEY,                     // same in Datum and ReferenceSystem
+        /*[5]*/ CoordinateOperation     .DOMAIN_OF_VALIDITY_KEY,        // same in Datum and ReferenceSystem
+        /*[6]*/ CoordinateOperation     .OPERATION_VERSION_KEY,
+        /*[7]*/ CoordinateOperation     .COORDINATE_OPERATION_ACCURACY_KEY,
+        /*[8]*/ OperationMethod         .FORMULA_KEY,
+        /*[9]*/ AbstractIdentifiedObject.DEPRECATED_KEY
 
         /*
          * The current implementation does not look for minimum and maximum values in ParameterDescriptor
@@ -179,6 +183,18 @@ final class Properties extends AbstractMap<String,Object> implements Serializabl
                                 return c.toArray(new PositionalAccuracy[size]);
                             }
                         }
+                    }
+                    break;
+                }
+                case 8: {   // FORMULA_KEY
+                    if (object instanceof OperationMethod) {
+                        return ((OperationMethod) object).getFormula();
+                    }
+                    break;
+                }
+                case 9: {   // DEPRECATED_KEY
+                    if (object instanceof Deprecable) {
+                        return ((Deprecable) object).isDeprecated();
                     }
                     break;
                 }

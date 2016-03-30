@@ -46,6 +46,7 @@ import static org.apache.sis.util.Utilities.deepEquals;
 
 // Branch-dependent imports
 import org.apache.sis.internal.jdk7.Objects;
+import org.apache.sis.io.wkt.Formatter;
 
 
 /**
@@ -323,6 +324,23 @@ final class DefaultConcatenatedOperation extends AbstractCoordinateOperation imp
     @Override
     protected long computeHashCode() {
         return super.computeHashCode() + 37 * Objects.hashCode(operations);
+    }
+
+    /**
+     * Formats this coordinate operation in pseudo-WKT. This is specific to Apache SIS since
+     * there is no concatenated operation in the Well Known Text (WKT) version 2 format.
+     *
+     * @param  formatter The formatter to use.
+     * @return {@code "ConcatenatedOperation"}.
+     */
+    @Override
+    protected String formatTo(final Formatter formatter) {
+        super.formatTo(formatter);
+        for (final CoordinateOperation component : operations) {
+            formatter.append(castOrCopy(component));
+        }
+        formatter.setInvalidWKT(this, null);
+        return "ConcatenatedOperation";
     }
 
 

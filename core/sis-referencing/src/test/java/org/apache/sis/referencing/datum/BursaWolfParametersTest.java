@@ -37,7 +37,7 @@ import static org.apache.sis.test.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.6
+ * @version 0.7
  * @module
  */
 public final strictfp class BursaWolfParametersTest extends TestCase {
@@ -55,7 +55,7 @@ public final strictfp class BursaWolfParametersTest extends TestCase {
         bursaWolf.tZ = 4.5;
         bursaWolf.rZ = 0.554;
         bursaWolf.dS = 0.219;
-        bursaWolf.verify();
+        bursaWolf.verify(PrimeMeridianMock.GREENWICH);
         assertFalse("isIdentity",    bursaWolf.isIdentity());
         assertFalse("isTranslation", bursaWolf.isTranslation());
         return bursaWolf;
@@ -75,7 +75,7 @@ public final strictfp class BursaWolfParametersTest extends TestCase {
         bursaWolf.rY =    0.1503;
         bursaWolf.rZ =    0.3898;
         bursaWolf.dS =   -0.3143;
-        bursaWolf.verify();
+        bursaWolf.verify(PrimeMeridianMock.GREENWICH);
         assertFalse("isIdentity",    bursaWolf.isIdentity());
         assertFalse("isTranslation", bursaWolf.isTranslation());
         return bursaWolf;
@@ -91,7 +91,7 @@ public final strictfp class BursaWolfParametersTest extends TestCase {
         bursaWolf.tX = -168;
         bursaWolf.tY =  -60;
         bursaWolf.tZ =  320;
-        bursaWolf.verify();
+        bursaWolf.verify(PrimeMeridianMock.GREENWICH);
         assertFalse("isIdentity",    bursaWolf.isIdentity());
         assertTrue ("isTranslation", bursaWolf.isTranslation());
         return bursaWolf;
