@@ -44,8 +44,8 @@
  *   GeographicCRS source = CommonCRS.WGS84.geographic();
  *   ProjectedCRS  target = CommonCRS.WGS84.UTM(20, 30);                        // 20°N 30°E   (watch out axis order!)
  *   CoordinateOperation operation = CRS.findOperation(source, target, null);
- *   if (CRS.getLinearAccuracy(operation) < 100) {
- *       // If the accuracy is less than 100 metres (or any other threshold at application choice)
+ *   if (CRS.getLinearAccuracy(operation) > 100) {
+ *       // If the accuracy is coarser than 100 metres (or any other threshold at application choice)
  *       // maybe the operation is not suitable. Decide here what to do (throw an exception, etc).
  *   }
  *   MathTransform mt = operation.getMathTransform();
