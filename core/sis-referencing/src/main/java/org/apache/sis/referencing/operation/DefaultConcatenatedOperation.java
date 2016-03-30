@@ -41,12 +41,12 @@ import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.io.wkt.Formatter;
 
 import static org.apache.sis.util.Utilities.deepEquals;
 
 // Branch-dependent imports
 import java.util.Objects;
-import org.apache.sis.io.wkt.Formatter;
 
 
 /**

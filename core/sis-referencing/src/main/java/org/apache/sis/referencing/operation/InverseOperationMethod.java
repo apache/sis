@@ -19,11 +19,13 @@ package org.apache.sis.referencing.operation;
 import java.util.Map;
 import java.util.HashMap;
 import javax.xml.bind.annotation.XmlTransient;
-import org.opengis.metadata.Identifier;
 import org.opengis.referencing.operation.OperationMethod;
 import org.apache.sis.internal.referencing.provider.AbstractProvider;
 import org.apache.sis.metadata.iso.ImmutableIdentifier;
 import org.apache.sis.util.Deprecable;
+
+// Branch-dependent imports
+import org.opengis.metadata.Identifier;
 
 
 /**
