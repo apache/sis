@@ -787,4 +787,45 @@ testNextNumber:         while (true) { // Simulate a "goto" statement (usually n
         }
         return ArraysExt.resize(divisors, count);
     }
+
+    /**
+     * Convert two long bits values containing a quadruple precision floating point number
+     * to a java double precision floating point number.
+     *
+     * @param l0 upper part of the quadruple precision floating point number
+     * @param l1 lower part of the quadruple precision floating point number
+     * @return double precision approximation
+     */
+    public static double quadrupleToDouble(long l0, long l1){
+        //build double
+        long sig = (l0 & 0x8000000000000000L);
+        long exp = (l0 & 0x7FFF000000000000L) >> 48;
+        l0 = (l0 & 0x0000FFFFFFFFFFFFL);
+        if(exp==0){
+            //subnormal number
+            //note : since we convert them to double precision, subnormal number
+            //can not be represented, we map them to zero preserving the sign.
+            return Double.longBitsToDouble(sig);
+        }
+        if(exp==0x7FFF){
+            //NaN number
+            //note : mantissa with all bits at 0 is used for infinite, this is the only
+            //special NaN we can preserve.
+            if(l0==0 && l1==0){
+                return Double.longBitsToDouble(sig|0x7FF0000000000000L);
+            }
+            //Other NaN values might have a meaning, when truncating the value
+            //we might change this meaning, which could cause several issues later
+            //Therefor we map all other NaNs to the default NaN
+            return Double.NaN;
+        }
+        exp = exp - 16383 + 1023; //change from 15 bias to 11 bias
+        //check cases where mantissa excess what double can support
+        if(exp<0)    return Double.NEGATIVE_INFINITY;
+        if(exp>2046) return Double.POSITIVE_INFINITY;
+
+        return Double.longBitsToDouble(
+                sig | (exp << 52) | (l0 << 4) | (l1 >>> 60));
+    }
+
 }

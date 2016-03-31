@@ -340,4 +340,68 @@ public final strictfp class MathFunctionsTest extends TestCase {
             1, 5
         }, commonDivisors(2000, 15));
     }
+
+    /**
+     * Tests the {@link MathFunctions#quadrupleToDouble(int[])} method.
+     */
+    @Test
+    public void testQuadrupleToDouble(){
+
+        long l0,l1;
+
+        // 1.0
+        l0 = 0x3FFF000000000000L;
+        l1 = 0x0000000000000000L;
+        assertEquals(doubleToLongBits(1.0),
+                     doubleToLongBits(quadrupleToDouble(l0, l1)));
+
+        // -2.0
+        l0 = 0xC000000000000000L;
+        l1 = 0x0000000000000000L;
+        assertEquals(doubleToLongBits(-2.0),
+                     doubleToLongBits(quadrupleToDouble(l0, l1)));
+
+        // 3.1415926535897932384626433832795028
+        l0 = 0x4000921FB54442D1L;
+        l1 = 0x8469898CC51701B8L;
+        assertEquals(doubleToLongBits(3.1415926535897932384626433832795028),
+                     doubleToLongBits(quadrupleToDouble(l0, l1)));
+
+        // ~1/3
+        l0 = 0x3FFD555555555555L;
+        l1 = 0x5555555555555555L;
+        assertEquals(doubleToLongBits(1.0/3.0),
+                     doubleToLongBits(quadrupleToDouble(l0, l1)));
+
+        //positive zero
+        l0 = 0x0000000000000000L;
+        l1 = 0x0000000000000000L;
+        assertEquals(doubleToLongBits(+0.0),
+                     doubleToLongBits(quadrupleToDouble(l0, l1)));
+
+        //negative zero
+        l0 = 0x8000000000000000L;
+        l1 = 0x0000000000000000L;
+        assertEquals(doubleToLongBits(-0.0),
+                     doubleToLongBits(quadrupleToDouble(l0, l1)));
+
+        //positive infinite
+        l0 = 0x7FFF000000000000L;
+        l1 = 0x0000000000000000L;
+        assertEquals(doubleToLongBits(Double.POSITIVE_INFINITY),
+                     doubleToLongBits(quadrupleToDouble(l0, l1)));
+
+        //negative infinite
+        l0 = 0xFFFF000000000000L;
+        l1 = 0x0000000000000000L;
+        assertEquals(doubleToLongBits(Double.NEGATIVE_INFINITY),
+                     doubleToLongBits(quadrupleToDouble(l0, l1)));
+
+        //a random NaN
+        l0 = 0x7FFF000100040000L;
+        l1 = 0x0001005000080000L;
+        assertEquals(doubleToLongBits(Double.NaN),
+                     doubleToLongBits(quadrupleToDouble(l0, l1)));
+
+    }
 }
