@@ -337,6 +337,7 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
             (object = parseToWGS84          (FIRST, element       )) == null &&
             (object = parseVerticalDatum    (FIRST, element, false)) == null &&
             (object = parseTimeDatum        (FIRST, element       )) == null &&
+            (object = parseParametricDatum  (FIRST, element       )) == null &&
             (object = parseEngineeringDatum (FIRST, element, false)) == null &&
             (object = parseImageDatum       (FIRST, element       )) == null &&
             (object = parseOperation        (FIRST, element))        == null)
@@ -362,6 +363,7 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
             (crs = parseProjectedCRS   (FIRST, element, false))   == null &&
             (crs = parseVerticalCRS    (FIRST, element, false))   == null &&
             (crs = parseTimeCRS        (FIRST, element, false))   == null &&
+            (crs = parseParametricCRS  (FIRST, element, false))   == null &&
             (crs = parseEngineeringCRS (FIRST, element, false))   == null &&
             (crs = parseImageCRS       (FIRST, element))          == null &&
             (crs = parseCompoundCRS    (FIRST, element))          == null &&
@@ -848,6 +850,18 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
                     z = "t";
                     break;
                 }
+                 /*
+                 * Parametric — axis name and abbreviation not yet specified by ISO 19111_2.
+                 */
+                case WKTKeywords.parametric: {
+                    if (defaultUnit == null) {
+                        throw parent.missingComponent(WKTKeywords.ParametricUnit);
+                    }
+                    direction = AxisDirection.OTHER;
+                    nz = "Parametric";
+                    z = "p";
+                    break;
+                }
                 /*
                  * Unknown CS type — we can not guess which axes to create.
                  */
@@ -936,8 +950,8 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
                 if (axes.length != (dimension = 3)) break;
                 return csFactory.createSphericalCS(csProperties, axes[0], axes[1], axes[2]);
             }
-            case WKTKeywords.parametric: {  // TODO: not yet supported.
-                return referencing.createAbstractCS(csProperties, axes);
+            case WKTKeywords.parametric: {
+                return csFactory.createParametricCS(csProperties, axes[0]);
             }
             default: {
                 warning(parent, null, Errors.formatInternational(Errors.Keys.UnknownType_1, type), null);
@@ -1439,6 +1453,31 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
     }
 
     /**
+     * Parses a {@code "ParametricDatum"} element. This element has the following pattern:
+     *
+     * {@preformat wkt
+     *     ParametricDatum["<name>", Anchor[...] {,<authority>}]
+     * }
+     *
+     * @param  mode {@link #FIRST}, {@link #OPTIONAL} or {@link #MANDATORY}.
+     * @param  parent The parent element.
+     * @return The {@code "ParametricDatum"} element as a {@link ParametricDatum} object.
+     * @throws ParseException if the {@code "ParametricDatum"} element can not be parsed.
+     */
+    private ParametricDatum parseParametricDatum(final int mode, final Element parent) throws ParseException {
+        final Element element = parent.pullElement(mode, WKTKeywords.ParametricDatum, WKTKeywords.PDatum);
+        if (element == null) {
+            return null;
+        }
+        final String  name   = element.pullString ("name");
+        try {
+            return datumFactory.createParametricDatum(parseAnchorAndClose(element, name));
+        } catch (FactoryException exception) {
+            throw element.parseFailed(exception);
+        }
+    }
+
+    /**
      * Parses a {@code "EngineeringDatum"} (WKT 2) element. The syntax is given by
      * <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#76">WKT 2 specification §11.2</a>.
      *
@@ -1921,6 +1960,66 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
                     return crsFactory.createDerivedCRS(properties, baseCRS, fromBase, cs);
                 }
                 return crsFactory.createTemporalCRS(properties, datum, (TimeCS) cs);
+            }
+        } catch (FactoryException exception) {
+            throw element.parseFailed(exception);
+        }
+        throw element.illegalCS(cs);
+    }
+
+    /**
+     * Parses {@code "ParametricCRS"} element.
+     *
+     * @param  mode      {@link #FIRST}, {@link #OPTIONAL} or {@link #MANDATORY}.
+     * @param  parent    The parent element.
+     * @param  isBaseCRS {@code true} if parsing the CRS inside a {@code DerivedCRS}.
+     * @return The {@code "ParametricCRS"} object.
+     * @throws ParseException if the {@code "ParametricCRS"} element can not be parsed.
+     */
+    private SingleCRS parseParametricCRS(final int mode, final Element parent, final boolean isBaseCRS)
+            throws ParseException
+    {
+        final Element element = parent.pullElement(mode, isBaseCRS ? WKTKeywords.BaseParamCRS : WKTKeywords.ParametricCRS);
+        if (element == null) {
+            return null;
+        }
+        final String  name   = element.pullString("name");
+        final Unit<?> unit   = parseUnit(element);
+        /*
+         * A ParametricCRS can be either a "normal" one (with a non-null datum), or a DerivedCRS of kind ParametricCRS.
+         * In the later case, the datum is null and we have instead DerivingConversion element from a BaseParametricCRS.
+         */
+        ParametricDatum datum  = null;
+        SingleCRS     baseCRS  = null;
+        Conversion    fromBase = null;
+        if (!isBaseCRS) {
+            /*
+             * UNIT[…] in DerivedCRS parameters are mandatory according ISO 19162 and the specification does not said
+             * what to do if they are missing.  In this code, we default to the contextual units in the same way than
+             * what we do for ProjectedCRS parameters, in the hope to be consistent.
+             *
+             * An alternative would be to specify null units, in which case MathTransformParser.parseParameters(…)
+             * defaults to the units specified in the parameter descriptor. But this would make the CRS parser more
+             * implementation-dependent, because the parameter descriptors are provided by the MathTransformFactory
+             * instead than inferred from the WKT.
+             */
+            fromBase = parseDerivingConversion(OPTIONAL, element, WKTKeywords.DerivingConversion, unit, null);
+            if (fromBase != null) {
+                baseCRS = parseParametricCRS(MANDATORY, element, true);
+            }
+        }
+        if (baseCRS == null) {  // The most usual case.
+            datum = parseParametricDatum(MANDATORY, element);
+        }
+        final CoordinateSystem cs;
+        try {
+            cs = parseCoordinateSystem(element, WKTKeywords.parametric, 1, false, unit, datum);
+            final Map<String,?> properties = parseMetadataAndClose(element, name, datum);
+            if (cs instanceof ParametricCS) {
+                if (baseCRS != null) {
+                    return crsFactory.createDerivedCRS(properties, baseCRS, fromBase, cs);
+                }
+                return crsFactory.createParametricCRS(properties, datum, (ParametricCS) cs);
             }
         } catch (FactoryException exception) {
             throw element.parseFailed(exception);

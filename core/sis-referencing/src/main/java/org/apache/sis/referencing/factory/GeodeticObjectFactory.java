@@ -1548,4 +1548,92 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
                     Errors.Keys.IllegalClass_2, CoordinateReferenceSystem.class, object.getClass()));
         }
     }
+
+    /**
+     * Creates a parametric coordinate reference system.
+     *
+     * <div class="note"><b>Dependencies:</b>
+     * the components needed by this method can be created by the following methods:
+     * <ol>
+     *   <li>{@link #createCoordinateSystemAxis(Map, String, AxisDirection, Unit)}</li>
+     *   <li>{@link #createParametricCS(Map, CoordinateSystemAxis)}</li>
+     *   <li>{@link #createParametricDatum(Map)}</li>
+     * </ol></div>
+     *
+     * The default implementation creates a {@link DefaultParametricCRS} instance.
+     *
+     * @param  properties Name and other properties to give to the new object.
+     * @param  datum      The parametric datum to use in created CRS.
+     * @param  cs         The parametric coordinate system for the created CRS.
+     * @throws FactoryException if the object creation failed.
+     *
+     * @see DefaultParametricCRS#DefaultParametricCRS(Map, ParametricDatum, ParametricCS)
+     * @see GeodeticAuthorityFactory#createParametricCRS(String)
+     */
+    @Override
+    public ParametricCRS createParametricCRS(final Map<String,?> properties,
+            final ParametricDatum datum, final ParametricCS cs) throws FactoryException
+    {
+        final DefaultParametricCRS crs;
+        try {
+            crs = new DefaultParametricCRS(complete(properties), datum, cs);
+        } catch (IllegalArgumentException exception) {
+            throw new InvalidGeodeticParameterException(exception);
+        }
+        return unique("createParametricCRS", crs);
+    }
+    
+    /**
+     * Creates a parametric coordinate system.
+     * This coordinate system can be used only with parametric CRS.
+     *
+     * <div class="note"><b>Dependencies:</b>
+     * the components needed by this method can be created by the following methods:
+     * <ol>
+     *   <li>{@link #createCoordinateSystemAxis(Map, String, AxisDirection, Unit)}</li>
+     * </ol></div>
+     *
+     * The default implementation creates a {@link DefaultParametricCS} instance.
+     *
+     * @param  properties Name and other properties to give to the new object.
+     * @param  axis The single axis.
+     * @throws FactoryException if the object creation failed.
+     *
+     * @see DefaultParametricCS#DefaultParametricCS(Map, CoordinateSystemAxis)
+     * @see GeodeticAuthorityFactory#createParametricCS(String)
+     */
+    @Override
+    public ParametricCS createParametricCS(Map<String, ?> properties, CoordinateSystemAxis axis) throws FactoryException {
+        final DefaultParametricCS cs;
+        try {
+            cs = new DefaultParametricCS(complete(properties), axis);
+        } catch (IllegalArgumentException exception) {
+            throw new InvalidGeodeticParameterException(exception);
+        }
+        return unique("createParametricCS", cs);
+    }
+
+    /**
+     * Creates a parametric datum.
+     * The default implementation creates a {@link DefaultParametricDatum} instance.
+     *
+     * @param  properties Name and other properties to give to the new object.
+     * @throws FactoryException if the object creation failed.
+     *
+     * @see DefaultParametricDatum#DefaultParametricDatum(Map)
+     * @see GeodeticAuthorityFactory#createParametricDatum(String)
+     */
+    @Override
+    public ParametricDatum createParametricDatum(final Map<String,?> properties)
+            throws FactoryException
+    {
+        final DefaultParametricDatum datum;
+        try {
+            datum = new DefaultParametricDatum(complete(properties));
+        } catch (IllegalArgumentException exception) {
+            throw new InvalidGeodeticParameterException(exception);
+        }
+        return unique("createTemporalDatum", datum);
+    }
+
 }
