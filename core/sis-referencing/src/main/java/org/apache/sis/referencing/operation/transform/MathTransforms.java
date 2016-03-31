@@ -419,4 +419,55 @@ public final class MathTransforms extends Static {
         }
         return derivative;
     }
+
+    /**
+     * Create an 1D Transform for the given serie.
+     * <br>
+     * Values are expected to be in increasing or decreasing order and must
+     * not contain duplicates.
+     * <br>
+     * This method first try to find a regular scale between values to create a
+     * linear transform, otherwise a non linear transform is created.
+     *
+     * @param serie value serie
+     * @return MathTransform1D may not be linear
+     * @throws org.opengis.referencing.operation.TransformException
+     */
+    public static MathTransform1D create1D(final double[] serie) throws TransformException {
+
+        if(serie.length==0){
+            throw new TransformException("Serie can not be empty");
+        }else if(serie.length==1){
+            //only one value, we use it as an offset
+            return (MathTransform1D) linear(1.0, serie[0]);
+        }
+
+        //search for a linear scale and verify values
+        boolean linear = true;
+        final double scale = serie[1]-serie[0];
+        final double sign = Math.signum(scale);
+        if(sign == 0.0) throw new TransformException("Serie contains a duplicated value at index 0 and 1");
+
+        double candidate;
+        for(int i=1;i<serie.length-1;i++){
+            candidate = serie[i+1]-serie[i];
+            if(candidate == 0.0){
+                throw new TransformException("Serie contains a duplicated value at index "+i+" and "+(i+1));
+            }
+            if(scale != candidate){
+                linear = false;
+                if(sign != Math.signum(candidate)){
+                    throw new TransformException("Serie is not sorted at index "+i+" and "+(i+1));
+                }
+            }
+        }
+
+        if(linear){
+            return (MathTransform1D) linear(scale, serie[0]);
+        }else{
+            //unlinear transform
+            return new LinearInterpolator1D(serie);
+        }
+    }
+
 }
