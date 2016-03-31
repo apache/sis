@@ -127,6 +127,15 @@ public final class WKTKeywords extends Static {
             BaseTimeCRS = "BaseTimeCRS";
 
     /**
+     * Related to {@link org.apache.sis.referencing.crs.DefaultParametricCRS}.
+     */
+    public static final String
+            ParametricDatum = "ParametricDatum",
+            PDatum          = "PDatum",
+            ParametricCRS   = "ParametricCRS",
+            BaseParamCRS    = "BaseParamCRS";
+
+    /**
      * Related to {@link org.apache.sis.referencing.crs.DefaultImageCRS}
      * and {@link org.apache.sis.referencing.crs.DefaultEngineeringCRS}.
      * Former can be seen as a special case of the later.
