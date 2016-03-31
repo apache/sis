@@ -20,9 +20,10 @@ import java.util.Date;
 import java.util.Map;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
+import org.opengis.referencing.datum.ParametricDatum;
 import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.io.wkt.Formatter;
-import org.opengis.referencing.datum.ParametricDatum;
+
 
 /**
  * Defines the origin of a parametric coordinate reference system.
@@ -57,7 +58,6 @@ import org.opengis.referencing.datum.ParametricDatum;
 @XmlType(name = "ParametricDatumType")
 @XmlRootElement(name = "ParametricDatum")
 public class DefaultParametricDatum extends AbstractDatum implements ParametricDatum {
-
     /**
      * Serial number for inter-operability with different versions.
      */
@@ -175,7 +175,7 @@ public class DefaultParametricDatum extends AbstractDatum implements ParametricD
      * Formats this datum as a <cite>Well Known Text</cite> {@code ParametricDatum[…]} element.
      *
      * <div class="note"><b>Compatibility note:</b>
-     * {@code TimeDatum} is defined in the WKT 2 specification only.</div>
+     * {@code ParametricDatum} is defined in the WKT 2 specification only.</div>
      *
      * @return {@code "ParametricDatum"}.
      *
@@ -209,5 +209,4 @@ public class DefaultParametricDatum extends AbstractDatum implements ParametricD
      */
     private DefaultParametricDatum() {
     }
-
 }

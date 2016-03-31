@@ -1522,6 +1522,16 @@ addURIs:    for (int i=0; ; i++) {
                         break;
                     }
                     /* ----------------------------------------------------------------------
+                     *   PARAMETRIC CRS
+                     * ---------------------------------------------------------------------- */
+                    case "parametric": {
+                        final ParametricCS    cs    = owner.createParametricCS   (getString(code, result, 8));
+                        final ParametricDatum datum = owner.createParametricDatum(getString(code, result, 9));
+                        crs = crsFactory.createParametricCRS(createProperties("Coordinate Reference System",
+                                name, epsg, area, scope, remarks, deprecated), datum, cs);
+                        break;
+                    }
+                    /* ----------------------------------------------------------------------
                      *   UNKNOWN CRS
                      * ---------------------------------------------------------------------- */
                     default: {
@@ -1664,6 +1674,10 @@ addURIs:    for (int i=0; ; i++) {
                      */
                     case "engineering": {
                         datum = datumFactory.createEngineeringDatum(properties);
+                        break;
+                    }
+                    case "parametric": {
+                        datum = datumFactory.createParametricDatum(properties);
                         break;
                     }
                     default: {
@@ -2112,6 +2126,12 @@ addURIs:    for (int i=0; ; i++) {
                     case "temporal": {      // Was used in older ISO-19111 versions.
                         switch (dimension) {
                             case 1: cs = csFactory.createTimeCS(properties, axes[0]); break;
+                        }
+                        break;
+                    }
+                    case "parametric": {
+                        switch (dimension) {
+                            case 1: cs = csFactory.createParametricCS(properties, axes[0]); break;
                         }
                         break;
                     }

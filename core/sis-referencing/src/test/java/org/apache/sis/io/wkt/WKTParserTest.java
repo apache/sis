@@ -38,7 +38,7 @@ import static org.junit.Assert.*;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.6
- * @version 0.6
+ * @version 0.7
  * @module
  */
 @RunWith(JUnit4.class)
@@ -352,6 +352,28 @@ public final strictfp class WKTParserTest extends CRSParserTest {
     }
 
     /**
+     * Completes the GeoAPI tests with a check of axis name.
+     * The WKT parsed by this test is (except for quote characters):
+     *
+     * {@preformat wkt
+     *   PARAMETRICCRS[“WMO standard atmosphere layer 0”,
+     *     PDATUM[“Mean Sea Level”,ANCHOR[“1013.25 hPa at 15°C”]],
+     *     CS[parametric,1],
+     *     AXIS[“pressure (hPa)”,up],
+     *     PARAMETRICUNIT[“hPa”,100.0]]
+     * }
+     *
+     * @throws FactoryException if an error occurred during the WKT parsing.
+     */
+    @Test
+    @Override
+    public void testParametric() throws FactoryException {
+        super.testParametric();
+        final CoordinateSystem cs = object.getCoordinateSystem();
+        assertEquals("name", "pressure", cs.getAxis(0).getName().getCode());
+    }
+
+    /**
      * Completes the GeoAPI tests with a check of axis names.
      * The WKT parsed by this test is (except for quote characters):
      *
@@ -557,18 +579,18 @@ public final strictfp class WKTParserTest extends CRSParserTest {
      *
      * {@preformat wkt
      *  COMPOUNDCRS[“GPS position and time”,
-     *     GEODCRS[“WGS 84”,
-     *       DATUM[“World Geodetic System 1984”,
-     *         ELLIPSOID[“WGS 84”,6378137,298.257223563]],
-     *       CS[ellipsoidal,2],
-     *         AXIS[“(lat)”,north,ORDER[1]],
-     *         AXIS[“(lon)”,east,ORDER[2]],
-     *         ANGLEUNIT[“degree”,0.0174532925199433]],
-     *     TIMECRS[“GPS Time”,
-     *       TIMEDATUM[“Time origin”,TIMEORIGIN[1980-01-01]],
-     *       CS[temporal,1],
-     *         AXIS[“time (T)”,future],
-     *         TIMEUNIT[“day”,86400]]]
+     *    GEODCRS[“WGS 84”,
+     *      DATUM[“World Geodetic System 1984”,
+     *        ELLIPSOID[“WGS 84”,6378137,298.257223563]],
+     *      CS[ellipsoidal,2],
+     *        AXIS[“(lat)”,north,ORDER[1]],
+     *        AXIS[“(lon)”,east,ORDER[2]],
+     *        ANGLEUNIT[“degree”,0.0174532925199433]],
+     *    TIMECRS[“GPS Time”,
+     *      TIMEDATUM[“Time origin”,TIMEORIGIN[1980-01-01]],
+     *      CS[temporal,1],
+     *        AXIS[“time (T)”,future],
+     *        TIMEUNIT[“day”,86400]]]
      * }
      *
      * @throws FactoryException if an error occurred during the WKT parsing.
@@ -581,5 +603,39 @@ public final strictfp class WKTParserTest extends CRSParserTest {
         assertEquals("name", AxisNames.GEODETIC_LATITUDE,  cs.getAxis(0).getName().getCode());
         assertEquals("name", AxisNames.GEODETIC_LONGITUDE, cs.getAxis(1).getName().getCode());
         assertEquals("name", AxisNames.TIME,               cs.getAxis(2).getName().getCode());
+    }
+
+    /**
+     * Completes the GeoAPI tests with a check of axis names.
+     * The WKT parsed by this test is (except for quote characters):
+     *
+     * {@preformat wkt
+     *  COMPOUNDCRS[“ICAO layer 0”,
+     *    GEODETICCRS[“WGS 84”,
+     *      DATUM[“World Geodetic System 1984”,
+     *        ELLIPSOID[“WGS 84”,6378137,298.257223563,
+     *          LENGTHUNIT[“metre”,1.0]]],
+     *      CS[ellipsoidal,2],
+     *        AXIS[“latitude”,north,ORDER[1]],
+     *        AXIS[“longitude”,east,ORDER[2]],
+     *        ANGLEUNIT[“degree”,0.0174532925199433]],
+     *    PARAMETRICCRS[“WMO standard atmosphere”,
+     *      PARAMETRICDATUM[“Mean Sea Level”,
+     *        ANCHOR[“Mean Sea Level = 1013.25 hPa”]],
+     *          CS[parametric,1],
+     *            AXIS[“pressure (P)”,unspecified],
+     *            PARAMETRICUNIT[“hPa”,100]]]
+     * }
+     *
+     * @throws FactoryException if an error occurred during the WKT parsing.
+     */
+    @Test
+    @Override
+    public void testCompoundWithParametric() throws FactoryException {
+        super.testCompoundWithParametric();
+        final CoordinateSystem cs = object.getCoordinateSystem();
+        assertEquals("name", AxisNames.GEODETIC_LATITUDE,  cs.getAxis(0).getName().getCode());
+        assertEquals("name", AxisNames.GEODETIC_LONGITUDE, cs.getAxis(1).getName().getCode());
+        assertEquals("name", "pressure",                   cs.getAxis(2).getName().getCode());
     }
 }

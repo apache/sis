@@ -22,6 +22,7 @@ import javax.xml.bind.annotation.XmlType;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.cs.ParametricCS;
 
+
 /**
  * A 1-dimensional coordinate system for parametric values or functions.
  *
@@ -53,7 +54,6 @@ import org.opengis.referencing.cs.ParametricCS;
 @XmlType(name = "ParametricCSType")
 @XmlRootElement(name = "ParametricCS")
 public class DefaultParametricCS extends AbstractCS implements ParametricCS {
-
     /**
      * Serial number for inter-operability with different versions.
      */
@@ -200,6 +200,4 @@ public class DefaultParametricCS extends AbstractCS implements ParametricCS {
      */
     private DefaultParametricCS() {
     }
-
-
 }

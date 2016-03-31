@@ -62,6 +62,7 @@ import org.apache.sis.util.Debug;
  * However, other methods may be overridden as well for better performances.</p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
+ * @author  Johann Sorel (Geomatys)
  * @since   0.7
  * @version 0.7
  * @module
