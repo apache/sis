@@ -20,20 +20,24 @@ import java.util.Map;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
-import org.apache.sis.internal.metadata.MetadataUtilities;
-import org.apache.sis.internal.metadata.WKTKeywords;
-import org.apache.sis.io.wkt.Formatter;
-import static org.apache.sis.referencing.crs.AbstractCRS.isBaseCRS;
-import org.apache.sis.referencing.cs.AxesConvention;
-import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 import org.opengis.referencing.crs.ParametricCRS;
 import org.opengis.referencing.crs.TemporalCRS;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.ParametricCS;
 import org.opengis.referencing.datum.ParametricDatum;
+import org.apache.sis.internal.metadata.MetadataUtilities;
+import org.apache.sis.internal.metadata.WKTKeywords;
+import org.apache.sis.referencing.cs.AxesConvention;
+import org.apache.sis.io.wkt.Formatter;
+
+import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
+import static org.apache.sis.referencing.crs.AbstractCRS.isBaseCRS;
+
 
 /**
  * A 1-dimensional coordinate reference system which uses parameter values or functions.
+ * Parametric CRS can be used for physical properties or functions that vary monotonically with height.
+ * A typical example is the pressure in meteorological applications.
  *
  * <p><b>Used with coordinate system type:</b>
  *   {@linkplain org.apache.sis.referencing.cs.DefaultParametricCS Parametric}.
@@ -59,6 +63,10 @@ import org.opengis.referencing.datum.ParametricDatum;
 })
 @XmlRootElement(name = "ParametricCRS")
 public class DefaultParametricCRS extends AbstractCRS implements ParametricCRS {
+    /**
+     * Serial number for inter-operability with different versions.
+     */
+    private static final long serialVersionUID = 4013698133331342649L;
 
     /**
      * The datum.
@@ -104,12 +112,12 @@ public class DefaultParametricCRS extends AbstractCRS implements ParametricCRS {
      *     <td>{@link #getRemarks()}</td>
      *   </tr>
      *   <tr>
-     *     <td>{@value org.opengis.referencing.datum.Datum#DOMAIN_OF_VALIDITY_KEY}</td>
+     *     <td>{@value org.opengis.referencing.ReferenceSystem#DOMAIN_OF_VALIDITY_KEY}</td>
      *     <td>{@link org.opengis.metadata.extent.Extent}</td>
      *     <td>{@link #getDomainOfValidity()}</td>
      *   </tr>
      *   <tr>
-     *     <td>{@value org.opengis.referencing.datum.Datum#SCOPE_KEY}</td>
+     *     <td>{@value org.opengis.referencing.ReferenceSystem#SCOPE_KEY}</td>
      *     <td>{@link org.opengis.util.InternationalString} or {@link String}</td>
      *     <td>{@link #getScope()}</td>
      *   </tr>
@@ -122,8 +130,8 @@ public class DefaultParametricCRS extends AbstractCRS implements ParametricCRS {
      * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createParametricCRS(Map, ParametricDatum, ParametricCS)
      */
     public DefaultParametricCRS(final Map<String,?> properties,
-                              final ParametricDatum datum,
-                              final ParametricCS    cs)
+                                final ParametricDatum datum,
+                                final ParametricCS    cs)
     {
         super(properties, cs);
         ensureNonNull("datum", datum);
@@ -273,7 +281,7 @@ public class DefaultParametricCRS extends AbstractCRS implements ParametricCRS {
         if (datum == null) {
             datum = value;
         } else {
-            MetadataUtilities.propertyAlreadySet(DefaultVerticalCRS.class, "setDatum", "parametricDatum");
+            MetadataUtilities.propertyAlreadySet(DefaultParametricCRS.class, "setDatum", "parametricDatum");
         }
     }
 
@@ -285,5 +293,4 @@ public class DefaultParametricCRS extends AbstractCRS implements ParametricCRS {
     private void setCoordinateSystem(final ParametricCS cs) {
         setCoordinateSystem("parametricCS", cs);
     }
-
 }
