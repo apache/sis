@@ -16,178 +16,226 @@
  */
 package org.apache.sis.referencing.operation.transform;
 
-import org.apache.sis.test.TestCase;
-import org.junit.Assert;
-import static org.junit.Assert.assertTrue;
-import org.junit.Test;
+import java.util.Random;
 import org.opengis.referencing.operation.MathTransform1D;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.opengis.referencing.operation.TransformException;
+import org.opengis.test.referencing.TransformTestCase;
+import org.junit.Test;
+
+import static org.opengis.test.Assert.*;
+
 
 /**
  * Test {@link LinearInterpolator1D} class.
  *
- * @author Remi Marechal (Geomatys).
+ * @author  Remi Marechal (Geomatys).
+ * @author  Martin Desruisseaux (Geomatys).
+ * @since   0.7
+ * @version 0.7
+ * @module
  */
-public class LinearInterpolator1DTest extends TestCase {
+public final strictfp class LinearInterpolator1DTest extends TransformTestCase {
+    /**
+     * The values of the <i>y=f(x)</i> function to test.
+     */
+    private double[] x, y;
 
-    private double[] antecedent, values;
-
+    /**
+     * Creates a new test case.
+     */
     public LinearInterpolator1DTest() {
     }
 
     /**
-     * <p>antecedents in increasing order.<br>
-     * values in increasing order.</p>
-     * @throws TransformException
+     * Tests <var>x</var> values equal to indices and <var>y</var> values in increasing order.
+     *
+     * @throws TransformException if an error occurred while testing a value.
      */
     @Test
-    public void testIncreaseIncrease() throws TransformException{
-        antecedent = new double[]{0,1,2,3};
-        values     = new double[]{10,12,16,22};
-        testMath(true);
+    public void testIndicesToIncreasingValues() throws TransformException {
+        x = new double[] { 0,  1,  2,  3};
+        y = new double[] {10, 12, 16, 22};
+        verifyConsistency(-2, 5, -5196528645359952958L);
+        assertInstanceOf("Expected y=f(i)", LinearInterpolator1D.class, transform);
     }
 
     /**
-     * <p>antecedents in increasing order.<br>
-     * values in decreasing order.</p>
-     * @throws TransformException
+     * Tests <var>x</var> values equal to indices and <var>y</var> values in decreasing order.
+     *
+     * @throws TransformException if an error occurred while testing a value.
      */
     @Test
-    public void testIncreaseDecrease() throws TransformException{
-        antecedent = new double[]{0,1,2,3};
-        values     = new double[]{35,27,22,5};
-        testMath(true);
+    public void testIndicesToDecreasingValues() throws TransformException {
+        x = new double[] {0,   1,  2, 3};
+        y = new double[] {35, 27, 22, 5};
+        verifyConsistency(-2, 5, 6445394511592290678L);
+        assertInstanceOf("Expected y = -f(-i)", ConcatenatedTransformDirect1D.class, transform);
+        assertInstanceOf("Expected y = -f(-i)", LinearInterpolator1D.class, ((ConcatenatedTransform) transform).transform1);
+        assertSame      ("Expected y = -f(-i)", LinearTransform1D.NEGATE,   ((ConcatenatedTransform) transform).transform2);
     }
 
     /**
-     * <p>antecedents in decreasing order.<br>
-     * values in increasing order.</p>
-     * @throws TransformException
+     * Tests increasing <var>x</var> values to <var>y</var> values that are equal to indices.
+     *
+     * @throws TransformException if an error occurred while testing a value.
      */
     @Test
-    public void testDecreaseIncrease() throws TransformException{
-        antecedent = new double[]{2,-5,-96,-207};
-        values     = new double[]{-50,-20,7,105};
-        testMath(true);
+    public void testIncreasingInputsToIndices() throws TransformException {
+        x = new double[] {10, 12, 16, 22};
+        y = new double[] { 0,  1,  2,  3};
+        verifyConsistency(0, 30, 6130776597146077588L);
     }
 
     /**
-     * <p>antecedents in decreasing order.<br>
-     * values in decreasing order.</p>
-     * @throws TransformException
+     * Tests decreasing <var>x</var> values to <var>y</var> values that are equal to indices.
+     *
+     * @throws TransformException if an error occurred while testing a value.
      */
     @Test
-    public void testDecreaseDecrease() throws TransformException{
-        antecedent = new double[]{2,-5,-96,-207};
-        values     = new double[]{105,7,-19,-43};
-        testMath(true);
+    public void testDecreasingInputsToIndices() throws TransformException {
+        x = new double[] {35, 27, 22, 5};
+        y = new double[] {0,   1,  2, 3};
+        verifyConsistency(0, 40, 4109281798631024654L);
+        assertInstanceOf("Expected i = -f(-x)", ConcatenatedTransformDirect1D.class, transform);
     }
 
     /**
-     * <p>antecedents in increasing order.<br>
-     * values in random order.</p>
-     * @throws TransformException
+     * Tests increasing <var>x</var> values to increasing <var>y</var> values.
+     *
+     * @throws TransformException if an error occurred while testing a value.
      */
     @Test
-    public void testIncreaseRandom() throws TransformException{
-        antecedent = new double[]{-52,-27,-13,2};
-        values     = new double[]{105,-19,7,-43};
-        testMath(false);
+    public void testIncreasingInputsToIncreasingValues() throws TransformException {
+        x = new double[] { -207, -96, -5,   2};
+        y = new double[] {  -50, -20,  7, 105};
+        verifyConsistency(-210, 5, 1941178068603334535L);
+        assertInstanceOf("Expected y = f(x)", ConcatenatedTransformDirect1D.class, transform);
+        assertInstanceOf("Expected y = f(x)", LinearInterpolator1D.class, ((ConcatenatedTransform) transform).transform2);
     }
 
     /**
-     * <p>antecedents in increasing order.<br>
-     * values in random order.</p>
-     * @throws TransformException
+     * Tests decreasing <var>x</var> values to increasing <var>y</var> values.
+     *
+     * @throws TransformException if an error occurred while testing a value.
      */
     @Test
-    public void testDecreaseRandom() throws TransformException{
-        antecedent = new double[]{1017,525,24,12};
-        values     = new double[]{-43,7,-19,105};
-        testMath(false);
+    public void testDecreasingInputsToIncreasingValues() throws TransformException {
+        x = new double[] {  2,  -5, -96, -207};
+        y = new double[] {-50, -20,  7,   105};
+        verifyConsistency(-210, 5, 7360962930883142147L);
+        assertInstanceOf("Expected y = -f(-x)", ConcatenatedTransformDirect1D.class, transform);
     }
 
     /**
-     * <p>antecedents in increasing order.<br>
-     * values in random order.</p>
-     * @throws TransformException
+     * Tests decreasing <var>x</var> values to decreasing <var>y</var> values.
+     *
+     * @throws TransformException if an error occurred while testing a value.
      */
     @Test
-    public void testDcnsPercent() throws TransformException{
-        antecedent = new double[]{5, 6.5, 8, 10, 25, 28, 30, 32};
-        values     = new double[]{100, 66, 33, 0, 0, 33, 66, 100};
-        testMath(false);
+    public void testDecreasingInputsToDecreasingValues() throws TransformException {
+        x = new double[] {  2, -5, -96, -207};
+        y = new double[] {105,  7, -19,  -43};
+        verifyConsistency(-210, 5, -2463171263749789198L);
+        assertInstanceOf("Expected y = -f(-x)", ConcatenatedTransformDirect1D.class, transform);
     }
 
     /**
-     * Test fail.
+     * Tests increasing <var>x</var> values to non-monotonic <var>y</var> values.
+     *
+     * @throws TransformException if an error occurred while testing a value.
      */
     @Test
-    public void testFail() throws TransformException{
-        antecedent = new double[]{-43,7,-19,105};
-        values     = new double[]{1017,525,24,12};
+    public void testIncreasingInputsToNonMonotonic() throws TransformException {
+        x = new double[] {-52, -27, -13,   2};
+        y = new double[] {105, -19,   7, -43};
+        isInverseTransformSupported = false;
+        verifyConsistency(-60, 5, 7750310847358135291L);
+    }
+
+    /**
+     * Tests decreasing <var>x</var> values to non-monotonic <var>y</var> values.
+     *
+     * @throws TransformException if an error occurred while testing a value.
+     */
+    @Test
+    public void testDecreasingInputsToNonMonotonic() throws TransformException {
+        x = new double[] {1017, 525,  24,  12};
+        y = new double[] { -43,   7, -19, 105};
+        isInverseTransformSupported = false;
+        verifyConsistency(0, 1020, 2060810396521686858L);
+    }
+
+    /**
+     * Tests increasing <var>x</var> values to non-monotonic <var>y</var> values.
+     *
+     * @throws TransformException if an error occurred while testing a value.
+     */
+    @Test
+    public void testIncreasingInputsToPercent() throws TransformException {
+        x = new double[] {  5, 6.5,  8, 10, 25, 28, 30,  32};
+        y = new double[] {100,  66, 33,  0,  0, 33, 66, 100};
+        isInverseTransformSupported = false;
+        verifyConsistency(0, 40, -6588291548545974041L);
+    }
+
+    /**
+     * Verifies that the factory method does not accept invalid arguments.
+     */
+    @Test
+    public void testArgumentChecks() {
+        x = new double[] { -43,   7, -19, 105};                         // Non-monotonic sequence.
+        y = new double[] {1017, 525,  24,  12};
         try {
-            MathTransform1D mt = new LinearInterpolator1D(antecedent, values);
-            Assert.fail("test should had failed");
-        } catch (Exception e) {
-            //ok
+            LinearInterpolator1D.create(x, y);
+            fail("Should not have accepted the x inputs.");
+        } catch (IllegalArgumentException e) {
+            final String message = e.getMessage();
+            assertTrue(message, message.contains("x"));
         }
 
-        antecedent = new double[]{1017,525,24,12};
-        values     = new double[]{-43,7,-19,105};
-        MathTransform1D mt = new LinearInterpolator1D(antecedent, values);
+        x = new double[] {1017, 525,  24,  12};
+        y = new double[] {-43,    7, -19, 105};
+        MathTransform1D mt = LinearInterpolator1D.create(x, y);
         try {
             mt.inverse();
-            Assert.fail("test should had failed");
-        } catch (Exception e) {
-            //ok
+            fail("Should not have accepted the inverse that transform.");
+        } catch (NoninvertibleTransformException e) {
+            final String message = e.getMessage();
+            assertFalse(message, message.isEmpty());
         }
-        antecedent = new double[]{1017,525,24,12,45};
-        values     = new double[]{-43,7,-19,105};
+
+        x = new double[] {1017, 525,  24,  12, 45};                     // Mismatched array length.
+        y = new double[] {-43,    7, -19, 105};
         try {
-            mt = new LinearInterpolator1D(antecedent, values);
-            Assert.fail("test should had failed");
-        } catch (Exception e) {
-            //ok
+            LinearInterpolator1D.create(x, y);
+            fail("Should not have accepted the x inputs.");
+        } catch (IllegalArgumentException e) {
+            final String message = e.getMessage();
+            assertFalse(message, message.isEmpty());
         }
     }
 
     /**
-     * Test MathTransform.
-     *
-     * @param testInvert apply test on invert transform if true else not.
-     * @throws NoninvertibleTransformException
-     * @throws TransformException
+     * Transforms point and verifies that the result is consistent with the inverse transform and the derivative.
      */
-    private void testMath (boolean testInvert) throws NoninvertibleTransformException, TransformException {
-        final MathTransform1D math1 = new LinearInterpolator1D(antecedent, values);
-        MathTransform1D mathInvert = null;
-        if (testInvert) mathInvert = math1.inverse();
-        int step = 10;
-        final int l = antecedent.length;
-        for (int i = 0; i < l-1; i++) {
-            final double a0    = antecedent[i];
-            final double v0    = values[i];
-            double pasX        = antecedent[i+1] - a0;
-            double pasY        = values[i+1] - v0;
-            final double deriv = pasY / pasX;
-            pasX /= step;
-            pasY /= step;
-            for (int s = 0; s < step; s++) {
-                //mathtransform
-                final double x = a0 + s*pasX;
-                final double y = math1.transform(x);
-                //derivative
-                assertTrue(y-(v0+s*pasY) <= 1E-9);
-                if (s != step-1) assertTrue(math1.derivative(x) - deriv <= 1E-9);
-                if (testInvert) {
-                    //inverse transform
-                    assertTrue(mathInvert.transform(y)-x <= 1E-9);
-                    //inverse derivative
-                    if (s != step-1) assertTrue(mathInvert.derivative(y)-(1/deriv) <= 1E-9);
-                }
-            }
+    private void verifyConsistency(final double min, final double max, final long randomSeed) throws TransformException {
+        transform = LinearInterpolator1D.create(x, y);
+        tolerance = 1E-10;
+        derivativeDeltas = new double[] {0.1};
+        /*
+         * Convert a x value to y value, then back to x.
+         * This code is provided mostly as a convenience place where to step into with a debugger.
+         */
+        if (isInverseTransformSupported) {
+            final double xm = (min + max) / 2;
+            final double ym = ((MathTransform1D) transform).transform(xm);
+            assertEquals(xm,  ((MathTransform1D) transform.inverse()).transform(ym), tolerance);
         }
+        /*
+         * The actual test: 100 random values, test all transform methods
+         * (including those working on arrays), verify consistency and derivatives.
+         */
+        verifyInDomain(new double[] {min}, new double[] {max}, new int[] {100}, new Random(randomSeed));
     }
 }

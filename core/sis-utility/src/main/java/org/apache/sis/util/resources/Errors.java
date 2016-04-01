@@ -791,6 +791,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final short NonLinearUnit_1 = 84;
 
         /**
+         * The “{0}” sequence is not monotonic.
+         */
+        public static final short NonMonotonicSequence_1 = 221;
+
+        /**
          * Axis directions {0} and {1} are not perpendicular.
          */
         public static final short NonPerpendicularDirections_2 = 85;

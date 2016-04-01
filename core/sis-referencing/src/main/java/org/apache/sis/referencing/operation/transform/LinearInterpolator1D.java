@@ -17,133 +17,290 @@
 package org.apache.sis.referencing.operation.transform;
 
 import java.util.Arrays;
-import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.ArraysExt;
+import java.io.Serializable;
 import org.opengis.referencing.operation.MathTransform1D;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
-import org.opengis.referencing.operation.TransformException;
+import org.apache.sis.internal.util.Numerics;
+import org.apache.sis.util.ComparisonMode;
+import org.apache.sis.util.resources.Errors;
+
 
 /**
- * {@link MathTransform1D} with linear interpolation between values.
+ * A transform that performs linear interpolation between values.
+ * The transform is invertible if, and only if, the values are in increasing order.
  *
- * @author Johann Sorel (Geomatys)
- * @author Remi Marechal (Geomatys)
+ * <p>If desired values in decreasing order can be supported by inverting the sign of all values,
+ * then concatenating this transform with a transform that multiply all output values by -1.</p>
+ *
+ * @author  Johann Sorel (Geomatys)
+ * @author  Remi Marechal (Geomatys)
+ * @author  Martin Desruisseaux (Geomatys)
+ * @since   0.7
+ * @version 0.7
+ * @module
  */
-final class LinearInterpolator1D extends AbstractMathTransform1D {
-    private final double[] antecedent;
+final class LinearInterpolator1D extends AbstractMathTransform1D implements Serializable {
+    /**
+     * For cross-version compatibility.
+     */
+    private static final long serialVersionUID = -5025693608589996896L;
+
+    /**
+     * The sequence values specified at construction time.
+     */
     private final double[] values;
-    private boolean isIncreaseOrder = true;
-    private final int l;
 
     /**
-     * <p>In this case an antecedents default table is construct such as : <br>
-     *
-     * [0, 1, ... , N] with N is length of image table values.<p>
-     *
-     * @param values image from antecedents table values.
+     * The average function slope. Used only for extrapolations.
      */
-    public LinearInterpolator1D(double[] values) {
-        ArgumentChecks.ensureNonNull("values", values);
-        this.l          = values.length;
-        if (l < 2)
-            throw new IllegalArgumentException("table must have more than only two values");
-        this.values     = values;
-        this.antecedent = new double[l];
-        for (int v = 0;v<l;v++) this.antecedent[v] = v;
-    }
+    private final double slope;
 
     /**
-     * Two tables such as : f(antecedents) = values.
-     *
-     * @param antecedents "abscissa" table values.
-     * @param values image from antecedents table values.
+     * If the transform is invertible, the inverse. Otherwise {@code null}.
+     * The transform is invertible only if values are in increasing order.
      */
-    public LinearInterpolator1D(double[] antecedents, double[] values) {
-        ArgumentChecks.ensureNonNull("values", values);
-        ArgumentChecks.ensureNonNull("antecedents", antecedents);
-        this.l = antecedents.length;
-        if (l<2)
-            throw new IllegalArgumentException("table must have more than only two values");
-        if (l != values.length)
-            throw new IllegalArgumentException("antecedents and values table must have same length");
-        if (!ArraysExt.isSorted(antecedents, true)) {
-            final double[] antecedent2 = new double[l];
-            int id = l;
-            for (int i = 0; i < l; i++) antecedent2[i] = antecedents[--id];
-            if (!ArraysExt.isSorted(antecedent2, true))
-                throw new IllegalArgumentException("antecedents table must be strictly increasing or decreasing");
-            isIncreaseOrder = false;
+    private final MathTransform1D inverse;
+
+    /**
+     * Creates a new transform which will interpolate in the given table of values.
+     * The inputs are {0, 1, … , <var>N</var>} where <var>N</var> is length of output values.
+     *
+     * <p>This constructor assumes that the {@code values} array have already be clones,
+     * so it will not clone it again.</p>
+     *
+     * @param values the <var>y</var> values in <var>y=f(x)</var> where <var>x</var> = {0, 1, … , {@code values.length-1}}.
+     * @param slope  the value to use for extrapolation.
+     */
+    private LinearInterpolator1D(final double[] values, final double slope) {
+        this.values = values;                           // Cloning this array is caller's responsibility.
+        this.slope  = slope;
+        double last = values[0];
+        for (int i=1; i<values.length; i++) {
+            if (!(last <= (last = values[i]))) {        // Use '!' for catching NaN values.
+                inverse = null;                         // Transform is not reversible.
+                return;
+            }
         }
-        this.antecedent = antecedents;
-        this.values     = values;
+        inverse = new Inverse();
     }
 
     /**
-     * {@inheritDoc }.
+     * Creates a transform for the given values. This method returns an affine transform instead than an
+     * interpolator if the given values form a series with a constant increment.
+     *
+     * @param values a <strong>copy</strong> of the user-provided values. This array may be modified.
      */
-    @Override
-    public double transform(double d) throws TransformException {
-        int ida, idb, idn, idn1;
-        if (isIncreaseOrder) {
-            ida = 0; idb  = l-1;
-            idn = 0; idn1 = 1;
+    private static MathTransform1D create(final double[] values) {
+        final int n = values.length - 1;
+        final double offset = values[0];
+        double slope = (values[n] - offset) / n;
+        /*
+         * If the increment between values is constant (with a small tolerance factor),
+         * return a one-dimensional affine transform instead than an interpolator.
+         * We need to perform this check before the sign reversal applied after this loop.
+         */
+        final double tolerance = Math.abs(slope) * Numerics.COMPARISON_THRESHOLD;
+        for (int i=0; Numerics.epsilonEqual(values[++i]-offset, slope*i, tolerance);) {
+            if (i >= n) {
+                return LinearTransform1D.create(slope, offset);
+            }
+        }
+        /*
+         * If the values are in decreasing order, reverse their sign so we get increasing order.
+         * We will multiply the results by -1 after the transformation.
+         */
+        final boolean isReverted = (slope < 0);
+        if (isReverted) {
+            slope = -slope;
+            for (int i=0; i<=n; i++) {
+                values[i] = -values[i];
+            }
+        }
+        MathTransform1D tr = new LinearInterpolator1D(values, slope);
+        if (isReverted) {
+            tr = new ConcatenatedTransformDirect1D(tr, LinearTransform1D.NEGATE);
+        }
+        return tr;
+    }
+
+    /**
+     * Creates a <i>y=f(x)</i> transform for the given <var>x</var> and <var>y</var> values.
+     * See {@link MathTransforms#interpolate(double[], double[])} javadoc for more information.
+     */
+    static MathTransform1D create(final double[] x, final double[] y) {
+        final int length;
+        if (x == null) {
+            if (y == null) {
+                return IdentityTransform1D.INSTANCE;
+            }
+            length = y.length;
         } else {
-            ida = l-1; idb  = 0;
-            idn = 1;   idn1 = 0;
+            length = x.length;
+            if (y != null && y.length != length) {
+                throw new IllegalArgumentException(Errors.format(Errors.Keys.MismatchedArrayLengths));
+            }
         }
-        if (d <= antecedent[ida]) return values[ida];
-        if (d >= antecedent[idb]) return values[idb];
-        double x0, x1;
-        for (int id = 0; id < l-1; id++) {
-            x0 = antecedent[idn];
-            x1 = antecedent[idn1];
-            if      (d == x0) return values[idn];
-            else if (d == x1) return values[idn1];
-            else if (d > antecedent[idn] && d < antecedent[idn1])
-                return values[idn] + (values[idn1] - values[idn]) * ((d-x0) / (x1-x0));
-            idn++;idn1++;
+        switch (length) {
+            case 0: throw new IllegalArgumentException(Errors.format(Errors.Keys.EmptyArgument_1, (x != null) ? "x" : "y"));
+            case 1: return LinearTransform1D.constant((x != null) ? x[0] : Double.NaN, (y != null) ? y[0] : Double.NaN);
         }
-        return 0;//impossible
+        /*
+         * A common usage of this 'create' method is for creating a "gridToCRS" transform from grid coordinates
+         * to something else, in which case the 'x' array is null. In the less frequent case where x is non-null,
+         * we first convert from x values to indices, then from indices to y values.
+         */
+        MathTransform1D tr = null;
+        if (y != null) {
+            tr = create(y.clone());
+        }
+        if (x != null) {
+            final MathTransform1D indexToY = tr;
+            try {
+                tr = create(x.clone()).inverse();                                       // xToIndex transform.
+            } catch (NoninvertibleTransformException e) {
+                throw new IllegalArgumentException(Errors.format(Errors.Keys.NonMonotonicSequence_1, "x"), e);
+            }
+            if (indexToY != null) {
+                tr = MathTransforms.concatenate(tr, indexToY);
+            }
+        }
+        return tr;
     }
 
     /**
-     * {@inheritDoc }.
-     * Note : for each segment lower sequence point derivative is inclusive
-     * whereas upper sequence point is exclusive.
+     * Returns {@code true} if this transform is the identity transform. This method should never returns {@code true}
+     * since we verified the inputs in the {@code create(…)} method. We nevertheless verify as a paranoiac safety.
      */
-    @Override
-    public double derivative(double d) throws TransformException {
-        int idn, idn1;
-        if (isIncreaseOrder) {
-            idn  = 0; idn1 = 1;
-            if (d < antecedent[0] || d >= antecedent[l-1]) return 0;
-        } else {
-            idn  = 1; idn1 = 0;
-            if (d <= antecedent[l-1] || d > antecedent[0]) return 0;
-        }
-        for (int id = 0; id < l; id++) {
-            if ((d > antecedent[idn]  && d < antecedent[idn1]) || d == antecedent[id])
-                return (values[idn1]-values[idn]) / (antecedent[idn1]-antecedent[idn]);
-            idn++;idn1++;
-        }
-        return 0;//impossible
-    }
-
-    @Override
-    public MathTransform1D inverse() throws NoninvertibleTransformException {
-        if (!ArraysExt.isSorted(values, true)) {
-            final double[] values2 = new double[l];
-            int id = l;
-            for (int i = 0; i < l; i++) values2[i] = values[--id];
-            if (!ArraysExt.isSorted(values2, true))
-                throw new NoninvertibleTransformException("non inversible");
-        }
-        return new LinearInterpolator1D(values, antecedent);
-    }
-
     @Override
     public boolean isIdentity() {
-        return Arrays.equals(antecedent, values);
+        for (int i=0; i<values.length; i++) {
+            if (values[i] != i) return false;
+        }
+        return true;
     }
 
+    /**
+     * Interpolates a <var>y</var> values for the given <var>x</var>.
+     * The given <var>x</var> value should be between 0 to {@code values.length - 1} inclusive.
+     * If the given input value is outside that range, then the output value will be extrapolated.
+     */
+    @Override
+    public double transform(double x) {
+        if (x >= 0) {
+            final int i = (int) x;
+            final int n = values.length - 1;
+            if (i < n) {
+                x -= i;
+                return values[i] * (1-x) + values[i+1] * x;
+            }
+            // x is after the last available value.
+            return (x - n) * slope + values[n];
+        } else {
+            // x is before the first available value.
+            return x * slope + values[0];
+        }
+    }
+
+    /**
+     * Returns the derivative of <var>y</var> for the given <var>x</var>.
+     * Note: for each segment, the derivative is considered constant between
+     * <var>x</var> inclusive and <var>x+1</var> exclusive.
+     */
+    @Override
+    public double derivative(final double x) {
+        if (x >= 0) {
+            final int i = (int) x;
+            if (i < values.length - 1) {
+                return values[i+1] - values[i];
+            }
+        }
+        return slope;
+    }
+
+    /**
+     * Returns the inverse of this transform, or throw an exception if there is no inverse.
+     */
+    @Override
+    public MathTransform1D inverse() throws NoninvertibleTransformException {
+        return (inverse != null) ? inverse : super.inverse();
+    }
+
+    /**
+     * The inverse of the enclosing {@link LinearInterpolator1D}. Given a <var>y</var> value, this class performs
+     * a bilinear search for locating the lower and upper <var>x</var> values as integers, then interpolates the
+     * <var>x</var> real value.
+     */
+    private final class Inverse extends AbstractMathTransform1D.Inverse implements MathTransform1D {
+        /**
+         * For cross-version compatibility.
+         */
+        private static final long serialVersionUID = 3179638888992528901L;
+
+        /**
+         * Creates a new inverse transform.
+         */
+        Inverse() {
+        }
+
+        /**
+         * Locates by bilinear search and interpolates the <var>x</var> value for the given <var>y</var>.
+         */
+        @Override
+        public double transform(final double y) {
+            final double[] values = LinearInterpolator1D.this.values;
+            int x = Arrays.binarySearch(values, y);
+            if (x >= 0) {
+                return x;
+            }
+            x = ~x;
+            if (x >= 1) {
+                if (x < values.length) {
+                    final double y0 = values[x-1];
+                    return (y - y0) / (values[x] - y0) + (x-1);
+                } else {
+                    // y is after the last available value.
+                    final int n = values.length - 1;
+                    return (y - values[n]) / slope + n;
+                }
+            } else {
+                // y is before the first available value.
+                return (y - values[0]) / slope;
+            }
+        }
+
+        /**
+         * Returns the derivative at the given <var>y</var> value.
+         */
+        @Override
+        public double derivative(final double y) {
+            final double[] values = LinearInterpolator1D.this.values;
+            int x = Arrays.binarySearch(values, y);
+            if (x < 0) {
+                x = ~x;
+            }
+            if (x >= 1 && x < values.length) {
+                return 1 / (values[x] - values[x-1]);
+            }
+            return 1 / slope;
+        }
+    }
+
+    /**
+     * Computes a hash code value for this transform.
+     */
+    @Override
+    protected int computeHashCode() {
+        return Arrays.hashCode(values) ^ Numerics.hashCode(Double.doubleToLongBits(slope));
+    }
+
+    /**
+     * Compares this transform with the given object for equality.
+     */
+    @Override
+    public boolean equals(final Object object, final ComparisonMode mode) {
+        if (super.equals(object, mode)) {
+            return Arrays.equals(values, ((LinearInterpolator1D) object).values);
+        }
+        return false;
+    }
 }
