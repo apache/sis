@@ -42,7 +42,9 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  *   <li>CRSs on moving platforms such as road vehicles, vessels, aircraft, or spacecraft.</li>
  * </ul>
  *
- * <p><b>Used with coordinate system types:</b>
+ * <p><b>Used with datum type:</b>
+ *   {@linkplain org.apache.sis.referencing.datum.DefaultEngineeringDatum Engineering}.<br>
+ * <b>Used with coordinate system types:</b>
  *   {@linkplain org.apache.sis.referencing.cs.DefaultAffineCS Affine},
  *   {@linkplain org.apache.sis.referencing.cs.DefaultCartesianCS Cartesian},
  *   {@linkplain org.apache.sis.referencing.cs.DefaultCylindricalCS Cylindrical},

@@ -39,7 +39,9 @@ import static org.apache.sis.referencing.crs.AbstractCRS.isBaseCRS;
  * Parametric CRS can be used for physical properties or functions that vary monotonically with height.
  * A typical example is the pressure in meteorological applications.
  *
- * <p><b>Used with coordinate system type:</b>
+ * <p><b>Used with datum type:</b>
+ *   {@linkplain org.apache.sis.referencing.datum.DefaultParametricDatum Parametric}.<br>
+ * <b>Used with coordinate system type:</b>
  *   {@linkplain org.apache.sis.referencing.cs.DefaultParametricCS Parametric}.
  * </p>
  *

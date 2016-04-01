@@ -33,7 +33,9 @@ import org.apache.sis.referencing.AbstractReferenceSystem;
  * A geocentric CRS deals with the earth's curvature by taking a 3-dimensional spatial view, which obviates
  * the need to model the earth's curvature.
  *
- * <p><b>Used with coordinate system type:</b>
+ * <p><b>Used with datum type:</b>
+ *   {@linkplain org.apache.sis.referencing.datum.DefaultGeodeticDatum Geodetic}.<br>
+ * <b>Used with coordinate system types:</b>
  *   {@linkplain org.apache.sis.referencing.cs.DefaultCartesianCS Cartesian} or
  *   {@linkplain org.apache.sis.referencing.cs.DefaultSphericalCS Spherical}.
  * </p>

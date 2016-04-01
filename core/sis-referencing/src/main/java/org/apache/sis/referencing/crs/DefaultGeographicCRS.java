@@ -47,7 +47,9 @@ import static org.apache.sis.internal.util.Constants.CRS84;
  * This provides an accurate representation of the geometry of geographic features
  * for a large portion of the earth's surface.
  *
- * <p><b>Used with coordinate system type:</b>
+ * <p><b>Used with datum type:</b>
+ *   {@linkplain org.apache.sis.referencing.datum.DefaultGeodeticDatum Geodetic}.<br>
+ * <b>Used with coordinate system type:</b>
  *   {@linkplain org.apache.sis.referencing.cs.DefaultEllipsoidalCS Ellipsoidal}.
  * </p>
  *

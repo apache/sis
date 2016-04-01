@@ -67,6 +67,7 @@ import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.internal.metadata.TransformationAccuracy;
+import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.internal.metadata.sql.SQLUtilities;
 import org.apache.sis.internal.referencing.DeprecatedCode;
 import org.apache.sis.internal.referencing.EPSGParameterDomain;
@@ -2095,27 +2096,27 @@ addURIs:    for (int i=0; ; i++) {
                 final CSFactory csFactory = owner.csFactory;
                 CoordinateSystem cs = null;
                 switch (type.toLowerCase(Locale.US)) {
-                    case "ellipsoidal": {
+                    case WKTKeywords.ellipsoidal: {
                         switch (dimension) {
                             case 2: cs = csFactory.createEllipsoidalCS(properties, axes[0], axes[1]); break;
                             case 3: cs = csFactory.createEllipsoidalCS(properties, axes[0], axes[1], axes[2]); break;
                         }
                         break;
                     }
-                    case "cartesian": {
+                    case "cartesian": {         // Need lower-case "c"
                         switch (dimension) {
                             case 2: cs = csFactory.createCartesianCS(properties, axes[0], axes[1]); break;
                             case 3: cs = csFactory.createCartesianCS(properties, axes[0], axes[1], axes[2]); break;
                         }
                         break;
                     }
-                    case "spherical": {
+                    case WKTKeywords.spherical: {
                         switch (dimension) {
                             case 3: cs = csFactory.createSphericalCS(properties, axes[0], axes[1], axes[2]); break;
                         }
                         break;
                     }
-                    case "vertical":
+                    case WKTKeywords.vertical:
                     case "gravity-related": {
                         switch (dimension) {
                             case 1: cs = csFactory.createVerticalCS(properties, axes[0]); break;
@@ -2123,37 +2124,37 @@ addURIs:    for (int i=0; ; i++) {
                         break;
                     }
                     case "time":
-                    case "temporal": {      // Was used in older ISO-19111 versions.
+                    case WKTKeywords.temporal: {
                         switch (dimension) {
                             case 1: cs = csFactory.createTimeCS(properties, axes[0]); break;
                         }
                         break;
                     }
-                    case "parametric": {
+                    case WKTKeywords.parametric: {
                         switch (dimension) {
                             case 1: cs = csFactory.createParametricCS(properties, axes[0]); break;
                         }
                         break;
                     }
-                    case "linear": {
+                    case WKTKeywords.linear: {
                         switch (dimension) {
                             case 1: cs = csFactory.createLinearCS(properties, axes[0]); break;
                         }
                         break;
                     }
-                    case "polar": {
+                    case WKTKeywords.polar: {
                         switch (dimension) {
                             case 2: cs = csFactory.createPolarCS(properties, axes[0], axes[1]); break;
                         }
                         break;
                     }
-                    case "cylindrical": {
+                    case WKTKeywords.cylindrical: {
                         switch (dimension) {
                             case 3: cs = csFactory.createCylindricalCS(properties, axes[0], axes[1], axes[2]); break;
                         }
                         break;
                     }
-                    case "affine": {
+                    case WKTKeywords.affine: {
                         switch (dimension) {
                             case 2: cs = csFactory.createAffineCS(properties, axes[0], axes[1]); break;
                             case 3: cs = csFactory.createAffineCS(properties, axes[0], axes[1], axes[2]); break;
