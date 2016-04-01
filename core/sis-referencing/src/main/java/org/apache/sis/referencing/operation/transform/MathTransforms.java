@@ -147,6 +147,33 @@ public final class MathTransforms extends Static {
     }
 
     /**
+     * Creates a transform for the <i>y=f(x)</i> function where <var>y</var> are computed by a linear interpolation.
+     * Both {@code x} and {@code y} arguments can be null:
+     *
+     * <ul>
+     *   <li>If both {@code x} and {@code y} arrays are non-null, then the must have the same length.</li>
+     *   <li>If both {@code x} and {@code y} arrays are null, then this method returns the identity transform.</li>
+     *   <li>If only {@code x} is null, then the <var>x</var> values are taken as {0, 1, 2, …, {@code y.length} - 1}.</li>
+     *   <li>If only {@code y} is null, then the <var>y</var> values are taken as {0, 1, 2, …, {@code x.length} - 1}.</li>
+     * </ul>
+     *
+     * All <var>x</var> values shall be real numbers (not NaN) sorted in increasing or decreasing order.
+     * Elements in the {@code y} array do not need to be ordered, but the returned transform will be invertible
+     * only if all <var>y</var> values are real numbers sorted in increasing or decreasing order.
+     * Furthermore the returned transform is affine (i.e. implement the {@link LinearTransform} interface)
+     * if the interval between each <var>x</var> and <var>y</var> value is constant.
+     *
+     * @param x the input values in the function domain, or {@code null}.
+     * @param y the output values in the function range, or {@code null}.
+     * @return the <i>y=f(x)</i> function.
+     *
+     * @since 0.7
+     */
+    public static MathTransform1D interpolate(final double[] x, final double[] y) {
+        return LinearInterpolator1D.create(x, y);
+    }
+
+    /**
      * Puts together a list of independent math transforms, each of them operating on a subset of ordinate values.
      * This method is often used for defining 4-dimensional (<var>x</var>,<var>y</var>,<var>z</var>,<var>t</var>)
      * transform as an aggregation of 3 simpler transforms operating on (<var>x</var>,<var>y</var>), (<var>z</var>)
@@ -419,55 +446,4 @@ public final class MathTransforms extends Static {
         }
         return derivative;
     }
-
-    /**
-     * Create an 1D Transform for the given serie.
-     * <br>
-     * Values are expected to be in increasing or decreasing order and must
-     * not contain duplicates.
-     * <br>
-     * This method first try to find a regular scale between values to create a
-     * linear transform, otherwise a non linear transform is created.
-     *
-     * @param serie value serie
-     * @return MathTransform1D may not be linear
-     * @throws org.opengis.referencing.operation.TransformException
-     */
-    public static MathTransform1D create1D(final double[] serie) throws TransformException {
-
-        if(serie.length==0){
-            throw new TransformException("Serie can not be empty");
-        }else if(serie.length==1){
-            //only one value, we use it as an offset
-            return (MathTransform1D) linear(1.0, serie[0]);
-        }
-
-        //search for a linear scale and verify values
-        boolean linear = true;
-        final double scale = serie[1]-serie[0];
-        final double sign = Math.signum(scale);
-        if(sign == 0.0) throw new TransformException("Serie contains a duplicated value at index 0 and 1");
-
-        double candidate;
-        for(int i=1;i<serie.length-1;i++){
-            candidate = serie[i+1]-serie[i];
-            if(candidate == 0.0){
-                throw new TransformException("Serie contains a duplicated value at index "+i+" and "+(i+1));
-            }
-            if(scale != candidate){
-                linear = false;
-                if(sign != Math.signum(candidate)){
-                    throw new TransformException("Serie is not sorted at index "+i+" and "+(i+1));
-                }
-            }
-        }
-
-        if(linear){
-            return (MathTransform1D) linear(scale, serie[0]);
-        }else{
-            //unlinear transform
-            return new LinearInterpolator1D(serie);
-        }
-    }
-
 }
