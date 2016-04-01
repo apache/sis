@@ -39,7 +39,9 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * Image coordinate reference systems are treated as a separate sub-type because a separate
  * user community exists for images with its own terms of reference.
  *
- * <p><b>Used with coordinate system types:</b>
+ * <p><b>Used with datum type:</b>
+ *   {@linkplain org.apache.sis.referencing.datum.DefaultImageDatum Image}.<br>
+ * <b>Used with coordinate system types:</b>
  *   {@linkplain org.apache.sis.referencing.cs.DefaultCartesianCS Cartesian} or
  *   {@linkplain org.apache.sis.referencing.cs.DefaultAffineCS Affine}.
  * </p>

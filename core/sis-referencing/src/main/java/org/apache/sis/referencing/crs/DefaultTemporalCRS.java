@@ -46,7 +46,9 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  *   <li>{@link #toValue(Date)} for converting a {@link Date} to a temporal position.</li>
  * </ul>
  *
- * <p><b>Used with coordinate system type:</b>
+ * <p><b>Used with datum type:</b>
+ *   {@linkplain org.apache.sis.referencing.datum.DefaultTemporalDatum Temporal}.<br>
+ * <b>Used with coordinate system type:</b>
  *   {@linkplain org.apache.sis.referencing.cs.DefaultTimeCS Time}.
  * </p>
  *

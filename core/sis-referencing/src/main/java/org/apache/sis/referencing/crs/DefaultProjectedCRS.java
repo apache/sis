@@ -59,7 +59,9 @@ import static org.apache.sis.internal.referencing.WKTUtilities.toFormattable;
  * Distortion correction is commonly applied to calculated bearings and distances to produce values
  * that are a close match to actual field values.
  *
- * <p><b>Used with coordinate system type:</b>
+ * <p><b>Used with datum type:</b>
+ *   {@linkplain org.apache.sis.referencing.datum.DefaultGeodeticDatum Geodetic}.<br>
+ * <b>Used with coordinate system type:</b>
  *   {@linkplain org.apache.sis.referencing.cs.DefaultCartesianCS Cartesian}.
  * </p>
  *

@@ -79,6 +79,7 @@ import org.apache.sis.util.Classes;
  *   <tr><td>{@link GeodeticCRS}</td>    <td>Base CRS is also a {@code GeodeticCRS} and is associated to the same type of coordinate system.</td></tr>
  *   <tr><td>{@link VerticalCRS}</td>    <td>Base CRS is also a {@code VerticalCRS} and coordinate system is a {@code VerticalCS}.</td></tr>
  *   <tr><td>{@link TemporalCRS}</td>    <td>Base CRS is also a {@code TemporalCRS} and coordinate system is a {@code TimeCS}.</td></tr>
+ *   <tr><td>{@link ParametricCRS}</td>  <td>Base CRS is also a {@code ParametricCRS} and coordinate system is a {@code ParametricCS}.</td></tr>
  *   <tr><td>{@link EngineeringCRS}</td> <td>Base CRS is a {@code GeodeticCRS}, {@code ProjectedCRS} or {@code EngineeringCRS}.</td></tr>
  * </table>
  *
@@ -267,7 +268,8 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
      * This method expects the same arguments and performs the same work than the
      * {@linkplain #DefaultDerivedCRS(Map, SingleCRS, Conversion, CoordinateSystem) above constructor},
      * except that the {@code DerivedCRS} instance returned by this method may additionally implement
-     * the {@link GeodeticCRS}, {@link VerticalCRS}, {@link TemporalCRS} or {@link EngineeringCRS} interface.
+     * the {@link GeodeticCRS}, {@link VerticalCRS}, {@link TemporalCRS}, {@link ParametricCRS} or
+     * {@link EngineeringCRS} interface.
      * See the class javadoc for more information.
      *
      * @param  properties The properties to be given to the new derived CRS object.
@@ -320,7 +322,8 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
      * {@linkplain #DefaultDerivedCRS(Map, SingleCRS, CoordinateReferenceSystem, OperationMethod, MathTransform,
      * CoordinateSystem) above constructor},
      * except that the {@code DerivedCRS} instance returned by this method may additionally implement
-     * the {@link GeodeticCRS}, {@link VerticalCRS}, {@link TemporalCRS} or {@link EngineeringCRS} interface.
+     * the {@link GeodeticCRS}, {@link VerticalCRS}, {@link TemporalCRS}, {@link ParametricCRS} or
+     * {@link EngineeringCRS} interface.
      * See the class javadoc for more information.
      *
      * @param  properties       The properties to be given to the {@link DefaultConversion} object
