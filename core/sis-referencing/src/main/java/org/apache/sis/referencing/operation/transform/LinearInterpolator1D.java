@@ -18,8 +18,11 @@ package org.apache.sis.referencing.operation.transform;
 
 import java.util.Arrays;
 import java.io.Serializable;
+import org.opengis.parameter.ParameterValueGroup;
+import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.referencing.operation.MathTransform1D;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
+import org.apache.sis.internal.referencing.provider.Interpolation1D;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.resources.Errors;
@@ -124,47 +127,65 @@ final class LinearInterpolator1D extends AbstractMathTransform1D implements Seri
     }
 
     /**
-     * Creates a <i>y=f(x)</i> transform for the given <var>x</var> and <var>y</var> values.
+     * Creates a <i>y=f(x)</i> transform for the given preimage (<var>x</var>) and values (<var>y</var>).
      * See {@link MathTransforms#interpolate(double[], double[])} javadoc for more information.
      */
-    static MathTransform1D create(final double[] x, final double[] y) {
+    static MathTransform1D create(final double[] preimage, final double[] values) {
         final int length;
-        if (x == null) {
-            if (y == null) {
+        if (preimage == null) {
+            if (values == null) {
                 return IdentityTransform1D.INSTANCE;
             }
-            length = y.length;
+            length = values.length;
         } else {
-            length = x.length;
-            if (y != null && y.length != length) {
+            length = preimage.length;
+            if (values != null && values.length != length) {
                 throw new IllegalArgumentException(Errors.format(Errors.Keys.MismatchedArrayLengths));
             }
         }
         switch (length) {
-            case 0: throw new IllegalArgumentException(Errors.format(Errors.Keys.EmptyArgument_1, (x != null) ? "x" : "y"));
-            case 1: return LinearTransform1D.constant((x != null) ? x[0] : Double.NaN, (y != null) ? y[0] : Double.NaN);
+            case 0: throw new IllegalArgumentException(Errors.format(Errors.Keys.EmptyArgument_1, (preimage != null) ? "preimage" : "values"));
+            case 1: return LinearTransform1D.constant((preimage != null) ? preimage[0] : Double.NaN, (values != null) ? values[0] : Double.NaN);
         }
         /*
          * A common usage of this 'create' method is for creating a "gridToCRS" transform from grid coordinates
-         * to something else, in which case the 'x' array is null. In the less frequent case where x is non-null,
-         * we first convert from x values to indices, then from indices to y values.
+         * to something else, in which case the preimage array is null. In the less frequent case where preimage
+         * is non-null, we first convert from preimage to indices, then from indices to y values.
          */
         MathTransform1D tr = null;
-        if (y != null) {
-            tr = create(y.clone());
+        if (values != null) {
+            tr = create(values.clone());
         }
-        if (x != null) {
-            final MathTransform1D indexToY = tr;
+        if (preimage != null) {
+            final MathTransform1D indexToValues = tr;
             try {
-                tr = create(x.clone()).inverse();                                       // xToIndex transform.
+                tr = create(preimage.clone()).inverse();                                // preimageToIndex transform.
             } catch (NoninvertibleTransformException e) {
-                throw new IllegalArgumentException(Errors.format(Errors.Keys.NonMonotonicSequence_1, "x"), e);
+                throw new IllegalArgumentException(Errors.format(Errors.Keys.NonMonotonicSequence_1, "preimage"), e);
             }
-            if (indexToY != null) {
-                tr = MathTransforms.concatenate(tr, indexToY);
+            if (indexToValues != null) {
+                tr = MathTransforms.concatenate(tr, indexToValues);
             }
         }
         return tr;
+    }
+
+    /**
+     * Returns the parameter descriptors for this math transform.
+     */
+    @Override
+    public ParameterDescriptorGroup getParameterDescriptors() {
+        return Interpolation1D.PARAMETERS;
+    }
+
+    /**
+     * Returns the parameter values for this math transform.
+     */
+    @Override
+    public ParameterValueGroup getParameterValues() {
+        final ParameterValueGroup p = getParameterDescriptors().createValue();
+        p.parameter("values").setValue(values);
+        return p;
     }
 
     /**
