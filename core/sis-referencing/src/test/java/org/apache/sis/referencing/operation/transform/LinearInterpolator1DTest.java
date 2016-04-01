@@ -39,7 +39,7 @@ public final strictfp class LinearInterpolator1DTest extends TransformTestCase {
     /**
      * The values of the <i>y=f(x)</i> function to test.
      */
-    private double[] x, y;
+    private double[] preimage, values;
 
     /**
      * Creates a new test case.
@@ -54,8 +54,8 @@ public final strictfp class LinearInterpolator1DTest extends TransformTestCase {
      */
     @Test
     public void testIndicesToIncreasingValues() throws TransformException {
-        x = new double[] { 0,  1,  2,  3};
-        y = new double[] {10, 12, 16, 22};
+        preimage = new double[] { 0,  1,  2,  3};
+        values   = new double[] {10, 12, 16, 22};
         verifyConsistency(-2, 5, -5196528645359952958L);
         assertInstanceOf("Expected y=f(i)", LinearInterpolator1D.class, transform);
     }
@@ -67,8 +67,8 @@ public final strictfp class LinearInterpolator1DTest extends TransformTestCase {
      */
     @Test
     public void testIndicesToDecreasingValues() throws TransformException {
-        x = new double[] {0,   1,  2, 3};
-        y = new double[] {35, 27, 22, 5};
+        preimage = new double[] {0,   1,  2, 3};
+        values   = new double[] {35, 27, 22, 5};
         verifyConsistency(-2, 5, 6445394511592290678L);
         assertInstanceOf("Expected y = -f(-i)", ConcatenatedTransformDirect1D.class, transform);
         assertInstanceOf("Expected y = -f(-i)", LinearInterpolator1D.class, ((ConcatenatedTransform) transform).transform1);
@@ -82,8 +82,8 @@ public final strictfp class LinearInterpolator1DTest extends TransformTestCase {
      */
     @Test
     public void testIncreasingInputsToIndices() throws TransformException {
-        x = new double[] {10, 12, 16, 22};
-        y = new double[] { 0,  1,  2,  3};
+        preimage = new double[] {10, 12, 16, 22};
+        values   = new double[] { 0,  1,  2,  3};
         verifyConsistency(0, 30, 6130776597146077588L);
     }
 
@@ -94,8 +94,8 @@ public final strictfp class LinearInterpolator1DTest extends TransformTestCase {
      */
     @Test
     public void testDecreasingInputsToIndices() throws TransformException {
-        x = new double[] {35, 27, 22, 5};
-        y = new double[] {0,   1,  2, 3};
+        preimage = new double[] {35, 27, 22, 5};
+        values   = new double[] {0,   1,  2, 3};
         verifyConsistency(0, 40, 4109281798631024654L);
         assertInstanceOf("Expected i = -f(-x)", ConcatenatedTransformDirect1D.class, transform);
     }
@@ -107,8 +107,8 @@ public final strictfp class LinearInterpolator1DTest extends TransformTestCase {
      */
     @Test
     public void testIncreasingInputsToIncreasingValues() throws TransformException {
-        x = new double[] { -207, -96, -5,   2};
-        y = new double[] {  -50, -20,  7, 105};
+        preimage = new double[] { -207, -96, -5,   2};
+        values   = new double[] {  -50, -20,  7, 105};
         verifyConsistency(-210, 5, 1941178068603334535L);
         assertInstanceOf("Expected y = f(x)", ConcatenatedTransformDirect1D.class, transform);
         assertInstanceOf("Expected y = f(x)", LinearInterpolator1D.class, ((ConcatenatedTransform) transform).transform2);
@@ -121,8 +121,8 @@ public final strictfp class LinearInterpolator1DTest extends TransformTestCase {
      */
     @Test
     public void testDecreasingInputsToIncreasingValues() throws TransformException {
-        x = new double[] {  2,  -5, -96, -207};
-        y = new double[] {-50, -20,  7,   105};
+        preimage = new double[] {  2,  -5, -96, -207};
+        values   = new double[] {-50, -20,  7,   105};
         verifyConsistency(-210, 5, 7360962930883142147L);
         assertInstanceOf("Expected y = -f(-x)", ConcatenatedTransformDirect1D.class, transform);
     }
@@ -134,8 +134,8 @@ public final strictfp class LinearInterpolator1DTest extends TransformTestCase {
      */
     @Test
     public void testDecreasingInputsToDecreasingValues() throws TransformException {
-        x = new double[] {  2, -5, -96, -207};
-        y = new double[] {105,  7, -19,  -43};
+        preimage = new double[] {  2, -5, -96, -207};
+        values   = new double[] {105,  7, -19,  -43};
         verifyConsistency(-210, 5, -2463171263749789198L);
         assertInstanceOf("Expected y = -f(-x)", ConcatenatedTransformDirect1D.class, transform);
     }
@@ -147,8 +147,8 @@ public final strictfp class LinearInterpolator1DTest extends TransformTestCase {
      */
     @Test
     public void testIncreasingInputsToNonMonotonic() throws TransformException {
-        x = new double[] {-52, -27, -13,   2};
-        y = new double[] {105, -19,   7, -43};
+        preimage = new double[] {-52, -27, -13,   2};
+        values   = new double[] {105, -19,   7, -43};
         isInverseTransformSupported = false;
         verifyConsistency(-60, 5, 7750310847358135291L);
     }
@@ -160,8 +160,8 @@ public final strictfp class LinearInterpolator1DTest extends TransformTestCase {
      */
     @Test
     public void testDecreasingInputsToNonMonotonic() throws TransformException {
-        x = new double[] {1017, 525,  24,  12};
-        y = new double[] { -43,   7, -19, 105};
+        preimage = new double[] {1017, 525,  24,  12};
+        values   = new double[] { -43,   7, -19, 105};
         isInverseTransformSupported = false;
         verifyConsistency(0, 1020, 2060810396521686858L);
     }
@@ -173,8 +173,8 @@ public final strictfp class LinearInterpolator1DTest extends TransformTestCase {
      */
     @Test
     public void testIncreasingInputsToPercent() throws TransformException {
-        x = new double[] {  5, 6.5,  8, 10, 25, 28, 30,  32};
-        y = new double[] {100,  66, 33,  0,  0, 33, 66, 100};
+        preimage = new double[] {  5, 6.5,  8, 10, 25, 28, 30,  32};
+        values   = new double[] {100,  66, 33,  0,  0, 33, 66, 100};
         isInverseTransformSupported = false;
         verifyConsistency(0, 40, -6588291548545974041L);
     }
@@ -184,19 +184,19 @@ public final strictfp class LinearInterpolator1DTest extends TransformTestCase {
      */
     @Test
     public void testArgumentChecks() {
-        x = new double[] { -43,   7, -19, 105};                         // Non-monotonic sequence.
-        y = new double[] {1017, 525,  24,  12};
+        preimage = new double[] { -43,   7, -19, 105};                         // Non-monotonic sequence.
+        values   = new double[] {1017, 525,  24,  12};
         try {
-            LinearInterpolator1D.create(x, y);
+            LinearInterpolator1D.create(preimage, values);
             fail("Should not have accepted the x inputs.");
         } catch (IllegalArgumentException e) {
             final String message = e.getMessage();
-            assertTrue(message, message.contains("x"));
+            assertTrue(message, message.contains("preimage"));
         }
 
-        x = new double[] {1017, 525,  24,  12};
-        y = new double[] {-43,    7, -19, 105};
-        MathTransform1D mt = LinearInterpolator1D.create(x, y);
+        preimage = new double[] {1017, 525,  24,  12};
+        values   = new double[] {-43,    7, -19, 105};
+        MathTransform1D mt = LinearInterpolator1D.create(preimage, values);
         try {
             mt.inverse();
             fail("Should not have accepted the inverse that transform.");
@@ -205,10 +205,10 @@ public final strictfp class LinearInterpolator1DTest extends TransformTestCase {
             assertFalse(message, message.isEmpty());
         }
 
-        x = new double[] {1017, 525,  24,  12, 45};                     // Mismatched array length.
-        y = new double[] {-43,    7, -19, 105};
+        preimage = new double[] {1017, 525,  24,  12, 45};                     // Mismatched array length.
+        values   = new double[] {-43,    7, -19, 105};
         try {
-            LinearInterpolator1D.create(x, y);
+            LinearInterpolator1D.create(preimage, values);
             fail("Should not have accepted the x inputs.");
         } catch (IllegalArgumentException e) {
             final String message = e.getMessage();
@@ -220,7 +220,7 @@ public final strictfp class LinearInterpolator1DTest extends TransformTestCase {
      * Transforms point and verifies that the result is consistent with the inverse transform and the derivative.
      */
     private void verifyConsistency(final double min, final double max, final long randomSeed) throws TransformException {
-        transform = LinearInterpolator1D.create(x, y);
+        transform = LinearInterpolator1D.create(preimage, values);
         tolerance = 1E-10;
         derivativeDeltas = new double[] {0.1};
         /*

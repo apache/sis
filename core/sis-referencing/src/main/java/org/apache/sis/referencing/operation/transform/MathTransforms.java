@@ -148,29 +148,29 @@ public final class MathTransforms extends Static {
 
     /**
      * Creates a transform for the <i>y=f(x)</i> function where <var>y</var> are computed by a linear interpolation.
-     * Both {@code x} and {@code y} arguments can be null:
+     * Both {@code preimage} (the <var>x</var>) and {@code values} (the <var>y</var>) arguments can be null:
      *
      * <ul>
-     *   <li>If both {@code x} and {@code y} arrays are non-null, then the must have the same length.</li>
-     *   <li>If both {@code x} and {@code y} arrays are null, then this method returns the identity transform.</li>
-     *   <li>If only {@code x} is null, then the <var>x</var> values are taken as {0, 1, 2, …, {@code y.length} - 1}.</li>
-     *   <li>If only {@code y} is null, then the <var>y</var> values are taken as {0, 1, 2, …, {@code x.length} - 1}.</li>
+     *   <li>If both {@code preimage} and {@code values} arrays are non-null, then the must have the same length.</li>
+     *   <li>If both {@code preimage} and {@code values} arrays are null, then this method returns the identity transform.</li>
+     *   <li>If only {@code preimage} is null, then the <var>x</var> values are taken as {0, 1, 2, …, {@code values.length} - 1}.</li>
+     *   <li>If only {@code values} is null, then the <var>y</var> values are taken as {0, 1, 2, …, {@code preimage.length} - 1}.</li>
      * </ul>
      *
-     * All <var>x</var> values shall be real numbers (not NaN) sorted in increasing or decreasing order.
-     * Elements in the {@code y} array do not need to be ordered, but the returned transform will be invertible
-     * only if all <var>y</var> values are real numbers sorted in increasing or decreasing order.
+     * All {@code preimage} elements shall be real numbers (not NaN) sorted in increasing or decreasing order.
+     * Elements in the {@code values} array do not need to be ordered, but the returned transform will be invertible
+     * only if all values are real numbers sorted in increasing or decreasing order.
      * Furthermore the returned transform is affine (i.e. implement the {@link LinearTransform} interface)
-     * if the interval between each <var>x</var> and <var>y</var> value is constant.
+     * if the interval between each {@code preimage} and {@code values} element is constant.
      *
-     * @param x the input values in the function domain, or {@code null}.
-     * @param y the output values in the function range, or {@code null}.
+     * @param preimage the input values (<var>x</var>) in the function domain, or {@code null}.
+     * @param values the output values (<var>y</var>) in the function range, or {@code null}.
      * @return the <i>y=f(x)</i> function.
      *
      * @since 0.7
      */
-    public static MathTransform1D interpolate(final double[] x, final double[] y) {
-        return LinearInterpolator1D.create(x, y);
+    public static MathTransform1D interpolate(final double[] preimage, final double[] values) {
+        return LinearInterpolator1D.create(preimage, values);
     }
 
     /**
