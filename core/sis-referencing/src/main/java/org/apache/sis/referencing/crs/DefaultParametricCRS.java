@@ -21,7 +21,6 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 import org.opengis.referencing.crs.ParametricCRS;
-import org.opengis.referencing.crs.TemporalCRS;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.ParametricCS;
 import org.opengis.referencing.datum.ParametricDatum;
@@ -149,7 +148,7 @@ public class DefaultParametricCRS extends AbstractCRS implements ParametricCRS {
      *
      * @param crs The coordinate reference system to copy.
      *
-     * @see #castOrCopy(TemporalCRS)
+     * @see #castOrCopy(ParametricCRS)
      */
     protected DefaultParametricCRS(final ParametricCRS crs) {
         super(crs);

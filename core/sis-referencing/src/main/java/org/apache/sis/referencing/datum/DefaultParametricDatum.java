@@ -38,7 +38,7 @@ import org.apache.sis.io.wkt.Formatter;
  *   <li>Create a {@code ParametricDatum} by invoking the {@code DatumFactory.createParametricDatum(…)} method,
  *       (implemented for example by {@link org.apache.sis.referencing.factory.GeodeticObjectFactory}).</li>
  *   <li>Create a {@code DefaultParametricDatum} by invoking the
- *       {@linkplain #createParametricDatum(Map) constructor}.</li>
+ *       {@linkplain #DefaultParametricDatum(Map) constructor}.</li>
  * </ol>
  *
  * <div class="section">Immutability and thread safety</div>
