@@ -180,7 +180,7 @@ public abstract class AbstractProvider extends DefaultOperationMethod implements
     }
 
     /**
-     * Creates a false easting or northing parameter in metre with a default value of 0.
+     * Creates a false easting, false northing or height parameter in metre with a default value of 0.
      */
     static ParameterDescriptor<Double> createShift(final ParameterBuilder builder) {
         return builder.create(0.0, SI.METRE);

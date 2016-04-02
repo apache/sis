@@ -68,6 +68,7 @@ public final strictfp class AllProvidersTest extends TestCase {
             GeographicToGeocentric.class,
             GeocentricToGeographic.class,
             Geographic3Dto2D.class,
+            Geographic2Dto3D.class,
             Molodensky.class,
             AbridgedMolodensky.class,
             Equirectangular.class,
@@ -92,7 +93,8 @@ public final strictfp class AllProvidersTest extends TestCase {
             ObliqueStereographic.class,
             NTv2.class,
             NADCON.class,
-            FranceGeocentricInterpolation.class
+            FranceGeocentricInterpolation.class,
+            Interpolation1D.class
         };
     }
 
