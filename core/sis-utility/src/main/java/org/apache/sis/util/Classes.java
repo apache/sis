@@ -285,7 +285,7 @@ public final class Classes extends Static {
      *
      * @see Class#getInterfaces()
      */
-    @SuppressWarnings({"unchecked","rawtypes"}) // Generic array creation.
+    @SuppressWarnings({"unchecked","rawtypes"})                             // Generic array creation.
     public static <T> Class<? super T>[] getAllInterfaces(final Class<T> type) {
         final Set<Class<?>> interfaces = getInterfaceSet(type);
         return (interfaces != null) ? interfaces.toArray(new Class[interfaces.size()]) : EMPTY_ARRAY;
@@ -561,9 +561,9 @@ cmp:    for (final Class<?> c : c1) {
                     continue cmp;
                 }
             }
-            return false; // Interface not found in 'c2'.
+            return false;                       // Interface not found in 'c2'.
         }
-        return n == 0; // If n>0, at least one interface was not found in 'c1'.
+        return n == 0;                          // If n>0, at least one interface was not found in 'c1'.
     }
 
     /**
