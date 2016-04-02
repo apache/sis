@@ -38,6 +38,8 @@ import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.referencing.CoordinateOperations;
 import org.apache.sis.internal.referencing.PositionalAccuracyConstant;
+import org.apache.sis.internal.referencing.provider.Geographic2Dto3D;
+import org.apache.sis.internal.referencing.provider.Geographic3Dto2D;
 import org.apache.sis.internal.referencing.provider.GeographicToGeocentric;
 import org.apache.sis.internal.referencing.provider.GeocentricToGeographic;
 import org.apache.sis.internal.referencing.provider.GeocentricAffine;
@@ -501,11 +503,18 @@ public class CoordinateOperationInference {
             parameters = (isGeographicToGeocentric ? GeographicToGeocentric.PARAMETERS
                                                    : GeocentricToGeographic.PARAMETERS).createValue();
         } else {
-            parameters = TensorParameters.WKT1.createValueGroup(properties(Constants.AFFINE));  // Initialized to identity.
-            parameters.parameter(Constants.NUM_COL).setValue(sourceCS.getDimension() + 1);
-            parameters.parameter(Constants.NUM_ROW).setValue(targetCS.getDimension() + 1);
-            before = mtFactory.createCoordinateSystemChange(sourceCS, targetCS);
-            context.setSource(targetCS);
+            final int sourceDim = sourceCS.getDimension();
+            final int targetDim = targetCS.getDimension();
+            if ((sourceDim & ~1) == 2 && (sourceDim ^ targetDim) == 1) {    // sourceDim == 2 or 3 and difference with targetDim is 1.
+                parameters = (sourceDim == 2 ? Geographic2Dto3D.PARAMETERS
+                                             : Geographic3Dto2D.PARAMETERS).createValue();
+            } else {
+                parameters = TensorParameters.WKT1.createValueGroup(properties(Constants.AFFINE));      // Initialized to identity.
+                parameters.parameter(Constants.NUM_COL).setValue(targetDim + 1);
+                parameters.parameter(Constants.NUM_ROW).setValue(targetDim + 1);
+                before = mtFactory.createCoordinateSystemChange(sourceCS, targetCS);
+                context.setSource(targetCS);
+            }
         }
         /*
          * Transform between differents datums using Bursa Wolf parameters. The Bursa Wolf parameters are used
@@ -727,7 +736,7 @@ public class CoordinateOperationInference {
             }
         }
         properties.put(ReferencingServices.OPERATION_TYPE_KEY, type);
-        if (Conversion.class.isAssignableFrom(type)) {
+        if (Conversion.class.isAssignableFrom(type) && transform.isIdentity()) {
             properties.replace(IdentifiedObject.NAME_KEY, AXIS_CHANGES, IDENTITY);
         }
         return factorySIS.createSingleOperation(properties, sourceCRS, targetCRS, null, method, transform);

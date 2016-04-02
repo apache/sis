@@ -194,9 +194,10 @@ public final strictfp class CoordinateOperationInferenceTest extends MathTransfo
 
         final GeographicCRS       targetCRS = CommonCRS.WGS84.geographic();
         final CoordinateOperation operation = factory.createOperation(sourceCRS, targetCRS);
-        assertSame ("sourceCRS",  sourceCRS,  operation.getSourceCRS());
-        assertSame ("targetCRS",  targetCRS,  operation.getTargetCRS());
-        assertFalse("isIdentity", operation.getMathTransform().isIdentity());
+        assertSame  ("sourceCRS",  sourceCRS,  operation.getSourceCRS());
+        assertSame  ("targetCRS",  targetCRS,  operation.getTargetCRS());
+        assertFalse ("isIdentity", operation.getMathTransform().isIdentity());
+        assertEquals("name", "Datum shift", operation.getName().getCode());
         assertSetEquals(Arrays.asList(DATUM_SHIFT_APPLIED), operation.getCoordinateOperationAccuracy());
         assertInstanceOf("operation", Transformation.class, operation);
         assertEquals("method", "Geocentric translations (geog2D domain)",
@@ -238,9 +239,10 @@ public final strictfp class CoordinateOperationInferenceTest extends MathTransfo
 
         final GeographicCRS       targetCRS = CommonCRS.WGS84.geographic();
         final CoordinateOperation operation = factory.createOperation(sourceCRS, targetCRS);
-        assertSame ("sourceCRS",  sourceCRS,  operation.getSourceCRS());
-        assertSame ("targetCRS",  targetCRS,  operation.getTargetCRS());
-        assertFalse("isIdentity", operation.getMathTransform().isIdentity());
+        assertSame  ("sourceCRS",  sourceCRS,  operation.getSourceCRS());
+        assertSame  ("targetCRS",  targetCRS,  operation.getTargetCRS());
+        assertFalse ("isIdentity", operation.getMathTransform().isIdentity());
+        assertEquals("name", "Datum shift", operation.getName().getCode());
         assertSetEquals(Arrays.asList(DATUM_SHIFT_APPLIED), operation.getCoordinateOperationAccuracy());
         assertInstanceOf("operation", Transformation.class, operation);
         assertEquals("method", "Geocentric translations (geog2D domain)",
@@ -282,9 +284,10 @@ public final strictfp class CoordinateOperationInferenceTest extends MathTransfo
 
         final GeocentricCRS       targetCRS = CommonCRS.WGS84.geocentric();
         final CoordinateOperation operation = factory.createOperation(sourceCRS, targetCRS);
-        assertSame ("sourceCRS",  sourceCRS,  operation.getSourceCRS());
-        assertSame ("targetCRS",  targetCRS,  operation.getTargetCRS());
-        assertFalse("isIdentity", operation.getMathTransform().isIdentity());
+        assertSame  ("sourceCRS",  sourceCRS,  operation.getSourceCRS());
+        assertSame  ("targetCRS",  targetCRS,  operation.getTargetCRS());
+        assertFalse ("isIdentity", operation.getMathTransform().isIdentity());
+        assertEquals("name", "Datum shift", operation.getName().getCode());
         assertSetEquals(Arrays.asList(DATUM_SHIFT_APPLIED), operation.getCoordinateOperationAccuracy());
         assertInstanceOf("operation", Transformation.class, operation);
         assertEquals("method", "Geocentric translations (geocentric domain)",
@@ -334,8 +337,9 @@ public final strictfp class CoordinateOperationInferenceTest extends MathTransfo
                 "    Unit[“US survey foot”, 0.304800609601219]]");
 
         final CoordinateOperation operation = factory.createOperation(sourceCRS, targetCRS);
-        assertSame("sourceCRS", sourceCRS, operation.getSourceCRS());
-        assertSame("targetCRS", targetCRS, operation.getTargetCRS());
+        assertSame  ("sourceCRS", sourceCRS, operation.getSourceCRS());
+        assertSame  ("targetCRS", targetCRS, operation.getTargetCRS());
+        assertEquals("name", "TM", operation.getName().getCode());
         assertInstanceOf("operation", Projection.class, operation);
 
         final ParameterValueGroup param = ((SingleOperation) operation).getParameterValues();
@@ -393,8 +397,9 @@ public final strictfp class CoordinateOperationInferenceTest extends MathTransfo
         final TemporalCRS sourceCRS = CommonCRS.Temporal.UNIX.crs();
         final TemporalCRS targetCRS = CommonCRS.Temporal.MODIFIED_JULIAN.crs();
         final CoordinateOperation operation = factory.createOperation(sourceCRS, targetCRS);
-        assertSame("sourceCRS", sourceCRS, operation.getSourceCRS());
-        assertSame("targetCRS", targetCRS, operation.getTargetCRS());
+        assertSame  ("sourceCRS", sourceCRS, operation.getSourceCRS());
+        assertSame  ("targetCRS", targetCRS, operation.getTargetCRS());
+        assertEquals("name", "Axis changes", operation.getName().getCode());
         assertInstanceOf("operation", Conversion.class, operation);
 
         transform = operation.getMathTransform();
@@ -424,14 +429,15 @@ public final strictfp class CoordinateOperationInferenceTest extends MathTransfo
      * @throws FactoryException if the operation can not be created.
      * @throws TransformException if an error occurred while converting the test points.
      */
-//  @Test
+    @Test
     @DependsOnMethod("testIdentityTransform")
     public void testGeographic3D_to_2D() throws FactoryException, TransformException {
         final GeographicCRS sourceCRS = CommonCRS.WGS84.geographic3D();
         final GeographicCRS targetCRS = CommonCRS.WGS84.geographic();
         final CoordinateOperation operation = factory.createOperation(sourceCRS, targetCRS);
-        assertSame("sourceCRS", sourceCRS, operation.getSourceCRS());
-        assertSame("targetCRS", targetCRS, operation.getTargetCRS());
+        assertSame  ("sourceCRS", sourceCRS, operation.getSourceCRS());
+        assertSame  ("targetCRS", targetCRS, operation.getTargetCRS());
+        assertEquals("name", "Axis changes", operation.getName().getCode());
         assertInstanceOf("operation", Conversion.class, operation);
 
         transform = operation.getMathTransform();
@@ -443,6 +449,15 @@ public final strictfp class CoordinateOperationInferenceTest extends MathTransfo
             0, 1, 0, 0,
             0, 0, 0, 1
         }), ((LinearTransform) transform).getMatrix(), STRICT, false));
+
+        isInverseTransformSupported = false;
+        verifyTransform(new double[] {
+            30, 10,  20,
+            20, 30, -10
+        }, new double[] {
+            30, 10,
+            20, 30
+        });
         validate();
     }
 
@@ -453,14 +468,15 @@ public final strictfp class CoordinateOperationInferenceTest extends MathTransfo
      * @throws FactoryException if the operation can not be created.
      * @throws TransformException if an error occurred while converting the test points.
      */
-//  @Test
+    @Test
     @DependsOnMethod("testGeographic3D_to_2D")
     public void testGeographic2D_to_3D() throws Exception {
         final GeographicCRS sourceCRS = CommonCRS.WGS84.geographic();
         final GeographicCRS targetCRS = CommonCRS.WGS84.geographic3D();
         final CoordinateOperation operation = factory.createOperation(sourceCRS, targetCRS);
-        assertSame("sourceCRS", sourceCRS, operation.getSourceCRS());
-        assertSame("targetCRS", targetCRS, operation.getTargetCRS());
+        assertSame  ("sourceCRS", sourceCRS, operation.getSourceCRS());
+        assertSame  ("targetCRS", targetCRS, operation.getTargetCRS());
+        assertEquals("name", "Axis changes", operation.getName().getCode());
         assertInstanceOf("operation", Conversion.class, operation);
 
         transform = operation.getMathTransform();
