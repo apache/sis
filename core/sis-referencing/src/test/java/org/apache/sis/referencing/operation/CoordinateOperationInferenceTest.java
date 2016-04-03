@@ -435,10 +435,14 @@ public final strictfp class CoordinateOperationInferenceTest extends MathTransfo
         final GeographicCRS sourceCRS = CommonCRS.WGS84.geographic3D();
         final GeographicCRS targetCRS = CommonCRS.WGS84.geographic();
         final CoordinateOperation operation = factory.createOperation(sourceCRS, targetCRS);
-        assertSame  ("sourceCRS", sourceCRS, operation.getSourceCRS());
-        assertSame  ("targetCRS", targetCRS, operation.getTargetCRS());
-        assertEquals("name", "Axis changes", operation.getName().getCode());
+        assertSame      ("sourceCRS", sourceCRS,        operation.getSourceCRS());
+        assertSame      ("targetCRS", targetCRS,        operation.getTargetCRS());
+        assertEquals    ("name",      "Axis changes",   operation.getName().getCode());
         assertInstanceOf("operation", Conversion.class, operation);
+
+        final ParameterValueGroup parameters = ((SingleOperation) operation).getParameterValues();
+        assertEquals("parameters.descriptor", "Geographic3D to 2D conversion", parameters.getDescriptor().getName().getCode());
+        assertTrue  ("parameters.isEmpty", parameters.values().isEmpty());
 
         transform = operation.getMathTransform();
         assertInstanceOf("transform", LinearTransform.class, transform);
@@ -474,10 +478,14 @@ public final strictfp class CoordinateOperationInferenceTest extends MathTransfo
         final GeographicCRS sourceCRS = CommonCRS.WGS84.geographic();
         final GeographicCRS targetCRS = CommonCRS.WGS84.geographic3D();
         final CoordinateOperation operation = factory.createOperation(sourceCRS, targetCRS);
-        assertSame  ("sourceCRS", sourceCRS, operation.getSourceCRS());
-        assertSame  ("targetCRS", targetCRS, operation.getTargetCRS());
-        assertEquals("name", "Axis changes", operation.getName().getCode());
+        assertSame      ("sourceCRS", sourceCRS,        operation.getSourceCRS());
+        assertSame      ("targetCRS", targetCRS,        operation.getTargetCRS());
+        assertEquals    ("name",      "Axis changes",   operation.getName().getCode());
         assertInstanceOf("operation", Conversion.class, operation);
+
+        final ParameterValueGroup parameters = ((SingleOperation) operation).getParameterValues();
+        assertEquals("parameters.descriptor", "Geographic2D to 3D conversion", parameters.getDescriptor().getName().getCode());
+        assertEquals("parameters.height", 0, parameters.parameter("height").doubleValue(), STRICT);
 
         transform = operation.getMathTransform();
         assertInstanceOf("transform", LinearTransform.class, transform);
@@ -489,6 +497,14 @@ public final strictfp class CoordinateOperationInferenceTest extends MathTransfo
             0, 0, 0,
             0, 0, 1
         }), ((LinearTransform) transform).getMatrix(), STRICT, false));
+
+        verifyTransform(new double[] {
+            30, 10,
+            20, 30
+        }, new double[] {
+            30, 10, 0,
+            20, 30, 0
+        });
         validate();
     }
 }
