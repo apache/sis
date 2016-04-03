@@ -505,7 +505,10 @@ public class CoordinateOperationInference {
         } else {
             final int sourceDim = sourceCS.getDimension();
             final int targetDim = targetCS.getDimension();
-            if ((sourceDim & ~1) == 2 && (sourceDim ^ targetDim) == 1) {    // sourceDim == 2 or 3 and difference with targetDim is 1.
+            if ((sourceDim & ~1) == 2 && (sourceDim ^ targetDim) == 1    // sourceDim == 2 or 3 and difference with targetDim is 1.
+                    && (sourceCS instanceof EllipsoidalCS)
+                    && (targetCS instanceof EllipsoidalCS))
+            {
                 parameters = (sourceDim == 2 ? Geographic2Dto3D.PARAMETERS
                                              : Geographic3Dto2D.PARAMETERS).createValue();
             } else {
@@ -537,7 +540,7 @@ public class CoordinateOperationInference {
                 transform = mtFactory.createConcatenatedTransform(transform, after);
             }
         }
-        return createFromMathTransform(properties(identifier), sourceCRS, targetCRS, transform, method, null);
+        return createFromMathTransform(properties(identifier), sourceCRS, targetCRS, transform, method, parameters, null);
     }
 
     /**
@@ -641,7 +644,7 @@ public class CoordinateOperationInference {
             throws FactoryException
     {
         final MathTransform transform  = factorySIS.getMathTransformFactory().createAffineTransform(matrix);
-        return createFromMathTransform(properties(name), sourceCRS, targetCRS, transform, null, null);
+        return createFromMathTransform(properties(name), sourceCRS, targetCRS, transform, null, null, null);
     }
 
     /**
@@ -675,6 +678,7 @@ public class CoordinateOperationInference {
      * @param  targetCRS  The destination coordinate reference system.
      * @param  transform  The math transform.
      * @param  method     The operation method, or {@code null} if unknown.
+     * @param  parameters The operations parameters, or {@code null} for automatic detection (not always reliable).
      * @param  type       {@code Conversion.class}, {@code Transformation.class}, or {@code null} if unknown.
      * @return A coordinate operation using the specified math transform.
      * @throws FactoryException if the operation can not be created.
@@ -684,6 +688,7 @@ public class CoordinateOperationInference {
                                                         final CoordinateReferenceSystem targetCRS,
                                                         final MathTransform             transform,
                                                               OperationMethod           method,
+                                                        final ParameterValueGroup       parameters,
                                                         Class<? extends CoordinateOperation> type)
             throws FactoryException
     {
@@ -735,6 +740,9 @@ public class CoordinateOperationInference {
                 }
             }
         }
+        if (parameters != null) {
+            properties.put(ReferencingServices.PARAMETERS_KEY, parameters);
+        }
         properties.put(ReferencingServices.OPERATION_TYPE_KEY, type);
         if (Conversion.class.isAssignableFrom(type) && transform.isIdentity()) {
             properties.replace(IdentifiedObject.NAME_KEY, AXIS_CHANGES, IDENTITY);
@@ -755,7 +763,7 @@ public class CoordinateOperationInference {
             throw new OperationNotFoundException(notFoundMessage(targetCRS, sourceCRS), exception);
         }
         return createFromMathTransform(properties(INVERSE_OPERATION), targetCRS, sourceCRS,
-                transform, InverseOperationMethod.create(op.getMethod()), null);
+                transform, InverseOperationMethod.create(op.getMethod()), null, null);
     }
 
     /**
@@ -791,9 +799,10 @@ public class CoordinateOperationInference {
         if (step1.getName() == AXIS_CHANGES && mt1.getSourceDimensions() == mt1.getTargetDimensions()) main = step2;
         if (step2.getName() == AXIS_CHANGES && mt2.getSourceDimensions() == mt2.getTargetDimensions()) main = step1;
         if (main instanceof SingleOperation) {
+            final SingleOperation op = (SingleOperation) main;
             final MathTransform mt = factorySIS.getMathTransformFactory().createConcatenatedTransform(mt1, mt2);
             main = createFromMathTransform(new HashMap<>(IdentifiedObjects.getProperties(main)),
-                   sourceCRS, targetCRS, mt, ((SingleOperation) main).getMethod(),
+                   sourceCRS, targetCRS, mt, op.getMethod(), op.getParameterValues(),
                    (main instanceof Transformation) ? Transformation.class : SingleOperation.class);
         } else {
             main = factory.createConcatenatedOperation(defaultName(sourceCRS, targetCRS), step1, step2);
@@ -812,7 +821,7 @@ public class CoordinateOperationInference {
                 }
             }
             main = createFromMathTransform(new HashMap<>(IdentifiedObjects.getProperties(main)),
-                    main.getSourceCRS(), main.getTargetCRS(), main.getMathTransform(), null, type);
+                    main.getSourceCRS(), main.getTargetCRS(), main.getMathTransform(), null, null, type);
         }
         return main;
     }

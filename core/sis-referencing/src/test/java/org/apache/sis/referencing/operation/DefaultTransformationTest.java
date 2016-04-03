@@ -177,9 +177,9 @@ public final strictfp class DefaultTransformationTest extends TestCase {
                 "      AXIS[“(Z)”, geocentricZ, ORDER[3]],\n" +
                 "      LENGTHUNIT[“metre”, 1]]],\n" +
                 "  METHOD[“Geocentric translations”, ID[“EPSG”, 1031]],\n" +
-                "  PARAMETER[“X-axis translation”, -146.414, ID[“EPSG”, 8605]],\n" +
-                "  PARAMETER[“Y-axis translation”, 507.337, ID[“EPSG”, 8606]],\n" +
-                "  PARAMETER[“Z-axis translation”, 680.507, ID[“EPSG”, 8607]]]", op);
+                "    PARAMETER[“X-axis translation”, -146.414, ID[“EPSG”, 8605]],\n" +
+                "    PARAMETER[“Y-axis translation”, 507.337, ID[“EPSG”, 8606]],\n" +
+                "    PARAMETER[“Z-axis translation”, 680.507, ID[“EPSG”, 8607]]]", op);
 
         assertWktEquals(Convention.WKT2_SIMPLIFIED,
                 "CoordinateOperation[“Tokyo to JGD2000 (GSI)”,\n" +
@@ -200,9 +200,9 @@ public final strictfp class DefaultTransformationTest extends TestCase {
                 "      Axis[“(Z)”, geocentricZ],\n" +
                 "      Unit[“metre”, 1]]],\n" +
                 "  Method[“Geocentric translations”],\n" +
-                "  Parameter[“X-axis translation”, -146.414],\n" +
-                "  Parameter[“Y-axis translation”, 507.337],\n" +
-                "  Parameter[“Z-axis translation”, 680.507]]", op);
+                "    Parameter[“X-axis translation”, -146.414],\n" +
+                "    Parameter[“Y-axis translation”, 507.337],\n" +
+                "    Parameter[“Z-axis translation”, 680.507]]", op);
     }
 
     /**

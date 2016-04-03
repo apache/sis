@@ -882,9 +882,11 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
             }
             if (parameters != null) {
                 formatter.newLine();
+                formatter.indent(+1);
                 for (final GeneralParameterValue param : parameters.values()) {
                     WKTUtilities.append(param, formatter);
                 }
+                formatter.indent(-1);
             }
         }
         if (!isComponent) {
