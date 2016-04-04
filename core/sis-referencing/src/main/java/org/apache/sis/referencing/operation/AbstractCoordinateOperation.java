@@ -860,13 +860,18 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
         super.formatTo(formatter);
         formatter.newLine();
         /*
-         * If the WKT is a component of a ConcatenatedOperation, do not format the source and target CRS.
-         * This decision SIS-specific since the WKT 2 specification does not define concatenated operations.
-         * The choice of content to omit may change in any future version.
+         * If the WKT is a component of a ConcatenatedOperation, do not format the source CRS since it is identical
+         * to the target CRS of the previous step, or to the source CRS of the enclosing "ConcatenatedOperation" if
+         * this step is the first step.
+         *
+         * This decision is SIS-specific since the WKT 2 specification does not define concatenated operations.
+         * This choice may change in any future SIS version.
          */
         final boolean isComponent = (formatter.getEnclosingElement(1) instanceof ConcatenatedOperation);
         if (!isComponent) {
             append(formatter, getSourceCRS(), WKTKeywords.SourceCRS);
+        }
+        if (!(this instanceof ConcatenatedOperation)) {
             append(formatter, getTargetCRS(), WKTKeywords.TargetCRS);
         }
         final OperationMethod method = getMethod();
@@ -904,7 +909,7 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
         if (formatter.getConvention().majorVersion() == 1) {
             formatter.setInvalidWKT(this, null);
         }
-        return WKTKeywords.CoordinateOperation;
+        return isComponent ? "CoordinateOperationStep" : WKTKeywords.CoordinateOperation;
     }
 
     /**
