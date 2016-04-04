@@ -69,7 +69,7 @@ public final strictfp class DefaultTransformationTest extends TestCase {
     /**
      * Creates a “Tokyo to JGD2000 (GSI)” transformation.
      */
-    private static DefaultTransformation createGeocentricTranslation() {
+    static DefaultTransformation createGeocentricTranslation() {
         /*
          * The following code fills the parameter values AND creates itself the MathTransform instance
          * (indirectly, through the matrix). The later step is normally not our business, since we are
@@ -108,6 +108,7 @@ public final strictfp class DefaultTransformationTest extends TestCase {
      * Asserts that at least some of the properties of the given {@code op} instance have the expected values
      * for an instance created by {@link #createGeocentricTranslation()}.
      */
+    @SuppressWarnings("SuspiciousToArrayCall")
     private static void verifyProperties(final DefaultTransformation op) {
         assertEquals("name",       "Tokyo to JGD2000 (GSI)",  op.getName().getCode());
         assertEquals("sourceCRS",  "Tokyo 1918",              op.getSourceCRS().getName().getCode());

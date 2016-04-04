@@ -23,6 +23,7 @@ import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.crs.GeodeticCRS;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.TemporalCRS;
 import org.opengis.referencing.cs.EllipsoidalCS;
@@ -96,7 +97,7 @@ public final strictfp class DefaultConversionTest extends TestCase {
      */
     private static GeographicCRS changeCS(final CoordinateReferenceSystem crs, final EllipsoidalCS cs) {
         return new DefaultGeographicCRS(Collections.singletonMap(DefaultGeographicCRS.NAME_KEY,
-                crs.getName()), ((GeographicCRS) crs).getDatum(), cs);
+                crs.getName()), ((GeodeticCRS) crs).getDatum(), cs);
     }
 
     /**
@@ -167,6 +168,7 @@ public final strictfp class DefaultConversionTest extends TestCase {
      * Asserts that at least some of the properties of the given {@code op} instance have the expected values
      * for an instance created by {@link #createLongitudeRotation(GeographicCRS, GeographicCRS)}.
      */
+    @SuppressWarnings("SuspiciousToArrayCall")
     private static void verifyProperties(final DefaultConversion op, final boolean swapSourceAxes) {
         assertEquals("name",       "Paris to Greenwich", op.getName().getCode());
         assertEquals("sourceCRS",  "NTF (Paris)",        op.getSourceCRS().getName().getCode());
