@@ -20,8 +20,11 @@ import java.util.Arrays;
 import java.io.Serializable;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptorGroup;
+import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform1D;
+import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
+import org.apache.sis.referencing.operation.matrix.Matrix1;
 import org.apache.sis.internal.referencing.provider.Interpolation1D;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.util.ComparisonMode;
@@ -201,6 +204,39 @@ final class LinearInterpolator1D extends AbstractMathTransform1D implements Seri
     }
 
     /**
+     * Combines {@link #transform(double)}, {@link #derivative(double)} in a single method call.
+     */
+    @Override
+    public Matrix transform(final double[] srcPts, final int srcOff,
+                            final double[] dstPts, final int dstOff,
+                            final boolean derivate) throws TransformException
+    {
+        double x = srcPts[srcOff];
+        final double y, d;
+        if (x >= 0) {
+            final int i = (int) x;
+            final int n = values.length - 1;
+            if (i < n) {
+                x -= i;
+                y = values[i] * (1-x) + values[i+1] * x;
+                d = values[i+1] - values[i];
+            } else {
+                // x is after the last available value.
+                y = (x - n) * slope + values[n];
+                d = slope;
+            }
+        } else {
+            // x is before the first available value.
+            y = x * slope + values[0];
+            d = slope;
+        }
+        if (dstPts != null) {
+            dstPts[dstOff] = y;
+        }
+        return derivate ? new Matrix1(d) : null;
+    }
+
+    /**
      * Interpolates a <var>y</var> values for the given <var>x</var>.
      * The given <var>x</var> value should be between 0 to {@code values.length - 1} inclusive.
      * If the given input value is outside that range, then the output value will be extrapolated.
@@ -213,9 +249,10 @@ final class LinearInterpolator1D extends AbstractMathTransform1D implements Seri
             if (i < n) {
                 x -= i;
                 return values[i] * (1-x) + values[i+1] * x;
+            } else {
+                // x is after the last available value.
+                return (x - n) * slope + values[n];
             }
-            // x is after the last available value.
-            return (x - n) * slope + values[n];
         } else {
             // x is before the first available value.
             return x * slope + values[0];
@@ -264,28 +301,67 @@ final class LinearInterpolator1D extends AbstractMathTransform1D implements Seri
         }
 
         /**
+         * Combines {@link #transform(double)}, {@link #derivative(double)} in a single method call.
+         * The intend is to avoid to call {@link Arrays#binarySearch(double[], double)} twice for the
+         * same value.
+         */
+        @Override
+        public Matrix transform(final double[] srcPts, final int srcOff,
+                                final double[] dstPts, final int dstOff,
+                                final boolean derivate) throws TransformException
+        {
+            final double d, x, y = srcPts[srcOff];
+            final double[] values = LinearInterpolator1D.this.values;
+            int i = Arrays.binarySearch(values, y);
+            if (i >= 0) {
+                x = i;
+                d = (i >= 1 && i < values.length) ? (values[i] - values[i-1]) : slope;
+            } else {
+                i = ~i;
+                if (i >= 1) {
+                    if (i < values.length) {
+                        final double y0 = values[i-1];
+                        x = (y - y0) / (d = values[i] - y0) + (i-1);
+                    } else {
+                        // y is after the last available value.
+                        final int n = values.length - 1;
+                        x = (y - values[n]) / (d = slope) + n;
+                    }
+                } else {
+                    // y is before the first available value.
+                    x = (y - values[0]) / (d = slope);
+                }
+            }
+            if (dstPts != null) {
+                dstPts[dstOff] = x;
+            }
+            return derivate ? new Matrix1(1/d) : null;
+        }
+
+        /**
          * Locates by bilinear search and interpolates the <var>x</var> value for the given <var>y</var>.
          */
         @Override
         public double transform(final double y) {
             final double[] values = LinearInterpolator1D.this.values;
-            int x = Arrays.binarySearch(values, y);
-            if (x >= 0) {
-                return x;
-            }
-            x = ~x;
-            if (x >= 1) {
-                if (x < values.length) {
-                    final double y0 = values[x-1];
-                    return (y - y0) / (values[x] - y0) + (x-1);
-                } else {
-                    // y is after the last available value.
-                    final int n = values.length - 1;
-                    return (y - values[n]) / slope + n;
-                }
+            int i = Arrays.binarySearch(values, y);
+            if (i >= 0) {
+                return i;
             } else {
-                // y is before the first available value.
-                return (y - values[0]) / slope;
+                i = ~i;
+                if (i >= 1) {
+                    if (i < values.length) {
+                        final double y0 = values[i-1];
+                        return (y - y0) / (values[i] - y0) + (i-1);
+                    } else {
+                        // y is after the last available value.
+                        final int n = values.length - 1;
+                        return (y - values[n]) / slope + n;
+                    }
+                } else {
+                    // y is before the first available value.
+                    return (y - values[0]) / slope;
+                }
             }
         }
 
@@ -295,14 +371,17 @@ final class LinearInterpolator1D extends AbstractMathTransform1D implements Seri
         @Override
         public double derivative(final double y) {
             final double[] values = LinearInterpolator1D.this.values;
-            int x = Arrays.binarySearch(values, y);
-            if (x < 0) {
-                x = ~x;
+            int i = Arrays.binarySearch(values, y);
+            if (i < 0) {
+                i = ~i;
             }
-            if (x >= 1 && x < values.length) {
-                return 1 / (values[x] - values[x-1]);
+            final double d;
+            if (i >= 1 && i < values.length) {
+                d = (values[i] - values[i-1]);
+            } else {
+                d = slope;
             }
-            return 1 / slope;
+            return 1 / d;
         }
     }
 
@@ -311,7 +390,7 @@ final class LinearInterpolator1D extends AbstractMathTransform1D implements Seri
      */
     @Override
     protected int computeHashCode() {
-        return Arrays.hashCode(values) ^ Numerics.hashCode(Double.doubleToLongBits(slope));
+        return super.hashCode() ^ Arrays.hashCode(values);
     }
 
     /**
@@ -320,6 +399,7 @@ final class LinearInterpolator1D extends AbstractMathTransform1D implements Seri
     @Override
     public boolean equals(final Object object, final ComparisonMode mode) {
         if (super.equals(object, mode)) {
+            // No need to compare 'slope' because it is computed from 'values'.
             return Arrays.equals(values, ((LinearInterpolator1D) object).values);
         }
         return false;
