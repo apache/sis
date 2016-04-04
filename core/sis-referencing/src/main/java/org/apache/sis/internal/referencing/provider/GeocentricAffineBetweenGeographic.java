@@ -25,11 +25,13 @@ import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
+import org.opengis.referencing.operation.OperationMethod;
 import org.apache.sis.referencing.operation.transform.EllipsoidToCentricTransform;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.parameter.Parameters;
+import org.apache.sis.util.ArgumentChecks;
 
 
 /**
@@ -99,13 +101,52 @@ public abstract class GeocentricAffineBetweenGeographic extends GeocentricAffine
     }
 
     /**
+     * The providers for all combinations between 2D and 3D cases, or {@code null} if none.
+     * If non-null, then array length shall be 4. Indices are built with following rules:
+     *
+     * <ul>
+     *   <li>Bit 1: dimension of source coordinates (0 for 2D, 1 for 3D).</li>
+     *   <li>Bit 0: dimension of target coordinates (0 for 2D, 1 for 3D).</li>
+     * </ul>
+     *
+     * <strong>Do not modify this array after construction</strong>, since the same array is shared by many
+     * objects and there is no synchronization.
+     */
+    final GeocentricAffineBetweenGeographic[] redimensioned;
+
+    /**
      * Constructs a provider with the specified parameters.
      *
      * @param sourceDimensions Number of dimensions in the source CRS of this operation method.
      * @param targetDimensions Number of dimensions in the target CRS of this operation method.
+     * @param parameters       Description of parameters expected by this operation.
+     * @param redimensioned    The providers for all combinations between 2D and 3D cases, or {@code null}.
      */
-    GeocentricAffineBetweenGeographic(int sourceDimensions, int targetDimensions, ParameterDescriptorGroup parameters) {
+    GeocentricAffineBetweenGeographic(int sourceDimensions, int targetDimensions, ParameterDescriptorGroup parameters,
+            final GeocentricAffineBetweenGeographic[] redimensioned)
+    {
         super(sourceDimensions, targetDimensions, parameters);
+        this.redimensioned = redimensioned;
+    }
+
+    /**
+     * Returns the same operation method, but for different number of dimensions.
+     *
+     * @param  sourceDimensions The desired number of input dimensions.
+     * @param  targetDimensions The desired number of output dimensions.
+     * @return The redimensioned operation method, or {@code this} if no change is needed.
+     */
+    @Override
+    public final OperationMethod redimension(final int sourceDimensions, final int targetDimensions) {
+        if (redimensioned != null) {
+            ArgumentChecks.ensureBetween("sourceDimensions", 2, 3, sourceDimensions);
+            ArgumentChecks.ensureBetween("targetDimensions", 2, 3, targetDimensions);
+            final OperationMethod m = redimensioned[((sourceDimensions & 1) << 1) | (targetDimensions & 1)];
+            if (m != null) {
+                return m;
+            }
+        }
+        return super.redimension(sourceDimensions, targetDimensions);
     }
 
     /**

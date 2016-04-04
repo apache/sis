@@ -840,25 +840,60 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
          * if available. This method writes semi-major and semi-minor parameter values only if they do not
          * already exists in the given parameters.
          *
+         * <p>The given method and parameters are stored in the {@link #provider} and {@link #parameters}
+         * fields respectively. The actual stored values may differ from the values given to this method.</p>
+         *
          * @param  method Description of the transform to be created, or {@code null} if unknown.
          * @return The exception if the operation failed, or {@code null} if none. This exception is not thrown now
          *         because the caller may succeed in creating the transform anyway, or otherwise may produce a more
          *         informative exception.
          * @throws IllegalArgumentException if the operation fails because a parameter has a unrecognized name or an
          *         illegal value.
+         *
+         * @see #getCompletedParameters()
          */
-        final RuntimeException setEllipsoids(final OperationMethod method) throws IllegalArgumentException {
-            ensureCompatibleParameters(false);
+        @SuppressWarnings("null")
+        final RuntimeException completeParameters(OperationMethod method, final ParameterValueGroup userParams)
+                throws IllegalArgumentException
+        {
+            provider   = method;
+            parameters = userParams;
+            /*
+             * Get the operation method for the appropriate number of dimensions. For example the default Molodensky
+             * operation expects two-dimensional source and target CRS. If a given CRS is three-dimensional, we need
+             * a provider variant which will not concatenate a "geographic 3D to 2D" operation before the Molodensky
+             * one. It is worth to perform this check only if the provider is a subclass of DefaultOperationMethod,
+             * since it needs to override the 'redimension(int, int)' method.
+             */
+            if (method instanceof DefaultOperationMethod && method.getClass() != DefaultOperationMethod.class) {
+                final Integer sourceDim = (sourceCS != null) ? sourceCS.getDimension() : method.getSourceDimensions();
+                final Integer targetDim = (targetCS != null) ? targetCS.getDimension() : method.getTargetDimensions();
+                if (sourceDim != null && targetDim != null) {
+                    method = ((DefaultOperationMethod) method).redimension(sourceDim, targetDim);
+                    if (method instanceof MathTransformProvider) {
+                        provider = method;
+                    }
+                }
+            }
+            ensureCompatibleParameters(false);      // Invoke only after we set 'provider' to its final instance.
+            /*
+             * Get a mask telling us if we need to set parameters for the source and/or target ellipsoid.
+             * This information should preferably be given by the provider. But if the given provider is
+             * not a SIS implementation, use as a fallback whether ellipsoids are provided. This fallback
+             * may be less reliable.
+             */
             int n;
-            if (method instanceof AbstractProvider) {
-                n = ((AbstractProvider) method).getEllipsoidsMask();
+            if (provider instanceof AbstractProvider) {
+                n = ((AbstractProvider) provider).getEllipsoidsMask();
             } else {
-                // Fallback used only when the information is not available in
-                // a more reliable way from AbstractProvider.getEllipsoidsMask().
                 n = 0;
                 if (sourceEllipsoid != null) n  = 1;
                 if (targetEllipsoid != null) n |= 2;
             }
+            /*
+             * Set the ellipsoid axis-length parameter values. Those parameters may appear in the source
+             * ellipsoid, in the target ellipsoid or in both ellipsoids.
+             */
             switch (n) {
                 case 0: return null;
                 case 1: return setEllipsoid(getSourceEllipsoid(), Constants.SEMI_MAJOR, Constants.SEMI_MINOR, true, null);
@@ -867,7 +902,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
                     RuntimeException failure = null;
                     if (sourceCS != null) try {
                         ensureCompatibleParameters(true);
-                        final ParameterValue<?> p = parameters.parameter("dim");
+                        final ParameterValue<?> p = parameters.parameter("dim");    // Really 'parameters', not 'userParams'.
                         if (p.getValue() == null) {
                             p.setValue(sourceCS.getDimension());
                         }
@@ -980,10 +1015,9 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
                  * since the standard place where to provide this information is in the ellipsoid object.
                  */
                 if (context != null) {
-                    context.provider   = method;
-                    context.parameters = parameters;
-                    failure = context.setEllipsoids(method);
+                    failure = context.completeParameters(method, parameters);
                     parameters = context.parameters;
+                    method     = context.provider;
                 }
                 transform = ((MathTransformProvider) method).createMathTransform(this, parameters);
             } catch (IllegalArgumentException | IllegalStateException exception) {

@@ -56,8 +56,23 @@ public final class CoordinateFrameRotation3D extends GeocentricAffineBetweenGeog
     /**
      * Constructs the provider.
      */
+    @SuppressWarnings("ThisEscapedInObjectConstruction")
     public CoordinateFrameRotation3D() {
-        super(3, 3, PARAMETERS);
+        this(3, 3, new CoordinateFrameRotation3D[4]);
+        redimensioned[1] = new CoordinateFrameRotation3D(2, 3, redimensioned);
+        redimensioned[2] = new CoordinateFrameRotation3D(3, 2, redimensioned);
+        redimensioned[3] = this;
+    }
+
+    /**
+     * Constructs a provider for the given dimensions.
+     *
+     * @param sourceDimensions Number of dimensions in the source CRS of this operation method.
+     * @param targetDimensions Number of dimensions in the target CRS of this operation method.
+     * @param redimensioned    Providers for all combinations between 2D and 3D cases.
+     */
+    private CoordinateFrameRotation3D(int sourceDimensions, int targetDimensions, GeocentricAffineBetweenGeographic[] redimensioned) {
+        super(sourceDimensions, targetDimensions, PARAMETERS, redimensioned);
     }
 
     /**

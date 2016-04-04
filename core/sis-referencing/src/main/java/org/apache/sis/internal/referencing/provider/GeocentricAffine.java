@@ -155,6 +155,7 @@ public abstract class GeocentricAffine extends AbstractProvider {
      *
      * @param sourceDimensions Number of dimensions in the source CRS of this operation method.
      * @param targetDimensions Number of dimensions in the target CRS of this operation method.
+     * @param parameters       Description of parameters expected by this operation.
      */
     GeocentricAffine(int sourceDimensions, int targetDimensions, ParameterDescriptorGroup parameters) {
         super(sourceDimensions, targetDimensions, parameters);
@@ -275,7 +276,7 @@ public abstract class GeocentricAffine extends AbstractProvider {
         @SuppressWarnings("null")
         int dimension  = sourceCS.getDimension();
         if (dimension != targetCS.getDimension()) {
-            dimension  = 0;                             // Sentinal value for mismatched dimensions.
+            dimension  = 4;     // Any value greater than 3 means "mismatched dimensions" for this method.
         }
         /*
          * Try to convert the matrix into (tX, tY, tZ, rX, rY, rZ, dS) parameters.
@@ -312,7 +313,7 @@ public abstract class GeocentricAffine extends AbstractProvider {
             }
         }
         final Parameters values = createParameters(descriptor, parameters, isTranslation);
-        if (useMolodensky && dimension != 0) {
+        if (useMolodensky && dimension <= 3) {
             values.getOrCreate(Molodensky.DIMENSION).setValue(dimension);
         }
         return values;
