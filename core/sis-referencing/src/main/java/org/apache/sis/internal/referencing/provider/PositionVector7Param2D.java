@@ -59,7 +59,7 @@ public final class PositionVector7Param2D extends GeocentricAffineBetweenGeograp
      * Constructs the provider.
      */
     public PositionVector7Param2D() {
-        super(2, 2, PARAMETERS);
+        super(2, 2, PARAMETERS, null);
     }
 
     /**

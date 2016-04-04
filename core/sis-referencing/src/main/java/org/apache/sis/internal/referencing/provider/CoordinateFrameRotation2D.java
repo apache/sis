@@ -57,7 +57,7 @@ public final class CoordinateFrameRotation2D extends GeocentricAffineBetweenGeog
      * Constructs the provider.
      */
     public CoordinateFrameRotation2D() {
-        super(2, 2, PARAMETERS);
+        super(2, 2, PARAMETERS, null);
     }
 
     /**

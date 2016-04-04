@@ -17,13 +17,16 @@
 package org.apache.sis.referencing.operation;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.text.ParseException;
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterValueGroup;
+import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.GeocentricCRS;
 import org.opengis.referencing.crs.VerticalCRS;
 import org.opengis.referencing.crs.TemporalCRS;
+import org.opengis.referencing.crs.CompoundCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.SingleOperation;
@@ -34,6 +37,7 @@ import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.OperationNotFoundException;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.referencing.operation.matrix.Matrices;
+import org.apache.sis.referencing.crs.DefaultCompoundCRS;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.io.wkt.WKTFormat;
 
@@ -43,6 +47,7 @@ import static org.apache.sis.internal.referencing.PositionalAccuracyConstant.DAT
 
 // Test dependencies
 import org.apache.sis.referencing.operation.transform.MathTransformTestCase;
+import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.junit.BeforeClass;
@@ -106,7 +111,7 @@ public final strictfp class CoordinateOperationInferenceTest extends MathTransfo
                 "GEOGCS[“Sphere”,\n" +
                 "  Datum[“Sphere”, Ellipsoid[“Sphere”, 6370997, 0]],\n" +
                 "  CS[ellipsoidal, 2],\n" +
-                "    Axis[“Longitude (λ)”, EAST],\n" +
+                "    Axis[“Longitude (λ)”, EAST],\n" +          // Use of non-ASCII letters is departure from WKT 2.
                 "    Axis[“Latitude (φ)”, NORTH],\n" +
                 "    Unit[“degree”, 0.017453292519943295]]");
         /*
@@ -213,6 +218,72 @@ public final strictfp class CoordinateOperationInferenceTest extends MathTransfo
             39.00004480, -84.99993102,      // This is NOT the most accurate NAD27 to WGS84 transformation.
             38.26005019, -80.57979096       // We use non-optimal TOWGS84[…] for the purpose of this test.
         });
+        validate();
+    }
+
+    /**
+     * Tests a transformation using the <cite>"Geocentric translations (geog3D domain)"</cite> method.
+     * This method verifies with both a three-dimensional and a two-dimensional target CRS.
+     *
+     * @throws ParseException if a CRS used in this test can not be parsed.
+     * @throws FactoryException if the operation can not be created.
+     * @throws TransformException if an error occurred while converting the test points.
+     */
+    @Test
+    @DependsOnMethod("testGeocentricTranslationInGeographicDomain")
+    public void testGeocentricTranslationInGeographic3D() throws ParseException, FactoryException, TransformException {
+        final GeographicCRS sourceCRS = (GeographicCRS) parse(
+                "GeodeticCRS[“NAD27”,\n" +
+                "  Datum[“North American Datum 1927”,\n" +
+                "    Ellipsoid[“Clarke 1866”, 6378206.4, 294.9786982138982],\n" +
+                "    ToWGS84[-8, 160, 176]]," +                                     // See comment in above test.
+                "  CS[ellipsoidal, 3],\n" +
+                "    Axis[“Latitude (φ)”, NORTH, Unit[“degree”, 0.017453292519943295]],\n" +
+                "    Axis[“Longitude (λ)”, EAST, Unit[“degree”, 0.017453292519943295]],\n" +
+                "    Axis[“Height (h)”, UP, Unit[“m”, 1]]]");
+
+        testGeocentricTranslationInGeographic3D(sourceCRS, CommonCRS.WGS84.geographic3D());
+
+        isInverseTransformSupported = false;
+        testGeocentricTranslationInGeographic3D(sourceCRS, CommonCRS.WGS84.geographic());
+    }
+
+    /**
+     * Implementation of {@link #testGeocentricTranslationInGeographic3D()}.
+     *
+     * @param sourceCRS The NAD27 geographic CRS.
+     * @param targetCRS Either the two-dimensional or the three-dimensional geographic CRS using WGS84 datum.
+     */
+    private void testGeocentricTranslationInGeographic3D(final GeographicCRS sourceCRS, final GeographicCRS targetCRS)
+            throws ParseException, FactoryException, TransformException
+    {
+        final CoordinateOperation operation = factory.createOperation(sourceCRS, targetCRS);
+        assertSame  ("sourceCRS",  sourceCRS,  operation.getSourceCRS());
+        assertSame  ("targetCRS",  targetCRS,  operation.getTargetCRS());
+        assertFalse ("isIdentity", operation.getMathTransform().isIdentity());
+        assertEquals("name", "Datum shift", operation.getName().getCode());
+        assertSetEquals(Arrays.asList(DATUM_SHIFT_APPLIED), operation.getCoordinateOperationAccuracy());
+        assertInstanceOf("operation", Transformation.class, operation);
+        assertEquals("method", "Geocentric translations (geog3D domain)",
+                ((SingleOperation) operation).getMethod().getName().getCode());
+
+        transform  = operation.getMathTransform();
+        tolerance  = ANGULAR_TOLERANCE;
+        zTolerance = 0.01;
+        λDimension = new int[] {1};
+        zDimension = new int[] {2};
+        double[] source = {
+            39.00,       -85.00,       -10000.00,   // The intend of those large height values is to cause a shift in (φ,λ)
+            38.26,       -80.58,       +10000.00    // large enough for being detected if we fail to use h in calculations.
+        };
+        double[] target = {
+            39.00004487, -84.99993091, -10038.28,
+            38.26005011, -80.57979129,   9962.38
+        };
+        if (targetCRS.getCoordinateSystem().getDimension() == 2) {
+            target = TestUtilities.dropLastDimensions(target, 3, 2);
+        }
+        verifyTransform(source, target);
         validate();
     }
 
@@ -505,6 +576,44 @@ public final strictfp class CoordinateOperationInferenceTest extends MathTransfo
             30, 10, 0,
             20, 30, 0
         });
+        validate();
+    }
+
+    /**
+     * Convenience method for creating a compound CRS.
+     */
+    private static CompoundCRS compound(final String name, final SingleCRS... components) {
+        return new DefaultCompoundCRS(Collections.singletonMap(CompoundCRS.NAME_KEY, name), components);
+    }
+
+    /**
+     * Tests transformation from three-dimensional geographic CRS to four-dimensional compound CRS
+     * where the last dimension is time.
+     *
+     * @throws FactoryException if the operation can not be created.
+     * @throws TransformException if an error occurred while converting the test points.
+     */
+//  @Test
+    public void testGeographic3D_to_4D() throws FactoryException, TransformException {
+        final CompoundCRS sourceCRS = compound("Test3D", CommonCRS.WGS84.geographic(),   CommonCRS.Temporal.UNIX.crs());
+        final CompoundCRS targetCRS = compound("Test4D", CommonCRS.WGS84.geographic3D(), CommonCRS.Temporal.MODIFIED_JULIAN.crs());
+        final CoordinateOperation operation = factory.createOperation(sourceCRS, targetCRS);
+        assertSame      ("sourceCRS", sourceCRS,        operation.getSourceCRS());
+        assertSame      ("targetCRS", targetCRS,        operation.getTargetCRS());
+        assertEquals    ("name",      "Axis changes",   operation.getName().getCode());
+        assertInstanceOf("operation", Conversion.class, operation);
+
+        transform = operation.getMathTransform();
+        assertInstanceOf("transform", LinearTransform.class, transform);
+        assertEquals(3, transform.getSourceDimensions());
+        assertEquals(4, transform.getTargetDimensions());
+        assertTrue(Matrices.create(5, 4, new double[] {
+            1, 0, 0, 0,
+            0, 1, 0, 0,
+            0, 0, 0, 0,
+            0, 0, 1./(24*60*60), 40587,
+            0, 0, 0, 1
+        }).equals(((LinearTransform) transform).getMatrix(), 1E-12));
         validate();
     }
 }

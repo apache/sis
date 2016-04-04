@@ -56,7 +56,7 @@ public final class GeocentricTranslation2D extends GeocentricAffineBetweenGeogra
      * Constructs the provider.
      */
     public GeocentricTranslation2D() {
-        super(2, 2, PARAMETERS);
+        super(2, 2, PARAMETERS, null);
     }
 
     /**
