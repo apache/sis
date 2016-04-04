@@ -47,9 +47,11 @@ import static org.apache.sis.internal.referencing.PositionalAccuracyConstant.DAT
 
 // Test dependencies
 import org.apache.sis.referencing.operation.transform.MathTransformTestCase;
+import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
+import org.opengis.test.Assert;
 import org.junit.BeforeClass;
 import org.junit.AfterClass;
 import org.junit.Test;
@@ -514,11 +516,11 @@ public final strictfp class CoordinateOperationInferenceTest extends MathTransfo
         assertInstanceOf("transform", LinearTransform.class, transform);
         assertEquals(3, transform.getSourceDimensions());
         assertEquals(2, transform.getTargetDimensions());
-        assertTrue(Matrices.equals(Matrices.create(3, 4, new double[] {
+        Assert.assertMatrixEquals("transform.matrix", Matrices.create(3, 4, new double[] {
             1, 0, 0, 0,
             0, 1, 0, 0,
             0, 0, 0, 1
-        }), ((LinearTransform) transform).getMatrix(), STRICT, false));
+        }), ((LinearTransform) transform).getMatrix(), STRICT);
 
         isInverseTransformSupported = false;
         verifyTransform(new double[] {
@@ -540,7 +542,7 @@ public final strictfp class CoordinateOperationInferenceTest extends MathTransfo
      */
     @Test
     @DependsOnMethod("testGeographic3D_to_2D")
-    public void testGeographic2D_to_3D() throws Exception {
+    public void testGeographic2D_to_3D() throws FactoryException, TransformException {
         final GeographicCRS sourceCRS = CommonCRS.WGS84.geographic();
         final GeographicCRS targetCRS = CommonCRS.WGS84.geographic3D();
         final CoordinateOperation operation = factory.createOperation(sourceCRS, targetCRS);
@@ -557,12 +559,12 @@ public final strictfp class CoordinateOperationInferenceTest extends MathTransfo
         assertInstanceOf("transform", LinearTransform.class, transform);
         assertEquals(2, transform.getSourceDimensions());
         assertEquals(3, transform.getTargetDimensions());
-        assertTrue(Matrices.equals(Matrices.create(4, 3, new double[] {
+        Assert.assertMatrixEquals("transform.matrix", Matrices.create(4, 3, new double[] {
             1, 0, 0,
             0, 1, 0,
             0, 0, 0,
             0, 0, 1
-        }), ((LinearTransform) transform).getMatrix(), STRICT, false));
+        }), ((LinearTransform) transform).getMatrix(), STRICT);
 
         verifyTransform(new double[] {
             30, 10,
@@ -570,6 +572,46 @@ public final strictfp class CoordinateOperationInferenceTest extends MathTransfo
         }, new double[] {
             30, 10, 0,
             20, 30, 0
+        });
+        validate();
+    }
+
+    /**
+     * Tests transformation from a tree-dimensional geographic CRS to an ellipsoidal CRS.
+     * Such vertical CRS are illegal according ISO 19111, but they are the easiest test
+     * that we can perform for geographic → vertical transformation.
+     *
+     * @throws FactoryException if the operation can not be created.
+     * @throws TransformException if an error occurred while converting the test points.
+     */
+    @Test
+    public void testGeographic3D_to_EllipsoidalHeight() throws FactoryException, TransformException {
+        final CoordinateReferenceSystem sourceCRS = CommonCRS.WGS84.geographic3D();
+        final CoordinateReferenceSystem targetCRS = HardCodedCRS.ELLIPSOIDAL_HEIGHT_cm;
+        final CoordinateOperation operation = factory.createOperation(sourceCRS, targetCRS);
+        assertSame      ("sourceCRS", sourceCRS,        operation.getSourceCRS());
+        assertSame      ("targetCRS", targetCRS,        operation.getTargetCRS());
+        assertEquals    ("name",      "Axis changes",   operation.getName().getCode());
+        assertInstanceOf("operation", Conversion.class, operation);
+
+        transform = operation.getMathTransform();
+        assertInstanceOf("transform", LinearTransform.class, transform);
+        assertEquals(3, transform.getSourceDimensions());
+        assertEquals(1, transform.getTargetDimensions());
+        Assert.assertMatrixEquals("transform.matrix", Matrices.create(2, 4, new double[] {
+            0, 0, 100, 0,
+            0, 0,   0, 1
+        }), ((LinearTransform) transform).getMatrix(), STRICT);
+
+        isInverseTransformSupported = false;
+        verifyTransform(new double[] {
+             0,  0,  0,
+             5,  8, 20,
+            -5, -8, 24
+        }, new double[] {
+                     0,
+                  2000,
+                  2400,
         });
         validate();
     }
@@ -602,13 +644,13 @@ public final strictfp class CoordinateOperationInferenceTest extends MathTransfo
         assertInstanceOf("transform", LinearTransform.class, transform);
         assertEquals(3, transform.getSourceDimensions());
         assertEquals(4, transform.getTargetDimensions());
-        assertTrue(Matrices.create(5, 4, new double[] {
+        Assert.assertMatrixEquals("transform.matrix", Matrices.create(5, 4, new double[] {
             1, 0, 0, 0,
             0, 1, 0, 0,
             0, 0, 0, 0,
             0, 0, 1./(24*60*60), 40587,
             0, 0, 0, 1
-        }).equals(((LinearTransform) transform).getMatrix(), 1E-12));
+        }), ((LinearTransform) transform).getMatrix(), 1E-12);
         validate();
     }
 }

@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Collections;
 import javax.measure.unit.Unit;
+import javax.measure.quantity.Length;
 import javax.measure.quantity.Duration;
 import javax.measure.converter.ConversionException;
 import org.opengis.util.FactoryException;
@@ -34,6 +35,8 @@ import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.metadata.quality.PositionalAccuracy;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptorGroup;
+import org.apache.sis.internal.metadata.AxisDirections;
+import org.apache.sis.internal.metadata.VerticalDatumTypes;
 import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.referencing.CoordinateOperations;
@@ -54,6 +57,8 @@ import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.referencing.cs.CoordinateSystems;
+import org.apache.sis.referencing.crs.DefaultVerticalCRS;
+import org.apache.sis.referencing.crs.DefaultGeographicCRS;
 import org.apache.sis.referencing.datum.BursaWolfParameters;
 import org.apache.sis.referencing.datum.DefaultGeodeticDatum;
 import org.apache.sis.referencing.operation.matrix.Matrices;
@@ -287,7 +292,7 @@ public class CoordinateOperationInference {
                 return createOperationStep(source, (GeodeticCRS) targetCRS);
             }
             if (targetCRS instanceof VerticalCRS) {
-//              return createOperationStep(source, (VerticalCRS) targetCRS);
+                return createOperationStep(source, (VerticalCRS) targetCRS);
             }
         }
         ////////////////////////////////////////////////////////////////////////////////
@@ -410,6 +415,7 @@ public class CoordinateOperationInference {
      * @return a coordinate operation from {@code sourceCRS} to {@code targetCRS}.
      * @throws FactoryException if the operation can not be constructed.
      */
+    @SuppressWarnings("null")
     protected CoordinateOperation createOperationStep(final GeodeticCRS sourceCRS,
                                                       final GeodeticCRS targetCRS)
             throws FactoryException
@@ -541,6 +547,85 @@ public class CoordinateOperationInference {
             }
         }
         return createFromMathTransform(properties(identifier), sourceCRS, targetCRS, transform, method, parameters, null);
+    }
+
+    /**
+     * Creates an operation between a geodetic and a vertical coordinate reference systems.
+     * The height returned by this method will usually be part of a
+     * {@linkplain DefaultPassThroughOperation pass-through operation}.
+     *
+     * @param  sourceCRS  input coordinate reference system.
+     * @param  targetCRS  output coordinate reference system.
+     * @return a coordinate operation from {@code sourceCRS} to {@code targetCRS}.
+     * @throws FactoryException if the operation can not be constructed.
+     */
+    protected CoordinateOperation createOperationStep(final GeodeticCRS sourceCRS,
+                                                      final VerticalCRS targetCRS)
+            throws FactoryException
+    {
+        /*
+         * We will perform the conversion or transformation as a 3 steps process:
+         *
+         *     source CRS          →
+         *     interpolation CRS   →
+         *     ellipsoidal height  →
+         *     target height
+         */
+        CoordinateOperation step1 = null;
+        CoordinateOperation step2;
+        CoordinateOperation step3 = null;
+        /*
+         * Convert the source CRS to the CRS needed for transforming the heights.
+         * For now this step is fixed to a three-dimensional geographic CRS, but
+         * a future version should use a plugin-mechanism, with the code below
+         * as the last fallback.
+         */
+        CoordinateReferenceSystem interpolationCRS = sourceCRS;
+        CoordinateSystem interpolationCS = interpolationCRS.getCoordinateSystem();
+        if (!(interpolationCS instanceof EllipsoidalCS)) {
+            interpolationCRS = new DefaultGeographicCRS(
+                    Collections.singletonMap(GeographicCRS.NAME_KEY, sourceCRS.getName()),
+                    sourceCRS.getDatum(), CommonCRS.WGS84.geographic3D().getCoordinateSystem());
+
+            step1            = createOperation(sourceCRS, interpolationCRS);
+            interpolationCRS = step1.getTargetCRS();                                // May have changed.
+            interpolationCS  = interpolationCRS.getCoordinateSystem();
+        }
+        /*
+         * Transform from ellipsoidal height to the height requested by the caller.
+         */
+        final int i = AxisDirections.indexOfColinear(interpolationCS, AxisDirection.UP);
+        if (i < 0) {
+            throw new OperationNotFoundException(notFoundMessage(sourceCRS, targetCRS));
+        }
+        VerticalCRS heightCRS = targetCRS;
+        VerticalCS  heightCS  = heightCRS.getCoordinateSystem();
+        final CoordinateSystemAxis interpAxis = interpolationCS.getAxis(i);
+        final Unit<?>              interpUnit = interpAxis.getUnit();
+        if (!Objects.equals(interpUnit, heightCS.getAxis(0).getUnit()) ||
+            !VerticalDatumTypes.ELLIPSOIDAL.equals(targetCRS.getDatum().getVerticalDatumType()))
+        {
+            heightCRS = CommonCRS.Vertical.ELLIPSOIDAL.crs();
+            heightCS  = heightCRS.getCoordinateSystem();
+            if (!Objects.equals(interpUnit, heightCS.getAxis(0).getUnit())) {
+                heightCRS = new DefaultVerticalCRS(
+                        Collections.singletonMap(VerticalCRS.NAME_KEY, heightCRS.getName()), heightCRS.getDatum(),
+                        (VerticalCS) CoordinateSystems.replaceLinearUnit(heightCS, interpUnit.asType(Length.class)));
+            }
+            step3     = createOperation(heightCRS, targetCRS);
+            heightCRS = (VerticalCRS) step3.getSourceCRS();                         // May have changed.
+            heightCS  = heightCRS.getCoordinateSystem();
+        }
+        /*
+         * Conversion from three-dimensional geographic CRS to ellipsoidal height.
+         */
+        final int srcDim = interpolationCS.getDimension();                          // Should always be 3.
+        final int tgtDim = heightCS.getDimension();                                 // Should always be 1.
+        final Matrix matrix = Matrices.createZero(tgtDim + 1, srcDim + 1);
+        matrix.setElement(0,      i,      1);                                       // Scale factor for height.
+        matrix.setElement(tgtDim, srcDim, 1);                                       // Always 1 for affine transform.
+        step2 = createFromAffineTransform(AXIS_CHANGES, interpolationCRS, heightCRS, matrix);
+        return concatenate(step1, step2, step3);
     }
 
     /**
@@ -783,10 +868,10 @@ public class CoordinateOperationInference {
                                             final CoordinateOperation step2)
             throws FactoryException
     {
+        if (isIdentity(step1)) return step2;
+        if (isIdentity(step2)) return step1;
         final MathTransform mt1 = step1.getMathTransform();
         final MathTransform mt2 = step2.getMathTransform();
-        if (step1 instanceof Conversion && mt1.isIdentity()) return step2;
-        if (step2 instanceof Conversion && mt2.isIdentity()) return step1;
         final CoordinateReferenceSystem sourceCRS = step1.getSourceCRS();
         final CoordinateReferenceSystem targetCRS = step2.getTargetCRS();
         /*
@@ -803,7 +888,8 @@ public class CoordinateOperationInference {
             final MathTransform mt = factorySIS.getMathTransformFactory().createConcatenatedTransform(mt1, mt2);
             main = createFromMathTransform(new HashMap<>(IdentifiedObjects.getProperties(main)),
                    sourceCRS, targetCRS, mt, op.getMethod(), op.getParameterValues(),
-                   (main instanceof Transformation) ? Transformation.class : SingleOperation.class);
+                   (main instanceof Transformation) ? Transformation.class :
+                   (main instanceof Conversion) ? Conversion.class : SingleOperation.class);
         } else {
             main = factory.createConcatenatedOperation(defaultName(sourceCRS, targetCRS), step1, step2);
         }
@@ -858,7 +944,7 @@ public class CoordinateOperationInference {
      * are usually datum shift and must be visible.
      */
     private static boolean isIdentity(final CoordinateOperation operation) {
-        return (operation instanceof Conversion) && operation.getMathTransform().isIdentity();
+        return (operation == null) || ((operation instanceof Conversion) && operation.getMathTransform().isIdentity());
     }
 
     /**

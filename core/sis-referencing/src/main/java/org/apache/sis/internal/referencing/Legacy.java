@@ -18,9 +18,9 @@ package org.apache.sis.internal.referencing;
 
 import javax.measure.unit.SI;
 import javax.measure.unit.Unit;
+import javax.measure.quantity.Length;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CartesianCS;
-import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.cs.AxisFilter;
 import org.apache.sis.referencing.cs.CoordinateSystems;
@@ -40,10 +40,10 @@ import static org.opengis.referencing.IdentifiedObject.NAME_KEY;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.6
+ * @version 0.7
  * @module
  */
-public final class Legacy implements AxisFilter {
+public final class Legacy {
     /**
      * A three-dimensional Cartesian CS with the legacy set of geocentric axes.
      * OGC 01-009 defines the default geocentric axes as:
@@ -60,6 +60,12 @@ public final class Legacy implements AxisFilter {
             new DefaultCoordinateSystemAxis(singletonMap(NAME_KEY, "X"), "X", AxisDirection.OTHER, SI.METRE),
             new DefaultCoordinateSystemAxis(singletonMap(NAME_KEY, "Y"), "Y", AxisDirection.EAST,  SI.METRE),
             new DefaultCoordinateSystemAxis(singletonMap(NAME_KEY, "Z"), "Z", AxisDirection.NORTH, SI.METRE));
+
+    /**
+     * Do not allow instantiation of this class.
+     */
+    private Legacy() {
+    }
 
     /**
      * The standard three-dimensional Cartesian CS as defined by ISO 19111.
@@ -108,40 +114,8 @@ public final class Legacy implements AxisFilter {
      */
     public static CartesianCS replaceUnit(CartesianCS cs, final Unit<?> unit) {
         if (unit != null && !unit.equals(SI.METRE)) {
-            cs = (CartesianCS) CoordinateSystems.replaceAxes(cs, new Legacy(unit));
+            cs = (CartesianCS) CoordinateSystems.replaceLinearUnit(cs, unit.asType(Length.class));
         }
         return cs;
-    }
-
-
-
-
-    // -----------------------------------------------------------------
-    //         AxisFilter implementation for internal usage only
-    // -----------------------------------------------------------------
-
-    /**
-     * The value to be returned by {@link #getUnitReplacement(CoordinateSystemAxis, Unit)},
-     * or {@code null} if no replacement should be done.
-     */
-    private final Unit<?> replacement;
-
-    /**
-     * For internal usage by {@link #replaceUnit(CartesianCS, Unit)} only.
-     */
-    private Legacy(final Unit<?> unit) {
-        replacement = unit;
-    }
-
-    /**
-     * For internal usage by {@link #replaceUnit(CartesianCS, Unit)} only.
-     *
-     * @param  axis ignored.
-     * @param  unit ignored.
-     * @return The unit of the new coordinate system.
-     */
-    @Override
-    public Unit<?> getUnitReplacement(CoordinateSystemAxis axis, final Unit<?> unit) {
-        return replacement;
     }
 }
