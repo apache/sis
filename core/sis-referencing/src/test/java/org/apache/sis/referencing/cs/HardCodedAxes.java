@@ -114,6 +114,16 @@ public final strictfp class HardCodedAxes {
             AxisDirection.UP, SI.METRE, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, null);
 
     /**
+     * Axis for height values above the ellipsoid in a
+     * {@linkplain org.apache.sis.referencing.crs.DefaultGeographicCRS geographic CRS}.
+     * Increasing ordinates values go {@linkplain AxisDirection#UP up} and units are {@linkplain SI#CENTIMETRE centimetres}.
+     *
+     * @since 0.7
+     */
+    public static final DefaultCoordinateSystemAxis ELLIPSOIDAL_HEIGHT_cm = create(AxisNames.ELLIPSOIDAL_HEIGHT, "h",
+            AxisDirection.UP, SI.CENTIMETRE, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, null);
+
+    /**
      * Axis for height values measured from gravity.
      * Increasing ordinates values go {@linkplain AxisDirection#UP up} and units are {@linkplain SI#METRE metres}.
      * The ISO 19111 name is <cite>"gravity-related height"</cite> and the abbreviation is upper case <cite>"H"</cite>.

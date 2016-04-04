@@ -193,6 +193,18 @@ public final strictfp class HardCodedCRS {
             getProperties(HardCodedCS.ELLIPSOIDAL_HEIGHT), HardCodedDatum.ELLIPSOID, HardCodedCS.ELLIPSOIDAL_HEIGHT);
 
     /**
+     * A vertical coordinate reference system using ellipsoidal datum.
+     * Ellipsoidal heights are measured along the normal to the ellipsoid used in the definition of horizontal datum.
+     *
+     * <p>This is not a valid vertical CRS according ISO 19111.
+     * This CRS is used by Apache SIS for internal calculation.</p>
+     *
+     * @since 0.7
+     */
+    public static final DefaultVerticalCRS ELLIPSOIDAL_HEIGHT_cm = new DefaultVerticalCRS(
+            getProperties(HardCodedCS.ELLIPSOIDAL_HEIGHT_cm), HardCodedDatum.ELLIPSOID, HardCodedCS.ELLIPSOIDAL_HEIGHT_cm);
+
+    /**
      * A vertical coordinate reference system using Mean Sea Level datum.
      */
     public static final DefaultVerticalCRS GRAVITY_RELATED_HEIGHT = new DefaultVerticalCRS(
