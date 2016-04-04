@@ -20,7 +20,6 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Collections;
 import javax.measure.unit.Unit;
-import javax.measure.quantity.Length;
 import javax.measure.quantity.Duration;
 import javax.measure.converter.ConversionException;
 import org.opengis.util.FactoryException;
@@ -57,6 +56,7 @@ import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.referencing.cs.CoordinateSystems;
+import org.apache.sis.referencing.cs.DefaultVerticalCS;
 import org.apache.sis.referencing.crs.DefaultVerticalCRS;
 import org.apache.sis.referencing.crs.DefaultGeographicCRS;
 import org.apache.sis.referencing.datum.BursaWolfParameters;
@@ -583,41 +583,57 @@ public class CoordinateOperationInference {
         CoordinateReferenceSystem interpolationCRS = sourceCRS;
         CoordinateSystem interpolationCS = interpolationCRS.getCoordinateSystem();
         if (!(interpolationCS instanceof EllipsoidalCS)) {
-            interpolationCRS = new DefaultGeographicCRS(
-                    Collections.singletonMap(GeographicCRS.NAME_KEY, sourceCRS.getName()),
-                    sourceCRS.getDatum(), CommonCRS.WGS84.geographic3D().getCoordinateSystem());
-
-            step1            = createOperation(sourceCRS, interpolationCRS);
-            interpolationCRS = step1.getTargetCRS();                                // May have changed.
-            interpolationCS  = interpolationCRS.getCoordinateSystem();
+            final EllipsoidalCS cs = CommonCRS.WGS84.geographic3D().getCoordinateSystem();
+            if (!equalsIgnoreMetadata(interpolationCS, cs)) {
+                step1 = createOperation(sourceCRS, new DefaultGeographicCRS(sameNameAs(sourceCRS), sourceCRS.getDatum(), cs));
+                interpolationCRS = step1.getTargetCRS();
+                interpolationCS  = interpolationCRS.getCoordinateSystem();
+            }
         }
         /*
          * Transform from ellipsoidal height to the height requested by the caller.
+         * This operation requires the horizontal components (φ,λ) of source CRS,
+         * unless the user asked for ellipsooidal height (which strictly speaking
+         * is not allowed by ISO 19111). Those horizontal components are given by
+         * the interpolation CRS.
+         *
+         * TODO: store the interpolationCRS in some field for allowing other methods to use it.
          */
         final int i = AxisDirections.indexOfColinear(interpolationCS, AxisDirection.UP);
         if (i < 0) {
             throw new OperationNotFoundException(notFoundMessage(sourceCRS, targetCRS));
         }
-        VerticalCRS heightCRS = targetCRS;
+        final CoordinateSystemAxis expectedAxis = interpolationCS.getAxis(i);
+        final boolean isEllipsoidalHeight;      // Whether heightCRS is okay or need to be recreated.
+        VerticalCRS heightCRS = targetCRS;      // First candidate, will be replaced if it doesn't fit.
         VerticalCS  heightCS  = heightCRS.getCoordinateSystem();
-        final CoordinateSystemAxis interpAxis = interpolationCS.getAxis(i);
-        final Unit<?>              interpUnit = interpAxis.getUnit();
-        if (!Objects.equals(interpUnit, heightCS.getAxis(0).getUnit()) ||
-            !VerticalDatumTypes.ELLIPSOIDAL.equals(targetCRS.getDatum().getVerticalDatumType()))
-        {
+        if (equalsIgnoreMetadata(heightCS.getAxis(0), expectedAxis)) {
+            isEllipsoidalHeight = VerticalDatumTypes.ELLIPSOIDAL.equals(heightCRS.getDatum().getVerticalDatumType());
+        } else {
             heightCRS = CommonCRS.Vertical.ELLIPSOIDAL.crs();
             heightCS  = heightCRS.getCoordinateSystem();
-            if (!Objects.equals(interpUnit, heightCS.getAxis(0).getUnit())) {
-                heightCRS = new DefaultVerticalCRS(
-                        Collections.singletonMap(VerticalCRS.NAME_KEY, heightCRS.getName()), heightCRS.getDatum(),
-                        (VerticalCS) CoordinateSystems.replaceLinearUnit(heightCS, interpUnit.asType(Length.class)));
+            isEllipsoidalHeight = equalsIgnoreMetadata(heightCS.getAxis(0), expectedAxis);
+            if (!isEllipsoidalHeight) {
+                heightCS = new DefaultVerticalCS(sameNameAs(heightCS), expectedAxis);
             }
-            step3     = createOperation(heightCRS, targetCRS);
-            heightCRS = (VerticalCRS) step3.getSourceCRS();                         // May have changed.
+        }
+        if (!isEllipsoidalHeight) {                     // 'false' if we need to change datum, unit or axis direction.
+            heightCRS = new DefaultVerticalCRS(sameNameAs(heightCRS), CommonCRS.Vertical.ELLIPSOIDAL.datum(), heightCS);
+        }
+        if (heightCRS != targetCRS) {
+            step3     = createOperation(heightCRS, targetCRS);  // May need interpolationCRS for performing datum change.
+            heightCRS = (VerticalCRS) step3.getSourceCRS();
             heightCS  = heightCRS.getCoordinateSystem();
         }
         /*
          * Conversion from three-dimensional geographic CRS to ellipsoidal height.
+         * This part does nothing more than dropping the horizontal components,
+         * like the "Geographic3D to 2D conversion" (EPSG:9659).
+         * It is not the job of this block to perform unit conversions.
+         * Unit conversions, if needed, are done by 'step3' computed in above block.
+         *
+         * The "Geographic3DtoVertical.txt" file in the provider package is a reminder.
+         * If this policy is changed, that file should be edited accordingly.
          */
         final int srcDim = interpolationCS.getDimension();                          // Should always be 3.
         final int tgtDim = heightCS.getDimension();                                 // Should always be 1.
@@ -977,6 +993,13 @@ public class CoordinateOperationInference {
      */
     private static Map<String,?> properties(final String name) {
         return Collections.singletonMap(IdentifiedObject.NAME_KEY, name);
+    }
+
+    /**
+     * Returns the name of the given object in a singleton map.
+     */
+    private static Map<String,?> sameNameAs(final IdentifiedObject object) {
+        return Collections.singletonMap(IdentifiedObject.NAME_KEY, object.getName());
     }
 
     /**
