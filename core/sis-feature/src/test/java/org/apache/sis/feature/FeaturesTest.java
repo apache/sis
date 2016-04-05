@@ -16,19 +16,24 @@
  */
 package org.apache.sis.feature;
 
+import org.apache.sis.internal.feature.FeatureTypeBuilder;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
+import org.opengis.feature.Feature;
+import org.opengis.feature.FeatureType;
+import org.opengis.feature.InvalidPropertyValueException;
 
 
 /**
  * Tests {@link Features}.
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @author  Johann Sorel (Geomatys)
  * @since   0.5
- * @version 0.5
+ * @version 0.7
  * @module
  */
 @DependsOn(SingletonAttributeTest.class)
@@ -68,4 +73,32 @@ public final strictfp class FeaturesTest extends TestCase {
             assertTrue(message, message.contains("CharSequence"));
         }
     }
+
+    /**
+     * Tests {@link Features#validate(org.opengis.feature.Feature) }.
+     */
+    @Test
+    public void testValidate(){
+
+        final FeatureTypeBuilder ftb = new FeatureTypeBuilder();
+        ftb.setName("myScope","myName");
+        ftb.addProperty("name", String.class,1,1,null);
+        final FeatureType type = ftb.build();
+
+        final Feature feature = type.newInstance();
+
+        //should not pass validation
+        try{
+            Features.validate(feature);
+            fail("Feature is unvalid, property name is missing, validation should have raised an exception.");
+        }catch(InvalidPropertyValueException ex){
+            //ok
+        }
+
+        //should pass validation
+        feature.setPropertyValue("name", "hubert");
+        Features.validate(feature);
+
+    }
+
 }
