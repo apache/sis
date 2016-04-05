@@ -111,11 +111,21 @@ public class ReferencingServices extends OptionalDependency {
     public static final String OPERATION_TYPE_KEY = "operationType";
 
     /**
-     * The key for specifying a {@linkplain org.opengis.referencing.operation.MathTransformFactory}
-     * instance to use for the construction of a geodetic object. This is usually not needed for CRS
-     * construction, except in the special case of a derived CRS created from a defining conversion.
+     * The key for specifying a {@link MathTransformFactory} instance to use for geodetic object constructions.
+     * This is usually not needed for CRS construction, except in the special case of a derived CRS created
+     * from a defining conversion.
      */
     public static final String MT_FACTORY = "mtFactory";
+
+    /**
+     * The key for specifying a {@link CRSFactory} instance to use for geodetic object constructions.
+     */
+    public static final String CRS_FACTORY = "crsFactory";
+
+    /**
+     * The key for specifying a {@link CSFactory} instance to use for geodetic object constructions.
+     */
+    public static final String CS_FACTORY = "csFactory";
 
     /**
      * The separator character between an identifier and its namespace in the argument given to
@@ -553,11 +563,15 @@ public class ReferencingServices extends OptionalDependency {
      *
      * @param  properties The default properties.
      * @param  mtFactory  The math transform factory to use.
+     * @param  crsFactory The factory to use if the operation factory needs to create CRS for intermediate steps.
+     * @param  csFactory  The factory to use if the operation factory needs to create CS for intermediate steps.
      * @return The coordinate operation factory to use.
      *
-     * @since 0.6
+     * @since 0.7
      */
-    public CoordinateOperationFactory getCoordinateOperationFactory(Map<String,?> properties, MathTransformFactory mtFactory) {
+    public CoordinateOperationFactory getCoordinateOperationFactory(Map<String,?> properties,
+            final MathTransformFactory mtFactory, final CRSFactory crsFactory, final CSFactory csFactory)
+    {
         /*
          * The check for 'properties' and 'mtFactory' is performed by the ServicesForMetadata subclass. If this code is
          * executed, this means that the "sis-referencing" module is not on the classpath, in which case we do not know

@@ -203,7 +203,7 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
         csFactory       = (CSFactory)    factories;
         datumFactory    = (DatumFactory) factories;
         referencing     = ReferencingServices.getInstance();
-        opFactory       = referencing.getCoordinateOperationFactory(defaultProperties, mtFactory);
+        opFactory       = referencing.getCoordinateOperationFactory(defaultProperties, mtFactory, crsFactory, csFactory);
         transliterator  = Transliterator.DEFAULT;
         usesCommonUnits = false;
         ignoreAxes      = false;
@@ -240,7 +240,7 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
         if (f != null) {
             opFactory = (CoordinateOperationFactory) f;
         } else {
-            opFactory = referencing.getCoordinateOperationFactory(null, mtFactory);
+            opFactory = referencing.getCoordinateOperationFactory(null, mtFactory, crsFactory, csFactory);
             factories.put(CoordinateOperationFactory.class, opFactory);
         }
     }

@@ -17,8 +17,10 @@
 package org.apache.sis.internal.referencing;
 
 import java.util.Map;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Locale;
 import javax.measure.unit.Unit;
 import javax.measure.quantity.Length;
@@ -34,6 +36,8 @@ import org.opengis.referencing.crs.TemporalCRS;
 import org.opengis.referencing.crs.VerticalCRS;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.crs.CRSFactory;
+import org.opengis.referencing.cs.CSFactory;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.referencing.cs.CoordinateSystem;
@@ -623,17 +627,30 @@ public final class ServicesForMetadata extends ReferencingServices {
      *
      * @param  properties The default properties.
      * @param  mtFactory  The math transform factory to use.
+     * @param  crsFactory The factory to use if the operation factory needs to create CRS for intermediate steps.
+     * @param  csFactory  The factory to use if the operation factory needs to create CS for intermediate steps.
      * @return The coordinate operation factory to use.
      *
-     * @since 0.6
+     * @since 0.7
      */
     @Override
-    public CoordinateOperationFactory getCoordinateOperationFactory(Map<String,?> properties, MathTransformFactory mtFactory) {
-        if (Containers.isNullOrEmpty(properties) && DefaultFactories.isDefaultInstance(MathTransformFactory.class, mtFactory)) {
-            return CoordinateOperations.factory();
-        } else {
-            return new DefaultCoordinateOperationFactory(properties, mtFactory);
+    public CoordinateOperationFactory getCoordinateOperationFactory(Map<String,?> properties,
+            final MathTransformFactory mtFactory, final CRSFactory crsFactory, final CSFactory csFactory)
+    {
+        if (Containers.isNullOrEmpty(properties)) {
+            if (DefaultFactories.isDefaultInstance(MathTransformFactory.class, mtFactory) &&
+                DefaultFactories.isDefaultInstance(CRSFactory.class, crsFactory) &&
+                DefaultFactories.isDefaultInstance(CSFactory.class, csFactory))
+            {
+                return CoordinateOperations.factory();
+            }
+            properties = Collections.emptyMap();
         }
+        final HashMap<String,Object> p = new HashMap<>(properties);
+        p.putIfAbsent(CRS_FACTORY, crsFactory);
+        p.putIfAbsent(CS_FACTORY,  csFactory);
+        properties = p;
+        return new DefaultCoordinateOperationFactory(properties, mtFactory);
     }
 
     /**
