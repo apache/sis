@@ -30,6 +30,8 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.crs.SingleCRS;
+import org.opengis.referencing.crs.CRSFactory;
+import org.opengis.referencing.cs.CSFactory;
 import org.opengis.referencing.datum.Datum;
 import org.apache.sis.internal.referencing.MergedProperties;
 import org.apache.sis.internal.metadata.ReferencingServices;
@@ -44,6 +46,7 @@ import org.apache.sis.util.iso.AbstractFactory;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.CharSequences;
+import org.apache.sis.util.Classes;
 import org.apache.sis.util.NullArgumentException;
 import org.apache.sis.util.Utilities;
 
@@ -85,6 +88,22 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
     private final Map<String,?> defaultProperties;
 
     /**
+     * The factory to use if {@link CoordinateOperationInference} needs to create CRS for intermediate steps.
+     * Will be created only when first needed.
+     *
+     * @see #getCRSFactory()
+     */
+    private volatile CRSFactory crsFactory;
+
+    /**
+     * The factory to use if {@link CoordinateOperationInference} needs to create CS for intermediate steps.
+     * Will be created only when first needed.
+     *
+     * @see #getCSFactory()
+     */
+    private volatile CSFactory csFactory;
+
+    /**
      * The math transform factory. Will be created only when first needed.
      *
      * @see #getMathTransformFactory()
@@ -101,8 +120,7 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
      * Constructs a factory with no default properties.
      */
     public DefaultCoordinateOperationFactory() {
-        defaultProperties = Collections.emptyMap();
-        pool = new WeakHashSet<>(IdentifiedObject.class);
+        this(null, null);
     }
 
     /**
@@ -110,19 +128,36 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
      * {@code DefaultCoordinateOperationFactory} will fallback on the map given to this constructor
      * for any property not present in the map provided to a {@code createFoo(Map<String,?>, …)} method.
      *
-     * @param properties The default properties, or {@code null} if none.
-     * @param mtFactory The factory to use for creating
+     * @param properties the default properties, or {@code null} if none.
+     * @param factory the factory to use for creating
      *        {@linkplain org.apache.sis.referencing.operation.transform.AbstractMathTransform math transforms},
      *        or {@code null} for the default factory.
      */
-    public DefaultCoordinateOperationFactory(Map<String,?> properties, final MathTransformFactory mtFactory) {
+    public DefaultCoordinateOperationFactory(Map<String,?> properties, final MathTransformFactory factory) {
         if (properties == null || properties.isEmpty()) {
             properties = Collections.emptyMap();
         } else {
-            properties = CollectionsExt.compact(new HashMap<String,Object>(properties));
+            String key   = null;
+            Object value = null;
+            properties   = new HashMap<>(properties);
+            /*
+             * Following use of properties is an undocumented feature for now. Current version documents only
+             * MathTransformFactory because math transforms are intimately related to coordinate operations.
+             */
+            try {
+                crsFactory = (CRSFactory)           (value = properties.remove(key = ReferencingServices.CRS_FACTORY));
+                csFactory  = (CSFactory)            (value = properties.remove(key = ReferencingServices.CS_FACTORY));
+                mtFactory  = (MathTransformFactory) (value = properties.remove(key = ReferencingServices.MT_FACTORY));
+            } catch (ClassCastException e) {
+                throw new IllegalArgumentException(Errors.getResources(properties)
+                        .getString(Errors.Keys.IllegalPropertyClass_2, key, Classes.getClass(value)));
+            }
+            properties = CollectionsExt.compact(properties);
         }
         defaultProperties = properties;
-        this.mtFactory = mtFactory;
+        if (factory != null) {
+            mtFactory = factory;
+        }
         pool = new WeakHashSet<>(IdentifiedObject.class);
     }
 
@@ -145,6 +180,28 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
     protected Map<String,?> complete(final Map<String,?> properties) {
         ArgumentChecks.ensureNonNull("properties", properties);
         return new MergedProperties(properties, defaultProperties);
+    }
+
+    /**
+     * Returns the factory to use if {@link CoordinateOperationInference} needs to create CRS for intermediate steps.
+     */
+    final CRSFactory getCRSFactory() {
+        CRSFactory factory = crsFactory;
+        if (factory == null) {
+            crsFactory = factory = DefaultFactories.forBuildin(CRSFactory.class);
+        }
+        return factory;
+    }
+
+    /**
+     * Returns the factory to use if {@link CoordinateOperationInference} needs to create CS for intermediate steps.
+     */
+    final CSFactory getCSFactory() {
+        CSFactory factory = csFactory;
+        if (factory == null) {
+            csFactory = factory = DefaultFactories.forBuildin(CSFactory.class);
+        }
+        return factory;
     }
 
     /**

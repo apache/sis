@@ -18,6 +18,7 @@ package org.apache.sis.referencing.operation;
 
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.IdentifiedObject;
+import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Classes;
@@ -78,24 +79,36 @@ final class CRSPair {
     }
 
     /**
-     * Returns a name for the given object, truncating it if needed.
+     * Returns the name of the GeoAPI interface implemented by the specified object,
+     * followed by the name between brackets.
      */
-    static String shortName(final IdentifiedObject object) {
-        String name = IdentifiedObjects.getName(object, null);
-        if (name == null) {
-            name = Classes.getShortClassName(object);
+    static String label(final IdentifiedObject object) {
+        if (object == null) {
+            return null;
+        }
+        Class<?> type;
+        if (object instanceof AbstractIdentifiedObject) {
+            type = ((AbstractIdentifiedObject) object).getInterface();
         } else {
-            int i = 30;                 // Arbitrary length threshold.
+            type = object.getClass();
+            final Class<?>[] c = Classes.getLeafInterfaces(type, IdentifiedObject.class);
+            if (c.length != 0) type = c[0];
+        }
+        String label = Classes.getShortName(type);
+        String name = IdentifiedObjects.getName(object, null);
+        if (name != null) {
+            int i = 30;                                         // Arbitrary length threshold.
             if (name.length() >= i) {
-                while (i > 15) {        // Arbitrary minimal length.
+                while (i > 15) {                                // Arbitrary minimal length.
                     final int c = name.codePointBefore(i);
                     if (Character.isSpaceChar(c)) break;
                     i -= Character.charCount(c);
                 }
                 name = CharSequences.trimWhitespaces(name, 0, i).toString() + '…';
             }
+            label = label + "[“" + name + "”]";
         }
-        return name;
+        return label;
     }
 
     /**
@@ -103,6 +116,6 @@ final class CRSPair {
      */
     @Override
     public String toString() {
-        return shortName(sourceCRS) + " → " + shortName(targetCRS);
+        return label(sourceCRS) + " → " + label(targetCRS);
     }
 }

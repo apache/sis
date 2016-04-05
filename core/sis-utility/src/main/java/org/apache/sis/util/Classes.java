@@ -370,10 +370,10 @@ next:       for (final Class<?> candidate : candidates) {
                     for (int i=0; i<count; i++) {
                         final Class<?> old = types[i];
                         if (candidate.isAssignableFrom(old)) {
-                            continue next; // A more specialized interface already exists.
+                            continue next;                      // A more specialized interface already exists.
                         }
                         if (old.isAssignableFrom(candidate)) {
-                            types[i] = candidate; // This interface specializes a previous interface.
+                            types[i] = candidate;               // This interface specializes a previous interface.
                             continue next;
                         }
                     }
@@ -501,14 +501,14 @@ next:       for (final Class<?> candidate : candidates) {
      */
     public static Set<Class<?>> findCommonInterfaces(final Class<?> c1, final Class<?> c2) {
         final Set<Class<?>> interfaces = getInterfaceSet(c1);
-        final Set<Class<?>> buffer     = getInterfaceSet(c2); // To be recycled.
+        final Set<Class<?>> buffer     = getInterfaceSet(c2);               // To be recycled.
         if (interfaces == null || buffer == null) {
             return Collections.emptySet();
         }
         interfaces.retainAll(buffer);
         for (Iterator<Class<?>> it=interfaces.iterator(); it.hasNext();) {
             final Class<?> candidate = it.next();
-            buffer.clear(); // Safe because the buffer can not be Collections.EMPTY_SET at this point.
+            buffer.clear();     // Safe because the buffer can not be Collections.EMPTY_SET at this point.
             getInterfaceSet(candidate, buffer);
             if (interfaces.removeAll(buffer)) {
                 it = interfaces.iterator();

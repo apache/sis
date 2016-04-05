@@ -191,6 +191,11 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final short DefaultValue = 71;
 
         /**
+         * Derived from {0}
+         */
+        public static final short DerivedFrom_1 = 108;
+
+        /**
          * Description
          */
         public static final short Description = 75;

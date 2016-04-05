@@ -18,6 +18,7 @@ package org.apache.sis.referencing.operation;
 
 import java.util.Map;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Collections;
 import javax.measure.unit.Unit;
 import javax.measure.quantity.Duration;
@@ -56,9 +57,6 @@ import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.referencing.cs.CoordinateSystems;
-import org.apache.sis.referencing.cs.DefaultVerticalCS;
-import org.apache.sis.referencing.crs.DefaultVerticalCRS;
-import org.apache.sis.referencing.crs.DefaultGeographicCRS;
 import org.apache.sis.referencing.datum.BursaWolfParameters;
 import org.apache.sis.referencing.datum.DefaultGeodeticDatum;
 import org.apache.sis.referencing.operation.matrix.Matrices;
@@ -177,6 +175,21 @@ public class CoordinateOperationInference {
     private double desiredAccuracy;
 
     /**
+     * Identifiers used as the basis for identifier of CRS used as an intermediate step.
+     * The values can be of two kinds:
+     *
+     * <ul>
+     *   <li>If the value is an instance of {@link Integer}, then this is the number
+     *       of identifiers derived from the identifier associated to the key.</li>
+     *   <li>Otherwise the key is itself an {@link Indentifier} derived from another
+     *       identifier, and the value is that identifier.</li>
+     * </ul>
+     *
+     * @see #derivedFrom(IdentifiedObject)
+     */
+    private final Map<Identifier,Object> identifierOfStepCRS;
+
+    /**
      * The pair of source and target CRS for which we already searched a coordinate operation.
      * This is used as a safety against infinite recursivity.
      */
@@ -200,7 +213,8 @@ public class CoordinateOperationInference {
             desiredAccuracy = context.getDesiredAccuracy();
             bbox            = context.getGeographicBoundingBox();
         }
-        previousSearches = new HashMap<>(4);
+        identifierOfStepCRS = new HashMap<>(8);
+        previousSearches    = new HashMap<>(8);
     }
 
     /**
@@ -232,29 +246,6 @@ public class CoordinateOperationInference {
             bbox = Extents.intersection(CRS.getGeographicBoundingBox(sourceCRS),
                                         CRS.getGeographicBoundingBox(targetCRS));
             areaOfInterest = CoordinateOperationContext.setGeographicBoundingBox(areaOfInterest, bbox);
-        }
-        ////////////////////////////////////////////////////////////////////////////////
-        ////                                                                        ////
-        ////                        Compound  →  various CRS                        ////
-        ////                                                                        ////
-        ////  We check CompoundCRS first because experience shows that it produces  ////
-        ////  simpler transformation chains than if we check them last.             ////
-        ////                                                                        ////
-        ////////////////////////////////////////////////////////////////////////////////
-        if (sourceCRS instanceof CompoundCRS) {
-            final CompoundCRS source = (CompoundCRS) sourceCRS;
-            if (targetCRS instanceof CompoundCRS) {
-//              return createOperationStep(source, (CompoundCRS) targetCRS);
-            }
-            if (targetCRS instanceof SingleCRS) {
-//              return createOperationStep(source, (SingleCRS) targetCRS);
-            }
-        }
-        if (targetCRS instanceof CompoundCRS) {
-            final CompoundCRS target = (CompoundCRS) targetCRS;
-            if (sourceCRS instanceof SingleCRS) {
-//              return createOperationStep((SingleCRS) sourceCRS, target);
-            }
         }
         ////////////////////////////////////////////////////////////////////////////////
         ////                                                                        ////
@@ -316,6 +307,14 @@ public class CoordinateOperationInference {
             if (targetCRS instanceof TemporalCRS) {
                 return createOperationStep(source, (TemporalCRS) targetCRS);
             }
+        }
+        ////////////////////////////////////////////////////////////////////////////////
+        ////                                                                        ////
+        ////                        Compound  ↔  various CRS                        ////
+        ////                                                                        ////
+        ////////////////////////////////////////////////////////////////////////////////
+        if (sourceCRS instanceof CompoundCRS || targetCRS instanceof CompoundCRS) {
+            return decompose(sourceCRS, targetCRS);
         }
         throw new OperationNotFoundException(notFoundMessage(sourceCRS, targetCRS));
     }
@@ -585,7 +584,8 @@ public class CoordinateOperationInference {
         if (!(interpolationCS instanceof EllipsoidalCS)) {
             final EllipsoidalCS cs = CommonCRS.WGS84.geographic3D().getCoordinateSystem();
             if (!equalsIgnoreMetadata(interpolationCS, cs)) {
-                step1 = createOperation(sourceCRS, new DefaultGeographicCRS(sameNameAs(sourceCRS), sourceCRS.getDatum(), cs));
+                step1 = createOperation(sourceCRS, factorySIS.getCRSFactory()
+                        .createGeographicCRS(derivedFrom(sourceCRS), sourceCRS.getDatum(), cs));
                 interpolationCRS = step1.getTargetCRS();
                 interpolationCS  = interpolationCRS.getCoordinateSystem();
             }
@@ -614,11 +614,12 @@ public class CoordinateOperationInference {
             heightCS  = heightCRS.getCoordinateSystem();
             isEllipsoidalHeight = equalsIgnoreMetadata(heightCS.getAxis(0), expectedAxis);
             if (!isEllipsoidalHeight) {
-                heightCS = new DefaultVerticalCS(sameNameAs(heightCS), expectedAxis);
+                heightCS = factorySIS.getCSFactory().createVerticalCS(derivedFrom(heightCS), expectedAxis);
             }
         }
         if (!isEllipsoidalHeight) {                     // 'false' if we need to change datum, unit or axis direction.
-            heightCRS = new DefaultVerticalCRS(sameNameAs(heightCRS), CommonCRS.Vertical.ELLIPSOIDAL.datum(), heightCS);
+            heightCRS = factorySIS.getCRSFactory()
+                    .createVerticalCRS(derivedFrom(heightCRS), CommonCRS.Vertical.ELLIPSOIDAL.datum(), heightCS);
         }
         if (heightCRS != targetCRS) {
             step3     = createOperation(heightCRS, targetCRS);  // May need interpolationCRS for performing datum change.
@@ -724,6 +725,55 @@ public class CoordinateOperationInference {
         matrix.setElement(0, translationColumn, translation + epochShift);
         return createFromAffineTransform(AXIS_CHANGES, sourceCRS, targetCRS, matrix);
     }
+
+    /**
+     * Creates an operation between at least one {@code CompoundCRS} (usually the source) and an arbitrary CRS.
+     * The default implementation tries to invoke the {@link #createOperation createOperation(…)} method with
+     * various combinations of source and target components. A preference is given for components of the same
+     * type (e.g. source {@link GeodeticCRS} with target {@code GeodeticCRS}, <i>etc.</i>).
+     *
+     * @param  sourceCRS  input coordinate reference system.
+     * @param  targetCRS  output coordinate reference system.
+     * @return a coordinate operation from {@code sourceCRS} to {@code targetCRS}.
+     * @throws FactoryException if the operation can not be constructed.
+     */
+    private CoordinateOperation decompose(final CoordinateReferenceSystem sourceCRS,
+                                          final CoordinateReferenceSystem targetCRS)
+            throws FactoryException
+    {
+        final List<SingleCRS> sources = CRS.getSingleComponents(sourceCRS);
+        final List<SingleCRS> targets = CRS.getSingleComponents(targetCRS);
+        final SourceComponent[] infos = new SourceComponent[targets.size()];
+        final boolean[]  sourceIsUsed = new boolean[sources.size()];
+        /*
+         * Operations found are stored in 'infos', but are not yet wrapped in PassThroughOperations.
+         * We need to know first if some ordinate values need reordering for matching the target CRS
+         * order. We also need to know if any source ordinates should be dropped.
+         */
+        for (int i=0; i<infos.length; i++) {
+            if ((infos[i] = SourceComponent.create(this, sourceIsUsed, sources, targets.get(i))) == null) {
+                throw new OperationNotFoundException(notFoundMessage(sourceCRS, targetCRS));
+            }
+        }
+        /*
+         * A coordinate operation has been found for every target component CRS.
+         * Some reordering of ordinate values may be needed, and some coordinates may need to be dropped.
+         */
+        final Matrix select = SourceComponent.sourceToSelected(sourceCRS.getCoordinateSystem().getDimension(), infos);
+        throw new UnsupportedOperationException();      // TODO continue work from here.
+    }
+
+
+
+
+
+    /////////////////////////////////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////////////////////////////////
+    ////////////                                                         ////////////
+    ////////////                M I S C E L L A N E O U S                ////////////
+    ////////////                                                         ////////////
+    /////////////////////////////////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////////////////////////////////
 
     /**
      * Creates a coordinate operation from a matrix, which usually describes an affine transform.
@@ -996,28 +1046,46 @@ public class CoordinateOperationInference {
     }
 
     /**
-     * Returns the name of the given object in a singleton map.
+     * Returns a name for an object derived from the specified one.
+     * This method builds a name of the form "{@literal <original identifier>} (step 1)"
+     * where "(step 1)" may be replaced by "(step 2)", "(step 3)", <i>etc.</i> if this
+     * method has already been invoked for the same identifier (directly or indirectly).
      */
-    private static Map<String,?> sameNameAs(final IdentifiedObject object) {
-        return Collections.singletonMap(IdentifiedObject.NAME_KEY, object.getName());
+    private Map<String,?> derivedFrom(final IdentifiedObject object) {
+        Identifier oldID = object.getName();
+        Object p = identifierOfStepCRS.get(oldID);
+        if (p instanceof Identifier) {
+            oldID = (Identifier) p;
+            p = identifierOfStepCRS.get(oldID);
+        }
+        final int count = (p != null) ? (Integer) p + 1 : 1;
+        final Identifier newID = new NamedIdentifier(Citations.SIS, oldID.getCode() + " (step " + count + ')');
+        identifierOfStepCRS.put(newID, oldID);
+        identifierOfStepCRS.put(oldID, count);
+
+        final Map<String,Object> properties = new HashMap<>(4);
+        properties.put(IdentifiedObject.NAME_KEY, newID);
+        properties.put(IdentifiedObject.REMARKS_KEY, Vocabulary.formatInternational(
+                            Vocabulary.Keys.DerivedFrom_1, CRSPair.label(object)));
+        return properties;
     }
 
     /**
      * Returns a name for a transformation between two CRS.
      */
     private static Map<String,?> defaultName(CoordinateReferenceSystem source, CoordinateReferenceSystem target) {
-        return properties(CRSPair.shortName(source) + " → " + CRSPair.shortName(target));
+        return properties(CRSPair.label(source) + " → " + CRSPair.label(target));
     }
 
     /**
      * Returns an error message for "No path found from sourceCRS to targetCRS".
      * This is used for the construction of {@link OperationNotFoundException}.
      *
-     * @param  source The source CRS.
-     * @param  target The target CRS.
+     * @param  source the source CRS.
+     * @param  target the target CRS.
      * @return A default error message.
      */
     private static String notFoundMessage(final IdentifiedObject source, final IdentifiedObject target) {
-        return Errors.format(Errors.Keys.CoordinateOperationNotFound_2, CRSPair.shortName(source), CRSPair.shortName(target));
+        return Errors.format(Errors.Keys.CoordinateOperationNotFound_2, CRSPair.label(source), CRSPair.label(target));
     }
 }
