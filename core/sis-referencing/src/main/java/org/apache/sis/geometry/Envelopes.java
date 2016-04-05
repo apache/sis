@@ -292,11 +292,11 @@ public final class Envelopes extends Static {
                         sourcePt, ordinates, offset, isDerivativeSupported);
             } catch (TransformException e) {
                 if (!isDerivativeSupported) {
-                    throw e; // Derivative were already disabled, so something went wrong.
+                    throw e;                    // Derivative were already disabled, so something went wrong.
                 }
                 isDerivativeSupported = false;
                 transform.transform(sourcePt, 0, ordinates, offset, 1);
-                recoverableException(e); // Log only if the above call was successful.
+                recoverableException(e);        // Log only if the above call was successful.
             }
             /*
              * The transformed point has been saved for future reuse after the enclosing
@@ -324,10 +324,10 @@ public final class Envelopes extends Static {
             int indexBase3 = ++pointIndex;
             for (int dim=sourceDim; --dim>=0; indexBase3 /= 3) {
                 switch (indexBase3 % 3) {
-                    case 0:  sourcePt[dim] = envelope.getMinimum(dim); break; // Continue the loop.
+                    case 0:  sourcePt[dim] = envelope.getMinimum(dim); break;   // Continue the loop.
                     case 1:  sourcePt[dim] = envelope.getMaximum(dim); continue transformPoint;
                     case 2:  sourcePt[dim] = envelope.getMedian (dim); continue transformPoint;
-                    default: throw new AssertionError(indexBase3); // Should never happen
+                    default: throw new AssertionError(indexBase3);     // Should never happen
                 }
             }
             break;
@@ -691,9 +691,9 @@ public final class Envelopes extends Static {
                          * or skip c={2,3}.
                          */
                         double value = max;
-                        if ((c & 1) == 0) { // 'true' if we are testing "wrapAroundMin".
+                        if ((c & 1) == 0) {         // 'true' if we are testing "wrapAroundMin".
                             if (((c == 0 ? includedMinValue : includedMaxValue) & bm) == 0) {
-                                c++; // Skip also the case for "wrapAroundMax".
+                                c++;                // Skip also the case for "wrapAroundMax".
                                 continue;
                             }
                             targetPt.setOrdinate(axisIndex, (c == 0) ? axis.getMinimumValue() : axis.getMaximumValue());
