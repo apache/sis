@@ -21,7 +21,6 @@ import java.util.Collections;
 import java.text.ParseException;
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterValueGroup;
-import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.GeocentricCRS;
 import org.opengis.referencing.crs.VerticalCRS;
@@ -621,12 +620,62 @@ public final strictfp class CoordinateOperationInferenceTest extends MathTransfo
     /**
      * Convenience method for creating a compound CRS.
      */
-    private static CompoundCRS compound(final String name, final SingleCRS... components) {
+    private static CompoundCRS compound(final String name, final CoordinateReferenceSystem... components) {
         return new DefaultCompoundCRS(Collections.singletonMap(CompoundCRS.NAME_KEY, name), components);
     }
 
     /**
-     * Tests transformation from three-dimensional geographic CRS to four-dimensional compound CRS
+     * Tests conversion from four-dimensional compound CRS to two-dimensional projected CRS.
+     *
+     * @throws ParseException if a CRS used in this test can not be parsed.
+     * @throws FactoryException if the operation can not be created.
+     * @throws TransformException if an error occurred while converting the test points.
+     */
+    @Test
+    @DependsOnMethod("testTemporalConversion")
+    public void testProjected4D_to_2D() throws ParseException, FactoryException, TransformException {
+        final CoordinateReferenceSystem targetCRS = parse(
+                "ProjectedCRS[“WGS 84 / World Mercator”,\n" +
+                "  BaseGeodCRS[“WGS 84”,\n" +
+                "    Datum[“World Geodetic System 1984”,\n" +
+                "      Ellipsoid[“WGS 84”, 6378137.0, 298.257223563]]],\n" +
+                "  Conversion[“WGS 84 / World Mercator”,\n" +
+                "    Method[“Mercator (1SP)”]],\n" +
+                "  CS[Cartesian, 2],\n" +
+                "    Axis[“Easting”, EAST],\n" +
+                "    Axis[“Northing”, NORTH],\n" +
+                "    Unit[“m”, 1],\n" +
+                "  Id[“EPSG”, “3395”]]");
+
+        CoordinateReferenceSystem sourceCRS = targetCRS;
+        sourceCRS = compound("Mercator 3D", sourceCRS, CommonCRS.Vertical.ELLIPSOIDAL.crs());
+        sourceCRS = compound("Mercator 4D", sourceCRS, CommonCRS.Temporal.MODIFIED_JULIAN.crs());
+
+        final CoordinateOperation operation = factory.createOperation(sourceCRS, targetCRS);
+        assertSame("sourceCRS", sourceCRS, operation.getSourceCRS());
+        assertSame("targetCRS", targetCRS, operation.getTargetCRS());
+
+        transform = operation.getMathTransform();
+        assertFalse("transform.isIdentity", transform.isIdentity());
+        assertInstanceOf("The somewhat complex MathTransform chain should have been simplified " +
+                         "to a single affine transform.", LinearTransform.class, transform);
+        assertInstanceOf("The operation should be a simple axis change, not a complex" +
+                         "chain of ConcatenatedOperations.", Conversion.class, operation);
+
+        tolerance = 1E-12;
+        isInverseTransformSupported = false;
+        verifyTransform(new double[] {
+               0,     0,  0,    0,
+            1000, -2000, 20, 4000
+        }, new double[] {
+               0,     0,
+            1000, -2000
+        });
+        validate();
+    }
+
+    /**
+     * Tests conversion from three-dimensional geographic CRS to four-dimensional compound CRS
      * where the last dimension is time.
      *
      * @throws FactoryException if the operation can not be created.
