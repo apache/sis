@@ -36,6 +36,7 @@ import org.opengis.referencing.operation.ConcatenatedOperation;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.MathTransform;
+import org.opengis.referencing.operation.PassThroughOperation;
 import org.opengis.parameter.GeneralParameterValue;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.ParameterValueGroup;
@@ -867,12 +868,16 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
          * This decision is SIS-specific since the WKT 2 specification does not define concatenated operations.
          * This choice may change in any future SIS version.
          */
-        final boolean isComponent = (formatter.getEnclosingElement(1) instanceof ConcatenatedOperation);
-        if (!isComponent) {
-            append(formatter, getSourceCRS(), WKTKeywords.SourceCRS);
-        }
-        if (!(this instanceof ConcatenatedOperation)) {
-            append(formatter, getTargetCRS(), WKTKeywords.TargetCRS);
+        final FormattableObject enclosing = formatter.getEnclosingElement(1);
+        final boolean isSubOperation = (enclosing instanceof PassThroughOperation);
+        final boolean isComponent    = (enclosing instanceof ConcatenatedOperation);
+        if (!isSubOperation) {
+            if (!isComponent) {
+                append(formatter, getSourceCRS(), WKTKeywords.SourceCRS);
+            }
+            if (!(this instanceof ConcatenatedOperation)) {
+                append(formatter, getTargetCRS(), WKTKeywords.TargetCRS);
+            }
         }
         final OperationMethod method = getMethod();
         if (method != null) {
@@ -894,7 +899,7 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
                 formatter.indent(-1);
             }
         }
-        if (!isComponent) {
+        if (!isSubOperation && !isComponent) {
             append(formatter, getInterpolationCRS(), WKTKeywords.InterpolationCRS);
             final double accuracy = getLinearAccuracy();
             if (accuracy > 0) {
