@@ -314,7 +314,8 @@ public class CoordinateOperationInference {
         ////                                                                        ////
         ////////////////////////////////////////////////////////////////////////////////
         if (sourceCRS instanceof CompoundCRS || targetCRS instanceof CompoundCRS) {
-            return decompose(sourceCRS, targetCRS);
+            return createOperationStep(sourceCRS, CRS.getSingleComponents(sourceCRS),
+                                       targetCRS, CRS.getSingleComponents(targetCRS));
         }
         throw new OperationNotFoundException(notFoundMessage(sourceCRS, targetCRS));
     }
@@ -732,19 +733,20 @@ public class CoordinateOperationInference {
      * various combinations of source and target components. A preference is given for components of the same
      * type (e.g. source {@link GeodeticCRS} with target {@code GeodeticCRS}, <i>etc.</i>).
      *
-     * @param  sourceCRS  input coordinate reference system.
-     * @param  targetCRS  output coordinate reference system.
+     * @param  sourceCRS        input coordinate reference system.
+     * @param  sourceComponents components of the source CRS.
+     * @param  targetCRS        output coordinate reference system.
+     * @param  targetComponents components of the target CRS.
      * @return a coordinate operation from {@code sourceCRS} to {@code targetCRS}.
      * @throws FactoryException if the operation can not be constructed.
      */
-    private CoordinateOperation decompose(final CoordinateReferenceSystem sourceCRS,
-                                          final CoordinateReferenceSystem targetCRS)
+    protected CoordinateOperation createOperationStep(
+            final CoordinateReferenceSystem sourceCRS, final List<? extends SingleCRS> sourceComponents,
+            final CoordinateReferenceSystem targetCRS, final List<? extends SingleCRS> targetComponents)
             throws FactoryException
     {
-        final List<SingleCRS> sources = CRS.getSingleComponents(sourceCRS);
-        final List<SingleCRS> targets = CRS.getSingleComponents(targetCRS);
-        final SourceComponent[] infos = new SourceComponent[targets.size()];
-        final boolean[]  sourceIsUsed = new boolean[sources.size()];
+        final SubOperationInfo[] infos = new SubOperationInfo[targetComponents.size()];
+        final boolean[]   sourceIsUsed = new boolean[sourceComponents.size()];
         final CoordinateReferenceSystem[] stepComponents = new CoordinateReferenceSystem[infos.length];
         /*
          * Operations found are stored in 'infos', but are not yet wrapped in PassThroughOperations.
@@ -752,7 +754,7 @@ public class CoordinateOperationInference {
          * order. We also need to know if any source ordinates should be dropped.
          */
         for (int i=0; i<infos.length; i++) {
-            if ((infos[i] = SourceComponent.create(this, sourceIsUsed, sources, targets.get(i))) == null) {
+            if ((infos[i] = SubOperationInfo.create(this, sourceIsUsed, sourceComponents, targetComponents.get(i))) == null) {
                 throw new OperationNotFoundException(notFoundMessage(sourceCRS, targetCRS));
             }
             stepComponents[i] = infos[i].operation.getSourceCRS();
@@ -765,10 +767,10 @@ public class CoordinateOperationInference {
          * operations that we just found.
          */
         int remainingSourceDimensions = 0;
-        for (final SourceComponent component : infos) {
+        for (final SubOperationInfo component : infos) {
             remainingSourceDimensions += component.endAtDimension - component.startAtDimension;
         }
-        final Matrix select = SourceComponent.sourceToSelected(
+        final Matrix select = SubOperationInfo.sourceToSelected(
                 sourceCRS.getCoordinateSystem().getDimension(), remainingSourceDimensions, infos);
         /*
          * First, we need a CRS matching the above-cited rearrangement. That CRS will be named 'stepSourceCRS'
@@ -793,13 +795,13 @@ public class CoordinateOperationInference {
          * For each sub-operation, create a PassThroughOperation for the (stepSourceCRS → stepTargetCRS) operation.
          * Each source CRS inside this loop will be for dimensions at indices [startAtDimension … endAtDimension-1].
          * Note that those indices are not necessarily the same than the indices in the fields of the same name in
-         * SourceComponent, because those indices are not relative to the same CompoundCRS.
+         * SubOperationInfo, because those indices are not relative to the same CompoundCRS.
          */
         int endAtDimension = 0;
-        final int startOfIdentity = SourceComponent.startOfIdentity(infos);
+        final int startOfIdentity = SubOperationInfo.startOfIdentity(infos);
         for (int i=0; i<stepComponents.length; i++) {
             final CoordinateReferenceSystem source = stepComponents[i];
-            final CoordinateReferenceSystem target = targets.get(i);
+            final CoordinateReferenceSystem target = targetComponents.get(i);
             CoordinateOperation subOperation = infos[i].operation;
             final MathTransform subTransform = subOperation.getMathTransform();
             /*

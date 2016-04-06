@@ -36,7 +36,7 @@ import org.apache.sis.referencing.operation.matrix.Matrices;
  * @version 0.7
  * @module
  */
-final class SourceComponent {
+final class SubOperationInfo {
     /**
      * Types of target CRS, together with the type of CRS that may be used as the source for that target.
      * For each array {@code COMPATIBLE_TYPES[i]}, the first element (i.e. {@code COMPATIBLE_TYPES[i][0]})
@@ -88,7 +88,7 @@ final class SourceComponent {
     /**
      * Creates a new instance containing the given information.
      */
-    private SourceComponent(final CoordinateOperation operation, final int startAtDimension, final int endAtDimension) {
+    private SubOperationInfo(final CoordinateOperation operation, final int startAtDimension, final int endAtDimension) {
         this.operation        = operation;
         this.startAtDimension = startAtDimension;
         this.endAtDimension   = endAtDimension;
@@ -105,8 +105,8 @@ final class SourceComponent {
      * @return information about a coordinate operation from a source CRS to the given target CRS, or {@code null}.
      * @throws FactoryException if an error occurred while grabbing a coordinate operation.
      */
-    static SourceComponent create(final CoordinateOperationInference caller, final boolean[] sourceIsUsed,
-            final List<SingleCRS> sources, final SingleCRS target) throws FactoryException
+    static SubOperationInfo create(final CoordinateOperationInference caller, final boolean[] sourceIsUsed,
+            final List<? extends SingleCRS> sources, final SingleCRS target) throws FactoryException
     {
         OperationNotFoundException failure = null;
         final Class<?> targetType = type(target);
@@ -119,7 +119,7 @@ final class SourceComponent {
                         final SingleCRS source = sources.get(i);
                         startAtDimension = endAtDimension;
                         endAtDimension += source.getCoordinateSystem().getDimension();
-                        if (!sourceIsUsed[i] && sourceType.isInstance(source)) {
+                        if (!sourceIsUsed[i] && sourceType.isAssignableFrom(type(source))) {
                             final CoordinateOperation operation;
                             try {
                                 operation = caller.createOperation(source, target);
@@ -151,7 +151,7 @@ final class SourceComponent {
                                 Logging.recoverableException(Logging.getLogger(Loggers.COORDINATE_OPERATION),
                                         CoordinateOperationInference.class, "decompose", failure);
                             }
-                            return new SourceComponent(operation, startAtDimension, endAtDimension);
+                            return new SubOperationInfo(operation, startAtDimension, endAtDimension);
                         }
                     }
                 }
@@ -166,7 +166,7 @@ final class SourceComponent {
     /**
      * Returns the dimension from which all remaining operations are identity.
      */
-    static int startOfIdentity(final SourceComponent[] selected) {
+    static int startOfIdentity(final SubOperationInfo[] selected) {
         int n = selected.length;
         while (n != 0) {
             if (!selected[--n].operation.getMathTransform().isIdentity()) {
@@ -184,11 +184,11 @@ final class SourceComponent {
      * @param selectedDimensions  number of source dimensions needed by the coordinate operations.
      * @param selected all {@code SourceComponent} instances needed for the target {@code CompoundCRS}.
      */
-    static Matrix sourceToSelected(final int sourceDimensions, final int selectedDimensions, final SourceComponent[] selected) {
+    static Matrix sourceToSelected(final int sourceDimensions, final int selectedDimensions, final SubOperationInfo[] selected) {
         final Matrix select = Matrices.createZero(selectedDimensions + 1, sourceDimensions + 1);
         select.setElement(selectedDimensions, sourceDimensions, 1);
         int j = 0;
-        for (final SourceComponent component : selected) {
+        for (final SubOperationInfo component : selected) {
             for (int i=component.startAtDimension; i<component.endAtDimension; i++) {
                 select.setElement(j++, i, 1);
             }
