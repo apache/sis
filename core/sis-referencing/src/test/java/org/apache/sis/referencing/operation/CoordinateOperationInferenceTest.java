@@ -34,6 +34,7 @@ import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.Projection;
 import org.opengis.referencing.operation.Transformation;
 import org.opengis.referencing.operation.TransformException;
+import org.opengis.referencing.operation.ConcatenatedOperation;
 import org.opengis.referencing.operation.OperationNotFoundException;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.referencing.operation.matrix.Matrices;
@@ -585,6 +586,7 @@ public final strictfp class CoordinateOperationInferenceTest extends MathTransfo
      * @throws TransformException if an error occurred while converting the test points.
      */
     @Test
+    @DependsOnMethod("testIdentityTransform")
     public void testGeographic3D_to_EllipsoidalHeight() throws FactoryException, TransformException {
         final CoordinateReferenceSystem sourceCRS = CommonCRS.WGS84.geographic3D();
         final CoordinateReferenceSystem targetCRS = HardCodedCRS.ELLIPSOIDAL_HEIGHT_cm;
@@ -630,15 +632,16 @@ public final strictfp class CoordinateOperationInferenceTest extends MathTransfo
      * @throws FactoryException if the operation can not be created.
      * @throws TransformException if an error occurred while converting the test points.
      */
-//  @Test
+    @Test
+    @DependsOnMethod("testTemporalConversion")
     public void testGeographic3D_to_4D() throws FactoryException, TransformException {
         final CompoundCRS sourceCRS = compound("Test3D", CommonCRS.WGS84.geographic(),   CommonCRS.Temporal.UNIX.crs());
         final CompoundCRS targetCRS = compound("Test4D", CommonCRS.WGS84.geographic3D(), CommonCRS.Temporal.MODIFIED_JULIAN.crs());
         final CoordinateOperation operation = factory.createOperation(sourceCRS, targetCRS);
-        assertSame      ("sourceCRS", sourceCRS,        operation.getSourceCRS());
-        assertSame      ("targetCRS", targetCRS,        operation.getTargetCRS());
-        assertEquals    ("name",      "Axis changes",   operation.getName().getCode());
-        assertInstanceOf("operation", Conversion.class, operation);
+        assertSame      ("sourceCRS", sourceCRS, operation.getSourceCRS());
+        assertSame      ("targetCRS", targetCRS, operation.getTargetCRS());
+        assertInstanceOf("operation", ConcatenatedOperation.class, operation);
+        assertEquals    ("name", "CompoundCRS[“Test3D”] → CompoundCRS[“Test4D”]", operation.getName().getCode());
 
         transform = operation.getMathTransform();
         assertInstanceOf("transform", LinearTransform.class, transform);
@@ -651,6 +654,13 @@ public final strictfp class CoordinateOperationInferenceTest extends MathTransfo
             0, 0, 1./(24*60*60), 40587,
             0, 0, 0, 1
         }), ((LinearTransform) transform).getMatrix(), 1E-12);
+
+        tolerance = 1E-12;
+        verifyTransform(new double[] {
+            -5, -8, CommonCRS.Temporal.DUBLIN_JULIAN.datum().getOrigin().getTime() / 1000
+        }, new double[] {
+            -5, -8, 0, 15019.5              // Same value than in testTemporalConversion().
+        });
         validate();
     }
 }
