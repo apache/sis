@@ -668,7 +668,7 @@ public class FeatureTypeBuilder {
             if(!properties.containsKey(defGeomAttribute)){
                 throw new IllegalArgumentException("Property "+defGeomAttribute+" used in default geometry does not exist");
             }
-            final AttributeType geomAtt = (AttributeType)properties.get(defGeomAttribute);
+            final PropertyType geomAtt = properties.get(defGeomAttribute);
             final CoordinateReferenceSystem crs = AttributeConvention.getCRSCharacteristic(geomAtt);
             final Operation att = FeatureOperations.link(ATTRIBUTE_DEFAULT_GEOMETRY, geomAtt);
             properties.put(ATTRIBUTE_DEFAULT_GEOMETRY, att);

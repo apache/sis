@@ -270,7 +270,8 @@ public abstract class AbstractFeature implements Feature, Serializable {
         if (pt instanceof AttributeType<?>) {
             return getDefaultValue((AttributeType<?>) pt);
         } else if (pt instanceof FeatureAssociationRole) {
-            return null; // No default value for associations.
+            final int maxOcc = ((FeatureAssociationRole)pt).getMaximumOccurs();
+            return maxOcc>1 ? Collections.EMPTY_LIST : null;                        // No default value for associations.
         } else {
             throw unsupportedPropertyType(pt.getName());
         }
