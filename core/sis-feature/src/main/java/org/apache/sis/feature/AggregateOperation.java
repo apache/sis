@@ -44,7 +44,11 @@ import org.opengis.util.GenericName;
  * @module
  */
 final class AggregateOperation extends AbstractOperation {
-
+    /**
+     * For cross-version compatibility.
+     */
+    private static final long serialVersionUID = 2303047827010821381L;
+    
     private static final AttributeType<String> TYPE = new DefaultAttributeType<>(
             Collections.singletonMap(NAME_KEY, "String"),String.class,1,1,null);
 

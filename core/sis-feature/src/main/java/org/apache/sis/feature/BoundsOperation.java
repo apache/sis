@@ -59,6 +59,10 @@ import org.opengis.referencing.operation.TransformException;
  * @module
  */
 final class BoundsOperation extends AbstractOperation {
+    /**
+     * For cross-version compatibility.
+     */
+    private static final long serialVersionUID = 6250548001562807671L;
 
     private static final AttributeType<Envelope> TYPE = new DefaultAttributeType<>(
             Collections.singletonMap(NAME_KEY, "Envelope"),Envelope.class,1,1,null);
@@ -144,13 +148,15 @@ final class BoundsOperation extends AbstractOperation {
 
     }
 
-    static GeneralEnvelope calculate(Feature feature, CoordinateReferenceSystem crs) throws TransformException {
+    GeneralEnvelope calculate(Feature feature, CoordinateReferenceSystem crs) throws TransformException {
 
         GeneralEnvelope bounds = null;
 
         final FeatureType type = feature.getType();
         for(PropertyType pt : type.getProperties(true)){
-            if(!AttributeConvention.isGeometryAttribute(pt)) continue;
+            if(!pt.getName().equals(AttributeConvention.ATTRIBUTE_DEFAULT_GEOMETRY)){
+                if(!AttributeConvention.isGeometryAttribute(pt)) continue;
+            }
 
             final Object val = feature.getPropertyValue(pt.getName().toString());
 
