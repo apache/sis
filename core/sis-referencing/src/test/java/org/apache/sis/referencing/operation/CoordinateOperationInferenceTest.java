@@ -16,6 +16,8 @@
  */
 package org.apache.sis.referencing.operation;
 
+import java.util.Map;
+import java.util.HashMap;
 import java.util.Arrays;
 import java.util.Collections;
 import java.text.ParseException;
@@ -26,6 +28,7 @@ import org.opengis.referencing.crs.GeocentricCRS;
 import org.opengis.referencing.crs.VerticalCRS;
 import org.opengis.referencing.crs.TemporalCRS;
 import org.opengis.referencing.crs.CompoundCRS;
+import org.opengis.referencing.crs.DerivedCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.SingleOperation;
@@ -36,8 +39,10 @@ import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.ConcatenatedOperation;
 import org.opengis.referencing.operation.OperationNotFoundException;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
+import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.crs.DefaultCompoundCRS;
+import org.apache.sis.referencing.crs.DefaultDerivedCRS;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.io.wkt.WKTFormat;
 
@@ -52,6 +57,7 @@ import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.opengis.test.Assert;
+import org.apache.sis.referencing.cs.HardCodedCS;
 import org.junit.BeforeClass;
 import org.junit.AfterClass;
 import org.junit.Test;
@@ -514,8 +520,8 @@ public final strictfp class CoordinateOperationInferenceTest extends MathTransfo
 
         transform = operation.getMathTransform();
         assertInstanceOf("transform", LinearTransform.class, transform);
-        assertEquals(3, transform.getSourceDimensions());
-        assertEquals(2, transform.getTargetDimensions());
+        assertEquals("sourceDimensions", 3, transform.getSourceDimensions());
+        assertEquals("targetDimensions", 2, transform.getTargetDimensions());
         Assert.assertMatrixEquals("transform.matrix", Matrices.create(3, 4, new double[] {
             1, 0, 0, 0,
             0, 1, 0, 0,
@@ -557,8 +563,8 @@ public final strictfp class CoordinateOperationInferenceTest extends MathTransfo
 
         transform = operation.getMathTransform();
         assertInstanceOf("transform", LinearTransform.class, transform);
-        assertEquals(2, transform.getSourceDimensions());
-        assertEquals(3, transform.getTargetDimensions());
+        assertEquals("sourceDimensions", 2, transform.getSourceDimensions());
+        assertEquals("targetDimensions", 3, transform.getTargetDimensions());
         Assert.assertMatrixEquals("transform.matrix", Matrices.create(4, 3, new double[] {
             1, 0, 0,
             0, 1, 0,
@@ -597,8 +603,8 @@ public final strictfp class CoordinateOperationInferenceTest extends MathTransfo
 
         transform = operation.getMathTransform();
         assertInstanceOf("transform", LinearTransform.class, transform);
-        assertEquals(3, transform.getSourceDimensions());
-        assertEquals(1, transform.getTargetDimensions());
+        assertEquals("sourceDimensions", 3, transform.getSourceDimensions());
+        assertEquals("targetDimensions", 1, transform.getTargetDimensions());
         Assert.assertMatrixEquals("transform.matrix", Matrices.create(2, 4, new double[] {
             0, 0, 100, 0,
             0, 0,   0, 1
@@ -662,7 +668,14 @@ public final strictfp class CoordinateOperationInferenceTest extends MathTransfo
         assertInstanceOf("The operation should be a simple axis change, not a complex" +
                          "chain of ConcatenatedOperations.", Conversion.class, operation);
 
-        tolerance = 1E-12;
+        assertEquals("sourceDimensions", 4, transform.getSourceDimensions());
+        assertEquals("targetDimensions", 2, transform.getTargetDimensions());
+        Assert.assertMatrixEquals("transform.matrix", Matrices.create(3, 5, new double[] {
+            1, 0, 0, 0, 0,
+            0, 1, 0, 0, 0,
+            0, 0, 0, 0, 1
+        }), ((LinearTransform) transform).getMatrix(), STRICT);
+
         isInverseTransformSupported = false;
         verifyTransform(new double[] {
                0,     0,  0,    0,
@@ -694,8 +707,8 @@ public final strictfp class CoordinateOperationInferenceTest extends MathTransfo
 
         transform = operation.getMathTransform();
         assertInstanceOf("transform", LinearTransform.class, transform);
-        assertEquals(3, transform.getSourceDimensions());
-        assertEquals(4, transform.getTargetDimensions());
+        assertEquals("sourceDimensions", 3, transform.getSourceDimensions());
+        assertEquals("targetDimensions", 4, transform.getTargetDimensions());
         Assert.assertMatrixEquals("transform.matrix", Matrices.create(5, 4, new double[] {
             1, 0, 0, 0,
             0, 1, 0, 0,
@@ -710,6 +723,45 @@ public final strictfp class CoordinateOperationInferenceTest extends MathTransfo
         }, new double[] {
             -5, -8, 0, 15019.5              // Same value than in testTemporalConversion().
         });
+        validate();
+    }
+
+    /**
+     * Tests conversion from spatio-temporal CRS to a derived CRS.
+     *
+     * @throws FactoryException if the operation can not be created.
+     * @throws TransformException if an error occurred while converting the test points.
+     */
+    @Test
+    @DependsOnMethod("testProjected4D_to_2D")
+    public void testSpatioTemporalToDerived() throws FactoryException, TransformException {
+        final Map<String,Object> properties = new HashMap<>();
+        properties.put(DerivedCRS.NAME_KEY, "Display");
+        properties.put("conversion.name", "Display to WGS84");
+
+        final GeographicCRS WGS84     = CommonCRS.WGS84.normalizedGeographic();
+        final CompoundCRS   sourceCRS = compound("Test3D", WGS84, CommonCRS.Temporal.UNIX.crs());
+        final DerivedCRS    targetCRS = DefaultDerivedCRS.create(properties,
+                WGS84, null, factory.getOperationMethod("Affine"),
+                MathTransforms.linear(Matrices.create(3, 3, new double[] {
+                    12,  0, 480,
+                    0, -12, 790,
+                    0,   0,   1
+                })), HardCodedCS.DISPLAY);
+
+        final CoordinateOperation operation = factory.createOperation(sourceCRS, targetCRS);
+        assertSame("sourceCRS", sourceCRS, operation.getSourceCRS());
+        assertSame("targetCRS", targetCRS, operation.getTargetCRS());
+
+        transform = operation.getMathTransform();
+        assertInstanceOf("transform", LinearTransform.class, transform);
+        assertEquals("sourceDimensions", 3, transform.getSourceDimensions());
+        assertEquals("targetDimensions", 2, transform.getTargetDimensions());
+        Assert.assertMatrixEquals("transform.matrix", Matrices.create(3, 4, new double[] {
+            12,  0,  0, 480,
+            0, -12,  0, 790,
+            0,   0,  0,   1
+        }), ((LinearTransform) transform).getMatrix(), STRICT);
         validate();
     }
 }
