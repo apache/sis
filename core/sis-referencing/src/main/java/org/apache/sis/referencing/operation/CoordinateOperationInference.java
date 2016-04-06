@@ -745,6 +745,7 @@ public class CoordinateOperationInference {
         final List<SingleCRS> targets = CRS.getSingleComponents(targetCRS);
         final SourceComponent[] infos = new SourceComponent[targets.size()];
         final boolean[]  sourceIsUsed = new boolean[sources.size()];
+        final CoordinateReferenceSystem[] stepComponents = new CoordinateReferenceSystem[infos.length];
         /*
          * Operations found are stored in 'infos', but are not yet wrapped in PassThroughOperations.
          * We need to know first if some ordinate values need reordering for matching the target CRS
@@ -754,13 +755,109 @@ public class CoordinateOperationInference {
             if ((infos[i] = SourceComponent.create(this, sourceIsUsed, sources, targets.get(i))) == null) {
                 throw new OperationNotFoundException(notFoundMessage(sourceCRS, targetCRS));
             }
+            stepComponents[i] = infos[i].operation.getSourceCRS();
         }
         /*
-         * A coordinate operation has been found for every target component CRS.
-         * Some reordering of ordinate values may be needed, and some coordinates may need to be dropped.
+         * At this point, a coordinate operation has been found for all components of the target CRS.
+         * However the CoordinateOperation.getSourceCRS() values are not necessarily in the same order
+         * than the components of the source CRS given to this method, and some dimensions may be dropped.
+         * The matrix computed by sourceToSelected(…) gives us the rearrangement needed for the coordinate
+         * operations that we just found.
          */
-        final Matrix select = SourceComponent.sourceToSelected(sourceCRS.getCoordinateSystem().getDimension(), infos);
-        throw new UnsupportedOperationException();      // TODO continue work from here.
+        int remainingSourceDimensions = 0;
+        for (final SourceComponent component : infos) {
+            remainingSourceDimensions += component.endAtDimension - component.startAtDimension;
+        }
+        final Matrix select = SourceComponent.sourceToSelected(
+                sourceCRS.getCoordinateSystem().getDimension(), remainingSourceDimensions, infos);
+        /*
+         * First, we need a CRS matching the above-cited rearrangement. That CRS will be named 'stepSourceCRS'
+         * and its components will be named 'stepComponents'. Then we will execute a loop in which each component
+         * is progressively (one by one) updated from a source component to a target component. A new step CRS is
+         * recreated each time, since it will be needed for each PassThroughOperation.
+         */
+        CoordinateReferenceSystem stepSourceCRS;
+        CoordinateOperation operation;
+        if (select.isIdentity()) {
+            stepSourceCRS = sourceCRS;                // No rearrangement - we can use source CRS as-is.
+            operation = null;
+        } else {
+            if (stepComponents.length == 1) {
+                stepSourceCRS = stepComponents[0];    // Slight optimization of the next block (in the 'else' case).
+            } else {
+                stepSourceCRS = factorySIS.getCRSFactory().createCompoundCRS(derivedFrom(sourceCRS), stepComponents);
+            }
+            operation = createFromAffineTransform(AXIS_CHANGES, sourceCRS, stepSourceCRS, select);
+        }
+        /*
+         * For each sub-operation, create a PassThroughOperation for the (stepSourceCRS → stepTargetCRS) operation.
+         * Each source CRS inside this loop will be for dimensions at indices [startAtDimension … endAtDimension-1].
+         * Note that those indices are not necessarily the same than the indices in the fields of the same name in
+         * SourceComponent, because those indices are not relative to the same CompoundCRS.
+         */
+        int endAtDimension = 0;
+        final int startOfIdentity = SourceComponent.startOfIdentity(infos);
+        for (int i=0; i<stepComponents.length; i++) {
+            final CoordinateReferenceSystem source = stepComponents[i];
+            final CoordinateReferenceSystem target = targets.get(i);
+            CoordinateOperation subOperation = infos[i].operation;
+            final MathTransform subTransform = subOperation.getMathTransform();
+            /*
+             * In order to compute 'stepTargetCRS', replace in-place a single element in 'stepComponents'.
+             * For each step except the last one, 'stepTargetCRS' is a mix of target and source CRS. Only
+             * after the loop finished, 'stepTargetCRS' will become the complete targetCRS definition.
+             */
+            final CoordinateReferenceSystem stepTargetCRS;
+            stepComponents[i] = target;
+            if (i >= startOfIdentity) {
+                stepTargetCRS = targetCRS;              // If all remaining transforms are identity, we reached the final CRS.
+            } else if (subTransform.isIdentity()) {
+                stepTargetCRS = stepSourceCRS;          // In any identity transform, the source and target CRS are equal.
+            } else if (stepComponents.length == 1) {
+                stepTargetCRS = target;                 // Slight optimization of the next block.
+            } else {
+                stepTargetCRS = ReferencingServices.getInstance().createCompoundCRS(
+                        factorySIS.getCRSFactory(), factorySIS.getCSFactory(), derivedFrom(target), stepComponents);
+            }
+            int delta = source.getCoordinateSystem().getDimension();
+            final int startAtDimension = endAtDimension;
+            endAtDimension += delta;
+            /*
+             * Constructs the pass through transform only if there is at least one ordinate to pass.
+             * Actually the code below would work inconditionally, but we perform this check anyway
+             * for avoiding the creation of intermediate objects.
+             */
+            if (!(startAtDimension == 0 && endAtDimension == remainingSourceDimensions)) {
+                final Map<String,?> properties = IdentifiedObjects.getProperties(subOperation);
+                /*
+                 * The DefaultPassThroughOperation constuctor expect a SingleOperation.
+                 * In most case, the 'subOperation' is already of this kind. However if
+                 * it is not, try to copy it in such object.
+                 */
+                final SingleOperation op;
+                if (subOperation instanceof SingleOperation) {
+                    op = (SingleOperation) subOperation;
+                } else {
+                    op = factorySIS.createSingleOperation(properties,
+                            subOperation.getSourceCRS(), subOperation.getTargetCRS(), null,
+                            new DefaultOperationMethod(subTransform), subTransform);
+                }
+                subOperation = new DefaultPassThroughOperation(properties, stepSourceCRS, stepTargetCRS,
+                        op, startAtDimension, remainingSourceDimensions - endAtDimension);
+            }
+            /*
+             * Concatenate the operation with the ones we have found so far, and use the current 'stepTargetCRS'
+             * as the source CRS for the next operation step. We also need to adjust the dimension indices,
+             * since the previous operations may have removed some dimensions. Note that the delta may also
+             * be negative in a few occasions.
+             */
+            operation = concatenate(operation, subOperation);
+            stepSourceCRS = stepTargetCRS;
+            delta -= target.getCoordinateSystem().getDimension();
+            endAtDimension -= delta;
+            remainingSourceDimensions -= delta;
+        }
+        return operation;
     }
 
 

@@ -78,12 +78,12 @@ final class SourceComponent {
     /**
      * Returns the first dimension (inclusive) where the source component CRS begins in the source compound CRS.
      */
-    private final int startAtDimension;
+    final int startAtDimension;
 
     /**
      * Returns the last dimension (exclusive) where the source component CRS ends in the source compound CRS.
      */
-    private final int endAtDimension;
+    final int endAtDimension;
 
     /**
      * Creates a new instance containing the given information.
@@ -132,7 +132,7 @@ final class SourceComponent {
                                 continue;
                             }
                             /*
-                             * Found an operation. Remove the source component from the list because each source
+                             * Found an operation.  Exclude the source component from the list because each source
                              * should be used at most once by SourceComponent. Note that the same source may still
                              * be used again in another context if that source is also an interpolation CRS.
                              *
@@ -164,17 +164,27 @@ final class SourceComponent {
     }
 
     /**
+     * Returns the dimension from which all remaining operations are identity.
+     */
+    static int startOfIdentity(final SourceComponent[] selected) {
+        int n = selected.length;
+        while (n != 0) {
+            if (!selected[--n].operation.getMathTransform().isIdentity()) {
+                break;
+            }
+        }
+        return n;
+    }
+
+    /**
      * Returns a matrix for an affine transform from all source coordinates to the coordinates of the
      * source components selected for participating in the coordinate operation.
      *
-     * @param sourceDimensions number of dimension of the source {@code CompoundCRS}.
+     * @param sourceDimensions    number of dimension of the source {@code CompoundCRS}.
+     * @param selectedDimensions  number of source dimensions needed by the coordinate operations.
      * @param selected all {@code SourceComponent} instances needed for the target {@code CompoundCRS}.
      */
-    static Matrix sourceToSelected(final int sourceDimensions, final SourceComponent[] selected) {
-        int selectedDimensions = 0;
-        for (final SourceComponent component : selected) {
-            selectedDimensions += component.endAtDimension - component.startAtDimension;
-        }
+    static Matrix sourceToSelected(final int sourceDimensions, final int selectedDimensions, final SourceComponent[] selected) {
         final Matrix select = Matrices.createZero(selectedDimensions + 1, sourceDimensions + 1);
         select.setElement(selectedDimensions, sourceDimensions, 1);
         int j = 0;
