@@ -28,6 +28,7 @@
                 <root id="src.console.dir" name="Console"/>
                 <root id="src.netcdf.dir" name="NetCDF"/>
                 <root id="src.shapefile.dir" name="Shapefile"/>
+                <root id="src.xmlstore.dir" name="XMLStore"/>
                 <root id="src.storage.dir" name="Storage"/>
                 <root id="src.feature.dir" name="Feature"/>
                 <root id="src.referencing.dir" name="Referencing"/>
@@ -39,6 +40,7 @@
                 <root id="test.console.dir" name="Test Console"/>
                 <root id="test.netcdf.dir" name="Test NetCDF"/>
                 <root id="test.shapefile.dir" name="Test Shapefile"/>
+                <root id="test.xmlstore.dir" name="Test XMLStore"/>
                 <root id="test.storage.dir" name="Test Storage"/>
                 <root id="test.feature.dir" name="Test Feature"/>
                 <root id="test.referencing.dir" name="Test Referencing"/>

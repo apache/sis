@@ -186,6 +186,10 @@
         <include name="**/*.laa"/>
         <include name="**/*.loa"/>
       </fileset>
+      <fileset dir="${project.root}/storage/sis-xmlstore/src/test/resources">
+        <include name="**/*.gpx"/>
+        <include name="**/*.xml"/>
+      </fileset>
     </copy>
     <copy todir="${build.test.classes.dir}">
       <fileset dir="${project.root}/storage/sis-shapefile/src/test/resources">

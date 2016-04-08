@@ -118,7 +118,7 @@ public final class Features extends Static {
      * otherwise the function return doing nothing.
      *
      * @param feature tested feature.
-     * @throws InvalidPropertyValueException
+     * @throws InvalidPropertyValueException if feature do not pass validation
      */
     public static void validate(Feature feature) throws InvalidPropertyValueException {
 

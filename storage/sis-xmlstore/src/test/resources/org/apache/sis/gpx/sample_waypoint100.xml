@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gpx xmlns="http://www.topografix.com/GPX/1/0" version="1.0" creator="DataProducer"
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xsi:schemaLocation="http://www.topografix.com/GPX/1/0
+                    http://www.topografix.com/GPX/1/0/gpx.xsd
+                    http://www.topografix.com/GPX/gpx_overlay/0/3
+                    http://www.topografix.com/GPX/gpx_overlay/0/3/gpx_overlay.xsd
+                    http://www.topografix.com/GPX/gpx_modified/0/1
+                    http://www.topografix.com/GPX/gpx_modified/0/1/gpx_modified.xsd">
+    
+    <bounds minlat="10" minlon="-20" maxlat="40" maxlon="30"/>
+    
+    <wpt lat="10" lon="15">
+        <ele>140</ele>
+        <time>2010-01-10</time>
+        <magvar>35</magvar>
+        <geoidheight>112.32</geoidheight>
+        <name>first point</name>
+        <cmt>first comment</cmt>
+        <desc>first description</desc>
+        <src>first source</src>
+        <url>http://first-adress1.org</url>
+        <sym>first sym</sym>
+        <type>first type</type>
+        <fix>first fix</fix>
+        <sat>11</sat>
+        <hdop>15.15</hdop>
+        <vdop>14.14</vdop>
+        <pdop>13.13</pdop>
+        <ageofdgpsdata>55.55</ageofdgpsdata>
+        <dgpsid>256</dgpsid>
+    </wpt>
+    <wpt lat="20" lon="25" />
+    <wpt lat="30" lon="35">
+        <ele>150</ele>
+        <time>2010-01-30</time>
+        <magvar>25</magvar>
+        <geoidheight>142.32</geoidheight>
+        <name>third point</name>
+        <cmt>third comment</cmt>
+        <desc>third description</desc>
+        <src>third source</src>
+        <url>http://third-adress1.org</url>
+        <sym>third sym</sym>
+        <type>third type</type>
+        <fix>third fix</fix>
+        <sat>35</sat>
+        <hdop>35.15</hdop>
+        <vdop>34.14</vdop>
+        <pdop>33.13</pdop>
+        <ageofdgpsdata>85.55</ageofdgpsdata>
+        <dgpsid>456</dgpsid>
+    </wpt>
+</gpx>
