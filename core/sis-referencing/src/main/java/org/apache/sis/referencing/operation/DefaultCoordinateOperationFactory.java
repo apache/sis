@@ -624,6 +624,9 @@ next:   for (int i=components.size(); --i >= 0;) {
     public CoordinateOperation createConcatenatedOperation(final Map<String,?> properties,
             final CoordinateOperation... operations) throws FactoryException
     {
+        if (operations != null && operations.length == 1) {
+            return operations[0];
+        }
         final CoordinateOperation op;
         try {
             op = new DefaultConcatenatedOperation(properties, operations, getMathTransformFactory());
