@@ -515,7 +515,7 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
     /**
      * Returns the interpolation CRS of the given coordinate operation, or {@code null} if none.
      */
-    private static CoordinateReferenceSystem getInterpolationCRS(final CoordinateOperation operation) {
+    static CoordinateReferenceSystem getInterpolationCRS(final CoordinateOperation operation) {
         return (operation instanceof AbstractCoordinateOperation)
                ? ((AbstractCoordinateOperation) operation).getInterpolationCRS() : null;
     }
