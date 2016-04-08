@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gpx xmlns="http://www.topografix.com/GPX/1/0" version="1.0" creator="DataProducer"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.topografix.com/GPX/1/0
+		    http://www.topografix.com/GPX/1/0/gpx.xsd
+		    http://www.topografix.com/GPX/gpx_overlay/0/3
+		    http://www.topografix.com/GPX/gpx_overlay/0/3/gpx_overlay.xsd
+		    http://www.topografix.com/GPX/gpx_modified/0/1
+		    http://www.topografix.com/GPX/gpx_modified/0/1/gpx_modified.xsd">
+
+    <name>sample</name>
+    <desc>sample gpx test file</desc>
+    <author>Jean-Pierre</author>
+    <email>jean.pierre@test.com</email>
+
+    <url>http://first-adress.org</url>
+    <urlname>first</urlname>
+
+    <time>2010-03-01</time>
+    <keywords>sample,metadata</keywords>
+    <bounds minlat="10" minlon="-20" maxlat="40" maxlon="30"/>
+
+</gpx>

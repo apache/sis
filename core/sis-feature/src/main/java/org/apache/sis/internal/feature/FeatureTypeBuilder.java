@@ -151,7 +151,7 @@ public class FeatureTypeBuilder {
      *
      * See {@link #DESCRIPTION_KEY}
      *
-     * @param description
+     * @param description feature type description
      */
     public void setDescription(CharSequence description){
         parameters.put(DESCRIPTION_KEY, description);
@@ -162,7 +162,7 @@ public class FeatureTypeBuilder {
      *
      * See {@link #DESIGNATION_KEY}
      *
-     * @param designation
+     * @param designation feature type designation
      */
     public void setDesignation(CharSequence designation){
         parameters.put(DESIGNATION_KEY, designation);
@@ -173,7 +173,7 @@ public class FeatureTypeBuilder {
      *
      * See {@link #DEFINITION_KEY}
      *
-     * @param definition
+     * @param definition feature type definition
      */
     public void setDefinition(CharSequence definition){
         parameters.put(DEFINITION_KEY, definition);
@@ -182,7 +182,7 @@ public class FeatureTypeBuilder {
     /**
      * Set feature type abstract.
      *
-     * @param abstrac
+     * @param abstrac long description of the feature type
      */
     public void setAbstract(boolean abstrac) {
         this.isAbstract = abstrac;
@@ -740,7 +740,7 @@ public class FeatureTypeBuilder {
      * if the given string do not match any, then a Name with no namespace will be
      * created and the localpart will be the given string.
      *
-     * @param candidate
+     * @param candidate String to convert to a geoneric name
      * @return Name
      */
     private static GenericName valueOf(final String candidate){
@@ -787,8 +787,8 @@ public class FeatureTypeBuilder {
      * String can be written with only the local part or in extendedform or JCR
      * extended form.
      *
-     * @param name
-     * @param candidate
+     * @param name expected generic name
+     * @param candidate name to test
      * @return true if the string match the name
      */
     private static boolean match(final GenericName name, final String candidate){

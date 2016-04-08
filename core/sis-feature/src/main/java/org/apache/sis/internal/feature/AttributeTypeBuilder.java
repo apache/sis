@@ -120,7 +120,7 @@ public class AttributeTypeBuilder {
      *
      * See {@link #DESCRIPTION_KEY}
      *
-     * @param description
+     * @param description attribute description
      */
     public void setDescription(CharSequence description){
         parameters.put(DESCRIPTION_KEY, description);
@@ -131,7 +131,7 @@ public class AttributeTypeBuilder {
      *
      * See {@link #DESIGNATION_KEY}
      *
-     * @param designation
+     * @param designation attribute designation
      */
     public void setDesignation(CharSequence designation){
         parameters.put(DESIGNATION_KEY, designation);
@@ -142,7 +142,7 @@ public class AttributeTypeBuilder {
      *
      * See {@link #DEFINITION_KEY}
      *
-     * @param definition
+     * @param definition attribute definition
      */
     public void setDefinition(CharSequence definition){
         parameters.put(DEFINITION_KEY, definition);
@@ -160,7 +160,7 @@ public class AttributeTypeBuilder {
     /**
      * Set default attribute value.
      *
-     * @param defaultValue
+     * @param defaultValue attribute default value, can be null
      */
     public void setDefaultValue(Object defaultValue) {
         this.defaultValue = defaultValue;
@@ -169,7 +169,7 @@ public class AttributeTypeBuilder {
     /**
      * Set minimum occurrences of the attribute values.
      *
-     * @param minimumOccurs
+     * @param minimumOccurs must be positive
      */
     public void setMinimumOccurs(int minimumOccurs) {
         this.minimumOccurs = minimumOccurs;
@@ -178,7 +178,7 @@ public class AttributeTypeBuilder {
     /**
      * Set maximum occurrences of the attribute values.
      *
-     * @param maximumOccurs
+     * @param maximumOccurs must be positive and superior to minimum occurences
      */
     public void setMaximumOccurs(int maximumOccurs) {
         this.maximumOccurs = maximumOccurs;
@@ -188,7 +188,7 @@ public class AttributeTypeBuilder {
      * Set maximum attribute length.
      * This characteristic only have a meaning with CharSequence type attributes.
      *
-     * @param length 
+     * @param length character sequence length
      * @return created characteristic
      */
     public AttributeType setLengthCharacteristic(int length){
@@ -199,7 +199,7 @@ public class AttributeTypeBuilder {
      * Set attribute {@code CoordinateReferenceSystem}.
      * This characteristic only have a meaning with georeferenced type attributes.
      * 
-     * @param crs
+     * @param crs geometry coordinate reference system
      * @return created characteristic
      */
     public AttributeType setCRSCharacteristic(CoordinateReferenceSystem crs){
@@ -210,7 +210,7 @@ public class AttributeTypeBuilder {
      * Set attribute restricted values.
      * This characteristic defines a list of possible values for the attribute.
      *
-     * @param values
+     * @param values enumeration of values
      * @return created characteristic
      */
     public AttributeType setPossibleValues(Collection values){
@@ -252,7 +252,7 @@ public class AttributeTypeBuilder {
     /**
      * Add a user defined characteristic.
      *
-     * @param characteristic
+     * @param characteristic not null
      * @return added characteristic
      */
     public AttributeType addCharacteristic(AttributeType characteristic){

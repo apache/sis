@@ -1,0 +1,591 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.sis.internal.gpx;
+
+import com.esri.core.geometry.Point;
+import java.net.URI;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.Temporal;
+import java.time.temporal.TemporalAccessor;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import org.apache.sis.geometry.GeneralEnvelope;
+import org.apache.sis.geometry.ImmutableEnvelope;
+import org.apache.sis.referencing.CommonCRS;
+
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+import org.opengis.feature.Feature;
+import org.opengis.geometry.Envelope;
+
+/**
+ * GPX Reader test class.
+ * 
+ * @author Johann Sorel (Geomatys)
+ * @since   0.7
+ * @version 0.7
+ * @module
+ */
+public class GPXReaderTest {
+
+    private static final double DELTA = 0.000001;
+    
+
+    /**
+     * Test gpx version 1.0.0 metadata tag parsing.
+     */
+    @Test
+    public void testMetadataRead100() throws Exception{
+
+        try(final GPXReader reader = new GPXReader()){
+            reader.setInput(GPXReaderTest.class.getResource(
+                    "/org/apache/sis/gpx/sample_metadata100.xml"));
+
+            final MetaData data = reader.getMetadata();
+
+            assertEquals("sample", data.getName());
+            assertEquals("sample gpx test file", data.getDescription());
+            assertEquals(parseTime("2010-03-01"), data.getTime());
+            assertEquals("sample,metadata", data.getKeywords());
+            assertEquals(createEnvelope(-20, 30, 10, 40), data.getBounds());
+
+            assertEquals("Jean-Pierre", data.getPerson().getName());
+            assertEquals("jean.pierre@test.com", data.getPerson().getEmail());
+            assertNull(data.getPerson().getLink());
+
+            assertNull(data.getCopyRight());
+
+            assertEquals(1, data.getLinks().size());
+            assertEquals("http://first-adress.org", data.getLinks().get(0).toString());
+        }
+    }
+
+    /**
+     * Test gpx version 1.1.0 metadata tag parsing.
+     */
+    @Test
+    public void testMetadataRead110() throws Exception{
+
+        try(final GPXReader reader = new GPXReader()){
+            reader.setInput(GPXReaderTest.class.getResource(
+                    "/org/apache/sis/gpx/sample_metadata110.xml"));
+
+            final MetaData data = reader.getMetadata();
+
+            assertEquals("sample", data.getName());
+            assertEquals("sample gpx test file", data.getDescription());
+            assertEquals(parseTime("2010-03-01"), data.getTime());
+            assertEquals("sample,metadata", data.getKeywords());
+            assertEquals(createEnvelope(-20, 30, 10, 40), data.getBounds());
+
+            assertEquals("Jean-Pierre", data.getPerson().getName());
+            assertEquals("jean.pierre@test.com", data.getPerson().getEmail());
+            assertEquals("http://someone-site.org", data.getPerson().getLink().toString());
+
+            assertEquals("gnu", data.getCopyRight().getAuthor());
+            assertEquals(2010, data.getCopyRight().getYear().intValue());
+            assertEquals("http://www.gnu.org/licenses/lgpl-3.0-standalone.html", data.getCopyRight().getLicense().toString());
+
+            assertEquals(3, data.getLinks().size());
+            assertEquals("http://first-adress.org", data.getLinks().get(0).toString());
+            assertEquals("http://second-adress.org", data.getLinks().get(1).toString());
+            assertEquals("http://third-adress.org", data.getLinks().get(2).toString());
+        }
+    }
+
+
+    /**
+     * Test gpx version 1.0.0 way point tag parsing.
+     */
+    @Test
+    public void testWayPointRead100() throws Exception{
+
+        try(final GPXReader reader = new GPXReader()){
+            reader.setInput(GPXReaderTest.class.getResource(
+                    "/org/apache/sis/gpx/sample_waypoint100.xml"));
+
+            final MetaData data = reader.getMetadata();
+
+            assertNull(data.getName());
+            assertNull(data.getDescription());
+            assertNull(data.getTime());
+            assertNull(data.getKeywords());
+            assertEquals(createEnvelope(-20, 30, 10, 40), data.getBounds());
+            assertNull(data.getPerson());
+            assertNull(data.getCopyRight());
+            assertEquals(0, data.getLinks().size());
+
+            Feature f = reader.next();
+            checkPoint(f, 0, false);
+            f = reader.next();
+            checkPoint(f, 1, false);
+            f = reader.next();
+            checkPoint(f, 2, false);
+            assertFalse(reader.hasNext());
+        }
+    }
+
+    /**
+     * Test gpx version 1.1.0 way point tag parsing.
+     */
+    @Test
+    public void testWayPointRead110() throws Exception{
+
+        try(final GPXReader reader = new GPXReader()){
+            reader.setInput(GPXReaderTest.class.getResource(
+                    "/org/apache/sis/gpx/sample_waypoint110.xml"));
+
+            final MetaData data = reader.getMetadata();
+
+            assertNull(data.getName());
+            assertNull(data.getDescription());
+            assertNull(data.getTime());
+            assertNull(data.getKeywords());
+            assertEquals(createEnvelope(-20, 30, 10, 40), data.getBounds());
+            assertNull(data.getPerson());
+            assertNull(data.getCopyRight());
+            assertEquals(0, data.getLinks().size());
+
+            Feature f = reader.next();
+            checkPoint(f, 0, true);
+            f = reader.next();
+            checkPoint(f, 1 , true);
+            f = reader.next();
+            checkPoint(f, 2, true);
+            assertFalse(reader.hasNext());
+        }
+
+    }
+
+
+    /**
+     * Test gpx version v1.0.0 route tag parsing.
+     */
+    @Test
+    public void testRouteRead100() throws Exception{
+
+        try(final GPXReader reader = new GPXReader()){
+            reader.setInput(GPXReaderTest.class.getResource(
+                    "/org/apache/sis/gpx/sample_route100.xml"));
+
+            final MetaData data = reader.getMetadata();
+
+            assertNull(data.getName());
+            assertNull(data.getDescription());
+            assertNull(data.getTime());
+            assertNull(data.getKeywords());
+            assertEquals(createEnvelope(-20, 30, 10, 40), data.getBounds());
+            assertNull(data.getPerson());
+            assertNull(data.getCopyRight());
+            assertEquals(0, data.getLinks().size());
+
+            Feature f = reader.next();
+            assertEquals("route name",          f.getPropertyValue("name"));
+            assertEquals("route comment",       f.getPropertyValue("cmt"));
+            assertEquals("route description",   f.getPropertyValue("desc"));
+            assertEquals("route source",        f.getPropertyValue("src"));
+            assertEquals("route type",          f.getPropertyValue("type"));
+            assertEquals(7,                     f.getPropertyValue("number"));
+
+            List<URI> links = new ArrayList<>((Collection)f.getPropertyValue("link"));
+            assertEquals(1,links.size());
+            assertEquals("http://route-adress1.org", links.get(0).toString());
+
+            List<Feature> points = new ArrayList<>((Collection)f.getPropertyValue("rtept"));
+            assertEquals(3,points.size());
+            checkPoint(points.get(0), 0, false);
+            checkPoint(points.get(1), 1, false);
+            checkPoint(points.get(2), 2, false);
+
+            Envelope bbox = (Envelope) f.getPropertyValue("@bounds");
+            assertEquals(bbox.getMinimum(0), 15.0d, DELTA);
+            assertEquals(bbox.getMaximum(0), 35.0d, DELTA);
+            assertEquals(bbox.getMinimum(1), 10.0d, DELTA);
+            assertEquals(bbox.getMaximum(1), 30.0d, DELTA);
+
+
+            f = reader.next();
+            assertEquals(null,                  f.getPropertyValue("name"));
+            assertEquals(null,                  f.getPropertyValue("cmt"));
+            assertEquals(null,                  f.getPropertyValue("desc"));
+            assertEquals(null,                  f.getPropertyValue("src"));
+            assertEquals(null,                  f.getPropertyValue("type"));
+            assertEquals(null,                  f.getPropertyValue("number"));
+
+            links = new ArrayList<>((Collection)f.getPropertyValue("link"));
+            assertEquals(0,links.size());
+
+            points = new ArrayList<>((Collection)f.getPropertyValue("rtept"));
+            assertEquals(0,points.size());
+
+            bbox = (Envelope) f.getPropertyValue("@bounds");
+            assertNull(bbox);
+
+            assertFalse(reader.hasNext());
+        }
+    }
+
+    /**
+     * Test gpx version 1.1.0 route tag parsing.
+     */
+    @Test
+    public void testRouteRead110() throws Exception{
+
+        try(final GPXReader reader = new GPXReader()){
+            reader.setInput(GPXReaderTest.class.getResource(
+                    "/org/apache/sis/gpx/sample_route110.xml"));
+
+            final MetaData data = reader.getMetadata();
+
+            assertNull(data.getName());
+            assertNull(data.getDescription());
+            assertNull(data.getTime());
+            assertNull(data.getKeywords());
+            assertEquals(createEnvelope(-20, 30, 10, 40), data.getBounds());
+            assertNull(data.getPerson());
+            assertNull(data.getCopyRight());
+            assertEquals(0, data.getLinks().size());
+
+            Feature f = reader.next();
+            assertEquals("route name",          f.getPropertyValue("name"));
+            assertEquals("route comment",       f.getPropertyValue("cmt"));
+            assertEquals("route description",   f.getPropertyValue("desc"));
+            assertEquals("route source",        f.getPropertyValue("src"));
+            assertEquals("route type",          f.getPropertyValue("type"));
+            assertEquals(7,                     f.getPropertyValue("number"));
+
+            List<URI> links = new ArrayList<>((Collection)f.getPropertyValue("link"));
+            assertEquals(3,links.size());
+            assertEquals("http://route-adress1.org", links.get(0).toString());
+            assertEquals("http://route-adress2.org", links.get(1).toString());
+            assertEquals("http://route-adress3.org", links.get(2).toString());
+
+            List<Feature> points = new ArrayList<>((Collection)f.getPropertyValue("rtept"));
+            assertEquals(3,points.size());
+            checkPoint(points.get(0), 0, true);
+            checkPoint(points.get(1), 1, true);
+            checkPoint(points.get(2), 2, true);
+
+            Envelope bbox = (Envelope) f.getPropertyValue("@bounds");
+            assertEquals(bbox.getMinimum(0), 15.0d, DELTA);
+            assertEquals(bbox.getMaximum(0), 35.0d, DELTA);
+            assertEquals(bbox.getMinimum(1), 10.0d, DELTA);
+            assertEquals(bbox.getMaximum(1), 30.0d, DELTA);
+
+
+            f = reader.next();
+            assertEquals(null,                  f.getPropertyValue("name"));
+            assertEquals(null,                  f.getPropertyValue("cmt"));
+            assertEquals(null,                  f.getPropertyValue("desc"));
+            assertEquals(null,                  f.getPropertyValue("src"));
+            assertEquals(null,                  f.getPropertyValue("type"));
+            assertEquals(null,                  f.getPropertyValue("number"));
+
+            links = new ArrayList<>((Collection)f.getPropertyValue("link"));
+            assertEquals(0,links.size());
+
+            points = new ArrayList<>((Collection)f.getPropertyValue("rtept"));
+            assertEquals(0,points.size());
+
+            bbox = (Envelope) f.getPropertyValue("@bounds");
+            assertNull(bbox);
+
+            assertFalse(reader.hasNext());
+        }
+    }
+
+    /**
+     * Test gpx version 1.0.0 track tag parsing.
+     */
+    @Test
+    public void testTrackRead100() throws Exception{
+
+        try(final GPXReader reader = new GPXReader()){
+            reader.setInput(GPXReaderTest.class.getResource(
+                    "/org/apache/sis/gpx/sample_track100.xml"));
+
+            final MetaData data = reader.getMetadata();
+
+            assertNull(data.getName());
+            assertNull(data.getDescription());
+            assertNull(data.getTime());
+            assertNull(data.getKeywords());
+            assertEquals(createEnvelope(-20, 30, 10, 40), data.getBounds());
+            assertNull(data.getPerson());
+            assertNull(data.getCopyRight());
+            assertEquals(0, data.getLinks().size());
+
+            Feature f = reader.next();
+            assertEquals("track name",          f.getPropertyValue("name"));
+            assertEquals("track comment",       f.getPropertyValue("cmt"));
+            assertEquals("track description",   f.getPropertyValue("desc"));
+            assertEquals("track source",        f.getPropertyValue("src"));
+            assertEquals("track type",          f.getPropertyValue("type"));
+            assertEquals(7,                     f.getPropertyValue("number"));
+
+            List<URI> links = new ArrayList<>((Collection)f.getPropertyValue("link"));
+            assertEquals(1,links.size());
+            assertEquals("http://track-adress1.org", links.get(0).toString());
+
+            List<Feature> segments = new ArrayList<>((Collection)f.getPropertyValue("trkseg"));
+            assertEquals(2,segments.size());
+            Feature seg1 = segments.get(0);
+            Feature seg2 = segments.get(1);
+            List<Feature> points = new ArrayList<>((Collection)seg1.getPropertyValue("trkpt"));
+            assertEquals(3, points.size());
+            checkPoint((Feature) points.get(0), 0, false);
+            checkPoint((Feature) points.get(1), 1, false);
+            checkPoint((Feature) points.get(2), 2, false);
+            points = new ArrayList<>((Collection)seg2.getPropertyValue("trkpt"));
+            assertEquals(0, points.size());
+
+            Envelope bbox = (Envelope) f.getPropertyValue("@bounds");
+            assertEquals(bbox.getMinimum(0), 15.0d, DELTA);
+            assertEquals(bbox.getMaximum(0), 35.0d, DELTA);
+            assertEquals(bbox.getMinimum(1), 10.0d, DELTA);
+            assertEquals(bbox.getMaximum(1), 30.0d, DELTA);
+
+            f = reader.next();
+            assertEquals(null,                  f.getPropertyValue("name"));
+            assertEquals(null,                  f.getPropertyValue("cmt"));
+            assertEquals(null,                  f.getPropertyValue("desc"));
+            assertEquals(null,                  f.getPropertyValue("src"));
+            assertEquals(null,                  f.getPropertyValue("type"));
+            assertEquals(null,                  f.getPropertyValue("number"));
+
+            links = new ArrayList<>((Collection)f.getPropertyValue("link"));
+            assertEquals(0,links.size());
+
+            segments = new ArrayList<>((Collection)f.getPropertyValue("trkseg"));
+            assertEquals(0,segments.size());
+
+            bbox = (Envelope) f.getPropertyValue("@bounds");
+            assertNull(bbox);
+
+
+            assertFalse(reader.hasNext());
+        }
+    }
+
+    /**
+     * Test gpx version 1.1.0 track tag parsing.
+     */
+    @Test
+    public void testTrackRead110() throws Exception{
+
+        try(final GPXReader reader = new GPXReader()){
+            reader.setInput(GPXReaderTest.class.getResource(
+                    "/org/apache/sis/gpx/sample_track110.xml"));
+
+            final MetaData data = reader.getMetadata();
+
+            assertNull(data.getName());
+            assertNull(data.getDescription());
+            assertNull(data.getTime());
+            assertNull(data.getKeywords());
+            assertEquals(createEnvelope(-20, 30, 10, 40), data.getBounds());
+            assertNull(data.getPerson());
+            assertNull(data.getCopyRight());
+            assertEquals(0, data.getLinks().size());
+
+            Feature f = reader.next();
+            assertEquals("track name",          f.getPropertyValue("name"));
+            assertEquals("track comment",       f.getPropertyValue("cmt"));
+            assertEquals("track description",   f.getPropertyValue("desc"));
+            assertEquals("track source",        f.getPropertyValue("src"));
+            assertEquals("track type",          f.getPropertyValue("type"));
+            assertEquals(7,                     f.getPropertyValue("number"));
+
+            List<URI> links = new ArrayList<>((Collection)f.getPropertyValue("link"));
+            assertEquals(3,links.size());
+            assertEquals("http://track-adress1.org", links.get(0).toString());
+            assertEquals("http://track-adress2.org", links.get(1).toString());
+            assertEquals("http://track-adress3.org", links.get(2).toString());
+
+            List<Feature> segments = new ArrayList<>((Collection)f.getPropertyValue("trkseg"));
+            assertEquals(2,segments.size());
+            Feature seg1 = segments.get(0);
+            Feature seg2 = segments.get(1);
+            List<Feature> points = new ArrayList<>((Collection)seg1.getPropertyValue("trkpt"));
+            assertEquals(3, points.size());
+            checkPoint(points.get(0), 0,true);
+            checkPoint(points.get(1), 1,true);
+            checkPoint(points.get(2), 2,true);
+            points = new ArrayList<>((Collection)seg2.getPropertyValue("trkpt"));
+            assertEquals(0, points.size());
+
+            Envelope bbox = (Envelope) f.getPropertyValue("@bounds");
+            assertEquals(bbox.getMinimum(0), 15.0d, DELTA);
+            assertEquals(bbox.getMaximum(0), 35.0d, DELTA);
+            assertEquals(bbox.getMinimum(1), 10.0d, DELTA);
+            assertEquals(bbox.getMaximum(1), 30.0d, DELTA);
+
+            f = reader.next();
+            assertEquals(null,                  f.getPropertyValue("name"));
+            assertEquals(null,                  f.getPropertyValue("cmt"));
+            assertEquals(null,                  f.getPropertyValue("desc"));
+            assertEquals(null,                  f.getPropertyValue("src"));
+            assertEquals(null,                  f.getPropertyValue("type"));
+            assertEquals(null,                  f.getPropertyValue("number"));
+
+            links = new ArrayList<>((Collection)f.getPropertyValue("link"));
+            assertEquals(0,links.size());
+
+            segments = new ArrayList<>((Collection)f.getPropertyValue("trkseg"));
+            assertEquals(0,segments.size());
+
+            bbox = (Envelope) f.getPropertyValue("@bounds");
+            assertNull(bbox);
+
+
+            assertFalse(reader.hasNext());
+        }
+    }
+
+    private void checkPoint(final Feature f, final int num, final boolean v11) throws Exception{
+        if(num == 0){
+            assertEquals(0,                     f.getPropertyValue("index"));
+            assertEquals(15.0,                  ((Point)f.getPropertyValue("geometry")).getX(), DELTA);
+            assertEquals(10.0,                  ((Point)f.getPropertyValue("geometry")).getY(), DELTA);
+            assertEquals(140.0,                 f.getPropertyValue("ele"));
+            assertEquals(parseTime("2010-01-10"),f.getPropertyValue("time"));
+            assertEquals(35.0,                  f.getPropertyValue("magvar"));
+            assertEquals(112.32,                f.getPropertyValue("geoidheight"));
+            assertEquals("first point",         f.getPropertyValue("name"));
+            assertEquals("first comment",       f.getPropertyValue("cmt"));
+            assertEquals("first description",   f.getPropertyValue("desc"));
+            assertEquals("first source",        f.getPropertyValue("src"));
+            assertEquals("first sym",           f.getPropertyValue("sym"));
+            assertEquals("first type",          f.getPropertyValue("type"));
+            assertEquals("first fix",           f.getPropertyValue("fix"));
+            assertEquals(11,                    f.getPropertyValue("sat"));
+            assertEquals(15.15,                 f.getPropertyValue("hdop"));
+            assertEquals(14.14,                 f.getPropertyValue("vdop"));
+            assertEquals(13.13,                 f.getPropertyValue("pdop"));
+            assertEquals(55.55,                 f.getPropertyValue("ageofdgpsdata"));
+            assertEquals(256,                   f.getPropertyValue("dgpsid"));
+
+            final List<URI> links = new ArrayList<>((Collection)f.getPropertyValue("link"));
+            if(v11){
+                assertEquals(3,links.size());
+                assertEquals("http://first-adress1.org", links.get(0).toString());
+                assertEquals("http://first-adress2.org", links.get(1).toString());
+                assertEquals("http://first-adress3.org", links.get(2).toString());
+            }else{
+                assertEquals(1,links.size());
+                assertEquals("http://first-adress1.org", links.get(0).toString());
+            }
+
+            final Envelope bbox = (Envelope) f.getPropertyValue("@bounds");
+            assertEquals(bbox.getMinimum(0), 15.0d, DELTA);
+            assertEquals(bbox.getMaximum(0), 15.0d, DELTA);
+            assertEquals(bbox.getMinimum(1), 10.0d, DELTA);
+            assertEquals(bbox.getMaximum(1), 10.0d, DELTA);
+
+        }else if(num == 1){
+            assertEquals(1,                     f.getPropertyValue("index"));
+            assertEquals(25.0,                  ((Point)f.getPropertyValue("geometry")).getX(), DELTA);
+            assertEquals(20.0,                  ((Point)f.getPropertyValue("geometry")).getY(), DELTA);
+            assertEquals(null,                  f.getPropertyValue("ele"));
+            assertEquals(null,                  f.getPropertyValue("time"));
+            assertEquals(null,                  f.getPropertyValue("magvar"));
+            assertEquals(null,                  f.getPropertyValue("geoidheight"));
+            assertEquals(null,                  f.getPropertyValue("name"));
+            assertEquals(null,                  f.getPropertyValue("cmt"));
+            assertEquals(null,                  f.getPropertyValue("desc"));
+            assertEquals(null,                  f.getPropertyValue("src"));
+            assertEquals(null,                  f.getPropertyValue("sym"));
+            assertEquals(null,                  f.getPropertyValue("type"));
+            assertEquals(null,                  f.getPropertyValue("fix"));
+            assertEquals(null,                  f.getPropertyValue("sat"));
+            assertEquals(null,                  f.getPropertyValue("hdop"));
+            assertEquals(null,                  f.getPropertyValue("vdop"));
+            assertEquals(null,                  f.getPropertyValue("pdop"));
+            assertEquals(null,                  f.getPropertyValue("ageofdgpsdata"));
+            assertEquals(null,                  f.getPropertyValue("dgpsid"));
+
+            final List<URI> links = new ArrayList<>((Collection)f.getPropertyValue("link"));
+            assertEquals(0,links.size());
+
+            final Envelope bbox = (Envelope) f.getPropertyValue("@bounds");
+            assertEquals(bbox.getMinimum(0), 25.0d, DELTA);
+            assertEquals(bbox.getMaximum(0), 25.0d, DELTA);
+            assertEquals(bbox.getMinimum(1), 20.0d, DELTA);
+            assertEquals(bbox.getMaximum(1), 20.0d, DELTA);
+
+        }else if(num == 2){
+            assertEquals(2,                     f.getPropertyValue("index"));
+            assertEquals(35.0,                  ((Point)f.getPropertyValue("geometry")).getX(), DELTA);
+            assertEquals(30.0,                  ((Point)f.getPropertyValue("geometry")).getY(), DELTA);
+            assertEquals(150.0,                 f.getPropertyValue("ele"));
+            assertEquals(parseTime("2010-01-30"),f.getPropertyValue("time"));
+            assertEquals(25.0,                  f.getPropertyValue("magvar"));
+            assertEquals(142.32,                f.getPropertyValue("geoidheight"));
+            assertEquals("third point",         f.getPropertyValue("name"));
+            assertEquals("third comment",       f.getPropertyValue("cmt"));
+            assertEquals("third description",   f.getPropertyValue("desc"));
+            assertEquals("third source",        f.getPropertyValue("src"));
+            assertEquals("third sym",           f.getPropertyValue("sym"));
+            assertEquals("third type",          f.getPropertyValue("type"));
+            assertEquals("third fix",           f.getPropertyValue("fix"));
+            assertEquals(35,                    f.getPropertyValue("sat"));
+            assertEquals(35.15,                 f.getPropertyValue("hdop"));
+            assertEquals(34.14,                 f.getPropertyValue("vdop"));
+            assertEquals(33.13,                 f.getPropertyValue("pdop"));
+            assertEquals(85.55,                 f.getPropertyValue("ageofdgpsdata"));
+            assertEquals(456,                   f.getPropertyValue("dgpsid"));
+
+            final List<URI> links = new ArrayList<>((Collection)f.getPropertyValue("link"));
+            if(v11){
+                assertEquals(2,links.size());
+                assertEquals("http://third-adress1.org", links.get(0).toString());
+                assertEquals("http://third-adress2.org", links.get(1).toString());
+            }else{
+                assertEquals(1,links.size());
+                assertEquals("http://third-adress1.org", links.get(0).toString());
+            }
+
+            final Envelope bbox = (Envelope) f.getPropertyValue("@bounds");
+            assertEquals(bbox.getMinimum(0), 35.0d, DELTA);
+            assertEquals(bbox.getMaximum(0), 35.0d, DELTA);
+            assertEquals(bbox.getMinimum(1), 30.0d, DELTA);
+            assertEquals(bbox.getMaximum(1), 30.0d, DELTA);
+
+        }else{
+            fail("unexpected point number :" + num);
+        }
+    }
+
+    private static Temporal parseTime(String str) {
+        final DateTimeFormatter format = DateTimeFormatter.ISO_DATE;
+        final TemporalAccessor accessor = format.parse(str);
+        final LocalDate localDate = LocalDate.from(accessor);
+        return localDate;
+    }
+
+    private static Envelope createEnvelope(double d0, double d1, double d2, double d3) {
+        final GeneralEnvelope envelope = new GeneralEnvelope(CommonCRS.WGS84.normalizedGeographic());
+        envelope.setRange(0, d0, d1);
+        envelope.setRange(1, d2, d3);
+        return new ImmutableEnvelope(envelope);
+
+    }
+
+}
