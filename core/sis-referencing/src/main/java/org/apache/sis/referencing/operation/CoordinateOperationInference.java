@@ -367,7 +367,12 @@ public class CoordinateOperationInference {
     {
         // Create first the operation that is more at risk to fail.
         final CoordinateOperation step2 = createOperation(sourceCRS.getBaseCRS(), targetCRS);
-        final CoordinateOperation step1 = inverse(sourceCRS.getConversionFromBase());
+        final CoordinateOperation step1;
+        try {
+            step1 = inverse(sourceCRS.getConversionFromBase());
+        } catch (NoninvertibleTransformException exception) {
+            throw new OperationNotFoundException(notFoundMessage(sourceCRS, targetCRS), exception);
+        }
         return concatenate(step1, step2);
     }
 
@@ -392,8 +397,13 @@ public class CoordinateOperationInference {
     {
         // Create first the operations that are more at risk to fail.
         final CoordinateOperation step2 = createOperation(sourceCRS.getBaseCRS(), targetCRS.getBaseCRS());
-        final CoordinateOperation step1 = inverse(sourceCRS.getConversionFromBase());
         final CoordinateOperation step3 = targetCRS.getConversionFromBase();
+        final CoordinateOperation step1;
+        try {
+            step1 = inverse(sourceCRS.getConversionFromBase());
+        } catch (NoninvertibleTransformException exception) {
+            throw new OperationNotFoundException(notFoundMessage(sourceCRS, targetCRS), exception);
+        }
         return concatenate(step1, step2, step3);
     }
 
@@ -1003,15 +1013,10 @@ public class CoordinateOperationInference {
     /**
      * Creates the inverse of the given operation.
      */
-    private CoordinateOperation inverse(final SingleOperation op) throws FactoryException {
+    private CoordinateOperation inverse(final SingleOperation op) throws NoninvertibleTransformException, FactoryException {
         final CoordinateReferenceSystem sourceCRS = op.getSourceCRS();
         final CoordinateReferenceSystem targetCRS = op.getTargetCRS();
-        MathTransform transform = op.getMathTransform();
-        try {
-            transform = transform.inverse();
-        } catch (NoninvertibleTransformException exception) {
-            throw new OperationNotFoundException(notFoundMessage(targetCRS, sourceCRS), exception);
-        }
+        final MathTransform transform = op.getMathTransform().inverse();
         return createFromMathTransform(properties(INVERSE_OPERATION), targetCRS, sourceCRS,
                 transform, InverseOperationMethod.create(op.getMethod()), null, null);
     }

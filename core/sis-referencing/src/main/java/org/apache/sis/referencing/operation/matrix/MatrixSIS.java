@@ -249,6 +249,41 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
     public abstract void setElements(final double[] elements);
 
     /**
+     * Sets elements in a sub-region of this matrix, optionally including error terms.
+     *
+     * @param source    Row-major values as given by {@link ExtendedPrecisionMatrix#getExtendedElements()}.
+     * @param length    Number of elements ({@code numRow} × {@code numCol}) in the source matrix, not including error terms.
+     * @param stride    Number of columns in the source matrix, used for computing indices in {@code source} array.
+     * @param srcRow    Index of the first row from the {@code source} to copy in {@code this}.
+     * @param srcCol    Index of the first column from the {@code source} to copy in {@code this}.
+     * @param dstRow    Index of the first row in {@code this} where to copy the {@code source} values.
+     * @param dstCol    Index of the first column in {@code this} where to copy the {@code source} values.
+     * @param numRow    Number of rows to copy.
+     * @param numCol    Number of columns to copy.
+     * @param transfer  If both {@code source} and {@code this} use extended precision,
+     *                  the temporary object to use for transferring values. Otherwise {@code null}.
+     */
+    final void setElements(final double[] source, final int length, final int stride, final DoubleDouble transfer,
+                           int srcRow, final int srcCol,
+                           int dstRow, final int dstCol,
+                           int numRow, final int numCol)
+    {
+        while (--numRow >= 0) {
+            final int valueOffset = srcRow*stride + srcCol;
+            for (int i=0; i<numCol; i++) {
+                if (transfer != null) {
+                    transfer.setFrom(source, valueOffset + i, length);
+                    set(dstRow, dstCol + i, transfer);
+                } else {
+                    setElement(dstRow, dstCol + i, source[valueOffset + i]);
+                }
+            }
+            srcRow++;
+            dstRow++;
+        }
+    }
+
+    /**
      * Sets this matrix to the values of another matrix.
      * The given matrix must have the same size.
      *

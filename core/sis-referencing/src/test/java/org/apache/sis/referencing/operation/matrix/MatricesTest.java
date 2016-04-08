@@ -39,7 +39,7 @@ import static org.opengis.referencing.cs.AxisDirection.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.4
+ * @version 0.7
  * @module
  */
 @DependsOn({
@@ -354,13 +354,46 @@ public final strictfp class MatricesTest extends TestCase {
         });
         matrix = Matrices.createPassThrough(2, matrix, 1);
         assertEquals(Matrices.create(6, 7, new double[] {
-            1, 0, 0, 0, 0, 0, 0,  // Dimension added
-            0, 1, 0, 0, 0, 0, 0,  // Dimension added
-            0, 0, 2, 0, 3, 0, 8,  // Sub-matrix, row 0
-            0, 0, 0, 4, 7, 0, 5,  // Sub-matrix, row 1
-            0, 0, 0, 0, 0, 1, 0,  // Dimension added
-            0, 0, 0, 0, 0, 0, 1   // Last sub-matrix row
+            1, 0, 0, 0, 0, 0, 0,        // Dimension added
+            0, 1, 0, 0, 0, 0, 0,        // Dimension added
+            0, 0, 2, 0, 3, 0, 8,        // Sub-matrix, row 0
+            0, 0, 0, 4, 7, 0, 5,        // Sub-matrix, row 1
+            0, 0, 0, 0, 0, 1, 0,        // Dimension added
+            0, 0, 0, 0, 0, 0, 1         // Last sub-matrix row
         }), matrix);
+    }
+
+    /**
+     * Tests {@link Matrices#resizeAffine(Matrix, int, int)}.
+     */
+    @Test
+    public void testResizeAffine() {
+        // Add dimensions
+        MatrixSIS matrix = Matrices.create(3, 4, new double[] {
+            2, 0, 3, 8,
+            0, 4, 7, 5,
+            0, 0, 0, 1
+        });
+        assertEquals(Matrices.create(5, 6, new double[] {
+            2, 0, 3, 0, 0, 8,
+            0, 4, 7, 0, 0, 5,
+            0, 0, 1, 0, 0, 0,
+            0, 0, 0, 1, 0, 0,
+            0, 0, 0, 0, 0, 1
+        }), Matrices.resizeAffine(matrix, 5, 6));
+
+        // Remove dimensions
+        matrix = Matrices.create(4, 5, new double[] {
+            1, 2, 7, 8, 9,
+            3, 4, 6, 7, 8,
+            9, 8, 7, 6, 5,
+            4, 3, 2, 1, -1
+        });
+        assertEquals(Matrices.create(3, 3, new double[] {
+            1, 2, 9,
+            3, 4, 8,
+            4, 3, -1
+        }), Matrices.resizeAffine(matrix, 3, 3));
     }
 
     /**
