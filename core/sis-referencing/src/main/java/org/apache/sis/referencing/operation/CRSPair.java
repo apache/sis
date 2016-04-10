@@ -45,8 +45,8 @@ final class CRSPair {
     /**
      * Creates a {@code CRSPair} for the specified source and target CRS.
      */
-    public CRSPair(final CoordinateReferenceSystem sourceCRS,
-                   final CoordinateReferenceSystem targetCRS)
+    CRSPair(final CoordinateReferenceSystem sourceCRS,
+            final CoordinateReferenceSystem targetCRS)
     {
         this.sourceCRS = sourceCRS;
         this.targetCRS = targetCRS;

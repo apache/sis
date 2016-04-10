@@ -44,6 +44,7 @@ import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.factory.IdentifiedObjectFinder;
+import org.apache.sis.referencing.factory.MissingFactoryResourceException;
 import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.internal.system.Loggers;
@@ -55,6 +56,10 @@ import org.apache.sis.util.Deprecable;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.collection.BackingStoreException;
+import org.apache.sis.util.resources.Errors;
+
+// Branch-dependent imports
+import java.util.function.Predicate;
 
 
 /**
@@ -95,6 +100,11 @@ final class CoordinateOperationRegistry extends CoordinateOperationFinder {
     private final CoordinateOperationAuthorityFactory registry;
 
     /**
+     * Filter the coordinate operation, or {@code null} if none.
+     */
+    private final Predicate<CoordinateOperation> filter;
+
+    /**
      * Creates a new finder for the given factory.
      */
     CoordinateOperationRegistry(final DefaultCoordinateOperationFactory   factory,
@@ -102,11 +112,12 @@ final class CoordinateOperationRegistry extends CoordinateOperationFinder {
                                 final CoordinateOperationContext          context) throws FactoryException
     {
         super(factory, context);
-        this.registry  = registry;
+        this.registry = registry;
         authority  = registry.getAuthority();
         codeFinder = IdentifiedObjects.newFinder(Citations.getIdentifier(authority, false));
         codeFinder.setSearchDomain(IdentifiedObjectFinder.Domain.ALL_DATASET);
         codeFinder.setIgnoringAxes(true);
+        filter = null;  // TODO
     }
 
     /**
@@ -116,6 +127,66 @@ final class CoordinateOperationRegistry extends CoordinateOperationFinder {
     private String findCode(final CoordinateReferenceSystem crs) throws FactoryException {
         final Identifier identifier = IdentifiedObjects.getIdentifier(codeFinder.findSingleton(crs), authority);
         return (identifier != null) ? identifier.getCode() : null;
+    }
+
+    /**
+     * Returns an operation for conversion or transformation between two coordinate reference systems.
+     * The default implementation extracts the authority code from the supplied {@code sourceCRS} and
+     * {@code targetCRS}, and submit them to the
+     * <code>{@linkplain CoordinateOperationAuthorityFactory#createFromCoordinateReferenceSystemCodes
+     * createFromCoordinateReferenceSystemCodes}(sourceCode, targetCode)</code> methods.
+     * If no operation is found for those codes, then this method returns {@code null}.
+     *
+     * @param  sourceCRS  source coordinate reference system.
+     * @param  targetCRS  target coordinate reference system.
+     * @return a coordinate operation from {@code sourceCRS} to {@code targetCRS}, or {@code null}
+     *         if no such operation is explicitly defined in the underlying database.
+     */
+    @Override
+    public CoordinateOperation createOperation(final CoordinateReferenceSystem sourceCRS,
+                                               final CoordinateReferenceSystem targetCRS)
+            throws FactoryException
+    {
+        CoordinateReferenceSystem source = sourceCRS;
+        CoordinateReferenceSystem target = targetCRS;
+        for (int combine=0; ;combine++) {
+            /*
+             * First, try directly the provided (sourceCRS, targetCRS) pair. If that pair does not work,
+             * try to use different combinations of user-provided CRS and two-dimensional components of
+             * those CRS. The code below assumes that the user-provided CRS are three-dimensional, but
+             * actually it works for other kind of CRS too without testing twice the same combinations.
+             */
+            switch (combine) {
+                case 0:  break;                                                         // 3D → 3D
+                case 1:  target = CRS.getHorizontalComponent(targetCRS);                // 3D → 2D
+                         if (target == targetCRS) continue;
+                         break;
+                case 2:  source = CRS.getHorizontalComponent(sourceCRS);                // 2D → 2D
+                         if (source == sourceCRS) continue;
+                         break;
+                case 3:  if (source == sourceCRS || target == targetCRS) continue;
+                         target = targetCRS;                                            // 2D → 3D
+                         break;
+                default: return null;
+            }
+            if (source != null && target != null) try {
+                CoordinateOperation operation = search(source, target);
+                if (operation != null) {
+                    /*
+                     * Found an operation. If we had to extract the horizontal part of some 3D CRS,
+                     * then we need to modify the coordinate operation.
+                     */
+                    if (combine != 0) {
+                        operation = propagateVertical(operation, source != sourceCRS, target != targetCRS);
+                        operation = complete(operation, sourceCRS, targetCRS);
+                    }
+                    return operation;
+                }
+            } catch (IllegalArgumentException | ConversionException e) {
+                throw new FactoryException(Errors.format(
+                        Errors.Keys.CanNotInstantiate_1, new CRSPair(sourceCRS, targetCRS)), e);
+            }
+        }
     }
 
     /**
@@ -130,6 +201,7 @@ final class CoordinateOperationRegistry extends CoordinateOperationFinder {
      *         or {@code null} if no such operation is explicitly defined in the underlying database.
      * @return A coordinate operation from {@code sourceCRS} to {@code targetCRS}, or {@code null}
      *         if no such operation is explicitly defined in the underlying database.
+     * @throws IllegalArgumentException if the coordinate systems are not of the same type or axes do not match.
      * @throws ConversionException if the units are not compatible or a unit conversion is non-linear.
      * @throws FactoryException if an error occurred while creating the operation.
      */
@@ -169,17 +241,17 @@ final class CoordinateOperationRegistry extends CoordinateOperationFinder {
                  * The EPSG database usually contains transformation paths for geographic to projected CRS only.
                  */
                 operations = registry.createFromCoordinateReferenceSystemCodes(targetID, sourceID);
-                if (operations == null) {
+                if (Containers.isNullOrEmpty(operations)) {
                     return null;
                 }
             }
-        } catch (NoSuchAuthorityCodeException exception) {
+        } catch (NoSuchAuthorityCodeException | MissingFactoryResourceException exception) {
             /*
              * sourceCode or targetCode is unknown to the underlying authority factory.
              * Ignores the exception and fallback on the generic algorithm provided by
              * CoordinateOperationInference.
              */
-            log(exception, false);
+            log(exception);
             return null;
         }
         /*
@@ -195,16 +267,21 @@ final class CoordinateOperationRegistry extends CoordinateOperationFinder {
         for (final Iterator<CoordinateOperation> it=operations.iterator(); it.hasNext();) {
             CoordinateOperation candidate;
             try {
-                candidate = it.next();
-            } catch (BackingStoreException exception) {
-                throw exception.unwrapOrRethrow(FactoryException.class);
-            }
-            if (inverse) try {
-                candidate = inverse(candidate);
-            } catch (NoninvertibleTransformException exception) {
-                // It may be a normal failure - the operation is not required to be invertible.
-                Logging.recoverableException(Logging.getLogger(Loggers.COORDINATE_OPERATION),
-                        CoordinateOperationRegistry.class, "search", exception);
+                try {
+                    candidate = it.next();
+                } catch (BackingStoreException exception) {
+                    throw exception.unwrapOrRethrow(FactoryException.class);
+                }
+                if (inverse) try {
+                    candidate = inverse(candidate);
+                } catch (NoninvertibleTransformException exception) {
+                    // It may be a normal failure - the operation is not required to be invertible.
+                    Logging.recoverableException(Logging.getLogger(Loggers.COORDINATE_OPERATION),
+                            CoordinateOperationRegistry.class, "search", exception);
+                    continue;
+                }
+            } catch (MissingFactoryResourceException e) {
+                log(e);
                 continue;
             }
             if (candidate != null) {
@@ -233,12 +310,14 @@ final class CoordinateOperationRegistry extends CoordinateOperationFinder {
                          * the FactoryException propagate.
                          */
                         candidate = complete(candidate, sourceCRS, targetCRS);
-                        bestChoice = candidate;
-                        if (!Double.isNaN(area)) {
-                            largestArea = area;
+                        if (filter == null || filter.test(candidate)) {
+                            bestChoice = candidate;
+                            if (!Double.isNaN(area)) {
+                                largestArea = area;
+                            }
+                            finestAccuracy = Double.isNaN(accuracy) ? Double.POSITIVE_INFINITY : accuracy;
+                            stopAtFirstDeprecated = !isDeprecated;
                         }
-                        finestAccuracy = Double.isNaN(accuracy) ? Double.POSITIVE_INFINITY : accuracy;
-                        stopAtFirstDeprecated = !isDeprecated;
                     }
                 }
             }
@@ -399,19 +478,35 @@ final class CoordinateOperationRegistry extends CoordinateOperationFinder {
      * @throws FactoryException if an error occurred while creating the new operation.
      */
     private CoordinateOperation recreate(final CoordinateOperation       operation,
-                                         final CoordinateReferenceSystem sourceCRS,
-                                         final CoordinateReferenceSystem targetCRS,
+                                               CoordinateReferenceSystem sourceCRS,
+                                               CoordinateReferenceSystem targetCRS,
                                          final MathTransform             transform) throws FactoryException
     {
-        Class<? extends CoordinateOperation> type;                  // GeoAPI type for the given operation.
+        /*
+         * If the user-provided CRS are approximatively equal to the coordinate operation CRS, keep the later.
+         * The reason is that coordinate operation CRS are built from the definitions provided by the authority,
+         * while the user-provided CRS can be anything (e.g. parsed from a quite approximative WKT).
+         */
+        CoordinateReferenceSystem crs;
+        if (Utilities.equalsApproximatively(sourceCRS, crs = operation.getSourceCRS())) sourceCRS = crs;
+        if (Utilities.equalsApproximatively(targetCRS, crs = operation.getTargetCRS())) targetCRS = crs;
+        /*
+         * Determine whether the operation to create is a Conversion or a Transformation.
+         * Conversion may also be a more accurate type like Projection. We want the GeoAPI
+         * interface. The most reliable way is to ask to the operation, but this is SIS-specific.
+         * The fallback uses reflection.
+         */
+        final Class<? extends CoordinateOperation> type;
         if (operation instanceof AbstractCoordinateOperation) {
             type = ((AbstractCoordinateOperation) operation).getInterface();
         } else {
-            // Fallback (less reliable) for non-SIS implementations.
             final Class<? extends CoordinateOperation>[] types =
                     Classes.getLeafInterfaces(operation.getClass(), CoordinateOperation.class);
             type = (types.length != 0) ? types[0] : SingleOperation.class;
         }
+        /*
+         * Reuse the same operation method, just changing its number of dimension.
+         */
         OperationMethod method = null;
         if (operation instanceof SingleOperation) {
             method = DefaultOperationMethod.redimension(((SingleOperation) operation).getMethod(),
@@ -444,17 +539,27 @@ final class CoordinateOperationRegistry extends CoordinateOperationFinder {
      *         or {@code null} if this method does not know how to create the operation.
      * @throws FactoryException if an error occurred while creating the coordinate operation.
      */
-    private CoordinateOperation propagateVertical(ConcatenatedOperation operation,
+    private CoordinateOperation propagateVertical(final CoordinateOperation operation,
             final boolean source3D, final boolean target3D) throws FactoryException
     {
-        final List<CoordinateOperation> operations = new ArrayList<>(operation.getOperations());
+        final List<CoordinateOperation> operations = new ArrayList<>();
+        if (operation instanceof ConcatenatedOperation) {
+            operations.addAll(((ConcatenatedOperation) operation).getOperations());
+        } else {
+            operations.add(operation);
+        }
         if ((source3D && !propagateVertical(operations.listIterator(), true)) ||
             (target3D && !propagateVertical(operations.listIterator(operations.size()), false)))
         {
             return null;
         }
-        return factory.createConcatenatedOperation(derivedFrom(operation),
-                operations.toArray(new CoordinateOperation[operations.size()]));
+        switch (operations.size()) {
+            case 0:  return null;
+            case 1:  return operations.get(0);
+            default: return factory.createConcatenatedOperation(derivedFrom(operation),
+                            operations.toArray(new CoordinateOperation[operations.size()]));
+
+        }
     }
 
     /**
@@ -555,17 +660,14 @@ final class CoordinateOperationRegistry extends CoordinateOperationFinder {
     }
 
     /**
-     * Logs an exception. This method pretends that the logging come from {@link DefaultCoordinateOperationFactory}
-     * since this is the public API which use this {@code CoordinateOperationRegistry} class.
+     * Logs an unexpected but ignorable exception. This method pretends that the logging
+     * come from {@link DefaultCoordinateOperationFactory} since this is the public API
+     * which use this {@code CoordinateOperationRegistry} class.
      *
      * @param exception  the exception which occurred.
-     * @param trace      whether the include the stack trace.
      */
-    private void log(final Exception exception, final boolean trace) {
+    private void log(final FactoryException exception) {
         final LogRecord record = new LogRecord(Level.WARNING, exception.getLocalizedMessage());
-        if (trace) {
-            record.setThrown(exception);
-        }
         record.setLoggerName(Loggers.COORDINATE_OPERATION);
         Logging.log(DefaultCoordinateOperationFactory.class, "createOperation", record);
     }

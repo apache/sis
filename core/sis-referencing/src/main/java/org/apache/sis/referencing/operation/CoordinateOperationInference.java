@@ -94,6 +94,13 @@ public class CoordinateOperationInference extends CoordinateOperationFinder {
     private static final double MOLODENSKY_ACCURACY = 5;
 
     /**
+     * The desired accuracy in metres, or 0 for the best accuracy available.
+     *
+     * @see #MOLODENSKY_ACCURACY
+     */
+    private final double desiredAccuracy;
+
+    /**
      * Identifiers used as the basis for identifier of CRS used as an intermediate step.
      * The values can be of two kinds:
      *
@@ -126,6 +133,7 @@ public class CoordinateOperationInference extends CoordinateOperationFinder {
         super(factory, context);
         identifierOfStepCRS = new HashMap<>(8);
         previousSearches    = new HashMap<>(8);
+        desiredAccuracy     = (context != null) ? context.getDesiredAccuracy() : 0;
     }
 
     /**
@@ -140,6 +148,7 @@ public class CoordinateOperationInference extends CoordinateOperationFinder {
      * @throws OperationNotFoundException if no operation path was found from {@code sourceCRS} to {@code targetCRS}.
      * @throws FactoryException if the operation creation failed for some other reason.
      */
+    @Override
     public CoordinateOperation createOperation(final CoordinateReferenceSystem sourceCRS,
                                                final CoordinateReferenceSystem targetCRS)
             throws OperationNotFoundException, FactoryException
@@ -950,7 +959,7 @@ public class CoordinateOperationInference extends CoordinateOperationFinder {
      * Returns a name for a transformation between two CRS.
      */
     private static Map<String,?> defaultName(CoordinateReferenceSystem source, CoordinateReferenceSystem target) {
-        return properties(CRSPair.label(source) + " → " + CRSPair.label(target));
+        return properties(new CRSPair(source, target).toString());
     }
 
     /**

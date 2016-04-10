@@ -319,8 +319,8 @@ public final class CRS extends Static {
      *   <li>If the given operation is an instance of {@link AbstractCoordinateOperation}, then delegate to the
      *       operation {@link AbstractCoordinateOperation#getLinearAccuracy() getLinearAccuracy()} method.</li>
      *
-     *   <li>Otherwise if a {@linkplain org.apache.sis.metadata.iso.quality.DefaultQuantitativeResult quantitative result}
-     *       is found with a linear unit, then return the result value converted to metres.</li>
+     *   <li>Otherwise if at least one {@linkplain org.apache.sis.metadata.iso.quality.DefaultQuantitativeResult
+     *       quantitative result} is found with a linear unit, then return the largest value converted to metres.</li>
      *
      *   <li>Otherwise if the operation is a {@linkplain org.apache.sis.referencing.operation.DefaultConversion
      *       conversion}, then returns 0 since a conversion is by definition accurate up to rounding errors.</li>

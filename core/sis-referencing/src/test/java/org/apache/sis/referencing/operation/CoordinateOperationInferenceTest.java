@@ -53,11 +53,11 @@ import static org.apache.sis.internal.referencing.PositionalAccuracyConstant.DAT
 // Test dependencies
 import org.apache.sis.referencing.operation.transform.MathTransformTestCase;
 import org.apache.sis.referencing.crs.HardCodedCRS;
+import org.apache.sis.referencing.cs.HardCodedCS;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.opengis.test.Assert;
-import org.apache.sis.referencing.cs.HardCodedCS;
 import org.junit.BeforeClass;
 import org.junit.AfterClass;
 import org.junit.Test;
@@ -99,6 +99,18 @@ public final strictfp class CoordinateOperationInferenceTest extends MathTransfo
      * The parser to use for WKT strings used in this test.
      */
     private static WKTFormat parser;
+
+    /**
+     * The instance on which to execute the tests.
+     */
+    private CoordinateOperationInference inference;
+
+    /**
+     * Creates a new test case.
+     */
+    public CoordinateOperationInferenceTest() {
+        inference = new CoordinateOperationInference(factory, null);
+    }
 
     /**
      * Creates a new {@link DefaultCoordinateOperationFactory} to use for testing purpose.
@@ -169,13 +181,14 @@ public final strictfp class CoordinateOperationInferenceTest extends MathTransfo
     /**
      * Implementation of {@link #testIdentityTransform()} using the given CRS.
      */
-    private static void testIdentityTransform(final CoordinateReferenceSystem crs) throws FactoryException {
-        final CoordinateOperation operation = factory.createOperation(crs, crs);
+    private void testIdentityTransform(final CoordinateReferenceSystem crs) throws FactoryException {
+        final CoordinateOperation operation = inference.createOperation(crs, crs);
         assertSame      ("sourceCRS",  crs, operation.getSourceCRS());
         assertSame      ("targetCRS",  crs, operation.getTargetCRS());
         assertTrue      ("isIdentity", operation.getMathTransform().isIdentity());
         assertTrue      ("accuracy",   operation.getCoordinateOperationAccuracy().isEmpty());
         assertInstanceOf("operation",  Conversion.class, operation);
+        inference = new CoordinateOperationInference(factory, null);        // Reset for next call.
     }
 
     /**
@@ -250,7 +263,7 @@ public final strictfp class CoordinateOperationInferenceTest extends MathTransfo
             final GeographicCRS sourceCRS, final GeographicCRS targetCRS)
             throws ParseException, FactoryException, TransformException
     {
-        final CoordinateOperation operation = factory.createOperation(sourceCRS, targetCRS);
+        final CoordinateOperation operation = inference.createOperation(sourceCRS, targetCRS);
         assertSame      ("sourceCRS",  sourceCRS,            operation.getSourceCRS());
         assertSame      ("targetCRS",  targetCRS,            operation.getTargetCRS());
         assertFalse     ("isIdentity",                       operation.getMathTransform().isIdentity());
@@ -310,7 +323,7 @@ public final strictfp class CoordinateOperationInferenceTest extends MathTransfo
                 "  Id[“EPSG”, “4807”]]");
 
         final GeographicCRS       targetCRS = CommonCRS.WGS84.geographic();
-        final CoordinateOperation operation = factory.createOperation(sourceCRS, targetCRS);
+        final CoordinateOperation operation = inference.createOperation(sourceCRS, targetCRS);
 
         assertSame      ("sourceCRS",  sourceCRS,            operation.getSourceCRS());
         assertSame      ("targetCRS",  targetCRS,            operation.getTargetCRS());
@@ -356,7 +369,7 @@ public final strictfp class CoordinateOperationInferenceTest extends MathTransfo
                 "    Unit[“km”, 1000]]");
 
         final GeocentricCRS       targetCRS = CommonCRS.WGS84.geocentric();
-        final CoordinateOperation operation = factory.createOperation(sourceCRS, targetCRS);
+        final CoordinateOperation operation = inference.createOperation(sourceCRS, targetCRS);
 
         assertSame      ("sourceCRS",  sourceCRS,            operation.getSourceCRS());
         assertSame      ("targetCRS",  targetCRS,            operation.getTargetCRS());
@@ -410,7 +423,7 @@ public final strictfp class CoordinateOperationInferenceTest extends MathTransfo
                 "    Axis[“y”, NORTH],\n" +
                 "    Unit[“US survey foot”, 0.304800609601219]]");
 
-        final CoordinateOperation operation = factory.createOperation(sourceCRS, targetCRS);
+        final CoordinateOperation operation = inference.createOperation(sourceCRS, targetCRS);
         assertSame      ("sourceCRS", sourceCRS,        operation.getSourceCRS());
         assertSame      ("targetCRS", targetCRS,        operation.getTargetCRS());
         assertEquals    ("name",      "TM",             operation.getName().getCode());
@@ -448,7 +461,7 @@ public final strictfp class CoordinateOperationInferenceTest extends MathTransfo
         final VerticalCRS sourceCRS = CommonCRS.Vertical.NAVD88.crs();
         final VerticalCRS targetCRS = CommonCRS.Vertical.MEAN_SEA_LEVEL.crs();
         try {
-            factory.createOperation(sourceCRS, targetCRS);
+            inference.createOperation(sourceCRS, targetCRS);
             fail("The operation should have failed.");
         } catch (OperationNotFoundException e) {
             final String message = e.getMessage();
@@ -470,7 +483,7 @@ public final strictfp class CoordinateOperationInferenceTest extends MathTransfo
     public void testTemporalConversion() throws FactoryException, TransformException {
         final TemporalCRS sourceCRS = CommonCRS.Temporal.UNIX.crs();
         final TemporalCRS targetCRS = CommonCRS.Temporal.MODIFIED_JULIAN.crs();
-        final CoordinateOperation operation = factory.createOperation(sourceCRS, targetCRS);
+        final CoordinateOperation operation = inference.createOperation(sourceCRS, targetCRS);
         assertSame      ("sourceCRS", sourceCRS,        operation.getSourceCRS());
         assertSame      ("targetCRS", targetCRS,        operation.getTargetCRS());
         assertEquals    ("name",      "Axis changes",   operation.getName().getCode());
@@ -508,7 +521,7 @@ public final strictfp class CoordinateOperationInferenceTest extends MathTransfo
     public void testGeographic3D_to_2D() throws FactoryException, TransformException {
         final GeographicCRS sourceCRS = CommonCRS.WGS84.geographic3D();
         final GeographicCRS targetCRS = CommonCRS.WGS84.geographic();
-        final CoordinateOperation operation = factory.createOperation(sourceCRS, targetCRS);
+        final CoordinateOperation operation = inference.createOperation(sourceCRS, targetCRS);
         assertSame      ("sourceCRS", sourceCRS,        operation.getSourceCRS());
         assertSame      ("targetCRS", targetCRS,        operation.getTargetCRS());
         assertEquals    ("name",      "Axis changes",   operation.getName().getCode());
@@ -551,7 +564,7 @@ public final strictfp class CoordinateOperationInferenceTest extends MathTransfo
     public void testGeographic2D_to_3D() throws FactoryException, TransformException {
         final GeographicCRS sourceCRS = CommonCRS.WGS84.geographic();
         final GeographicCRS targetCRS = CommonCRS.WGS84.geographic3D();
-        final CoordinateOperation operation = factory.createOperation(sourceCRS, targetCRS);
+        final CoordinateOperation operation = inference.createOperation(sourceCRS, targetCRS);
         assertSame      ("sourceCRS", sourceCRS,        operation.getSourceCRS());
         assertSame      ("targetCRS", targetCRS,        operation.getTargetCRS());
         assertEquals    ("name",      "Axis changes",   operation.getName().getCode());
@@ -595,7 +608,7 @@ public final strictfp class CoordinateOperationInferenceTest extends MathTransfo
     public void testGeographic3D_to_EllipsoidalHeight() throws FactoryException, TransformException {
         final CoordinateReferenceSystem sourceCRS = CommonCRS.WGS84.geographic3D();
         final CoordinateReferenceSystem targetCRS = HardCodedCRS.ELLIPSOIDAL_HEIGHT_cm;
-        final CoordinateOperation operation = factory.createOperation(sourceCRS, targetCRS);
+        final CoordinateOperation operation = inference.createOperation(sourceCRS, targetCRS);
         assertSame      ("sourceCRS", sourceCRS,        operation.getSourceCRS());
         assertSame      ("targetCRS", targetCRS,        operation.getTargetCRS());
         assertEquals    ("name",      "Axis changes",   operation.getName().getCode());
@@ -657,7 +670,7 @@ public final strictfp class CoordinateOperationInferenceTest extends MathTransfo
         sourceCRS = compound("Mercator 3D", sourceCRS, CommonCRS.Vertical.ELLIPSOIDAL.crs());
         sourceCRS = compound("Mercator 4D", sourceCRS, CommonCRS.Temporal.MODIFIED_JULIAN.crs());
 
-        final CoordinateOperation operation = factory.createOperation(sourceCRS, targetCRS);
+        final CoordinateOperation operation = inference.createOperation(sourceCRS, targetCRS);
         assertSame("sourceCRS", sourceCRS, operation.getSourceCRS());
         assertSame("targetCRS", targetCRS, operation.getTargetCRS());
 
@@ -699,7 +712,7 @@ public final strictfp class CoordinateOperationInferenceTest extends MathTransfo
     public void testGeographic3D_to_4D() throws FactoryException, TransformException {
         final CompoundCRS sourceCRS = compound("Test3D", CommonCRS.WGS84.geographic(),   CommonCRS.Temporal.UNIX.crs());
         final CompoundCRS targetCRS = compound("Test4D", CommonCRS.WGS84.geographic3D(), CommonCRS.Temporal.MODIFIED_JULIAN.crs());
-        final CoordinateOperation operation = factory.createOperation(sourceCRS, targetCRS);
+        final CoordinateOperation operation = inference.createOperation(sourceCRS, targetCRS);
         assertSame      ("sourceCRS", sourceCRS, operation.getSourceCRS());
         assertSame      ("targetCRS", targetCRS, operation.getTargetCRS());
         assertInstanceOf("operation", ConcatenatedOperation.class, operation);
@@ -749,7 +762,7 @@ public final strictfp class CoordinateOperationInferenceTest extends MathTransfo
                     0,   0,   1
                 })), HardCodedCS.DISPLAY);
 
-        final CoordinateOperation operation = factory.createOperation(sourceCRS, targetCRS);
+        final CoordinateOperation operation = inference.createOperation(sourceCRS, targetCRS);
         assertSame("sourceCRS", sourceCRS, operation.getSourceCRS());
         assertSame("targetCRS", targetCRS, operation.getTargetCRS());
 

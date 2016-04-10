@@ -54,7 +54,18 @@ import java.util.Objects;
 
 /**
  * Base class of code that search for coordinate operation, either by looking in a registry maintained by an authority
- * or by trying to infer the coordinate operation by itself.
+ * or by trying to infer the coordinate operation by itself.  There is two subclasses which correspond to the two main
+ * strategies for finding coordinate operations:
+ *
+ * <ul>
+ *   <li>{@link CoordinateOperationRegistry} implements the <cite>late-binding</cite> approach
+ *       (i.e. search coordinate operation paths specified by authorities like the ones listed in the EPSG dataset),
+ *       which is the preferred approach.</li>
+ *   <li>{@link CoordinateOperationFinder} implements the <cite>early-binding</cite> approach
+ *       (i.e. find a coordinate operation path by inspecting the properties associated to the CRS,
+ *       including {@code BOUNDCRS} or {@code TOWGS84} WKT elements).
+ *       This approach is used only as a fallback in the late-binding approach gave no result.</li>
+ * </ul>
  *
  * <div class="section">Limitations</div>
  * <ul>
@@ -67,7 +78,7 @@ import java.util.Objects;
  * @version 0.7
  * @module
  */
-class CoordinateOperationFinder {
+abstract class CoordinateOperationFinder {
     /**
      * The identifier for an identity operation.
      */
@@ -132,13 +143,6 @@ class CoordinateOperationFinder {
     GeographicBoundingBox bbox;
 
     /**
-     * The desired accuracy in metres, or 0 for the best accuracy available.
-     *
-     * @see #MOLODENSKY_ACCURACY
-     */
-    double desiredAccuracy;
-
-    /**
      * Creates a new instance for the given factory and context.
      *
      * @param factory The factory to use for creating coordinate operations.
@@ -152,11 +156,29 @@ class CoordinateOperationFinder {
         factorySIS = (factory instanceof DefaultCoordinateOperationFactory)
                      ? (DefaultCoordinateOperationFactory) factory : CoordinateOperations.factory();
         if (context != null) {
-            areaOfInterest  = context.getAreaOfInterest();
-            desiredAccuracy = context.getDesiredAccuracy();
-            bbox            = context.getGeographicBoundingBox();
+            areaOfInterest = context.getAreaOfInterest();
+            bbox           = context.getGeographicBoundingBox();
         }
     }
+
+    /**
+     * Finds or infers an operation for conversion or transformation between two coordinate reference systems.
+     * If the subclass implements the <cite>late-binding</cite> approach (see definition of terms in class javadoc),
+     * then this method may return {@code null} if no operation path is defined in the registry for the given pair
+     * of CRS. Note that it does not mean that no path exist.
+     *
+     * <p>If the subclass implements the <cite>early-binding</cite> approach (which is the fallback if late-binding
+     * gave no result), then this method should never return {@code null} since there is no other fallback.
+     * Instead, this method may throw an {@link OperationNotFoundException}.</p>
+     *
+     * @param  sourceCRS  input coordinate reference system.
+     * @param  targetCRS  output coordinate reference system.
+     * @return a coordinate operation from {@code sourceCRS} to {@code targetCRS}, or {@code null} if none.
+     * @throws OperationNotFoundException if no operation path was found from {@code sourceCRS} to {@code targetCRS}.
+     * @throws FactoryException if the operation creation failed for some other reason.
+     */
+    public abstract CoordinateOperation createOperation(CoordinateReferenceSystem sourceCRS,
+                                                        CoordinateReferenceSystem targetCRS) throws FactoryException;
 
     /**
      * Creates a coordinate operation from a math transform.

@@ -558,8 +558,8 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
      * Note that those rules may change in any future SIS version.
      *
      * <ul>
-     *   <li>If a {@linkplain org.apache.sis.metadata.iso.quality.DefaultQuantitativeResult quantitative result}
-     *       is found with a linear unit, then returns the result value converted to metres.</li>
+     *   <li>If at least one {@linkplain org.apache.sis.metadata.iso.quality.DefaultQuantitativeResult quantitative
+     *       result} is found with a linear unit, then returns the largest result value converted to metres.</li>
      *
      *   <li>Otherwise if the operation is a {@linkplain DefaultConversion conversion},
      *       then returns 0 since a conversion is by definition accurate up to rounding errors.</li>
