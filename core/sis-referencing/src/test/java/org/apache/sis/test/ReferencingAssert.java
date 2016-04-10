@@ -110,7 +110,7 @@ public strictfp class ReferencingAssert extends MetadataAssert {
      * @since 0.6
      */
     public static void assertEpsgNameAndIdentifierEqual(final String name, final int identifier, final IdentifiedObject object) {
-        assertNotNull(object);
+        assertNotNull(name, object);
         assertEpsgIdentifierEquals(name, object.getName());
         assertEpsgIdentifierEquals(String.valueOf(identifier), TestUtilities.getSingleton(object.getIdentifiers()));
     }

@@ -171,7 +171,6 @@ import org.junit.BeforeClass;
     org.apache.sis.referencing.operation.SingleOperationMarshallingTest.class,
     org.apache.sis.referencing.operation.DefaultPassThroughOperationTest.class,
     org.apache.sis.referencing.operation.DefaultConcatenatedOperationTest.class,
-    org.apache.sis.referencing.operation.CoordinateOperationInferenceTest.class,
     org.apache.sis.referencing.crs.DefaultProjectedCRSTest.class,
     org.apache.sis.referencing.crs.DefaultDerivedCRSTest.class,
     org.apache.sis.referencing.crs.SubTypesTest.class,
@@ -217,6 +216,12 @@ import org.junit.BeforeClass;
     org.apache.sis.referencing.AuthorityFactoriesTest.class,
     org.apache.sis.referencing.CRSTest.class,
 
+    // Coordinate operation finders are last, since they need everything else.
+    org.apache.sis.referencing.operation.CoordinateOperationInferenceTest.class,
+    org.apache.sis.referencing.operation.CoordinateOperationRegistryTest.class,
+    org.apache.sis.referencing.operation.builder.LinearTransformBuilderTest.class,
+
+    // Geometry
     org.apache.sis.geometry.AbstractDirectPositionTest.class,
     org.apache.sis.geometry.GeneralDirectPositionTest.class,
     org.apache.sis.geometry.DirectPosition1DTest.class,
@@ -228,11 +233,10 @@ import org.junit.BeforeClass;
     org.apache.sis.geometry.Envelope2DTest.class,
     org.apache.sis.geometry.CurveExtremumTest.class,
     org.apache.sis.geometry.EnvelopesTest.class,
+    org.apache.sis.internal.referencing.ServicesForMetadataTest.class,
 
     org.apache.sis.distance.LatLonPointRadiusTest.class,        // Pending refactoring in a geometry package.
 
-    org.apache.sis.referencing.operation.builder.LinearTransformBuilderTest.class,
-    org.apache.sis.internal.referencing.ServicesForMetadataTest.class,
     org.apache.sis.test.integration.DatumShiftTest.class,
     org.apache.sis.test.integration.MetadataTest.class,
     org.apache.sis.test.integration.ConsistencyTest.class

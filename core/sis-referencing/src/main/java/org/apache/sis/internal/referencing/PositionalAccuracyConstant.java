@@ -131,8 +131,8 @@ public final class PositionalAccuracyConstant extends DefaultAbsoluteExternalPos
      * This method tries each of the following procedures and returns the first successful one:
      *
      * <ul>
-     *   <li>If a {@link QuantitativeResult} is found with a linear unit, then this accuracy estimate
-     *       is converted to {@linkplain SI#METRE metres} and returned.</li>
+     *   <li>If at least one {@link QuantitativeResult} is found with a linear unit, then the largest
+     *       accuracy estimate is converted to {@linkplain SI#METRE metres} and returned.</li>
      *   <li>Otherwise, if the operation is a {@link Conversion}, then returns 0 since a conversion
      *       is by definition accurate up to rounding errors.</li>
      *   <li>Otherwise, if the operation is a {@link Transformation}, then checks if the datum shift
@@ -152,9 +152,10 @@ public final class PositionalAccuracyConstant extends DefaultAbsoluteExternalPos
      * @see org.apache.sis.referencing.operation.AbstractCoordinateOperation#getLinearAccuracy()
      */
     public static double getLinearAccuracy(final CoordinateOperation operation) {
+        double accuracy = Double.NaN;
         final Collection<PositionalAccuracy> accuracies = operation.getCoordinateOperationAccuracy();
-        for (final PositionalAccuracy accuracy : accuracies) {
-            for (final Result result : accuracy.getResults()) {
+        for (final PositionalAccuracy metadata : accuracies) {
+            for (final Result result : metadata.getResults()) {
                 if (result instanceof QuantitativeResult) {
                     final QuantitativeResult quantity = (QuantitativeResult) result;
                     final Collection<? extends Record> records = quantity.getValues();
@@ -167,7 +168,9 @@ public final class PositionalAccuracyConstant extends DefaultAbsoluteExternalPos
                                     if (value instanceof Number) {
                                         double v = ((Number) value).doubleValue();
                                         v = unitOfLength.getConverterTo(SI.METRE).convert(v);
-                                        return v;
+                                        if (v >= 0 && !(v <= accuracy)) {       // '!' is for replacing the NaN value.
+                                            accuracy = v;
+                                        }
                                     }
                                 }
                             }
@@ -176,40 +179,41 @@ public final class PositionalAccuracyConstant extends DefaultAbsoluteExternalPos
                 }
             }
         }
-        /*
-         * No quantitative (linear) accuracy were found. If the coordinate operation is actually
-         * a conversion, the accuracy is up to rounding error (i.e. conceptually 0) by definition.
-         */
-        if (operation instanceof Conversion) {
-            return 0;
-        }
-        /*
-         * If the coordinate operation is actually a transformation, checks if Bursa-Wolf parameters
-         * were available for the datum shift. This is SIS-specific. See field javadoc for a rational
-         * about the return values chosen.
-         */
-        if (operation instanceof Transformation) {
-            if (accuracies.contains(DATUM_SHIFT_APPLIED)) {
-                return DATUM_SHIFT_ACCURACY;
+        if (Double.isNaN(accuracy)) {
+            /*
+             * No quantitative (linear) accuracy were found. If the coordinate operation is actually
+             * a conversion, the accuracy is up to rounding error (i.e. conceptually 0) by definition.
+             */
+            if (operation instanceof Conversion) {
+                return 0;
             }
-            if (accuracies.contains(DATUM_SHIFT_OMITTED)) {
-                return UNKNOWN_ACCURACY;
+            /*
+             * If the coordinate operation is actually a transformation, checks if Bursa-Wolf parameters
+             * were available for the datum shift. This is SIS-specific. See field javadoc for a rational
+             * about the return values chosen.
+             */
+            if (operation instanceof Transformation) {
+                if (accuracies.contains(DATUM_SHIFT_APPLIED)) {
+                    return DATUM_SHIFT_ACCURACY;
+                }
+                if (accuracies.contains(DATUM_SHIFT_OMITTED)) {
+                    return UNKNOWN_ACCURACY;
+                }
             }
-        }
-        /*
-         * If the coordinate operation is a compound of other coordinate operations, returns the sum of their accuracy,
-         * skipping unknown ones. Making the sum is a conservative approach (not exactly the "worst case" scenario,
-         * since it could be worst if the transforms are highly non-linear).
-         */
-        double accuracy = Double.NaN;
-        if (operation instanceof ConcatenatedOperation) {
-            for (final CoordinateOperation op : ((ConcatenatedOperation) operation).getOperations()) {
-                final double candidate = Math.abs(getLinearAccuracy(op));
-                if (!Double.isNaN(candidate)) {
-                    if (Double.isNaN(accuracy)) {
-                        accuracy = candidate;
-                    } else {
-                        accuracy += candidate;
+            /*
+             * If the coordinate operation is a compound of other coordinate operations, returns the sum of their accuracy,
+             * skipping unknown ones. Making the sum is a conservative approach (not exactly the "worst case" scenario,
+             * since it could be worst if the transforms are highly non-linear).
+             */
+            if (operation instanceof ConcatenatedOperation) {
+                for (final CoordinateOperation op : ((ConcatenatedOperation) operation).getOperations()) {
+                    final double candidate = Math.abs(getLinearAccuracy(op));
+                    if (!Double.isNaN(candidate)) {
+                        if (Double.isNaN(accuracy)) {
+                            accuracy = candidate;
+                        } else {
+                            accuracy += candidate;
+                        }
                     }
                 }
             }
