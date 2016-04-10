@@ -354,11 +354,23 @@ abstract class AbstractParser implements Parser {
      * @param ex      The non-fatal exception that occurred while parsing the element, or {@code null}.
      */
     final void warning(final Element parent, final Element element, final InternationalString message, final Exception ex) {
+        warning(parent, (element != null) ? element.keyword : null, message, ex);
+    }
+
+    /**
+     * Reports a non-fatal warning that occurred while parsing a WKT.
+     *
+     * @param parent  The parent element, or {@code null} if unknown.
+     * @param element The name of the element that we can not parse, or {@code null} if unknown.
+     * @param message The message. Can be {@code null} only if {@code ex} is non-null.
+     * @param ex      The non-fatal exception that occurred while parsing the element, or {@code null}.
+     */
+    final void warning(final Element parent, final String element, final InternationalString message, final Exception ex) {
         if (warnings == null) {
             warnings = new Warnings(errorLocale, true, ignoredElements);
         }
         warnings.add(message, ex, (parent != null && element != null)
-                ? new String[] {parent.keyword, element.keyword} : null);
+                ? new String[] {parent.keyword, element} : null);
     }
 
     /**

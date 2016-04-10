@@ -300,7 +300,7 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
                     else ex.addSuppressed(e);
                 }
                 if (verticalElements != null) {
-                    warning(null, null, Errors.formatInternational(Errors.Keys.CanNotAssignUnitToDimension_2,
+                    warning(null, (String) null, Errors.formatInternational(Errors.Keys.CanNotAssignUnitToDimension_2,
                             WKTKeywords.VerticalExtent, verticalElements.unit), ex);
                 }
             }
@@ -956,7 +956,7 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
                 return csFactory.createParametricCS(csProperties, axes[0]);
             }
             default: {
-                warning(parent, null, Errors.formatInternational(Errors.Keys.UnknownType_1, type), null);
+                warning(parent, WKTKeywords.CS, Errors.formatInternational(Errors.Keys.UnknownType_1, type), null);
                 return referencing.createAbstractCS(csProperties, axes);
             }
         }
@@ -1690,8 +1690,8 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
             return null;
         }
         final boolean isWKT1;
-        Unit<?>     csUnit;
-        Unit<Angle> angularUnit;
+        Unit<?> csUnit;
+        final Unit<Angle> angularUnit;
         switch (element.getKeywordIndex()) {
             default: {
                 /*
@@ -1788,7 +1788,7 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
                 return crsFactory.createDerivedCRS(properties, baseCRS, fromBase, cs);
             }
             /*
-             * The specifiation in §8.2.2 (ii) said:
+             * The specification in §8.2.2 (ii) said:
              *
              *     "(snip) the prime meridian’s <irm longitude> value shall be given in the
              *     same angular units as those for the horizontal axes of the geographic CRS."
@@ -1798,8 +1798,12 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
              * So we re-fetch the angular unit. Normally, we will get the same value (unless
              * the previous value was null).
              */
-            angularUnit = AxisDirections.getAngularUnit(cs, angularUnit);
-            final PrimeMeridian meridian = parsePrimeMeridian(OPTIONAL, element, isWKT1, angularUnit);
+            final Unit<Angle> longitudeUnit = AxisDirections.getAngularUnit(cs, angularUnit);
+            if (angularUnit != null && !angularUnit.equals(longitudeUnit)) {
+                warning(element, WKTKeywords.AngleUnit, Errors.formatInternational(
+                        Errors.Keys.InconsistentUnitsForCS_1, angularUnit), null);
+            }
+            final PrimeMeridian meridian = parsePrimeMeridian(OPTIONAL, element, isWKT1, longitudeUnit);
             final GeodeticDatum datum = parseDatum(MANDATORY, element, meridian);
             final Map<String,?> properties = parseMetadataAndClose(element, name, datum);
             if (cs instanceof EllipsoidalCS) {  // By far the most frequent case.
@@ -1834,6 +1838,7 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
      * @return The {@code "VerticalCRS"} element as a {@link VerticalCRS} object.
      * @throws ParseException if the {@code "VerticalCRS"} element can not be parsed.
      */
+    @SuppressWarnings("null")
     private SingleCRS parseVerticalCRS(final int mode, final Element parent, final boolean isBaseCRS)
             throws ParseException
     {
