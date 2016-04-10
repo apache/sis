@@ -519,6 +519,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final short InconsistentTableColumns = 48;
 
         /**
+         * Unit of measurement “{0}” is inconsistent with coordinate system axes.
+         */
+        public static final short InconsistentUnitsForCS_1 = 222;
+
+        /**
          * Index {0} is out of bounds.
          */
         public static final short IndexOutOfBounds_1 = 49;
