@@ -17,6 +17,7 @@
 package org.apache.sis.internal.gpx;
 
 import java.net.URI;
+import java.util.Objects;
 
 /**
  * Person object as defined in GPX.
@@ -92,6 +93,35 @@ public class Person {
         sb.append(name).append(',').append(email).append(',').append(link);
         sb.append(')');
         return sb.toString();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final Person other = (Person) obj;
+        if (!Objects.equals(this.name, other.name)) {
+            return false;
+        }
+        if (!Objects.equals(this.email, other.email)) {
+            return false;
+        }
+        if (!Objects.equals(this.link, other.link)) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        return 45;
     }
 
 }

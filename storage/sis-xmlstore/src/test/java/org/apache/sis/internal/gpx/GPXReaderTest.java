@@ -17,6 +17,7 @@
 package org.apache.sis.internal.gpx;
 
 import com.esri.core.geometry.Point;
+import java.io.IOException;
 import java.net.URI;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -25,6 +26,7 @@ import java.time.temporal.TemporalAccessor;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import javax.xml.stream.XMLStreamException;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.ImmutableEnvelope;
 import org.apache.sis.referencing.CommonCRS;
@@ -50,11 +52,13 @@ public class GPXReaderTest {
 
     /**
      * Test gpx version 1.0.0 metadata tag parsing.
+     * 
+     * @throws java.lang.Exception if reader failed to be created or failed at reading
      */
     @Test
-    public void testMetadataRead100() throws Exception{
+    public void testMetadataRead100() throws Exception {
 
-        try(final GPXReader reader = new GPXReader()){
+        try (final GPXReader reader = new GPXReader()) {
             reader.setInput(GPXReaderTest.class.getResource(
                     "/org/apache/sis/gpx/sample_metadata100.xml"));
 
@@ -79,11 +83,13 @@ public class GPXReaderTest {
 
     /**
      * Test gpx version 1.1.0 metadata tag parsing.
+     *
+     * @throws java.lang.Exception if reader failed to be created or failed at reading
      */
     @Test
-    public void testMetadataRead110() throws Exception{
+    public void testMetadataRead110() throws Exception {
 
-        try(final GPXReader reader = new GPXReader()){
+        try (final GPXReader reader = new GPXReader()) {
             reader.setInput(GPXReaderTest.class.getResource(
                     "/org/apache/sis/gpx/sample_metadata110.xml"));
 
@@ -113,11 +119,13 @@ public class GPXReaderTest {
 
     /**
      * Test gpx version 1.0.0 way point tag parsing.
+     *
+     * @throws java.lang.Exception if reader failed to be created or failed at reading
      */
     @Test
-    public void testWayPointRead100() throws Exception{
+    public void testWayPointRead100() throws Exception {
 
-        try(final GPXReader reader = new GPXReader()){
+        try (final GPXReader reader = new GPXReader()) {
             reader.setInput(GPXReaderTest.class.getResource(
                     "/org/apache/sis/gpx/sample_waypoint100.xml"));
 
@@ -144,11 +152,13 @@ public class GPXReaderTest {
 
     /**
      * Test gpx version 1.1.0 way point tag parsing.
+     *
+     * @throws java.lang.Exception if reader failed to be created or failed at reading
      */
     @Test
-    public void testWayPointRead110() throws Exception{
+    public void testWayPointRead110() throws Exception {
 
-        try(final GPXReader reader = new GPXReader()){
+        try (final GPXReader reader = new GPXReader()) {
             reader.setInput(GPXReaderTest.class.getResource(
                     "/org/apache/sis/gpx/sample_waypoint110.xml"));
 
@@ -177,11 +187,13 @@ public class GPXReaderTest {
 
     /**
      * Test gpx version v1.0.0 route tag parsing.
+     *
+     * @throws java.lang.Exception if reader failed to be created or failed at reading
      */
     @Test
-    public void testRouteRead100() throws Exception{
+    public void testRouteRead100() throws Exception {
 
-        try(final GPXReader reader = new GPXReader()){
+        try (final GPXReader reader = new GPXReader()) {
             reader.setInput(GPXReaderTest.class.getResource(
                     "/org/apache/sis/gpx/sample_route100.xml"));
 
@@ -244,11 +256,13 @@ public class GPXReaderTest {
 
     /**
      * Test gpx version 1.1.0 route tag parsing.
+     *
+     * @throws java.lang.Exception if reader failed to be created or failed at reading
      */
     @Test
-    public void testRouteRead110() throws Exception{
+    public void testRouteRead110() throws Exception {
 
-        try(final GPXReader reader = new GPXReader()){
+        try (final GPXReader reader = new GPXReader()) {
             reader.setInput(GPXReaderTest.class.getResource(
                     "/org/apache/sis/gpx/sample_route110.xml"));
 
@@ -313,11 +327,13 @@ public class GPXReaderTest {
 
     /**
      * Test gpx version 1.0.0 track tag parsing.
+     *
+     * @throws java.lang.Exception if reader failed to be created or failed at reading
      */
     @Test
-    public void testTrackRead100() throws Exception{
+    public void testTrackRead100() throws Exception {
 
-        try(final GPXReader reader = new GPXReader()){
+        try (final GPXReader reader = new GPXReader()) {
             reader.setInput(GPXReaderTest.class.getResource(
                     "/org/apache/sis/gpx/sample_track100.xml"));
 
@@ -386,11 +402,13 @@ public class GPXReaderTest {
 
     /**
      * Test gpx version 1.1.0 track tag parsing.
+     * 
+     * @throws java.lang.Exception if reader failed to be created or failed at reading
      */
     @Test
-    public void testTrackRead110() throws Exception{
+    public void testTrackRead110() throws Exception {
 
-        try(final GPXReader reader = new GPXReader()){
+        try (final GPXReader reader = new GPXReader()) {
             reader.setInput(GPXReaderTest.class.getResource(
                     "/org/apache/sis/gpx/sample_track110.xml"));
 
@@ -459,8 +477,8 @@ public class GPXReaderTest {
         }
     }
 
-    private void checkPoint(final Feature f, final int num, final boolean v11) throws Exception{
-        if(num == 0){
+    private void checkPoint(final Feature f, final int num, final boolean v11) throws Exception {
+        if (num == 0) {
             assertEquals(0,                     f.getPropertyValue("index"));
             assertEquals(15.0,                  ((Point)f.getPropertyValue("geometry")).getX(), DELTA);
             assertEquals(10.0,                  ((Point)f.getPropertyValue("geometry")).getY(), DELTA);
@@ -483,12 +501,12 @@ public class GPXReaderTest {
             assertEquals(256,                   f.getPropertyValue("dgpsid"));
 
             final List<URI> links = new ArrayList<>((Collection)f.getPropertyValue("link"));
-            if(v11){
+            if (v11) {
                 assertEquals(3,links.size());
                 assertEquals("http://first-adress1.org", links.get(0).toString());
                 assertEquals("http://first-adress2.org", links.get(1).toString());
                 assertEquals("http://first-adress3.org", links.get(2).toString());
-            }else{
+            } else {
                 assertEquals(1,links.size());
                 assertEquals("http://first-adress1.org", links.get(0).toString());
             }
@@ -499,7 +517,7 @@ public class GPXReaderTest {
             assertEquals(bbox.getMinimum(1), 10.0d, DELTA);
             assertEquals(bbox.getMaximum(1), 10.0d, DELTA);
 
-        }else if(num == 1){
+        } else if (num == 1) {
             assertEquals(1,                     f.getPropertyValue("index"));
             assertEquals(25.0,                  ((Point)f.getPropertyValue("geometry")).getX(), DELTA);
             assertEquals(20.0,                  ((Point)f.getPropertyValue("geometry")).getY(), DELTA);
@@ -530,7 +548,7 @@ public class GPXReaderTest {
             assertEquals(bbox.getMinimum(1), 20.0d, DELTA);
             assertEquals(bbox.getMaximum(1), 20.0d, DELTA);
 
-        }else if(num == 2){
+        } else if (num == 2) {
             assertEquals(2,                     f.getPropertyValue("index"));
             assertEquals(35.0,                  ((Point)f.getPropertyValue("geometry")).getX(), DELTA);
             assertEquals(30.0,                  ((Point)f.getPropertyValue("geometry")).getY(), DELTA);
@@ -553,11 +571,11 @@ public class GPXReaderTest {
             assertEquals(456,                   f.getPropertyValue("dgpsid"));
 
             final List<URI> links = new ArrayList<>((Collection)f.getPropertyValue("link"));
-            if(v11){
+            if (v11) {
                 assertEquals(2,links.size());
                 assertEquals("http://third-adress1.org", links.get(0).toString());
                 assertEquals("http://third-adress2.org", links.get(1).toString());
-            }else{
+            } else {
                 assertEquals(1,links.size());
                 assertEquals("http://third-adress1.org", links.get(0).toString());
             }
@@ -568,7 +586,7 @@ public class GPXReaderTest {
             assertEquals(bbox.getMinimum(1), 30.0d, DELTA);
             assertEquals(bbox.getMaximum(1), 30.0d, DELTA);
 
-        }else{
+        } else {
             fail("unexpected point number :" + num);
         }
     }

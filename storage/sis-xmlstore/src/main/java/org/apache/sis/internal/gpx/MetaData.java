@@ -22,6 +22,7 @@ import java.net.URI;
 import java.time.temporal.Temporal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import org.apache.sis.io.TableAppender;
 
 import org.opengis.geometry.Envelope;
@@ -236,6 +237,50 @@ public class MetaData {
         }
 
         return writer.getBuffer().toString();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final MetaData other = (MetaData) obj;
+        if (!Objects.equals(this.name, other.name)) {
+            return false;
+        }
+        if (!Objects.equals(this.description, other.description)) {
+            return false;
+        }
+        if (!Objects.equals(this.keywords, other.keywords)) {
+            return false;
+        }
+        if (!Objects.equals(this.person, other.person)) {
+            return false;
+        }
+        if (!Objects.equals(this.copyRight, other.copyRight)) {
+            return false;
+        }
+        if (!Objects.equals(this.links, other.links)) {
+            return false;
+        }
+        if (!Objects.equals(this.time, other.time)) {
+            return false;
+        }
+        if (!Objects.equals(this.bounds, other.bounds)) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        return 43;
     }
 
 }
