@@ -89,7 +89,7 @@ final class AuthorityFactories<T extends AuthorityFactory> extends LazySet<T> {
      * Creates a new provider for factories of the given type.
      */
     private AuthorityFactories(final Class<T> type) {
-        super(ServiceLoader.load(type));
+        super(type);
     }
 
     /**

@@ -25,7 +25,6 @@ import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.ParameterNotFoundException;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
-import org.opengis.referencing.operation.Transformation;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.referencing.operation.matrix.Matrix4;
@@ -43,7 +42,7 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
  * @module
  */
 @XmlTransient
-public class GeographicOffsets extends AbstractProvider {
+public class GeographicOffsets extends GeodeticOperation {
     /**
      * Serial number for inter-operability with different versions.
      */
@@ -79,35 +78,22 @@ public class GeographicOffsets extends AbstractProvider {
     /**
      * Constructs a provider with default parameters.
      */
+    @SuppressWarnings("ThisEscapedInObjectConstruction")
     public GeographicOffsets() {
-        super(3, 3, PARAMETERS);
+        super(3, 3, PARAMETERS, new GeographicOffsets[4]);
+        redimensioned[0] = new GeographicOffsets2D(redimensioned);
+        redimensioned[1] = new GeographicOffsets(2, 3, PARAMETERS, redimensioned);
+        redimensioned[2] = new GeographicOffsets(3, 2, PARAMETERS, redimensioned);
+        redimensioned[3] = this;
     }
 
     /**
      * For subclasses constructor only.
      */
-    GeographicOffsets(int dim, ParameterDescriptorGroup parameters) {
-        super(dim, dim, parameters);
-    }
-
-    /**
-     * Returns the operation type.
-     *
-     * @return Interface implemented by all coordinate operations that use this method.
-     */
-    @Override
-    public final Class<Transformation> getOperationType() {
-        return Transformation.class;
-    }
-
-    /**
-     * The inverse of this operation is the same operation with parameter signs inverted.
-     *
-     * @return {@code true} for all {@code GeocentricAffine}.
-     */
-    @Override
-    public final boolean isInvertible() {
-        return true;
+    GeographicOffsets(int sourceDimensions, int targetDimensions,
+            ParameterDescriptorGroup parameters, GeodeticOperation[] redimensioned)
+    {
+        super(sourceDimensions, targetDimensions, parameters, redimensioned);
     }
 
     /**

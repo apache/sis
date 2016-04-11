@@ -61,6 +61,7 @@ import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.referencing.j2d.ParameterizedAffine;
 import org.apache.sis.internal.referencing.provider.AbstractProvider;
 import org.apache.sis.internal.referencing.provider.VerticalOffset;
+import org.apache.sis.internal.referencing.provider.Providers;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.parameter.DefaultParameterValueGroup;
@@ -267,7 +268,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
          *
          * Wrapping the ServiceLoader in a LazySet avoid this issue.
          */
-        this(new LazySet<>(ServiceLoader.load(OperationMethod.class)));
+        this(new Providers());
     }
 
     /**
@@ -384,7 +385,10 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
         ArgumentChecks.ensureNonEmpty("identifier", identifier);
         OperationMethod method = methodsByName.get(identifier);
         if (method == null) {
-            method = ReferencingServices.getInstance().getOperationMethod(methods, identifier);
+            final ReferencingServices services = ReferencingServices.getInstance();
+            synchronized (methods) {
+                method = services.getOperationMethod(methods, identifier);
+            }
             if (method == null) {
                 throw new NoSuchIdentifierException(Errors.format(Errors.Keys.NoSuchOperationMethod_1, identifier), identifier);
             }
@@ -1414,9 +1418,9 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
     public void reload() {
         synchronized (methods) {
             methodsByName.clear();
-            Iterable<? extends OperationMethod> m = methods;
+            final Iterable<? extends OperationMethod> m = methods;
             if (m instanceof LazySet<?>) { // Workaround for JDK bug. See DefaultMathTransformFactory() constructor.
-                m = ((LazySet<? extends OperationMethod>) m).reload();
+                ((LazySet<? extends OperationMethod>) m).reload();
             }
             if (m instanceof ServiceLoader<?>) {
                 ((ServiceLoader<?>) m).reload();

@@ -28,6 +28,7 @@ import java.util.logging.LogRecord;
 import javax.measure.converter.ConversionException;
 
 import org.opengis.util.FactoryException;
+import org.opengis.util.NoSuchIdentifierException;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.referencing.IdentifiedObject;
@@ -44,9 +45,11 @@ import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
+import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
 import org.apache.sis.referencing.factory.IdentifiedObjectFinder;
 import org.apache.sis.referencing.factory.MissingFactoryResourceException;
 import org.apache.sis.metadata.iso.extent.Extents;
+import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.util.Citations;
@@ -174,11 +177,14 @@ final class CoordinateOperationRegistry extends CoordinateOperationFinder {
                 CoordinateOperation operation = search(source, target);
                 if (operation != null) {
                     /*
-                     * Found an operation. If we had to extract the horizontal part of some 3D CRS,
-                     * then we need to modify the coordinate operation.
+                     * Found an operation. If we had to extract the horizontal part of some 3D CRS, then we
+                     * need to modify the coordinate operation in order to match the new number of dimensions.
                      */
                     if (combine != 0) {
                         operation = propagateVertical(operation, source != sourceCRS, target != targetCRS);
+                        if (operation == null) {
+                            continue;
+                        }
                         operation = complete(operation, sourceCRS, targetCRS);
                     }
                     return operation;
@@ -421,6 +427,7 @@ final class CoordinateOperationRegistry extends CoordinateOperationFinder {
      * @param  targetCRS  the target CRS to give to the new operation.
      * @param  mtFactory  the math transform factory to use.
      * @return a new operation, or {@code operation} if {@code prepend} and {@code append} were nulls or identity transforms.
+     * @throws IllegalArgumentException if the operation method can not have the desired number of dimensions.
      * @throws FactoryException if the operation can not be constructed.
      */
     private CoordinateOperation transform(final CoordinateReferenceSystem sourceCRS,
@@ -429,7 +436,7 @@ final class CoordinateOperationRegistry extends CoordinateOperationFinder {
                                           final MathTransform             append,
                                           final CoordinateReferenceSystem targetCRS,
                                           final MathTransformFactory      mtFactory)
-            throws FactoryException
+            throws IllegalArgumentException, FactoryException
     {
         if ((prepend == null || prepend.isIdentity()) && (append == null || append.isIdentity())) {
             return operation;
@@ -463,7 +470,7 @@ final class CoordinateOperationRegistry extends CoordinateOperationFinder {
         if (prepend != null) transform = mtFactory.createConcatenatedTransform(prepend, transform);
         if (append  != null) transform = mtFactory.createConcatenatedTransform(transform, append);
         assert !transform.equals(operation.getMathTransform()) : transform;
-        return recreate(operation, sourceCRS, targetCRS, transform);
+        return recreate(operation, sourceCRS, targetCRS, transform, null);
     }
 
     /**
@@ -475,13 +482,17 @@ final class CoordinateOperationRegistry extends CoordinateOperationFinder {
      * @param  sourceCRS  the source CRS specified by the user.
      * @param  targetCRS  the target CRS specified by the user
      * @param  transform  the math transform to use in replacement to the one in {@code operation}.
+     * @param  method     the operation method, or {@code null} for attempting an automatic detection.
      * @return a new operation from the given source CRS to target CRS using the given transform.
+     * @throws IllegalArgumentException if the operation method can not have the desired number of dimensions.
      * @throws FactoryException if an error occurred while creating the new operation.
      */
     private CoordinateOperation recreate(final CoordinateOperation       operation,
                                                CoordinateReferenceSystem sourceCRS,
                                                CoordinateReferenceSystem targetCRS,
-                                         final MathTransform             transform) throws FactoryException
+                                         final MathTransform             transform,
+                                               OperationMethod           method)
+            throws IllegalArgumentException, FactoryException
     {
         /*
          * If the user-provided CRS are approximatively equal to the coordinate operation CRS, keep the later.
@@ -493,10 +504,11 @@ final class CoordinateOperationRegistry extends CoordinateOperationFinder {
         if (Utilities.equalsApproximatively(targetCRS, crs = operation.getTargetCRS())) targetCRS = crs;
         final Map<String,Object> properties = new HashMap<>(derivedFrom(operation));
         /*
-         * Determine whether the operation to create is a Conversion or a Transformation.
-         * Conversion may also be a more accurate type like Projection. We want the GeoAPI
-         * interface. The most reliable way is to ask to the operation, but this is SIS-specific.
-         * The fallback uses reflection.
+         * Determine whether the operation to create is a Conversion or a Transformation
+         * (could also be a Conversion subtype like Projection, but this is less important).
+         * We want the GeoAPI interface, not the implementation class.
+         * The most reliable way is to ask to the 'AbstractOperation.getInterface()' method,
+         * but this is SIS-specific. The fallback uses reflection.
          */
         if (operation instanceof AbstractIdentifiedObject) {
             properties.put(ReferencingServices.OPERATION_TYPE_KEY,
@@ -509,14 +521,30 @@ final class CoordinateOperationRegistry extends CoordinateOperationFinder {
             }
         }
         /*
-         * Reuse the same operation method, just changing its number of dimension.
+         * Reuse the same operation method, but we may need to change its number of dimension.
+         * The capability to resize an OperationMethod is specific to Apache SIS, so we must
+         * be prepared to see the 'redimension' call fails. In such case, we will try to get
+         * the SIS implementation of the operation method and try again.
          */
-        OperationMethod method = null;
         if (operation instanceof SingleOperation) {
             final SingleOperation single = (SingleOperation) operation;
             properties.put(ReferencingServices.PARAMETERS_KEY, single.getParameterValues());
-            method = DefaultOperationMethod.redimension(single.getMethod(),
-                            transform.getSourceDimensions(), transform.getTargetDimensions());
+            if (method == null) {
+                final int sourceDimensions = transform.getSourceDimensions();
+                final int targetDimensions = transform.getTargetDimensions();
+                method = single.getMethod();
+                try {
+                    method = DefaultOperationMethod.redimension(method, sourceDimensions, targetDimensions);
+                } catch (IllegalArgumentException ex) {
+                    try {
+                        method = factory.getOperationMethod(method.getName().getCode());
+                        method = DefaultOperationMethod.redimension(method, sourceDimensions, targetDimensions);
+                    } catch (NoSuchIdentifierException | IllegalArgumentException se) {
+                        ex.addSuppressed(se);
+                        throw ex;
+                    }
+                }
+            }
         }
         return factorySIS.createSingleOperation(properties, sourceCRS, targetCRS,
                 AbstractCoordinateOperation.getInterpolationCRS(operation), method, transform);
@@ -541,10 +569,11 @@ final class CoordinateOperationRegistry extends CoordinateOperationFinder {
      * @param  target3D  {@code true} for adding ellipsoidal height in target coordinates.
      * @return a coordinate operation with the source and/or target coordinates made 3D,
      *         or {@code null} if this method does not know how to create the operation.
+     * @throws IllegalArgumentException if the operation method can not have the desired number of dimensions.
      * @throws FactoryException if an error occurred while creating the coordinate operation.
      */
     private CoordinateOperation propagateVertical(final CoordinateOperation operation,
-            final boolean source3D, final boolean target3D) throws FactoryException
+            final boolean source3D, final boolean target3D) throws IllegalArgumentException, FactoryException
     {
         final List<CoordinateOperation> operations = new ArrayList<>();
         if (operation instanceof ConcatenatedOperation) {
@@ -574,9 +603,10 @@ final class CoordinateOperationRegistry extends CoordinateOperationFinder {
      * @param  forward     {@code true} for adding the vertical axis at the beginning, or
      *                     {@code false} for adding the vertical axis at the end.
      * @return {@code true} on success.
+     * @throws IllegalArgumentException if the operation method can not have the desired number of dimensions.
      */
     private boolean propagateVertical(final ListIterator<CoordinateOperation> operations, final boolean forward)
-            throws FactoryException
+            throws IllegalArgumentException, FactoryException
     {
         while (forward ? operations.hasNext() : operations.hasPrevious()) {
             final CoordinateOperation op = forward ? operations.next() : operations.previous();
@@ -594,14 +624,40 @@ final class CoordinateOperationRegistry extends CoordinateOperationFinder {
                 break;
             }
             /*
-             * We can process only linear operations, otherwise we would not know how to add a dimension.
+             * We can process mostly linear operations, otherwise it is hard to know how to add a dimension.
              * Examples of linear operations are:
              *
              *   - Longitude rotation (EPSG:9601). Note that this is a transformation rather than a conversion.
              *   - Geographic3D to 2D conversion (EPSG:9659).
+             *
+             * However there is a few special cases where we may be able to add a dimension in a non-linear operation.
+             * We can attempt those special cases by just giving the same parameters to the math transform factory
+             * together with the desired CRS. Examples of such special cases are:
+             *
+             *   - Geocentric translations (geog2D domain)
+             *   - Coordinate Frame Rotation (geog2D domain)
+             *   - Position Vector transformation (geog2D domain)
              */
             Matrix matrix = MathTransforms.getMatrix(op.getMathTransform());
             if (matrix == null) {
+                if (op instanceof SingleOperation) {
+                    final MathTransformFactory mtFactory = factorySIS.getMathTransformFactory();
+                    if (mtFactory instanceof DefaultMathTransformFactory) {
+                        final CoordinateReferenceSystem source3D = toGeodetic3D(sourceCRS);
+                        final CoordinateReferenceSystem target3D = toGeodetic3D(targetCRS);
+                        final MathTransform mt;
+                        try {
+                            mt = ((DefaultMathTransformFactory) mtFactory).createParameterizedTransform(
+                                    ((SingleOperation) op).getParameterValues(),
+                                    ReferencingUtilities.createTransformContext(source3D, target3D, null));
+                        } catch (FactoryException e) {
+                            log(e);
+                            break;
+                        }
+                        operations.set(recreate(op, source3D, target3D, mt, mtFactory.getLastMethodUsed()));
+                        return true;
+                    }
+                }
                 break;
             }
             /*
@@ -629,7 +685,7 @@ final class CoordinateOperationRegistry extends CoordinateOperationFinder {
                  * conform to the definition provided by the authority.
                  */
                 final MathTransform mt = factorySIS.getMathTransformFactory().createAffineTransform(matrix);
-                operations.set(recreate(op, toGeodetic3D(sourceCRS), toGeodetic3D(targetCRS), mt));
+                operations.set(recreate(op, toGeodetic3D(sourceCRS), toGeodetic3D(targetCRS), mt, null));
             }
             /*
              * If we processed the operation that change the number of dimensions, we are done.

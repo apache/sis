@@ -68,15 +68,15 @@ public final class MolodenskyInterpolation extends FranceGeocentricInterpolation
     /**
      * Constructs a provider for the given number of dimensions.
      *
-     * @param sourceDimensions Number of dimensions in the source CRS of this operation method.
-     * @param targetDimensions Number of dimensions in the target CRS of this operation method.
-     * @param parameters       The set of parameters (never {@code null}).
-     * @param redimensioned    Providers for all combinations between 2D and 3D cases.
+     * @param sourceDimensions  number of dimensions in the source CRS of this operation method.
+     * @param targetDimensions  number of dimensions in the target CRS of this operation method.
+     * @param parameters        description of parameters expected by this operation.
+     * @param redimensioned     providers for all combinations between 2D and 3D cases, or {@code null}.
      */
     private MolodenskyInterpolation(final int sourceDimensions,
                                     final int targetDimensions,
                                     final ParameterDescriptorGroup parameters,
-                                    final FranceGeocentricInterpolation[] redimensioned)
+                                    final GeodeticOperation[] redimensioned)
     {
         super(sourceDimensions, targetDimensions, parameters, redimensioned);
     }

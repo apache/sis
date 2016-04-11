@@ -12,12 +12,12 @@ org.apache.sis.internal.referencing.provider.PositionVector7Param
 org.apache.sis.internal.referencing.provider.CoordinateFrameRotation
 org.apache.sis.internal.referencing.provider.GeographicToGeocentric
 org.apache.sis.internal.referencing.provider.GeocentricToGeographic
-org.apache.sis.internal.referencing.provider.GeocentricTranslation2D
 org.apache.sis.internal.referencing.provider.GeocentricTranslation3D
-org.apache.sis.internal.referencing.provider.PositionVector7Param2D
+org.apache.sis.internal.referencing.provider.GeocentricTranslation2D
 org.apache.sis.internal.referencing.provider.PositionVector7Param3D
-org.apache.sis.internal.referencing.provider.CoordinateFrameRotation2D
+org.apache.sis.internal.referencing.provider.PositionVector7Param2D
 org.apache.sis.internal.referencing.provider.CoordinateFrameRotation3D
+org.apache.sis.internal.referencing.provider.CoordinateFrameRotation2D
 org.apache.sis.internal.referencing.provider.Molodensky
 org.apache.sis.internal.referencing.provider.AbridgedMolodensky
 org.apache.sis.internal.referencing.provider.Equirectangular
