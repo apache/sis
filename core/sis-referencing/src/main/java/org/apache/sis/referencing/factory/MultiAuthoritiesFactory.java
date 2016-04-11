@@ -1588,11 +1588,11 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
      */
     public void reload() {
         for (int type=0; type < providers.length; type++) {
-            Iterable<?> provider = providers[type];
+            final Iterable<?> provider = providers[type];
             if (provider != null) {
                 synchronized (provider) {
                     if (provider instanceof LazySet<?>) {
-                        provider = ((LazySet<?>) provider).reload();
+                        ((LazySet<?>) provider).reload();
                     }
                     if (provider instanceof ServiceLoader<?>) {
                         ((ServiceLoader<?>) provider).reload();

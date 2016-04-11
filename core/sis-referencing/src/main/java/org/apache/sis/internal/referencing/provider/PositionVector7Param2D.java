@@ -59,7 +59,22 @@ public final class PositionVector7Param2D extends GeocentricAffineBetweenGeograp
      * Constructs the provider.
      */
     public PositionVector7Param2D() {
-        super(2, 2, PARAMETERS, null);
+        this(null);
+    }
+
+    /**
+     * Constructs a provider that can be resized.
+     */
+    PositionVector7Param2D(GeodeticOperation[] redimensioned) {
+        super(2, 2, PARAMETERS, redimensioned);
+    }
+
+    /**
+     * Returns the three-dimensional variant of this operation method.
+     */
+    @Override
+    Class<PositionVector7Param3D> variant3D() {
+        return PositionVector7Param3D.class;
     }
 
     /**

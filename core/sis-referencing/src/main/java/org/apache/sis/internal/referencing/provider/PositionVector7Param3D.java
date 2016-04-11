@@ -56,7 +56,8 @@ public final class PositionVector7Param3D extends GeocentricAffineBetweenGeograp
      */
     @SuppressWarnings("ThisEscapedInObjectConstruction")
     public PositionVector7Param3D() {
-        this(3, 3, new PositionVector7Param3D[4]);
+        this(3, 3, new GeocentricAffineBetweenGeographic[4]);
+        redimensioned[0] = new PositionVector7Param2D(      redimensioned);
         redimensioned[1] = new PositionVector7Param3D(2, 3, redimensioned);
         redimensioned[2] = new PositionVector7Param3D(3, 2, redimensioned);
         redimensioned[3] = this;
@@ -65,11 +66,11 @@ public final class PositionVector7Param3D extends GeocentricAffineBetweenGeograp
     /**
      * Constructs a provider for the given dimensions.
      *
-     * @param sourceDimensions Number of dimensions in the source CRS of this operation method.
-     * @param targetDimensions Number of dimensions in the target CRS of this operation method.
-     * @param redimensioned    Providers for all combinations between 2D and 3D cases.
+     * @param sourceDimensions  number of dimensions in the source CRS of this operation method.
+     * @param targetDimensions  number of dimensions in the target CRS of this operation method.
+     * @param redimensioned     providers for all combinations between 2D and 3D cases, or {@code null}.
      */
-    private PositionVector7Param3D(int sourceDimensions, int targetDimensions, GeocentricAffineBetweenGeographic[] redimensioned) {
+    private PositionVector7Param3D(int sourceDimensions, int targetDimensions, GeodeticOperation[] redimensioned) {
         super(sourceDimensions, targetDimensions, PARAMETERS, redimensioned);
     }
 

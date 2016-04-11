@@ -236,10 +236,10 @@ public final class Affine extends AbstractProvider {
      * Returns the operation method for the specified source and target dimensions.
      * This method provides different {@code Affine} instances for different dimensions.
      *
-     * @param sourceDimensions The number of source dimensions.
-     * @param targetDimensions The number of target dimensions.
-     * @param isAffine {@code true} if the transform is affine.
-     * @return The provider for transforms of the given source and target dimensions.
+     * @param  sourceDimensions  the number of source dimensions.
+     * @param  targetDimensions  the number of target dimensions.
+     * @param  isAffine          {@code true} if the transform is affine.
+     * @return the provider for transforms of the given source and target dimensions.
      */
     public static Affine getProvider(final int sourceDimensions, final int targetDimensions, final boolean isAffine) {
         Affine method;

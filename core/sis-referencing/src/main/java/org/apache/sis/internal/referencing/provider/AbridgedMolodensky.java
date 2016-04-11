@@ -82,11 +82,11 @@ public final class AbridgedMolodensky extends GeocentricAffineBetweenGeographic 
     /**
      * Constructs a provider for the given dimensions.
      *
-     * @param sourceDimension Number of dimensions in the source CRS of this operation method.
-     * @param targetDimension Number of dimensions in the target CRS of this operation method.
-     * @param redimensioned   Providers for all combinations between 2D and 3D cases.
+     * @param sourceDimensions  number of dimensions in the source CRS of this operation method.
+     * @param targetDimensions  number of dimensions in the target CRS of this operation method.
+     * @param redimensioned     providers for all combinations between 2D and 3D cases, or {@code null}.
      */
-    private AbridgedMolodensky(int sourceDimension, int targetDimension, GeocentricAffineBetweenGeographic[] redimensioned) {
+    private AbridgedMolodensky(int sourceDimension, int targetDimension, GeodeticOperation[] redimensioned) {
         super(sourceDimension, targetDimension, PARAMETERS, redimensioned);
     }
 
