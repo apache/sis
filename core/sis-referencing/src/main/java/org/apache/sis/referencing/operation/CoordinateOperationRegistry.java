@@ -48,6 +48,7 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
 import org.apache.sis.referencing.factory.IdentifiedObjectFinder;
 import org.apache.sis.referencing.factory.MissingFactoryResourceException;
+import org.apache.sis.referencing.factory.InvalidGeodeticParameterException;
 import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.metadata.ReferencingServices;
@@ -650,7 +651,7 @@ final class CoordinateOperationRegistry extends CoordinateOperationFinder {
                             mt = ((DefaultMathTransformFactory) mtFactory).createParameterizedTransform(
                                     ((SingleOperation) op).getParameterValues(),
                                     ReferencingUtilities.createTransformContext(source3D, target3D, null));
-                        } catch (FactoryException e) {
+                        } catch (InvalidGeodeticParameterException e) {
                             log(e);
                             break;
                         }

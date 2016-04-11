@@ -871,14 +871,9 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
         final FormattableObject enclosing = formatter.getEnclosingElement(1);
         final boolean isSubOperation = (enclosing instanceof PassThroughOperation);
         final boolean isComponent    = (enclosing instanceof ConcatenatedOperation);
-        final boolean isConcatenated =      (this instanceof ConcatenatedOperation);
-        if (!isSubOperation) {
-            if (!isComponent) {
-                append(formatter, getSourceCRS(), WKTKeywords.SourceCRS);
-            }
-            if (!isConcatenated) {
-                append(formatter, getTargetCRS(), WKTKeywords.TargetCRS);
-            }
+        if (!isSubOperation && !isComponent) {
+            append(formatter, getSourceCRS(), WKTKeywords.SourceCRS);
+            append(formatter, getTargetCRS(), WKTKeywords.TargetCRS);
         }
         final OperationMethod method = getMethod();
         if (method != null) {
@@ -900,7 +895,7 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
                 formatter.indent(-1);
             }
         }
-        if (!isSubOperation && !isConcatenated) {
+        if (!isSubOperation && !(this instanceof ConcatenatedOperation)) {
             append(formatter, getInterpolationCRS(), WKTKeywords.InterpolationCRS);
             final double accuracy = getLinearAccuracy();
             if (accuracy > 0) {
