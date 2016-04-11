@@ -21,9 +21,11 @@ import com.esri.core.geometry.Point;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.time.temporal.Temporal;
 import java.time.temporal.TemporalAccessor;
 import java.time.temporal.UnsupportedTemporalTypeException;
@@ -721,13 +723,19 @@ public class GPXReader extends StaxStreamReader {
      */
     private static Temporal parseTime(String dateStr) {
         try{
-            final DateTimeFormatter format = DateTimeFormatter.ISO_DATE;
+            final DateTimeFormatter format = DateTimeFormatter.ISO_INSTANT;
             final TemporalAccessor accessor = format.parse(dateStr);
-            return LocalDate.from(accessor);
-        }catch(UnsupportedTemporalTypeException ex){
-            final DateTimeFormatter format = DateTimeFormatter.ISO_DATE_TIME;
-            final TemporalAccessor accessor = format.parse(dateStr);
-            return LocalDateTime.from(accessor);
+            return Instant.from(accessor);
+        }catch(UnsupportedTemporalTypeException | DateTimeParseException ex){
+            try{
+                final DateTimeFormatter format = DateTimeFormatter.ISO_DATE;
+                final TemporalAccessor accessor = format.parse(dateStr);
+                return LocalDate.from(accessor);
+            }catch(UnsupportedTemporalTypeException | DateTimeParseException e){
+                final DateTimeFormatter format = DateTimeFormatter.ISO_DATE_TIME;
+                final TemporalAccessor accessor = format.parse(dateStr);
+                return LocalDateTime.from(accessor);
+            }
         }
     }
     

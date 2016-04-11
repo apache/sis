@@ -17,6 +17,7 @@
 package org.apache.sis.internal.gpx;
 
 import java.net.URI;
+import java.util.Objects;
 
 /**
  * Copyright object as defined in GPX.
@@ -92,6 +93,35 @@ public class CopyRight {
         sb.append(author).append(',').append(year).append(',').append(license);
         sb.append(')');
         return sb.toString();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final CopyRight other = (CopyRight) obj;
+        if (!Objects.equals(this.author, other.author)) {
+            return false;
+        }
+        if (!Objects.equals(this.year, other.year)) {
+            return false;
+        }
+        if (!Objects.equals(this.license, other.license)) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        return 44;
     }
 
 }
