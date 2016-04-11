@@ -40,6 +40,7 @@ import org.opengis.referencing.operation.*;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.IdentifiedObjects;
+import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
@@ -490,30 +491,33 @@ final class CoordinateOperationRegistry extends CoordinateOperationFinder {
         CoordinateReferenceSystem crs;
         if (Utilities.equalsApproximatively(sourceCRS, crs = operation.getSourceCRS())) sourceCRS = crs;
         if (Utilities.equalsApproximatively(targetCRS, crs = operation.getTargetCRS())) targetCRS = crs;
+        final Map<String,Object> properties = new HashMap<>(derivedFrom(operation));
         /*
          * Determine whether the operation to create is a Conversion or a Transformation.
          * Conversion may also be a more accurate type like Projection. We want the GeoAPI
          * interface. The most reliable way is to ask to the operation, but this is SIS-specific.
          * The fallback uses reflection.
          */
-        final Class<? extends CoordinateOperation> type;
-        if (operation instanceof AbstractCoordinateOperation) {
-            type = ((AbstractCoordinateOperation) operation).getInterface();
+        if (operation instanceof AbstractIdentifiedObject) {
+            properties.put(ReferencingServices.OPERATION_TYPE_KEY,
+                    ((AbstractIdentifiedObject) operation).getInterface());
         } else {
             final Class<? extends CoordinateOperation>[] types =
                     Classes.getLeafInterfaces(operation.getClass(), CoordinateOperation.class);
-            type = (types.length != 0) ? types[0] : SingleOperation.class;
+            if (types.length != 0) {
+                properties.put(ReferencingServices.OPERATION_TYPE_KEY, types[0]);
+            }
         }
         /*
          * Reuse the same operation method, just changing its number of dimension.
          */
         OperationMethod method = null;
         if (operation instanceof SingleOperation) {
-            method = DefaultOperationMethod.redimension(((SingleOperation) operation).getMethod(),
+            final SingleOperation single = (SingleOperation) operation;
+            properties.put(ReferencingServices.PARAMETERS_KEY, single.getParameterValues());
+            method = DefaultOperationMethod.redimension(single.getMethod(),
                             transform.getSourceDimensions(), transform.getTargetDimensions());
         }
-        final Map<String,Object> properties = new HashMap<>(derivedFrom(operation));
-        properties.put(ReferencingServices.OPERATION_TYPE_KEY, type);
         return factorySIS.createSingleOperation(properties, sourceCRS, targetCRS,
                 AbstractCoordinateOperation.getInterpolationCRS(operation), method, transform);
     }

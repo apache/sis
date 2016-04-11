@@ -1159,8 +1159,12 @@ addURIs:    for (int i=0; ; i++) {
      * @return The name together with a set of properties.
      */
     private Map<String,Object> createProperties(final String table, final String name, final Integer code,
-            final String domainCode, String scope, String remarks, final boolean deprecated) throws SQLException, FactoryException
+            final String domainCode, String scope, final String remarks, final boolean deprecated)
+            throws SQLException, FactoryException
     {
+        if ("?".equals(scope)) {                // EPSG sometime uses this value for unspecified scope.
+            scope = null;
+        }
         final Map<String,Object> properties = createProperties(table, name, code, remarks, deprecated);
         if (domainCode != null) {
             properties.put(Datum.DOMAIN_OF_VALIDITY_KEY, owner.createExtent(domainCode));
@@ -2895,6 +2899,7 @@ next:               while (r.next()) {
                             }
                         }
                         opProperties.put(ReferencingServices.OPERATION_TYPE_KEY, opType);
+                        opProperties.put(ReferencingServices.PARAMETERS_KEY, parameters);
                         /*
                          * Following restriction will be removed in a future SIS version if the method is added to GeoAPI.
                          */

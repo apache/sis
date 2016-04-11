@@ -34,6 +34,7 @@ import org.opengis.referencing.operation.ConcatenatedOperation;
 import org.opengis.referencing.operation.Transformation;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
+import org.apache.sis.internal.referencing.PositionalAccuracyConstant;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.internal.util.CollectionsExt;
@@ -177,6 +178,7 @@ final class DefaultConcatenatedOperation extends AbstractCoordinateOperation imp
                             final boolean                   setAccuracy)
             throws FactoryException
     {
+        double coarsestAccuracy = 0;
         CoordinateReferenceSystem previous = null;
         for (int i=0; i<operations.length; i++) {
             final CoordinateOperation op = operations[i];
@@ -222,12 +224,18 @@ final class DefaultConcatenatedOperation extends AbstractCoordinateOperation imp
              * See javadoc for a rational about why we take only transformations in account.
              */
             if (setAccuracy && op instanceof Transformation) {
-                Collection<PositionalAccuracy> candidates = op.getCoordinateOperationAccuracy();
+                final Collection<PositionalAccuracy> candidates = op.getCoordinateOperationAccuracy();
                 if (!Containers.isNullOrEmpty(candidates)) {
-                    if (coordinateOperationAccuracy == null) {
-                        coordinateOperationAccuracy = new LinkedHashSet<>();
+                    final double accuracy = PositionalAccuracyConstant.getLinearAccuracy(op);
+                    if (accuracy > coarsestAccuracy) {
+                        coarsestAccuracy = accuracy;
+                        if (coordinateOperationAccuracy == null) {
+                            coordinateOperationAccuracy = new LinkedHashSet<>(candidates);
+                        } else {
+                            coordinateOperationAccuracy.clear();
+                            coordinateOperationAccuracy.addAll(candidates);
+                        }
                     }
-                    coordinateOperationAccuracy.addAll(candidates);
                 }
             }
         }
@@ -337,6 +345,7 @@ final class DefaultConcatenatedOperation extends AbstractCoordinateOperation imp
     protected String formatTo(final Formatter formatter) {
         super.formatTo(formatter);
         for (final CoordinateOperation component : operations) {
+            formatter.newLine();
             formatter.append(castOrCopy(component));
         }
         formatter.setInvalidWKT(this, null);
