@@ -25,6 +25,7 @@ import org.opengis.util.NoSuchIdentifierException;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.referencing.operation.*;
+import org.opengis.referencing.AuthorityFactory;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.GeographicCRS;
@@ -37,6 +38,7 @@ import org.apache.sis.internal.referencing.MergedProperties;
 import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.util.CollectionsExt;
+import org.apache.sis.internal.util.Constants;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.factory.InvalidGeodeticParameterException;
 import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
@@ -88,7 +90,7 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
     private final Map<String,?> defaultProperties;
 
     /**
-     * The factory to use if {@link CoordinateOperationInference} needs to create CRS for intermediate steps.
+     * The factory to use if {@link CoordinateOperationFinder} needs to create CRS for intermediate steps.
      * Will be created only when first needed.
      *
      * @see #getCRSFactory()
@@ -96,7 +98,7 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
     private volatile CRSFactory crsFactory;
 
     /**
-     * The factory to use if {@link CoordinateOperationInference} needs to create CS for intermediate steps.
+     * The factory to use if {@link CoordinateOperationFinder} needs to create CS for intermediate steps.
      * Will be created only when first needed.
      *
      * @see #getCSFactory()
@@ -183,7 +185,7 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
     }
 
     /**
-     * Returns the factory to use if {@link CoordinateOperationInference} needs to create CRS for intermediate steps.
+     * Returns the factory to use if {@link CoordinateOperationFinder} needs to create CRS for intermediate steps.
      */
     final CRSFactory getCRSFactory() {
         CRSFactory factory = crsFactory;
@@ -194,7 +196,7 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
     }
 
     /**
-     * Returns the factory to use if {@link CoordinateOperationInference} needs to create CS for intermediate steps.
+     * Returns the factory to use if {@link CoordinateOperationFinder} needs to create CS for intermediate steps.
      */
     final CSFactory getCSFactory() {
         CSFactory factory = csFactory;
@@ -664,14 +666,16 @@ next:   for (int i=components.size(); --i >= 0;) {
      * widest intersection between its {@linkplain AbstractCoordinateOperation#getDomainOfValidity() domain of
      * validity} and the {@linkplain CoordinateOperationContext#getAreaOfInterest() area of interest} is returned.
      *
-     * <p>The default implementation is as below:</p>
+     * <p>The default implementation is equivalent to the following code
+     * (omitting the cast safety check for brevity):</p>
      *
      * {@preformat java
-     *   return new CoordinateOperationInference(this, context).createOperation(sourceCRS, targetCRS);
+     *   CoordinateOperationAuthorityFactory registry = (CoordinateOperationAuthorityFactory) CRS.getAuthorityFactory("EPSG");
+     *   return new CoordinateOperationFinder(registry, this, context).createOperation(sourceCRS, targetCRS);
      * }
      *
      * Subclasses can override this method if they need, for example, to use a custom
-     * {@link CoordinateOperationInference} implementation.
+     * {@link CoordinateOperationFinder} implementation.
      *
      * @param  sourceCRS  input coordinate reference system.
      * @param  targetCRS  output coordinate reference system.
@@ -680,7 +684,7 @@ next:   for (int i=components.size(); --i >= 0;) {
      * @throws OperationNotFoundException if no operation path was found from {@code sourceCRS} to {@code targetCRS}.
      * @throws FactoryException if the operation creation failed for some other reason.
      *
-     * @see CoordinateOperationInference
+     * @see CoordinateOperationFinder
      *
      * @since 0.7
      */
@@ -689,7 +693,9 @@ next:   for (int i=components.size(); --i >= 0;) {
                                                final CoordinateOperationContext context)
             throws OperationNotFoundException, FactoryException
     {
-        return new CoordinateOperationInference(this, context).createOperation(sourceCRS, targetCRS);
+        final AuthorityFactory registry = CRS.getAuthorityFactory(Constants.EPSG);
+        return new CoordinateOperationFinder((registry instanceof CoordinateOperationAuthorityFactory) ?
+                (CoordinateOperationAuthorityFactory) registry : null, this, context).createOperation(sourceCRS, targetCRS);
     }
 
     /**

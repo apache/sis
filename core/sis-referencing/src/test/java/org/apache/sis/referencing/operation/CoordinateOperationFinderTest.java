@@ -66,7 +66,7 @@ import static org.apache.sis.test.Assert.*;
 
 
 /**
- * Tests {@link CoordinateOperationInference}.
+ * Tests {@link CoordinateOperationFinder}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.7
@@ -79,7 +79,7 @@ import static org.apache.sis.test.Assert.*;
     DefaultPassThroughOperationTest.class,
     DefaultConcatenatedOperationTest.class
 })
-public final strictfp class CoordinateOperationInferenceTest extends MathTransformTestCase {
+public final strictfp class CoordinateOperationFinderTest extends MathTransformTestCase {
     /**
      * Tolerance threshold for strict comparisons of floating point numbers.
      * This constant can be used like below, where {@code expected} and {@code actual} are {@code double} values:
@@ -103,13 +103,15 @@ public final strictfp class CoordinateOperationInferenceTest extends MathTransfo
     /**
      * The instance on which to execute the tests.
      */
-    private CoordinateOperationInference inference;
+    private CoordinateOperationFinder inference;
 
     /**
      * Creates a new test case.
+     *
+     * @throws FactoryException if an error occurred while initializing the finder to test.
      */
-    public CoordinateOperationInferenceTest() {
-        inference = new CoordinateOperationInference(factory, null);
+    public CoordinateOperationFinderTest() throws FactoryException {
+        inference = new CoordinateOperationFinder(null, factory, null);
     }
 
     /**
@@ -188,7 +190,7 @@ public final strictfp class CoordinateOperationInferenceTest extends MathTransfo
         assertTrue      ("isIdentity", operation.getMathTransform().isIdentity());
         assertTrue      ("accuracy",   operation.getCoordinateOperationAccuracy().isEmpty());
         assertInstanceOf("operation",  Conversion.class, operation);
-        inference = new CoordinateOperationInference(factory, null);        // Reset for next call.
+        inference = new CoordinateOperationFinder(null, factory, null);        // Reset for next call.
     }
 
     /**

@@ -105,7 +105,7 @@ final class SubOperationInfo {
      * @return information about a coordinate operation from a source CRS to the given target CRS, or {@code null}.
      * @throws FactoryException if an error occurred while grabbing a coordinate operation.
      */
-    static SubOperationInfo create(final CoordinateOperationInference caller, final boolean[] sourceIsUsed,
+    static SubOperationInfo create(final CoordinateOperationFinder caller, final boolean[] sourceIsUsed,
             final List<? extends SingleCRS> sources, final SingleCRS target) throws FactoryException
     {
         OperationNotFoundException failure = null;
@@ -149,7 +149,7 @@ final class SubOperationInfo {
                             sourceIsUsed[i] = true;
                             if (failure != null) {
                                 Logging.recoverableException(Logging.getLogger(Loggers.COORDINATE_OPERATION),
-                                        CoordinateOperationInference.class, "decompose", failure);
+                                        CoordinateOperationFinder.class, "decompose", failure);
                             }
                             return new SubOperationInfo(operation, startAtDimension, endAtDimension);
                         }

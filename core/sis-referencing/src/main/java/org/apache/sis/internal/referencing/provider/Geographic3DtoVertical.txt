@@ -5,7 +5,7 @@ but it should be only in contexts where SIS can keep trace of other
 dimensions in an "interpolation CRS".  This happen in the following
 method:
 
-CoordinateOperationInference.createOperationStep(GeodeticCRS, VerticalCRS)
+CoordinateOperationFinder.createOperationStep(GeodeticCRS, VerticalCRS)
 
 The above method does inline the work of what would have been a
 "Geographic 3D to ellipsoidal height" operation if it existed.

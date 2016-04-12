@@ -301,12 +301,11 @@ public final class CRS extends Static {
         ArgumentChecks.ensureNonNull("targetCRS", targetCRS);
         CoordinateOperationContext context = null;
         if (areaOfInterest != null) {
-            final DefaultGeographicBoundingBox bbox = DefaultGeographicBoundingBox.castOrCopy(areaOfInterest);
-            if (bbox.isEmpty()) {
+            if (areaOfInterest instanceof DefaultGeographicBoundingBox && ((DefaultGeographicBoundingBox) areaOfInterest).isEmpty()) {
                 throw new IllegalArgumentException(Errors.format(Errors.Keys.EmptyArgument_1, "areaOfInterest"));
             }
             context = new CoordinateOperationContext();
-            context.setGeographicBoundingBox(bbox);
+            context.setAreaOfInterest(areaOfInterest);
         }
         return CoordinateOperations.factory().createOperation(sourceCRS, targetCRS, context);
     }
