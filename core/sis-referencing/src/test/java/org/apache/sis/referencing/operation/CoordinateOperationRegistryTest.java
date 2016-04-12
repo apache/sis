@@ -104,7 +104,7 @@ public final strictfp class CoordinateOperationRegistryTest extends MathTransfor
     public CoordinateOperationRegistryTest() throws FactoryException {
         final CRSAuthorityFactory crsFactory = CRS.getAuthorityFactory("EPSG");
         assumeTrue("EPSG factory required.", crsFactory instanceof CoordinateOperationAuthorityFactory);
-        registry = new CoordinateOperationRegistry(factory, (CoordinateOperationAuthorityFactory) crsFactory, null);
+        registry = new CoordinateOperationRegistry((CoordinateOperationAuthorityFactory) crsFactory, factory, null);
     }
 
     /**

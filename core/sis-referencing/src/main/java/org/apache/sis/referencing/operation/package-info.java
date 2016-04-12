@@ -86,7 +86,7 @@
  * exists in the form of the {@link org.apache.sis.referencing.datum.DefaultGeodeticDatum#getBursaWolfParameters()}
  * method for those who really need it. This means that when searching for a coordinate operation between a given
  * pair of CRS, Apache SIS will query {@link org.apache.sis.referencing.factory.sql.EPSGFactory} before to try to
- * {@linkplain org.apache.sis.referencing.operation.CoordinateOperationInference infer the operation path by itelf}.
+ * {@linkplain org.apache.sis.referencing.operation.CoordinateOperationFinder infer the operation path by itelf}.
  * The {@link org.apache.sis.referencing.operation.CoordinateOperationContext} can be used for further refinements,
  * for example by specifying the area of interest.
  *
