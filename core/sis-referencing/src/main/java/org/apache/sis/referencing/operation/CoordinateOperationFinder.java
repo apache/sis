@@ -293,7 +293,9 @@ abstract class CoordinateOperationFinder {
         Class<? extends CoordinateOperation> type = null;
         if (op instanceof Transformation)  type = Transformation.class;
         else if (op instanceof Conversion) type = Conversion.class;
-        return createFromMathTransform(properties(INVERSE_OPERATION), targetCRS, sourceCRS,
+        final Map<String,Object> properties = properties(INVERSE_OPERATION);
+        InverseOperationMethod.putParameters(op, properties);
+        return createFromMathTransform(properties, targetCRS, sourceCRS,
                 transform, InverseOperationMethod.create(op.getMethod()), null, type);
     }
 
