@@ -18,8 +18,10 @@ package org.apache.sis.referencing.operation;
 
 import java.util.List;
 import java.text.ParseException;
+import org.opengis.metadata.Identifier;
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterValueGroup;
+import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.crs.CRSAuthorityFactory;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.SingleOperation;
@@ -28,6 +30,8 @@ import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.CoordinateOperationAuthorityFactory;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.internal.referencing.Formulas;
+import org.apache.sis.referencing.crs.DefaultGeographicCRS;
+import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.io.wkt.WKTFormat;
@@ -155,10 +159,7 @@ public final strictfp class CoordinateOperationRegistryTest extends MathTransfor
 
         final CoordinateReferenceSystem targetCRS = CommonCRS.WGS84.geographic();
         final CoordinateOperation operation = registry.createOperation(sourceCRS, targetCRS);
-        assertEpsgNameAndIdentifierEqual("NTF (Paris) to WGS 84 (1)", 8094, operation);
-        assertEpsgNameAndIdentifierEqual("NTF (Paris)", 4807, operation.getSourceCRS());
-        assertEpsgNameAndIdentifierEqual("WGS 84",      4326, operation.getTargetCRS());
-        verifyNTF(operation, "geog2D domain");
+        verifyNTF(operation, "geog2D domain", true);
         /*
          * Same test point than the one used in FranceGeocentricInterpolationTest:
          *
@@ -196,13 +197,43 @@ public final strictfp class CoordinateOperationRegistryTest extends MathTransfor
 
         final CoordinateReferenceSystem targetCRS = CommonCRS.WGS84.normalizedGeographic();
         final CoordinateOperation operation = registry.createOperation(sourceCRS, targetCRS);
-        verifyNTF(operation, "geog2D domain");
+        verifyNTF(operation, "geog2D domain", false);
 
         transform  = operation.getMathTransform();
         tolerance  = Formulas.ANGULAR_TOLERANCE;
         λDimension = new int[] {1};
         verifyTransform(new double[] {0.088442691, 48.844512250},      // in degrees east of Paris
                         new double[] {2.424952028, 48.844443528});     // in degrees east of Greenwich
+        validate();
+    }
+
+    /**
+     * Tests the inverse of <cite>"NTF (Paris) to WGS 84 (1)"</cite> operation, also with different axis order.
+     *
+     * @throws ParseException if a CRS used in this test can not be parsed.
+     * @throws FactoryException if the operation can not be created.
+     * @throws TransformException if an error occurred while converting the test points.
+     */
+    @Test
+    @DependsOnMethod("testLongitudeRotationBetweenNormalizedCRS")
+    public void testInverse() throws ParseException, FactoryException, TransformException {
+        final CoordinateReferenceSystem targetCRS = parse(
+                "GeodeticCRS[“NTF (Paris)”,\n" +
+                "  $NTF,\n" +
+                "    PrimeMeridian[“Paris”, 2.5969213],\n" +
+                "  CS[ellipsoidal, 2],\n" +
+                "    Axis[“Longitude (λ)”, EAST],\n" +
+                "    Axis[“Latitude (φ)”, NORTH],\n" +
+                "    Unit[“grade”, 0.015707963267948967]]");
+
+        final CoordinateReferenceSystem sourceCRS = CommonCRS.WGS84.normalizedGeographic();
+        final CoordinateOperation operation = registry.createOperation(sourceCRS, targetCRS);
+
+        transform  = operation.getMathTransform();
+        tolerance  = Formulas.ANGULAR_TOLERANCE;
+        λDimension = new int[] {1};
+        verifyTransform(new double[] {2.424952028, 48.844443528},      // in degrees east of Greenwich
+                        new double[] {0.098269657, 54.271680278});     // in grads east of Paris
         validate();
     }
 
@@ -229,7 +260,7 @@ public final strictfp class CoordinateOperationRegistryTest extends MathTransfor
 
         final CoordinateReferenceSystem targetCRS = CommonCRS.WGS84.geographic3D();
         final CoordinateOperation operation = registry.createOperation(sourceCRS, targetCRS);
-        verifyNTF(operation, "geog3D domain");
+        verifyNTF(operation, "geog3D domain", false);
 
         transform  = operation.getMathTransform();
         tolerance  = Formulas.ANGULAR_TOLERANCE;
@@ -242,26 +273,66 @@ public final strictfp class CoordinateOperationRegistryTest extends MathTransfor
     }
 
     /**
+     * Tests <cite>"NTF (Paris) to WGS 84 (1)"</cite> operation with three-dimensional source and target CRS
+     * having different axis order and units than the ones declared in the EPSG dataset.
+     *
+     * @throws ParseException if a CRS used in this test can not be parsed.
+     * @throws FactoryException if the operation can not be created.
+     * @throws TransformException if an error occurred while converting the test points.
+     */
+    @Test
+    @DependsOnMethod({"testLongitudeRotationBetweenNormalizedCRS", "testLongitudeRotationBetweenGeographic3D"})
+    public void testLongitudeRotationBetweenNormalizedGeographic3D() throws ParseException, FactoryException, TransformException {
+        final CoordinateReferenceSystem sourceCRS = parse(
+                "GeodeticCRS[“NTF (Paris)”,\n" +
+                "  $NTF,\n" +
+                "    PrimeMeridian[“Paris”, 2.33722917],\n" +
+                "  CS[ellipsoidal, 3],\n" +
+                "    Axis[“Longitude (λ)”, EAST, Unit[“degree”, 0.017453292519943295]],\n" +
+                "    Axis[“Latitude (φ)”, NORTH, Unit[“degree”, 0.017453292519943295]],\n" +
+                "    Axis[“Height (h)”, UP, Unit[“m”, 1]]]");
+
+        final CoordinateReferenceSystem targetCRS =
+                DefaultGeographicCRS.castOrCopy(CommonCRS.WGS84.geographic3D()).forConvention(AxesConvention.NORMALIZED);
+        final CoordinateOperation operation = registry.createOperation(sourceCRS, targetCRS);
+        verifyNTF(operation, "geog3D domain", false);
+
+        transform  = operation.getMathTransform();
+        tolerance  = Formulas.ANGULAR_TOLERANCE;
+        zTolerance = Formulas.LINEAR_TOLERANCE;
+        zDimension = new int[] {2};
+        λDimension = new int[] {1};
+        verifyTransform(new double[] {0.088442691, 48.844512250, 20.00},      // in degrees east of Paris
+                        new double[] {2.424952028, 48.844443528, 63.15});     // in degrees east of Greenwich
+        validate();
+    }
+
+    /**
      * Verifies a coordinate operation which is expected to be <cite>"NTF (Paris) to WGS 84 (1)"</cite> (EPSG:8094).
      *
      * @param domain  either {@code "geog2D domain"} or either {@code "geog3D domain"}.
+     * @param isEPSG  {@code true} if the coordinate operation is expected to contain EPSG identifiers.
      */
-    static void verifyNTF(final CoordinateOperation operation, final String domain) {
-        assertEquals("name",           "NTF (Paris) to WGS 84 (1)",  operation.getName().getCode());
-        assertEquals("sourceCRS.name", "NTF (Paris)",                operation.getSourceCRS().getName().getCode());
-        assertEquals("targetCRS.name", "WGS 84",                     operation.getTargetCRS().getName().getCode());
-        assertEquals("Should report only the coarsest accuracy.", 1, operation.getCoordinateOperationAccuracy().size());
-        assertEquals("linearAccuracy",                            2, CRS.getLinearAccuracy(operation), STRICT);
-
+    static void verifyNTF(final CoordinateOperation operation, final String domain, final boolean isEPSG) {
         assertInstanceOf("Operation should have two steps.", ConcatenatedOperation.class, operation);
         final List<? extends CoordinateOperation> steps = ((ConcatenatedOperation) operation).getOperations();
         assertEquals("Operation should have two steps.", 2, steps.size());
-
         final SingleOperation step1 = (SingleOperation) steps.get(0);
         final SingleOperation step2 = (SingleOperation) steps.get(1);
+        if (isEPSG) {
+            assertEpsgNameAndIdentifierEqual("NTF (Paris) to WGS 84 (1)", 8094, operation);
+            assertEpsgNameAndIdentifierEqual("NTF (Paris)",               4807, operation.getSourceCRS());
+            assertEpsgNameAndIdentifierEqual("WGS 84",                    4326, operation.getTargetCRS());
+            assertEpsgNameAndIdentifierEqual("NTF (Paris) to NTF (1)",    1763, step1);
+            assertEpsgNameAndIdentifierEqual("NTF to WGS 84 (1)",         1193, step2);
+        } else {
+            assertEpsgNameWithoutIdentifierEqual("NTF (Paris) to WGS 84 (1)", operation);
+            assertEpsgNameWithoutIdentifierEqual("NTF (Paris)",               operation.getSourceCRS());
+            assertEpsgNameWithoutIdentifierEqual("WGS 84",                    operation.getTargetCRS());
+            assertEpsgNameWithoutIdentifierEqual("NTF (Paris) to NTF (1)",    step1);
+            assertEpsgNameWithoutIdentifierEqual("NTF to WGS 84 (1)",         step2);
+        }
         assertSame("SourceCRS shall be the targetCRS of previous step.",     step1.getTargetCRS(), step2.getSourceCRS());
-        assertEquals("Step 1",   "NTF (Paris) to NTF (1)",                   step1.getName().getCode());
-        assertEquals("Step 2",   "NTF to WGS 84 (1)",                        step2.getName().getCode());
         assertEquals("Method 1", "Longitude rotation",                       step1.getMethod().getName().getCode());
         assertEquals("Method 2", "Geocentric translations (" + domain + ')', step2.getMethod().getName().getCode());
 
@@ -271,5 +342,25 @@ public final strictfp class CoordinateOperationRegistryTest extends MathTransfor
         assertEquals("X-axis translation",    -168, p2.parameter("X-axis translation").doubleValue(), STRICT);
         assertEquals("Y-axis translation",     -60, p2.parameter("Y-axis translation").doubleValue(), STRICT);
         assertEquals("Z-axis translation",     320, p2.parameter("Z-axis translation").doubleValue(), STRICT);
+
+        assertEquals("Should report only the coarsest accuracy.", 1, operation.getCoordinateOperationAccuracy().size());
+        assertEquals("linearAccuracy",                            2, CRS.getLinearAccuracy(operation), STRICT);
+    }
+
+    /**
+     * Asserts that the given object has the expected name but no identifier. This method is used when the given object
+     * has been modified compared to the object declared in the EPSG dataset, for example with a change of axis order
+     * or the addition of height. In such case the modified object is not allowed to have the EPSG identifier of the
+     * original object.
+     *
+     * @param name    The expected EPSG name.
+     * @param object  The object to verify.
+     */
+    private static void assertEpsgNameWithoutIdentifierEqual(final String name, final IdentifiedObject object) {
+        assertNotNull(name, object);
+        assertEquals("name", name, object.getName().getCode());
+        for (final Identifier id : object.getIdentifiers()) {
+            assertFalse("EPSG identifier not allowed for modified objects.", "EPSG".equalsIgnoreCase(id.getCodeSpace()));
+        }
     }
 }

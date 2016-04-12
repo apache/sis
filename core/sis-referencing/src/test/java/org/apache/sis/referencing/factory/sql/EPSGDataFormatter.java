@@ -85,8 +85,9 @@ import java.nio.charset.StandardCharsets;
  *           and add a {@code CONSTRAINT pk_change PRIMARY KEY (change_id)} line instead.</li>
  *       <li>In the statement creating the {@code epsg_datum} table,
  *           change the type of the {@code realization_epoch} column to {@code SMALLINT}.</li>
- *       <li>Change the type of {@code show_crs}, {@code show_operation} and all {@code deprecated} fields
- *           from {@code SMALLINT} to {@code BOOLEAN}.</li>
+ *       <li>Change the type of {@code ellipsoid_shape}, {@code reverse_op}, {@code param_sign_reversal}
+ *           {@code show_crs}, {@code show_operation} and all {@code deprecated} fields from {@code SMALLINT}
+ *           (or sometime {@code VARCHAR(3)}) to {@code BOOLEAN}.</li>
  *       <li>Change the type of every {@code table_name} columns from {@code VARCHAR(80)} to {@code epsg_table_name}.</li>
  *       <li>Change the type of {@code coord_ref_sys_kind} column from {@code VARCHAR(24)} to {@code epsg_crs_kind}.</li>
  *       <li>Change the type of {@code coord_sys_type} column from {@code VARCHAR(24)} to {@code epsg_cs_kind}.</li>
@@ -175,15 +176,16 @@ public final class EPSGDataFormatter extends ScriptRunner {
     private boolean insertDatum;
 
     /**
-     * Number of columns to change from type SMALLINT to type BOOLEAN.
-     * All those columns must be last.
+     * Index (in reversal order) of columns to change from type SMALLINT to type BOOLEAN.
+     * Index 0 is the last columns, index 1 is the column before the last, <i>etc</i>.
+     * We use the reverse order because most boolean columns in the EPSG dataset are last.
      */
-    private int numBooleanColumns;
+    private int[] booleanColumnIndices;
 
     /**
-     * The {@link #numBooleanColumns} value for each table.
+     * The {@link #booleanColumnIndices} value for each table.
      */
-    private final Map<String,Integer> numBooleanColumnsForTables;
+    private final Map<String,int[]> booleanColumnIndicesForTables;
 
     /**
      * Creates a new instance.
@@ -193,28 +195,29 @@ public final class EPSGDataFormatter extends ScriptRunner {
      */
     private EPSGDataFormatter(final Connection c) throws SQLException {
         super(c, Integer.MAX_VALUE);
-        numBooleanColumnsForTables = new HashMap<>();
-        numBooleanColumnsForTables.put("epsg_alias",                     0);
-        numBooleanColumnsForTables.put("epsg_area",                      1);
-        numBooleanColumnsForTables.put("epsg_change",                    0);
-        numBooleanColumnsForTables.put("epsg_coordinateaxis",            0);
-        numBooleanColumnsForTables.put("epsg_coordinateaxisname",        1);
-        numBooleanColumnsForTables.put("epsg_coordinatereferencesystem", 2);
-        numBooleanColumnsForTables.put("epsg_coordinatesystem",          1);
-        numBooleanColumnsForTables.put("epsg_coordoperation",            2);
-        numBooleanColumnsForTables.put("epsg_coordoperationmethod",      1);
-        numBooleanColumnsForTables.put("epsg_coordoperationparam",       1);
-        numBooleanColumnsForTables.put("epsg_coordoperationparamusage",  0);
-        numBooleanColumnsForTables.put("epsg_coordoperationparamvalue",  0);
-        numBooleanColumnsForTables.put("epsg_coordoperationpath",        0);
-        numBooleanColumnsForTables.put("epsg_datum",                     1);
-        numBooleanColumnsForTables.put("epsg_deprecation",               0);
-        numBooleanColumnsForTables.put("epsg_ellipsoid",                 1);
-        numBooleanColumnsForTables.put("epsg_namingsystem",              1);
-        numBooleanColumnsForTables.put("epsg_primemeridian",             1);
-        numBooleanColumnsForTables.put("epsg_supersession",              0);
-        numBooleanColumnsForTables.put("epsg_unitofmeasure",             1);
-        numBooleanColumnsForTables.put("epsg_versionhistory",            0);
+        final Map<String,int[]> m = new HashMap<>();
+        m.put("epsg_alias",                     new int[] {   });
+        m.put("epsg_area",                      new int[] {0  });
+        m.put("epsg_change",                    new int[] {   });
+        m.put("epsg_coordinateaxis",            new int[] {   });
+        m.put("epsg_coordinateaxisname",        new int[] {0  });
+        m.put("epsg_coordinatereferencesystem", new int[] {0,1});
+        m.put("epsg_coordinatesystem",          new int[] {0  });
+        m.put("epsg_coordoperation",            new int[] {0,1});
+        m.put("epsg_coordoperationmethod",      new int[] {0,8});
+        m.put("epsg_coordoperationparam",       new int[] {0  });
+        m.put("epsg_coordoperationparamusage",  new int[] {0  });
+        m.put("epsg_coordoperationparamvalue",  new int[] {   });
+        m.put("epsg_coordoperationpath",        new int[] {   });
+        m.put("epsg_datum",                     new int[] {0  });
+        m.put("epsg_deprecation",               new int[] {   });
+        m.put("epsg_ellipsoid",                 new int[] {0,6});
+        m.put("epsg_namingsystem",              new int[] {0  });
+        m.put("epsg_primemeridian",             new int[] {0  });
+        m.put("epsg_supersession",              new int[] {   });
+        m.put("epsg_unitofmeasure",             new int[] {0  });
+        m.put("epsg_versionhistory",            new int[] {   });
+        booleanColumnIndicesForTables = m;
     }
 
     /**
@@ -302,14 +305,17 @@ public final class EPSGDataFormatter extends ScriptRunner {
                 return 0;
             }
             /*
-             * Following statements do not make sense anymore on enumerated values:
+             * Following statements do not make sense anymore on enumerated or boolean values:
              *
              *    UPDATE epsg_coordinatereferencesystem SET coord_ref_sys_kind = replace(coord_ref_sys_kind, CHR(182), CHR(10));
              *    UPDATE epsg_coordinatesystem SET coord_sys_type = replace(coord_sys_type, CHR(182), CHR(10));
              *    UPDATE epsg_datum SET datum_type = replace(datum_type, CHR(182), CHR(10));
+             *    UPDATE epsg_coordoperationparamusage SET param_sign_reversal = replace(param_sign_reversal, CHR(182), CHR(10))
              */
             if (line.contains("replace")) {
-                if (line.contains("coord_ref_sys_kind") || line.contains("coord_sys_type") || line.contains("datum_type")) {
+                if (line.contains("param_sign_reversal") || line.contains("coord_ref_sys_kind")
+                        || line.contains("coord_sys_type") || line.contains("datum_type"))
+                {
                     return 0;
                 }
             }
@@ -337,7 +343,7 @@ public final class EPSGDataFormatter extends ScriptRunner {
                 throw new SQLException("This simple program wants VALUES on the same line than INSERT INTO.");
             }
             final String table = CharSequences.trimWhitespaces(line, INSERT_INTO.length(), valuesStart).toString();
-            numBooleanColumns = numBooleanColumnsForTables.get(table);
+            booleanColumnIndices = booleanColumnIndicesForTables.get(table);
             insertDatum = table.equals("epsg_datum");
             /*
              * We are beginning insertions in a new table.
@@ -383,20 +389,40 @@ public final class EPSGDataFormatter extends ScriptRunner {
      */
     private String replaceIntegerByBoolean(final String line) throws SQLException {
         final StringBuilder buffer = new StringBuilder(line);
-        int end = line.length();
-        for (int n = 0; n < numBooleanColumns; n++) {
-            end = line.lastIndexOf(',', end - 1);
-            final int p = CharSequences.skipLeadingWhitespaces(line, end+1, line.length());
-            final boolean value;
-            switch (line.charAt(p)) {
-                case '0': value = false; break;
-                case '1': value = true;  break;
-                default: throw new SQLException("Unexpected boolean value at position " + p + " in:\n" + line);
+        int end = CharSequences.skipTrailingWhitespaces(buffer, 0, buffer.length());
+        if (buffer.codePointBefore(end) == ')') end--;
+        for (int n=0, columnIndex=0; n < booleanColumnIndices.length; columnIndex++) {
+            int start = end;
+            for (int c; (c = buffer.codePointBefore(start)) != ',';) {
+                start -= Character.charCount(c);
+                if (c == '\'') {
+                    while (true) {
+                        c = buffer.codePointBefore(start);
+                        start -= Character.charCount(c);
+                        if (c == '\'') {
+                            if (buffer.codePointBefore(start) != '\'') {
+                                break;
+                            }
+                            start--;
+                        }
+                    }
+                }
             }
-            if (line.charAt(p+1) != (n == 0 ? ' ' : ',')) {
-                throw new SQLException("Unexpected character at position " + (p+1) + " in:\n" + line);
+            if (columnIndex == booleanColumnIndices[n]) {
+                String value = CharSequences.trimWhitespaces(buffer, start, end).toString();
+                if (value.equals("0") || value.equalsIgnoreCase("'No'")) {
+                    value = "false";
+                } else if (value.equals("1") || value.equalsIgnoreCase("'Yes'")) {
+                    value = "true";
+                } else if (value.equalsIgnoreCase("Null") || value.equals("''")) {
+                    value = "Null";
+                } else {
+                    throw new SQLException("Unexpected boolean value \"" + value + "\" at position " + start + " in:\n" + line);
+                }
+                buffer.replace(start, end, value);
+                n++;
             }
-            buffer.replace(p, p+1, String.valueOf(value));
+            end = CharSequences.skipTrailingWhitespaces(buffer, 0, start - 1);
         }
         return buffer.toString();
     }
@@ -410,6 +436,7 @@ public final class EPSGDataFormatter extends ScriptRunner {
     /**
      * Removes the useless "E0" exponents after floating point numbers.
      */
+    @SuppressWarnings("null")
     private static String removeUselessExponents(String line) {
         StringBuilder cleaned = null;
         final Matcher matcher = uselessExponentPattern.matcher(line);
