@@ -1,26 +1,23 @@
 /*
- *    Geotoolkit - An Open Source Java GIS Toolkit
- *    http://www.geotoolkit.org
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
  *
- *    (C) 2015, Geomatys
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
- *    This library is free software; you can redistribute it and/or
- *    modify it under the terms of the GNU Lesser General Public
- *    License as published by the Free Software Foundation;
- *    version 2.1 of the License.
- *
- *    This library is distributed in the hope that it will be useful,
- *    but WITHOUT ANY WARRANTY; without even the implied warranty of
- *    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- *    Lesser General Public License for more details.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package org.apache.sis.feature;
 
-import java.util.Collections;
 import java.util.Map;
-import static org.apache.sis.feature.AbstractIdentifiedType.NAME_KEY;
-import static org.apache.sis.feature.LinkOperation.parameters;
-import org.apache.sis.util.ObjectConverters;
+import java.util.Collections;
 import org.opengis.feature.AttributeType;
 import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
@@ -30,15 +27,17 @@ import org.opengis.feature.Property;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.util.GenericName;
+import org.apache.sis.util.ObjectConverters;
+
 
 /**
- * An aggregate operation concatenate the values of multiple properties.
- * This operation is mainly used as an id generator for multiple primary key properties.
- * <br>
- * This operation support both reading and writing. When setting the operation value,
- * the value will be split and forwarded to each attribute element.
+ * An aggregate operation concatenating the values of multiple properties.
+ * This operation is mainly used as an {@code id} generator for multiple properties used as primary keys.
  *
- * @author Johann Sorel (Geomatys)
+ * <p>This operation support both reading and writing. When setting the operation value,
+ * the value will be split and forwarded to each attribute element.</p>
+ *
+ * @author  Johann Sorel (Geomatys)
  * @since   0.7
  * @version 0.7
  * @module
@@ -48,14 +47,17 @@ final class AggregateOperation extends AbstractOperation {
      * For cross-version compatibility.
      */
     private static final long serialVersionUID = 2303047827010821381L;
-    
+
+    /**
+     * The type of the result returned by the aggregate operation.
+     */
     private static final AttributeType<String> TYPE = new DefaultAttributeType<>(
-            Collections.singletonMap(NAME_KEY, "String"),String.class,1,1,null);
+            Collections.singletonMap(DefaultAttributeType.NAME_KEY, "String"), String.class, 1, 1, null);
 
     /**
      * The parameter descriptor for the "Aggregate" operation, which does not take any parameter.
      */
-    private static final ParameterDescriptorGroup EMPTY_PARAMS = parameters("Link", 1);
+    private static final ParameterDescriptorGroup EMPTY_PARAMS = LinkOperation.parameters("Aggregate", 1);
 
     private final GenericName[] attributeNames;
     private final String prefix;
@@ -65,8 +67,8 @@ final class AggregateOperation extends AbstractOperation {
     AggregateOperation(Map<String, ?> identification, String prefix, String suffix, String separator, GenericName ... attributeNames) {
         super(identification);
         this.attributeNames = attributeNames;
-        this.prefix = prefix==null ? "" : prefix;
-        this.suffix = suffix==null ? "" : suffix;
+        this.prefix = (prefix == null) ? "" : prefix;
+        this.suffix = (suffix == null) ? "" : suffix;
         this.separator = separator;
     }
 
@@ -111,7 +113,7 @@ final class AggregateOperation extends AbstractOperation {
     private final class AggregateAttribute extends AbstractAttribute<String> {
 
         private final Feature feature;
-        
+
         public AggregateAttribute(final Feature feature) {
             super(TYPE);
             this.feature = feature;
@@ -122,8 +124,8 @@ final class AggregateOperation extends AbstractOperation {
             final StringBuilder sb = new StringBuilder();
             sb.append(prefix);
 
-            for(int i=0;i<attributeNames.length;i++){
-                if(i!=0) sb.append(separator);
+            for (int i=0; i < attributeNames.length; i++) {
+                if (i!=0) sb.append(separator);
                 sb.append(feature.getPropertyValue(attributeNames[i].toString()));
             }
 
@@ -134,23 +136,25 @@ final class AggregateOperation extends AbstractOperation {
         @Override
         public void setValue(String value) {
             //check prefix
-            if(!value.startsWith(prefix)){
+            if (!value.startsWith(prefix)) {
                 throw new IllegalArgumentException("Unvalid string, does not start with "+prefix);
             }
-            if(!value.endsWith(suffix)){
+            if (!value.endsWith(suffix)) {
                 throw new IllegalArgumentException("Unvalid string, does not end with "+suffix);
             }
 
             //split values, we don't use the regex split to avoid possible reserverd regex characters
             final Object[] values = new Object[attributeNames.length];
-            int i=0;
+            int i = 0;
             int offset = 0;
             //remove prefix and suffix
-            value = value.substring(prefix.length(), value.length()-suffix.length());
-            while(true){
-                if(i>=values.length) throw new IllegalArgumentException("Unvalid string, expected "+values.length+" values, but found more");
-                final int idx = value.indexOf(separator,offset);
-                if (idx==-1) {
+            value = value.substring(prefix.length(), value.length() - suffix.length());
+            while (true) {
+                if (i >= values.length) {
+                    throw new IllegalArgumentException("Unvalid string, expected "+values.length+" values, but found more");
+                }
+                final int idx = value.indexOf(separator, offset);
+                if (idx == -1) {
                     //last element
                     values[i] = value.substring(offset);
                     i++;
@@ -162,20 +166,18 @@ final class AggregateOperation extends AbstractOperation {
                 }
             }
 
-            if(i!=values.length){
+            if (i != values.length) {
                 throw new IllegalArgumentException("Unvalid string, number of values do not match, found "+(i)+" but expected "+values.length);
             }
 
             //set values, convert them if necessary
             final FeatureType type = feature.getType();
-            for(int k=0;k<values.length;k++){
+            for (int k=0; k < values.length; k++) {
                 final String propName = attributeNames[k].toString();
-                final AttributeType pt = (AttributeType) type.getProperty(propName);
+                final AttributeType<?> pt = (AttributeType<?>) type.getProperty(propName);
                 final Object val = ObjectConverters.convert(values[k], pt.getValueClass());
                 feature.setPropertyValue(propName, val);
             }
         }
-        
     }
-    
 }
