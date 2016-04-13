@@ -67,7 +67,7 @@ public final class PositionalAccuracyConstant extends DefaultAbsoluteExternalPos
      *
      * @see org.apache.sis.referencing.operation.AbstractCoordinateOperation#getLinearAccuracy()
      */
-    private static final double UNKNOWN_ACCURACY = 3000;
+    public static final double UNKNOWN_ACCURACY = 3000;
 
     /**
      * Default accuracy of datum shift, if not explicitly provided in the EPSG database.

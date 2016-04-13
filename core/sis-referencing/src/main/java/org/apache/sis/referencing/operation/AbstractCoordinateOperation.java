@@ -160,7 +160,7 @@ public class AbstractCoordinateOperation extends AbstractIdentifiedObject implem
      * (i.e., instantiation due to the stochastic nature of the parameters).
      *
      * <p><b>Consider this field as final!</b>
-     * This field is modified only at unmarshalling time by {@link #setOperationVersion(String)}</p>
+     * This field is modified only at unmarshalling time by {@link #setOperationVersion(String)}.</p>
      *
      * @see #getOperationVersion()
      */
@@ -181,7 +181,7 @@ public class AbstractCoordinateOperation extends AbstractIdentifiedObject implem
      * Area in which this operation is valid, or {@code null} if not available.
      *
      * <p><b>Consider this field as final!</b>
-     * This field is modified only at unmarshalling time by {@link #setDomainOfValidity(Extent)}</p>
+     * This field is modified only at unmarshalling time by {@link #setDomainOfValidity(Extent)}.</p>
      *
      * @see #getDomainOfValidity()
      */
@@ -191,7 +191,7 @@ public class AbstractCoordinateOperation extends AbstractIdentifiedObject implem
      * Description of domain of usage, or limitations of usage, for which this operation is valid.
      *
      * <p><b>Consider this field as final!</b>
-     * This field is modified only at unmarshalling time by {@link #setScope(InternationalString)}</p>
+     * This field is modified only at unmarshalling time by {@link #setScope(InternationalString)}.</p>
      *
      * @see #getScope()
      */
@@ -203,7 +203,7 @@ public class AbstractCoordinateOperation extends AbstractIdentifiedObject implem
      *
      * <p><b>Consider this field as final!</b>
      * This field is non-final only for the convenience of constructors and for initialization
-     * at XML unmarshalling time by {@link AbstractSingleOperation#afterUnmarshal(Unmarshaller, Object)}</p>
+     * at XML unmarshalling time by {@link AbstractSingleOperation#afterUnmarshal(Unmarshaller, Object)}.</p>
      */
     MathTransform transform;
 
