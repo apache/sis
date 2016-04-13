@@ -939,9 +939,9 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
      * @return A concatenated operation, or {@code null} if all arguments were null.
      * @throws FactoryException if the operation can not be constructed.
      */
-    protected CoordinateOperation concatenate(final CoordinateOperation step1,
-                                              final CoordinateOperation step2,
-                                              final CoordinateOperation step3)
+    private CoordinateOperation concatenate(final CoordinateOperation step1,
+                                            final CoordinateOperation step2,
+                                            final CoordinateOperation step3)
             throws FactoryException
     {
         if (isIdentity(step1)) return concatenate(step2, step3);

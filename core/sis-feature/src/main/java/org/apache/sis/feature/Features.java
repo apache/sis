@@ -16,6 +16,12 @@
  */
 package org.apache.sis.feature;
 
+import org.opengis.util.InternationalString;
+import org.opengis.metadata.maintenance.ScopeCode;
+import org.opengis.metadata.quality.ConformanceResult;
+import org.opengis.metadata.quality.DataQuality;
+import org.opengis.metadata.quality.Element;
+import org.opengis.metadata.quality.Result;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.resources.Errors;
 
@@ -23,15 +29,7 @@ import org.apache.sis.util.resources.Errors;
 import org.opengis.feature.Attribute;
 import org.opengis.feature.AttributeType;
 import org.opengis.feature.Feature;
-import org.opengis.feature.FeatureType;
 import org.opengis.feature.InvalidPropertyValueException;
-import org.opengis.feature.Property;
-import org.opengis.feature.PropertyType;
-import org.opengis.metadata.maintenance.ScopeCode;
-import org.opengis.metadata.quality.ConformanceResult;
-import org.opengis.metadata.quality.DataQuality;
-import org.opengis.metadata.quality.Element;
-import org.opengis.metadata.quality.Result;
 
 
 /**
@@ -108,66 +106,55 @@ public final class Features extends Static {
         return (Attribute<V>) attribute;
     }
 
-
     /**
-     * Validate feature state.
-     * <br>
-     * This method is a shortcut to loop on feature data quality results.
-     * <br>
-     * If one ConformanceResult is false then an IllegalArgumentException is throw,
-     * otherwise the function return doing nothing.
+     * Ensures that all characteristics and property values in the given feature are valid.
+     * An attribute is valid if it contains a number of values between the
+     * {@linkplain DefaultAttributeType#getMinimumOccurs() minimum} and
+     * {@linkplain DefaultAttributeType#getMaximumOccurs() maximum number of occurrences} (inclusive),
+     * all values are instances of the expected {@linkplain DefaultAttributeType#getValueClass() value class},
+     * and the attribute is compliant with any other restriction that the implementation may add.
      *
-     * @param feature tested feature.
-     * @throws InvalidPropertyValueException if feature do not pass validation
+     * <p>This method gets a quality report as documented in the {@link AbstractFeature#quality()} method
+     * and verifies that all {@linkplain org.apache.sis.metadata.iso.quality.DefaultConformanceResult#pass()
+     * conformance tests pass}. If at least one {@code ConformanceResult.pass} attribute is false, then an
+     * {@code InvalidPropertyValueException} is thrown. Otherwise this method returns doing nothing.
+     *
+     * @param  feature  the feature to validate, or {@code null}.
+     * @throws InvalidPropertyValueException if the given feature is non-null and does not pass validation.
+     *
+     * @since 0.7
      */
-    public static void validate(Feature feature) throws InvalidPropertyValueException {
-
-        //Get data quality of the feature
-        final DataQuality quality;
-        if(feature instanceof AbstractFeature){
-            quality = ((AbstractFeature)feature).quality();
-        }else{
-            //use default validator
-            final Validator v = new Validator(ScopeCode.FEATURE);
-            final FeatureType type = feature.getType();
-            for (final PropertyType pt : type.getProperties(true)) {
-                final Property property = feature.getProperty(pt.getName().toString());
-                final DataQuality pq;
-                if (property instanceof AbstractAttribute<?>) {
-                    pq = ((AbstractAttribute<?>) property).quality();
-                } else if (property instanceof AbstractAssociation) {
-                    pq = ((AbstractAssociation) property).quality();
-                } else {
-                    continue;
-                }
-                if (pq != null) { // Should not be null, but let be safe.
-                    v.quality.getReports().addAll(pq.getReports());
-                }
+    public static void validate(final Feature feature) throws InvalidPropertyValueException {
+        if (feature != null) {
+            /*
+             * Delegate to AbstractFeature.quality() if possible because the user may have overridden the method.
+             * Otherwise fallback on the same code than AbstractFeature.quality() default implementation.
+             */
+            final DataQuality quality;
+            if (feature instanceof AbstractFeature) {
+                quality = ((AbstractFeature) feature).quality();
+            } else {
+                final Validator v = new Validator(ScopeCode.FEATURE);
+                v.validate(feature.getType(), feature);
+                quality = v.quality;
             }
-            quality = v.quality;
-        }
-
-        //loop on quality elements and check conformance results
-        boolean valid = true;
-        search:
-        for(Element element : quality.getReports()){
-            for(Result result : element.getResults()){
-                //NOTE : other type of result are ignored for now
-                // other results may requiere threshold and other informations
-                // to be evaluated
-                if(result instanceof ConformanceResult){
-                    final Boolean pass = ((ConformanceResult)result).pass();
-                    if(Boolean.FALSE.equals(pass)){
-                        valid = false;
-                        break search;
+            /*
+             * Loop on quality elements and check conformance results.
+             * NOTE: other types of result are ignored for now, since those other
+             * types may require threshold and other informations to be evaluated.
+             */
+            for (Element element : quality.getReports()) {
+                for (Result result : element.getResults()) {
+                    if (result instanceof ConformanceResult) {
+                        if (Boolean.FALSE.equals(((ConformanceResult) result).pass())) {
+                            final InternationalString message = ((ConformanceResult) result).getExplanation();
+                            if (message != null) {
+                                throw new InvalidFeatureException(message);
+                            }
+                        }
                     }
                 }
             }
         }
-
-        if(!valid){
-            throw new InvalidPropertyValueException(quality.toString());
-        }
     }
-
 }
