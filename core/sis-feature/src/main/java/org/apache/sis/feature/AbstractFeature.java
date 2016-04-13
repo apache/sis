@@ -228,7 +228,7 @@ public abstract class AbstractFeature implements Feature, Serializable {
     final Object getOperationValue(final String name) {
         final Operation operation = (Operation) type.getProperty(name);
         if (operation instanceof LinkOperation) {
-            return getPropertyValue(((LinkOperation) operation).propertyName);
+            return getPropertyValue(((LinkOperation) operation).referentName);
         }
         final Property result = operation.apply(this, null);
         if (result instanceof Attribute<?>) {
@@ -246,7 +246,7 @@ public abstract class AbstractFeature implements Feature, Serializable {
     final void setOperationValue(final String name, final Object value) {
         final Operation operation = (Operation) type.getProperty(name);
         if (operation instanceof LinkOperation) {
-            setPropertyValue(((LinkOperation) operation).propertyName, value);
+            setPropertyValue(((LinkOperation) operation).referentName, value);
         } else {
             final Property result = operation.apply(this, null);
             if (result != null) {
