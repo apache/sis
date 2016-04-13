@@ -82,6 +82,12 @@ import org.apache.sis.util.Utilities;
  */
 public class DefaultCoordinateOperationFactory extends AbstractFactory implements CoordinateOperationFactory {
     /**
+     * Whether this class is allowed to use the EPSG authority factory for searching coordinate operation paths.
+     * This flag should always be {@code true}, except temporarily for testing purposes.
+     */
+    static final boolean USE_EPSG_FACTORY = true;
+
+    /**
      * The default properties, or an empty map if none. This map shall not change after construction in
      * order to allow usage without synchronization in multi-thread context. But we do not need to wrap
      * in a unmodifiable map since {@code DefaultCoordinateOperationFactory} does not provide public
@@ -667,10 +673,10 @@ next:   for (int i=components.size(); --i >= 0;) {
      * validity} and the {@linkplain CoordinateOperationContext#getAreaOfInterest() area of interest} is returned.
      *
      * <p>The default implementation is equivalent to the following code
-     * (omitting the cast safety check for brevity):</p>
+     * (omitting the {@code registry} type check and cast for brevity):</p>
      *
      * {@preformat java
-     *   CoordinateOperationAuthorityFactory registry = (CoordinateOperationAuthorityFactory) CRS.getAuthorityFactory("EPSG");
+     *   CoordinateOperationAuthorityFactory registry = CRS.getAuthorityFactory("EPSG");    // Actually needs cast
      *   return new CoordinateOperationFinder(registry, this, context).createOperation(sourceCRS, targetCRS);
      * }
      *
@@ -693,7 +699,7 @@ next:   for (int i=components.size(); --i >= 0;) {
                                                final CoordinateOperationContext context)
             throws OperationNotFoundException, FactoryException
     {
-        final AuthorityFactory registry = CRS.getAuthorityFactory(Constants.EPSG);
+        final AuthorityFactory registry = USE_EPSG_FACTORY ? CRS.getAuthorityFactory(Constants.EPSG) : null;
         return new CoordinateOperationFinder((registry instanceof CoordinateOperationAuthorityFactory) ?
                 (CoordinateOperationAuthorityFactory) registry : null, this, context).createOperation(sourceCRS, targetCRS);
     }

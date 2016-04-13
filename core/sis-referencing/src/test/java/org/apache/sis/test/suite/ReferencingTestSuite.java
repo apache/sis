@@ -217,8 +217,9 @@ import org.junit.BeforeClass;
     org.apache.sis.referencing.CRSTest.class,
 
     // Coordinate operation finders are last, since they need everything else.
-    org.apache.sis.referencing.operation.CoordinateOperationFinderTest.class,
     org.apache.sis.referencing.operation.CoordinateOperationRegistryTest.class,
+    org.apache.sis.referencing.operation.CoordinateOperationFinderTest.class,
+    org.apache.sis.referencing.operation.DefaultCoordinateOperationFactoryTest.class,
     org.apache.sis.referencing.operation.builder.LinearTransformBuilderTest.class,
 
     // Geometry

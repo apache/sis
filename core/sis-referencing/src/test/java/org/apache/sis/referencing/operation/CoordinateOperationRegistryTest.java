@@ -313,7 +313,7 @@ public final strictfp class CoordinateOperationRegistryTest extends MathTransfor
      * @param domain  either {@code "geog2D domain"} or either {@code "geog3D domain"}.
      * @param isEPSG  {@code true} if the coordinate operation is expected to contain EPSG identifiers.
      */
-    static void verifyNTF(final CoordinateOperation operation, final String domain, final boolean isEPSG) {
+    private static void verifyNTF(final CoordinateOperation operation, final String domain, final boolean isEPSG) {
         assertInstanceOf("Operation should have two steps.", ConcatenatedOperation.class, operation);
         final List<? extends CoordinateOperation> steps = ((ConcatenatedOperation) operation).getOperations();
         assertEquals("Operation should have two steps.", 2, steps.size());
@@ -342,9 +342,7 @@ public final strictfp class CoordinateOperationRegistryTest extends MathTransfor
         assertEquals("X-axis translation",    -168, p2.parameter("X-axis translation").doubleValue(), STRICT);
         assertEquals("Y-axis translation",     -60, p2.parameter("Y-axis translation").doubleValue(), STRICT);
         assertEquals("Z-axis translation",     320, p2.parameter("Z-axis translation").doubleValue(), STRICT);
-
-        assertEquals("Should report only the coarsest accuracy.", 1, operation.getCoordinateOperationAccuracy().size());
-        assertEquals("linearAccuracy",                            2, CRS.getLinearAccuracy(operation), STRICT);
+        assertEquals("linearAccuracy",           2, CRS.getLinearAccuracy(operation),                 STRICT);
     }
 
     /**
