@@ -16,14 +16,14 @@
  */
 package org.apache.sis.feature;
 
-import org.apache.sis.internal.feature.FeatureTypeBuilder;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
+
+// Branch-dependent imports
 import org.opengis.feature.Feature;
-import org.opengis.feature.FeatureType;
 import org.opengis.feature.InvalidPropertyValueException;
 
 
@@ -75,30 +75,24 @@ public final strictfp class FeaturesTest extends TestCase {
     }
 
     /**
-     * Tests {@link Features#validate(org.opengis.feature.Feature) }.
+     * Tests {@link Features#validate(Feature)}.
      */
     @Test
-    public void testValidate(){
+    public void testValidate() {
+        final Feature feature = DefaultFeatureTypeTest.city().newInstance();
 
-        final FeatureTypeBuilder ftb = new FeatureTypeBuilder();
-        ftb.setName("myScope","myName");
-        ftb.addProperty("name", String.class,1,1,null);
-        final FeatureType type = ftb.build();
-
-        final Feature feature = type.newInstance();
-
-        //should not pass validation
-        try{
+        // Should not pass validation.
+        try {
             Features.validate(feature);
-            fail("Feature is unvalid, property name is missing, validation should have raised an exception.");
-        }catch(InvalidPropertyValueException ex){
-            //ok
+            fail("Feature is invalid because of missing property “population”. Validation should have raised an exception.");
+        } catch (InvalidPropertyValueException ex) {
+            String message = ex.getMessage();
+            assertTrue(message, message.contains("city") || message.contains("population"));
         }
 
-        //should pass validation
-        feature.setPropertyValue("name", "hubert");
+        // Should pass validation.
+        feature.setPropertyValue("city", "Utopia");
+        feature.setPropertyValue("population", 10);
         Features.validate(feature);
-
     }
-
 }

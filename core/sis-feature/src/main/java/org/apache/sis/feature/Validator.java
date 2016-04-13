@@ -22,6 +22,7 @@ import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.maintenance.ScopeCode;
+import org.opengis.metadata.quality.DataQuality;
 import org.opengis.metadata.quality.EvaluationMethodType;
 import org.apache.sis.metadata.iso.quality.AbstractElement;
 import org.apache.sis.metadata.iso.quality.DefaultDataQuality;
@@ -32,10 +33,13 @@ import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.util.resources.Errors;
 
 // Branch-dependent imports
+import org.opengis.feature.Property;
 import org.opengis.feature.PropertyType;
+import org.opengis.feature.Attribute;
 import org.opengis.feature.AttributeType;
 import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
+import org.opengis.feature.FeatureAssociation;
 import org.opengis.feature.FeatureAssociationRole;
 
 
@@ -44,7 +48,7 @@ import org.opengis.feature.FeatureAssociationRole;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5
- * @version 0.5
+ * @version 0.7
  * @module
  */
 final class Validator {
@@ -106,6 +110,35 @@ final class Validator {
             return (value != null) ? Collections.singletonList(value) : Collections.emptyList();
         } else {
             return (Collection<?>) value;
+        }
+    }
+
+    /**
+     * Implementation of {@link AbstractFeature#quality()}, also shared by {@link Features} static method.
+     *
+     * @param type     the type of the {@code feature} argument, provided explicitely for protecting from user overriding.
+     * @param feature  the feature to validate.
+     */
+    void validate(final FeatureType type, final Feature feature) {
+        for (final PropertyType pt : type.getProperties(true)) {
+            final Property property = feature.getProperty(pt.getName().toString());
+            final DataQuality pq;
+            if (property instanceof AbstractAttribute<?>) {
+                pq = ((AbstractAttribute<?>) property).quality();
+            } else if (property instanceof AbstractAssociation) {
+                pq = ((AbstractAssociation) property).quality();
+            } else if (property instanceof Attribute<?>) {
+                validateAny(((Attribute<?>) property).getType(), ((Attribute<?>) property).getValues());
+                continue;
+            } else if (property instanceof FeatureAssociation) {
+                validateAny(((FeatureAssociation) property).getRole(), ((FeatureAssociation) property).getValues());
+                continue;
+            } else {
+                continue;
+            }
+            if (pq != null) {                                          // Should not be null, but let be safe.
+                quality.getReports().addAll(pq.getReports());
+            }
         }
     }
 

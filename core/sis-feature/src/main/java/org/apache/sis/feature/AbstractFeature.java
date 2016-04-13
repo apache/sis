@@ -74,7 +74,7 @@ import org.opengis.feature.Operation;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5
- * @version 0.6
+ * @version 0.7
  * @module
  *
  * @see DefaultFeatureType#newInstance()
@@ -270,8 +270,8 @@ public abstract class AbstractFeature implements Feature, Serializable {
         if (pt instanceof AttributeType<?>) {
             return getDefaultValue((AttributeType<?>) pt);
         } else if (pt instanceof FeatureAssociationRole) {
-            final int maxOcc = ((FeatureAssociationRole)pt).getMaximumOccurs();
-            return maxOcc>1 ? Collections.EMPTY_LIST : null;                        // No default value for associations.
+            final int maximumOccurs = ((FeatureAssociationRole) pt).getMaximumOccurs();
+            return maximumOccurs > 1 ? Collections.EMPTY_LIST : null;       // No default value for associations.
         } else {
             throw unsupportedPropertyType(pt.getName());
         }
@@ -646,20 +646,7 @@ public abstract class AbstractFeature implements Feature, Serializable {
      */
     public DataQuality quality() {
         final Validator v = new Validator(ScopeCode.FEATURE);
-        for (final PropertyType pt : type.getProperties(true)) {
-            final Property property = getProperty(pt.getName().toString());
-            final DataQuality quality;
-            if (property instanceof AbstractAttribute<?>) {
-                quality = ((AbstractAttribute<?>) property).quality();
-            } else if (property instanceof AbstractAssociation) {
-                quality = ((AbstractAssociation) property).quality();
-            } else {
-                continue;
-            }
-            if (quality != null) { // Should not be null, but let be safe.
-                v.quality.getReports().addAll(quality.getReports());
-            }
-        }
+        v.validate(type, this);
         return v.quality;
     }
 
