@@ -22,8 +22,6 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import static org.apache.sis.feature.AbstractIdentifiedType.NAME_KEY;
-import static org.apache.sis.feature.LinkOperation.parameters;
 import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.opengis.feature.AttributeType;
@@ -52,7 +50,7 @@ import org.opengis.referencing.operation.TransformException;
  * crs will be used.
  * <br>
  * This operation can only be read, not setted.
- * 
+ *
  * @author Johann Sorel (Geomatys)
  * @since   0.7
  * @version 0.7
@@ -70,12 +68,12 @@ final class BoundsOperation extends AbstractOperation {
     /**
      * The parameter descriptor for the "Bounds" operation, which does not take any parameter.
      */
-    private static final ParameterDescriptorGroup EMPTY_PARAMS = parameters("Link", 1);
+    private static final ParameterDescriptorGroup EMPTY_PARAMS = LinkOperation.parameters("Bounds", 1);
 
     private final CoordinateReferenceSystem crs;
 
     /**
-     * 
+     *
      * @param identification The name and other information to be given to this operation.
      * @param crs result envelope CRS, can be {@code null}
      */
@@ -198,5 +196,5 @@ final class BoundsOperation extends AbstractOperation {
 
         return bounds;
     }
-    
+
 }
