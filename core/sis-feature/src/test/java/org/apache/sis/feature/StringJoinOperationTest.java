@@ -17,13 +17,15 @@
 package org.apache.sis.feature;
 
 import java.util.Collections;
-import org.apache.sis.internal.feature.FeatureTypeBuilder;
+import java.util.Map;
+import org.junit.Test;
+import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
-import org.apache.sis.util.iso.Names;
-import org.junit.Test;
 
 import static org.junit.Assert.*;
+
+// Branch-dependent imports
 import org.opengis.feature.PropertyType;
 
 
@@ -41,62 +43,72 @@ import org.opengis.feature.PropertyType;
 })
 public final strictfp class StringJoinOperationTest extends TestCase {
     /**
-     * Creates a feature type with an aggregation operation.
+     * Creates a feature type with an string join operation.
      * The feature contains the following properties:
      *
      * <ul>
-     *   <li>{@code name} as a  {@link String}</li>
+     *   <li>{@code name} as a {@link String}</li>
      *   <li>{@code age} as an {@link Integer}</li>
-     *   <li>{@code summary} as aggregation of {@code name} and {@code age} attributes.</li>
+     *   <li>{@code summary} as string join of {@code name} and {@code age} attributes.</li>
      * </ul>
      *
-     * @return The feature for a city.
+     * @return The feature for a person.
      */
     private static DefaultFeatureType person() {
-        //Create type with an aggregation
-        final FeatureTypeBuilder ftb = new FeatureTypeBuilder();
-        ftb.setName("person");
-        final PropertyType nameType = ftb.addProperty("name", String.class);
-        final PropertyType ageType = ftb.addProperty("age", Integer.class);
-        ftb.addProperty(FeatureOperations.compound(
-                Collections.singletonMap(AbstractOperation.NAME_KEY, Names.parseGenericName(null, ":", "summary")),
-                "/", "prefix:", ":suffix", nameType.getName(), ageType.getName()));
-        return ftb.build();
+        final PropertyType nameType = new DefaultAttributeType<>(name("name"), String.class, 1, 1, null);
+        final PropertyType ageType  = new DefaultAttributeType<>(name("age"), Integer.class, 1, 1, null);
+        final PropertyType cmpType  = FeatureOperations.compound(name("concat"), "/", "prefix:", ":suffix", nameType, ageType);
+        return new DefaultFeatureType(name("person"), false, null, nameType, ageType, cmpType);
     }
 
     /**
-     * Implementation of the test methods.
+     * Creates the identification map to be given to attribute, operation and feature constructors.
      */
-    private static void run(final AbstractFeature feature) {
+    private static Map<String,?> name(final String name) {
+        return Collections.singletonMap(AbstractIdentifiedType.NAME_KEY, name);
+    }
 
-        //test feature
-        assertEquals("prefix:/:suffix", feature.getPropertyValue("summary"));
+    /**
+     * Tests {@code StringJoinOperation.Result.getValue()} on sparse and dense features.
+     */
+    @Test
+    public void testGetValue() {
+        final DefaultFeatureType person = person();
+        testGetValue(new DenseFeature (person));
+        testGetValue(new SparseFeature(person));
+    }
+
+    /**
+     * Executes the {@link #testGetValue()} on the given feature, which is either sparse or dense.
+     */
+    private static void testGetValue(final AbstractFeature feature) {
+        assertEquals("prefix:/:suffix", feature.getPropertyValue("concat"));
+
         feature.setPropertyValue("name", "marc");
-        assertEquals("prefix:marc/:suffix", feature.getPropertyValue("summary"));
+        assertEquals("prefix:marc/:suffix", feature.getPropertyValue("concat"));
+
         feature.setPropertyValue("age", 21);
-        assertEquals("prefix:marc/21:suffix", feature.getPropertyValue("summary"));
-
-        //test setting value
-        feature.setPropertyValue("summary", "prefix:emile/37:suffix");
-        assertEquals("emile", feature.getPropertyValue("name"));
-        assertEquals(37, feature.getPropertyValue("age"));
-        assertEquals("prefix:emile/37:suffix", feature.getPropertyValue("summary"));
-
+        assertEquals("prefix:marc/21:suffix", feature.getPropertyValue("concat"));
     }
 
     /**
-     * Tests a dense type with operations.
+     * Tests {@code StringJoinOperation.Result.setValue(String)} on sparse and dense features.
      */
     @Test
-    public void testDenseFeature() {
-        run(new DenseFeature(person()));
+    @DependsOnMethod("testGetValue")
+    public void testSetValue() {
+        final DefaultFeatureType person = person();
+        testSetValue(new DenseFeature (person));
+        testSetValue(new SparseFeature(person));
     }
 
     /**
-     * Tests a sparse feature type with operations.
+     * Executes the {@link #testSetValue()} on the given feature, which is either sparse or dense.
      */
-    @Test
-    public void testSparseFeature() {
-        run(new SparseFeature(person()));
+    private static void testSetValue(final AbstractFeature feature) {
+        feature.setPropertyValue("concat", "prefix:emile/37:suffix");
+        assertEquals("name",   "emile", feature.getPropertyValue("name"));
+        assertEquals("age",         37, feature.getPropertyValue("age"));
+        assertEquals("concat", "prefix:emile/37:suffix", feature.getPropertyValue("concat"));
     }
 }

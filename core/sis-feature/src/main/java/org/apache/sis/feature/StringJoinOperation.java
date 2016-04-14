@@ -23,15 +23,20 @@ import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.util.GenericName;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.ObjectConverter;
 import org.apache.sis.util.ObjectConverters;
+import org.apache.sis.util.UnconvertibleObjectException;
+import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.Classes;
 
 // Branch-dependent imports
 import org.opengis.feature.AttributeType;
 import org.opengis.feature.Feature;
-import org.opengis.feature.FeatureType;
 import org.opengis.feature.IdentifiedType;
 import org.opengis.feature.InvalidPropertyValueException;
+import org.opengis.feature.Operation;
 import org.opengis.feature.Property;
+import org.opengis.feature.PropertyType;
 
 
 /**
@@ -43,6 +48,7 @@ import org.opengis.feature.Property;
  * created by this operation, the value will be split and forwarded to each single attribute.</p>
  *
  * @author  Johann Sorel (Geomatys)
+ * @author  Martin Desruisseaux (Geomatys)
  * @since   0.7
  * @version 0.7
  * @module
@@ -56,14 +62,26 @@ final class StringJoinOperation extends AbstractOperation {
     private static final long serialVersionUID = 2303047827010821381L;
 
     /**
-     * The parameter descriptor for the "Aggregate" operation, which does not take any parameter.
+     * The parameter descriptor for the "String join" operation, which does not take any parameter.
      */
     private static final ParameterDescriptorGroup EMPTY_PARAMS = LinkOperation.parameters("StringJoin", 1);
 
     /**
-     * The name of the properties from which to get the values to concatenate.
+     * The name of the properties (attributes of operations producing attributes)
+     * from which to get the values to concatenate.
      */
-    private final String[] propertyNames;
+    private final String[] attributeNames;
+
+    /**
+     * Converters for parsing strings as attribute values. Those converters will be used by
+     * {@link Result#setValue(String)} while {@link Result#getValue()} will use the inverse
+     * of those converters.
+     *
+     * <p>Note: we store converters from string to value instead than the converse because
+     * the inverse conversion is often a simple call to {@link Object#toString()}, so there
+     * is a risk that some of the later converters do not bother to remember their inverse.</p>
+     */
+    private final ObjectConverter<? super String, ?>[] converters;
 
     /**
      * The property names as an unmodifiable set, created when first needed.
@@ -92,17 +110,37 @@ final class StringJoinOperation extends AbstractOperation {
 
     /**
      * Creates a new operation for string concatenations using the given prefix, suffix and delimeter.
-     * It is caller's responsibility to ensure that {@code delimiter} and {@code singleProperties} are not null.
+     * It is caller's responsibility to ensure that {@code delimiter} and {@code singleAttributes} are not null.
      * This private constructor does not verify that condition on the assumption that the public API did.
+     *
+     * @see FeatureOperations#compound(Map, String, String, String, PropertyType...)
      */
+    @SuppressWarnings({"rawtypes", "unchecked"})                                        // Generic array creation.
     StringJoinOperation(final Map<String,?> identification, final String delimiter,
-            final String prefix, final String suffix, final GenericName[] singleProperties)
+            final String prefix, final String suffix, final PropertyType[] singleAttributes)
+            throws UnconvertibleObjectException
     {
         super(identification);
-        propertyNames = new String[singleProperties.length];
-        for (int i=0; i < singleProperties.length; i++) {
-            ArgumentChecks.ensureNonNullElement("singleProperties", i, singleProperties);
-            propertyNames[i] = singleProperties[i].toString();
+        attributeNames = new String[singleAttributes.length];
+        converters = new ObjectConverter[singleAttributes.length];
+        for (int i=0; i < singleAttributes.length; i++) {
+            IdentifiedType attributeType = singleAttributes[i];
+            ArgumentChecks.ensureNonNullElement("singleAttributes", i, attributeType);
+            final GenericName name = attributeType.getName();
+            if (attributeType instanceof Operation) {
+                attributeType = ((Operation) attributeType).getResult();
+            }
+            if (!(attributeType instanceof AttributeType)) {
+                throw new IllegalArgumentException(Errors.getResources(identification)
+                        .getString(Errors.Keys.IllegalPropertyType_2, name,
+                        Classes.getLeafInterfaces(attributeType.getClass(), PropertyType.class)[0]));
+            }
+            if (((AttributeType<?>) attributeType).getMaximumOccurs() > 1) {
+                throw new IllegalArgumentException(Errors.getResources(identification)
+                        .getString(Errors.Keys.NotASingleton_1, name));
+            }
+            converters[i] = ObjectConverters.find(String.class, ((AttributeType<?>) attributeType).getValueClass());
+            attributeNames[i] = name.toString();
         }
         resultType = new DefaultAttributeType<>(resultIdentification(identification), String.class, 1, 1, null);
         this.delimiter = delimiter;
@@ -137,9 +175,54 @@ final class StringJoinOperation extends AbstractOperation {
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
     public synchronized Set<String> getDependencies() {
         if (dependencies == null) {
-            dependencies = CollectionsExt.immutableSet(true, propertyNames);
+            dependencies = CollectionsExt.immutableSet(true, attributeNames);
         }
         return dependencies;
+    }
+
+    /**
+     * Formats the given value using the given converter. This method is a workaround for the presence
+     * of the first {@code ?} in {@code ObjectConverter<?,?>}: defining a separated method allows us
+     * to replace that {@code <?>} by {@code <V>}, thus allowing the compiler to verify consistency.
+     *
+     * @param converter  the converter to use for formatting the given value.
+     * @param value      the value to format, or {@code null}.
+     */
+    private static <S> Object format(final ObjectConverter<S,?> converter, final Object value) {
+        return converter.apply(converter.getSourceClass().cast(value));
+    }
+
+    /**
+     * Creates a value as the concatenation of the attributes read from the given feature.
+     *
+     * @param  feature  the feature from which to read the attributes.
+     * @return the concatenated string.
+     * @throws UnconvertibleObjectException if one of the attribute value is not of the expected type.
+     */
+    final String join(final Feature feature) throws UnconvertibleObjectException {
+        final StringBuilder sb = new StringBuilder();
+        String sep = prefix;
+        String name  = null;
+        Object value = null;
+        try {
+            for (int i=0; i < attributeNames.length; i++) {
+                name  = attributeNames[i];
+                value = feature.getPropertyValue(name);                 // Used in 'catch' block in case of exception.
+                value = format(converters[i].inverse(), value);
+                sb.append(sep);
+                if (value != null) {
+                    sb.append(value);
+                }
+                sep = delimiter;
+            }
+        } catch (ClassCastException e) {
+            if (value == null) {
+                throw e;
+            }
+            throw new UnconvertibleObjectException(Errors.format(
+                    Errors.Keys.IllegalPropertyValueClass_2, name, value.getClass(), e));
+        }
+        return sb.append(suffix).toString();
     }
 
     /**
@@ -184,17 +267,7 @@ final class StringJoinOperation extends AbstractOperation {
          */
         @Override
         public String getValue() {
-            final StringBuilder sb = new StringBuilder();
-            String sep = prefix;
-            for (final String name : propertyNames) {
-                final Object value = feature.getPropertyValue(name);
-                sb.append(sep);
-                if (value != null) {
-                    sb.append(value);
-                }
-                sep = delimiter;
-            }
-            return sb.append(suffix).toString();
+            return join(feature);
         }
 
         /**
@@ -212,7 +285,7 @@ final class StringJoinOperation extends AbstractOperation {
             }
 
             //split values, we don't use the regex split to avoid possible reserverd regex characters
-            final Object[] values = new Object[propertyNames.length];
+            final String[] values = new String[attributeNames.length];
             int i = 0;
             int offset = 0;
             //remove prefix and suffix
@@ -237,11 +310,9 @@ final class StringJoinOperation extends AbstractOperation {
             }
 
             //set values, convert them if necessary
-            final FeatureType type = feature.getType();
             for (int k=0; k < values.length; k++) {
-                final String propName = propertyNames[k];
-                final AttributeType<?> pt = (AttributeType<?>) type.getProperty(propName);
-                final Object val = ObjectConverters.convert(values[k], pt.getValueClass());
+                final String propName = attributeNames[k];
+                final Object val = converters[k].apply(values[k]);
                 feature.setPropertyValue(propName, val);
             }
         }

@@ -22,6 +22,8 @@ import org.opengis.util.InternationalString;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Static;
+import org.apache.sis.util.UnconvertibleObjectException;
+import org.apache.sis.util.resources.Errors;
 
 // Branch-dependent imports
 import org.opengis.feature.Operation;
@@ -158,7 +160,7 @@ public final class FeatureOperations extends Static {
      *
      * <p>The {@code delimiter}, {@code prefix} and {@code suffix} arguments given to this method are used in
      * the same way than {@link java.util.StringJoiner}. Null prefix, suffix and property values are handled
-     * as an empty string.</p>
+     * as if they were empty strings.</p>
      *
      * <div class="section">Restrictions</div>
      * The single properties can be either attributes or operations that produce attributes;
@@ -174,17 +176,35 @@ public final class FeatureOperations extends Static {
      * @param  delimiter         the characters to use a delimiter between each single property value.
      * @param  prefix            characters to use at the beginning of the concatenated string, or {@code null} if none.
      * @param  suffix            characters to use at the end of the concatenated string, or {@code null} if none.
-     * @param  singleProperties  identification of the single properties to concatenate.
+     * @param  singleAttributes  identification of the single attributes (or operations producing attributes) to concatenate.
      * @return an operation which concatenates the string representations of all referenced single property values.
+     * @throws UnconvertibleObjectException if at least one of the given {@code singleAttributes} uses a
+     *         {@linkplain DefaultAttributeType#getValueClass() value class} which is not convertible from a {@link String}.
+     * @throws IllegalArgumentException if {@code singleAttributes} is an empty sequence, or contains a property which
+     *         is neither an {@code AttributeType} or an {@code Operation} computing an attribute, or an attribute has
+     *         a {@linkplain DefaultAttributeType#getMaximumOccurs() maximum number of occurrences} greater than 1.
      *
      * @see <a href="https://en.wikipedia.org/wiki/Compound_key">Compound key on Wikipedia</a>
      */
     public static Operation compound(final Map<String,?> identification, final String delimiter,
-            final String prefix, final String suffix, final GenericName... singleProperties)
+            final String prefix, final String suffix, final PropertyType... singleAttributes)
+            throws UnconvertibleObjectException
     {
         ArgumentChecks.ensureNonEmpty("delimiter", delimiter);
-        ArgumentChecks.ensureNonNull("singleProperties", singleProperties);
-        return new StringJoinOperation(identification, delimiter, prefix, suffix, singleProperties);
+        ArgumentChecks.ensureNonNull("singleAttributes", singleAttributes);
+        switch (singleAttributes.length) {
+            case 0: {
+                throw new IllegalArgumentException(Errors.getResources(identification)
+                        .getString(Errors.Keys.EmptyArgument_1, "singleAttributes"));
+            }
+            case 1: {
+                if ((prefix == null || prefix.isEmpty()) && (suffix == null || suffix.isEmpty())) {
+                    return link(identification, singleAttributes[0]);
+                }
+                break;
+            }
+        }
+        return new StringJoinOperation(identification, delimiter, prefix, suffix, singleAttributes);
     }
 
     /**

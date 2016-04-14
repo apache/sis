@@ -641,16 +641,13 @@ class CoordinateOperationRegistry {
          * The most reliable way is to ask to the 'AbstractOperation.getInterface()' method,
          * but this is SIS-specific. The fallback uses reflection.
          */
+        final Class<? extends IdentifiedObject> type;
         if (operation instanceof AbstractIdentifiedObject) {
-            properties.put(ReferencingServices.OPERATION_TYPE_KEY,
-                    ((AbstractIdentifiedObject) operation).getInterface());
+             type = ((AbstractIdentifiedObject) operation).getInterface();
         } else {
-            final Class<? extends CoordinateOperation>[] types =
-                    Classes.getLeafInterfaces(operation.getClass(), CoordinateOperation.class);
-            if (types.length != 0) {
-                properties.put(ReferencingServices.OPERATION_TYPE_KEY, types[0]);
-            }
+             type = Classes.getLeafInterfaces(operation.getClass(), CoordinateOperation.class)[0];
         }
+        properties.put(ReferencingServices.OPERATION_TYPE_KEY, type);
         /*
          * Reuse the same operation method, but we may need to change its number of dimension.
          * The capability to resize an OperationMethod is specific to Apache SIS, so we must

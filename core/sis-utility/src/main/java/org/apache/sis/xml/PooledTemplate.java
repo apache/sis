@@ -96,7 +96,7 @@ final class PooledTemplate extends Pooled {
         if (value == null) {
             return defaultValue;
         }
-        throw new PropertyException(Errors.format(Errors.Keys.IllegalPropertyClass_2, name, value.getClass()));
+        throw new PropertyException(Errors.format(Errors.Keys.IllegalPropertyValueClass_2, name, value.getClass()));
     }
 
     /**

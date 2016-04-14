@@ -168,10 +168,13 @@ final class Validator {
              * method signature. However in practice the call to Attribute.setValue(…) is sometime done after type erasure,
              * so we are better to check.
              */
-            if (!type.getValueClass().isInstance(value)) {
+            final Class<?> valueClass = type.getValueClass();
+            if (!valueClass.isInstance(value)) {
                 report = addViolationReport(report, type, Errors.formatInternational(
-                        Errors.Keys.IllegalPropertyClass_2, type.getName(), value.getClass()));
-                break; // Report only the first violation for now.
+                        Errors.Keys.IllegalPropertyValueClass_3, type.getName(), valueClass, value.getClass()));
+
+                // Report only the first violation for now.
+                break;
             }
         }
         verifyCardinality(report, type, type.getMinimumOccurs(), type.getMaximumOccurs(), values.size());
@@ -184,10 +187,13 @@ final class Validator {
         AbstractElement report = null;
         for (final Object value : values) {
             final FeatureType type = ((Feature) value).getType();
-            if (!role.getValueType().isAssignableFrom(type)) {
+            final FeatureType valueType = role.getValueType();
+            if (!valueType.isAssignableFrom(type)) {
                 report = addViolationReport(report, role, Errors.formatInternational(
-                        Errors.Keys.IllegalPropertyClass_2, role.getName(), type.getName()));
-                break; // Report only the first violation for now.
+                        Errors.Keys.IllegalPropertyValueClass_3, role.getName(), valueType.getName(), type.getName()));
+
+                // Report only the first violation for now.
+                break;
             }
         }
         verifyCardinality(report, role, role.getMinimumOccurs(), role.getMaximumOccurs(), values.size());
