@@ -25,30 +25,34 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.opengis.util.GenericName;
+import org.opengis.util.NameFactory;
+import org.opengis.util.ScopedName;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.feature.AbstractOperation;
 import org.apache.sis.feature.DefaultAssociationRole;
 import org.apache.sis.feature.DefaultAttributeType;
 import org.apache.sis.feature.DefaultFeatureType;
 import org.apache.sis.feature.FeatureOperations;
+import org.apache.sis.internal.system.DefaultFactories;
+
 import static org.apache.sis.internal.feature.AttributeConvention.*;
 import static org.apache.sis.feature.DefaultFeatureType.*;
-import org.apache.sis.internal.system.DefaultFactories;
+
+// Branch-dependent imports
 import org.opengis.feature.AttributeType;
 import org.opengis.feature.FeatureAssociationRole;
 import org.opengis.feature.FeatureType;
 import org.opengis.feature.Operation;
 import org.opengis.feature.PropertyType;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.util.GenericName;
-import org.opengis.util.NameFactory;
-import org.opengis.util.ScopedName;
+
 
 /**
  * Helper class for the creation of {@link FeatureType} instances.
  * This builder can create the parameters to be given to {@linkplain DefaultFeatureType feature type constructor}
  * from simpler parameters given to this builder.
  *
- * @author Johann Sorel (Geomatys)
+ * @author  Johann Sorel (Geomatys)
  * @since   0.7
  * @version 0.7
  * @module
@@ -70,7 +74,7 @@ public class FeatureTypeBuilder {
     /**
      * Reset builder parameters to there original values.
      */
-    public void reset(){
+    public void reset() {
         properties.clear();
         superTypes.clear();
         isAbstract = false;
@@ -86,7 +90,7 @@ public class FeatureTypeBuilder {
      *
      * @param type feature type to copy parameters from.
      */
-    public void copy(FeatureType type){
+    public void copy(final FeatureType type) {
         reset();
         setName(type.getName());
         setDescription(type.getDescription());
@@ -95,10 +99,9 @@ public class FeatureTypeBuilder {
         setAbstract(type.isAbstract());
         setSuperTypes(type.getSuperTypes());
 
-        for(PropertyType pt : type.getProperties(false)){
+        for (PropertyType pt : type.getProperties(false)) {
             addProperty(pt);
         }
-
     }
 
     /**
@@ -106,7 +109,7 @@ public class FeatureTypeBuilder {
      *
      * @param localPart generic name tip part, not null
      */
-    public void setName(String localPart){
+    public void setName(String localPart) {
         setName(create(localPart));
     }
 
@@ -116,7 +119,7 @@ public class FeatureTypeBuilder {
      * @param scope generic name scope part, can be null
      * @param localPart generic name tip part, not null
      */
-    public void setName(String scope, String localPart){
+    public void setName(String scope, String localPart) {
         setName(create(scope,localPart));
     }
 
@@ -127,7 +130,7 @@ public class FeatureTypeBuilder {
      *
      * @param name generic name, not null
      */
-    public void setName(GenericName name){
+    public void setName(GenericName name) {
         parameters.put(NAME_KEY, name);
     }
 
@@ -136,12 +139,12 @@ public class FeatureTypeBuilder {
      *
      * @return GenericName, can be null
      */
-    public GenericName getName(){
+    public GenericName getName() {
         Object val = parameters.get(DefaultFeatureType.NAME_KEY);
-        if(val instanceof GenericName){
+        if (val instanceof GenericName) {
             return (GenericName) val;
-        }else if(val instanceof String){
-            return valueOf((String)val);
+        } else if (val instanceof String) {
+            return valueOf((String) val);
         }
         return null;
     }
@@ -153,7 +156,7 @@ public class FeatureTypeBuilder {
      *
      * @param description feature type description
      */
-    public void setDescription(CharSequence description){
+    public void setDescription(CharSequence description) {
         parameters.put(DESCRIPTION_KEY, description);
     }
 
@@ -164,7 +167,7 @@ public class FeatureTypeBuilder {
      *
      * @param designation feature type designation
      */
-    public void setDesignation(CharSequence designation){
+    public void setDesignation(CharSequence designation) {
         parameters.put(DESIGNATION_KEY, designation);
     }
 
@@ -175,17 +178,17 @@ public class FeatureTypeBuilder {
      *
      * @param definition feature type definition
      */
-    public void setDefinition(CharSequence definition){
+    public void setDefinition(CharSequence definition) {
         parameters.put(DEFINITION_KEY, definition);
     }
 
     /**
      * Set feature type abstract.
      *
-     * @param abstrac long description of the feature type
+     * @param isAbstract whether the feature is abstract.
      */
-    public void setAbstract(boolean abstrac) {
-        this.isAbstract = abstrac;
+    public void setAbstract(final boolean isAbstract) {
+        this.isAbstract = isAbstract;
     }
 
     /**
@@ -194,7 +197,7 @@ public class FeatureTypeBuilder {
      *
      * @param types not null
      */
-    public void setSuperTypes(Collection<? extends FeatureType> types){
+    public void setSuperTypes(final Collection<? extends FeatureType> types) {
         superTypes.clear();
         superTypes.addAll(types);
     }
@@ -205,7 +208,7 @@ public class FeatureTypeBuilder {
      *
      * @param types not null
      */
-    public void setSuperTypes(FeatureType... types){
+    public void setSuperTypes(final FeatureType... types) {
         superTypes.clear();
         superTypes.addAll(Arrays.asList(types));
     }
@@ -216,7 +219,7 @@ public class FeatureTypeBuilder {
      *
      * @param attributeName attribute id used in the id operation
      */
-    public void setIdOperation(String attributeName){
+    public void setIdOperation(final String attributeName) {
         setIdOperation(null, "-", create(attributeName));
     }
 
@@ -226,7 +229,7 @@ public class FeatureTypeBuilder {
      *
      * @param attributes attributes used in the id operation
      */
-    public void setIdOperation(GenericName ... attributes){
+    public void setIdOperation(final GenericName ... attributes) {
         setIdOperation(null, "-", attributes);
     }
 
@@ -236,7 +239,7 @@ public class FeatureTypeBuilder {
      * @param prefix generated id prefix
      * @param attributeName attribute id used in the id operation
      */
-    public void setIdOperation(String prefix, String attributeName){
+    public void setIdOperation(final String prefix, final String attributeName) {
         setIdOperation(prefix, "-", create(attributeName));
     }
 
@@ -246,7 +249,7 @@ public class FeatureTypeBuilder {
      * @param prefix generated id prefix
      * @param attributes attributes used in the id operation
      */
-    public void setIdOperation(String prefix, GenericName ... attributes){
+    public void setIdOperation(final String prefix, final GenericName ... attributes) {
         setIdOperation(prefix, "-", attributes);
     }
 
@@ -257,7 +260,7 @@ public class FeatureTypeBuilder {
      * @param separator generated id separator between attribute values
      * @param attributes attributes used in the id operation
      */
-    public void setIdOperation(String prefix, String separator, GenericName ... attributes){
+    public void setIdOperation(final String prefix, final String separator, final GenericName ... attributes) {
         idPrefix = prefix;
         idSeparator = separator;
         idAttributes = attributes;
@@ -270,7 +273,7 @@ public class FeatureTypeBuilder {
      *
      * @param attribute referenced attribute
      */
-    public void setDefaultGeometryOperation(String attribute){
+    public void setDefaultGeometryOperation(final String attribute) {
         setDefaultGeometryOperation(create(attribute));
     }
 
@@ -280,7 +283,7 @@ public class FeatureTypeBuilder {
      * @param scope referenced attribute name scope
      * @param localPart referenced name tip
      */
-    public void setDefaultGeometryOperation(String scope, String localPart){
+    public void setDefaultGeometryOperation(final String scope, final String localPart) {
         setDefaultGeometryOperation(create(scope,localPart));
     }
 
@@ -289,7 +292,7 @@ public class FeatureTypeBuilder {
      *
      * @param attribute referenced attribute
      */
-    public void setDefaultGeometryOperation(GenericName attribute){
+    public void setDefaultGeometryOperation(final GenericName attribute) {
         defGeomAttribute = attribute;
         //add placeholder
         properties.put(ATTRIBUTE_DEFAULT_GEOMETRY, null);
@@ -305,7 +308,7 @@ public class FeatureTypeBuilder {
      * @param valueClass property value class
      * @return created property type
      */
-    public AttributeType addProperty(String localPart, Class valueClass){
+    public <V> AttributeType<V> addProperty(final String localPart, final Class<V> valueClass) {
         return addProperty(create(localPart), valueClass);
     }
 
@@ -319,7 +322,7 @@ public class FeatureTypeBuilder {
      * @param valueClass property value class
      * @return created property type
      */
-    public AttributeType addProperty(String scope, String localPart, Class valueClass){
+    public <V> AttributeType<V> addProperty(final String scope, final String localPart, final Class<V> valueClass) {
         return addProperty(create(scope, localPart), valueClass);
     }
 
@@ -332,8 +335,8 @@ public class FeatureTypeBuilder {
      * @param valueClass property value class
      * @return created property type
      */
-    public AttributeType addProperty(GenericName name, Class valueClass){
-        return addProperty(name, valueClass,null);
+    public <V> AttributeType<V> addProperty(final GenericName name, final Class<V> valueClass) {
+        return addProperty(name, valueClass, (V) null);
     }
 
     /**
@@ -346,8 +349,8 @@ public class FeatureTypeBuilder {
      * @param crs property {@code CoordinateReferenceSystem} characteristic
      * @return created property type
      */
-    public AttributeType addProperty(String localPart, Class valueClass, CoordinateReferenceSystem crs){
-        return addProperty(null, localPart, valueClass,crs);
+    public <V> AttributeType<V> addProperty(final String localPart, final Class<V> valueClass, final CoordinateReferenceSystem crs) {
+        return addProperty(null, localPart, valueClass, crs);
     }
 
     /**
@@ -361,8 +364,10 @@ public class FeatureTypeBuilder {
      * @param crs property {@code CoordinateReferenceSystem} characteristic
      * @return created property type
      */
-    public AttributeType addProperty(String scope, String localPart, Class valueClass, CoordinateReferenceSystem crs){
-        return addProperty(create(scope, localPart), valueClass,crs);
+    public <V> AttributeType<V> addProperty(final String scope, final String localPart,
+            final Class<V> valueClass, final CoordinateReferenceSystem crs)
+    {
+        return addProperty(create(scope, localPart), valueClass, crs);
     }
 
     /**
@@ -375,8 +380,8 @@ public class FeatureTypeBuilder {
      * @param crs property {@code CoordinateReferenceSystem} characteristic
      * @return created property type
      */
-    public AttributeType addProperty(GenericName name, Class valueClass, CoordinateReferenceSystem crs){
-        return addProperty(name, valueClass,null,crs);
+    public <V> AttributeType<V> addProperty(final GenericName name, final Class<V> valueClass, final CoordinateReferenceSystem crs) {
+        return addProperty(name, valueClass, null, crs);
     }
 
     /**
@@ -389,8 +394,10 @@ public class FeatureTypeBuilder {
      * @param defaultValue property default value
      * @return created property type
      */
-    public AttributeType addProperty(String scope, String localPart, Class valueClass, Object defaultValue){
-        return addProperty(create(scope, localPart), valueClass,defaultValue,null);
+    public <V> AttributeType<V> addProperty(final String scope, final String localPart,
+            final Class<V> valueClass, final V defaultValue)
+    {
+        return addProperty(create(scope, localPart), valueClass, defaultValue, null);
     }
 
     /**
@@ -405,8 +412,10 @@ public class FeatureTypeBuilder {
      * @param crs property {@code CoordinateReferenceSystem} characteristic
      * @return created property type
      */
-    public AttributeType addProperty(String scope, String localPart, Class valueClass, Object defaultValue, CoordinateReferenceSystem crs){
-        return addProperty(create(scope, localPart), valueClass,1, 1, defaultValue,crs);
+    public <V> AttributeType<V> addProperty(final String scope, final String localPart,
+            final Class<V> valueClass, final V defaultValue, final CoordinateReferenceSystem crs)
+    {
+        return addProperty(create(scope, localPart), valueClass, 1, 1, defaultValue, crs);
     }
 
     /**
@@ -418,8 +427,8 @@ public class FeatureTypeBuilder {
      * @param defaultValue property default value
      * @return created property type
      */
-    public AttributeType addProperty(GenericName name, Class valueClass, Object defaultValue){
-        return addProperty(name, valueClass,1, 1, defaultValue);
+    public <V> AttributeType<V> addProperty(final GenericName name, final Class<V> valueClass, final V defaultValue) {
+        return addProperty(name, valueClass, 1, 1, defaultValue);
     }
 
     /**
@@ -433,8 +442,10 @@ public class FeatureTypeBuilder {
      * @param crs property {@code CoordinateReferenceSystem} characteristic
      * @return created property type
      */
-    public AttributeType addProperty(GenericName name, Class valueClass, Object defaultValue, CoordinateReferenceSystem crs){
-        return addProperty(name, valueClass,1, 1, defaultValue, crs);
+    public <V> AttributeType<V> addProperty(final GenericName name, final Class<V> valueClass,
+            final V defaultValue, final CoordinateReferenceSystem crs)
+    {
+        return addProperty(name, valueClass, 1, 1, defaultValue, crs);
     }
 
     /**
@@ -448,9 +459,10 @@ public class FeatureTypeBuilder {
      * @param defaultValue property default value
      * @return created property type
      */
-    public AttributeType addProperty(String localPart, Class valueClass,
-            int minimumOccurs, int maximumOccurs, Object defaultValue){
-        return addProperty(create(localPart), valueClass,minimumOccurs, maximumOccurs, defaultValue);
+    public <V> AttributeType<V> addProperty(final String localPart, final Class<V> valueClass,
+            final int minimumOccurs, final int maximumOccurs, final V defaultValue)
+    {
+        return addProperty(create(localPart), valueClass, minimumOccurs, maximumOccurs, defaultValue);
     }
 
     /**
@@ -464,9 +476,10 @@ public class FeatureTypeBuilder {
      * @param defaultValue property default value
      * @return created property type
      */
-    public AttributeType addProperty(String scope, String localPart, Class valueClass,
-            int minimumOccurs, int maximumOccurs, Object defaultValue){
-        return addProperty(create(scope, localPart), valueClass,minimumOccurs, maximumOccurs, defaultValue);
+    public <V> AttributeType<V> addProperty(final String scope, final String localPart, final Class<V> valueClass,
+            final int minimumOccurs, final int maximumOccurs, final V defaultValue)
+    {
+        return addProperty(create(scope, localPart), valueClass, minimumOccurs, maximumOccurs, defaultValue);
     }
 
     /**
@@ -481,9 +494,10 @@ public class FeatureTypeBuilder {
      * @param crs property {@code CoordinateReferenceSystem} characteristic
      * @return created property type
      */
-    public AttributeType addProperty(String scope, String localPart, Class valueClass,
-            int minimumOccurs, int maximumOccurs, Object defaultValue, CoordinateReferenceSystem crs){
-        return addProperty(create(scope, localPart), valueClass,minimumOccurs, maximumOccurs, defaultValue, crs);
+    public <V> AttributeType<V> addProperty(final String scope, final String localPart, final Class<V> valueClass,
+            final int minimumOccurs, final int maximumOccurs, final V defaultValue, final CoordinateReferenceSystem crs)
+    {
+        return addProperty(create(scope, localPart), valueClass, minimumOccurs, maximumOccurs, defaultValue, crs);
     }
 
     /**
@@ -496,9 +510,10 @@ public class FeatureTypeBuilder {
      * @param defaultValue property default value
      * @return created property type
      */
-    public AttributeType addProperty(GenericName name, Class valueClass, int minimumOccurs,
-            int maximumOccurs, Object defaultValue){
-        return addProperty(name, valueClass,minimumOccurs, maximumOccurs, defaultValue,null);
+    public <V> AttributeType<V> addProperty(final GenericName name, final Class<V> valueClass,
+            final int minimumOccurs, final int maximumOccurs, final V defaultValue)
+    {
+        return addProperty(name, valueClass, minimumOccurs, maximumOccurs, defaultValue,null);
     }
 
     /**
@@ -512,22 +527,22 @@ public class FeatureTypeBuilder {
      * @param crs property {@code CoordinateReferenceSystem} characteristic
      * @return created property type
      */
-    public AttributeType addProperty(GenericName name, Class valueClass, int minimumOccurs,
-            int maximumOccurs, Object defaultValue, CoordinateReferenceSystem crs){
-        final AttributeType att;
-        if(crs!=null){
-            final AttributeType qualifier = new DefaultAttributeType(
+    public <V> AttributeType<V> addProperty(final GenericName name, final Class<V> valueClass,
+            final int minimumOccurs, final int maximumOccurs, final V defaultValue, final CoordinateReferenceSystem crs)
+    {
+        final AttributeType<V> att;
+        if (crs != null) {
+            final AttributeType<CoordinateReferenceSystem> qualifier = new DefaultAttributeType<>(
                     Collections.singletonMap(NAME_KEY, CHARACTERISTIC_CRS),
-                    CoordinateReferenceSystem.class,1,1,crs);
-            att = new DefaultAttributeType(
+                    CoordinateReferenceSystem.class, 1, 1, crs);
+            att = new DefaultAttributeType<>(
                 Collections.singletonMap(NAME_KEY, name),
                 valueClass, minimumOccurs, maximumOccurs, defaultValue, qualifier);
-        }else{
-            att = new DefaultAttributeType(
+        } else {
+            att = new DefaultAttributeType<>(
                 Collections.singletonMap(NAME_KEY, name),
                 valueClass, minimumOccurs, maximumOccurs, defaultValue);
         }
-
         addProperty(att);
         return att;
     }
@@ -538,7 +553,7 @@ public class FeatureTypeBuilder {
      * @param property user defined property type
      * @return created property type
      */
-    public PropertyType addProperty(PropertyType property){
+    public PropertyType addProperty(final PropertyType property) {
         properties.put(property.getName(), property);
         return property;
     }
@@ -552,7 +567,7 @@ public class FeatureTypeBuilder {
      * @param type associated feature type
      * @return created association
      */
-    public FeatureAssociationRole addAssociation(String scope, String localPart, FeatureType type){
+    public FeatureAssociationRole addAssociation(final String scope, final String localPart, final FeatureType type) {
         return addAssociation(scope, localPart, type,0,1);
     }
 
@@ -564,7 +579,7 @@ public class FeatureTypeBuilder {
      * @param type associated feature type
      * @return created association
      */
-    public FeatureAssociationRole addAssociation(GenericName name, FeatureType type){
+    public FeatureAssociationRole addAssociation(final GenericName name, final FeatureType type) {
         return addAssociation(name, type,0,1);
     }
 
@@ -578,7 +593,9 @@ public class FeatureTypeBuilder {
      * @param maximumOccurs property maximum number of occurrences
      * @return created association
      */
-    public FeatureAssociationRole addAssociation(String scope, String localPart, FeatureType type, int minimumOccurs, int maximumOccurs){
+    public FeatureAssociationRole addAssociation(final String scope, final String localPart, final FeatureType type,
+            final int minimumOccurs, final int maximumOccurs)
+    {
         return addAssociation(create(scope, localPart), type,minimumOccurs, maximumOccurs);
     }
 
@@ -591,7 +608,9 @@ public class FeatureTypeBuilder {
      * @param maximumOccurs property maximum number of occurrences
      * @return created association
      */
-    public FeatureAssociationRole addAssociation(GenericName name, FeatureType type, int minimumOccurs, int maximumOccurs){
+    public FeatureAssociationRole addAssociation(final GenericName name, final FeatureType type,
+            final int minimumOccurs, final int maximumOccurs)
+    {
         final FeatureAssociationRole role = new DefaultAssociationRole(
                 Collections.singletonMap(NAME_KEY, name), type, minimumOccurs, maximumOccurs);
         addProperty(role);
@@ -603,8 +622,8 @@ public class FeatureTypeBuilder {
      *
      * @param properties user defined property types
      */
-    public void addProperties(PropertyType ... properties){
-        for(PropertyType pt : properties){
+    public void addProperties(final PropertyType ... properties) {
+        for (PropertyType pt : properties) {
             this.properties.put(pt.getName(), pt);
         }
     }
@@ -614,8 +633,8 @@ public class FeatureTypeBuilder {
      *
      * @param properties user defined property types
      */
-    public void addProperties(Collection<? extends PropertyType> properties){
-        for(PropertyType pt : properties){
+    public void addProperties(final Collection<? extends PropertyType> properties) {
+        for (PropertyType pt : properties) {
             this.properties.put(pt.getName(), pt);
         }
     }
@@ -626,7 +645,7 @@ public class FeatureTypeBuilder {
      * @param name property name
      * @return removed property, can be null if property was not found
      */
-    public PropertyType removeProperty(String name){
+    public PropertyType removeProperty(final String name) {
         return properties.remove(valueOf(name));
     }
 
@@ -636,7 +655,7 @@ public class FeatureTypeBuilder {
      * @param name property name
      * @return removed property, can be null if property was not found
      */
-    public PropertyType removeProperty(GenericName name){
+    public PropertyType removeProperty(final GenericName name) {
         return properties.remove(name);
     }
 
@@ -645,29 +664,29 @@ public class FeatureTypeBuilder {
      *
      * @return FeatureType
      */
-    public DefaultFeatureType build() throws IllegalArgumentException{
+    public DefaultFeatureType build() throws IllegalArgumentException {
         //build id property
-        if(idAttributes!=null){
+        if (idAttributes != null) {
             //check id properties exist
-            for(GenericName n : idAttributes){
-                if(!properties.containsKey(n)){
+            for (GenericName n : idAttributes) {
+                if (!properties.containsKey(n)) {
                     throw new IllegalArgumentException("Property "+n+" used in id does not exist");
                 }
             }
 
             String prefix = idPrefix;
-            if(idPrefix==null){
+            if (idPrefix==null) {
                 prefix = getName().tip().toString();
             }
 
             final Operation att = FeatureOperations.compound(
                     Collections.singletonMap(AbstractOperation.NAME_KEY, ATTRIBUTE_ID),
-                    idSeparator, prefix, null, idAttributes);
+                    idSeparator, prefix, null, properties.get(idAttributes));
             properties.put(ATTRIBUTE_ID, att);
         }
         //build default geometry property
-        if(defGeomAttribute!=null){
-            if(!properties.containsKey(defGeomAttribute)){
+        if (defGeomAttribute != null) {
+            if (!properties.containsKey(defGeomAttribute)) {
                 throw new IllegalArgumentException("Property "+defGeomAttribute+" used in default geometry does not exist");
             }
             final PropertyType geomAtt = properties.get(defGeomAttribute);
@@ -695,15 +714,14 @@ public class FeatureTypeBuilder {
      *
      * @throws IllegalArgumentException if some properties are missing for an operation.
      */
-    private void verifyOperations() throws IllegalArgumentException{
-
-        for(PropertyType pt : properties.values()){
-            if(pt instanceof AbstractOperation){
+    private void verifyOperations() throws IllegalArgumentException {
+        for (PropertyType pt : properties.values()) {
+            if (pt instanceof AbstractOperation) {
                 final Set<String> dependencies = ((AbstractOperation)pt).getDependencies();
                 depLoop:
-                for(String dep : dependencies){
-                    for(GenericName gn : properties.keySet()){
-                        if(match(gn, dep)) continue depLoop;
+                for (String dep : dependencies) {
+                    for (GenericName gn : properties.keySet()) {
+                        if (match(gn, dep)) continue depLoop;
                     }
                     throw new IllegalArgumentException("Operation "+pt.getName().toString()+" requiere property "+dep+" but this property is missing.");
                 }
@@ -727,10 +745,10 @@ public class FeatureTypeBuilder {
      * @param parsedNames mandatory
      * @return GenericName
      */
-    private static GenericName create(final String scope, String localPart) {
-        if(scope==null){
+    private static GenericName create(final String scope, final String localPart) {
+        if (scope == null) {
             return DefaultFactories.forBuildin(NameFactory.class).createGenericName(null, localPart);
-        }else{
+        } else {
             return DefaultFactories.forBuildin(NameFactory.class).createGenericName(null, scope, localPart);
         }
     }
@@ -746,18 +764,18 @@ public class FeatureTypeBuilder {
      * @param candidate String to convert to a geoneric name
      * @return Name
      */
-    private static GenericName valueOf(final String candidate){
+    private static GenericName valueOf(final String candidate) {
 
-        if(candidate.startsWith("{")){
+        if (candidate.startsWith("{")) {
             //name is in extended form
             return toSessionNamespaceFromExtended(candidate);
         }
 
         int index = candidate.lastIndexOf(':');
 
-        if(index <= 0){
+        if (index <= 0) {
             return create(null, candidate);
-        }else{
+        } else {
             final String uri = candidate.substring(0,index);
             final String name = candidate.substring(index+1,candidate.length());
             return create(uri, name);
@@ -768,7 +786,7 @@ public class FeatureTypeBuilder {
     private static GenericName toSessionNamespaceFromExtended(final String candidate) {
         final int index = candidate.indexOf('}');
 
-        if(index == -1) throw new IllegalArgumentException("Invalide extended form : "+ candidate);
+        if (index < 0) throw new IllegalArgumentException("Invalide extended form : "+ candidate);
 
         final String uri = candidate.substring(1, index);
         final String name = candidate.substring(index+1, candidate.length());
@@ -776,12 +794,12 @@ public class FeatureTypeBuilder {
         return create(uri, name);
     }
 
-    private static String toExpandedString(final GenericName name){
+    private static String toExpandedString(final GenericName name) {
         String ns = getNamespace(name);
-        if(ns==null){
+        if (ns == null) {
             return name.tip().toString();
-        }else{
-            return new StringBuilder("{").append(ns).append('}').append(name.tip().toString()).toString();
+        } else {
+            return '{' + ns + '}' + name.tip();
         }
     }
 
@@ -794,26 +812,24 @@ public class FeatureTypeBuilder {
      * @param candidate name to test
      * @return true if the string match the name
      */
-    private static boolean match(final GenericName name, final String candidate){
-        if(candidate.startsWith("{")){
+    private static boolean match(final GenericName name, final String candidate) {
+        if (candidate.startsWith("{")) {
             //candidate is in extended form
             return candidate.equals(toExpandedString(name));
         }
 
         final int index = candidate.lastIndexOf(':');
 
-        if(index <= 0){
+        if (index <= 0) {
             return candidate.equals(name.tip().toString());
-        }else{
+        } else {
             final String uri = candidate.substring(0,index);
             final String local = candidate.substring(index+1,candidate.length());
             return uri.equals(getNamespace(name)) && local.equals(name.tip().toString());
         }
     }
 
-    private static String getNamespace(GenericName name){
+    private static String getNamespace(final GenericName name) {
         return (name instanceof ScopedName) ? ((ScopedName)name).path().toString() : null;
     }
-
-
 }

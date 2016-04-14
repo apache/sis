@@ -255,8 +255,8 @@ public class DefaultRecord implements Record, Serializable {
         if (value != null) {
             final Class<?> valueClass = definition.getValueClass(index);
             if (valueClass != null && !valueClass.isInstance(value)) {
-                throw new ClassCastException(Errors.format(Errors.Keys.IllegalPropertyClass_2,
-                        name, value.getClass()));
+                throw new ClassCastException(Errors.format(Errors.Keys.IllegalPropertyValueClass_3,
+                        name, valueClass, value.getClass()));
             }
         }
         Array.set(values, index, value);
@@ -281,8 +281,8 @@ public class DefaultRecord implements Record, Serializable {
             if (value != null) {
                 final Class<?> valueClass = definition.getValueClass(i);
                 if (valueClass != null && !valueClass.isInstance(value)) {
-                    throw new ClassCastException(Errors.format(Errors.Keys.IllegalPropertyClass_2,
-                            definition.getName(i), value.getClass()));
+                    throw new ClassCastException(Errors.format(Errors.Keys.IllegalPropertyValueClass_3,
+                            definition.getName(i), valueClass, value.getClass()));
                 }
             }
             Array.set(values, i, value);

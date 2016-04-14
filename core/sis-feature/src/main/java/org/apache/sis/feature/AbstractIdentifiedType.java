@@ -178,7 +178,7 @@ public class AbstractIdentifiedType implements IdentifiedType, Serializable {
             name = (GenericName) value;
         } else {
             throw new IllegalArgumentException(Errors.getResources(identification).getString(
-                    Errors.Keys.IllegalPropertyClass_2, NAME_KEY, value.getClass()));
+                    Errors.Keys.IllegalPropertyValueClass_2, NAME_KEY, value.getClass()));
         }
         definition  = Types.toInternationalString(identification, DEFINITION_KEY );
         designation = Types.toInternationalString(identification, DESIGNATION_KEY);

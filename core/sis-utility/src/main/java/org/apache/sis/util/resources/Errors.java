@@ -454,9 +454,19 @@ public final class Errors extends IndexedResourceBundle {
         public static final short IllegalParameterValue_2 = 144;
 
         /**
+         * Property “{0}” can not be of type ‘{1}’.
+         */
+        public static final short IllegalPropertyType_2 = 223;
+
+        /**
          * Property “{0}” does not accept instances of ‘{1}’.
          */
-        public static final short IllegalPropertyClass_2 = 40;
+        public static final short IllegalPropertyValueClass_2 = 40;
+
+        /**
+         * Expected an instance of ‘{1}’ for the “{0}” property, but got an instance of ‘{2}’.
+         */
+        public static final short IllegalPropertyValueClass_3 = 224;
 
         /**
          * Range [{0} … {1}] is not valid.

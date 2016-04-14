@@ -86,13 +86,11 @@ final class CRSPair {
         if (object == null) {
             return null;
         }
-        Class<?> type;
+        Class<? extends IdentifiedObject> type;
         if (object instanceof AbstractIdentifiedObject) {
             type = ((AbstractIdentifiedObject) object).getInterface();
         } else {
-            type = object.getClass();
-            final Class<?>[] c = Classes.getLeafInterfaces(type, IdentifiedObject.class);
-            if (c.length != 0) type = c[0];
+            type = Classes.getLeafInterfaces(object.getClass(), IdentifiedObject.class)[0];
         }
         String label = Classes.getShortName(type);
         String name = IdentifiedObjects.getName(object, null);

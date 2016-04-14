@@ -18,6 +18,7 @@ package org.apache.sis.feature;
 
 import java.util.Collection;
 import org.apache.sis.internal.util.CheckedArrayList;
+import org.apache.sis.util.collection.CheckedContainer;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 
@@ -91,7 +92,7 @@ final class MultiValuedAttribute<V> extends AbstractAttribute<V> {
         if (values == null) {
             this.values = new CheckedArrayList<>(valueClass);
         } else {
-            final Class<?> actual = ((CheckedArrayList<?>) values).getElementType();
+            final Class<?> actual = ((CheckedContainer<?>) values).getElementType();
             if (actual == valueClass) {
                 this.values = (CheckedArrayList<V>) values;
             } else {

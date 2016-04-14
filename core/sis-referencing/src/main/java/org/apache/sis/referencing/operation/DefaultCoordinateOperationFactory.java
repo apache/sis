@@ -158,7 +158,7 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
                 mtFactory  = (MathTransformFactory) (value = properties.remove(key = ReferencingServices.MT_FACTORY));
             } catch (ClassCastException e) {
                 throw new IllegalArgumentException(Errors.getResources(properties)
-                        .getString(Errors.Keys.IllegalPropertyClass_2, key, Classes.getClass(value)));
+                        .getString(Errors.Keys.IllegalPropertyValueClass_2, key, Classes.getClass(value)));
             }
             properties = CollectionsExt.compact(properties);
         }

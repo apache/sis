@@ -586,14 +586,14 @@ public abstract class AbstractFeature implements Feature, Serializable {
      * @param value The value, which shall be non-null.
      */
     private static ClassCastException illegalValueClass(final GenericName name, final Object value) {
-        return new ClassCastException(Errors.format(Errors.Keys.IllegalPropertyClass_2, name, value.getClass()));
+        return new ClassCastException(Errors.format(Errors.Keys.IllegalPropertyValueClass_2, name, value.getClass()));
     }
 
     /**
      * Returns the exception for a property value (usually a feature) of wrong type.
      */
     private static InvalidPropertyValueException illegalPropertyType(final GenericName name, final Object value) {
-        return new InvalidPropertyValueException(Errors.format(Errors.Keys.IllegalPropertyClass_2, name, value));
+        return new InvalidPropertyValueException(Errors.format(Errors.Keys.IllegalPropertyValueClass_2, name, value));
     }
 
     /**
