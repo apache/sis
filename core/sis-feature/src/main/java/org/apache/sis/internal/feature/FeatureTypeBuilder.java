@@ -47,7 +47,7 @@ import org.opengis.util.ScopedName;
  * Helper class for the creation of {@link FeatureType} instances.
  * This builder can create the parameters to be given to {@linkplain DefaultFeatureType feature type constructor}
  * from simpler parameters given to this builder.
- * 
+ *
  * @author Johann Sorel (Geomatys)
  * @since   0.7
  * @version 0.7
@@ -83,7 +83,7 @@ public class FeatureTypeBuilder {
 
     /**
      * Copy parameters from the given feature type.
-     * 
+     *
      * @param type feature type to copy parameters from.
      */
     public void copy(FeatureType type){
@@ -213,7 +213,7 @@ public class FeatureTypeBuilder {
     /**
      * Define an id operation composed of the given attribute.
      * Generated id prefix will be the name of the featuretype+'.'
-     * 
+     *
      * @param attributeName attribute id used in the id operation
      */
     public void setIdOperation(String attributeName){
@@ -267,7 +267,7 @@ public class FeatureTypeBuilder {
 
     /**
      * Define a default geometry link operation.
-     * 
+     *
      * @param attribute referenced attribute
      */
     public void setDefaultGeometryOperation(String attribute){
@@ -286,7 +286,7 @@ public class FeatureTypeBuilder {
 
     /**
      * Define a default geometry link operation.
-     * 
+     *
      * @param attribute referenced attribute
      */
     public void setDefaultGeometryOperation(GenericName attribute){
@@ -369,7 +369,7 @@ public class FeatureTypeBuilder {
      * Add a new property to the feature type.
      * Property will have a minimum and maximum occurrence of one, no default value
      * and the given {@code CoordinateReferenceSystem} characteristic.
-     * 
+     *
      * @param name property name
      * @param valueClass property value class
      * @param crs property {@code CoordinateReferenceSystem} characteristic
@@ -426,7 +426,7 @@ public class FeatureTypeBuilder {
      * Add a new property to the feature type.
      * Property will have a minimum and maximum occurrence of one and the given
      * {@code CoordinateReferenceSystem} characteristic.
-     * 
+     *
      * @param name property name
      * @param valueClass property value class
      * @param defaultValue property default value
@@ -503,7 +503,7 @@ public class FeatureTypeBuilder {
 
     /**
      * Add a new property to the feature type.
-     * 
+     *
      * @param name property name
      * @param valueClass property value class
      * @param minimumOccurs property minimum number of occurrences
@@ -632,7 +632,7 @@ public class FeatureTypeBuilder {
 
     /**
      * Remove a property from the feature type.
-     * 
+     *
      * @param name property name
      * @return removed property, can be null if property was not found
      */
@@ -660,7 +660,9 @@ public class FeatureTypeBuilder {
                 prefix = getName().tip().toString();
             }
 
-            final Operation att = FeatureOperations.aggregate(ATTRIBUTE_ID, prefix, null, idSeparator, idAttributes);
+            final Operation att = FeatureOperations.compound(
+                    Collections.singletonMap(AbstractOperation.NAME_KEY, ATTRIBUTE_ID),
+                    idSeparator, prefix, null, idAttributes);
             properties.put(ATTRIBUTE_ID, att);
         }
         //build default geometry property
@@ -670,16 +672,17 @@ public class FeatureTypeBuilder {
             }
             final PropertyType geomAtt = properties.get(defGeomAttribute);
             final CoordinateReferenceSystem crs = AttributeConvention.getCRSCharacteristic(geomAtt);
-            final Operation att = FeatureOperations.link(ATTRIBUTE_DEFAULT_GEOMETRY, geomAtt);
+            final Operation att = FeatureOperations.link(
+                    Collections.singletonMap(AbstractOperation.NAME_KEY, ATTRIBUTE_DEFAULT_GEOMETRY), geomAtt);
             properties.put(ATTRIBUTE_DEFAULT_GEOMETRY, att);
 
-            final Operation boundAtt = FeatureOperations.bounds(ATTRIBUTE_BOUNDS, crs);
+            final Operation boundAtt = FeatureOperations.bounds(Collections.singletonMap(AbstractOperation.NAME_KEY, ATTRIBUTE_BOUNDS), crs);
             properties.put(ATTRIBUTE_BOUNDS, boundAtt);
 
         }
 
         verifyOperations();
-        
+
         return new DefaultFeatureType(
                 parameters,
                 isAbstract,
@@ -689,11 +692,11 @@ public class FeatureTypeBuilder {
 
     /**
      * Check operations have the required properties.
-     * 
+     *
      * @throws IllegalArgumentException if some properties are missing for an operation.
      */
     private void verifyOperations() throws IllegalArgumentException{
-        
+
         for(PropertyType pt : properties.values()){
             if(pt instanceof AbstractOperation){
                 final Set<String> dependencies = ((AbstractOperation)pt).getDependencies();
@@ -704,10 +707,10 @@ public class FeatureTypeBuilder {
                     }
                     throw new IllegalArgumentException("Operation "+pt.getName().toString()+" requiere property "+dep+" but this property is missing.");
                 }
-                
+
             }
         }
-        
+
     }
 
     ////////////////////////////////////////////////////////////////////////////

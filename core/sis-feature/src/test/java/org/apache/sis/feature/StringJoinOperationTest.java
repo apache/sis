@@ -16,6 +16,7 @@
  */
 package org.apache.sis.feature;
 
+import java.util.Collections;
 import org.apache.sis.internal.feature.FeatureTypeBuilder;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -27,7 +28,7 @@ import org.opengis.feature.PropertyType;
 
 
 /**
- * Tests {@link AggregateOperation}.
+ * Tests {@link StringJoinOperation}.
  *
  * @author  Johann Sorel (Geomatys)
  * @since   0.7
@@ -38,7 +39,7 @@ import org.opengis.feature.PropertyType;
     AbstractOperationTest.class,
     DenseFeatureTest.class
 })
-public final strictfp class AggregateOperationTest extends TestCase {
+public final strictfp class StringJoinOperationTest extends TestCase {
     /**
      * Creates a feature type with an aggregation operation.
      * The feature contains the following properties:
@@ -57,8 +58,9 @@ public final strictfp class AggregateOperationTest extends TestCase {
         ftb.setName("person");
         final PropertyType nameType = ftb.addProperty("name", String.class);
         final PropertyType ageType = ftb.addProperty("age", Integer.class);
-        ftb.addProperty(FeatureOperations.aggregate(Names.parseGenericName(null, ":", 
-                "summary"), "prefix:", ":suffix","/",nameType.getName(), ageType.getName()));
+        ftb.addProperty(FeatureOperations.compound(
+                Collections.singletonMap(AbstractOperation.NAME_KEY, Names.parseGenericName(null, ":", "summary")),
+                "/", "prefix:", ":suffix", nameType.getName(), ageType.getName()));
         return ftb.build();
     }
 
@@ -68,9 +70,9 @@ public final strictfp class AggregateOperationTest extends TestCase {
     private static void run(final AbstractFeature feature) {
 
         //test feature
-        assertEquals("prefix:null/null:suffix", feature.getPropertyValue("summary"));
+        assertEquals("prefix:/:suffix", feature.getPropertyValue("summary"));
         feature.setPropertyValue("name", "marc");
-        assertEquals("prefix:marc/null:suffix", feature.getPropertyValue("summary"));
+        assertEquals("prefix:marc/:suffix", feature.getPropertyValue("summary"));
         feature.setPropertyValue("age", 21);
         assertEquals("prefix:marc/21:suffix", feature.getPropertyValue("summary"));
 

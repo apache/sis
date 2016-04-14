@@ -16,7 +16,7 @@
  */
 package org.apache.sis.feature;
 
-import org.apache.sis.internal.feature.FeatureTypeBuilder;
+import java.util.Collections;
 import com.esri.core.geometry.Point;
 import com.esri.core.geometry.Polygon;
 import org.apache.sis.geometry.GeneralEnvelope;
@@ -24,6 +24,7 @@ import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.util.iso.Names;
+import org.apache.sis.internal.feature.FeatureTypeBuilder;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -64,7 +65,9 @@ public final strictfp class BoundsOperationTest extends TestCase {
         ftb.addProperty("classes", Polygon.class, CommonCRS.WGS84.geographic());
         ftb.addProperty("climbing wall", Point.class, CommonCRS.WGS84.geographic());
         ftb.addProperty("gymnasium", Polygon.class, CommonCRS.WGS84.normalizedGeographic());
-        ftb.addProperty(FeatureOperations.bounds(Names.parseGenericName(null,":","bounds"), CommonCRS.WGS84.geographic()));
+        ftb.addProperty(FeatureOperations.bounds(
+                Collections.singletonMap(AbstractOperation.NAME_KEY, Names.parseGenericName(null, ":", "bounds")),
+                CommonCRS.WGS84.geographic()));
         return ftb.build();
     }
 
