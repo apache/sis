@@ -19,6 +19,7 @@ package org.apache.sis.feature;
 import java.util.Map;
 import java.util.Set;
 import java.util.Collections;
+import java.util.HashMap;
 import org.opengis.util.GenericName;
 import org.opengis.parameter.GeneralParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
@@ -69,6 +70,12 @@ public abstract class AbstractOperation extends AbstractIdentifiedType implement
     private static final long serialVersionUID = -179930765502963170L;
 
     /**
+     * The prefix for result identification entries in the {@code identification} map.
+     * This prefix is documented in {@link FeatureOperations} javadoc.
+     */
+    static final String RESULT_PREFIX = "result.";
+
+    /**
      * Constructs an operation from the given properties. The identification map is given unchanged to
      * the {@linkplain AbstractIdentifiedType#AbstractIdentifiedType(Map) super-class constructor}.
      *
@@ -76,6 +83,27 @@ public abstract class AbstractOperation extends AbstractIdentifiedType implement
      */
     public AbstractOperation(final Map<String,?> identification) {
         super(identification);
+    }
+
+    /**
+     * Returns a map that can be used for creating the {@link #getResult()} type.
+     * This method can be invoked for subclass constructor.
+     */
+    final Map<String,Object> resultIdentification(final Map<String,?> identification) {
+        final Map<String,Object> properties = new HashMap<>(6);
+        for (final Map.Entry<String,?> entry : identification.entrySet()) {
+            final String key = entry.getKey();
+            if (key != null && key.startsWith(RESULT_PREFIX)) {
+                properties.put(key.substring(RESULT_PREFIX.length()), entry.getValue());
+            }
+        }
+        if (properties.isEmpty()) {
+            properties.put(NAME_KEY,        super.getName());           // Do not invoke user-overrideable method.
+            properties.put(DEFINITION_KEY,  super.getDefinition());
+            properties.put(DESIGNATION_KEY, super.getDesignation());
+            properties.put(DESCRIPTION_KEY, super.getDescription());
+        }
+        return properties;
     }
 
     /**

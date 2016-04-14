@@ -90,7 +90,7 @@ final class LinkOperation extends AbstractOperation {
      * @param identification  the name of the link, together with optional information.
      * @param referent        the referenced attribute or feature association.
      */
-    LinkOperation(final Map<String, ?> identification, final PropertyType referent) {
+    LinkOperation(final Map<String,?> identification, final PropertyType referent) {
         super(identification);
         result = referent;
         referentName = referent.getName().toString();
@@ -117,6 +117,9 @@ final class LinkOperation extends AbstractOperation {
      */
     @Override
     public Set<String> getDependencies() {
+        if (result instanceof AbstractOperation) {
+            return ((AbstractOperation) result).getDependencies();
+        }
         return Collections.singleton(referentName);
     }
 

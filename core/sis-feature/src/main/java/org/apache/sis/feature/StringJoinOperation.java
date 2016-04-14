@@ -17,7 +17,6 @@
 package org.apache.sis.feature;
 
 import java.util.Map;
-import java.util.Collections;
 import java.util.Set;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.ParameterValueGroup;
@@ -31,7 +30,7 @@ import org.opengis.feature.AttributeType;
 import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
 import org.opengis.feature.IdentifiedType;
-import org.opengis.feature.MultiValuedPropertyException;
+import org.opengis.feature.InvalidPropertyValueException;
 import org.opengis.feature.Property;
 
 
@@ -50,22 +49,16 @@ import org.opengis.feature.Property;
  *
  * @see <a href="https://en.wikipedia.org/wiki/Compound_key">Compound key on Wikipedia</a>
  */
-final class AggregateOperation extends AbstractOperation {
+final class StringJoinOperation extends AbstractOperation {
     /**
      * For cross-version compatibility.
      */
     private static final long serialVersionUID = 2303047827010821381L;
 
     /**
-     * The type of the result returned by the aggregate operation.
-     */
-    private static final AttributeType<String> TYPE = new DefaultAttributeType<>(
-            Collections.singletonMap(NAME_KEY, "String"), String.class, 1, 1, null);
-
-    /**
      * The parameter descriptor for the "Aggregate" operation, which does not take any parameter.
      */
-    private static final ParameterDescriptorGroup EMPTY_PARAMS = LinkOperation.parameters("Aggregate", 1);
+    private static final ParameterDescriptorGroup EMPTY_PARAMS = LinkOperation.parameters("StringJoin", 1);
 
     /**
      * The name of the properties from which to get the values to concatenate.
@@ -76,6 +69,11 @@ final class AggregateOperation extends AbstractOperation {
      * The property names as an unmodifiable set, created when first needed.
      */
     private transient Set<String> dependencies;
+
+    /**
+     * The type of the result returned by the string concatenation operation.
+     */
+    private final AttributeType<String> resultType;
 
     /**
      * The characters to use at the beginning of the concatenated string, or an empty string if none.
@@ -90,13 +88,15 @@ final class AggregateOperation extends AbstractOperation {
     /**
      * The characters to use a delimiter between each single attribute value.
      */
-    private final String separator;
+    private final String delimiter;
 
     /**
      * Creates a new operation for string concatenations using the given prefix, suffix and delimeter.
+     * It is caller's responsibility to ensure that {@code delimiter} and {@code singleProperties} are not null.
+     * This private constructor does not verify that condition on the assumption that the public API did.
      */
-    AggregateOperation(final Map<String, ?> identification, final String prefix, final String suffix,
-            final String separator, final GenericName[] singleProperties)
+    StringJoinOperation(final Map<String,?> identification, final String delimiter,
+            final String prefix, final String suffix, final GenericName[] singleProperties)
     {
         super(identification);
         propertyNames = new String[singleProperties.length];
@@ -104,9 +104,10 @@ final class AggregateOperation extends AbstractOperation {
             ArgumentChecks.ensureNonNullElement("singleProperties", i, singleProperties);
             propertyNames[i] = singleProperties[i].toString();
         }
+        resultType = new DefaultAttributeType<>(resultIdentification(identification), String.class, 1, 1, null);
+        this.delimiter = delimiter;
         this.prefix = (prefix == null) ? "" : prefix;
         this.suffix = (suffix == null) ? "" : suffix;
-        this.separator = separator;
     }
 
     /**
@@ -126,7 +127,7 @@ final class AggregateOperation extends AbstractOperation {
      */
     @Override
     public IdentifiedType getResult() {
-        return TYPE;
+        return resultType;
     }
 
     /**
@@ -144,51 +145,70 @@ final class AggregateOperation extends AbstractOperation {
     /**
      * Returns the concatenation of property values of the given feature.
      *
-     * @param  feature    the feature on which to execute the operation.
-     * @param  parameters ignored (can be {@code null}).
+     * @param  feature     the feature on which to execute the operation.
+     * @param  parameters  ignored (can be {@code null}).
      * @return the concatenation of feature property values.
      */
     @Override
     public Property apply(Feature feature, ParameterValueGroup parameters) {
         ArgumentChecks.ensureNonNull("feature", feature);
-        return new AggregateAttribute(feature);
+        return new Result(feature);
     }
 
     /**
-     * Operation attribute.
+     * The attributes that contains the result of concatenating the string representation of other attributes.
      * Value is calculated each time it is accessed.
      */
-    private final class AggregateAttribute extends AbstractAttribute<String> {
+    private final class Result extends AbstractAttribute<String> {
+        /**
+         * For cross-version compatibility.
+         */
+        private static final long serialVersionUID = -8435975199763452547L;
 
+        /**
+         * The feature specified to the {@link StringJoinOperation#apply(Feature, ParameterValueGroup)} method.
+         */
         private final Feature feature;
 
-        public AggregateAttribute(final Feature feature) {
-            super(TYPE);
+        /**
+         * Creates a new attribute for the given feature.
+         */
+        Result(final Feature feature) {
+            super(resultType);
             this.feature = feature;
         }
 
+        /**
+         * Creates a string which is the concatenation of attribute values of all properties
+         * specified to the {@link StringJoinOperation} constructor.
+         */
         @Override
-        public String getValue() throws MultiValuedPropertyException {
+        public String getValue() {
             final StringBuilder sb = new StringBuilder();
-            sb.append(prefix);
-
-            for (int i=0; i < propertyNames.length; i++) {
-                if (i != 0) sb.append(separator);
-                sb.append(feature.getPropertyValue(propertyNames[i]));
+            String sep = prefix;
+            for (final String name : propertyNames) {
+                final Object value = feature.getPropertyValue(name);
+                sb.append(sep);
+                if (value != null) {
+                    sb.append(value);
+                }
+                sep = delimiter;
             }
-
-            sb.append(suffix);
-            return sb.toString();
+            return sb.append(suffix).toString();
         }
 
+        /**
+         * Given a concatenated string as produced by {@link #getValue()}, separates the components around
+         * the separator and forward the values to the original attributes.
+         */
         @Override
         public void setValue(String value) {
             //check prefix
             if (!value.startsWith(prefix)) {
-                throw new IllegalArgumentException("Unvalid string, does not start with "+prefix);
+                throw new InvalidPropertyValueException("Unvalid string, does not start with "+prefix);
             }
             if (!value.endsWith(suffix)) {
-                throw new IllegalArgumentException("Unvalid string, does not end with "+suffix);
+                throw new InvalidPropertyValueException("Unvalid string, does not end with "+suffix);
             }
 
             //split values, we don't use the regex split to avoid possible reserverd regex characters
@@ -199,21 +219,21 @@ final class AggregateOperation extends AbstractOperation {
             value = value.substring(prefix.length(), value.length() - suffix.length());
             while (true) {
                 if (i >= values.length) {
-                    throw new IllegalArgumentException("Unvalid string, expected "+values.length+" values, but found more");
+                    throw new InvalidPropertyValueException("Unvalid string, expected "+values.length+" values, but found more");
                 }
-                final int idx = value.indexOf(separator, offset);
+                final int idx = value.indexOf(delimiter, offset);
                 if (idx < 0) {
                     //last element
                     values[i++] = value.substring(offset);
                     break;
                 } else {
                     values[i++] = value.substring(offset, idx);
-                    offset = (idx + separator.length());
+                    offset = (idx + delimiter.length());
                 }
             }
 
             if (i != values.length) {
-                throw new IllegalArgumentException("Unvalid string, number of values do not match, found "+(i)+" but expected "+values.length);
+                throw new InvalidPropertyValueException("Unvalid string, number of values do not match, found "+(i)+" but expected "+values.length);
             }
 
             //set values, convert them if necessary

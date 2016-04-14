@@ -16,14 +16,21 @@
  */
 package org.apache.sis.feature;
 
-import org.apache.sis.internal.feature.AttributeConvention;
-import com.esri.core.geometry.Geometry;
 import java.util.Collections;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import com.esri.core.geometry.Geometry;
+import org.opengis.geometry.Envelope;
+import org.opengis.parameter.ParameterDescriptorGroup;
+import org.opengis.parameter.ParameterValueGroup;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.operation.TransformException;
+import org.apache.sis.internal.feature.AttributeConvention;
 import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.geometry.GeneralEnvelope;
+
+// Branch-dependent imports
 import org.opengis.feature.AttributeType;
 import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
@@ -31,11 +38,7 @@ import org.opengis.feature.IdentifiedType;
 import org.opengis.feature.MultiValuedPropertyException;
 import org.opengis.feature.Property;
 import org.opengis.feature.PropertyType;
-import org.opengis.geometry.Envelope;
-import org.opengis.parameter.ParameterDescriptorGroup;
-import org.opengis.parameter.ParameterValueGroup;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.operation.TransformException;
+
 
 /**
  * Calculate feature bounds operation.
@@ -51,7 +54,7 @@ import org.opengis.referencing.operation.TransformException;
  * <br>
  * This operation can only be read, not setted.
  *
- * @author Johann Sorel (Geomatys)
+ * @author  Johann Sorel (Geomatys)
  * @since   0.7
  * @version 0.7
  * @module
@@ -77,7 +80,7 @@ final class BoundsOperation extends AbstractOperation {
      * @param identification The name and other information to be given to this operation.
      * @param crs result envelope CRS, can be {@code null}
      */
-    BoundsOperation(Map<String, ?> identification, CoordinateReferenceSystem crs) {
+    BoundsOperation(Map<String,?> identification, CoordinateReferenceSystem crs) {
         super(identification);
         this.crs = crs;
     }

@@ -162,7 +162,7 @@ public class AbstractIdentifiedType implements IdentifiedType, Serializable {
      * is used only on a <cite>best effort</cite> basis. The locale is discarded after successful construction
      * since localizations are applied by the {@link InternationalString#toString(Locale)} method.</p>
      *
-     * @param  identification The name and other information to be given to this identified type.
+     * @param  identification  the name and other information to be given to this identified type.
      * @throws IllegalArgumentException if a property has an invalid value.
      */
     @SuppressWarnings("OverridableMethodCallDuringObjectConstruction")
