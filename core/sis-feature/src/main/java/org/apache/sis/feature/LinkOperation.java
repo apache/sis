@@ -119,9 +119,6 @@ final class LinkOperation extends AbstractOperation {
      */
     @Override
     public Set<String> getDependencies() {
-        if (result instanceof AbstractOperation) {
-            return ((AbstractOperation) result).getDependencies();
-        }
         return Collections.singleton(referentName);
     }
 
@@ -136,5 +133,22 @@ final class LinkOperation extends AbstractOperation {
     public Property apply(final Feature feature, final ParameterValueGroup parameters) {
         ArgumentChecks.ensureNonNull("feature", feature);
         return feature.getProperty(referentName);
+    }
+
+    /**
+     * Computes a hash-code value for this operation.
+     */
+    @Override
+    public int hashCode() {
+        return super.hashCode() + referentName.hashCode();
+    }
+
+    /**
+     * Compares this operation with the given object for equality.
+     */
+    @Override
+    public boolean equals(final Object obj) {
+        // 'this.result' is compared (indirectly) by the super class.
+        return super.equals(obj) && referentName.equals(((LinkOperation) obj).referentName);
     }
 }

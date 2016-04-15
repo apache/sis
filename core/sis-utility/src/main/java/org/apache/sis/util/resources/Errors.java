@@ -1001,6 +1001,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final short UnexpectedCharactersAfter_2 = 198;
 
         /**
+         * Text for ‘{0}’ was expected to {1,choice,0#begin|1#end} with “{2}”, but found “{3}”.
+         */
+        public static final short UnexpectedCharactersAtBound_4 = 225;
+
+        /**
          * Unexpected dimension for a coordinate system of type ‘{0}’.
          */
         public static final short UnexpectedDimensionForCS_1 = 212;
@@ -1019,6 +1024,11 @@ public final class Errors extends IndexedResourceBundle {
          * File “{1}” seems to be encoded in an other format than {0}.
          */
         public static final short UnexpectedFileFormat_2 = 111;
+
+        /**
+         * Expected {1} components in “{0}” but found {2}.
+         */
+        public static final short UnexpectedNumberOfComponents_3 = 226;
 
         /**
          * Parameter “{0}” was not expected.

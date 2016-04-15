@@ -16,6 +16,7 @@
  */
 package org.apache.sis.feature;
 
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Set;
 import org.opengis.parameter.ParameterDescriptorGroup;
@@ -27,9 +28,11 @@ import org.apache.sis.util.ObjectConverter;
 import org.apache.sis.util.ObjectConverters;
 import org.apache.sis.util.UnconvertibleObjectException;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Classes;
 
 // Branch-dependent imports
+import java.util.Objects;
 import org.opengis.feature.AttributeType;
 import org.opengis.feature.Feature;
 import org.opengis.feature.IdentifiedType;
@@ -60,6 +63,11 @@ final class StringJoinOperation extends AbstractOperation {
      * For cross-version compatibility.
      */
     private static final long serialVersionUID = 2303047827010821381L;
+
+    /**
+     * The character used for escaping occurrences of the delimiter inside a value.
+     */
+    static final char ESCAPE = '\\';
 
     /**
      * The parameter descriptor for the "String join" operation, which does not take any parameter.
@@ -96,17 +104,17 @@ final class StringJoinOperation extends AbstractOperation {
     /**
      * The characters to use at the beginning of the concatenated string, or an empty string if none.
      */
-    private final String prefix;
+    final String prefix;
 
     /**
      * The characters to use at the end of the concatenated string, or an empty string if none.
      */
-    private final String suffix;
+    final String suffix;
 
     /**
      * The characters to use a delimiter between each single attribute value.
      */
-    private final String delimiter;
+    final String delimiter;
 
     /**
      * Creates a new operation for string concatenations using the given prefix, suffix and delimeter.
@@ -124,6 +132,12 @@ final class StringJoinOperation extends AbstractOperation {
         attributeNames = new String[singleAttributes.length];
         converters = new ObjectConverter[singleAttributes.length];
         for (int i=0; i < singleAttributes.length; i++) {
+            /*
+             * Verify the following conditions:
+             *   - property types are non-null.
+             *   - properties are either attributes, or operations producing attributes.
+             *   - attributes contain at most one value (no collections).
+             */
             IdentifiedType attributeType = singleAttributes[i];
             ArgumentChecks.ensureNonNullElement("singleAttributes", i, attributeType);
             final GenericName name = attributeType.getName();
@@ -139,10 +153,15 @@ final class StringJoinOperation extends AbstractOperation {
                 throw new IllegalArgumentException(Errors.getResources(identification)
                         .getString(Errors.Keys.NotASingleton_1, name));
             }
-            converters[i] = ObjectConverters.find(String.class, ((AttributeType<?>) attributeType).getValueClass());
+            /*
+             * StringJoinOperation does not need to keep the AttributeType references.
+             * We need only their names and how to convert from String to their values.
+             */
             attributeNames[i] = name.toString();
+            converters[i] = ObjectConverters.find(String.class, ((AttributeType<?>) attributeType).getValueClass());
         }
-        resultType = new DefaultAttributeType<>(resultIdentification(identification), String.class, 1, 1, null);
+        resultType = FeatureOperations.POOL.unique(new DefaultAttributeType<>(
+                resultIdentification(identification), String.class, 1, 1, null));
         this.delimiter = delimiter;
         this.prefix = (prefix == null) ? "" : prefix;
         this.suffix = (suffix == null) ? "" : suffix;
@@ -188,41 +207,8 @@ final class StringJoinOperation extends AbstractOperation {
      * @param converter  the converter to use for formatting the given value.
      * @param value      the value to format, or {@code null}.
      */
-    private static <S> Object format(final ObjectConverter<S,?> converter, final Object value) {
+    static <S> Object format(final ObjectConverter<S,?> converter, final Object value) {
         return converter.apply(converter.getSourceClass().cast(value));
-    }
-
-    /**
-     * Creates a value as the concatenation of the attributes read from the given feature.
-     *
-     * @param  feature  the feature from which to read the attributes.
-     * @return the concatenated string.
-     * @throws UnconvertibleObjectException if one of the attribute value is not of the expected type.
-     */
-    final String join(final Feature feature) throws UnconvertibleObjectException {
-        final StringBuilder sb = new StringBuilder();
-        String sep = prefix;
-        String name  = null;
-        Object value = null;
-        try {
-            for (int i=0; i < attributeNames.length; i++) {
-                name  = attributeNames[i];
-                value = feature.getPropertyValue(name);                 // Used in 'catch' block in case of exception.
-                value = format(converters[i].inverse(), value);
-                sb.append(sep);
-                if (value != null) {
-                    sb.append(value);
-                }
-                sep = delimiter;
-            }
-        } catch (ClassCastException e) {
-            if (value == null) {
-                throw e;
-            }
-            throw new UnconvertibleObjectException(Errors.format(
-                    Errors.Keys.IllegalPropertyValueClass_2, name, value.getClass(), e));
-        }
-        return sb.append(suffix).toString();
     }
 
     /**
@@ -237,6 +223,9 @@ final class StringJoinOperation extends AbstractOperation {
         ArgumentChecks.ensureNonNull("feature", feature);
         return new Result(feature);
     }
+
+
+
 
     /**
      * The attributes that contains the result of concatenating the string representation of other attributes.
@@ -264,57 +253,167 @@ final class StringJoinOperation extends AbstractOperation {
         /**
          * Creates a string which is the concatenation of attribute values of all properties
          * specified to the {@link StringJoinOperation} constructor.
+         *
+         * @return the concatenated string.
+         * @throws UnconvertibleObjectException if one of the attribute values is not of the expected type.
          */
         @Override
-        public String getValue() {
-            return join(feature);
+        public String getValue() throws UnconvertibleObjectException {
+            final StringBuilder sb = new StringBuilder();
+            String sep = prefix;
+            String name  = null;
+            Object value = null;
+            try {
+                for (int i=0; i < attributeNames.length; i++) {
+                    name  = attributeNames[i];
+                    value = feature.getPropertyValue(name);                 // Used in 'catch' block in case of exception.
+                    value = format(converters[i].inverse(), value);
+                    sb.append(sep);
+                    sep = delimiter;
+                    if (value != null) {
+                        /*
+                         * First insert the value, then substitute in-place all occurrences of "\" by "\\"
+                         * then all occurence of the delimiter by "\" followed by the delimiter.
+                         */
+                        final int startAt = sb.length();
+                        int j = sb.append(value).length();
+                        while (--j >= startAt) {
+                            if (sb.charAt(j) == ESCAPE) {
+                                sb.insert(j, ESCAPE);
+                            }
+                        }
+                        j = startAt;
+                        while ((j = sb.indexOf(sep, j)) >= 0) {
+                            sb.insert(j, ESCAPE);
+                            j += sep.length() + 1;
+                        }
+                    }
+                }
+            } catch (ClassCastException e) {
+                if (value == null) {
+                    throw e;
+                }
+                throw new UnconvertibleObjectException(Errors.format(
+                        Errors.Keys.IllegalPropertyValueClass_2, name, value.getClass(), e));
+            }
+            return sb.append(suffix).toString();
         }
 
         /**
          * Given a concatenated string as produced by {@link #getValue()}, separates the components around
-         * the separator and forward the values to the original attributes.
+         * the separator and forward the values to the original attributes. If one of the values can not be
+         * parsed, then this method does not store any property value ("all or nothing" behavior).
+         *
+         * @param  value  the concatenated string.
+         * @throws UnconvertibleObjectException if one of the attribute values can not be parsed to the expected type.
          */
         @Override
-        public void setValue(String value) {
-            //check prefix
-            if (!value.startsWith(prefix)) {
-                throw new InvalidPropertyValueException("Unvalid string, does not start with "+prefix);
+        public void setValue(final String value) throws UnconvertibleObjectException {
+            final int endAt = value.length() - suffix.length();
+            final boolean prefixMatches = value.startsWith(prefix);
+            if (!prefixMatches || !value.endsWith(suffix)) {
+                throw new InvalidPropertyValueException(Errors.format(Errors.Keys.UnexpectedCharactersAtBound_4,
+                        getName(),
+                        prefixMatches ? 1 : 0,              // For "{1,choice,0#begin|1#end}" in message format.
+                        prefixMatches ? suffix : prefix,
+                        prefixMatches ? CharSequences.token(value, 0) : value.substring(Math.max(0, endAt))));
             }
-            if (!value.endsWith(suffix)) {
-                throw new InvalidPropertyValueException("Unvalid string, does not end with "+suffix);
-            }
-
-            //split values, we don't use the regex split to avoid possible reserverd regex characters
-            final String[] values = new String[attributeNames.length];
-            int i = 0;
-            int offset = 0;
-            //remove prefix and suffix
-            value = value.substring(prefix.length(), value.length() - suffix.length());
-            while (true) {
-                if (i >= values.length) {
-                    throw new InvalidPropertyValueException("Unvalid string, expected "+values.length+" values, but found more");
-                }
-                final int idx = value.indexOf(delimiter, offset);
-                if (idx < 0) {
-                    //last element
-                    values[i++] = value.substring(offset);
-                    break;
+            /*
+             * We do not use the regex split for avoiding possible reserved regex characters,
+             * and also for processing directly escaped delimiters. We convert the values as we
+             * read them (no need to store the substrings) but do not store them in the properties
+             * before we succeeded to parse all values, so we have a "all or nothing" behavior.
+             */
+            final Object[] values = new Object[attributeNames.length];
+            int lower = prefix.length();
+            int upper = lower;
+            int count = 0;
+            boolean done = false;
+            do {
+                upper = value.indexOf(delimiter, upper);
+                if (upper >= 0 && upper < endAt) {
+                    /*
+                     * If an odd number of escape characters exist before the delimiter, remove the last
+                     * escape character and continue the search for the next delimiter.
+                     */
+                    int escape = upper;
+                    while (escape != 0 && value.charAt(escape - 1) == ESCAPE) {
+                        escape--;
+                    }
+                    if (((upper - escape) & 1) != 0) {
+                        upper += delimiter.length() + 1;
+                        continue;
+                    }
                 } else {
-                    values[i++] = value.substring(offset, idx);
-                    offset = (idx + delimiter.length());
+                    upper = endAt;
+                    done = true;
                 }
+                /*
+                 * Get the value and remove all escape characters. Each escape character is either followed by another
+                 * escape character (that we need to keep) or the delimiter. The algorithm used here is inefficient
+                 * (we recreate a buffer for each character to remove), but we assume that it should be rarely needed.
+                 */
+                String element = value.substring(lower, upper);
+                for (int i=0; (i = element.indexOf(ESCAPE, i)) >= 0;) {
+                    element = new StringBuilder(element.length() - 1)
+                            .append(element, 0, i).append(element, i+1, element.length()).toString();
+                    if (i < element.length()) {
+                        if (element.indexOf(i) == ESCAPE) {
+                            i++;
+                        } else {
+                            assert element.regionMatches(i, delimiter, 0, delimiter.length()) : element;
+                            i += delimiter.length();
+                        }
+                    }
+                }
+                /*
+                 * Empty strings are considered as null values for consistency with StringJoinOperation.format(…).
+                 * If we have more values than expected, continue the parsing but without storing the values.
+                 * The intend is to get the correct count of values for error reporting.
+                 */
+                if (!element.isEmpty() && count < values.length) {
+                    values[count] = converters[count].apply(element);
+                }
+                count++;
+                upper += delimiter.length();
+                lower = upper;
+            } while (!done);
+            /*
+             * Store the values in the properties only after we successfully converted all of them,
+             * in order to have a "all or nothing" behavior.
+             */
+            if (values.length != count) {
+                throw new InvalidPropertyValueException(
+                        Errors.format(Errors.Keys.UnexpectedNumberOfComponents_3, value, values.length, count));
             }
-
-            if (i != values.length) {
-                throw new InvalidPropertyValueException("Unvalid string, number of values do not match, found "+(i)+" but expected "+values.length);
-            }
-
-            //set values, convert them if necessary
-            for (int k=0; k < values.length; k++) {
-                final String propName = attributeNames[k];
-                final Object val = converters[k].apply(values[k]);
-                feature.setPropertyValue(propName, val);
+            for (int i=0; i < values.length; i++) {
+                feature.setPropertyValue(attributeNames[i], values[i]);
             }
         }
+    }
+
+    /**
+     * Computes a hash-code value for this operation.
+     */
+    @Override
+    public int hashCode() {
+        return super.hashCode() + Arrays.hashCode(attributeNames) + 37 * Objects.hash(delimiter, prefix, suffix);
+    }
+
+    /**
+     * Compares this operation with the given object for equality.
+     */
+    @Override
+    public boolean equals(final Object obj) {
+        if (super.equals(obj)) {
+            // 'this.result' is compared (indirectly) by the super class.
+            final StringJoinOperation that = (StringJoinOperation) obj;
+            return Arrays.equals(this.attributeNames, that.attributeNames) &&
+                   Arrays.equals(this.converters,     that.converters)     &&
+                  Objects.equals(this.delimiter,      that.delimiter)      &&
+                  Objects.equals(this.prefix,         that.prefix)         &&
+                  Objects.equals(this.suffix,         that.suffix);
+        }
+        return false;
     }
 }
