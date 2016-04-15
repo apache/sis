@@ -154,6 +154,9 @@ public abstract class AbstractOperation extends AbstractIdentifiedType implement
 
     /**
      * Returns the names of feature properties that this operation needs for performing its task.
+     * This method does not resolve transitive dependencies, i.e. if a dependency is itself an operation having
+     * other dependencies, the returned set will contain the name of that operation but not the names of that
+     * operation dependencies (unless they are the same that the direct dependencies of {@code this}).
      *
      * <div class="note"><b>Rational:</b>
      * this information is needed for writing the {@code SELECT} SQL statement to send to a database server.
@@ -171,7 +174,7 @@ public abstract class AbstractOperation extends AbstractIdentifiedType implement
 
     /**
      * Returns a hash code value for this operation.
-     * The default implementation computes a hash code from the {@linkplain #getParameters() parameters}
+     * The default implementation computes a hash code from the {@linkplain #getParameters() parameters descriptor}
      * and {@linkplain #getResult() result type}.
      *
      * @return {@inheritDoc}
@@ -183,7 +186,7 @@ public abstract class AbstractOperation extends AbstractIdentifiedType implement
 
     /**
      * Compares this operation with the given object for equality.
-     * The default implementation compares the {@linkplain #getParameters() parameters}
+     * The default implementation compares the {@linkplain #getParameters() parameters descriptor}
      * and {@linkplain #getResult() result type}.
      *
      * @return {@inheritDoc}

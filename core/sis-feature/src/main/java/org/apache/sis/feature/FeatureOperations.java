@@ -23,6 +23,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.UnconvertibleObjectException;
+import org.apache.sis.util.collection.WeakHashSet;
 import org.apache.sis.util.resources.Errors;
 
 // Branch-dependent imports
@@ -52,22 +53,22 @@ import org.opengis.feature.PropertyType;
  *     <th>Returned by</th>
  *   </tr>
  *   <tr>
- *     <td>{@value org.apache.sis.feature.AbstractOperation#NAME_KEY}</td>
+ *     <td>{@value org.apache.sis.feature.AbstractIdentifiedType#NAME_KEY}</td>
  *     <td>{@link GenericName} or {@link String}</td>
  *     <td>{@link AbstractOperation#getName() Operation.getName()} (mandatory)</td>
  *   </tr>
  *   <tr>
- *     <td>{@value org.apache.sis.feature.AbstractOperation#DEFINITION_KEY}</td>
+ *     <td>{@value org.apache.sis.feature.AbstractIdentifiedType#DEFINITION_KEY}</td>
  *     <td>{@link InternationalString} or {@link String}</td>
  *     <td>{@link AbstractOperation#getDefinition() Operation.getDefinition()}</td>
  *   </tr>
  *   <tr>
- *     <td>{@value org.apache.sis.feature.AbstractOperation#DESIGNATION_KEY}</td>
+ *     <td>{@value org.apache.sis.feature.AbstractIdentifiedType#DESIGNATION_KEY}</td>
  *     <td>{@link InternationalString} or {@link String}</td>
  *     <td>{@link AbstractOperation#getDesignation() Operation.getDesignation()}</td>
  *   </tr>
  *   <tr>
- *     <td>{@value org.apache.sis.feature.AbstractOperation#DESCRIPTION_KEY}</td>
+ *     <td>{@value org.apache.sis.feature.AbstractIdentifiedType#DESCRIPTION_KEY}</td>
  *     <td>{@link InternationalString} or {@link String}</td>
  *     <td>{@link AbstractOperation#getDescription() Operation.getDescription()}</td>
  *   </tr>
@@ -110,6 +111,11 @@ import org.opengis.feature.PropertyType;
  */
 public final class FeatureOperations extends Static {
     /**
+     * The pool of operations or operation dependencies created so far, for sharing exiting instances.
+     */
+    static final WeakHashSet<PropertyType> POOL = new WeakHashSet<>(PropertyType.class);
+
+    /**
      * Do not allow instantiation of this class.
      */
     private FeatureOperations() {
@@ -150,7 +156,7 @@ public final class FeatureOperations extends Static {
      */
     public static Operation link(final Map<String,?> identification, final PropertyType referent) {
         ArgumentChecks.ensureNonNull("referent", referent);
-        return new LinkOperation(identification, referent);
+        return POOL.unique(new LinkOperation(identification, referent));
     }
 
     /**
@@ -158,14 +164,21 @@ public final class FeatureOperations extends Static {
      * This operation can be used for creating a <cite>compound key</cite> as a {@link String} that consists
      * of two or more attribute values that uniquely identify a feature instance.
      *
-     * <p>The {@code delimiter}, {@code prefix} and {@code suffix} arguments given to this method are used in
-     * the same way than {@link java.util.StringJoiner}. Null prefix, suffix and property values are handled
-     * as if they were empty strings.</p>
+     * <p>The {@code delimiter}, {@code prefix} and {@code suffix} arguments given to this method
+     * are used in the same way than {@link java.util.StringJoiner}, except for null values.
+     * Null prefix, suffix and property values are handled as if they were empty strings.</p>
      *
-     * <div class="section">Restrictions</div>
-     * The single properties can be either attributes or operations that produce attributes;
-     * feature associations are not allowed.
-     * Furthermore each attribute shall contain at most one value; multi-valued attributes are not allowed.
+     * <p>If the same character sequences than the given delimiter appears in a property value,
+     * the {@code '\'} escape character will be inserted before that sequence.
+     * If the {@code '\'} character appears in a property value, it will be doubled.</p>
+     *
+     * <p><b>Restrictions:</b></p>
+     * <ul>
+     *   <li>The single properties can be either attributes or operations that produce attributes;
+     *       feature associations are not allowed.</li>
+     *   <li>Each attribute shall contain at most one value; multi-valued attributes are not allowed.</li>
+     *   <li>The delimiter can not contain the {@code '\'} escape character.</li>
+     * </ul>
      *
      * <div class="section">Read/write behavior</div>
      * This operation supports both reading and writing. When setting a value on the attribute created by this
@@ -191,6 +204,10 @@ public final class FeatureOperations extends Static {
             throws UnconvertibleObjectException
     {
         ArgumentChecks.ensureNonEmpty("delimiter", delimiter);
+        if (delimiter.indexOf(StringJoinOperation.ESCAPE) >= 0) {
+            throw new IllegalArgumentException(Errors.getResources(identification).getString(
+                    Errors.Keys.IllegalCharacter_2, "delimiter", StringJoinOperation.ESCAPE));
+        }
         ArgumentChecks.ensureNonNull("singleAttributes", singleAttributes);
         switch (singleAttributes.length) {
             case 0: {
@@ -204,7 +221,7 @@ public final class FeatureOperations extends Static {
                 break;
             }
         }
-        return new StringJoinOperation(identification, delimiter, prefix, suffix, singleAttributes);
+        return POOL.unique(new StringJoinOperation(identification, delimiter, prefix, suffix, singleAttributes));
     }
 
     /**
