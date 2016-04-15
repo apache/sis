@@ -27,12 +27,14 @@ import static org.junit.Assert.*;
 
 // Branch-dependent imports
 import org.opengis.feature.PropertyType;
+import org.opengis.feature.InvalidPropertyValueException;
 
 
 /**
  * Tests {@link StringJoinOperation}.
  *
  * @author  Johann Sorel (Geomatys)
+ * @author  Martin Desruisseaux (Geomatys)
  * @since   0.7
  * @version 0.7
  * @module
@@ -52,12 +54,16 @@ public final strictfp class StringJoinOperationTest extends TestCase {
      *   <li>{@code summary} as string join of {@code name} and {@code age} attributes.</li>
      * </ul>
      *
+     * The operation uses {@code "<<:"} and {@code ":>>"} as prefix and suffix respectively
+     * avoid avoiding confusion if a code spelled the variable name (e.g. {@code prefix})
+     * instead of using it.
+     *
      * @return The feature for a person.
      */
     private static DefaultFeatureType person() {
         final PropertyType nameType = new DefaultAttributeType<>(name("name"), String.class, 1, 1, null);
         final PropertyType ageType  = new DefaultAttributeType<>(name("age"), Integer.class, 1, 1, null);
-        final PropertyType cmpType  = FeatureOperations.compound(name("concat"), "/", "prefix:", ":suffix", nameType, ageType);
+        final PropertyType cmpType  = FeatureOperations.compound(name("concat"), "/", "<<:", ":>>", nameType, ageType);
         return new DefaultFeatureType(name("person"), false, null, nameType, ageType, cmpType);
     }
 
@@ -70,6 +76,7 @@ public final strictfp class StringJoinOperationTest extends TestCase {
 
     /**
      * Tests {@code StringJoinOperation.Result.getValue()} on sparse and dense features.
+     * This test does not use the {@code '\'} escape character.
      */
     @Test
     public void testGetValue() {
@@ -82,17 +89,18 @@ public final strictfp class StringJoinOperationTest extends TestCase {
      * Executes the {@link #testGetValue()} on the given feature, which is either sparse or dense.
      */
     private static void testGetValue(final AbstractFeature feature) {
-        assertEquals("prefix:/:suffix", feature.getPropertyValue("concat"));
+        assertEquals("<<:/:>>", feature.getPropertyValue("concat"));
 
         feature.setPropertyValue("name", "marc");
-        assertEquals("prefix:marc/:suffix", feature.getPropertyValue("concat"));
+        assertEquals("<<:marc/:>>", feature.getPropertyValue("concat"));
 
         feature.setPropertyValue("age", 21);
-        assertEquals("prefix:marc/21:suffix", feature.getPropertyValue("concat"));
+        assertEquals("<<:marc/21:>>", feature.getPropertyValue("concat"));
     }
 
     /**
      * Tests {@code StringJoinOperation.Result.setValue(String)} on sparse and dense features.
+     * This test does not use the {@code '\'} escape character.
      */
     @Test
     @DependsOnMethod("testGetValue")
@@ -106,9 +114,65 @@ public final strictfp class StringJoinOperationTest extends TestCase {
      * Executes the {@link #testSetValue()} on the given feature, which is either sparse or dense.
      */
     private static void testSetValue(final AbstractFeature feature) {
-        feature.setPropertyValue("concat", "prefix:emile/37:suffix");
+        feature.setPropertyValue("concat", "<<:emile/37:>>");
         assertEquals("name",   "emile", feature.getPropertyValue("name"));
         assertEquals("age",         37, feature.getPropertyValue("age"));
-        assertEquals("concat", "prefix:emile/37:suffix", feature.getPropertyValue("concat"));
+        assertEquals("concat", "<<:emile/37:>>", feature.getPropertyValue("concat"));
+    }
+
+    /**
+     * Tests {@code getValue()} and {@code setValue(String)} with values that contains the {@code '\'}
+     * escape character.
+     */
+    @Test
+    @DependsOnMethod({"testGetValue", "testSetValue"})
+    public void testEscapeCharacter() {
+        final DenseFeature feature = new DenseFeature(person());
+        feature.setPropertyValue("name", "marc/emile\\julie");
+        feature.setPropertyValue("age", 30);
+        assertEquals("<<:marc\\/emile\\\\julie/30:>>", feature.getPropertyValue("concat"));
+
+        feature.setPropertyValue("concat", "<<:emile\\\\julie\\/marc/:>>");
+        assertEquals("name", "emile\\julie/marc", feature.getPropertyValue("name"));
+        assertNull  ("age", feature.getPropertyValue("age"));
+    }
+
+    /**
+     * Verifies that proper exceptions are thrown in case of illegal argument.
+     */
+    @Test
+    public void testIllegalArgument() {
+        final DenseFeature feature = new DenseFeature(person());
+        try {
+            feature.setPropertyValue("concat", "((:marc/21:>>");
+            fail("Should fail because of mismatched prefix.");
+        } catch (InvalidPropertyValueException e) {
+            String message = e.getMessage();
+            assertTrue(message, message.contains("<<:"));
+            assertTrue(message, message.contains("(("));
+        }
+        try {
+            feature.setPropertyValue("concat", "<<:marc/21:))");
+            fail("Should fail because of mismatched suffix.");
+        } catch (InvalidPropertyValueException e) {
+            String message = e.getMessage();
+            assertTrue(message, message.contains(":>>"));
+            assertTrue(message, message.contains("))"));
+        }
+        try {
+            feature.setPropertyValue("concat", "<<:marc/21/julie:>>");
+            fail("Should fail because of too many components.");
+        } catch (InvalidPropertyValueException e) {
+            String message = e.getMessage();
+            assertTrue(message, message.contains("<<:marc/21/julie:>>"));
+        }
+        try {
+            feature.setPropertyValue("concat", "<<:marc/julie:>>");
+            fail("Should fail because of unparsable number.");
+        } catch (InvalidPropertyValueException e) {
+            String message = e.getMessage();
+            assertTrue(message, message.contains("julie"));
+            assertTrue(message, message.contains("age"));
+        }
     }
 }

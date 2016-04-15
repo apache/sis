@@ -305,10 +305,10 @@ final class StringJoinOperation extends AbstractOperation {
          * parsed, then this method does not store any property value ("all or nothing" behavior).
          *
          * @param  value  the concatenated string.
-         * @throws UnconvertibleObjectException if one of the attribute values can not be parsed to the expected type.
+         * @throws InvalidPropertyValueException if one of the attribute values can not be parsed to the expected type.
          */
         @Override
-        public void setValue(final String value) throws UnconvertibleObjectException {
+        public void setValue(final String value) throws InvalidPropertyValueException {
             final int endAt = value.length() - suffix.length();
             final boolean prefixMatches = value.startsWith(prefix);
             if (!prefixMatches || !value.endsWith(suffix)) {
@@ -316,7 +316,7 @@ final class StringJoinOperation extends AbstractOperation {
                         getName(),
                         prefixMatches ? 1 : 0,              // For "{1,choice,0#begin|1#end}" in message format.
                         prefixMatches ? suffix : prefix,
-                        prefixMatches ? CharSequences.token(value, 0) : value.substring(Math.max(0, endAt))));
+                        prefixMatches ? value.substring(Math.max(0, endAt)) : CharSequences.token(value, 0)));
             }
             /*
              * We do not use the regex split for avoiding possible reserved regex characters,
@@ -358,7 +358,7 @@ final class StringJoinOperation extends AbstractOperation {
                     element = new StringBuilder(element.length() - 1)
                             .append(element, 0, i).append(element, i+1, element.length()).toString();
                     if (i < element.length()) {
-                        if (element.indexOf(i) == ESCAPE) {
+                        if (element.charAt(i) == ESCAPE) {
                             i++;
                         } else {
                             assert element.regionMatches(i, delimiter, 0, delimiter.length()) : element;
@@ -371,8 +371,11 @@ final class StringJoinOperation extends AbstractOperation {
                  * If we have more values than expected, continue the parsing but without storing the values.
                  * The intend is to get the correct count of values for error reporting.
                  */
-                if (!element.isEmpty() && count < values.length) {
+                if (!element.isEmpty() && count < values.length) try {
                     values[count] = converters[count].apply(element);
+                } catch (UnconvertibleObjectException e) {
+                    throw new InvalidPropertyValueException(Errors.format(
+                            Errors.Keys.CanNotAssign_2, attributeNames[count], element), e);
                 }
                 count++;
                 upper += delimiter.length();
