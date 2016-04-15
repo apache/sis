@@ -17,6 +17,7 @@
 package org.apache.sis.referencing.operation.builder;
 
 import java.io.IOException;
+import java.util.Arrays;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.MismatchedDimensionException;
 import org.apache.sis.io.TableAppender;
@@ -26,11 +27,12 @@ import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
+import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Debug;
+import org.apache.sis.util.NullArgumentException;
 
 
 /**
@@ -56,6 +58,16 @@ import org.apache.sis.util.Debug;
  * @see Plane
  */
 public class LinearTransformBuilder {
+
+    private static double COORDS_TOLERANCE = 1E-12;
+
+
+    private int[] gridSize;
+
+    private int gridLength;
+
+    private int noneRegularPointPosition = 0;
+
     /**
      * The arrays of source ordinate values, for example (x[], y[]).
      * This is {@code null} if not yet specified.
@@ -86,6 +98,39 @@ public class LinearTransformBuilder {
     }
 
     /**
+     * Define this LinearTransform as a regular (2D or more dimension) grid and stipulate its size and the dimension of source points.<br>
+     * The dimension of source points is given by sizes array length.<br>
+     *
+     * For example if you want stipulate 2D grid of width w and height h sizes array equal to {w, h}.
+     *
+     * @param sizes array which contain grid size for each dimension.
+     */
+    public LinearTransformBuilder(final int ...sizes) {
+        ArgumentChecks.ensureNonNull("sizes", sizes);
+        if (sizes.length < 2)
+            throw new MismatchedDimensionException("Grid shall specify at least 2 Dimension grid. "
+                    + "Expected grid array size 2 or more, found : "+sizes.length);
+
+        gridLength = getLength(0, sizes.length, sizes);
+
+        if (gridLength < 4) {
+            throw new IllegalArgumentException("Impossible to define regular grid with "
+                    + "less than 4 points. Grid size = "+Arrays.toString(sizes));
+        }
+
+        for (int size : sizes) {
+            if (gridLength <= size) {
+                //-- means all point are stored only on one axis and do not represente multi-dimensionnal grid.
+                throw new MismatchedDimensionException("All grid points are referenced on only one axis. "
+                        + "Impossible to build regular grid : "+Arrays.toString(sizes));
+            }
+        }
+        gridSize   = sizes.clone();
+    }
+
+    //------------------------- private  static ------------------------------//
+
+    /**
      * Extracts the ordinate values of the given points into separated arrays, one for each dimension.
      *
      * @param points The points from which to extract the ordinate values.
@@ -109,6 +154,478 @@ public class LinearTransformBuilder {
     }
 
     /**
+     * Returns result of geometric serie computing, from stored array coefficient.<br>
+     * Computing begin at <var>inclusiveBeginIndex</var> to <var>exclusiveEndIndex - 1</var>.
+     *
+     * <pre>
+     * In other word :
+     *
+     *         n = exclusiveEndIndex - 1
+     *        ─┬──┬─
+     *         │  │ array[i] = array[inclusiveBeginIndex] x ... x array[exclusiveEndIndex - 1]
+     *
+     *         i = inclusiveBeginIndex
+     * </pre>
+     *
+     *
+     * @param inclusiveBeginIndex first <strong>INCLUSIVE</strong> index to begin serie computing.
+     * @param exclusiveEndIndex last <strong>EXCLUSIVE</strong> index to terminate serie computing.
+     * @param array array which contains all coefficients.
+     * @return Serie computing result.
+     * @throws NullArgumentException if array is {@code null}.
+     * @throws IllegalArgumentException if indexes are out of array boundary.
+     */
+    private static int getLength(final int inclusiveBeginIndex, final int exclusiveEndIndex,
+                                 final int[] array) {
+        ArgumentChecks.ensureNonNull("array", array);
+        ArgumentChecks.ensureBetween("inclusiveBeginIndex", 0, array.length, inclusiveBeginIndex);
+        ArgumentChecks.ensureBetween("exclusiveEndIndex", 0, array.length, exclusiveEndIndex);
+        int len = 1;
+        for (int s = inclusiveBeginIndex; s < exclusiveEndIndex; s++) {
+            final int size = array[s];
+            ArgumentChecks.ensureStrictlyPositive("Grid size at index : "+s, size);
+            len *= size;
+        }
+        return len;
+    }
+
+    /**
+     * Returns {@code true} if this coords are considered as regular.<br>
+     * In other words return true if all values into the coords array is filled by {@link Integer} values.
+     *
+     * @param coords
+     * @return
+     */
+    private static boolean isRegular(final double[] coords) {
+        for (double coord : coords) {
+            final int c = (int) coord;
+            if (Math.abs(coord - c) > COORDS_TOLERANCE)
+                return false;
+        }
+        return true;
+    }
+
+    /**
+     *
+     * @param array
+     * @param newNumberPoints
+     * @return
+     */
+    private static double[][] increasePointLength(final double[][] array, final int newNumberPoints) {
+        final double[][] result = new double[array.length][];
+        for (int d = 0; d < array.length; d++) {
+            result[d] = Arrays.copyOf(array[d], newNumberPoints);
+        }
+        return result;
+    }
+
+
+    //------------------------------- private --------------------------------//
+
+    /**
+     * Convert <strong>Integer</strong> source coordinates into array index position.
+     *
+     * @param sourceCoords coordinates from sources point.
+     * @return index position into source points array.
+     * @throws NullArgumentException if <var>sourceCoords</var> is {@code null}.
+     * @throws IllegalArgumentException if <var>sourceCoords</var> do not contains only intergers values.
+     */
+    private int getRegularArrayPosition(final double... sourceCoords) {
+        ArgumentChecks.ensureNonNull("sourceCoords", sourceCoords);
+        if (!isRegular(sourceCoords))
+            throw new IllegalArgumentException("Impossible to define appropriate regular "
+                    + "array position from no integer coordinates. Found : "+Arrays.toString(sourceCoords));
+        int index = 0;
+        for (int sc = 0; sc < sourceCoords.length; sc++) {
+            index += ((int)(sourceCoords[sc])) * getLength(0, sc, gridSize);
+        }
+        return index;
+    }
+
+    /**
+     * Build source coordinates from regular array index.<br>
+     * The returned array has a length equals to source point dimension number.
+     *
+     * @param index stored point array index.
+     * @return array source coordinate from index computing.
+     * @throws IllegalArgumentException if <var>index</var> is not eaqual or greater than 0.
+     */
+    private double[] getRegularSourcePositionFromIndex(final int index) {
+        ArgumentChecks.ensurePositive("index", index);
+        int rest = index;
+        final double[] coords = new double[gridSize.length];
+        for (int gid = gridSize.length - 1; gid >= 0; gid--) {
+            final int div = getLength(0, gid, gridSize);
+            final int nb = rest / div;
+            coords[gid] = nb;
+            rest = rest % div;
+        }
+        assert rest == 0;
+        return coords;
+    }
+
+    /**
+     * Add couple of points into none regular grid.
+     *
+     * @param sourceCoords
+     * @param targetCoords
+     */
+    private void addNoRegularPoints(final double[] sourceCoords, final double[] targetCoords) {
+        assert targets != null && targets.length == targetCoords.length;
+        assert sources != null && sources.length == sourceCoords.length;
+
+        for (int sd = 0; sd < sourceCoords.length; sd++) {
+            sources[sd][noneRegularPointPosition] = sourceCoords[sd];
+        }
+
+        for (int td = 0; td < targetCoords.length; td++) {
+            targets[td][noneRegularPointPosition] = targetCoords[td];
+        }
+        noneRegularPointPosition++;
+    }
+
+    /**
+     * Add couple of points into regular grid.
+     *
+     * @param sourceCoords
+     * @param targetCoords
+     */
+    private void addRegularPoints(final double[] sourceCoords, final double[] targetCoords) {
+        assert sources == null;
+        assert targets != null;
+
+        final int targetIndex = getRegularArrayPosition(sourceCoords);
+
+        for (int td = 0; td < targetCoords.length; td++) {
+            targets[td][targetIndex] = targetCoords[td];
+        }
+    }
+
+    /**
+     * Create a 2D array of dimension length for the first ordinate and grid length for the second.
+     *
+     * @param array pointer which will be affected.
+     * @param dimension array dimension.
+     * @see #getLength(int, int, int[])
+     */
+    private static double[][] createArray(final int dimension, final int length) {
+        double[][] array = new double[dimension][];
+        for (int d = 0; d < dimension; d++) {
+            final double[] coord = new double[length];
+            Arrays.fill(coord, Double.NaN);
+            array[d] = coord;
+        }
+        return array;
+    }
+
+    /**
+     * Decant all targets and sources points from regular grid into another none regular grid.
+     */
+    private void decantTargetArray() {
+        assert sources != null;
+        //-- keep in memory precedently insertions
+        final int tCLen = targets.length;
+        final double[][] tartar = targets.clone();
+
+        //-- init target
+        targets = createArray(gridLength, tCLen);
+
+        //-- fill new none regular grid with precedently inserted points
+        final double[] tartarDim0 = tartar[0];
+        for (int tid = 0; tid < tartarDim0.length; tid++) {
+            if (!Double.isNaN(tartarDim0[tid])) {
+                //-- if first target ordinate not NAN
+                //-- add into target array directly
+                for (int i = 0; i < tCLen; i++) {
+                    final double coordi = tartar[i][tid];
+                    assert !Double.isNaN(coordi);
+                    targets[i][noneRegularPointPosition] = coordi;
+                }
+                //-- compute source array coordinates
+                final double[] srcPoint = getRegularSourcePositionFromIndex(tid);
+                assert srcPoint.length == gridSize.length;
+                //-- add directly into source array
+                for (int srcd = 0; srcd < gridSize.length; srcd++) {
+                    sources[srcd][noneRegularPointPosition] = srcPoint[srcd];
+                }
+                noneRegularPointPosition++;
+            }
+        }
+        gridLength = 0;
+        gridSize   = null;
+    }
+
+    /**
+     * Notifies this localization grid that a coordinate is about to be changed. This method
+     * invalidate any transforms previously created.
+     */
+    private void notifyChanges() {
+        transform   = null;
+        correlation = null;
+    }
+
+    /**
+     * Fits a plane through the longitude or latitude values. More specifically, find
+     * coefficients <var>c</var>, <var>cx</var> and <var>cy</var> for the following
+     * equation:
+     *
+     * {@preformat math
+     *     [longitude or latitude] = c + cx*x + cy*y
+     * }
+     *
+     * where <var>x</var> and <var>cx</var> are grid coordinates.
+     * Coefficients are computed using the least-squares method.
+     *
+     *
+     * @param grid   The grid to process, either {@link #gridX} or {@link #gridY}.
+     * @param offset 0 for fitting longitude values, or 1 for fitting latitude values
+     *               (assuming that "real world" coordinates are longitude and latitude values).
+     * @param coeff  An array of length 6 in which to store plane's coefficients.
+     *               Coefficients will be store in the following order:
+     *               {@code coeff[0 + offset] = cx;}
+     *               {@code coeff[2 + offset] = cy;}
+     *               {@code coeff[4 + offset] = c;}
+     */
+    private void fitPlane(final double[] grid, final int offset, final double[] coeff) {
+        final int width  = gridSize[0];
+        final int height = gridSize[1];
+        /*
+         * Computes the sum of x, y and z values. Computes also the sum of x*x, y*y, x*y, z*x
+         * and z*y values. When possible, we will avoid to compute the sum inside the loop and
+         * use the following identities instead:
+         *
+         *           1 + 2 + 3 ... + n    =    n*(n+1)/2              (arithmetic series)
+         *        1² + 2² + 3² ... + n²   =    n*(n+0.5)*(n+1)/3
+         */
+        double x,y,z, xx,yy, xy, zx,zy;
+        z = zx = zy = 0; // To be computed in the loop.
+        int n = 0;
+        for (int yi=0; yi<height; yi++) {
+            for (int xi=0; xi<width; xi++) {
+                assert getRegularArrayPosition(xi, yi) == n : n;
+                final double zi = grid[n];
+                if (Double.isNaN(zi))
+                    throw new IllegalStateException("The point at coordinate : ("+xi+", "+yi+") is not referenced.");
+                z  += zi;
+                zx += zi*xi;
+                zy += zi*yi;
+                n++;
+            }
+        }
+        assert n == width * height : n;
+
+        x  = (n * (double) (width -1))            / 2;
+        y  = (n * (double) (height-1))            / 2;
+        xx = (n * (width -0.5) * (width -1))      / 3;
+        yy = (n * (height-0.5) * (height-1))      / 3;
+        xy = (n * (double)((height-1)*(width-1))) / 4;
+        /*
+         * Solves the following equations for cx and cy:
+         *
+         *    ( zx - z*x )  =  cx*(xx - x*x) + cy*(xy - x*y)
+         *    ( zy - z*y )  =  cx*(xy - x*y) + cy*(yy - y*y)
+         */
+        zx -= z*x/n;
+        zy -= z*y/n;
+        xx -= x*x/n;
+        xy -= x*y/n;
+        yy -= y*y/n;
+        final double den= (xy*xy - xx*yy);
+        final double cy = (zx*xy - zy*xx) / den;
+        final double cx = (zy*xy - zx*yy) / den;
+        final double c  = (z - (cx*x + cy*y)) / n;
+        coeff[0 + offset] = cx;
+        coeff[1 + offset] = cy;
+        coeff[2 + offset] = c;
+    }
+
+
+    //------------------------------- public --------------------------------//
+
+    /**
+     * Set all source and target points from an array which contain all of them.
+     * {@preformat text
+     * Array should be organize as follow :
+     *
+     *       ┌──┬─    ─┬────┬──┬────┬─    ─┬────┬──┬────┬─   ─┬─────
+     *       │  │ .... │src0│..│srcN│ .... │tar0│..│tarN│ ... │... next points
+     *       └──┴─    ─┴────┴──┴────┴─    ─┴────┴──┴────┴─   ─┴─────
+     *       └────────>└────────────>
+     *     sourceOffset sourceDimension
+     *
+     *       └────────────────────────────>└────────────>
+     *          TargetOffset                TargetDimension
+     *
+     *       └────────────────────────────────────────────────>
+     *                      Tie Point Length
+     * }
+     *
+     * <p><b>Limitation:</b> in current implementation, the source points must be one or two-dimensional.
+     * This restriction may be removed in a future SIS version.</p>
+     *
+     * <p>Moreover sourceDimension equal to zero is allowed. In this case source point will be considered as a regular integer grid.</p>
+     *
+     * @param sourceOffset array offset of first source point coordinate.
+     * @param sourceDimension source point dimension number.
+     * @param targetOffset array offset of first target point coordinate.
+     * @param targetdimension target point dimension number.
+     * @param tiePointLength array length of one point element.
+     * @param tiePoints tie point array.
+     * @throws IllegalArgumentException if points array haven't got length multiple of tiePointLength.
+     */
+    public void setModelTiePoints(final int sourceOffset,   final int sourceDimension,
+                                  final int targetOffset,   final int targetdimension,
+                                  final int tiePointLength, final double[] tiePoints)
+    {
+        ArgumentChecks.ensurePositive("sourceOffset", sourceOffset);
+        ArgumentChecks.ensurePositive("sourceDimension", sourceDimension);
+        ArgumentChecks.ensurePositive("targetOffset", targetOffset);
+        ArgumentChecks.ensureStrictlyPositive("targetdimension", targetdimension);
+        ArgumentChecks.ensureStrictlyPositive("tiePointLength", tiePointLength);
+        ArgumentChecks.ensureNonNull("tiePoints", tiePoints);
+
+        final int tiePointsLen = tiePoints.length;
+        if (tiePointsLen % tiePointLength != 0)
+            throw new IllegalArgumentException("tiePoint array should have array length multiple of tiePointLenth."
+                    + " Array length : "+tiePointsLen+"  One point length = "+tiePointLength);
+
+        final int nbTiePoints = tiePointsLen / tiePointLength;
+        sources = (sourceDimension > 0) ? new double[sourceDimension][nbTiePoints] : null;
+        targets = new double[targetdimension][nbTiePoints];
+
+        for (int pt = 0; pt < nbTiePoints; pt ++) {
+
+            final int originPt = pt * tiePointLength;
+
+            //-- source
+            final int srcOffset = originPt + sourceOffset;
+            for (int srcDim = 0; srcDim < sourceDimension; srcDim++) {
+                sources[srcDim][pt] = tiePoints[srcOffset + srcDim];
+            }
+
+            //-- target
+            final int tarOffset = originPt + targetOffset;
+            for (int tarDim = 0; tarDim < targetdimension; tarDim++) {
+                targets[tarDim][pt] = tiePoints[tarOffset + tarDim];
+            }
+        }
+        notifyChanges();
+    }
+
+    /**
+     * Sets source and target point. The number of target points shall be the same than the number of source points.
+     * Target points can have any number of dimensions (not necessarily 2), but all targets points shall have
+     * the same number of dimensions.
+     * The number of source points shall be the same than the number of target points.
+     *
+     * <p><b>Limitation:</b> in current implementation, the source points must be one or two-dimensional.
+     * This restriction may be removed in a future SIS version.</p>
+     *
+     * @param sourcePoint
+     * @param targetPoint
+     */
+    private void setPoints(final double[] sourcePoint, final double[] targetPoint) {
+        ArgumentChecks.ensureNonNull("sourcePoint", sourcePoint);
+        ArgumentChecks.ensureNonNull("targetPoint", targetPoint);
+
+        final int tCLen = targetPoint.length;
+        if (gridSize == null) {
+            assert sources != null;
+            assert targets != null;
+        }
+
+        if (targets != null && tCLen != targets.length)
+                throw new MismatchedDimensionException("TargetPoint must be same dimension than grid. "
+                        + "Expected : "+targets.length+", found : "+tCLen);
+
+        if (sources != null) {
+            //-- source array not null means none regular grid.
+            assert targets != null;
+            final int sCLen = sourcePoint.length;
+            if (sCLen != sources.length)
+                throw new MismatchedDimensionException("SourceCoords must be same dimension than grid. "
+                        + "Expected : "+sources.length+", found : "+sCLen);
+            addNoRegularPoints(sourcePoint, targetPoint);
+
+        } else {
+            //-- sources array is null means regular grid
+            assert gridSize != null;
+            assert noneRegularPointPosition == 0;
+            if (isRegular(sourcePoint)) {
+                //-- if source point contains only integer values means continue as regular grid.
+
+                if (targets == null)
+                    //-- if first point insertion
+                    targets = createArray(tCLen, gridLength);
+
+                addRegularPoints(sourcePoint, targetPoint);
+
+            } else {
+                //-- current point is not regular
+
+                //-- create source array
+                sources = createArray(sourcePoint.length, gridLength);//-- gridSize len == source dimension
+
+                if (targets == null) {
+                    //-- if first point insertion
+                    targets = createArray(tCLen, gridLength);
+                } else {
+                    //-- if they exist some precedently inserted point we must "decant"
+                    //-- precedently regular inserted points, into none regular grid
+                    decantTargetArray();
+                }
+                assert gridSize == null;
+                //-- add current none regular point
+                addNoRegularPoints(sourcePoint, targetPoint);
+            }
+        }
+        notifyChanges();
+    }
+
+    /**
+     * Sets source and target point. The number of target points shall be the same than the number of source points.
+     * Target points can have any number of dimensions (not necessarily 2), but all targets points shall have
+     * the same number of dimensions.
+     * The number of source points shall be the same than the number of target points.
+     *
+     * <p><b>Limitation:</b> in current implementation, the source points must be one or two-dimensional.
+     * This restriction may be removed in a future SIS version.</p>
+     *
+     * @param sourcePoints
+     * @param targetPoints
+     */
+    public void setPoints(final DirectPosition[] sourcePoints, final DirectPosition[] targetPoints) {
+        ArgumentChecks.ensureNonNull("sourcePoints", sourcePoints);
+        ArgumentChecks.ensureNonNull("targetPoints", targetPoints);
+        if (sourcePoints.length != targetPoints.length)
+            throw new IllegalArgumentException("Source and target array points shall be the same number of points. "
+                    + "Source number points : "+sourcePoints.length+", Target number of points : "+targetPoints.length);
+        if (sourcePoints.length == 0) {
+            noneRegularPointPosition = 0;
+            sources = null;
+            targets = null;
+            transform   = null;
+            correlation = null;
+        } else {
+            if (gridSize == null) {
+                //-- maybe its not efficient
+                if (sources == null)
+                    sources = createArray(sourcePoints[0].getDimension(), sourcePoints.length);
+                else
+                    sources = increasePointLength(sources, sources[0].length + sourcePoints.length);
+
+                if (targets == null)
+                    targets = createArray(targetPoints[0].getDimension(), targetPoints.length);
+                else
+                    targets = increasePointLength(targets, targets[0].length + targetPoints.length);
+            }
+            for (int p = 0; p < sourcePoints.length; p++) {
+                setPoints(sourcePoints[p].getCoordinate(), targetPoints[p].getCoordinate());
+            }
+        }
+    }
+
+    /**
      * Sets the source points. The number of points shall be the same than the number of target points.
      *
      * <p><b>Limitation:</b> in current implementation, the source points must be one or two-dimensional.
@@ -124,6 +641,7 @@ public class LinearTransformBuilder {
         } else {
             sources = null;
         }
+        noneRegularPointPosition = points.length;
         transform   = null;
         correlation = null;
     }
@@ -162,15 +680,16 @@ public class LinearTransformBuilder {
         if (transform == null) {
             final double[][] sources = this.sources;  // Protect from changes.
             final double[][] targets = this.targets;
-            if (sources == null || targets == null) {
+
+            if ((gridSize == null && (sources == null || targets == null))) {
                 throw new IllegalStateException(Errors.format(
                         Errors.Keys.MissingValueForProperty_1, (sources == null) ? "sources" : "targets"));
             }
-            final int sourceDim = sources.length;
+
+            final int sourceDim = (gridSize != null) ? gridSize.length : sources.length;
             final int targetDim = targets.length;
             correlation = new double[targetDim];
             final MatrixSIS matrix = Matrices.createZero(targetDim + 1, sourceDim + 1);
-            matrix.setElement(targetDim, sourceDim, 1);
             switch (sourceDim) {
                 case 1: {
                     final Line line = new Line();
@@ -182,17 +701,30 @@ public class LinearTransformBuilder {
                     break;
                 }
                 case 2: {
-                    final Plane plan = new Plane();
-                    for (int j=0; j<targets.length; j++) {
-                        correlation[j] = plan.fit(sources[0], sources[1], targets[j]);
-                        matrix.setElement(j, 0, plan.slopeX());
-                        matrix.setElement(j, 1, plan.slopeY());
-                        matrix.setElement(j, 2, plan.z0());
+
+                    if (sources == null) {
+                        //-- means regular grid
+                        //-- correlation ??
+                        double[] elements = new double[(targetDim + 1)*(sourceDim + 1)];
+                        for (int j=0; j<targets.length; j++) {
+                            fitPlane(targets[j], j * (sourceDim + 1), elements);
+                        }
+                        matrix.setElements(elements);
+                    } else {
+                        final Plane plan = new Plane();
+                        for (int j=0; j<targets.length; j++) {
+                            correlation[j] = plan.fit(sources[0], sources[1], targets[j]);
+                            matrix.setElement(j, 0, plan.slopeX());
+                            matrix.setElement(j, 1, plan.slopeY());
+                            matrix.setElement(j, 2, plan.z0());
+                        }
                     }
+
                     break;
                 }
                 default: throw new AssertionError(sourceDim); // Should have been verified by setSourcePoints(…) method.
             }
+            matrix.setElement(targetDim, sourceDim, 1);
             transform = MathTransforms.linear(matrix);
         }
         return transform;

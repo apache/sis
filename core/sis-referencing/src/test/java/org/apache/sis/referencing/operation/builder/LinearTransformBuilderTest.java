@@ -24,9 +24,11 @@ import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.TestCase;
+import org.junit.Assert;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
+import org.opengis.geometry.MismatchedDimensionException;
 
 
 /**
@@ -86,6 +88,122 @@ public final strictfp class LinearTransformBuilderTest extends TestCase {
         assertEquals("m₁₂", -1, m.getElement(1, 2), STRICT);
 
         assertArrayEquals("correlation", new double[] {1, 1}, builder.correlation(), STRICT);
+    }
+
+    /**
+     * Tests a very simple case where an exact answer is expected.
+     * Tolerance threshold is set to zero because the math transform has been built from exactly 3 points,
+     * in which case we expect an exact solution without rounding errors at the scale of the {@code double}
+     * type. This is possible because SIS implementation uses double-double arithmetic.
+     */
+    @Test
+    public void testMinimalistRegular2D() {
+        final LinearTransformBuilder builder = new LinearTransformBuilder(2, 2);
+        final DirectPosition2D[] sourcePoints = new DirectPosition2D[]{new DirectPosition2D(0, 0),
+                                                                       new DirectPosition2D(1, 0),
+                                                                       new DirectPosition2D(1, 1),
+                                                                       new DirectPosition2D(0, 1)};
+
+        final DirectPosition2D[] targetPoints = new DirectPosition2D[]{new DirectPosition2D(1, -1),
+                                                                       new DirectPosition2D(3, -1),
+                                                                       new DirectPosition2D(3, 2),
+                                                                       new DirectPosition2D(1, 2)};
+
+        builder.setPoints(sourcePoints, targetPoints);
+        final Matrix m = builder.create().getMatrix();
+
+        // First row (x)
+        assertEquals("m₀₀",  2, m.getElement(0, 0), STRICT);
+        assertEquals("m₀₁",  0, m.getElement(0, 1), STRICT);
+        assertEquals("m₀₂",  1, m.getElement(0, 2), STRICT);
+
+        // Second row (y)
+        assertEquals("m₁₀",  0, m.getElement(1, 0), STRICT);
+        assertEquals("m₁₁",  3, m.getElement(1, 1), STRICT);
+        assertEquals("m₁₂", -1, m.getElement(1, 2), STRICT);
+
+//        assertArrayEquals("correlation", new double[] {1, 1}, builder.correlation(), STRICT);
+    }
+
+    /**
+     * Test comportements which should fail.
+     */
+    @Test
+    public void testFail() {
+
+        //-- build a no 2D grid
+        try {
+            final LinearTransformBuilder builder = new LinearTransformBuilder(2);
+            Assert.fail("Test should thrown an exception it is normaly impossible to build a no 2D grid.");
+        } catch (MismatchedDimensionException ex) {
+            //-- do nothing test validate
+        }
+        try {
+            final LinearTransformBuilder builder = new LinearTransformBuilder(2, 1);
+            Assert.fail("Test should thrown an exception it is normaly impossible to build a grid only define on one axis.");
+        } catch (IllegalArgumentException ex) {
+            //-- do nothing test validate
+        }
+        try {
+            final LinearTransformBuilder builder = new LinearTransformBuilder(1, 10);
+            Assert.fail("Test should thrown an exception it is normaly impossible to build a grid only define on one axis.");
+        } catch (MismatchedDimensionException ex) {
+            //-- do nothing test validate
+        }
+        try {
+            final LinearTransformBuilder builder = new LinearTransformBuilder(1, -5);
+            Assert.fail("Test should thrown an exception it is normaly impossible to build a grid with negative size value.");
+        } catch (IllegalArgumentException ex) {
+            //-- do nothing test validate
+        }
+
+        //-- try to build a regular grid with a missing point
+        try {
+            final LinearTransformBuilder builder = new LinearTransformBuilder(2, 2);
+            final DirectPosition2D[] sourcePoints = new DirectPosition2D[]{new DirectPosition2D(0, 0),
+                                                                           //--new DirectPosition2D(1, 0), volontary miss a grid point
+                                                                           new DirectPosition2D(1, 1),
+                                                                           new DirectPosition2D(0, 1)};
+
+            final DirectPosition2D[] targetPoints = new DirectPosition2D[]{new DirectPosition2D(1, -1),
+                                                                           //--new DirectPosition2D(3, -1),
+                                                                           new DirectPosition2D(3, 2),
+                                                                           new DirectPosition2D(1, 2)};
+
+            builder.setPoints(sourcePoints, targetPoints);
+            final Matrix m = builder.create().getMatrix();
+            Assert.fail("Test should thrown an exception it is normaly impossible to build a transformation with missing grid point.");
+        } catch (IllegalStateException ex) {
+            //-- do nothing
+        }
+
+
+
+        try {
+
+        } catch (Exception ex) {
+
+        }
+        try {
+
+        } catch (Exception ex) {
+
+        }
+        try {
+
+        } catch (Exception ex) {
+
+        }
+        try {
+
+        } catch (Exception ex) {
+
+        }
+        try {
+
+        } catch (Exception ex) {
+
+        }
     }
 
     /**
