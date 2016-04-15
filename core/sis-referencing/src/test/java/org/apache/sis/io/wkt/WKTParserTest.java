@@ -45,6 +45,13 @@ import static org.junit.Assert.*;
 @DependsOn(GeodeticObjectParserTest.class)
 public final strictfp class WKTParserTest extends CRSParserTest {
     /**
+     * Whether the test should replace the curly quotation marks “ and ” by the straight quotation mark ".
+     * The ISO 19162 specification uses only straight quotation marks, but SIS supports both.
+     * Curly quotation marks are convenient for identifying bugs, so we test them first.
+     */
+    private boolean useStraightQuotes;
+
+    /**
      * Creates a new test case using the default {@code CRSFactory} implementation.
      */
     public WKTParserTest() {
@@ -52,8 +59,8 @@ public final strictfp class WKTParserTest extends CRSParserTest {
     }
 
     /**
-     * Pre-process the WKT string before parsing. This method chooses randomly whether to replace
-     * curly quotation marks ({@code “} and {@code ”}) by straight quotation marks ({@code "}) or not.
+     * Pre-process the WKT string before parsing. This method may replace curly quotation marks
+     * ({@code “} and {@code ”}) by straight quotation marks ({@code "}).
      * The Apache SIS parser should understand both forms transparently.
      *
      * @param  wkt The Well-Known Text to pre-process.
@@ -61,7 +68,7 @@ public final strictfp class WKTParserTest extends CRSParserTest {
      */
     @Override
     protected String preprocessWKT(String wkt) {
-        if (StrictMath.random() >= 0.5) {
+        if (useStraightQuotes) {
             wkt = super.preprocessWKT(wkt);
         }
         return wkt;
@@ -110,6 +117,8 @@ public final strictfp class WKTParserTest extends CRSParserTest {
     public void testGeographic3D() throws FactoryException {
         super.testGeographic3D();
         verifyEllipsoidalCS();
+        useStraightQuotes = true;
+        super.testGeographic3D();                           // Test again with “ and ” replaced by ".
     }
 
     /**
@@ -135,6 +144,8 @@ public final strictfp class WKTParserTest extends CRSParserTest {
     public void testGeographicWithUnicode() throws FactoryException {
         super.testGeographicWithUnicode();
         verifyEllipsoidalCS();
+        useStraightQuotes = true;
+        super.testGeographicWithUnicode();                  // Test again with “ and ” replaced by ".
     }
 
     /**
@@ -160,6 +171,8 @@ public final strictfp class WKTParserTest extends CRSParserTest {
     public void testGeographicWithIdentifier() throws FactoryException {
         super.testGeographicWithIdentifier();
         verifyEllipsoidalCS();
+        useStraightQuotes = true;
+        super.testGeographicWithIdentifier();               // Test again with “ and ” replaced by ".
     }
 
     /**
@@ -185,6 +198,8 @@ public final strictfp class WKTParserTest extends CRSParserTest {
     public void testGeographicWithGradUnits() throws FactoryException {
         super.testGeographicWithGradUnits();
         verifyEllipsoidalCS();
+        useStraightQuotes = true;
+        super.testGeographicWithGradUnits();                // Test again with “ and ” replaced by ".
     }
 
     /**
@@ -218,6 +233,9 @@ public final strictfp class WKTParserTest extends CRSParserTest {
         assertEquals("name", AxisNames.GEOCENTRIC_X, cs.getAxis(0).getName().getCode());
         assertEquals("name", AxisNames.GEOCENTRIC_Y, cs.getAxis(1).getName().getCode());
         assertEquals("name", AxisNames.GEOCENTRIC_Z, cs.getAxis(2).getName().getCode());
+
+        useStraightQuotes = true;
+        super.testGeocentric();                             // Test again with “ and ” replaced by ".
     }
 
     /**
@@ -271,6 +289,9 @@ public final strictfp class WKTParserTest extends CRSParserTest {
         final CoordinateSystem cs = object.getCoordinateSystem();
         assertEquals("name", AxisNames.EASTING,  cs.getAxis(0).getName().getCode());
         assertEquals("name", AxisNames.NORTHING, cs.getAxis(1).getName().getCode());
+
+        useStraightQuotes = true;
+        super.testProjectedWithFootUnits();                  // Test again with “ and ” replaced by ".
     }
 
     /**
@@ -307,6 +328,9 @@ public final strictfp class WKTParserTest extends CRSParserTest {
         final CoordinateSystem cs = object.getCoordinateSystem();
         assertEquals("name", AxisNames.EASTING,  cs.getAxis(0).getName().getCode());
         assertEquals("name", AxisNames.NORTHING, cs.getAxis(1).getName().getCode());
+
+        useStraightQuotes = true;
+        super.testProjectedWithImplicitParameterUnits();    // Test again with “ and ” replaced by ".
     }
 
     /**
@@ -329,6 +353,9 @@ public final strictfp class WKTParserTest extends CRSParserTest {
         final CoordinateSystem cs = object.getCoordinateSystem();
         assertEquals("name", AxisNames.GRAVITY_RELATED_HEIGHT, cs.getAxis(0).getName().getCode());
         assertEquals("datumType", VerticalDatumType.GEOIDAL, ((VerticalCRS) object).getDatum().getVerticalDatumType());
+
+        useStraightQuotes = true;
+        super.testVertical();                               // Test again with “ and ” replaced by ".
     }
 
     /**
@@ -349,6 +376,9 @@ public final strictfp class WKTParserTest extends CRSParserTest {
         super.testTemporal();
         final CoordinateSystem cs = object.getCoordinateSystem();
         assertEquals("name", AxisNames.TIME, cs.getAxis(0).getName().getCode());
+
+        useStraightQuotes = true;
+        super.testTemporal();                               // Test again with “ and ” replaced by ".
     }
 
     /**
@@ -371,6 +401,9 @@ public final strictfp class WKTParserTest extends CRSParserTest {
         super.testParametric();
         final CoordinateSystem cs = object.getCoordinateSystem();
         assertEquals("name", "pressure", cs.getAxis(0).getName().getCode());
+
+        useStraightQuotes = true;
+        super.testParametric();                             // Test again with “ and ” replaced by ".
     }
 
     /**
@@ -396,6 +429,9 @@ public final strictfp class WKTParserTest extends CRSParserTest {
         final CoordinateSystem cs = object.getCoordinateSystem();
         assertEquals("name", AxisNames.NORTHING, cs.getAxis(0).getName().getCode());
         assertEquals("name", AxisNames.WESTING,  cs.getAxis(1).getName().getCode());
+
+        useStraightQuotes = true;
+        super.testEngineering();                            // Test again with “ and ” replaced by ".
     }
 
     /**
@@ -421,6 +457,9 @@ public final strictfp class WKTParserTest extends CRSParserTest {
         final CoordinateSystem cs = object.getCoordinateSystem();
         assertEquals("name", "site east",  cs.getAxis(0).getName().getCode());
         assertEquals("name", "site north", cs.getAxis(1).getName().getCode());
+
+        useStraightQuotes = true;
+        super.testEngineeringRotated();                     // Test again with “ and ” replaced by ".
     }
 
     /**
@@ -451,6 +490,9 @@ public final strictfp class WKTParserTest extends CRSParserTest {
         assertEquals("name", "x", cs.getAxis(0).getName().getCode());
         assertEquals("name", "y", cs.getAxis(1).getName().getCode());
         assertEquals("name", "z", cs.getAxis(2).getName().getCode());
+
+        useStraightQuotes = true;
+        super.testEngineeringForShip();                     // Test again with “ and ” replaced by ".
     }
 
     /**
@@ -483,6 +525,8 @@ public final strictfp class WKTParserTest extends CRSParserTest {
     public void testDerivedGeodetic() throws FactoryException {
         super.testDerivedGeodetic();
         verifyEllipsoidalCS();
+        useStraightQuotes = true;
+        super.testDerivedGeodetic();                        // Test again with “ and ” replaced by ".
     }
 
     /**
@@ -519,6 +563,9 @@ public final strictfp class WKTParserTest extends CRSParserTest {
         assertEquals("name", "Topocentric East",   cs.getAxis(0).getName().getCode());
         assertEquals("name", "Topocentric North",  cs.getAxis(1).getName().getCode());
         assertEquals("name", "Topocentric height", cs.getAxis(2).getName().getCode());
+
+        useStraightQuotes = true;
+        super.testDerivedEngineeringFromGeodetic();         // Test again with “ and ” replaced by ".
     }
 
     /**
@@ -537,6 +584,9 @@ public final strictfp class WKTParserTest extends CRSParserTest {
          */
         assertEquals("name", "I", cs.getAxis(0).getName().getCode());
         assertEquals("name", "J", cs.getAxis(1).getName().getCode());
+
+        useStraightQuotes = true;
+        super.testDerivedEngineeringFromProjected();        // Test again with “ and ” replaced by ".
     }
 
     /**
@@ -571,6 +621,9 @@ public final strictfp class WKTParserTest extends CRSParserTest {
         assertEquals("name", AxisNames.GEODETIC_LATITUDE,      cs.getAxis(0).getName().getCode());
         assertEquals("name", AxisNames.GEODETIC_LONGITUDE,     cs.getAxis(1).getName().getCode());
         assertEquals("name", AxisNames.GRAVITY_RELATED_HEIGHT, cs.getAxis(2).getName().getCode());
+
+        useStraightQuotes = true;
+        super.testCompoundWithVertical();                   // Test again with “ and ” replaced by ".
     }
 
     /**
@@ -603,6 +656,9 @@ public final strictfp class WKTParserTest extends CRSParserTest {
         assertEquals("name", AxisNames.GEODETIC_LATITUDE,  cs.getAxis(0).getName().getCode());
         assertEquals("name", AxisNames.GEODETIC_LONGITUDE, cs.getAxis(1).getName().getCode());
         assertEquals("name", AxisNames.TIME,               cs.getAxis(2).getName().getCode());
+
+        useStraightQuotes = true;
+        super.testCompoundWithTime();                       // Test again with “ and ” replaced by ".
     }
 
     /**
@@ -637,5 +693,8 @@ public final strictfp class WKTParserTest extends CRSParserTest {
         assertEquals("name", AxisNames.GEODETIC_LATITUDE,  cs.getAxis(0).getName().getCode());
         assertEquals("name", AxisNames.GEODETIC_LONGITUDE, cs.getAxis(1).getName().getCode());
         assertEquals("name", "pressure",                   cs.getAxis(2).getName().getCode());
+
+        useStraightQuotes = true;
+        super.testCompoundWithParametric();                 // Test again with “ and ” replaced by ".
     }
 }
