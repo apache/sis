@@ -111,9 +111,7 @@ public final strictfp class BoundsOperationTest extends TestCase {
         bounds.setRange(0, -31, 18);
         bounds.setRange(1, -6, 40);
         assertEquals(bounds,feature.getPropertyValue("bounds"));
-
     }
-
 
     /**
      * Tests a dense type with operations.

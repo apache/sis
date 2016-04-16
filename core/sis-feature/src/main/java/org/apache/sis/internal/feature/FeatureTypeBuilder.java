@@ -36,7 +36,7 @@ import org.apache.sis.feature.DefaultFeatureType;
 import org.apache.sis.feature.FeatureOperations;
 import org.apache.sis.internal.system.DefaultFactories;
 
-import static org.apache.sis.internal.feature.AttributeConvention.*;
+import static org.apache.sis.internal.feature.NameConvention.*;
 import static org.apache.sis.feature.DefaultFeatureType.*;
 
 // Branch-dependent imports
@@ -265,7 +265,7 @@ public class FeatureTypeBuilder {
         idSeparator = separator;
         idAttributes = attributes;
         //add placeholder
-        properties.put(ATTRIBUTE_ID, null);
+        properties.put(ID_PROPERTY, null);
     }
 
     /**
@@ -295,8 +295,8 @@ public class FeatureTypeBuilder {
     public void setDefaultGeometryOperation(final GenericName attribute) {
         defGeomAttribute = attribute;
         //add placeholder
-        properties.put(ATTRIBUTE_DEFAULT_GEOMETRY, null);
-        properties.put(ATTRIBUTE_BOUNDS, null);
+        properties.put(DEFAULT_GEOMETRY_PROPERTY, null);
+        properties.put(ENVELOPE_PROPERTY, null);
     }
 
     /**
@@ -533,7 +533,7 @@ public class FeatureTypeBuilder {
         final AttributeType<V> att;
         if (crs != null) {
             final AttributeType<CoordinateReferenceSystem> qualifier = new DefaultAttributeType<>(
-                    Collections.singletonMap(NAME_KEY, CHARACTERISTIC_CRS),
+                    Collections.singletonMap(NAME_KEY, CRS_CHARACTERISTIC),
                     CoordinateReferenceSystem.class, 1, 1, crs);
             att = new DefaultAttributeType<>(
                 Collections.singletonMap(NAME_KEY, name),
@@ -680,9 +680,9 @@ public class FeatureTypeBuilder {
             }
 
             final Operation att = FeatureOperations.compound(
-                    Collections.singletonMap(AbstractOperation.NAME_KEY, ATTRIBUTE_ID),
+                    Collections.singletonMap(AbstractOperation.NAME_KEY, ID_PROPERTY),
                     idSeparator, prefix, null, properties.get(idAttributes));
-            properties.put(ATTRIBUTE_ID, att);
+            properties.put(ID_PROPERTY, att);
         }
         //build default geometry property
         if (defGeomAttribute != null) {
@@ -690,13 +690,13 @@ public class FeatureTypeBuilder {
                 throw new IllegalArgumentException("Property "+defGeomAttribute+" used in default geometry does not exist");
             }
             final PropertyType geomAtt = properties.get(defGeomAttribute);
-            final CoordinateReferenceSystem crs = AttributeConvention.getCRSCharacteristic(geomAtt);
+            final CoordinateReferenceSystem crs = NameConvention.getCoordinateReferenceSystem(geomAtt);
             final Operation att = FeatureOperations.link(
-                    Collections.singletonMap(AbstractOperation.NAME_KEY, ATTRIBUTE_DEFAULT_GEOMETRY), geomAtt);
-            properties.put(ATTRIBUTE_DEFAULT_GEOMETRY, att);
+                    Collections.singletonMap(AbstractOperation.NAME_KEY, DEFAULT_GEOMETRY_PROPERTY), geomAtt);
+            properties.put(DEFAULT_GEOMETRY_PROPERTY, att);
 
-            final Operation boundAtt = FeatureOperations.bounds(Collections.singletonMap(AbstractOperation.NAME_KEY, ATTRIBUTE_BOUNDS), crs);
-            properties.put(ATTRIBUTE_BOUNDS, boundAtt);
+            final Operation boundAtt = FeatureOperations.bounds(Collections.singletonMap(AbstractOperation.NAME_KEY, ENVELOPE_PROPERTY), crs);
+            properties.put(ENVELOPE_PROPERTY, boundAtt);
 
         }
 

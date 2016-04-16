@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.Map;
 import org.apache.sis.feature.DefaultAttributeType;
 import static org.apache.sis.feature.AbstractIdentifiedType.*;
-import static org.apache.sis.internal.feature.AttributeConvention.*;
+import static org.apache.sis.internal.feature.NameConvention.*;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.opengis.feature.AttributeType;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -36,7 +36,7 @@ import org.opengis.util.NameFactory;
  * This builder can create the parameters to be given to {@linkplain DefaultAttributeType#DefaultAttributeType(
  * java.util.Map, java.lang.Class, int, int, java.lang.Object, org.opengis.feature.AttributeType...)  attribute type constructor}
  * from simpler parameters given to this builder.
- * 
+ *
  * @author Johann Sorel (Geomatys)
  * @since   0.7
  * @version 0.7
@@ -54,7 +54,7 @@ public class AttributeTypeBuilder {
     /**
      * Reset builder parameters to there original values.
      */
-    public void reset(){
+    public void reset() {
         parameters.clear();
         atts.clear();
         valueClass = Object.class;
@@ -68,7 +68,7 @@ public class AttributeTypeBuilder {
      *
      * @param type attribute type to copy parameters from.
      */
-    public void copy(AttributeType type){
+    public void copy(AttributeType type) {
         setName(type.getName());
         setDefinition(type.getDefinition());
         setDescription(type.getDescription());
@@ -85,7 +85,7 @@ public class AttributeTypeBuilder {
      *
      * @param localPart generic name tip part, not null
      */
-    public void setName(String localPart){
+    public void setName(String localPart) {
         this.setName(null,localPart);
     }
 
@@ -95,12 +95,12 @@ public class AttributeTypeBuilder {
      * @param scope generic name scope part, can be null
      * @param localPart generic name tip part, not null
      */
-    public void setName(String scope, String localPart){
+    public void setName(String scope, String localPart) {
         final NameFactory factory = DefaultFactories.forBuildin(NameFactory.class);
-        if(scope==null){
+        if (scope == null) {
             setName(factory.createGenericName(null, localPart));
-        }else{
-            setName(factory.createGenericName(null, scope,  localPart));
+        } else {
+            setName(factory.createGenericName(null, scope, localPart));
         }
     }
 
@@ -122,7 +122,7 @@ public class AttributeTypeBuilder {
      *
      * @param description attribute description
      */
-    public void setDescription(CharSequence description){
+    public void setDescription(CharSequence description) {
         parameters.put(DESCRIPTION_KEY, description);
     }
 
@@ -133,7 +133,7 @@ public class AttributeTypeBuilder {
      *
      * @param designation attribute designation
      */
-    public void setDesignation(CharSequence designation){
+    public void setDesignation(CharSequence designation) {
         parameters.put(DESIGNATION_KEY, designation);
     }
 
@@ -144,7 +144,7 @@ public class AttributeTypeBuilder {
      *
      * @param definition attribute definition
      */
-    public void setDefinition(CharSequence definition){
+    public void setDefinition(CharSequence definition) {
         parameters.put(DEFINITION_KEY, definition);
     }
 
@@ -191,19 +191,19 @@ public class AttributeTypeBuilder {
      * @param length character sequence length
      * @return created characteristic
      */
-    public AttributeType setLengthCharacteristic(int length){
-        return addCharacteristic(CHARACTERISTIC_LENGTH, Integer.class, 1, 1, length);
+    public AttributeType setLengthCharacteristic(int length) {
+        return addCharacteristic(MAXIMAL_LENGTH_CHARACTERISTIC, Integer.class, 1, 1, length);
     }
 
     /**
      * Set attribute {@code CoordinateReferenceSystem}.
      * This characteristic only have a meaning with georeferenced type attributes.
-     * 
+     *
      * @param crs geometry coordinate reference system
      * @return created characteristic
      */
-    public AttributeType setCRSCharacteristic(CoordinateReferenceSystem crs){
-        return addCharacteristic(CHARACTERISTIC_CRS, CoordinateReferenceSystem.class, 1, 1, crs);
+    public AttributeType setCRSCharacteristic(CoordinateReferenceSystem crs) {
+        return addCharacteristic(CRS_CHARACTERISTIC, CoordinateReferenceSystem.class, 1, 1, crs);
     }
 
     /**
@@ -213,8 +213,8 @@ public class AttributeTypeBuilder {
      * @param values enumeration of values
      * @return created characteristic
      */
-    public AttributeType setPossibleValues(Collection values){
-        return addCharacteristic(CHARACTERISTIC_ENUM, Object.class, 1, 1, values);
+    public AttributeType setPossibleValues(Collection values) {
+        return addCharacteristic(VALID_VALUES_CHARACTERISTIC, Object.class, 1, 1, values);
     }
 
     /**
@@ -227,7 +227,7 @@ public class AttributeTypeBuilder {
      * @param defaultValue characteristic default value
      * @return created characteristic
      */
-    public AttributeType addCharacteristic(String localPart, Class valueClass, int minimumOccurs, int maximumOccurs, Object defaultValue){
+    public AttributeType addCharacteristic(String localPart, Class valueClass, int minimumOccurs, int maximumOccurs, Object defaultValue) {
         final NameFactory factory = DefaultFactories.forBuildin(NameFactory.class);
         final GenericName name = factory.createGenericName(null, localPart);
         return addCharacteristic(name,valueClass,minimumOccurs,maximumOccurs,defaultValue);
@@ -243,7 +243,7 @@ public class AttributeTypeBuilder {
      * @param defaultValue characteristic default value
      * @return created characteristic
      */
-    public AttributeType addCharacteristic(GenericName name, Class valueClass, int minimumOccurs, int maximumOccurs, Object defaultValue){
+    public AttributeType addCharacteristic(GenericName name, Class valueClass, int minimumOccurs, int maximumOccurs, Object defaultValue) {
         return addCharacteristic(new DefaultAttributeType(
                     Collections.singletonMap(NAME_KEY, name),
                     valueClass,minimumOccurs,maximumOccurs,defaultValue));
@@ -255,10 +255,10 @@ public class AttributeTypeBuilder {
      * @param characteristic not null
      * @return added characteristic
      */
-    public AttributeType addCharacteristic(AttributeType characteristic){
+    public AttributeType addCharacteristic(AttributeType characteristic) {
         //search and remove previous characteristic with the same id if it exist
-        for(AttributeType at : atts){
-            if(at.getName().equals(characteristic.getName())){
+        for(AttributeType at : atts) {
+            if(at.getName().equals(characteristic.getName())) {
                 atts.remove(at);
                 break;
             }
@@ -272,8 +272,8 @@ public class AttributeTypeBuilder {
      *
      * @return AtributeType, never null
      */
-    public AttributeType build(){
-        return new DefaultAttributeType(parameters, valueClass, 
+    public AttributeType build() {
+        return new DefaultAttributeType(parameters, valueClass,
                 minimumOccurs, maximumOccurs,
                 defaultValue, atts.toArray(new AttributeType[atts.size()]));
     }

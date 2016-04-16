@@ -87,7 +87,7 @@ public class AttributeTypeBuilderTest extends TestCase {
         assertEquals("test text with words and letters.", att.getDefaultValue());
         assertEquals(10, att.getMinimumOccurs());
         assertEquals(60, att.getMaximumOccurs());
-        assertEquals(80, (int)AttributeConvention.getLengthCharacteristic(att));
+        assertEquals(80, (int)NameConvention.getMaximalLength(att));
     }
 
     /**
@@ -121,7 +121,7 @@ public class AttributeTypeBuilderTest extends TestCase {
         assertEquals("test text with words and letters.", att.getDefaultValue());
         assertEquals(10, att.getMinimumOccurs());
         assertEquals(60, att.getMaximumOccurs());
-        assertEquals(80, (int)AttributeConvention.getLengthCharacteristic(att));
+        assertEquals(80, (int)NameConvention.getMaximalLength(att));
     }
 
     /**

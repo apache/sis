@@ -26,7 +26,7 @@ import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.TransformException;
-import org.apache.sis.internal.feature.AttributeConvention;
+import org.apache.sis.internal.feature.NameConvention;
 import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.geometry.GeneralEnvelope;
 
@@ -155,8 +155,8 @@ final class BoundsOperation extends AbstractOperation {
 
         final FeatureType type = feature.getType();
         for(PropertyType pt : type.getProperties(true)){
-            if(!pt.getName().equals(AttributeConvention.ATTRIBUTE_DEFAULT_GEOMETRY)){
-                if(!AttributeConvention.isGeometryAttribute(pt)) continue;
+            if(!pt.getName().equals(NameConvention.DEFAULT_GEOMETRY_PROPERTY)){
+                if(!NameConvention.isGeometryAttribute(pt)) continue;
             }
 
             final Object val = feature.getPropertyValue(pt.getName().toString());
@@ -169,7 +169,7 @@ final class BoundsOperation extends AbstractOperation {
                 if(env.isEmpty()) continue;
 
                 //extract geometry enveloppe
-                final CoordinateReferenceSystem geomCrs = AttributeConvention.getCRSCharacteristic(pt);
+                final CoordinateReferenceSystem geomCrs = NameConvention.getCoordinateReferenceSystem(pt);
                 Envelope genv;
                 if(geomCrs!=null){
                     genv = new GeneralEnvelope(geomCrs);

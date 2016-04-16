@@ -222,9 +222,9 @@ public class FeatureTypeBuilderTest extends TestCase {
         assertEquals(5, type.getProperties(true).size());
 
         final List<PropertyType> properties = new ArrayList(type.getProperties(true));
-        assertEquals(AttributeConvention.ATTRIBUTE_ID, properties.get(0).getName());
-        assertEquals(AttributeConvention.ATTRIBUTE_DEFAULT_GEOMETRY, properties.get(1).getName());
-        assertEquals(AttributeConvention.ATTRIBUTE_BOUNDS, properties.get(2).getName());
+        assertEquals(NameConvention.ID_PROPERTY, properties.get(0).getName());
+        assertEquals(NameConvention.DEFAULT_GEOMETRY_PROPERTY, properties.get(1).getName());
+        assertEquals(NameConvention.ENVELOPE_PROPERTY, properties.get(2).getName());
         assertEquals("name", properties.get(3).getName().toString());
         assertEquals("shape", properties.get(4).getName().toString());
     }
