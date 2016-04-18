@@ -53,7 +53,7 @@ public final class GPXConstants extends Static {
     /** used in version : 1.0 and 1.1 */
     public static final String ATT_GPX_VERSION = "version";
     /** used in version : 1.0 and 1.1 */
-    public static final String ATT_GPX_CREATOR = "creator";             
+    public static final String ATT_GPX_CREATOR = "creator";
 
     /**
      * Attributs used a bit everywhere.
@@ -75,7 +75,7 @@ public final class GPXConstants extends Static {
     /** used in version : 1.0 and 1.1 */
     public static final String TAG_TYPE = "type";
     /** used in version : 1.0 and 1.1 */
-    public static final String TAG_NUMBER = "number";                   
+    public static final String TAG_NUMBER = "number";
 
     /**
      * Metadata tag.
@@ -85,7 +85,7 @@ public final class GPXConstants extends Static {
     /** used in version : 1.0 and 1.1 */
     public static final String TAG_METADATA_TIME = "time";
     /** used in version : 1.0 and 1.1 */
-    public static final String TAG_METADATA_KEYWORDS = "keywords";      
+    public static final String TAG_METADATA_KEYWORDS = "keywords";
 
     /**
      * Person tag.
@@ -93,7 +93,7 @@ public final class GPXConstants extends Static {
     /** used in version : 1.0(as attribut) and 1.1(as tag) */
     public static final String TAG_AUTHOR = "author";
     /** used in version : 1.0 and 1.1 */
-    public static final String TAG_AUTHOR_EMAIL = "email";              
+    public static final String TAG_AUTHOR_EMAIL = "email";
 
     /**
      * CopyRight tag.
@@ -105,7 +105,7 @@ public final class GPXConstants extends Static {
     /** used in version : 1.1 */
     public static final String TAG_COPYRIGHT_LICENSE = "license";
     /** used in version : 1.1 */
-    public static final String ATT_COPYRIGHT_AUTHOR = "author";         
+    public static final String ATT_COPYRIGHT_AUTHOR = "author";
 
     /**
      * Bounds tag.
@@ -119,7 +119,7 @@ public final class GPXConstants extends Static {
     /** used in version : 1.0 and 1.1 */
     public static final String ATT_BOUNDS_MAXLAT = "maxlat";
     /** used in version : 1.0 and 1.1 */
-    public static final String ATT_BOUNDS_MAXLON = "maxlon";            
+    public static final String ATT_BOUNDS_MAXLON = "maxlon";
 
     /**
      * Link tag.
@@ -129,7 +129,7 @@ public final class GPXConstants extends Static {
     /** used in version : 1.1 */
     public static final String TAG_LINK_TYPE = "type";
     /** used in version : 1.1 */
-    public static final String ATT_LINK_HREF = "href";                  
+    public static final String ATT_LINK_HREF = "href";
 
     /**
      * WPT tag.
@@ -163,7 +163,7 @@ public final class GPXConstants extends Static {
     /** used in version : 1.0 and 1.1 */
     public static final String TAG_WPT_AGEOFGPSDATA = "ageofdgpsdata";
     /** used in version : 1.0 and 1.1 */
-    public static final String TAG_WPT_DGPSID = "dgpsid";               
+    public static final String TAG_WPT_DGPSID = "dgpsid";
 
     /**
      * RTE tag.
@@ -171,7 +171,7 @@ public final class GPXConstants extends Static {
     /** used in version : 1.0 and 1.1 */
     public static final String TAG_RTE = "rte";
     /** used in version : 1.0 and 1.1 */
-    public static final String TAG_RTE_RTEPT = "rtept";                 
+    public static final String TAG_RTE_RTEPT = "rtept";
 
     /**
      * TRK tag.
@@ -181,7 +181,7 @@ public final class GPXConstants extends Static {
     /** used in version : 1.0 and 1.1 */
     public static final String TAG_TRK_SEG = "trkseg";
     /** used in version : 1.0 and 1.1 */
-    public static final String TAG_TRK_SEG_PT = "trkpt";                
+    public static final String TAG_TRK_SEG_PT = "trkpt";
 
     /**
      * Coordinate reference system used by gpx files.
@@ -227,10 +227,10 @@ public final class GPXConstants extends Static {
         final AttributeTypeBuilder atb = new AttributeTypeBuilder();
 
         //-------------------- GENERIC GPX ENTITY ------------------------------
-        final AttributeType attIndex = createAttribute("index",Integer.class,1,1,null);
+        final AttributeType<Integer> attIndex = createAttribute("index", Integer.class, 1, 1);
         final String geomName = "geometry";
 
-        ftb.reset();
+        ftb.clear();
         ftb.setName(GPX_NAMESPACE, "GPXEntity");
         ftb.setAbstract(true);
         ftb.addProperty(attIndex);
@@ -264,26 +264,26 @@ public final class GPXConstants extends Static {
         atb.setMinimumOccurs(1);
         atb.setMaximumOccurs(1);
         final AttributeType attPointGeometry =    atb.build();
-        final AttributeType attWptEle =           createAttribute(TAG_WPT_ELE,            Double.class,0,1,null);
-        final AttributeType attWptTime =          createAttribute(TAG_WPT_TIME,           Temporal.class,0,1,null);
-        final AttributeType attWptMagvar =        createAttribute(TAG_WPT_MAGVAR,         Double.class,0,1,null);
-        final AttributeType attWptGeoHeight =     createAttribute(TAG_WPT_GEOIHEIGHT,     Double.class,0,1,null);
-        final AttributeType attName =             createAttribute(TAG_NAME,               String.class,0,1,null);
-        final AttributeType attCmt =              createAttribute(TAG_CMT,                String.class,0,1,null);
-        final AttributeType attDesc =             createAttribute(TAG_DESC,               String.class,0,1,null);
-        final AttributeType attSrc =              createAttribute(TAG_SRC,                String.class,0,1,null);
-        final AttributeType attLink =             createAttribute(TAG_LINK,               URI.class,0,Integer.MAX_VALUE,null);
-        final AttributeType attWptSym =           createAttribute(TAG_WPT_SYM,            String.class,0,1,null);
-        final AttributeType attType =             createAttribute(TAG_TYPE,               String.class,0,1,null);
-        final AttributeType attWptFix =           createAttribute(TAG_WPT_FIX,            String.class,0,1,null);
-        final AttributeType attWptSat =           createAttribute(TAG_WPT_SAT,            Integer.class,0,1,null);
-        final AttributeType attWptHdop =          createAttribute(TAG_WPT_HDOP,           Double.class,0,1,null);
-        final AttributeType attWptVdop =          createAttribute(TAG_WPT_VDOP,           Double.class,0,1,null);
-        final AttributeType attWptPdop =          createAttribute(TAG_WPT_PDOP,           Double.class,0,1,null);
-        final AttributeType attWptAgeofGpsData =  createAttribute(TAG_WPT_AGEOFGPSDATA,   Double.class,0,1,null);
-        final AttributeType attWptDgpsid =        createAttribute(TAG_WPT_DGPSID,         Integer.class,0,1,null);
+        final AttributeType attWptEle =           createAttribute(TAG_WPT_ELE,            Double.class);
+        final AttributeType attWptTime =          createAttribute(TAG_WPT_TIME,           Temporal.class);
+        final AttributeType attWptMagvar =        createAttribute(TAG_WPT_MAGVAR,         Double.class);
+        final AttributeType attWptGeoHeight =     createAttribute(TAG_WPT_GEOIHEIGHT,     Double.class);
+        final AttributeType attName =             createAttribute(TAG_NAME,               String.class);
+        final AttributeType attCmt =              createAttribute(TAG_CMT,                String.class);
+        final AttributeType attDesc =             createAttribute(TAG_DESC,               String.class);
+        final AttributeType attSrc =              createAttribute(TAG_SRC,                String.class);
+        final AttributeType attLink =             createAttribute(TAG_LINK,               URI.class, 0, Integer.MAX_VALUE);
+        final AttributeType attWptSym =           createAttribute(TAG_WPT_SYM,            String.class);
+        final AttributeType attType =             createAttribute(TAG_TYPE,               String.class);
+        final AttributeType attWptFix =           createAttribute(TAG_WPT_FIX,            String.class);
+        final AttributeType attWptSat =           createAttribute(TAG_WPT_SAT,            Integer.class);
+        final AttributeType attWptHdop =          createAttribute(TAG_WPT_HDOP,           Double.class);
+        final AttributeType attWptVdop =          createAttribute(TAG_WPT_VDOP,           Double.class);
+        final AttributeType attWptPdop =          createAttribute(TAG_WPT_PDOP,           Double.class);
+        final AttributeType attWptAgeofGpsData =  createAttribute(TAG_WPT_AGEOFGPSDATA,   Double.class);
+        final AttributeType attWptDgpsid =        createAttribute(TAG_WPT_DGPSID,         Integer.class);
 
-        ftb.reset();
+        ftb.clear();
         ftb.setName(GPX_NAMESPACE, "WayPoint");
         ftb.setSuperTypes(TYPE_GPX_ENTITY);
         ftb.addProperty(attIndex);
@@ -320,9 +320,9 @@ public final class GPXConstants extends Static {
         //<type> xsd:string </type> [0..1] ?
         //<extensions> extensionsType </extensions> [0..1] ?
         //<rtept> wptType </rtept> [0..*] ?
-        final AttributeType attNumber          = createAttribute(TAG_NUMBER,    Integer.class,0,1,null);
+        final AttributeType<Integer> attNumber = createAttribute(TAG_NUMBER, Integer.class);
 
-        ftb.reset();
+        ftb.clear();
         ftb.setName(GPX_NAMESPACE, "Route");
         ftb.setSuperTypes(TYPE_GPX_ENTITY);
         ftb.addProperty(attIndex);
@@ -343,7 +343,7 @@ public final class GPXConstants extends Static {
         //------------------- TRACK SEGMENT TYPE -------------------------------
         //<trkpt> wptType </trkpt> [0..*] ?
         //<extensions> extensionsType </extensions> [0..1] ?
-        ftb.reset();
+        ftb.clear();
         ftb.setName(GPX_NAMESPACE, "TrackSegment");
         ftb.addProperty(attIndex);
         final FeatureAssociationRole attTrackPoints = ftb.addAssociation(createName(TAG_TRK_SEG_PT),TYPE_WAYPOINT,0,Integer.MAX_VALUE);
@@ -362,7 +362,7 @@ public final class GPXConstants extends Static {
         //<type> xsd:string </type> [0..1] ?
         //<extensions> extensionsType </extensions> [0..1] ?
         //<trkseg> trksegType </trkseg> [0..*] ?
-        ftb.reset();
+        ftb.clear();
         ftb.setName(GPX_NAMESPACE, "Track");
         ftb.setSuperTypes(TYPE_GPX_ENTITY);
         ftb.addProperty(attIndex);
@@ -373,7 +373,7 @@ public final class GPXConstants extends Static {
         ftb.addProperty(attLink);
         ftb.addProperty(attNumber);
         ftb.addProperty(attType);
-        final FeatureAssociationRole attTrackSegments = ftb.addAssociation(createName(TAG_TRK_SEG),TYPE_TRACK_SEGMENT,0,Integer.MAX_VALUE);
+        final FeatureAssociationRole attTrackSegments = ftb.addAssociation(createName(TAG_TRK_SEG), TYPE_TRACK_SEGMENT, 0, Integer.MAX_VALUE);
         final Operation attTrackGeometry = new GroupPolylinesOperation(createName(geomName),attTrackSegments.getName(), attTrackSegGeometry.getName());
         ftb.addProperty(attTrackGeometry);
         ftb.setDefaultGeometryOperation(attTrackGeometry.getName());
@@ -384,9 +384,13 @@ public final class GPXConstants extends Static {
     /**
      * Shortcut method to create attribute type.
      */
-    private static AttributeType createAttribute(String name, Class valueClass, int min, int max, Object defaultValue) {
-        return new DefaultAttributeType(Collections.singletonMap(AbstractIdentifiedType.NAME_KEY,
-                createName(name)), valueClass, min, max, defaultValue);
+    private static <V> AttributeType<V> createAttribute(String name, Class<V> valueClass, int min, int max) {
+        return new DefaultAttributeType<>(Collections.singletonMap(AbstractIdentifiedType.NAME_KEY,
+                createName(name)), valueClass, min, max, null);
+    }
+
+    private static <V> AttributeType<V> createAttribute(String name, Class<V> valueClass) {
+        return createAttribute(name, valueClass, 0, 1);
     }
 
     /**
@@ -394,9 +398,9 @@ public final class GPXConstants extends Static {
      */
     private static GenericName createName(String localPart) {
         final NameFactory factory = DefaultFactories.forBuildin(NameFactory.class);
-        return factory.createGenericName(null, GPX_NAMESPACE,  localPart);
+        return factory.createGenericName(null, GPX_NAMESPACE, localPart);
     }
 
-    private GPXConstants(){};
-
+    private GPXConstants() {
+    };
 }
