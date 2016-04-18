@@ -690,13 +690,14 @@ public class FeatureTypeBuilder {
                 throw new IllegalArgumentException("Property "+defGeomAttribute+" used in default geometry does not exist");
             }
             final PropertyType geomAtt = properties.get(defGeomAttribute);
-            final CoordinateReferenceSystem crs = NameConvention.getCoordinateReferenceSystem(geomAtt);
+            final CoordinateReferenceSystem crs = null; // TODO NameConvention.getCoordinateReferenceSystem(geomAtt);
             final Operation att = FeatureOperations.link(
                     Collections.singletonMap(AbstractOperation.NAME_KEY, DEFAULT_GEOMETRY_PROPERTY), geomAtt);
             properties.put(DEFAULT_GEOMETRY_PROPERTY, att);
 
-            final Operation boundAtt = FeatureOperations.bounds(Collections.singletonMap(AbstractOperation.NAME_KEY, ENVELOPE_PROPERTY), crs);
-            properties.put(ENVELOPE_PROPERTY, boundAtt);
+            // TODO
+//            final Operation boundAtt = FeatureOperations.bounds(Collections.singletonMap(AbstractOperation.NAME_KEY, ENVELOPE_PROPERTY), null, crs);
+//            properties.put(ENVELOPE_PROPERTY, boundAtt);
 
         }
 

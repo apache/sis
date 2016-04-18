@@ -29,7 +29,7 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 // Branch-dependent imports
-import org.opengis.feature.AttributeType;
+import org.opengis.feature.Property;
 import org.opengis.feature.IdentifiedType;
 
 
@@ -37,6 +37,7 @@ import org.opengis.feature.IdentifiedType;
  * Tests {@link NameConvention}.
  *
  * @author  Johann Sorel (Geomatys)
+ * @author  Martin Desruisseaux (Geomatys)
  * @since   0.7
  * @version 0.7
  * @module
@@ -67,13 +68,15 @@ public final strictfp class NameConventionTest extends TestCase {
     }
 
     /**
-     * Tests {@link NameConvention#getCoordinateReferenceSystem(IdentifiedType)} method.
+     * Tests {@link NameConvention#characterizedByCRS(IdentifiedType)} and
+     * {@link NameConvention#getCrsCharacteristic(Property)} methods.
      */
     @Test
-    public void testGetCoordinateReferenceSystem() {
+    public void testGetCrsCharacteristic() {
         final Map<String,?> properties = Collections.singletonMap(DefaultAttributeType.NAME_KEY, "geometry");
         DefaultAttributeType<Point> type = new DefaultAttributeType<>(properties, Point.class, 1, 1, null);
-        assertNull("Without characteristic", NameConvention.getCoordinateReferenceSystem(type));
+        assertFalse("characterizedByCRS",  NameConvention.characterizedByCRS(type));
+        assertNull("getCrsCharacteristic", NameConvention.getCrsCharacteristic(type.newInstance()));
         /*
          * Creates an attribute associated to an attribute (i.e. a "characteristic") for storing
          * the Coordinate Reference System of the "geometry" attribute. Then test again.
@@ -83,17 +86,20 @@ public final strictfp class NameConventionTest extends TestCase {
                 CoordinateReferenceSystem.class, 1, 1, HardCodedCRS.WGS84);
 
         type = new DefaultAttributeType<>(properties, Point.class, 1, 1, null, characteristic);
-        assertEquals(HardCodedCRS.WGS84, NameConvention.getCoordinateReferenceSystem(type));
+        assertTrue(NameConvention.characterizedByCRS(type));
+        assertEquals(HardCodedCRS.WGS84, NameConvention.getCrsCharacteristic(type.newInstance()));
     }
 
     /**
-     * Tests {@link NameConvention#getMaximalLength(AttributeType)} method.
+     * Tests {@link NameConvention#characterizedByMaximalLength(IdentifiedType)} and
+     * {@link NameConvention#getMaximalLengthCharacteristic(Property)} methods.
      */
     @Test
-    public void testGetMaximalLength() {
+    public void testGetMaximalLengthCharacteristic() {
         final Map<String,?> properties = Collections.singletonMap(DefaultAttributeType.NAME_KEY, "name");
         DefaultAttributeType<String> type = new DefaultAttributeType<>(properties, String.class, 1, 1, null);
-        assertNull("Without characteristic", NameConvention.getMaximalLength(type));
+        assertFalse("characterizedByMaximalLength",  NameConvention.characterizedByMaximalLength(type));
+        assertNull("getMaximalLengthCharacteristic", NameConvention.getMaximalLengthCharacteristic(type.newInstance()));
         /*
          * Creates an attribute associated to an attribute (i.e. a "characteristic") for storing
          * the maximal length of the "name" attribute. Then test again.
@@ -103,6 +109,7 @@ public final strictfp class NameConventionTest extends TestCase {
                 Integer.class, 1, 1, 120);
 
         type = new DefaultAttributeType<>(properties, String.class, 1, 1, null, characteristic);
-        assertEquals(Integer.valueOf(120), NameConvention.getMaximalLength(type));
+        assertTrue("characterizedByMaximalLength", NameConvention.characterizedByMaximalLength(type));
+        assertEquals(Integer.valueOf(120), NameConvention.getMaximalLengthCharacteristic(type.newInstance()));
     }
 }
