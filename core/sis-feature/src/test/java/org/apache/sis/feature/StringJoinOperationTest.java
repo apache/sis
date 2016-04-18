@@ -39,10 +39,7 @@ import org.opengis.feature.InvalidPropertyValueException;
  * @version 0.7
  * @module
  */
-@DependsOn({
-    AbstractOperationTest.class,
-    DenseFeatureTest.class
-})
+@DependsOn(LinkOperationTest.class)
 public final strictfp class StringJoinOperationTest extends TestCase {
     /**
      * Creates a feature type with an string join operation.

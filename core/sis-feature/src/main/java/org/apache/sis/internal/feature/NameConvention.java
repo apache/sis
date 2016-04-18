@@ -16,7 +16,6 @@
  */
 package org.apache.sis.internal.feature;
 
-import com.esri.core.geometry.Geometry;
 import org.opengis.util.LocalName;
 import org.opengis.util.ScopedName;
 import org.opengis.util.GenericName;
@@ -28,10 +27,11 @@ import org.apache.sis.internal.util.Constants;
 import org.apache.sis.util.Static;
 
 // Branch-dependent imports
+import org.opengis.feature.Attribute;
 import org.opengis.feature.AttributeType;
 import org.opengis.feature.IdentifiedType;
 import org.opengis.feature.Operation;
-import org.opengis.feature.PropertyType;
+import org.opengis.feature.Property;
 
 
 /**
@@ -100,12 +100,12 @@ public final class NameConvention extends Static {
      * <p>Properties of this name are usually {@linkplain org.apache.sis.feature.FeatureOperations#link
      * operations acting as a redirection to another attribute}.</p>
      *
-     * <p>The {@linkplain org.apache.sis.feature.DefaultAttributeType#getValueClass() value class} can be the
-     * {@link Geometry} class from ESRI's API, or the {@code Geometry} class from <cite>Java Topology Suite</cite>
-     * (JTS) library, or any other class defined in future SIS versions. See {@link #isGeometryAttribute(PropertyType)}
-     * for testing whether the value is a supported type.</p>
+     * <p>The {@linkplain org.apache.sis.feature.DefaultAttributeType#getValueClass() value class} can be
+     * the {@link com.esri.core.geometry.Geometry} class from ESRI's API, or the {@code Geometry} class from
+     * <cite>Java Topology Suite</cite> (JTS) library, or any other class defined in future SIS versions.
+     * See {@link #isGeometryAttribute(IdentifiedType)} for testing whether the value is a supported type.</p>
      *
-     * @see #isGeometryAttribute(PropertyType)
+     * @see #isGeometryAttribute(IdentifiedType)
      */
     public static final LocalName DEFAULT_GEOMETRY_PROPERTY;
 
@@ -165,7 +165,7 @@ public final class NameConvention extends Static {
         NAMESPACE                     = factory.createGenericName(null, "Apache", Constants.SIS);
         NameSpace ns                  = factory.createNameSpace(NAMESPACE, null);
         ID_PROPERTY                   = factory.createLocalName(ns, "@identifier");
-        DEFAULT_GEOMETRY_PROPERTY     = factory.createLocalName(ns, "@defaultGeometry");
+        DEFAULT_GEOMETRY_PROPERTY     = factory.createLocalName(ns, "@geometry");
         ENVELOPE_PROPERTY             = factory.createLocalName(ns, "@envelope");
         CRS_CHARACTERISTIC            = factory.createLocalName(ns, "@crs");
         MAXIMAL_LENGTH_CHARACTERISTIC = factory.createLocalName(ns, "@maximalLength");
@@ -225,49 +225,102 @@ public final class NameConvention extends Static {
         while (type instanceof Operation) {
             type = ((Operation) type).getResult();
         }
+        return (type instanceof AttributeType<?>) && Geometries.isKnownType(((AttributeType<?>) type).getValueClass());
+    }
+
+    /**
+     * Returns whether the given operation or attribute type is characterized by a coordinate reference system.
+     * This method verifies whether a characteristic named {@link #CRS_CHARACTERISTIC} with values assignable to
+     * {@link CoordinateReferenceSystem} exists (directly or indirectly) for the given type.
+     *
+     * @param  type  the operation or attribute type for which to get the CRS, or {@code null}.
+     * @return {@code true} if a characteristic for Coordinate Reference System has been found.
+     */
+    public static boolean characterizedByCRS(final IdentifiedType type) {
+        return hasCharacteristic(type, CRS_CHARACTERISTIC.toString(), CoordinateReferenceSystem.class);
+    }
+
+    /**
+     * Returns the Coordinate Reference Systems characteristic for the given attribute, or {@code null} if none.
+     * This method gets the value or default value from the characteristic named {@link #CRS_CHARACTERISTIC}.
+     *
+     * @param  attribute  the attribute for which to get the CRS, or {@code null}.
+     * @return The Coordinate Reference System characteristic of the given attribute, or {@code null} if none.
+     * @throws ClassCastException if {@link #CRS_CHARACTERISTIC} has been found but is associated
+     *         to an object which is not a {@link CoordinateReferenceSystem} instance.
+     */
+    public static CoordinateReferenceSystem getCrsCharacteristic(final Property attribute) {
+        return (CoordinateReferenceSystem) getCharacteristic(attribute, CRS_CHARACTERISTIC.toString());
+    }
+
+    /**
+     * Returns whether the given operation or attribute type is characterized by a maximal length.
+     * This method verifies whether a characteristic named {@link #MAXIMAL_LENGTH_CHARACTERISTIC}
+     * with values of class {@link Integer} exists (directly or indirectly) for the given type.
+     *
+     * @param  type  the operation or attribute type for which to get the maximal length, or {@code null}.
+     * @return {@code true} if a characteristic for maximal length has been found.
+     */
+    public static boolean characterizedByMaximalLength(final IdentifiedType type) {
+        return hasCharacteristic(type, MAXIMAL_LENGTH_CHARACTERISTIC.toString(), Integer.class);
+    }
+
+    /**
+     * Returns the maximal length characteristic for the given attribute, or {@code null} if none.
+     * This method gets the value or default value from the characteristic named {@link #MAXIMAL_LENGTH_CHARACTERISTIC}.
+     *
+     * @param  attribute  the attribute for which to get the CRS, or {@code null}.
+     * @return The Coordinate Reference System characteristic of the given attribute, or {@code null} if none.
+     * @throws ClassCastException if {@link #MAXIMAL_LENGTH_CHARACTERISTIC} has been found but is associated
+     *         to an object which is not an {@link Integer} instance.
+     */
+    public static Integer getMaximalLengthCharacteristic(final Property attribute) {
+        return (Integer) getCharacteristic(attribute, MAXIMAL_LENGTH_CHARACTERISTIC.toString());
+    }
+
+    /**
+     * Returns {@code true} if the given operation or attribute type has a characteristic of the given name,
+     * and the values of that characteristic are assignable to the given {@code valueClass}.
+     *
+     * @param  type        the operation or attribute type for which to test the existence of a characteristic.
+     * @param  name        the name of the characteristic to test.
+     * @param  valueClass  the expected characteristic values.
+     * @return {@code true} if a characteristic of the given name exists and has values assignable to the given class.
+     */
+    private static boolean hasCharacteristic(IdentifiedType type, final String name, final Class<?> valueClass) {
+        while (type instanceof Operation) {
+            type = ((Operation) type).getResult();
+        }
         if (type instanceof AttributeType<?>) {
-            final Class<?> valueClass = ((AttributeType<?>) type).getValueClass();
-            return Geometry.class.isAssignableFrom(valueClass);
+            final AttributeType<?> at = ((AttributeType<?>) type).characteristics().get(name);
+            if (at != null) {
+                return valueClass.isAssignableFrom(at.getValueClass());
+            }
         }
         return false;
     }
 
     /**
-     * Returns the coordinate reference systems associated to the given operation or attribute type,
-     * or {@code null} if none. This method searches for a characteristic named {@link #CRS_CHARACTERISTIC}.
+     * Fetches from the given property the value or default value of the named characteristic.
+     * If the given property is null, or is not an attribute, or does not have characteristics
+     * of the given name, then this method returns {@code null}.
      *
-     * @param  type  the operation or attribute type for which to get the CRS, or {@code null}.
-     * @return The Coordinate Reference System for the given type, or {@code null} if none.
-     * @throws ClassCastException if {@link #CRS_CHARACTERISTIC} has been found but is associated
-     *         to an object which is not a {@link CoordinateReferenceSystem} instance.
+     * @param  attribute  the attribute from which to get the characteristic value or default value, or {@code null}.
+     * @param  name       name of the characteristic to get.
+     * @return the value or default value of the given characteristic in the given property, or {@code null} if none.
      */
-    public static CoordinateReferenceSystem getCoordinateReferenceSystem(IdentifiedType type) {
-        while (type instanceof Operation) {
-            type = ((Operation) type).getResult();
-        }
-        if (type instanceof AttributeType<?>) {
-            final AttributeType<?> at = ((AttributeType<?>) type).characteristics().get(CRS_CHARACTERISTIC.toString());
+    private static Object getCharacteristic(final Property attribute, final String name) {
+        if (attribute instanceof Attribute<?>) {
+            final Attribute<?> at = ((Attribute<?>) attribute).characteristics().get(name);
             if (at != null) {
-                return (CoordinateReferenceSystem) at.getDefaultValue();
+                final Object value = at.getValue();
+                if (value != null) {
+                    return value;
+                }
             }
-        }
-        return null;
-    }
-
-    /**
-     * Returns the maximal string length associated to the given attribute type, or {@code null} if none.
-     * This method searches for a characteristic named {@link #MAXIMAL_LENGTH_CHARACTERISTIC}.
-     *
-     * @param  type  the attribute type for which to get the maximal string length, or {@code null}.
-     * @return The maximal string length for the given type, or {@code null} if none.
-     * @throws ClassCastException if {@link #MAXIMAL_LENGTH_CHARACTERISTIC} has been found
-     *         but is associated to an object which is not an {@link Integer} instance.
-     */
-    public static Integer getMaximalLength(final AttributeType<?> type){
-        if (type != null) {
-            final AttributeType<?> at = type.characteristics().get(MAXIMAL_LENGTH_CHARACTERISTIC.toString());
-            if (at != null) {
-                return (Integer) at.getDefaultValue();
+            final AttributeType<?> type = ((Attribute<?>) attribute).getType().characteristics().get(name);
+            if (type != null) {
+                return type.getDefaultValue();
             }
         }
         return null;

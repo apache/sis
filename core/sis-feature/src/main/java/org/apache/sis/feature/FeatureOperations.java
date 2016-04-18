@@ -18,6 +18,7 @@ package org.apache.sis.feature;
 
 import java.util.Map;
 import org.opengis.util.GenericName;
+import org.opengis.util.FactoryException;
 import org.opengis.util.InternationalString;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.util.ArgumentChecks;
@@ -80,17 +81,17 @@ import org.opengis.feature.PropertyType;
  *   <tr>
  *     <td>"result.definition"</td>
  *     <td>{@link InternationalString} or {@link String}</td>
- *     <td>{@link AbstractAttribute#getDefinition() Attribute.getDefinition()} on the {@linkplain AbstractOperation#getResult() result}</td>
+ *     <td>{@link DefaultAttributeType#getDefinition() Attribute.getDefinition()} on the {@linkplain AbstractOperation#getResult() result}</td>
  *   </tr>
  *   <tr>
  *     <td>"result.designation"</td>
  *     <td>{@link InternationalString} or {@link String}</td>
- *     <td>{@link AbstractAttribute#getDesignation() Attribute.getDesignation()} on the {@linkplain AbstractOperation#getResult() result}</td>
+ *     <td>{@link DefaultAttributeType#getDesignation() Attribute.getDesignation()} on the {@linkplain AbstractOperation#getResult() result}</td>
  *   </tr>
  *   <tr>
  *     <td>"result.description"</td>
  *     <td>{@link InternationalString} or {@link String}</td>
- *     <td>{@link AbstractAttribute#getDescription() Attribute.getDescription()} on the {@linkplain AbstractOperation#getResult() result}</td>
+ *     <td>{@link DefaultAttributeType#getDescription() Attribute.getDescription()} on the {@linkplain AbstractOperation#getResult() result}</td>
  *   </tr>
  *   <tr>
  *     <td>{@value org.apache.sis.referencing.AbstractIdentifiedObject#LOCALE_KEY}</td>
@@ -225,13 +226,41 @@ public final class FeatureOperations extends Static {
     }
 
     /**
-     * Creates a calculate bounds operation type.
+     * Creates an operation computing the envelope that encompass all geometries found in the given attributes.
+     * Geometries can be in different coordinate reference systems; they will be transformed to the first non-null
+     * CRS in the following choices:
      *
-     * @param  identification  the name and other information to be given to the operation.
-     * @param  baseCRS         created envelope CRS.
-     * @return Operation
+     * <ol>
+     *   <li>the CRS specified to this method,</li>
+     *   <li>the CRS of the default geometry, or</li>
+     *   <li>the CRS of the first non-empty geometry.</li>
+     * </ol>
+     *
+     * The {@linkplain AbstractOperation#getResult() result} of this operation is an {@code Attribute}
+     * with values of type {@link org.opengis.geometry.Envelope}. If the {@code crs} argument given to
+     * this method is non-null, then the
+     * {@linkplain org.apache.sis.geometry.GeneralEnvelope#getCoordinateReferenceSystem() envelope CRS}
+     * will be that CRS.
+     *
+     * <div class="section">Limitations</div>
+     * If a geometry contains other geometries, this operation queries only the envelope of the root geometry.
+     * It is the root geometry responsibility to take in account the envelope of all its children.
+     *
+     * <div class="section">Read/write behavior</div>
+     * This operation is read-only. Calls to {@code Attribute.setValue(Envelope)} will result in an
+     * {@link IllegalStateException} to be thrown.
+     *
+     * @param  identification     the name and other information to be given to the operation.
+     * @param  crs                the Coordinate Reference System in which to express the envelope, or {@code null}.
+     * @param  geometryAttributes the operation or attribute type from which to get geometry values.
+     *                            Any element which is {@code null} or has a non-geometric value class will be ignored.
+     * @return an operation which will compute the envelope encompassing all geometries in the given attributes.
+     * @throws FactoryException if a coordinate operation to the target CRS can not be created.
      */
-    public static Operation bounds(final Map<String,?> identification, CoordinateReferenceSystem baseCRS) {
-        return new BoundsOperation(identification, baseCRS);
+    public static Operation envelope(final Map<String,?> identification, final CoordinateReferenceSystem crs,
+            final PropertyType... geometryAttributes) throws FactoryException
+    {
+        ArgumentChecks.ensureNonNull("geometryAttributes", geometryAttributes);
+        return POOL.unique(new EnvelopeOperation(identification, crs, geometryAttributes));
     }
 }

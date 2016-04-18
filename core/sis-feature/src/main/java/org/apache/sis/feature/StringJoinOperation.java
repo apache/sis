@@ -168,7 +168,7 @@ final class StringJoinOperation extends AbstractOperation {
     }
 
     /**
-     * Concatenate operation do not require any parameter.
+     * Returns an empty group of parameters since this operation does not require any parameter.
      *
      * @return empty parameter group.
      */
@@ -178,9 +178,11 @@ final class StringJoinOperation extends AbstractOperation {
     }
 
     /**
-     * Concatenate operation generates a {@link String} result.
+     * Returns the type of results computed by this operation, which is {@code AttributeType<String>}.
+     * The attribute type name depends on the value of {@code "result.*"} properties (if any)
+     * given at construction time.
      *
-     * @return concatenated string type.
+     * @return an {@code AttributeType<String>}.
      */
     @Override
     public IdentifiedType getResult() {

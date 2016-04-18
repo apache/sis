@@ -21,6 +21,7 @@ import org.junit.Test;
 import org.opengis.feature.AttributeType;
 import static org.junit.Assert.*;
 
+
 /**
  * Tests {@link AttributeTypeBuilder}.
  *
@@ -48,7 +49,7 @@ public class AttributeTypeBuilderTest extends TestCase {
         }
 
         atb.setName("myScope","myName");
-        final AttributeType att = atb.build();
+        final AttributeType<?> att = atb.build();
 
         assertEquals("myScope:myName", att.getName().toString());
         assertEquals(Object.class, att.getValueClass());
@@ -58,7 +59,7 @@ public class AttributeTypeBuilderTest extends TestCase {
         assertEquals(null, att.getDesignation());
         assertEquals(1, att.getMinimumOccurs());
         assertEquals(1, att.getMaximumOccurs());
-        
+
     }
 
     /**
@@ -77,7 +78,7 @@ public class AttributeTypeBuilderTest extends TestCase {
         atb.setMinimumOccurs(10);
         atb.setMaximumOccurs(60);
         atb.setLengthCharacteristic(80);
-        final AttributeType att = atb.build();
+        final AttributeType<?> att = atb.build();
 
         assertEquals("myScope:myName", att.getName().toString());
         assertEquals("test definition", att.getDefinition().toString());
@@ -87,7 +88,7 @@ public class AttributeTypeBuilderTest extends TestCase {
         assertEquals("test text with words and letters.", att.getDefaultValue());
         assertEquals(10, att.getMinimumOccurs());
         assertEquals(60, att.getMaximumOccurs());
-        assertEquals(80, (int)NameConvention.getMaximalLength(att));
+//      assertEquals(Integer.valueOf(80), NameConvention.getMaximalLengthCharacteristic(att));
     }
 
     /**
@@ -106,7 +107,7 @@ public class AttributeTypeBuilderTest extends TestCase {
         atb.setMinimumOccurs(10);
         atb.setMaximumOccurs(60);
         atb.setLengthCharacteristic(80);
-        AttributeType att = atb.build();
+        AttributeType<?> att = atb.build();
 
         //copy the attribute
         atb = new AttributeTypeBuilder();
@@ -121,7 +122,7 @@ public class AttributeTypeBuilderTest extends TestCase {
         assertEquals("test text with words and letters.", att.getDefaultValue());
         assertEquals(10, att.getMinimumOccurs());
         assertEquals(60, att.getMaximumOccurs());
-        assertEquals(80, (int)NameConvention.getMaximalLength(att));
+//      assertEquals(Integer.valueOf(80), NameConvention.getMaximalLengthCharacteristic(att));
     }
 
     /**
