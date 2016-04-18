@@ -165,7 +165,7 @@ public final class NameConvention extends Static {
         NAMESPACE                     = factory.createGenericName(null, "Apache", Constants.SIS);
         NameSpace ns                  = factory.createNameSpace(NAMESPACE, null);
         ID_PROPERTY                   = factory.createLocalName(ns, "@identifier");
-        DEFAULT_GEOMETRY_PROPERTY     = factory.createLocalName(ns, "@geometry");
+        DEFAULT_GEOMETRY_PROPERTY     = factory.createLocalName(ns, "@defaultGeometry");
         ENVELOPE_PROPERTY             = factory.createLocalName(ns, "@envelope");
         CRS_CHARACTERISTIC            = factory.createLocalName(ns, "@crs");
         MAXIMAL_LENGTH_CHARACTERISTIC = factory.createLocalName(ns, "@maximalLength");

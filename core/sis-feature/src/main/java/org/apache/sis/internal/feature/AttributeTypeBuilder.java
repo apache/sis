@@ -22,14 +22,18 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.apache.sis.feature.DefaultAttributeType;
-import static org.apache.sis.feature.AbstractIdentifiedType.*;
-import static org.apache.sis.internal.feature.NameConvention.*;
-import org.apache.sis.internal.system.DefaultFactories;
-import org.opengis.feature.AttributeType;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.util.GenericName;
 import org.opengis.util.NameFactory;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.apache.sis.internal.system.DefaultFactories;
+import org.apache.sis.feature.DefaultAttributeType;
+
+import static org.apache.sis.feature.AbstractIdentifiedType.*;
+import static org.apache.sis.internal.feature.NameConvention.*;
+
+// Branch-dependent imports
+import org.opengis.feature.AttributeType;
+
 
 /**
  * Helper class for the creation of {@link AttributeType} instances.
@@ -44,12 +48,12 @@ import org.opengis.util.NameFactory;
  */
 public class AttributeTypeBuilder {
 
-    private final Map parameters = new HashMap();
-    private final List<AttributeType> atts = new ArrayList<>();
-    private Class valueClass = Object.class;
+    private final Map<String,Object> parameters = new HashMap<>();
+    private final List<AttributeType<?>> atts = new ArrayList<>();
+    private Class<?> valueClass = Object.class;
     private int minimumOccurs = 1;
     private int maximumOccurs = 1;
-    private Object defaultValue = null;
+    private Object defaultValue;
 
     /**
      * Reset builder parameters to there original values.
@@ -68,7 +72,7 @@ public class AttributeTypeBuilder {
      *
      * @param type attribute type to copy parameters from.
      */
-    public void copy(AttributeType type) {
+    public void copy(AttributeType<?> type) {
         setName(type.getName());
         setDefinition(type.getDefinition());
         setDescription(type.getDescription());
@@ -153,7 +157,7 @@ public class AttributeTypeBuilder {
      *
      * @param valueClass not null
      */
-    public void setValueClass(Class valueClass) {
+    public void setValueClass(Class<?> valueClass) {
         this.valueClass = valueClass;
     }
 
@@ -178,7 +182,7 @@ public class AttributeTypeBuilder {
     /**
      * Set maximum occurrences of the attribute values.
      *
-     * @param maximumOccurs must be positive and superior to minimum occurences
+     * @param maximumOccurs must be positive and superior to minimum occureences
      */
     public void setMaximumOccurs(int maximumOccurs) {
         this.maximumOccurs = maximumOccurs;
@@ -191,7 +195,7 @@ public class AttributeTypeBuilder {
      * @param length character sequence length
      * @return created characteristic
      */
-    public AttributeType setLengthCharacteristic(int length) {
+    public AttributeType<?> setLengthCharacteristic(int length) {
         return addCharacteristic(MAXIMAL_LENGTH_CHARACTERISTIC, Integer.class, 1, 1, length);
     }
 
@@ -202,7 +206,7 @@ public class AttributeTypeBuilder {
      * @param crs geometry coordinate reference system
      * @return created characteristic
      */
-    public AttributeType setCRSCharacteristic(CoordinateReferenceSystem crs) {
+    public AttributeType<?> setCRSCharacteristic(CoordinateReferenceSystem crs) {
         return addCharacteristic(CRS_CHARACTERISTIC, CoordinateReferenceSystem.class, 1, 1, crs);
     }
 
@@ -213,7 +217,7 @@ public class AttributeTypeBuilder {
      * @param values enumeration of values
      * @return created characteristic
      */
-    public AttributeType setPossibleValues(Collection values) {
+    public AttributeType<?> setPossibleValues(Collection<?> values) {
         return addCharacteristic(VALID_VALUES_CHARACTERISTIC, Object.class, 1, 1, values);
     }
 
@@ -227,7 +231,7 @@ public class AttributeTypeBuilder {
      * @param defaultValue characteristic default value
      * @return created characteristic
      */
-    public AttributeType addCharacteristic(String localPart, Class valueClass, int minimumOccurs, int maximumOccurs, Object defaultValue) {
+    public AttributeType<?> addCharacteristic(String localPart, Class<?> valueClass, int minimumOccurs, int maximumOccurs, Object defaultValue) {
         final NameFactory factory = DefaultFactories.forBuildin(NameFactory.class);
         final GenericName name = factory.createGenericName(null, localPart);
         return addCharacteristic(name,valueClass,minimumOccurs,maximumOccurs,defaultValue);
@@ -243,7 +247,7 @@ public class AttributeTypeBuilder {
      * @param defaultValue characteristic default value
      * @return created characteristic
      */
-    public AttributeType addCharacteristic(GenericName name, Class valueClass, int minimumOccurs, int maximumOccurs, Object defaultValue) {
+    public AttributeType<?> addCharacteristic(GenericName name, Class<?> valueClass, int minimumOccurs, int maximumOccurs, Object defaultValue) {
         return addCharacteristic(new DefaultAttributeType(
                     Collections.singletonMap(NAME_KEY, name),
                     valueClass,minimumOccurs,maximumOccurs,defaultValue));
@@ -255,9 +259,9 @@ public class AttributeTypeBuilder {
      * @param characteristic not null
      * @return added characteristic
      */
-    public AttributeType addCharacteristic(AttributeType characteristic) {
+    public AttributeType<?> addCharacteristic(AttributeType<?> characteristic) {
         //search and remove previous characteristic with the same id if it exist
-        for(AttributeType at : atts) {
+        for (AttributeType<?> at : atts) {
             if(at.getName().equals(characteristic.getName())) {
                 atts.remove(at);
                 break;
@@ -272,10 +276,9 @@ public class AttributeTypeBuilder {
      *
      * @return AtributeType, never null
      */
-    public AttributeType build() {
+    public AttributeType<?> build() {
         return new DefaultAttributeType(parameters, valueClass,
                 minimumOccurs, maximumOccurs,
-                defaultValue, atts.toArray(new AttributeType[atts.size()]));
+                defaultValue, atts.toArray(new AttributeType<?>[atts.size()]));
     }
-
 }

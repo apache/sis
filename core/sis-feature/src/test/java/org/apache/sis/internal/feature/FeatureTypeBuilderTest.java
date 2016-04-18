@@ -16,17 +16,21 @@
  */
 package org.apache.sis.internal.feature;
 
+import java.util.List;
+import java.util.ArrayList;
 import com.esri.core.geometry.Geometry;
 import com.esri.core.geometry.Point;
-import java.util.ArrayList;
-import java.util.List;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.test.TestCase;
-import static org.junit.Assert.*;
 import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+// Branch-dependent imports
 import org.opengis.feature.AttributeType;
 import org.opengis.feature.FeatureType;
 import org.opengis.feature.PropertyType;
+
 
 /**
  * Tests {@link FeatureTypeBuilder}.
@@ -36,8 +40,7 @@ import org.opengis.feature.PropertyType;
  * @version 0.7
  * @module
  */
-public class FeatureTypeBuilderTest extends TestCase {
-
+public final strictfp class FeatureTypeBuilderTest extends TestCase {
     /**
      * Test a builder with the minimum number of parameters.
      */
@@ -46,14 +49,14 @@ public class FeatureTypeBuilderTest extends TestCase {
         final FeatureTypeBuilder ftb = new FeatureTypeBuilder();
 
         //check at least name must be set
-        try{
+        try {
             ftb.build();
             fail("Builder should have failed if there is not at least a name set.");
-        }catch(IllegalArgumentException ex){
+        } catch (IllegalArgumentException ex) {
             //ok
         }
 
-        ftb.reset();
+        ftb.clear();
         ftb.setName("scope","test");
         FeatureType type = ftb.build();
 
@@ -89,7 +92,7 @@ public class FeatureTypeBuilderTest extends TestCase {
         assertTrue(type.isAbstract());
         assertEquals(4, type.getProperties(true).size());
 
-        final List<PropertyType> properties = new ArrayList(type.getProperties(true));
+        final List<PropertyType> properties = new ArrayList<>(type.getProperties(true));
         assertEquals("name",    properties.get(0).getName().toString());
         assertEquals("age",     properties.get(1).getName().toString());
         assertEquals("location",properties.get(2).getName().toString());
@@ -148,7 +151,7 @@ public class FeatureTypeBuilderTest extends TestCase {
         assertTrue(type.isAbstract());
         assertEquals(4, type.getProperties(true).size());
 
-        final List<PropertyType> properties = new ArrayList(type.getProperties(true));
+        final List<PropertyType> properties = new ArrayList<>(type.getProperties(true));
         assertEquals("name",    properties.get(0).getName().toString());
         assertEquals("age",     properties.get(1).getName().toString());
         assertEquals("location",properties.get(2).getName().toString());
@@ -193,7 +196,7 @@ public class FeatureTypeBuilderTest extends TestCase {
         ftb.addProperty("score", Double.class, 5, 50, 10.0);
 
         FeatureType type = ftb.build();
-        ftb.reset();
+        ftb.clear();
         ftb.setName("scope","test");
         type = ftb.build();
 
@@ -211,8 +214,8 @@ public class FeatureTypeBuilderTest extends TestCase {
     public void testConventionProperties() {
         final FeatureTypeBuilder ftb = new FeatureTypeBuilder();
         ftb.setName("scope","test");
-        ftb.setIdOperation("pref.", "name");
-        ftb.setDefaultGeometryOperation("shape");
+        ftb.setIdOperation("pref.", "-", ftb.name(null, "name"));
+        ftb.setDefaultGeometryOperation(ftb.name(null, "shape"));
         ftb.addProperty("name", String.class);
         ftb.addProperty("shape", Geometry.class, CommonCRS.WGS84.normalizedGeographic());
 
@@ -221,7 +224,7 @@ public class FeatureTypeBuilderTest extends TestCase {
         assertFalse(type.isAbstract());
         assertEquals(5, type.getProperties(true).size());
 
-        final List<PropertyType> properties = new ArrayList(type.getProperties(true));
+        final List<PropertyType> properties = new ArrayList<>(type.getProperties(true));
         assertEquals(NameConvention.ID_PROPERTY, properties.get(0).getName());
         assertEquals(NameConvention.DEFAULT_GEOMETRY_PROPERTY, properties.get(1).getName());
         assertEquals(NameConvention.ENVELOPE_PROPERTY, properties.get(2).getName());
