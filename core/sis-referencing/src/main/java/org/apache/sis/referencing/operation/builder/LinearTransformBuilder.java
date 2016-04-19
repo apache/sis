@@ -59,13 +59,28 @@ import org.apache.sis.util.NullArgumentException;
  */
 public class LinearTransformBuilder {
 
+    /**
+     * Tolerance use to define if points coordinates are considered as regular or not.
+     * A coordinate is define as regular if between its value and the integer troncated
+     * coordinate value is lesser than tolerance.
+     */
     private static double COORDS_TOLERANCE = 1E-12;
 
-
+    /**
+     * Define grid size for each dimension.
+     */
     private int[] gridSize;
 
+    /**
+     * Define number of expected points exprimate by {@link #gridSize}.
+     * @see #getLength(int, int, int[])
+     */
     private int gridLength;
 
+    /**
+     * Define the current index of inserted source and target points.
+     * @see #addNoRegularPoints(double[], double[]) 
+     */
     private int noneRegularPointPosition = 0;
 
     /**
@@ -206,10 +221,12 @@ public class LinearTransformBuilder {
     }
 
     /**
+     * Increase the length of the array on the 2nd array dimension.<br>
+     * Stored datas from given array are copied into new array.
      *
-     * @param array
-     * @param newNumberPoints
-     * @return
+     * @param array reference array.
+     * @param newNumberPoints new array length.
+     * @return array with increased length.
      */
     private static double[][] increasePointLength(final double[][] array, final int newNumberPoints) {
         final double[][] result = new double[array.length][];
@@ -228,7 +245,7 @@ public class LinearTransformBuilder {
      * @param sourceCoords coordinates from sources point.
      * @return index position into source points array.
      * @throws NullArgumentException if <var>sourceCoords</var> is {@code null}.
-     * @throws IllegalArgumentException if <var>sourceCoords</var> do not contains only intergers values.
+     * @throws IllegalArgumentException if <var>sourceCoords</var> do not contains only integers values.
      */
     private int getRegularArrayPosition(final double... sourceCoords) {
         ArgumentChecks.ensureNonNull("sourceCoords", sourceCoords);
@@ -267,8 +284,8 @@ public class LinearTransformBuilder {
     /**
      * Add couple of points into none regular grid.
      *
-     * @param sourceCoords
-     * @param targetCoords
+     * @param sourceCoords grid point source coordinates.
+     * @param targetCoords target point coordinates.
      */
     private void addNoRegularPoints(final double[] sourceCoords, final double[] targetCoords) {
         assert targets != null && targets.length == targetCoords.length;
@@ -440,7 +457,70 @@ public class LinearTransformBuilder {
     }
 
 
-    //------------------------------- public --------------------------------//
+    //-------------------------- package protected ---------------------------//
+
+    /**
+     * Returns {@code true} if this class is considered as valid.
+     * This object is valid if its attributs are consistent into regular grid
+     * mode or consistent into none regular grid mode.
+     * @return {@code true} if all attributs are consistent else {@code false}.
+     */
+    boolean isValid() {
+
+        if (sources == null
+         && targets == null
+         && gridSize == null)
+            return true;
+
+        //-- sources
+        if (sources == null) {
+            if (gridSize == null)
+                throw new AssertionError("Impossible to have null sources points and grid size not defined.");
+            if (noneRegularPointPosition != 0)
+                throw new AssertionError("With grid define as regular noneRegularPointPosition attribut should be 0. Found : "+noneRegularPointPosition);
+            if (gridLength == 0)
+                throw new AssertionError("With grid define as regular gridLength should be equals to gridsize length. "
+                        + "Expected : "+getLength(0, gridSize.length, gridSize)+", found : "+gridLength);
+        } else {
+            if (gridSize != null)
+                throw new AssertionError("Impossible to have defined sources points and grid size defined.");
+            if (gridLength != 0)
+                throw new AssertionError("With grid define as none regular gridLength should be equals to 0. Found : "+gridLength);
+            if (targets == null)
+                throw new AssertionError("Target points should never be null");
+            if (targets[0].length != sources[0].length)
+                throw new AssertionError("With grid defined as none regular, sources points and targets points "
+                        + "should own same points number. Sources points length : "+sources[0].length+", targets points length : "+targets[0].length);
+            if (sources[0].length != noneRegularPointPosition)
+                throw new AssertionError("With grid define as none regular sources points length and noneRegularPointPosition should be equals. "
+                        + "Sources points length : "+sources[0].length+", noneRegularPointPosition : "+noneRegularPointPosition);
+        }
+
+        //-- targets
+        if (targets != null) {
+            if (sources == null) {
+                if (gridSize != null) {
+                    if (gridLength != targets[0].length)
+                        throw new AssertionError("Target number points do not match with expected stipulate regular grid size."
+                                + " Grid size : ("+Arrays.toString(gridSize)+"), expected target points numbers : "
+                                +gridLength+", target points found : "+targets[0].length);
+                } else {
+                    throw new AssertionError("Only targets points are defined, please set grid size or set source points.");
+                }
+            } else {
+                if (sources[0].length != targets[0].length)
+                    throw new AssertionError("Target number points do not match with expected sources number points."
+                                + " Sources points number found : "+sources[0].length+", target points number found : "+targets[0].length);
+                if (gridSize != null)
+                    throw new AssertionError("With grid define as none regular gridSize should be null. Found : "+Arrays.toString(gridSize));
+                if (gridLength != 0)
+                    throw new AssertionError("With grid define as none regular gridLength should be equals to 0. Found : "+gridLength);
+            }
+        }
+        return true;
+    }
+
+    //------------------------------- public ---------------------------------//
 
     /**
      * Set all source and target points from an array which contain all of them.
@@ -478,8 +558,8 @@ public class LinearTransformBuilder {
                                   final int tiePointLength, final double[] tiePoints)
     {
         ArgumentChecks.ensurePositive("sourceOffset", sourceOffset);
-        ArgumentChecks.ensurePositive("sourceDimension", sourceDimension);
-        ArgumentChecks.ensurePositive("targetOffset", targetOffset);
+        ArgumentChecks.ensureStrictlyPositive("sourceDimension", sourceDimension);
+        ArgumentChecks.ensureStrictlyPositive("targetOffset", targetOffset);
         ArgumentChecks.ensureStrictlyPositive("targetdimension", targetdimension);
         ArgumentChecks.ensureStrictlyPositive("tiePointLength", tiePointLength);
         ArgumentChecks.ensureNonNull("tiePoints", tiePoints);
@@ -489,26 +569,48 @@ public class LinearTransformBuilder {
             throw new IllegalArgumentException("tiePoint array should have array length multiple of tiePointLenth."
                     + " Array length : "+tiePointsLen+"  One point length = "+tiePointLength);
 
+        //-- verify source and targets offsets
+        final int min = Math.max(sourceOffset, targetOffset);
+        final int max = Math.min(sourceOffset + sourceDimension, targetOffset + targetdimension);
+
+        if (min < max)
+            throw new MismatchedDimensionException("Source offset, dimension indexes overlaps target offset, dimension indexes."
+                    + "Source offset : "+sourceOffset
+                    + ", Source dimension : "+sourceDimension
+                    + ", Target offset : "+targetOffset
+                    + ", Target dimension : "+targetdimension);
+
         final int nbTiePoints = tiePointsLen / tiePointLength;
-        sources = (sourceDimension > 0) ? new double[sourceDimension][nbTiePoints] : null;
-        targets = new double[targetdimension][nbTiePoints];
+
+        if (gridSize == null) {
+            //-- maybe its not efficient
+            if (sources == null)
+                sources = createArray(sourceDimension, nbTiePoints);
+            else
+                sources = increasePointLength(sources, sources[0].length + nbTiePoints);
+
+            if (targets == null)
+                targets = createArray(targetdimension, nbTiePoints);
+            else
+                targets = increasePointLength(targets, targets[0].length + nbTiePoints);
+        }
+
+        final double[] srcPt    = new double[sourceDimension];
+        final double[] targetPt = new double[targetdimension];
 
         for (int pt = 0; pt < nbTiePoints; pt ++) {
 
-            final int originPt = pt * tiePointLength;
-
+            final int originPt  = pt * tiePointLength;
             //-- source
             final int srcOffset = originPt + sourceOffset;
-            for (int srcDim = 0; srcDim < sourceDimension; srcDim++) {
-                sources[srcDim][pt] = tiePoints[srcOffset + srcDim];
-            }
-
+            System.arraycopy(tiePoints, srcOffset, srcPt, 0, sourceDimension);
             //-- target
             final int tarOffset = originPt + targetOffset;
-            for (int tarDim = 0; tarDim < targetdimension; tarDim++) {
-                targets[tarDim][pt] = tiePoints[tarOffset + tarDim];
-            }
+            System.arraycopy(tiePoints, tarOffset, targetPt, 0, targetdimension);
+
+            setPoints(srcPt, targetPt);
         }
+        assert isValid();
         notifyChanges();
     }
 
@@ -634,13 +736,18 @@ public class LinearTransformBuilder {
      * @param  points The source points, assumed precise.
      * @throws MismatchedDimensionException if at least one point does not have the expected number of dimensions.
      */
-    public void setSourcePoints(final DirectPosition... points) throws MismatchedDimensionException {
+    public void setSourcePoints(final DirectPosition... points)
+            throws MismatchedDimensionException
+    {
         ArgumentChecks.ensureNonNull("points", points);
         if (points.length != 0) {
             sources = toArrays(points, points[0].getDimension() == 1 ? 1 : 2);
         } else {
             sources = null;
         }
+        //-- when this setter is used, mandatory pass into no regular grid.
+        gridSize = null;
+        gridLength = 0;
         noneRegularPointPosition = points.length;
         transform   = null;
         correlation = null;
@@ -654,13 +761,19 @@ public class LinearTransformBuilder {
      * @param  points The target points, assumed uncertain.
      * @throws MismatchedDimensionException if not all points have the same number of dimensions.
      */
-    public void setTargetPoints(final DirectPosition... points) throws MismatchedDimensionException {
+    public void setTargetPoints(final DirectPosition... points)
+            throws MismatchedDimensionException
+    {
         ArgumentChecks.ensureNonNull("points", points);
         if (points.length != 0) {
             targets = toArrays(points, points[0].getDimension());
         } else {
             targets = null;
         }
+        //-- when this setter is used, mandatory pass into no regular grid.
+        gridSize = null;
+        gridLength = 0;
+        noneRegularPointPosition = points.length;
         transform   = null;
         correlation = null;
     }
@@ -678,6 +791,7 @@ public class LinearTransformBuilder {
      */
     public LinearTransform create() {
         if (transform == null) {
+            isValid();
             final double[][] sources = this.sources;  // Protect from changes.
             final double[][] targets = this.targets;
 
@@ -719,7 +833,6 @@ public class LinearTransformBuilder {
                             matrix.setElement(j, 2, plan.z0());
                         }
                     }
-
                     break;
                 }
                 default: throw new AssertionError(sourceDim); // Should have been verified by setSourcePoints(…) method.

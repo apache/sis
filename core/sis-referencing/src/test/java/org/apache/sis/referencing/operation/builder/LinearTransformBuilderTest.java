@@ -18,6 +18,7 @@ package org.apache.sis.referencing.operation.builder;
 
 import java.util.Random;
 import java.awt.geom.AffineTransform;
+import java.util.Arrays;
 import org.opengis.referencing.operation.Matrix;
 import org.apache.sis.geometry.DirectPosition1D;
 import org.apache.sis.geometry.DirectPosition2D;
@@ -91,8 +92,8 @@ public final strictfp class LinearTransformBuilderTest extends TestCase {
     }
 
     /**
-     * Tests a very simple case where an exact answer is expected.
-     * Tolerance threshold is set to zero because the math transform has been built from exactly 3 points,
+     * Tests a very simple on regular grid, case where an exact answer is expected.
+     * Tolerance threshold is set to zero because the math transform has been built from exactly 4 points,
      * in which case we expect an exact solution without rounding errors at the scale of the {@code double}
      * type. This is possible because SIS implementation uses double-double arithmetic.
      */
@@ -110,6 +111,7 @@ public final strictfp class LinearTransformBuilderTest extends TestCase {
                                                                        new DirectPosition2D(1, 2)};
 
         builder.setPoints(sourcePoints, targetPoints);
+        assertTrue(builder.isValid());
         final Matrix m = builder.create().getMatrix();
 
         // First row (x)
@@ -124,6 +126,132 @@ public final strictfp class LinearTransformBuilderTest extends TestCase {
 
 //        assertArrayEquals("correlation", new double[] {1, 1}, builder.correlation(), STRICT);
     }
+
+    /**
+     * Test different kind of insertions.
+     */
+    @Test
+    public void testValidity() {
+
+        //-- test insertion in many times
+        final LinearTransformBuilder builder  = new LinearTransformBuilder();
+        final DirectPosition2D[] sourcePoints = new DirectPosition2D[]{new DirectPosition2D(0, 0),
+                                                                       new DirectPosition2D(1, 0),
+                                                                       new DirectPosition2D(1, 1),
+                                                                       new DirectPosition2D(0, 1)};
+
+        final DirectPosition2D[] targetPoints = new DirectPosition2D[]{new DirectPosition2D(1, -1),
+                                                                       new DirectPosition2D(3, -1),
+                                                                       new DirectPosition2D(3, 2),
+                                                                       new DirectPosition2D(1, 2)};
+
+        builder.setPoints(Arrays.copyOfRange(sourcePoints, 0, 2), Arrays.copyOfRange(targetPoints, 0, 2));
+        assertTrue(builder.isValid());
+        builder.setPoints(Arrays.copyOfRange(sourcePoints, 2, 4), Arrays.copyOfRange(targetPoints, 2, 4));
+        assertTrue(builder.isValid());
+
+        final Matrix m = builder.create().getMatrix();
+
+        // First row (x)
+        assertEquals("m₀₀",  2, m.getElement(0, 0), STRICT);
+        assertEquals("m₀₁",  0, m.getElement(0, 1), STRICT);
+        assertEquals("m₀₂",  1, m.getElement(0, 2), STRICT);
+
+        // Second row (y)
+        assertEquals("m₁₀",  0, m.getElement(1, 0), STRICT);
+        assertEquals("m₁₁",  3, m.getElement(1, 1), STRICT);
+        assertEquals("m₁₂", -1, m.getElement(1, 2), STRICT);
+
+//        assertArrayEquals("correlation", new double[] {1, 1}, builder.correlation(), STRICT);
+
+                                //--------------//
+
+
+        //-- Test switch from regular grid to no regular
+        //-- begin insertion with integer coordinates points and switch with floating coordinates points.
+        final LinearTransformBuilder regBuilder  = new LinearTransformBuilder();
+        final DirectPosition2D[] noRegSourcePoints = new DirectPosition2D[]{new DirectPosition2D(1+1E-12, 1),
+                                                                       new DirectPosition2D(0, 1+1E-12)};
+
+        //-- set 2 pts as regular grid.
+        regBuilder.setPoints(Arrays.copyOfRange(sourcePoints, 0, 2), Arrays.copyOfRange(targetPoints, 0, 2));
+        assertTrue(regBuilder.isValid());
+
+        //-- set 2 no regular points and verify that switch between regular to none regular grid is controled
+        regBuilder.setPoints(noRegSourcePoints, Arrays.copyOfRange(targetPoints, 2, 4));
+        assertTrue(regBuilder.isValid());
+
+                                //--------------//
+
+
+        //-- test insert source points and targets points separately
+        LinearTransformBuilder builderTest  = new LinearTransformBuilder();
+        builderTest.setSourcePoints(sourcePoints);
+        builderTest.setTargetPoints(targetPoints);
+        assertTrue(builderTest.isValid());
+
+                                //--------------//
+
+        //-- test validity at origin
+        builderTest  = new LinearTransformBuilder();
+        assertTrue(builderTest.isValid());
+    }
+
+    /**
+     * Test method {@link LinearTransformBuilder#setModelTiePoints(int, int, int, int, int, double[]) .
+     */
+    @Test
+    public void setTiePointTest() {
+
+        final double[] points = new double[]{
+        //-- [Empty][x source][y source][Empty][Empty][x dest][y dest]
+        Double.NaN, 0, 0, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, 1, -1,//-- pt 0
+        Double.NaN, 1, 0, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, 3, -1,//-- pt 1
+        Double.NaN, 1, 1, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, 3,  2,//-- pt 2
+        Double.NaN, 0, 1, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, 1,  2,//-- pt 3
+        };
+
+        //-- No regular
+        LinearTransformBuilder builder  = new LinearTransformBuilder();
+
+        builder.setModelTiePoints(1, 2, 5, 2, 7, points);
+        assertTrue(builder.isValid());
+
+        Matrix m = builder.create().getMatrix();
+
+        // First row (x)
+        assertEquals("m₀₀",  2, m.getElement(0, 0), STRICT);
+        assertEquals("m₀₁",  0, m.getElement(0, 1), STRICT);
+        assertEquals("m₀₂",  1, m.getElement(0, 2), STRICT);
+
+        // Second row (y)
+        assertEquals("m₁₀",  0, m.getElement(1, 0), STRICT);
+        assertEquals("m₁₁",  3, m.getElement(1, 1), STRICT);
+        assertEquals("m₁₂", -1, m.getElement(1, 2), STRICT);
+
+//        assertArrayEquals("correlation", new double[] {1, 1}, builder.correlation(), STRICT);
+
+        //-- regular
+        builder  = new LinearTransformBuilder(2, 2);
+
+        builder.setModelTiePoints(1, 2, 5, 2, 7, points);
+        assertTrue(builder.isValid());
+
+        m = builder.create().getMatrix();
+
+        // First row (x)
+        assertEquals("m₀₀",  2, m.getElement(0, 0), STRICT);
+        assertEquals("m₀₁",  0, m.getElement(0, 1), STRICT);
+        assertEquals("m₀₂",  1, m.getElement(0, 2), STRICT);
+
+        // Second row (y)
+        assertEquals("m₁₀",  0, m.getElement(1, 0), STRICT);
+        assertEquals("m₁₁",  3, m.getElement(1, 1), STRICT);
+        assertEquals("m₁₂", -1, m.getElement(1, 2), STRICT);
+
+//        assertArrayEquals("correlation", new double[] {1, 1}, builder.correlation(), STRICT);
+    }
+
 
     /**
      * Test comportements which should fail.
@@ -157,52 +285,58 @@ public final strictfp class LinearTransformBuilderTest extends TestCase {
             //-- do nothing test validate
         }
 
+        final DirectPosition2D[] sourcePoints = new DirectPosition2D[]{new DirectPosition2D(0, 0),
+                                                                       new DirectPosition2D(1, 0),
+                                                                       new DirectPosition2D(1, 1),
+                                                                       new DirectPosition2D(0, 1)};
+
+        final DirectPosition2D[] targetPoints = new DirectPosition2D[]{new DirectPosition2D(1, -1),
+                                                                       new DirectPosition2D(3, -1),
+                                                                       new DirectPosition2D(3, 2),
+                                                                       new DirectPosition2D(1, 2)};
+
+
         //-- try to build a regular grid with a missing point
         try {
             final LinearTransformBuilder builder = new LinearTransformBuilder(2, 2);
-            final DirectPosition2D[] sourcePoints = new DirectPosition2D[]{new DirectPosition2D(0, 0),
-                                                                           //--new DirectPosition2D(1, 0), volontary miss a grid point
-                                                                           new DirectPosition2D(1, 1),
-                                                                           new DirectPosition2D(0, 1)};
-
-            final DirectPosition2D[] targetPoints = new DirectPosition2D[]{new DirectPosition2D(1, -1),
-                                                                           //--new DirectPosition2D(3, -1),
-                                                                           new DirectPosition2D(3, 2),
-                                                                           new DirectPosition2D(1, 2)};
-
-            builder.setPoints(sourcePoints, targetPoints);
+            //-- missing one point
+            builder.setPoints(Arrays.copyOfRange(sourcePoints, 0, 3), Arrays.copyOfRange(targetPoints, 0, 3));
             final Matrix m = builder.create().getMatrix();
             Assert.fail("Test should thrown an exception it is normaly impossible to build a transformation with missing grid point.");
         } catch (IllegalStateException ex) {
-            //-- do nothing
+            //-- test with missing points from expected defined grid.
+        }
+
+        try {
+            final LinearTransformBuilder builder = new LinearTransformBuilder();
+
+            builder.setSourcePoints(Arrays.copyOfRange(sourcePoints, 0, 3));
+            builder.setTargetPoints(targetPoints);
+            final Matrix m = builder.create().getMatrix();
+            Assert.fail("Test should thrown an exception it is normaly impossible to build a transformation with missing grid point.");
+        } catch (AssertionError ex) {
+            //-- define grid with missing source points.
+        }
+
+        try {
+            //-- test define builder as regular grid and only set targets points
+            final LinearTransformBuilder builderTest = new LinearTransformBuilder(2, 2);
+            assertTrue(builderTest.isValid());
+            builderTest.setTargetPoints(targetPoints);
+            builderTest.isValid();
+        } catch (AssertionError ex) {
+            //-- only setted target points + grid is not enought to build transform
         }
 
 
-
         try {
-
-        } catch (Exception ex) {
-
-        }
-        try {
-
-        } catch (Exception ex) {
-
-        }
-        try {
-
-        } catch (Exception ex) {
-
-        }
-        try {
-
-        } catch (Exception ex) {
-
-        }
-        try {
-
-        } catch (Exception ex) {
-
+            //-- test define builder as regular grid and only set targets points
+            final LinearTransformBuilder builderTest = new LinearTransformBuilder(2, 2);
+            assertTrue(builderTest.isValid());
+            builderTest.setSourcePoints(sourcePoints);
+            builderTest.isValid();
+        } catch (AssertionError ex) {
+            //-- only setted source points + grid is not enought to build transform
         }
     }
 
