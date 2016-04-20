@@ -187,7 +187,7 @@ public final class FeatureOperations extends Static {
      * forwarded to the corresponding single property.
      *
      * @param  identification    the name and other information to be given to the operation.
-     * @param  delimiter         the characters to use a delimiter between each single property value.
+     * @param  delimiter         the characters to use as delimiter between each single property value.
      * @param  prefix            characters to use at the beginning of the concatenated string, or {@code null} if none.
      * @param  suffix            characters to use at the end of the concatenated string, or {@code null} if none.
      * @param  singleAttributes  identification of the single attributes (or operations producing attributes) to concatenate.

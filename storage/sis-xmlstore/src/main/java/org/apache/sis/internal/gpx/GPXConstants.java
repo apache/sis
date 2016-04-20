@@ -16,24 +16,29 @@
  */
 package org.apache.sis.internal.gpx;
 
-import com.esri.core.geometry.Point;
 import java.net.URI;
 import java.time.temporal.Temporal;
 import java.util.Collections;
+import java.util.Map;
+import com.esri.core.geometry.Point;
+import org.opengis.util.LocalName;
+import org.opengis.util.NameFactory;
+import org.opengis.util.FactoryException;
 import org.apache.sis.feature.AbstractIdentifiedType;
-import org.apache.sis.internal.feature.AttributeTypeBuilder;
 import org.apache.sis.feature.DefaultAttributeType;
+import org.apache.sis.feature.DefaultFeatureType;
+import org.apache.sis.feature.DefaultAssociationRole;
 import org.apache.sis.internal.feature.FeatureTypeBuilder;
+import org.apache.sis.internal.feature.NameConvention;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.util.Static;
-import org.opengis.feature.AttributeType;
-import org.opengis.feature.FeatureAssociationRole;
+
+// Branch-dependent imports
 import org.opengis.feature.FeatureType;
-import org.opengis.feature.Operation;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.util.GenericName;
-import org.opengis.util.NameFactory;
+import org.opengis.feature.PropertyType;
+import org.apache.sis.feature.FeatureOperations;
+
 
 /**
  * GPX XML tags and feature types.
@@ -44,8 +49,7 @@ import org.opengis.util.NameFactory;
  * @module
  */
 public final class GPXConstants extends Static {
-
-    /**
+    /*
      * Main GPX xml tag.
      */
     /** used in version : 1.0 and 1.1 */
@@ -56,7 +60,7 @@ public final class GPXConstants extends Static {
     public static final String ATT_GPX_CREATOR = "creator";
 
     /**
-     * Attributs used a bit everywhere.
+     * Attributes used a bit everywhere.
      */
     /** used in version : 1.0 and 1.1 */
     public static final String TAG_NAME = "name";
@@ -77,7 +81,7 @@ public final class GPXConstants extends Static {
     /** used in version : 1.0 and 1.1 */
     public static final String TAG_NUMBER = "number";
 
-    /**
+    /*
      * Metadata tag.
      */
     /** used in version : 1.1 */
@@ -87,7 +91,7 @@ public final class GPXConstants extends Static {
     /** used in version : 1.0 and 1.1 */
     public static final String TAG_METADATA_KEYWORDS = "keywords";
 
-    /**
+    /*
      * Person tag.
      */
     /** used in version : 1.0(as attribut) and 1.1(as tag) */
@@ -95,7 +99,7 @@ public final class GPXConstants extends Static {
     /** used in version : 1.0 and 1.1 */
     public static final String TAG_AUTHOR_EMAIL = "email";
 
-    /**
+    /*
      * CopyRight tag.
      */
     /** used in version : 1.1 */
@@ -107,7 +111,7 @@ public final class GPXConstants extends Static {
     /** used in version : 1.1 */
     public static final String ATT_COPYRIGHT_AUTHOR = "author";
 
-    /**
+    /*
      * Bounds tag.
      */
     /** used in version : 1.0 and 1.1 */
@@ -121,7 +125,7 @@ public final class GPXConstants extends Static {
     /** used in version : 1.0 and 1.1 */
     public static final String ATT_BOUNDS_MAXLON = "maxlon";
 
-    /**
+    /*
      * Link tag.
      */
     /** used in version : 1.1 */
@@ -131,7 +135,7 @@ public final class GPXConstants extends Static {
     /** used in version : 1.1 */
     public static final String ATT_LINK_HREF = "href";
 
-    /**
+    /*
      * WPT tag.
      */
     /** used in version : 1.0 and 1.1 */
@@ -165,7 +169,7 @@ public final class GPXConstants extends Static {
     /** used in version : 1.0 and 1.1 */
     public static final String TAG_WPT_DGPSID = "dgpsid";
 
-    /**
+    /*
      * RTE tag.
      */
     /** used in version : 1.0 and 1.1 */
@@ -173,7 +177,7 @@ public final class GPXConstants extends Static {
     /** used in version : 1.0 and 1.1 */
     public static final String TAG_RTE_RTEPT = "rtept";
 
-    /**
+    /*
      * TRK tag.
      */
     /** used in version : 1.0 and 1.1 */
@@ -184,13 +188,10 @@ public final class GPXConstants extends Static {
     public static final String TAG_TRK_SEG_PT = "trkpt";
 
     /**
-     * Coordinate reference system used by gpx files.
-     */
-    public static final CoordinateReferenceSystem GPX_CRS = CommonCRS.WGS84.normalizedGeographic();
-    /**
      * GPX scope name used for feature type names.
      */
     public static final String GPX_NAMESPACE = "http://www.topografix.com";
+
     /**
      * GPX 1.1 xml namespace
      */
@@ -204,203 +205,186 @@ public final class GPXConstants extends Static {
      * Parent feature type of all gpx types.
      */
     public static final FeatureType TYPE_GPX_ENTITY;
+
     /**
      * Waypoint GPX feature type.
      */
     public static final FeatureType TYPE_WAYPOINT;
+
     /**
      * Track GPX feature type.
      */
     public static final FeatureType TYPE_TRACK;
+
     /**
      * Route GPX feature type.
      */
     public static final FeatureType TYPE_ROUTE;
+
     /**
      * Track segment GPX feature type.
      */
     public static final FeatureType TYPE_TRACK_SEGMENT;
 
-
     static {
-        final FeatureTypeBuilder ftb = new FeatureTypeBuilder();
-        final AttributeTypeBuilder atb = new AttributeTypeBuilder();
+        final NameFactory   factory  = DefaultFactories.forBuildin(NameFactory.class);
+        final LocalName     geomName = NameConvention.DEFAULT_GEOMETRY_PROPERTY;
+        final Map<String,?> geomInfo = Collections.singletonMap(AbstractIdentifiedType.NAME_KEY, geomName);
 
         //-------------------- GENERIC GPX ENTITY ------------------------------
-        final AttributeType<Integer> attIndex = createAttribute("index", Integer.class, 1, 1);
-        final String geomName = "geometry";
-
-        ftb.clear();
-        ftb.setName(GPX_NAMESPACE, "GPXEntity");
-        ftb.setAbstract(true);
-        ftb.addProperty(attIndex);
-        TYPE_GPX_ENTITY = ftb.build();
+        final FeatureTypeBuilder builder = new FeatureTypeBuilder(factory);
+        builder.setDefaultScope(GPX_NAMESPACE).setName("GPXEntity").setAbstract(true);
+        builder.addAttribute(Integer.class).setName("index");
+        TYPE_GPX_ENTITY = builder.build();
 
         //------------------- WAY POINT TYPE -----------------------------------
-        //lat="latitudeType [1] ?"
-        //lon="longitudeType [1] ?">
-        //<ele> xsd:decimal </ele> [0..1] ?
-        //<time> xsd:dateTime </time> [0..1] ?
-        //<magvar> degreesType </magvar> [0..1] ?
-        //<geoidheight> xsd:decimal </geoidheight> [0..1] ?
-        //<name> xsd:string </name> [0..1] ?
-        //<cmt> xsd:string </cmt> [0..1] ?
-        //<desc> xsd:string </desc> [0..1] ?
-        //<src> xsd:string </src> [0..1] ?
-        //<link> linkType </link> [0..*] ?
-        //<sym> xsd:string </sym> [0..1] ?
-        //<type> xsd:string </type> [0..1] ?
-        //<fix> fixType </fix> [0..1] ?
-        //<sat> xsd:nonNegativeInteger </sat> [0..1] ?
-        //<hdop> xsd:decimal </hdop> [0..1] ?
-        //<vdop> xsd:decimal </vdop> [0..1] ?
-        //<pdop> xsd:decimal </pdop> [0..1] ?
-        //<ageofdgpsdata> xsd:decimal </ageofdgpsdata> [0..1] ?
-        //<dgpsid> dgpsStationType </dgpsid> [0..1] ?
-        //<extensions> extensionsType </extensions> [0..1] ?
-        atb.setName(createName(geomName));
-        atb.setValueClass(Point.class);
-        atb.setCRSCharacteristic(GPX_CRS);
-        atb.setMinimumOccurs(1);
-        atb.setMaximumOccurs(1);
-        final AttributeType attPointGeometry =    atb.build();
-        final AttributeType attWptEle =           createAttribute(TAG_WPT_ELE,            Double.class);
-        final AttributeType attWptTime =          createAttribute(TAG_WPT_TIME,           Temporal.class);
-        final AttributeType attWptMagvar =        createAttribute(TAG_WPT_MAGVAR,         Double.class);
-        final AttributeType attWptGeoHeight =     createAttribute(TAG_WPT_GEOIHEIGHT,     Double.class);
-        final AttributeType attName =             createAttribute(TAG_NAME,               String.class);
-        final AttributeType attCmt =              createAttribute(TAG_CMT,                String.class);
-        final AttributeType attDesc =             createAttribute(TAG_DESC,               String.class);
-        final AttributeType attSrc =              createAttribute(TAG_SRC,                String.class);
-        final AttributeType attLink =             createAttribute(TAG_LINK,               URI.class, 0, Integer.MAX_VALUE);
-        final AttributeType attWptSym =           createAttribute(TAG_WPT_SYM,            String.class);
-        final AttributeType attType =             createAttribute(TAG_TYPE,               String.class);
-        final AttributeType attWptFix =           createAttribute(TAG_WPT_FIX,            String.class);
-        final AttributeType attWptSat =           createAttribute(TAG_WPT_SAT,            Integer.class);
-        final AttributeType attWptHdop =          createAttribute(TAG_WPT_HDOP,           Double.class);
-        final AttributeType attWptVdop =          createAttribute(TAG_WPT_VDOP,           Double.class);
-        final AttributeType attWptPdop =          createAttribute(TAG_WPT_PDOP,           Double.class);
-        final AttributeType attWptAgeofGpsData =  createAttribute(TAG_WPT_AGEOFGPSDATA,   Double.class);
-        final AttributeType attWptDgpsid =        createAttribute(TAG_WPT_DGPSID,         Integer.class);
-
-        ftb.clear();
-        ftb.setName(GPX_NAMESPACE, "WayPoint");
-        ftb.setSuperTypes(TYPE_GPX_ENTITY);
-        ftb.addProperty(attIndex);
-        ftb.addProperty(attPointGeometry);
-        ftb.addProperty(attWptEle);
-        ftb.addProperty(attWptTime);
-        ftb.addProperty(attWptMagvar);
-        ftb.addProperty(attWptGeoHeight);
-        ftb.addProperty(attName);
-        ftb.addProperty(attCmt);
-        ftb.addProperty(attDesc);
-        ftb.addProperty(attSrc);
-        ftb.addProperty(attLink);
-        ftb.addProperty(attWptSym);
-        ftb.addProperty(attType);
-        ftb.addProperty(attWptFix);
-        ftb.addProperty(attWptSat);
-        ftb.addProperty(attWptHdop);
-        ftb.addProperty(attWptVdop);
-        ftb.addProperty(attWptPdop);
-        ftb.addProperty(attWptAgeofGpsData);
-        ftb.addProperty(attWptDgpsid);
-        ftb.setDefaultGeometryOperation(attPointGeometry.getName());
-        TYPE_WAYPOINT = ftb.build();
-
+        /*
+         * lat="latitudeType [1] ?"
+         * lon="longitudeType [1] ?">
+         * <ele> xsd:decimal </ele> [0..1] ?
+         * <time> xsd:dateTime </time> [0..1] ?
+         * <magvar> degreesType </magvar> [0..1] ?
+         * <geoidheight> xsd:decimal </geoidheight> [0..1] ?
+         * <name> xsd:string </name> [0..1] ?
+         * <cmt> xsd:string </cmt> [0..1] ?
+         * <desc> xsd:string </desc> [0..1] ?
+         * <src> xsd:string </src> [0..1] ?
+         * <link> linkType </link> [0..*] ?
+         * <sym> xsd:string </sym> [0..1] ?
+         * <type> xsd:string </type> [0..1] ?
+         * <fix> fixType </fix> [0..1] ?
+         * <sat> xsd:nonNegativeInteger </sat> [0..1] ?
+         * <hdop> xsd:decimal </hdop> [0..1] ?
+         * <vdop> xsd:decimal </vdop> [0..1] ?
+         * <pdop> xsd:decimal </pdop> [0..1] ?
+         * <ageofdgpsdata> xsd:decimal </ageofdgpsdata> [0..1] ?
+         * <dgpsid> dgpsStationType </dgpsid> [0..1] ?
+         * <extensions> extensionsType </extensions> [0..1] ?
+         */
+        builder.clear().setDefaultScope(GPX_NAMESPACE).setName("WayPoint").setSuperTypes(TYPE_GPX_ENTITY);
+        builder.addDefaultGeometry(Point.class).setName(geomName).setCRSCharacteristic(CommonCRS.defaultGeographic());
+        builder.setDefaultCardinality(0, 1);
+        builder.addAttribute(Double  .class).setName(TAG_WPT_ELE);
+        builder.addAttribute(Temporal.class).setName(TAG_WPT_TIME);
+        builder.addAttribute(Double  .class).setName(TAG_WPT_MAGVAR);
+        builder.addAttribute(Double  .class).setName(TAG_WPT_GEOIHEIGHT);
+        builder.addAttribute(String  .class).setName(TAG_NAME);
+        builder.addAttribute(String  .class).setName(TAG_CMT);
+        builder.addAttribute(String  .class).setName(TAG_DESC);
+        builder.addAttribute(String  .class).setName(TAG_SRC);
+        builder.addAttribute(URI     .class).setName(TAG_LINK).setCardinality(0, Integer.MAX_VALUE);
+        builder.addAttribute(String  .class).setName(TAG_WPT_SYM);
+        builder.addAttribute(String  .class).setName(TAG_TYPE);
+        builder.addAttribute(String  .class).setName(TAG_WPT_FIX);
+        builder.addAttribute(Integer .class).setName(TAG_WPT_SAT);
+        builder.addAttribute(Double  .class).setName(TAG_WPT_HDOP);
+        builder.addAttribute(Double  .class).setName(TAG_WPT_VDOP);
+        builder.addAttribute(Double  .class).setName(TAG_WPT_PDOP);
+        builder.addAttribute(Double  .class).setName(TAG_WPT_AGEOFGPSDATA);
+        builder.addAttribute(Integer .class).setName(TAG_WPT_DGPSID);
+        TYPE_WAYPOINT = builder.build();
 
         //------------------- ROUTE TYPE ---------------------------------------
-        //<name> xsd:string </name> [0..1] ?
-        //<cmt> xsd:string </cmt> [0..1] ?
-        //<desc> xsd:string </desc> [0..1] ?
-        //<src> xsd:string </src> [0..1] ?
-        //<link> linkType </link> [0..*] ?
-        //<number> xsd:nonNegativeInteger </number> [0..1] ?
-        //<type> xsd:string </type> [0..1] ?
-        //<extensions> extensionsType </extensions> [0..1] ?
-        //<rtept> wptType </rtept> [0..*] ?
-        final AttributeType<Integer> attNumber = createAttribute(TAG_NUMBER, Integer.class);
-
-        ftb.clear();
-        ftb.setName(GPX_NAMESPACE, "Route");
-        ftb.setSuperTypes(TYPE_GPX_ENTITY);
-        ftb.addProperty(attIndex);
-        ftb.addProperty(attName);
-        ftb.addProperty(attCmt);
-        ftb.addProperty(attDesc);
-        ftb.addProperty(attSrc);
-        ftb.addProperty(attLink);
-        ftb.addProperty(attNumber);
-        ftb.addProperty(attType);
-        final FeatureAssociationRole attWayPoints = ftb.addAssociation(createName(TAG_RTE_RTEPT),TYPE_WAYPOINT,0,Integer.MAX_VALUE);
-        final Operation attRouteGeometry = new GroupPointsAsPolylineOperation(createName(geomName),attWayPoints.getName(), attPointGeometry.getName());
-        ftb.addProperty(attRouteGeometry);
-        ftb.setDefaultGeometryOperation(attRouteGeometry.getName());
-        TYPE_ROUTE = ftb.build();
+        /*
+         * <name> xsd:string </name> [0..1] ?
+         * <cmt> xsd:string </cmt> [0..1] ?
+         * <desc> xsd:string </desc> [0..1] ?
+         * <src> xsd:string </src> [0..1] ?
+         * <link> linkType </link> [0..*] ?
+         * <number> xsd:nonNegativeInteger </number> [0..1] ?
+         * <type> xsd:string </type> [0..1] ?
+         * <extensions> extensionsType </extensions> [0..1] ?
+         * <rtept> wptType </rtept> [0..*] ?
+         */
+        final DefaultAssociationRole attWayPoints = new DefaultAssociationRole(
+                identification(factory, TAG_RTE_RTEPT), TYPE_WAYPOINT, 0, Integer.MAX_VALUE);
+        PropertyType[] properties = {
+                TYPE_WAYPOINT.getProperty(TAG_NAME),
+                TYPE_WAYPOINT.getProperty(TAG_CMT),
+                TYPE_WAYPOINT.getProperty(TAG_DESC),
+                TYPE_WAYPOINT.getProperty(TAG_SRC),
+                TYPE_WAYPOINT.getProperty(TAG_LINK),
+                new DefaultAttributeType<>(identification(factory, TAG_NUMBER), Integer.class, 0, 1, null),
+                TYPE_WAYPOINT.getProperty(TAG_TYPE),
+                attWayPoints,
+                new GroupPointsAsPolylineOperation(geomInfo, attWayPoints.getName(), geomName),
+                null
+        };
+        final Map<String,?> envelopeInfo = Collections.singletonMap(AbstractIdentifiedType.NAME_KEY, NameConvention.ENVELOPE_PROPERTY);
+        try {
+            properties[properties.length - 1] = FeatureOperations.envelope(envelopeInfo, null, properties);
+        } catch (FactoryException e) {
+            throw new IllegalStateException(e);
+        }
+        TYPE_ROUTE = new DefaultFeatureType(identification(factory, "Route"), false,
+                new FeatureType[] {TYPE_GPX_ENTITY}, properties);
 
 
         //------------------- TRACK SEGMENT TYPE -------------------------------
-        //<trkpt> wptType </trkpt> [0..*] ?
-        //<extensions> extensionsType </extensions> [0..1] ?
-        ftb.clear();
-        ftb.setName(GPX_NAMESPACE, "TrackSegment");
-        ftb.addProperty(attIndex);
-        final FeatureAssociationRole attTrackPoints = ftb.addAssociation(createName(TAG_TRK_SEG_PT),TYPE_WAYPOINT,0,Integer.MAX_VALUE);
-        final Operation attTrackSegGeometry = new GroupPointsAsPolylineOperation(createName(geomName),attTrackPoints.getName(), attPointGeometry.getName());
-        ftb.addProperty(attTrackSegGeometry);
-        ftb.setDefaultGeometryOperation(attTrackSegGeometry.getName());
-        TYPE_TRACK_SEGMENT = ftb.build();
+        /*
+         * <trkpt> wptType </trkpt> [0..*] ?
+         * <extensions> extensionsType </extensions> [0..1] ?
+         */
+        final DefaultAssociationRole attTrackPoints = new DefaultAssociationRole(
+                identification(factory, TAG_TRK_SEG_PT), TYPE_WAYPOINT, 0, Integer.MAX_VALUE);
+        properties = new PropertyType[] {
+                attTrackPoints,
+                new GroupPointsAsPolylineOperation(geomInfo, attTrackPoints.getName(), geomName),
+                null
+        };
+        try {
+            properties[properties.length - 1] = FeatureOperations.envelope(envelopeInfo, null, properties);
+        } catch (FactoryException e) {
+            throw new IllegalStateException(e);
+        }
+        TYPE_TRACK_SEGMENT = new DefaultFeatureType(identification(factory, "TrackSegment"), false,
+                new FeatureType[] {TYPE_GPX_ENTITY}, properties
+        );
 
         //------------------- TRACK TYPE ---------------------------------------
-        //<name> xsd:string </name> [0..1] ?
-        //<cmt> xsd:string </cmt> [0..1] ?
-        //<desc> xsd:string </desc> [0..1] ?
-        //<src> xsd:string </src> [0..1] ?
-        //<link> linkType </link> [0..*] ?
-        //<number> xsd:nonNegativeInteger </number> [0..1] ?
-        //<type> xsd:string </type> [0..1] ?
-        //<extensions> extensionsType </extensions> [0..1] ?
-        //<trkseg> trksegType </trkseg> [0..*] ?
-        ftb.clear();
-        ftb.setName(GPX_NAMESPACE, "Track");
-        ftb.setSuperTypes(TYPE_GPX_ENTITY);
-        ftb.addProperty(attIndex);
-        ftb.addProperty(attName);
-        ftb.addProperty(attCmt);
-        ftb.addProperty(attDesc);
-        ftb.addProperty(attSrc);
-        ftb.addProperty(attLink);
-        ftb.addProperty(attNumber);
-        ftb.addProperty(attType);
-        final FeatureAssociationRole attTrackSegments = ftb.addAssociation(createName(TAG_TRK_SEG), TYPE_TRACK_SEGMENT, 0, Integer.MAX_VALUE);
-        final Operation attTrackGeometry = new GroupPolylinesOperation(createName(geomName),attTrackSegments.getName(), attTrackSegGeometry.getName());
-        ftb.addProperty(attTrackGeometry);
-        ftb.setDefaultGeometryOperation(attTrackGeometry.getName());
-        TYPE_TRACK = ftb.build();
+        /*
+         * <name> xsd:string </name> [0..1] ?
+         * <cmt> xsd:string </cmt> [0..1] ?
+         * <desc> xsd:string </desc> [0..1] ?
+         * <src> xsd:string </src> [0..1] ?
+         * <link> linkType </link> [0..*] ?
+         * <number> xsd:nonNegativeInteger </number> [0..1] ?
+         * <type> xsd:string </type> [0..1] ?
+         * <extensions> extensionsType </extensions> [0..1] ?
+         * <trkseg> trksegType </trkseg> [0..*] ?
+         */
+        final DefaultAssociationRole attTrackSegments = new DefaultAssociationRole(
+                identification(factory, TAG_TRK_SEG), TYPE_TRACK_SEGMENT, 0, Integer.MAX_VALUE);
+        properties = new PropertyType[] {
+                TYPE_ROUTE.getProperty(TAG_NAME),
+                TYPE_ROUTE.getProperty(TAG_CMT),
+                TYPE_ROUTE.getProperty(TAG_DESC),
+                TYPE_ROUTE.getProperty(TAG_SRC),
+                TYPE_ROUTE.getProperty(TAG_LINK),
+                TYPE_ROUTE.getProperty(TAG_NUMBER),
+                TYPE_ROUTE.getProperty(TAG_TYPE),
+                attTrackSegments,
+                new GroupPolylinesOperation(geomInfo, attTrackSegments.getName(), geomName),
+                null
+        };
+        try {
+            properties[properties.length - 1] = FeatureOperations.envelope(envelopeInfo, null, properties);
+        } catch (FactoryException e) {
+            throw new IllegalStateException(e);
+        }
+        TYPE_TRACK = new DefaultFeatureType(identification(factory, "Track"), false,
+                new FeatureType[] {TYPE_GPX_ENTITY}, properties
+        );
+    }
 
+    private static Map<String,?> identification(final NameFactory factory, final String localPart) {
+        return Collections.singletonMap(AbstractIdentifiedType.NAME_KEY,
+                factory.createGenericName(null, GPX_NAMESPACE, localPart));
     }
 
     /**
-     * Shortcut method to create attribute type.
+     * Do not allow instantiation of this class.
      */
-    private static <V> AttributeType<V> createAttribute(String name, Class<V> valueClass, int min, int max) {
-        return new DefaultAttributeType<>(Collections.singletonMap(AbstractIdentifiedType.NAME_KEY,
-                createName(name)), valueClass, min, max, null);
-    }
-
-    private static <V> AttributeType<V> createAttribute(String name, Class<V> valueClass) {
-        return createAttribute(name, valueClass, 0, 1);
-    }
-
-    /**
-     * Shortcut method to create generic name in GPX scope.
-     */
-    private static GenericName createName(String localPart) {
-        final NameFactory factory = DefaultFactories.forBuildin(NameFactory.class);
-        return factory.createGenericName(null, GPX_NAMESPACE, localPart);
-    }
-
     private GPXConstants() {
-    };
+    }
 }

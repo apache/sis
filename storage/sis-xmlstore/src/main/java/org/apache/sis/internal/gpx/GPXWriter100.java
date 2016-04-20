@@ -198,7 +198,7 @@ public class GPXWriter100 extends StaxStreamWriter {
 
     /**
      * Write GPX Metadata.
-     * 
+     *
      * @param metadata no null
      * @throws XMLStreamException if underlying xml stax writer encounter an error
      */
@@ -237,7 +237,7 @@ public class GPXWriter100 extends StaxStreamWriter {
 
         writer.writeStartElement(namespace, tagName);
 
-        final Point pt = (Point) feature.getProperty("geometry").getValue();
+        final Point pt = (Point) feature.getProperty("@geometry").getValue();
         writer.writeAttribute(ATT_WPT_LAT, Double.toString(pt.getY()));
         writer.writeAttribute(ATT_WPT_LON, Double.toString(pt.getX()));
 
@@ -317,7 +317,7 @@ public class GPXWriter100 extends StaxStreamWriter {
 
     /**
      * Write a track segment feature.
-     * 
+     *
      * @param feature track segment, can be null
      * @throws XMLStreamException if underlying xml stax writer encounter an error
      */
@@ -347,7 +347,7 @@ public class GPXWriter100 extends StaxStreamWriter {
 
     /**
      * Write a link tag.
-     * 
+     *
      * @param uri if null nothing will be written
      * @throws XMLStreamException if underlying xml stax writer encounter an error
      */
@@ -361,7 +361,7 @@ public class GPXWriter100 extends StaxStreamWriter {
 
     /**
      * Write bounds gpx tag.
-     * 
+     *
      * @param env if null nothing will be written
      * @throws XMLStreamException if underlying xml stax writer encounter an error
      */
@@ -397,7 +397,7 @@ public class GPXWriter100 extends StaxStreamWriter {
 
     /**
      * Convert temporal object to it's most appropriate ISO-8601 string representation.
-     * 
+     *
      * @param temp not null
      * @return String representation
      */

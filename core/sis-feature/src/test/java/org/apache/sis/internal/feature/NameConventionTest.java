@@ -69,14 +69,14 @@ public final strictfp class NameConventionTest extends TestCase {
 
     /**
      * Tests {@link NameConvention#characterizedByCRS(IdentifiedType)} and
-     * {@link NameConvention#getCrsCharacteristic(Property)} methods.
+     * {@link NameConvention#getCRSCharacteristic(Property)} methods.
      */
     @Test
     public void testGetCrsCharacteristic() {
         final Map<String,?> properties = Collections.singletonMap(DefaultAttributeType.NAME_KEY, "geometry");
         DefaultAttributeType<Point> type = new DefaultAttributeType<>(properties, Point.class, 1, 1, null);
         assertFalse("characterizedByCRS",  NameConvention.characterizedByCRS(type));
-        assertNull("getCrsCharacteristic", NameConvention.getCrsCharacteristic(type.newInstance()));
+        assertNull("getCRSCharacteristic", NameConvention.getCRSCharacteristic(type.newInstance()));
         /*
          * Creates an attribute associated to an attribute (i.e. a "characteristic") for storing
          * the Coordinate Reference System of the "geometry" attribute. Then test again.
@@ -87,7 +87,7 @@ public final strictfp class NameConventionTest extends TestCase {
 
         type = new DefaultAttributeType<>(properties, Point.class, 1, 1, null, characteristic);
         assertTrue(NameConvention.characterizedByCRS(type));
-        assertEquals(HardCodedCRS.WGS84, NameConvention.getCrsCharacteristic(type.newInstance()));
+        assertEquals(HardCodedCRS.WGS84, NameConvention.getCRSCharacteristic(type.newInstance()));
     }
 
     /**

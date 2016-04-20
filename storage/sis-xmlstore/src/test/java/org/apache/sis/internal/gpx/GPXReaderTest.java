@@ -16,31 +16,31 @@
  */
 package org.apache.sis.internal.gpx;
 
-import com.esri.core.geometry.Point;
-import java.io.IOException;
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import com.esri.core.geometry.Point;
+import org.opengis.geometry.Envelope;
+import org.apache.sis.geometry.GeneralEnvelope;
+import org.apache.sis.geometry.ImmutableEnvelope;
+import org.apache.sis.referencing.CommonCRS;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+// Branch-dependent imports
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.Temporal;
 import java.time.temporal.TemporalAccessor;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import javax.xml.stream.XMLStreamException;
-import org.apache.sis.geometry.GeneralEnvelope;
-import org.apache.sis.geometry.ImmutableEnvelope;
-import org.apache.sis.referencing.CommonCRS;
-
-import org.junit.Test;
-
-import static org.junit.Assert.*;
 import org.opengis.feature.Feature;
-import org.opengis.geometry.Envelope;
+
 
 /**
- * GPX Reader test class.
- * 
- * @author Johann Sorel (Geomatys)
+ * Test {@link GPXReader} class.
+ *
+ * @author  Johann Sorel (Geomatys)
  * @since   0.7
  * @version 0.7
  * @module
@@ -48,12 +48,12 @@ import org.opengis.geometry.Envelope;
 public class GPXReaderTest {
 
     private static final double DELTA = 0.000001;
-    
+
 
     /**
-     * Test gpx version 1.0.0 metadata tag parsing.
-     * 
-     * @throws java.lang.Exception if reader failed to be created or failed at reading
+     * Tests GPX version 1.0.0 metadata tag parsing.
+     *
+     * @throws Exception if reader failed to be created or failed at reading.
      */
     @Test
     public void testMetadataRead100() throws Exception {
@@ -82,9 +82,9 @@ public class GPXReaderTest {
     }
 
     /**
-     * Test gpx version 1.1.0 metadata tag parsing.
+     * Tests GPX version 1.1.0 metadata tag parsing.
      *
-     * @throws java.lang.Exception if reader failed to be created or failed at reading
+     * @throws Exception if reader failed to be created or failed at reading.
      */
     @Test
     public void testMetadataRead110() throws Exception {
@@ -118,9 +118,9 @@ public class GPXReaderTest {
 
 
     /**
-     * Test gpx version 1.0.0 way point tag parsing.
+     * Tests GPX version 1.0.0 way point tag parsing.
      *
-     * @throws java.lang.Exception if reader failed to be created or failed at reading
+     * @throws Exception if reader failed to be created or failed at reading.
      */
     @Test
     public void testWayPointRead100() throws Exception {
@@ -151,9 +151,9 @@ public class GPXReaderTest {
     }
 
     /**
-     * Test gpx version 1.1.0 way point tag parsing.
+     * Tests GPX version 1.1.0 way point tag parsing.
      *
-     * @throws java.lang.Exception if reader failed to be created or failed at reading
+     * @throws Exception if reader failed to be created or failed at reading.
      */
     @Test
     public void testWayPointRead110() throws Exception {
@@ -184,11 +184,10 @@ public class GPXReaderTest {
 
     }
 
-
     /**
-     * Test gpx version v1.0.0 route tag parsing.
+     * Tests GPX version v1.0.0 route tag parsing.
      *
-     * @throws java.lang.Exception if reader failed to be created or failed at reading
+     * @throws Exception if reader failed to be created or failed at reading.
      */
     @Test
     public void testRouteRead100() throws Exception {
@@ -216,17 +215,17 @@ public class GPXReaderTest {
             assertEquals("route type",          f.getPropertyValue("type"));
             assertEquals(7,                     f.getPropertyValue("number"));
 
-            List<URI> links = new ArrayList<>((Collection)f.getPropertyValue("link"));
+            List<URI> links = new ArrayList<>((Collection<URI>) f.getPropertyValue("link"));
             assertEquals(1,links.size());
             assertEquals("http://route-adress1.org", links.get(0).toString());
 
-            List<Feature> points = new ArrayList<>((Collection)f.getPropertyValue("rtept"));
+            List<Feature> points = new ArrayList<>((Collection<Feature>) f.getPropertyValue("rtept"));
             assertEquals(3,points.size());
             checkPoint(points.get(0), 0, false);
             checkPoint(points.get(1), 1, false);
             checkPoint(points.get(2), 2, false);
 
-            Envelope bbox = (Envelope) f.getPropertyValue("@bounds");
+            Envelope bbox = (Envelope) f.getPropertyValue("@envelope");
             assertEquals(bbox.getMinimum(0), 15.0d, DELTA);
             assertEquals(bbox.getMaximum(0), 35.0d, DELTA);
             assertEquals(bbox.getMinimum(1), 10.0d, DELTA);
@@ -241,13 +240,13 @@ public class GPXReaderTest {
             assertEquals(null,                  f.getPropertyValue("type"));
             assertEquals(null,                  f.getPropertyValue("number"));
 
-            links = new ArrayList<>((Collection)f.getPropertyValue("link"));
+            links = new ArrayList<>((Collection<URI>) f.getPropertyValue("link"));
             assertEquals(0,links.size());
 
-            points = new ArrayList<>((Collection)f.getPropertyValue("rtept"));
+            points = new ArrayList<>((Collection<Feature>) f.getPropertyValue("rtept"));
             assertEquals(0,points.size());
 
-            bbox = (Envelope) f.getPropertyValue("@bounds");
+            bbox = (Envelope) f.getPropertyValue("@envelope");
             assertNull(bbox);
 
             assertFalse(reader.hasNext());
@@ -255,9 +254,9 @@ public class GPXReaderTest {
     }
 
     /**
-     * Test gpx version 1.1.0 route tag parsing.
+     * Tests GPX version 1.1.0 route tag parsing.
      *
-     * @throws java.lang.Exception if reader failed to be created or failed at reading
+     * @throws Exception if reader failed to be created or failed at reading.
      */
     @Test
     public void testRouteRead110() throws Exception {
@@ -285,19 +284,19 @@ public class GPXReaderTest {
             assertEquals("route type",          f.getPropertyValue("type"));
             assertEquals(7,                     f.getPropertyValue("number"));
 
-            List<URI> links = new ArrayList<>((Collection)f.getPropertyValue("link"));
+            List<URI> links = new ArrayList<>((Collection<URI>) f.getPropertyValue("link"));
             assertEquals(3,links.size());
             assertEquals("http://route-adress1.org", links.get(0).toString());
             assertEquals("http://route-adress2.org", links.get(1).toString());
             assertEquals("http://route-adress3.org", links.get(2).toString());
 
-            List<Feature> points = new ArrayList<>((Collection)f.getPropertyValue("rtept"));
+            List<Feature> points = new ArrayList<>((Collection<Feature>) f.getPropertyValue("rtept"));
             assertEquals(3,points.size());
             checkPoint(points.get(0), 0, true);
             checkPoint(points.get(1), 1, true);
             checkPoint(points.get(2), 2, true);
 
-            Envelope bbox = (Envelope) f.getPropertyValue("@bounds");
+            Envelope bbox = (Envelope) f.getPropertyValue("@envelope");
             assertEquals(bbox.getMinimum(0), 15.0d, DELTA);
             assertEquals(bbox.getMaximum(0), 35.0d, DELTA);
             assertEquals(bbox.getMinimum(1), 10.0d, DELTA);
@@ -312,13 +311,13 @@ public class GPXReaderTest {
             assertEquals(null,                  f.getPropertyValue("type"));
             assertEquals(null,                  f.getPropertyValue("number"));
 
-            links = new ArrayList<>((Collection)f.getPropertyValue("link"));
+            links = new ArrayList<>((Collection<URI>) f.getPropertyValue("link"));
             assertEquals(0,links.size());
 
-            points = new ArrayList<>((Collection)f.getPropertyValue("rtept"));
+            points = new ArrayList<>((Collection<Feature>) f.getPropertyValue("rtept"));
             assertEquals(0,points.size());
 
-            bbox = (Envelope) f.getPropertyValue("@bounds");
+            bbox = (Envelope) f.getPropertyValue("@envelope");
             assertNull(bbox);
 
             assertFalse(reader.hasNext());
@@ -326,9 +325,9 @@ public class GPXReaderTest {
     }
 
     /**
-     * Test gpx version 1.0.0 track tag parsing.
+     * Tests GPX version 1.0.0 track tag parsing.
      *
-     * @throws java.lang.Exception if reader failed to be created or failed at reading
+     * @throws Exception if reader failed to be created or failed at reading.
      */
     @Test
     public void testTrackRead100() throws Exception {
@@ -356,23 +355,23 @@ public class GPXReaderTest {
             assertEquals("track type",          f.getPropertyValue("type"));
             assertEquals(7,                     f.getPropertyValue("number"));
 
-            List<URI> links = new ArrayList<>((Collection)f.getPropertyValue("link"));
+            List<URI> links = new ArrayList<>((Collection<URI>) f.getPropertyValue("link"));
             assertEquals(1,links.size());
             assertEquals("http://track-adress1.org", links.get(0).toString());
 
-            List<Feature> segments = new ArrayList<>((Collection)f.getPropertyValue("trkseg"));
+            List<Feature> segments = new ArrayList<>((Collection<Feature>) f.getPropertyValue("trkseg"));
             assertEquals(2,segments.size());
             Feature seg1 = segments.get(0);
             Feature seg2 = segments.get(1);
-            List<Feature> points = new ArrayList<>((Collection)seg1.getPropertyValue("trkpt"));
+            List<Feature> points = new ArrayList<>((Collection<Feature>) seg1.getPropertyValue("trkpt"));
             assertEquals(3, points.size());
             checkPoint((Feature) points.get(0), 0, false);
             checkPoint((Feature) points.get(1), 1, false);
             checkPoint((Feature) points.get(2), 2, false);
-            points = new ArrayList<>((Collection)seg2.getPropertyValue("trkpt"));
+            points = new ArrayList<>((Collection<Feature>) seg2.getPropertyValue("trkpt"));
             assertEquals(0, points.size());
 
-            Envelope bbox = (Envelope) f.getPropertyValue("@bounds");
+            Envelope bbox = (Envelope) f.getPropertyValue("@envelope");
             assertEquals(bbox.getMinimum(0), 15.0d, DELTA);
             assertEquals(bbox.getMaximum(0), 35.0d, DELTA);
             assertEquals(bbox.getMinimum(1), 10.0d, DELTA);
@@ -386,24 +385,23 @@ public class GPXReaderTest {
             assertEquals(null,                  f.getPropertyValue("type"));
             assertEquals(null,                  f.getPropertyValue("number"));
 
-            links = new ArrayList<>((Collection)f.getPropertyValue("link"));
+            links = new ArrayList<>((Collection<URI>) f.getPropertyValue("link"));
             assertEquals(0,links.size());
 
-            segments = new ArrayList<>((Collection)f.getPropertyValue("trkseg"));
+            segments = new ArrayList<>((Collection<Feature>) f.getPropertyValue("trkseg"));
             assertEquals(0,segments.size());
 
-            bbox = (Envelope) f.getPropertyValue("@bounds");
+            bbox = (Envelope) f.getPropertyValue("@envelope");
             assertNull(bbox);
-
 
             assertFalse(reader.hasNext());
         }
     }
 
     /**
-     * Test gpx version 1.1.0 track tag parsing.
-     * 
-     * @throws java.lang.Exception if reader failed to be created or failed at reading
+     * Tests GPX version 1.1.0 track tag parsing.
+     *
+     * @throws Exception if reader failed to be created or failed at reading
      */
     @Test
     public void testTrackRead110() throws Exception {
@@ -431,25 +429,25 @@ public class GPXReaderTest {
             assertEquals("track type",          f.getPropertyValue("type"));
             assertEquals(7,                     f.getPropertyValue("number"));
 
-            List<URI> links = new ArrayList<>((Collection)f.getPropertyValue("link"));
+            List<URI> links = new ArrayList<>((Collection<URI>) f.getPropertyValue("link"));
             assertEquals(3,links.size());
             assertEquals("http://track-adress1.org", links.get(0).toString());
             assertEquals("http://track-adress2.org", links.get(1).toString());
             assertEquals("http://track-adress3.org", links.get(2).toString());
 
-            List<Feature> segments = new ArrayList<>((Collection)f.getPropertyValue("trkseg"));
+            List<Feature> segments = new ArrayList<>((Collection<Feature>) f.getPropertyValue("trkseg"));
             assertEquals(2,segments.size());
             Feature seg1 = segments.get(0);
             Feature seg2 = segments.get(1);
-            List<Feature> points = new ArrayList<>((Collection)seg1.getPropertyValue("trkpt"));
+            List<Feature> points = new ArrayList<>((Collection<Feature>) seg1.getPropertyValue("trkpt"));
             assertEquals(3, points.size());
             checkPoint(points.get(0), 0,true);
             checkPoint(points.get(1), 1,true);
             checkPoint(points.get(2), 2,true);
-            points = new ArrayList<>((Collection)seg2.getPropertyValue("trkpt"));
+            points = new ArrayList<>((Collection<Feature>) seg2.getPropertyValue("trkpt"));
             assertEquals(0, points.size());
 
-            Envelope bbox = (Envelope) f.getPropertyValue("@bounds");
+            Envelope bbox = (Envelope) f.getPropertyValue("@envelope");
             assertEquals(bbox.getMinimum(0), 15.0d, DELTA);
             assertEquals(bbox.getMaximum(0), 35.0d, DELTA);
             assertEquals(bbox.getMinimum(1), 10.0d, DELTA);
@@ -463,13 +461,13 @@ public class GPXReaderTest {
             assertEquals(null,                  f.getPropertyValue("type"));
             assertEquals(null,                  f.getPropertyValue("number"));
 
-            links = new ArrayList<>((Collection)f.getPropertyValue("link"));
+            links = new ArrayList<>((Collection<URI>) f.getPropertyValue("link"));
             assertEquals(0,links.size());
 
-            segments = new ArrayList<>((Collection)f.getPropertyValue("trkseg"));
+            segments = new ArrayList<>((Collection<Feature>) f.getPropertyValue("trkseg"));
             assertEquals(0,segments.size());
 
-            bbox = (Envelope) f.getPropertyValue("@bounds");
+            bbox = (Envelope) f.getPropertyValue("@envelope");
             assertNull(bbox);
 
 
@@ -480,8 +478,8 @@ public class GPXReaderTest {
     private void checkPoint(final Feature f, final int num, final boolean v11) throws Exception {
         if (num == 0) {
             assertEquals(0,                     f.getPropertyValue("index"));
-            assertEquals(15.0,                  ((Point)f.getPropertyValue("geometry")).getX(), DELTA);
-            assertEquals(10.0,                  ((Point)f.getPropertyValue("geometry")).getY(), DELTA);
+            assertEquals(15.0,                  ((Point)f.getPropertyValue("@geometry")).getX(), DELTA);
+            assertEquals(10.0,                  ((Point)f.getPropertyValue("@geometry")).getY(), DELTA);
             assertEquals(140.0,                 f.getPropertyValue("ele"));
             assertEquals(parseTime("2010-01-10"),f.getPropertyValue("time"));
             assertEquals(35.0,                  f.getPropertyValue("magvar"));
@@ -500,7 +498,7 @@ public class GPXReaderTest {
             assertEquals(55.55,                 f.getPropertyValue("ageofdgpsdata"));
             assertEquals(256,                   f.getPropertyValue("dgpsid"));
 
-            final List<URI> links = new ArrayList<>((Collection)f.getPropertyValue("link"));
+            final List<URI> links = new ArrayList<>((Collection<URI>) f.getPropertyValue("link"));
             if (v11) {
                 assertEquals(3,links.size());
                 assertEquals("http://first-adress1.org", links.get(0).toString());
@@ -511,7 +509,7 @@ public class GPXReaderTest {
                 assertEquals("http://first-adress1.org", links.get(0).toString());
             }
 
-            final Envelope bbox = (Envelope) f.getPropertyValue("@bounds");
+            final Envelope bbox = (Envelope) f.getPropertyValue("@envelope");
             assertEquals(bbox.getMinimum(0), 15.0d, DELTA);
             assertEquals(bbox.getMaximum(0), 15.0d, DELTA);
             assertEquals(bbox.getMinimum(1), 10.0d, DELTA);
@@ -519,8 +517,8 @@ public class GPXReaderTest {
 
         } else if (num == 1) {
             assertEquals(1,                     f.getPropertyValue("index"));
-            assertEquals(25.0,                  ((Point)f.getPropertyValue("geometry")).getX(), DELTA);
-            assertEquals(20.0,                  ((Point)f.getPropertyValue("geometry")).getY(), DELTA);
+            assertEquals(25.0,                  ((Point)f.getPropertyValue("@geometry")).getX(), DELTA);
+            assertEquals(20.0,                  ((Point)f.getPropertyValue("@geometry")).getY(), DELTA);
             assertEquals(null,                  f.getPropertyValue("ele"));
             assertEquals(null,                  f.getPropertyValue("time"));
             assertEquals(null,                  f.getPropertyValue("magvar"));
@@ -539,10 +537,10 @@ public class GPXReaderTest {
             assertEquals(null,                  f.getPropertyValue("ageofdgpsdata"));
             assertEquals(null,                  f.getPropertyValue("dgpsid"));
 
-            final List<URI> links = new ArrayList<>((Collection)f.getPropertyValue("link"));
+            final List<URI> links = new ArrayList<>((Collection<URI>) f.getPropertyValue("link"));
             assertEquals(0,links.size());
 
-            final Envelope bbox = (Envelope) f.getPropertyValue("@bounds");
+            final Envelope bbox = (Envelope) f.getPropertyValue("@envelope");
             assertEquals(bbox.getMinimum(0), 25.0d, DELTA);
             assertEquals(bbox.getMaximum(0), 25.0d, DELTA);
             assertEquals(bbox.getMinimum(1), 20.0d, DELTA);
@@ -550,8 +548,8 @@ public class GPXReaderTest {
 
         } else if (num == 2) {
             assertEquals(2,                     f.getPropertyValue("index"));
-            assertEquals(35.0,                  ((Point)f.getPropertyValue("geometry")).getX(), DELTA);
-            assertEquals(30.0,                  ((Point)f.getPropertyValue("geometry")).getY(), DELTA);
+            assertEquals(35.0,                  ((Point) f.getPropertyValue("@geometry")).getX(), DELTA);
+            assertEquals(30.0,                  ((Point) f.getPropertyValue("@geometry")).getY(), DELTA);
             assertEquals(150.0,                 f.getPropertyValue("ele"));
             assertEquals(parseTime("2010-01-30"),f.getPropertyValue("time"));
             assertEquals(25.0,                  f.getPropertyValue("magvar"));
@@ -570,7 +568,7 @@ public class GPXReaderTest {
             assertEquals(85.55,                 f.getPropertyValue("ageofdgpsdata"));
             assertEquals(456,                   f.getPropertyValue("dgpsid"));
 
-            final List<URI> links = new ArrayList<>((Collection)f.getPropertyValue("link"));
+            final List<URI> links = new ArrayList<>((Collection<URI>) f.getPropertyValue("link"));
             if (v11) {
                 assertEquals(2,links.size());
                 assertEquals("http://third-adress1.org", links.get(0).toString());
@@ -580,7 +578,7 @@ public class GPXReaderTest {
                 assertEquals("http://third-adress1.org", links.get(0).toString());
             }
 
-            final Envelope bbox = (Envelope) f.getPropertyValue("@bounds");
+            final Envelope bbox = (Envelope) f.getPropertyValue("@envelope");
             assertEquals(bbox.getMinimum(0), 35.0d, DELTA);
             assertEquals(bbox.getMaximum(0), 35.0d, DELTA);
             assertEquals(bbox.getMinimum(1), 30.0d, DELTA);
@@ -605,5 +603,4 @@ public class GPXReaderTest {
         return new ImmutableEnvelope(envelope);
 
     }
-
 }

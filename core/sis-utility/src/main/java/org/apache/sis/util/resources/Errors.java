@@ -1228,9 +1228,9 @@ public final class Errors extends IndexedResourceBundle {
     /**
      * Returns resources in the given locale.
      *
-     * @param  locale The locale, or {@code null} for the default locale.
-     * @return Resources in the given locale.
-     * @throws MissingResourceException if resources can't be found.
+     * @param  locale  the locale, or {@code null} for the default locale.
+     * @return resources in the given locale.
+     * @throws MissingResourceException if resources can not be found.
      */
     public static Errors getResources(final Locale locale) throws MissingResourceException {
         return getBundle(Errors.class, locale);

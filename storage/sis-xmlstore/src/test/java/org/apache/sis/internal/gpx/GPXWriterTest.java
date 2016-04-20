@@ -17,7 +17,6 @@
 
 package org.apache.sis.internal.gpx;
 
-import com.esri.core.geometry.Point;
 import java.io.File;
 import java.net.URI;
 import java.time.Instant;
@@ -26,24 +25,28 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import com.esri.core.geometry.Point;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.ImmutableEnvelope;
+import org.apache.sis.referencing.CommonCRS;
 import org.junit.Test;
-import static org.junit.Assert.*;
+
 import static org.apache.sis.internal.gpx.GPXConstants.*;
+import static org.junit.Assert.*;
+
+// Branch-dependent imports
 import org.opengis.feature.Feature;
+
 
 /**
  * GPX Writer tests.
- * 
- * @author Johann Sorel (Geomatys)
+ *
+ * @author  Johann Sorel (Geomatys)
  * @since   0.7
  * @version 0.7
  * @module
  */
-public class GPXWriterTest {
-
-
+public final strictfp class GPXWriterTest {
     /**
      * Test writing gpx metadata.
      *
@@ -54,7 +57,7 @@ public class GPXWriterTest {
         final File f = new File("output.xml");
         f.deleteOnExit();
         if (f.exists()) f.delete();
-        final GPXWriter110 writer = new GPXWriter110("Geotoolkit.org");
+        final GPXWriter110 writer = new GPXWriter110("Apache SIS");
         writer.setOutput(f);
 
         final Person person = new Person();
@@ -67,7 +70,7 @@ public class GPXWriterTest {
         copyright.setYear(2010);
         copyright.setLicense(new URI("http://gnu.org"));
 
-        final GeneralEnvelope bounds = new GeneralEnvelope(GPXConstants.GPX_CRS);
+        final GeneralEnvelope bounds = new GeneralEnvelope(CommonCRS.defaultGeographic());
         bounds.setRange(0, -10, 20);
         bounds.setRange(1, -30, 40);
 
@@ -96,7 +99,7 @@ public class GPXWriterTest {
 
     /**
      * Test writing the various gpx feature types.
-     * 
+     *
      * @throws Exception
      */
     @Test
@@ -105,13 +108,13 @@ public class GPXWriterTest {
         final File f = new File("output.xml");
         f.deleteOnExit();
         if (f.exists()) f.delete();
-        final GPXWriter110 writer = new GPXWriter110("Geotoolkit.org");
+        final GPXWriter110 writer = new GPXWriter110("Apache SIS");
         writer.setOutput(f);
 
         //way points -----------------------------------------------------------
         Feature point1 = TYPE_WAYPOINT.newInstance();
         point1.setPropertyValue("index", 0);
-        point1.setPropertyValue("geometry", new Point(-10, 10));
+        point1.setPropertyValue("@geometry", new Point(-10, 10));
         point1.setPropertyValue("ele", 15.6);
         point1.setPropertyValue("time", LocalDate.now());
         point1.setPropertyValue("magvar", 31.7);
@@ -132,7 +135,7 @@ public class GPXWriterTest {
         point1.setPropertyValue("dgpsid", 6);
         Feature point2 = TYPE_WAYPOINT.newInstance();
         point2.setPropertyValue("index", 1);
-        point2.setPropertyValue("geometry", new Point(-15, 15));
+        point2.setPropertyValue("@geometry", new Point(-15, 15));
         point2.setPropertyValue("ele", 15.6);
         point2.setPropertyValue("time", LocalDate.now());
         point2.setPropertyValue("magvar", 31.7);
@@ -153,7 +156,7 @@ public class GPXWriterTest {
         point2.setPropertyValue("dgpsid", 6);
         Feature point3 = TYPE_WAYPOINT.newInstance();
         point3.setPropertyValue("index", 2);
-        point3.setPropertyValue("geometry", new Point(-20, 20));
+        point3.setPropertyValue("@geometry", new Point(-20, 20));
         point3.setPropertyValue("ele", 15.6);
         point3.setPropertyValue("time", LocalDate.now());
         point3.setPropertyValue("magvar", 31.7);
@@ -215,7 +218,7 @@ public class GPXWriterTest {
         final Feature seg3 = TYPE_TRACK_SEGMENT.newInstance();
         seg3.setPropertyValue("index", 2);
         seg3.setPropertyValue("trkpt", wayPoints);
-        
+
         final Feature track1 = TYPE_TRACK.newInstance();
         track1.setPropertyValue("index", 0);
         track1.setPropertyValue("name", "tc");
