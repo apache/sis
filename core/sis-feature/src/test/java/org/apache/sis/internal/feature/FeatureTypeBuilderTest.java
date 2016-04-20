@@ -16,11 +16,11 @@
  */
 package org.apache.sis.internal.feature;
 
-import java.util.List;
-import java.util.ArrayList;
+import java.util.Iterator;
 import com.esri.core.geometry.Geometry;
 import com.esri.core.geometry.Point;
-import org.apache.sis.referencing.CommonCRS;
+import org.apache.sis.referencing.crs.HardCodedCRS;
+import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -35,200 +35,206 @@ import org.opengis.feature.PropertyType;
 /**
  * Tests {@link FeatureTypeBuilder}.
  *
- * @author Johann Sorel (Geomatys)
+ * @author  Johann Sorel (Geomatys)
+ * @author  Martin Desruisseaux (Geomatys)
  * @since   0.7
  * @version 0.7
  * @module
  */
 public final strictfp class FeatureTypeBuilderTest extends TestCase {
     /**
-     * Test a builder with the minimum number of parameters.
+     * Tests a {@code FeatureTypeBuilder.Property} with the minimum number of parameters.
      */
     @Test
-    public void buildMinimal() {
-        final FeatureTypeBuilder ftb = new FeatureTypeBuilder();
-
-        //check at least name must be set
+    public void testEmptyProperty() {
+        final FeatureTypeBuilder.Property<String> builder = new FeatureTypeBuilder().addAttribute(String.class);
         try {
-            ftb.build();
+            builder.build();
             fail("Builder should have failed if there is not at least a name set.");
         } catch (IllegalArgumentException ex) {
-            //ok
+            final String message = ex.getMessage();
+            assertTrue(message, message.contains("name"));
         }
+        builder.setName("myScope", "myName");
+        final AttributeType<?> att = (AttributeType<?>) builder.build();
 
-        ftb.clear();
-        ftb.setName("scope","test");
-        FeatureType type = ftb.build();
-
-        assertEquals("scope:test", type.getName().toString());
-        assertFalse(type.isAbstract());
-        assertEquals(0, type.getProperties(true).size());
-        assertEquals(0, type.getSuperTypes().size());
-
+        assertEquals("name",       "myScope:myName", att.getName().toString());
+        assertEquals("valueClass", String.class,     att.getValueClass());
+        assertNull  ("defaultValue",                 att.getDefaultValue());
+        assertNull  ("definition",                   att.getDefinition());
+        assertNull  ("description",                  att.getDescription());
+        assertNull  ("designation",                  att.getDesignation());
+        assertEquals("minimumOccurs", 1,             att.getMinimumOccurs());
+        assertEquals("maximumOccurs", 1,             att.getMaximumOccurs());
     }
 
     /**
-     * Test adding properties.
+     * Tests a {@code FeatureTypeBuilder} with the minimum number of parameters (no property and no super type).
      */
     @Test
+    @DependsOnMethod("testEmptyProperty")
+    public void testEmptyFeature() {
+        final FeatureTypeBuilder builder = new FeatureTypeBuilder();
+        try {
+            builder.build();
+            fail("Builder should have failed if there is not at least a name set.");
+        } catch (IllegalArgumentException ex) {
+            final String message = ex.getMessage();
+            assertTrue(message, message.contains("name"));
+        }
+        testEmptyFeature(builder);
+    }
+
+    /**
+     * Implementation of {@link #testEmptyFeature()} using the given pre-existing builder.
+     */
+    private static void testEmptyFeature(final FeatureTypeBuilder builder) {
+        builder.setName("scope", "test");
+        final FeatureType type = builder.build();
+
+        assertEquals("name", "scope:test",   type.getName().toString());
+        assertFalse ("isAbstract",           type.isAbstract());
+        assertEquals("properties count",  0, type.getProperties(true).size());
+        assertEquals("super-types count", 0, type.getSuperTypes().size());
+    }
+
+    /**
+     * Test creation of a single property.
+     */
+    @Test
+    @DependsOnMethod("testEmptyProperty")
+    public void testPropertyBuild() {
+        final FeatureTypeBuilder.Property<String> builder = new FeatureTypeBuilder().addAttribute(String.class);
+        builder.setName        ("myScope", "myName");
+        builder.setDefinition  ("test definition");
+        builder.setDesignation ("test designation");
+        builder.setDescription ("test description");
+        builder.setDefaultValue("test default value.");
+        builder.setCardinality(10, 60);
+        builder.setMaximalLengthCharacteristic(80);
+        final AttributeType<?> att = (AttributeType<?>) builder.build();
+
+        assertEquals("name",          "myScope:myName",      att.getName().toString());
+        assertEquals("definition",    "test definition",     att.getDefinition().toString());
+        assertEquals("description",   "test description",    att.getDescription().toString());
+        assertEquals("designation",   "test designation",    att.getDesignation().toString());
+        assertEquals("valueClass",    String.class,          att.getValueClass());
+        assertEquals("defaultValue",  "test default value.", att.getDefaultValue());
+        assertEquals("minimumOccurs", 10,                    att.getMinimumOccurs());
+        assertEquals("maximumOccurs", 60,                    att.getMaximumOccurs());
+        assertTrue  ("characterizedByMaximalLength", NameConvention.characterizedByMaximalLength(att));
+        assertEquals("maximalLengthCharacteristic", Integer.valueOf(80),
+                NameConvention.getMaximalLengthCharacteristic(att.newInstance()));
+    }
+
+    /**
+     * Tests {@link FeatureTypeBuilder#addAttribute(Class)}.
+     */
+    @Test
+    @DependsOnMethod("testEmptyFeature")
     public void testAddProperties() {
-
-        final FeatureTypeBuilder ftb = new FeatureTypeBuilder();
-        ftb.setName("myScope","myName");
-        ftb.setDefinition("test definition");
-        ftb.setDesignation("test designation");
-        ftb.setDescription("test description");
-        ftb.setAbstract(true);
-        ftb.addProperty("name", String.class);
-        ftb.addProperty("age", Integer.class);
-        ftb.addProperty("location", Point.class, CommonCRS.WGS84.normalizedGeographic());
-        ftb.addProperty("score", Double.class, 5, 50, 10.0);
-
-        final FeatureType type = ftb.build();
-        assertEquals("myScope:myName", type.getName().toString());
-        assertEquals("test definition", type.getDefinition().toString());
-        assertEquals("test description", type.getDescription().toString());
-        assertEquals("test designation", type.getDesignation().toString());
-        assertTrue(type.isAbstract());
-        assertEquals(4, type.getProperties(true).size());
-
-        final List<PropertyType> properties = new ArrayList<>(type.getProperties(true));
-        assertEquals("name",    properties.get(0).getName().toString());
-        assertEquals("age",     properties.get(1).getName().toString());
-        assertEquals("location",properties.get(2).getName().toString());
-        assertEquals("score",   properties.get(3).getName().toString());
-
-        assertEquals(String.class,  ((AttributeType)properties.get(0)).getValueClass());
-        assertEquals(Integer.class, ((AttributeType)properties.get(1)).getValueClass());
-        assertEquals(Point.class,   ((AttributeType)properties.get(2)).getValueClass());
-        assertEquals(Double.class,  ((AttributeType)properties.get(3)).getValueClass());
-
-        assertEquals(1, ((AttributeType)properties.get(0)).getMinimumOccurs());
-        assertEquals(1, ((AttributeType)properties.get(1)).getMinimumOccurs());
-        assertEquals(1, ((AttributeType)properties.get(2)).getMinimumOccurs());
-        assertEquals(5, ((AttributeType)properties.get(3)).getMinimumOccurs());
-
-        assertEquals( 1, ((AttributeType)properties.get(0)).getMaximumOccurs());
-        assertEquals( 1, ((AttributeType)properties.get(1)).getMaximumOccurs());
-        assertEquals( 1, ((AttributeType)properties.get(2)).getMaximumOccurs());
-        assertEquals(50, ((AttributeType)properties.get(3)).getMaximumOccurs());
-
-        assertEquals(null, ((AttributeType)properties.get(0)).getDefaultValue());
-        assertEquals(null, ((AttributeType)properties.get(1)).getDefaultValue());
-        assertEquals(null, ((AttributeType)properties.get(2)).getDefaultValue());
-        assertEquals(10.0, ((AttributeType)properties.get(3)).getDefaultValue());
+        testAddProperties(new FeatureTypeBuilder());
     }
 
     /**
-     * Test adding properties.
+     * Implementation of {@link #testAddProperties()} using the given pre-existing builder.
      */
-    @Test
-    public void testCopy() {
+    private static void testAddProperties(final FeatureTypeBuilder builder) {
+        builder.setName("myScope", "myName");
+        builder.setDefinition ("test definition");
+        builder.setDesignation("test designation");
+        builder.setDescription("test description");
+        builder.setAbstract(true);
+        builder.addAttribute(String .class).setName("name");
+        builder.addAttribute(Integer.class).setName("age");
+        builder.addAttribute(Point  .class).setName("location").setCRSCharacteristic(HardCodedCRS.WGS84);
+        builder.addAttribute(Double .class).setName("score").setCardinality(5, 50).setDefaultValue(10.0);
 
-        FeatureTypeBuilder ftb = new FeatureTypeBuilder();
-        ftb.setName("myScope","myName");
-        ftb.setDefinition("test definition");
-        ftb.setDesignation("test designation");
-        ftb.setDescription("test description");
-        ftb.setAbstract(true);
-        ftb.addProperty("name", String.class);
-        ftb.addProperty("age", Integer.class);
-        ftb.addProperty("location", Point.class, CommonCRS.WGS84.normalizedGeographic());
-        ftb.addProperty("score", Double.class, 5, 50, 10.0);
+        final FeatureType type = builder.build();
+        assertEquals("name",        "myScope:myName",   type.getName().toString());
+        assertEquals("definition",  "test definition",  type.getDefinition().toString());
+        assertEquals("description", "test description", type.getDescription().toString());
+        assertEquals("designation", "test designation", type.getDesignation().toString());
+        assertTrue  ("isAbstract",                      type.isAbstract());
 
-        FeatureType type = ftb.build();
+        final Iterator<? extends PropertyType> it = type.getProperties(true).iterator();
+        final AttributeType<?> a0 = (AttributeType<?>) it.next();
+        final AttributeType<?> a1 = (AttributeType<?>) it.next();
+        final AttributeType<?> a2 = (AttributeType<?>) it.next();
+        final AttributeType<?> a3 = (AttributeType<?>) it.next();
+        assertFalse("properties count", it.hasNext());
 
-        //copy the feature type
-        ftb = new FeatureTypeBuilder();
-        ftb.copy(type);
-        type = ftb.build();
+        assertEquals("name", "name",     a0.getName().toString());
+        assertEquals("name", "age",      a1.getName().toString());
+        assertEquals("name", "location", a2.getName().toString());
+        assertEquals("name", "score",    a3.getName().toString());
 
+        assertEquals("valueClass", String.class,  a0.getValueClass());
+        assertEquals("valueClass", Integer.class, a1.getValueClass());
+        assertEquals("valueClass", Point.class,   a2.getValueClass());
+        assertEquals("valueClass", Double.class,  a3.getValueClass());
 
-        assertEquals("myScope:myName", type.getName().toString());
-        assertEquals("test definition", type.getDefinition().toString());
-        assertEquals("test description", type.getDescription().toString());
-        assertEquals("test designation", type.getDesignation().toString());
-        assertTrue(type.isAbstract());
-        assertEquals(4, type.getProperties(true).size());
+        assertEquals("minimumOccurs",   1, a0.getMinimumOccurs());
+        assertEquals("minimumOccurs",   1, a1.getMinimumOccurs());
+        assertEquals("minimumOccurs",   1, a2.getMinimumOccurs());
+        assertEquals("minimumOccurs",   5, a3.getMinimumOccurs());
 
-        final List<PropertyType> properties = new ArrayList<>(type.getProperties(true));
-        assertEquals("name",    properties.get(0).getName().toString());
-        assertEquals("age",     properties.get(1).getName().toString());
-        assertEquals("location",properties.get(2).getName().toString());
-        assertEquals("score",   properties.get(3).getName().toString());
+        assertEquals("maximumOccurs",   1, a0.getMaximumOccurs());
+        assertEquals("maximumOccurs",   1, a1.getMaximumOccurs());
+        assertEquals("maximumOccurs",   1, a2.getMaximumOccurs());
+        assertEquals("maximumOccurs",  50, a3.getMaximumOccurs());
 
-        assertEquals(String.class,  ((AttributeType)properties.get(0)).getValueClass());
-        assertEquals(Integer.class, ((AttributeType)properties.get(1)).getValueClass());
-        assertEquals(Point.class,   ((AttributeType)properties.get(2)).getValueClass());
-        assertEquals(Double.class,  ((AttributeType)properties.get(3)).getValueClass());
+        assertEquals("defaultValue", null, a0.getDefaultValue());
+        assertEquals("defaultValue", null, a1.getDefaultValue());
+        assertEquals("defaultValue", null, a2.getDefaultValue());
+        assertEquals("defaultValue", 10.0, a3.getDefaultValue());
 
-        assertEquals(1, ((AttributeType)properties.get(0)).getMinimumOccurs());
-        assertEquals(1, ((AttributeType)properties.get(1)).getMinimumOccurs());
-        assertEquals(1, ((AttributeType)properties.get(2)).getMinimumOccurs());
-        assertEquals(5, ((AttributeType)properties.get(3)).getMinimumOccurs());
-
-        assertEquals( 1, ((AttributeType)properties.get(0)).getMaximumOccurs());
-        assertEquals( 1, ((AttributeType)properties.get(1)).getMaximumOccurs());
-        assertEquals( 1, ((AttributeType)properties.get(2)).getMaximumOccurs());
-        assertEquals(50, ((AttributeType)properties.get(3)).getMaximumOccurs());
-
-        assertEquals(null, ((AttributeType)properties.get(0)).getDefaultValue());
-        assertEquals(null, ((AttributeType)properties.get(1)).getDefaultValue());
-        assertEquals(null, ((AttributeType)properties.get(2)).getDefaultValue());
-        assertEquals(10.0, ((AttributeType)properties.get(3)).getDefaultValue());
+        assertFalse("characterizedByCRS", NameConvention.characterizedByCRS(a0));
+        assertFalse("characterizedByCRS", NameConvention.characterizedByCRS(a1));
+        assertTrue ("characterizedByCRS", NameConvention.characterizedByCRS(a2));
+        assertFalse("characterizedByCRS", NameConvention.characterizedByCRS(a3));
     }
 
     /**
-     * Test reset operation.
+     * Test {@link FeatureTypeBuilder#clear()}.
      */
     @Test
-    public void testReset(){
-
-        final FeatureTypeBuilder ftb = new FeatureTypeBuilder();
-        ftb.setName("myScope","myName");
-        ftb.setDefinition("test definition");
-        ftb.setDesignation("test designation");
-        ftb.setDescription("test description");
-        ftb.setAbstract(true);
-        ftb.addProperty("name", String.class);
-        ftb.addProperty("age", Integer.class);
-        ftb.addProperty("location", Point.class, CommonCRS.WGS84.normalizedGeographic());
-        ftb.addProperty("score", Double.class, 5, 50, 10.0);
-
-        FeatureType type = ftb.build();
-        ftb.clear();
-        ftb.setName("scope","test");
-        type = ftb.build();
-
-        assertEquals("scope:test", type.getName().toString());
-        assertFalse(type.isAbstract());
-        assertEquals(0, type.getProperties(true).size());
-        assertEquals(0, type.getSuperTypes().size());
+    @DependsOnMethod({"testEmptyFeature", "testAddProperties"})
+    public void testClear() {
+        final FeatureTypeBuilder builder = new FeatureTypeBuilder();
+        testAddProperties(builder);
+        builder.clear();
+        testEmptyFeature(builder);
     }
 
     /**
-     * Test convention properties.
+     * Tests {@link FeatureTypeBuilder#addIdentifier(Class)}.
      */
     @Test
-    @org.junit.Ignore("Temporarily broken builder.")
-    public void testConventionProperties() {
-        final FeatureTypeBuilder ftb = new FeatureTypeBuilder();
-        ftb.setName("scope","test");
-        ftb.setIdOperation("pref.", "-", ftb.name(null, "name"));
-        ftb.setDefaultGeometryOperation(ftb.name(null, "shape"));
-        ftb.addProperty("name", String.class);
-        ftb.addProperty("shape", Geometry.class, CommonCRS.WGS84.normalizedGeographic());
+    @DependsOnMethod("testAddProperties")
+    public void testAddIdentifier() {
+        final FeatureTypeBuilder builder = new FeatureTypeBuilder();
+        builder.setName("scope", "test");
+        builder.setIdentifierDelimiters("-", "pref.", null);
+        builder.addIdentifier(String.class).setName("name");
+        builder.addDefaultGeometry(Geometry.class).setName("shape").setCRSCharacteristic(HardCodedCRS.WGS84);
 
-        final FeatureType type = ftb.build();
-        assertEquals("scope:test", type.getName().toString());
-        assertFalse(type.isAbstract());
-        assertEquals(5, type.getProperties(true).size());
+        final FeatureType type = builder.build();
+        assertEquals("name", "scope:test", type.getName().toString());
+        assertFalse ("isAbstract", type.isAbstract());
 
-        final List<PropertyType> properties = new ArrayList<>(type.getProperties(true));
-        assertEquals(NameConvention.ID_PROPERTY, properties.get(0).getName());
-        assertEquals(NameConvention.DEFAULT_GEOMETRY_PROPERTY, properties.get(1).getName());
-        assertEquals(NameConvention.ENVELOPE_PROPERTY, properties.get(2).getName());
-        assertEquals("name", properties.get(3).getName().toString());
-        assertEquals("shape", properties.get(4).getName().toString());
+        final Iterator<? extends PropertyType> it = type.getProperties(true).iterator();
+        final PropertyType a0 = it.next();
+        final PropertyType a1 = it.next();
+        final PropertyType a2 = it.next();
+        final PropertyType a3 = it.next();
+        final PropertyType a4 = it.next();
+        assertFalse("properties count", it.hasNext());
+
+        assertEquals("name", NameConvention.ID_PROPERTY,                a0.getName());
+        assertEquals("name", NameConvention.ENVELOPE_PROPERTY,          a1.getName());
+        assertEquals("name", NameConvention.DEFAULT_GEOMETRY_PROPERTY,  a2.getName());
+        assertEquals("name", "name",                                    a3.getName().toString());
+        assertEquals("name", "shape",                                   a4.getName().toString());
     }
 }

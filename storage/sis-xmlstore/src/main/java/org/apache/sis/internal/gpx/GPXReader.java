@@ -166,7 +166,7 @@ public class GPXReader extends StaxStreamReader {
 
     /**
      * Returns true if there is a next feature in the stream.
-     * 
+     *
      * @return true if there is next feature
      * @throws javax.xml.stream.XMLStreamException if xml parser encounter an invalid
      *                          element or underlying stream caused an exception
@@ -178,7 +178,7 @@ public class GPXReader extends StaxStreamReader {
 
     /**
      * Get next feature in the stream.
-     * 
+     *
      * @return GPX WayPoint, Route or track
      * @throws javax.xml.stream.XMLStreamException if xml parser encounter an invalid
      *                          element or underlying stream caused an exception
@@ -331,7 +331,7 @@ public class GPXReader extends StaxStreamReader {
      * @return CopyRight
      */
     private CopyRight parseCopyRight() throws XMLStreamException {
-        
+
         final CopyRight copyright = new CopyRight();
         copyright.setAuthor(reader.getAttributeValue(null, ATT_COPYRIGHT_AUTHOR));
 
@@ -483,7 +483,7 @@ public class GPXReader extends StaxStreamReader {
         if(lat == null || lon == null){
             throw new XMLStreamException("Error in xml file, way point lat/lon not defined correctly");
         }else{
-            feature.setPropertyValue("geometry", new Point(Double.parseDouble(lon), Double.parseDouble(lat)));
+            feature.setPropertyValue("@geometry", new Point(Double.parseDouble(lon), Double.parseDouble(lat)));
         }
 
         while (reader.hasNext()) {
@@ -738,5 +738,5 @@ public class GPXReader extends StaxStreamReader {
             }
         }
     }
-    
+
 }

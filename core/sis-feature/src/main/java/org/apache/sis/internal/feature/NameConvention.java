@@ -136,6 +136,8 @@ public final class NameConvention extends Static {
      *
      * <p>The {@linkplain org.apache.sis.feature.DefaultAttributeType#getValueClass() value class} should be
      * {@link org.opengis.referencing.crs.CoordinateReferenceSystem}.</p>
+     *
+     * @see #getCRSCharacteristic(Property)
      */
     public static final LocalName CRS_CHARACTERISTIC;
 
@@ -148,6 +150,8 @@ public final class NameConvention extends Static {
      *
      * <p>The {@linkplain org.apache.sis.feature.DefaultAttributeType#getValueClass() value class} should be
      * {@link Integer}.</p>
+     *
+     * @see #getMaximalLengthCharacteristic(Property)
      */
     public static final LocalName MAXIMAL_LENGTH_CHARACTERISTIC;
 
@@ -165,7 +169,7 @@ public final class NameConvention extends Static {
         NAMESPACE                     = factory.createGenericName(null, "Apache", Constants.SIS);
         NameSpace ns                  = factory.createNameSpace(NAMESPACE, null);
         ID_PROPERTY                   = factory.createLocalName(ns, "@identifier");
-        DEFAULT_GEOMETRY_PROPERTY     = factory.createLocalName(ns, "@defaultGeometry");
+        DEFAULT_GEOMETRY_PROPERTY     = factory.createLocalName(ns, "@geometry");
         ENVELOPE_PROPERTY             = factory.createLocalName(ns, "@envelope");
         CRS_CHARACTERISTIC            = factory.createLocalName(ns, "@crs");
         MAXIMAL_LENGTH_CHARACTERISTIC = factory.createLocalName(ns, "@maximalLength");
@@ -248,8 +252,10 @@ public final class NameConvention extends Static {
      * @return The Coordinate Reference System characteristic of the given attribute, or {@code null} if none.
      * @throws ClassCastException if {@link #CRS_CHARACTERISTIC} has been found but is associated
      *         to an object which is not a {@link CoordinateReferenceSystem} instance.
+     *
+     * @see org.apache.sis.internal.feature.FeatureTypeBuilder.Property#setCRSCharacteristic(CoordinateReferenceSystem)
      */
-    public static CoordinateReferenceSystem getCrsCharacteristic(final Property attribute) {
+    public static CoordinateReferenceSystem getCRSCharacteristic(final Property attribute) {
         return (CoordinateReferenceSystem) getCharacteristic(attribute, CRS_CHARACTERISTIC.toString());
     }
 
@@ -273,6 +279,8 @@ public final class NameConvention extends Static {
      * @return The Coordinate Reference System characteristic of the given attribute, or {@code null} if none.
      * @throws ClassCastException if {@link #MAXIMAL_LENGTH_CHARACTERISTIC} has been found but is associated
      *         to an object which is not an {@link Integer} instance.
+     *
+     * @see org.apache.sis.internal.feature.FeatureTypeBuilder.Property#setMaximalLengthCharacteristic(Integer)
      */
     public static Integer getMaximalLengthCharacteristic(final Property attribute) {
         return (Integer) getCharacteristic(attribute, MAXIMAL_LENGTH_CHARACTERISTIC.toString());

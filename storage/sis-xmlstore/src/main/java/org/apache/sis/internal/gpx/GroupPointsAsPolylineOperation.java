@@ -34,6 +34,7 @@ import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.util.GenericName;
 
+
 /**
  * A calculated attribute that define a Polyline geometry calculated
  * from other attributes of the feature.
@@ -43,17 +44,17 @@ import org.opengis.util.GenericName;
  * This class while extract each position and create a line as a new attribute.
  * Any change applied to the positions will be visible on the line.
  *
- * @author Johann Sorel (Geomatys)
+ * @author  Johann Sorel (Geomatys)
  * @since   0.7
  * @version 0.7
  * @module
  */
-public final class GroupPointsAsPolylineOperation extends AbstractOperation {
+final class GroupPointsAsPolylineOperation extends AbstractOperation {
     /**
      * For cross-version compatibility.
      */
     private static final long serialVersionUID = -5169104838093353092L;
-    
+
     private static final AttributeType<Polyline> TYPE = new DefaultAttributeType<>(
             Collections.singletonMap(NAME_KEY, "Polyline"),Polyline.class,1,1,null);
 
@@ -67,19 +68,10 @@ public final class GroupPointsAsPolylineOperation extends AbstractOperation {
 
     /**
      *
-     * @param name operation name
-     * @param attributePath names of the properties to group
-     */
-    public GroupPointsAsPolylineOperation(GenericName name, GenericName ... attributePath) {
-        this(Collections.singletonMap(DefaultAttributeType.NAME_KEY, name),attributePath);
-    }
-
-    /**
-     *
      * @param identification operation identification parameters
      * @param attributePath names of the properties to group
      */
-    public GroupPointsAsPolylineOperation(Map<String, ?> identification, GenericName ... attributePath) {
+    GroupPointsAsPolylineOperation(Map<String,?> identification, GenericName... attributePath) {
         super(identification);
         this.path = attributePath;
     }
@@ -94,7 +86,7 @@ public final class GroupPointsAsPolylineOperation extends AbstractOperation {
     }
 
     /**
-     * {@inheritDoc }
+     * {@inheritDoc}
      */
     @Override
     public IdentifiedType getResult() {
@@ -102,7 +94,7 @@ public final class GroupPointsAsPolylineOperation extends AbstractOperation {
     }
 
     /**
-     * {@inheritDoc }
+     * {@inheritDoc}
      */
     @Override
     public Property apply(Feature feature, ParameterValueGroup parameters) {
@@ -110,31 +102,35 @@ public final class GroupPointsAsPolylineOperation extends AbstractOperation {
     }
 
     private boolean explore(final Feature att, final int depth, Polyline geom, boolean first) {
-        if(depth == path.length-1){
-            //we are on the field that hold the geometry points
+        if (depth == path.length - 1) {
+            // We are on the field that hold the geometry points
             for (final Object propVal : asCollection(att, path[depth])) {
-                if(first){
-                    geom.startPath(((Point)propVal));
+                if (first) {
+                    geom.startPath(((Point) propVal));
                     first = false;
-                }else{
-                    geom.lineTo(((Point)propVal));
+                } else {
+                    geom.lineTo(((Point) propVal));
                 }
             }
-        }else{
-            //explore children
-            int d = depth+1;
-            for (final Object prop : asCollection(att,path[depth])) {
+        } else {
+            // Explore children
+            int d = depth + 1;
+            for (final Object prop : asCollection(att, path[depth])) {
                 final Feature child = (Feature) prop;
-                first = explore(child, d, geom,first);
+                first = explore(child, d, geom, first);
             }
         }
         return first;
     }
 
-    private static Collection asCollection(Feature att, GenericName property) {
+    private static Collection<?> asCollection(Feature att, GenericName property) {
         final Object value = att.getPropertyValue(property.toString());
-        if(value == null) return Collections.EMPTY_LIST;
-        if(value instanceof Collection) return (Collection) value;
+        if (value == null) {
+            return Collections.emptyList();
+        }
+        if (value instanceof Collection<?>) {
+            return (Collection<?>) value;
+        }
         return Collections.singletonList(value);
     }
 
@@ -149,7 +145,7 @@ public final class GroupPointsAsPolylineOperation extends AbstractOperation {
 
         private final Feature feature;
 
-        public GeomAtt(final Feature feature) {
+        GeomAtt(final Feature feature) {
             super(TYPE);
             this.feature = feature;
         }
@@ -157,7 +153,7 @@ public final class GroupPointsAsPolylineOperation extends AbstractOperation {
         @Override
         public Polyline getValue() throws MultiValuedPropertyException {
             final Polyline geom = new Polyline();
-            explore(feature,0,geom,true);
+            explore(feature, 0, geom, true);
             return geom;
         }
 
@@ -165,7 +161,5 @@ public final class GroupPointsAsPolylineOperation extends AbstractOperation {
         public void setValue(Polyline value) {
             throw new UnsupportedOperationException("Operation attribute can not be set.");
         }
-
     }
-
 }
