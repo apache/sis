@@ -57,7 +57,22 @@ public final class CoordinateFrameRotation2D extends GeocentricAffineBetweenGeog
      * Constructs the provider.
      */
     public CoordinateFrameRotation2D() {
-        super(2, 2, PARAMETERS);
+        this(null);
+    }
+
+    /**
+     * Constructs a provider that can be resized.
+     */
+    CoordinateFrameRotation2D(GeodeticOperation[] redimensioned) {
+        super(2, 2, PARAMETERS, redimensioned);
+    }
+
+    /**
+     * Returns the three-dimensional variant of this operation method.
+     */
+    @Override
+    Class<CoordinateFrameRotation3D> variant3D() {
+        return CoordinateFrameRotation3D.class;
     }
 
     /**

@@ -209,8 +209,9 @@ public class DefaultParameterDescriptorGroup extends AbstractParameterDescriptor
      */
     private static void verifyNames(final Map<String,?> properties, final GeneralParameterDescriptor[] parameters) {
         for (int i=0; i<parameters.length; i++) {
-            ArgumentChecks.ensureNonNullElement("parameters", i, parameters);
-            final String name = parameters[i].getName().getCode();
+            final GeneralParameterDescriptor parameter = parameters[i];
+            ArgumentChecks.ensureNonNullElement("parameters", i, parameter);
+            final String name = parameter.getName().getCode();
             for (int j=0; j<i; j++) {
                 if (IdentifiedObjects.isHeuristicMatchForName(parameters[j], name)) {
                     throw new InvalidParameterNameException(Errors.getResources(properties).getString(

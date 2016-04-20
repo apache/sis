@@ -454,9 +454,19 @@ public final class Errors extends IndexedResourceBundle {
         public static final short IllegalParameterValue_2 = 144;
 
         /**
+         * Property “{0}” can not be of type ‘{1}’.
+         */
+        public static final short IllegalPropertyType_2 = 223;
+
+        /**
          * Property “{0}” does not accept instances of ‘{1}’.
          */
-        public static final short IllegalPropertyClass_2 = 40;
+        public static final short IllegalPropertyValueClass_2 = 40;
+
+        /**
+         * Expected an instance of ‘{1}’ for the “{0}” property, but got an instance of ‘{2}’.
+         */
+        public static final short IllegalPropertyValueClass_3 = 224;
 
         /**
          * Range [{0} … {1}] is not valid.
@@ -517,6 +527,11 @@ public final class Errors extends IndexedResourceBundle {
          * Inconsistent table columns.
          */
         public static final short InconsistentTableColumns = 48;
+
+        /**
+         * Unit of measurement “{0}” is inconsistent with coordinate system axes.
+         */
+        public static final short InconsistentUnitsForCS_1 = 222;
 
         /**
          * Index {0} is out of bounds.
@@ -791,6 +806,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final short NonLinearUnit_1 = 84;
 
         /**
+         * The “{0}” sequence is not monotonic.
+         */
+        public static final short NonMonotonicSequence_1 = 221;
+
+        /**
          * Axis directions {0} and {1} are not perpendicular.
          */
         public static final short NonPerpendicularDirections_2 = 85;
@@ -981,6 +1001,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final short UnexpectedCharactersAfter_2 = 198;
 
         /**
+         * Text for ‘{0}’ was expected to {1,choice,0#begin|1#end} with “{2}”, but found “{3}”.
+         */
+        public static final short UnexpectedCharactersAtBound_4 = 225;
+
+        /**
          * Unexpected dimension for a coordinate system of type ‘{0}’.
          */
         public static final short UnexpectedDimensionForCS_1 = 212;
@@ -999,6 +1024,11 @@ public final class Errors extends IndexedResourceBundle {
          * File “{1}” seems to be encoded in an other format than {0}.
          */
         public static final short UnexpectedFileFormat_2 = 111;
+
+        /**
+         * Expected {1} components in “{0}” but found {2}.
+         */
+        public static final short UnexpectedNumberOfComponents_3 = 226;
 
         /**
          * Parameter “{0}” was not expected.
@@ -1136,7 +1166,8 @@ public final class Errors extends IndexedResourceBundle {
         public static final short UnspecifiedParameterValues = 185;
 
         /**
-         * Can not handle instances of ‘{0}’ because arbitrary implementations are not yet supported.
+         * Can not handle this instance of ‘{0}’ because arbitrary implementations are not yet
+         * supported.
          */
         public static final short UnsupportedImplementation_1 = 127;
 
@@ -1197,9 +1228,9 @@ public final class Errors extends IndexedResourceBundle {
     /**
      * Returns resources in the given locale.
      *
-     * @param  locale The locale, or {@code null} for the default locale.
-     * @return Resources in the given locale.
-     * @throws MissingResourceException if resources can't be found.
+     * @param  locale  the locale, or {@code null} for the default locale.
+     * @return resources in the given locale.
+     * @throws MissingResourceException if resources can not be found.
      */
     public static Errors getResources(final Locale locale) throws MissingResourceException {
         return getBundle(Errors.class, locale);

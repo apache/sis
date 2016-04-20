@@ -46,7 +46,9 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  *   <li>{@link #toValue(Date)} for converting a {@link Date} to a temporal position.</li>
  * </ul>
  *
- * <p><b>Used with coordinate system type:</b>
+ * <p><b>Used with datum type:</b>
+ *   {@linkplain org.apache.sis.referencing.datum.DefaultTemporalDatum Temporal}.<br>
+ * <b>Used with coordinate system type:</b>
  *   {@linkplain org.apache.sis.referencing.cs.DefaultTimeCS Time}.
  * </p>
  *
@@ -132,12 +134,12 @@ public class DefaultTemporalCRS extends AbstractCRS implements TemporalCRS {
      *     <td>{@link #getRemarks()}</td>
      *   </tr>
      *   <tr>
-     *     <td>{@value org.opengis.referencing.datum.Datum#DOMAIN_OF_VALIDITY_KEY}</td>
+     *     <td>{@value org.opengis.referencing.ReferenceSystem#DOMAIN_OF_VALIDITY_KEY}</td>
      *     <td>{@link org.opengis.metadata.extent.Extent}</td>
      *     <td>{@link #getDomainOfValidity()}</td>
      *   </tr>
      *   <tr>
-     *     <td>{@value org.opengis.referencing.datum.Datum#SCOPE_KEY}</td>
+     *     <td>{@value org.opengis.referencing.ReferenceSystem#SCOPE_KEY}</td>
      *     <td>{@link org.opengis.util.InternationalString} or {@link String}</td>
      *     <td>{@link #getScope()}</td>
      *   </tr>

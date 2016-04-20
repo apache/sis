@@ -34,15 +34,15 @@ import org.apache.sis.referencing.operation.transform.AbstractMathTransform;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.6
- * @version 0.6
+ * @version 0.7
  * @module
  */
 @SuppressWarnings("serial")
-abstract strictfp class MockProvider extends AbstractProvider {
+abstract strictfp class ProviderMock extends AbstractProvider {
     /**
      * Creates a new mock provider.
      */
-    MockProvider(final int sourceDimension,
+    ProviderMock(final int sourceDimension,
                  final int targetDimension,
                  final ParameterDescriptorGroup parameters)
     {
@@ -59,8 +59,8 @@ abstract strictfp class MockProvider extends AbstractProvider {
     @Override
     public final MathTransform createMathTransform(MathTransformFactory factory, ParameterValueGroup parameters) {
         return new AbstractMathTransform() {
-            @Override public int getSourceDimensions() {return MockProvider.this.getSourceDimensions();}
-            @Override public int getTargetDimensions() {return MockProvider.this.getTargetDimensions();}
+            @Override public int getSourceDimensions() {return ProviderMock.this.getSourceDimensions();}
+            @Override public int getTargetDimensions() {return ProviderMock.this.getTargetDimensions();}
             @Override
             public Matrix transform(double[] srcPts, int srcOff, double[] dstPts, int dstOff, boolean derivate) {
                 throw new UnsupportedOperationException();

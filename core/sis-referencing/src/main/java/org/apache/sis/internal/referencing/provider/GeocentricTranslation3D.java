@@ -51,8 +51,24 @@ public final class GeocentricTranslation3D extends GeocentricAffineBetweenGeogra
     /**
      * Constructs the provider.
      */
+    @SuppressWarnings("ThisEscapedInObjectConstruction")
     public GeocentricTranslation3D() {
-        super(3, 3, PARAMETERS);
+        this(3, 3, new GeocentricAffineBetweenGeographic[4]);
+        redimensioned[0] = new GeocentricTranslation2D(      redimensioned);
+        redimensioned[1] = new GeocentricTranslation3D(2, 3, redimensioned);
+        redimensioned[2] = new GeocentricTranslation3D(3, 2, redimensioned);
+        redimensioned[3] = this;
+    }
+
+    /**
+     * Constructs a provider for the given dimensions.
+     *
+     * @param sourceDimensions  number of dimensions in the source CRS of this operation method.
+     * @param targetDimensions  number of dimensions in the target CRS of this operation method.
+     * @param redimensioned     providers for all combinations between 2D and 3D cases, or {@code null}.
+     */
+    private GeocentricTranslation3D(int sourceDimensions, int targetDimensions, GeodeticOperation[] redimensioned) {
+        super(sourceDimensions, targetDimensions, PARAMETERS, redimensioned);
     }
 
     /**

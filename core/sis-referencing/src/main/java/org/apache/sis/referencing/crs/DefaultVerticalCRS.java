@@ -38,7 +38,9 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * Vertical CRSs make use of the direction of gravity to define the concept of height or depth,
  * but the relationship with gravity may not be straightforward.
  *
- * <p><b>Used with coordinate system type:</b>
+ * <p><b>Used with datum type:</b>
+ *   {@linkplain org.apache.sis.referencing.datum.DefaultVerticalDatum Vertical}.<br>
+ * <b>Used with coordinate system type:</b>
  *   {@linkplain org.apache.sis.referencing.cs.DefaultVerticalCS Vertical}.
  * </p>
  *
@@ -111,12 +113,12 @@ public class DefaultVerticalCRS extends AbstractCRS implements VerticalCRS {
      *     <td>{@link #getRemarks()}</td>
      *   </tr>
      *   <tr>
-     *     <td>{@value org.opengis.referencing.datum.Datum#DOMAIN_OF_VALIDITY_KEY}</td>
+     *     <td>{@value org.opengis.referencing.ReferenceSystem#DOMAIN_OF_VALIDITY_KEY}</td>
      *     <td>{@link org.opengis.metadata.extent.Extent}</td>
      *     <td>{@link #getDomainOfValidity()}</td>
      *   </tr>
      *   <tr>
-     *     <td>{@value org.opengis.referencing.datum.Datum#SCOPE_KEY}</td>
+     *     <td>{@value org.opengis.referencing.ReferenceSystem#SCOPE_KEY}</td>
      *     <td>{@link org.opengis.util.InternationalString} or {@link String}</td>
      *     <td>{@link #getScope()}</td>
      *   </tr>

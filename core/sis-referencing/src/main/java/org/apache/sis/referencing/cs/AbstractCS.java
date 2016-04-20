@@ -84,6 +84,7 @@ import static org.apache.sis.util.Utilities.deepEquals;
     DefaultLinearCS.class,
     DefaultVerticalCS.class,
     DefaultTimeCS.class,
+    DefaultParametricCS.class,
     DefaultUserDefinedCS.class
 })
 public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSystem {

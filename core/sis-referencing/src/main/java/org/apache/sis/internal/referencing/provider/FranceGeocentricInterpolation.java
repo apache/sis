@@ -38,8 +38,6 @@ import org.opengis.parameter.InvalidParameterValueException;
 import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
-import org.opengis.referencing.operation.Transformation;
-import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.opengis.util.FactoryException;
 import org.apache.sis.internal.system.Loggers;
@@ -47,7 +45,6 @@ import org.apache.sis.internal.system.DataDirectory;
 import org.apache.sis.internal.referencing.NilReferencingObject;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.parameter.Parameters;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
@@ -93,7 +90,7 @@ import org.apache.sis.internal.jdk8.JDK8;
  * @module
  */
 @XmlTransient
-public class FranceGeocentricInterpolation extends AbstractProvider {
+public class FranceGeocentricInterpolation extends GeodeticOperation {
     /**
      * Serial number for inter-operability with different versions.
      */
@@ -172,18 +169,6 @@ public class FranceGeocentricInterpolation extends AbstractProvider {
     }
 
     /**
-     * The providers for all combinations between 2D and 3D cases.
-     * Array length is 4. Index is built with following rule:
-     * <ul>
-     *   <li>Bit 1: dimension of source coordinates (0 for 2D, 1 for 3D).</li>
-     *   <li>Bit 0: dimension of target coordinates (0 for 2D, 1 for 3D).</li>
-     * </ul>
-     *
-     * This array is initialized at construction time and shall not be modified after.
-     */
-    final FranceGeocentricInterpolation[] redimensioned;
-
-    /**
      * Constructs a provider.
      */
     @SuppressWarnings("ThisEscapedInObjectConstruction")
@@ -198,32 +183,17 @@ public class FranceGeocentricInterpolation extends AbstractProvider {
     /**
      * Constructs a provider for the given number of dimensions.
      *
-     * @param sourceDimensions Number of dimensions in the source CRS of this operation method.
-     * @param targetDimensions Number of dimensions in the target CRS of this operation method.
-     * @param parameters       The set of parameters (never {@code null}).
-     * @param redimensioned    Providers for all combinations between 2D and 3D cases.
+     * @param sourceDimensions  number of dimensions in the source CRS of this operation method.
+     * @param targetDimensions  number of dimensions in the target CRS of this operation method.
+     * @param parameters        description of parameters expected by this operation.
+     * @param redimensioned     providers for all combinations between 2D and 3D cases, or {@code null}.
      */
     FranceGeocentricInterpolation(final int sourceDimensions,
                                   final int targetDimensions,
                                   final ParameterDescriptorGroup parameters,
-                                  final FranceGeocentricInterpolation[] redimensioned)
+                                  final GeodeticOperation[] redimensioned)
     {
-        super(sourceDimensions, targetDimensions, parameters);
-        this.redimensioned = redimensioned;
-    }
-
-    /**
-     * Returns the same operation method, but for different number of dimensions.
-     *
-     * @param  sourceDimensions The desired number of input dimensions.
-     * @param  targetDimensions The desired number of output dimensions.
-     * @return The redimensioned operation method, or {@code this} if no change is needed.
-     */
-    @Override
-    public OperationMethod redimension(final int sourceDimensions, final int targetDimensions) {
-        ArgumentChecks.ensureBetween("sourceDimensions", 2, 3, sourceDimensions);
-        ArgumentChecks.ensureBetween("targetDimensions", 2, 3, targetDimensions);
-        return redimensioned[((sourceDimensions & 1) << 1) | (targetDimensions & 1)];
+        super(sourceDimensions, targetDimensions, parameters, redimensioned);
     }
 
     /**
@@ -240,13 +210,13 @@ public class FranceGeocentricInterpolation extends AbstractProvider {
     }
 
     /**
-     * Returns the base interface of the {@code CoordinateOperation} instances that use this method.
+     * The inverse of {@code FranceGeocentricInterpolation} is a different operation.
      *
-     * @return Fixed to {@link Transformation}.
+     * @return {@code false}.
      */
     @Override
-    public Class<Transformation> getOperationType() {
-        return Transformation.class;
+    public final boolean isInvertible() {
+        return false;
     }
 
     /**

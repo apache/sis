@@ -207,6 +207,7 @@ final class SubEnvelope extends GeneralEnvelope {
      * If the user wants a clone, copy only the relevant part of the ordinates array.
      */
     @Override
+    @SuppressWarnings("CloneDoesntCallSuperClone")
     public GeneralEnvelope clone() {
         final int d = ordinates.length >>> 1;
         final int dimension = endIndex - beginIndex;

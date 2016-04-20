@@ -29,7 +29,6 @@ import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.CoordinateOperation;
-import org.opengis.referencing.operation.CoordinateOperationFactory;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
@@ -42,9 +41,9 @@ import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.operation.transform.AbstractMathTransform;
+import org.apache.sis.internal.referencing.CoordinateOperations;
 import org.apache.sis.internal.referencing.DirectPositionView;
 import org.apache.sis.internal.referencing.Formulas;
-import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.system.Loggers;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
@@ -99,17 +98,6 @@ public final class Envelopes extends Static {
      * Do not allow instantiation of this class.
      */
     private Envelopes() {
-    }
-
-    /**
-     * Returns the coordinate operation factory to be used for transforming the envelope.
-     */
-    private static CoordinateOperationFactory getFactory() throws TransformException {
-        final CoordinateOperationFactory factory = DefaultFactories.forClass(CoordinateOperationFactory.class);
-        if (factory != null) {
-            return factory;
-        }
-        throw new TransformException(Errors.format(Errors.Keys.MissingRequiredModule_1, "geotk-referencing")); // This is temporary.
     }
 
     /**
@@ -184,7 +172,7 @@ public final class Envelopes extends Static {
                 } else {
                     final CoordinateOperation operation;
                     try {
-                        operation = getFactory().createOperation(sourceCRS, targetCRS);
+                        operation = CoordinateOperations.factory().createOperation(sourceCRS, targetCRS);
                     } catch (FactoryException exception) {
                         throw new TransformException(Errors.format(Errors.Keys.CanNotTransformEnvelope), exception);
                     }
@@ -304,11 +292,11 @@ public final class Envelopes extends Static {
                         sourcePt, ordinates, offset, isDerivativeSupported);
             } catch (TransformException e) {
                 if (!isDerivativeSupported) {
-                    throw e; // Derivative were already disabled, so something went wrong.
+                    throw e;                    // Derivative were already disabled, so something went wrong.
                 }
                 isDerivativeSupported = false;
                 transform.transform(sourcePt, 0, ordinates, offset, 1);
-                recoverableException(e); // Log only if the above call was successful.
+                recoverableException(e);        // Log only if the above call was successful.
             }
             /*
              * The transformed point has been saved for future reuse after the enclosing
@@ -336,10 +324,10 @@ public final class Envelopes extends Static {
             int indexBase3 = ++pointIndex;
             for (int dim=sourceDim; --dim>=0; indexBase3 /= 3) {
                 switch (indexBase3 % 3) {
-                    case 0:  sourcePt[dim] = envelope.getMinimum(dim); break; // Continue the loop.
+                    case 0:  sourcePt[dim] = envelope.getMinimum(dim); break;   // Continue the loop.
                     case 1:  sourcePt[dim] = envelope.getMaximum(dim); continue transformPoint;
                     case 2:  sourcePt[dim] = envelope.getMedian (dim); continue transformPoint;
-                    default: throw new AssertionError(indexBase3); // Should never happen
+                    default: throw new AssertionError(indexBase3);     // Should never happen
                 }
             }
             break;
@@ -469,7 +457,7 @@ public final class Envelopes extends Static {
                  */
                 final MathTransform mt;
                 try {
-                    mt = getFactory().createOperation(crs, sourceCRS).getMathTransform();
+                    mt = CoordinateOperations.factory().createOperation(crs, sourceCRS).getMathTransform();
                 } catch (FactoryException e) {
                     throw new TransformException(Errors.format(Errors.Keys.CanNotTransformEnvelope), e);
                 }
@@ -703,9 +691,9 @@ public final class Envelopes extends Static {
                          * or skip c={2,3}.
                          */
                         double value = max;
-                        if ((c & 1) == 0) { // 'true' if we are testing "wrapAroundMin".
+                        if ((c & 1) == 0) {         // 'true' if we are testing "wrapAroundMin".
                             if (((c == 0 ? includedMinValue : includedMaxValue) & bm) == 0) {
-                                c++; // Skip also the case for "wrapAroundMax".
+                                c++;                // Skip also the case for "wrapAroundMax".
                                 continue;
                             }
                             targetPt.setOrdinate(axisIndex, (c == 0) ? axis.getMinimumValue() : axis.getMaximumValue());

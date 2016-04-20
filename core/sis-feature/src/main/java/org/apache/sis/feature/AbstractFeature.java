@@ -61,7 +61,7 @@ import org.apache.sis.internal.util.CheckedArrayList;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5
- * @version 0.6
+ * @version 0.7
  * @module
  *
  * @see DefaultFeatureType#newInstance()
@@ -222,7 +222,7 @@ public abstract class AbstractFeature implements Serializable {
     final Object getOperationValue(final String name) {
         final AbstractOperation operation = (AbstractOperation) type.getProperty(name);
         if (operation instanceof LinkOperation) {
-            return getPropertyValue(((LinkOperation) operation).propertyName);
+            return getPropertyValue(((LinkOperation) operation).referentName);
         }
         final Object result = operation.apply(this, null);
         if (result instanceof AbstractAttribute<?>) {
@@ -240,7 +240,7 @@ public abstract class AbstractFeature implements Serializable {
     final void setOperationValue(final String name, final Object value) {
         final AbstractOperation operation = (AbstractOperation) type.getProperty(name);
         if (operation instanceof LinkOperation) {
-            setPropertyValue(((LinkOperation) operation).propertyName, value);
+            setPropertyValue(((LinkOperation) operation).referentName, value);
         } else {
             final Object result = operation.apply(this, null);
             if (result instanceof Property) {
@@ -264,7 +264,8 @@ public abstract class AbstractFeature implements Serializable {
         if (pt instanceof DefaultAttributeType<?>) {
             return getDefaultValue((DefaultAttributeType<?>) pt);
         } else if (pt instanceof DefaultAssociationRole) {
-            return null; // No default value for associations.
+            final int maximumOccurs = ((DefaultAssociationRole) pt).getMaximumOccurs();
+            return maximumOccurs > 1 ? Collections.EMPTY_LIST : null;       // No default value for associations.
         } else {
             throw unsupportedPropertyType(pt.getName());
         }
@@ -577,14 +578,14 @@ public abstract class AbstractFeature implements Serializable {
      * @param value The value, which shall be non-null.
      */
     private static ClassCastException illegalValueClass(final GenericName name, final Object value) {
-        return new ClassCastException(Errors.format(Errors.Keys.IllegalPropertyClass_2, name, value.getClass()));
+        return new ClassCastException(Errors.format(Errors.Keys.IllegalPropertyValueClass_2, name, value.getClass()));
     }
 
     /**
      * Returns the exception for a property value (usually a feature) of wrong type.
      */
     private static IllegalArgumentException illegalPropertyType(final GenericName name, final Object value) {
-        return new IllegalArgumentException(Errors.format(Errors.Keys.IllegalPropertyClass_2, name, value));
+        return new IllegalArgumentException(Errors.format(Errors.Keys.IllegalPropertyValueClass_2, name, value));
     }
 
     /**
@@ -637,20 +638,7 @@ public abstract class AbstractFeature implements Serializable {
      */
     public DataQuality quality() {
         final Validator v = new Validator(ScopeCode.FEATURE);
-        for (final AbstractIdentifiedType pt : type.getProperties(true)) {
-            final Property property = (Property) getProperty(pt.getName().toString());
-            final DataQuality quality;
-            if (property instanceof AbstractAttribute<?>) {
-                quality = ((AbstractAttribute<?>) property).quality();
-            } else if (property instanceof AbstractAssociation) {
-                quality = ((AbstractAssociation) property).quality();
-            } else {
-                continue;
-            }
-            if (quality != null) { // Should not be null, but let be safe.
-                v.quality.getReports().addAll(quality.getReports());
-            }
-        }
+        v.validate(type, this);
         return v.quality;
     }
 

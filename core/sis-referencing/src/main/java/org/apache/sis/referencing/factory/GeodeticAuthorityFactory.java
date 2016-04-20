@@ -40,6 +40,11 @@ import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Debug;
 
+// Branch-dependent imports
+import org.apache.sis.referencing.cs.DefaultParametricCS;
+import org.apache.sis.referencing.crs.DefaultParametricCRS;
+import org.apache.sis.referencing.datum.DefaultParametricDatum;
+
 
 /**
  * Creates geodetic objects from codes defined by an authority.
@@ -62,6 +67,7 @@ import org.apache.sis.util.Debug;
  * However, other methods may be overridden as well for better performances.</p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
+ * @author  Johann Sorel (Geomatys)
  * @since   0.7
  * @version 0.7
  * @module
@@ -393,6 +399,27 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
     }
 
     /**
+     * Creates a 1-dimensional parametric coordinate reference system.
+     *
+     * <div class="section">Default implementation</div>
+     * The default implementation delegates to {@link #createCoordinateReferenceSystem(String)} and casts the result.
+     * If the result can not be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
+     *
+     * <div class="warning"><b>Warning:</b> in a future SIS version, the return type may be changed
+     * to {@code org.opengis.referencing.crs.ParametricCRS}. This change is pending GeoAPI revision.</div>
+     *
+     * @param  code Value allocated by authority.
+     * @return The coordinate reference system for the given code.
+     * @throws NoSuchAuthorityCodeException if the specified {@code code} was not found.
+     * @throws FactoryException if the object creation failed for some other reason.
+     *
+     * @see org.apache.sis.referencing.crs.DefaultParametricCRS
+     */
+    public DefaultParametricCRS createParametricCRS(final String code) throws NoSuchAuthorityCodeException, FactoryException {
+        return cast(DefaultParametricCRS.class, createCoordinateReferenceSystem(code), code);
+    }
+
+    /**
      * Creates a CRS describing the position of points through two or more independent coordinate reference systems.
      *
      * <div class="note"><b>Example:</b>
@@ -607,6 +634,27 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      */
     public TemporalDatum createTemporalDatum(final String code) throws NoSuchAuthorityCodeException, FactoryException {
         return cast(TemporalDatum.class, createDatum(code), code);
+    }
+
+    /**
+     * Creates a datum defining the origin of a parametric coordinate reference system.
+     *
+     * <div class="section">Default implementation</div>
+     * The default implementation delegates to {@link #createDatum(String)} and casts the result.
+     * If the result can not be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
+     *
+     * <div class="warning"><b>Warning:</b> in a future SIS version, the return type may be changed
+     * to {@code org.opengis.referencing.datum.ParametricDatum}. This change is pending GeoAPI revision.</div>
+     *
+     * @param  code Value allocated by authority.
+     * @return The datum for the given code.
+     * @throws NoSuchAuthorityCodeException if the specified {@code code} was not found.
+     * @throws FactoryException if the object creation failed for some other reason.
+     *
+     * @see org.apache.sis.referencing.datum.DefaultParametricDatum
+     */
+    public DefaultParametricDatum createParametricDatum(final String code) throws NoSuchAuthorityCodeException, FactoryException {
+        return cast(DefaultParametricDatum.class, createDatum(code), code);
     }
 
     /**
@@ -867,6 +915,27 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      */
     public TimeCS createTimeCS(final String code) throws NoSuchAuthorityCodeException, FactoryException {
         return cast(TimeCS.class, createCoordinateSystem(code), code);
+    }
+
+    /**
+     * Creates a 1-dimensional parametric coordinate system.
+     *
+     * <div class="section">Default implementation</div>
+     * The default implementation delegates to {@link #createCoordinateSystem(String)} and casts the result.
+     * If the result can not be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
+     *
+     * <div class="warning"><b>Warning:</b> in a future SIS version, the return type may be changed
+     * to {@code org.opengis.referencing.cs.ParametricCS}. This change is pending GeoAPI revision.</div>
+     *
+     * @param  code Value allocated by authority.
+     * @return The coordinate system for the given code.
+     * @throws NoSuchAuthorityCodeException if the specified {@code code} was not found.
+     * @throws FactoryException if the object creation failed for some other reason.
+     *
+     * @see org.apache.sis.referencing.cs.DefaultParametricCS
+     */
+    public DefaultParametricCS createParametricCS(final String code) throws NoSuchAuthorityCodeException, FactoryException {
+        return cast(DefaultParametricCS.class, createCoordinateSystem(code), code);
     }
 
     /**

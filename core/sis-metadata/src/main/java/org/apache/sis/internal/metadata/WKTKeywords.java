@@ -34,8 +34,9 @@ import org.apache.sis.util.Static;
  * This class is intended to be used only at compile-time and could be omitted from the JAR file.</div>
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @author  Johann Sorel (Geomatys)
  * @since   0.6
- * @version 0.6
+ * @version 0.7
  * @module
  *
  * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html">WKT 2 specification</a>
@@ -125,6 +126,15 @@ public final class WKTKeywords extends Static {
             TDatum      = "TDatum",
             TimeCRS     = "TimeCRS",
             BaseTimeCRS = "BaseTimeCRS";
+
+    /**
+     * Related to {@link org.apache.sis.referencing.crs.DefaultParametricCRS}.
+     */
+    public static final String
+            ParametricDatum = "ParametricDatum",
+            PDatum          = "PDatum",
+            ParametricCRS   = "ParametricCRS",
+            BaseParamCRS    = "BaseParamCRS";
 
     /**
      * Related to {@link org.apache.sis.referencing.crs.DefaultImageCRS}

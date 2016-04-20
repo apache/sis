@@ -24,6 +24,7 @@ import org.opengis.metadata.Identifier;
 import org.opengis.parameter.GeneralParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.referencing.operation.OperationMethod;
+import org.apache.sis.referencing.operation.DefaultOperationMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
@@ -32,7 +33,7 @@ import static org.junit.Assert.*;
 
 
 /**
- * Tests all providers defined in this package.
+ * Tests {@link Providers} and some consistency rules of all providers defined in this package.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.6
@@ -45,7 +46,7 @@ import static org.junit.Assert.*;
     LongitudeRotationTest.class,
     MapProjectionTest.class
 })
-public final strictfp class AllProvidersTest extends TestCase {
+public final strictfp class ProvidersTest extends TestCase {
     /**
      * Returns all providers to test.
      */
@@ -68,6 +69,7 @@ public final strictfp class AllProvidersTest extends TestCase {
             GeographicToGeocentric.class,
             GeocentricToGeographic.class,
             Geographic3Dto2D.class,
+            Geographic2Dto3D.class,
             Molodensky.class,
             AbridgedMolodensky.class,
             Equirectangular.class,
@@ -92,6 +94,30 @@ public final strictfp class AllProvidersTest extends TestCase {
             ObliqueStereographic.class,
             NTv2.class,
             NADCON.class,
+            FranceGeocentricInterpolation.class,
+            MolodenskyInterpolation.class,
+            Interpolation1D.class
+        };
+    }
+
+    /**
+     * Returns the subset of {@link #methods()} which are expected to support
+     * {@link AbstractProvider#redimension(int, int)}.
+     */
+    private static Class<?>[] redimensionables() {
+        return new Class<?>[] {
+            Affine.class,
+            LongitudeRotation.class,
+            GeographicOffsets.class,
+            GeographicOffsets2D.class,
+            CoordinateFrameRotation2D.class,
+            CoordinateFrameRotation3D.class,
+            PositionVector7Param2D.class,
+            PositionVector7Param3D.class,
+            GeocentricTranslation2D.class,
+            GeocentricTranslation3D.class,
+            Molodensky.class,
+            AbridgedMolodensky.class,
             FranceGeocentricInterpolation.class
         };
     }
@@ -103,11 +129,9 @@ public final strictfp class AllProvidersTest extends TestCase {
      * @throws Exception if the instantiation of a service provider failed.
      */
     @Test
-    public void ensureParameterUniqueness() throws Exception {   // ReflectiveOperationException on JDK7 branch.
-        final Map<GeneralParameterDescriptor, String> groupNames =
-                new IdentityHashMap<GeneralParameterDescriptor, String>();
-        final Map<GeneralParameterDescriptor, GeneralParameterDescriptor> parameters =
-                new HashMap<GeneralParameterDescriptor, GeneralParameterDescriptor>();
+    public void ensureParameterUniqueness() throws Exception {
+        final Map<GeneralParameterDescriptor, String> groupNames = new IdentityHashMap<GeneralParameterDescriptor, String>();
+        final Map<GeneralParameterDescriptor, GeneralParameterDescriptor> parameters = new HashMap<GeneralParameterDescriptor, GeneralParameterDescriptor>();
         final Map<Object, Object> namesAndIdentifiers = new HashMap<Object, Object>();
         for (final Class<?> c : methods()) {
             final OperationMethod method = (OperationMethod) c.newInstance();
@@ -148,6 +172,54 @@ public final strictfp class AllProvidersTest extends TestCase {
                                 + " was already defined elsewhere. The same instance could be shared.");
                     }
                 }
+            }
+        }
+    }
+
+    /**
+     * Tests {@link AbstractProvider#redimension(int, int)} on all providers managed by {@link Providers}.
+     */
+    @Test
+    public void testRedimension() {
+        final Map<Class<?>,Boolean> redimensionables = new HashMap<Class<?>,Boolean>(100);
+        for (final Class<?> type : methods()) {
+            assertNull(type.getName(), redimensionables.put(type, Boolean.FALSE));
+        }
+        for (final Class<?> type : redimensionables()) {
+            assertEquals(type.getName(), Boolean.FALSE, redimensionables.put(type, Boolean.TRUE));
+        }
+        final Providers providers = new Providers();
+        for (final OperationMethod method : providers) {
+            if (method instanceof ProviderMock) {
+                continue;                           // Skip the methods that were defined only for test purpose.
+            }
+            final int sourceDimensions = method.getSourceDimensions();
+            final int targetDimensions = method.getTargetDimensions();
+            final Boolean isRedimensionable = redimensionables.get(method.getClass());
+            assertNotNull(method.getClass().getName(), isRedimensionable);
+            if (isRedimensionable) {
+                for (int newSource = 2; newSource <= 3; newSource++) {
+                    for (int newTarget = 2; newTarget <= 3; newTarget++) {
+                        final OperationMethod redim = ((DefaultOperationMethod) method).redimension(newSource, newTarget);
+                        assertEquals("sourceDimensions", newSource, redim.getSourceDimensions().intValue());
+                        assertEquals("targetDimensions", newTarget, redim.getTargetDimensions().intValue());
+                        if (!(method instanceof Affine)) {
+                            if (newSource == sourceDimensions && newTarget == targetDimensions) {
+                                assertSame("When asking the original number of dimensions, expected the original instance.", method, redim);
+                            } else {
+                                assertNotSame("When asking a different number of dimensions, expected a different instance.", method, redim);
+                            }
+                            assertSame("When asking the original number of dimensions, expected the original instance.",
+                                    method, ((DefaultOperationMethod) redim).redimension(sourceDimensions, targetDimensions));
+                        }
+                    }
+                }
+            } else try {
+                ((DefaultOperationMethod) method).redimension(sourceDimensions ^ 1, targetDimensions ^ 1);
+                fail("Type " + method.getClass().getName() + " is not in our list of redimensionable methods.");
+            } catch (IllegalArgumentException e) {
+                final String message = e.getMessage();
+                assertTrue(message, message.contains(method.getName().getCode()));
             }
         }
     }

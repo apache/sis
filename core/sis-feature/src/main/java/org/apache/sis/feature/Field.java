@@ -57,6 +57,7 @@ abstract class Field<V> extends Property {
      *
      * @see AbstractFeature#getPropertyValue(String)
      */
+    @Override
     public abstract V getValue() throws IllegalStateException;
 
     /**

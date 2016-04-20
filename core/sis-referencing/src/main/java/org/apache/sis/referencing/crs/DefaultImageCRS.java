@@ -39,7 +39,9 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * Image coordinate reference systems are treated as a separate sub-type because a separate
  * user community exists for images with its own terms of reference.
  *
- * <p><b>Used with coordinate system types:</b>
+ * <p><b>Used with datum type:</b>
+ *   {@linkplain org.apache.sis.referencing.datum.DefaultImageDatum Image}.<br>
+ * <b>Used with coordinate system types:</b>
  *   {@linkplain org.apache.sis.referencing.cs.DefaultCartesianCS Cartesian} or
  *   {@linkplain org.apache.sis.referencing.cs.DefaultAffineCS Affine}.
  * </p>
@@ -113,12 +115,12 @@ public class DefaultImageCRS extends AbstractCRS implements ImageCRS {
      *     <td>{@link #getRemarks()}</td>
      *   </tr>
      *   <tr>
-     *     <td>{@value org.opengis.referencing.datum.Datum#DOMAIN_OF_VALIDITY_KEY}</td>
+     *     <td>{@value org.opengis.referencing.ReferenceSystem#DOMAIN_OF_VALIDITY_KEY}</td>
      *     <td>{@link org.opengis.metadata.extent.Extent}</td>
      *     <td>{@link #getDomainOfValidity()}</td>
      *   </tr>
      *   <tr>
-     *     <td>{@value org.opengis.referencing.datum.Datum#SCOPE_KEY}</td>
+     *     <td>{@value org.opengis.referencing.ReferenceSystem#SCOPE_KEY}</td>
      *     <td>{@link org.opengis.util.InternationalString} or {@link String}</td>
      *     <td>{@link #getScope()}</td>
      *   </tr>

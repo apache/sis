@@ -19,10 +19,14 @@ package org.apache.sis.referencing.operation;
 import java.io.Serializable;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.extent.GeographicBoundingBox;
+import org.opengis.referencing.operation.CoordinateOperation;
 import org.apache.sis.metadata.iso.extent.DefaultExtent;
 import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.util.ArgumentChecks;
+
+// Branch-dependent imports
+import org.apache.sis.internal.jdk8.Predicate;
 
 
 /**
@@ -38,7 +42,7 @@ import org.apache.sis.util.ArgumentChecks;
  * to choose the most suitable coordinate transformation between two CRS.
  *
  * <div class="note"><b>Example:</b>
- * if a transformation from NAD27 to NAD83 is requested without providing context, then Apache SIS will return the
+ * if a transformation from NAD27 to WGS84 is requested without providing context, then Apache SIS will return the
  * transformation applicable to the widest North American surface. But if the user provides a context saying that
  * he wants to transform coordinates in Texas, then Apache SIS may return another coordinate transformation with
  * different {@linkplain org.apache.sis.referencing.datum.BursaWolfParameters Bursa-Wolf parameters} more suitable
@@ -64,11 +68,6 @@ public class CoordinateOperationContext implements Serializable {
      * The spatio-temporal area of interest, or {@code null} if none.
      */
     private Extent areaOfInterest;
-
-    /**
-     * The geographic component of the area of interest, computed when first needed.
-     */
-    private transient GeographicBoundingBox bbox;
 
     /**
      * The desired accuracy in metres, or 0 for the best accuracy available.
@@ -99,6 +98,8 @@ public class CoordinateOperationContext implements Serializable {
      * Returns the spatio-temporal area of interest, or {@code null} if none.
      *
      * @return The spatio-temporal area of interest, or {@code null} if none.
+     *
+     * @see Extents#getGeographicBoundingBox(Extent)
      */
     public Extent getAreaOfInterest() {
         return areaOfInterest;
@@ -109,32 +110,24 @@ public class CoordinateOperationContext implements Serializable {
      *
      * @param area The spatio-temporal area of interest, or {@code null} if none.
      */
-    public void setAreaOfInterest(final Extent area) {
-        areaOfInterest = area;
-    }
-
-    /**
-     * Returns the geographic component of the area of interest, or {@code null} if none.
-     * This convenience method extracts the bounding box from the spatio-temporal {@link Extent}.
-     *
-     * @return The geographic area of interest, or {@code null} if none.
-     */
-    public GeographicBoundingBox getGeographicBoundingBox() {
-        if (bbox == null) {
-            bbox = Extents.getGeographicBoundingBox(areaOfInterest);
+    public void setAreaOfInterest(Extent area) {
+        if (area != null) {
+            area = new DefaultExtent(area);
         }
-        return bbox;
+        areaOfInterest = area;
     }
 
     /**
      * Sets the geographic component of the area of interest, or {@code null} if none.
      * This convenience method set the bounding box into the spatio-temporal {@link Extent}.
      *
+     * <p>The reverse operation can be done with <code>{@linkplain Extents#getGeographicBoundingBox(Extent)
+     * Extents.getGeographicBoundingBox}({@linkplain #getAreaOfInterest()})</code>.</p>
+     *
      * @param area The geographic area of interest, or {@code null} if none.
      */
-    public void setGeographicBoundingBox(final GeographicBoundingBox area) {
+    public void setAreaOfInterest(final GeographicBoundingBox area) {
         areaOfInterest = setGeographicBoundingBox(areaOfInterest, area);
-        bbox = area;
     }
 
     /**
@@ -176,5 +169,14 @@ public class CoordinateOperationContext implements Serializable {
     public void setDesiredAccuracy(final double accuracy) {
         ArgumentChecks.ensurePositive("accuracy", accuracy);
         desiredAccuracy = accuracy;
+    }
+
+    /**
+     * Returns a filter that can be used for applying additional restrictions on the coordinate operation.
+     *
+     * @todo Not yet implemented.
+     */
+    Predicate<CoordinateOperation> getOperationFilter() {
+        return null;
     }
 }

@@ -189,6 +189,7 @@ import org.apache.sis.xml.XML;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Guilhem Legal (Geomatys)
+ * @author  Johann Sorel (Geomatys)
  * @since   0.6
  * @version 0.7
  * @module
@@ -1036,6 +1037,103 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
     }
 
     /**
+     * Creates a parametric coordinate reference system.
+     * Parametric CRS can be used for physical properties or functions that vary monotonically with height.
+     * A typical example is the pressure in meteorological applications.
+     *
+     * <div class="note"><b>Dependencies:</b>
+     * the components needed by this method can be created by the following methods:
+     * <ol>
+     *   <li>{@link #createCoordinateSystemAxis(Map, String, AxisDirection, Unit)}</li>
+     *   <li>{@link #createParametricCS(Map, CoordinateSystemAxis)}</li>
+     *   <li>{@link #createParametricDatum(Map)}</li>
+     * </ol></div>
+     *
+     * The default implementation creates a {@link DefaultParametricCRS} instance.
+     *
+     * <div class="warning"><b>Warning:</b> in a future SIS version, the parameter types may be changed to
+     * {@code org.opengis.referencing.datum.ParametricDatum} and {@code org.opengis.referencing.cs.ParametricCS},
+     * and the return type may be changed to {@code org.opengis.referencing.crs.ParametricCRS}.
+     * Those change are pending GeoAPI revision.</div>
+     *
+     * @param  properties Name and other properties to give to the new object.
+     * @param  datum      The parametric datum to use in created CRS.
+     * @param  cs         The parametric coordinate system for the created CRS.
+     * @throws FactoryException if the object creation failed.
+     *
+     * @see DefaultParametricCRS#DefaultParametricCRS(Map, DefaultParametricDatum, DefaultParametricCS)
+     * @see GeodeticAuthorityFactory#createParametricCRS(String)
+     */
+    public DefaultParametricCRS createParametricCRS(final Map<String,?> properties,
+            final DefaultParametricDatum datum, final DefaultParametricCS cs) throws FactoryException
+    {
+        final DefaultParametricCRS crs;
+        try {
+            crs = new DefaultParametricCRS(complete(properties), datum, cs);
+        } catch (IllegalArgumentException exception) {
+            throw new InvalidGeodeticParameterException(exception);
+        }
+        return unique("createParametricCRS", crs);
+    }
+
+    /**
+     * Creates a parametric datum.
+     * The default implementation creates a {@link DefaultParametricDatum} instance.
+     *
+     * <div class="warning"><b>Warning:</b> in a future SIS version, the return type may be changed
+     * to {@code org.opengis.referencing.datum.ParametricDatum}. This change is pending GeoAPI revision.</div>
+     *
+     * @param  properties Name and other properties to give to the new object.
+     * @throws FactoryException if the object creation failed.
+     *
+     * @see DefaultParametricDatum#DefaultParametricDatum(Map)
+     * @see GeodeticAuthorityFactory#createParametricDatum(String)
+     */
+    public DefaultParametricDatum createParametricDatum(final Map<String,?> properties)
+            throws FactoryException
+    {
+        final DefaultParametricDatum datum;
+        try {
+            datum = new DefaultParametricDatum(complete(properties));
+        } catch (IllegalArgumentException exception) {
+            throw new InvalidGeodeticParameterException(exception);
+        }
+        return unique("createParametricDatum", datum);
+    }
+
+    /**
+     * Creates a parametric coordinate system.
+     * This coordinate system can be used only with parametric CRS.
+     *
+     * <div class="note"><b>Dependencies:</b>
+     * the components needed by this method can be created by the following methods:
+     * <ol>
+     *   <li>{@link #createCoordinateSystemAxis(Map, String, AxisDirection, Unit)}</li>
+     * </ol></div>
+     *
+     * The default implementation creates a {@link DefaultParametricCS} instance.
+     *
+     * <div class="warning"><b>Warning:</b> in a future SIS version, the return type may be changed
+     * to {@code org.opengis.referencing.cs.ParametricCS}. This change is pending GeoAPI revision.</div>
+     *
+     * @param  properties Name and other properties to give to the new object.
+     * @param  axis The single axis.
+     * @throws FactoryException if the object creation failed.
+     *
+     * @see DefaultParametricCS#DefaultParametricCS(Map, CoordinateSystemAxis)
+     * @see GeodeticAuthorityFactory#createParametricCS(String)
+     */
+    public DefaultParametricCS createParametricCS(Map<String, ?> properties, CoordinateSystemAxis axis) throws FactoryException {
+        final DefaultParametricCS cs;
+        try {
+            cs = new DefaultParametricCS(complete(properties), axis);
+        } catch (IllegalArgumentException exception) {
+            throw new InvalidGeodeticParameterException(exception);
+        }
+        return unique("createParametricCS", cs);
+    }
+
+    /**
      * Creates a compound coordinate reference system from an ordered list of {@code CoordinateReferenceSystem} objects.
      * Apache SIS puts no restriction on the components that can be used in a compound CRS.
      * However for better inter-operability, users are encouraged to follow the order mandated by ISO 19162:
@@ -1458,6 +1556,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * @throws FactoryException if the object creation failed.
      *
      * @see XML#unmarshal(String)
+     * @see org.apache.sis.referencing.CRS#fromXML(String)
      */
     @Override
     public CoordinateReferenceSystem createFromXML(final String xml) throws FactoryException {

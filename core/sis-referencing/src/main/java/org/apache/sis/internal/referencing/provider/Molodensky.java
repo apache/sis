@@ -29,7 +29,6 @@ import org.opengis.parameter.ParameterNotFoundException;
 import org.opengis.parameter.InvalidParameterValueException;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
-import org.opengis.referencing.operation.OperationMethod;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.parameter.Parameters;
@@ -39,7 +38,6 @@ import org.apache.sis.internal.referencing.NilReferencingObject;
 import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Debug;
 
 
@@ -134,22 +132,11 @@ public final class Molodensky extends GeocentricAffineBetweenGeographic {
     }
 
     /**
-     * The providers for all combinations between 2D and 3D cases.
-     * Array length is 4. Index is built with following rule:
-     * <ul>
-     *   <li>Bit 1: dimension of source coordinates (0 for 2D, 1 for 3D).</li>
-     *   <li>Bit 0: dimension of target coordinates (0 for 2D, 1 for 3D).</li>
-     * </ul>
-     */
-    private final Molodensky[] redimensioned;
-
-    /**
      * Constructs a new provider.
      */
     @SuppressWarnings("ThisEscapedInObjectConstruction")
     public Molodensky() {
-        super(3, 3, PARAMETERS);
-        redimensioned = new Molodensky[4];
+        this(3, 3, new Molodensky[4]);
         redimensioned[0] = new Molodensky(2, 2, redimensioned);
         redimensioned[1] = new Molodensky(2, 3, redimensioned);
         redimensioned[2] = new Molodensky(3, 2, redimensioned);
@@ -159,27 +146,12 @@ public final class Molodensky extends GeocentricAffineBetweenGeographic {
     /**
      * Constructs a provider for the given dimensions.
      *
-     * @param sourceDimensions Number of dimensions in the source CRS of this operation method.
-     * @param targetDimensions Number of dimensions in the target CRS of this operation method.
-     * @param redimensioned    Providers for all combinations between 2D and 3D cases.
+     * @param sourceDimensions  number of dimensions in the source CRS of this operation method.
+     * @param targetDimensions  number of dimensions in the target CRS of this operation method.
+     * @param redimensioned     providers for all combinations between 2D and 3D cases.
      */
-    private Molodensky(final int sourceDimensions, final int targetDimensions, final Molodensky[] redimensioned) {
-        super(sourceDimensions, targetDimensions, PARAMETERS);
-        this.redimensioned = redimensioned;
-    }
-
-    /**
-     * Returns the same operation method, but for different number of dimensions.
-     *
-     * @param  sourceDimensions The desired number of input dimensions.
-     * @param  targetDimensions The desired number of output dimensions.
-     * @return The redimensioned operation method, or {@code this} if no change is needed.
-     */
-    @Override
-    public OperationMethod redimension(final int sourceDimensions, final int targetDimensions) {
-        ArgumentChecks.ensureBetween("sourceDimensions", 2, 3, sourceDimensions);
-        ArgumentChecks.ensureBetween("targetDimensions", 2, 3, targetDimensions);
-        return redimensioned[((sourceDimensions & 1) << 1) | (targetDimensions & 1)];
+    private Molodensky(int sourceDimensions, int targetDimensions, GeodeticOperation[] redimensioned) {
+        super(sourceDimensions, targetDimensions, PARAMETERS, redimensioned);
     }
 
     /**

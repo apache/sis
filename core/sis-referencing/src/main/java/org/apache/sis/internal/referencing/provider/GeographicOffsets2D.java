@@ -53,7 +53,22 @@ public final class GeographicOffsets2D extends GeographicOffsets {
      * Constructs a provider with default parameters.
      */
     public GeographicOffsets2D() {
-        super(2, PARAMETERS);
+        this(null);
+    }
+
+    /**
+     * Constructs a provider that can be resized.
+     */
+    GeographicOffsets2D(GeodeticOperation[] redimensioned) {
+        super(2, 2, PARAMETERS, redimensioned);
+    }
+
+    /**
+     * Returns the three-dimensional variant of this operation method.
+     */
+    @Override
+    Class<GeographicOffsets> variant3D() {
+        return GeographicOffsets.class;
     }
 
     /**

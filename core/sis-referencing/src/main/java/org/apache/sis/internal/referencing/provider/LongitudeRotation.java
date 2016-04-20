@@ -65,8 +65,24 @@ public final class LongitudeRotation extends GeographicOffsets {
     /**
      * Constructs a provider with default parameters.
      */
+    @SuppressWarnings("ThisEscapedInObjectConstruction")
     public LongitudeRotation() {
-        super(2, PARAMETERS);
+        this(2, 2, new LongitudeRotation[4]);
+        redimensioned[0] = this;
+        redimensioned[1] = new LongitudeRotation(2, 3, redimensioned);
+        redimensioned[2] = new LongitudeRotation(3, 2, redimensioned);
+        redimensioned[3] = new LongitudeRotation(3, 3, redimensioned);
+    }
+
+    /**
+     * Constructs a provider for the given dimensions.
+     *
+     * @param sourceDimensions  number of dimensions in the source CRS of this operation method.
+     * @param targetDimensions  number of dimensions in the target CRS of this operation method.
+     * @param redimensioned     providers for all combinations between 2D and 3D cases.
+     */
+    private LongitudeRotation(int sourceDimensions, int targetDimensions, GeodeticOperation[] redimensioned) {
+        super(sourceDimensions, targetDimensions, PARAMETERS, redimensioned);
     }
 
     /**

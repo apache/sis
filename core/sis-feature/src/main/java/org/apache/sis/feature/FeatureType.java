@@ -16,6 +16,7 @@
  */
 package org.apache.sis.feature;
 
+import java.util.Collection;
 import org.opengis.util.GenericName;
 
 
@@ -33,4 +34,8 @@ import org.opengis.util.GenericName;
  */
 interface FeatureType {
     GenericName getName();
+
+    Collection<AbstractIdentifiedType> getProperties(boolean includeSuperTypes);
+
+    boolean isAssignableFrom(DefaultFeatureType type);
 }

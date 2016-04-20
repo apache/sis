@@ -434,7 +434,7 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
     /**
      * If the given class is not public, returns the first public interface or the first public super-class.
      * This is for avoiding confusing the user with private class in message like "Value can not be instance
-     * of XYZ". In the worst case (nothing public other than {@code Object}), returns {@code Object.class}.
+     * of XYZ".
      */
     private static Class<?> getPublicType(Class<?> c) {
         while (!Modifier.isPublic(c.getModifiers())) {

@@ -101,11 +101,15 @@ public abstract class GeocentricAffineBetweenGeographic extends GeocentricAffine
     /**
      * Constructs a provider with the specified parameters.
      *
-     * @param sourceDimensions Number of dimensions in the source CRS of this operation method.
-     * @param targetDimensions Number of dimensions in the target CRS of this operation method.
+     * @param sourceDimensions  number of dimensions in the source CRS of this operation method.
+     * @param targetDimensions  number of dimensions in the target CRS of this operation method.
+     * @param parameters        description of parameters expected by this operation.
+     * @param redimensioned     providers for all combinations between 2D and 3D cases, or {@code null}.
      */
-    GeocentricAffineBetweenGeographic(int sourceDimensions, int targetDimensions, ParameterDescriptorGroup parameters) {
-        super(sourceDimensions, targetDimensions, parameters);
+    GeocentricAffineBetweenGeographic(int sourceDimensions, int targetDimensions,
+            ParameterDescriptorGroup parameters, GeodeticOperation[] redimensioned)
+    {
+        super(sourceDimensions, targetDimensions, parameters, redimensioned);
     }
 
     /**

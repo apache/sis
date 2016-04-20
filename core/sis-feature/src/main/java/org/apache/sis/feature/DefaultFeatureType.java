@@ -580,6 +580,7 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
      * @param  type The type to be checked.
      * @return {@code true} if instances of the given type can be assigned to association of this type.
      */
+    @Override
     public boolean isAssignableFrom(final DefaultFeatureType type) {
         if (type == this) {
             return true; // Optimization for a common case.
@@ -704,6 +705,7 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
      * @return Feature operation, attribute type and association role that carries characteristics of this
      *         feature type (not including parent types).
      */
+    @Override
     public final Collection<AbstractIdentifiedType> getProperties(final boolean includeSuperTypes) {
         return includeSuperTypes ? allProperties : properties;
     }
