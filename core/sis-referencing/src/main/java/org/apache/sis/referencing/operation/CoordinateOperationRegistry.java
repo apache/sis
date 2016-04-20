@@ -38,6 +38,7 @@ import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.GeodeticCRS;
+import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.operation.*;
 
@@ -295,7 +296,8 @@ class CoordinateOperationRegistry {
                      * need to modify the coordinate operation in order to match the new number of dimensions.
                      */
                     if (combine != 0) {
-                        operation = propagateVertical(operation, source != sourceCRS, target != targetCRS);
+                        operation = propagateVertical(sourceCRS, source != sourceCRS,
+                                                      targetCRS, target != targetCRS, operation);
                         if (operation == null) {
                             continue;
                         }
@@ -304,8 +306,12 @@ class CoordinateOperationRegistry {
                     return operation;
                 }
             } catch (IllegalArgumentException | ConversionException e) {
-                throw new FactoryException(Errors.format(
-                        Errors.Keys.CanNotInstantiate_1, new CRSPair(sourceCRS, targetCRS)), e);
+                String message = Errors.format(Errors.Keys.CanNotInstantiate_1, new CRSPair(sourceCRS, targetCRS));
+                String details = e.getLocalizedMessage();
+                if (details != null) {
+                    message = message + ' ' + details;
+                }
+                throw new FactoryException(message, e);
             }
         }
     }
@@ -539,7 +545,8 @@ class CoordinateOperationRegistry {
                                                   final MathTransformFactory      mtFactory)
             throws IllegalArgumentException, ConversionException, FactoryException
     {
-        assert Utilities.deepEquals(sourceCRS, targetCRS, ComparisonMode.ALLOW_VARIANT);
+        assert ReferencingUtilities.getDimension(sourceCRS) != ReferencingUtilities.getDimension(targetCRS)
+                || Utilities.deepEquals(sourceCRS, targetCRS, ComparisonMode.ALLOW_VARIANT);
         final Matrix m = CoordinateSystems.swapAndScaleAxes(sourceCRS.getCoordinateSystem(), targetCRS.getCoordinateSystem());
         return (m.isIdentity()) ? null : mtFactory.createAffineTransform(m);
     }
@@ -693,16 +700,20 @@ class CoordinateOperationRegistry {
      * <cite>best effort</cite> basis. In any cases, the {@link #complete} method should be invoked
      * after this one in order to ensure that the source and target CRS are the expected ones.</p>
      *
-     * @param  operation the original (typically two-dimensional) coordinate operation.
+     * @param  sourceCRS the potentially three-dimensional source CRS
      * @param  source3D  {@code true} for adding ellipsoidal height in source coordinates.
+     * @param  targetCRS the potentially three-dimensional target CRS
      * @param  target3D  {@code true} for adding ellipsoidal height in target coordinates.
+     * @param  operation the original (typically two-dimensional) coordinate operation.
      * @return a coordinate operation with the source and/or target coordinates made 3D,
      *         or {@code null} if this method does not know how to create the operation.
      * @throws IllegalArgumentException if the operation method can not have the desired number of dimensions.
      * @throws FactoryException if an error occurred while creating the coordinate operation.
      */
-    private CoordinateOperation propagateVertical(final CoordinateOperation operation,
-            final boolean source3D, final boolean target3D) throws IllegalArgumentException, FactoryException
+    private CoordinateOperation propagateVertical(final CoordinateReferenceSystem sourceCRS, final boolean source3D,
+                                                  final CoordinateReferenceSystem targetCRS, final boolean target3D,
+                                                  final CoordinateOperation operation)
+            throws IllegalArgumentException, FactoryException
     {
         final List<CoordinateOperation> operations = new ArrayList<>();
         if (operation instanceof ConcatenatedOperation) {
@@ -710,8 +721,8 @@ class CoordinateOperationRegistry {
         } else {
             operations.add(operation);
         }
-        if ((source3D && !propagateVertical(operations.listIterator(), true)) ||
-            (target3D && !propagateVertical(operations.listIterator(operations.size()), false)))
+        if ((source3D && !propagateVertical(sourceCRS, targetCRS, operations.listIterator(), true)) ||
+            (target3D && !propagateVertical(sourceCRS, targetCRS, operations.listIterator(operations.size()), false)))
         {
             return null;
         }
@@ -728,13 +739,18 @@ class CoordinateOperationRegistry {
      * Appends a vertical axis in the source CRS of the first step {@code forward = true} or in
      * the target CRS of the last step {@code forward = false} of the given operations chain.
      *
+     * @param  source3D    the potentially three-dimensional source CRS
+     * @param  target3D    the potentially three-dimensional target CRS
      * @param  operations  the chain of operations in which to add a vertical axis.
      * @param  forward     {@code true} for adding the vertical axis at the beginning, or
      *                     {@code false} for adding the vertical axis at the end.
      * @return {@code true} on success.
      * @throws IllegalArgumentException if the operation method can not have the desired number of dimensions.
      */
-    private boolean propagateVertical(final ListIterator<CoordinateOperation> operations, final boolean forward)
+    private boolean propagateVertical(final CoordinateReferenceSystem source3D,
+                                      final CoordinateReferenceSystem target3D,
+                                      final ListIterator<CoordinateOperation> operations,
+                                      final boolean forward)
             throws IllegalArgumentException, FactoryException
     {
         while (forward ? operations.hasNext() : operations.hasPrevious()) {
@@ -772,18 +788,18 @@ class CoordinateOperationRegistry {
                 if (op instanceof SingleOperation) {
                     final MathTransformFactory mtFactory = factorySIS.getMathTransformFactory();
                     if (mtFactory instanceof DefaultMathTransformFactory) {
-                        final CoordinateReferenceSystem source3D = toGeodetic3D(sourceCRS);
-                        final CoordinateReferenceSystem target3D = toGeodetic3D(targetCRS);
+                        if (forward) sourceCRS = toGeodetic3D(sourceCRS, source3D);
+                        else         targetCRS = toGeodetic3D(targetCRS, target3D);
                         final MathTransform mt;
                         try {
                             mt = ((DefaultMathTransformFactory) mtFactory).createParameterizedTransform(
                                     ((SingleOperation) op).getParameterValues(),
-                                    ReferencingUtilities.createTransformContext(source3D, target3D, null));
+                                    ReferencingUtilities.createTransformContext(sourceCRS, targetCRS, null));
                         } catch (InvalidGeodeticParameterException e) {
                             log(e);
                             break;
                         }
-                        operations.set(recreate(op, source3D, target3D, mt, mtFactory.getLastMethodUsed()));
+                        operations.set(recreate(op, sourceCRS, targetCRS, mt, mtFactory.getLastMethodUsed()));
                         return true;
                     }
                 }
@@ -814,7 +830,7 @@ class CoordinateOperationRegistry {
                  * conform to the definition provided by the authority.
                  */
                 final MathTransform mt = factorySIS.getMathTransformFactory().createAffineTransform(matrix);
-                operations.set(recreate(op, toGeodetic3D(sourceCRS), toGeodetic3D(targetCRS), mt, null));
+                operations.set(recreate(op, toGeodetic3D(sourceCRS, source3D), toGeodetic3D(targetCRS, target3D), mt, null));
             }
             /*
              * If we processed the operation that change the number of dimensions, we are done.
@@ -830,13 +846,27 @@ class CoordinateOperationRegistry {
      * If the given CRS is two-dimensional, append an ellipsoidal height to it.
      * It is caller's responsibility to ensure that the given CRS is geographic.
      */
-    private CoordinateReferenceSystem toGeodetic3D(CoordinateReferenceSystem crs) throws FactoryException {
+    private CoordinateReferenceSystem toGeodetic3D(CoordinateReferenceSystem crs,
+            final CoordinateReferenceSystem candidate) throws FactoryException
+    {
         assert (crs instanceof GeodeticCRS) && (crs.getCoordinateSystem() instanceof EllipsoidalCS) : crs;
-        if (crs.getCoordinateSystem().getDimension() == 2) {
-            crs = ReferencingServices.getInstance().createCompoundCRS(factorySIS.getCRSFactory(), factorySIS.getCSFactory(),
-                    derivedFrom(crs), crs, CommonCRS.Vertical.ELLIPSOIDAL.crs());
+        if (crs.getCoordinateSystem().getDimension() != 2) {
+            return crs;
         }
-        return crs;
+        /*
+         * The check for same class is a cheap way to ensure that the two CRS implement the same GeoAPI interface.
+         * This test is stricter than necessary, but the result should still not wrong if we miss an opportunity
+         * to return the existing instance.
+         */
+        if (crs.getClass() == candidate.getClass() && candidate.getCoordinateSystem().getDimension() == 3) {
+            if (Utilities.equalsIgnoreMetadata(((SingleCRS) crs).getDatum(), ((SingleCRS) candidate).getDatum())) {
+                return candidate;               // Keep the existing instance since it may contain useful metadata.
+            }
+        }
+        return ReferencingServices.getInstance().createCompoundCRS(
+                factorySIS.getCRSFactory(),
+                factorySIS.getCSFactory(),
+                derivedFrom(crs), crs, CommonCRS.Vertical.ELLIPSOIDAL.crs());
     }
 
     /**

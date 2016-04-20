@@ -20,6 +20,8 @@ import java.util.Map;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
+
+// Branch-dependent imports
 import org.opengis.referencing.cs.ParametricCS;
 
 
