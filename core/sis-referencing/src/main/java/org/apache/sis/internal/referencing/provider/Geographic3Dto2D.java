@@ -37,7 +37,7 @@ import org.apache.sis.internal.referencing.WKTUtilities;
 /**
  * The provider for <cite>"Geographic 3D to 2D conversion"</cite> (EPSG:9659).
  * This is a trivial operation that just drop the height in a geographic coordinate.
- * The inverse operation arbitrarily set the ellipsoidal height to zero.
+ * The inverse operation arbitrarily sets the ellipsoidal height to zero.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.7
@@ -54,7 +54,7 @@ public final class Geographic3Dto2D extends AbstractProvider {
     /**
      * The group of all parameters expected by this coordinate operation (in this case, none).
      */
-    static final ParameterDescriptorGroup PARAMETERS = builder()
+    public static final ParameterDescriptorGroup PARAMETERS = builder()
             .addIdentifier("9659").addName("Geographic3D to 2D conversion").createGroup();
 
     /**
@@ -113,9 +113,9 @@ public final class Geographic3Dto2D extends AbstractProvider {
     }
 
     /**
-     * A temporary placeholder used for formatting a {@code PARAM_MT["Geographic 3D to 2D conversion"]}
-     * element in Well-Known Text format. This placeholder is needed there is no {@link MathTransform}
-     * implementation for the Geographic 3D to 2D conversion, since we use affine transform instead.
+     * A temporary placeholder used for formatting a {@code PARAM_MT["Geographic 3D to 2D conversion"]} element in
+     * Well-Known Text format. This placeholder is needed because there is no {@link MathTransform} implementation
+     * for the Geographic 3D to 2D conversion, since we use affine transform instead.
      */
     public static final class WKT extends FormattableObject implements Parameterized {
         /**

@@ -52,7 +52,7 @@ public final class GeocentricTranslation extends GeocentricAffine {
      * Constructs the provider.
      */
     public GeocentricTranslation() {
-        super(3, 3, PARAMETERS);
+        super(3, 3, PARAMETERS, null);
     }
 
     /**

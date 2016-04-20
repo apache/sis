@@ -348,7 +348,7 @@ public class ImmutableIdentifier extends FormattableObject implements Identifier
             final Map<String,?> properties, final String key, final Object value)
     {
         return new IllegalArgumentException(Errors.getResources(properties)
-                .getString(Errors.Keys.IllegalPropertyClass_2, key, value.getClass()));
+                .getString(Errors.Keys.IllegalPropertyValueClass_2, key, value.getClass()));
     }
 
     /**

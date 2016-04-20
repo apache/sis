@@ -30,7 +30,6 @@ import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
-import org.opengis.referencing.operation.Transformation;
 import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.internal.referencing.WKTUtilities;
 import org.apache.sis.internal.metadata.WKTKeywords;
@@ -64,7 +63,7 @@ import org.apache.sis.util.logging.Logging;
  * @module
  */
 @XmlTransient
-public abstract class GeocentricAffine extends AbstractProvider {
+public abstract class GeocentricAffine extends GeodeticOperation {
     /**
      * Serial number for inter-operability with different versions.
      */
@@ -153,21 +152,13 @@ public abstract class GeocentricAffine extends AbstractProvider {
     /**
      * Constructs a provider with the specified parameters.
      *
-     * @param sourceDimensions Number of dimensions in the source CRS of this operation method.
-     * @param targetDimensions Number of dimensions in the target CRS of this operation method.
+     * @param sourceDimensions  number of dimensions in the source CRS of this operation method.
+     * @param targetDimensions  number of dimensions in the target CRS of this operation method.
+     * @param parameters        description of parameters expected by this operation.
+     * @param redimensioned     providers for all combinations between 2D and 3D cases, or {@code null}.
      */
-    GeocentricAffine(int sourceDimensions, int targetDimensions, ParameterDescriptorGroup parameters) {
-        super(sourceDimensions, targetDimensions, parameters);
-    }
-
-    /**
-     * Returns the interface implemented by all coordinate operations that extends this class.
-     *
-     * @return Fixed to {@link Transformation}.
-     */
-    @Override
-    public final Class<Transformation> getOperationType() {
-        return Transformation.class;
+    GeocentricAffine(int sourceDimensions, int targetDimensions, ParameterDescriptorGroup parameters, GeodeticOperation[] redimensioned) {
+        super(sourceDimensions, targetDimensions, parameters, redimensioned);
     }
 
     /**
@@ -175,16 +166,6 @@ public abstract class GeocentricAffine extends AbstractProvider {
      * {@link #FRAME_ROTATION} or {@link #OTHER} constants.
      */
     abstract int getType();
-
-    /**
-     * The inverse of this operation is the same operation with parameter signs inverted.
-     *
-     * @return {@code true} for all {@code GeocentricAffine}.
-     */
-    @Override
-    public final boolean isInvertible() {
-        return true;
-    }
 
     /**
      * Creates a math transform from the specified group of parameter values.
@@ -206,12 +187,12 @@ public abstract class GeocentricAffine extends AbstractProvider {
         boolean reverseRotation = false;
         switch (getType()) {
             default:             throw new AssertionError();
-            case FRAME_ROTATION: reverseRotation = true;               // Fall through
+            case FRAME_ROTATION: reverseRotation = true;                    // Fall through
             case SEVEN_PARAM:    parameters.rX = pv.doubleValue(RX);
                                  parameters.rY = pv.doubleValue(RY);
                                  parameters.rZ = pv.doubleValue(RZ);
                                  parameters.dS = pv.doubleValue(DS);
-            case TRANSLATION:    parameters.tX = pv.doubleValue(TX);   // Fall through
+            case TRANSLATION:    parameters.tX = pv.doubleValue(TX);        // Fall through
                                  parameters.tY = pv.doubleValue(TY);
                                  parameters.tZ = pv.doubleValue(TZ);
         }
@@ -275,7 +256,7 @@ public abstract class GeocentricAffine extends AbstractProvider {
         @SuppressWarnings("null")
         int dimension  = sourceCS.getDimension();
         if (dimension != targetCS.getDimension()) {
-            dimension  = 0;                             // Sentinal value for mismatched dimensions.
+            dimension  = 4;     // Any value greater than 3 means "mismatched dimensions" for this method.
         }
         /*
          * Try to convert the matrix into (tX, tY, tZ, rX, rY, rZ, dS) parameters.
@@ -312,7 +293,7 @@ public abstract class GeocentricAffine extends AbstractProvider {
             }
         }
         final Parameters values = createParameters(descriptor, parameters, isTranslation);
-        if (useMolodensky && dimension != 0) {
+        if (useMolodensky && dimension <= 3) {
             values.getOrCreate(Molodensky.DIMENSION).setValue(dimension);
         }
         return values;

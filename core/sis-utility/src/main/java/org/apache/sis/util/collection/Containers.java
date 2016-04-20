@@ -243,7 +243,7 @@ public final class Containers extends Static {
         final Object value = properties.get(key);
         if (value != null && !type.isInstance(value)) {
             throw new IllegalArgumentException(Errors.getResources(properties)
-                    .getString(Errors.Keys.IllegalPropertyClass_2, key, value.getClass()));
+                    .getString(Errors.Keys.IllegalPropertyValueClass_3, key, type, value.getClass()));
         }
         return (T) value;
     }

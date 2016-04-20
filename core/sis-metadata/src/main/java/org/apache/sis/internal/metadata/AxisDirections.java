@@ -417,7 +417,7 @@ public final class AxisDirections extends Static {
      *
      * @param  cs The coordinate system from which to get the angular unit, or {@code null}.
      * @param  unit The default unit to return if no angular unit is found.
-     * @return The angular unit, of {@code null} if no angular unit was found.
+     * @return The angular unit, of {@code unit} if no angular unit was found.
      *
      * @since 0.6
      *

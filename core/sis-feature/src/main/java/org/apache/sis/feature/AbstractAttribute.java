@@ -104,7 +104,7 @@ public abstract class AbstractAttribute<V> extends Field<V> implements Attribute
     /**
      * Creates a new attribute of the given type.
      *
-     * @param type Information about the attribute (base Java class, domain of values, <i>etc.</i>).
+     * @param type  information about the attribute (base Java class, domain of values, <i>etc.</i>).
      *
      * @see #create(AttributeType)
      */
@@ -116,9 +116,9 @@ public abstract class AbstractAttribute<V> extends Field<V> implements Attribute
      * Creates a new attribute of the given type initialized to the
      * {@linkplain DefaultAttributeType#getDefaultValue() default value}.
      *
-     * @param  <V>  The type of attribute values.
-     * @param  type Information about the attribute (base Java class, domain of values, <i>etc.</i>).
-     * @return The new attribute.
+     * @param  <V>   the type of attribute values.
+     * @param  type  information about the attribute (base Java class, domain of values, <i>etc.</i>).
+     * @return the new attribute.
      *
      * @see DefaultAttributeType#newInstance()
      */
@@ -133,9 +133,9 @@ public abstract class AbstractAttribute<V> extends Field<V> implements Attribute
      * Creates a new attribute of the given type initialized to the given value.
      * Note that a {@code null} value may not be the same as the default value.
      *
-     * @param  <V>   The type of attribute values.
-     * @param  type  Information about the attribute (base Java class, domain of values, <i>etc.</i>).
-     * @param  value The initial value (may be {@code null}).
+     * @param  <V>    the type of attribute values.
+     * @param  type   information about the attribute (base Java class, domain of values, <i>etc.</i>).
+     * @param  value  the initial value (may be {@code null}).
      * @return The new attribute.
      */
     static <V> AbstractAttribute<V> create(final AttributeType<V> type, final Object value) {
@@ -148,8 +148,8 @@ public abstract class AbstractAttribute<V> extends Field<V> implements Attribute
     /**
      * Invoked on serialization for saving the {@link #characteristics} field.
      *
-     * @param  out The output stream where to serialize this attribute.
-     * @throws IOException If an I/O error occurred while writing.
+     * @param  out  the output stream where to serialize this attribute.
+     * @throws IOException if an I/O error occurred while writing.
      */
     private void writeObject(final ObjectOutputStream out) throws IOException {
         out.defaultWriteObject();
@@ -165,9 +165,9 @@ public abstract class AbstractAttribute<V> extends Field<V> implements Attribute
     /**
      * Invoked on deserialization for restoring the {@link #characteristics} field.
      *
-     * @param  in The input stream from which to deserialize an attribute.
-     * @throws IOException If an I/O error occurred while reading or if the stream contains invalid data.
-     * @throws ClassNotFoundException If the class serialized on the stream is not on the classpath.
+     * @param  in  the input stream from which to deserialize an attribute.
+     * @throws IOException if an I/O error occurred while reading or if the stream contains invalid data.
+     * @throws ClassNotFoundException if the class serialized on the stream is not on the classpath.
      */
     private void readObject(final ObjectInputStream in) throws IOException, ClassNotFoundException {
         in.defaultReadObject();
@@ -186,7 +186,7 @@ public abstract class AbstractAttribute<V> extends Field<V> implements Attribute
      * Returns the name of this attribute as defined by its {@linkplain #getType() type}.
      * This convenience method delegates to {@link AttributeType#getName()}.
      *
-     * @return The attribute name specified by its type.
+     * @return the attribute name specified by its type.
      */
     @Override
     public GenericName getName() {
@@ -196,7 +196,7 @@ public abstract class AbstractAttribute<V> extends Field<V> implements Attribute
     /**
      * Returns information about the attribute (base Java class, domain of values, <i>etc.</i>).
      *
-     * @return Information about the attribute.
+     * @return information about the attribute.
      */
     @Override
     public AttributeType<V> getType() {
@@ -208,7 +208,7 @@ public abstract class AbstractAttribute<V> extends Field<V> implements Attribute
      * the common case where the {@linkplain DefaultAttributeType#getMaximumOccurs() maximum number}
      * of attribute values is restricted to 1 or 0.
      *
-     * @return The attribute value (may be {@code null}).
+     * @return the attribute value (may be {@code null}).
      * @throws MultiValuedPropertyException if this attribute contains more than one value.
      *
      * @see AbstractFeature#getPropertyValue(String)
@@ -224,7 +224,7 @@ public abstract class AbstractAttribute<V> extends Field<V> implements Attribute
      * <p>The default implementation returns a collection which will delegate its work to
      * {@link #getValue()} and {@link #setValue(Object)}.</p>
      *
-     * @return The attribute values in a <cite>live</cite> collection.
+     * @return the attribute values in a <cite>live</cite> collection.
      */
     @Override
     public Collection<V> getValues() {
@@ -240,12 +240,14 @@ public abstract class AbstractAttribute<V> extends Field<V> implements Attribute
      * and also because some rules may be temporarily broken while constructing a feature.
      * A more exhaustive verification can be performed by invoking the {@link #quality()} method.
      *
-     * @param value The new value, or {@code null} for removing all values from this attribute.
+     * @param  value  the new value, or {@code null} for removing all values from this attribute.
+     * @throws InvalidPropertyValueException if this method verifies argument validity and the given value
+     *         does not met the attribute constraints.
      *
      * @see AbstractFeature#setPropertyValue(String, Object)
      */
     @Override
-    public abstract void setValue(final V value);
+    public abstract void setValue(final V value) throws InvalidPropertyValueException;
 
     /**
      * Sets the attribute values. All previous values are replaced by the given collection.
@@ -253,7 +255,7 @@ public abstract class AbstractAttribute<V> extends Field<V> implements Attribute
      * <p>The default implementation ensures that the given collection contains at most one element,
      * then delegates to {@link #setValue(Object)}.</p>
      *
-     * @param  values The new values.
+     * @param  values  the new values.
      * @throws InvalidPropertyValueException if the given collection contains too many elements.
      */
     @Override
@@ -332,7 +334,7 @@ public abstract class AbstractAttribute<V> extends Field<V> implements Attribute
      *     }</li>
      * </ol>
      *
-     * @return Other attribute types that describes this attribute type, or an empty map if none.
+     * @return other attribute types that describes this attribute type, or an empty map if none.
      *
      * @see DefaultAttributeType#characteristics()
      */
@@ -342,7 +344,7 @@ public abstract class AbstractAttribute<V> extends Field<V> implements Attribute
         if (characteristics == null) {
             characteristics = newCharacteristicsMap();
         }
-        return characteristics;     // Intentionally modifiable
+        return characteristics;                                 // Intentionally modifiable
     }
 
     /**
@@ -437,7 +439,7 @@ public abstract class AbstractAttribute<V> extends Field<V> implements Attribute
      * }
      * </div>
      *
-     * @return Reports on all constraint violations found.
+     * @return reports on all constraint violations found.
      *
      * @see AbstractFeature#quality()
      */
@@ -457,7 +459,7 @@ public abstract class AbstractAttribute<V> extends Field<V> implements Attribute
      *     └─ characteristics: units=°C, accuracy=0.1
      * }
      *
-     * @return A string representation of this attribute for debugging purpose.
+     * @return a string representation of this attribute for debugging purpose.
      */
     @Debug
     @Override
@@ -482,7 +484,7 @@ public abstract class AbstractAttribute<V> extends Field<V> implements Attribute
      * are <strong>not</strong> cloned.
      * However subclasses may choose to do otherwise.
      *
-     * @return A clone of this attribute.
+     * @return a clone of this attribute.
      * @throws CloneNotSupportedException if this attribute, the {@linkplain #getValue() value}
      *         or one of its {@linkplain #characteristics() characteristics} can not be cloned.
      */

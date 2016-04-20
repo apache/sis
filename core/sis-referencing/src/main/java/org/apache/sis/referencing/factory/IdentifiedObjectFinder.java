@@ -341,7 +341,7 @@ public class IdentifiedObjectFinder {
      * If the set returned by {@link #find(IdentifiedObject)} contains exactly one element,
      * then that element is returned. Otherwise this method returns {@code null}.
      *
-     * <p>Note that this method returns {@code null} even if there is more than one element,
+     * <p>This method returns {@code null} if there is more than one element
      * because in such case we consider that there is an ambiguity.</p>
      *
      * @param  object The object looked up.

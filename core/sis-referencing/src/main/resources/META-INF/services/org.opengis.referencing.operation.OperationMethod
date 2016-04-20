@@ -2,6 +2,7 @@
 # Heavier classes (e.g. having more dependencies) or classes less likely to be used, should be last.
 org.apache.sis.internal.referencing.provider.Affine
 org.apache.sis.internal.referencing.provider.Geographic3Dto2D
+org.apache.sis.internal.referencing.provider.Geographic2Dto3D
 org.apache.sis.internal.referencing.provider.GeographicOffsets
 org.apache.sis.internal.referencing.provider.GeographicOffsets2D
 org.apache.sis.internal.referencing.provider.VerticalOffset
@@ -11,12 +12,12 @@ org.apache.sis.internal.referencing.provider.PositionVector7Param
 org.apache.sis.internal.referencing.provider.CoordinateFrameRotation
 org.apache.sis.internal.referencing.provider.GeographicToGeocentric
 org.apache.sis.internal.referencing.provider.GeocentricToGeographic
-org.apache.sis.internal.referencing.provider.GeocentricTranslation2D
 org.apache.sis.internal.referencing.provider.GeocentricTranslation3D
-org.apache.sis.internal.referencing.provider.PositionVector7Param2D
+org.apache.sis.internal.referencing.provider.GeocentricTranslation2D
 org.apache.sis.internal.referencing.provider.PositionVector7Param3D
-org.apache.sis.internal.referencing.provider.CoordinateFrameRotation2D
+org.apache.sis.internal.referencing.provider.PositionVector7Param2D
 org.apache.sis.internal.referencing.provider.CoordinateFrameRotation3D
+org.apache.sis.internal.referencing.provider.CoordinateFrameRotation2D
 org.apache.sis.internal.referencing.provider.Molodensky
 org.apache.sis.internal.referencing.provider.AbridgedMolodensky
 org.apache.sis.internal.referencing.provider.Equirectangular
@@ -42,3 +43,4 @@ org.apache.sis.internal.referencing.provider.ObliqueStereographic
 org.apache.sis.internal.referencing.provider.NTv2
 org.apache.sis.internal.referencing.provider.NADCON
 org.apache.sis.internal.referencing.provider.FranceGeocentricInterpolation
+org.apache.sis.internal.referencing.provider.Interpolation1D

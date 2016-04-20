@@ -259,7 +259,7 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
             formula = new DefaultFormula((CharSequence) value);
         } else {
             throw new IllegalArgumentException(Errors.getResources(properties)
-                    .getString(Errors.Keys.IllegalPropertyClass_2, FORMULA_KEY, value.getClass()));
+                    .getString(Errors.Keys.IllegalPropertyValueClass_2, FORMULA_KEY, value.getClass()));
         }
         this.parameters       = parameters;
         this.sourceDimensions = sourceDimensions;

@@ -30,10 +30,9 @@ import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.referencing.operation.OperationMethod;
-import org.opengis.referencing.operation.CoordinateOperationFactory;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.jaxb.gco.PropertyType;
-import org.apache.sis.internal.system.DefaultFactories;
+import org.apache.sis.internal.referencing.CoordinateOperations;
 import org.apache.sis.internal.referencing.provider.MapProjection;
 import org.apache.sis.parameter.DefaultParameterValue;
 import org.apache.sis.parameter.DefaultParameterValueGroup;
@@ -50,7 +49,7 @@ import org.apache.sis.util.ArraysExt;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.6
- * @version 0.6
+ * @version 0.7
  * @module
  */
 public final class CC_OperationMethod extends PropertyType<CC_OperationMethod, OperationMethod> {
@@ -180,13 +179,13 @@ public final class CC_OperationMethod extends PropertyType<CC_OperationMethod, O
      * @return A parameter group containing at least the given descriptors, or equivalent descriptors.
      */
     public static ParameterDescriptorGroup group(final Identifier name, final GeneralParameterDescriptor[] descriptors) {
-        final CoordinateOperationFactory factory = DefaultFactories.forClass(CoordinateOperationFactory.class);
-        OperationMethod method = null;
-        if (factory != null) try {
-            method = factory.getOperationMethod(name.getCode());
+        OperationMethod method;
+        try {
+            method = CoordinateOperations.factory().getOperationMethod(name.getCode());
         } catch (FactoryException e) {
             // Use DefaultOperationMethod as the source class because it is the first public class in callers.
             Context.warningOccured(Context.current(), DefaultOperationMethod.class, "setDescriptors", e, true);
+            method = null;
         }
         final Map<String,?> properties = Collections.singletonMap(ParameterDescriptorGroup.NAME_KEY, name);
         if (method != null) {

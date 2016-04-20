@@ -313,7 +313,7 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
                 }
             }
         }
-        this.crs = crs; // Set only on success.
+        this.crs = crs;                                             // Set only on success.
     }
 
     /**
@@ -326,7 +326,7 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      * @throws IllegalArgumentException If {@code lower > upper} and the axis range meaning at the given dimension
      *         is not "wraparound". See <cite>Envelope validation</cite> in class javadoc for more details.
      */
-    @Override // Must also be overridden in SubEnvelope
+    @Override                                                           // Must also be overridden in SubEnvelope
     public void setRange(final int dimension, final double lower, final double upper)
             throws IndexOutOfBoundsException
     {
@@ -433,8 +433,7 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      *
      * @see #isAllNaN()
      */
-    // Must be overridden in SubEnvelope
-    public void setToNaN() {
+    public void setToNaN() {                   // Must be overridden in SubEnvelope
         Arrays.fill(ordinates, Double.NaN);
         assert isAllNaN() : this;
     }
@@ -523,7 +522,7 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
             final double value = position.getOrdinate(i);
             final double min = ordinates[iLower];
             final double max = ordinates[iUpper];
-            if (!isNegative(max - min)) { // Standard case, or NaN.
+            if (!isNegative(max - min)) {                       // Standard case, or NaN.
                 if (value < min) ordinates[iLower] = value;
                 if (value > max) ordinates[iUpper] = value;
             } else {
@@ -622,7 +621,7 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
                 if (min1 < min0) ordinates[iLower] = min1;
                 if (max1 > max0) ordinates[iUpper] = max1;
                 if (!sp0 || isNegativeUnsafe(ordinates[iUpper] - ordinates[iLower])) {
-                    continue; // We are done, go to the next dimension.
+                    continue;               // We are done, go to the next dimension.
                 }
                 // If we were spanning the anti-meridian before the union but
                 // are not anymore after the union, we actually merged to two
@@ -638,8 +637,8 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
                  *     └────┘  │  │
                  *   ──────────┘  └─────
                  */
-                if (max1 <= max0) continue;  // This is the case of above picture.
-                if (min1 >= min0) continue;  // Like above picture, but on the right side.
+                if (max1 <= max0) continue;             // This is the case of above picture.
+                if (min1 >= min0) continue;             // Like above picture, but on the right side.
                 /*
                  * At this point, the given envelope partially overlaps the "exclusion area"
                  * of this envelope or has NaN values. We will move at most one edge of this
@@ -655,8 +654,8 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
                     // The < and > checks below are not completly redundant.
                     // The difference is when a value is NaN.
                     if (left > right) ordinates[iLower] = min1;
-                    if (right > left) ordinates[iUpper] = max1; // This is the case illustrated above.
-                    continue; // We are done, go to the next dimension.
+                    if (right > left) ordinates[iUpper] = max1;     // This is the case illustrated above.
+                    continue;                                       // We are done, go to the next dimension.
                 }
                 // If we reach this point, the given envelope fills completly the "exclusion area"
                 // of this envelope. As a consequence this envelope is now spanning to infinities.
@@ -729,7 +728,7 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
             final double max1  = upper.getOrdinate(i);
             final double span0 = max0 - min0;
             final double span1 = max1 - min1;
-            if (isSameSign(span0, span1)) { // Always 'false' if any value is NaN.
+            if (isSameSign(span0, span1)) {                 // Always 'false' if any value is NaN.
                 /*
                  * First, verify that the two envelopes intersect.
                  *     ┌──────────┐             ┌─────────────┐
@@ -757,7 +756,7 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
                     continue;
                 }
             } else {
-                int intersect = 0; // A bitmask of intersections (two bits).
+                int intersect = 0;                          // A bitmask of intersections (two bits).
                 if (!Double.isNaN(span0) && !Double.isNaN(span1)) {
                     if (isNegativeUnsafe(span0)) {
                         /*

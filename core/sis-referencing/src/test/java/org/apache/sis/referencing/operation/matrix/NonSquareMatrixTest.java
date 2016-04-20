@@ -17,14 +17,13 @@
 package org.apache.sis.referencing.operation.matrix;
 
 import java.util.Random;
-import org.opengis.test.Assert;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestUtilities;
 import org.junit.AfterClass;
 import org.junit.Test;
 
 import static java.lang.Double.NaN;
-import static org.junit.Assert.*;
+import static org.opengis.test.Assert.*;
 
 
 /**
@@ -103,12 +102,12 @@ public final strictfp class NonSquareMatrixTest extends MatrixTestCase {
             0, 0, 1
         });
         MatrixSIS inverse = m.inverse();
-        Assert.assertMatrixEquals("Inverse of non-square matrix.", new NonSquareMatrix(3, 5, new double[] {
+        assertMatrixEquals("Inverse of non-square matrix.", new NonSquareMatrix(3, 5, new double[] {
             0.5, 0,   0,    0,   0,
             0,   0,   0.25, 0,   0,
             0,   0,   0,    0,   1}), inverse, STRICT);
 
-        Assert.assertMatrixEquals("Back to original.", new NonSquareMatrix(5, 3, new double[] {
+        assertMatrixEquals("Back to original.", new NonSquareMatrix(5, 3, new double[] {
             2, 0, 0,
             0, 0, NaN,
             0, 4, 0,

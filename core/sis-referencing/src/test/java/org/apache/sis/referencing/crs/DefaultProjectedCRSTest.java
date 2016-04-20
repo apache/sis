@@ -29,6 +29,7 @@ import org.opengis.parameter.ParameterValueGroup;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.cs.HardCodedCS;
+import org.apache.sis.referencing.factory.InvalidGeodeticParameterException;
 import org.apache.sis.internal.referencing.GeodeticObjectBuilder;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.system.Loggers;
@@ -88,6 +89,25 @@ public final strictfp class DefaultProjectedCRSTest extends XMLTestCase {
     private static final String XML_FILE = "ProjectedCRS.xml";
 
     /**
+     * Creates a projected CRS and verifies its parameters.
+     * Verifies also that the constructor does not accept invalid base CRS.
+     *
+     * @throws FactoryException if the CRS creation failed.
+     */
+    @Test
+    public void testConstructor() throws FactoryException {
+        final ProjectedCRS crs = create(HardCodedCRS.NTF);
+        verifyParameters(crs.getConversionFromBase().getParameterValues());
+        try {
+            create(HardCodedCRS.WGS84_3D);
+            fail("Should not accept a three-dimensional base geodetic CRS.");
+        } catch (InvalidGeodeticParameterException e) {
+            final String message = e.getMessage();
+            assertTrue(message, message.contains("Lambert Conic Conformal (1SP)"));
+        }
+    }
+
+    /**
      * Creates the "NTF (Paris) / Lambert zone II" CRS. The prime meridian is always in grades,
      * but the axes can be in degrees or in grades depending if the {@code baseCRS} argument is
      * {@link HardCodedCRS.NTF_NORMALIZED_AXES} or {@link HardCodedCRS.NTF} respectively.
@@ -109,11 +129,24 @@ public final strictfp class DefaultProjectedCRSTest extends XMLTestCase {
     }
 
     /**
+     * Verifies the parameters of a {@code ProjectedCRS} created by the {@link #create(GeographicCRS)} method
+     * or something equivalent.
+     */
+    private static void verifyParameters(final ParameterValueGroup pg) {
+        assertEquals("Latitude of natural origin",    52,          pg.parameter("Latitude of natural origin")    .doubleValue(NonSI.GRADE), STRICT);
+        assertEquals("Longitude of natural origin",    0,          pg.parameter("Longitude of natural origin")   .doubleValue(NonSI.GRADE), STRICT);
+        assertEquals("Scale factor at natural origin", 0.99987742, pg.parameter("Scale factor at natural origin").doubleValue(),            STRICT);
+        assertEquals("False easting",             600000,          pg.parameter("False easting")                 .doubleValue(SI.METRE),    STRICT);
+        assertEquals("False northing",           2200000,          pg.parameter("False northing")                .doubleValue(SI.METRE),    STRICT);
+    }
+
+    /**
      * Tests WKT 1 formatting.
      *
      * @throws FactoryException if the CRS creation failed.
      */
     @Test
+    @DependsOnMethod("testConstructor")
     public void testWKT1() throws FactoryException {
         final ProjectedCRS crs = create(HardCodedCRS.NTF);
         assertWktEquals(Convention.WKT1,
@@ -447,16 +480,10 @@ public final strictfp class DefaultProjectedCRSTest extends XMLTestCase {
         assertAxisDirectionsEqual("coordinateSystem", crs.getCoordinateSystem(), AxisDirection.EAST, AxisDirection.NORTH);
 
         final Projection conversion = crs.getConversionFromBase();
-        final ParameterValueGroup pg = conversion.getParameterValues();
         assertEpsgNameAndIdentifierEqual("Lambert zone II", 18082, conversion);
         assertEpsgNameAndIdentifierEqual("Lambert Conic Conformal (1SP)", 9801, conversion.getMethod());
-        assertEquals("Latitude of natural origin",    52,          pg.parameter("Latitude of natural origin")    .doubleValue(NonSI.GRADE), STRICT);
-        assertEquals("Longitude of natural origin",    0,          pg.parameter("Longitude of natural origin")   .doubleValue(NonSI.GRADE), STRICT);
-        assertEquals("Scale factor at natural origin", 0.99987742, pg.parameter("Scale factor at natural origin").doubleValue(),            STRICT);
-        assertEquals("False easting",             600000,          pg.parameter("False easting")                 .doubleValue(SI.METRE),    STRICT);
-        assertEquals("False northing",           2200000,          pg.parameter("False northing")                .doubleValue(SI.METRE),    STRICT);
-
         assertNotNull("conversion.mathTransform", conversion.getMathTransform());
+        verifyParameters(conversion.getParameterValues());
         /*
          * Test marshalling and compare with the original file. The comparison ignores the <gml:name> nodes because the
          * marshalled CRS contains many operation method and parameter aliases which were not in the original XML file.

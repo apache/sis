@@ -36,7 +36,7 @@ import static org.apache.sis.referencing.IdentifiedObjects.getProperties;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.5
+ * @version 0.7
  * @module
  */
 public final strictfp class HardCodedCRS {
@@ -109,6 +109,38 @@ public final strictfp class HardCodedCRS {
             HardCodedDatum.NTF, HardCodedCS.GEODETIC_2D);
 
     /**
+     * A three-dimensional geographic coordinate reference system using the Tokyo datum.
+     * This CRS uses (<var>longitude</var>, <var>latitude</var>, <var>height</var>) ordinates
+     * with longitude values increasing towards the East, latitude values increasing towards
+     * the North and ellipsoidal eight increasing toward up.
+     * The angular units are decimal degrees and the linear units are metres.
+     *
+     * <p>This CRS is equivalent to {@code EPSG:4301} except for axis order and the addition
+     * of ellipsoidal height.</p>
+     *
+     * @since 0.7
+     */
+    public static final DefaultGeographicCRS TOKYO = new DefaultGeographicCRS(
+            Collections.singletonMap(DefaultGeographicCRS.NAME_KEY, "Tokyo"),
+            HardCodedDatum.TOKYO, HardCodedCS.GEODETIC_3D);
+
+    /**
+     * A two-dimensional geographic coordinate reference system using the JGD2000 datum.
+     * This CRS uses (<var>longitude</var>, <var>latitude</var>, <var>height</var>) ordinates
+     * with longitude values increasing towards the East, latitude values increasing towards
+     * the North and ellipsoidal eight increasing toward up.
+     * The angular units are decimal degrees and the linear units are metres.
+     *
+     * <p>This CRS is equivalent to {@code EPSG:4612} except for axis order and the addition
+     * of ellipsoidal height.</p>
+     *
+     * @since 0.7
+     */
+    public static final DefaultGeographicCRS JGD2000 = new DefaultGeographicCRS(
+            Collections.singletonMap(DefaultGeographicCRS.NAME_KEY, "JGD2000"),
+            HardCodedDatum.JGD2000, HardCodedCS.GEODETIC_3D);
+
+    /**
      * A two-dimensional geographic coordinate reference system using a spherical datum.
      * This CRS uses (<var>longitude</var>, <var>latitude</var>) ordinates with longitude values
      * increasing towards the East and latitude values increasing towards the North.
@@ -159,6 +191,18 @@ public final strictfp class HardCodedCRS {
      */
     public static final DefaultVerticalCRS ELLIPSOIDAL_HEIGHT = new DefaultVerticalCRS(
             getProperties(HardCodedCS.ELLIPSOIDAL_HEIGHT), HardCodedDatum.ELLIPSOID, HardCodedCS.ELLIPSOIDAL_HEIGHT);
+
+    /**
+     * A vertical coordinate reference system using ellipsoidal datum.
+     * Ellipsoidal heights are measured along the normal to the ellipsoid used in the definition of horizontal datum.
+     *
+     * <p>This is not a valid vertical CRS according ISO 19111.
+     * This CRS is used by Apache SIS for internal calculation.</p>
+     *
+     * @since 0.7
+     */
+    public static final DefaultVerticalCRS ELLIPSOIDAL_HEIGHT_cm = new DefaultVerticalCRS(
+            getProperties(HardCodedCS.ELLIPSOIDAL_HEIGHT_cm), HardCodedDatum.ELLIPSOID, HardCodedCS.ELLIPSOIDAL_HEIGHT_cm);
 
     /**
      * A vertical coordinate reference system using Mean Sea Level datum.
