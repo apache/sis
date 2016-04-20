@@ -51,7 +51,9 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * The CRS is geographic if associated with an ellipsoidal coordinate system,
  * or geocentric if associated with a spherical or Cartesian coordinate system.
  *
- * <p><b>Used with coordinate system types:</b>
+ * <p><b>Used with datum type:</b>
+ *   {@linkplain org.apache.sis.referencing.datum.DefaultGeodeticDatum Geodetic}.<br>
+ * <b>Used with coordinate system types:</b>
  *   {@linkplain org.apache.sis.referencing.cs.DefaultCartesianCS Cartesian},
  *   {@linkplain org.apache.sis.referencing.cs.DefaultSphericalCS Spherical} or
  *   {@linkplain org.apache.sis.referencing.cs.DefaultEllipsoidalCS Ellipsoidal}.

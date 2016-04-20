@@ -97,6 +97,7 @@ import java.util.Objects;
     DefaultGeodeticCRS.class,
     DefaultVerticalCRS.class,
     DefaultTemporalCRS.class,
+    DefaultParametricCRS.class,
     DefaultEngineeringCRS.class,
     DefaultImageCRS.class,
     DefaultCompoundCRS.class
@@ -159,12 +160,12 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
      *     <td>{@link #getRemarks()}</td>
      *   </tr>
      *   <tr>
-     *     <td>{@value org.opengis.referencing.datum.Datum#DOMAIN_OF_VALIDITY_KEY}</td>
+     *     <td>{@value org.opengis.referencing.ReferenceSystem#DOMAIN_OF_VALIDITY_KEY}</td>
      *     <td>{@link org.opengis.metadata.extent.Extent}</td>
      *     <td>{@link #getDomainOfValidity()}</td>
      *   </tr>
      *   <tr>
-     *     <td>{@value org.opengis.referencing.datum.Datum#SCOPE_KEY}</td>
+     *     <td>{@value org.opengis.referencing.ReferenceSystem#SCOPE_KEY}</td>
      *     <td>{@link org.opengis.util.InternationalString} or {@link String}</td>
      *     <td>{@link #getScope()}</td>
      *   </tr>

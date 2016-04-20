@@ -70,7 +70,7 @@ public final class VerticalOffset extends GeographicOffsets {
      * Constructs a provider with default parameters.
      */
     public VerticalOffset() {
-        super(1, PARAMETERS);
+        super(1, 1, PARAMETERS, null);
     }
 
     /**

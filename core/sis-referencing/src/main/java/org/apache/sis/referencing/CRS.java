@@ -44,6 +44,8 @@ import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.apache.sis.internal.metadata.AxisDirections;
+import org.apache.sis.internal.referencing.PositionalAccuracyConstant;
+import org.apache.sis.internal.referencing.CoordinateOperations;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.referencing.cs.DefaultVerticalCS;
@@ -51,6 +53,7 @@ import org.apache.sis.referencing.cs.DefaultEllipsoidalCS;
 import org.apache.sis.referencing.crs.DefaultGeographicCRS;
 import org.apache.sis.referencing.crs.DefaultVerticalCRS;
 import org.apache.sis.referencing.crs.DefaultCompoundCRS;
+import org.apache.sis.referencing.operation.AbstractCoordinateOperation;
 import org.apache.sis.referencing.operation.CoordinateOperationContext;
 import org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory;
 import org.apache.sis.referencing.factory.UnavailableFactoryException;
@@ -66,12 +69,33 @@ import static java.util.Collections.singletonMap;
 
 /**
  * Static methods working on {@linkplain CoordinateReferenceSystem Coordinate Reference Systems}.
- * The methods defined in this class can be grouped in two categories:
+ * The methods defined in this class can be grouped in three categories:
  *
  * <ul>
  *   <li>Factory methods, the most notable one being {@link #forCode(String)}.</li>
  *   <li>Methods providing information, like {@link #isHorizontalCRS(CoordinateReferenceSystem)}.</li>
+ *   <li>Finding coordinate operations between a source and a target CRS.</li>
  * </ul>
+ *
+ * <div class="section">Usage example</div>
+ * The most frequently used methods in this class are {@link #forCode forCode(…)}, {@link #fromWKT fromWKT(…)}
+ * and {@link #findOperation findOperation(…)}. An usage example is like below
+ * (see the <a href="http://sis.apache.org/book/tables/CoordinateReferenceSystems.html">Apache SIS™ Coordinate
+ * Reference System (CRS) codes</a> page for the complete list of EPSG codes):
+ *
+ * {@preformat java
+ *   CoordinateReferenceSystem source = CRS.forCode("EPSG:4326");                   // WGS 84
+ *   CoordinateReferenceSystem target = CRS.forCode("EPSG:3395");                   // WGS 84 / World Mercator
+ *   CoordinateOperation operation = CRS.findOperation(source, target, null);
+ *   if (CRS.getLinearAccuracy(operation) > 100) {
+ *       // If the accuracy is coarser than 100 metres (or any other threshold at application choice)
+ *       // maybe the operation is not suitable. Decide here what to do (throw an exception, etc).
+ *   }
+ *   MathTransform mt = operation.getMathTransform();
+ *   DirectPosition position = new DirectPosition2D(20, 30);            // 20°N 30°E   (watch out axis order!)
+ *   position = mt.transform(position, position);
+ *   System.out.println(position);
+ * }
  *
  * <div class="section">Note on kinds of CRS</div>
  * The {@link #getSingleComponents(CoordinateReferenceSystem)} method decomposes an arbitrary CRS into a flat
@@ -101,9 +125,10 @@ public final class CRS extends Static {
     /**
      * Returns the Coordinate Reference System for the given authority code.
      * The set of available codes depends on the {@link CRSAuthorityFactory} instances available on the classpath.
-     * There is many thousands of CRS defined by EPSG authority or by other authorities.
+     * There is many thousands of <a href="http://sis.apache.org/book/tables/CoordinateReferenceSystems.html">CRS
+     * defined by EPSG authority or by other authorities</a>.
      * The following table lists a very small subset of codes which are guaranteed to be available
-     * on any installation of Apache SIS version 0.4 or above:
+     * on any installation of Apache SIS:
      *
      * <blockquote><table class="sis">
      *   <caption>Minimal set of supported authority codes</caption>
@@ -218,14 +243,141 @@ public final class CRS extends Static {
     }
 
     /**
-     * Returns the valid geographic area for the given coordinate reference system, or {@code null} if unknown.
-     * This method explores the {@linkplain CoordinateReferenceSystem#getDomainOfValidity() domain of validity}
-     * associated with the given CRS. If more than one geographic bounding box is found, then they will be
-     * {@linkplain org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox#add(GeographicBoundingBox)
-     * added} together.
+     * Creates a coordinate reference system object from a XML string.
+     * Note that the given argument is the XML document itself, <strong>not</strong> a URL to a XML document.
+     * For reading XML documents from readers or input streams,
+     * see static methods in the {@link org.apache.sis.xml.XML} class.
      *
-     * @param  crs The coordinate reference system, or {@code null}.
-     * @return The geographic area, or {@code null} if none.
+     * @param  xml Coordinate reference system encoded in XML format.
+     * @return The unmarshalled Coordinate Reference System.
+     * @throws FactoryException if the object creation failed.
+     *
+     * @see org.apache.sis.xml.XML#unmarshal(String)
+     *
+     * @since 0.7
+     */
+    public static CoordinateReferenceSystem fromXML(final String xml) throws FactoryException {
+        ArgumentChecks.ensureNonNull("text", xml);
+        return DefaultFactories.forBuildin(CRSFactory.class).createFromXML(xml);
+    }
+
+    /**
+     * Finds a mathematical operation that transforms or converts coordinates from the given source to the
+     * given target coordinate reference system. If an estimation of the geographic area containing the points
+     * to transform is known, it can be specified for helping this method to find a better suited operation.
+     *
+     * <div class="note"><b>Note:</b>
+     * the area of interest is just one aspect that may affect the coordinate operation.
+     * Other aspects are the time of interest (because some coordinate operations take in account the
+     * plate tectonics movement) or the desired accuracy. For more control on the coordinate operation
+     * to create, see {@link CoordinateOperationContext}.</div>
+     *
+     * After the caller received a {@code CoordinateOperation} instance, the following methods can be invoked
+     * for checking if the operation suits the caller's needs:
+     *
+     * <ul>
+     *   <li>{@link #getGeographicBoundingBox(CoordinateOperation)}
+     *       for checking if the operation is valid in the caller's area of interest.</li>
+     *   <li>{@link #getLinearAccuracy(CoordinateOperation)}
+     *       for checking if the operation has sufficient accuracy for caller's purpose.</li>
+     * </ul>
+     *
+     * @param  sourceCRS      the CRS of source coordinates.
+     * @param  targetCRS      the CRS of target coordinates.
+     * @param  areaOfInterest the area of interest, or {@code null} if none.
+     * @return the mathematical operation from {@code sourceCRS} to {@code targetCRS}.
+     * @throws FactoryException if the operation can not be created.
+     *
+     * @see DefaultCoordinateOperationFactory#createOperation(CoordinateReferenceSystem, CoordinateReferenceSystem, CoordinateOperationContext)
+     *
+     * @since 0.7
+     */
+    public static CoordinateOperation findOperation(final CoordinateReferenceSystem sourceCRS,
+                                                    final CoordinateReferenceSystem targetCRS,
+                                                    final GeographicBoundingBox areaOfInterest)
+            throws FactoryException
+    {
+        ArgumentChecks.ensureNonNull("sourceCRS", sourceCRS);
+        ArgumentChecks.ensureNonNull("targetCRS", targetCRS);
+        CoordinateOperationContext context = null;
+        if (areaOfInterest != null) {
+            if (areaOfInterest instanceof DefaultGeographicBoundingBox && ((DefaultGeographicBoundingBox) areaOfInterest).isEmpty()) {
+                throw new IllegalArgumentException(Errors.format(Errors.Keys.EmptyArgument_1, "areaOfInterest"));
+            }
+            context = new CoordinateOperationContext();
+            context.setAreaOfInterest(areaOfInterest);
+        }
+        return CoordinateOperations.factory().createOperation(sourceCRS, targetCRS, context);
+    }
+
+    /**
+     * Returns a positional accuracy estimation in metres for the given operation, or {@code NaN} if unknown.
+     * This method applies the following heuristics:
+     *
+     * <ul>
+     *   <li>If the given operation is an instance of {@link AbstractCoordinateOperation}, then delegate to the
+     *       operation {@link AbstractCoordinateOperation#getLinearAccuracy() getLinearAccuracy()} method.</li>
+     *
+     *   <li>Otherwise if at least one {@linkplain org.apache.sis.metadata.iso.quality.DefaultQuantitativeResult
+     *       quantitative result} is found with a linear unit, then return the largest value converted to metres.</li>
+     *
+     *   <li>Otherwise if the operation is a {@linkplain org.apache.sis.referencing.operation.DefaultConversion
+     *       conversion}, then returns 0 since a conversion is by definition accurate up to rounding errors.</li>
+     *
+     *   <li>Otherwise if the operation is a {@linkplain org.apache.sis.referencing.operation.DefaultTransformation
+     *       transformation}, then the returned value depends on whether the datum shift were applied with the help
+     *       of Bursa-Wolf parameters of not.</li>
+     * </ul>
+     *
+     * See {@link AbstractCoordinateOperation#getLinearAccuracy()} for more details on the above heuristic rules.
+     *
+     * @param  operation The coordinate operation for which to get the accuracy estimation, or {@code null}.
+     * @return The accuracy estimation (always in meters), or NaN if unknown.
+     *
+     * @see #findOperation(CoordinateReferenceSystem, CoordinateReferenceSystem, GeographicBoundingBox)
+     *
+     * @since 0.7
+     */
+    public static double getLinearAccuracy(final CoordinateOperation operation) {
+        if (operation == null) {
+            return Double.NaN;
+        } else if (operation instanceof AbstractCoordinateOperation) {
+            return ((AbstractCoordinateOperation) operation).getLinearAccuracy();
+        } else {
+            return PositionalAccuracyConstant.getLinearAccuracy(operation);
+        }
+    }
+
+    /**
+     * Returns the valid geographic area for the given coordinate operation, or {@code null} if unknown.
+     * This method explores the {@linkplain AbstractCoordinateOperation#getDomainOfValidity() domain of validity}
+     * associated with the given operation. If more than one geographic bounding box is found, then they will be
+     * {@linkplain org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox#add(GeographicBoundingBox) added}
+     * together.
+     *
+     * @param  operation The coordinate operation for which to get the domain of validity, or {@code null}.
+     * @return The geographic area where the operation is valid, or {@code null} if unspecified.
+     *
+     * @see #findOperation(CoordinateReferenceSystem, CoordinateReferenceSystem, GeographicBoundingBox)
+     * @see Extents#getGeographicBoundingBox(Extent)
+     *
+     * @category information
+     *
+     * @since 0.7
+     */
+    public static GeographicBoundingBox getGeographicBoundingBox(final CoordinateOperation operation) {
+        return (operation != null) ? Extents.getGeographicBoundingBox(operation.getDomainOfValidity()) : null;
+    }
+
+    /**
+     * Returns the valid geographic area for the given coordinate reference system, or {@code null} if unknown.
+     * This method explores the {@linkplain org.apache.sis.referencing.crs.AbstractCRS#getDomainOfValidity() domain of
+     * validity} associated with the given CRS. If more than one geographic bounding box is found, then they will be
+     * {@linkplain org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox#add(GeographicBoundingBox) added}
+     * together.
+     *
+     * @param  crs The coordinate reference system for which to get the domain of validity, or {@code null}.
+     * @return The geographic area where the coordinate reference system is valid, or {@code null} if unspecified.
      *
      * @see #getEnvelope(CoordinateReferenceSystem)
      * @see Extents#getGeographicBoundingBox(Extent)
@@ -595,44 +747,5 @@ check:  while (lower != 0 || upper != dimension) {
             return AuthorityFactories.ALL;
         }
         return AuthorityFactories.ALL.getAuthorityFactory(CRSAuthorityFactory.class, authority, null);
-    }
-
-    /**
-     * Finds a mathematical operation that transforms or converts coordinates from the given source to the
-     * given target coordinate reference system. If an estimation of the geographic area containing the points
-     * to transform is known, it can be specified for helping this method to find a better suited operation.
-     *
-     * <p>Note that the area of interest is just one aspect that may affect the coordinate operation.
-     * Other aspects are the time of interest (because some coordinate operations take in account the
-     * plate tectonics movement) or the desired accuracy. For more control on the coordinate operation
-     * to create, see {@link CoordinateOperationContext}.</p>
-     *
-     * @param  sourceCRS      the CRS of source coordinates.
-     * @param  targetCRS      the CRS of target coordinates.
-     * @param  areaOfInterest the area of interest, or {@code null} if none.
-     * @return the mathematical operation from {@code sourceCRS} to {@code targetCRS}.
-     * @throws FactoryException if the operation can not be created.
-     *
-     * @see DefaultCoordinateOperationFactory#createOperation(CoordinateReferenceSystem, CoordinateReferenceSystem, CoordinateOperationContext)
-     *
-     * @since 0.7
-     */
-    public static CoordinateOperation findOperation(final CoordinateReferenceSystem sourceCRS,
-                                                    final CoordinateReferenceSystem targetCRS,
-                                                    final GeographicBoundingBox areaOfInterest)
-            throws FactoryException
-    {
-        ArgumentChecks.ensureNonNull("sourceCRS", sourceCRS);
-        ArgumentChecks.ensureNonNull("targetCRS", targetCRS);
-        CoordinateOperationContext context = null;
-        if (areaOfInterest != null) {
-            final DefaultGeographicBoundingBox bbox = DefaultGeographicBoundingBox.castOrCopy(areaOfInterest);
-            if (bbox.isEmpty()) {
-                throw new IllegalArgumentException(Errors.format(Errors.Keys.EmptyArgument_1, "areaOfInterest"));
-            }
-            context = new CoordinateOperationContext();
-            context.setGeographicBoundingBox(bbox);
-        }
-        return CoordinateOperations.factory.createOperation(sourceCRS, targetCRS, context);
     }
 }

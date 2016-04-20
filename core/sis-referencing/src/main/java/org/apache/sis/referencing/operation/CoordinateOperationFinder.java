@@ -18,6 +18,7 @@ package org.apache.sis.referencing.operation;
 
 import java.util.Map;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Collections;
 import javax.measure.unit.Unit;
 import javax.measure.quantity.Duration;
@@ -29,19 +30,17 @@ import org.opengis.referencing.crs.*;
 import org.opengis.referencing.datum.*;
 import org.opengis.referencing.operation.*;
 import org.opengis.metadata.Identifier;
-import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.extent.GeographicBoundingBox;
-import org.opengis.metadata.quality.PositionalAccuracy;
 import org.opengis.parameter.ParameterValueGroup;
-import org.opengis.parameter.ParameterDescriptorGroup;
+import org.apache.sis.internal.metadata.AxisDirections;
+import org.apache.sis.internal.metadata.VerticalDatumTypes;
 import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
-import org.apache.sis.internal.referencing.PositionalAccuracyConstant;
+import org.apache.sis.internal.referencing.provider.Geographic2Dto3D;
+import org.apache.sis.internal.referencing.provider.Geographic3Dto2D;
 import org.apache.sis.internal.referencing.provider.GeographicToGeocentric;
 import org.apache.sis.internal.referencing.provider.GeocentricToGeographic;
 import org.apache.sis.internal.referencing.provider.GeocentricAffine;
-import org.apache.sis.internal.referencing.provider.Affine;
-import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.measure.Units;
 import org.apache.sis.metadata.iso.citation.Citations;
@@ -55,7 +54,6 @@ import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.referencing.datum.BursaWolfParameters;
 import org.apache.sis.referencing.datum.DefaultGeodeticDatum;
 import org.apache.sis.referencing.operation.matrix.Matrices;
-import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
@@ -63,13 +61,39 @@ import org.apache.sis.util.resources.Vocabulary;
 
 import static org.apache.sis.util.Utilities.equalsIgnoreMetadata;
 
-// Branch-dependent imports
-import java.util.Objects;
-import org.apache.sis.internal.jdk8.JDK8;
-
 
 /**
- * Infers a conversion of transformation path from a source CRS to a target CRS.
+ * Finds a conversion or transformation path from a source CRS to a target CRS.
+ * This class implements two strategies for searching the coordinate operation:
+ *
+ * <ol class="verbose">
+ *   <li>When <code>{@linkplain #createOperation createOperation}(sourceCRS, targetCRS)</code> is invoked,
+ *       this class first {@linkplain org.apache.sis.referencing.factory.IdentifiedObjectFinder tries to
+ *       find the authority codes} for the given source and target CRS. If such codes are found, they are
+ *       {@linkplain org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createFromCoordinateReferenceSystemCodes
+ *       submitted to a registry of coordinate operations}. If an operation is found, it will be returned.
+ *
+ *       <div class="note"><b>Note:</b> the above is known as the <cite>late-binding</cite> approach.
+ *       The late-binding approach allows the authority to define better suited operations than what
+ *       we would get if we were transforming everything from and to a pivot system (e.g. WGS84).
+ *       In addition, this approach provides useful informations like the coordinate operation
+ *       {@linkplain AbstractCoordinateOperation#getScope() scope} and
+ *       {@linkplain AbstractCoordinateOperation#getDomainOfValidity() domain of validity},
+ *       {@linkplain AbstractCoordinateOperation#getCoordinateOperationAccuracy() accuracy}.</div>
+ *   </li>
+ *   <li>If the above authority factory does not know about the specified CRS, then this class tries to
+ *       infer the coordinate operation by itself. The CRS type is examined and the work is dispatched
+ *       to one or many of the {@code createOperationStep(…)} protected methods defined in this class.
+ *       Those methods use properties associated to the CRS, including {@code BOUNDCRS} or {@code TOWGS84}
+ *       elements found in <cite>Well Known Text</cite> (WKT).
+ *
+ *       <div class="note"><b>Note:</b> the use of elements like {@code TOWGS84} is known as the
+ *       <cite>early-binding</cite> approach. The operation found by this approach may be sub-optimal.
+ *       The early-binding approach is used only as a fallback when the late-binding approach gave no result.</div>
+ *   </li>
+ * </ol>
+ *
+ * <div class="section">Customization</div>
  * Instances of this class are created by {@link DefaultCoordinateOperationFactory}.
  * The only public method is {@link #createOperation(CoordinateReferenceSystem, CoordinateReferenceSystem)},
  * which dispatches its work to the {@code createOperationStep(…)} protected methods.
@@ -88,7 +112,7 @@ import org.apache.sis.internal.jdk8.JDK8;
  *
  * @see DefaultCoordinateOperationFactory#createOperation(CoordinateReferenceSystem, CoordinateReferenceSystem, CoordinateOperationContext)
  */
-public class CoordinateOperationInference {
+public class CoordinateOperationFinder extends CoordinateOperationRegistry {
     /**
      * The accuracy threshold (in metres) for allowing the use of Molodensky approximation instead than the
      * Geocentric Translation method. The accuracy of datum shifts with Molodensky approximation is about 5
@@ -101,74 +125,19 @@ public class CoordinateOperationInference {
     private static final double MOLODENSKY_ACCURACY = 5;
 
     /**
-     * The identifier for an identity operation.
-     */
-    private static final Identifier IDENTITY = createIdentifier(Vocabulary.Keys.Identity);
-
-    /**
-     * The identifier for conversion using an affine transform for axis swapping and/or unit conversions.
-     */
-    private static final Identifier AXIS_CHANGES = createIdentifier(Vocabulary.Keys.AxisChanges);
-
-    /**
-     * The identifier for a transformation which is a datum shift without {@link BursaWolfParameters}.
-     * Only the changes in ellipsoid axis-length are taken in account.
-     * Such ellipsoid shifts are approximative and may have 1 kilometre error.
+     * Identifiers used as the basis for identifier of CRS used as an intermediate step.
+     * The values can be of two kinds:
      *
-     * @see org.apache.sis.internal.referencing.PositionalAccuracyConstan#DATUM_SHIFT_OMITTED
-     */
-    private static final Identifier ELLIPSOID_CHANGE = createIdentifier(Vocabulary.Keys.EllipsoidChange);
-
-    /**
-     * The identifier for a transformation which is a datum shift.
+     * <ul>
+     *   <li>If the value is an instance of {@link Integer}, then this is the number
+     *       of identifiers derived from the identifier associated to the key.</li>
+     *   <li>Otherwise the key is itself an {@link Indentifier} derived from another
+     *       identifier, and the value is that identifier.</li>
+     * </ul>
      *
-     * @see org.apache.sis.internal.referencing.PositionalAccuracyConstant#DATUM_SHIFT_APPLIED
+     * @see #derivedFrom(IdentifiedObject)
      */
-    private static final Identifier DATUM_SHIFT = createIdentifier(Vocabulary.Keys.DatumShift);
-
-    /**
-     * The identifier for a geocentric conversion.
-     */
-    private static final Identifier GEOCENTRIC_CONVERSION = createIdentifier(Vocabulary.Keys.GeocentricConversion);
-
-    /**
-     * The identifier for an inverse operation.
-     */
-    private static final Identifier INVERSE_OPERATION = createIdentifier(Vocabulary.Keys.InverseOperation);
-
-    /**
-     * Creates an identifier in the Apache SIS namespace for the given vocabulary key.
-     */
-    private static Identifier createIdentifier(final short key) {
-        return new NamedIdentifier(Citations.SIS, Vocabulary.formatInternational(key));
-    }
-
-    /**
-     * The factory to use for creating coordinate operations.
-     */
-    private final CoordinateOperationFactory factory;
-
-    /**
-     * Used only when we need a SIS-specific method.
-     */
-    private final DefaultCoordinateOperationFactory factorySIS;
-
-    /**
-     * The spatio-temporal area of interest, or {@code null} if none.
-     */
-    private Extent areaOfInterest;
-
-    /**
-     * The geographic component of the area of interest, or {@code null} if none.
-     */
-    private GeographicBoundingBox bbox;
-
-    /**
-     * The desired accuracy in metres, or 0 for the best accuracy available.
-     *
-     * @see #MOLODENSKY_ACCURACY
-     */
-    private double desiredAccuracy;
+    private final Map<Identifier,Object> identifierOfStepCRS;
 
     /**
      * The pair of source and target CRS for which we already searched a coordinate operation.
@@ -179,29 +148,34 @@ public class CoordinateOperationInference {
     /**
      * Creates a new instance for the given factory and context.
      *
-     * @param factory The factory to use for creating coordinate operations.
-     * @param context The area of interest and desired accuracy, or {@code null} if none.
+     * @param  registry  the factory to use for creating operations as defined by authority, or {@code null} if none.
+     * @param  factory   the factory to use for creating operations not found in the registry.
+     * @param  context   the area of interest and desired accuracy, or {@code null} if none.
+     * @throws FactoryException if an error occurred while initializing this {@code CoordinateOperationFinder}.
      */
-    public CoordinateOperationInference(final CoordinateOperationFactory factory,
-                                        final CoordinateOperationContext context)
+    public CoordinateOperationFinder(final CoordinateOperationAuthorityFactory registry,
+                                     final CoordinateOperationFactory          factory,
+                                     final CoordinateOperationContext          context) throws FactoryException
     {
-        ArgumentChecks.ensureNonNull("factory", factory);
-        this.factory = factory;
-        factorySIS = (factory instanceof DefaultCoordinateOperationFactory) ? (DefaultCoordinateOperationFactory) factory
-                : DefaultFactories.forBuildin(CoordinateOperationFactory.class, DefaultCoordinateOperationFactory.class);
-        if (context != null) {
-            areaOfInterest  = context.getAreaOfInterest();
-            desiredAccuracy = context.getDesiredAccuracy();
-            bbox            = context.getGeographicBoundingBox();
-        }
-        previousSearches = new HashMap<>(4);
+        super(registry, factory, context);
+        identifierOfStepCRS = new HashMap<>(8);
+        previousSearches    = new HashMap<>(8);
     }
 
     /**
      * Infers an operation for conversion or transformation between two coordinate reference systems.
-     * This method inspects the given CRS and delegates the work to one or many {@code createOperationStep(…)} methods.
-     * Note that some {@code createOperationStep(…)} methods may callback this {@code createOperation(…)} method with
-     * another source or target CRS.
+     * If a non-null authority factory – the <cite>registry</cite> – has been specified at construction time,
+     * this method will first query that factory (<cite>late-binding</cite> approach – see class javadoc).
+     * If no operation has been found in the registry or if no registry has been specified to the constructor,
+     * this method inspects the given CRS and delegates the work to one or many {@code createOperationStep(…)}
+     * methods (<cite>early-binding</cite> approach).
+     *
+     * <p>At first, this method is invoked with the {@code sourceCRS} and {@code targetCRS} arguments given to the
+     * {@link DefaultCoordinateOperationFactory#createOperation(CoordinateReferenceSystem, CoordinateReferenceSystem,
+     * CoordinateOperationContext) CoordinateOperationFactory.createOperation(…)} method. But then, this method may
+     * be invoked recursively by some {@code createOperationStep(…)} methods with different source or target CRS,
+     * for example in order to process the {@linkplain org.apache.sis.referencing.crs.DefaultProjectedCRS#getBaseCRS()
+     * base geographic CRS} of a projected CRS.</p>
      *
      * @param  sourceCRS  input coordinate reference system.
      * @param  targetCRS  output coordinate reference system.
@@ -209,6 +183,7 @@ public class CoordinateOperationInference {
      * @throws OperationNotFoundException if no operation path was found from {@code sourceCRS} to {@code targetCRS}.
      * @throws FactoryException if the operation creation failed for some other reason.
      */
+    @Override
     public CoordinateOperation createOperation(final CoordinateReferenceSystem sourceCRS,
                                                final CoordinateReferenceSystem targetCRS)
             throws OperationNotFoundException, FactoryException
@@ -222,33 +197,15 @@ public class CoordinateOperationInference {
         if (previousSearches.put(key, Boolean.TRUE) != null) {
             throw new FactoryException(Errors.format(Errors.Keys.RecursiveCreateCallForCode_2, CoordinateOperation.class, key));
         }
+        GeographicBoundingBox bbox = Extents.getGeographicBoundingBox(areaOfInterest);
         if (bbox == null) {
             bbox = Extents.intersection(CRS.getGeographicBoundingBox(sourceCRS),
                                         CRS.getGeographicBoundingBox(targetCRS));
             areaOfInterest = CoordinateOperationContext.setGeographicBoundingBox(areaOfInterest, bbox);
         }
-        ////////////////////////////////////////////////////////////////////////////////
-        ////                                                                        ////
-        ////                        Compound  →  various CRS                        ////
-        ////                                                                        ////
-        ////  We check CompoundCRS first because experience shows that it produces  ////
-        ////  simpler transformation chains than if we check them last.             ////
-        ////                                                                        ////
-        ////////////////////////////////////////////////////////////////////////////////
-        if (sourceCRS instanceof CompoundCRS) {
-            final CompoundCRS source = (CompoundCRS) sourceCRS;
-            if (targetCRS instanceof CompoundCRS) {
-//              return createOperationStep(source, (CompoundCRS) targetCRS);
-            }
-            if (targetCRS instanceof SingleCRS) {
-//              return createOperationStep(source, (SingleCRS) targetCRS);
-            }
-        }
-        if (targetCRS instanceof CompoundCRS) {
-            final CompoundCRS target = (CompoundCRS) targetCRS;
-            if (sourceCRS instanceof SingleCRS) {
-//              return createOperationStep((SingleCRS) sourceCRS, target);
-            }
+        if (registry != null) {
+            final CoordinateOperation op = super.createOperation(sourceCRS, targetCRS);
+            if (op != null) return op;
         }
         ////////////////////////////////////////////////////////////////////////////////
         ////                                                                        ////
@@ -286,7 +243,7 @@ public class CoordinateOperationInference {
                 return createOperationStep(source, (GeodeticCRS) targetCRS);
             }
             if (targetCRS instanceof VerticalCRS) {
-//              return createOperationStep(source, (VerticalCRS) targetCRS);
+                return createOperationStep(source, (VerticalCRS) targetCRS);
             }
         }
         ////////////////////////////////////////////////////////////////////////////////
@@ -310,6 +267,15 @@ public class CoordinateOperationInference {
             if (targetCRS instanceof TemporalCRS) {
                 return createOperationStep(source, (TemporalCRS) targetCRS);
             }
+        }
+        ////////////////////////////////////////////////////////////////////////////////
+        ////                                                                        ////
+        ////                        Compound  ↔  various CRS                        ////
+        ////                                                                        ////
+        ////////////////////////////////////////////////////////////////////////////////
+        if (sourceCRS instanceof CompoundCRS || targetCRS instanceof CompoundCRS) {
+            return createOperationStep(sourceCRS, CRS.getSingleComponents(sourceCRS),
+                                       targetCRS, CRS.getSingleComponents(targetCRS));
         }
         throw new OperationNotFoundException(notFoundMessage(sourceCRS, targetCRS));
     }
@@ -361,7 +327,12 @@ public class CoordinateOperationInference {
     {
         // Create first the operation that is more at risk to fail.
         final CoordinateOperation step2 = createOperation(sourceCRS.getBaseCRS(), targetCRS);
-        final CoordinateOperation step1 = inverse(sourceCRS.getConversionFromBase());
+        final CoordinateOperation step1;
+        try {
+            step1 = inverse(sourceCRS.getConversionFromBase());
+        } catch (NoninvertibleTransformException exception) {
+            throw new OperationNotFoundException(notFoundMessage(sourceCRS, targetCRS), exception);
+        }
         return concatenate(step1, step2);
     }
 
@@ -386,8 +357,13 @@ public class CoordinateOperationInference {
     {
         // Create first the operations that are more at risk to fail.
         final CoordinateOperation step2 = createOperation(sourceCRS.getBaseCRS(), targetCRS.getBaseCRS());
-        final CoordinateOperation step1 = inverse(sourceCRS.getConversionFromBase());
         final CoordinateOperation step3 = targetCRS.getConversionFromBase();
+        final CoordinateOperation step1;
+        try {
+            step1 = inverse(sourceCRS.getConversionFromBase());
+        } catch (NoninvertibleTransformException exception) {
+            throw new OperationNotFoundException(notFoundMessage(sourceCRS, targetCRS), exception);
+        }
         return concatenate(step1, step2, step3);
     }
 
@@ -409,6 +385,7 @@ public class CoordinateOperationInference {
      * @return a coordinate operation from {@code sourceCRS} to {@code targetCRS}.
      * @throws FactoryException if the operation can not be constructed.
      */
+    @SuppressWarnings("null")
     protected CoordinateOperation createOperationStep(final GeodeticCRS sourceCRS,
                                                       final GeodeticCRS targetCRS)
             throws FactoryException
@@ -502,11 +479,21 @@ public class CoordinateOperationInference {
             parameters = (isGeographicToGeocentric ? GeographicToGeocentric.PARAMETERS
                                                    : GeocentricToGeographic.PARAMETERS).createValue();
         } else {
-            parameters = TensorParameters.WKT1.createValueGroup(properties(Constants.AFFINE));  // Initialized to identity.
-            parameters.parameter(Constants.NUM_COL).setValue(sourceCS.getDimension() + 1);
-            parameters.parameter(Constants.NUM_ROW).setValue(targetCS.getDimension() + 1);
-            before = mtFactory.createCoordinateSystemChange(sourceCS, targetCS);
-            context.setSource(targetCS);
+            final int sourceDim = sourceCS.getDimension();
+            final int targetDim = targetCS.getDimension();
+            if ((sourceDim & ~1) == 2 && (sourceDim ^ targetDim) == 1    // sourceDim == 2 or 3 and difference with targetDim is 1.
+                    && (sourceCS instanceof EllipsoidalCS)
+                    && (targetCS instanceof EllipsoidalCS))
+            {
+                parameters = (sourceDim == 2 ? Geographic2Dto3D.PARAMETERS
+                                             : Geographic3Dto2D.PARAMETERS).createValue();
+            } else {
+                parameters = TensorParameters.WKT1.createValueGroup(properties(Constants.AFFINE));      // Initialized to identity.
+                parameters.parameter(Constants.NUM_COL).setValue(targetDim + 1);
+                parameters.parameter(Constants.NUM_ROW).setValue(targetDim + 1);
+                before = mtFactory.createCoordinateSystemChange(sourceCS, targetCS);
+                context.setSource(targetCS);
+            }
         }
         /*
          * Transform between differents datums using Bursa Wolf parameters. The Bursa Wolf parameters are used
@@ -529,7 +516,104 @@ public class CoordinateOperationInference {
                 transform = mtFactory.createConcatenatedTransform(transform, after);
             }
         }
-        return createFromMathTransform(properties(identifier), sourceCRS, targetCRS, transform, method, null);
+        return createFromMathTransform(properties(identifier), sourceCRS, targetCRS, transform, method, parameters, null);
+    }
+
+    /**
+     * Creates an operation between a geodetic and a vertical coordinate reference systems.
+     * The height returned by this method will usually be part of a
+     * {@linkplain DefaultPassThroughOperation pass-through operation}.
+     *
+     * @param  sourceCRS  input coordinate reference system.
+     * @param  targetCRS  output coordinate reference system.
+     * @return a coordinate operation from {@code sourceCRS} to {@code targetCRS}.
+     * @throws FactoryException if the operation can not be constructed.
+     */
+    protected CoordinateOperation createOperationStep(final GeodeticCRS sourceCRS,
+                                                      final VerticalCRS targetCRS)
+            throws FactoryException
+    {
+        /*
+         * We will perform the conversion or transformation as a 3 steps process:
+         *
+         *     source CRS          →
+         *     interpolation CRS   →
+         *     ellipsoidal height  →
+         *     target height
+         */
+        CoordinateOperation step1 = null;
+        CoordinateOperation step2;
+        CoordinateOperation step3 = null;
+        /*
+         * Convert the source CRS to the CRS needed for transforming the heights.
+         * For now this step is fixed to a three-dimensional geographic CRS, but
+         * a future version should use a plugin-mechanism, with the code below
+         * as the last fallback.
+         */
+        CoordinateReferenceSystem interpolationCRS = sourceCRS;
+        CoordinateSystem interpolationCS = interpolationCRS.getCoordinateSystem();
+        if (!(interpolationCS instanceof EllipsoidalCS)) {
+            final EllipsoidalCS cs = CommonCRS.WGS84.geographic3D().getCoordinateSystem();
+            if (!equalsIgnoreMetadata(interpolationCS, cs)) {
+                step1 = createOperation(sourceCRS, factorySIS.getCRSFactory()
+                        .createGeographicCRS(derivedFrom(sourceCRS), sourceCRS.getDatum(), cs));
+                interpolationCRS = step1.getTargetCRS();
+                interpolationCS  = interpolationCRS.getCoordinateSystem();
+            }
+        }
+        /*
+         * Transform from ellipsoidal height to the height requested by the caller.
+         * This operation requires the horizontal components (φ,λ) of source CRS,
+         * unless the user asked for ellipsooidal height (which strictly speaking
+         * is not allowed by ISO 19111). Those horizontal components are given by
+         * the interpolation CRS.
+         *
+         * TODO: store the interpolationCRS in some field for allowing other methods to use it.
+         */
+        final int i = AxisDirections.indexOfColinear(interpolationCS, AxisDirection.UP);
+        if (i < 0) {
+            throw new OperationNotFoundException(notFoundMessage(sourceCRS, targetCRS));
+        }
+        final CoordinateSystemAxis expectedAxis = interpolationCS.getAxis(i);
+        final boolean isEllipsoidalHeight;      // Whether heightCRS is okay or need to be recreated.
+        VerticalCRS heightCRS = targetCRS;      // First candidate, will be replaced if it doesn't fit.
+        VerticalCS  heightCS  = heightCRS.getCoordinateSystem();
+        if (equalsIgnoreMetadata(heightCS.getAxis(0), expectedAxis)) {
+            isEllipsoidalHeight = VerticalDatumTypes.ELLIPSOIDAL.equals(heightCRS.getDatum().getVerticalDatumType());
+        } else {
+            heightCRS = CommonCRS.Vertical.ELLIPSOIDAL.crs();
+            heightCS  = heightCRS.getCoordinateSystem();
+            isEllipsoidalHeight = equalsIgnoreMetadata(heightCS.getAxis(0), expectedAxis);
+            if (!isEllipsoidalHeight) {
+                heightCS = factorySIS.getCSFactory().createVerticalCS(derivedFrom(heightCS), expectedAxis);
+            }
+        }
+        if (!isEllipsoidalHeight) {                     // 'false' if we need to change datum, unit or axis direction.
+            heightCRS = factorySIS.getCRSFactory()
+                    .createVerticalCRS(derivedFrom(heightCRS), CommonCRS.Vertical.ELLIPSOIDAL.datum(), heightCS);
+        }
+        if (heightCRS != targetCRS) {
+            step3     = createOperation(heightCRS, targetCRS);  // May need interpolationCRS for performing datum change.
+            heightCRS = (VerticalCRS) step3.getSourceCRS();
+            heightCS  = heightCRS.getCoordinateSystem();
+        }
+        /*
+         * Conversion from three-dimensional geographic CRS to ellipsoidal height.
+         * This part does nothing more than dropping the horizontal components,
+         * like the "Geographic3D to 2D conversion" (EPSG:9659).
+         * It is not the job of this block to perform unit conversions.
+         * Unit conversions, if needed, are done by 'step3' computed in above block.
+         *
+         * The "Geographic3DtoVertical.txt" file in the provider package is a reminder.
+         * If this policy is changed, that file should be edited accordingly.
+         */
+        final int srcDim = interpolationCS.getDimension();                          // Should always be 3.
+        final int tgtDim = heightCS.getDimension();                                 // Should always be 1.
+        final Matrix matrix = Matrices.createZero(tgtDim + 1, srcDim + 1);
+        matrix.setElement(0,      i,      1);                                       // Scale factor for height.
+        matrix.setElement(tgtDim, srcDim, 1);                                       // Always 1 for affine transform.
+        step2 = createFromAffineTransform(AXIS_CHANGES, interpolationCRS, heightCRS, matrix);
+        return concatenate(step1, step2, step3);
     }
 
     /**
@@ -614,6 +698,153 @@ public class CoordinateOperationInference {
     }
 
     /**
+     * Creates an operation between at least one {@code CompoundCRS} (usually the source) and an arbitrary CRS.
+     * The default implementation tries to invoke the {@link #createOperation createOperation(…)} method with
+     * various combinations of source and target components. A preference is given for components of the same
+     * type (e.g. source {@link GeodeticCRS} with target {@code GeodeticCRS}, <i>etc.</i>).
+     *
+     * @param  sourceCRS        input coordinate reference system.
+     * @param  sourceComponents components of the source CRS.
+     * @param  targetCRS        output coordinate reference system.
+     * @param  targetComponents components of the target CRS.
+     * @return a coordinate operation from {@code sourceCRS} to {@code targetCRS}.
+     * @throws FactoryException if the operation can not be constructed.
+     */
+    protected CoordinateOperation createOperationStep(
+            final CoordinateReferenceSystem sourceCRS, final List<? extends SingleCRS> sourceComponents,
+            final CoordinateReferenceSystem targetCRS, final List<? extends SingleCRS> targetComponents)
+            throws FactoryException
+    {
+        final SubOperationInfo[] infos = new SubOperationInfo[targetComponents.size()];
+        final boolean[]   sourceIsUsed = new boolean[sourceComponents.size()];
+        final CoordinateReferenceSystem[] stepComponents = new CoordinateReferenceSystem[infos.length];
+        /*
+         * Operations found are stored in 'infos', but are not yet wrapped in PassThroughOperations.
+         * We need to know first if some ordinate values need reordering for matching the target CRS
+         * order. We also need to know if any source ordinates should be dropped.
+         */
+        for (int i=0; i<infos.length; i++) {
+            if ((infos[i] = SubOperationInfo.create(this, sourceIsUsed, sourceComponents, targetComponents.get(i))) == null) {
+                throw new OperationNotFoundException(notFoundMessage(sourceCRS, targetCRS));
+            }
+            stepComponents[i] = infos[i].operation.getSourceCRS();
+        }
+        /*
+         * At this point, a coordinate operation has been found for all components of the target CRS.
+         * However the CoordinateOperation.getSourceCRS() values are not necessarily in the same order
+         * than the components of the source CRS given to this method, and some dimensions may be dropped.
+         * The matrix computed by sourceToSelected(…) gives us the rearrangement needed for the coordinate
+         * operations that we just found.
+         */
+        int remainingSourceDimensions = 0;
+        for (final SubOperationInfo component : infos) {
+            remainingSourceDimensions += component.endAtDimension - component.startAtDimension;
+        }
+        final Matrix select = SubOperationInfo.sourceToSelected(
+                sourceCRS.getCoordinateSystem().getDimension(), remainingSourceDimensions, infos);
+        /*
+         * First, we need a CRS matching the above-cited rearrangement. That CRS will be named 'stepSourceCRS'
+         * and its components will be named 'stepComponents'. Then we will execute a loop in which each component
+         * is progressively (one by one) updated from a source component to a target component. A new step CRS is
+         * recreated each time, since it will be needed for each PassThroughOperation.
+         */
+        CoordinateReferenceSystem stepSourceCRS;
+        CoordinateOperation operation;
+        if (select.isIdentity()) {
+            stepSourceCRS = sourceCRS;                // No rearrangement - we can use source CRS as-is.
+            operation = null;
+        } else {
+            if (stepComponents.length == 1) {
+                stepSourceCRS = stepComponents[0];    // Slight optimization of the next block (in the 'else' case).
+            } else {
+                stepSourceCRS = factorySIS.getCRSFactory().createCompoundCRS(derivedFrom(sourceCRS), stepComponents);
+            }
+            operation = createFromAffineTransform(AXIS_CHANGES, sourceCRS, stepSourceCRS, select);
+        }
+        /*
+         * For each sub-operation, create a PassThroughOperation for the (stepSourceCRS → stepTargetCRS) operation.
+         * Each source CRS inside this loop will be for dimensions at indices [startAtDimension … endAtDimension-1].
+         * Note that those indices are not necessarily the same than the indices in the fields of the same name in
+         * SubOperationInfo, because those indices are not relative to the same CompoundCRS.
+         */
+        int endAtDimension = 0;
+        final int startOfIdentity = SubOperationInfo.startOfIdentity(infos);
+        for (int i=0; i<stepComponents.length; i++) {
+            final CoordinateReferenceSystem source = stepComponents[i];
+            final CoordinateReferenceSystem target = targetComponents.get(i);
+            CoordinateOperation subOperation = infos[i].operation;
+            final MathTransform subTransform = subOperation.getMathTransform();
+            /*
+             * In order to compute 'stepTargetCRS', replace in-place a single element in 'stepComponents'.
+             * For each step except the last one, 'stepTargetCRS' is a mix of target and source CRS. Only
+             * after the loop finished, 'stepTargetCRS' will become the complete targetCRS definition.
+             */
+            final CoordinateReferenceSystem stepTargetCRS;
+            stepComponents[i] = target;
+            if (i >= startOfIdentity) {
+                stepTargetCRS = targetCRS;              // If all remaining transforms are identity, we reached the final CRS.
+            } else if (subTransform.isIdentity()) {
+                stepTargetCRS = stepSourceCRS;          // In any identity transform, the source and target CRS are equal.
+            } else if (stepComponents.length == 1) {
+                stepTargetCRS = target;                 // Slight optimization of the next block.
+            } else {
+                stepTargetCRS = ReferencingServices.getInstance().createCompoundCRS(
+                        factorySIS.getCRSFactory(), factorySIS.getCSFactory(), derivedFrom(target), stepComponents);
+            }
+            int delta = source.getCoordinateSystem().getDimension();
+            final int startAtDimension = endAtDimension;
+            endAtDimension += delta;
+            /*
+             * Constructs the pass through transform only if there is at least one ordinate to pass.
+             * Actually the code below would work inconditionally, but we perform this check anyway
+             * for avoiding the creation of intermediate objects.
+             */
+            if (!(startAtDimension == 0 && endAtDimension == remainingSourceDimensions)) {
+                final Map<String,?> properties = IdentifiedObjects.getProperties(subOperation);
+                /*
+                 * The DefaultPassThroughOperation constuctor expect a SingleOperation.
+                 * In most case, the 'subOperation' is already of this kind. However if
+                 * it is not, try to copy it in such object.
+                 */
+                final SingleOperation op;
+                if (subOperation instanceof SingleOperation) {
+                    op = (SingleOperation) subOperation;
+                } else {
+                    op = factorySIS.createSingleOperation(properties,
+                            subOperation.getSourceCRS(), subOperation.getTargetCRS(), null,
+                            new DefaultOperationMethod(subTransform), subTransform);
+                }
+                subOperation = new DefaultPassThroughOperation(properties, stepSourceCRS, stepTargetCRS,
+                        op, startAtDimension, remainingSourceDimensions - endAtDimension);
+            }
+            /*
+             * Concatenate the operation with the ones we have found so far, and use the current 'stepTargetCRS'
+             * as the source CRS for the next operation step. We also need to adjust the dimension indices,
+             * since the previous operations may have removed some dimensions. Note that the delta may also
+             * be negative in a few occasions.
+             */
+            operation = concatenate(operation, subOperation);
+            stepSourceCRS = stepTargetCRS;
+            delta -= target.getCoordinateSystem().getDimension();
+            endAtDimension -= delta;
+            remainingSourceDimensions -= delta;
+        }
+        return operation;
+    }
+
+
+
+
+
+    /////////////////////////////////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////////////////////////////////
+    ////////////                                                         ////////////
+    ////////////                M I S C E L L A N E O U S                ////////////
+    ////////////                                                         ////////////
+    /////////////////////////////////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////////////////////////////////
+
+    /**
      * Creates a coordinate operation from a matrix, which usually describes an affine transform.
      * A default {@link OperationMethod} object is given to this transform. In the special case
      * where the {@code name} identifier is {@link #DATUM_SHIFT} or {@link #ELLIPSOID_CHANGE},
@@ -633,121 +864,7 @@ public class CoordinateOperationInference {
             throws FactoryException
     {
         final MathTransform transform  = factorySIS.getMathTransformFactory().createAffineTransform(matrix);
-        return createFromMathTransform(properties(name), sourceCRS, targetCRS, transform, null, null);
-    }
-
-    /**
-     * Creates a coordinate operation from a math transform.
-     * The method performs the following steps:
-     *
-     * <ul class="verbose">
-     *   <li>If the given {@code transform} is already an instance of {@code CoordinateOperation} and if its properties
-     *       (operation method, source and target CRS) are compatible with the arguments values, then that operation is
-     *       returned as-is.
-     *
-     *       <div class="note"><b>Note:</b> we do not have many objects that are both a {@code CoordinateOperation}
-     *       and a {@code MathTransform}, but that combination is not forbidden. Since such practice is sometime
-     *       convenient for the implementor, Apache SIS allows that.</div></li>
-     *
-     *   <li>If the given {@code type} is null, then this method infers the type from whether the given properties
-     *       specify and accuracy or not. If those properties were created by the {@link #properties(Identifier)}
-     *       method, then the operation will be a {@link Transformation} instance instead of {@link Conversion} if
-     *       the {@code name} identifier was {@link #DATUM_SHIFT} or {@link #ELLIPSOID_CHANGE}.</li>
-     *
-     *   <li>If the given {@code method} is {@code null}, then infer an operation method by inspecting the given transform.
-     *       The transform needs to implement the {@link org.apache.sis.parameter.Parameterized} interface in order to allow
-     *       operation method discovery.</li>
-     *
-     *   <li>Delegate to {@link DefaultCoordinateOperationFactory#createSingleOperation
-     *       DefaultCoordinateOperationFactory.createSingleOperation(…)}.</li>
-     * </ul>
-     *
-     * @param  properties The properties to give to the operation, as a modifiable map.
-     * @param  sourceCRS  The source coordinate reference system.
-     * @param  targetCRS  The destination coordinate reference system.
-     * @param  transform  The math transform.
-     * @param  method     The operation method, or {@code null} if unknown.
-     * @param  type       {@code Conversion.class}, {@code Transformation.class}, or {@code null} if unknown.
-     * @return A coordinate operation using the specified math transform.
-     * @throws FactoryException if the operation can not be created.
-     */
-    private CoordinateOperation createFromMathTransform(final Map<String,Object>        properties,
-                                                        final CoordinateReferenceSystem sourceCRS,
-                                                        final CoordinateReferenceSystem targetCRS,
-                                                        final MathTransform             transform,
-                                                              OperationMethod           method,
-                                                        Class<? extends CoordinateOperation> type)
-            throws FactoryException
-    {
-        /*
-         * If the specified math transform is already a coordinate operation, and if its properties (method,
-         * source and target CRS) are compatible with the specified ones, then that operation is returned as-is.
-         */
-        if (transform instanceof CoordinateOperation) {
-            final CoordinateOperation operation = (CoordinateOperation) transform;
-            if (Objects.equals(operation.getSourceCRS(),     sourceCRS) &&
-                Objects.equals(operation.getTargetCRS(),     targetCRS) &&
-                Objects.equals(operation.getMathTransform(), transform) &&
-                (method == null || !(operation instanceof SingleOperation) ||
-                    Objects.equals(((SingleOperation) operation).getMethod(), method)))
-            {
-                return operation;
-            }
-        }
-        /*
-         * If the operation type was not explicitely specified, infers it from whether an accuracy is specified
-         * or not. In principle, only transformations has an accuracy property; conversions do not. This policy
-         * is applied by the properties(Identifier) method in this class.
-         */
-        if (type == null) {
-            type = properties.containsKey(CoordinateOperation.COORDINATE_OPERATION_ACCURACY_KEY)
-                    ? Transformation.class : Conversion.class;
-        }
-        /*
-         * The operation method is mandatory. If the user did not provided one, we need to infer it ourselves.
-         * If we fail to infer an OperationMethod, let it to null - the exception will be thrown by the factory.
-         */
-        if (method == null) {
-            final Matrix matrix = MathTransforms.getMatrix(transform);
-            if (matrix != null) {
-                method = Affine.getProvider(transform.getSourceDimensions(), transform.getTargetDimensions(), Matrices.isAffine(matrix));
-            } else {
-                final ParameterDescriptorGroup descriptor = AbstractCoordinateOperation.getParameterDescriptors(transform);
-                if (descriptor != null) {
-                    final Identifier name = descriptor.getName();
-                    if (name != null) {
-                        method = factory.getOperationMethod(name.getCode());
-                    }
-                    if (method == null) {
-                        method = factory.createOperationMethod(properties,
-                                sourceCRS.getCoordinateSystem().getDimension(),
-                                targetCRS.getCoordinateSystem().getDimension(),
-                                descriptor);
-                    }
-                }
-            }
-        }
-        properties.put(ReferencingServices.OPERATION_TYPE_KEY, type);
-        if (Conversion.class.isAssignableFrom(type)) {
-            JDK8.replace(properties, IdentifiedObject.NAME_KEY, AXIS_CHANGES, IDENTITY);
-        }
-        return factorySIS.createSingleOperation(properties, sourceCRS, targetCRS, null, method, transform);
-    }
-
-    /**
-     * Creates the inverse of the given operation.
-     */
-    private CoordinateOperation inverse(final SingleOperation op) throws FactoryException {
-        final CoordinateReferenceSystem sourceCRS = op.getSourceCRS();
-        final CoordinateReferenceSystem targetCRS = op.getTargetCRS();
-        MathTransform transform = op.getMathTransform();
-        try {
-            transform = transform.inverse();
-        } catch (NoninvertibleTransformException exception) {
-            throw new OperationNotFoundException(notFoundMessage(targetCRS, sourceCRS), exception);
-        }
-        return createFromMathTransform(properties(INVERSE_OPERATION), targetCRS, sourceCRS,
-                transform, InverseOperationMethod.create(op.getMethod()), null);
+        return createFromMathTransform(properties(name), sourceCRS, targetCRS, transform, null, null, null);
     }
 
     /**
@@ -767,10 +884,10 @@ public class CoordinateOperationInference {
                                             final CoordinateOperation step2)
             throws FactoryException
     {
+        if (isIdentity(step1)) return step2;
+        if (isIdentity(step2)) return step1;
         final MathTransform mt1 = step1.getMathTransform();
         final MathTransform mt2 = step2.getMathTransform();
-        if (step1 instanceof Conversion && mt1.isIdentity()) return step2;
-        if (step2 instanceof Conversion && mt2.isIdentity()) return step1;
         final CoordinateReferenceSystem sourceCRS = step1.getSourceCRS();
         final CoordinateReferenceSystem targetCRS = step2.getTargetCRS();
         /*
@@ -783,10 +900,12 @@ public class CoordinateOperationInference {
         if (step1.getName() == AXIS_CHANGES && mt1.getSourceDimensions() == mt1.getTargetDimensions()) main = step2;
         if (step2.getName() == AXIS_CHANGES && mt2.getSourceDimensions() == mt2.getTargetDimensions()) main = step1;
         if (main instanceof SingleOperation) {
+            final SingleOperation op = (SingleOperation) main;
             final MathTransform mt = factorySIS.getMathTransformFactory().createConcatenatedTransform(mt1, mt2);
             main = createFromMathTransform(new HashMap<>(IdentifiedObjects.getProperties(main)),
-                   sourceCRS, targetCRS, mt, ((SingleOperation) main).getMethod(),
-                   (main instanceof Transformation) ? Transformation.class : SingleOperation.class);
+                   sourceCRS, targetCRS, mt, op.getMethod(), op.getParameterValues(),
+                   (main instanceof Transformation) ? Transformation.class :
+                   (main instanceof Conversion) ? Conversion.class : SingleOperation.class);
         } else {
             main = factory.createConcatenatedOperation(defaultName(sourceCRS, targetCRS), step1, step2);
         }
@@ -804,7 +923,7 @@ public class CoordinateOperationInference {
                 }
             }
             main = createFromMathTransform(new HashMap<>(IdentifiedObjects.getProperties(main)),
-                    main.getSourceCRS(), main.getTargetCRS(), main.getMathTransform(), null, type);
+                    main.getSourceCRS(), main.getTargetCRS(), main.getMathTransform(), null, null, type);
         }
         return main;
     }
@@ -820,9 +939,9 @@ public class CoordinateOperationInference {
      * @return A concatenated operation, or {@code null} if all arguments were null.
      * @throws FactoryException if the operation can not be constructed.
      */
-    protected CoordinateOperation concatenate(final CoordinateOperation step1,
-                                              final CoordinateOperation step2,
-                                              final CoordinateOperation step3)
+    private CoordinateOperation concatenate(final CoordinateOperation step1,
+                                            final CoordinateOperation step2,
+                                            final CoordinateOperation step3)
             throws FactoryException
     {
         if (isIdentity(step1)) return concatenate(step2, step3);
@@ -841,32 +960,7 @@ public class CoordinateOperationInference {
      * are usually datum shift and must be visible.
      */
     private static boolean isIdentity(final CoordinateOperation operation) {
-        return (operation instanceof Conversion) && operation.getMathTransform().isIdentity();
-    }
-
-    /**
-     * Returns the specified identifier in a map to be given to coordinate operation constructors.
-     * In the special case where the {@code name} identifier is {@link #DATUM_SHIFT} or {@link #ELLIPSOID_CHANGE},
-     * the map will contains extra informations like positional accuracy.
-     *
-     * <div class="note"><b>Note:</b>
-     * in the datum shift case, an operation version is mandatory but unknown at this time.
-     * However, we noticed that the EPSG database do not always defines a version neither.
-     * Consequently, the Apache SIS implementation relaxes the rule requiring an operation
-     * version and we do not try to provide this information here for now.</div>
-     *
-     * @param  name  The name to put in a map.
-     * @return a modifiable map containing the given name. Callers can put other entries in this map.
-     */
-    private static Map<String,Object> properties(final Identifier name) {
-        final Map<String,Object> properties = new HashMap<>(4);
-        properties.put(CoordinateOperation.NAME_KEY, name);
-        if ((name == DATUM_SHIFT) || (name == ELLIPSOID_CHANGE)) {
-            properties.put(CoordinateOperation.COORDINATE_OPERATION_ACCURACY_KEY, new PositionalAccuracy[] {
-                      (name == DATUM_SHIFT) ? PositionalAccuracyConstant.DATUM_SHIFT_APPLIED
-                                            : PositionalAccuracyConstant.DATUM_SHIFT_OMITTED});
-        }
-        return properties;
+        return (operation == null) || ((operation instanceof Conversion) && operation.getMathTransform().isIdentity());
     }
 
     /**
@@ -877,21 +971,46 @@ public class CoordinateOperationInference {
     }
 
     /**
+     * Returns a name for an object derived from the specified one.
+     * This method builds a name of the form "{@literal <original identifier>} (step 1)"
+     * where "(step 1)" may be replaced by "(step 2)", "(step 3)", <i>etc.</i> if this
+     * method has already been invoked for the same identifier (directly or indirectly).
+     */
+    private Map<String,?> derivedFrom(final IdentifiedObject object) {
+        Identifier oldID = object.getName();
+        Object p = identifierOfStepCRS.get(oldID);
+        if (p instanceof Identifier) {
+            oldID = (Identifier) p;
+            p = identifierOfStepCRS.get(oldID);
+        }
+        final int count = (p != null) ? (Integer) p + 1 : 1;
+        final Identifier newID = new NamedIdentifier(Citations.SIS, oldID.getCode() + " (step " + count + ')');
+        identifierOfStepCRS.put(newID, oldID);
+        identifierOfStepCRS.put(oldID, count);
+
+        final Map<String,Object> properties = new HashMap<>(4);
+        properties.put(IdentifiedObject.NAME_KEY, newID);
+        properties.put(IdentifiedObject.REMARKS_KEY, Vocabulary.formatInternational(
+                            Vocabulary.Keys.DerivedFrom_1, CRSPair.label(object)));
+        return properties;
+    }
+
+    /**
      * Returns a name for a transformation between two CRS.
      */
     private static Map<String,?> defaultName(CoordinateReferenceSystem source, CoordinateReferenceSystem target) {
-        return properties(CRSPair.shortName(source) + " → " + CRSPair.shortName(target));
+        return properties(new CRSPair(source, target).toString());
     }
 
     /**
      * Returns an error message for "No path found from sourceCRS to targetCRS".
      * This is used for the construction of {@link OperationNotFoundException}.
      *
-     * @param  source The source CRS.
-     * @param  target The target CRS.
+     * @param  source the source CRS.
+     * @param  target the target CRS.
      * @return A default error message.
      */
     private static String notFoundMessage(final IdentifiedObject source, final IdentifiedObject target) {
-        return Errors.format(Errors.Keys.CoordinateOperationNotFound_2, CRSPair.shortName(source), CRSPair.shortName(target));
+        return Errors.format(Errors.Keys.CoordinateOperationNotFound_2, CRSPair.label(source), CRSPair.label(target));
     }
 }

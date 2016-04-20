@@ -53,6 +53,7 @@ import org.opengis.referencing.crs.CompoundCRS;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.CoordinateOperation;
+import org.opengis.referencing.operation.ConcatenatedOperation;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.util.ControlledVocabulary;
 
@@ -764,8 +765,8 @@ public class Formatter implements Localized {
             } else {
                 filterID = (parent != null);
                 if (object instanceof CoordinateOperation) {
-                    showOthers  = true;
-                    showRemarks = true;
+                    showOthers  = !(parent instanceof ConcatenatedOperation);
+                    showRemarks = showOthers;
                 } else if (object instanceof ReferenceSystem) {
                     showOthers  = (parent == null);
                     showRemarks = (parent == null) || (getEnclosingElement(2) instanceof CoordinateOperation);

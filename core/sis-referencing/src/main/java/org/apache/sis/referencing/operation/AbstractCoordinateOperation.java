@@ -36,6 +36,7 @@ import org.opengis.referencing.operation.ConcatenatedOperation;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.MathTransform;
+import org.opengis.referencing.operation.PassThroughOperation;
 import org.opengis.parameter.GeneralParameterValue;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.ParameterValueGroup;
@@ -159,7 +160,7 @@ public class AbstractCoordinateOperation extends AbstractIdentifiedObject implem
      * (i.e., instantiation due to the stochastic nature of the parameters).
      *
      * <p><b>Consider this field as final!</b>
-     * This field is modified only at unmarshalling time by {@link #setOperationVersion(String)}</p>
+     * This field is modified only at unmarshalling time by {@link #setOperationVersion(String)}.</p>
      *
      * @see #getOperationVersion()
      */
@@ -180,7 +181,7 @@ public class AbstractCoordinateOperation extends AbstractIdentifiedObject implem
      * Area in which this operation is valid, or {@code null} if not available.
      *
      * <p><b>Consider this field as final!</b>
-     * This field is modified only at unmarshalling time by {@link #setDomainOfValidity(Extent)}</p>
+     * This field is modified only at unmarshalling time by {@link #setDomainOfValidity(Extent)}.</p>
      *
      * @see #getDomainOfValidity()
      */
@@ -190,7 +191,7 @@ public class AbstractCoordinateOperation extends AbstractIdentifiedObject implem
      * Description of domain of usage, or limitations of usage, for which this operation is valid.
      *
      * <p><b>Consider this field as final!</b>
-     * This field is modified only at unmarshalling time by {@link #setScope(InternationalString)}</p>
+     * This field is modified only at unmarshalling time by {@link #setScope(InternationalString)}.</p>
      *
      * @see #getScope()
      */
@@ -202,7 +203,7 @@ public class AbstractCoordinateOperation extends AbstractIdentifiedObject implem
      *
      * <p><b>Consider this field as final!</b>
      * This field is non-final only for the convenience of constructors and for initialization
-     * at XML unmarshalling time by {@link AbstractSingleOperation#afterUnmarshal(Unmarshaller, Object)}</p>
+     * at XML unmarshalling time by {@link AbstractSingleOperation#afterUnmarshal(Unmarshaller, Object)}.</p>
      */
     MathTransform transform;
 
@@ -514,7 +515,7 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
     /**
      * Returns the interpolation CRS of the given coordinate operation, or {@code null} if none.
      */
-    private static CoordinateReferenceSystem getInterpolationCRS(final CoordinateOperation operation) {
+    static CoordinateReferenceSystem getInterpolationCRS(final CoordinateOperation operation) {
         return (operation instanceof AbstractCoordinateOperation)
                ? ((AbstractCoordinateOperation) operation).getInterpolationCRS() : null;
     }
@@ -557,33 +558,34 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
      * Note that those rules may change in any future SIS version.
      *
      * <ul>
-     *   <li>If a {@linkplain org.apache.sis.metadata.iso.quality.DefaultQuantitativeResult quantitative result}
-     *     is found with a linear unit, then this accuracy estimate is converted to
-     *     {@linkplain javax.measure.unit.SI#METRE metres} and returned.</li>
+     *   <li>If at least one {@linkplain org.apache.sis.metadata.iso.quality.DefaultQuantitativeResult quantitative
+     *       result} is found with a linear unit, then returns the largest result value converted to metres.</li>
      *
-     *   <li>Otherwise, if the operation is a {@linkplain DefaultConversion conversion}, then returns 0 since a
-     *     conversion is by definition accurate up to rounding errors.</li>
+     *   <li>Otherwise if the operation is a {@linkplain DefaultConversion conversion},
+     *       then returns 0 since a conversion is by definition accurate up to rounding errors.</li>
      *
-     *   <li>Otherwise, if the operation is a {@linkplain DefaultTransformation transformation}, then checks if
-     *     the datum shift were applied with the help of Bursa-Wolf parameters.
-     *     If a datum shift has been applied, returns 25 meters.
-     *     If a datum shift should have been applied but has been omitted, returns 3000 meters.
+     *   <li>Otherwise if the operation is a {@linkplain DefaultTransformation transformation},
+     *       then checks if the datum shift were applied with the help of Bursa-Wolf parameters.
+     *       If a datum shift has been applied, returns 25 meters.
+     *       If a datum shift should have been applied but has been omitted, returns 3000 meters.
      *
-     *     <div class="note"><b>Note:</b>
-     *     the 3000 meters value is higher than the highest value (999 meters) found in the EPSG
-     *     database version 6.7. The 25 meters value is the next highest value found in the EPSG
-     *     database for a significant number of transformations.</div>
+     *       <div class="note"><b>Note:</b>
+     *       the 3000 meters value is higher than the highest value (999 meters) found in the EPSG
+     *       database version 6.7. The 25 meters value is the next highest value found in the EPSG
+     *       database for a significant number of transformations.</div>
      *
-     *   <li>Otherwise, if the operation is a {@linkplain DefaultConcatenatedOperation concatenated operation},
-     *     returns the sum of the accuracy of all components. This is a conservative scenario where we assume that
-     *     errors cumulate linearly.
+     *   <li>Otherwise if the operation is a {@linkplain DefaultConcatenatedOperation concatenated operation},
+     *       returns the sum of the accuracy of all components.
+     *       This is a conservative scenario where we assume that errors cumulate linearly.
      *
-     *     <div class="note"><b>Note:</b>
-     *     this is not necessarily the "worst case" scenario since the accuracy could be worst if the math transforms
-     *     are highly non-linear.</div></li>
+     *       <div class="note"><b>Note:</b>
+     *       this is not necessarily the "worst case" scenario since the accuracy could be worst
+     *       if the math transforms are highly non-linear.</div></li>
      * </ul>
      *
      * @return The accuracy estimation (always in meters), or NaN if unknown.
+     *
+     * @see org.apache.sis.referencing.CRS#getLinearAccuracy(CoordinateOperation)
      */
     public double getLinearAccuracy() {
         return PositionalAccuracyConstant.getLinearAccuracy(this);
@@ -859,12 +861,17 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
         super.formatTo(formatter);
         formatter.newLine();
         /*
-         * If the WKT is a component of a ConcatenatedOperation, do not format the source and target CRS.
-         * This decision SIS-specific since the WKT 2 specification does not define concatenated operations.
-         * The choice of content to omit may change in any future version.
+         * If the WKT is a component of a ConcatenatedOperation, do not format the source CRS since it is identical
+         * to the target CRS of the previous step, or to the source CRS of the enclosing "ConcatenatedOperation" if
+         * this step is the first step.
+         *
+         * This decision is SIS-specific since the WKT 2 specification does not define concatenated operations.
+         * This choice may change in any future SIS version.
          */
-        final boolean isComponent = (formatter.getEnclosingElement(1) instanceof ConcatenatedOperation);
-        if (!isComponent) {
+        final FormattableObject enclosing = formatter.getEnclosingElement(1);
+        final boolean isSubOperation = (enclosing instanceof PassThroughOperation);
+        final boolean isComponent    = (enclosing instanceof ConcatenatedOperation);
+        if (!isSubOperation && !isComponent) {
             append(formatter, getSourceCRS(), WKTKeywords.SourceCRS);
             append(formatter, getTargetCRS(), WKTKeywords.TargetCRS);
         }
@@ -881,12 +888,14 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
             }
             if (parameters != null) {
                 formatter.newLine();
+                formatter.indent(+1);
                 for (final GeneralParameterValue param : parameters.values()) {
                     WKTUtilities.append(param, formatter);
                 }
+                formatter.indent(-1);
             }
         }
-        if (!isComponent) {
+        if (!isSubOperation && !(this instanceof ConcatenatedOperation)) {
             append(formatter, getInterpolationCRS(), WKTKeywords.InterpolationCRS);
             final double accuracy = getLinearAccuracy();
             if (accuracy > 0) {
@@ -901,7 +910,7 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
         if (formatter.getConvention().majorVersion() == 1) {
             formatter.setInvalidWKT(this, null);
         }
-        return WKTKeywords.CoordinateOperation;
+        return isComponent ? "CoordinateOperationStep" : WKTKeywords.CoordinateOperation;
     }
 
     /**

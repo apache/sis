@@ -178,7 +178,7 @@ public final class AffineTransforms2D extends Static {
      *
      * @return The direct transform of the {@code bounds} rectangle, or {@code null} if {@code bounds} was null.
      *
-     * @see org.apache.sis.referencing.CRS#transform(MathTransform2D, Rectangle2D, Rectangle2D)
+     * @see org.apache.sis.geometry.Envelopes#transform(MathTransform2D, Rectangle2D, Rectangle2D)
      */
     public static Rectangle2D transform(final AffineTransform transform,
             final Rectangle2D bounds, final Rectangle2D dest)

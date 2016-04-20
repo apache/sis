@@ -16,8 +16,10 @@
  */
 package org.apache.sis.internal.util;
 
+import java.util.List;
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.ServiceLoader;
 import java.util.NoSuchElementException;
 import org.apache.sis.util.Workaround;
 
@@ -35,7 +37,8 @@ import java.util.Objects;
  * a new iteration. See
  * {@link org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory#DefaultMathTransformFactory()}.</p>
  *
- * <p>Another usage for this class is to prepend some values before the elements given by the source {@code Iterable}.</p>
+ * <p>Some usages for this class are to prepend some values before the elements given by the source {@code Iterable},
+ * or to replace some values when they are loaded.</p>
  *
  * <p>This class is not thread-safe. Synchronization, if desired, shall be done by the caller.</p>
  *
@@ -49,9 +52,9 @@ import java.util.Objects;
 @Workaround(library="JDK", version="1.8.0_31-b13")
 public class LazySet<E> extends SetOfUnknownSize<E> {
     /**
-     * The original source of elements, or {@code null} if unknown.
+     * The type of service to request with {@link ServiceLoader}, or {@code null} if unknown.
      */
-    private final Iterable<? extends E> source;
+    private final Class<E> service;
 
     /**
      * The iterator to use for filling this set, or {@code null} if the iteration did not started yet
@@ -82,11 +85,11 @@ public class LazySet<E> extends SetOfUnknownSize<E> {
      * only when first needed, and at most one iteration will be performed (unless {@link #reload()}
      * is invoked).
      *
-     * @param source The source of elements to use for filling this set.
+     * @param service  the type of service to request with {@link ServiceLoader}, or {@code null} if unknown.
      */
-    public LazySet(final Iterable<? extends E> source) {
-        Objects.requireNonNull(source);
-        this.source = source;
+    public LazySet(final Class<E> service) {
+        Objects.requireNonNull(service);
+        this.service = service;
     }
 
     /**
@@ -98,23 +101,19 @@ public class LazySet<E> extends SetOfUnknownSize<E> {
     public LazySet(final Iterator<? extends E> iterator) {
         Objects.requireNonNull(iterator);
         sourceIterator = iterator;
-        source = null;
+        service = null;
         createCache();
     }
 
     /**
      * Notifies this {@code LazySet} that it should re-fetch the elements from the source given at construction time.
-     * This method does not verify if the source needs also to be reloaded; it is up to the caller to verify.
-     *
-     * @return The original source of elements, or {@code null} if unknown.
      */
-    public Iterable<? extends E> reload() {
-        if (source != null) {
+    public void reload() {
+        if (service != null) {
             sourceIterator = null;
             cachedElements = null;
             numCached = 0;
         }
-        return source;
     }
 
     /**
@@ -156,7 +155,7 @@ public class LazySet<E> extends SetOfUnknownSize<E> {
      */
     private boolean canPullMore() {
         if (sourceIterator == null && cachedElements == null) {
-            sourceIterator = source.iterator();
+            sourceIterator = ServiceLoader.load(service).iterator();
             if (createCache()) {
                 return true;
             }
@@ -198,15 +197,26 @@ public class LazySet<E> extends SetOfUnknownSize<E> {
     }
 
     /**
-     * Adds the given element to the {@link #cachedElements} array.
+     * Caches a new element. Subclasses can override this method is they want to substitute the given value
+     * by another value.
      *
      * @param element The element to add to the cache.
      */
-    private void cache(final E element) {
+    protected void cache(final E element) {
         if (numCached >= cachedElements.length) {
             cachedElements = Arrays.copyOf(cachedElements, numCached << 1);
         }
         cachedElements[numCached++] = element;
+    }
+
+    /**
+     * Returns an unmodifiable view over the elements cached so far.
+     * The returned list does not contain any elements that were not yet fetched from the source.
+     *
+     * @return  the elements cached so far.
+     */
+    protected final List<E> cached() {
+        return UnmodifiableArrayList.wrap(cachedElements, 0, numCached);
     }
 
     /**

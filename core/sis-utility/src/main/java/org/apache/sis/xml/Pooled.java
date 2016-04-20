@@ -343,7 +343,7 @@ abstract class Pooled {
                             final Object schema = map.get(key);
                             if (schema != null) {
                                 if (!(schema instanceof String)) {
-                                    throw new PropertyException(Errors.format(Errors.Keys.IllegalPropertyClass_2,
+                                    throw new PropertyException(Errors.format(Errors.Keys.IllegalPropertyValueClass_2,
                                             name + "[\"" + key + "\"]", value.getClass()));
                                 }
                                 copy.put(key, (String) schema);
@@ -400,7 +400,7 @@ abstract class Pooled {
             }
         } catch (ClassCastException | IllformedLocaleException e) {
             throw new PropertyException(Errors.format(
-                    Errors.Keys.IllegalPropertyClass_2, name, value.getClass()), e);
+                    Errors.Keys.IllegalPropertyValueClass_2, name, value.getClass()), e);
         }
         /*
          * If we reach this point, the given name is not a SIS property. Try to handle

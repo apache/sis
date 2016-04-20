@@ -14,11 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.referencing;
+package org.apache.sis.internal.referencing;
 
 import org.opengis.referencing.operation.CoordinateOperationFactory;
 import org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory;
 import org.apache.sis.internal.system.DefaultFactories;
+import org.apache.sis.internal.system.Modules;
+import org.apache.sis.internal.system.SystemListener;
 
 
 /**
@@ -30,16 +32,45 @@ import org.apache.sis.internal.system.DefaultFactories;
  * @version 0.7
  * @module
  */
-final class CoordinateOperations {
+public final class CoordinateOperations extends SystemListener {
     /**
      * The factory.
      */
-    static final DefaultCoordinateOperationFactory factory =
-            DefaultFactories.forBuildin(CoordinateOperationFactory.class, DefaultCoordinateOperationFactory.class);
+    private static volatile DefaultCoordinateOperationFactory factory;
 
     /**
-     * Do not allows instantiation of this class.
+     * For system listener only.
      */
     private CoordinateOperations() {
+        super(Modules.REFERENCING);
+    }
+
+    /**
+     * Discards the factory if the classpath changed.
+     */
+    static {
+        add(new CoordinateOperations());
+    }
+
+    /**
+     * Invoked when the classpath changed.
+     */
+    @Override
+    protected void classpathChanged() {
+        factory = null;
+    }
+
+    /**
+     * Returns the factory.
+     *
+     * @return The system-wide factory.
+     */
+    public static DefaultCoordinateOperationFactory factory() {
+        DefaultCoordinateOperationFactory c = factory;
+        if (c == null) {
+            // DefaultFactories.forBuildin(…) performs the necessary synchronization.
+            factory = c = DefaultFactories.forBuildin(CoordinateOperationFactory.class, DefaultCoordinateOperationFactory.class);
+        }
+        return c;
     }
 }

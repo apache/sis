@@ -754,7 +754,7 @@ public final class Types extends Static {
             if (value != null) {
                 if (!(value instanceof CharSequence)) {
                     throw new IllegalArgumentException(Errors.getResources(properties)
-                            .getString(Errors.Keys.IllegalPropertyClass_2, key, value.getClass()));
+                            .getString(Errors.Keys.IllegalPropertyValueClass_2, key, value.getClass()));
                 }
                 if (i18n == null) {
                     i18n = (CharSequence) value;

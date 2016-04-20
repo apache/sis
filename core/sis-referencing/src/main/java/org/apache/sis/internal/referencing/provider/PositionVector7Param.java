@@ -56,7 +56,7 @@ public final class PositionVector7Param extends GeocentricAffine {
      * Constructs the provider.
      */
     public PositionVector7Param() {
-        super(3, 3, PARAMETERS);
+        super(3, 3, PARAMETERS, null);
     }
 
     /**
