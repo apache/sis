@@ -16,6 +16,8 @@
  */
 package org.apache.sis.referencing.operation;
 
+import org.opengis.referencing.cs.EllipsoidalCS;
+import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.IdentifiedObject;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
@@ -79,8 +81,9 @@ final class CRSPair {
     }
 
     /**
-     * Returns the name of the GeoAPI interface implemented by the specified object,
-     * followed by the name between brackets.
+     * Returns the name of the GeoAPI interface implemented by the specified object. In the GeographicCRS
+     * or EllipsoidalCS cases, the trailing CRS or CS suffix is replaced by the number of dimensions
+     * (e.g. "Geographic3D").
      */
     static String label(final IdentifiedObject object) {
         if (object == null) {
@@ -92,7 +95,18 @@ final class CRSPair {
         } else {
             type = Classes.getLeafInterfaces(object.getClass(), IdentifiedObject.class)[0];
         }
-        String label = Classes.getShortName(type);
+        String suffix, label = Classes.getShortName(type);
+        if (label.endsWith((suffix = "CRS")) || label.endsWith(suffix = "CS")) {
+            Object cs = object;
+            if (object instanceof CoordinateReferenceSystem) {
+                cs = ((CoordinateReferenceSystem) object).getCoordinateSystem();
+            }
+            if (cs instanceof EllipsoidalCS) {
+                final StringBuilder sb = new StringBuilder(label);
+                sb.setLength(label.length() - suffix.length());
+                label = sb.append(((CoordinateSystem) cs).getDimension()).append('D').toString();
+            }
+        }
         String name = IdentifiedObjects.getName(object, null);
         if (name != null) {
             int i = 30;                                         // Arbitrary length threshold.

@@ -27,7 +27,6 @@ import org.opengis.referencing.datum.Datum;
 import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.referencing.datum.VerticalDatum;
 import org.opengis.referencing.datum.TemporalDatum;
-import org.opengis.referencing.datum.ParametricDatum;
 import org.opengis.referencing.datum.EngineeringDatum;
 import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.crs.DerivedCRS;
@@ -35,13 +34,11 @@ import org.opengis.referencing.crs.GeodeticCRS;
 import org.opengis.referencing.crs.VerticalCRS;
 import org.opengis.referencing.crs.TemporalCRS;
 import org.opengis.referencing.crs.ProjectedCRS;
-import org.opengis.referencing.crs.ParametricCRS;
 import org.opengis.referencing.crs.EngineeringCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.VerticalCS;
 import org.opengis.referencing.cs.TimeCS;
-import org.opengis.referencing.cs.ParametricCS;
 import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.MathTransform;
@@ -62,6 +59,11 @@ import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Classes;
+
+// Branch-dependent imports
+import org.opengis.referencing.cs.ParametricCS;
+import org.opengis.referencing.crs.ParametricCRS;
+import org.opengis.referencing.datum.ParametricDatum;
 
 
 /**

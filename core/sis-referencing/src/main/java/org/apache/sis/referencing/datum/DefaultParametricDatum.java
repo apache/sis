@@ -20,9 +20,11 @@ import java.util.Date;
 import java.util.Map;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
-import org.opengis.referencing.datum.ParametricDatum;
 import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.io.wkt.Formatter;
+
+// Branch-dependent imports
+import org.opengis.referencing.datum.ParametricDatum;
 
 
 /**

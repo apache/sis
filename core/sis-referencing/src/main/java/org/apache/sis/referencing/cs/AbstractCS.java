@@ -391,9 +391,10 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
      * @return {@code true} if both objects are equal.
      */
     @Override
+    @SuppressWarnings("fallthrough")
     public boolean equals(final Object object, final ComparisonMode mode) {
         if (object == this) {
-            return true; // Slight optimization.
+            return true;                                            // Slight optimization.
         }
         if (!super.equals(object, mode)) {
             return false;
@@ -402,6 +403,14 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
             case STRICT: {
                 // No need to check the class - this check has been done by super.equals(…).
                 return Arrays.equals(axes, ((AbstractCS) object).axes);
+            }
+            case DEBUG: {
+                final int d1 = axes.length;
+                final int d2 = ((CoordinateSystem) object).getDimension();
+                if (d1 != d2) {
+                    throw new AssertionError(Errors.format(Errors.Keys.MismatchedDimension_2, d1, d2));
+                }
+                // Fall through
             }
             default: {
                 final CoordinateSystem that = (CoordinateSystem) object;
