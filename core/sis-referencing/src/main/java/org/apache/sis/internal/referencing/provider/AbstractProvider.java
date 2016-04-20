@@ -76,15 +76,15 @@ public abstract class AbstractProvider extends DefaultOperationMethod implements
      * Constructs a math transform provider from a set of parameters. The provider name and
      * {@linkplain #getIdentifiers() identifiers} will be the same than the parameter ones.
      *
-     * @param sourceDimension Number of dimensions in the source CRS of this operation method.
-     * @param targetDimension Number of dimensions in the target CRS of this operation method.
-     * @param parameters      The set of parameters (never {@code null}).
+     * @param sourceDimensions Number of dimensions in the source CRS of this operation method.
+     * @param targetDimensions Number of dimensions in the target CRS of this operation method.
+     * @param parameters       Description of parameters expected by this operation.
      */
-    AbstractProvider(final int sourceDimension,
-                     final int targetDimension,
+    AbstractProvider(final int sourceDimensions,
+                     final int targetDimensions,
                      final ParameterDescriptorGroup parameters)
     {
-        super(toMap(parameters), sourceDimension, targetDimension, parameters);
+        super(toMap(parameters), sourceDimensions, targetDimensions, parameters);
     }
 
     /**
@@ -180,7 +180,7 @@ public abstract class AbstractProvider extends DefaultOperationMethod implements
     }
 
     /**
-     * Creates a false easting or northing parameter in metre with a default value of 0.
+     * Creates a false easting, false northing or height parameter in metre with a default value of 0.
      */
     static ParameterDescriptor<Double> createShift(final ParameterBuilder builder) {
         return builder.create(0.0, SI.METRE);
@@ -219,7 +219,24 @@ public abstract class AbstractProvider extends DefaultOperationMethod implements
      * Returns {@code true} if the inverse of this operation method is the same operation method with some parameter
      * values changed (typically with sign inverted). The default implementation returns {@code false}.
      *
+     * <p>This is a SIS-specific information which may be changed in any future SIS version.
+     * Current implementation provides this information in a "all or nothing" way: either all parameter values
+     * can have their sign reversed, or either the operation is considered not revertible at all.
+     * This is different than the EPSG dataset in two way:</p>
+     *
+     * <ul class="verbose">
+     *   <li>EPSG provides an equivalent information in the {@code PARAM_SIGN_REVERSAL} column of the
+     *       {@code [Coordinate_Operation Parameter Usage]} table, but on a parameter-by-parameter basis
+     *       instead than for the whole operation (which is probably better).</li>
+     *
+     *   <li>EPSG provides another information in the {@code REVERSE_OP} column of the
+     *       {@code [Coordinate_Operation Method]} table, but this is not equivalent to this method because it
+     *       does not differentiate the map projection methods from <em>inverse</em> map projection methods.</li>
+     * </ul>
+     *
      * @return {@code true} if the inverse of this operation method can be described by the same operation method.
+     *
+     * @see org.apache.sis.internal.referencing.SignReversalComment
      */
     public boolean isInvertible() {
         return false;

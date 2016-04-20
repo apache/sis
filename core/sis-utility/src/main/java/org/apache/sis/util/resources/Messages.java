@@ -208,6 +208,16 @@ public final class Messages extends IndexedResourceBundle {
         public static final short InsertDuration_2 = 40;
 
         /**
+         * Inverse operation uses this parameter value with opposite sign.
+         */
+        public static final short InverseOperationUsesOppositeSign = 42;
+
+        /**
+         * Inverse operation uses the same parameter value.
+         */
+        public static final short InverseOperationUsesSameSign = 43;
+
+        /**
          * No object associated to the “{0}” JNDI name.
          */
         public static final short JNDINotSpecified_1 = 32;

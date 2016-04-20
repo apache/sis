@@ -90,8 +90,9 @@ public final strictfp class ReferencingUtilitiesTest extends TestCase {
      */
     @Test
     public void testGetPropertiesForModifiedCRS() {
-        assertEquals("WGS 84", getPropertiesForModifiedCRS(HardCodedCRS.WGS84_3D).get(IdentifiedObject.NAME_KEY));
-        assertEquals("WGS 84", getPropertiesForModifiedCRS(HardCodedCRS.GEOID_4D).get(IdentifiedObject.NAME_KEY));
+        assertEquals("WGS 84",      getPropertiesForModifiedCRS(HardCodedCRS.WGS84_3D).get(IdentifiedObject.NAME_KEY));
+        assertEquals("WGS 84",      getPropertiesForModifiedCRS(HardCodedCRS.GEOID_4D).get(IdentifiedObject.NAME_KEY));
+        assertEquals("NTF (Paris)", getPropertiesForModifiedCRS(HardCodedCRS.NTF)     .get(IdentifiedObject.NAME_KEY));
     }
 
     /**

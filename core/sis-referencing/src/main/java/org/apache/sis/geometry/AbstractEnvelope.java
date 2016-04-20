@@ -197,7 +197,7 @@ public abstract class AbstractEnvelope implements Envelope, Emptiable {
     static CoordinateSystemAxis getAxis(final CoordinateReferenceSystem crs, final int dimension) {
         if (crs != null) {
             final CoordinateSystem cs = crs.getCoordinateSystem();
-            if (cs != null) {   // Paranoiac check (should never be null).
+            if (cs != null) {                                       // Paranoiac check (should never be null).
                 return cs.getAxis(dimension);
             }
         }
@@ -350,7 +350,7 @@ public abstract class AbstractEnvelope implements Envelope, Emptiable {
     @Override
     public double getMinimum(final int dimension) throws IndexOutOfBoundsException {
         double lower = getLower(dimension);
-        if (isNegative(getUpper(dimension) - lower)) { // Special handling for -0.0
+        if (isNegative(getUpper(dimension) - lower)) {              // Special handling for -0.0
             final CoordinateSystemAxis axis = getAxis(getCoordinateReferenceSystem(), dimension);
             lower = (axis != null) ? axis.getMinimumValue() : Double.NEGATIVE_INFINITY;
         }
@@ -371,7 +371,7 @@ public abstract class AbstractEnvelope implements Envelope, Emptiable {
     @Override
     public double getMaximum(final int dimension) throws IndexOutOfBoundsException {
         double upper = getUpper(dimension);
-        if (isNegative(upper - getLower(dimension))) { // Special handling for -0.0
+        if (isNegative(upper - getLower(dimension))) {              // Special handling for -0.0
             final CoordinateSystemAxis axis = getAxis(getCoordinateReferenceSystem(), dimension);
             upper = (axis != null) ? axis.getMaximumValue() : Double.POSITIVE_INFINITY;
         }
@@ -406,7 +406,7 @@ public abstract class AbstractEnvelope implements Envelope, Emptiable {
         final double lower = getLower(dimension);
         final double upper = getUpper(dimension);
         double median = 0.5 * (lower + upper);
-        if (isNegative(upper - lower)) { // Special handling for -0.0
+        if (isNegative(upper - lower)) {                            // Special handling for -0.0
             median = fixMedian(getAxis(getCoordinateReferenceSystem(), dimension), median);
         }
         return median;
@@ -453,7 +453,7 @@ public abstract class AbstractEnvelope implements Envelope, Emptiable {
     @Override
     public double getSpan(final int dimension) {
         double span = getUpper(dimension) - getLower(dimension);
-        if (isNegative(span)) { // Special handling for -0.0
+        if (isNegative(span)) {                                     // Special handling for -0.0
             span = fixSpan(getAxis(getCoordinateReferenceSystem(), dimension), span);
         }
         return span;
@@ -534,14 +534,14 @@ public abstract class AbstractEnvelope implements Envelope, Emptiable {
      */
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
     public Envelope[] toSimpleEnvelopes() {
-        long isWrapAround = 0; // A bitmask of the dimensions having a "wrap around" behavior.
+        long isWrapAround = 0;                              // A bitmask of the dimensions having a "wrap around" behavior.
         CoordinateReferenceSystem crs = null;
         final int dimension = getDimension();
         for (int i=0; i!=dimension; i++) {
-            final double span = getUpper(i) - getLower(i); // Do not use getSpan(i).
-            if (!(span > 0)) { // Use '!' for catching NaN.
+            final double span = getUpper(i) - getLower(i);  // Do not use getSpan(i).
+            if (!(span > 0)) {                              // Use '!' for catching NaN.
                 if (!isNegative(span)) {
-                    return EMPTY; // Span is positive zero.
+                    return EMPTY;                           // Span is positive zero.
                 }
                 if (crs == null) {
                     crs = getCoordinateReferenceSystem();
@@ -591,9 +591,9 @@ public abstract class AbstractEnvelope implements Envelope, Emptiable {
              * Assign the minimum and maximum ordinate values in the dimension where a wraparound has been found.
              * The 'for' loop below iterates only over the 'i' values for which the 'isWrapAround' bit is set to 1.
              */
-            int mask = 1; // For identifying whether we need to set the lower or the upper ordinate.
+            int mask = 1;               // For identifying whether we need to set the lower or the upper ordinate.
             @SuppressWarnings("null")
-            final CoordinateSystem cs = crs.getCoordinateSystem(); // Should not be null at this point.
+            final CoordinateSystem cs = crs.getCoordinateSystem();            // Should not be null at this point.
             for (int i; (i = Long.numberOfTrailingZeros(isWrapAround)) != Long.SIZE; isWrapAround &= ~(1L << i)) {
                 final CoordinateSystemAxis axis = cs.getAxis(i);
                 final double min = axis.getMinimumValue();
@@ -637,7 +637,7 @@ public abstract class AbstractEnvelope implements Envelope, Emptiable {
             return true;
         }
         for (int i=0; i<dimension; i++) {
-            if (!(getSpan(i) > 0)) { // Use '!' in order to catch NaN
+            if (!(getSpan(i) > 0)) {                            // Use '!' in order to catch NaN
                 return true;
             }
         }
@@ -710,7 +710,7 @@ public abstract class AbstractEnvelope implements Envelope, Emptiable {
             final boolean c1   = (value >= lower);
             final boolean c2   = (value <= upper);
             if (c1 & c2) {
-                continue; // Point inside the range, check other dimensions.
+                continue;               // Point inside the range, check other dimensions.
             }
             if (c1 | c2) {
                 if (isNegative(upper - lower)) {
@@ -1136,7 +1136,7 @@ public abstract class AbstractEnvelope implements Envelope, Emptiable {
             final DirectPosition lowerCorner = envelope.getLowerCorner();
             final DirectPosition upperCorner = envelope.getUpperCorner();
             boolean isUpper = false;
-            do { // Executed exactly twice.
+            do {                                                        // Executed exactly twice.
                 for (int i=0; i<dimension; i++) {
                     buffer.append(i == 0 && !isUpper ? '(' : ' ');
                     final double ordinate = (isUpper ? upperCorner : lowerCorner).getOrdinate(i);

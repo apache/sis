@@ -22,6 +22,7 @@ import org.opengis.referencing.crs.*;
 import org.opengis.referencing.datum.*;
 import org.opengis.referencing.operation.*;
 import org.opengis.parameter.ParameterDescriptor;
+import org.apache.sis.internal.metadata.WKTKeywords;
 
 
 /**
@@ -53,19 +54,31 @@ final class TableInfo {
                 "COORD_REF_SYS_CODE",
                 "COORD_REF_SYS_NAME",
                 "COORD_REF_SYS_KIND",
-                new Class<?>[] { ProjectedCRS.class, GeographicCRS.class, GeocentricCRS.class,
-                                 VerticalCRS.class,  CompoundCRS.class,   EngineeringCRS.class},
-                new String[]   {"projected",        "geographic",        "geocentric",
-                                "vertical",         "compound",          "engineering"},
+                new Class<?>[] { ProjectedCRS.class,   GeographicCRS.class,   GeocentricCRS.class,
+                                 VerticalCRS.class,    CompoundCRS.class,     EngineeringCRS.class},
+                              // TemporalCRS.class,    ParametricCRS.class    (See comment below)
+                new String[]   {"projected",          "geographic",          "geocentric",
+                                "vertical",           "compound",            "engineering"},
+                             // "temporal",           "parametric"
                 "SHOW_CRS"),
+                /*
+                 * Above declaration omitted Temporal and Parametric cases because they are not defined
+                 * by the EPSG registry (at least as of version 8.9). In particular, we are not sure if
+                 * EPSG would chose to use "time" or "temporal".  Omitting those types for now does not
+                 * prevent SIS to find CRS of those types; the operation will only be more costly.
+                 */
 
         new TableInfo(CoordinateSystem.class,
                 "[Coordinate System]",
                 "COORD_SYS_CODE",
                 "COORD_SYS_NAME",
                 "COORD_SYS_TYPE",
-                new Class<?>[] { CartesianCS.class, EllipsoidalCS.class, SphericalCS.class, VerticalCS.class},
-                new String[]   {"Cartesian",       "ellipsoidal",       "spherical",       "vertical"},    //Really upper-case C.
+                new Class<?>[] {CartesianCS.class,      EllipsoidalCS.class,      VerticalCS.class,      LinearCS.class,
+                                SphericalCS.class,      PolarCS.class,            CylindricalCS.class},
+                             // TimeCS.class,           ParametricCS.class,       AffineCS.class         (see above comment)
+                new String[]   {WKTKeywords.Cartesian,  WKTKeywords.ellipsoidal,  WKTKeywords.vertical,  WKTKeywords.linear,
+                                WKTKeywords.spherical,  WKTKeywords.polar,        WKTKeywords.cylindrical},
+                             // WKTKeywords.temporal,   WKTKeywords.parametric,   WKTKeywords.affine
                 null),
 
         new TableInfo(CoordinateSystemAxis.class,
@@ -80,8 +93,10 @@ final class TableInfo {
                 "DATUM_CODE",
                 "DATUM_NAME",
                 "DATUM_TYPE",
-                new Class<?>[] { GeodeticDatum.class, VerticalDatum.class, EngineeringDatum.class},
-                new String[]   {"geodetic",          "vertical",          "engineering"},
+                new Class<?>[] { GeodeticDatum.class,  VerticalDatum.class,   EngineeringDatum.class},
+                              // TemporalDatum.class,  ParametricDatum.class  (see above comment),
+                new String[]   {"geodetic",           "vertical",            "engineering"},
+                             // "temporal",           "parametric",
                 null),
 
         new TableInfo(Ellipsoid.class,

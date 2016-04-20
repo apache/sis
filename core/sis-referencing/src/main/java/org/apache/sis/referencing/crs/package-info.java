@@ -100,6 +100,7 @@
     @XmlJavaTypeAdapter(CD_GeodeticDatum.class),
     @XmlJavaTypeAdapter(CD_EngineeringDatum.class),
     @XmlJavaTypeAdapter(CD_ImageDatum.class),
+    @XmlJavaTypeAdapter(CD_ParametricDatum.class),
     @XmlJavaTypeAdapter(CD_TemporalDatum.class),
     @XmlJavaTypeAdapter(CD_VerticalDatum.class),
     @XmlJavaTypeAdapter(CS_CartesianCS.class),      // Must be before CS_AffineCS.
@@ -107,6 +108,7 @@
     @XmlJavaTypeAdapter(CS_CylindricalCS.class),
     @XmlJavaTypeAdapter(CS_EllipsoidalCS.class),
     @XmlJavaTypeAdapter(CS_LinearCS.class),
+    @XmlJavaTypeAdapter(CS_ParametricCS.class),
     @XmlJavaTypeAdapter(CS_PolarCS.class),
     @XmlJavaTypeAdapter(CS_SphericalCS.class),
     @XmlJavaTypeAdapter(CS_TimeCS.class),

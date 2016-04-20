@@ -29,6 +29,7 @@ import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.util.Numerics;
+import org.apache.sis.internal.util.DoubleDouble;
 import org.apache.sis.internal.metadata.AxisDirections;
 import org.apache.sis.internal.referencing.ExtendedPrecisionMatrix;
 
@@ -559,8 +560,9 @@ public final class Matrices extends Static {
      *
      * <p>The given sub-matrix shall have the following properties:</p>
      * <ul>
-     *   <li>The last column contains translation terms, except in the last row.</li>
-     *   <li>The last row often (but not necessarily) contains 0 values except in the last column.</li>
+     *   <li>The last row often (but not necessarily) contains 0 values everywhere except in the last column.</li>
+     *   <li>Values in the last column are translation terms, except in the last row.</li>
+     *   <li>All other values are scale or shear terms.</li>
      * </ul>
      *
      * A square matrix complying with the above conditions is often {@linkplain #isAffine(Matrix) affine},
@@ -608,22 +610,34 @@ public final class Matrices extends Static {
      * @param  firstAffectedOrdinate The lowest index of the affected ordinates.
      * @param  subMatrix The matrix to use for affected ordinates.
      * @param  numTrailingOrdinates Number of trailing ordinates to pass through.
-     * @return A matrix
+     * @return A matrix for the same transform than the given matrix,
+     *         augmented with leading and trailing pass-through coordinates.
      *
      * @see org.apache.sis.referencing.operation.DefaultMathTransformFactory#createPassThroughTransform(int, MathTransform, int)
      */
     public static MatrixSIS createPassThrough(final int firstAffectedOrdinate,
             final Matrix subMatrix, final int numTrailingOrdinates)
     {
+        ArgumentChecks.ensureNonNull ("subMatrix",             subMatrix);
         ArgumentChecks.ensurePositive("firstAffectedOrdinate", firstAffectedOrdinate);
         ArgumentChecks.ensurePositive("numTrailingOrdinates",  numTrailingOrdinates);
         final int  expansion = firstAffectedOrdinate + numTrailingOrdinates;
-        int sourceDimensions = subMatrix.getNumCol();
+        int sourceDimensions = subMatrix.getNumCol();           // Will become the number of dimensions later.
         int targetDimensions = subMatrix.getNumRow();
-        final MatrixSIS matrix = createZero(targetDimensions-- + expansion,
-                                            sourceDimensions-- + expansion);
         /*
-         * Following code process for upper row to lower row.
+         * Get data from the source matrix, together with the error terms if present.
+         * The 'stride' and 'length' values will be used for computing indices in that array.
+         * The DoubleDouble temporary object is used only if the array contains error terms.
+         */
+        final int      stride  = sourceDimensions;
+        final int      length  = sourceDimensions * targetDimensions;
+        final double[] sources = getExtendedElements(subMatrix);
+        final DoubleDouble transfer = (sources.length > length) ? new DoubleDouble() : null;
+        final MatrixSIS matrix = createZero(targetDimensions-- + expansion,
+                                            sourceDimensions-- + expansion,
+                                            transfer != null);
+        /*
+         * Following code processes from upper row to lower row.
          * First, set the diagonal elements on leading new dimensions.
          */
         for (int j=0; j<firstAffectedOrdinate; j++) {
@@ -634,12 +648,14 @@ public final class Matrices extends Static {
          * which are unconditionally stored in the last column.
          */
         final int lastColumn = sourceDimensions + expansion;
-        for (int j=0; j<targetDimensions; j++) {
-            for (int i=0; i<sourceDimensions; i++) {
-                matrix.setElement(firstAffectedOrdinate + j, firstAffectedOrdinate + i, subMatrix.getElement(j, i));
-            }
-            matrix.setElement(firstAffectedOrdinate + j, lastColumn, subMatrix.getElement(j, sourceDimensions));
-        }
+        matrix.setElements(sources, length, stride, transfer,
+                0,                     0,                           // Source (row, colum)
+                firstAffectedOrdinate, firstAffectedOrdinate,       // Target (row, column)
+                targetDimensions,      sourceDimensions);           // Number of rows and columns to copy.
+        matrix.setElements(sources, length, stride, transfer,
+                0,                     sourceDimensions,            // Source (row, colum):  last column
+                firstAffectedOrdinate, lastColumn,                  // Target (row, column): part of last column
+                targetDimensions,      1);                          // Copy some rows of only 1 column.
         /*
          * Set the pseudo-diagonal elements on the trailing new dimensions.
          * 'diff' is zero for a square matrix and non-zero for rectangular matrix.
@@ -653,11 +669,67 @@ public final class Matrices extends Static {
          * this row contains only 0 element except for the last one, which is 1.
          */
         final int lastRow = targetDimensions + expansion;
-        for (int i=0; i<sourceDimensions; i++) {
-            matrix.setElement(lastRow, i + firstAffectedOrdinate, subMatrix.getElement(targetDimensions, i));
-        }
-        matrix.setElement(lastRow, lastColumn, subMatrix.getElement(targetDimensions, sourceDimensions));
+        matrix.setElements(sources, length, stride, transfer,
+                targetDimensions, 0,                                // Source (row, colum):  last row
+                lastRow,          firstAffectedOrdinate,            // Target (row, column): part of last row
+                1,                sourceDimensions);                // Copy some columns of only 1 row.
+        matrix.setElements(sources, length, stride, transfer,
+                targetDimensions, sourceDimensions,
+                lastRow,          lastColumn,
+                1,                1);
         return matrix;
+    }
+
+    /**
+     * Returns a matrix with the same content than the given matrix but a different size, assuming an affine transform.
+     * This method can be invoked for adding or removing the <strong>last</strong> dimensions of an affine transform.
+     * More specifically:
+     *
+     * <ul class="verbose">
+     *   <li>If the given {@code numCol} is <var>n</var> less than the number of columns in the given matrix,
+     *       then the <var>n</var> columns <em>before the last column</em> are removed.
+     *       The last column is left unchanged because it is assumed to contain the translation terms.</li>
+     *   <li>If the given {@code numCol} is <var>n</var> more than the number of columns in the given matrix,
+     *       then <var>n</var> columns are inserted <em>before the last column</em>.
+     *       All values in the new columns will be zero.</li>
+     *   <li>If the given {@code numRow} is <var>n</var> less than the number of rows in the given matrix,
+     *       then the <var>n</var> rows <em>before the last row</em> are removed.
+     *       The last row is left unchanged because it is assumed to contain the usual [0 0 0 … 1] terms.</li>
+     *   <li>If the given {@code numRow} is <var>n</var> more than the number of rows in the given matrix,
+     *       then <var>n</var> rows are inserted <em>before the last row</em>.
+     *       The corresponding offset and scale factors will be 0 and 1 respectively.
+     *       In other words, new dimensions are propagated unchanged.</li>
+     * </ul>
+     *
+     * @param  matrix  the matrix to resize. This matrix will never be changed.
+     * @param  numRow  the new number of rows. This is equal to the desired number of target dimensions plus 1.
+     * @param  numCol  the new number of columns. This is equal to the desired number of source dimensions plus 1.
+     * @return a new matrix of the given size, or the given {@code matrix} if no resizing was needed.
+     */
+    public static Matrix resizeAffine(final Matrix matrix, int numRow, int numCol) {
+        ArgumentChecks.ensureNonNull         ("matrix", matrix);
+        ArgumentChecks.ensureStrictlyPositive("numRow", numRow);
+        ArgumentChecks.ensureStrictlyPositive("numCol", numCol);
+        int srcRow = matrix.getNumRow();
+        int srcCol = matrix.getNumCol();
+        if (numRow == srcRow && numCol == srcCol) {
+            return matrix;
+        }
+        final int      stride  = srcCol;
+        final int      length  = srcCol * srcRow;
+        final double[] sources = getExtendedElements(matrix);
+        final DoubleDouble transfer = (sources.length > length) ? new DoubleDouble() : null;
+        final MatrixSIS resized = createZero(numRow, numCol, transfer != null);
+        final int copyRow = Math.min(--numRow, --srcRow);
+        final int copyCol = Math.min(--numCol, --srcCol);
+        for (int j=copyRow; j<numRow; j++) {
+            resized.setElement(j, j, 1);
+        }
+        resized.setElements(sources, length, stride, transfer, 0,      0,       0,      0,       copyRow, copyCol);    // Shear and scale terms.
+        resized.setElements(sources, length, stride, transfer, 0,      srcCol,  0,      numCol,  copyRow, 1);          // Translation column.
+        resized.setElements(sources, length, stride, transfer, srcRow, 0,       numRow, 0,       1,       copyCol);    // Last row.
+        resized.setElements(sources, length, stride, transfer, srcRow, srcCol,  numRow, numCol,  1,       1);          // Last row.
+        return resized;
     }
 
     /**
@@ -668,6 +740,17 @@ public final class Matrices extends Static {
     private static boolean isExtendedPrecision(final Matrix matrix) {
         return (matrix instanceof MatrixSIS) ? ((MatrixSIS) matrix).isExtendedPrecision() :
                (matrix instanceof ExtendedPrecisionMatrix);  // Not guarantee that the matrix really uses double-double.
+    }
+
+    /**
+     * Returns the elements of the given matrix, together with error terms if available.
+     */
+    private static double[] getExtendedElements(final Matrix matrix) {
+        if (matrix instanceof ExtendedPrecisionMatrix) {
+            return ((ExtendedPrecisionMatrix) matrix).getExtendedElements();
+        } else {
+            return MatrixSIS.castOrCopy(matrix).getElements();
+        }
     }
 
     /**

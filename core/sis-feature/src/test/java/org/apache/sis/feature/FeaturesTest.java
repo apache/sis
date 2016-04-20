@@ -22,13 +22,18 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
+// Branch-dependent imports
+import org.opengis.feature.Feature;
+import org.opengis.feature.InvalidPropertyValueException;
+
 
 /**
  * Tests {@link Features}.
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @author  Johann Sorel (Geomatys)
  * @since   0.5
- * @version 0.5
+ * @version 0.7
  * @module
  */
 @DependsOn(SingletonAttributeTest.class)
@@ -67,5 +72,27 @@ public final strictfp class FeaturesTest extends TestCase {
             assertTrue(message, message.contains("String"));
             assertTrue(message, message.contains("CharSequence"));
         }
+    }
+
+    /**
+     * Tests {@link Features#validate(Feature)}.
+     */
+    @Test
+    public void testValidate() {
+        final Feature feature = DefaultFeatureTypeTest.city().newInstance();
+
+        // Should not pass validation.
+        try {
+            Features.validate(feature);
+            fail("Feature is invalid because of missing property “population”. Validation should have raised an exception.");
+        } catch (InvalidPropertyValueException ex) {
+            String message = ex.getMessage();
+            assertTrue(message, message.contains("city") || message.contains("population"));
+        }
+
+        // Should pass validation.
+        feature.setPropertyValue("city", "Utopia");
+        feature.setPropertyValue("population", 10);
+        Features.validate(feature);
     }
 }

@@ -20,6 +20,7 @@ import java.util.Locale;
 import java.text.ParsePosition;
 import java.text.ParseException;
 import org.apache.sis.util.Workaround;
+import org.apache.sis.util.Localized;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.resources.Errors;
 
@@ -39,10 +40,10 @@ import org.apache.sis.util.resources.Errors;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.3
+ * @version 0.7
  * @module
  */
-public final class LocalizedParseException extends ParseException implements LocalizedException {
+public final class LocalizedParseException extends ParseException implements LocalizedException, Localized {
     /**
      * For cross-version compatibility.
      */

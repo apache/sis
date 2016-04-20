@@ -153,7 +153,7 @@ abstract class StringConverter<T> extends SystemConverter<String, T> {
      */
     public static final class Number extends StringConverter<java.lang.Number> {
         private static final long serialVersionUID = 8356246549731207392L;
-        public Number() {super(java.lang.Number.class);} // Instantiated by ServiceLoader.
+        public Number() {super(java.lang.Number.class);}                            // Instantiated by ServiceLoader.
 
         @Override java.lang.Number doConvert(String source) throws NumberFormatException {
             return Numbers.narrowestNumber(source);
@@ -162,7 +162,7 @@ abstract class StringConverter<T> extends SystemConverter<String, T> {
 
     public static final class Double extends StringConverter<java.lang.Double> {
         private static final long serialVersionUID = -8576620873911755486L;
-        public Double() {super(java.lang.Double.class);} // Instantiated by ServiceLoader.
+        public Double() {super(java.lang.Double.class);}                            // Instantiated by ServiceLoader.
 
         @Override java.lang.Double doConvert(String source) throws NumberFormatException {
             return java.lang.Double.parseDouble(source);
@@ -171,7 +171,7 @@ abstract class StringConverter<T> extends SystemConverter<String, T> {
 
     public static final class Float extends StringConverter<java.lang.Float> {
         private static final long serialVersionUID = 2301101264860653956L;
-        public Float() {super(java.lang.Float.class);} // Instantiated by ServiceLoader.
+        public Float() {super(java.lang.Float.class);}                              // Instantiated by ServiceLoader.
 
         @Override java.lang.Float doConvert(String source) throws NumberFormatException {
             return java.lang.Float.parseFloat(source);
@@ -180,7 +180,7 @@ abstract class StringConverter<T> extends SystemConverter<String, T> {
 
     public static final class Long extends StringConverter<java.lang.Long> {
         private static final long serialVersionUID = 4711495660311641145L;
-        public Long() {super(java.lang.Long.class);} // Instantiated by ServiceLoader.
+        public Long() {super(java.lang.Long.class);}                                // Instantiated by ServiceLoader.
 
         @Override java.lang.Long doConvert(String source) throws NumberFormatException {
             return java.lang.Long.parseLong(source);
@@ -189,7 +189,7 @@ abstract class StringConverter<T> extends SystemConverter<String, T> {
 
     public static final class Integer extends StringConverter<java.lang.Integer> {
         private static final long serialVersionUID = -5024227987148221073L;
-        public Integer() {super(java.lang.Integer.class);} // Instantiated by ServiceLoader.
+        public Integer() {super(java.lang.Integer.class);}                          // Instantiated by ServiceLoader.
 
         @Override java.lang.Integer doConvert(String source) throws NumberFormatException {
             return java.lang.Integer.parseInt(source);
@@ -198,7 +198,7 @@ abstract class StringConverter<T> extends SystemConverter<String, T> {
 
     public static final class Short extends StringConverter<java.lang.Short> {
         private static final long serialVersionUID = 4067703596268901375L;
-        public Short() {super(java.lang.Short.class);} // Instantiated by ServiceLoader.
+        public Short() {super(java.lang.Short.class);}                              // Instantiated by ServiceLoader.
 
         @Override java.lang.Short doConvert(String source) throws NumberFormatException {
             return java.lang.Short.parseShort(source);
@@ -207,7 +207,7 @@ abstract class StringConverter<T> extends SystemConverter<String, T> {
 
     public static final class Byte extends StringConverter<java.lang.Byte> {
         private static final long serialVersionUID = 6934470534898203474L;
-        public Byte() {super(java.lang.Byte.class);} // Instantiated by ServiceLoader.
+        public Byte() {super(java.lang.Byte.class);}                                // Instantiated by ServiceLoader.
 
         @Override java.lang.Byte doConvert(String source) throws NumberFormatException {
             return java.lang.Byte.parseByte(source);
@@ -216,7 +216,7 @@ abstract class StringConverter<T> extends SystemConverter<String, T> {
 
     public static final class BigDecimal extends StringConverter<java.math.BigDecimal> {
         private static final long serialVersionUID = -5949128086478498785L;
-        public BigDecimal() {super(java.math.BigDecimal.class);} // Instantiated by ServiceLoader.
+        public BigDecimal() {super(java.math.BigDecimal.class);}                    // Instantiated by ServiceLoader.
 
         @Override java.math.BigDecimal doConvert(String source) throws NumberFormatException {
             return new java.math.BigDecimal(source);
@@ -225,7 +225,7 @@ abstract class StringConverter<T> extends SystemConverter<String, T> {
 
     public static final class BigInteger extends StringConverter<java.math.BigInteger> {
         private static final long serialVersionUID = 6387019773702794255L;
-        public BigInteger() {super(java.math.BigInteger.class);} // Instantiated by ServiceLoader.
+        public BigInteger() {super(java.math.BigInteger.class);}                    // Instantiated by ServiceLoader.
 
         @Override java.math.BigInteger doConvert(String source) throws NumberFormatException {
             return new java.math.BigInteger(source);
@@ -234,7 +234,7 @@ abstract class StringConverter<T> extends SystemConverter<String, T> {
 
     public static final class Boolean extends StringConverter<java.lang.Boolean> {
         private static final long serialVersionUID = 4689076223535035309L;
-        public Boolean() {super(java.lang.Boolean.class);} // Instantiated by ServiceLoader.
+        public Boolean() {super(java.lang.Boolean.class);}                          // Instantiated by ServiceLoader.
 
         /** See {@link StringConverter} for the conversion table. */
         @Override java.lang.Boolean doConvert(final String source) throws UnconvertibleObjectException {
@@ -248,7 +248,7 @@ abstract class StringConverter<T> extends SystemConverter<String, T> {
 
     public static final class Locale extends StringConverter<java.util.Locale> {
         private static final long serialVersionUID = -794933131690043494L;
-        public Locale() {super(java.util.Locale.class);} // Instantiated by ServiceLoader.
+        public Locale() {super(java.util.Locale.class);}                            // Instantiated by ServiceLoader.
 
         @Override java.util.Locale doConvert(String source) {
             return Locales.parse(source);
@@ -257,7 +257,7 @@ abstract class StringConverter<T> extends SystemConverter<String, T> {
 
     public static final class Charset extends StringConverter<java.nio.charset.Charset> {
         private static final long serialVersionUID = 4375157214436581095L;
-        public Charset() {super(java.nio.charset.Charset.class);} // Instantiated by ServiceLoader.
+        public Charset() {super(java.nio.charset.Charset.class);}                   // Instantiated by ServiceLoader.
 
         @Override java.nio.charset.Charset doConvert(String source) throws UnsupportedCharsetException {
             return java.nio.charset.Charset.forName(source);
@@ -266,7 +266,7 @@ abstract class StringConverter<T> extends SystemConverter<String, T> {
 
     public static final class File extends StringConverter<java.io.File> {
         private static final long serialVersionUID = -2157537605361631529L;
-        public File() {super(java.io.File.class);} // Instantiated by ServiceLoader.
+        public File() {super(java.io.File.class);}                                  // Instantiated by ServiceLoader.
 
         @Override java.io.File doConvert(String source) {
             return new java.io.File(source);
@@ -275,7 +275,7 @@ abstract class StringConverter<T> extends SystemConverter<String, T> {
 
     public static final class URI extends StringConverter<java.net.URI> {
         private static final long serialVersionUID = 7266486748714603336L;
-        public URI() {super(java.net.URI.class);} // Instantiated by ServiceLoader.
+        public URI() {super(java.net.URI.class);}                                   // Instantiated by ServiceLoader.
 
         @Override java.net.URI doConvert(String source) throws URISyntaxException {
             return new java.net.URI(source);
@@ -284,7 +284,7 @@ abstract class StringConverter<T> extends SystemConverter<String, T> {
 
     public static final class URL extends StringConverter<java.net.URL> {
         private static final long serialVersionUID = -6518011235037500143L;
-        public URL() {super(java.net.URL.class);} // Instantiated by ServiceLoader.
+        public URL() {super(java.net.URL.class);}                                   // Instantiated by ServiceLoader.
 
         @Override java.net.URL doConvert(String source) throws MalformedURLException {
             return new java.net.URL(source);
@@ -294,7 +294,7 @@ abstract class StringConverter<T> extends SystemConverter<String, T> {
     public static final class Unit extends StringConverter<javax.measure.unit.Unit<?>> {
         private static final long serialVersionUID = -1809497218136016210L;
         @SuppressWarnings("unchecked")
-        public Unit() {super((Class) javax.measure.unit.Unit.class);} // Instantiated by ServiceLoader.
+        public Unit() {super((Class) javax.measure.unit.Unit.class);}               // Instantiated by ServiceLoader.
 
         @Override javax.measure.unit.Unit<?> doConvert(String source) throws IllegalArgumentException {
             return Units.valueOf(source);
@@ -303,7 +303,7 @@ abstract class StringConverter<T> extends SystemConverter<String, T> {
 
     public static final class Angle extends StringConverter<org.apache.sis.measure.Angle> {
         private static final long serialVersionUID = -6937967772504961327L;
-        public Angle() {super(org.apache.sis.measure.Angle.class);} // Instantiated by ServiceLoader.
+        public Angle() {super(org.apache.sis.measure.Angle.class);}                 // Instantiated by ServiceLoader.
 
         @Override org.apache.sis.measure.Angle doConvert(String source) throws NumberFormatException {
             return new org.apache.sis.measure.Angle(source);

@@ -47,7 +47,7 @@ import static java.lang.Double.doubleToRawLongBits;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.5
- * @version 0.6
+ * @version 0.7
  * @module
  *
  * @see LogarithmicTransform1D
@@ -58,6 +58,11 @@ class LinearTransform1D extends AbstractMathTransform1D implements LinearTransfo
      * Serial number for inter-operability with different versions.
      */
     private static final long serialVersionUID = -7595037195668813000L;
+
+    /**
+     * A transform that just reverse the sign of input values.
+     */
+    static final LinearTransform1D NEGATE = new LinearTransform1D(-1, 0);
 
     /**
      * The value which is multiplied to input values.
@@ -99,8 +104,9 @@ class LinearTransform1D extends AbstractMathTransform1D implements LinearTransfo
      * @see MathTransforms#linear(double, double)
      */
     public static LinearTransform1D create(final double scale, final double offset) {
-        if (offset == 0 && scale == 1) {
-            return IdentityTransform1D.INSTANCE;
+        if (offset == 0) {
+            if (scale == +1) return IdentityTransform1D.INSTANCE;
+            if (scale == -1) return NEGATE;
         }
         if (scale == 0) {
             if (offset == 0) return ConstantTransform1D.ZERO;
@@ -108,6 +114,19 @@ class LinearTransform1D extends AbstractMathTransform1D implements LinearTransfo
             return new ConstantTransform1D(offset);
         }
         return new LinearTransform1D(scale, offset);
+    }
+
+    /**
+     * Creates a constant function having value <var>y</var>, and for which the inverse is <var>x</var>.
+     *
+     * @since 0.7
+     */
+    static LinearTransform1D constant(final double x, final double y) {
+        final LinearTransform1D tr = create(0, y);
+        if (!Double.isNaN(x)) {
+            tr.inverse = create(0, x);
+        }
+        return tr;
     }
 
     /**

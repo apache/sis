@@ -220,12 +220,12 @@ header: for (int i=0; ; i++) {
                     if (propertyType instanceof AttributeType &&
                             ((AttributeType) propertyType).getMinimumOccurs() == 0)
                     {
-                        continue;   // If no value, skip the full row.
+                        continue;                                       // If no value, skip the full row.
                     }
                     if (propertyType instanceof FeatureAssociationRole &&
                             ((FeatureAssociationRole) propertyType).getMinimumOccurs() == 0)
                     {
-                        continue;   // If no value, skip the full row.
+                        continue;                                       // If no value, skip the full row.
                     }
                 }
             } else if (propertyType instanceof AttributeType<?>) {
@@ -323,7 +323,7 @@ header: for (int i=0; ; i++) {
                         Object c = attribute.getDefaultValue();
                         if (feature != null) {
                             final Property p = feature.getProperty(propertyType.getName().toString());
-                            if (p instanceof Attribute<?>) {  // Should always be true, but we are paranoiac.
+                            if (p instanceof Attribute<?>) {            // Should always be true, but we are paranoiac.
                                 c = ((Attribute<?>) p).characteristics().get(attribute.getName().toString());
                             }
                         }
@@ -344,11 +344,11 @@ header: for (int i=0; ; i++) {
      * Returns the display name for the given {@code GenericName}.
      */
     private String toString(final GenericName name) {
-        if (name == null) { // Should not be null, but let be safe.
+        if (name == null) {                                             // Should not be null, but let be safe.
             return "";
         }
         final InternationalString i18n = name.toInternationalString();
-        if (i18n != null) { // Should not be null, but let be safe.
+        if (i18n != null) {                                             // Should not be null, but let be safe.
             final String s = i18n.toString(displayLocale);
             if (s != null) {
                 return s;

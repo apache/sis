@@ -246,7 +246,7 @@ public final class CollectionsExt extends Static {
                 return array;
             }
         }
-        throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalPropertyClass_2, name, valueType));
+        throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalPropertyValueClass_2, name, valueType));
     }
 
     /**

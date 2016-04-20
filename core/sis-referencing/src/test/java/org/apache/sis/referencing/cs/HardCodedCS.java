@@ -211,16 +211,26 @@ public final strictfp class HardCodedCS {
 
     /**
      * A one-dimensional vertical CS with
-     * <var>{@linkplain HardCodedAxes#ELLIPSOIDAL_HEIGHT
-     * ellipsoidal height}</var> axis in metres.
+     * <var>{@linkplain HardCodedAxes#ELLIPSOIDAL_HEIGHT ellipsoidal height}</var>
+     * axis in metres.
      */
     public static final DefaultVerticalCS ELLIPSOIDAL_HEIGHT = new DefaultVerticalCS(
             getProperties(HardCodedAxes.ELLIPSOIDAL_HEIGHT), HardCodedAxes.ELLIPSOIDAL_HEIGHT);
 
     /**
      * A one-dimensional vertical CS with
-     * <var>{@linkplain HardCodedAxes#GRAVITY_RELATED_HEIGHT
-     * gravity-related height}</var> axis in metres.
+     * <var>{@linkplain HardCodedAxes#ELLIPSOIDAL_HEIGHT ellipsoidal height}</var>
+     * axis in centimetres.
+     *
+     * @since 0.7
+     */
+    public static final DefaultVerticalCS ELLIPSOIDAL_HEIGHT_cm = new DefaultVerticalCS(
+            getProperties(HardCodedAxes.ELLIPSOIDAL_HEIGHT_cm), HardCodedAxes.ELLIPSOIDAL_HEIGHT_cm);
+
+    /**
+     * A one-dimensional vertical CS with
+     * <var>{@linkplain HardCodedAxes#GRAVITY_RELATED_HEIGHT gravity-related height}</var>
+     * axis in metres.
      */
     public static final DefaultVerticalCS GRAVITY_RELATED_HEIGHT = new DefaultVerticalCS(
             getProperties(HardCodedAxes.GRAVITY_RELATED_HEIGHT), HardCodedAxes.GRAVITY_RELATED_HEIGHT);

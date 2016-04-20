@@ -18,7 +18,6 @@ package org.apache.sis.internal.storage.csv;
 
 import java.util.Iterator;
 import java.io.StringReader;
-import org.opengis.feature.Feature;
 import org.opengis.metadata.Metadata;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.metadata.extent.SpatialTemporalExtent;
@@ -29,6 +28,9 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 import static org.apache.sis.test.TestUtilities.getSingleton;
+
+// Branch-dependent imports
+import org.opengis.feature.Feature;
 
 
 /**
