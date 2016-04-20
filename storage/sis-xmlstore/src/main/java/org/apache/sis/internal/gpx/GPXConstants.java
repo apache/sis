@@ -29,7 +29,7 @@ import org.apache.sis.feature.DefaultAttributeType;
 import org.apache.sis.feature.DefaultFeatureType;
 import org.apache.sis.feature.DefaultAssociationRole;
 import org.apache.sis.internal.feature.FeatureTypeBuilder;
-import org.apache.sis.internal.feature.NameConvention;
+import org.apache.sis.internal.feature.AttributeConvention;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.util.Static;
@@ -228,7 +228,7 @@ public final class GPXConstants extends Static {
 
     static {
         final NameFactory   factory  = DefaultFactories.forBuildin(NameFactory.class);
-        final LocalName     geomName = NameConvention.DEFAULT_GEOMETRY_PROPERTY;
+        final LocalName     geomName = AttributeConvention.DEFAULT_GEOMETRY_PROPERTY;
         final Map<String,?> geomInfo = Collections.singletonMap(AbstractIdentifiedType.NAME_KEY, geomName);
 
         //-------------------- GENERIC GPX ENTITY ------------------------------
@@ -310,7 +310,7 @@ public final class GPXConstants extends Static {
                 new GroupPointsAsPolylineOperation(geomInfo, attWayPoints.getName(), geomName),
                 null
         };
-        final Map<String,?> envelopeInfo = Collections.singletonMap(AbstractIdentifiedType.NAME_KEY, NameConvention.ENVELOPE_PROPERTY);
+        final Map<String,?> envelopeInfo = Collections.singletonMap(AbstractIdentifiedType.NAME_KEY, AttributeConvention.ENVELOPE_PROPERTY);
         try {
             properties[properties.length - 1] = FeatureOperations.envelope(envelopeInfo, null, properties);
         } catch (FactoryException e) {

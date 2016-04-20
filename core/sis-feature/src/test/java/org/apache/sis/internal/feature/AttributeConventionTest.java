@@ -34,7 +34,7 @@ import org.opengis.feature.IdentifiedType;
 
 
 /**
- * Tests {@link NameConvention}.
+ * Tests {@link AttributeConvention}.
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
@@ -42,74 +42,74 @@ import org.opengis.feature.IdentifiedType;
  * @version 0.7
  * @module
  */
-public final strictfp class NameConventionTest extends TestCase {
+public final strictfp class AttributeConventionTest extends TestCase {
     /**
-     * Tests {@link NameConvention#contains(GenericName)} method.
+     * Tests {@link AttributeConvention#contains(GenericName)} method.
      */
     @Test
     public void testIsConventionProperty() {
-        assertFalse("Feature-specific name", NameConvention.contains(Names.createLocalName("MyFeature", ":", "City")));
-        assertTrue ("Conventional name",     NameConvention.contains(NameConvention.ENVELOPE_PROPERTY));
-        assertTrue ("Fully qualified name",  NameConvention.contains(NameConvention.ENVELOPE_PROPERTY.toFullyQualifiedName()));
+        assertFalse("Feature-specific name", AttributeConvention.contains(Names.createLocalName("MyFeature", ":", "City")));
+        assertTrue ("Conventional name",     AttributeConvention.contains(AttributeConvention.ENVELOPE_PROPERTY));
+        assertTrue ("Fully qualified name",  AttributeConvention.contains(AttributeConvention.ENVELOPE_PROPERTY.toFullyQualifiedName()));
     }
 
     /**
-     * Tests {@link NameConvention#isGeometryAttribute(IdentifiedType)} method.
+     * Tests {@link AttributeConvention#isGeometryAttribute(IdentifiedType)} method.
      */
     @Test
     public void testIsGeometryAttribute() {
         final Map<String,?> properties = Collections.singletonMap(DefaultAttributeType.NAME_KEY, "geometry");
 
-        assertFalse("AttributeType<Integer>", NameConvention.isGeometryAttribute(
+        assertFalse("AttributeType<Integer>", AttributeConvention.isGeometryAttribute(
                 new DefaultAttributeType<>(properties, Integer.class, 1, 1, null)));
 
-        assertTrue("AttributeType<Point>", NameConvention.isGeometryAttribute(
+        assertTrue("AttributeType<Point>", AttributeConvention.isGeometryAttribute(
                 new DefaultAttributeType<>(properties, Point.class, 1, 1, null)));
     }
 
     /**
-     * Tests {@link NameConvention#characterizedByCRS(IdentifiedType)} and
-     * {@link NameConvention#getCRSCharacteristic(Property)} methods.
+     * Tests {@link AttributeConvention#characterizedByCRS(IdentifiedType)} and
+     * {@link AttributeConvention#getCRSCharacteristic(Property)} methods.
      */
     @Test
     public void testGetCrsCharacteristic() {
         final Map<String,?> properties = Collections.singletonMap(DefaultAttributeType.NAME_KEY, "geometry");
         DefaultAttributeType<Point> type = new DefaultAttributeType<>(properties, Point.class, 1, 1, null);
-        assertFalse("characterizedByCRS",  NameConvention.characterizedByCRS(type));
-        assertNull("getCRSCharacteristic", NameConvention.getCRSCharacteristic(type.newInstance()));
+        assertFalse("characterizedByCRS",  AttributeConvention.characterizedByCRS(type));
+        assertNull("getCRSCharacteristic", AttributeConvention.getCRSCharacteristic(type.newInstance()));
         /*
          * Creates an attribute associated to an attribute (i.e. a "characteristic") for storing
          * the Coordinate Reference System of the "geometry" attribute. Then test again.
          */
         final DefaultAttributeType<CoordinateReferenceSystem> characteristic = new DefaultAttributeType<>(
-                Collections.singletonMap(DefaultAttributeType.NAME_KEY, NameConvention.CRS_CHARACTERISTIC),
+                Collections.singletonMap(DefaultAttributeType.NAME_KEY, AttributeConvention.CRS_CHARACTERISTIC),
                 CoordinateReferenceSystem.class, 1, 1, HardCodedCRS.WGS84);
 
         type = new DefaultAttributeType<>(properties, Point.class, 1, 1, null, characteristic);
-        assertTrue(NameConvention.characterizedByCRS(type));
-        assertEquals(HardCodedCRS.WGS84, NameConvention.getCRSCharacteristic(type.newInstance()));
+        assertTrue("characterizedByCRS", AttributeConvention.characterizedByCRS(type));
+        assertEquals(HardCodedCRS.WGS84, AttributeConvention.getCRSCharacteristic(type.newInstance()));
     }
 
     /**
-     * Tests {@link NameConvention#characterizedByMaximalLength(IdentifiedType)} and
-     * {@link NameConvention#getMaximalLengthCharacteristic(Property)} methods.
+     * Tests {@link AttributeConvention#characterizedByMaximalLength(IdentifiedType)} and
+     * {@link AttributeConvention#getMaximalLengthCharacteristic(Property)} methods.
      */
     @Test
     public void testGetMaximalLengthCharacteristic() {
         final Map<String,?> properties = Collections.singletonMap(DefaultAttributeType.NAME_KEY, "name");
         DefaultAttributeType<String> type = new DefaultAttributeType<>(properties, String.class, 1, 1, null);
-        assertFalse("characterizedByMaximalLength",  NameConvention.characterizedByMaximalLength(type));
-        assertNull("getMaximalLengthCharacteristic", NameConvention.getMaximalLengthCharacteristic(type.newInstance()));
+        assertFalse("characterizedByMaximalLength",  AttributeConvention.characterizedByMaximalLength(type));
+        assertNull("getMaximalLengthCharacteristic", AttributeConvention.getMaximalLengthCharacteristic(type.newInstance()));
         /*
          * Creates an attribute associated to an attribute (i.e. a "characteristic") for storing
          * the maximal length of the "name" attribute. Then test again.
          */
         final DefaultAttributeType<Integer> characteristic = new DefaultAttributeType<>(
-                Collections.singletonMap(DefaultAttributeType.NAME_KEY, NameConvention.MAXIMAL_LENGTH_CHARACTERISTIC),
+                Collections.singletonMap(DefaultAttributeType.NAME_KEY, AttributeConvention.MAXIMAL_LENGTH_CHARACTERISTIC),
                 Integer.class, 1, 1, 120);
 
         type = new DefaultAttributeType<>(properties, String.class, 1, 1, null, characteristic);
-        assertTrue("characterizedByMaximalLength", NameConvention.characterizedByMaximalLength(type));
-        assertEquals(Integer.valueOf(120), NameConvention.getMaximalLengthCharacteristic(type.newInstance()));
+        assertTrue("characterizedByMaximalLength", AttributeConvention.characterizedByMaximalLength(type));
+        assertEquals(Integer.valueOf(120), AttributeConvention.getMaximalLengthCharacteristic(type.newInstance()));
     }
 }

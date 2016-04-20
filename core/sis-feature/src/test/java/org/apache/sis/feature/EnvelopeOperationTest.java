@@ -24,7 +24,7 @@ import com.esri.core.geometry.Polygon;
 import org.opengis.geometry.Envelope;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.apache.sis.internal.feature.NameConvention;
+import org.apache.sis.internal.feature.AttributeConvention;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.geometry.GeneralEnvelope;
 
@@ -68,10 +68,10 @@ public final strictfp class EnvelopeOperationTest extends TestCase {
      */
     private static DefaultFeatureType school(final int defaultGeometry) throws FactoryException {
         final DefaultAttributeType<?> standardCRS = new DefaultAttributeType<>(
-                name(NameConvention.CRS_CHARACTERISTIC), CoordinateReferenceSystem.class, 1, 1, HardCodedCRS.WGS84_φλ);
+                name(AttributeConvention.CRS_CHARACTERISTIC), CoordinateReferenceSystem.class, 1, 1, HardCodedCRS.WGS84_φλ);
 
         final DefaultAttributeType<?> normalizedCRS = new DefaultAttributeType<>(
-                name(NameConvention.CRS_CHARACTERISTIC), CoordinateReferenceSystem.class, 1, 1, HardCodedCRS.WGS84);
+                name(AttributeConvention.CRS_CHARACTERISTIC), CoordinateReferenceSystem.class, 1, 1, HardCodedCRS.WGS84);
 
         final PropertyType[] attributes = {
             new DefaultAttributeType<>(name("name"),          String.class,  1, 1, null),
@@ -81,7 +81,7 @@ public final strictfp class EnvelopeOperationTest extends TestCase {
             null,
             null
         };
-        attributes[4] = FeatureOperations.link(name(NameConvention.DEFAULT_GEOMETRY_PROPERTY), attributes[defaultGeometry]);
+        attributes[4] = FeatureOperations.link(name(AttributeConvention.DEFAULT_GEOMETRY_PROPERTY), attributes[defaultGeometry]);
         attributes[5] = FeatureOperations.envelope(name("bounds"), null, attributes);
         return new DefaultFeatureType(name("school"), false, null, attributes);
     }
