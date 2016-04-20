@@ -83,6 +83,7 @@ import org.apache.sis.internal.jdk7.Objects;
     DefaultGeodeticDatum.class,
     DefaultVerticalDatum.class,
     DefaultTemporalDatum.class,
+    DefaultParametricDatum.class,
     DefaultEngineeringDatum.class,
     DefaultImageDatum.class
 })

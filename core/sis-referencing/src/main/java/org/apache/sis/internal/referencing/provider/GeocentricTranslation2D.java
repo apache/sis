@@ -56,7 +56,22 @@ public final class GeocentricTranslation2D extends GeocentricAffineBetweenGeogra
      * Constructs the provider.
      */
     public GeocentricTranslation2D() {
-        super(2, 2, PARAMETERS);
+        this(null);
+    }
+
+    /**
+     * Constructs a provider that can be resized.
+     */
+    GeocentricTranslation2D(GeodeticOperation[] redimensioned) {
+        super(2, 2, PARAMETERS, redimensioned);
+    }
+
+    /**
+     * Returns the three-dimensional variant of this operation method.
+     */
+    @Override
+    Class<GeocentricTranslation3D> variant3D() {
+        return GeocentricTranslation3D.class;
     }
 
     /**

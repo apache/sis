@@ -33,4 +33,6 @@ import org.opengis.util.GenericName;
  */
 abstract class Property {
     public abstract GenericName getName();
+
+    public abstract Object getValue();
 }

@@ -17,8 +17,10 @@
 package org.apache.sis.internal.referencing;
 
 import java.util.Map;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Locale;
 import javax.measure.unit.Unit;
 import javax.measure.quantity.Length;
@@ -34,6 +36,9 @@ import org.opengis.referencing.crs.TemporalCRS;
 import org.opengis.referencing.crs.VerticalCRS;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.crs.CRSFactory;
+import org.opengis.referencing.cs.CSFactory;
+import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
@@ -54,7 +59,6 @@ import org.opengis.metadata.extent.GeographicExtent;
 import org.opengis.metadata.extent.VerticalExtent;
 import org.opengis.geometry.Envelope;
 
-import org.opengis.referencing.cs.AxisDirection;
 import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.CommonCRS;
@@ -89,7 +93,14 @@ import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.Utilities;
 
 // Branch-dependent imports
+import org.apache.sis.internal.jdk8.JDK8;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
+import org.apache.sis.referencing.factory.GeodeticObjectFactory;
+import org.apache.sis.referencing.cs.DefaultParametricCS;
+import org.apache.sis.referencing.datum.DefaultParametricDatum;
+import org.apache.sis.referencing.factory.InvalidGeodeticParameterException;
+import org.opengis.referencing.datum.Datum;
+import org.opengis.referencing.datum.DatumFactory;
 
 
 /**
@@ -154,7 +165,7 @@ public final class ServicesForMetadata extends ReferencingServices {
                 !Utilities.equalsIgnoreMetadata(cs2.getAxis(1), cs1.getAxis(1)))
             {
                 final CoordinateOperation operation;
-                final CoordinateOperationFactory factory = DefaultFactories.forBuildin(CoordinateOperationFactory.class);
+                final CoordinateOperationFactory factory = CoordinateOperations.factory();
                 try {
                     operation = factory.createOperation(crs, normalizedCRS);
                 } catch (FactoryException e) {
@@ -531,6 +542,77 @@ public final class ServicesForMetadata extends ReferencingServices {
     }
 
     /**
+     * Creates a parametric CS. This method requires the SIS factory
+     * since parametric CRS were not available in GeoAPI 3.0.
+     *
+     * @param  properties  the coordinate system name, and optionally other properties.
+     * @param  axis        the axis of the parametric coordinate system.
+     * @param  factory     the factory to use for creating the coordinate system.
+     * @return a parametric coordinate system using the given axes.
+     * @throws FactoryException if the parametric object creation failed.
+     *
+     * @since 0.7
+     */
+    @Override
+    public CoordinateSystem createParametricCS(final Map<String,?> properties, final CoordinateSystemAxis axis,
+            CSFactory factory) throws FactoryException
+    {
+        if (!(factory instanceof GeodeticObjectFactory)) {
+            factory = DefaultFactories.forBuildin(CSFactory.class, GeodeticObjectFactory.class);
+        }
+        return ((GeodeticObjectFactory) factory).createParametricCS(properties, axis);
+    }
+
+    /**
+     * Creates a parametric datum. This method requires the SIS factory
+     * since parametric CRS were not available in GeoAPI 3.0.
+     *
+     * @param  properties  the datum name, and optionally other properties.
+     * @param  factory     the factory to use for creating the datum.
+     * @return a parametric datum using the given name.
+     * @throws FactoryException if the parametric object creation failed.
+     *
+     * @since 0.7
+     */
+    @Override
+    public Datum createParametricDatum(final Map<String,?> properties, DatumFactory factory)
+            throws FactoryException
+    {
+        if (!(factory instanceof GeodeticObjectFactory)) {
+            factory = DefaultFactories.forBuildin(DatumFactory.class, GeodeticObjectFactory.class);
+        }
+        return ((GeodeticObjectFactory) factory).createParametricDatum(properties);
+    }
+
+    /**
+     * Creates a parametric CRS. This method requires the SIS factory
+     * since parametric CRS were not available in GeoAPI 3.0.
+     *
+     * @param  properties  the coordinate reference system name, and optionally other properties.
+     * @param  datum       the parametric datum.
+     * @param  cs          the parametric coordinate system.
+     * @param  factory     the factory to use for creating the coordinate reference system.
+     * @return a parametric coordinate system using the given axes.
+     * @throws FactoryException if the parametric object creation failed.
+     *
+     * @since 0.7
+     */
+    @Override
+    public SingleCRS createParametricCRS(final Map<String,?> properties, final Datum datum,
+            final CoordinateSystem cs, CRSFactory factory) throws FactoryException
+    {
+        if (!(factory instanceof GeodeticObjectFactory)) {
+            factory = DefaultFactories.forBuildin(CRSFactory.class, GeodeticObjectFactory.class);
+        }
+        try {
+            return ((GeodeticObjectFactory) factory).createParametricCRS(properties,
+                    (DefaultParametricDatum) datum, (DefaultParametricCS) cs);
+        } catch (ClassCastException e) {
+            throw new InvalidGeodeticParameterException(e.toString(), e);
+        }
+    }
+
+    /**
      * Creates a derived CRS from the information found in a WKT 1 {@code FITTED_CS} element.
      * This coordinate system can not be easily constructed from the information provided by the WKT 1 format.
      * Note that this method is needed only for WKT 1 parsing, since WKT provides enough information for using
@@ -614,7 +696,7 @@ public final class ServicesForMetadata extends ReferencingServices {
         if (factory instanceof DefaultCoordinateOperationFactory) {
             df = (DefaultCoordinateOperationFactory) factory;
         } else {
-            df = DefaultFactories.forBuildin(CoordinateOperationFactory.class, DefaultCoordinateOperationFactory.class);
+            df = CoordinateOperations.factory();
         }
         return df.createSingleOperation(properties, sourceCRS, targetCRS, interpolationCRS, method, null);
     }
@@ -626,17 +708,30 @@ public final class ServicesForMetadata extends ReferencingServices {
      *
      * @param  properties The default properties.
      * @param  mtFactory  The math transform factory to use.
+     * @param  crsFactory The factory to use if the operation factory needs to create CRS for intermediate steps.
+     * @param  csFactory  The factory to use if the operation factory needs to create CS for intermediate steps.
      * @return The coordinate operation factory to use.
      *
-     * @since 0.6
+     * @since 0.7
      */
     @Override
-    public CoordinateOperationFactory getCoordinateOperationFactory(Map<String,?> properties, MathTransformFactory mtFactory) {
-        if (Containers.isNullOrEmpty(properties) && DefaultFactories.isDefaultInstance(MathTransformFactory.class, mtFactory)) {
-            return DefaultFactories.forBuildin(CoordinateOperationFactory.class);
-        } else {
-            return new DefaultCoordinateOperationFactory(properties, mtFactory);
+    public CoordinateOperationFactory getCoordinateOperationFactory(Map<String,?> properties,
+            final MathTransformFactory mtFactory, final CRSFactory crsFactory, final CSFactory csFactory)
+    {
+        if (Containers.isNullOrEmpty(properties)) {
+            if (DefaultFactories.isDefaultInstance(MathTransformFactory.class, mtFactory) &&
+                DefaultFactories.isDefaultInstance(CRSFactory.class, crsFactory) &&
+                DefaultFactories.isDefaultInstance(CSFactory.class, csFactory))
+            {
+                return CoordinateOperations.factory();
+            }
+            properties = Collections.emptyMap();
         }
+        final HashMap<String,Object> p = new HashMap<String,Object>(properties);
+        JDK8.putIfAbsent(p, CRS_FACTORY, crsFactory);
+        JDK8.putIfAbsent(p, CS_FACTORY,  csFactory);
+        properties = p;
+        return new DefaultCoordinateOperationFactory(properties, mtFactory);
     }
 
     /**

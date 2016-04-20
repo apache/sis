@@ -139,7 +139,7 @@ public class DefaultCompoundCS extends AbstractCS {
         ensureNonNull("components", components);
         components = components.clone();
         for (int i=0; i<components.length; i++) {
-            ensureNonNullElement("components", i, components);
+            ensureNonNullElement("components", i, components[i]);
         }
         return components;
     }

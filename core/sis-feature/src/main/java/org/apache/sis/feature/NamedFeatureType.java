@@ -16,6 +16,8 @@
  */
 package org.apache.sis.feature;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.io.Serializable;
 import org.opengis.util.GenericName;
 
@@ -54,6 +56,22 @@ final class NamedFeatureType implements FeatureType, Serializable {
     @Override
     public GenericName getName() {
         return name;
+    }
+
+    /**
+     * Returns an empty set since this feature has no declared property yet.
+     */
+    @Override
+    public Collection<AbstractIdentifiedType> getProperties(final boolean includeSuperTypes) {
+        return Collections.emptySet();
+    }
+
+    /**
+     * This feature type is considered to all other features except itself.
+     */
+    @Override
+    public boolean isAssignableFrom(final DefaultFeatureType type) {
+        return false;
     }
 
     /**

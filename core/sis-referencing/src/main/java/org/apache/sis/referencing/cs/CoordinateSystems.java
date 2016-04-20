@@ -18,11 +18,13 @@ package org.apache.sis.referencing.cs;
 
 import java.util.Arrays;
 import javax.measure.unit.Unit;
+import javax.measure.quantity.Length;
 import javax.measure.converter.UnitConverter;
 import javax.measure.converter.LinearConverter;
 import javax.measure.converter.ConversionException;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystem;
+import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.operation.Matrix;
 import org.apache.sis.measure.Angle;
 import org.apache.sis.measure.ElevationAngle;
@@ -49,7 +51,7 @@ import org.apache.sis.internal.jdk7.Objects;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4
- * @version 0.6
+ * @version 0.7
  * @module
  */
 public final class CoordinateSystems extends Static {
@@ -306,8 +308,8 @@ public final class CoordinateSystems extends Static {
          * not a matrix multiplication. The last column is processed in a special
          * way, since it contains the offset values.
          */
-        final int sourceDim = matrix.getNumCol() - 1;  // == sourceCS.getDimension()
-        final int targetDim = matrix.getNumRow() - 1;  // == targetCS.getDimension()
+        final int sourceDim = matrix.getNumCol() - 1;                       // == sourceCS.getDimension()
+        final int targetDim = matrix.getNumRow() - 1;                       // == targetCS.getDimension()
         for (int j=0; j<targetDim; j++) {
             final Unit<?> targetUnit = targetCS.getAxis(j).getUnit();
             for (int i=0; i<sourceDim; i++) {
@@ -404,5 +406,107 @@ public final class CoordinateSystems extends Static {
             }
         }
         return cs;
+    }
+
+    /**
+     * Returns a coordinate system derived from the given one but with all linear units replaced by the given unit.
+     * Non-linear units (e.g. angular or scale units) are left unchanged.
+     *
+     * <p>This convenience method is equivalent to the following code:</p>
+     * {@preformat java
+     *     return CoordinateSystems.replaceAxes(cs, new AxisFilter() {
+     *         &#64;Override public Unit<?> getUnitReplacement(CoordinateSystemAxis axis, Unit<?> unit) {
+     *             return Units.isLinear(unit) ? newUnit : unit;
+     *         }
+     *     });
+     * }
+     *
+     * @param  cs       The coordinate system in which to replace linear units, or {@code null}.
+     * @param  newUnit  The new linear unit.
+     * @return The modified coordinate system as a new instance,
+     *         or {@code cs} if all linear units were already equal to the given one.
+     *
+     * @see Units#isLinear(Unit)
+     *
+     * @since 0.7
+     */
+    public static CoordinateSystem replaceLinearUnit(final CoordinateSystem cs, final Unit<Length> newUnit) {
+        ensureNonNull("newUnit", newUnit);
+        return CoordinateSystems.replaceAxes(cs, new AxisFilter() {
+            @Override public Unit<?> getUnitReplacement(CoordinateSystemAxis axis, Unit<?> unit) {
+                return Units.isLinear(unit) ? newUnit : unit;
+            }
+
+            @Override
+            public boolean accept(CoordinateSystemAxis axis) {
+                return true;
+            }
+
+            @Override
+            public AxisDirection getDirectionReplacement(CoordinateSystemAxis axis, AxisDirection direction) {
+                return direction;
+            }
+
+            @Deprecated @Override
+            public AxisDirection getDirectionReplacement(AxisDirection direction) {
+                return direction;
+            }
+
+            @Deprecated @Override
+            public Unit<?> getUnitReplacement(Unit<?> unit) {
+                return getUnitReplacement(null, unit);
+            }
+        });
+    }
+
+    /**
+     * Returns a coordinate system derived from the given one but with all angular units replaced by the given unit.
+     * Non-angular units (e.g. linear or scale units) are left unchanged.
+     *
+     * <p>This convenience method is equivalent to the following code:</p>
+     * {@preformat java
+     *     return CoordinateSystems.replaceAxes(cs, new AxisFilter() {
+     *         &#64;Override public Unit<?> getUnitReplacement(CoordinateSystemAxis axis, Unit<?> unit) {
+     *             return Units.isAngular(unit) ? newUnit : unit;
+     *         }
+     *     });
+     * }
+     *
+     * @param  cs       The coordinate system in which to replace angular units, or {@code null}.
+     * @param  newUnit  The new angular unit.
+     * @return The modified coordinate system as a new instance,
+     *         or {@code cs} if all angular units were already equal to the given one.
+     *
+     * @see Units#isAngular(Unit)
+     *
+     * @since 0.7
+     */
+    public static CoordinateSystem replaceAngularUnit(final CoordinateSystem cs, final Unit<javax.measure.quantity.Angle> newUnit) {
+        ensureNonNull("newUnit", newUnit);
+        return CoordinateSystems.replaceAxes(cs, new AxisFilter() {
+            @Override public Unit<?> getUnitReplacement(CoordinateSystemAxis axis, Unit<?> unit) {
+                return Units.isAngular(unit) ? newUnit : unit;
+            }
+
+            @Override
+            public boolean accept(CoordinateSystemAxis axis) {
+                return true;
+            }
+
+            @Override
+            public AxisDirection getDirectionReplacement(CoordinateSystemAxis axis, AxisDirection direction) {
+                return direction;
+            }
+
+            @Deprecated @Override
+            public AxisDirection getDirectionReplacement(AxisDirection direction) {
+                return direction;
+            }
+
+            @Deprecated @Override
+            public Unit<?> getUnitReplacement(Unit<?> unit) {
+                return getUnitReplacement(null, unit);
+            }
+        });
     }
 }

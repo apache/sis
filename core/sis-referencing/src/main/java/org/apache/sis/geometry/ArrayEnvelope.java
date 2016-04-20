@@ -108,7 +108,7 @@ class ArrayEnvelope extends AbstractEnvelope implements Serializable {
     public ArrayEnvelope(final DirectPosition lowerCorner, final DirectPosition upperCorner)
             throws MismatchedDimensionException, MismatchedReferenceSystemException
     {
-        crs = getCommonCRS(lowerCorner, upperCorner); // This performs also an argument check.
+        crs = getCommonCRS(lowerCorner, upperCorner);           // This performs also an argument check.
         final int dimension = lowerCorner.getDimension();
         ensureDimensionMatches("crs", dimension, crs);
         ensureSameDimension(dimension, upperCorner.getDimension());
@@ -221,10 +221,10 @@ class ArrayEnvelope extends AbstractEnvelope implements Serializable {
      */
     public ArrayEnvelope(final CharSequence wkt) throws IllegalArgumentException {
         ensureNonNull("wkt", wkt);
-        int levelParenth = 0; // Number of opening parenthesis: (
-        int levelBracket = 0; // Number of opening brackets: [
-        int dimLimit     = 4; // The length of minimum and maximum arrays.
-        int maxDimension = 0; // The number of valid entries in the minimum and maximum arrays.
+        int levelParenth = 0;               // Number of opening parenthesis: (
+        int levelBracket = 0;               // Number of opening brackets: [
+        int dimLimit     = 4;               // The length of minimum and maximum arrays.
+        int maxDimension = 0;               // The number of valid entries in the minimum and maximum arrays.
         final int length = CharSequences.skipTrailingWhitespaces(wkt, 0, wkt.length());
         double[] minimum = new double[dimLimit];
         double[] maximum = new double[dimLimit];
@@ -368,7 +368,7 @@ scanNumber: while ((i += Character.charCount(c)) < length) {
     {
         Object name = IdentifiedObjects.getName(getAxis(crs, dimension), null);
         if (name == null) {
-            name = dimension; // Paranoiac fallback (name should never be null).
+            name = dimension;       // Paranoiac fallback (name should never be null).
         }
         return Errors.format(Errors.Keys.IllegalOrdinateRange_3, lower, upper, name);
     }
@@ -413,7 +413,7 @@ scanNumber: while ((i += Character.charCount(c)) < length) {
      *
      * @return The dimensionality of this envelope.
      */
-    @Override // Must also be overridden in SubEnvelope
+    @Override                                       // Must also be overridden in SubEnvelope
     public int getDimension() {
         return ordinates.length >>> 1;
     }
@@ -434,7 +434,7 @@ scanNumber: while ((i += Character.charCount(c)) < length) {
     /**
      * {@inheritDoc}
      */
-    @Override // Must also be overridden in SubEnvelope
+    @Override                                       // Must also be overridden in SubEnvelope
     public double getLower(final int dimension) throws IndexOutOfBoundsException {
         ensureValidIndex(ordinates.length >>> 1, dimension);
         return ordinates[dimension];
@@ -443,7 +443,7 @@ scanNumber: while ((i += Character.charCount(c)) < length) {
     /**
      * {@inheritDoc}
      */
-    @Override // Must also be overridden in SubEnvelope
+    @Override                                       // Must also be overridden in SubEnvelope
     public double getUpper(final int dimension) throws IndexOutOfBoundsException {
         final int d = ordinates.length >>> 1;
         ensureValidIndex(d, dimension);
@@ -458,7 +458,7 @@ scanNumber: while ((i += Character.charCount(c)) < length) {
         ensureValidIndex(endIndex(), dimension);
         final int i = dimension + beginIndex();
         double lower = ordinates[i];
-        if (isNegative(ordinates[i + (ordinates.length >>> 1)] - lower)) { // Special handling for -0.0
+        if (isNegative(ordinates[i + (ordinates.length >>> 1)] - lower)) {      // Special handling for -0.0
             final CoordinateSystemAxis axis = getAxis(crs, dimension);
             lower = (axis != null) ? axis.getMinimumValue() : Double.NEGATIVE_INFINITY;
         }
@@ -473,7 +473,7 @@ scanNumber: while ((i += Character.charCount(c)) < length) {
         ensureValidIndex(endIndex(), dimension);
         final int i = dimension + beginIndex();
         double upper = ordinates[i + (ordinates.length >>> 1)];
-        if (isNegative(upper - ordinates[i])) { // Special handling for -0.0
+        if (isNegative(upper - ordinates[i])) {                                 // Special handling for -0.0
             final CoordinateSystemAxis axis = getAxis(crs, dimension);
             upper = (axis != null) ? axis.getMaximumValue() : Double.POSITIVE_INFINITY;
         }
@@ -490,7 +490,7 @@ scanNumber: while ((i += Character.charCount(c)) < length) {
         final double minimum = ordinates[i];
         final double maximum = ordinates[i + (ordinates.length >>> 1)];
         double median = 0.5 * (minimum + maximum);
-        if (isNegative(maximum - minimum)) { // Special handling for -0.0
+        if (isNegative(maximum - minimum)) {                                    // Special handling for -0.0
             median = fixMedian(getAxis(crs, dimension), median);
         }
         return median;
@@ -504,7 +504,7 @@ scanNumber: while ((i += Character.charCount(c)) < length) {
         ensureValidIndex(endIndex(), dimension);
         final int i = dimension + beginIndex();
         double span = ordinates[i + (ordinates.length >>> 1)] - ordinates[i];
-        if (isNegative(span)) { // Special handling for -0.0
+        if (isNegative(span)) {                                                 // Special handling for -0.0
             span = fixSpan(getAxis(crs, dimension), span);
         }
         return span;
@@ -523,7 +523,7 @@ scanNumber: while ((i += Character.charCount(c)) < length) {
         final int d = ordinates.length >>> 1;
         for (int i=beginIndex; i<endIndex; i++) {
             final double span = ordinates[i+d] - ordinates[i];
-            if (!(span > 0)) { // Use '!' in order to catch NaN
+            if (!(span > 0)) {                                                  // Use '!' in order to catch NaN
                 if (!(isNegative(span) && isWrapAround(crs, i - beginIndex))) {
                     return true;
                 }
@@ -536,7 +536,7 @@ scanNumber: while ((i += Character.charCount(c)) < length) {
     /**
      * {@inheritDoc}
      */
-    @Override // Must also be overridden in SubEnvelope
+    @Override                                       // Must also be overridden in SubEnvelope
     public boolean isAllNaN() {
         for (int i=0; i<ordinates.length; i++) {
             if (!Double.isNaN(ordinates[i])) {
@@ -550,7 +550,7 @@ scanNumber: while ((i += Character.charCount(c)) < length) {
     /**
      * {@inheritDoc}
      */
-    @Override // Must also be overridden in SubEnvelope
+    @Override                                       // Must also be overridden in SubEnvelope
     public int hashCode() {
         int code = Arrays.hashCode(ordinates);
         if (crs != null) {
@@ -571,7 +571,7 @@ scanNumber: while ((i += Character.charCount(c)) < length) {
     /**
      * {@inheritDoc}
      */
-    @Override // Must also be overridden in SubEnvelope
+    @Override                                       // Must also be overridden in SubEnvelope
     public boolean equals(final Object object) {
         if (object != null && object.getClass() == getClass()) {
             final ArrayEnvelope that = (ArrayEnvelope) object;

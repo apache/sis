@@ -22,6 +22,7 @@ import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.maintenance.ScopeCode;
+import org.opengis.metadata.quality.DataQuality;
 import org.opengis.metadata.quality.EvaluationMethodType;
 import org.apache.sis.metadata.iso.quality.AbstractElement;
 import org.apache.sis.metadata.iso.quality.DefaultDataQuality;
@@ -37,7 +38,7 @@ import org.apache.sis.util.resources.Errors;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5
- * @version 0.5
+ * @version 0.7
  * @module
  */
 final class Validator {
@@ -103,6 +104,35 @@ final class Validator {
     }
 
     /**
+     * Implementation of {@link AbstractFeature#quality()}, also shared by {@link Features} static method.
+     *
+     * @param type     the type of the {@code feature} argument, provided explicitely for protecting from user overriding.
+     * @param feature  the feature to validate.
+     */
+    void validate(final FeatureType type, final AbstractFeature feature) {
+        for (final AbstractIdentifiedType pt : type.getProperties(true)) {
+            final Object property = feature.getProperty(pt.getName().toString());
+            final DataQuality pq;
+            if (property instanceof AbstractAttribute<?>) {
+                pq = ((AbstractAttribute<?>) property).quality();
+            } else if (property instanceof AbstractAssociation) {
+                pq = ((AbstractAssociation) property).quality();
+            } else if (property instanceof AbstractAttribute<?>) {
+                validateAny(((AbstractAttribute<?>) property).getType(), ((AbstractAttribute<?>) property).getValues());
+                continue;
+            } else if (property instanceof AbstractAssociation) {
+                validateAny(((AbstractAssociation) property).getRole(), ((AbstractAssociation) property).getValues());
+                continue;
+            } else {
+                continue;
+            }
+            if (pq != null) {                                          // Should not be null, but let be safe.
+                quality.getReports().addAll(pq.getReports());
+            }
+        }
+    }
+
+    /**
      * Verifies if the given value is valid for the given attribute type.
      * This method delegates to one of the {@code validate(…)} methods depending of the value type.
      */
@@ -128,10 +158,13 @@ final class Validator {
              * method signature. However in practice the call to Attribute.setValue(…) is sometime done after type erasure,
              * so we are better to check.
              */
-            if (!type.getValueClass().isInstance(value)) {
+            final Class<?> valueClass = type.getValueClass();
+            if (!valueClass.isInstance(value)) {
                 report = addViolationReport(report, type, Errors.formatInternational(
-                        Errors.Keys.IllegalPropertyClass_2, type.getName(), value.getClass()));
-                break; // Report only the first violation for now.
+                        Errors.Keys.IllegalPropertyValueClass_3, type.getName(), valueClass, value.getClass()));
+
+                // Report only the first violation for now.
+                break;
             }
         }
         verifyCardinality(report, type, type.getMinimumOccurs(), type.getMaximumOccurs(), values.size());
@@ -144,10 +177,13 @@ final class Validator {
         AbstractElement report = null;
         for (final Object value : values) {
             final DefaultFeatureType type = ((AbstractFeature) value).getType();
-            if (!role.getValueType().isAssignableFrom(type)) {
+            final FeatureType valueType = role.getValueType();
+            if (!valueType.isAssignableFrom(type)) {
                 report = addViolationReport(report, role, Errors.formatInternational(
-                        Errors.Keys.IllegalPropertyClass_2, role.getName(), type.getName()));
-                break; // Report only the first violation for now.
+                        Errors.Keys.IllegalPropertyValueClass_3, role.getName(), valueType.getName(), type.getName()));
+
+                // Report only the first violation for now.
+                break;
             }
         }
         verifyCardinality(report, role, role.getMinimumOccurs(), role.getMaximumOccurs(), values.size());

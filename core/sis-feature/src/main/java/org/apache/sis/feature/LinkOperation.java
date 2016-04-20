@@ -76,18 +76,20 @@ final class LinkOperation extends AbstractOperation {
     /**
      * The name of the referenced attribute or feature association.
      */
-    final String propertyName;
+    final String referentName;
 
     /**
      * Creates a new link to the given attribute or association.
      *
-     * @param identification The name of the link, together with optional information.
-     * @param propertyType   The referenced attribute or feature association.
+     * @param identification  the name of the link, together with optional information.
+     * @param referent        the referenced attribute or feature association.
+     *
+     * @see FeatureOperations#link(Map, PropertyType)
      */
-    LinkOperation(final Map<String, ?> identification, final AbstractIdentifiedType propertyType) {
+    LinkOperation(final Map<String,?> identification, final AbstractIdentifiedType referent) {
         super(identification);
-        result = propertyType;
-        propertyName = propertyType.getName().toString();
+        result = referent;
+        referentName = referent.getName().toString();
     }
 
     /**
@@ -111,19 +113,36 @@ final class LinkOperation extends AbstractOperation {
      */
     @Override
     public Set<String> getDependencies() {
-        return Collections.singleton(propertyName);
+        return Collections.singleton(referentName);
     }
 
     /**
      * Returns the property from the referenced attribute of feature association.
      *
-     * @param  feature    The feature from which to get the property.
-     * @param  parameters Ignored.
-     * @return The property from the given feature.
+     * @param  feature     the feature from which to get the property.
+     * @param  parameters  ignored (can be {@code null}).
+     * @return the linked property from the given feature.
      */
     @Override
     public Object apply(final AbstractFeature feature, final ParameterValueGroup parameters) {
         ArgumentChecks.ensureNonNull("feature", feature);
-        return feature.getProperty(propertyName);
+        return feature.getProperty(referentName);
+    }
+
+    /**
+     * Computes a hash-code value for this operation.
+     */
+    @Override
+    public int hashCode() {
+        return super.hashCode() + referentName.hashCode();
+    }
+
+    /**
+     * Compares this operation with the given object for equality.
+     */
+    @Override
+    public boolean equals(final Object obj) {
+        // 'this.result' is compared (indirectly) by the super class.
+        return super.equals(obj) && referentName.equals(((LinkOperation) obj).referentName);
     }
 }

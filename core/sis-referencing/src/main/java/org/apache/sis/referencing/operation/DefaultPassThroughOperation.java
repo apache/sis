@@ -34,6 +34,8 @@ import org.apache.sis.util.UnsupportedImplementationException;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.io.wkt.FormattableObject;
+import org.apache.sis.io.wkt.Formatter;
 
 import static org.apache.sis.util.Utilities.deepEquals;
 
@@ -278,6 +280,33 @@ public class DefaultPassThroughOperation extends AbstractCoordinateOperation imp
     @Override
     protected long computeHashCode() {
         return super.computeHashCode() + 31 * operation.hashCode();
+    }
+
+    /**
+     * Formats this coordinate operation in a pseudo-Well Known Text (WKT) format.
+     * Current format is specific to Apache SIS and may change in any future version
+     * if a standard format for pass through operations is defined.
+     *
+     * @param  formatter The formatter to use.
+     * @return Currently {@code "PassThroughOperation"} (may change in any future version).
+     *
+     * @since 0.7
+     */
+    @Override
+    protected String formatTo(final Formatter formatter) {
+        super.formatTo(formatter);
+        formatter.append(new FormattableObject() {
+            @Override protected String formatTo(final Formatter formatter) {
+                for (final int i : getModifiedCoordinates()) {
+                    formatter.append(i);
+                }
+                return "ModifiedCoordinates";
+            }
+        });
+        formatter.newLine();
+        formatter.append(castOrCopy(getOperation()));
+        formatter.setInvalidWKT(this, null);
+        return "PassThroughOperation";
     }
 
 

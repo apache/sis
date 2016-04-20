@@ -62,7 +62,7 @@ import static org.apache.sis.test.Assert.*;
  * @module
  */
 @DependsOn({
-    org.apache.sis.internal.referencing.provider.AllProvidersTest.class,
+    org.apache.sis.internal.referencing.provider.ProvidersTest.class,
     OperationMethodSetTest.class
 })
 public final strictfp class DefaultMathTransformFactoryTest extends TestCase {

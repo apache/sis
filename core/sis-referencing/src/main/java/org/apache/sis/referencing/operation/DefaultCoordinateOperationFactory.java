@@ -25,16 +25,20 @@ import org.opengis.util.NoSuchIdentifierException;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.referencing.operation.*;
+import org.opengis.referencing.AuthorityFactory;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.crs.SingleCRS;
+import org.opengis.referencing.crs.CRSFactory;
+import org.opengis.referencing.cs.CSFactory;
 import org.opengis.referencing.datum.Datum;
 import org.apache.sis.internal.referencing.MergedProperties;
 import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.util.CollectionsExt;
+import org.apache.sis.internal.util.Constants;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.factory.InvalidGeodeticParameterException;
 import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
@@ -44,6 +48,7 @@ import org.apache.sis.util.iso.AbstractFactory;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.CharSequences;
+import org.apache.sis.util.Classes;
 import org.apache.sis.util.NullArgumentException;
 import org.apache.sis.util.Utilities;
 
@@ -77,12 +82,34 @@ import org.apache.sis.util.Utilities;
  */
 public class DefaultCoordinateOperationFactory extends AbstractFactory implements CoordinateOperationFactory {
     /**
+     * Whether this class is allowed to use the EPSG authority factory for searching coordinate operation paths.
+     * This flag should always be {@code true}, except temporarily for testing purposes.
+     */
+    static final boolean USE_EPSG_FACTORY = true;
+
+    /**
      * The default properties, or an empty map if none. This map shall not change after construction in
      * order to allow usage without synchronization in multi-thread context. But we do not need to wrap
      * in a unmodifiable map since {@code DefaultCoordinateOperationFactory} does not provide public
      * access to it.
      */
     private final Map<String,?> defaultProperties;
+
+    /**
+     * The factory to use if {@link CoordinateOperationFinder} needs to create CRS for intermediate steps.
+     * Will be created only when first needed.
+     *
+     * @see #getCRSFactory()
+     */
+    private volatile CRSFactory crsFactory;
+
+    /**
+     * The factory to use if {@link CoordinateOperationFinder} needs to create CS for intermediate steps.
+     * Will be created only when first needed.
+     *
+     * @see #getCSFactory()
+     */
+    private volatile CSFactory csFactory;
 
     /**
      * The math transform factory. Will be created only when first needed.
@@ -101,8 +128,7 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
      * Constructs a factory with no default properties.
      */
     public DefaultCoordinateOperationFactory() {
-        defaultProperties = Collections.emptyMap();
-        pool = new WeakHashSet<IdentifiedObject>(IdentifiedObject.class);
+        this(null, null);
     }
 
     /**
@@ -110,19 +136,36 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
      * {@code DefaultCoordinateOperationFactory} will fallback on the map given to this constructor
      * for any property not present in the map provided to a {@code createFoo(Map<String,?>, …)} method.
      *
-     * @param properties The default properties, or {@code null} if none.
-     * @param mtFactory The factory to use for creating
+     * @param properties the default properties, or {@code null} if none.
+     * @param factory the factory to use for creating
      *        {@linkplain org.apache.sis.referencing.operation.transform.AbstractMathTransform math transforms},
      *        or {@code null} for the default factory.
      */
-    public DefaultCoordinateOperationFactory(Map<String,?> properties, final MathTransformFactory mtFactory) {
+    public DefaultCoordinateOperationFactory(Map<String,?> properties, final MathTransformFactory factory) {
         if (properties == null || properties.isEmpty()) {
             properties = Collections.emptyMap();
         } else {
-            properties = CollectionsExt.compact(new HashMap<String,Object>(properties));
+            String key   = null;
+            Object value = null;
+            properties   = new HashMap<String,Object>(properties);
+            /*
+             * Following use of properties is an undocumented feature for now. Current version documents only
+             * MathTransformFactory because math transforms are intimately related to coordinate operations.
+             */
+            try {
+                crsFactory = (CRSFactory)           (value = properties.remove(key = ReferencingServices.CRS_FACTORY));
+                csFactory  = (CSFactory)            (value = properties.remove(key = ReferencingServices.CS_FACTORY));
+                mtFactory  = (MathTransformFactory) (value = properties.remove(key = ReferencingServices.MT_FACTORY));
+            } catch (ClassCastException e) {
+                throw new IllegalArgumentException(Errors.getResources(properties)
+                        .getString(Errors.Keys.IllegalPropertyValueClass_2, key, Classes.getClass(value)));
+            }
+            properties = CollectionsExt.compact(properties);
         }
         defaultProperties = properties;
-        this.mtFactory = mtFactory;
+        if (factory != null) {
+            mtFactory = factory;
+        }
         pool = new WeakHashSet<IdentifiedObject>(IdentifiedObject.class);
     }
 
@@ -145,6 +188,28 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
     protected Map<String,?> complete(final Map<String,?> properties) {
         ArgumentChecks.ensureNonNull("properties", properties);
         return new MergedProperties(properties, defaultProperties);
+    }
+
+    /**
+     * Returns the factory to use if {@link CoordinateOperationFinder} needs to create CRS for intermediate steps.
+     */
+    final CRSFactory getCRSFactory() {
+        CRSFactory factory = crsFactory;
+        if (factory == null) {
+            crsFactory = factory = DefaultFactories.forBuildin(CRSFactory.class);
+        }
+        return factory;
+    }
+
+    /**
+     * Returns the factory to use if {@link CoordinateOperationFinder} needs to create CS for intermediate steps.
+     */
+    final CSFactory getCSFactory() {
+        CSFactory factory = csFactory;
+        if (factory == null) {
+            csFactory = factory = DefaultFactories.forBuildin(CSFactory.class);
+        }
+        return factory;
     }
 
     /**
@@ -485,7 +550,7 @@ next:   for (int i=components.size(); --i >= 0;) {
         }
         /*
          * Now create the coordinate operation of the requested type. If we can not find a concrete class for the
-         * requested type, we will instantiate an SingleOperation in last resort. The later action is a departure
+         * requested type, we will instantiate a SingleOperation in last resort.  The later action is a departure
          * from ISO 19111 since 'SingleOperation' is conceptually abstract.  But we do that as a way to said that
          * we are missing this important piece of information but still go ahead.
          *
@@ -565,6 +630,9 @@ next:   for (int i=components.size(); --i >= 0;) {
     public CoordinateOperation createConcatenatedOperation(final Map<String,?> properties,
             final CoordinateOperation... operations) throws FactoryException
     {
+        if (operations != null && operations.length == 1) {
+            return operations[0];
+        }
         final CoordinateOperation op;
         try {
             op = new DefaultConcatenatedOperation(properties, operations, getMathTransformFactory());
@@ -602,14 +670,16 @@ next:   for (int i=components.size(); --i >= 0;) {
      * widest intersection between its {@linkplain AbstractCoordinateOperation#getDomainOfValidity() domain of
      * validity} and the {@linkplain CoordinateOperationContext#getAreaOfInterest() area of interest} is returned.
      *
-     * <p>The default implementation is as below:</p>
+     * <p>The default implementation is equivalent to the following code
+     * (omitting the {@code registry} type check and cast for brevity):</p>
      *
      * {@preformat java
-     *   return new CoordinateOperationInference(this, context).createOperation(sourceCRS, targetCRS);
+     *   CoordinateOperationAuthorityFactory registry = CRS.getAuthorityFactory("EPSG");    // Actually needs cast
+     *   return new CoordinateOperationFinder(registry, this, context).createOperation(sourceCRS, targetCRS);
      * }
      *
      * Subclasses can override this method if they need, for example, to use a custom
-     * {@link CoordinateOperationInference} implementation.
+     * {@link CoordinateOperationFinder} implementation.
      *
      * @param  sourceCRS  input coordinate reference system.
      * @param  targetCRS  output coordinate reference system.
@@ -618,7 +688,7 @@ next:   for (int i=components.size(); --i >= 0;) {
      * @throws OperationNotFoundException if no operation path was found from {@code sourceCRS} to {@code targetCRS}.
      * @throws FactoryException if the operation creation failed for some other reason.
      *
-     * @see CoordinateOperationInference
+     * @see CoordinateOperationFinder
      *
      * @since 0.7
      */
@@ -627,7 +697,9 @@ next:   for (int i=components.size(); --i >= 0;) {
                                                final CoordinateOperationContext context)
             throws OperationNotFoundException, FactoryException
     {
-        return new CoordinateOperationInference(this, context).createOperation(sourceCRS, targetCRS);
+        final AuthorityFactory registry = USE_EPSG_FACTORY ? CRS.getAuthorityFactory(Constants.EPSG) : null;
+        return new CoordinateOperationFinder((registry instanceof CoordinateOperationAuthorityFactory) ?
+                (CoordinateOperationAuthorityFactory) registry : null, this, context).createOperation(sourceCRS, targetCRS);
     }
 
     /**

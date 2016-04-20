@@ -37,7 +37,6 @@ import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.referencing.cs.TimeCS;
 import org.opengis.referencing.datum.DatumFactory;
 import org.opengis.referencing.datum.TemporalDatum;
-import org.opengis.referencing.operation.CoordinateOperationFactory;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.Conversion;
 import org.apache.sis.internal.metadata.ReferencingServices;
@@ -146,8 +145,7 @@ public class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> {
      */
     private DefaultCoordinateOperationFactory getCoordinateOperationFactory() {
         if (copFactory == null) {
-            copFactory = DefaultFactories.forBuildin(CoordinateOperationFactory.class,
-                                              DefaultCoordinateOperationFactory.class);
+            copFactory = CoordinateOperations.factory();
         }
         return copFactory;
     }
