@@ -45,7 +45,7 @@ import static org.junit.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.5
+ * @version 0.7
  * @module
  */
 public final strictfp class TestUtilities extends Static {
@@ -285,7 +285,7 @@ public final strictfp class TestUtilities extends Static {
      *   "      └─"
      * }
      *
-     * This method is used for comparing two tree having string representation in different locales.
+     * This method is used for comparing two trees having string representation in different locales.
      * In such case, we can not compare the actual text content. The best we can do is to compare
      * the tree structure.
      *
@@ -338,6 +338,26 @@ public final strictfp class TestUtilities extends Static {
         final E element = it.next();
         assertFalse("The collection has more than one element.", it.hasNext());
         return element;
+    }
+
+    /**
+     * Returns a copy of the given array with the last ordinate values dropped for each coordinates.
+     *
+     * @param  coordinates The source coordinates from which to drop the last ordinate values.
+     * @param  sourceDim   Number of dimensions of each point in the {@code coordinates} array.
+     * @param  targetDim   Number of dimensions to retain.
+     * @return Copy of the given {@code coordinates} array with only the {@code targetDim} first dimension for each point.
+     *
+     * @since 0.7
+     */
+    public static double[] dropLastDimensions(final double[] coordinates, final int sourceDim, final int targetDim) {
+        assertEquals("Unexpected array length.", 0, coordinates.length % sourceDim);
+        final int numPts = coordinates.length / sourceDim;
+        final double[] reduced = new double[numPts * targetDim];
+        for (int i=0; i<numPts; i++) {
+            System.arraycopy(coordinates, i*sourceDim, reduced, i*targetDim, targetDim);
+        }
+        return reduced;
     }
 
     /**

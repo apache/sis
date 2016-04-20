@@ -25,8 +25,9 @@ import org.junit.BeforeClass;
  * All tests from the {@code sis-feature} module, in approximative dependency order.
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @author  Johann Sorel (Geomatys)
  * @since   0.5
- * @version 0.5
+ * @version 0.7
  * @module
  */
 @Suite.SuiteClasses({
@@ -43,8 +44,12 @@ import org.junit.BeforeClass;
     org.apache.sis.feature.SingletonAssociationTest.class,
     org.apache.sis.feature.AbstractOperationTest.class,
     org.apache.sis.feature.LinkOperationTest.class,
+    org.apache.sis.feature.StringJoinOperationTest.class,
+    org.apache.sis.feature.EnvelopeOperationTest.class,
     org.apache.sis.feature.FeatureFormatTest.class,
-    org.apache.sis.feature.FeaturesTest.class
+    org.apache.sis.feature.FeaturesTest.class,
+    org.apache.sis.internal.feature.AttributeConventionTest.class,
+    org.apache.sis.internal.feature.FeatureTypeBuilderTest.class
 })
 public final strictfp class FeatureTestSuite extends TestSuite {
     /**

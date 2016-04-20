@@ -411,7 +411,7 @@ public abstract class Initializer {
             try {
                 ds.getConnection().close();     // Does the actual shutdown.
             } catch (SQLException e) {          // This is the expected exception.
-                final LogRecord record = new LogRecord(Level.CONFIG, e.getLocalizedMessage());
+                final LogRecord record = new LogRecord(Level.FINE, e.getLocalizedMessage());
                 if (!isSuccessfulShutdown(e)) {
                     record.setLevel(Level.WARNING);
                     record.setThrown(e);

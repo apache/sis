@@ -56,8 +56,9 @@ import static org.apache.sis.internal.util.Numerics.SIGNIFICAND_SIZE;
  * {@link #nextPrimeNumber(int) nextPrimeNumber}.
  *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
+ * @author  Johann Sorel (Geomatys)
  * @since   0.3
- * @version 0.6
+ * @version 0.7
  * @module
  *
  * @see DecimalFunctions
@@ -132,6 +133,7 @@ public final class MathFunctions extends Static {
      *
      * @see #primeNumberAt(int)
      */
+    @SuppressWarnings("VolatileArrayField")     // Because we will not modify array content.
     private static volatile short[] primes = new short[] {2, 3};
 
     /**
@@ -543,8 +545,7 @@ public final class MathFunctions extends Static {
 
     /**
      * Returns a {@linkplain Float#isNaN(float) NaN} number for the specified ordinal value.
-     * Valid NaN numbers in Java can have bit fields in the ranges listed below.
-     * This method allocates one of valid NaN bit fields to each ordinal value.
+     * Valid NaN numbers in Java can have bit fields in the ranges listed below:
      *
      * <ul>
      *   <li>[{@code 0x7F800001} … {@code 0x7FFFFFFF}], with
@@ -552,9 +553,12 @@ public final class MathFunctions extends Static {
      *   <li>[{@code 0xFF800001} … {@code 0xFFFFFFFF}]</li>
      * </ul>
      *
-     * The relationship between bit fields and ordinal values is implementation dependent and may
-     * change in any future version of the SIS library. The current implementation restricts the
-     * range of allowed ordinal values to a smaller one than the range of all possible NaN values.
+     * Some of those bits, named the <cite>payload</cite>, can be used for storing custom information.
+     * This method maps some of the payload values to each ordinal value.
+     *
+     * <p>The relationship between payload values and ordinal values is implementation dependent and
+     * may change in any future version of the SIS library. The current implementation restricts the
+     * range of allowed ordinal values to a smaller one than the range of all possible values.</p>
      *
      * @param  ordinal The NaN ordinal value, from {@code -0x200000} to {@code 0x1FFFFF} inclusive.
      * @return One of the legal {@linkplain Float#isNaN(float) NaN} values as a float.
@@ -593,6 +597,68 @@ public final class MathFunctions extends Static {
             obj = value;
         }
         throw new IllegalArgumentException(Errors.format(resourceKey, obj));
+    }
+
+    /**
+     * Converts two long bits values containing a IEEE 754 quadruple precision floating point number
+     * to a double precision floating point number. About 17 decimal digits of precision may be lost
+     * due to the {@code double} type having only half the capacity of quadruple precision type.
+     *
+     * <p>Some quadruple precision values can not be represented in double precision and are mapped
+     * to {@code double} values as below:</p>
+     * <ul>
+     *   <li>Values having a magnitude less than {@link Double#MIN_VALUE} are mapped to
+     *       positive or negative zero.</li>
+     *   <li>Values having a magnitude greater than {@link Double#MAX_VALUE} are mapped to
+     *       {@link Double#POSITIVE_INFINITY} or {@link Double#NEGATIVE_INFINITY}.</li>
+     *   <li>All NaN values are currently collapsed to the single "canonical" {@link Double#NaN} value
+     *       (this policy may be revisited in future SIS version).</li>
+     * </ul>
+     *
+     * @param l0 upper part of the quadruple precision floating point number.
+     * @param l1 lower part of the quadruple precision floating point number.
+     * @return double precision approximation.
+     *
+     * @see <a href="https://en.wikipedia.org/wiki/Quadruple-precision_floating-point_format">Quadruple-precision floating-point format on Wikipedia</a>
+     *
+     * @since 0.7
+     */
+    public static double quadrupleToDouble(long l0, long l1) {
+        // Build double
+        long sig = (l0 & 0x8000000000000000L);
+        long exp = (l0 & 0x7FFF000000000000L) >> 48;
+        l0       = (l0 & 0x0000FFFFFFFFFFFFL);
+        if (exp == 0) {
+            /*
+             * Subnormal number.
+             * Since we convert them to double precision, subnormal numbers can not be represented
+             * as they are smaller than Double.MIN_VALUE. We map them to zero preserving the sign.
+             */
+            return Double.longBitsToDouble(sig);
+        }
+        if (exp == 0x7FFF) {
+            /*
+             * NaN of infinite number.
+             * Mantissa with all bits at 0 is used for infinite.
+             * This is the only special number that we can preserve.
+             */
+            if (l0 == 0 && l1 == 0) {
+                return Double.longBitsToDouble(sig | 0x7FF0000000000000L);
+            }
+            /*
+             * Other NaN values might have a meaning (e.g. NaN(1) = forest, NaN(2) = lake, etc.)
+             * See above toNanFloat(int) and toNaNOrdinal(float) methods. When truncating the value we
+             * might change the meaning, which could cause several issues later. Therefor we conservatively
+             * collapse all NaNs to the default NaN for now (this may be revisited in a future SIS version).
+             */
+            return Double.NaN;
+        }
+        exp -= (16383 - 1023);      //change from 15 bias to 11 bias
+        // Check cases where mantissa excess what double can support
+        if (exp < 0)    return Double.NEGATIVE_INFINITY;
+        if (exp > 2046) return Double.POSITIVE_INFINITY;
+
+        return Double.longBitsToDouble(sig | (exp << 52) | (l0 << 4) | (l1 >>> 60));
     }
 
     /**

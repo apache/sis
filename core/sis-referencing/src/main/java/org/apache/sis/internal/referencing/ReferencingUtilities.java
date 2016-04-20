@@ -247,9 +247,16 @@ public final class ReferencingUtilities extends Static {
     /**
      * Returns the properties of the given object but potentially with a modified name.
      * Current implement truncates the name at the first non-white character which is not
-     * a valid Unicode identifier part.
+     * a valid Unicode identifier part, with the following exception:
+     *
+     * <ul>
+     *   <li>If the character is {@code '('} and the content until the closing {@code ')'} is a valid
+     *       Unicode identifier, then that part is included. The intend is to keep the prime meridian
+     *       name in names like <cite>"NTF (Paris)"</cite>.</li>
+     * </ul>
      *
      * <div class="note"><b>Example:</b><ul>
+     *   <li><cite>"NTF (Paris)"</cite> is left unchanged.</li>
      *   <li><cite>"WGS 84 (3D)"</cite> is truncated as <cite>"WGS 84"</cite>.</li>
      *   <li><cite>"Ellipsoidal 2D CS. Axes: latitude, longitude. Orientations: north, east. UoM: degree"</cite>
      *       is truncated as <cite>"Ellipsoidal 2D CS"</cite>.</li>
@@ -272,6 +279,15 @@ public final class ReferencingUtilities extends Static {
                 for (int i=0; i < name.length();) {
                     final int c = name.codePointAt(i);
                     if (!Character.isUnicodeIdentifierPart(c) && !Character.isSpaceChar(c)) {
+                        if (c == '(') {
+                            final int endAt = name.indexOf(')', i);
+                            if (endAt >= 0) {
+                                final String extra = name.substring(i+1, endAt);
+                                if (CharSequences.isUnicodeIdentifier(extra)) {
+                                    i += extra.length() + 2;
+                                }
+                            }
+                        }
                         name = CharSequences.trimWhitespaces(name, 0, i).toString();
                         if (!name.isEmpty()) {
                             final Map<String,Object> copy = new HashMap<>(properties);

@@ -67,10 +67,12 @@ import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.internal.metadata.TransformationAccuracy;
+import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.internal.metadata.sql.SQLUtilities;
 import org.apache.sis.internal.referencing.DeprecatedCode;
 import org.apache.sis.internal.referencing.EPSGParameterDomain;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
+import org.apache.sis.internal.referencing.SignReversalComment;
 import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.system.Semaphores;
@@ -1053,13 +1055,13 @@ addURIs:    for (int i=0; ; i++) {
      * @param  table       The table on which a query has been executed.
      * @param  name        The name for the {@link IndentifiedObject} to construct.
      * @param  code        The EPSG code of the object to construct.
-     * @param  remarks     Remarks, or {@code null} if none.
+     * @param  remarks     Remarks as a {@link String} or {@link InternationalString}, or {@code null} if none.
      * @param  deprecated  {@code true} if the object to create is deprecated.
      * @return The name together with a set of properties.
      */
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
     private Map<String,Object> createProperties(final String table, String name, final Integer code,
-            String remarks, final boolean deprecated) throws SQLException, FactoryDataException
+            CharSequence remarks, final boolean deprecated) throws SQLException, FactoryDataException
     {
         /*
          * Search for aliases. Note that searching for the object code is not sufficient. We also need to check if the
@@ -1159,8 +1161,12 @@ addURIs:    for (int i=0; ; i++) {
      * @return The name together with a set of properties.
      */
     private Map<String,Object> createProperties(final String table, final String name, final Integer code,
-            final String domainCode, String scope, String remarks, final boolean deprecated) throws SQLException, FactoryException
+            final String domainCode, String scope, final String remarks, final boolean deprecated)
+            throws SQLException, FactoryException
     {
+        if ("?".equals(scope)) {                // EPSG sometime uses this value for unspecified scope.
+            scope = null;
+        }
         final Map<String,Object> properties = createProperties(table, name, code, remarks, deprecated);
         if (domainCode != null) {
             properties.put(Datum.DOMAIN_OF_VALIDITY_KEY, owner.createExtent(domainCode));
@@ -1523,6 +1529,16 @@ addURIs:    for (int i=0; ; i++) {
                         break;
                     }
                     /* ----------------------------------------------------------------------
+                     *   PARAMETRIC CRS
+                     * ---------------------------------------------------------------------- */
+                    case "parametric": {
+                        final ParametricCS    cs    = owner.createParametricCS   (getString(code, result, 8));
+                        final ParametricDatum datum = owner.createParametricDatum(getString(code, result, 9));
+                        crs = crsFactory.createParametricCRS(createProperties("Coordinate Reference System",
+                                name, epsg, area, scope, remarks, deprecated), datum, cs);
+                        break;
+                    }
+                    /* ----------------------------------------------------------------------
                      *   UNKNOWN CRS
                      * ---------------------------------------------------------------------- */
                     default: {
@@ -1665,6 +1681,10 @@ addURIs:    for (int i=0; ; i++) {
                      */
                     case "engineering": {
                         datum = datumFactory.createEngineeringDatum(properties);
+                        break;
+                    }
+                    case "parametric": {
+                        datum = datumFactory.createParametricDatum(properties);
                         break;
                     }
                     default: {
@@ -2082,27 +2102,27 @@ addURIs:    for (int i=0; ; i++) {
                 final CSFactory csFactory = owner.csFactory;
                 CoordinateSystem cs = null;
                 switch (type.toLowerCase(Locale.US)) {
-                    case "ellipsoidal": {
+                    case WKTKeywords.ellipsoidal: {
                         switch (dimension) {
                             case 2: cs = csFactory.createEllipsoidalCS(properties, axes[0], axes[1]); break;
                             case 3: cs = csFactory.createEllipsoidalCS(properties, axes[0], axes[1], axes[2]); break;
                         }
                         break;
                     }
-                    case "cartesian": {
+                    case "cartesian": {         // Need lower-case "c"
                         switch (dimension) {
                             case 2: cs = csFactory.createCartesianCS(properties, axes[0], axes[1]); break;
                             case 3: cs = csFactory.createCartesianCS(properties, axes[0], axes[1], axes[2]); break;
                         }
                         break;
                     }
-                    case "spherical": {
+                    case WKTKeywords.spherical: {
                         switch (dimension) {
                             case 3: cs = csFactory.createSphericalCS(properties, axes[0], axes[1], axes[2]); break;
                         }
                         break;
                     }
-                    case "vertical":
+                    case WKTKeywords.vertical:
                     case "gravity-related": {
                         switch (dimension) {
                             case 1: cs = csFactory.createVerticalCS(properties, axes[0]); break;
@@ -2110,31 +2130,37 @@ addURIs:    for (int i=0; ; i++) {
                         break;
                     }
                     case "time":
-                    case "temporal": {      // Was used in older ISO-19111 versions.
+                    case WKTKeywords.temporal: {
                         switch (dimension) {
                             case 1: cs = csFactory.createTimeCS(properties, axes[0]); break;
                         }
                         break;
                     }
-                    case "linear": {
+                    case WKTKeywords.parametric: {
+                        switch (dimension) {
+                            case 1: cs = csFactory.createParametricCS(properties, axes[0]); break;
+                        }
+                        break;
+                    }
+                    case WKTKeywords.linear: {
                         switch (dimension) {
                             case 1: cs = csFactory.createLinearCS(properties, axes[0]); break;
                         }
                         break;
                     }
-                    case "polar": {
+                    case WKTKeywords.polar: {
                         switch (dimension) {
                             case 2: cs = csFactory.createPolarCS(properties, axes[0], axes[1]); break;
                         }
                         break;
                     }
-                    case "cylindrical": {
+                    case WKTKeywords.cylindrical: {
                         switch (dimension) {
                             case 3: cs = csFactory.createCylindricalCS(properties, axes[0], axes[1], axes[2]); break;
                         }
                         break;
                     }
-                    case "affine": {
+                    case WKTKeywords.affine: {
                         switch (dimension) {
                             case 2: cs = csFactory.createAffineCS(properties, axes[0], axes[1]); break;
                             case 3: cs = csFactory.createAffineCS(properties, axes[0], axes[1], axes[2]); break;
@@ -2433,10 +2459,10 @@ addURIs:    for (int i=0; ; i++) {
                 " WHERE PARAMETER_CODE = ?", code))
         {
             while (result.next()) {
-                final Integer epsg       = getInteger  (code, result, 1);
-                final String  name       = getString   (code, result, 2);
-                final String  remarks    = getOptionalString (result, 3);
-                final boolean deprecated = getOptionalBoolean(result, 4);
+                final Integer epsg        = getInteger  (code, result, 1);
+                final String  name        = getString   (code, result, 2);
+                final String  description = getOptionalString (result, 3);
+                final boolean deprecated  = getOptionalBoolean(result, 4);
                 Class<?> type = Double.class;
                 /*
                  * If the parameter appears to have at least one non-null value in the "Parameter File Name" column,
@@ -2483,6 +2509,27 @@ next:               while (r.next()) {
                     }
                 }
                 /*
+                 * Determines if the inverse operation can be performed by reversing the parameter sign.
+                 * The EPSG dataset uses "Yes" or "No" value, but SIS scripts use boolean type. We have
+                 * to accept both.
+                 */
+                InternationalString isReversible = null;
+                try (ResultSet r = executeQuery("ParameterSign",
+                        "SELECT DISTINCT PARAM_SIGN_REVERSAL FROM [Coordinate_Operation Parameter Usage]" +
+                        " WHERE (PARAMETER_CODE = ?)", epsg))
+                {
+                    if (r.next()) {
+                        final String v = r.getString(1);
+                        if (v != null && !r.next()) {
+                            if (v.equalsIgnoreCase("true") || v.equalsIgnoreCase("yes") || v.equals("1")) {
+                                isReversible = SignReversalComment.OPPOSITE;
+                            } else if (v.equalsIgnoreCase("false") || v.equalsIgnoreCase("no") || v.equals("0")) {
+                                isReversible = SignReversalComment.SAME;
+                            }
+                        }
+                    }
+                }
+                /*
                  * Now creates the parameter descriptor.
                  */
                 final NumberRange<?> valueDomain;
@@ -2492,8 +2539,10 @@ next:               while (r.next()) {
                     case 1:  valueDomain = MeasurementRange.create(Double.NEGATIVE_INFINITY, false,
                                     Double.POSITIVE_INFINITY, false, CollectionsExt.first(units)); break;
                 }
-                final ParameterDescriptor<?> descriptor = new DefaultParameterDescriptor<>(
-                        createProperties("Coordinate_Operation Parameter", name, epsg, remarks, deprecated),
+                final Map<String, Object> properties =
+                        createProperties("Coordinate_Operation Parameter", name, epsg, isReversible, deprecated);
+                properties.put(Identifier.DESCRIPTION_KEY, description);
+                final ParameterDescriptor<?> descriptor = new DefaultParameterDescriptor<>(properties,
                         1, 1, type, valueDomain, null, null);
                 returnValue = ensureSingleton(descriptor, returnValue, code);
             }
@@ -2875,6 +2924,7 @@ next:               while (r.next()) {
                             }
                         }
                         opProperties.put(ReferencingServices.OPERATION_TYPE_KEY, opType);
+                        opProperties.put(ReferencingServices.PARAMETERS_KEY, parameters);
                         /*
                          * Following restriction will be removed in a future SIS version if the method is added to GeoAPI.
                          */

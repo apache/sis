@@ -229,6 +229,7 @@ public final class TestRunner extends BlockJUnit4ClassRunner {
      *
      * @return The test method to be executed in dependencies order.
      */
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
     private FrameworkMethod[] getFilteredChildren() {
         if (filteredChildren == null) {
             final List<FrameworkMethod> children = super.getChildren();

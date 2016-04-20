@@ -36,7 +36,7 @@ import org.apache.sis.parameter.ParameterBuilder;
  * @module
  */
 @SuppressWarnings("serial")
-public final strictfp class PoleRotationMock extends MockProvider {
+public final strictfp class PoleRotationMock extends ProviderMock {
     /**
      * The group of all parameters expected by this coordinate operation.
      */

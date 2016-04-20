@@ -17,6 +17,7 @@
 package org.apache.sis.util.resources;
 
 import java.net.URL;
+import java.util.Map;
 import java.util.Locale;
 import java.util.MissingResourceException;
 import javax.annotation.Generated;
@@ -28,7 +29,7 @@ import org.opengis.util.InternationalString;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.3
- * @version 0.4
+ * @version 0.7
  * @module
  */
 public final class Vocabulary extends IndexedResourceBundle {
@@ -189,6 +190,11 @@ public final class Vocabulary extends IndexedResourceBundle {
          * Default value
          */
         public static final short DefaultValue = 71;
+
+        /**
+         * Derived from {0}
+         */
+        public static final short DerivedFrom_1 = 108;
 
         /**
          * Description
@@ -626,6 +632,21 @@ public final class Vocabulary extends IndexedResourceBundle {
     }
 
     /**
+     * Returns resources in the locale specified in the given property map. This convenience method looks
+     * for the {@link #LOCALE_KEY} entry. If the given map is null, or contains no entry for the locale key,
+     * or the value is not an instance of {@link Locale}, then this method fallback on the default locale.
+     *
+     * @param  properties  the map of properties, or {@code null} if none.
+     * @return resources in the given locale.
+     * @throws MissingResourceException if resources can not be found.
+     *
+     * @since 0.7
+     */
+    public static Vocabulary getResources(final Map<?,?> properties) throws MissingResourceException {
+        return getResources(getLocale(properties));
+    }
+
+    /**
      * Gets a string for the given key from this resource bundle or one of its parents.
      *
      * @param  key The key for the desired string.
@@ -633,7 +654,7 @@ public final class Vocabulary extends IndexedResourceBundle {
      * @throws MissingResourceException If no object for the given key can be found.
      */
     public static String format(final short key) throws MissingResourceException {
-        return getResources(null).getString(key);
+        return getResources((Locale) null).getString(key);
     }
 
     /**

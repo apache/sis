@@ -92,14 +92,14 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
     }
 
     /**
-     * Parses the given text.
+     * Parses the given text. It is caller's responsibility to verify if some warnings have been emitted.
      *
      * @param  type The expected object type.
      * @param  text The WKT string to parse.
      * @return The parsed object.
      * @throws ParseException if an error occurred during the parsing.
      */
-    private <T> T parse(final Class<T> type, final String text) throws ParseException {
+    private <T> T parseIgnoreWarnings(final Class<T> type, final String text) throws ParseException {
         if (parser == null) {
             newParser(Convention.DEFAULT);
         }
@@ -107,10 +107,23 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
         final Object obj = parser.parseObject(text, position);
         assertEquals("errorIndex", -1, position.getErrorIndex());
         assertEquals("index", text.length(), position.getIndex());
-        assertNull("warnings", parser.getAndClearWarnings(obj));
-        assertTrue("ignoredElements", parser.ignoredElements.isEmpty());
         assertInstanceOf("GeodeticObjectParser.parseObject", type, obj);
         return type.cast(obj);
+    }
+
+    /**
+     * Parses the given text and ensure that no warnings have been emitted.
+     *
+     * @param  type The expected object type.
+     * @param  text The WKT string to parse.
+     * @return The parsed object.
+     * @throws ParseException if an error occurred during the parsing.
+     */
+    private <T> T parse(final Class<T> type, final String text) throws ParseException {
+        final T obj = parseIgnoreWarnings(type, text);
+        assertNull("warnings", parser.getAndClearWarnings(obj));
+        assertTrue("ignoredElements", parser.ignoredElements.isEmpty());
+        return obj;
     }
 
     /**
@@ -436,6 +449,48 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
         assertEquals("dimension", 2, cs.getDimension());
         assertAxisEquals(AxisNames.GEODETIC_LONGITUDE, "λ", AxisDirection.EAST,  -200, +200, NonSI.GRADE, RangeMeaning.WRAPAROUND, cs.getAxis(0));
         assertAxisEquals(AxisNames.GEODETIC_LATITUDE,  "φ", AxisDirection.NORTH, -100, +100, NonSI.GRADE, RangeMeaning.EXACT,      cs.getAxis(1));
+    }
+
+    /**
+     * Tests parsing of a CRS with a prime meridian having implicit unit in grads but axes having explicit unit
+     * in degrees. The specification in §8.2.2 (ii) said:
+     *
+     *     "(snip) the prime meridian’s {@literal <irm longitude>} value shall be given in
+     *     the same angular units as those for the horizontal axes of the geographic CRS."
+     *
+     * Consequently we expect the prime meridian to be in decimal degrees even if the WKT used in this test has
+     * an {@code Unit[“grade”, 0.015707963267948967]} element, because this WK also declare the axis as being in
+     * degrees. Since this can be confusing, we expect the parser to emit a warning.
+     *
+     * @throws ParseException if the parsing failed.
+     */
+    @Test
+    @DependsOnMethod("testGeographicWithParisMeridian")
+    public void testMismatchedAngularUnits() throws ParseException {
+        String wkt = "GeodeticCRS[“NTF (Paris)”,\n" +
+                     "  Datum[“Nouvelle Triangulation Française (Paris)”,\n" +
+                     "    Ellipsoid[“Clarke 1880 (IGN)”, 6378249.2, 293.4660212936269]],\n" +
+                     "    PrimeMeridian[“Paris”, 2.33722917],\n" +              // In units of the longitude axis.
+                     "  CS[ellipsoidal, 2],\n" +
+                     "    Axis[“Latitude (φ)”, NORTH, Unit[“degree”, 0.017453292519943295]],\n" +
+                     "    Axis[“Longitude (λ)”, EAST, Unit[“degree”, 0.017453292519943295]],\n" +
+                     "    Unit[“grade”, 0.015707963267948967]\n," +             // Inconsistent with axis units.
+                     "  Id[“EPSG”, 4807]]";
+
+        GeographicCRS crs = parseIgnoreWarnings(GeographicCRS.class, wkt);
+        final Warnings warnings = parser.getAndClearWarnings(crs);
+        assertTrue("ignoredElements", parser.ignoredElements.isEmpty());
+        assertNotNull("warnings", warnings);
+        assertEquals("warnings.numMessages", 1, warnings.getNumMessages());
+
+        assertNameAndIdentifierEqual("NTF (Paris)", 4807, crs);
+        PrimeMeridian pm = crs.getDatum().getPrimeMeridian();
+        assertEquals("angularUnit", NonSI.DEGREE_ANGLE, pm.getAngularUnit());
+        assertEquals("greenwichLongitude", 2.33722917, pm.getGreenwichLongitude(), STRICT);
+        EllipsoidalCS cs = crs.getCoordinateSystem();
+        assertEquals("dimension", 2, cs.getDimension());
+        assertAxisEquals(AxisNames.GEODETIC_LATITUDE,  "φ", AxisDirection.NORTH,  -90,  +90, NonSI.DEGREE_ANGLE, RangeMeaning.EXACT,      cs.getAxis(0));
+        assertAxisEquals(AxisNames.GEODETIC_LONGITUDE, "λ", AxisDirection.EAST,  -180, +180, NonSI.DEGREE_ANGLE, RangeMeaning.WRAPAROUND, cs.getAxis(1));
     }
 
     /**
@@ -1042,17 +1097,14 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
     @Test
     @DependsOnMethod("testGeographicWithImplicitAxes")
     public void testWarnings() throws ParseException {
-        newParser(Convention.DEFAULT);
-        final ParsePosition position = new ParsePosition(0);
-        final GeographicCRS crs = (GeographicCRS) parser.parseObject(
+        final GeographicCRS crs = parseIgnoreWarnings(GeographicCRS.class,
                "GEOGCS[“WGS 84”,\n" +
                "  DATUM[“World Geodetic System 1984”,\n" +
                "    SPHEROID[“WGS84”, 6378137.0, 298.257223563, Ext1[“foo”], Ext2[“bla”]]],\n" +
                "    PRIMEM[“Greenwich”, 0.0, Intruder[“unknown”]],\n" +
-               "  UNIT[“degree”, 0.017453292519943295], Intruder[“foo”]]", position);
+               "  UNIT[“degree”, 0.017453292519943295], Intruder[“foo”]]");
 
         verifyGeographicCRS(0, crs);
-        assertEquals("errorIndex", -1, position.getErrorIndex());
         final Warnings warnings = parser.getAndClearWarnings(crs);
         assertNotNull("warnings", warnings);
 

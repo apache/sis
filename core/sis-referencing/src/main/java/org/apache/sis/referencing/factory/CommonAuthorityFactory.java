@@ -26,6 +26,7 @@ import java.util.Arrays;
 import javax.measure.unit.SI;
 import javax.measure.unit.NonSI;
 import javax.measure.unit.Unit;
+import javax.measure.quantity.Length;
 import org.opengis.util.FactoryException;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Citation;
@@ -42,7 +43,6 @@ import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.cs.CSFactory;
 import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.referencing.cs.AxisDirection;
-import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.datum.DatumFactory;
 import org.opengis.referencing.datum.EngineeringDatum;
 import org.apache.sis.internal.referencing.GeodeticObjectBuilder;
@@ -52,7 +52,6 @@ import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.measure.Units;
 import org.apache.sis.referencing.CommonCRS;
-import org.apache.sis.referencing.cs.AxisFilter;
 import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
@@ -627,36 +626,14 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
              * At this point we got a coordinate system with axes in metres.
              * If the user asked for another unit of measurement, change the axes now.
              */
-            final Unit<?> unit;
+            final Unit<Length> unit;
             if (isLegacy) {
-                unit = createUnitFromEPSG(factor);
+                unit = createUnitFromEPSG(factor).asType(Length.class);
             } else {
                 unit = (factor != 1) ? Units.multiply(SI.METRE, factor) : SI.METRE;
             }
             if (!SI.METRE.equals(unit)) {
-                cs = (CartesianCS) CoordinateSystems.replaceAxes(cs, new AxisFilter() {
-                    @Override public Unit<?> getUnitReplacement(Unit<?> ignored) {
-                        assert SI.METRE.equals(ignored) : ignored;
-                        return unit;
-                    }
-
-                    @Override public Unit<?> getUnitReplacement(CoordinateSystemAxis axis, Unit<?> ignored) {
-                        assert SI.METRE.equals(ignored) : ignored;
-                        return unit;
-                    }
-
-                    @Override public boolean accept(CoordinateSystemAxis axis) {
-                        return true;
-                    }
-
-                    @Override public AxisDirection getDirectionReplacement(AxisDirection direction) {
-                        return direction;
-                    }
-
-                    @Override public AxisDirection getDirectionReplacement(CoordinateSystemAxis axis, AxisDirection direction) {
-                        return direction;
-                    }
-                });
+                cs = (CartesianCS) CoordinateSystems.replaceLinearUnit(cs, unit);
             }
             /*
              * Set the projection name, operation method and parameters. The parameters for the Transverse Mercator

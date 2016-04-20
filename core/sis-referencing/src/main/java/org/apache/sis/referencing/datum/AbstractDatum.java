@@ -83,6 +83,7 @@ import java.util.Objects;
     DefaultGeodeticDatum.class,
     DefaultVerticalDatum.class,
     DefaultTemporalDatum.class,
+    DefaultParametricDatum.class,
     DefaultEngineeringDatum.class,
     DefaultImageDatum.class
 })

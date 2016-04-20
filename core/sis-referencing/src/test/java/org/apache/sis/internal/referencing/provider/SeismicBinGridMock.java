@@ -38,7 +38,7 @@ import org.apache.sis.parameter.ParameterBuilder;
  * @module
  */
 @SuppressWarnings("serial")
-public final strictfp class SeismicBinGridMock extends MockProvider {
+public final strictfp class SeismicBinGridMock extends ProviderMock {
     /**
      * The group of all parameters expected by this coordinate operation.
      */

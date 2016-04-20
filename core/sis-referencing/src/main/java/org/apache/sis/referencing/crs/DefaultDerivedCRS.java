@@ -27,6 +27,7 @@ import org.opengis.referencing.datum.Datum;
 import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.referencing.datum.VerticalDatum;
 import org.opengis.referencing.datum.TemporalDatum;
+import org.opengis.referencing.datum.ParametricDatum;
 import org.opengis.referencing.datum.EngineeringDatum;
 import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.crs.DerivedCRS;
@@ -34,11 +35,13 @@ import org.opengis.referencing.crs.GeodeticCRS;
 import org.opengis.referencing.crs.VerticalCRS;
 import org.opengis.referencing.crs.TemporalCRS;
 import org.opengis.referencing.crs.ProjectedCRS;
+import org.opengis.referencing.crs.ParametricCRS;
 import org.opengis.referencing.crs.EngineeringCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.VerticalCS;
 import org.opengis.referencing.cs.TimeCS;
+import org.opengis.referencing.cs.ParametricCS;
 import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.MathTransform;
@@ -76,6 +79,7 @@ import org.apache.sis.util.Classes;
  *   <tr><td>{@link GeodeticCRS}</td>    <td>Base CRS is also a {@code GeodeticCRS} and is associated to the same type of coordinate system.</td></tr>
  *   <tr><td>{@link VerticalCRS}</td>    <td>Base CRS is also a {@code VerticalCRS} and coordinate system is a {@code VerticalCS}.</td></tr>
  *   <tr><td>{@link TemporalCRS}</td>    <td>Base CRS is also a {@code TemporalCRS} and coordinate system is a {@code TimeCS}.</td></tr>
+ *   <tr><td>{@link ParametricCRS}</td>  <td>Base CRS is also a {@code ParametricCRS} and coordinate system is a {@code ParametricCS}.</td></tr>
  *   <tr><td>{@link EngineeringCRS}</td> <td>Base CRS is a {@code GeodeticCRS}, {@code ProjectedCRS} or {@code EngineeringCRS}.</td></tr>
  * </table>
  *
@@ -90,6 +94,7 @@ import org.apache.sis.util.Classes;
  * synchronization.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
+ * @author  Johann Sorel (Geomatys)
  * @since   0.6
  * @version 0.7
  * @module
@@ -142,12 +147,12 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
      *     <td>{@link #getRemarks()}</td>
      *   </tr>
      *   <tr>
-     *     <td>{@value org.opengis.referencing.datum.Datum#DOMAIN_OF_VALIDITY_KEY}</td>
+     *     <td>{@value org.opengis.referencing.ReferenceSystem#DOMAIN_OF_VALIDITY_KEY}</td>
      *     <td>{@link org.opengis.metadata.extent.Extent}</td>
      *     <td>{@link #getDomainOfValidity()}</td>
      *   </tr>
      *   <tr>
-     *     <td>{@value org.opengis.referencing.datum.Datum#SCOPE_KEY}</td>
+     *     <td>{@value org.opengis.referencing.ReferenceSystem#SCOPE_KEY}</td>
      *     <td>{@link org.opengis.util.InternationalString} or {@link String}</td>
      *     <td>{@link #getScope()}</td>
      *   </tr>
@@ -263,7 +268,8 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
      * This method expects the same arguments and performs the same work than the
      * {@linkplain #DefaultDerivedCRS(Map, SingleCRS, Conversion, CoordinateSystem) above constructor},
      * except that the {@code DerivedCRS} instance returned by this method may additionally implement
-     * the {@link GeodeticCRS}, {@link VerticalCRS}, {@link TemporalCRS} or {@link EngineeringCRS} interface.
+     * the {@link GeodeticCRS}, {@link VerticalCRS}, {@link TemporalCRS}, {@link ParametricCRS} or
+     * {@link EngineeringCRS} interface.
      * See the class javadoc for more information.
      *
      * @param  properties The properties to be given to the new derived CRS object.
@@ -287,9 +293,10 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
         if (baseCRS != null && derivedCS != null) {
             final String type = getType(baseCRS, derivedCS);
             if (type != null) switch (type) {
-                case WKTKeywords.GeodeticCRS: return new Geodetic(properties, (GeodeticCRS) baseCRS, conversion,              derivedCS);
-                case WKTKeywords.VerticalCRS: return new Vertical(properties, (VerticalCRS) baseCRS, conversion, (VerticalCS) derivedCS);
-                case WKTKeywords.TimeCRS:     return new Temporal(properties, (TemporalCRS) baseCRS, conversion,     (TimeCS) derivedCS);
+                case WKTKeywords.GeodeticCRS:   return new Geodetic  (properties, (GeodeticCRS)   baseCRS, conversion,                derivedCS);
+                case WKTKeywords.VerticalCRS:   return new Vertical  (properties, (VerticalCRS)   baseCRS, conversion,   (VerticalCS) derivedCS);
+                case WKTKeywords.TimeCRS:       return new Temporal  (properties, (TemporalCRS)   baseCRS, conversion,       (TimeCS) derivedCS);
+                case WKTKeywords.ParametricCRS: return new Parametric(properties, (ParametricCRS) baseCRS, conversion, (ParametricCS) derivedCS);
                 case WKTKeywords.EngineeringCRS: {
                     /*
                      * This case may happen for baseCRS of kind GeodeticCRS, ProjectedCRS or EngineeringCRS.
@@ -315,7 +322,8 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
      * {@linkplain #DefaultDerivedCRS(Map, SingleCRS, CoordinateReferenceSystem, OperationMethod, MathTransform,
      * CoordinateSystem) above constructor},
      * except that the {@code DerivedCRS} instance returned by this method may additionally implement
-     * the {@link GeodeticCRS}, {@link VerticalCRS}, {@link TemporalCRS} or {@link EngineeringCRS} interface.
+     * the {@link GeodeticCRS}, {@link VerticalCRS}, {@link TemporalCRS}, {@link ParametricCRS} or
+     * {@link EngineeringCRS} interface.
      * See the class javadoc for more information.
      *
      * @param  properties       The properties to be given to the {@link DefaultConversion} object
@@ -340,9 +348,10 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
         if (baseCRS != null && derivedCS != null) {
             final String type = getType(baseCRS, derivedCS);
             if (type != null) switch (type) {
-                case WKTKeywords.GeodeticCRS: return new Geodetic(properties, (GeodeticCRS) baseCRS, interpolationCRS, method, baseToDerived,              derivedCS);
-                case WKTKeywords.VerticalCRS: return new Vertical(properties, (VerticalCRS) baseCRS, interpolationCRS, method, baseToDerived, (VerticalCS) derivedCS);
-                case WKTKeywords.TimeCRS:     return new Temporal(properties, (TemporalCRS) baseCRS, interpolationCRS, method, baseToDerived,     (TimeCS) derivedCS);
+                case WKTKeywords.GeodeticCRS:   return new Geodetic  (properties, (GeodeticCRS)   baseCRS, interpolationCRS, method, baseToDerived,                derivedCS);
+                case WKTKeywords.VerticalCRS:   return new Vertical  (properties, (VerticalCRS)   baseCRS, interpolationCRS, method, baseToDerived,  (VerticalCS)  derivedCS);
+                case WKTKeywords.TimeCRS:       return new Temporal  (properties, (TemporalCRS)   baseCRS, interpolationCRS, method, baseToDerived,      (TimeCS)  derivedCS);
+                case WKTKeywords.ParametricCRS: return new Parametric(properties, (ParametricCRS) baseCRS, interpolationCRS, method, baseToDerived, (ParametricCS) derivedCS);
                 case WKTKeywords.EngineeringCRS: {
                     if (baseCRS instanceof EngineeringCRS) {
                         // See the comment in create(Map, SingleCRS, Conversion, CoordinateSystem)
@@ -374,6 +383,7 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
                 case WKTKeywords.GeodeticCRS:    return new Geodetic   (object);
                 case WKTKeywords.VerticalCRS:    return new Vertical   (object);
                 case WKTKeywords.TimeCRS:        return new Temporal   (object);
+                case WKTKeywords.ParametricCRS:  return new Parametric (object);
                 case WKTKeywords.EngineeringCRS: return new Engineering(object);
             }
             return new DefaultDerivedCRS(object);
@@ -623,6 +633,8 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
             return WKTKeywords.VerticalCRS;
         } else if (TemporalCRS.class.isAssignableFrom(type) && derivedCS instanceof TimeCS) {
             return WKTKeywords.TimeCRS;
+        } else if (ParametricCRS.class.isAssignableFrom(type) && derivedCS instanceof ParametricCS) {
+            return WKTKeywords.ParametricCRS;
         } else if (ProjectedCRS.class.isAssignableFrom(type) || EngineeringCRS.class.isAssignableFrom(type)) {
             return WKTKeywords.EngineeringCRS;
         } else {
@@ -790,6 +802,59 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
     }
 
     /**
+     * A derived parametric CRS.
+     */
+    @XmlTransient
+    private static final class Parametric extends DefaultDerivedCRS implements ParametricCRS {
+        /** For cross-version compatibility. */
+        private static final long serialVersionUID = 2344979923957294024L;
+
+        /** Creates a copy of the given CRS. */
+        Parametric(DerivedCRS other) {
+            super(other);
+        }
+
+        /** Creates a new parametric CRS from the given properties. */
+        Parametric(Map<String,?> properties, ParametricCRS baseCRS, Conversion conversion, ParametricCS derivedCS) {
+            super(properties, baseCRS, conversion, derivedCS);
+        }
+
+        /** Creates a new parametric CRS from the given properties. */
+        Parametric(Map<String,?> properties, ParametricCRS baseCRS, CoordinateReferenceSystem interpolationCRS,
+                OperationMethod method, MathTransform baseToDerived, ParametricCS derivedCS)
+        {
+            super(properties, baseCRS, interpolationCRS, method, baseToDerived, derivedCS);
+        }
+
+        /** Returns the datum of the base parametric CRS. */
+        @Override public ParametricDatum getDatum() {
+            return (ParametricDatum) super.getDatum();
+        }
+
+        /** Returns the coordinate system given at construction time. */
+        @Override public ParametricCS getCoordinateSystem() {
+            return (ParametricCS) super.getCoordinateSystem();
+        }
+
+        /** Returns a coordinate reference system of the same type than this CRS but with different axes. */
+        @Override AbstractCRS createSameType(final Map<String,?> properties, final CoordinateSystem derivedCS) {
+            final Conversion conversionFromBase = getConversionFromBase();
+            return new Parametric(properties, (ParametricCRS) conversionFromBase.getSourceCRS(),
+                    conversionFromBase, (ParametricCS) derivedCS);
+        }
+
+        /** Returns the WKT keyword for this derived CRS type. */
+        @Override String keyword(final Formatter formatter) {
+            return WKTKeywords.ParametricCRS;
+        }
+
+        /** Returns the GML code for this derived CRS type. */
+        @Override SC_DerivedCRSType getType() {
+            return new SC_DerivedCRSType("parametric");
+        }
+    }
+
+    /**
      * An derived engineering CRS. ISO 19162 restricts the base CRS to {@code EngineeringCRS}, {@code ProjectedCRS}
      * or {@code GeodeticCRS}. Note that in the later case, an ambiguity may exist with the
      * {@link org.apache.sis.referencing.crs.DefaultDerivedCRS.Geodetic} when deciding which {@code DerivedCRS} to
@@ -838,7 +903,6 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
             return new SC_DerivedCRSType("engineering");
         }
     }
-
 
 
 

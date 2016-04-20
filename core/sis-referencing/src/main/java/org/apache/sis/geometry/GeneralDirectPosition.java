@@ -127,7 +127,7 @@ public class GeneralDirectPosition extends AbstractDirectPosition implements Ser
      * @param point The position to copy.
      */
     public GeneralDirectPosition(final DirectPosition point) {
-        ordinates = point.getCoordinate(); // Should already be cloned.
+        ordinates = point.getCoordinate();                              // Should already be cloned.
         crs = point.getCoordinateReferenceSystem();
         ensureDimensionMatches("crs", ordinates.length, crs);
     }

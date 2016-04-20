@@ -17,19 +17,15 @@
 package org.apache.sis.referencing.operation.transform;
 
 import javax.measure.unit.SI;
-import javax.measure.unit.Unit;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.cs.CoordinateSystem;
-import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.cs.SphericalCS;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.crs.DefaultGeocentricCRS;
 import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.referencing.cs.AxesConvention;
-import org.apache.sis.referencing.cs.AxisFilter;
 import org.apache.sis.referencing.CommonCRS;
-import org.apache.sis.measure.Units;
 
 // Test dependencies
 import org.opengis.test.referencing.TransformTestCase;
@@ -39,10 +35,6 @@ import org.apache.sis.util.ArraysExt;
 import org.junit.BeforeClass;
 import org.junit.AfterClass;
 import org.junit.Test;
-
-// Branch-dependent imports
-import org.opengis.referencing.cs.AxisDirection;
-
 
 
 /**
@@ -92,29 +84,7 @@ public final strictfp class CoordinateSystemTransformTest extends TransformTestC
      * Returns the given coordinate system but with linear axes in centimetres instead of metres.
      */
     private static CoordinateSystem toCentimetres(final CoordinateSystem cs) {
-        return CoordinateSystems.replaceAxes(cs, new AxisFilter() {
-            @Override public Unit<?> getUnitReplacement(CoordinateSystemAxis axis, Unit<?> unit) {
-                return Units.isLinear(unit) ? SI.CENTIMETRE : unit;
-            }
-            @Override public Unit<?> getUnitReplacement(Unit<?> unit) {
-                return Units.isLinear(unit) ? SI.CENTIMETRE : unit;
-            }
-
-            @Override
-            public boolean accept(CoordinateSystemAxis axis) {
-                return true;
-            }
-
-            @Override
-            public AxisDirection getDirectionReplacement(CoordinateSystemAxis axis, AxisDirection direction) {
-                return direction;
-            }
-
-            @Override
-            public AxisDirection getDirectionReplacement(AxisDirection direction) {
-                return direction;
-            }
-        });
+        return CoordinateSystems.replaceLinearUnit(cs, SI.CENTIMETRE);
     }
 
     /**

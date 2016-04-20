@@ -233,7 +233,7 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
     public Envelope2D(final CoordinateReferenceSystem crs, final Rectangle2D rect)
             throws MismatchedDimensionException
     {
-        super(rect.getX(), rect.getY(), rect.getWidth(), rect.getHeight()); // Really 'super', not 'this'.
+        super(rect.getX(), rect.getY(), rect.getWidth(), rect.getHeight());     // Really 'super', not 'this'.
         ensureDimensionMatches("crs", DIMENSION, crs);
         this.crs = crs;
     }
@@ -256,7 +256,7 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
     public Envelope2D(final CoordinateReferenceSystem crs, final double x, final double y,
             final double width, final double height) throws MismatchedDimensionException
     {
-        super(x, y, width, height); // Really 'super', not 'this'.
+        super(x, y, width, height);                             // Really 'super', not 'this'.
         ensureDimensionMatches("crs", DIMENSION, crs);
         this.crs = crs;
     }
@@ -364,7 +364,7 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
             case 1:  value=y; span=height; break;
             default: throw indexOutOfBounds(dimension);
         }
-        if (isNegative(span)) { // Special handling for -0.0
+        if (isNegative(span)) {                                         // Special handling for -0.0
             final CoordinateSystemAxis axis = getAxis(crs, dimension);
             return (axis != null) ? axis.getMinimumValue() : NEGATIVE_INFINITY;
         }
@@ -388,7 +388,7 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
             case 1:  value=y; span=height; break;
             default: throw indexOutOfBounds(dimension);
         }
-        if (isNegative(span)) { // Special handling for -0.0
+        if (isNegative(span)) {                                         // Special handling for -0.0
             final CoordinateSystemAxis axis = getAxis(crs, dimension);
             return (axis != null) ? axis.getMaximumValue() : POSITIVE_INFINITY;
         }
@@ -413,7 +413,7 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
             default: throw indexOutOfBounds(dimension);
         }
         value += 0.5*span;
-        if (isNegative(span)) { // Special handling for -0.0
+        if (isNegative(span)) {                                         // Special handling for -0.0
             value = fixMedian(getAxis(crs, dimension), value);
         }
         return value;
@@ -435,7 +435,7 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
             case 1:  span=height; break;
             default: throw indexOutOfBounds(dimension);
         }
-        if (isNegative(span)) { // Special handling for -0.0
+        if (isNegative(span)) {                                         // Special handling for -0.0
             span = fixSpan(getAxis(crs, dimension), span);
         }
         return span;
@@ -570,11 +570,12 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
      *
      * @since 0.4
      */
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
     public Rectangle2D.Double[] toRectangles() {
-        int isWrapAround = 0; // A bitmask of the dimensions having a "wrap around" behavior.
+        int isWrapAround = 0;                   // A bitmask of the dimensions having a "wrap around" behavior.
         for (int i=0; i!=DIMENSION; i++) {
             final double span = (i == 0) ? width : height;
-            if (!(span > 0)) { // Use '!' for catching NaN.
+            if (!(span > 0)) {                                                      // Use '!' for catching NaN.
                 if (!isNegative(span) || !isWrapAround(crs, i)) {
                     return EMPTY;
                 }
@@ -614,7 +615,7 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
              */
             final CoordinateSystemAxis axis = getAxis(crs, 1);
             final Rectangle2D.Double start = rect[0];
-            final Rectangle2D.Double next  = rect[isWrapAround - 1]; // == 1 if y is the only wraparound axis, or 2 otherwise.
+            final Rectangle2D.Double next  = rect[isWrapAround - 1];    // == 1 if y is the only wraparound axis, or 2 otherwise.
             start.height = axis.getMaximumValue() - y;
             next.y       = axis.getMinimumValue();
             next.height += y - next.y;
@@ -839,14 +840,14 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
             /*
              * See GeneralEnvelope.intersect(Envelope) for an explanation of the algorithm applied below.
              */
-            if (isSameSign(span0, span1)) { // Always 'false' if any value is NaN.
+            if (isSameSign(span0, span1)) {                 // Always 'false' if any value is NaN.
                 if ((min1 > max0 || max1 < min0) && !isNegativeUnsafe(span0)) {
-                    continue; // No intersection: leave ordinate values to NaN
+                    continue;                               // No intersection: leave ordinate values to NaN
                 }
             } else if (isNaN(span0) || isNaN(span1)) {
-                continue; // Leave ordinate values to NaN
+                continue;                                   // Leave ordinate values to NaN
             } else {
-                int intersect = 0; // A bitmask of intersections (two bits).
+                int intersect = 0;                          // A bitmask of intersections (two bits).
                 if (isNegativeUnsafe(span0)) {
                     if (min1 <= max0) {min = min1; intersect  = 1;}
                     if (max1 >= min0) {max = max1; intersect |= 2;}
@@ -863,7 +864,7 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
                         min = min1;
                         max = max1;
                     } else {
-                        continue; // Leave ordinate values to NaN
+                        continue;                           // Leave ordinate values to NaN
                     }
                 }
             }
@@ -931,7 +932,7 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
             final boolean sp1 = isNegative(span1);
             if (sp0 == sp1) {
                 if (sp0 && !isNegativeUnsafe(max - min)) {
-                    continue; // Leave ordinates to NaN.
+                    continue;                                   // Leave ordinates to NaN.
                 }
             } else if (sp0) {
                 if (max1 <= max0 || min1 >= min0) {
@@ -941,7 +942,7 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
                     final double left  = min1 - max0;
                     final double right = min0 - max1;
                     if (!(left > 0 || right > 0)) {
-                        continue; // Leave ordinates to NaN.
+                        continue;                               // Leave ordinates to NaN.
                     }
                     if (left > right) {min = min1; max = max0;}
                     if (right > left) {min = min0; max = max1;}
@@ -954,7 +955,7 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
                     final double left  = min0 - max1;
                     final double right = min1 - max0;
                     if (!(left > 0 || right > 0)) {
-                        continue; // Leave ordinates to NaN.
+                        continue;                               // Leave ordinates to NaN.
                     }
                     if (left > right) {min = min0; max = max1;}
                     if (right > left) {min = min1; max = max0;}
@@ -1001,7 +1002,7 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
     @Override
     public void add(final double px, final double py) {
         double off = px - x;
-        if (!isNegative(width)) { // Standard case, or NaN.
+        if (!isNegative(width)) {                           // Standard case, or NaN.
             if (off < 0) {x=px; width -= off;}
             if (off > width)   {width  = off;}
         } else if (off < 0) {

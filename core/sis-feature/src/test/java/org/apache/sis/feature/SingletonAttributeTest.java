@@ -105,7 +105,7 @@ public final strictfp class SingletonAttributeTest extends TestCase {
         ((AbstractAttribute) attribute).setValue(4.5f);
         quality = attribute.quality();
         assertEquals("scope.level", ScopeCode.ATTRIBUTE, quality.getScope().getLevel());
-        assertDomainConsistencyEquals("population", "Property “population” does not accept instances of ‘Float’.",
+        assertDomainConsistencyEquals("population", "Expected an instance of ‘Integer’ for the “population” property, but got an instance of ‘Float’.",
                 (DomainConsistency) getSingleton(quality.getReports()));
     }
 
