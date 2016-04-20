@@ -125,7 +125,7 @@ public class FeatureTypeBuilder extends Builder<FeatureTypeBuilder> {
     /**
      * The default geometry attribute, or {@code null} if none.
      *
-     * @see NameConvention#DEFAULT_GEOMETRY_PROPERTY
+     * @see AttributeConvention#DEFAULT_GEOMETRY_PROPERTY
      */
     private Property<?> defaultGeometry;
 
@@ -301,7 +301,7 @@ public class FeatureTypeBuilder extends Builder<FeatureTypeBuilder> {
         }
         if (defaultGeometry != null) {
             throw new IllegalStateException(errors().getString(Errors.Keys.PropertyAlreadyExists_2,
-                    getDisplayName(), NameConvention.DEFAULT_GEOMETRY_PROPERTY));
+                    getDisplayName(), AttributeConvention.DEFAULT_GEOMETRY_PROPERTY));
         }
         final Property<V> property = new Property<>(valueClass);
         defaultGeometry = property;
@@ -497,11 +497,11 @@ public class FeatureTypeBuilder extends Builder<FeatureTypeBuilder> {
          * @return {@code this} for allowing method calls chaining.
          * @throws UnsupportedOperationException if this property does not support characteristics.
          *
-         * @see NameConvention#VALID_VALUES_CHARACTERISTIC
+         * @see AttributeConvention#VALID_VALUES_CHARACTERISTIC
          */
         @SafeVarargs
         public final Property<V> setValidValues(final V... values) {
-            return setCharacteristic(NameConvention.VALID_VALUES_CHARACTERISTIC,
+            return setCharacteristic(AttributeConvention.VALID_VALUES_CHARACTERISTIC,
                     Set.class, CollectionsExt.immutableSet(false, values));
         }
 
@@ -517,10 +517,10 @@ public class FeatureTypeBuilder extends Builder<FeatureTypeBuilder> {
          * @return {@code this} for allowing method calls chaining.
          * @throws UnsupportedOperationException if this property does not support length characteristics.
          *
-         * @see NameConvention#MAXIMAL_LENGTH_CHARACTERISTIC
+         * @see AttributeConvention#MAXIMAL_LENGTH_CHARACTERISTIC
          */
         public Property<V> setMaximalLengthCharacteristic(final Integer length) {
-            return setCharacteristic(NameConvention.MAXIMAL_LENGTH_CHARACTERISTIC, Integer.class, length);
+            return setCharacteristic(AttributeConvention.MAXIMAL_LENGTH_CHARACTERISTIC, Integer.class, length);
         }
 
         /**
@@ -535,10 +535,10 @@ public class FeatureTypeBuilder extends Builder<FeatureTypeBuilder> {
          * @return {@code this} for allowing method calls chaining.
          * @throws UnsupportedOperationException if this property does not support CRS characteristics.
          *
-         * @see NameConvention#CRS_CHARACTERISTIC
+         * @see AttributeConvention#CRS_CHARACTERISTIC
          */
         public Property<V> setCRSCharacteristic(final CoordinateReferenceSystem crs) {
-            return setCharacteristic(NameConvention.CRS_CHARACTERISTIC, CoordinateReferenceSystem.class, crs);
+            return setCharacteristic(AttributeConvention.CRS_CHARACTERISTIC, CoordinateReferenceSystem.class, crs);
         }
 
         /**
@@ -712,11 +712,11 @@ public class FeatureTypeBuilder extends Builder<FeatureTypeBuilder> {
              */
             if (builder == defaultGeometry) {
                 final PropertyType geom;
-                if (NameConvention.DEFAULT_GEOMETRY_PROPERTY.equals(instance.getName())) {
+                if (AttributeConvention.DEFAULT_GEOMETRY_PROPERTY.equals(instance.getName())) {
                     propertyTypes = ArraysExt.remove(propertyTypes, j--, 1);
                     geom = instance;
                 } else {
-                    geom = FeatureOperations.link(name(NameConvention.DEFAULT_GEOMETRY_PROPERTY), instance);
+                    geom = FeatureOperations.link(name(AttributeConvention.DEFAULT_GEOMETRY_PROPERTY), instance);
                 }
                 propertyTypes[numSynthetic - 1] = geom;
             }
@@ -727,12 +727,12 @@ public class FeatureTypeBuilder extends Builder<FeatureTypeBuilder> {
          * FeatureOperations.envelope(…) constructor will ignore any property which is not for a value.
          */
         if (defaultGeometry != null) try {
-            propertyTypes[numSynthetic - 2] = FeatureOperations.envelope(name(NameConvention.ENVELOPE_PROPERTY), null, propertyTypes);
+            propertyTypes[numSynthetic - 2] = FeatureOperations.envelope(name(AttributeConvention.ENVELOPE_PROPERTY), null, propertyTypes);
         } catch (FactoryException e) {
             throw new IllegalStateException(e);
         }
         if (identifierTypes != null) {
-            propertyTypes[0] = FeatureOperations.compound(name(NameConvention.ID_PROPERTY), idDelimiter, idPrefix, idSuffix, identifierTypes);
+            propertyTypes[0] = FeatureOperations.compound(name(AttributeConvention.ID_PROPERTY), idDelimiter, idPrefix, idSuffix, identifierTypes);
         }
         return new DefaultFeatureType(identification, isAbstract, superTypes.toArray(new FeatureType[superTypes.size()]), propertyTypes);
     }

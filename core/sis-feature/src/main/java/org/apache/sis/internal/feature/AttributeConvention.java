@@ -36,7 +36,7 @@ import org.opengis.feature.Property;
 
 /**
  * Defines the names of some properties or characteristics for which we assign a conventional usage.
- * Properties with the names defined in this {@code NameConvention} class are often aliases generated
+ * Properties with the names defined in this {@code AttributeConvention} class are often aliases generated
  * by the SIS implementation of various file readers. Those synthetic properties redirect to the most
  * appropriate "real" property in the feature.
  *
@@ -70,7 +70,7 @@ import org.opengis.feature.Property;
  * @version 0.7
  * @module
  */
-public final class NameConvention extends Static {
+public final class AttributeConvention extends Static {
     /**
      * Namespace of all names defined by SIS convention.
      */
@@ -179,7 +179,7 @@ public final class NameConvention extends Static {
     /**
      * Do not allow instantiation of this class.
      */
-    private NameConvention() {
+    private AttributeConvention() {
     }
 
     /**

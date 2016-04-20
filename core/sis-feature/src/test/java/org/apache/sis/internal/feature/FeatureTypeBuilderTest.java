@@ -122,9 +122,9 @@ public final strictfp class FeatureTypeBuilderTest extends TestCase {
         assertEquals("defaultValue",  "test default value.", att.getDefaultValue());
         assertEquals("minimumOccurs", 10,                    att.getMinimumOccurs());
         assertEquals("maximumOccurs", 60,                    att.getMaximumOccurs());
-        assertTrue  ("characterizedByMaximalLength", NameConvention.characterizedByMaximalLength(att));
+        assertTrue  ("characterizedByMaximalLength", AttributeConvention.characterizedByMaximalLength(att));
         assertEquals("maximalLengthCharacteristic", Integer.valueOf(80),
-                NameConvention.getMaximalLengthCharacteristic(att.newInstance()));
+                AttributeConvention.getMaximalLengthCharacteristic(att.newInstance()));
     }
 
     /**
@@ -189,10 +189,10 @@ public final strictfp class FeatureTypeBuilderTest extends TestCase {
         assertEquals("defaultValue", null, a2.getDefaultValue());
         assertEquals("defaultValue", 10.0, a3.getDefaultValue());
 
-        assertFalse("characterizedByCRS", NameConvention.characterizedByCRS(a0));
-        assertFalse("characterizedByCRS", NameConvention.characterizedByCRS(a1));
-        assertTrue ("characterizedByCRS", NameConvention.characterizedByCRS(a2));
-        assertFalse("characterizedByCRS", NameConvention.characterizedByCRS(a3));
+        assertFalse("characterizedByCRS", AttributeConvention.characterizedByCRS(a0));
+        assertFalse("characterizedByCRS", AttributeConvention.characterizedByCRS(a1));
+        assertTrue ("characterizedByCRS", AttributeConvention.characterizedByCRS(a2));
+        assertFalse("characterizedByCRS", AttributeConvention.characterizedByCRS(a3));
     }
 
     /**
@@ -231,10 +231,10 @@ public final strictfp class FeatureTypeBuilderTest extends TestCase {
         final PropertyType a4 = it.next();
         assertFalse("properties count", it.hasNext());
 
-        assertEquals("name", NameConvention.ID_PROPERTY,                a0.getName());
-        assertEquals("name", NameConvention.ENVELOPE_PROPERTY,          a1.getName());
-        assertEquals("name", NameConvention.DEFAULT_GEOMETRY_PROPERTY,  a2.getName());
-        assertEquals("name", "name",                                    a3.getName().toString());
-        assertEquals("name", "shape",                                   a4.getName().toString());
+        assertEquals("name", AttributeConvention.ID_PROPERTY,                a0.getName());
+        assertEquals("name", AttributeConvention.ENVELOPE_PROPERTY,          a1.getName());
+        assertEquals("name", AttributeConvention.DEFAULT_GEOMETRY_PROPERTY,  a2.getName());
+        assertEquals("name", "name",                                         a3.getName().toString());
+        assertEquals("name", "shape",                                        a4.getName().toString());
     }
 }

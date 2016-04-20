@@ -28,7 +28,7 @@ import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.TransformException;
-import org.apache.sis.internal.feature.NameConvention;
+import org.apache.sis.internal.feature.AttributeConvention;
 import org.apache.sis.internal.feature.Geometries;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.geometry.Envelopes;
@@ -126,7 +126,7 @@ final class EnvelopeOperation extends AbstractOperation {
     {
         super(identification);
         String defaultGeometry = null;
-        final String characteristicName = NameConvention.CRS_CHARACTERISTIC.toString();
+        final String characteristicName = AttributeConvention.CRS_CHARACTERISTIC.toString();
         /*
          * Get all property names without duplicated values. If a property is a link to an attribute,
          * then the key will be the name of the referenced attribute instead than the operation name.
@@ -138,11 +138,11 @@ final class EnvelopeOperation extends AbstractOperation {
         boolean characterizedByCRS = false;
         final Map<String,CoordinateReferenceSystem> names = new LinkedHashMap<>(4);
         for (IdentifiedType property : geometryAttributes) {
-            if (NameConvention.isGeometryAttribute(property)) {
+            if (AttributeConvention.isGeometryAttribute(property)) {
                 final GenericName name = property.getName();
                 final String attributeName = (property instanceof LinkOperation)
                                              ? ((LinkOperation) property).referentName : name.toString();
-                final boolean isDefault = NameConvention.DEFAULT_GEOMETRY_PROPERTY.equals(name.tip());
+                final boolean isDefault = AttributeConvention.DEFAULT_GEOMETRY_PROPERTY.equals(name.tip());
                 if (isDefault) {
                     defaultGeometry = attributeName;
                 }
@@ -317,7 +317,7 @@ final class EnvelopeOperation extends AbstractOperation {
                      * Envelopes.transform(…) searches a coordinate operation.
                      */
                     final Attribute<?> at = ((Attribute<?>) property).characteristics()
-                                    .get(NameConvention.CRS_CHARACTERISTIC.toString());
+                                    .get(AttributeConvention.CRS_CHARACTERISTIC.toString());
                     try {
                         if (at == null) {
                             final CoordinateOperation op = attributeToCRS[i];
