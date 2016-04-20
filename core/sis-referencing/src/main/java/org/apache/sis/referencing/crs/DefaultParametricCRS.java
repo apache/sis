@@ -20,10 +20,7 @@ import java.util.Map;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
-import org.opengis.referencing.crs.ParametricCRS;
 import org.opengis.referencing.cs.CoordinateSystem;
-import org.opengis.referencing.cs.ParametricCS;
-import org.opengis.referencing.datum.ParametricDatum;
 import org.apache.sis.internal.metadata.MetadataUtilities;
 import org.apache.sis.internal.metadata.WKTKeywords;
 import org.apache.sis.referencing.cs.AxesConvention;
@@ -31,6 +28,11 @@ import org.apache.sis.io.wkt.Formatter;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 import static org.apache.sis.referencing.crs.AbstractCRS.isBaseCRS;
+
+// Branch-dependent imports
+import org.opengis.referencing.cs.ParametricCS;
+import org.opengis.referencing.crs.ParametricCRS;
+import org.opengis.referencing.datum.ParametricDatum;
 
 
 /**
