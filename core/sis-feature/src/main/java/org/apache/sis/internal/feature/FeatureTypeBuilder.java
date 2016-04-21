@@ -499,7 +499,6 @@ public class FeatureTypeBuilder extends Builder<FeatureTypeBuilder> {
          *
          * @see AttributeConvention#VALID_VALUES_CHARACTERISTIC
          */
-        @SafeVarargs
         public final Property<V> setValidValues(final V... values) {
             return setCharacteristic(AttributeConvention.VALID_VALUES_CHARACTERISTIC,
                     Set.class, CollectionsExt.immutableSet(false, values));

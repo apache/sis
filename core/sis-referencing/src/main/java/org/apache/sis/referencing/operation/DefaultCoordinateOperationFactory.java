@@ -44,6 +44,7 @@ import org.apache.sis.referencing.factory.InvalidGeodeticParameterException;
 import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
 import org.apache.sis.util.collection.WeakHashSet;
 import org.apache.sis.util.collection.Containers;
+import org.apache.sis.util.collection.Cache;
 import org.apache.sis.util.iso.AbstractFactory;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
@@ -121,8 +122,19 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
     /**
      * Weak references to existing objects.
      * This set is used in order to return a pre-existing object instead of creating a new one.
+     * This apply to object created explicitly, not to coordinate operations inferred by a call
+     * to {@link #createOperation(CoordinateReferenceSystem, CoordinateReferenceSystem)}.
      */
     private final WeakHashSet<IdentifiedObject> pool;
+
+    /**
+     * The cache of coordinate operations found for a given pair of source and target CRS.
+     * If current implementation, we cache only operations found without context (otherwise
+     * we would need to take in account the area of interest and desired accuracy in the key).
+     *
+     * @see #createOperation(CoordinateReferenceSystem, CoordinateReferenceSystem, CoordinateOperationContext)
+     */
+    final Cache<CRSPair,CoordinateOperation> cache;
 
     /**
      * Constructs a factory with no default properties.
@@ -167,6 +179,7 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
             mtFactory = factory;
         }
         pool = new WeakHashSet<IdentifiedObject>(IdentifiedObject.class);
+        cache = new Cache<CRSPair,CoordinateOperation>(12, 50, true);
     }
 
     /**
@@ -699,9 +712,32 @@ next:   for (int i=components.size(); --i >= 0;) {
                                                final CoordinateOperationContext context)
             throws OperationNotFoundException, FactoryException
     {
-        final AuthorityFactory registry = USE_EPSG_FACTORY ? CRS.getAuthorityFactory(Constants.EPSG) : null;
-        return new CoordinateOperationFinder((registry instanceof CoordinateOperationAuthorityFactory) ?
-                (CoordinateOperationAuthorityFactory) registry : null, this, context).createOperation(sourceCRS, targetCRS);
+        final Cache.Handler<CoordinateOperation> handler;
+        CoordinateOperation op;
+        if (context == null) {
+            final CRSPair key = new CRSPair(sourceCRS, targetCRS);
+            op = cache.peek(key);
+            if (op != null) {
+                return op;
+            }
+            handler = cache.lock(key);
+        } else {
+            // We currently do not cache the operation when the result may depend on the context (see 'this.cache' javadoc).
+            handler = null;
+            op = null;
+        }
+        try {
+            if (handler == null || (op = handler.peek()) == null) {
+                final AuthorityFactory registry = USE_EPSG_FACTORY ? CRS.getAuthorityFactory(Constants.EPSG) : null;
+                op = new CoordinateOperationFinder((registry instanceof CoordinateOperationAuthorityFactory) ?
+                        (CoordinateOperationAuthorityFactory) registry : null, this, context).createOperation(sourceCRS, targetCRS);
+            }
+        } finally {
+            if (handler != null) {
+                handler.putAndUnlock(op);
+            }
+        }
+        return op;
     }
 
     /**

@@ -328,7 +328,7 @@ public final strictfp class CoordinateOperationRegistryTest extends MathTransfor
         } else {
             assertEpsgNameWithoutIdentifierEqual("NTF (Paris) to WGS 84 (1)", operation);
             assertEpsgNameWithoutIdentifierEqual("NTF (Paris)",               operation.getSourceCRS());
-            assertEpsgNameWithoutIdentifierEqual("WGS 84",                    operation.getTargetCRS());
+            assertEquals("name",                 "WGS 84",                    operation.getTargetCRS().getName().getCode());
             assertEpsgNameWithoutIdentifierEqual("NTF (Paris) to NTF (1)",    step1);
             assertEpsgNameWithoutIdentifierEqual("NTF to WGS 84 (1)",         step2);
         }

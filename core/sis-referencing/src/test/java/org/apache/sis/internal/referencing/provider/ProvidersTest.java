@@ -126,10 +126,10 @@ public final strictfp class ProvidersTest extends TestCase {
      * Ensures that every parameter instance is unique. Actually this test is not strong requirement.
      * This is only for sharing existing resources by avoiding unnecessary objects duplication.
      *
-     * @throws ReflectiveOperationException if the instantiation of a service provider failed.
+     * @throws Exception if the instantiation of a service provider failed.
      */
     @Test
-    public void ensureParameterUniqueness() throws ReflectiveOperationException {
+    public void ensureParameterUniqueness() throws Exception {
         final Map<GeneralParameterDescriptor, String> groupNames = new IdentityHashMap<GeneralParameterDescriptor, String>();
         final Map<GeneralParameterDescriptor, GeneralParameterDescriptor> parameters = new HashMap<GeneralParameterDescriptor, GeneralParameterDescriptor>();
         final Map<Object, Object> namesAndIdentifiers = new HashMap<Object, Object>();

@@ -512,6 +512,44 @@ public final strictfp class CoordinateOperationFinderTest extends MathTransformT
     //////////////////////////////////////////////////////////////////////////////////
 
     /**
+     * Tests the conversion from a four-dimensional geographic CRS to a two-dimensional geographic CRS.
+     * The vertical and temporal dimensions are simply dropped.
+     *
+     * @throws FactoryException if the operation can not be created.
+     * @throws TransformException if an error occurred while converting the test points.
+     */
+    @Test
+    @DependsOnMethod("testGeographic3D_to_2D")
+    public void testGeographic4D_to_2D() throws FactoryException, TransformException {
+        // NOTE: make sure that the 'sourceCRS' below is not equal to any other 'sourceCRS' created in this class.
+        final CompoundCRS   sourceCRS = compound("Test4D", CommonCRS.WGS84.geographic3D(), CommonCRS.Temporal.UNIX.crs());
+        final GeographicCRS targetCRS = CommonCRS.WGS84.geographic();
+        final CoordinateOperation operation = inference.createOperation(sourceCRS, targetCRS);
+        assertSame      ("sourceCRS", sourceCRS,        operation.getSourceCRS());
+        assertSame      ("targetCRS", targetCRS,        operation.getTargetCRS());
+
+        transform = operation.getMathTransform();
+        assertInstanceOf("transform", LinearTransform.class, transform);
+        assertEquals("sourceDimensions", 4, transform.getSourceDimensions());
+        assertEquals("targetDimensions", 2, transform.getTargetDimensions());
+        Assert.assertMatrixEquals("transform.matrix", Matrices.create(3, 5, new double[] {
+            1, 0, 0, 0, 0,
+            0, 1, 0, 0, 0,
+            0, 0, 0, 0, 1
+        }), ((LinearTransform) transform).getMatrix(), STRICT);
+
+        isInverseTransformSupported = false;
+        verifyTransform(new double[] {
+            30, 10,  20, 1000,
+            20, 30, -10, 3000
+        }, new double[] {
+            30, 10,
+            20, 30
+        });
+        validate();
+    }
+
+    /**
      * Tests the conversion from a three-dimensional geographic CRS to a two-dimensional geographic CRS.
      * The vertical dimension is simply dropped.
      *
@@ -639,6 +677,46 @@ public final strictfp class CoordinateOperationFinderTest extends MathTransformT
     }
 
     /**
+     * Tests extracting the vertical part of a spatio-temporal CRS.
+     *
+     * @throws FactoryException if the operation can not be created.
+     * @throws TransformException if an error occurred while converting the test points.
+     */
+    @Test
+    @DependsOnMethod("testGeographic3D_to_EllipsoidalHeight")
+    public void testGeographic4D_to_EllipsoidalHeight() throws FactoryException, TransformException {
+        // NOTE: make sure that the 'sourceCRS' below is not equal to any other 'sourceCRS' created in this class.
+        final CompoundCRS sourceCRS = compound("Test4D", CommonCRS.WGS84.geographic3D(), CommonCRS.Temporal.JULIAN.crs());
+        final VerticalCRS targetCRS = CommonCRS.Vertical.ELLIPSOIDAL.crs();
+        final CoordinateOperation operation = inference.createOperation(sourceCRS, targetCRS);
+        assertSame      ("sourceCRS", sourceCRS,        operation.getSourceCRS());
+        assertSame      ("targetCRS", targetCRS,        operation.getTargetCRS());
+        assertEquals    ("name",      "Axis changes",   operation.getName().getCode());
+        assertInstanceOf("operation", Conversion.class, operation);
+
+        transform = operation.getMathTransform();
+        assertInstanceOf("transform", LinearTransform.class, transform);
+        assertEquals("sourceDimensions", 4, transform.getSourceDimensions());
+        assertEquals("targetDimensions", 1, transform.getTargetDimensions());
+        Assert.assertMatrixEquals("transform.matrix", Matrices.create(2, 5, new double[] {
+            0, 0, 1, 0, 0,
+            0, 0, 0, 0, 1
+        }), ((LinearTransform) transform).getMatrix(), STRICT);
+
+        isInverseTransformSupported = false;
+        verifyTransform(new double[] {
+             0,  0,  0,  0,
+             5,  8, 20, 10,
+            -5, -8, 24, 30
+        }, new double[] {
+                     0,
+                    20,
+                    24,
+        });
+        validate();
+    }
+
+    /**
      * Convenience method for creating a compound CRS.
      */
     private static CompoundCRS compound(final String name, final CoordinateReferenceSystem... components) {
@@ -712,6 +790,7 @@ public final strictfp class CoordinateOperationFinderTest extends MathTransformT
     @Test
     @DependsOnMethod("testTemporalConversion")
     public void testGeographic3D_to_4D() throws FactoryException, TransformException {
+        // NOTE: make sure that the 'sourceCRS' below is not equal to any other 'sourceCRS' created in this class.
         final CompoundCRS sourceCRS = compound("Test3D", CommonCRS.WGS84.geographic(),   CommonCRS.Temporal.UNIX.crs());
         final CompoundCRS targetCRS = compound("Test4D", CommonCRS.WGS84.geographic3D(), CommonCRS.Temporal.MODIFIED_JULIAN.crs());
         final CoordinateOperation operation = inference.createOperation(sourceCRS, targetCRS);
