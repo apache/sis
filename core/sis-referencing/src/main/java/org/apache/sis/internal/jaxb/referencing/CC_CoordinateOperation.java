@@ -90,8 +90,17 @@ public final class CC_CoordinateOperation extends PropertyType<CC_CoordinateOper
      */
     public void setElement(final AbstractCoordinateOperation operation) {
         metadata = operation;
-        if ((operation instanceof PassThroughOperation) && ((PassThroughOperation) operation).getOperation() == null) {
-            incomplete("coordOperation");
+        /*
+         * In an older ISO 19111 model, PassThroughOperation extended SingleOperation.
+         * It was forcing us to provide a dummy value or null for the 'method' property.
+         * This has been fixed in newer ISO 19111 model, but for safety with object following the older model
+         * (e.g. when using GeoAPI 3.0) we are better to skip the check for the SingleOperation case when the
+         * operation is a PassThroughOperation.
+         */
+        if (operation instanceof PassThroughOperation) {
+            if (((PassThroughOperation) operation).getOperation() == null) {
+                incomplete("coordOperation");
+            }
         } else if ((operation instanceof SingleOperation) && ((SingleOperation) operation).getMethod() == null) {
             incomplete("method");
         }
