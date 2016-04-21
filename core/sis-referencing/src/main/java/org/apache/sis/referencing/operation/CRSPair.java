@@ -59,7 +59,7 @@ final class CRSPair {
      */
     @Override
     public int hashCode() {
-        return sourceCRS.hashCode() * 31 + targetCRS.hashCode();
+        return Objects.hashCode(sourceCRS) * 31 + Objects.hashCode(targetCRS);
     }
 
     /**
