@@ -207,7 +207,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
          * We do not perform this verification on the first invocation because it was already verified by
          * DefaultCoordinateOperationFactory.createOperation(…). We do not block if the operation is in
          * process of being computed in another thread because of the risk of deadlock. If the operation
-         * is not in the cache, store the keys in our internal map for preventing infinite recursivity.
+         * is not in the cache, store the key in our internal map for preventing infinite recursivity.
          */
         final CRSPair key = new CRSPair(sourceCRS, targetCRS);
         if (useCache && !previousSearches.isEmpty()) {
@@ -921,8 +921,14 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
          * trivial operations.
          */
         CoordinateOperation main = null;
-        if (step1.getName() == AXIS_CHANGES && mt1.getSourceDimensions() == mt1.getTargetDimensions()) main = step2;
-        if (step2.getName() == AXIS_CHANGES && mt2.getSourceDimensions() == mt2.getTargetDimensions()) main = step1;
+        final boolean isAxisChange1 = (step1.getName() == AXIS_CHANGES);
+        final boolean isAxisChange2 = (step2.getName() == AXIS_CHANGES);
+        if (isAxisChange1 && isAxisChange2) {
+            main = step2;                                           // Arbitrarily take the last step.
+        } else {
+            if (isAxisChange1 && mt1.getSourceDimensions() == mt1.getTargetDimensions()) main = step2;
+            if (isAxisChange2 && mt2.getSourceDimensions() == mt2.getTargetDimensions()) main = step1;
+        }
         if (main instanceof SingleOperation) {
             final SingleOperation op = (SingleOperation) main;
             final MathTransform mt = factorySIS.getMathTransformFactory().createConcatenatedTransform(mt1, mt2);
@@ -935,7 +941,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
         }
         /*
          * Sometime we get a concatenated operation made of an operation followed by its inverse.
-         * We can identity those case when the associated MathTransform is the identity transform.
+         * We can identify thoses case when the associated MathTransform is the identity transform.
          * In such case, simplify by replacing the ConcatenatedTransform by a SingleTransform.
          */
         if (main instanceof ConcatenatedOperation && main.getMathTransform().isIdentity()) {
