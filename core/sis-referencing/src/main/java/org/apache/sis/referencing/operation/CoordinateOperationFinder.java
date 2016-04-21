@@ -923,7 +923,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
         CoordinateOperation main = null;
         final boolean isAxisChange1 = (step1.getName() == AXIS_CHANGES);
         final boolean isAxisChange2 = (step2.getName() == AXIS_CHANGES);
-        if (isAxisChange1 && isAxisChange2) {
+        if (isAxisChange1 && isAxisChange2 && isAffine(step1) && isAffine(step2)) {
             main = step2;                                           // Arbitrarily take the last step.
         } else {
             if (isAxisChange1 && mt1.getSourceDimensions() == mt1.getTargetDimensions()) main = step2;
@@ -981,6 +981,18 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
         if (step3.getName() == AXIS_CHANGES) return concatenate(step1, concatenate(step2, step3));
         final Map<String,?> properties = defaultName(step1.getSourceCRS(), step3.getTargetCRS());
         return factory.createConcatenatedOperation(properties, step1, step2, step3);
+    }
+
+    /**
+     * Returns {@code true} if the given operation is non-null and use the affine operation method.
+     */
+    private static boolean isAffine(final CoordinateOperation operation) {
+        if (operation instanceof SingleOperation) {
+            if (IdentifiedObjects.isHeuristicMatchForName(((SingleOperation) operation).getMethod(), Constants.AFFINE)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
