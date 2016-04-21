@@ -58,8 +58,10 @@ public final class Supervisor extends StandardMBean implements SupervisorMBean {
     /**
      * Whatever JMX agent is enabled. Setting this variable to {@code false} allows the
      * Java compiler to omit any dependency to this {@code Supervisor} class.
+     *
+     * @see <a href="http://sis.apache.org/branches.html#trunk">Differences between SIS trunk and branches</a>
      */
-    static final boolean ENABLED = true;
+    static final boolean ENABLED = false;
 
     /**
      * The JMX object name for the {@code Supervisor} service.
