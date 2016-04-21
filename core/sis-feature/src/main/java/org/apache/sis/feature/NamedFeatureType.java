@@ -67,7 +67,7 @@ final class NamedFeatureType implements FeatureType, Serializable {
     }
 
     /**
-     * This feature type is considered to all other features except itself.
+     * This feature type is considered independent of all other feature types except itself.
      */
     @Override
     public boolean isAssignableFrom(final DefaultFeatureType type) {
