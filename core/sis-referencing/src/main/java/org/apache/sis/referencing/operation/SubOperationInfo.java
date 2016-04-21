@@ -115,9 +115,9 @@ final class SubOperationInfo {
         final Class<?> targetType = type(target);
         for (final Class<?>[] sourceTypes : COMPATIBLE_TYPES) {
             if (sourceTypes[0].isAssignableFrom(targetType)) {
-                int startAtDimension;
-                int endAtDimension = 0;
                 for (final Class<?> sourceType : sourceTypes) {
+                    int startAtDimension;
+                    int endAtDimension = 0;
                     for (int i=0; i<sourceIsUsed.length; i++) {
                         final SingleCRS source = sources.get(i);
                         startAtDimension = endAtDimension;
@@ -130,7 +130,7 @@ final class SubOperationInfo {
                                 if (failure == null) {
                                     failure = exception;
                                 } else {
-                                    // failure.addSuppressed(exception);
+                                    // failure.addSuppressed(exception) on the JDK7 branch.
                                 }
                                 continue;
                             }
