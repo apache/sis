@@ -797,10 +797,8 @@ public final strictfp class CoordinateOperationFinderTest extends MathTransformT
         final CoordinateOperation operation = inference.createOperation(sourceCRS, targetCRS);
         assertSame      ("sourceCRS", sourceCRS, operation.getSourceCRS());
         assertSame      ("targetCRS", targetCRS, operation.getTargetCRS());
-        if (false) {    // TODO need debugging
-            assertInstanceOf("operation", ConcatenatedOperation.class, operation);
-            assertEquals    ("name", "CompoundCRS[“Test3D”] → CompoundCRS[“Test4D”]", operation.getName().getCode());
-        }
+        assertInstanceOf("operation", ConcatenatedOperation.class, operation);
+        assertEquals    ("name", "CompoundCRS[“Test3D”] → CompoundCRS[“Test4D”]", operation.getName().getCode());
 
         transform = operation.getMathTransform();
         assertInstanceOf("transform", LinearTransform.class, transform);
