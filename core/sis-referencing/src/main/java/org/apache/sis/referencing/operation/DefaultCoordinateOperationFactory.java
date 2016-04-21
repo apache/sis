@@ -122,8 +122,8 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
     /**
      * Weak references to existing objects.
      * This set is used in order to return a pre-existing object instead of creating a new one.
-     * This apply to object created explicitly, not to coordinate operations inferred by a call
-     * to {@link #createOperation(CoordinateReferenceSystem, CoordinateReferenceSystem)}.
+     * This applies to objects created explicitly, not to coordinate operations inferred by a
+     * call to {@link #createOperation(CoordinateReferenceSystem, CoordinateReferenceSystem)}.
      */
     private final WeakHashSet<IdentifiedObject> pool;
 
