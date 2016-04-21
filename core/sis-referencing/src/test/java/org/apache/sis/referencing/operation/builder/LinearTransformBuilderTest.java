@@ -19,12 +19,14 @@ package org.apache.sis.referencing.operation.builder;
 import java.util.Random;
 import java.awt.geom.AffineTransform;
 import java.util.Arrays;
+
 import org.opengis.referencing.operation.Matrix;
 import org.apache.sis.geometry.DirectPosition1D;
 import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.TestCase;
+
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -124,7 +126,7 @@ public final strictfp class LinearTransformBuilderTest extends TestCase {
         assertEquals("m₁₁",  3, m.getElement(1, 1), STRICT);
         assertEquals("m₁₂", -1, m.getElement(1, 2), STRICT);
 
-//        assertArrayEquals("correlation", new double[] {1, 1}, builder.correlation(), STRICT);
+        assertArrayEquals("correlation", new double[] {1, 1}, builder.correlation(), STRICT);
     }
 
     /**
@@ -162,7 +164,7 @@ public final strictfp class LinearTransformBuilderTest extends TestCase {
         assertEquals("m₁₁",  3, m.getElement(1, 1), STRICT);
         assertEquals("m₁₂", -1, m.getElement(1, 2), STRICT);
 
-//        assertArrayEquals("correlation", new double[] {1, 1}, builder.correlation(), STRICT);
+        assertArrayEquals("correlation", new double[] {1, 1}, builder.correlation(), STRICT);
 
                                 //--------------//
 
@@ -198,7 +200,7 @@ public final strictfp class LinearTransformBuilderTest extends TestCase {
     }
 
     /**
-     * Test method {@link LinearTransformBuilder#setModelTiePoints(int, int, int, int, int, double[]) .
+     * Test method {@link LinearTransformBuilder#setModelTiePoints(int, int, int, int, int, double[]) }.
      */
     @Test
     public void setTiePointTest() {
@@ -229,7 +231,7 @@ public final strictfp class LinearTransformBuilderTest extends TestCase {
         assertEquals("m₁₁",  3, m.getElement(1, 1), STRICT);
         assertEquals("m₁₂", -1, m.getElement(1, 2), STRICT);
 
-//        assertArrayEquals("correlation", new double[] {1, 1}, builder.correlation(), STRICT);
+        assertArrayEquals("correlation", new double[] {1, 1}, builder.correlation(), STRICT);
 
         //-- regular
         builder  = new LinearTransformBuilder(2, 2);
@@ -249,7 +251,7 @@ public final strictfp class LinearTransformBuilderTest extends TestCase {
         assertEquals("m₁₁",  3, m.getElement(1, 1), STRICT);
         assertEquals("m₁₂", -1, m.getElement(1, 2), STRICT);
 
-//        assertArrayEquals("correlation", new double[] {1, 1}, builder.correlation(), STRICT);
+        assertArrayEquals("correlation", new double[] {1, 1}, builder.correlation(), STRICT);
     }
 
 

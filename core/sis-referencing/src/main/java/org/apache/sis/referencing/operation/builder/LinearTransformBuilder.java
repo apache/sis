@@ -18,11 +18,16 @@ package org.apache.sis.referencing.operation.builder;
 
 import java.io.IOException;
 import java.util.Arrays;
+import javax.measure.quantity.Quantity;
+import javax.measure.unit.Unit;
+
 import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.MismatchedDimensionException;
+
 import org.apache.sis.io.TableAppender;
 import org.apache.sis.math.Line;
 import org.apache.sis.math.Plane;
+import org.apache.sis.referencing.datum.DatumShiftGrid;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
@@ -33,7 +38,9 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.NullArgumentException;
+import org.opengis.referencing.operation.TransformException;
 
+import static java.lang.Math.sqrt;
 
 /**
  * Creates a linear (usually affine) transform which will map approximatively the given source points to
@@ -79,7 +86,7 @@ public class LinearTransformBuilder {
 
     /**
      * Define the current index of inserted source and target points.
-     * @see #addNoRegularPoints(double[], double[]) 
+     * @see #addNoRegularPoints(double[], double[])
      */
     private int noneRegularPointPosition = 0;
 
@@ -403,7 +410,7 @@ public class LinearTransformBuilder {
      *               {@code coeff[2 + offset] = cy;}
      *               {@code coeff[4 + offset] = c;}
      */
-    private void fitPlane(final double[] grid, final int offset, final double[] coeff) {
+    private double fitPlane(final double[] grid, final int offset, final double[] coeff) {
         final int width  = gridSize[0];
         final int height = gridSize[1];
         /*
@@ -414,8 +421,8 @@ public class LinearTransformBuilder {
          *           1 + 2 + 3 ... + n    =    n*(n+1)/2              (arithmetic series)
          *        1² + 2² + 3² ... + n²   =    n*(n+0.5)*(n+1)/3
          */
-        double x,y,z, xx,yy, xy, zx,zy;
-        z = zx = zy = 0; // To be computed in the loop.
+        double x,y,z, z2, xx,yy, xy, zx,zy;
+        z = zx = zy = z2 = 0; // To be computed in the loop.
         int n = 0;
         for (int yi=0; yi<height; yi++) {
             for (int xi=0; xi<width; xi++) {
@@ -424,6 +431,7 @@ public class LinearTransformBuilder {
                 if (Double.isNaN(zi))
                     throw new IllegalStateException("The point at coordinate : ("+xi+", "+yi+") is not referenced.");
                 z  += zi;
+                z2 += zi * zi; //-- prepare correlation computing
                 zx += zi*xi;
                 zy += zi*yi;
                 n++;
@@ -442,18 +450,38 @@ public class LinearTransformBuilder {
          *    ( zx - z*x )  =  cx*(xx - x*x) + cy*(xy - x*y)
          *    ( zy - z*y )  =  cx*(xy - x*y) + cy*(yy - y*y)
          */
-        zx -= z*x/n;
-        zy -= z*y/n;
-        xx -= x*x/n;
-        xy -= x*y/n;
-        yy -= y*y/n;
-        final double den= (xy*xy - xx*yy);
-        final double cy = (zx*xy - zy*xx) / den;
-        final double cx = (zy*xy - zx*yy) / den;
-        final double c  = (z - (cx*x + cy*y)) / n;
+        //-- plan coefficients computing
+        final double pzx = zx - z*x/n;
+        final double pzy = zy - z*y/n;
+        final double pxx = xx - x*x/n;
+        final double pxy = xy - x*y/n;
+        final double pyy = yy - y*y/n;
+        final double den = (pxy * pxy - pxx * pyy);
+        final double cy  = (pzx * pxy - pzy * pxx) / den;
+        final double cx  = (pzy * pxy - pzx * pyy) / den;
+        final double c   = (z - (cx * x + cy * y)) / n;
         coeff[0 + offset] = cx;
         coeff[1 + offset] = cy;
         coeff[2 + offset] = c;
+
+        /*
+         * At this point, the model is computed. Now computes an estimation of the Pearson
+         * correlation coefficient. Note that both the z array and the z computed from the
+         * model have the same average, called sum_z below (the name is not true anymore).
+         *
+         * We do not use double-double arithmetic here since the Pearson coefficient is
+         * for information purpose (quality estimation).
+         */
+        final double mean_x = x / n;
+        final double mean_y = y / n;
+        final double mean_z = z / n;
+
+        final double sum_ds2 = cx*cx*xx + 2*cx*cy*xy + cy*cy*yy
+                                + (cx*mean_x + cy*mean_y) * (cx*(n*mean_x - 2*x) + cy*(n*mean_y - 2*y));
+        final double sum_dz2 = z2 + mean_z * (n * mean_z - 2 * z);
+        final double sum_dsz = cx*(zx - mean_z*x) + cy*(zy - mean_z*y) - (cy*mean_y + cx*mean_x)*(n*mean_z - z);
+
+        return Math.min(sum_dsz / sqrt(sum_ds2 * sum_dz2), 1);
     }
 
 
@@ -820,8 +848,8 @@ public class LinearTransformBuilder {
                         //-- means regular grid
                         //-- correlation ??
                         double[] elements = new double[(targetDim + 1)*(sourceDim + 1)];
-                        for (int j=0; j<targets.length; j++) {
-                            fitPlane(targets[j], j * (sourceDim + 1), elements);
+                        for (int j = 0; j < targets.length; j++) {
+                            correlation[j] = fitPlane(targets[j], j * (sourceDim + 1), elements);
                         }
                         matrix.setElements(elements);
                     } else {
@@ -841,6 +869,27 @@ public class LinearTransformBuilder {
             transform = MathTransforms.linear(matrix);
         }
         return transform;
+    }
+
+    /**
+     *
+     * @param translationUnit
+     * @return
+     * @throws TransformException
+     */
+    public DatumShiftGrid getResidus(final Unit<? extends Quantity> translationUnit)
+            throws TransformException {
+        if (gridSize == null)
+            throw new IllegalStateException("Impossible to compute Datum grid from none regular grid, the grid should be regular.");
+
+        if (transform == null)
+            transform = create();
+        assert isValid();
+
+        final DoubleDatumShiftGrid ddsg = new DoubleDatumShiftGrid(Unit.ONE, MathTransforms.identity(gridSize.length),
+                                                                    gridSize, translationUnit,
+                                                                    targets, COORDS_TOLERANCE);
+        return ddsg;
     }
 
     /**
