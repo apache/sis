@@ -146,6 +146,11 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
     private final Map<CRSPair,Boolean> previousSearches;
 
     /**
+     * Whether this finder instance is allowed to use {@link DefaultCoordinateOperationFactory#cache}.
+     */
+    private final boolean useCache;
+
+    /**
      * Creates a new instance for the given factory and context.
      *
      * @param  registry  the factory to use for creating operations as defined by authority, or {@code null} if none.
@@ -160,6 +165,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
         super(registry, factory, context);
         identifierOfStepCRS = new HashMap<>(8);
         previousSearches    = new HashMap<>(8);
+        useCache = (context == null) && (factory == factorySIS);
     }
 
     /**
@@ -190,13 +196,31 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
     {
         ArgumentChecks.ensureNonNull("sourceCRS", sourceCRS);
         ArgumentChecks.ensureNonNull("targetCRS", targetCRS);
-        if (!previousSearches.isEmpty()) {
-            // TODO: verify here if the path is defined in EPSG database.
+        if (equalsIgnoreMetadata(sourceCRS, targetCRS)) try {
+            return createFromAffineTransform(AXIS_CHANGES, sourceCRS, targetCRS,
+                    CoordinateSystems.swapAndScaleAxes(sourceCRS.getCoordinateSystem(), targetCRS.getCoordinateSystem()));
+        } catch (IllegalArgumentException | ConversionException e) {
+            throw new FactoryException(Errors.format(Errors.Keys.CanNotInstantiate_1, new CRSPair(sourceCRS, targetCRS)), e);
         }
+        /*
+         * If this method is invoked recursively, verify if the requested operation is already in the cache.
+         * We do not perform this verification on the first invocation because it was already verified by
+         * DefaultCoordinateOperationFactory.createOperation(…). We do not block if the operation is in
+         * process of being computed in another thread because of the risk of deadlock. If the operation
+         * is not in the cache, store the keys in our internal map for preventing infinite recursivity.
+         */
         final CRSPair key = new CRSPair(sourceCRS, targetCRS);
+        if (useCache && !previousSearches.isEmpty()) {
+            final CoordinateOperation op = factorySIS.cache.peek(key);
+            if (op != null) return op;
+        }
         if (previousSearches.put(key, Boolean.TRUE) != null) {
             throw new FactoryException(Errors.format(Errors.Keys.RecursiveCreateCallForCode_2, CoordinateOperation.class, key));
         }
+        /*
+         * If the user did not specified an area of interest, use the domain of validity of the CRS.
+         * Then verify in the EPSG dataset if the operation is explicitely defined by an authority.
+         */
         GeographicBoundingBox bbox = Extents.getGeographicBoundingBox(areaOfInterest);
         if (bbox == null) {
             bbox = Extents.intersection(CRS.getGeographicBoundingBox(sourceCRS),
