@@ -163,9 +163,13 @@ public final class MathTransforms extends Static {
      * Furthermore the returned transform is affine (i.e. implement the {@link LinearTransform} interface)
      * if the interval between each {@code preimage} and {@code values} element is constant.
      *
+     * <p>The current implementation uses linear interpolation. This may be changed in a future SIS version.</p>
+     *
      * @param preimage the input values (<var>x</var>) in the function domain, or {@code null}.
      * @param values the output values (<var>y</var>) in the function range, or {@code null}.
      * @return the <i>y=f(x)</i> function.
+     *
+     * @see org.opengis.coverage.InterpolationMethod
      *
      * @since 0.7
      */
