@@ -930,6 +930,7 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
                     return type;
                 }
             });
+            formatter.newLine();
         }
     }
 

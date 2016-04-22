@@ -245,7 +245,12 @@ class MathTransformParser extends AbstractParser {
             return Units.multiply(BASE_UNITS[index], factor);
         }
         // If we can not infer the base type, we have to rely on the name.
-        return parseUnit(name);
+        try {
+            return parseUnit(name);
+        } catch (IllegalArgumentException e) {
+            throw (ParseException) new LocalizedParseException(errorLocale,
+                    Errors.Keys.UnknownUnit_1, new Object[] {name}, element.offset).initCause(e);
+        }
     }
 
     /**

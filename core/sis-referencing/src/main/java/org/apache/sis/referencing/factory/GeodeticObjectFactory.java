@@ -42,6 +42,7 @@ import org.opengis.referencing.cs.*;
 import org.opengis.referencing.crs.*;
 import org.opengis.referencing.datum.*;
 import org.opengis.referencing.operation.*;
+import org.opengis.parameter.ParameterNotFoundException;
 import org.apache.sis.referencing.cs.*;
 import org.apache.sis.referencing.crs.*;
 import org.apache.sis.referencing.datum.*;
@@ -1631,7 +1632,25 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
         } catch (ReflectiveOperationException e) {
             throw new FactoryException(e);
         }
-        final Object object = p.createFromWKT(text);
+        final Object object;
+        try {
+            object = p.createFromWKT(text);
+        } catch (FactoryException e) {
+            /*
+             * In the case of map projection, the parsing may fail because a projection parameter is not known to SIS.
+             * If this happen, replace the generic exception thrown be the parser (which is FactoryException) by a
+             * more specific one. Note that InvalidGeodeticParameterException is defined only in this sis-referencing
+             * module, so we could not throw it from the sis-metadata module that contain the parser.
+             */
+            Throwable cause = e.getCause();
+            while (cause != null) {
+                if (cause instanceof ParameterNotFoundException) {
+                    throw new InvalidGeodeticParameterException(e.getMessage(), cause);     // More accurate exception.
+                }
+                cause = cause.getCause();
+            }
+            throw e;
+        }
         parser.set(p);
         if (object instanceof CoordinateReferenceSystem) {
             return (CoordinateReferenceSystem) object;

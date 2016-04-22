@@ -1090,6 +1090,25 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
     }
 
     /**
+     * Ensures that parsing a WKT with wrong units throws an exception.
+     */
+    @Test
+    public void testIncompatibleUnits() {
+        try {
+            parse(GeographicCRS.class,
+                    "GEOGCS[“NAD83”,\n" +
+                    "  DATUM[“North American Datum 1983”,\n" +
+                    "    SPHEROID[“GRS 1980”, 6378137.0, 298.257222]],\n" +
+                    "  PRIMEM[“Greenwich”, 0],\n" +
+                    "  UNIT[“km”, 1000]]");                                             // Wrong unit
+            fail("Should not have parsed a CRS with wrong unit of measurement.");
+        } catch (ParseException e) {
+            final String message = e.getMessage();
+            assertTrue(message, message.contains("km"));
+        }
+    }
+
+    /**
      * Tests the production of a warning messages when the WKT contains unknown elements.
      *
      * @throws ParseException if the parsing failed.
@@ -1101,7 +1120,7 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
                "GEOGCS[“WGS 84”,\n" +
                "  DATUM[“World Geodetic System 1984”,\n" +
                "    SPHEROID[“WGS84”, 6378137.0, 298.257223563, Ext1[“foo”], Ext2[“bla”]]],\n" +
-               "    PRIMEM[“Greenwich”, 0.0, Intruder[“unknown”]],\n" +
+               "    PRIMEM[“Greenwich”, 0.0, Intruder[“unknown”], UNIT[“degree”, 0.01745]],\n" +    // Truncated scale factor.
                "  UNIT[“degree”, 0.017453292519943295], Intruder[“foo”]]");
 
         verifyGeographicCRS(0, crs);
@@ -1131,12 +1150,14 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
                 warnings.getUnknownElementLocations("Ext2").toArray());
 
         assertMultilinesEquals("Parsing of “WGS 84” done, but some elements were ignored.\n" +
+                               " • Unexpected scale factor 0.017 for unit of measurement “°”.\n" +
                                " • The text contains unknown elements:\n" +
                                "    ‣ “Intruder” in PRIMEM, GEOGCS.\n" +
                                "    ‣ “Ext1” in SPHEROID.\n" +
                                "    ‣ “Ext2” in SPHEROID.", warnings.toString(Locale.US));
 
         assertMultilinesEquals("La lecture de « WGS 84 » a été faite, mais en ignorant certains éléments.\n" +
+                               " • Le facteur d’échelle 0,017 est inattendu pour l’unité de mesure « ° ».\n" +
                                " • Le texte contient des éléments inconnus :\n" +
                                "    ‣ « Intruder » dans PRIMEM, GEOGCS.\n" +
                                "    ‣ « Ext1 » dans SPHEROID.\n" +

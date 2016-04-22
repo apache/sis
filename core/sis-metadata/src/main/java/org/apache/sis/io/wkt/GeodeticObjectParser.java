@@ -26,6 +26,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import java.text.DateFormat;
 import java.text.NumberFormat;
 import java.text.ParsePosition;
@@ -38,6 +40,7 @@ import javax.measure.quantity.Angle;
 import javax.measure.quantity.Length;
 import javax.measure.quantity.Quantity;
 import javax.measure.quantity.Duration;
+import javax.measure.converter.ConversionException;
 
 import org.opengis.util.Factory;
 import org.opengis.metadata.Identifier;
@@ -70,6 +73,7 @@ import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.internal.metadata.TransformationAccuracy;
 import org.apache.sis.internal.util.LocalizedParseException;
 import org.apache.sis.internal.system.DefaultFactories;
+import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.iso.DefaultNameSpace;
@@ -91,7 +95,7 @@ import static java.util.Collections.singletonMap;
  * @version 0.7
  * @module
  */
-final class GeodeticObjectParser extends MathTransformParser implements Comparator<CoordinateSystemAxis> {
+class GeodeticObjectParser extends MathTransformParser implements Comparator<CoordinateSystemAxis> {
     /**
      * The names of the 7 parameters in a {@code TOWGS84[…]} element.
      * Those names are derived from the <cite>Well Known Text</cite> (WKT) version 1 specification.
@@ -276,7 +280,7 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
      * @throws ParseException if the string can not be parsed.
      */
     @Override
-    public Object parseObject(final String text, final ParsePosition position) throws ParseException {
+    public final Object parseObject(final String text, final ParsePosition position) throws ParseException {
         final Object object;
         try {
             object = super.parseObject(text, position);
@@ -321,7 +325,7 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
      * @throws ParseException if the element can not be parsed.
      */
     @Override
-    Object parseObject(final Element element) throws ParseException {
+    final Object parseObject(final Element element) throws ParseException {
         Object value = parseCoordinateReferenceSystem(element, false);
         if (value != null) {
             return value;
@@ -617,7 +621,7 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
      * @return The {@code "UNIT"} element as an {@link Unit} object, or {@code null} if none.
      * @throws ParseException if the {@code "UNIT"} can not be parsed.
      *
-     * @todo Authority code is currently ignored. We may consider to create a subclass of
+     * @todo Authority code is currently discarded after parsing. We may consider to create a subclass of
      *       {@link Unit} which implements {@link IdentifiedObject} in a future version.
      */
     @SuppressWarnings("unchecked")
@@ -630,16 +634,46 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
         }
         final String name   = element.pullString("name");
         final double factor = element.pullDouble("factor");
-        final Unit<?> unit  = parseUnitID(element);
+        Unit<Q> unit   = Units.multiply(baseUnit, factor);
+        Unit<?> verify = parseUnitID(element);
         element.close(ignoredElements);
-        if (unit != null) {
-            if (baseUnit.toSI().equals(unit.toSI())) {
-                return (Unit<Q>) unit;
+        /*
+         * Consider the following element: UNIT[“km”, 1000, ID[“EPSG”, “9036”]]
+         *
+         *  - if the authority code (“9036”) refers to a unit incompatible with 'baseUnit' (“metre”), log a warning.
+         *  - otherwise: 1) unconditionally replace the parsed unit (“km”) by the unit referenced by the authority code.
+         *               2) if the new unit is not equivalent to the old one (i.e. different scale factor), log a warning.
+         */
+        if (verify != null) {
+            if (!baseUnit.toSI().equals(verify.toSI())) {
+                warning(parent, element, Errors.formatInternational(Errors.Keys.InconsistentUnitsForCS_1, verify), null);
+            } else if (Math.abs(unit.getConverterTo(unit = (Unit<Q>) verify).convert(1) - 1) > Numerics.COMPARISON_THRESHOLD) {
+                warning(parent, element, Errors.formatInternational(Errors.Keys.UnexpectedScaleFactorForUnit_2, verify, factor), null);
             } else {
-                warning(parent, element, Errors.formatInternational(Errors.Keys.IllegalUnitFor_2, keyword, unit), null);
+                verify = null;                                          // Means to perform additional verifications.
             }
         }
-        return Units.multiply(baseUnit, factor);
+        /*
+         * Above block verified the ID[“EPSG”, “9036”] authority code. Now verify the unit parsed from the “km” symbol.
+         * This is only a verification; we will not replace the unit by the parsed one (i.e. authority code or scale
+         * factor have precedence over the unit symbol).
+         */
+        if (verify == null) {
+            try {
+                verify = parseUnit(name);
+            } catch (IllegalArgumentException | ParseException e) {
+                log(new LogRecord(Level.FINE, e.toString()));
+            }
+            if (verify != null) try {
+                if (Math.abs(verify.getConverterToAny(unit).convert(1) - 1) > Numerics.COMPARISON_THRESHOLD) {
+                    warning(parent, element, Errors.formatInternational(Errors.Keys.UnexpectedScaleFactorForUnit_2, verify, factor), null);
+                }
+            } catch (ConversionException e) {
+                throw (ParseException) new LocalizedParseException(errorLocale,
+                        Errors.Keys.InconsistentUnitsForCS_1, new Object[] {verify}, element.offset).initCause(e);
+            }
+        }
+        return unit;
     }
 
     /**
@@ -1092,7 +1126,7 @@ final class GeodeticObjectParser extends MathTransformParser implements Comparat
      *          0 if undetermined (no axis order change).
      */
     @Override
-    public int compare(final CoordinateSystemAxis o1, final CoordinateSystemAxis o2) {
+    public final int compare(final CoordinateSystemAxis o1, final CoordinateSystemAxis o2) {
         final Integer n1 = axisOrder.get(o1);
         final Integer n2 = axisOrder.get(o2);
         if (n1 != null) {

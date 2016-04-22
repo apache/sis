@@ -729,7 +729,7 @@ public class WKTFormat extends CompoundFormat<Object> {
     private AbstractParser parser() {
         AbstractParser parser = this.parser;
         if (parser == null) {
-            this.parser = parser = new GeodeticObjectParser(symbols, fragments(),
+            this.parser = parser = new Parser(symbols, fragments(),
                     (NumberFormat) getFormat(Number.class),
                     (DateFormat)   getFormat(Date.class),
                     (UnitFormat)   getFormat(Unit.class),
@@ -739,6 +739,23 @@ public class WKTFormat extends CompoundFormat<Object> {
                     factories());
         }
         return parser;
+    }
+
+    /**
+     * The parser created by {@link #parser()}, identical to {@link GeodeticObjectParser} except for
+     * the source of logging messages which is the enclosing {@code WKTParser} instead than a factory.
+     */
+    private static final class Parser extends GeodeticObjectParser {
+        Parser(final Symbols symbols, final Map<String,Element> fragments,
+                final NumberFormat numberFormat, final DateFormat dateFormat, final UnitFormat unitFormat,
+                final Convention convention, final Transliterator transliterator, final Locale errorLocale,
+                final Map<Class<?>,Factory> factories)
+        {
+            super(symbols, fragments, numberFormat, dateFormat, unitFormat, convention, transliterator, errorLocale, factories);
+        }
+
+        @Override String getPublicFacade() {return WKTFormat.class.getName();}
+        @Override String getFacadeMethod() {return "parse";}
     }
 
     /**
