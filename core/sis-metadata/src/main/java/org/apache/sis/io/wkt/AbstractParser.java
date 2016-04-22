@@ -83,13 +83,6 @@ abstract class AbstractParser implements Parser {
     static final int MANDATORY = 2;
 
     /**
-     * The logger to use for reporting warnings when this parser is used through the {@link #createFromWKT(String)}.
-     * This happen most often when the user invoke the {@link org.apache.sis.referencing.CRS#fromWKT(String)}
-     * convenience method.
-     */
-    private static final Logger LOGGER = Logging.getLogger(Loggers.WKT);
-
-    /**
      * The locale for error messages (not for number parsing), or {@code null} for the system default.
      */
     final Locale errorLocale;
@@ -196,6 +189,14 @@ abstract class AbstractParser implements Parser {
     abstract String getPublicFacade();
 
     /**
+     * Returns the name of the method invoked from {@link #getPublicFacade()}.
+     * This information is used for logging purpose only.
+     */
+    String getFacadeMethod() {
+        return "createFromWKT";
+    }
+
+    /**
      * Creates the object from a string. This method is for implementation of {@code createFromWKT(String)}
      * method is SIS factories only.
      *
@@ -220,13 +221,21 @@ abstract class AbstractParser implements Parser {
         }
         final Warnings warnings = getAndClearWarnings(value);
         if (warnings != null) {
-            final LogRecord record = new LogRecord(Level.WARNING, warnings.toString());
-            record.setSourceClassName(getPublicFacade());
-            record.setSourceMethodName("createFromWKT");
-            record.setLoggerName(LOGGER.getName());
-            LOGGER.log(record);
+            log(new LogRecord(Level.WARNING, warnings.toString()));
         }
         return value;
+    }
+
+    /**
+     * Logs the given record. This is used only when we can not use the {@link #warning warning methods},
+     * or when the information is not worth to report as a warning.
+     */
+    final void log(final LogRecord record) {
+        Logger logger = Logging.getLogger(Loggers.WKT);
+        record.setSourceClassName(getPublicFacade());
+        record.setSourceMethodName(getFacadeMethod());
+        record.setLoggerName(logger.getName());
+        logger.log(record);
     }
 
     /**
@@ -323,7 +332,7 @@ abstract class AbstractParser implements Parser {
     /**
      * Parses the given unit symbol.
      */
-    final Unit<?> parseUnit(final String text) throws ParseException {
+    final Unit<?> parseUnit(final String text) throws ParseException, IllegalArgumentException {
         if (unitFormat == null) {
             if (symbols.getLocale() == Locale.ROOT) {
                 return Units.valueOf(text);             // Most common case, avoid the convolved code below.
