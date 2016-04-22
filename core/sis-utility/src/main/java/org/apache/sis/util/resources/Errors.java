@@ -1036,6 +1036,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final short UnexpectedParameter_1 = 152;
 
         /**
+         * Unexpected scale factor {1} for unit of measurement “{0}”.
+         */
+        public static final short UnexpectedScaleFactorForUnit_2 = 227;
+
+        /**
          * Expected “{0}” to reference an instance of ‘{1}’, but found an instance of ‘{2}’.
          */
         public static final short UnexpectedTypeForReference_3 = 200;
