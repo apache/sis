@@ -21,6 +21,7 @@ import org.opengis.referencing.crs.GeodeticCRS;
 import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.util.FactoryException;
 import org.apache.sis.referencing.crs.DefaultCompoundCRS;
+import org.apache.sis.referencing.crs.DefaultGeographicCRS;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Utilities;
@@ -102,6 +103,23 @@ public final strictfp class CRSTest extends TestCase {
         verifyForCode(CommonCRS.NAD27.normalizedGeographic(), "CRS:27");
         verifyForCode(CommonCRS.WGS84.normalizedGeographic(), "http://www.opengis.net/gml/srs/crs.xml#84");
         verifyForCode(CommonCRS.NAD83.normalizedGeographic(), "http://www.opengis.net/gml/srs/crs.xml#83");
+    }
+
+    /**
+     * Tests simple WKT parsing. It is not the purpose of this class to test extensively the WKT parser;
+     * those tests are rather done by {@link org.apache.sis.io.wkt.GeodeticObjectParserTest}.
+     * Here we merely test that {@link CRS#fromWKT(String)} is connected to the parser.
+     *
+     * @throws FactoryException if an error occurred while parsing the WKT.
+     */
+    @Test
+    public void testFromWKT() throws FactoryException {
+        final CoordinateReferenceSystem crs = CRS.fromWKT(
+                "GEOGCS[\"GCS WGS 1984\","
+                + "DATUM[\"WGS 1984\",SPHEROID[\"WGS 1984\",6378137,298.257223563]],"
+                + "PRIMEM[\"Greenwich\",0],UNIT[\"degree\",0.0174532925199433]]");
+        assertInstanceOf("GEOGCS", DefaultGeographicCRS.class, crs);
+        assertEquals("GCS WGS 1984", crs.getName().getCode());
     }
 
     /**

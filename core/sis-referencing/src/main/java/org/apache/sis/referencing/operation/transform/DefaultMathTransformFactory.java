@@ -1376,7 +1376,25 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
          * No need to check the type of the parsed object, because MathTransformParser
          * should return only instance of MathTransform.
          */
-        final Object object = p.createFromWKT(text);
+        final Object object;
+        try {
+            object = p.createFromWKT(text);
+        } catch (FactoryException e) {
+            /*
+             * The parsing may fail because a operation parameter is not known to SIS. If this happen, replace
+             * the generic exception thrown be the parser (which is FactoryException) by a more specific one.
+             * Note that InvalidGeodeticParameterException is defined only in this sis-referencing module,
+             * so we could not throw it from the sis-metadata module that contain the parser.
+             */
+            Throwable cause = e.getCause();
+            while (cause != null) {
+                if (cause instanceof ParameterNotFoundException) {
+                    throw new InvalidGeodeticParameterException(e.getMessage(), cause);     // More accurate exception.
+                }
+                cause = cause.getCause();
+            }
+            throw e;
+        }
         parser.set(p);
         return (MathTransform) object;
     }

@@ -91,7 +91,7 @@ public final strictfp class GeodeticObjectFactoryTest extends ObjectFactoryTest 
     }
 
     /**
-     * Test {@link GeodeticObjectFactory#createFromWKT(String)}. We test only a very small WKT here because
+     * Tests {@link GeodeticObjectFactory#createFromWKT(String)}. We test only a very small WKT here because
      * it is not the purpose of this class to test the parser. The main purpose of this test is to verify
      * that {@link GeodeticObjectFactory} has been able to instantiate the parser.
      *
@@ -108,6 +108,35 @@ public final strictfp class GeodeticObjectFactoryTest extends ObjectFactoryTest 
 
         assertEquals("name",  "WGS 84", crs.getName().getCode());
         assertEquals("datum", "World Geodetic System 1984", crs.getDatum().getName().getCode());
+    }
+
+    /**
+     * Tests {@link GeodeticObjectFactory#createFromWKT(String)} with an erroneous projection parameter name.
+     * The intend is to verify that the expected exception is thrown.
+     *
+     * @throws FactoryException if the parsing failed for another reason than the expected one.
+     */
+    @Test
+    public void testInvalidParameterInWKT() throws FactoryException {
+        try {
+            crsFactory.createFromWKT(
+                "PROJCRS[“Custom”,\n" +
+                "  BASEGEODCRS[“North American 1983”,\n" +
+                "    DATUM[“North American 1983”,\n" +
+                "      ELLIPSOID[“GRS 1980”, 6378137, 298.257222101]]],\n" +
+                "  CONVERSION[“Custom”,\n" +
+                "    METHOD[“Lambert Conformal Conic”],\n" +
+                "    PARAMETER[“Standard parallel 1”, 43.0],\n" +
+                "    PARAMETER[“Standard parallel 2”, 45.5],\n" +
+                "    PARAMETER[“Central parallel”, 41.75]],\n" +       // Wrong parameter.
+                "  CS[Cartesian, 2],\n" +
+                "    AXIS[“(Y)”, north],\n" +
+                "    AXIS[“(X)”, east]]");
+            fail("Should not have parsed a WKT with wrong projection parameter.");
+        } catch (InvalidGeodeticParameterException e) {
+            final String message = e.getMessage();
+            assertTrue(message, message.contains("Central parallel"));
+        }
     }
 
     /**
