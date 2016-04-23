@@ -17,7 +17,6 @@
 package org.apache.sis.referencing.factory;
 
 import java.util.Set;
-import java.util.Iterator;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import org.opengis.util.GenericName;
@@ -338,11 +337,16 @@ public class IdentifiedObjectFinder {
 
     /**
      * Lookups only one object which is approximatively equal to the specified object.
-     * If the set returned by {@link #find(IdentifiedObject)} contains exactly one element,
-     * then that element is returned. Otherwise this method returns {@code null}.
+     * This method invokes {@link #find(IdentifiedObject)}, then examine the returned {@code Set} as below:
      *
-     * <p>This method returns {@code null} if there is more than one element
-     * because in such case we consider that there is an ambiguity.</p>
+     * <ul>
+     *   <li>If the set is empty, then this method returns {@code null}.</li>
+     *   <li>If the set contains exactly one element, then this method returns that element.</li>
+     *   <li>If the set contains more than one element, but only one element has the same axis order
+     *       than {@code object} and all other elements have different axis order,
+     *       then this method returns the single element having the same axis order.</li>
+     *   <li>Otherwise this method considers that there is ambiguity and returns {@code null}.</li>
+     * </ul>
      *
      * @param  object The object looked up.
      * @return The identified object, or {@code null} if none or ambiguous.
@@ -353,18 +357,25 @@ public class IdentifiedObjectFinder {
          * Do not invoke Set.size() because it may be a costly operation if the subclass
          * implements a mechanism that create IdentifiedObject instances only on demand.
          */
+        IdentifiedObject result = null;
+        boolean sameAxisOrder = false;
+        boolean ambiguous = false;
         try {
-            final Iterator<IdentifiedObject> it = find(object).iterator();
-            if (it.hasNext()) {
-                final IdentifiedObject candidate = it.next();
-                if (!it.hasNext()) {
-                    return candidate;
+            for (final IdentifiedObject candidate : find(object)) {
+                final boolean so = !ignoreAxes || Utilities.deepEquals(candidate, object, COMPARISON_MODE);
+                if (result != null) {
+                    ambiguous = true;
+                    if (sameAxisOrder && so) {
+                        return null;            // Found two matches even when taking in account axis order.
+                    }
                 }
+                result = candidate;
+                sameAxisOrder = so;
             }
         } catch (BackingStoreException e) {
             throw e.unwrapOrRethrow(FactoryException.class);
         }
-        return null;
+        return (sameAxisOrder || !ambiguous) ? result : null;
     }
 
     /**
