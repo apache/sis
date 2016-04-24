@@ -16,39 +16,45 @@
  */
 package org.apache.sis.console;
 
+import java.util.List;
+import java.util.ArrayList;
 import java.util.Set;
 import java.util.EnumSet;
-import java.util.Locale;
+import java.util.Collections;
 import java.util.ResourceBundle;
-import java.io.PrintWriter;
+import java.io.IOException;
+import javax.xml.bind.JAXBException;
+import org.opengis.metadata.Metadata;
 import org.opengis.metadata.Identifier;
-import org.opengis.util.FactoryException;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
+import org.opengis.util.FactoryException;
 import org.opengis.referencing.ReferenceSystem;
-import org.apache.sis.referencing.IdentifiedObjects;
-import org.apache.sis.referencing.CRS;
 import org.apache.sis.internal.util.X364;
+import org.apache.sis.referencing.CRS;
+import org.apache.sis.referencing.IdentifiedObjects;
+import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ComparisonMode;
+import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
 
 
 /**
- * A row containing a metadata or CRS identifier, its name and a status flag.
+ * The "identifier" sub-command.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.7
+ * @since   0.3
  * @version 0.7
  * @module
  */
-final class IdentifierRow {
+final class IdentifierCommand extends MetadataCommand {
     /**
      * The state to write in the left margin before the identifier.
      *
      * <b>MAINTENANCE NOTE:</b> if this enumeration is modified,
      * update {@code IdentifierState.properties} accordingly.
      */
-    static enum State {
+    private static enum State {
         VALID("   "), APPROXIMATIVE("~  "), AXIS_ORDER("!  "), MISMATCH("!! "), UNKNOWN("?  ");
 
         /** The string representation. */ final String text;
@@ -56,27 +62,83 @@ final class IdentifierRow {
     }
 
     /**
-     * The two-letters state to write before the identifier.
+     * A row containing a metadata or CRS identifier, its name and a status flag.
      */
-    private final State state;
+    private static class Row {
+        /**
+         * The two-letters state to write before the identifier.
+         */
+        final State state;
+
+        /**
+         * The identifier.
+         */
+        final String identifier;
+
+        /**
+         * A description to write after the identifier.
+         */
+        final CharSequence description;
+
+        /**
+         * Creates a row for the given elements.
+         */
+        Row(final State state, final String identifier, final CharSequence description) {
+            this.state       = state;
+            this.identifier  = identifier;
+            this.description = description;
+        }
+    }
 
     /**
-     * The identifier.
+     * Creates the {@code "metadata"}, {@code "crs"} or {@code "identifier"} sub-command.
      */
-    private final String identifier;
+    IdentifierCommand(final int commandIndex, final String... args) throws InvalidOptionException {
+        super(commandIndex, args);
+    }
 
     /**
-     * A description to write after the identifier.
+     * Prints identifier information.
+     *
+     * @throws DataStoreException if an error occurred while reading the file.
+     * @throws JAXBException if an error occurred while producing the XML output.
+     * @throws FactoryException if an error occurred while looking for a CRS identifier.
+     * @throws IOException should never happen, since we are appending to a print writer.
      */
-    private final CharSequence description;
-
-    /**
-     * Creates a row for the given elements.
-     */
-    IdentifierRow(final State state, final String identifier, final CharSequence description) {
-        this.state       = state;
-        this.identifier  = identifier;
-        this.description = description;
+    @Override
+    public int run() throws InvalidOptionException, DataStoreException, JAXBException, FactoryException, IOException {
+        parseArguments();
+        if (outputFormat != Format.TEXT) {
+            final String format = outputFormat.name();
+            throw new InvalidOptionException(Errors.format(Errors.Keys.IncompatibleFormat_2, "identifier", format), format);
+        }
+        /*
+         * Read metadata from the data storage only after we verified that the arguments are valid.
+         * The input can be a file given on the command line, or the standard input stream.
+         */
+        Object metadata = readMetadataOrCRS();
+        if (hasUnexpectedFileCount) {
+            return Command.INVALID_ARGUMENT_EXIT_CODE;
+        }
+        if (metadata != null) {
+            final List<Row> rows;
+            if (metadata instanceof Metadata) {
+                rows = new ArrayList<>();
+                final Identifier id = ((Metadata) metadata).getMetadataIdentifier();
+                if (id != null) {
+                    CharSequence desc = id.getDescription();
+                    if (desc != null && !files.isEmpty()) desc = files.get(0);
+                    rows.add(new Row(State.VALID, IdentifiedObjects.toString(id), desc));
+                }
+                for (final ReferenceSystem rs : ((Metadata) metadata).getReferenceSystemInfo()) {
+                    rows.add(create(rs));
+                }
+            } else {
+                rows = Collections.singletonList(create((ReferenceSystem) metadata));
+            }
+            print(rows);
+        }
+        return 0;
     }
 
     /**
@@ -85,7 +147,7 @@ final class IdentifierRow {
      *
      * @return The row, or {@code null} if no identifier has been found.
      */
-    static IdentifierRow create(ReferenceSystem rs) throws FactoryException {
+    static Row create(ReferenceSystem rs) throws FactoryException {
         String identifier = IdentifiedObjects.lookupURN(rs, null);
         if (identifier == null) {
             /*
@@ -135,24 +197,22 @@ final class IdentifierRow {
         } catch (NoSuchAuthorityCodeException e) {
             state = State.UNKNOWN;
         }
-        return new IdentifierRow(state, identifier, rs.getName().getCode());
+        return new Row(state, identifier, rs.getName().getCode());
     }
 
     /**
-     * Prints all non-null rows to the given output.
+     * Prints all non-null rows.
      */
-    static void print(final Iterable<IdentifierRow> rows, final PrintWriter out,
-            final Locale locale, final boolean colors)
-    {
+    private void print(final Iterable<Row> rows) {
         int width = 0;
-        for (final IdentifierRow row : rows) {
+        for (final Row row : rows) {
             if (row != null) {
                 width = Math.max(width, row.identifier.length());
             }
         }
         width += 4;
         final Set<State> states = EnumSet.noneOf(State.class);
-        for (final IdentifierRow row : rows) {
+        for (final Row row : rows) {
             if (row != null) {
                 states.add(row.state);
                 final boolean warning = colors && row.state.text.startsWith("!");
