@@ -57,6 +57,11 @@ public final class Vocabulary extends IndexedResourceBundle {
         }
 
         /**
+         * Accuracy
+         */
+        public static final short Accuracy = 109;
+
+        /**
          * Aliases
          */
         public static final short Aliases = 74;
@@ -205,6 +210,11 @@ public final class Vocabulary extends IndexedResourceBundle {
          * Destination
          */
         public static final short Destination = 14;
+
+        /**
+         * Details
+         */
+        public static final short Details = 110;
 
         /**
          * Dimensions
@@ -375,6 +385,11 @@ public final class Vocabulary extends IndexedResourceBundle {
          * Mean value
          */
         public static final short MeanValue = 34;
+
+        /**
+         * Methods
+         */
+        public static final short Methods = 111;
 
         /**
          * Minimum value

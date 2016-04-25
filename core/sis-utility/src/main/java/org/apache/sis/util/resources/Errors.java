@@ -579,6 +579,12 @@ public final class Errors extends IndexedResourceBundle {
         public static final short MismatchedCRS = 57;
 
         /**
+         * The “{0}” coordinate reference system has {1} dimension{1,choice,1#|2#s}, but the given
+         * geometry is {2}-dimensional.
+         */
+        public static final short MismatchedDimensionForCRS_3 = 228;
+
+        /**
          * Mismatched object dimensions: {0}D and {1}D.
          */
         public static final short MismatchedDimension_2 = 58;
@@ -901,6 +907,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final short OddArrayLength_1 = 98;
 
         /**
+         * Coordinate is outside the domain of validity.
+         */
+        public static final short OutsideDomainOfValidity = 229;
+
+        /**
          * No parameter named “{1}” has been found in “{0}”.
          */
         public static final short ParameterNotFound_2 = 147;
@@ -1034,6 +1045,11 @@ public final class Errors extends IndexedResourceBundle {
          * Parameter “{0}” was not expected.
          */
         public static final short UnexpectedParameter_1 = 152;
+
+        /**
+         * Unexpected scale factor {1} for unit of measurement “{0}”.
+         */
+        public static final short UnexpectedScaleFactorForUnit_2 = 227;
 
         /**
          * Expected “{0}” to reference an instance of ‘{1}’, but found an instance of ‘{2}’.

@@ -41,20 +41,23 @@ import org.apache.sis.util.logging.MonolineFormatter;
  * <tr><td>{@code metadata}   </td><td>Show metadata information for the given file.</td></tr>
  * <tr><td>{@code crs}        </td><td>Show Coordinate Reference System information for the given file or code.</td></tr>
  * <tr><td>{@code identifier} </td><td>Show identifiers for metadata and referencing systems in the given file.</td></tr>
+ * <tr><td>{@code transform}  </td><td>Convert or transform coordinates from given source CRS to target CRS.</td></tr>
  * </table></blockquote>
  *
- * Each command can accepts an arbitrary amount of the following options:
+ * Each command can accepts some of the following options:
  *
  * <blockquote><table class="compact" summary="Supported command-line options.">
- * <tr><td>{@code --format}   </td><td>The output format: {@code xml}, {@code wkt}, {@code wkt1} or {@code text}.</td></tr>
- * <tr><td>{@code --locale}   </td><td>The locale to use for the command output.</td></tr>
- * <tr><td>{@code --timezone} </td><td>The timezone for the dates to be formatted.</td></tr>
- * <tr><td>{@code --encoding} </td><td>The encoding to use for the command output.</td></tr>
- * <tr><td>{@code --colors}   </td><td>Whether colorized output shall be enabled.</td></tr>
- * <tr><td>{@code --brief}    </td><td>Whether the output should contains only brief information.</td></tr>
- * <tr><td>{@code --verbose}  </td><td>Whether the output should contains more detailed information.</td></tr>
- * <tr><td>{@code --debug}    </td><td>Prints full stack trace in case of failure.</td></tr>
- * <tr><td>{@code --help}     </td><td>Lists the options available for a specific command.</td></tr>
+ * <tr><td>{@code --sourceCRS} </td><td>The Coordinate Reference System of input data.</td></tr>
+ * <tr><td>{@code --targetCRS} </td><td>The Coordinate Reference System of output data.</td></tr>
+ * <tr><td>{@code --format}    </td><td>The output format: {@code xml}, {@code wkt}, {@code wkt1} or {@code text}.</td></tr>
+ * <tr><td>{@code --locale}    </td><td>The locale to use for the command output.</td></tr>
+ * <tr><td>{@code --timezone}  </td><td>The timezone for the dates to be formatted.</td></tr>
+ * <tr><td>{@code --encoding}  </td><td>The encoding to use for the command output.</td></tr>
+ * <tr><td>{@code --colors}    </td><td>Whether colorized output shall be enabled.</td></tr>
+ * <tr><td>{@code --brief}     </td><td>Whether the output should contains only brief information.</td></tr>
+ * <tr><td>{@code --verbose}   </td><td>Whether the output should contains more detailed information.</td></tr>
+ * <tr><td>{@code --debug}     </td><td>Prints full stack trace in case of failure.</td></tr>
+ * <tr><td>{@code --help}      </td><td>Lists the options available for a specific command.</td></tr>
  * </table></blockquote>
  *
  * The {@code --locale}, {@code --timezone} and {@code --encoding} options apply to the command output sent
@@ -136,14 +139,9 @@ public final class Command {
             final String arg = args[i];
             if (arg.startsWith(Option.PREFIX)) {
                 final String name = arg.substring(Option.PREFIX.length());
-                final Option option;
-                try {
-                    option = Option.valueOf(name.toUpperCase(Locale.US));
-                } catch (IllegalArgumentException e) {
-                    throw new InvalidOptionException(Errors.format(Errors.Keys.UnknownOption_1, name), e, name);
-                }
+                final Option option = Option.forLabel(name);
                 if (option.hasValue) {
-                    i++; // Skip the next argument.
+                    i++;                        // Skip the next argument.
                 }
             } else {
                 // Takes the first non-argument option as the command name.
@@ -156,12 +154,13 @@ public final class Command {
             command = new HelpCommand(-1, args);
         } else {
             commandName = commandName.toLowerCase(Locale.US);
-                 if (commandName.equals("help"))       command = new HelpCommand    (commandIndex, args);
-            else if (commandName.equals("about"))      command = new AboutCommand   (commandIndex, args);
-            else if (commandName.equals("mime-type"))  command = new MimeTypeCommand(commandIndex, args);
-            else if (commandName.equals("identifier")) command = new MetadataCommand(MetadataCommand.Info.IDENTIFIER, commandIndex, args);
-            else if (commandName.equals("metadata"))   command = new MetadataCommand(MetadataCommand.Info.METADATA,   commandIndex, args);
-            else if (commandName.equals("crs"))        command = new MetadataCommand(MetadataCommand.Info.CRS,        commandIndex, args);
+                 if (commandName.equals("help"))       command = new HelpCommand      (commandIndex, args);
+            else if (commandName.equals("about"))      command = new AboutCommand     (commandIndex, args);
+            else if (commandName.equals("mime-type"))  command = new MimeTypeCommand  (commandIndex, args);
+            else if (commandName.equals("metadata"))   command = new MetadataCommand  (commandIndex, args);
+            else if (commandName.equals("crs"))        command = new CRSCommand       (commandIndex, args);
+            else if (commandName.equals("identifier")) command = new IdentifierCommand(commandIndex, args);
+            else if (commandName.equals("transform"))  command = new TransformCommand (commandIndex, args);
             else throw new InvalidCommandException(Errors.format(
                         Errors.Keys.UnknownCommand_1, commandName), commandName);
         }

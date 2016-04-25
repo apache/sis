@@ -39,8 +39,8 @@ public class InvalidOptionException extends Exception {
     /**
      * Constructs an exception with the specified detail message.
      *
-     * @param message The detail message.
-     * @param option The name of the invalid option.
+     * @param message  the detail message.
+     * @param option   the name of the invalid option.
      */
     public InvalidOptionException(final String message, final String option) {
         super(message);
@@ -50,9 +50,9 @@ public class InvalidOptionException extends Exception {
     /**
      * Constructs an exception with the specified detail message and cause.
      *
-     * @param message The detail message.
-     * @param cause   The cause of this exception.
-     * @param option  The name of the invalid option.
+     * @param message  the detail message.
+     * @param cause    the cause of this exception.
+     * @param option   the name of the invalid option.
      */
     public InvalidOptionException(final String message, final Throwable cause, final String option) {
         super(message, cause);
@@ -62,7 +62,7 @@ public class InvalidOptionException extends Exception {
     /**
      * Returns the name of the invalid option.
      *
-     * @return The name of the invalid option.
+     * @return the name of the invalid option.
      */
     public String getOption() {
         return option;
