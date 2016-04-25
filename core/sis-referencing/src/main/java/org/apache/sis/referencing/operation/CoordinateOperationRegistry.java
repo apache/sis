@@ -55,6 +55,7 @@ import org.apache.sis.referencing.factory.IdentifiedObjectFinder;
 import org.apache.sis.referencing.factory.GeodeticAuthorityFactory;
 import org.apache.sis.referencing.factory.MissingFactoryResourceException;
 import org.apache.sis.referencing.factory.InvalidGeodeticParameterException;
+import org.apache.sis.referencing.factory.NoSuchAuthorityFactoryException;
 import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.internal.referencing.CoordinateOperations;
 import org.apache.sis.internal.referencing.PositionalAccuracyConstant;
@@ -151,7 +152,8 @@ class CoordinateOperationRegistry {
     }
 
     /**
-     * The object to use for finding authority codes.
+     * The object to use for finding authority codes, or {@code null} if none.
+     * An instance is fetched at construction time from the {@link #registry} if possible.
      */
     private final IdentifiedObjectFinder codeFinder;
 
@@ -213,17 +215,21 @@ class CoordinateOperationRegistry {
         this.factory  = factory;
         factorySIS    = (factory instanceof DefaultCoordinateOperationFactory)
                         ? (DefaultCoordinateOperationFactory) factory : CoordinateOperations.factory();
+        IdentifiedObjectFinder codeFinder = null;
         if (registry != null) {
             if (registry instanceof GeodeticAuthorityFactory) {
                 codeFinder = ((GeodeticAuthorityFactory) registry).newIdentifiedObjectFinder();
-            } else {
+            } else try {
                 codeFinder = IdentifiedObjects.newFinder(Citations.getIdentifier(registry.getAuthority(), false));
+            } catch (NoSuchAuthorityFactoryException e) {
+                Logging.recoverableException(Logging.getLogger(Loggers.COORDINATE_OPERATION),
+                        CoordinateOperationRegistry.class, "<init>", e);
             }
-            codeFinder.setSearchDomain(IdentifiedObjectFinder.Domain.ALL_DATASET);
-            codeFinder.setIgnoringAxes(true);
-        } else {
-            codeFinder = null;
+            if (codeFinder != null) {
+                codeFinder.setIgnoringAxes(true);
+            }
         }
+        this.codeFinder = codeFinder;
         if (context != null) {
             areaOfInterest  = context.getAreaOfInterest();
             desiredAccuracy = context.getDesiredAccuracy();
@@ -232,12 +238,36 @@ class CoordinateOperationRegistry {
     }
 
     /**
+     * If the authority defines an object equal, ignoring metadata, to the given object, returns that authority object.
+     * Otherwise returns the given object unchanged. We do not invoke this method for user-supplied CRS, but only for
+     * CRS or other objects created by {@code CoordinateOperationRegistry} as intermediate step.
+     */
+    final <T extends IdentifiedObject> T toAuthorityDefinition(final Class<T> type, final T object) throws FactoryException {
+        if (codeFinder != null) {
+            codeFinder.setIgnoringAxes(false);
+            final IdentifiedObject candidate = codeFinder.findSingleton(object);
+            codeFinder.setIgnoringAxes(true);
+            if (Utilities.equalsIgnoreMetadata(object, candidate)) {
+                return type.cast(candidate);
+            }
+        }
+        return object;
+    }
+
+    /**
      * Finds the authority code for the given coordinate reference system.
      * This method does not trust the code given by the user in its CRS - we verify it.
+     * This method may return a code even if the axis order does not match;
+     * it will be caller's responsibility to make necessary adjustments.
      */
     private String findCode(final CoordinateReferenceSystem crs) throws FactoryException {
-        final Identifier identifier = IdentifiedObjects.getIdentifier(codeFinder.findSingleton(crs), null);
-        return (identifier != null) ? identifier.getCode() : null;
+        if (codeFinder != null) {
+            final Identifier identifier = IdentifiedObjects.getIdentifier(codeFinder.findSingleton(crs), null);
+            if (identifier != null) {
+                return identifier.getCode();
+            }
+        }
+        return null;
     }
 
     /**
@@ -404,7 +434,7 @@ class CoordinateOperationRegistry {
                 } catch (NoninvertibleTransformException exception) {
                     // It may be a normal failure - the operation is not required to be invertible.
                     Logging.recoverableException(Logging.getLogger(Loggers.COORDINATE_OPERATION),
-                            CoordinateOperationRegistry.class, "search", exception);
+                            CoordinateOperationRegistry.class, "createOperation", exception);
                     continue;
                 }
             } catch (MissingFactoryResourceException e) {
@@ -863,10 +893,11 @@ class CoordinateOperationRegistry {
                 return candidate;               // Keep the existing instance since it may contain useful metadata.
             }
         }
-        return ReferencingServices.getInstance().createCompoundCRS(
-                factorySIS.getCRSFactory(),
-                factorySIS.getCSFactory(),
-                derivedFrom(crs), crs, CommonCRS.Vertical.ELLIPSOIDAL.crs());
+        return toAuthorityDefinition(CoordinateReferenceSystem.class,
+                ReferencingServices.getInstance().createCompoundCRS(
+                        factorySIS.getCRSFactory(),
+                        factorySIS.getCSFactory(),
+                        derivedFrom(crs), crs, CommonCRS.Vertical.ELLIPSOIDAL.crs()));
     }
 
     /**

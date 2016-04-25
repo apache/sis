@@ -16,8 +16,6 @@
  */
 package org.apache.sis.console;
 
-import java.util.List;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -28,17 +26,15 @@ import java.io.IOException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.JAXBException;
 import org.opengis.metadata.Metadata;
-import org.opengis.metadata.Identifier;
-import org.opengis.util.FactoryException;
 import org.opengis.referencing.ReferenceSystem;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.util.FactoryException;
 import org.apache.sis.io.wkt.WKTFormat;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.io.wkt.Colors;
 import org.apache.sis.metadata.MetadataStandard;
 import org.apache.sis.metadata.ValueExistencePolicy;
 import org.apache.sis.metadata.iso.DefaultMetadata;
-import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStores;
@@ -52,15 +48,15 @@ import org.apache.sis.xml.XML;
 
 
 /**
- * The "metadata", "crs" and "identifier" subcommands.
- * CRS are considered as a kind of metadata here.
+ * The "metadata" sub-command. This class is also used as the base class of other sub-commands
+ * that perform most of their work on the basis of metadata information.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
  * @version 0.7
  * @module
  */
-final class MetadataCommand extends CommandRunner {
+class MetadataCommand extends CommandRunner {
     /**
      * The protocol part of the filename to be recognized as a CRS authority.
      * In such case, this class will delegate to {@link CRS#forCode(String)}
@@ -74,98 +70,82 @@ final class MetadataCommand extends CommandRunner {
     static final int MAX_AUTHORITY_LENGTH = 5;
 
     /**
-     * The desired information.
-     */
-    static enum Info {
-        METADATA, CRS, IDENTIFIER
-    }
-
-    /**
      * The output format.
      */
-    private static enum Format {
+    static enum Format {
         TEXT, WKT, XML
     }
 
     /**
-     * The sub-command: {@code "metadata"}, {@code "crs"} or {@code "identifier"}.
+     * The output format. Default value can be overridden by {@link #parseArguments()}.
      */
-    private final Info command;
-
-    /**
-     * The output format.
-     */
-    private Format outputFormat;
+    Format outputFormat = Format.TEXT;
 
     /**
      * The WKT convention, or {@code null} if it does not apply.
      */
-    private Convention convention;
+    Convention convention;
 
     /**
-     * Creates the {@code "metadata"}, {@code "crs"} or {@code "identifier"} sub-command.
+     * Sets to {@code true} by {@link #readMetadata()} if the users provided an unexpected number of file arguments.
+     * In such case, the {@link #run()} should terminate with exit code {@link Command#INVALID_ARGUMENT_EXIT_CODE}.
      */
-    MetadataCommand(final Info command, final int commandIndex, final String... args) throws InvalidOptionException {
+    boolean hasUnexpectedFileCount;
+
+    /**
+     * Creates the {@code "metadata"} sub-command.
+     */
+    MetadataCommand(final int commandIndex, final String... args) throws InvalidOptionException {
         super(commandIndex, args, EnumSet.of(Option.FORMAT, Option.LOCALE, Option.TIMEZONE, Option.ENCODING,
                 Option.COLORS, Option.HELP, Option.DEBUG));
-        this.command = command;
+    }
+
+    /**
+     * Creates a new sub-command with the given command-line arguments.
+     * This constructor is for {@code MetadataCommand} subclasses only.
+     *
+     * @param  commandIndex  index of the {@code args} element containing the sub-command name.
+     * @param  arguments     the command-line arguments provided by the user.
+     * @param  validOptions  the command-line options allowed by this sub-command.
+     * @throws InvalidOptionException if an illegal option has been provided, or the option has an illegal value.
+     */
+    MetadataCommand(final int commandIndex, final String[] args, final EnumSet<Option> validOptions)
+            throws InvalidOptionException
+    {
+        super(commandIndex, args, validOptions);
     }
 
     /**
      * Parses the command-line arguments and initializes the {@link #outputFormat} and {@link #convention} fields
-     * accordingly. This method verifies the parameter validity.
+     * accordingly.
      */
-    private void parseArguments() throws InvalidOptionException {
+    final void parseArguments() throws InvalidOptionException {
         /*
          * Output format can be either "text" (the default) or "xml".
          * In the case of "crs" sub-command, we accept also WKT variants.
          */
         final String format = options.get(Option.FORMAT);
-        if (format == null || format.equalsIgnoreCase("text")) {
-            if (command == Info.CRS) {
+        if (format != null && !format.equalsIgnoreCase("text")) {
+            if (format.equalsIgnoreCase("wkt") || format.equalsIgnoreCase("wkt2")) {
                 outputFormat = Format.WKT;
-                convention = Convention.WKT2_SIMPLIFIED;
+                convention = Convention.WKT2;
+            } else if (format.equalsIgnoreCase("wkt1")) {
+                outputFormat = Format.WKT;
+                convention = Convention.WKT1;
+            } else if (format.equalsIgnoreCase("xml")) {
+                outputFormat = Format.XML;
             } else {
-                outputFormat = Format.TEXT;
+                throw new InvalidOptionException(Errors.format(
+                        Errors.Keys.IllegalOptionValue_2, "format", format), format);
             }
-        } else if (format.equalsIgnoreCase("wkt") || format.equalsIgnoreCase("wkt2")) {
-            outputFormat = Format.WKT;
-            convention = Convention.WKT2;
-        } else if (format.equalsIgnoreCase("wkt1")) {
-            outputFormat = Format.WKT;
-            convention = Convention.WKT1;
-        } else if (format.equalsIgnoreCase("xml")) {
-            outputFormat = Format.XML;
-        } else {
-            throw new InvalidOptionException(Errors.format(
-                    Errors.Keys.IllegalOptionValue_2, "format", format), format);
-        }
-        final boolean isFormatCompatible;
-        switch (command) {
-            case CRS: {
-                isFormatCompatible = true;
-                break;
-            }
-            case IDENTIFIER: {
-                isFormatCompatible = (outputFormat == Format.TEXT);
-                break;
-            }
-            default: {
-                isFormatCompatible = (convention == null);
-                break;
-            }
-        }
-        if (!isFormatCompatible) {
-            throw new InvalidOptionException(Errors.format(Errors.Keys.IncompatibleFormat_2,
-                    command.name().toLowerCase(locale), format), format);
         }
     }
 
     /**
-     * If the given argument begins with one of the known authorities ("URN", "EPSG", "CRS", "AUTO", <i>etc.</i>),
-     * delegates to {@link CRS#forCode(String)} and wraps in a metadata object. Otherwise returns {@code null}.
+     * Returns {@code true} if the given argument begins with one of the known authorities
+     * ("URN", "EPSG", "CRS", "AUTO", <i>etc.</i>).
      */
-    private static Metadata fromDatabase(final String code) throws FactoryException {
+    static boolean isAuthorityCode(final String code) {
         final char[] authority = new char[MAX_AUTHORITY_LENGTH];
         final int length = code.length();
         int p = 0, i = 0;
@@ -175,9 +155,7 @@ final class MetadataCommand extends CommandRunner {
                 if (!AUTHORITIES.contains(new String(authority, 0, p))) {
                     break;
                 }
-                final DefaultMetadata metadata = new DefaultMetadata();
-                metadata.setReferenceSystemInfo(Collections.singleton(CRS.forCode(code)));
-                return metadata;
+                return true;
             }
             if (!Character.isWhitespace(c)) {
                 if (p >= MAX_AUTHORITY_LENGTH || !Character.isLetterOrDigit(c)) {
@@ -186,13 +164,39 @@ final class MetadataCommand extends CommandRunner {
                 /*
                  * Casting to char is okay because AUTHORITIES contains only ASCII values.
                  * If 'c' was a supplemental Unicode value, then the result of the cast
-                 * will not match any AUTHORITIES value anyway.
+                 * would not match any AUTHORITIES value anyway.
                  */
                 authority[p++] = (char) Character.toUpperCase(c);
             }
             i += Character.charCount(c);
         }
-        return null;
+        return false;
+    }
+
+    /**
+     * If the given argument begins with one of the known authorities ("URN", "EPSG", "CRS", "AUTO", <i>etc.</i>),
+     * delegates to {@link CRS#forCode(String)}. Otherwise reads the metadata using a datastore.
+     *
+     * @return A {@link Metadata} or {@link CoordinateReferenceSystem} instance, or {@code null} if none.
+     */
+    final Object readMetadataOrCRS() throws DataStoreException, FactoryException {
+        if (useStandardInput()) {
+            try (DataStore store = DataStores.open(System.in)) {
+                return store.getMetadata();
+            }
+        } else if (hasUnexpectedFileCount(1, 1)) {
+            hasUnexpectedFileCount = true;
+            return null;
+        } else {
+            final String file = files.get(0);
+            if (isAuthorityCode(file)) {
+                return CRS.forCode(file);
+            } else {
+                try (DataStore store = DataStores.open(file)) {
+                    return store.getMetadata();
+                }
+            }
+        }
     }
 
     /**
@@ -204,67 +208,37 @@ final class MetadataCommand extends CommandRunner {
      * @throws IOException should never happen, since we are appending to a print writer.
      */
     @Override
-    @SuppressWarnings("UseOfSystemOutOrSystemErr")
-    public int run() throws InvalidOptionException, DataStoreException, JAXBException, FactoryException, IOException {
+    public int run() throws Exception {
         parseArguments();
+        if (convention != null) {
+            final String format = outputFormat.name();
+            throw new InvalidOptionException(Errors.format(Errors.Keys.IncompatibleFormat_2, "metadata", format), format);
+        }
         /*
          * Read metadata from the data storage only after we verified that the arguments are valid.
          * The input can be a file given on the command line, or the standard input stream.
          */
-        Metadata metadata;
-        if (useStandardInput()) {
-            try (DataStore store = DataStores.open(System.in)) {
-                metadata = store.getMetadata();
-            }
-        } else {
-            if (hasUnexpectedFileCount(1, 1)) {
-                return Command.INVALID_ARGUMENT_EXIT_CODE;
-            }
-            final String file = files.get(0);
-            metadata = fromDatabase(file);
-            if (metadata == null) {
-                try (DataStore store = DataStores.open(file)) {
-                    metadata = store.getMetadata();
-                }
-            }
+        Object metadata = readMetadataOrCRS();
+        if (hasUnexpectedFileCount) {
+            return Command.INVALID_ARGUMENT_EXIT_CODE;
         }
-        if (metadata == null) {
-            return 0;
-        }
-        /*
-         * If we are executing the "identifier" sub-command, then show the metadata identifier (if any)
-         * and the identifier of all referencing systems found. Otherwise if we are executing the "crs"
-         * sub-command, extract only the first CRS. That CRS will be displayed after the switch statement.
-         */
-        Object object = metadata;
-choice: switch (command) {
-            case IDENTIFIER: {
-                final List<IdentifierRow> rows = new ArrayList<>();
-                final Identifier id = metadata.getMetadataIdentifier();
-                if (id != null) {
-                    CharSequence desc = id.getDescription();
-                    if (desc != null && !files.isEmpty()) desc = files.get(0);
-                    rows.add(new IdentifierRow(IdentifierRow.State.VALID, IdentifiedObjects.toString(id), desc));
-                }
-                for (final ReferenceSystem rs : metadata.getReferenceSystemInfo()) {
-                    rows.add(IdentifierRow.create(rs));
-                }
-                IdentifierRow.print(rows, out, locale, colors);
-                return 0;
+        if (metadata != null) {
+            if (!(metadata instanceof Metadata)) {
+                final DefaultMetadata md = new DefaultMetadata();
+                md.setReferenceSystemInfo(Collections.singleton((ReferenceSystem) metadata));
+                metadata = md;
             }
-            case CRS: {
-                for (final ReferenceSystem rs : metadata.getReferenceSystemInfo()) {
-                    if (rs instanceof CoordinateReferenceSystem) {
-                        object = rs;
-                        break choice;
-                    }
-                }
-                return 0;
-            }
+            format(metadata);
         }
-        /*
-         * Format metadata to the standard output stream.
-         */
+        return 0;
+    }
+
+    /**
+     * Format the given metadata or CRS object to the standard output stream.
+     * The format is determined by {@link #outputFormat} and (in WKT case only) {@link #convention}.
+     */
+    @SuppressWarnings("UseOfSystemOutOrSystemErr")
+    final void format(final Object object) throws IOException, JAXBException {
         switch (outputFormat) {
             case TEXT: {
                 final TreeTable tree = MetadataStandard.ISO_19115.asTreeTable(object, ValueExistencePolicy.NON_EMPTY);
@@ -304,7 +278,6 @@ choice: switch (command) {
             }
         }
         out.flush();
-        return 0;
     }
 
     /**
