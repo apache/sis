@@ -149,10 +149,10 @@ abstract class CommandRunner {
      * The argument at index {@code commandIndex} is the name of this command, and will be ignored except for
      * the special {@value #TEST} value which is used only at JUnit testing time.
      *
-     * @param  commandIndex Index of the {@code args} element containing the sub-command name.
-     * @param  arguments    The command-line arguments provided by the user.
-     * @param  validOptions The command-line options allowed by this sub-command.
-     * @throws InvalidOptionException If an illegal option has been provided, or the option has an illegal value.
+     * @param  commandIndex  index of the {@code args} element containing the sub-command name.
+     * @param  arguments     the command-line arguments provided by the user.
+     * @param  validOptions  the command-line options allowed by this sub-command.
+     * @throws InvalidOptionException if an illegal option has been provided, or the option has an illegal value.
      */
     @SuppressWarnings("UseOfSystemOutOrSystemErr")
     protected CommandRunner(final int commandIndex, final String[] arguments, final EnumSet<Option> validOptions)
@@ -170,12 +170,7 @@ abstract class CommandRunner {
             }
             if (arg.startsWith(Option.PREFIX)) {
                 final String name = arg.substring(Option.PREFIX.length());
-                final Option option;
-                try {
-                    option = Option.valueOf(name.toUpperCase(Locale.US));
-                } catch (IllegalArgumentException e) {
-                    throw new InvalidOptionException(Errors.format(Errors.Keys.UnknownOption_1, name), e, name);
-                }
+                final Option option = Option.forLabel(name);
                 if (!validOptions.contains(option)) {
                     throw new InvalidOptionException(Errors.format(Errors.Keys.UnknownOption_1, name), name);
                 }
@@ -197,7 +192,7 @@ abstract class CommandRunner {
         /*
          * Process the --locale, --encoding and --colors options.
          */
-        Option option = null; // In case of IllegalArgumentException.
+        Option option = null;                                           // In case of IllegalArgumentException.
         String value  = null;
         final Console console;
         final boolean explicitEncoding;
@@ -219,7 +214,7 @@ abstract class CommandRunner {
             colors = (value != null) ? Option.COLORS.parseBoolean(value) : (console != null) && X364.isAnsiSupported();
         } catch (RuntimeException e) {
             @SuppressWarnings("null")                                   // 'option' has been assigned in 'get' argument.
-            final String name = option.name().toLowerCase(Locale.US);
+            final String name = option.label();
             throw new InvalidOptionException(Errors.format(Errors.Keys.IllegalOptionValue_2, name, value), name);
         }
         /*
@@ -254,7 +249,7 @@ abstract class CommandRunner {
      *
      * <p>An example of a pair of mutually exclusive options is {@code --brief} and {@code --verbose}.</p>
      *
-     * @param  exclusive Pairs of mutually exclusive options.
+     * @param  exclusive  pairs of mutually exclusive options.
      * @return {@code true} if two mutually exclusive options exist.
      */
     final boolean hasContradictoryOptions(final Option... exclusive) {
@@ -262,9 +257,7 @@ abstract class CommandRunner {
             final Option o1 = exclusive[i++];
             final Option o2 = exclusive[i++];
             if (options.containsKey(o1) && options.containsKey(o2)) {
-                err.println(Errors.format(Errors.Keys.MutuallyExclusiveOptions_2,
-                        o1.name().toLowerCase(Locale.US),
-                        o2.name().toLowerCase(Locale.US)));
+                err.println(Errors.format(Errors.Keys.MutuallyExclusiveOptions_2, o1.label(), o2.label()));
                 return true;
             }
         }
@@ -275,8 +268,8 @@ abstract class CommandRunner {
      * Checks the size of the {@link #files} list. If the list has an unexpected size,
      * then this method prints an error message to {@link #err} and returns {@code true}.
      *
-     * @param  min Minimal number of files.
-     * @param  max Maximum number of files.
+     * @param  min  minimal number of files.
+     * @param  max  maximum number of files.
      * @return {@code true} if the list size is not in the expected bounds.
      */
     final boolean hasUnexpectedFileCount(final int min, final int max) {
@@ -306,8 +299,8 @@ abstract class CommandRunner {
     /**
      * Prints the <cite>"Can not open …"</cite> error message followed by the message in the given exception.
      *
-     * @param fileIndex Index in the {@link #files} list of the file that can not be opened.
-     * @param e The exception which occurred.
+     * @param fileIndex  index in the {@link #files} list of the file that can not be opened.
+     * @param e          the exception which occurred.
      */
     final void canNotOpen(final int fileIndex, final Exception e) {
         error(Errors.format(Errors.Keys.CanNotOpen_1, files.get(fileIndex)), e);
@@ -316,8 +309,8 @@ abstract class CommandRunner {
     /**
      * Prints the given error message followed by the message in the given exception.
      *
-     * @param message The message to print before the exception, or {@code null}.
-     * @param e The exception which occurred.
+     * @param message  the message to print before the exception, or {@code null}.
+     * @param e        the exception which occurred.
      */
     final void error(final String message, final Exception e) {
         out.flush();
@@ -332,7 +325,7 @@ abstract class CommandRunner {
      * Shows the help instructions for a specific command. This method is invoked
      * instead of {@link #run()} if the the user provided the {@code --help} option.
      *
-     * @param commandName The command name converted to lower cases.
+     * @param commandName  the command name converted to lower cases.
      */
     protected void help(final String commandName) {
         new HelpCommand(this).help(false, new String[] {commandName}, validOptions);
@@ -342,7 +335,7 @@ abstract class CommandRunner {
      * Executes the sub-command.
      *
      * @return 0 on success, or an exit code if the command failed for a reason other than a Java exception.
-     * @throws Exception If an error occurred while executing the sub-command.
+     * @throws Exception if an error occurred while executing the sub-command.
      */
     public abstract int run() throws Exception;
 }

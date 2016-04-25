@@ -696,7 +696,8 @@ public class Formatter implements Localized {
             info = ((GeneralParameterValue) object).getDescriptor();
         }
         if (info != null) {
-            appendComplement(info, (stackDepth != 0) ? enclosingElements.get(stackDepth - 1) : null);
+            appendComplement(info, (stackDepth >= 1) ? enclosingElements.get(stackDepth - 1) : null,
+                                   (stackDepth >= 2) ? enclosingElements.get(stackDepth - 2) : null);
         }
         buffer.appendCodePoint(symbols.getClosingBracket(0));
         indent(-1);
@@ -711,9 +712,10 @@ public class Formatter implements Localized {
      * and have a special treatment: they are written by {@link #append(FormattableObject)}
      * after the {@code formatTo(Formatter)} method returned.
      *
-     * <p>The {@code ID[<name>,<code>,…]} element is written only for the root element, unless the convention are
-     * INTERNAL. If formatted, the ID element will be on the same line than the enclosing one if no line separator
-     * were requested (e.g. SPHEROID["Clarke 1866", …, ID["EPSG", 7008]]), or on a new line otherwise. Example:</p>
+     * <p>The {@code ID[<name>,<code>,…]} element is normally written only for the root element
+     * (unless the convention is {@code INTERNAL}), but there is various exceptions to this rule.
+     * If formatted, the {@code ID} element will be by default on the same line than the enclosing
+     * element (e.g. {@code SPHEROID["Clarke 1866", …, ID["EPSG", 7008]]}). Other example:</p>
      *
      * {@preformat text
      *   PROJCS["NAD27 / Idaho Central",
@@ -734,7 +736,7 @@ public class Formatter implements Localized {
      * A {@code <remark>} can be included within the descriptions of source and target CRS embedded within
      * a coordinate transformation as well as within the coordinate transformation itself.</blockquote>
      */
-    private void appendComplement(final IdentifiedObject object, final FormattableObject parent) {
+    private void appendComplement(final IdentifiedObject object, final FormattableObject parent, final FormattableObject gp) {
         isComplement = true;
         final boolean showIDs;      // Whether to format ID[…] elements.
         final boolean filterID;     // Whether we shall limit to a single ID[…] element.
@@ -757,6 +759,9 @@ public class Formatter implements Localized {
              */
             if (parent == null || parent instanceof CompoundCRS) {
                 showIDs = true;
+            } else if (gp instanceof CoordinateOperation && !(parent instanceof IdentifiedObject)) {
+                // "SourceCRS[…]" and "TargetCRS[…]" sub-elements in CoordinateOperation.
+                showIDs = true;
             } else if (convention == Convention.WKT2_SIMPLIFIED) {
                 showIDs = false;
             } else {
@@ -773,7 +778,7 @@ public class Formatter implements Localized {
                     showRemarks = showOthers;
                 } else if (object instanceof ReferenceSystem) {
                     showOthers  = (parent == null);
-                    showRemarks = (parent == null) || (getEnclosingElement(2) instanceof CoordinateOperation);
+                    showRemarks = (parent == null) || (gp instanceof CoordinateOperation);
                 } else {
                     showOthers  = false;    // Mandated by ISO 19162.
                     showRemarks = false;

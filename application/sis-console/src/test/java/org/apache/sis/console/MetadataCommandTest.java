@@ -59,7 +59,7 @@ public final strictfp class MetadataCommandTest extends TestCase {
     public void testNetCDF() throws Exception {
         final URL url = MetadataCommandTest.class.getResource("NCEP-SST.nc");
         assertNotNull("NCEP-SST.nc", url);
-        final MetadataCommand test = new MetadataCommand(MetadataCommand.Info.METADATA, 0, CommandRunner.TEST, url.toString());
+        final MetadataCommand test = new MetadataCommand(0, CommandRunner.TEST, url.toString());
         test.run();
         verifyNetCDF("Metadata", test.outputBuffer.toString());
     }
@@ -86,8 +86,7 @@ public final strictfp class MetadataCommandTest extends TestCase {
     @DependsOnMethod("testNetCDF")
     public void testFormatXML() throws Exception {
         final URL url = MetadataCommandTest.class.getResource("NCEP-SST.nc");
-        final MetadataCommand test = new MetadataCommand(MetadataCommand.Info.METADATA,
-                0, CommandRunner.TEST, url.toString(), "--format", "XML");
+        final MetadataCommand test = new MetadataCommand(0, CommandRunner.TEST, url.toString(), "--format", "XML");
         test.run();
         verifyNetCDF("<?xml", test.outputBuffer.toString());
     }
