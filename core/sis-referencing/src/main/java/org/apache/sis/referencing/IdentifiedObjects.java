@@ -43,6 +43,7 @@ import org.apache.sis.internal.metadata.NameToIdentifier;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.referencing.factory.IdentifiedObjectFinder;
 import org.apache.sis.referencing.factory.GeodeticAuthorityFactory;
+import org.apache.sis.referencing.factory.NoSuchAuthorityFactoryException;
 
 import static org.apache.sis.internal.util.Citations.iterator;
 import static org.apache.sis.internal.util.Citations.identifierMatches;
@@ -515,14 +516,17 @@ public final class IdentifiedObjects extends Static {
      * @param  authority The authority of the objects to search (typically {@code "EPSG"} or {@code "OGC"}),
      *         or {@code null} for searching among the objects created by all authorities.
      * @return A finder to use for looking up unidentified objects.
-     * @throws FactoryException if the finder can not be created.
+     * @throws NoSuchAuthorityFactoryException if the given authority is not found.
+     * @throws FactoryException if the finder can not be created for another reason.
      *
      * @see #lookupEPSG(IdentifiedObject)
      * @see #lookupURN(IdentifiedObject, Citation)
      * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#newIdentifiedObjectFinder()
      * @see IdentifiedObjectFinder#find(IdentifiedObject)
      */
-    public static IdentifiedObjectFinder newFinder(final String authority) throws FactoryException {
+    public static IdentifiedObjectFinder newFinder(final String authority)
+            throws NoSuchAuthorityFactoryException, FactoryException
+    {
         final GeodeticAuthorityFactory factory;
         if (authority == null) {
             factory = AuthorityFactories.ALL;

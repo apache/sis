@@ -17,7 +17,6 @@
 package org.apache.sis.console;
 
 import java.util.EnumSet;
-import java.util.Locale;
 import java.util.ResourceBundle;
 import java.io.IOException;
 import org.apache.sis.io.TableAppender;
@@ -42,7 +41,8 @@ final class HelpCommand extends CommandRunner {
         "mime-type",
         "metadata",
         "crs",
-        "identifier"
+        "identifier",
+        "transform"
     };
 
     /**
@@ -110,7 +110,7 @@ final class HelpCommand extends CommandRunner {
             out.print(vocabulary.getString(Vocabulary.Keys.Options));
             out.println(':');
             for (final Option option : validOptions) {
-                final String name = option.name().toLowerCase(Locale.US);
+                final String name = option.label();
                 table.append("  ").append(Option.PREFIX).append(name);
                 table.nextColumn();
                 table.append(options.getString(name));

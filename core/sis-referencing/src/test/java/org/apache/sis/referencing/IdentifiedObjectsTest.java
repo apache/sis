@@ -33,9 +33,10 @@ import static org.apache.sis.referencing.IdentifiedObjects.*;
 
 /**
  * Tests the {@link IdentifiedObjects} static methods.
- * This test class intentionally declares {@code testLookup()} method without {@link Test} annotation
- * because those tests should not be executed only after the EPSG tests. Those tests will be executed
- * by {@link CRSTest} instead.
+ *
+ * <p><b>Note:</b> this test class intentionally declares {@link #testLookupEPSG()} and {@link #testLookupWMS()}
+ * methods without {@link Test} annotation because those tests should be executed only after the EPSG tests in
+ * {@link org.apache.sis.test.suite.ReferencingTestSuite}. Those tests will be executed by {@link CRSTest} instead.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
