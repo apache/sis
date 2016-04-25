@@ -225,7 +225,6 @@ class CoordinateOperationRegistry {
                         CoordinateOperationRegistry.class, "<init>", e);
             }
             if (codeFinder != null) {
-                codeFinder.setSearchDomain(IdentifiedObjectFinder.Domain.ALL_DATASET);
                 codeFinder.setIgnoringAxes(true);
             }
         }

@@ -365,7 +365,6 @@ final class TransformCommand extends MetadataCommand {
         final int dimension = cs.getDimension();
         numFractionDigits = new int[dimension];
         thresholdForScientificNotation = new double[dimension];
-        final double thresholdFactor = MathFunctions.pow10(ordinateWidth - 1);
         for (int i=0; i<dimension; i++) {
             final Unit<?> unit = cs.getAxis(0).getUnit();
             final Unit<?> source;
@@ -384,7 +383,7 @@ final class TransformCommand extends MetadataCommand {
             if (precision > 0) {
                 numFractionDigits[i] = Math.max(DecimalFunctions.fractionDigitsForDelta(precision, false) + 1, 0);
             }
-            thresholdForScientificNotation[i] = thresholdFactor * MathFunctions.pow10(-numFractionDigits[i]);
+            thresholdForScientificNotation[i] = MathFunctions.pow10(ordinateWidth - 1 - numFractionDigits[i]);
         }
     }
 
