@@ -420,6 +420,8 @@ public abstract class Initializer {
      * @return {@code true} if the exception indicates a successful shutdown.
      */
     static boolean isSuccessfulShutdown(final SQLException e) {
-        return e.getErrorCode() == 45000 && "08006".equals(e.getSQLState());
+        final String state = e.getSQLState();
+        return "08006".equals(state) ||     // Database 'SpatialMetadata' shutdown.
+               "XJ004".equals(state);       // Database 'SpatialMetadata' not found (may happen if we failed to open it in the first place).
     }
 }
