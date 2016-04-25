@@ -1412,13 +1412,14 @@ addURIs:    for (int i=0; ; i++) {
                                  * may be recreated every time a deprecated ProjectedCRS is created, we temporarily
                                  * shutdown the loggings in order to avoid the same warning to be logged many time.
                                  */
+                                final boolean old = quiet;
                                 try {
                                     quiet = true;
                                     replaceDeprecatedCS = true;
                                     baseCRS = createCoordinateReferenceSystem(geoCode);         // Do not cache that CRS.
                                 } finally {
                                     replaceDeprecatedCS = false;
-                                    quiet = false;
+                                    quiet = old;
                                 }
                                 /*
                                  * The crsFactory method calls will indirectly create a parameterized MathTransform.
