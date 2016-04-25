@@ -208,7 +208,7 @@ class MetadataCommand extends CommandRunner {
      * @throws IOException should never happen, since we are appending to a print writer.
      */
     @Override
-    public int run() throws InvalidOptionException, DataStoreException, JAXBException, FactoryException, IOException {
+    public int run() throws Exception {
         parseArguments();
         if (convention != null) {
             final String format = outputFormat.name();
