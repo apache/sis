@@ -443,7 +443,8 @@ public class EllipsoidToCentricTransform extends AbstractMathTransform implement
                 final ParameterBuilder builder = new ParameterBuilder().setCodeSpace(Citations.SIS, Constants.SIS);
                 final ParameterDescriptor<TargetType> target = builder.setRequired(true)
                         .addName("target").create(TargetType.class, TargetType.CARTESIAN);
-                DESCRIPTOR = builder.addName("Ellipsoid to centric").createGroup(1, 1, ECCENTRICITY, target, DIMENSION);
+                DESCRIPTOR = builder.addName("Ellipsoid (radians domain) to centric")
+                        .createGroup(1, 1, ECCENTRICITY, target, DIMENSION);
             }
             return DESCRIPTOR;
         }
@@ -829,7 +830,7 @@ next:   while (--numPts >= 0) {
         @Override
         public ParameterDescriptorGroup getParameterDescriptors() {
             return new DefaultParameterDescriptorGroup(Collections.singletonMap(ParameterDescriptorGroup.NAME_KEY,
-                            new ImmutableIdentifier(Citations.SIS, Constants.SIS, "Centric to ellipsoid")),
+                            new ImmutableIdentifier(Citations.SIS, Constants.SIS, "Centric to ellipsoid (radians domain)")),
                     EllipsoidToCentricTransform.this.getParameterDescriptors());
         }
 

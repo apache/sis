@@ -452,6 +452,6 @@ public class InterpolatedMolodenskyTransform extends MolodenskyFormula {
         };
         return new ParameterBuilder().setRequired(true)
                 .setCodeSpace(Citations.SIS, Constants.SIS)
-                .addName(context.getDescriptor().getName()).createGroup(param);
+                .addName(context.getDescriptor().getName().getCode() + " (radians domain)").createGroup(param);
     }
 }
