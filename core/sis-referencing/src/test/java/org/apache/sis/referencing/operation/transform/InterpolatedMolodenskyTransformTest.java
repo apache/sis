@@ -112,7 +112,7 @@ public final strictfp class InterpolatedMolodenskyTransformTest extends Interpol
                 "  Param_MT[“Affine parametric transformation”,\n" +
                 "    Parameter[“A0”, 0.017453292519943295, Id[“EPSG”, 8623]],\n" +   // Degrees to radians conversion
                 "    Parameter[“B1”, 0.017453292519943295, Id[“EPSG”, 8640]]],\n" +
-                "  Param_MT[“Molodensky inverse interpolation”,\n" +
+                "  Param_MT[“Molodensky inverse interpolation (radians domain)”,\n" +
                 "    Parameter[“src_semi_major”, 6378249.2],\n" +
                 "    Parameter[“src_semi_minor”, 6356515.0],\n" +
                 "    Parameter[“Semi-major axis length difference”, -112.2],\n" +
