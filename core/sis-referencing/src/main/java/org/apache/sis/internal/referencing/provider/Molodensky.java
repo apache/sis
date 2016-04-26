@@ -119,7 +119,7 @@ public final class Molodensky extends GeocentricAffineBetweenGeographic {
     public static ParameterDescriptorGroup internal() {
         final ParameterBuilder builder = builder().setCodeSpace(Citations.SIS, Constants.SIS);
         ParameterDescriptor<Boolean> abridged = builder.addName("abridged").create(Boolean.class, null);
-        return builder.addName("Molodensky")
+        return builder.addName("Molodensky (radians domain)")
                 .createGroup(DIMENSION,
                              SRC_SEMI_MAJOR,
                              SRC_SEMI_MINOR,

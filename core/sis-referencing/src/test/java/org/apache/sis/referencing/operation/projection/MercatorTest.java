@@ -79,12 +79,12 @@ public final strictfp class MercatorTest extends MapProjectionTestCase {
     @Test
     public void testNormalizedWKT() throws NoninvertibleTransformException {
         createNormalizedProjection(true);
-        assertWktEquals("PARAM_MT[“Mercator”,\n" +
+        assertWktEquals("PARAM_MT[“Mercator (radians domain)”,\n" +
                         "  PARAMETER[“eccentricity”, 0.0818191908426215]]");
 
         transform = transform.inverse();
         assertWktEquals("INVERSE_MT[\n" +
-                        "  PARAM_MT[“Mercator”,\n" +
+                        "  PARAM_MT[“Mercator (radians domain)”,\n" +
                         "    PARAMETER[“eccentricity”, 0.0818191908426215]]]");
     }
 
