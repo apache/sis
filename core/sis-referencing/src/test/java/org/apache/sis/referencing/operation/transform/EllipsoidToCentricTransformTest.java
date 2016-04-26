@@ -341,7 +341,7 @@ public final strictfp class EllipsoidToCentricTransformTest extends MathTransfor
                 "    Parameter[“elt_0_0”, 0.017453292519943295],\n" +
                 "    Parameter[“elt_1_1”, 0.017453292519943295],\n" +
                 "    Parameter[“elt_2_2”, 1.567855942887398E-7]],\n" +
-                "  Param_MT[“Ellipsoid to centric”,\n" +
+                "  Param_MT[“Ellipsoid (radians domain) to centric”,\n" +
                 "    Parameter[“eccentricity”, 0.08181919084262157],\n" +
                 "    Parameter[“target”, “CARTESIAN”],\n" +
                 "    Parameter[“dim”, 3]],\n" +
@@ -361,7 +361,7 @@ public final strictfp class EllipsoidToCentricTransformTest extends MathTransfor
                 "    Parameter[“elt_0_0”, 1.567855942887398E-7],\n" +
                 "    Parameter[“elt_1_1”, 1.567855942887398E-7],\n" +
                 "    Parameter[“elt_2_2”, 1.567855942887398E-7]],\n" +
-                "  Param_MT[“Centric to ellipsoid”,\n" +
+                "  Param_MT[“Centric to ellipsoid (radians domain)”,\n" +
                 "    Parameter[“eccentricity”, 0.08181919084262157],\n" +
                 "    Parameter[“target”, “CARTESIAN”],\n" +
                 "    Parameter[“dim”, 3]],\n" +
