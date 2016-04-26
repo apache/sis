@@ -299,7 +299,7 @@ public final strictfp class MolodenskyTransformTest extends MathTransformTestCas
                 "    Parameter[“num_col”, 4],\n" +
                 "    Parameter[“elt_0_0”, 0.017453292519943295],\n" +       // Degrees to radians conversion
                 "    Parameter[“elt_1_1”, 0.017453292519943295]],\n" +
-                "  Param_MT[“Molodensky”,\n" +
+                "  Param_MT[“Molodensky (radians domain)”,\n" +
                 "    Parameter[“src_semi_major”, 6378137.0],\n" +
                 "    Parameter[“src_semi_minor”, 6356752.314245179],\n" +
                 "    Parameter[“Semi-major axis length difference”, 251.0],\n" +
