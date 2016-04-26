@@ -52,7 +52,7 @@ import org.apache.sis.util.logging.MonolineFormatter;
  * <tr><td>{@code --format}    </td><td>The output format: {@code xml}, {@code wkt}, {@code wkt1} or {@code text}.</td></tr>
  * <tr><td>{@code --locale}    </td><td>The locale to use for the command output.</td></tr>
  * <tr><td>{@code --timezone}  </td><td>The timezone for the dates to be formatted.</td></tr>
- * <tr><td>{@code --encoding}  </td><td>The encoding to use for the command output.</td></tr>
+ * <tr><td>{@code --encoding}  </td><td>The encoding to use for the command outputs and some inputs.</td></tr>
  * <tr><td>{@code --colors}    </td><td>Whether colorized output shall be enabled.</td></tr>
  * <tr><td>{@code --brief}     </td><td>Whether the output should contains only brief information.</td></tr>
  * <tr><td>{@code --verbose}   </td><td>Whether the output should contains more detailed information.</td></tr>

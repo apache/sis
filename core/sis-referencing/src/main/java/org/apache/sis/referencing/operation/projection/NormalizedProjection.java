@@ -603,7 +603,8 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
                 for (int i=1; i<parameters.length; i++) {
                     parameters[i] = builder.addName(names[i-1]).create(Double.class, null);
                 }
-                group = builder.addName(CharSequences.camelCaseToSentence(type.getSimpleName())).createGroup(1, 1, parameters);
+                group = builder.addName(CharSequences.camelCaseToSentence(
+                        type.getSimpleName()) + " (radians domain)").createGroup(1, 1, parameters);
                 DESCRIPTORS.put(type, group);
             }
         }

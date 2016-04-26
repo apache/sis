@@ -19,7 +19,7 @@ package org.apache.sis.console;
 import java.util.EnumSet;
 import java.util.Locale;
 import java.io.IOException;
-import java.io.FileReader;
+import java.io.FileInputStream;
 import java.io.LineNumberReader;
 import java.io.InputStreamReader;
 import java.text.NumberFormat;
@@ -37,6 +37,7 @@ import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.cs.CoordinateSystem;
+import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.operation.SingleOperation;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.ConcatenatedOperation;
@@ -47,11 +48,15 @@ import org.apache.sis.geometry.ImmutableEnvelope;
 import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.internal.referencing.DirectPositionView;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
+import org.apache.sis.internal.util.PatchedUnitFormat;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.internal.util.X364;
+import org.apache.sis.io.LineAppender;
+import org.apache.sis.io.TableAppender;
 import org.apache.sis.io.wkt.Colors;
 import org.apache.sis.io.wkt.Convention;
+import org.apache.sis.io.wkt.Transliterator;
 import org.apache.sis.io.wkt.WKTFormat;
 import org.apache.sis.math.DecimalFunctions;
 import org.apache.sis.math.MathFunctions;
@@ -99,6 +104,11 @@ final class TransformCommand extends MetadataCommand {
      * Resources for {@link #printHeader(short)}.
      */
     private final Vocabulary resources;
+
+    /**
+     * Where to write the header before the data.
+     */
+    private TableAppender outHeader;
 
     /**
      * The format to use for writing coordinate values.
@@ -185,22 +195,28 @@ final class TransformCommand extends MetadataCommand {
         /*
          * Prints the header: source CRS, target CRS, operation steps and positional accuracy.
          */
+        outHeader = new TableAppender(new LineAppender(out), " ");
+        outHeader.setMultiLinesCells(true);
         printHeader(Vocabulary.Keys.Source);      printNameAndIdentifier(operation.getSourceCRS());
         printHeader(Vocabulary.Keys.Destination); printNameAndIdentifier(operation.getTargetCRS());
         printHeader(Vocabulary.Keys.Methods);     printOperationMethods (operation, false);
-        out.println();
+        outHeader.nextLine();
         if (options.containsKey(Option.VERBOSE)) {
-            printHeader(Vocabulary.Keys.Details);
-            out.println();
             final WKTFormat f = new WKTFormat(locale, timezone);
             f.setConvention(options.containsKey(Option.DEBUG) ? Convention.INTERNAL : convention);
             if (colors) {
                 f.setColors(Colors.DEFAULT);
             }
-            for (final CharSequence line : CharSequences.splitOnEOL(f.format(operation.getMathTransform()))) {
-                printCommentLinePrefix();
-                out.print("  ");
-                out.println(line);
+            final CharSequence[] lines = CharSequences.splitOnEOL(f.format(operation.getMathTransform()));
+            for (int i=0; i<lines.length; i++) {
+                if (i == 0) {
+                    printHeader(Vocabulary.Keys.Details);
+                } else {
+                    printCommentLinePrefix();
+                    outHeader.nextColumn();
+                }
+                outHeader.append(lines[i]);
+                outHeader.nextLine();
             }
         }
         double accuracy = CRS.getLinearAccuracy(operation);
@@ -210,14 +226,17 @@ final class TransformCommand extends MetadataCommand {
             }
             printHeader(Vocabulary.Keys.Accuracy);
             if (colors) {
-                out.print(X364.FOREGROUND_YELLOW.sequence());       // Same as Colors.DEFAULT for ElementKind.NUMBER
+                outHeader.append(X364.FOREGROUND_YELLOW.sequence());    // Same as Colors.DEFAULT for ElementKind.NUMBER
             }
-            out.print(accuracy);
+            outHeader.append(Double.toString(accuracy));
             if (colors) {
-                out.print(X364.FOREGROUND_DEFAULT.sequence());
+                outHeader.append(X364.FOREGROUND_DEFAULT.sequence());
             }
-            out.println(" metres");
+            outHeader.append(" metres");
+            outHeader.nextLine();
         }
+        outHeader.flush();
+        outHeader = null;
         /*
          * At this point we finished to write the header. If there is at least one input file,
          * compute the transformation needed for verifying if the input points are inside the
@@ -226,7 +245,7 @@ final class TransformCommand extends MetadataCommand {
         final boolean useStandardInput = useStandardInput();
         if (useStandardInput || !files.isEmpty()) {
             computeDomainOfValidity();
-            ordinateWidth    = 14;                                      // Must be set before computeNumFractionDigits(…).
+            ordinateWidth    = 15;                                      // Must be set before computeNumFractionDigits(…).
             coordinateFormat = NumberFormat.getInstance(Locale.US);
             coordinateFormat.setGroupingUsed(false);
             computeNumFractionDigits(operation.getTargetCRS().getCoordinateSystem());
@@ -234,7 +253,7 @@ final class TransformCommand extends MetadataCommand {
             printAxes(operation.getTargetCRS().getCoordinateSystem());
             out.println();
             if (useStandardInput) {
-                final LineNumberReader in = new LineNumberReader(new InputStreamReader(System.in));
+                final LineNumberReader in = new LineNumberReader(new InputStreamReader(System.in, encoding));
                 try {
                     transform(in, "stdin");
                 } finally {
@@ -242,7 +261,7 @@ final class TransformCommand extends MetadataCommand {
                 }
             } else {
                 for (final String file : files) {
-                    final LineNumberReader in = new LineNumberReader(new FileReader(file));
+                    final LineNumberReader in = new LineNumberReader(new InputStreamReader(new FileInputStream(file), encoding));
                     try {
                         transform(in, file);
                     } finally {
@@ -261,11 +280,11 @@ final class TransformCommand extends MetadataCommand {
      */
     private void printCommentLinePrefix() {
         if (colors) {
-            out.print(X364.FOREGROUND_GRAY.sequence());
+            outHeader.append(X364.FOREGROUND_GRAY.sequence());
         }
-        out.print("# ");
+        outHeader.append("# ");
         if (colors) {
-            out.print(X364.FOREGROUND_DEFAULT.sequence());
+            outHeader.append(X364.FOREGROUND_DEFAULT.sequence());
         }
     }
 
@@ -277,29 +296,29 @@ final class TransformCommand extends MetadataCommand {
      */
     private void printHeader(final short key) {
         printCommentLinePrefix();
-        out.print(resources.getLabel(key));
-        out.print(' ');
+        outHeader.append(resources.getLabel(key));
+        outHeader.nextColumn();
     }
 
     /**
      * Prints the name and authority code (if any) of the given object.
      */
     private void printNameAndIdentifier(final IdentifiedObject object) {
-        out.print(object.getName().getCode());
+        outHeader.append(object.getName().getCode());
         final String identifier = IdentifiedObjects.toString(IdentifiedObjects.getIdentifier(object, null));
         if (identifier != null) {
-            out.print(' ');
+            outHeader.append(' ');
             if (colors) {
-                out.print(X364.FOREGROUND_CYAN.sequence());
+                outHeader.append(X364.FOREGROUND_CYAN.sequence());
             }
-            out.print('(');
-            out.print(identifier);
-            out.print(')');
+            outHeader.append('(');
+            outHeader.append(identifier);
+            outHeader.append(')');
             if (colors) {
-                out.print(X364.FOREGROUND_DEFAULT.sequence());
+                outHeader.append(X364.FOREGROUND_DEFAULT.sequence());
             }
         }
-        out.println();
+        outHeader.nextLine();
     }
 
     /**
@@ -319,14 +338,14 @@ final class TransformCommand extends MetadataCommand {
         } else if (step instanceof SingleOperation) {
             if (isNext) {
                 if (colors) {
-                    out.print(X364.FOREGROUND_GREEN.sequence());
+                    outHeader.append(X364.FOREGROUND_GREEN.sequence());
                 }
-                out.print(" → ");
+                outHeader.append(" → ");
                 if (colors) {
-                    out.print(X364.FOREGROUND_DEFAULT.sequence());
+                    outHeader.append(X364.FOREGROUND_DEFAULT.sequence());
                 }
             }
-            out.print(((SingleOperation) step).getMethod().getName().getCode());
+            outHeader.append(((SingleOperation) step).getMethod().getName().getCode());
         }
     }
 
@@ -334,16 +353,21 @@ final class TransformCommand extends MetadataCommand {
      * Prints a quoted text in the given color.
      * If the given text contains the quote character, it will be escaped.
      */
-    private void printQuotedText(final String text, final X364 color) {
-        if (colors) {
-            out.print(color.sequence());
+    private void printQuotedText(String text, int fieldWidth, final X364 color) {
+        final boolean quoted;
+        if (text.indexOf('"') >= 0) {
+            text = text.replace("\"", "\"\"");
+            quoted = true;
+        } else {
+            quoted = (text.indexOf(',') >= 0);
         }
-        out.print('"');
-        out.print(text.replace("\"", "\"\""));
-        out.print('"');
-        if (colors) {
-            out.print(X364.FOREGROUND_DEFAULT.sequence());
-        }
+        if (quoted) fieldWidth -= 2;
+        out.print(CharSequences.spaces(fieldWidth - text.length()));
+        if (colors) out.print(color.sequence());
+        if (quoted) out.print('"');
+        out.print(text);
+        if (quoted) out.print('"');
+        if (colors) out.print(X364.FOREGROUND_DEFAULT.sequence());
     }
 
     /*
@@ -359,9 +383,14 @@ final class TransformCommand extends MetadataCommand {
             if (i != 0) {
                 out.print(',');
             }
-            final String axis = cs.getAxis(i).getName().getCode();
-            out.print(CharSequences.spaces(ordinateWidth - (axis.length() + 2)));
-            printQuotedText(axis, X364.FOREGROUND_CYAN);
+            final CoordinateSystemAxis axis = cs.getAxis(i);
+            String name =  axis.getName().getCode();
+            name = Transliterator.DEFAULT.toShortAxisName(cs, axis.getDirection(), name);
+            final String unit = PatchedUnitFormat.toString(axis.getUnit());
+            if (unit != null && !unit.isEmpty()) {
+                name = name + " (" + unit + ')';
+            }
+            printQuotedText(name, ordinateWidth, X364.FOREGROUND_CYAN);
         }
     }
 
@@ -482,7 +511,7 @@ final class TransformCommand extends MetadataCommand {
                         }
                         if (!inside) {
                             out.print(",    ");
-                            printQuotedText(Errors.getResources(locale).getString(Errors.Keys.OutsideDomainOfValidity), X364.FOREGROUND_RED);
+                            printQuotedText(Errors.getResources(locale).getString(Errors.Keys.OutsideDomainOfValidity), 0, X364.FOREGROUND_RED);
                         }
                     }
                     out.println();
