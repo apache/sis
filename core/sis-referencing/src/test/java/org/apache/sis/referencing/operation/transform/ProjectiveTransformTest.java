@@ -29,9 +29,9 @@ import org.apache.sis.parameter.Parameterized;
 
 // Test imports
 import org.opengis.test.Validators;
+import org.apache.sis.test.TestRunner;
 import org.apache.sis.test.DependsOn;
 import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
 import org.junit.After;
 import org.junit.Test;
 import static org.opengis.test.Assert.*;
@@ -51,7 +51,7 @@ import org.opengis.test.referencing.AffineTransformTest;
  * @version 0.7
  * @module
  */
-@RunWith(JUnit4.class)
+@RunWith(TestRunner.class)
 @DependsOn({AbstractMathTransformTest.class, ScaleTransformTest.class})
 public strictfp class ProjectiveTransformTest extends AffineTransformTest {
     /**
