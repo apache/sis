@@ -49,9 +49,9 @@ import org.apache.sis.io.wkt.Convention;
 
 // Test dependencies
 import org.opengis.test.referencing.ObjectFactoryTest;
+import org.apache.sis.test.TestRunner;
 import org.apache.sis.test.DependsOn;
 import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -67,7 +67,7 @@ import static org.apache.sis.test.MetadataAssert.*;
  * @version 0.7
  * @module
  */
-@RunWith(JUnit4.class)
+@RunWith(TestRunner.class)
 @DependsOn({
     org.apache.sis.referencing.crs.DefaultGeocentricCRSTest.class,
     org.apache.sis.referencing.crs.DefaultGeographicCRSTest.class,

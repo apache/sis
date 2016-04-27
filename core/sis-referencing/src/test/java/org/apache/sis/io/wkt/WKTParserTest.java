@@ -23,11 +23,11 @@ import org.opengis.referencing.datum.VerticalDatumType;
 import org.opengis.util.FactoryException;
 import org.opengis.test.wkt.CRSParserTest;
 import org.apache.sis.internal.metadata.AxisNames;
+import org.apache.sis.test.TestRunner;
 import org.apache.sis.test.DependsOn;
 import org.junit.Test;
 import org.junit.Ignore;
 import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
 
 import static org.junit.Assert.*;
 
@@ -41,7 +41,7 @@ import static org.junit.Assert.*;
  * @version 0.7
  * @module
  */
-@RunWith(JUnit4.class)
+@RunWith(TestRunner.class)
 @DependsOn(GeodeticObjectParserTest.class)
 public final strictfp class WKTParserTest extends CRSParserTest {
     /**
