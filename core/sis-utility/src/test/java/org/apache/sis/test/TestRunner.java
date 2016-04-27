@@ -262,21 +262,29 @@ public final class TestRunner extends BlockJUnit4ClassRunner {
      * @param methods The methods to sort.
      */
     private static void sortDependantTestsLast(final FrameworkMethod[] methods) {
-        Set<String> dependencies = null;
+        final Set<String> dependencies = new HashSet<>();
+        int retryCount = methods.length;
         for (int i=methods.length-1; --i>=0;) {
             final FrameworkMethod method = methods[i];
             final DependsOnMethod depend = method.getAnnotation(DependsOnMethod.class);
             if (depend != null) {
-                if (dependencies == null) {
-                    dependencies = new HashSet<>();
-                }
                 dependencies.addAll(Arrays.asList(depend.value()));
                 for (int j=methods.length; --j>i;) {
                     if (dependencies.contains(methods[j].getName())) {
-                        // Found a method j which is a dependency of i. Move i after j.
-                        // The order of other methods relative to j is left unchanged.
+                        /*
+                         * Found a method j which is a dependency of i. Move i after j.
+                         * The order of other methods relative to j is left unchanged.
+                         *
+                         * As a result of this move, maybe some methods between i and j
+                         * need to be revisited. We should restart the iteration from j.
+                         * Over unlimited retries could cause an infinite loop, so we
+                         * arbitrarily limit the amount of time we retry.
+                         */
                         System.arraycopy(methods, i+1, methods, i, j-i);
                         methods[j] = method;
+                        if (--retryCount >= 0) {
+                            i = j;                      // Revisit the methods between i and j.
+                        }
                         break;
                     }
                 }
