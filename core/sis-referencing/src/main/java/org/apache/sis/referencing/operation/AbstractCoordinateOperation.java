@@ -181,11 +181,12 @@ public class AbstractCoordinateOperation extends AbstractIdentifiedObject implem
      * Area in which this operation is valid, or {@code null} if not available.
      *
      * <p><b>Consider this field as final!</b>
-     * This field is modified only at unmarshalling time by {@link #setDomainOfValidity(Extent)}.</p>
+     * This field is non-final only for the convenience of constructors and for initialization
+     * at XML unmarshalling time by {@link #setDomainOfValidity(Extent)}.</p>
      *
      * @see #getDomainOfValidity()
      */
-    private Extent domainOfValidity;
+    Extent domainOfValidity;
 
     /**
      * Description of domain of usage, or limitations of usage, for which this operation is valid.

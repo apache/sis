@@ -18,9 +18,11 @@ package org.apache.sis.referencing.operation;
 
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Collection;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.measure.unit.Unit;
 import org.opengis.metadata.Identifier;
+import org.opengis.metadata.quality.PositionalAccuracy;
 import org.opengis.util.InternationalString;
 import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterValueGroup;
@@ -33,6 +35,7 @@ import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.internal.referencing.SignReversalComment;
 import org.apache.sis.internal.referencing.provider.AbstractProvider;
 import org.apache.sis.metadata.iso.ImmutableIdentifier;
+import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.Deprecable;
 
 
@@ -101,6 +104,26 @@ final class InverseOperationMethod extends DefaultOperationMethod {
             }
         }
         return method;
+    }
+
+    /**
+     * Copies accuracy and domain of validity metadata from the given operation into the given properties map.
+     * We presume that the inverse operation has the same accuracy than the direct operation.
+     *
+     * <div class="note"><b>Note:</b>
+     * in many cases, the inverse operation is numerically less accurate than the direct operation because it
+     * uses approximations like series expansions or iterative methods. However the numerical errors caused by
+     * those approximations are not of interest here, because they are usually much smaller than the inaccuracy
+     * due to the stochastic nature of coordinate transformations (not to be confused with coordinate conversions;
+     * see ISO 19111 for more information).</div>
+     */
+    static void putMetadata(final SingleOperation source, final Map<String,Object> target) {
+        target.put(SingleOperation.DOMAIN_OF_VALIDITY_KEY, source.getDomainOfValidity());
+        final Collection<PositionalAccuracy> accuracy = source.getCoordinateOperationAccuracy();
+        if (!Containers.isNullOrEmpty(accuracy)) {
+            target.put(SingleOperation.COORDINATE_OPERATION_ACCURACY_KEY,
+                    accuracy.toArray(new PositionalAccuracy[accuracy.size()]));
+        }
     }
 
     /**

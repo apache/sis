@@ -24,6 +24,7 @@ import java.util.Collection;
 import java.util.AbstractSet;
 import java.util.LinkedHashMap;
 import java.util.NoSuchElementException;
+import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import org.opengis.util.FactoryException;
@@ -39,6 +40,7 @@ import org.apache.sis.util.resources.Messages;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.collection.CheckedContainer;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.Localized;
 import org.apache.sis.util.Classes;
 
 // Branch-dependent imports
@@ -84,7 +86,7 @@ import java.util.Objects;
  * @version 0.7
  * @module
  */
-public class IdentifiedObjectSet<T extends IdentifiedObject> extends AbstractSet<T> implements CheckedContainer<T> {
+public class IdentifiedObjectSet<T extends IdentifiedObject> extends AbstractSet<T> implements CheckedContainer<T>, Localized {
     /**
      * The map of object codes (keys), and the actual identified objects (values) when they have been created.
      * Each entry has a null value until the corresponding object is created.
@@ -134,6 +136,17 @@ public class IdentifiedObjectSet<T extends IdentifiedObject> extends AbstractSet
         proxy = AuthorityFactoryProxy.getInstance(type);
         this.factory = factory;
         this.type = type;
+    }
+
+    /**
+     * Returns the locale to use for error messages and warnings.
+     * The default implementation inherits the {@link #factory} locale, if any.
+     *
+     * @return The locale, or {@code null} if not explicitly defined.
+     */
+    @Override
+    public Locale getLocale() {
+        return (factory instanceof Localized) ? ((Localized) factory).getLocale() : null;
     }
 
     /**
@@ -286,7 +299,7 @@ public class IdentifiedObjectSet<T extends IdentifiedObject> extends AbstractSet
                 if (!isRecoverableFailure(exception)) {
                     throw new BackingStoreException(exception);
                 }
-                final LogRecord record = Messages.getResources(null).getLogRecord(Level.WARNING,
+                final LogRecord record = Messages.getResources(getLocale()).getLogRecord(Level.WARNING,
                         Messages.Keys.CanNotInstantiateForIdentifier_3, type, code, getCause(exception));
                 record.setLoggerName(Loggers.CRS_FACTORY);
                 Logging.log(IdentifiedObjectSet.class, "createObject", record);
