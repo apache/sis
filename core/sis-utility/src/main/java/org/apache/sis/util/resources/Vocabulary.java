@@ -442,6 +442,11 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final short OperatingSystem = 42;
 
         /**
+         * Operations
+         */
+        public static final short Operations = 112;
+
+        /**
          * Optional
          */
         public static final short Optional = 79;
