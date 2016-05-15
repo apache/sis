@@ -28,9 +28,11 @@ import javax.measure.unit.NonSI;
 import javax.measure.unit.SI;
 import javax.measure.converter.ConversionException;
 import org.opengis.metadata.Metadata;
-import org.opengis.geometry.MismatchedDimensionException;
+import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.extent.GeographicBoundingBox;
+import org.opengis.geometry.MismatchedDimensionException;
 import org.opengis.util.FactoryException;
+import org.opengis.util.InternationalString;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.ReferenceSystem;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
@@ -58,6 +60,7 @@ import org.apache.sis.io.wkt.Colors;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.io.wkt.Transliterator;
 import org.apache.sis.io.wkt.WKTFormat;
+import org.apache.sis.io.wkt.Warnings;
 import org.apache.sis.math.DecimalFunctions;
 import org.apache.sis.math.MathFunctions;
 import org.apache.sis.measure.Units;
@@ -198,39 +201,10 @@ final class TransformCommand extends MetadataCommand {
         printHeader(Vocabulary.Keys.Destination); printNameAndIdentifier(operation.getTargetCRS(), false);
         printHeader(Vocabulary.Keys.Operations);  printOperations (operation, false);
         outHeader.nextLine();
+        printDomainOfValidity(operation.getDomainOfValidity());
+        printAccuracy(CRS.getLinearAccuracy(operation));
         if (options.containsKey(Option.VERBOSE)) {
-            final WKTFormat f = new WKTFormat(locale, timezone);
-            f.setConvention(options.containsKey(Option.DEBUG) ? Convention.INTERNAL : convention);
-            if (colors) {
-                f.setColors(Colors.DEFAULT);
-            }
-            final CharSequence[] lines = CharSequences.splitOnEOL(f.format(operation.getMathTransform()));
-            for (int i=0; i<lines.length; i++) {
-                if (i == 0) {
-                    printHeader(Vocabulary.Keys.Details);
-                } else {
-                    printCommentLinePrefix();
-                    outHeader.nextColumn();
-                }
-                outHeader.append(lines[i]);
-                outHeader.nextLine();
-            }
-        }
-        double accuracy = CRS.getLinearAccuracy(operation);
-        if (accuracy >= 0) {
-            if (accuracy == 0) {
-                accuracy = Formulas.LINEAR_TOLERANCE;
-            }
-            printHeader(Vocabulary.Keys.Accuracy);
-            if (colors) {
-                outHeader.append(X364.FOREGROUND_YELLOW.sequence());    // Same as Colors.DEFAULT for ElementKind.NUMBER
-            }
-            outHeader.append(Double.toString(accuracy));
-            if (colors) {
-                outHeader.append(X364.FOREGROUND_DEFAULT.sequence());
-            }
-            outHeader.append(" metres");
-            outHeader.nextLine();
+            printDetails();
         }
         outHeader.flush();
         outHeader = null;
@@ -351,6 +325,92 @@ final class TransformCommand extends MetadataCommand {
                 printOperations(((PassThroughOperation) step).getOperation(), false);
             } else if (step instanceof SingleOperation) {
                 outHeader.append(((SingleOperation) step).getMethod().getName().getCode());
+            }
+        }
+    }
+
+    /**
+     * Prints the accuracy.
+     */
+    private void printAccuracy(double accuracy) {
+        if (accuracy >= 0) {
+            if (accuracy == 0) {
+                accuracy = Formulas.LINEAR_TOLERANCE;
+            }
+            printHeader(Vocabulary.Keys.Accuracy);
+            if (colors) {
+                outHeader.append(X364.FOREGROUND_YELLOW.sequence());    // Same as Colors.DEFAULT for ElementKind.NUMBER
+            }
+            outHeader.append(Double.toString(accuracy));
+            if (colors) {
+                outHeader.append(X364.FOREGROUND_DEFAULT.sequence());
+            }
+            outHeader.append(" metres");
+            outHeader.nextLine();
+        }
+    }
+
+    /**
+     * Prints a textual description of the domain of validity. This method tries to reduce the string length by
+     * the use of some heuristic rules based on the syntax used in EPSG dataset. For example the following string:
+     *
+     * <blockquote>Canada - onshore and offshore - Alberta; British Columbia (BC); Manitoba; New Brunswick (NB);
+     * Newfoundland and Labrador; Northwest Territories (NWT); Nova Scotia (NS); Nunavut; Ontario; Prince Edward
+     * Island (PEI); Quebec; Saskatchewan; Yukon.</blockquote>
+     *
+     * is replaced by:
+     *
+     * <blockquote>Canada - onshore and offshore</blockquote>
+     */
+    private void printDomainOfValidity(final Extent domain) {
+        if (domain != null) {
+            final InternationalString description = domain.getDescription();
+            if (description != null) {
+                String text = description.toString(locale);
+                if (text.length() >= 80) {
+                    int end = text.indexOf(';');
+                    if (end >= 0) {
+                        int s = text.lastIndexOf('-', end);
+                        if (s >= 0) {
+                            end = s;
+                        }
+                        text = text.substring(0, end).trim();
+                    }
+                }
+                printHeader(Vocabulary.Keys.Domain);
+                outHeader.append(text);
+                outHeader.nextLine();
+            }
+        }
+    }
+
+    /**
+     * Prints the coordinate operation or math transform in Well Known Text format.
+     * This information is printed only if the {@code --verbose} option was specified.
+     */
+    private void printDetails() {
+        final boolean debug = options.containsKey(Option.DEBUG);
+        final WKTFormat f = new WKTFormat(locale, timezone);
+        if (colors) f.setColors(Colors.DEFAULT);
+        f.setConvention(convention);
+        CharSequence[] lines = CharSequences.splitOnEOL(f.format(debug ? operation.getMathTransform() : operation));
+        for (int i=0; i<lines.length; i++) {
+            if (i == 0) {
+                printHeader(Vocabulary.Keys.Details);
+            } else {
+                printCommentLinePrefix();
+                outHeader.nextColumn();
+            }
+            outHeader.append(lines[i]);
+            outHeader.nextLine();
+        }
+        final Warnings warnings = f.getWarnings();
+        if (warnings != null) {
+            lines = CharSequences.splitOnEOL(warnings.toString());
+            if (lines.length != 0) {                                            // Paranoiac check.
+                printHeader(Vocabulary.Keys.Note);
+                outHeader.append(lines[0]);
+                outHeader.nextLine();
             }
         }
     }

@@ -232,6 +232,11 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final short DittoMark = 82;
 
         /**
+         * Domain
+         */
+        public static final short Domain = 113;
+
+        /**
          * Dublin Julian
          */
         public static final short DublinJulian = 17;
@@ -410,6 +415,11 @@ public final class Vocabulary extends IndexedResourceBundle {
          * None
          */
         public static final short None = 91;
+
+        /**
+         * Note
+         */
+        public static final short Note = 114;
 
         /**
          * Number of ‘NaN’
