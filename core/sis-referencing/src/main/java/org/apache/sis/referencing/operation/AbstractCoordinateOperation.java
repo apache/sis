@@ -911,7 +911,11 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
         if (formatter.getConvention().majorVersion() == 1) {
             formatter.setInvalidWKT(this, null);
         }
-        return isComponent ? "CoordinateOperationStep" : WKTKeywords.CoordinateOperation;
+        if (isComponent) {
+            formatter.setInvalidWKT(this, null);
+            return "CoordinateOperationStep";
+        }
+        return WKTKeywords.CoordinateOperation;
     }
 
     /**
