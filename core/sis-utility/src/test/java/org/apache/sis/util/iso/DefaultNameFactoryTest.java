@@ -17,11 +17,11 @@
 package org.apache.sis.util.iso;
 
 import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
 import org.junit.BeforeClass;
 import org.junit.AfterClass;
 import org.opengis.test.util.NameTest;
 import org.apache.sis.test.DependsOn;
+import org.apache.sis.test.TestRunner;
 
 
 /**
@@ -33,7 +33,7 @@ import org.apache.sis.test.DependsOn;
  * @version 0.3
  * @module
  */
-@RunWith(JUnit4.class)
+@RunWith(TestRunner.class)
 @DependsOn(AbstractNameTest.class)
 public final strictfp class DefaultNameFactoryTest extends NameTest {
     /**
