@@ -59,6 +59,15 @@
         <role>developer</role>
       </roles>
     </developer>
+    <developer>
+      <name>Thi Phuong Hao NGUYEN</name>
+      <id>haonguyen</id>
+      <email>nguyenthiphuonghao243@gmail.com</email>
+      <timezone>+7</timezone>
+      <roles>
+        <role>developer</role>
+      </roles>
+    </developer>
   </developers>
   <contributors>
     <contributor>
@@ -67,6 +76,14 @@
       <organization>Geomatys</organization>
       <organizationUrl>http://www.geomatys.com/</organizationUrl>
       <timezone>+1</timezone>
+      <roles>
+        <role>developer</role>
+      </roles>
+    </contributor>
+    <contributor>
+      <name>Minh Chinh VU</name>
+      <email>chinhvm.uet.1995@gmail.com</email>
+      <timezone>+7</timezone>
       <roles>
         <role>developer</role>
       </roles>
@@ -138,6 +155,7 @@
     <module>sis-storage</module>
     <module>sis-shapefile</module>
     <module>sis-netcdf</module>
+    <module>sis-geotiff</module>
     <module>sis-xmlstore</module>
   </modules>
 

@@ -28,7 +28,7 @@
   <parent>
     <groupId>org.apache.sis</groupId>
     <artifactId>storage</artifactId>
-    <version>0.7-SNAPSHOT</version>
+    <version>0.7-jdk8-SNAPSHOT</version>
   </parent>
 
 
@@ -81,7 +81,7 @@ Bridge between GeoTIFF convention and ISO 19115 metadata.
         <role>developer</role>
       </roles>
     </contributor>
-<contributor>
+    <contributor>
       <name>Minh Chinh VU</name>
       <email>chinhvm.uet.1995@gmail.com</email>
       <timezone>+7</timezone>
@@ -102,15 +102,10 @@ Bridge between GeoTIFF convention and ISO 19115 metadata.
         <artifactId>maven-bundle-plugin</artifactId>
         <configuration>
           <instructions>
-            <Bundle-SymbolicName>org.apache.sis.storage.netcdf</Bundle-SymbolicName>
-            <Import-Package>!ucar.*, *</Import-Package>
+            <Bundle-SymbolicName>org.apache.sis.storage.geotiff</Bundle-SymbolicName>
           </instructions>
         </configuration>
       </plugin>
     </plugins>
   </build>
-
-
- 
-
 </project>
