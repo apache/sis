@@ -16,6 +16,9 @@
  */
 package org.apache.sis.console;
 
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Locale;
 import java.io.IOException;
@@ -64,6 +67,7 @@ import org.apache.sis.io.wkt.Warnings;
 import org.apache.sis.math.DecimalFunctions;
 import org.apache.sis.math.MathFunctions;
 import org.apache.sis.measure.Units;
+import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStores;
 import org.apache.sis.storage.DataStoreException;
@@ -89,19 +93,9 @@ final class TransformCommand extends MetadataCommand {
     private CoordinateOperation operation;
 
     /**
-     * The coordinate operation domain of validity.
-     * We use the {@code ImmutableEnvelope} type in order to handle envelope crossing the anti-meridian.
-     *
-     * @see #computeDomainOfValidity()
-     */
-    private ImmutableEnvelope domainOfValidity;
-
-    /**
      * The transformation from source CRS to the domain of validity CRS, or {@code null} if none.
-     *
-     * @see #computeDomainOfValidity()
      */
-    private MathTransform toDomainOfValidityCRS;
+    private MathTransform toDomainOfValidity;
 
     /**
      * Resources for {@link #printHeader(short)}.
@@ -132,6 +126,16 @@ final class TransformCommand extends MetadataCommand {
      * We will switch to scientific notation if the ordinate value to format is greater than this value.
      */
     private double[] thresholdForScientificNotation;
+
+    /**
+     * The error message to report after we transformed all coordinates, or {@code null}.
+     */
+    private String errorMessage;
+
+    /**
+     * The cause of {@link #errorMessage}, or {@code null} if none.
+     */
+    private NumberFormatException errorCause;
 
     /**
      * Creates the {@code "transform"} sub-command.
@@ -191,7 +195,38 @@ final class TransformCommand extends MetadataCommand {
             final String format = outputFormat.name();
             throw new InvalidOptionException(Errors.format(Errors.Keys.IncompatibleFormat_2, "transform", format), format);
         }
-        operation = CRS.findOperation(fetchCRS(Option.SOURCE_CRS), fetchCRS(Option.TARGET_CRS), null);
+        final CoordinateReferenceSystem sourceCRS = fetchCRS(Option.SOURCE_CRS);
+        final CoordinateReferenceSystem targetCRS = fetchCRS(Option.TARGET_CRS);
+        /*
+         * Read all coordinates, so we can compute the area of interest.
+         * This will be used when searching for a coordinate operation.
+         */
+        GeographicBoundingBox areaOfInterest = null;
+        List<double[]> points = Collections.emptyList();
+        final boolean useStandardInput = useStandardInput();
+        if (useStandardInput || !files.isEmpty()) {
+            if (useStandardInput) {
+                try (LineNumberReader in = new LineNumberReader(new InputStreamReader(System.in, encoding))) {
+                    points = readCoordinates(in, "stdin");
+                }
+            } else {
+                for (final String file : files) {
+                    try (LineNumberReader in = new LineNumberReader(new InputStreamReader(new FileInputStream(file), encoding))) {
+                        points = readCoordinates(in, file);
+                    }
+                }
+            }
+            try {
+                final GeographicCRS domainOfValidityCRS = ReferencingUtilities.toNormalizedGeographicCRS(sourceCRS);
+                if (domainOfValidityCRS != null) {
+                    toDomainOfValidity = CRS.findOperation(sourceCRS, domainOfValidityCRS, null).getMathTransform();
+                    areaOfInterest = computeAreaOfInterest(points);
+                }
+            } catch (FactoryException e) {
+                warning(e);
+            }
+        }
+        operation = CRS.findOperation(sourceCRS, targetCRS, areaOfInterest);
         /*
          * Prints the header: source CRS, target CRS, operation steps and positional accuracy.
          */
@@ -210,12 +245,9 @@ final class TransformCommand extends MetadataCommand {
         outHeader = null;
         /*
          * At this point we finished to write the header. If there is at least one input file,
-         * compute the transformation needed for verifying if the input points are inside the
-         * domain of validity. Next we can perform the actual coordinate operations.
+         * compute the number of digits to format and perform the actual coordinate operations.
          */
-        final boolean useStandardInput = useStandardInput();
-        if (useStandardInput || !files.isEmpty()) {
-            computeDomainOfValidity();
+        if (!points.isEmpty()) {
             ordinateWidth    = 15;                                      // Must be set before computeNumFractionDigits(…).
             coordinateFormat = NumberFormat.getInstance(Locale.US);
             coordinateFormat.setGroupingUsed(false);
@@ -223,16 +255,9 @@ final class TransformCommand extends MetadataCommand {
             out.println();
             printAxes(operation.getTargetCRS().getCoordinateSystem());
             out.println();
-            if (useStandardInput) {
-                try (LineNumberReader in = new LineNumberReader(new InputStreamReader(System.in, encoding))) {
-                    transform(in, "stdin");
-                }
-            } else {
-                for (final String file : files) {
-                    try (LineNumberReader in = new LineNumberReader(new InputStreamReader(new FileInputStream(file), encoding))) {
-                        transform(in, file);
-                    }
-                }
+            transform(points);
+            if (errorMessage != null) {
+                error(errorMessage, errorCause);
             }
         }
         return 0;
@@ -492,99 +517,133 @@ final class TransformCommand extends MetadataCommand {
     }
 
     /**
-     * Computes the domain validity. This method is a "all or nothing" operation; if the domain of validity
-     * can not be computed, then {@link #toDomainOfValidityCRS} and {@link #domainOfValidity} stay {@code null}.
-     */
-    private void computeDomainOfValidity() {
-        final GeographicBoundingBox bbox = CRS.getGeographicBoundingBox(operation);
-        if (bbox != null) {
-            final GeographicCRS domainOfValidityCRS = ReferencingUtilities.toNormalizedGeographicCRS(operation.getSourceCRS());
-            if (domainOfValidityCRS != null) try {
-                toDomainOfValidityCRS = CRS.findOperation(operation.getSourceCRS(), domainOfValidityCRS, null).getMathTransform();
-                domainOfValidity = new ImmutableEnvelope(bbox);
-            } catch (FactoryException e) {
-                warning(e);
-            }
-        }
-    }
-
-    /**
-     * Transforms the coordinates read from the given stream.
+     * Reads all coordinates.
      * This method ignores empty and comment lines.
      *
      * @param  in        the stream from where to read coordinates.
      * @param  filename  the filename, for error reporting only.
-     * @return the errors that occurred during transformation.
+     * @return the coordinate values.
      */
-    private void transform(final LineNumberReader in, final String filename) throws IOException {
-        final int dimension    = operation.getSourceCRS().getCoordinateSystem().getDimension();
-        final MathTransform mt = operation.getMathTransform();
-        final double[] result  = new double[mt.getTargetDimensions()];
-        final double[] domainCoordinate;
-        final DirectPositionView positionInDomain;
-        if (toDomainOfValidityCRS != null) {
-            domainCoordinate = new double[toDomainOfValidityCRS.getTargetDimensions()];
-            positionInDomain = new DirectPositionView(domainCoordinate, 0, domainCoordinate.length);
-        } else {
-            domainCoordinate = null;
-            positionInDomain = null;
-        }
+    private List<double[]> readCoordinates(final LineNumberReader in, final String filename) throws IOException {
+        final List<double[]> points = new ArrayList<>();
         try {
             String line;
             while ((line = in.readLine()) != null) {
                 final int start = CharSequences.skipLeadingWhitespaces(line, 0, line.length());
                 if (start < line.length() && line.charAt(start) != '#') {
-                    final double[] coordinates = CharSequences.parseDoubles(line, ',');
-                    if (coordinates.length != dimension) {
-                        throw new MismatchedDimensionException(Errors.format(Errors.Keys.MismatchedDimensionForCRS_3,
-                                    operation.getSourceCRS().getName().getCode(), dimension, coordinates.length));
-                    }
-                    /*
-                     * At this point we got the coordinates and they have the expected number of dimensions.
-                     * Now perform the coordinate operation and print each ordinate values.  We will switch
-                     * to scientific notation if the coordinate is much larger than expected.
-                     */
-                    mt.transform(coordinates, 0, result, 0, 1);
-                    for (int i=0; i<result.length; i++) {
-                        if (i != 0) {
-                            out.print(',');
-                        }
-                        final double value = result[i];
-                        final String s;
-                        if (Math.abs(value) >= thresholdForScientificNotation[i]) {
-                            s = Double.toString(value);
-                        } else {
-                            coordinateFormat.setMinimumFractionDigits(numFractionDigits[i]);
-                            coordinateFormat.setMaximumFractionDigits(numFractionDigits[i]);
-                            s = coordinateFormat.format(value);
-                        }
-                        out.print(CharSequences.spaces(ordinateWidth - s.length()));
-                        out.print(s);
-                    }
-                    /*
-                     * Append a warning after the transformed coordinate values if the source coordinate was outside
-                     * the domain of validity. A failure to perform a coordinate transformation is also considered as
-                     * being out of the domain of valididty.
-                     */
-                    if (domainCoordinate != null) {
-                        boolean inside;
-                        try {
-                            toDomainOfValidityCRS.transform(coordinates, 0, domainCoordinate, 0, 1);
-                            inside = domainOfValidity.contains(positionInDomain);
-                        } catch (TransformException e) {
-                            inside = false;
-                            warning(e);
-                        }
-                        if (!inside) {
-                            out.print(",    ");
-                            printQuotedText(Errors.getResources(locale).getString(Errors.Keys.OutsideDomainOfValidity), 0, X364.FOREGROUND_RED);
-                        }
-                    }
-                    out.println();
+                    points.add(CharSequences.parseDoubles(line, ','));
                 }
             }
-        } catch (NumberFormatException | MismatchedDimensionException | TransformException e) {
-            error(Errors.format(Errors.Keys.ErrorInFileAtLine_2, filename, in.getLineNumber()), e);
+        } catch (NumberFormatException e) {
+            errorMessage = Errors.format(Errors.Keys.ErrorInFileAtLine_2, filename, in.getLineNumber());
+            errorCause = e;
+        }
+        return points;
+    }
+
+    /**
+     * Computes the geographic area of interest from the given points.
+     * This method ignores the points having an unexpected number of dimensions since it is not this
+     * method's job to report those issues (they will be reported by {@link #transform(List)} instead.
+     */
+    private GeographicBoundingBox computeAreaOfInterest(final List<double[]> points) {
+        final int dimension = toDomainOfValidity.getSourceDimensions();
+        final double[] domainCoordinate = new double[toDomainOfValidity.getTargetDimensions()];
+        if (domainCoordinate.length >= 2) {
+            double xmin = Double.POSITIVE_INFINITY;
+            double ymin = Double.POSITIVE_INFINITY;
+            double xmax = Double.NEGATIVE_INFINITY;
+            double ymax = Double.NEGATIVE_INFINITY;
+            for (final double[] coordinates : points) {
+                if (coordinates.length == dimension) {
+                    try {
+                        toDomainOfValidity.transform(coordinates, 0, domainCoordinate, 0, 1);
+                    } catch (TransformException e) {
+                        warning(e);
+                        continue;
+                    }
+                    final double x = domainCoordinate[0];
+                    final double y = domainCoordinate[1];
+                    if (x < xmin) xmin = x;
+                    if (x > xmax) xmax = x;
+                    if (y < ymin) ymin = y;
+                    if (y > ymax) ymax = y;
+                }
+            }
+            if (xmin < xmax && ymin < ymax) {
+                return new DefaultGeographicBoundingBox(xmin, xmax, ymin, ymax);
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Transforms the given coordinates.
+     */
+    private void transform(final List<double[]> points) throws TransformException {
+        final int dimension    = operation.getSourceCRS().getCoordinateSystem().getDimension();
+        final MathTransform mt = operation.getMathTransform();
+        final double[] result  = new double[mt.getTargetDimensions()];
+        final double[] domainCoordinate;
+        final DirectPositionView positionInDomain;
+        final ImmutableEnvelope domainOfValidity;
+        final GeographicBoundingBox bbox;
+        if (toDomainOfValidity != null && (bbox = CRS.getGeographicBoundingBox(operation)) != null) {
+            domainOfValidity = new ImmutableEnvelope(bbox);
+            domainCoordinate = new double[toDomainOfValidity.getTargetDimensions()];
+            positionInDomain = new DirectPositionView(domainCoordinate, 0, domainCoordinate.length);
+        } else {
+            domainOfValidity = null;
+            domainCoordinate = null;
+            positionInDomain = null;
+        }
+        for (final double[] coordinates : points) {
+            if (coordinates.length != dimension) {
+                throw new MismatchedDimensionException(Errors.format(Errors.Keys.MismatchedDimensionForCRS_3,
+                            operation.getSourceCRS().getName().getCode(), dimension, coordinates.length));
+            }
+            /*
+             * At this point we got the coordinates and they have the expected number of dimensions.
+             * Now perform the coordinate operation and print each ordinate values.  We will switch
+             * to scientific notation if the coordinate is much larger than expected.
+             */
+            mt.transform(coordinates, 0, result, 0, 1);
+            for (int i=0; i<result.length; i++) {
+                if (i != 0) {
+                    out.print(',');
+                }
+                final double value = result[i];
+                final String s;
+                if (Math.abs(value) >= thresholdForScientificNotation[i]) {
+                    s = Double.toString(value);
+                } else {
+                    coordinateFormat.setMinimumFractionDigits(numFractionDigits[i]);
+                    coordinateFormat.setMaximumFractionDigits(numFractionDigits[i]);
+                    s = coordinateFormat.format(value);
+                }
+                out.print(CharSequences.spaces(ordinateWidth - s.length()));
+                out.print(s);
+            }
+            /*
+             * Append a warning after the transformed coordinate values if the source coordinate was outside
+             * the domain of validity. A failure to perform a coordinate transformation is also considered as
+             * being out of the domain of valididty.
+             */
+            if (domainOfValidity != null) {
+                boolean inside;
+                try {
+                    toDomainOfValidity.transform(coordinates, 0, domainCoordinate, 0, 1);
+                    inside = domainOfValidity.contains(positionInDomain);
+                } catch (TransformException e) {
+                    inside = false;
+                    warning(e);
+                }
+                if (!inside) {
+                    out.print(",    ");
+                    printQuotedText(Errors.getResources(locale).getString(Errors.Keys.OutsideDomainOfValidity), 0, X364.FOREGROUND_RED);
+                }
+            }
+            out.println();
         }
     }
 
