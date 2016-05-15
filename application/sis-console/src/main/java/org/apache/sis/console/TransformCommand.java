@@ -16,6 +16,9 @@
  */
 package org.apache.sis.console;
 
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Locale;
 import java.io.IOException;
@@ -28,9 +31,11 @@ import javax.measure.unit.NonSI;
 import javax.measure.unit.SI;
 import javax.measure.converter.ConversionException;
 import org.opengis.metadata.Metadata;
-import org.opengis.geometry.MismatchedDimensionException;
+import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.extent.GeographicBoundingBox;
+import org.opengis.geometry.MismatchedDimensionException;
 import org.opengis.util.FactoryException;
+import org.opengis.util.InternationalString;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.ReferenceSystem;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
@@ -58,9 +63,11 @@ import org.apache.sis.io.wkt.Colors;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.io.wkt.Transliterator;
 import org.apache.sis.io.wkt.WKTFormat;
+import org.apache.sis.io.wkt.Warnings;
 import org.apache.sis.math.DecimalFunctions;
 import org.apache.sis.math.MathFunctions;
 import org.apache.sis.measure.Units;
+import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStores;
 import org.apache.sis.storage.DataStoreException;
@@ -86,19 +93,9 @@ final class TransformCommand extends MetadataCommand {
     private CoordinateOperation operation;
 
     /**
-     * The coordinate operation domain of validity.
-     * We use the {@code ImmutableEnvelope} type in order to handle envelope crossing the anti-meridian.
-     *
-     * @see #computeDomainOfValidity()
-     */
-    private ImmutableEnvelope domainOfValidity;
-
-    /**
      * The transformation from source CRS to the domain of validity CRS, or {@code null} if none.
-     *
-     * @see #computeDomainOfValidity()
      */
-    private MathTransform toDomainOfValidityCRS;
+    private MathTransform toDomainOfValidity;
 
     /**
      * Resources for {@link #printHeader(short)}.
@@ -129,6 +126,16 @@ final class TransformCommand extends MetadataCommand {
      * We will switch to scientific notation if the ordinate value to format is greater than this value.
      */
     private double[] thresholdForScientificNotation;
+
+    /**
+     * The error message to report after we transformed all coordinates, or {@code null}.
+     */
+    private String errorMessage;
+
+    /**
+     * The cause of {@link #errorMessage}, or {@code null} if none.
+     */
+    private NumberFormatException errorCause;
 
     /**
      * Creates the {@code "transform"} sub-command.
@@ -191,60 +198,65 @@ final class TransformCommand extends MetadataCommand {
             final String format = outputFormat.name();
             throw new InvalidOptionException(Errors.format(Errors.Keys.IncompatibleFormat_2, "transform", format), format);
         }
-        operation = CRS.findOperation(fetchCRS(Option.SOURCE_CRS), fetchCRS(Option.TARGET_CRS), null);
+        final CoordinateReferenceSystem sourceCRS = fetchCRS(Option.SOURCE_CRS);
+        final CoordinateReferenceSystem targetCRS = fetchCRS(Option.TARGET_CRS);
+        /*
+         * Read all coordinates, so we can compute the area of interest.
+         * This will be used when searching for a coordinate operation.
+         */
+        GeographicBoundingBox areaOfInterest = null;
+        List<double[]> points = Collections.emptyList();
+        final boolean useStandardInput = useStandardInput();
+        if (useStandardInput || !files.isEmpty()) {
+            if (useStandardInput) {
+                LineNumberReader in = new LineNumberReader(new InputStreamReader(System.in, encoding));
+                try {
+                    points = readCoordinates(in, "stdin");
+                } finally {
+                    in.close();
+                }
+            } else {
+                for (final String file : files) {
+                    LineNumberReader in = new LineNumberReader(new InputStreamReader(new FileInputStream(file), encoding));
+                    try {
+                        points = readCoordinates(in, file);
+                    } finally {
+                        in.close();
+                    }
+                }
+            }
+            try {
+                final GeographicCRS domainOfValidityCRS = ReferencingUtilities.toNormalizedGeographicCRS(sourceCRS);
+                if (domainOfValidityCRS != null) {
+                    toDomainOfValidity = CRS.findOperation(sourceCRS, domainOfValidityCRS, null).getMathTransform();
+                    areaOfInterest = computeAreaOfInterest(points);
+                }
+            } catch (FactoryException e) {
+                warning(e);
+            }
+        }
+        operation = CRS.findOperation(sourceCRS, targetCRS, areaOfInterest);
         /*
          * Prints the header: source CRS, target CRS, operation steps and positional accuracy.
          */
         outHeader = new TableAppender(new LineAppender(out), " ");
         outHeader.setMultiLinesCells(true);
-        printHeader(Vocabulary.Keys.Source);      printNameAndIdentifier(operation.getSourceCRS());
-        printHeader(Vocabulary.Keys.Destination); printNameAndIdentifier(operation.getTargetCRS());
-        printHeader(Vocabulary.Keys.Methods);     printOperationMethods (operation, false);
+        printHeader(Vocabulary.Keys.Source);      printNameAndIdentifier(operation.getSourceCRS(), false);
+        printHeader(Vocabulary.Keys.Destination); printNameAndIdentifier(operation.getTargetCRS(), false);
+        printHeader(Vocabulary.Keys.Operations);  printOperations (operation, false);
         outHeader.nextLine();
+        printDomainOfValidity(operation.getDomainOfValidity());
+        printAccuracy(CRS.getLinearAccuracy(operation));
         if (options.containsKey(Option.VERBOSE)) {
-            final WKTFormat f = new WKTFormat(locale, timezone);
-            f.setConvention(options.containsKey(Option.DEBUG) ? Convention.INTERNAL : convention);
-            if (colors) {
-                f.setColors(Colors.DEFAULT);
-            }
-            final CharSequence[] lines = CharSequences.splitOnEOL(f.format(operation.getMathTransform()));
-            for (int i=0; i<lines.length; i++) {
-                if (i == 0) {
-                    printHeader(Vocabulary.Keys.Details);
-                } else {
-                    printCommentLinePrefix();
-                    outHeader.nextColumn();
-                }
-                outHeader.append(lines[i]);
-                outHeader.nextLine();
-            }
-        }
-        double accuracy = CRS.getLinearAccuracy(operation);
-        if (accuracy >= 0) {
-            if (accuracy == 0) {
-                accuracy = Formulas.LINEAR_TOLERANCE;
-            }
-            printHeader(Vocabulary.Keys.Accuracy);
-            if (colors) {
-                outHeader.append(X364.FOREGROUND_YELLOW.sequence());    // Same as Colors.DEFAULT for ElementKind.NUMBER
-            }
-            outHeader.append(Double.toString(accuracy));
-            if (colors) {
-                outHeader.append(X364.FOREGROUND_DEFAULT.sequence());
-            }
-            outHeader.append(" metres");
-            outHeader.nextLine();
+            printDetails();
         }
         outHeader.flush();
         outHeader = null;
         /*
          * At this point we finished to write the header. If there is at least one input file,
-         * compute the transformation needed for verifying if the input points are inside the
-         * domain of validity. Next we can perform the actual coordinate operations.
+         * compute the number of digits to format and perform the actual coordinate operations.
          */
-        final boolean useStandardInput = useStandardInput();
-        if (useStandardInput || !files.isEmpty()) {
-            computeDomainOfValidity();
+        if (!points.isEmpty()) {
             ordinateWidth    = 15;                                      // Must be set before computeNumFractionDigits(…).
             coordinateFormat = NumberFormat.getInstance(Locale.US);
             coordinateFormat.setGroupingUsed(false);
@@ -252,22 +264,9 @@ final class TransformCommand extends MetadataCommand {
             out.println();
             printAxes(operation.getTargetCRS().getCoordinateSystem());
             out.println();
-            if (useStandardInput) {
-                final LineNumberReader in = new LineNumberReader(new InputStreamReader(System.in, encoding));
-                try {
-                    transform(in, "stdin");
-                } finally {
-                    in.close();
-                }
-            } else {
-                for (final String file : files) {
-                    final LineNumberReader in = new LineNumberReader(new InputStreamReader(new FileInputStream(file), encoding));
-                    try {
-                        transform(in, file);
-                    } finally {
-                        in.close();
-                    }
-                }
+            transform(points);
+            if (errorMessage != null) {
+                error(errorMessage, errorCause);
             }
         }
         return 0;
@@ -302,10 +301,17 @@ final class TransformCommand extends MetadataCommand {
 
     /**
      * Prints the name and authority code (if any) of the given object.
+     *
+     * @param  object      the object for which to print name and identifier.
+     * @param  idRequired  {@code true} for printing the name only if an identifier is present.
+     * @return whether this method has printed something.
      */
-    private void printNameAndIdentifier(final IdentifiedObject object) {
-        outHeader.append(object.getName().getCode());
+    private boolean printNameAndIdentifier(final IdentifiedObject object, final boolean idRequired) {
         final String identifier = IdentifiedObjects.toString(IdentifiedObjects.getIdentifier(object, null));
+        if (idRequired && identifier == null) {
+            return false;
+        }
+        outHeader.append(object.getName().getCode());
         if (identifier != null) {
             outHeader.append(' ');
             if (colors) {
@@ -318,34 +324,128 @@ final class TransformCommand extends MetadataCommand {
                 outHeader.append(X364.FOREGROUND_DEFAULT.sequence());
             }
         }
-        outHeader.nextLine();
+        if (!idRequired) {
+            outHeader.nextLine();
+        }
+        return true;
     }
 
     /**
-     * Prints a summary (currently only the operation method) of the given coordinate operation as a list item.
-     * The list will contain many items if the given operation is a concatenated operation.
+     * Prints a summary of the given coordinate operation as a sequence of steps.
+     * If the operations is specified by EPSG, prints the EPSG name and code.
+     * Otherwise prints only the operation method names, since the coordinate operation names
+     * generated by SIS are not very meaningful.
      *
-     * @param step  the coordinate operation to print as a list of steps.
+     * @param step  the coordinate operation to print as a sequence of steps.
      */
-    private void printOperationMethods(final CoordinateOperation step, boolean isNext) {
-        if (step instanceof ConcatenatedOperation) {
-            for (final CoordinateOperation op : ((ConcatenatedOperation) step).getOperations()) {
-                printOperationMethods(op, isNext);
-                isNext = true;
+    private void printOperations(final CoordinateOperation step, boolean isNext) {
+        if (isNext) {
+            isNext = false;
+            if (colors) {
+                outHeader.append(X364.FOREGROUND_GREEN.sequence());
             }
-        } else if (step instanceof PassThroughOperation) {
-            printOperationMethods(((PassThroughOperation) step).getOperation(), isNext);
-        } else if (step instanceof SingleOperation) {
-            if (isNext) {
-                if (colors) {
-                    outHeader.append(X364.FOREGROUND_GREEN.sequence());
-                }
-                outHeader.append(" → ");
-                if (colors) {
-                    outHeader.append(X364.FOREGROUND_DEFAULT.sequence());
-                }
+            outHeader.append(" → ");
+            if (colors) {
+                outHeader.append(X364.FOREGROUND_DEFAULT.sequence());
             }
-            outHeader.append(((SingleOperation) step).getMethod().getName().getCode());
+        }
+        if (!printNameAndIdentifier(step, true)) {
+            if (step instanceof ConcatenatedOperation) {
+                for (final CoordinateOperation op : ((ConcatenatedOperation) step).getOperations()) {
+                    printOperations(op, isNext);
+                    isNext = true;
+                }
+            } else if (step instanceof PassThroughOperation) {
+                printOperations(((PassThroughOperation) step).getOperation(), false);
+            } else if (step instanceof SingleOperation) {
+                outHeader.append(((SingleOperation) step).getMethod().getName().getCode());
+            }
+        }
+    }
+
+    /**
+     * Prints the accuracy.
+     */
+    private void printAccuracy(double accuracy) {
+        if (accuracy >= 0) {
+            if (accuracy == 0) {
+                accuracy = Formulas.LINEAR_TOLERANCE;
+            }
+            printHeader(Vocabulary.Keys.Accuracy);
+            if (colors) {
+                outHeader.append(X364.FOREGROUND_YELLOW.sequence());    // Same as Colors.DEFAULT for ElementKind.NUMBER
+            }
+            outHeader.append(Double.toString(accuracy));
+            if (colors) {
+                outHeader.append(X364.FOREGROUND_DEFAULT.sequence());
+            }
+            outHeader.append(" metres");
+            outHeader.nextLine();
+        }
+    }
+
+    /**
+     * Prints a textual description of the domain of validity. This method tries to reduce the string length by
+     * the use of some heuristic rules based on the syntax used in EPSG dataset. For example the following string:
+     *
+     * <blockquote>Canada - onshore and offshore - Alberta; British Columbia (BC); Manitoba; New Brunswick (NB);
+     * Newfoundland and Labrador; Northwest Territories (NWT); Nova Scotia (NS); Nunavut; Ontario; Prince Edward
+     * Island (PEI); Quebec; Saskatchewan; Yukon.</blockquote>
+     *
+     * is replaced by:
+     *
+     * <blockquote>Canada - onshore and offshore</blockquote>
+     */
+    private void printDomainOfValidity(final Extent domain) {
+        if (domain != null) {
+            final InternationalString description = domain.getDescription();
+            if (description != null) {
+                String text = description.toString(locale);
+                if (text.length() >= 80) {
+                    int end = text.indexOf(';');
+                    if (end >= 0) {
+                        int s = text.lastIndexOf('-', end);
+                        if (s >= 0) {
+                            end = s;
+                        }
+                        text = text.substring(0, end).trim();
+                    }
+                }
+                printHeader(Vocabulary.Keys.Domain);
+                outHeader.append(text);
+                outHeader.nextLine();
+            }
+        }
+    }
+
+    /**
+     * Prints the coordinate operation or math transform in Well Known Text format.
+     * This information is printed only if the {@code --verbose} option was specified.
+     */
+    private void printDetails() {
+        final boolean debug = options.containsKey(Option.DEBUG);
+        final WKTFormat f = new WKTFormat(locale, timezone);
+        if (colors) f.setColors(Colors.DEFAULT);
+        f.setConvention(convention);
+        CharSequence[] lines = CharSequences.splitOnEOL(f.format(debug ? operation.getMathTransform() : operation));
+        for (int i=0; i<lines.length; i++) {
+            if (i == 0) {
+                printHeader(Vocabulary.Keys.Details);
+            } else {
+                printCommentLinePrefix();
+                outHeader.nextColumn();
+            }
+            outHeader.append(lines[i]);
+            outHeader.nextLine();
+        }
+        final Warnings warnings = f.getWarnings();
+        if (warnings != null) {
+            lines = CharSequences.splitOnEOL(warnings.toString());
+            if (lines.length != 0) {                                            // Paranoiac check.
+                printHeader(Vocabulary.Keys.Note);
+                outHeader.append(lines[0]);
+                outHeader.nextLine();
+            }
         }
     }
 
@@ -426,99 +526,133 @@ final class TransformCommand extends MetadataCommand {
     }
 
     /**
-     * Computes the domain validity. This method is a "all or nothing" operation; if the domain of validity
-     * can not be computed, then {@link #toDomainOfValidityCRS} and {@link #domainOfValidity} stay {@code null}.
-     */
-    private void computeDomainOfValidity() {
-        final GeographicBoundingBox bbox = CRS.getGeographicBoundingBox(operation);
-        if (bbox != null) {
-            final GeographicCRS domainOfValidityCRS = ReferencingUtilities.toNormalizedGeographicCRS(operation.getSourceCRS());
-            if (domainOfValidityCRS != null) try {
-                toDomainOfValidityCRS = CRS.findOperation(operation.getSourceCRS(), domainOfValidityCRS, null).getMathTransform();
-                domainOfValidity = new ImmutableEnvelope(bbox);
-            } catch (FactoryException e) {
-                warning(e);
-            }
-        }
-    }
-
-    /**
-     * Transforms the coordinates read from the given stream.
+     * Reads all coordinates.
      * This method ignores empty and comment lines.
      *
      * @param  in        the stream from where to read coordinates.
      * @param  filename  the filename, for error reporting only.
-     * @return the errors that occurred during transformation.
+     * @return the coordinate values.
      */
-    private void transform(final LineNumberReader in, final String filename) throws IOException {
-        final int dimension    = operation.getSourceCRS().getCoordinateSystem().getDimension();
-        final MathTransform mt = operation.getMathTransform();
-        final double[] result  = new double[mt.getTargetDimensions()];
-        final double[] domainCoordinate;
-        final DirectPositionView positionInDomain;
-        if (toDomainOfValidityCRS != null) {
-            domainCoordinate = new double[toDomainOfValidityCRS.getTargetDimensions()];
-            positionInDomain = new DirectPositionView(domainCoordinate, 0, domainCoordinate.length);
-        } else {
-            domainCoordinate = null;
-            positionInDomain = null;
-        }
+    private List<double[]> readCoordinates(final LineNumberReader in, final String filename) throws IOException {
+        final List<double[]> points = new ArrayList<double[]>();
         try {
             String line;
             while ((line = in.readLine()) != null) {
                 final int start = CharSequences.skipLeadingWhitespaces(line, 0, line.length());
                 if (start < line.length() && line.charAt(start) != '#') {
-                    final double[] coordinates = CharSequences.parseDoubles(line, ',');
-                    if (coordinates.length != dimension) {
-                        throw new MismatchedDimensionException(Errors.format(Errors.Keys.MismatchedDimensionForCRS_3,
-                                    operation.getSourceCRS().getName().getCode(), dimension, coordinates.length));
-                    }
-                    /*
-                     * At this point we got the coordinates and they have the expected number of dimensions.
-                     * Now perform the coordinate operation and prints each ordinate values. We will switch
-                     * to scientific notation if the coordinate is much larger than expected.
-                     */
-                    mt.transform(coordinates, 0, result, 0, 1);
-                    for (int i=0; i<result.length; i++) {
-                        if (i != 0) {
-                            out.print(',');
-                        }
-                        final double value = result[i];
-                        final String s;
-                        if (Math.abs(value) >= thresholdForScientificNotation[i]) {
-                            s = Double.toString(value);
-                        } else {
-                            coordinateFormat.setMinimumFractionDigits(numFractionDigits[i]);
-                            coordinateFormat.setMaximumFractionDigits(numFractionDigits[i]);
-                            s = coordinateFormat.format(value);
-                        }
-                        out.print(CharSequences.spaces(ordinateWidth - s.length()));
-                        out.print(s);
-                    }
-                    /*
-                     * Append a warning after the transformed coordinate values if the source coordinate was outside
-                     * the domain of validity. A failure to perform a coordinate transformation is also considered as
-                     * being out of the domain of valididty.
-                     */
-                    if (domainCoordinate != null) {
-                        boolean inside;
-                        try {
-                            toDomainOfValidityCRS.transform(coordinates, 0, domainCoordinate, 0, 1);
-                            inside = domainOfValidity.contains(positionInDomain);
-                        } catch (TransformException e) {
-                            inside = false;
-                            warning(e);
-                        }
-                        if (!inside) {
-                            out.print(",    ");
-                            printQuotedText(Errors.getResources(locale).getString(Errors.Keys.OutsideDomainOfValidity), 0, X364.FOREGROUND_RED);
-                        }
-                    }
-                    out.println();
+                    points.add(CharSequences.parseDoubles(line, ','));
                 }
             }
-        } catch (Exception e) {     // This is a multi-catch exception on the JDK7 branch.
-            error(Errors.format(Errors.Keys.ErrorInFileAtLine_2, filename, in.getLineNumber()), e);
+        } catch (NumberFormatException e) {
+            errorMessage = Errors.format(Errors.Keys.ErrorInFileAtLine_2, filename, in.getLineNumber());
+            errorCause = e;
+        }
+        return points;
+    }
+
+    /**
+     * Computes the geographic area of interest from the given points.
+     * This method ignores the points having an unexpected number of dimensions since it is not this
+     * method's job to report those issues (they will be reported by {@link #transform(List)} instead.
+     */
+    private GeographicBoundingBox computeAreaOfInterest(final List<double[]> points) {
+        final int dimension = toDomainOfValidity.getSourceDimensions();
+        final double[] domainCoordinate = new double[toDomainOfValidity.getTargetDimensions()];
+        if (domainCoordinate.length >= 2) {
+            double xmin = Double.POSITIVE_INFINITY;
+            double ymin = Double.POSITIVE_INFINITY;
+            double xmax = Double.NEGATIVE_INFINITY;
+            double ymax = Double.NEGATIVE_INFINITY;
+            for (final double[] coordinates : points) {
+                if (coordinates.length == dimension) {
+                    try {
+                        toDomainOfValidity.transform(coordinates, 0, domainCoordinate, 0, 1);
+                    } catch (TransformException e) {
+                        warning(e);
+                        continue;
+                    }
+                    final double x = domainCoordinate[0];
+                    final double y = domainCoordinate[1];
+                    if (x < xmin) xmin = x;
+                    if (x > xmax) xmax = x;
+                    if (y < ymin) ymin = y;
+                    if (y > ymax) ymax = y;
+                }
+            }
+            if (xmin < xmax && ymin < ymax) {
+                return new DefaultGeographicBoundingBox(xmin, xmax, ymin, ymax);
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Transforms the given coordinates.
+     */
+    private void transform(final List<double[]> points) throws TransformException {
+        final int dimension    = operation.getSourceCRS().getCoordinateSystem().getDimension();
+        final MathTransform mt = operation.getMathTransform();
+        final double[] result  = new double[mt.getTargetDimensions()];
+        final double[] domainCoordinate;
+        final DirectPositionView positionInDomain;
+        final ImmutableEnvelope domainOfValidity;
+        final GeographicBoundingBox bbox;
+        if (toDomainOfValidity != null && (bbox = CRS.getGeographicBoundingBox(operation)) != null) {
+            domainOfValidity = new ImmutableEnvelope(bbox);
+            domainCoordinate = new double[toDomainOfValidity.getTargetDimensions()];
+            positionInDomain = new DirectPositionView(domainCoordinate, 0, domainCoordinate.length);
+        } else {
+            domainOfValidity = null;
+            domainCoordinate = null;
+            positionInDomain = null;
+        }
+        for (final double[] coordinates : points) {
+            if (coordinates.length != dimension) {
+                throw new MismatchedDimensionException(Errors.format(Errors.Keys.MismatchedDimensionForCRS_3,
+                            operation.getSourceCRS().getName().getCode(), dimension, coordinates.length));
+            }
+            /*
+             * At this point we got the coordinates and they have the expected number of dimensions.
+             * Now perform the coordinate operation and print each ordinate values.  We will switch
+             * to scientific notation if the coordinate is much larger than expected.
+             */
+            mt.transform(coordinates, 0, result, 0, 1);
+            for (int i=0; i<result.length; i++) {
+                if (i != 0) {
+                    out.print(',');
+                }
+                final double value = result[i];
+                final String s;
+                if (Math.abs(value) >= thresholdForScientificNotation[i]) {
+                    s = Double.toString(value);
+                } else {
+                    coordinateFormat.setMinimumFractionDigits(numFractionDigits[i]);
+                    coordinateFormat.setMaximumFractionDigits(numFractionDigits[i]);
+                    s = coordinateFormat.format(value);
+                }
+                out.print(CharSequences.spaces(ordinateWidth - s.length()));
+                out.print(s);
+            }
+            /*
+             * Append a warning after the transformed coordinate values if the source coordinate was outside
+             * the domain of validity. A failure to perform a coordinate transformation is also considered as
+             * being out of the domain of valididty.
+             */
+            if (domainOfValidity != null) {
+                boolean inside;
+                try {
+                    toDomainOfValidity.transform(coordinates, 0, domainCoordinate, 0, 1);
+                    inside = domainOfValidity.contains(positionInDomain);
+                } catch (TransformException e) {
+                    inside = false;
+                    warning(e);
+                }
+                if (!inside) {
+                    out.print(",    ");
+                    printQuotedText(Errors.getResources(locale).getString(Errors.Keys.OutsideDomainOfValidity), 0, X364.FOREGROUND_RED);
+                }
+            }
+            out.println();
         }
     }
 

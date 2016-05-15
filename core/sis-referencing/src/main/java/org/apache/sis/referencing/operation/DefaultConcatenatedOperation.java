@@ -24,6 +24,7 @@ import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import org.opengis.util.FactoryException;
+import org.opengis.metadata.extent.Extent;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.ConcatenatedOperation;
@@ -110,7 +111,8 @@ final class DefaultConcatenatedOperation extends AbstractCoordinateOperation imp
         super(properties);
         ArgumentChecks.ensureNonNull("operations", operations);
         final List<CoordinateOperation> flattened = new ArrayList<CoordinateOperation>(operations.length);
-        initialize(properties, operations, flattened, mtFactory, (coordinateOperationAccuracy == null));
+        initialize(properties, operations, flattened, mtFactory,
+                (coordinateOperationAccuracy == null), (domainOfValidity == null));
         if (flattened.size() < 2) {
             throw new IllegalArgumentException(Errors.getResources(properties).getString(
                     Errors.Keys.TooFewOccurrences_2, 2, CoordinateOperation.class));
@@ -158,13 +160,15 @@ final class DefaultConcatenatedOperation extends AbstractCoordinateOperation imp
      * @param  flattened   The destination list in which to add the {@code SingleOperation} instances.
      * @param  mtFactory   The math transform factory to use, or {@code null} for not performing concatenation.
      * @param  setAccuracy {@code true} for setting the {@link #coordinateOperationAccuracy} field.
+     * @param  setDomain   {@code true} for setting the {@link #domainOfValidity} field.
      * @throws FactoryException if the factory can not concatenate the math transforms.
      */
     private void initialize(final Map<String,?>             properties,
                             final CoordinateOperation[]     operations,
                             final List<CoordinateOperation> flattened,
                             final MathTransformFactory      mtFactory,
-                            boolean                         setAccuracy)
+                            boolean                         setAccuracy,
+                            boolean                         setDomain)
             throws FactoryException
     {
         CoordinateReferenceSystem previous = null;
@@ -200,7 +204,7 @@ final class DefaultConcatenatedOperation extends AbstractCoordinateOperation imp
                 final List<? extends CoordinateOperation> children = ((ConcatenatedOperation) op).getOperations();
                 @SuppressWarnings("SuspiciousToArrayCall")
                 final CoordinateOperation[] asArray = children.toArray(new CoordinateOperation[children.size()]);
-                initialize(properties, asArray, flattened, (step == null) ? mtFactory : null, setAccuracy);
+                initialize(properties, asArray, flattened, (step == null) ? mtFactory : null, setAccuracy, setDomain);
             } else {
                 flattened.add(op);
             }
@@ -215,15 +219,29 @@ final class DefaultConcatenatedOperation extends AbstractCoordinateOperation imp
              * Instead the user will get a better result by invoking PositionalAccuracyConstant.getLinearAccuracy(…)
              * since that method conservatively computes the sum of all linear accuracy.
              */
-            if (setAccuracy && (op instanceof Transformation || op instanceof ConcatenatedOperation)) {
+            if (setAccuracy && (op instanceof Transformation || op instanceof ConcatenatedOperation)
+                    && (PositionalAccuracyConstant.getLinearAccuracy(op) != 0))
+            {
                 if (coordinateOperationAccuracy == null) {
-                    setAccuracy = (PositionalAccuracyConstant.getLinearAccuracy(op) > 0);
-                    if (setAccuracy) {
-                        coordinateOperationAccuracy = op.getCoordinateOperationAccuracy();
-                    }
+                    coordinateOperationAccuracy = op.getCoordinateOperationAccuracy();
                 } else {
                     coordinateOperationAccuracy = null;
                     setAccuracy = false;
+                }
+            }
+            /*
+             * Optionally copy the domain of validity, provided that it is the same for all component.
+             * Current implementation does not try to compute the intersection of all components.
+             */
+            if (setDomain) {
+                final Extent domain = op.getDomainOfValidity();
+                if (domain != null) {
+                    if (domainOfValidity == null) {
+                        domainOfValidity = domain;
+                    } else if (!domain.equals(domainOfValidity)) {
+                        domainOfValidity = null;
+                        setDomain = false;
+                    }
                 }
             }
         }
@@ -379,7 +397,8 @@ final class DefaultConcatenatedOperation extends AbstractCoordinateOperation imp
      */
     private void setSteps(final CoordinateOperation[] steps) throws FactoryException {
         final List<CoordinateOperation> flattened = new ArrayList<CoordinateOperation>(steps.length);
-        initialize(null, steps, flattened, DefaultFactories.forBuildin(MathTransformFactory.class), coordinateOperationAccuracy == null);
+        initialize(null, steps, flattened, DefaultFactories.forBuildin(MathTransformFactory.class),
+                (coordinateOperationAccuracy == null), (domainOfValidity == null));
         operations = UnmodifiableArrayList.wrap(flattened.toArray(new CoordinateOperation[flattened.size()]));
     }
 }
