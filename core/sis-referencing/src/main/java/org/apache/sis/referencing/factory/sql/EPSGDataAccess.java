@@ -2956,7 +2956,9 @@ next:               while (r.next()) {
      * This method only extract the information explicitely declared in the EPSG database;
      * it does not attempt to infer by itself operations that are not explicitely recorded in the database.
      *
-     * <p>The returned set is ordered with the most accurate operations first.</p>
+     * <p>The returned set is ordered with the most accurate operations first.
+     * Deprecated operations are not included in the set; if a deprecated operation is really wanted,
+     * it can be fetched by an explicit call to {@link #createCoordinateOperation(String)}.</p>
      *
      * @param  sourceCRS  Coded value of source coordinate reference system.
      * @param  targetCRS  Coded value of target coordinate reference system.
@@ -2987,9 +2989,10 @@ next:               while (r.next()) {
                     sql = "SELECT COORD_OP_CODE" +
                           " FROM [Coordinate_Operation] AS CO" +
                           " JOIN [Area] ON AREA_OF_USE_CODE = AREA_CODE" +
-                          " WHERE SOURCE_CRS_CODE = ?" +
+                          " WHERE CO.DEPRECATED=0" +   // Do not put spaces around "=" - SQLTranslator searches for this exact match.
+                            " AND SOURCE_CRS_CODE = ?" +
                             " AND TARGET_CRS_CODE = ?" +
-                          " ORDER BY ABS(CO.DEPRECATED), COORD_OP_ACCURACY ASC NULLS LAST, " +
+                          " ORDER BY COORD_OP_ACCURACY ASC NULLS LAST, " +
                             " (AREA_EAST_BOUND_LON - AREA_WEST_BOUND_LON + CASE WHEN AREA_EAST_BOUND_LON < AREA_WEST_BOUND_LON THEN 360 ELSE 0 END)" +
                           " * (AREA_NORTH_BOUND_LAT - AREA_SOUTH_BOUND_LAT)" +
                           " * COS(RADIANS(AREA_NORTH_BOUND_LAT + AREA_SOUTH_BOUND_LAT)/2) DESC";
