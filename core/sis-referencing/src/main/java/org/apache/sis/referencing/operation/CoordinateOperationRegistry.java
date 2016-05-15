@@ -423,22 +423,14 @@ class CoordinateOperationRegistry {
         for (final Iterator<CoordinateOperation> it=operations.iterator(); it.hasNext();) {
             CoordinateOperation candidate;
             try {
-                try {
-                    candidate = it.next();
-                } catch (BackingStoreException exception) {
-                    throw exception.unwrapOrRethrow(FactoryException.class);
-                }
-                if (inverse) try {
-                    candidate = inverse(candidate);
-                } catch (NoninvertibleTransformException exception) {
-                    // It may be a normal failure - the operation is not required to be invertible.
-                    Logging.recoverableException(Logging.getLogger(Loggers.COORDINATE_OPERATION),
-                            CoordinateOperationRegistry.class, "createOperation", exception);
+                candidate = it.next();
+            } catch (BackingStoreException exception) {
+                FactoryException cause = exception.unwrapOrRethrow(FactoryException.class);
+                if (cause instanceof MissingFactoryResourceException) {
+                    log(cause);
                     continue;
                 }
-            } catch (MissingFactoryResourceException e) {
-                log(e);
-                continue;
+                throw cause;
             }
             if (candidate != null) {
                 /*
@@ -455,6 +447,22 @@ class CoordinateOperationRegistry {
                 if (bestChoice == null || area >= largestArea) {
                     final double accuracy = CRS.getLinearAccuracy(candidate);
                     if (bestChoice == null || area != largestArea || accuracy < finestAccuracy) {
+                        /*
+                         * Inverse the operation only after we verified the metadata (domain of validity,
+                         * accuracy, etc.) since the creation of inverse operation is not guaranteed to
+                         * preserve all metadata.
+                         */
+                        if (inverse) try {
+                            candidate = inverse(candidate);
+                        } catch (NoninvertibleTransformException exception) {
+                            // It may be a normal failure - the operation is not required to be invertible.
+                            Logging.recoverableException(Logging.getLogger(Loggers.COORDINATE_OPERATION),
+                                    CoordinateOperationRegistry.class, "createOperation", exception);
+                            continue;
+                        } catch (MissingFactoryResourceException e) {
+                            log(e);
+                            continue;
+                        }
                         /*
                          * It is possible that the CRS given to this method were not quite right.  For example the user
                          * may have created his CRS from a WKT using a different axis order than the order specified by
