@@ -65,7 +65,7 @@ public class ResourcesDownloader extends InstallationResources {
      * THIS IS A TEMPORARY LINK to be moved to another location after discussion on the mailing list.
      * This temporary link is provided in order to allow experimentations by other SIS developers.
      */
-    private static final String DOWNLOAD_URL = "http://home.apache.org/~desruisseaux/Temporary/geotk-epsg-4.0-SNAPSHOT.jar";
+    private static final String DOWNLOAD_URL = "http://home.apache.org/~desruisseaux/Temporary/sis-epsg-0.7-SNAPSHOT.jar";
 
     /**
      * Estimation of the EPSG database size after installation, in mega-bytes.
