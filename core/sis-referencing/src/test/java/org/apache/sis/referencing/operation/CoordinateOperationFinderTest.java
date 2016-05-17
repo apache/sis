@@ -299,7 +299,7 @@ public final strictfp class CoordinateOperationFinderTest extends MathTransformT
         if (targetCRS.getCoordinateSystem().getDimension() == 2) {
             target = TestUtilities.dropLastDimensions(target, 3, 2);
         }
-        tolerance = zTolerance; // Because GeoAPI 3.0 does not distinguish z axis from other axis (fixed in GeoAPI 3.1).
+        tolerance = zTolerance; // Because GeoAPI 3.0 does not distinguish z axis from other axes (fixed in GeoAPI 3.1).
         verifyTransform(source, target);
         validate();
     }
