@@ -267,6 +267,7 @@ public final strictfp class CoordinateOperationRegistryTest extends MathTransfor
         zTolerance = Formulas.LINEAR_TOLERANCE;
         zDimension = new int[] {2};
         λDimension = new int[] {1};
+        tolerance  = zTolerance; // Because GeoAPI 3.0 does not distinguish z axis from other axes (fixed in GeoAPI 3.1).
         verifyTransform(new double[] {54.271680278,  0.098269657, 20.00},      // in grads east of Paris
                         new double[] {48.844443528,  2.424952028, 63.15});     // in degrees east of Greenwich
         validate();
@@ -302,6 +303,7 @@ public final strictfp class CoordinateOperationRegistryTest extends MathTransfor
         zTolerance = Formulas.LINEAR_TOLERANCE;
         zDimension = new int[] {2};
         λDimension = new int[] {1};
+        tolerance  = zTolerance; // Because GeoAPI 3.0 does not distinguish z axis from other axes (fixed in GeoAPI 3.1).
         verifyTransform(new double[] {0.088442691, 48.844512250, 20.00},      // in degrees east of Paris
                         new double[] {2.424952028, 48.844443528, 63.15});     // in degrees east of Greenwich
         validate();
