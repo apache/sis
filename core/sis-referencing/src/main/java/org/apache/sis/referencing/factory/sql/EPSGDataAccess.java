@@ -165,7 +165,7 @@ import org.apache.sis.referencing.datum.DefaultParametricDatum;
  * @version 0.7
  * @module
  *
- * @see <a href="http://sis.apache.org/book/tables/CoordinateReferenceSystems.html">List of authority codes</a>
+ * @see <a href="http://sis.apache.org/tables/CoordinateReferenceSystems.html">List of authority codes</a>
  */
 @AutoCloseable
 public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAuthorityFactory,
