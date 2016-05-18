@@ -61,11 +61,8 @@ import org.apache.sis.internal.jdk7.Path;
 public class ResourcesDownloader extends InstallationResources {
     /**
      * Where to download the EPSG scripts after user has approved the terms of use.
-     *
-     * THIS IS A TEMPORARY LINK to be moved to another location after discussion on the mailing list.
-     * This temporary link is provided in order to allow experimentations by other SIS developers.
      */
-    private static final String DOWNLOAD_URL = "http://home.apache.org/~desruisseaux/Temporary/sis-epsg-0.7-SNAPSHOT.jar";
+    private static final String DOWNLOAD_URL = "http://repo1.maven.org/maven2/org/apache/sis/non-free/sis-epsg/0.7/sis-epsg-0.7.jar";
 
     /**
      * Estimation of the EPSG database size after installation, in mega-bytes.
