@@ -282,7 +282,6 @@ public class LineAppender extends Appender implements Flushable {
      *
      * @param  lineSeparator The new line separator, or {@code null} for forwarding EOL <i>as-is</i>.
      *
-     * @see System#lineSeparator()
      * @see Characters#isLineOrParagraphSeparator(int)
      */
     public void setLineSeparator(final String lineSeparator) {

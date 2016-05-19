@@ -215,7 +215,7 @@ public abstract class TabularFormat<T> extends CompoundFormat<T> {
      *   <li>If present, {@code '?'} shall be the first character in the pattern.</li>
      *   <li>The repeated character (specified inside the pair of brackets) is mandatory.</li>
      *   <li>In the current implementation, the repeated character must be in the
-     *       {@linkplain Character#isBmpCodePoint(int) Basic Multilanguage Plane}.</li>
+     *       Basic Multilanguage Plane.</li>
      *   <li>If {@code '/'} is present, anything on its right side shall be compliant
      *       with the {@link Pattern} syntax.</li>
      * </ul>
