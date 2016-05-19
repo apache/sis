@@ -620,7 +620,7 @@ public final class Types extends Static {
      * @return A code matching the given name, or {@code null} if the name is null
      *         or if no matching code is found and {@code canCreate} is {@code false}.
      *
-     * @see #getCodeName(CodeList<?>)
+     * @see #getCodeName(CodeList)
      * @see CodeList#valueOf(Class, String)
      */
     public static <T extends CodeList<T>> T forCodeName(final Class<T> codeType, String name, final boolean canCreate) {
@@ -646,7 +646,7 @@ public final class Types extends Static {
      * The current implementation performs the following choice:
      *
      * <ul>
-     *   <li>If the given title is a value returned by a previous call to {@link #getCodeTitle(CodeList<?>)},
+     *   <li>If the given title is a value returned by a previous call to {@link #getCodeTitle(CodeList)},
      *       returns the code or enumeration value used for creating that title.</li>
      *   <li>Otherwise returns {@code null}.</li>
      * </ul>
@@ -656,7 +656,7 @@ public final class Types extends Static {
      *
      * @since 0.7
      *
-     * @see #getCodeTitle(CodeList<?>)
+     * @see #getCodeTitle(CodeList)
      */
     public static CodeList<?> forCodeTitle(final CharSequence title) {
         return (title instanceof CodeTitle) ? ((CodeTitle) title).code : null;
