@@ -50,7 +50,7 @@ import com.sun.tools.doclets.formats.html.HtmlDoclet;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5
- * @version 0.5
+ * @version 0.7
  * @module
  */
 public final class Doclet extends HtmlDoclet {
@@ -97,7 +97,7 @@ public final class Doclet extends HtmlDoclet {
             copyResources(customCSS.getParentFile(), output);
             final Rewriter r = new Rewriter();
             for (final File file : output.listFiles()) {
-                if (file.isDirectory()) {  // Do not process files in the root directory, only in sub-directories.
+                if (file.isDirectory()) {       // Do not process files in the root directory, only in sub-directories.
                     r.processDirectory(file);
                 }
             }
@@ -148,6 +148,7 @@ public final class Doclet extends HtmlDoclet {
 
     /**
      * Copies the standard CSS file, then copies the custom CSS file.
+     * If the {@value #RENAMED_CSS} file already exists, it will not be overwritten.
      *
      * @param  inputFile        The custom CSS file to copy in the destination directory.
      * @param  outputDirectory  The directory where to copy the CSS file.
@@ -156,29 +157,31 @@ public final class Doclet extends HtmlDoclet {
     private static void copyStylesheet(final File inputFile, final File outputDirectory) throws IOException {
         final File stylesheetFile = new File(outputDirectory, STYLESHEET);
         final File standardFile   = new File(outputDirectory, RENAMED_CSS);
-        /*
-         * Copy the standard CSS file, skipping the import of DejaVu font
-         * since our custom CSS file does not use it.
-         */
-        BufferedReader in  = openReader(stylesheetFile);
-        BufferedWriter out = openWriter(standardFile);
-        try {
-            String line;
-            while ((line = in.readLine()) != null) {
-                if (!line.equals("@import url('resources/fonts/dejavu.css');")) {
-                    out.write(line);
-                    out.newLine();
+        if (!standardFile.exists()) {
+            /*
+             * Copy the standard CSS file, skipping the import of DejaVu font
+             * since our custom CSS file does not use it.
+             */
+            final BufferedReader in  = openReader(stylesheetFile);
+            final BufferedWriter out = openWriter(standardFile);
+            try {
+                String line;
+                while ((line = in.readLine()) != null) {
+                    if (!line.equals("@import url('resources/fonts/dejavu.css');")) {
+                        out.write(line);
+                        out.newLine();
+                    }
                 }
+            } finally {
+                out.close();
+                in.close();
             }
-        } finally {
-            out.close();
-            in.close();
         }
         /*
          * Copy the custom CSS file, skipping comments for more compact file.
          */
-        in  = openReader(inputFile);
-        out = openWriter(stylesheetFile);
+        final BufferedReader in  = openReader(inputFile);
+        final BufferedWriter out = openWriter(stylesheetFile);
         try {
             String line;
             while ((line = in.readLine()) != null) {
