@@ -22,6 +22,7 @@ import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
 import org.opengis.util.FactoryException;
+import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -169,7 +170,7 @@ public final strictfp class ConcurrentAuthorityFactoryTest extends TestCase {
         Thread.sleep(TimeUnit.NANOSECONDS.toMillis(waitTime));
         int n = 3;
         while (factory.isCleanScheduled()) {
-            Logging.getLogger("org.geotoolkit.referencing.factory")
+            Logging.getLogger(Loggers.CRS_FACTORY)
                     .warning("Execution of ConcurrentAuthorityFactory.disposeExpired() has been delayed.");
             Thread.sleep(TIMEOUT);
             System.gc();
