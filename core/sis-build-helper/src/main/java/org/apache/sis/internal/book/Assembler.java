@@ -65,7 +65,7 @@ import static org.apache.sis.internal.book.CodeColorizer.toArray;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.7
- * @version 0.7
+ * @version 0.8
  */
 public final class Assembler {
     /**
@@ -545,5 +545,44 @@ public final class Assembler {
         transformer.setOutputProperty(OutputKeys.DOCTYPE_SYSTEM, "about:legacy-compat");
         transformer.setOutputProperty(OutputKeys.INDENT, "no");
         transformer.transform(new DOMSource(document), new StreamResult(output));
+    }
+
+    /**
+     * Generates the {@code "content/book/en|fr/developer-guide.html"} file from {@code "book/en|fr/body.html"}.
+     * The only argument expected by this method is the language: {@code "en"} or {@code "fr"}.
+     * The current directory shall be the parent directory of {@code "book"} and {@code "content"}.
+     *
+     * @param  args command-line arguments. Should contain exactly on value, which is the language.
+     * @throws Exception if an I/O error, a XML parsing error or other kinds of error occurred.
+     *
+     * @since 0.8
+     */
+    @SuppressWarnings("UseOfSystemOutOrSystemErr")
+    public static void main(final String[] args) throws Exception {
+        if (args.length != 1) {
+            System.err.println("Expected parameter: the language (\"en\" or \"fr\").");
+            System.err.println("Current directory shall be the root of Apache SIS site source code.");
+            System.exit(1);
+        }
+        String lang = args[0];
+        final Locale locale;
+        if ("en".equalsIgnoreCase(lang)) {
+            locale = Locale.ENGLISH;
+        } else if ("fr".equalsIgnoreCase(lang)) {
+            locale = Locale.FRENCH;
+        } else {
+            System.err.println("Unsupported language code: " + lang);
+            System.exit(1);
+            return;
+        }
+        lang = locale.getLanguage();
+        File input = new File("book/" + lang + "/body.html");
+        if (!input.isFile()) {
+            System.err.println("Can not read " + input + ". Is the current directory the root of SIS site source code?");
+            System.exit(1);
+            return;
+        }
+        final Assembler assembler = new Assembler(input, locale);
+        assembler.run(new File("content/book/" + lang + "/developer-guide.html"));
     }
 }
