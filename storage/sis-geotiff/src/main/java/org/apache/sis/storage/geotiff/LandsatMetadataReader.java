@@ -22,9 +22,39 @@ import java.util.Locale;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
+import org.apache.sis.metadata.iso.DefaultIdentifier;
+import org.apache.sis.metadata.iso.DefaultMetadata;
+import org.apache.sis.metadata.iso.acquisition.DefaultPlatform;
+import org.apache.sis.metadata.iso.citation.DefaultCitation;
+import org.apache.sis.metadata.iso.citation.DefaultCitationDate;
+import org.apache.sis.metadata.iso.citation.DefaultOrganisation;
+import org.apache.sis.metadata.iso.citation.DefaultResponsibility;
+import org.apache.sis.metadata.iso.citation.DefaultResponsibleParty;
+
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
+import org.apache.sis.metadata.iso.identification.DefaultResolution;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.util.iso.DefaultInternationalString;
+import org.opengis.metadata.Identifier;
+import org.opengis.metadata.Metadata;
+import org.opengis.metadata.acquisition.Platform;
+import org.opengis.metadata.citation.Citation;
+import org.opengis.metadata.citation.CitationDate;
+import org.opengis.metadata.citation.DateType;
+import org.opengis.metadata.citation.Party;
+import org.opengis.metadata.citation.Responsibility;
+import org.opengis.metadata.citation.Role;
+
 
 
 /**
@@ -52,7 +82,9 @@ class LandsatMetadataReader {
      * }
      */
     private final Map<String,String> properties;
-
+    
+    
+  
     /**
      * Stores all properties found in the Landsat file read from the the given reader,
      * except {@code GROUP} and {@code END_GROUP}.
@@ -118,9 +150,12 @@ class LandsatMetadataReader {
      * @param  key  the key for which to get the property value.
      * @return the property value associated to the given key, {@code null} if none.
      */
-    private String getValue(String key) {
+    private String getValue(boolean par, String key) {
         return properties.get(key);
     }
+    
+        
+     
 
     /**
      * Returns the floating-point value associated to the given key, or {@code NaN} if none.
@@ -131,7 +166,7 @@ class LandsatMetadataReader {
      *         as a floating-point number.
      */
     private double getNumericValue(String key) throws NumberFormatException {
-        String value = getValue(key);
+        String value = getValue(false, key);
         return (value != null) ? Double.parseDouble(value) : Double.NaN;
     }
 
@@ -162,6 +197,60 @@ class LandsatMetadataReader {
      * @return the data domain in degrees of longitude and latitude, or {@code null} if none.
      * @throws DataStoreException if a longitude or a latitude can not be read.
      */
+  
+   private Citation getCollectiveTitle() throws ParseException{
+        final DefaultCitation citation = new DefaultCitation();
+        final String identifier = getValue(false, "LANDSAT_SCENE_ID");
+        if (identifier != null) 
+            citation.setTitle(new DefaultInternationalString(identifier));
+        final String editi = getValue(false, "PROCESSING_SOFTWARE_VERSION");
+        if (editi != null) 
+            citation.setEdition(new DefaultInternationalString(editi));
+        final Date date =  getDates();
+        if (date != null)  
+        citation.setDates(Collections.singleton(new DefaultCitationDate(date, DateType.PUBLICATION)));
+        final String identifiers = getValue(false, "DATA_TYPE");
+        if (identifier != null)
+            
+            citation.setIdentifiers(Collections.singleton(new DefaultIdentifier(identifiers)));
+       final DefaultResponsibleParty cities = new DefaultResponsibleParty();
+       
+       final String part = getValue(false, "ORIGIN");
+       cities.setOrganisationName(new DefaultInternationalString(part));
+       cities.setRole(Role.ORIGINATOR);
+       citation.setCitedResponsibleParties(Arrays.asList(cities));
+        return citation  ;
+        
+       
+         
+   }
+   
+   
+//   private Metadata getInfos() throws ParseException{
+//       final DefaultMetadata filledMetadata = new DefaultMetadata();
+//       final Date metadataPublicationDate =  getDates();
+//        if (metadataPublicationDate != null)
+//            filledMetadata.setDateStamp(metadataPublicationDate);
+//        //-- unique file identifier
+//        filledMetadata.setFileIdentifier(UUID.randomUUID().toString());
+//        //-- Iso metadatas 19115 generation date.
+//        filledMetadata.setDateStamp(new Date());
+//         final Citation citation =  getCollectiveTitle();
+//        if (citation != null)
+//            filledMetadata.setParentMetadata(citation);
+//        
+//        return filledMetadata;
+//   }
+   private Date getDates()throws ParseException {
+       
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+	final String dateInString = getValue(false, "FILE_DATE");		
+	final Date date = formatter.parse(dateInString);
+                if (dateInString == null) {
+        return null;
+            }	
+        return date;
+   }
     private GeographicBoundingBox getGeographicBoundingBox() throws DataStoreException {
         final DefaultGeographicBoundingBox bbox;
         try {
@@ -186,5 +275,10 @@ class LandsatMetadataReader {
         }
         System.out.println("The geographic bounding box of LC81230522014071LGN00_MTL.txt is:");
         System.out.println(reader.getGeographicBoundingBox());
+         System.out.println(reader.getCollectiveTitle());
+//         System.out.println(reader. getInfos());
+  
     }
+
+    
 }
