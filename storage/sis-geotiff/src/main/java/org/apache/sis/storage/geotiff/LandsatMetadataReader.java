@@ -33,20 +33,30 @@ import java.util.Set;
 import java.util.UUID;
 import org.apache.sis.metadata.iso.DefaultIdentifier;
 import org.apache.sis.metadata.iso.DefaultMetadata;
+import org.apache.sis.metadata.iso.acquisition.DefaultAcquisitionInformation;
+import org.apache.sis.metadata.iso.acquisition.DefaultInstrument;
 import org.apache.sis.metadata.iso.acquisition.DefaultPlatform;
+import org.apache.sis.metadata.iso.citation.DefaultAddress;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.citation.DefaultCitationDate;
+import org.apache.sis.metadata.iso.citation.DefaultContact;
 import org.apache.sis.metadata.iso.citation.DefaultOrganisation;
 import org.apache.sis.metadata.iso.citation.DefaultResponsibility;
 import org.apache.sis.metadata.iso.citation.DefaultResponsibleParty;
+import org.apache.sis.metadata.iso.citation.DefaultSeries;
+import org.apache.sis.metadata.iso.extent.DefaultExtent;
 
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
+import org.apache.sis.metadata.iso.identification.AbstractIdentification;
+import org.apache.sis.metadata.iso.identification.DefaultDataIdentification;
 import org.apache.sis.metadata.iso.identification.DefaultResolution;
+import org.apache.sis.metadata.iso.identification.DefaultServiceIdentification;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.iso.DefaultInternationalString;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.Metadata;
+import org.opengis.metadata.acquisition.Instrument;
 import org.opengis.metadata.acquisition.Platform;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.CitationDate;
@@ -54,6 +64,7 @@ import org.opengis.metadata.citation.DateType;
 import org.opengis.metadata.citation.Party;
 import org.opengis.metadata.citation.Responsibility;
 import org.opengis.metadata.citation.Role;
+import org.opengis.util.InternationalString;
 
 
 
@@ -197,50 +208,92 @@ class LandsatMetadataReader {
      * @return the data domain in degrees of longitude and latitude, or {@code null} if none.
      * @throws DataStoreException if a longitude or a latitude can not be read.
      */
-  
-   private Citation getCollectiveTitle() throws ParseException{
+ 
+   
+   
+   private Metadata getInfos() throws ParseException, DataStoreException{
+       final DefaultMetadata filledMetadata = new DefaultMetadata();
+      //contact
+       final DefaultResponsibleParty cities = new DefaultResponsibleParty();
+       final String part = getValue(false, "STATION_ID");
+        cities.setOrganisationName(new DefaultInternationalString(part));
+       
+    
+       cities.setRole(Role.POINT_OF_CONTACT);
+        filledMetadata.setContacts(Arrays.asList(cities));
+       //Identification info
+       final AbstractIdentification inden = new AbstractIdentification();
+            //citation
         final DefaultCitation citation = new DefaultCitation();
         final String identifier = getValue(false, "LANDSAT_SCENE_ID");
         if (identifier != null) 
-            citation.setTitle(new DefaultInternationalString(identifier));
-        final String editi = getValue(false, "PROCESSING_SOFTWARE_VERSION");
-        if (editi != null) 
-            citation.setEdition(new DefaultInternationalString(editi));
+        citation.setTitle(new DefaultInternationalString(identifier));
+         final String id = getValue(false, "REQUEST_ID");
+         citation.setSeries(new DefaultSeries(id));
         final Date date =  getDates();
         if (date != null)  
         citation.setDates(Collections.singleton(new DefaultCitationDate(date, DateType.PUBLICATION)));
-        final String identifiers = getValue(false, "DATA_TYPE");
+         final String identifiers = getValue(false, "DATA_TYPE");
         if (identifier != null)
-            
             citation.setIdentifiers(Collections.singleton(new DefaultIdentifier(identifiers)));
-       final DefaultResponsibleParty cities = new DefaultResponsibleParty();
-       
-       final String part = getValue(false, "ORIGIN");
-       cities.setOrganisationName(new DefaultInternationalString(part));
-       cities.setRole(Role.ORIGINATOR);
-       citation.setCitedResponsibleParties(Arrays.asList(cities));
-        return citation  ;
         
-       
+       final String party = getValue(false, "ORIGIN");
+       cities.setOrganisationName(new DefaultInternationalString(party));
+       cities.setRole(Role.ORIGINATOR);
+        citation.setCitedResponsibleParties(Arrays.asList(cities));
+        
+        inden.setCitation(new DefaultCitation(citation));
+            //Abstrac
+            
+            inden.setAbstract(new DefaultInternationalString(part));
+            
+            //PointOfContacts
+            final String point = getValue(false, "ORIGIN");
+       cities.setOrganisationName(new DefaultInternationalString(point));
+       cities.setRole(Role.POINT_OF_CONTACT);
+        
+       inden.setPointOfContacts(Arrays.asList(new DefaultResponsibleParty( cities)));
          
+       filledMetadata.setIdentificationInfo(Collections.singleton(inden));
+            //extend
+                    //GeographicBoundingBox 
+                    final DefaultExtent ex = new DefaultExtent();
+             final GeographicBoundingBox box = getGeographicBoundingBox();
+        ex.setGeographicElements(Arrays.asList(box));
+                    //
+           inden.setExtents(Collections.singleton(new DefaultExtent(ex)));
+      //AcquisitionInformation
+          final DefaultAcquisitionInformation dAI = new DefaultAcquisitionInformation();
+       final DefaultPlatform platF = new DefaultPlatform();
+       final String space = getValue(false, "SPACECRAFT_ID");
+       platF.setCitation(new DefaultCitation(space));
+       final DefaultInstrument instru = new DefaultInstrument();
+        final String instrum = getValue(false, "SENSOR_ID");
+        instru.setType(new DefaultInternationalString(instrum));
+        final String nadir = getValue(false, "NADIR_OFFNADIR");
+         instru.setDescription(new DefaultInternationalString(nadir));
+        if (platF != null && instrum != null) {
+            //-- set related founded instrument and platform
+            //*****************************************************************//
+            //-- a cycle is define here, platform -> instru and instru -> platform
+            //-- like a dad know his son and a son know his dad.
+            //-- during xml binding a cycle is not supported for the current Apach SIS version
+            //-- decomment this row when upgrade SIS version
+            //instru.setMountedOn(platform);
+            //*****************************************************************//
+
+            platF.setInstruments(Collections.singleton(instru));
+
+            dAI.setPlatforms(Collections.singleton(platF));
+            
+
+            filledMetadata.setAcquisitionInformation(Collections.singleton(dAI));
+        }
+         
+        
+
+        return filledMetadata;
    }
-   
-   
-//   private Metadata getInfos() throws ParseException{
-//       final DefaultMetadata filledMetadata = new DefaultMetadata();
-//       final Date metadataPublicationDate =  getDates();
-//        if (metadataPublicationDate != null)
-//            filledMetadata.setDateStamp(metadataPublicationDate);
-//        //-- unique file identifier
-//        filledMetadata.setFileIdentifier(UUID.randomUUID().toString());
-//        //-- Iso metadatas 19115 generation date.
-//        filledMetadata.setDateStamp(new Date());
-//         final Citation citation =  getCollectiveTitle();
-//        if (citation != null)
-//            filledMetadata.setParentMetadata(citation);
-//        
-//        return filledMetadata;
-//   }
    private Date getDates()throws ParseException {
        
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
@@ -274,9 +327,9 @@ class LandsatMetadataReader {
             reader = new LandsatMetadataReader(in);
         }
         System.out.println("The geographic bounding box of LC81230522014071LGN00_MTL.txt is:");
-        System.out.println(reader.getGeographicBoundingBox());
-         System.out.println(reader.getCollectiveTitle());
-//         System.out.println(reader. getInfos());
+//        System.out.println(reader.getGeographicBoundingBox());
+       
+        System.out.println(reader. getInfos());
   
     }
 
