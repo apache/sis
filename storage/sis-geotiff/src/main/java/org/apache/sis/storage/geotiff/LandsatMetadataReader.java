@@ -29,6 +29,8 @@ import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.internal.referencing.GeodeticObjectBuilder;
 import org.apache.sis.internal.system.DefaultFactories;
@@ -37,31 +39,20 @@ import org.apache.sis.metadata.iso.DefaultIdentifier;
 import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.metadata.iso.acquisition.DefaultAcquisitionInformation;
 import org.apache.sis.metadata.iso.acquisition.DefaultInstrument;
-import org.apache.sis.metadata.iso.acquisition.DefaultObjective;
 import org.apache.sis.metadata.iso.acquisition.DefaultPlatform;
-import org.apache.sis.metadata.iso.acquisition.DefaultPlatformPass;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.citation.DefaultCitationDate;
 import org.apache.sis.metadata.iso.citation.DefaultResponsibleParty;
 import org.apache.sis.metadata.iso.citation.DefaultSeries;
-import org.apache.sis.metadata.iso.content.DefaultRangeElementDescription;
 import org.apache.sis.metadata.iso.extent.DefaultExtent;
-
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
-import org.apache.sis.metadata.iso.extent.DefaultTemporalExtent;
-import org.apache.sis.metadata.iso.extent.DefaultVerticalExtent;
 import org.apache.sis.metadata.iso.identification.AbstractIdentification;
-import org.apache.sis.metadata.iso.identification.DefaultResolution;
-import org.apache.sis.metadata.iso.lineage.DefaultLineage;
-import org.apache.sis.metadata.iso.lineage.DefaultSource;
+import org.apache.sis.metadata.iso.lineage.DefaultProcessStep;
 import org.apache.sis.metadata.iso.quality.DefaultDataQuality;
-import org.apache.sis.referencing.AbstractReferenceSystem;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.crs.DefaultProjectedCRS;
-import org.apache.sis.referencing.cs.DefaultAffineCS;
-import org.apache.sis.referencing.cs.DefaultCartesianCS;
 import org.apache.sis.referencing.operation.DefaultConversion;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.ArgumentChecks;
@@ -70,18 +61,14 @@ import org.opengis.geometry.Envelope;
 import org.opengis.metadata.Metadata;
 import org.opengis.metadata.citation.DateType;
 import org.opengis.metadata.citation.Role;
+import org.opengis.metadata.lineage.ProcessStep;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.TemporalCRS;
-import org.opengis.referencing.cs.AffineCS;
-import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.referencing.operation.CoordinateOperationFactory;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.util.FactoryException;
-
-
-
 
 /**
  * Parses Landsat metadata as {@linkplain DefaultMetadata ISO-19115 Metadata} object.
@@ -179,10 +166,6 @@ class LandsatMetadataReader {
     private String getValue(String key) {
         return properties.get(key);
     }
-    
-        
-     
-
     /**
      * Returns the floating-point value associated to the given key, or {@code NaN} if none.
      *
@@ -196,7 +179,6 @@ class LandsatMetadataReader {
         return (value != null) ? Double.parseDouble(value) : Double.NaN;
     }
     
-
     /**
      * Returns the minimal or maximal value associated to the given two keys.
      *
@@ -232,9 +214,6 @@ class LandsatMetadataReader {
      * @return the data domain in degrees of longitude and latitude, or {@code null} if none.
      * @throws DataStoreException if a longitude or a latitude can not be read.
      */
- 
-   
-   
    private Metadata getInfos() throws ParseException, DataStoreException, FactoryException, TransformException{
        final DefaultMetadata filledMetadata = new DefaultMetadata();
       //contact
@@ -322,7 +301,6 @@ class LandsatMetadataReader {
        if( instrum == null){
            return null;
        }
-        
        instru.setType(new DefaultInternationalString(instrum));
        final String nadir = getValue("NADIR_OFFNADIR");
        if ( nadir == null){
@@ -337,15 +315,9 @@ class LandsatMetadataReader {
        filledMetadata.setAcquisitionInformation(Collections.singleton(dAI));
         //data quality info 
        final DefaultDataQuality quali = new DefaultDataQuality();
- 
         // Lineage
-       
        filledMetadata.setDataQualityInfo(Collections.singleton(quali));
         //setResourceLineages
-      
-        
-        
-        
        final CoordinateReferenceSystem crs = getCRS();
        filledMetadata.setReferenceSystemInfo(Arrays.asList(crs));
        return filledMetadata;
@@ -353,21 +325,15 @@ class LandsatMetadataReader {
    private Date getAcquisitionDate1() throws ParseException {
      //-- year month day
        final String dateAcquired  = getValue("DATE_ACQUIRED");
-
         if (dateAcquired == null)
             return null;
-
         //-- hh mm ss:ms
         final String sceneCenterTime = getValue("SCENE_CENTER_TIME");
-
         String strDate = dateAcquired;
         if (sceneCenterTime != null)
             strDate = dateAcquired+"T"+sceneCenterTime;
-
        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.sssssss'Z'");
-       
        final Date date = formatter.parse(strDate);
-      
        return date;
     }
    private String getAcquisitionDate() throws ParseException {
@@ -395,20 +361,15 @@ class LandsatMetadataReader {
         return date;
    }
     private CoordinateReferenceSystem getCRS2D() throws FactoryException {
-
         if (projectedCRS2D != null)
             return projectedCRS2D;
-
         //-- Datum
         final String datum = getValue("DATUM");
-
         //-- Ellipsoid
         final String ellips = getValue("ELLIPSOID");
-
         if (!(("WGS84".equalsIgnoreCase(datum)) && ("WGS84".equalsIgnoreCase(ellips)))){
             throw new IllegalStateException("Comportement not supported : expected Datum and Ellipsoid value WGS84, found Datum = "+datum+", Ellipsoid : "+ellips);
         }
-
         final String projType = getValue("MAP_PROJECTION");
 
         switch (projType) {
@@ -420,83 +381,63 @@ class LandsatMetadataReader {
                  * For example if UTM area is 45 we decode 32645 CRS from EPSG database.
                  */
                 final String utm_Zone = getValue("UTM_ZONE");
-
                 final Integer utm = Integer.valueOf(utm_Zone);
                 ArgumentChecks.ensureBetween(datum, 0, 60, utm);
                 final NumberFormat nf = new DecimalFormat("##");
                 final String utmFormat = nf.format(utm);
-
                 projectedCRS2D = CRS.forCode("EPSG:326"+utmFormat);
                 break;
             }
             case "PS" : {
-
                 final String originLongitude   = getValue("VERTICAL_LON_FROM_POLE");
                 final String trueLatitudeScale = getValue("TRUE_SCALE_LAT");
                 final String falseEasting      = getValue("FALSE_EASTING");
                 final String falseNorthing     = getValue("FALSE_NORTHING");
-
                 final OperationMethod method = DefaultFactories.forBuildin(CoordinateOperationFactory.class)
                     .getOperationMethod("Polar Stereographic (variant B)");
-
                 final ParameterValueGroup psParameters = method.getParameters().createValue();
-
                 psParameters.parameter(Constants.STANDARD_PARALLEL_1).setValue(Double.valueOf(trueLatitudeScale));
                 psParameters.parameter(Constants.CENTRAL_MERIDIAN).setValue(Double.valueOf(originLongitude));
                 psParameters.parameter(Constants.FALSE_EASTING).setValue(Double.valueOf(falseEasting));
                 psParameters.parameter(Constants.FALSE_NORTHING).setValue(Double.valueOf(falseNorthing));
 
                 final Map<String, String> properties = Collections.singletonMap("name", "Landsat 8 polar stereographic");
-
                 //-- define mathematical formula to pass from Geographic Base CRS to projected Coordinate space.
                 final DefaultConversion projection = new DefaultConversion(properties, method, null, psParameters);
-               
-                
                 projectedCRS2D = new DefaultProjectedCRS(properties, CommonCRS.WGS84.normalizedGeographic(), projection, null);
                 break;
             }
             default : throw new IllegalStateException("Comportement not supported : expected MAP_PROJECTION values are : PS or UTM, found : "+projType);
         }
-
         return projectedCRS2D;
     }
   
    CoordinateReferenceSystem getCRS() throws FactoryException {
-
         if (projectedCRS != null) {
             return projectedCRS;
         }
-
         final CoordinateReferenceSystem crs2D = getCRS2D();
-
         //-- add temporal part if Date exist
         final TemporalCRS temporalCRS = CommonCRS.Temporal.JAVA.crs();
-
         projectedCRS = new GeodeticObjectBuilder()
                 .addName(crs2D.getName().getCode() + '/' + temporalCRS.getName().getCode())
                 .createCompoundCRS(crs2D, temporalCRS);
         return projectedCRS;
     }
    Envelope getProjectedEnvelope() throws FactoryException, ParseException {
-
         final CoordinateReferenceSystem projCRS = getCRS();
         assert projCRS != null;
-
         //-- {west, est, south, north}
         final double[] projectedBound2D = getProjectedBound2D();
-        
         final GeneralEnvelope projEnvelope = new GeneralEnvelope(projCRS);
         projEnvelope.setRange(0, projectedBound2D[0], projectedBound2D[1]);
         projEnvelope.setRange(1, projectedBound2D[2], projectedBound2D[3]);
         final Date dat = getAcquisitionDate1();
         if (dat != null)
         projEnvelope.setRange(2, dat.getTime(), dat.getTime());
-        
-        
-
         return projEnvelope;
     }
-
+   
     private GeographicBoundingBox getGeographicBoundingBox() throws DataStoreException {
         final DefaultGeographicBoundingBox bbox;
         try {
@@ -514,17 +455,240 @@ private double[] getProjectedBound2D() {
 
         //-- longitude
         final String west = getExtremumValue1("CORNER_LL_PROJECTION_X_PRODUCT", "CORNER_UL_PROJECTION_X_PRODUCT",true);
-       
         final String est  = getExtremumValue1("CORNER_UR_PROJECTION_X_PRODUCT", "CORNER_LR_PROJECTION_X_PRODUCT",true);
-        
-
         //-- lattitude
         final String south = getExtremumValue1("CORNER_LL_PROJECTION_Y_PRODUCT", "CORNER_LR_PROJECTION_Y_PRODUCT",true);
-        
         final String north = getExtremumValue1("CORNER_UR_PROJECTION_Y_PRODUCT", "CORNER_UL_PROJECTION_Y_PRODUCT",true);
-       
-
         return new double[]{Double.valueOf(west), Double.valueOf(est), Double.valueOf(south), Double.valueOf(north)};
+    }
+  private Set<ProcessStep> getThermicInfos13(){
+         final HashSet<ProcessStep> extendedInfos = new HashSet<>();
+        
+            final ProcessStep r1 = getband("ANGLE_COEFFICIENT_FILE_NAME");
+            if (r1 != null) extendedInfos.add(r1);
+            final ProcessStep r2 = getband("BPF_NAME_OLI");
+            if (r2!= null) extendedInfos.add(r2);
+            final ProcessStep r3 = getband("BPF_NAME_TIRS");
+            if (r3!= null) extendedInfos.add(r3);
+            final ProcessStep r4 = getband("CPF_NAME");
+            if (r4!= null) extendedInfos.add(r4);
+            final ProcessStep r5 = getband("RLUT_FILE_NAME");
+            if (r5!= null) extendedInfos.add(r5);
+         
+           return extendedInfos;
+         }
+   private Set<ProcessStep> getThermicInfos15(){
+         final HashSet<ProcessStep> extendedInfos = new HashSet<>();
+        
+            final ProcessStep r1 = getband("PANCHROMATIC_LINES");
+            if (r1 != null) extendedInfos.add(r1);
+            final ProcessStep r2 = getband("PANCHROMATIC_SAMPLES");
+            if (r2!= null) extendedInfos.add(r2);
+            final ProcessStep r3 = getband("REFLECTIVE_LINES");
+            if (r3!= null) extendedInfos.add(r3);
+            final ProcessStep r4 = getband("REFLECTIVE_SAMPLES");
+            if (r4!= null) extendedInfos.add(r4);
+            final ProcessStep r5 = getband("THERMAL_LINES");
+            if (r5!= null) extendedInfos.add(r5);
+            final ProcessStep r6 = getband("THERMAL_SAMPLES");
+            if (r6!= null) extendedInfos.add(r6);
+           return extendedInfos;
+         }
+  private Set<ProcessStep> getThermicInfos14(){
+         final HashSet<ProcessStep> extendedInfos = new HashSet<>();
+        
+            final ProcessStep r1 = getband("CLOUD_COVER");
+            if (r1 != null) extendedInfos.add(r1);
+            final ProcessStep r2 = getband("CLOUD_COVER_LAND");
+            if (r2!= null) extendedInfos.add(r2);
+            final ProcessStep r3 = getband("IMAGE_QUALITY_OLI");
+            if (r3!= null) extendedInfos.add(r3);
+            final ProcessStep r4 = getband("IMAGE_QUALITY_TIRS");
+            if (r4!= null) extendedInfos.add(r4);
+            final ProcessStep r5 = getband("TIRS_SSM_POSITION_STATUS");
+            if (r5!= null) extendedInfos.add(r5);
+             final ProcessStep r6 = getband("ROLL_ANGLE");
+            if (r6 != null) extendedInfos.add(r6);
+            final ProcessStep r7 = getband("SUN_AZIMUTH");
+            if (r7!= null) extendedInfos.add(r7);
+            final ProcessStep r8 = getband("SUN_ELEVATION");
+            if (r8!= null) extendedInfos.add(r8);
+            final ProcessStep r9 = getband("EARTH_SUN_DISTANCE");
+            if (r9!= null) extendedInfos.add(r9);
+            final ProcessStep r10 = getband("GROUND_CONTROL_POINTS_VERSION");
+            if (r10!= null) extendedInfos.add(r10);
+            final ProcessStep r11 = getband("GROUND_CONTROL_POINTS_MODEL");
+            if (r11!= null) extendedInfos.add(r11);
+            final ProcessStep r12 = getband("GEOMETRIC_RMSE_MODEL");
+            if (r12!= null) extendedInfos.add(r12);
+            final ProcessStep r13 = getband("GEOMETRIC_RMSE_MODEL_Y");
+            if (r13!= null) extendedInfos.add(r13);
+            final ProcessStep r14 = getband("GEOMETRIC_RMSE_MODEL_X");
+            if (r14!= null) extendedInfos.add(r14);
+            final ProcessStep r15 = getband("GROUND_CONTROL_POINTS_VERIFYL");
+            if (r15!= null) extendedInfos.add(r15);
+            final ProcessStep r16 = getband("GEOMETRIC_RMSE_VERIFY");
+            if (r16!= null) extendedInfos.add(r16);
+         
+           return extendedInfos;
+         }
+        //Minimum achievable spectral radiance value for Band
+         private Set<ProcessStep> getThermicInfos2(){
+         final HashSet<ProcessStep> extendedInfos = new HashSet<>();
+         for(int x=1 ;x<=11 ; x++){
+            final ProcessStep r1 = getRaminmax("RADIANCE_MINIMUM_BAND_", x);
+            if (r1 != null) extendedInfos.add(r1);
+         }
+           return extendedInfos;
+         }
+         //Maximum achievable spectral radiance value for Band
+          private Set<ProcessStep> getThermicInfos3(){
+          final HashSet<ProcessStep> extendedInfos = new HashSet<>();
+          for(int x=1 ;x<=11 ; x++){
+               final ProcessStep r1 = getRaminmax("RADIANCE_MAXIMUM_BAND_", x);
+               if (r1 != null) extendedInfos.add(r1);
+           }
+          return extendedInfos;
+         }
+        //Maximum achievable reflectance value for Band
+          private Set<ProcessStep> getThermicInfos4(){
+          final HashSet<ProcessStep> extendedInfos = new HashSet<>();
+          for(int x=1 ;x<=11 ; x++){
+               final ProcessStep r1 = getRaminmax("REFLECTANCE_MAXIMUM_BAND_", x);
+               if (r1 != null) extendedInfos.add(r1);
+           }
+          return extendedInfos;
+         } 
+//Minimum achievable reflectance value for Band 
+          private Set<ProcessStep> getThermicInfos5(){
+          final HashSet<ProcessStep> extendedInfos = new HashSet<>();
+          for(int x=1 ;x<=11 ; x++){
+               final ProcessStep r1 = getRaminmax("REFLECTANCE_MINIMUM_BAND_", x);
+               if (r1 != null) extendedInfos.add(r1);
+           }
+          return extendedInfos;
+         } 
+          //Maximum possible pixel value for Band
+           private Set<ProcessStep> getThermicInfos6(){
+          final HashSet<ProcessStep> extendedInfos = new HashSet<>();
+          for(int x=1 ;x<=11 ; x++){
+               final ProcessStep r1 = getRaminmax("QUANTIZE_CAL_MAX_BAND_", x);
+               if (r1 != null) extendedInfos.add(r1);
+           }
+          return extendedInfos;
+         } 
+          //Minimum possible pixel value for Band
+           private Set<ProcessStep> getThermicInfos7(){
+          final HashSet<ProcessStep> extendedInfos = new HashSet<>();
+          for(int x=1 ;x<=11 ; x++){
+               final ProcessStep r1 = getRaminmax("QUANTIZE_CAL_MIN_BAND_", x);
+               if (r1 != null) extendedInfos.add(r1);
+           }
+          return extendedInfos;
+         } 
+          //The multiplicative rescaling factor used to convert calibrated DN to Radiance units for Band
+          private Set<ProcessStep> getThermicInfos8(){
+          final HashSet<ProcessStep> extendedInfos = new HashSet<>();
+          for(int x=1 ;x<=11 ; x++){
+               final ProcessStep r1 = getRaminmax("RADIANCE_MULT_BAND_", x);
+               if (r1 != null) extendedInfos.add(r1);
+           }
+          return extendedInfos;
+         } 
+          //The additive rescaling factor used to convert calibrated DN to Radiance units for Band
+           private Set<ProcessStep> getThermicInfos9(){
+          final HashSet<ProcessStep> extendedInfos = new HashSet<>();
+          for(int x=1 ;x<=11 ; x++){
+               final ProcessStep r1 = getRaminmax("RADIANCE_ADD_BAND_", x);
+               if (r1 != null) extendedInfos.add(r1);
+           }
+          return extendedInfos;
+         } 
+          //The multiplicative rescaling factor used to convert calibrated DN to Reflectance for Band
+            private Set<ProcessStep> getThermicInfos10(){
+          final HashSet<ProcessStep> extendedInfos = new HashSet<>();
+          for(int x=1 ;x<=11 ; x++){
+               final ProcessStep r1 = getRaminmax("REFLECTANCE_MULT_BAND_", x);
+               if (r1 != null) extendedInfos.add(r1);
+           }
+          return extendedInfos;
+         } 
+          //The additive rescaling factor used to convert calibrated DN to Reflectance for Band
+          private Set<ProcessStep> getThermicInfos11(){
+          final HashSet<ProcessStep> extendedInfos = new HashSet<>();
+          for(int x=1 ;x<=11 ; x++){
+               final ProcessStep r1 = getRaminmax("REFLECTANCE_ADD_BAND_", x);
+               if (r1 != null) extendedInfos.add(r1);
+           }
+          return extendedInfos;
+         } 
+           private Set<ProcessStep> getThermicInfos12(){
+         final HashSet<ProcessStep> extendedInfos = new HashSet<>();
+         for(int x=1 ;x<=11 ; x++){
+            final ProcessStep rx = getRaminmax("FILE_NAME_BAND_", x);
+            if (rx != null) extendedInfos.add(rx);
+         }
+         final ProcessStep r2 = getband("FILE_NAME_BAND_QUALITY");
+         if (r2 != null) extendedInfos.add(r2);
+           return extendedInfos;
+           }
+//return K infor
+        private Set<ProcessStep> getThermicInfos() {
+               final HashSet<ProcessStep> extendedInfos = new HashSet<>();
+               final ProcessStep k110 = getKConstant(1, 10);
+               if (k110 != null) extendedInfos.add(k110);
+               final ProcessStep k210 = getKConstant(2, 10);
+               if (k210 != null) extendedInfos.add(k210);
+               final ProcessStep k111 = getKConstant(1, 11);
+               if (k111 != null) extendedInfos.add(k111);
+               final ProcessStep k211 = getKConstant(2, 11);
+               if (k211 != null) extendedInfos.add(k211);
+               return extendedInfos;
+           }
+        //radian min max band
+        
+        private ProcessStep getRaminmax(final String minmax, final int bandIndex) {
+
+        final String RaLabel = minmax+bandIndex;
+        final String k = getValue(RaLabel);
+        if (k != null) {
+            final DefaultProcessStep kProcessStep = new DefaultProcessStep();
+            final String description = "Band"+bandIndex+" = "+k;
+            kProcessStep.setDescription(new DefaultInternationalString(description));
+            return kProcessStep;
+        }
+        return null;
+    }
+/**
+     * Returns if exist K constant for one thermic band.
+     *
+     * @param kVal 1 or 2 for K1 or K2.
+     * @param bandIndex thermic band index. (10 or 11 for Landsat)
+     * @return
+     */
+     private ProcessStep getband(final String band) {
+
+        final String kLabel = band;
+        final String k = getValue(kLabel);
+        if (k != null) {
+            final DefaultProcessStep kProcessStep = new DefaultProcessStep();
+            final String description = band+"is:  "+k;
+            kProcessStep.setDescription(new DefaultInternationalString(description));
+            return kProcessStep;
+        }
+        return null;
+    }
+    private ProcessStep getKConstant(final int kVal, final int bandIndex) {
+
+        final String kLabel = "K"+kVal+"_CONSTANT_BAND_"+bandIndex;
+        final String k = getValue(kLabel);
+        if (k != null) {
+            final DefaultProcessStep kProcessStep = new DefaultProcessStep();
+            final String description = kLabel+" = "+k;
+            kProcessStep.setDescription(new DefaultInternationalString(description));
+            return kProcessStep;
+        }
+        return null;
     }
     /**
      * Temporary method for testing purpose only - will be removed in the final version.
@@ -535,12 +699,40 @@ private double[] getProjectedBound2D() {
             reader = new LandsatMetadataReader(in);
         }
         System.out.println("The Metadata of LC81230522014071LGN00_MTL.txt is:");
-     
+        System.out.println(reader.getCRS2D());
+        
        System.out.println(reader. getInfos());
        System.out.println(reader.getProjectedEnvelope());
-       System.out.println(reader.getCRS2D());
-  
+       
+       System.out.println("The number of product ");
+        System.out.println(reader.getThermicInfos15());
+       System.out.println("The file name for Band");
+        System.out.println(reader.getThermicInfos12());
+        System.out.println("The file other");
+        System.out.println(reader.getThermicInfos13());
+         System.out.println("The Attributes image");
+        System.out.println(reader.getThermicInfos14());
+       System.out.println("Minimum achievable spectral radiance value for Band");
+        System.out.println(reader.getThermicInfos2());
+        System.out.println("Maximum achievable spectral radiance value for Band");
+        System.out.println(reader.getThermicInfos3());
+        System.out.println("Maximum achievable reflectance value for Band");
+        System.out.println(reader.getThermicInfos4());
+        System.out.println("Minimum achievable reflectance value for Band ");
+        System.out.println(reader.getThermicInfos5());
+        System.out.println("Maximum possible pixel value for Band");
+        System.out.println(reader.getThermicInfos6());
+        System.out.println("Minimum possible pixel value for Band ");
+        System.out.println(reader.getThermicInfos7());
+        System.out.println("The multiplicative rescaling factor used to convert calibrated DN to Radiance units for Band");
+        System.out.println(reader.getThermicInfos8());
+        System.out.println("The additive rescaling factor used to convert calibrated DN to Radiance units for Band");
+        System.out.println(reader.getThermicInfos9());
+        System.out.println("The multiplicative rescaling factor used to convert calibrated DN to Reflectance for Band");
+        System.out.println(reader.getThermicInfos10());
+        System.out.println("The additive rescaling factor used to convert calibrated DN to Reflectance for Band");
+        System.out.println(reader.getThermicInfos11());
+         System.out.println("K info is:");
+       System.out.println(reader.getThermicInfos());
     }
-
-    
 }
