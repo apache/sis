@@ -265,7 +265,7 @@ public final class CodeColorizer {
              */
             if (stopCondition != null) {
                 if (node.getNodeType() != Node.TEXT_NODE) {
-                    syntaticElement.appendChild(node);  // Also remove from its previous position.
+                    syntaticElement.appendChild(node);          // Also remove from its previous position.
                     continue;
                 }
                 final String text = node.getTextContent();

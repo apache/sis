@@ -42,6 +42,7 @@ Coverage
 CoverageContentType
 CoverageDescription
 CoverageResult
+CRSFactory
 CylindricalCS
 DataIdentification
 DataQuality
