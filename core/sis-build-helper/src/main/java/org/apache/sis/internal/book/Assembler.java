@@ -247,21 +247,24 @@ public final class Assembler {
      * @param filename  the source XML file in the same directory than the input file given to the constructor.
      * @param toReplace the target XML node to be replaced by the content of the given file.
      */
-    private Node replaceByBody(final String filename, final Node toReplace) throws IOException, SAXException, BookException {
+    private Node[] replaceByBody(final String filename, final Node toReplace) throws IOException, SAXException, BookException {
         final NodeList nodes = load(filename).getElementsByTagName("body");
         if (nodes.getLength() != 1) {
             throw new BookException(filename + ": expected exactly one <body> element.");
         }
-        final Node element = document.createElement("section");
-        toReplace.getParentNode().replaceChild(element, toReplace);
-        for (Node child : toArray(nodes.item(0).getChildNodes())) {
+        final Node parent = toReplace.getParentNode();
+        parent.removeChild(toReplace);
+        Node[] childNodes = toArray(nodes.item(0).getChildNodes());
+        for (int i=0; i<childNodes.length; i++) {
+            Node child = childNodes[i];
             child = document.importNode(child, true);   // document.adoptNode(child) would have been more efficient but does not seem to work.
             if (child == null) {
                 throw new BookException("Failed to copy subtree.");
             }
-            element.appendChild(child);
+            parent.appendChild(child);
+            childNodes[i] = child;
         }
-        return element;
+        return childNodes;
     }
 
     /**
@@ -289,7 +292,8 @@ public final class Assembler {
      * @param index {@code true} for including the {@code <h1>}, <i>etc.</i> texts in the Table Of Content (TOC).
      *        This is set to {@code false} when parsing the content of {@code <aside>} or {@code <article>} elements.
      */
-    private void process(Node node, boolean index) throws IOException, SAXException, BookException {
+    private void process(final Node node, boolean index) throws IOException, SAXException, BookException {
+        Node[] childNodes = toArray(node.getChildNodes());
         switch (node.getNodeType()) {
             case Node.COMMENT_NODE: {
                 final String text = node.getNodeValue().trim();
@@ -302,7 +306,7 @@ public final class Assembler {
                 final String name = node.getNodeName();
                 switch (name) {
                     case "xi:include": {
-                        node = replaceByBody(((Element) node).getAttribute("href"), node);
+                        childNodes = replaceByBody(((Element) node).getAttribute("href"), node);
                         break;
                     }
                     case "aside":
@@ -329,7 +333,7 @@ public final class Assembler {
                         if (text != null) {
                             node.setTextContent(text);
                         }
-                        return; // Do not scan recursively the <code> text content.
+                        return;                             // Do not scan recursively the <code> text content.
                     }
                     default: {
                         if (name.length() == 2 && name.charAt(0) == 'h') {
@@ -355,7 +359,7 @@ public final class Assembler {
                                     } else {
                                         appendToTableOfContent(tableOfChapterContent, c-1, (Element) node);
                                     }
-                                    prependSectionNumber(c, node);  // Only after insertion in TOC.
+                                    prependSectionNumber(c, node);                      // Only after insertion in TOC.
                                 }
                             }
                         }
@@ -365,7 +369,7 @@ public final class Assembler {
                 break;
             }
         }
-        for (final Node child : toArray(node.getChildNodes())) {
+        for (final Node child : childNodes) {
             process(child, index);
         }
     }
