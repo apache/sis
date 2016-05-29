@@ -33,7 +33,7 @@ package org.apache.sis.internal.system;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.5
+ * @version 0.8
  * @module
  */
 public final class Modules {
@@ -74,7 +74,7 @@ public final class Modules {
      *
      * @see org.apache.sis.util.Version
      */
-    public static final int MINOR_VERSION = 7;
+    public static final int MINOR_VERSION = 8;
 
     /**
      * Do not allow instantiation of this class.
