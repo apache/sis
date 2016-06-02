@@ -45,6 +45,7 @@ import org.apache.sis.metadata.iso.acquisition.DefaultInstrument;
 import org.apache.sis.metadata.iso.acquisition.DefaultObjective;
 import org.apache.sis.metadata.iso.acquisition.DefaultOperation;
 import org.apache.sis.metadata.iso.acquisition.DefaultPlatform;
+import org.apache.sis.metadata.iso.acquisition.DefaultRequirement;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.citation.DefaultCitationDate;
@@ -102,26 +103,33 @@ import org.opengis.util.FactoryException;
 public class LandsatReader {
 
     /**
-     * All properties found in the Landsat metadata file, except {@code GROUP}
-     * and {@code END_GROUP}. Example:
+     * All properties found in the Landsat metadata file, except {@code GROUP} and {@code END_GROUP}.
+     * Example:
      *
-     * {
+     * {@preformat text
+     *   DATE_ACQUIRED = 2014-03-12
+     *   SCENE_CENTER_TIME = 03:02:01.5339408Z
+     *   CORNER_UL_LAT_PRODUCT = 12.61111
+     *   CORNER_UL_LON_PRODUCT = 108.33624
+     *   CORNER_UR_LAT_PRODUCT = 12.62381
+     *   CORNER_UR_LON_PRODUCT = 110.44017
+     * }
+     *//**
+     * Stores all properties found in the Landsat file read from the the given reader,
+     * except {@code GROUP} and {@code END_GROUP}.
      *
-     * @preformat text DATE_ACQUIRED = 2014-03-12 SCENE_CENTER_TIME =
-     * 03:02:01.5339408Z CORNER_UL_LAT_PRODUCT = 12.61111 CORNER_UL_LON_PRODUCT
-     * = 108.33624 CORNER_UR_LAT_PRODUCT = 12.62381 CORNER_UR_LON_PRODUCT =
-     * 110.44017 }
+     * @param  reader a reader opened on the Landsat file. It is caller's responsibility to close this reader.
+     * @throws IOException if an I/O error occurred while reading the given stream.
+     * @throws DataStoreException if the content is not a Landsat file.
      */
     private final Map<String, String> properties;
 
-    /**
-     * Stores all properties found in the Landsat file read from the the given
-     * reader, except {@code GROUP} and {@code END_GROUP}.
+   /**
+     * Stores all properties found in the Landsat file read from the the given reader,
+     * except {@code GROUP} and {@code END_GROUP}.
      *
-     * @param reader a reader opened on the Landsat file. It is caller's
-     * responsibility to close this reader.
-     * @throws IOException if an I/O error occurred while reading the given
-     * stream.
+     * @param  reader a reader opened on the Landsat file. It is caller's responsibility to close this reader.
+     * @throws IOException if an I/O error occurred while reading the given stream.
      * @throws DataStoreException if the content is not a Landsat file.
      */
     LandsatReader(final BufferedReader reader) throws IOException, DataStoreException {
@@ -225,19 +233,13 @@ public class LandsatReader {
     }
 
     /**
-     * Gets the data bounding box in degrees of longitude and latitude, or
-     * {@code null} if none.
-     *
-     * @return the data domain in degrees of longitude and latitude, or
-     * {@code null} if none.
-     * @throws DataStoreException if a longitude or a latitude can not be read.
+     * Gets the date the image was acquired.
+     * @return the  date the image was acquired.
+     * @throws ParseException returns the position where the error was found. if the error was found..
      */
     private Date getAcquisitionDate() throws ParseException {
         //-- year month day
         final String dateAcquired = getValue("DATE_ACQUIRED");
-        if (dateAcquired == null) {
-            return null;
-        }
         //-- hh mm ss:ms
         final String sceneCenterTime = getValue("SCENE_CENTER_TIME");
         String strDate = dateAcquired;
@@ -248,7 +250,11 @@ public class LandsatReader {
         final Date date = formatter.parse(strDate);
         return date;
     }
-
+     /**
+     * Gets the date when the metadata file for the L1G product set was created.
+     * @return the  date the image was acquired.
+     * @throws ParseException returns the position where the error was found. if the error was found..
+     */
     private Date getDates() throws ParseException {
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
         final String dateInString = getValue("FILE_DATE");
@@ -280,44 +286,43 @@ public class LandsatReader {
         }
         return bbox.isEmpty() ? null : bbox;
     }
-
-    /*
-     * Gets the data bouding box uper - lower corner 
-     */
-    private GeographicBoundingBox getGeographicBoundingBox1() throws DataStoreException {
-        final DefaultGeographicBoundingBox bbox;
-        try {
-            bbox = new DefaultGeographicBoundingBox(
-                    getExtremumValue("CORNER_LL_PROJECTION_X_PRODUCT", "CORNER_UL_PROJECTION_X_PRODUCT", false), // westBoundLongitude
-                    getExtremumValue("CORNER_UR_PROJECTION_X_PRODUCT", "CORNER_LR_PROJECTION_X_PRODUCT", true), // eastBoundLongitude
-                    getExtremumValue("CORNER_LL_PROJECTION_Y_PRODUCT", "CORNER_LR_PROJECTION_Y_PRODUCT", false), // southBoundLatitude
-                    getExtremumValue("CORNER_UR_PROJECTION_Y_PRODUCT", "CORNER_UL_PROJECTION_Y_PRODUCT", true));      // northBoundLatitude
-        } catch (NumberFormatException e) {
-            throw new DataStoreException("Can not read the geographic bounding box.", e);
-        }
-        return bbox.isEmpty() ? null : bbox;
-    }
-
-    /*
-     *Gets GeographicExtent
+ /**
+     * Gets the extent for Identification infor 
+     * {@code null} if none.
+     *
+     * @return the data extent in Indentification infor 
+     * {@code null} if none.
+     * @throws DataStoreException if data can not be read.
      */
     private Extent getExtent() throws DataStoreException {
 
         final DefaultExtent ex = new DefaultExtent();
         final GeographicBoundingBox box = getGeographicBoundingBox();
-        final GeographicBoundingBox box1 = getGeographicBoundingBox1();
         ex.getGeographicElements().add(box);
-        ex.getGeographicElements().add(box1);
 
         return ex;
     }
-
-    /*
-     *Get metadata AcquisitionInformation
+/**
+     * Gets the Information for the Acquisition Information 
+     * {@code null} if none.
+     *
+     * @return the data for the Acquisition Information 
+     * {@code null} if none.
      */
-    private AcquisitionInformation getAcquisitionInformation() {
+    private AcquisitionInformation getAcquisitionInformation() throws ParseException {
         final DefaultAcquisitionInformation dAi = new DefaultAcquisitionInformation();
+        final DefaultCitation citation = new DefaultCitation();
+        final DefaultRequirement requirement = new DefaultRequirement();
+        final Date date = getAcquisitionDate();
+        final String title = getValue("DATA_TYPE");
+        citation.setTitle(new DefaultInternationalString(title));
+        citation.setDates(Collections.singleton(new DefaultCitationDate(date, DateType.PUBLICATION)));
+        requirement.setCitation(citation);
+        dAi.setAcquisitionRequirements(Collections.singleton(requirement));
         final DefaultPlatform platF = new DefaultPlatform();
+        /*
+        The characteristics, spatial and temporal extent of the intended object to be observed.
+        */
         final DefaultObjective object1 = new DefaultObjective();
         final DefaultObjective object2 = new DefaultObjective();
         final String orientatin = getValue("ORIENTATION");
@@ -326,6 +331,9 @@ public class LandsatReader {
         object1.setFunctions(Collections.singleton(new DefaultInternationalString(orientatin)));
         object2.setTypes(Collections.singleton(ObjectiveType.valueOf("Resampling")));
         object2.setFunctions(Collections.singleton(new DefaultInternationalString(resampling)));
+        /*
+        *The Platform, Instrument and the type of instrument used to observe the object 
+        */
         final String space = getValue("SPACECRAFT_ID");
         if (space == null) {
             return null;
@@ -344,8 +352,14 @@ public class LandsatReader {
 
     }
 
-    /*
-     *Get metadata file info
+    /**
+     * Gets the information for the File Identifier
+     * {@code null} if none.
+     *
+     * @return the data for the File Identifier
+     * {@code null} if none.
+     * @throws IOException Signals that an I/O exception of some sort has occurred.
+     * @throws ParseException Signals that an error has been reached unexpectedly
      */
     private Identifier getFileIdentifier() throws IOException, ParseException {
         final DefaultIdentifier iden = new DefaultIdentifier();
@@ -365,8 +379,13 @@ public class LandsatReader {
         return iden;
     }
 
-    /*
-      * Creates a {@code <gmd:spatialRepresentationInfo>} element from the given grid geometries.
+    /**
+     * Gets the information for the SpatialRepresentationInfo
+     * {@code null} if none.
+     *
+     * @return the data for the SpatialRepresentationInfo
+     * {@code null} if none.
+     * @throws IOException Signals that an I/O exception of some sort has occurred.
      */
     private GridSpatialRepresentation createSpatialRepresentationInfo() throws IOException {
         final DefaultGridSpatialRepresentation grid = new DefaultGridSpatialRepresentation();
@@ -437,18 +456,22 @@ public class LandsatReader {
 
         return grid;
     }
-
-    /*
-     *Get Metadata Content Infor
+/**
+     * Gets Basic information required to uniquely identify a resource or resources.
+     * {@code null} if none.
+     *
+     * @return the data for the File Identifier
+     * {@code null} if none.
+     * @throws DataStoreException Thrown when a {@link DataStore} can not complete a read or write operation.
+     * @throws ParseException Signals that an error has been reached unexpectedly
      */
     Identification getIdentification() throws ParseException, DataStoreException {
         final AbstractIdentification abtract = new AbstractIdentification();
         final DefaultCitation citation = new DefaultCitation();
-        final String datatype = getValue("DATA_TYPE");
+        final String datatype = getValue("ORIGIN");
         citation.setTitle(new DefaultInternationalString(datatype));
-        final Date date = getAcquisitionDate();
+        final Date date = getDates();
         citation.setDates(Collections.singleton(new DefaultCitationDate(date, DateType.PUBLICATION)));
-//     abtract.setPointOfContacts(newValues);
         final DefaultFormat format = new DefaultFormat();
         final String name = getValue("OUTPUT_FORMAT");
         final String version = getValue("DATA_TYPE");
@@ -463,6 +486,15 @@ public class LandsatReader {
 
         return abtract;
     }
+    /**
+     * Gets the description of the spatial and temporal reference systems used in the dataset.
+     * {@code null} if none.
+     *
+     * @return the description of the spatial and temporal reference systems used in the dataset.
+     * {@code null} if none.
+     * @throws FactoryException Thrown when a {@linkplain Factory factory} can't create an instance
+     * of the requested object.
+     */
 
     private CoordinateReferenceSystem getReferenceSystem() throws FactoryException {
         final CoordinateReferenceSystem coordinate;
@@ -521,8 +553,13 @@ public class LandsatReader {
         }
         return coordinate;
     }
-   
-    private DataQuality getdataquali(){
+     /**
+     * Gets the data quality 
+     * {@code null} if none.
+     * @return the data quality 
+     * {@code null} if none.
+     */
+    private DataQuality getQuality(){
         final DefaultDataQuality quali = new DefaultDataQuality(); 
         final DefaultLineage lineage = new DefaultLineage();
         final String level = getValue("DATA_TYPE");
@@ -639,6 +676,18 @@ public class LandsatReader {
         quali.setLineage(lineage);
         return quali;   
     }
+     /**
+     * Read which defines metadata about a resource or resources.
+     * {@code null} if none.
+     * @return the data which defines metadata about a resource or resources.
+     * {@code null} if none.
+     * @throws FactoryException Thrown when a {@linkplain Factory factory} can't create an instance
+     * of the requested object.
+     * @throws DataStoreException Thrown when a {@link DataStore} can not complete a read or write operation.
+     * @throws ParseException Signals that an error has been reached unexpectedly
+     * @throws IOException Signals that an I/O exception of some sort has occurred.
+     */
+    
     public Metadata read() throws IOException, ParseException, DataStoreException, FactoryException {
         final DefaultMetadata metadata = new DefaultMetadata();
         metadata.setMetadataStandards(Citations.ISO_19115);
@@ -652,7 +701,7 @@ public class LandsatReader {
         metadata.setSpatialRepresentationInfo(Collections.singleton(grid));
         final CoordinateReferenceSystem a = getReferenceSystem();
         metadata.setReferenceSystemInfo(Collections.singleton(a));
-        final DataQuality quali = getdataquali();
+        final DataQuality quali = getQuality();
         metadata.setDataQualityInfo(Collections.singleton(quali));
         return metadata;
     }
