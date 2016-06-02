@@ -153,12 +153,6 @@ public enum AxesConvention implements AxisFilter {
         }
 
         @Override
-        @Deprecated
-        public Unit<?> getUnitReplacement(Unit<?> unit) {
-            return getUnitReplacement(null, unit);
-        }
-
-        @Override
         public Unit<?> getUnitReplacement(final CoordinateSystemAxis axis, Unit<?> unit) {
             if (Units.isLinear(unit)) {
                 unit = SI.METRE;
@@ -168,12 +162,6 @@ public enum AxesConvention implements AxisFilter {
                 unit = NonSI.DAY;
             }
             return unit;
-        }
-
-        @Override
-        @Deprecated
-        public AxisDirection getDirectionReplacement(final AxisDirection direction) {
-            return getDirectionReplacement(null, direction);
         }
 
         @Override
@@ -250,20 +238,8 @@ public enum AxesConvention implements AxisFilter {
         }
 
         @Override
-        @Deprecated
-        public Unit<?> getUnitReplacement(final Unit<?> unit) {
-            return unit;
-        }
-
-        @Override
         public Unit<?> getUnitReplacement(final CoordinateSystemAxis axis, final Unit<?> unit) {
             return unit;
-        }
-
-        @Override
-        @Deprecated
-        public AxisDirection getDirectionReplacement(final AxisDirection direction) {
-            return getDirectionReplacement(null, direction);
         }
 
         @Override
@@ -306,20 +282,8 @@ public enum AxesConvention implements AxisFilter {
         }
 
         @Override
-        @Deprecated
-        public Unit<?> getUnitReplacement(final Unit<?> unit) {
-            return unit;
-        }
-
-        @Override
         public Unit<?> getUnitReplacement(CoordinateSystemAxis axis, final Unit<?> unit) {
             return unit;
-        }
-
-        @Override
-        @Deprecated
-        public AxisDirection getDirectionReplacement(final AxisDirection direction) {
-            return direction;
         }
 
         @Override
@@ -358,20 +322,8 @@ public enum AxesConvention implements AxisFilter {
         }
 
         @Override
-        @Deprecated
-        public Unit<?> getUnitReplacement(final Unit<?> unit) {
-            return unit;
-        }
-
-        @Override
         public Unit<?> getUnitReplacement(CoordinateSystemAxis axis, final Unit<?> unit) {
             return unit;
-        }
-
-        @Override
-        @Deprecated
-        public AxisDirection getDirectionReplacement(final AxisDirection direction) {
-            return direction;
         }
 
         @Override

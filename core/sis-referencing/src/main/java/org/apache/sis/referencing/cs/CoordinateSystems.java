@@ -446,16 +446,6 @@ public final class CoordinateSystems extends Static {
             public AxisDirection getDirectionReplacement(CoordinateSystemAxis axis, AxisDirection direction) {
                 return direction;
             }
-
-            @Deprecated @Override
-            public AxisDirection getDirectionReplacement(AxisDirection direction) {
-                return direction;
-            }
-
-            @Deprecated @Override
-            public Unit<?> getUnitReplacement(Unit<?> unit) {
-                return getUnitReplacement(null, unit);
-            }
         });
     }
 
@@ -496,16 +486,6 @@ public final class CoordinateSystems extends Static {
             @Override
             public AxisDirection getDirectionReplacement(CoordinateSystemAxis axis, AxisDirection direction) {
                 return direction;
-            }
-
-            @Deprecated @Override
-            public AxisDirection getDirectionReplacement(AxisDirection direction) {
-                return direction;
-            }
-
-            @Deprecated @Override
-            public Unit<?> getUnitReplacement(Unit<?> unit) {
-                return getUnitReplacement(null, unit);
             }
         });
     }

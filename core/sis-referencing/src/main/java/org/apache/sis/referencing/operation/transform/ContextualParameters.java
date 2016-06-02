@@ -422,18 +422,6 @@ public class ContextualParameters extends Parameters implements Serializable {
     }
 
     /**
-     * @deprecated Replaced by {@link #getMatrix(MatrixRole)}.
-     *
-     * @param  norm {@code true} for fetching the <cite>normalization</cite> transform to apply before the kernel,
-     *         or {@code false} for the <cite>denormalization</cite> transform to apply after the kernel.
-     * @return The matrix for the requested normalization ({@code true}) or denormalization ({@code false}) affine transform.
-     */
-    @Deprecated
-    public final MatrixSIS getMatrix(final boolean norm) {
-        return getMatrix(norm ? MatrixRole.NORMALIZATION : MatrixRole.DENORMALIZATION);
-    }
-
-    /**
      * Prepends a normalization step converting input ordinates in the two first dimensions from degrees to radians.
      * The normalization can optionally subtract the given λ₀ value (in degrees) from the longitude.
      *
