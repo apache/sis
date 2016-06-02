@@ -93,17 +93,6 @@ public interface AxisFilter {
     }
 
     /**
-     * @deprecated Use {@link #getDirectionReplacement(CoordinateSystemAxis, AxisDirection)} instead.
-     *
-     * @param  direction The original axis direction.
-     * @return The new axis direction, or {@code direction} if there is no change.
-     */
-    @Deprecated
-    default AxisDirection getDirectionReplacement(AxisDirection direction) {
-        return getDirectionReplacement(null, direction);
-    }
-
-    /**
      * Returns a replacement for the given axis unit.
      * The default implementation unconditionally returns the given {@code unit} unchanged.
      *
@@ -130,16 +119,5 @@ public interface AxisFilter {
      */
     default Unit<?> getUnitReplacement(CoordinateSystemAxis axis, Unit<?> unit) {
         return unit;
-    }
-
-    /**
-     * @deprecated Use {@link #getUnitReplacement(CoordinateSystemAxis, Unit)} instead.
-     *
-     * @param  unit The original axis unit.
-     * @return The new axis unit, or {@code unit} if there is no change.
-     */
-    @Deprecated
-    default Unit<?> getUnitReplacement(Unit<?> unit) {
-        return getUnitReplacement(null, unit);
     }
 }
