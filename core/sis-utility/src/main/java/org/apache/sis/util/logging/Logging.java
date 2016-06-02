@@ -211,24 +211,6 @@ public final class Logging extends Static {
     }
 
     /**
-     * Invoked when an unexpected error occurred. This method logs a message at {@link Level#WARNING} to the
-     * specified logger. The originating class name and method name are inferred from the error stack trace,
-     * using the first {@linkplain StackTraceElement stack trace element} for which the class name is inside
-     * a package or sub-package of the logger name.
-     *
-     * @param  logger Where to log the error, or {@code null} for inferring a default value from other arguments.
-     * @param  error  The error that occurred, or {@code null} if none.
-     * @return {@code true} if the error has been logged, or {@code false} if the given {@code error}
-     *         was null or if the logger does not log anything at {@link Level#WARNING}.
-     *
-     * @deprecated Use {@link #unexpectedException(Logger, Class, String, Throwable)} instead.
-     */
-    @Deprecated
-    public static boolean unexpectedException(final Logger logger, final Throwable error) {
-        return unexpectedException(logger, null, null, error, Level.WARNING);
-    }
-
-    /**
      * Invoked when an unexpected error occurred. This method logs a message at {@link Level#WARNING}
      * to the specified logger. The originating class name and method name can optionally be specified.
      * If any of them is {@code null}, then it will be inferred from the error stack trace as described below.
