@@ -1,253 +1,336 @@
-<!DOCTYPE html>
+<?xml version="1.0" encoding="UTF-8" ?>
+
 <!--
-Copyright 2016 haonguyen.
+  Licensed to the Apache Software Foundation (ASF) under one
+  or more contributor license agreements.  See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership.  The ASF licenses this file
+  to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License.  You may obtain a copy of the License at
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+    http://www.apache.org/licenses/LICENSE-2.0
 
-     http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+  Unless required by applicable law or agreed to in writing,
+  software distributed under the License is distributed on an
+  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  KIND, either express or implied.  See the License for the
+  specific language governing permissions and limitations
+  under the License.
 -->
-<html>
-    <head>
-        <title>TODO supply a title</title>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    </head>
-    <body>
-        <div>TODO write content</div>
-        <table border ='1' cellspacing="0">
-  <tr>
-    <th>ISO 19115</th>
-    <th>Landsat</th>
-    <th>Description</th>
-    </tr><tr>
-    <td>MetadataIdentifier/Authority/Citation/Title</td>
-    <td>ORIGIN</td>
-    <td>The person or party responsible for maintenance of the namespace.</td>
-    </tr><tr>
-    <td>MetadataIdentifier/Authority/Citation/Dates</td>
-    <td>FILE_DATE</td>
-    <td>The date when metadata file product set was created .</td>
-    </tr><tr>
-    <td>MetadataIdentifier/CodeSpace</td>
-    <td>LANDSAT_SCENE_ID</td>
-    <td>The identifier or namespace in which the code is valid.</td>
-    </tr><tr>
-    <td>MetadataIdentifier/Code</td>
-    <td>REQUEST_ID</td>
-    <td>The alphanumeric value identifying an instance in the namespace.</td>
-    </tr><tr>
-    <td>MetadataIdentifier/Version</td>
-    <td>PROCESSING_SOFTWARE_VERSION</td>
-    <td>The version identifier for the namespace, as specified by the code authority.</td>
-    </tr><tr>
-    <td>IdentificationInfo/Citation/Title</td>
-    <td>DATA_TYPE</td>
-    <td> The name by which the cited resource is known.</td>
-    </tr><tr>
-    <td>IdentificationInfo/Citation/Dates</td>
-    <td>ORIGIN</td>
-    <td> The date when metadata file product set was created .</td>
-    </tr><tr>
-    <td>IdentificationInfo/ResourceFormats/Name</td>
-    <td>OUTPUT_FORMAT</td>
-    <td> The name of the data transfer format</td>
-    </tr><tr>
-    <td>IdentificationInfo/ResourceFormats/Version</td>
-    <td>DATA_TYPE</td>
-    <td> The name of the data transfer format</td>
-    </tr><tr>
-     <td>IdentificationInfo/ResourceFormats/AmendmentNumber</td>
-    <td>ELEVATION_SOURCE</td>
-    <td> The amendment number of the format version.</td>
-  </tr><tr>
-    <td>IdentificationInfo/extent/Geographicelement/westBoundLongitude</td>
-    <td>min(CORNER_UL_LON_PRODUCT, CORNER_LL_LON_PRODUCT)</td>
-    <td>The western-most longitude value in degrees.</td>
-  </tr><tr>
-    <td>IdentificationInfo/extent/Geographicelement/eastBoundLongitude</td>
-    <td>max(CORNER_UR_LON_PRODUCT, CORNER_LR_LON_PRODUCT)</td>
-    <td>The eastern-most longitude value in degrees.</td>
-    </tr><tr>
-    <td>IdentificationInfo/extent/Geographicelement/southBoundLongitude</td>
-    <td>min(CORNER_LL_LAT_PRODUCT, CORNER_LR_LAT_PRODUCT)</td>
-    <td>The southern-most longitude value in degrees.</td>
-    </tr><tr>
-    <td>IdentificationInfo/extent/Geographicelement/northBoundLongitude</td>
-    <td>max(CORNER_UL_LAT_PRODUCT, CORNER_UR_LAT_PRODUCT)</td>
-    <td>The northern-most longitude value in degrees.</td>
-    </tr><tr>
-    <td>AcquisitionInformation/AcquisitionRequirements/citation/Title</td>
-    <td>DATA_TYPE</td>
-    <td>Standard products, Identification of reference or guidance material for the requirement.</td>
-    </tr><tr>
-    <td>AcquisitionInformation/AcquisitionRequirements/Objectives1/function</td>
-    <td>ORIENTATION</td>
-    <td>The collection technique for the objective -Orientation </td>
-     </tr><tr>
-    <td>AcquisitionInformation/AcquisitionRequirements/Objectives2/function</td>
-    <td>RESAMPLING_OPTION</td>
-    <td>The collection technique for the objective -Resampling </td>
-     </tr><tr>
-    <td>AcquisitionInformation/AcquisitionRequirements/Platforms/Citation/title</td>
-    <td>SPACECRAFT_ID</td>
-    <td>Name which describe the platform  </td>
-     </tr><tr>
-    <td>AcquisitionInformation/AcquisitionRequirements/Platforms/Instrument/type</td>
-    <td>SENSOR_ID</td>
-    <td>Type instrument used to capture this scene. </td>
-    </tr><tr>
-    <td>AcquisitionInformation/AcquisitionRequirements/Platforms/Instrument/Description</td>
-    <td>NADIR_OFFNADIR</td>
-    <td>Description instrument used to capture this scene- Nadir or offnadir </td>
-    </tr><tr>
-    <td>SpatialRepresentationInfo/AxisDimensionProperties/Dimension/DimensionSize</td>
-    <td>WRS_PATH</td>
-    <td>The number of elements along the axis.</td>
-    </tr><tr>
-    <td>SpatialRepresentationInfo/AxisDimensionProperties/Dimension1/DimensionSize</td>
-    <td>WRS_ROW</td>
-    <td>The number of elements along the axis.</td>
-    </tr><tr>
-    <td>SpatialRepresentationInfo/AxisDimensionProperties/Dimension3/DimensionSize</td>
-    <td>PANCHROMATIC_LINES</td>
-    <td>The number of elements along the axis.</td>
-    </tr><tr>
-    <td>SpatialRepresentationInfo/AxisDimensionProperties/Dimension4/DimensionSize</td>
-    <td>PANCHROMATIC_SAMPLES</td>
-    <td>The number of elements along the axis.</td>
-    </tr><tr>
-    <td>SpatialRepresentationInfo/AxisDimensionProperties/Dimension5/Resolution</td>
-    <td>GRID_CELL_SIZE_PANCHROMATIC</td>
-    <td>The degree of detail in the grid dataset.</td>
-    </tr><tr>
-    <td>SpatialRepresentationInfo/AxisDimensionProperties/Dimension6/DimensionSize</td>
-    <td>REFLECTIVE_LINES</td>
-    <td>The number of elements along the axis.</td>
-    </tr><tr>
-    <td>SpatialRepresentationInfo/AxisDimensionProperties/Dimension7/DimensionSize</td>
-    <td>REFLECTIVE_SAMPLES</td>
-    <td>The number of elements along the axis.</td>
-    </tr><tr>
-    <td>SpatialRepresentationInfo/AxisDimensionProperties/Dimension8/Resolution</td>
-    <td>GRID_CELL_SIZE_REFLECTIVE</td>
-    <td>The degree of detail in the grid dataset.</td>
-    </tr><tr>
-    <td>SpatialRepresentationInfo/AxisDimensionProperties/Dimension9/DimensionSize</td>
-    <td>THERMAL_LINES</td>
-    <td>The number of elements along the axis.</td>
-    </tr><tr>
-    <td>SpatialRepresentationInfo/AxisDimensionProperties/Dimension10/DimensionSize</td>
-    <td>THERMAL_SAMPLES</td>
-    <td>The number of elements along the axis.</td>
-    </tr><tr>
-    <td>SpatialRepresentationInfo/AxisDimensionProperties/Dimension11/Resolution</td>
-    <td>GRID_CELL_SIZE_THERMAL</td>
-    <td>The degree of detail in the grid dataset.</td>
-    </tr><tr>
-    <td>ReferenceSystemInfo</td>
-    <td>DATUM,ELLIPSOID,UTM_ZONE</td>
-    <td>The description of the spatial and temporal reference systems used in the dataset with if mapproject is UTM</td>
-     </tr><tr>
-    <td>ReferenceSystemInfo</td>
-    <td>DATUM,ELLIPSOID,VERTICAL_LON_FROM_POLE,
-        TRUE_SCALE_LAT,FALSE_EASTING,FALSE_NORTHING</td>
-    <td>The description of the spatial and temporal reference systems used in the dataset with if mapproject is PS</td>
-    </tr><tr>
-    <td>DataQualityInfo/citation/Title</td>
-    <td>DATA_TYPE</td>
-    <td>Name standard product</td>
-    </tr><tr>
-    <td>DataQualityInfo/citation/Edition</td>
-    <td>GROUND_CONTROL_POINTS_VERSION</td>
-    <td>GCP dataset version used in the precision correction process.</td>
-    </tr><tr>
-    <td>DataQualityInfo/citation/Series</td>
-    <td>GROUND_CONTROL_POINTS_MODEL</td>
-    <td>Number of GCPs used in the precision correction process</td>
-     </tr><tr>
-    <td>DataQualityInfo/citation/Reports/Element1/MeasureDescription</td>
-    <td>CLOUD_COVER</td>
-    <td>The description of the measure being determined,The overall cloud coverage (percent) of the WRS-2 scene</td>
-    </tr><tr>
-    <td>DataQualityInfo/citation/Reports/Element3/MeasureDescription</td>
-    <td>CLOUD_COVER_LAND</td>
-    <td>The description of the measure being determined,The overall cloud coverage over land
-(percent) in the WRS-2 scene.</td>
-    </tr><tr>
-    <td>DataQualityInfo/citation/Reports/Element4/MeasureDescription</td>
-    <td>IMAGE_QUALITY_OLI</td>
-    <td>The description of the measure being determined. The composite image quality for the OLI
-bands.</td>
-     </tr><tr>
-    <td>DataQualityInfo/citation/Reports/Element5/MeasureDescription</td>
-    <td>IMAGE_QUALITY_TIRS</td>
-    <td>The description of the measure being determined. The composite image quality for the TIRS
-bands.</td>
-    </tr><tr>
-    <td>DataQualityInfo/citation/Reports/Element6/MeasureDescription</td>
-    <td>TIRS_SSM_POSITION_STATUS</td>
-    <td>The description of the measure being determined. The TIRS scene select mirror position
-status.</td>
-    </tr><tr>
-    <td>DataQualityInfo/citation/Reports/Element7/MeasureDescription</td>
-    <td>ROLL_ANGLE</td>
-    <td>The description of the measure being determined. The amount of spacecraft roll angle at the
-scene center.</td>
-     </tr><tr>
-    <td>DataQualityInfo/citation/Reports/Element8/MeasureDescription</td>
-    <td>SUN_AZIMUTH</td>
-    <td>The description of the measure being determined. The Sun azimuth angle in degrees for the
-image center location at the image center
-acquisition time.</td>
-     </tr><tr>
-    <td>DataQualityInfo/citation/Reports/Element9/MeasureDescription</td>
-    <td>SUN_ELEVATION</td>
-    <td>The description of the measure being determined. The Sun elevation angle in degrees for the
-image center location at the image center
-acquisition time.</td>
-     </tr><tr>
-    <td>DataQualityInfo/citation/Reports/Element10/MeasureDescription</td>
-    <td>EARTH_SUN_DISTANCE</td>
-    <td>The description of the measure being determined. Measurement of the earth to sun distance
-at the particular day and time of imagery
-acquisition</td>
-     </tr><tr>
-    <td>DataQualityInfo/citation/Reports/Element11/MeasureDescription</td>
-    <td>GROUND_CONTROL_POINTS_VERIFY</td>
-    <td>The description of the measure being determined.Number of GCPs used in the verification
-of the terrain corrected product. </td>
-    </tr><tr>
-    <td>DataQualityInfo/citation/Reports/Element12/MeasureDescription</td>
-    <td>GEOMETRIC_RMSE_VERIFY</td>
-    <td>The description of the measure being determined.RMSE of the geometric residuals (meters)
-measured on the terrain</td>
-    </tr><tr>
-    <td>DataQualityInfo/citation/Reports/Element13/MeasureDescription</td>
-    <td>GEOMETRIC_RMSE_MODEL</td>
-    <td>The description of the measure being determined. Combined Root Mean Squared Error
-(RMSE) of the geometric residuals
-(meters) </td>
-    </tr><tr>
-    <td>DataQualityInfo/citation/Reports/Element14/MeasureDescription</td>
-    <td>GEOMETRIC_RMSE_MODEL_Y</td>
-    <td>The description of the measure being determined. The post-fit RMSE for the along-track
-direction.</td>
-    </tr><tr>
-    <td>DataQualityInfo/citation/Reports/Element15/MeasureDescription</td>
-    <td>GEOMETRIC_RMSE_MODEL_X</td>
-    <td>The description of the measure being determined. The post-fit RMSE for the along-track
-direction.</td>
-    
-  </tr>
-  
-</table>
-    </body>
+
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+  <head>
+    <title>Landsat to ISO 19115 metadata</title>
+  </head>
+  <body>
+    <h1>Landsat to ISO 19115 metadata</h1>
+    <p>
+      Landset metadata are provided as <var>key</var>-<var>value</var> pairs in text files (ASCII).
+      ISO 19115 metadata are structured as a tree.
+      Landsat values are mapped to ISO 19115 metadata when an ISO property can be found for a Landsat key.
+    </p>
+    <p>
+      The Landsat to ISO mapping is not always a one-to-one relationship.
+      In some cases the ISO value need to be computed from two or more Landsat values.
+      In other cases the ISO value does not appear in the Landsat file at all,
+      so the value is hard-coded in the <code>LandsatReader</code> class.
+    </p>
+    <p><b>Sources:</b></p>
+    <ul>
+      <li><a href="http://www.iso.org/iso/home/store/catalogue_ics/catalogue_detail_ics.htm?csnumber=53798">ISO 19115-1:2014
+          - Geographic information - Metadata - Part 1: Fundamentals</a></li>
+      <li><a href="https://landsat.usgs.gov/documents/LSDS-809.pdf">LANDSAT 8 (L8) level 1 (L1) Data Format Control Book (DFCB)</a></li>
+    </ul>
+    <h2>Hard-coded values</h2>
+    <p>
+      In the following table, values in the Landsat column are from
+      table 2-1: <cite>Band Reference Table</cite> in the Landsat DFCB.
+      Values in the ISO 19115 column are paths to an ISO property relative to the <code>Metadata</code> root.
+      When an ISO property can accept various subtypes, the type used are those listed below:
+    </p>
+    <ul>
+      <li><code>contentInfo</code> is of type <code>ImageDescription</code> (a <code>ContentInformation</code> subtype)</li>
+      <li><code>attribute</code> is of type <code>Band</code> (a <code>RangeDimension</code> subtype)</li>
+    </ul>
+    <table border ="1" cellspacing="0">
+      <tr>
+        <th>ISO 19115</th>
+        <th>Landsat</th>
+        <th>Description</th>
+      </tr><tr>
+        <td><code>contentInfo/attributeGroup/attribute[0]/peakResponse</code></td>
+        <td><code>433</code></td>
+        <td>Coastal Aerosol (Operational Land Imager (OLI)).</td>
+      </tr><tr>
+        <td><code>contentInfo/attributeGroup/attribute[1]/peakResponse</code></td>
+        <td><code>482</code></td>
+        <td>Blue (OLI).</td>
+      </tr><tr>
+        <td><code>contentInfo/attributeGroup/attribute[2]/peakResponse</code></td>
+        <td><code>562</code></td>
+        <td>Green (OLI).</td>
+      </tr><tr>
+        <td colspan="3"><font color="red">TODO</font></td>
+      </tr><tr>
+        <td><code>contentInfo/attributeGroup/attribute[0-10]/boundUnits</code></td>
+        <td>nanometre</td>
+        <td>Units in which sensor wavelengths are expressed.</td>
+      </tr><tr>
+        <td><code>contentInfo/attributeGroup/contentType</code></td>
+        <td><code>ContentType.PHYSICAL_MEASUREMENT</code></td>
+        <td>The types of information represented by the value(s).</td>
+      </tr>
+    </table>
+
+    <h2>Values read from the Landsat file</h2>
+    <p>
+      In the following table, values in the Landsat column are from
+      table 3-4: <cite>L1Gt / L1T Metadata File</cite> in the Landsat DFCB.
+      Values in the ISO 19115 column are paths to an ISO property relative to the <code>Metadata</code> root.
+      When an ISO property can accept various subtypes, the type used are those listed below:
+    </p>
+    <ul>
+      <li><code>identificationInfo</code> is of type <code>DataIdentification</code> (a <code>Identification</code> subtype)</li>
+      <li><code>contentInfo</code> is of type <code>ImageDescription</code> (a <code>ContentInformation</code> subtype)</li>
+    </ul>
+    <table border ="1" cellspacing="0">
+      <tr>
+        <th>ISO 19115</th>
+        <th>Landsat</th>
+        <th>Description</th>
+      </tr><tr>
+        <td><code>dateInfo/date</code></td>
+        <td><code>FILE_DATE</code></td>
+        <td>The date when metadata file product set was created.</td>
+      </tr><tr>
+        <td><code>dateInfo/dateType</code></td>
+        <td><code>DateType.CREATION</code></td>
+        <td>Hard-coded ISO 19115 value to be set only if <code>dateInfo/date</code> exists.</td>
+      </tr><tr>
+        <td><code>identificationInfo/credit</code></td>
+        <td><code>ORIGIN</code></td>
+        <td>Recognition of those who contributed to the resource(s).</td>
+      </tr><tr>
+        <td><code>identificationInfo/citation/identifier</code></td>
+        <td><code>LANDSAT_SCENE_ID</code></td>
+        <td>The unique Landsat scene identifier.</td>
+      </tr><tr>
+        <td><code>identificationInfo/extent/geographicElement/westBoundLongitude</code></td>
+        <td><code>min(CORNER_UL_LON_PRODUCT, CORNER_LL_LON_PRODUCT)</code></td>
+        <td>The western-most longitude value in degrees.</td>
+      </tr><tr>
+        <td><code>identificationInfo/extent/geographicElement/eastBoundLongitude</code></td>
+        <td><code>max(CORNER_UR_LON_PRODUCT, CORNER_LR_LON_PRODUCT)</code></td>
+        <td>The eastern-most longitude value in degrees.</td>
+      </tr><tr>
+        <td><code>identificationInfo/extent/geographicElement/southBoundLongitude</code></td>
+        <td><code>min(CORNER_LL_LAT_PRODUCT, CORNER_LR_LAT_PRODUCT)</code></td>
+        <td>The southern-most longitude value in degrees.</td>
+      </tr><tr>
+        <td><code>identificationInfo/extent/geographicElement/northBoundLongitude</code></td>
+        <td><code>max(CORNER_UL_LAT_PRODUCT, CORNER_UR_LAT_PRODUCT)</code></td>
+        <td>The northern-most longitude value in degrees.</td>
+      </tr><tr>
+        <td><code>identificationInfo/extent/temporalElement/startTime</code></td>
+        <td><code>DATE_ACQUIRED + SCENE_CENTER_TIME</code></td>
+        <td>The date and scene center time the image was acquired.</td>
+      </tr><tr>
+        <td><code>identificationInfo/resourceFormat/formatSpecificationCitation/title</code></td>
+        <td><code>OUTPUT_FORMAT</code></td>
+        <td>The name of the data transfer format.</td>
+      </tr><tr>
+        <td><code>acquisitionInformation/platform/identifier/code</code></td>
+        <td><code>SPACECRAFT_ID</code></td>
+        <td>Spacecraft from which the data were captured.</td>
+      </tr><tr>
+        <td><code>acquisitionInformation/instrument/identifier/code</code></td>
+        <td><code>SENSOR_ID</code></td>
+        <td>Sensor(s) used to capture this scene.</td>
+      </tr><tr>
+        <td><code>contentInfo/cloudCoverPercentage</code></td>
+        <td><code>CLOUD_COVER</code></td>
+        <td>The overall cloud coverage (percent) of the WRS-2 scene.</td>
+      </tr><tr>
+        <td><code>contentInfo/illuminationAzimuthAngle</code></td>
+        <td><code>SUN_AZIMUTH</code></td>
+        <td>The Sun azimuth angle in degrees for the image center location at the image center acquisition time.</td>
+      </tr><tr>
+        <td><code>contentInfo/illuminationElevationAngle</code></td>
+        <td><code>SUN_ELEVATION</code></td>
+        <td>The Sun elevation angle in degrees for the image center location at the image center acquisition time.</td>
+      </tr>
+    </table>
+
+    <h2>Mapping to revisit</h2>
+    <p>
+      Mappings in the following table need to be reviewed.
+    </p>
+    <table border ="1" cellspacing="0">
+      <tr>
+        <td><code>MetadataIdentifier/Code</code></td>
+        <td><code>REQUEST_ID</code></td>
+        <td><font color="red">(maybe should be a property in the acquisition package instead)</font></td>
+      </tr><tr>
+        <td><code>MetadataIdentifier/Version</code></td>
+        <td><code>PROCESSING_SOFTWARE_VERSION</code></td>
+        <td><font color="red">(maybe should be a property in the lineage package instead)</font></td>
+      </tr><tr>
+        <td><code>IdentificationInfo/Citation/Title</code></td>
+        <td><code>DATA_TYPE</code></td>
+        <td><font color="red">(DATA_TYPE is not really a title - need to find another location)</font></td>
+      </tr><tr>
+        <td><code>IdentificationInfo/Citation/Dates</code></td>
+        <td><code>ORIGIN</code></td>
+        <td>The date when metadata file product set was created.
+            <font color="red">(duplicated value?)</font></td>
+      </tr><tr>
+        <td><code>IdentificationInfo/ResourceFormats/Version</code></td>
+        <td><code>DATA_TYPE</code></td>
+        <td>The name of the data transfer format.
+            <font color="red">(duplicated value?)</font></td>
+      </tr><tr>
+        <td><code>IdentificationInfo/ResourceFormats/AmendmentNumber</code></td>
+        <td><code>ELEVATION_SOURCE</code></td>
+        <td>Indicates the source of the DEM used in the correction process.
+            <font color="red">(maybe should be a property in the lineage package instead)</font></td>
+      </tr><tr>
+        <td><code>AcquisitionInformation/AcquisitionRequirements/citation/Title</code></td>
+        <td><code>DATA_TYPE</code></td>
+        <td>Standard products, Identification of reference or guidance material for the requirement.</td>
+      </tr><tr>
+        <td><code>AcquisitionInformation/AcquisitionRequirements/Objectives1/function</code></td>
+        <td><code>ORIENTATION</code></td>
+        <td>The collection technique for the objective - Orientation.</td>
+      </tr><tr>
+        <td><code>AcquisitionInformation/AcquisitionRequirements/Objectives2/function</code></td>
+        <td><code>RESAMPLING_OPTION</code></td>
+        <td>The collection technique for the objective - Resampling.</td>
+      </tr><tr>
+        <td><code>AcquisitionInformation/AcquisitionRequirements/Platforms/Instrument/Description</code></td>
+        <td><code>NADIR_OFFNADIR</code></td>
+        <td>Description instrument used to capture this scene- Nadir or offnadir.</td>
+      </tr><tr>
+        <td><code>SpatialRepresentationInfo/AxisDimensionProperties/Dimension/DimensionSize</code></td>
+        <td><code>WRS_PATH</code></td>
+        <td>The number of elements along the axis.</td>
+      </tr><tr>
+        <td><code>SpatialRepresentationInfo/AxisDimensionProperties/Dimension1/DimensionSize</code></td>
+        <td><code>WRS_ROW</code></td>
+        <td>The number of elements along the axis.</td>
+      </tr><tr>
+        <td><code>SpatialRepresentationInfo/AxisDimensionProperties/Dimension3/DimensionSize</code></td>
+        <td><code>PANCHROMATIC_LINES</code></td>
+        <td>The number of elements along the axis.</td>
+      </tr><tr>
+        <td><code>SpatialRepresentationInfo/AxisDimensionProperties/Dimension4/DimensionSize</code></td>
+        <td><code>PANCHROMATIC_SAMPLES</code></td>
+        <td>The number of elements along the axis.</td>
+      </tr><tr>
+        <td><code>SpatialRepresentationInfo/AxisDimensionProperties/Dimension5/Resolution</code></td>
+        <td><code>GRID_CELL_SIZE_PANCHROMATIC</code></td>
+        <td>The degree of detail in the grid dataset.</td>
+      </tr><tr>
+        <td><code>SpatialRepresentationInfo/AxisDimensionProperties/Dimension6/DimensionSize</code></td>
+        <td><code>REFLECTIVE_LINES</code></td>
+        <td>The number of elements along the axis.</td>
+      </tr><tr>
+        <td><code>SpatialRepresentationInfo/AxisDimensionProperties/Dimension7/DimensionSize</code></td>
+        <td><code>REFLECTIVE_SAMPLES</code></td>
+        <td>The number of elements along the axis.</td>
+      </tr><tr>
+        <td><code>SpatialRepresentationInfo/AxisDimensionProperties/Dimension8/Resolution</code></td>
+        <td><code>GRID_CELL_SIZE_REFLECTIVE</code></td>
+        <td>The degree of detail in the grid dataset.</td>
+      </tr><tr>
+        <td><code>SpatialRepresentationInfo/AxisDimensionProperties/Dimension9/DimensionSize</code></td>
+        <td><code>THERMAL_LINES</code></td>
+        <td>The number of elements along the axis.</td>
+      </tr><tr>
+        <td><code>SpatialRepresentationInfo/AxisDimensionProperties/Dimension10/DimensionSize</code></td>
+        <td><code>THERMAL_SAMPLES</code></td>
+        <td>The number of elements along the axis.</td>
+      </tr><tr>
+        <td><code>SpatialRepresentationInfo/AxisDimensionProperties/Dimension11/Resolution</code></td>
+        <td><code>GRID_CELL_SIZE_THERMAL</code></td>
+        <td>The degree of detail in the grid dataset.</td>
+      </tr><tr>
+        <td><code>ReferenceSystemInfo</code></td>
+        <td><code>DATUM</code>, <code>ELLIPSOID</code>, <code>UTM_ZONE</code></td>
+        <td>The description of the spatial and temporal reference systems used in the dataset with if mapproject is UTM.</td>
+      </tr><tr>
+        <td><code>ReferenceSystemInfo</code></td>
+        <td><code>DATUM</code>, <code>ELLIPSOID</code>, <code>VERTICAL_LON_FROM_POLE</code>, <code>TRUE_SCALE_LAT</code>, <code>FALSE_EASTING</code>, <code>FALSE_NORTHING</code></td>
+        <td>The description of the spatial and temporal reference systems used in the dataset with if mapproject is PS.</td>
+      </tr><tr>
+        <td><code>DataQualityInfo/citation/Title</code></td>
+        <td><code>DATA_TYPE</code></td>
+        <td>Name standard product.</td>
+      </tr><tr>
+        <td><code>DataQualityInfo/citation/Edition</code></td>
+        <td><code>GROUND_CONTROL_POINTS_VERSION</code></td>
+        <td>GCP dataset version used in the precision correction process.</td>
+      </tr><tr>
+        <td><code>DataQualityInfo/citation/Series</code></td>
+        <td><code>GROUND_CONTROL_POINTS_MODEL</code></td>
+        <td>Number of GCPs used in the precision correction process.</td>
+      </tr><tr>
+        <td><code>DataQualityInfo/citation/Reports/Element3/MeasureDescription</code></td>
+        <td><code>CLOUD_COVER_LAND</code></td>
+        <td>The description of the measure being determined.
+            The overall cloud coverage over land (percent) in the WRS-2 scene.</td>
+      </tr><tr>
+        <td><code>DataQualityInfo/citation/Reports/Element4/MeasureDescription</code></td>
+        <td><code>IMAGE_QUALITY_OLI</code></td>
+        <td>The description of the measure being determined.
+            The composite image quality for the OLI bands.</td>
+      </tr><tr>
+        <td><code>DataQualityInfo/citation/Reports/Element5/MeasureDescription</code></td>
+        <td><code>IMAGE_QUALITY_TIRS</code></td>
+        <td>The description of the measure being determined.
+            The composite image quality for the TIRS bands.</td>
+      </tr><tr>
+        <td><code>DataQualityInfo/citation/Reports/Element6/MeasureDescription</code></td>
+        <td><code>TIRS_SSM_POSITION_STATUS</code></td>
+        <td>The description of the measure being determined.
+            The TIRS scene select mirror position status.</td>
+      </tr><tr>
+        <td><code>DataQualityInfo/citation/Reports/Element7/MeasureDescription</code></td>
+        <td><code>ROLL_ANGLE</code></td>
+        <td>The description of the measure being determined.
+            The amount of spacecraft roll angle at the scene center.</td>
+      </tr><tr>
+        <td><code>DataQualityInfo/citation/Reports/Element10/MeasureDescription</code></td>
+        <td><code>EARTH_SUN_DISTANCE</code></td>
+        <td>The description of the measure being determined.
+            Measurement of the earth to sun distance at the particular day and time of imagery acquisition</td>
+      </tr><tr>
+        <td><code>DataQualityInfo/citation/Reports/Element11/MeasureDescription</code></td>
+        <td><code>GROUND_CONTROL_POINTS_VERIFY</code></td>
+        <td>The description of the measure being determined.
+            Number of GCPs used in the verification of the terrain corrected product.</td>
+      </tr><tr>
+        <td><code>DataQualityInfo/citation/Reports/Element12/MeasureDescription</code></td>
+        <td><code>GEOMETRIC_RMSE_VERIFY</code></td>
+        <td>The description of the measure being determined.
+            RMSE of the geometric residuals (meters) measured on the terrain.</td>
+      </tr><tr>
+        <td><code>DataQualityInfo/citation/Reports/Element13/MeasureDescription</code></td>
+        <td><code>GEOMETRIC_RMSE_MODEL</code></td>
+        <td>The description of the measure being determined.
+            Combined Root Mean Squared Error (RMSE) of the geometric residuals (meters).</td>
+      </tr><tr>
+        <td><code>DataQualityInfo/citation/Reports/Element14/MeasureDescription</code></td>
+        <td><code>GEOMETRIC_RMSE_MODEL_Y</code></td>
+        <td>The description of the measure being determined.
+            The post-fit RMSE for the along-track direction.</td>
+      </tr><tr>
+        <td><code>DataQualityInfo/citation/Reports/Element15/MeasureDescription</code></td>
+        <td><code>GEOMETRIC_RMSE_MODEL_X</code></td>
+        <td>The description of the measure being determined.
+            The post-fit RMSE for the along-track direction.</td>
+      </tr>
+    </table>
+  </body>
 </html>
