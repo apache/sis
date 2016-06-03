@@ -15,7 +15,6 @@
  */
 package org.apache.sis.storage.geotiff;
 
-
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
@@ -36,6 +35,7 @@ import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.internal.netcdf.GridGeometry;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.util.Constants;
+import org.apache.sis.measure.Units;
 import org.apache.sis.metadata.iso.DefaultExtendedElementInformation;
 import org.apache.sis.metadata.iso.DefaultIdentifier;
 import org.apache.sis.metadata.iso.DefaultMetadata;
@@ -50,10 +50,17 @@ import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.citation.DefaultCitationDate;
 import org.apache.sis.metadata.iso.citation.DefaultSeries;
+import org.apache.sis.metadata.iso.content.DefaultAttributeGroup;
+import org.apache.sis.metadata.iso.content.DefaultBand;
+import org.apache.sis.metadata.iso.content.DefaultCoverageDescription;
+import org.apache.sis.metadata.iso.content.DefaultImageDescription;
+import org.apache.sis.metadata.iso.content.DefaultRangeDimension;
 import org.apache.sis.metadata.iso.distribution.DefaultDataFile;
 import org.apache.sis.metadata.iso.distribution.DefaultFormat;
 import org.apache.sis.metadata.iso.extent.DefaultExtent;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
+import org.apache.sis.metadata.iso.extent.DefaultSpatialTemporalExtent;
+import org.apache.sis.metadata.iso.extent.DefaultTemporalExtent;
 import org.apache.sis.metadata.iso.identification.AbstractIdentification;
 import org.apache.sis.metadata.iso.identification.DefaultDataIdentification;
 import org.apache.sis.metadata.iso.lineage.DefaultLineage;
@@ -79,9 +86,16 @@ import org.opengis.metadata.Identifier;
 import org.opengis.metadata.Metadata;
 import org.opengis.metadata.acquisition.AcquisitionInformation;
 import org.opengis.metadata.acquisition.ObjectiveType;
+import org.opengis.metadata.citation.CitationDate;
 import org.opengis.metadata.citation.DateType;
+import org.opengis.metadata.content.AttributeGroup;
+import org.opengis.metadata.content.Band;
+import org.opengis.metadata.content.CoverageContentType;
+import org.opengis.metadata.content.CoverageDescription;
+import org.opengis.metadata.content.ImageDescription;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.extent.GeographicBoundingBox;
+import org.opengis.metadata.extent.SpatialTemporalExtent;
 import org.opengis.metadata.identification.Identification;
 import org.opengis.metadata.maintenance.ScopeCode;
 import org.opengis.metadata.quality.DataQuality;
@@ -103,33 +117,36 @@ import org.opengis.util.FactoryException;
 public class LandsatReader {
 
     /**
-     * All properties found in the Landsat metadata file, except {@code GROUP} and {@code END_GROUP}.
-     * Example:
+     * All properties found in the Landsat metadata file, except {@code GROUP}
+     * and {@code END_GROUP}. Example:
      *
-     * {@preformat text
-     *   DATE_ACQUIRED = 2014-03-12
-     *   SCENE_CENTER_TIME = 03:02:01.5339408Z
-     *   CORNER_UL_LAT_PRODUCT = 12.61111
-     *   CORNER_UL_LON_PRODUCT = 108.33624
-     *   CORNER_UR_LAT_PRODUCT = 12.62381
-     *   CORNER_UR_LON_PRODUCT = 110.44017
-     * }
-     *//**
-     * Stores all properties found in the Landsat file read from the the given reader,
-     * except {@code GROUP} and {@code END_GROUP}.
+     * {
      *
-     * @param  reader a reader opened on the Landsat file. It is caller's responsibility to close this reader.
-     * @throws IOException if an I/O error occurred while reading the given stream.
+     * @preformat text DATE_ACQUIRED = 2014-03-12 SCENE_CENTER_TIME =
+     * 03:02:01.5339408Z CORNER_UL_LAT_PRODUCT = 12.61111 CORNER_UL_LON_PRODUCT
+     * = 108.33624 CORNER_UR_LAT_PRODUCT = 12.62381 CORNER_UR_LON_PRODUCT =
+     * 110.44017 }
+     */
+    /**
+     * Stores all properties found in the Landsat file read from the the given
+     * reader, except {@code GROUP} and {@code END_GROUP}.
+     *
+     * @param reader a reader opened on the Landsat file. It is caller's
+     * responsibility to close this reader.
+     * @throws IOException if an I/O error occurred while reading the given
+     * stream.
      * @throws DataStoreException if the content is not a Landsat file.
      */
     private final Map<String, String> properties;
 
-   /**
-     * Stores all properties found in the Landsat file read from the the given reader,
-     * except {@code GROUP} and {@code END_GROUP}.
+    /**
+     * Stores all properties found in the Landsat file read from the the given
+     * reader, except {@code GROUP} and {@code END_GROUP}.
      *
-     * @param  reader a reader opened on the Landsat file. It is caller's responsibility to close this reader.
-     * @throws IOException if an I/O error occurred while reading the given stream.
+     * @param reader a reader opened on the Landsat file. It is caller's
+     * responsibility to close this reader.
+     * @throws IOException if an I/O error occurred while reading the given
+     * stream.
      * @throws DataStoreException if the content is not a Landsat file.
      */
     LandsatReader(final BufferedReader reader) throws IOException, DataStoreException {
@@ -233,9 +250,93 @@ public class LandsatReader {
     }
 
     /**
+     * Creat the attributeGroup the band
+     *
+     * @return Information about the band identification
+     */
+    private AttributeGroup coverage() {
+        final DefaultAttributeGroup attribute = new DefaultAttributeGroup();
+        final DefaultBand coastal = new DefaultBand();
+        coastal.setDescription(new DefaultInternationalString("Coastal Aerosol (Operational Land Imager (OLI))"));
+        coastal.setPeakResponse(Double.parseDouble("433"));
+        coastal.setUnits(Units.valueOf("nm"));
+        attribute.getAttributes().add(coastal);
+        final DefaultBand blue = new DefaultBand();
+        blue.setDescription(new DefaultInternationalString("Blue (OLI)"));
+        blue.setPeakResponse(Double.parseDouble("482"));
+        blue.setUnits(Units.valueOf("nm"));
+        attribute.getAttributes().add(blue);
+        final DefaultBand green = new DefaultBand();
+        green.setDescription(new DefaultInternationalString("Green (OLI)"));
+        green.setPeakResponse(Double.parseDouble("562"));
+        green.setUnits(Units.valueOf("nm"));
+        attribute.getAttributes().add(green);
+        final DefaultBand red = new DefaultBand();
+        red.setDescription(new DefaultInternationalString("Red (OLI)"));
+        red.setPeakResponse(Double.parseDouble("655"));
+        red.setUnits(Units.valueOf("nm"));
+        attribute.getAttributes().add(red);
+        final DefaultBand near = new DefaultBand();
+        near.setDescription(new DefaultInternationalString("Near-Infrared (NIR) (OLI)"));
+        near.setPeakResponse(Double.parseDouble("865"));
+        near.setUnits(Units.valueOf("nm"));
+        attribute.getAttributes().add(near);
+        final DefaultBand shor = new DefaultBand();
+        shor.setDescription(new DefaultInternationalString("Short Wavelength Infrared (SWIR) 1 (OLI)"));
+        shor.setPeakResponse(Double.parseDouble("1610"));
+        shor.setUnits(Units.valueOf("nm"));
+        attribute.getAttributes().add(shor);
+        final DefaultBand swir = new DefaultBand();
+        swir.setDescription(new DefaultInternationalString("SWIR 2 (OLI)"));
+        swir.setPeakResponse(Double.parseDouble("2200"));
+        swir.setUnits(Units.valueOf("nm"));
+        attribute.getAttributes().add(swir);
+        final DefaultBand panchromatic = new DefaultBand();
+        panchromatic.setDescription(new DefaultInternationalString("Panchromatic (OLI)"));
+        panchromatic.setPeakResponse(Double.parseDouble("590"));
+        panchromatic.setUnits(Units.valueOf("nm"));
+        attribute.getAttributes().add(panchromatic);
+        final DefaultBand cirrus = new DefaultBand();
+        cirrus.setDescription(new DefaultInternationalString("Cirrus (OLI)"));
+        cirrus.setPeakResponse(Double.parseDouble("1375"));
+        cirrus.setUnits(Units.valueOf("nm"));
+        attribute.getAttributes().add(cirrus);
+        final DefaultBand thermal = new DefaultBand();
+        thermal.setDescription(new DefaultInternationalString("Thermal Infrared Sensor (TIRS) 1"));
+        thermal.setPeakResponse(Double.parseDouble("10800"));
+        thermal.setUnits(Units.valueOf("nm"));
+        attribute.getAttributes().add(thermal);
+        final DefaultBand tirs = new DefaultBand();
+        tirs.setDescription(new DefaultInternationalString("TIRS 2"));
+        tirs.setPeakResponse(Double.parseDouble("12000"));
+        tirs.setUnits(Units.valueOf("nm"));
+        attribute.getAttributes().add(tirs);
+        return attribute;
+    }
+
+    /**
+     * Gets Information about an image's suitability for use.
+     *
+     * @return the Information about an image's suitability for use.
+     */
+    private ImageDescription createContentInfo() {
+        final DefaultImageDescription content = new DefaultImageDescription();
+        final double cloudcover = Double.valueOf(getValue("CLOUD_COVER"));
+        content.setCloudCoverPercentage(cloudcover);
+        final double azimuth = Double.valueOf(getValue("SUN_AZIMUTH"));
+        content.setIlluminationAzimuthAngle(azimuth);
+        final double elevation = Double.valueOf(getValue("SUN_ELEVATION"));
+        content.setIlluminationElevationAngle(elevation);
+        content.setAttributeGroups(Collections.singleton(coverage()));
+        return content;
+    }
+
+    /**
      * Gets the date the image was acquired.
-     * @return the  date the image was acquired.
-     * @throws ParseException returns the position where the error was found. if the error was found..
+     *
+     * @return the date the image was acquired.
+     * @throws ParseException returns the position where the error was found. if
+     * the error was found..
      */
     private Date getAcquisitionDate() throws ParseException {
         //-- year month day
@@ -250,10 +351,13 @@ public class LandsatReader {
         final Date date = formatter.parse(strDate);
         return date;
     }
-     /**
+
+    /**
      * Gets the date when the metadata file for the L1G product set was created.
-     * @return the  date the image was acquired.
-     * @throws ParseException returns the position where the error was found. if the error was found..
+     *
+     * @return the date the image was acquired.
+     * @throws ParseException returns the position where the error was found. if
+     * the error was found..
      */
     private Date getDates() throws ParseException {
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
@@ -286,80 +390,83 @@ public class LandsatReader {
         }
         return bbox.isEmpty() ? null : bbox;
     }
- /**
-     * Gets the extent for Identification infor 
-     * {@code null} if none.
+
+    /**
+     * Gets the extent for Identification infor {@code null} if none.
      *
-     * @return the data extent in Indentification infor 
-     * {@code null} if none.
+     * @return the data extent in Indentification infor {@code null} if none.
      * @throws DataStoreException if data can not be read.
      */
-    private Extent getExtent() throws DataStoreException {
+    private Extent getExtent() throws DataStoreException, ParseException,UnsupportedOperationException{
 
         final DefaultExtent ex = new DefaultExtent();
         final GeographicBoundingBox box = getGeographicBoundingBox();
         ex.getGeographicElements().add(box);
+//        final DefaultTemporalExtent tex = new DefaultTemporalExtent();
+//        final Date acquisitionDate = getAcquisitionDate();
+//        tex.setBounds(acquisitionDate,acquisitionDate);
+//        ex.setTemporalElements(Arrays.asList(tex));
+        
 
         return ex;
     }
-/**
-     * Gets the Information for the Acquisition Information 
-     * {@code null} if none.
+
+    /**
+     * Gets the Information for the Acquisition Information {@code null} if
+     * none.
      *
-     * @return the data for the Acquisition Information 
-     * {@code null} if none.
+     * @return the data for the Acquisition Information {@code null} if none.
      */
     private AcquisitionInformation getAcquisitionInformation() throws ParseException {
         final DefaultAcquisitionInformation dAi = new DefaultAcquisitionInformation();
         final DefaultCitation citation = new DefaultCitation();
         final DefaultRequirement requirement = new DefaultRequirement();
         final Date date = getAcquisitionDate();
-        final String title = getValue("DATA_TYPE");
-        citation.setTitle(new DefaultInternationalString(title));
+//        final String title = getValue("DATA_TYPE");
+//        citation.setTitle(new DefaultInternationalString(title));
         citation.setDates(Collections.singleton(new DefaultCitationDate(date, DateType.PUBLICATION)));
         requirement.setCitation(citation);
         dAi.setAcquisitionRequirements(Collections.singleton(requirement));
         final DefaultPlatform platF = new DefaultPlatform();
         /*
         The characteristics, spatial and temporal extent of the intended object to be observed.
-        */
-        final DefaultObjective object1 = new DefaultObjective();
-        final DefaultObjective object2 = new DefaultObjective();
-        final String orientatin = getValue("ORIENTATION");
-        final String resampling = getValue("RESAMPLING_OPTION");
-        object1.setTypes(Collections.singleton(ObjectiveType.valueOf("Orientation")));
-        object1.setFunctions(Collections.singleton(new DefaultInternationalString(orientatin)));
-        object2.setTypes(Collections.singleton(ObjectiveType.valueOf("Resampling")));
-        object2.setFunctions(Collections.singleton(new DefaultInternationalString(resampling)));
+         */
+//        final DefaultObjective object1 = new DefaultObjective();
+//        final DefaultObjective object2 = new DefaultObjective();
+//        final String orientatin = getValue("ORIENTATION");
+//        final String resampling = getValue("RESAMPLING_OPTION");
+//        object1.setTypes(Collections.singleton(ObjectiveType.valueOf("Orientation")));
+//        object1.setFunctions(Collections.singleton(new DefaultInternationalString(orientatin)));
+//        object2.setTypes(Collections.singleton(ObjectiveType.valueOf("Resampling")));
+//        object2.setFunctions(Collections.singleton(new DefaultInternationalString(resampling)));
         /*
         *The Platform, Instrument and the type of instrument used to observe the object 
-        */
+         */
         final String space = getValue("SPACECRAFT_ID");
-        if (space == null) {
-            return null;
+        if (space != null) {
+            platF.setCitation(new DefaultCitation(space));
         }
-        platF.setCitation(new DefaultCitation(space));
         final DefaultInstrument instru = new DefaultInstrument();
         final String instrum = getValue("SENSOR_ID");
         instru.setType(new DefaultInternationalString(instrum));
-        final String nadir = getValue("NADIR_OFFNADIR");
-        instru.setDescription(new DefaultInternationalString(nadir));
+//        final String nadir = getValue("NADIR_OFFNADIR");
+//        instru.setDescription(new DefaultInternationalString(nadir));
         platF.setInstruments(Collections.singleton(instru));
         dAi.setPlatforms(Collections.singleton(platF));
-        dAi.getObjectives().add(object1);
-        dAi.getObjectives().add(object2);
+//        dAi.getObjectives().add(object1);
+//        dAi.getObjectives().add(object2);
         return dAi;
 
     }
 
     /**
-     * Gets the information for the File Identifier
-     * {@code null} if none.
+     * Gets the information for the File Identifier {@code null} if none.
      *
-     * @return the data for the File Identifier
-     * {@code null} if none.
-     * @throws IOException Signals that an I/O exception of some sort has occurred.
-     * @throws ParseException Signals that an error has been reached unexpectedly
+     * @return the data for the File Identifier {@code null} if none.
+     * @throws IOException Signals that an I/O exception of some sort has
+     * occurred.
+     * @throws ParseException Signals that an error has been reached
+     * unexpectedly
      */
     private Identifier getFileIdentifier() throws IOException, ParseException {
         final DefaultIdentifier iden = new DefaultIdentifier();
@@ -380,12 +487,12 @@ public class LandsatReader {
     }
 
     /**
-     * Gets the information for the SpatialRepresentationInfo
-     * {@code null} if none.
+     * Gets the information for the SpatialRepresentationInfo {@code null} if
+     * none.
      *
-     * @return the data for the SpatialRepresentationInfo
-     * {@code null} if none.
-     * @throws IOException Signals that an I/O exception of some sort has occurred.
+     * @return the data for the SpatialRepresentationInfo {@code null} if none.
+     * @throws IOException Signals that an I/O exception of some sort has
+     * occurred.
      */
     private GridSpatialRepresentation createSpatialRepresentationInfo() throws IOException {
         final DefaultGridSpatialRepresentation grid = new DefaultGridSpatialRepresentation();
@@ -456,22 +563,26 @@ public class LandsatReader {
 
         return grid;
     }
-/**
-     * Gets Basic information required to uniquely identify a resource or resources.
-     * {@code null} if none.
+
+    /**
+     * Gets Basic information required to uniquely identify a resource or
+     * resources. {@code null} if none.
      *
-     * @return the data for the File Identifier
-     * {@code null} if none.
-     * @throws DataStoreException Thrown when a {@link DataStore} can not complete a read or write operation.
-     * @throws ParseException Signals that an error has been reached unexpectedly
+     * @return the data for the File Identifier {@code null} if none.
+     * @throws DataStoreException Thrown when a {@link DataStore} can not
+     * complete a read or write operation.
+     * @throws ParseException Signals that an error has been reached
+     * unexpectedly
      */
     Identification getIdentification() throws ParseException, DataStoreException {
         final AbstractIdentification abtract = new AbstractIdentification();
         final DefaultCitation citation = new DefaultCitation();
-        final String datatype = getValue("ORIGIN");
-        citation.setTitle(new DefaultInternationalString(datatype));
+//        final String datatype = getValue("ORIGIN");
+//        citation.setTitle(new DefaultInternationalString(datatype));
         final Date date = getDates();
         citation.setDates(Collections.singleton(new DefaultCitationDate(date, DateType.PUBLICATION)));
+        final String identifier = getValue("LANDSAT_SCENE_ID");
+        citation.setIdentifiers(Collections.singleton(new DefaultIdentifier(identifier)));
         final DefaultFormat format = new DefaultFormat();
         final String name = getValue("OUTPUT_FORMAT");
         final String version = getValue("DATA_TYPE");
@@ -483,17 +594,20 @@ public class LandsatReader {
         abtract.setCitation(citation);
         final Extent ex = getExtent();
         abtract.setExtents(Arrays.asList(ex));
+        final String credit = getValue("ORIGIN");
+        abtract.setCredits(Collections.singleton(new DefaultInternationalString(credit)));
 
         return abtract;
     }
+
     /**
-     * Gets the description of the spatial and temporal reference systems used in the dataset.
-     * {@code null} if none.
+     * Gets the description of the spatial and temporal reference systems used
+     * in the dataset. {@code null} if none.
      *
-     * @return the description of the spatial and temporal reference systems used in the dataset.
-     * {@code null} if none.
-     * @throws FactoryException Thrown when a {@linkplain Factory factory} can't create an instance
-     * of the requested object.
+     * @return the description of the spatial and temporal reference systems
+     * used in the dataset. {@code null} if none.
+     * @throws FactoryException Thrown when a {@linkplain Factory factory} can't
+     * create an instance of the requested object.
      */
 
     private CoordinateReferenceSystem getReferenceSystem() throws FactoryException {
@@ -553,156 +667,164 @@ public class LandsatReader {
         }
         return coordinate;
     }
-     /**
-     * Gets the data quality 
-     * {@code null} if none.
-     * @return the data quality 
-     * {@code null} if none.
+
+    /**
+     * Gets the data quality {@code null} if none.
+     *
+     * @return the data quality {@code null} if none.
      */
-    private DataQuality getQuality(){
-        final DefaultDataQuality quali = new DefaultDataQuality(); 
+    private DataQuality getQuality() {
+        final DefaultDataQuality quali = new DefaultDataQuality();
         final DefaultLineage lineage = new DefaultLineage();
         final String level = getValue("DATA_TYPE");
         final DefaultCitation citation = new DefaultCitation();
-        citation.setTitle(new DefaultInternationalString(level) );
+        citation.setTitle(new DefaultInternationalString(level));
         final String version = getValue("GROUND_CONTROL_POINTS_VERSION");
         citation.setEdition(new DefaultInternationalString(version));
         final DefaultSeries seri = new DefaultSeries();
         final String gcpmodel = getValue("GROUND_CONTROL_POINTS_MODEL");
-        seri.setIssueIdentification(new DefaultInternationalString("Number of GCPs used in the precision" +
-"correction process is :"+gcpmodel));
+        seri.setIssueIdentification(new DefaultInternationalString("Number of GCPs used in the precision"
+                + "correction process is :" + gcpmodel));
         citation.setSeries(seri);
         lineage.setAdditionalDocumentation(Collections.singleton(citation));
-       
+
         final AbstractElement abs = new AbstractElement();
         final String cloudcover = getValue("CLOUD_COVER");
-        if(cloudcover !=null){
-        abs.setNamesOfMeasure(Collections.singleton(new DefaultInternationalString("Cloud cover ")));
-        abs.setMeasureDescription(new DefaultInternationalString(cloudcover));
-        quali.getReports().add(abs);
+        if (cloudcover != null) {
+            abs.setNamesOfMeasure(Collections.singleton(new DefaultInternationalString("Cloud cover ")));
+            abs.setMeasureDescription(new DefaultInternationalString(cloudcover));
+            quali.getReports().add(abs);
         }
         final AbstractElement abs2 = new AbstractElement();
         final String cloudcoland = getValue("CLOUD_COVER_LAND");
-        if(cloudcoland !=null){
-        abs2.setNamesOfMeasure(Collections.singleton(new DefaultInternationalString("Cloud cover land")));
-        abs2.setMeasureDescription(new DefaultInternationalString(cloudcoland));
-        quali.getReports().add(abs2);
+        if (cloudcoland != null) {
+            abs2.setNamesOfMeasure(Collections.singleton(new DefaultInternationalString("Cloud cover land")));
+            abs2.setMeasureDescription(new DefaultInternationalString(cloudcoland));
+            quali.getReports().add(abs2);
         }
         final AbstractElement abs3 = new AbstractElement();
         final String qualioli = getValue("IMAGE_QUALITY_OLI");
-        if(qualioli !=null){
-        abs3.setNamesOfMeasure(Collections.singleton(new DefaultInternationalString("Image quality OLI")));
-        abs3.setMeasureDescription(new DefaultInternationalString(qualioli));
-        quali.getReports().add(abs3);
+        if (qualioli != null) {
+            abs3.setNamesOfMeasure(Collections.singleton(new DefaultInternationalString("Image quality OLI")));
+            abs3.setMeasureDescription(new DefaultInternationalString(qualioli));
+            quali.getReports().add(abs3);
         }
         final AbstractElement abs4 = new AbstractElement();
         final String qualitirs = getValue("IMAGE_QUALITY_TIRS");
-        if(qualitirs !=null){
-        abs4.setNamesOfMeasure(Collections.singleton(new DefaultInternationalString("Image quality TIRS")));
-        abs4.setMeasureDescription(new DefaultInternationalString(qualitirs));
-        quali.getReports().add(abs4);
+        if (qualitirs != null) {
+            abs4.setNamesOfMeasure(Collections.singleton(new DefaultInternationalString("Image quality TIRS")));
+            abs4.setMeasureDescription(new DefaultInternationalString(qualitirs));
+            quali.getReports().add(abs4);
         }
         final AbstractElement abs5 = new AbstractElement();
         final String tirsssm = getValue("TIRS_SSM_POSITION_STATUS");
-        if(tirsssm !=null){
-        abs5.setNamesOfMeasure(Collections.singleton(new DefaultInternationalString("TIRS SSM position status")));
-        abs5.setMeasureDescription(new DefaultInternationalString(tirsssm));
-        quali.getReports().add(abs5);
+        if (tirsssm != null) {
+            abs5.setNamesOfMeasure(Collections.singleton(new DefaultInternationalString("TIRS SSM position status")));
+            abs5.setMeasureDescription(new DefaultInternationalString(tirsssm));
+            quali.getReports().add(abs5);
         }
         final AbstractElement abs6 = new AbstractElement();
         final String rollangle = getValue("ROLL_ANGLE");
-        if(rollangle !=null){
-        abs6.setNamesOfMeasure(Collections.singleton(new DefaultInternationalString("Roll angle")));
-        abs6.setMeasureDescription(new DefaultInternationalString(rollangle));
-        quali.getReports().add(abs6);
+        if (rollangle != null) {
+            abs6.setNamesOfMeasure(Collections.singleton(new DefaultInternationalString("Roll angle")));
+            abs6.setMeasureDescription(new DefaultInternationalString(rollangle));
+            quali.getReports().add(abs6);
         }
         final AbstractElement abs7 = new AbstractElement();
         final String sunazimuth = getValue("SUN_AZIMUTH");
-        if(sunazimuth !=null){
-        abs7.setNamesOfMeasure(Collections.singleton(new DefaultInternationalString("Sun azimuth")));
-        abs7.setMeasureDescription(new DefaultInternationalString(sunazimuth));
-        quali.getReports().add(abs7);
+        if (sunazimuth != null) {
+            abs7.setNamesOfMeasure(Collections.singleton(new DefaultInternationalString("Sun azimuth")));
+            abs7.setMeasureDescription(new DefaultInternationalString(sunazimuth));
+            quali.getReports().add(abs7);
         }
         final AbstractElement abs8 = new AbstractElement();
         final String sunelevation = getValue("SUN_ELEVATION");
-        if(sunelevation !=null){
-        abs8.setNamesOfMeasure(Collections.singleton(new DefaultInternationalString("Sun elevation")));
-        abs8.setMeasureDescription(new DefaultInternationalString(sunelevation));
-        quali.getReports().add(abs8);
+        if (sunelevation != null) {
+            abs8.setNamesOfMeasure(Collections.singleton(new DefaultInternationalString("Sun elevation")));
+            abs8.setMeasureDescription(new DefaultInternationalString(sunelevation));
+            quali.getReports().add(abs8);
         }
         final AbstractElement abs9 = new AbstractElement();
         final String earthsun = getValue("EARTH_SUN_DISTANCE");
-        if(earthsun !=null){
-        abs9.setNamesOfMeasure(Collections.singleton(new DefaultInternationalString("Earth sun distance")));
-        abs9.setMeasureDescription(new DefaultInternationalString(earthsun));
-        quali.getReports().add(abs9);
+        if (earthsun != null) {
+            abs9.setNamesOfMeasure(Collections.singleton(new DefaultInternationalString("Earth sun distance")));
+            abs9.setMeasureDescription(new DefaultInternationalString(earthsun));
+            quali.getReports().add(abs9);
         }
         final AbstractElement abs10 = new AbstractElement();
         final String gcpverify = getValue("GROUND_CONTROL_POINTS_VERIFY");
-        if(gcpverify !=null){
-        abs10.setNamesOfMeasure(Collections.singleton(new DefaultInternationalString("Ground control points verify")));
-        abs10.setMeasureDescription(new DefaultInternationalString(gcpverify));
-        quali.getReports().add(abs10);
+        if (gcpverify != null) {
+            abs10.setNamesOfMeasure(Collections.singleton(new DefaultInternationalString("Ground control points verify")));
+            abs10.setMeasureDescription(new DefaultInternationalString(gcpverify));
+            quali.getReports().add(abs10);
         }
         final AbstractElement abs11 = new AbstractElement();
-        final String rmsverify= getValue("GEOMETRIC_RMSE_VERIFY");
-        if(rmsverify !=null){
-        abs11.setNamesOfMeasure(Collections.singleton(new DefaultInternationalString("Geometric RMSE verify")));
-        abs11.setMeasureDescription(new DefaultInternationalString(rmsverify));
-        quali.getReports().add(abs11);
+        final String rmsverify = getValue("GEOMETRIC_RMSE_VERIFY");
+        if (rmsverify != null) {
+            abs11.setNamesOfMeasure(Collections.singleton(new DefaultInternationalString("Geometric RMSE verify")));
+            abs11.setMeasureDescription(new DefaultInternationalString(rmsverify));
+            quali.getReports().add(abs11);
         }
         final AbstractElement abs12 = new AbstractElement();
         final String rmsemodel = getValue("GEOMETRIC_RMSE_MODEL");
-        if(rmsemodel !=null){
-        abs12.setNamesOfMeasure(Collections.singleton(new DefaultInternationalString("Geometric RMSE model")));
-        abs12.setMeasureDescription(new DefaultInternationalString(rmsemodel));
-        quali.getReports().add(abs12);
+        if (rmsemodel != null) {
+            abs12.setNamesOfMeasure(Collections.singleton(new DefaultInternationalString("Geometric RMSE model")));
+            abs12.setMeasureDescription(new DefaultInternationalString(rmsemodel));
+            quali.getReports().add(abs12);
         }
         final AbstractElement abs13 = new AbstractElement();
         final String rmsemodely = getValue("GEOMETRIC_RMSE_MODEL_Y");
-        if(rmsemodely !=null){
-        abs13.setNamesOfMeasure(Collections.singleton(new DefaultInternationalString("Geometric RMSE Model Y")));
-        abs13.setMeasureDescription(new DefaultInternationalString(rmsemodely));
-        quali.getReports().add(abs13);
+        if (rmsemodely != null) {
+            abs13.setNamesOfMeasure(Collections.singleton(new DefaultInternationalString("Geometric RMSE Model Y")));
+            abs13.setMeasureDescription(new DefaultInternationalString(rmsemodely));
+            quali.getReports().add(abs13);
         }
         final AbstractElement abs14 = new AbstractElement();
         final String rmsemodelx = getValue("GEOMETRIC_RMSE_MODEL_X");
-        if(rmsemodelx !=null){
-        abs14.setNamesOfMeasure(Collections.singleton(new DefaultInternationalString("Geometric RMSE Model X")));
-        abs14.setMeasureDescription(new DefaultInternationalString(rmsemodelx));
-        quali.getReports().add(abs14);
+        if (rmsemodelx != null) {
+            abs14.setNamesOfMeasure(Collections.singleton(new DefaultInternationalString("Geometric RMSE Model X")));
+            abs14.setMeasureDescription(new DefaultInternationalString(rmsemodelx));
+            quali.getReports().add(abs14);
         }
-        
+
         quali.setLineage(lineage);
-        return quali;   
+        return quali;
     }
-     /**
-     * Read which defines metadata about a resource or resources.
-     * {@code null} if none.
+
+    /**
+     * Read which defines metadata about a resource or resources. {@code null}
+     * if none.
+     *
      * @return the data which defines metadata about a resource or resources.
      * {@code null} if none.
-     * @throws FactoryException Thrown when a {@linkplain Factory factory} can't create an instance
-     * of the requested object.
-     * @throws DataStoreException Thrown when a {@link DataStore} can not complete a read or write operation.
-     * @throws ParseException Signals that an error has been reached unexpectedly
-     * @throws IOException Signals that an I/O exception of some sort has occurred.
+     * @throws FactoryException Thrown when a {@linkplain Factory factory} can't
+     * create an instance of the requested object.
+     * @throws DataStoreException Thrown when a {@link DataStore} can not
+     * complete a read or write operation.
+     * @throws ParseException Signals that an error has been reached
+     * unexpectedly
+     * @throws IOException Signals that an I/O exception of some sort has
+     * occurred.
      */
-    
+
     public Metadata read() throws IOException, ParseException, DataStoreException, FactoryException {
         final DefaultMetadata metadata = new DefaultMetadata();
         metadata.setMetadataStandards(Citations.ISO_19115);
-        final Identifier identifier = getFileIdentifier();
-        metadata.setMetadataIdentifier(identifier);
+        metadata.setDateInfo(Collections.singleton(new DefaultCitationDate(getDates(),DateType.CREATION)));
+//        final Identifier identifier = getFileIdentifier();
+//        metadata.setMetadataIdentifier(identifier);
         final Identification identification = getIdentification();
         metadata.setIdentificationInfo(Collections.singleton(identification));
+        final ImageDescription creat = createContentInfo();
+        metadata.getContentInfo().add(creat);
         final AcquisitionInformation Ai = getAcquisitionInformation();
         metadata.setAcquisitionInformation(Collections.singleton(Ai));
-        final GridSpatialRepresentation grid = createSpatialRepresentationInfo();
-        metadata.setSpatialRepresentationInfo(Collections.singleton(grid));
-        final CoordinateReferenceSystem a = getReferenceSystem();
-        metadata.setReferenceSystemInfo(Collections.singleton(a));
-        final DataQuality quali = getQuality();
-        metadata.setDataQualityInfo(Collections.singleton(quali));
+//        final GridSpatialRepresentation grid = createSpatialRepresentationInfo();
+//        metadata.setSpatialRepresentationInfo(Collections.singleton(grid));
+//        final CoordinateReferenceSystem a = getReferenceSystem();
+//        metadata.setReferenceSystemInfo(Collections.singleton(a));
+//        final DataQuality quali = getQuality();
+//        metadata.setDataQualityInfo(Collections.singleton(quali));
         return metadata;
     }
 
