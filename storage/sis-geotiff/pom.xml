@@ -28,7 +28,7 @@
   <parent>
     <groupId>org.apache.sis</groupId>
     <artifactId>storage</artifactId>
-    <version>0.7-jdk8-SNAPSHOT</version>
+    <version>0.8-jdk8-SNAPSHOT</version>
   </parent>
 
 
@@ -108,4 +108,24 @@ Bridge between GeoTIFF convention and ISO 19115 metadata.
       </plugin>
     </plugins>
   </build>
+
+
+  <!-- ===========================================================
+           Temporary dependency (to be removed)
+       =========================================================== -->
+  <dependencies>
+    <dependency>
+      <groupId>org.geotoolkit</groupId>
+      <artifactId>geotk-temporal</artifactId>
+      <version>4.0-SNAPSHOT</version>
+      <optional>true</optional>
+    </dependency>
+  </dependencies>
+  <repositories>
+    <repository>
+      <id>geotoolkit.org</id>
+      <name>Geotoolkit.org repository</name>
+      <url>http://maven.geotoolkit.org</url>
+    </repository>
+  </repositories>
 </project>

@@ -21,7 +21,7 @@
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5
- * @version 0.5
+ * @version 0.7
  * @module
  */
 package org.apache.sis.internal.doclet;
