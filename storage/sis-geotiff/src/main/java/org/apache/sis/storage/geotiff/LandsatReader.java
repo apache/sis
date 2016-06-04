@@ -1,11 +1,12 @@
 /*
- * Copyright 2016 haonguyen.
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -23,91 +24,39 @@ import java.text.NumberFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import org.apache.sis.internal.netcdf.Axis;
-import org.apache.sis.internal.netcdf.Decoder;
-import org.apache.sis.internal.netcdf.GridGeometry;
-import org.apache.sis.internal.system.DefaultFactories;
-import org.apache.sis.internal.util.Constants;
-import org.apache.sis.measure.Units;
-import org.apache.sis.metadata.iso.DefaultExtendedElementInformation;
+import javax.measure.unit.Unit;
 import org.apache.sis.metadata.iso.DefaultIdentifier;
 import org.apache.sis.metadata.iso.DefaultMetadata;
-import org.apache.sis.metadata.iso.DefaultMetadataExtensionInformation;
 import org.apache.sis.metadata.iso.acquisition.DefaultAcquisitionInformation;
 import org.apache.sis.metadata.iso.acquisition.DefaultInstrument;
-import org.apache.sis.metadata.iso.acquisition.DefaultObjective;
-import org.apache.sis.metadata.iso.acquisition.DefaultOperation;
 import org.apache.sis.metadata.iso.acquisition.DefaultPlatform;
 import org.apache.sis.metadata.iso.acquisition.DefaultRequirement;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.citation.DefaultCitationDate;
-import org.apache.sis.metadata.iso.citation.DefaultSeries;
 import org.apache.sis.metadata.iso.content.DefaultAttributeGroup;
 import org.apache.sis.metadata.iso.content.DefaultBand;
-import org.apache.sis.metadata.iso.content.DefaultCoverageDescription;
 import org.apache.sis.metadata.iso.content.DefaultImageDescription;
-import org.apache.sis.metadata.iso.content.DefaultRangeDimension;
-import org.apache.sis.metadata.iso.distribution.DefaultDataFile;
 import org.apache.sis.metadata.iso.distribution.DefaultFormat;
 import org.apache.sis.metadata.iso.extent.DefaultExtent;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
-import org.apache.sis.metadata.iso.extent.DefaultSpatialTemporalExtent;
-import org.apache.sis.metadata.iso.extent.DefaultTemporalExtent;
 import org.apache.sis.metadata.iso.identification.AbstractIdentification;
-import org.apache.sis.metadata.iso.identification.DefaultDataIdentification;
-import org.apache.sis.metadata.iso.lineage.DefaultLineage;
-import org.apache.sis.metadata.iso.quality.AbstractElement;
-import org.apache.sis.metadata.iso.quality.AbstractResult;
-import org.apache.sis.metadata.iso.quality.DefaultConformanceResult;
-import org.apache.sis.metadata.iso.quality.DefaultCoverageResult;
-import org.apache.sis.metadata.iso.quality.DefaultDataQuality;
-import org.apache.sis.metadata.iso.quality.DefaultQuantitativeResult;
-
-import org.apache.sis.metadata.iso.spatial.DefaultDimension;
-import org.apache.sis.metadata.iso.spatial.DefaultGridSpatialRepresentation;
-import org.apache.sis.referencing.AbstractReferenceSystem;
-import org.apache.sis.referencing.CRS;
-import org.apache.sis.referencing.CommonCRS;
-import org.apache.sis.referencing.crs.DefaultProjectedCRS;
-import org.apache.sis.referencing.operation.DefaultConversion;
 import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.iso.DefaultInternationalString;
-import org.opengis.metadata.ExtendedElementInformation;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.Metadata;
 import org.opengis.metadata.acquisition.AcquisitionInformation;
-import org.opengis.metadata.acquisition.ObjectiveType;
-import org.opengis.metadata.citation.CitationDate;
 import org.opengis.metadata.citation.DateType;
 import org.opengis.metadata.content.AttributeGroup;
-import org.opengis.metadata.content.Band;
-import org.opengis.metadata.content.CoverageContentType;
-import org.opengis.metadata.content.CoverageDescription;
 import org.opengis.metadata.content.ImageDescription;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.extent.GeographicBoundingBox;
-import org.opengis.metadata.extent.SpatialTemporalExtent;
 import org.opengis.metadata.identification.Identification;
-import org.opengis.metadata.maintenance.ScopeCode;
-import org.opengis.metadata.quality.DataQuality;
-import org.opengis.metadata.quality.Element;
-import org.opengis.metadata.quality.Result;
-import org.opengis.metadata.spatial.DimensionNameType;
-import org.opengis.metadata.spatial.GridSpatialRepresentation;
-import org.opengis.parameter.ParameterValueGroup;
-import org.opengis.referencing.ReferenceSystem;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.operation.CoordinateOperationFactory;
-import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.util.FactoryException;
 
 /**
@@ -122,10 +71,13 @@ public class LandsatReader {
      *
      * {
      *
-     * @preformat text DATE_ACQUIRED = 2014-03-12 SCENE_CENTER_TIME =
-     * 03:02:01.5339408Z CORNER_UL_LAT_PRODUCT = 12.61111 CORNER_UL_LON_PRODUCT
-     * = 108.33624 CORNER_UR_LAT_PRODUCT = 12.62381 CORNER_UR_LON_PRODUCT =
-     * 110.44017 }
+     * @preformat text 
+     * DATE_ACQUIRED = 2014-03-12 
+     * SCENE_CENTER_TIME =03:02:01.5339408Z 
+     * CORNER_UL_LAT_PRODUCT = 12.61111
+     * CORNER_UL_LON_PRODUCT= 108.33624 
+     * CORNER_UR_LAT_PRODUCT = 12.62381
+     * CORNER_UR_LON_PRODUCT =110.44017 }
      */
     /**
      * Stores all properties found in the Landsat file read from the the given
@@ -256,61 +208,18 @@ public class LandsatReader {
      */
     private AttributeGroup coverage() {
         final DefaultAttributeGroup attribute = new DefaultAttributeGroup();
-        final DefaultBand coastal = new DefaultBand();
-        coastal.setDescription(new DefaultInternationalString("Coastal Aerosol (Operational Land Imager (OLI))"));
-        coastal.setPeakResponse(Double.parseDouble("433"));
-        coastal.setUnits(Units.valueOf("nm"));
-        attribute.getAttributes().add(coastal);
-        final DefaultBand blue = new DefaultBand();
-        blue.setDescription(new DefaultInternationalString("Blue (OLI)"));
-        blue.setPeakResponse(Double.parseDouble("482"));
-        blue.setUnits(Units.valueOf("nm"));
-        attribute.getAttributes().add(blue);
-        final DefaultBand green = new DefaultBand();
-        green.setDescription(new DefaultInternationalString("Green (OLI)"));
-        green.setPeakResponse(Double.parseDouble("562"));
-        green.setUnits(Units.valueOf("nm"));
-        attribute.getAttributes().add(green);
-        final DefaultBand red = new DefaultBand();
-        red.setDescription(new DefaultInternationalString("Red (OLI)"));
-        red.setPeakResponse(Double.parseDouble("655"));
-        red.setUnits(Units.valueOf("nm"));
-        attribute.getAttributes().add(red);
-        final DefaultBand near = new DefaultBand();
-        near.setDescription(new DefaultInternationalString("Near-Infrared (NIR) (OLI)"));
-        near.setPeakResponse(Double.parseDouble("865"));
-        near.setUnits(Units.valueOf("nm"));
-        attribute.getAttributes().add(near);
-        final DefaultBand shor = new DefaultBand();
-        shor.setDescription(new DefaultInternationalString("Short Wavelength Infrared (SWIR) 1 (OLI)"));
-        shor.setPeakResponse(Double.parseDouble("1610"));
-        shor.setUnits(Units.valueOf("nm"));
-        attribute.getAttributes().add(shor);
-        final DefaultBand swir = new DefaultBand();
-        swir.setDescription(new DefaultInternationalString("SWIR 2 (OLI)"));
-        swir.setPeakResponse(Double.parseDouble("2200"));
-        swir.setUnits(Units.valueOf("nm"));
-        attribute.getAttributes().add(swir);
-        final DefaultBand panchromatic = new DefaultBand();
-        panchromatic.setDescription(new DefaultInternationalString("Panchromatic (OLI)"));
-        panchromatic.setPeakResponse(Double.parseDouble("590"));
-        panchromatic.setUnits(Units.valueOf("nm"));
-        attribute.getAttributes().add(panchromatic);
-        final DefaultBand cirrus = new DefaultBand();
-        cirrus.setDescription(new DefaultInternationalString("Cirrus (OLI)"));
-        cirrus.setPeakResponse(Double.parseDouble("1375"));
-        cirrus.setUnits(Units.valueOf("nm"));
-        attribute.getAttributes().add(cirrus);
-        final DefaultBand thermal = new DefaultBand();
-        thermal.setDescription(new DefaultInternationalString("Thermal Infrared Sensor (TIRS) 1"));
-        thermal.setPeakResponse(Double.parseDouble("10800"));
-        thermal.setUnits(Units.valueOf("nm"));
-        attribute.getAttributes().add(thermal);
-        final DefaultBand tirs = new DefaultBand();
-        tirs.setDescription(new DefaultInternationalString("TIRS 2"));
-        tirs.setPeakResponse(Double.parseDouble("12000"));
-        tirs.setUnits(Units.valueOf("nm"));
-        attribute.getAttributes().add(tirs);
+        double[] wavelengths = {433.0, 482.0, 562.0,655.0,865.0,1610.0,2200.0,590.0,1375.0,10800.0,12000.0};
+        String[] nameband = {"Coastal Aerosol (Operational Land Imager (OLI))","Blue (OLI)",
+                             "Green (OLI)","Red (OLI)","Near-Infrared (NIR) (OLI)",
+                             "Short Wavelength Infrared (SWIR) 1 (OLI)","SWIR 2 (OLI)",
+                             "Panchromatic (OLI)","Cirrus (OLI)","Thermal Infrared Sensor (TIRS) 1","TIRS 2"};
+            for (int i=0; i<wavelengths.length; i++) {
+                final DefaultBand band = new DefaultBand();
+                band.setPeakResponse(wavelengths[i]);
+                band.setDescription(new DefaultInternationalString(nameband[i]));
+                band.setUnits(Unit.valueOf("nm"));
+                attribute.getAttributes().add(band);
+            }
         return attribute;
     }
 
@@ -397,17 +306,11 @@ public class LandsatReader {
      * @return the data extent in Indentification infor {@code null} if none.
      * @throws DataStoreException if data can not be read.
      */
-    private Extent getExtent() throws DataStoreException, ParseException,UnsupportedOperationException{
+    private Extent getExtent() throws DataStoreException, ParseException, UnsupportedOperationException {
 
         final DefaultExtent ex = new DefaultExtent();
         final GeographicBoundingBox box = getGeographicBoundingBox();
         ex.getGeographicElements().add(box);
-//        final DefaultTemporalExtent tex = new DefaultTemporalExtent();
-//        final Date acquisitionDate = getAcquisitionDate();
-//        tex.setBounds(acquisitionDate,acquisitionDate);
-//        ex.setTemporalElements(Arrays.asList(tex));
-        
-
         return ex;
     }
 
@@ -422,39 +325,19 @@ public class LandsatReader {
         final DefaultCitation citation = new DefaultCitation();
         final DefaultRequirement requirement = new DefaultRequirement();
         final Date date = getAcquisitionDate();
-//        final String title = getValue("DATA_TYPE");
-//        citation.setTitle(new DefaultInternationalString(title));
         citation.setDates(Collections.singleton(new DefaultCitationDate(date, DateType.PUBLICATION)));
         requirement.setCitation(citation);
         dAi.setAcquisitionRequirements(Collections.singleton(requirement));
         final DefaultPlatform platF = new DefaultPlatform();
-        /*
-        The characteristics, spatial and temporal extent of the intended object to be observed.
-         */
-//        final DefaultObjective object1 = new DefaultObjective();
-//        final DefaultObjective object2 = new DefaultObjective();
-//        final String orientatin = getValue("ORIENTATION");
-//        final String resampling = getValue("RESAMPLING_OPTION");
-//        object1.setTypes(Collections.singleton(ObjectiveType.valueOf("Orientation")));
-//        object1.setFunctions(Collections.singleton(new DefaultInternationalString(orientatin)));
-//        object2.setTypes(Collections.singleton(ObjectiveType.valueOf("Resampling")));
-//        object2.setFunctions(Collections.singleton(new DefaultInternationalString(resampling)));
-        /*
-        *The Platform, Instrument and the type of instrument used to observe the object 
-         */
         final String space = getValue("SPACECRAFT_ID");
         if (space != null) {
             platF.setCitation(new DefaultCitation(space));
         }
         final DefaultInstrument instru = new DefaultInstrument();
         final String instrum = getValue("SENSOR_ID");
-        instru.setType(new DefaultInternationalString(instrum));
-//        final String nadir = getValue("NADIR_OFFNADIR");
-//        instru.setDescription(new DefaultInternationalString(nadir));
+        instru.setType(new DefaultInternationalString(instrum));;
         platF.setInstruments(Collections.singleton(instru));
         dAi.setPlatforms(Collections.singleton(platF));
-//        dAi.getObjectives().add(object1);
-//        dAi.getObjectives().add(object2);
         return dAi;
 
     }
@@ -487,84 +370,6 @@ public class LandsatReader {
     }
 
     /**
-     * Gets the information for the SpatialRepresentationInfo {@code null} if
-     * none.
-     *
-     * @return the data for the SpatialRepresentationInfo {@code null} if none.
-     * @throws IOException Signals that an I/O exception of some sort has
-     * occurred.
-     */
-    private GridSpatialRepresentation createSpatialRepresentationInfo() throws IOException {
-        final DefaultGridSpatialRepresentation grid = new DefaultGridSpatialRepresentation();
-        final DefaultDimension dimen = new DefaultDimension();
-        final int path = Integer.parseInt(getValue("WRS_PATH"));
-        dimen.setDimensionName(DimensionNameType.COLUMN);
-        dimen.setDimensionSize(path);
-        final DefaultDimension dimen1 = new DefaultDimension();
-        final int row = Integer.parseInt(getValue("WRS_ROW"));
-        dimen1.setDimensionName(DimensionNameType.ROW);
-        dimen1.setDimensionSize(row);
-        final DefaultDimension dimen3 = new DefaultDimension();
-        final int panchromaticline = Integer.parseInt(getValue("PANCHROMATIC_LINES"));
-        dimen3.setDimensionDescription(new DefaultInternationalString("Panchromatic lines"));
-        dimen3.setDimensionName(DimensionNameType.LINE);
-        dimen3.setDimensionSize(panchromaticline);
-        final DefaultDimension dimen4 = new DefaultDimension();
-        final int panchromaticsample = Integer.parseInt(getValue("PANCHROMATIC_SAMPLES"));
-        dimen4.setDimensionDescription(new DefaultInternationalString("Panchromatic samples"));
-        dimen4.setDimensionName(DimensionNameType.SAMPLE);
-        dimen4.setDimensionSize(panchromaticsample);
-        final DefaultDimension dimen9 = new DefaultDimension();
-        final double panchromaticgrid = Double.valueOf(getValue("GRID_CELL_SIZE_PANCHROMATIC"));
-        dimen9.setDimensionDescription(new DefaultInternationalString("Panchromatic grid cell size"));
-        dimen9.setResolution(panchromaticgrid);
-
-        final DefaultDimension dimen5 = new DefaultDimension();
-        final int reflecline = Integer.parseInt(getValue("REFLECTIVE_LINES"));
-        dimen5.setDimensionDescription(new DefaultInternationalString("Reflective lines"));
-        dimen5.setDimensionName(DimensionNameType.LINE);
-        dimen5.setDimensionSize(reflecline);
-        final DefaultDimension dimen6 = new DefaultDimension();
-        final int reflecsample = Integer.parseInt(getValue("REFLECTIVE_SAMPLES"));
-        dimen6.setDimensionDescription(new DefaultInternationalString("Reflective samples"));
-        dimen6.setDimensionName(DimensionNameType.SAMPLE);
-        dimen6.setDimensionSize(reflecsample);
-        final DefaultDimension dimen10 = new DefaultDimension();
-        final double reflecgrid = Double.valueOf(getValue("GRID_CELL_SIZE_REFLECTIVE"));
-        dimen10.setDimensionDescription(new DefaultInternationalString("Reflective grid cell size"));
-        dimen10.setResolution(reflecgrid);
-
-        final DefaultDimension dimen7 = new DefaultDimension();
-        final int thermalline = Integer.parseInt(getValue("THERMAL_LINES"));
-        dimen7.setDimensionDescription(new DefaultInternationalString("Thermal lines"));
-        dimen7.setDimensionName(DimensionNameType.LINE);
-        dimen7.setDimensionSize(thermalline);
-        final DefaultDimension dimen8 = new DefaultDimension();
-        final int thermalsample = Integer.parseInt(getValue("THERMAL_SAMPLES"));
-        dimen8.setDimensionDescription(new DefaultInternationalString("Thermal samples"));
-        dimen8.setDimensionName(DimensionNameType.SAMPLE);
-        dimen8.setDimensionSize(thermalline);
-        final DefaultDimension dimen11 = new DefaultDimension();
-        final double thermalgrid = Double.valueOf(getValue("GRID_CELL_SIZE_THERMAL"));
-        dimen11.setDimensionDescription(new DefaultInternationalString("Thermal grid cell size"));
-        dimen11.setResolution(thermalgrid);
-
-        grid.getAxisDimensionProperties().add(dimen);
-        grid.getAxisDimensionProperties().add(dimen1);
-        grid.getAxisDimensionProperties().add(dimen3);
-        grid.getAxisDimensionProperties().add(dimen4);
-        grid.getAxisDimensionProperties().add(dimen5);
-        grid.getAxisDimensionProperties().add(dimen6);
-        grid.getAxisDimensionProperties().add(dimen7);
-        grid.getAxisDimensionProperties().add(dimen8);
-        grid.getAxisDimensionProperties().add(dimen9);
-        grid.getAxisDimensionProperties().add(dimen10);
-        grid.getAxisDimensionProperties().add(dimen11);
-
-        return grid;
-    }
-
-    /**
      * Gets Basic information required to uniquely identify a resource or
      * resources. {@code null} if none.
      *
@@ -577,8 +382,6 @@ public class LandsatReader {
     Identification getIdentification() throws ParseException, DataStoreException {
         final AbstractIdentification abtract = new AbstractIdentification();
         final DefaultCitation citation = new DefaultCitation();
-//        final String datatype = getValue("ORIGIN");
-//        citation.setTitle(new DefaultInternationalString(datatype));
         final Date date = getDates();
         citation.setDates(Collections.singleton(new DefaultCitationDate(date, DateType.PUBLICATION)));
         final String identifier = getValue("LANDSAT_SCENE_ID");
@@ -601,197 +404,6 @@ public class LandsatReader {
     }
 
     /**
-     * Gets the description of the spatial and temporal reference systems used
-     * in the dataset. {@code null} if none.
-     *
-     * @return the description of the spatial and temporal reference systems
-     * used in the dataset. {@code null} if none.
-     * @throws FactoryException Thrown when a {@linkplain Factory factory} can't
-     * create an instance of the requested object.
-     */
-
-    private CoordinateReferenceSystem getReferenceSystem() throws FactoryException {
-        final CoordinateReferenceSystem coordinate;
-        final String orientation = getValue("ORIENTATION");
-        final String resampling = getValue("RESAMPLING_OPTION");
-
-        //-- Datum
-        final String datum = getValue("DATUM");
-        //-- Ellipsoid
-        final String ellips = getValue("ELLIPSOID");
-        if (!(("WGS84".equalsIgnoreCase(datum)) && ("WGS84".equalsIgnoreCase(ellips)))) {
-            throw new IllegalStateException("Comportement not supported : expected Datum and Ellipsoid value WGS84, found Datum = " + datum + ", Ellipsoid : " + ellips);
-        }
-        final String projType = getValue("MAP_PROJECTION");
-
-        switch (projType) {
-            case "UTM": {
-                /**
-                 * From Landsat specification, normaly Datum and ellipsoid are
-                 * always WGS84. UTM area is the only thing which change.
-                 * Thereby we build a CRS from basic 32600 and we add read UTM
-                 * area. For example if UTM area is 45 we decode 32645 CRS from
-                 * EPSG database.
-                 */
-                final String utm_Zone = getValue("UTM_ZONE");
-                final Integer utm = Integer.valueOf(utm_Zone);
-                ArgumentChecks.ensureBetween(datum, 0, 60, utm);
-                final NumberFormat nf = new DecimalFormat("##");
-                final String utmFormat = nf.format(utm);
-                coordinate = CRS.forCode("EPSG:326" + utmFormat);
-
-                break;
-            }
-            case "PS": {
-                final String originLongitude = getValue("VERTICAL_LON_FROM_POLE");
-                final String trueLatitudeScale = getValue("TRUE_SCALE_LAT");
-                final String falseEasting = getValue("FALSE_EASTING");
-                final String falseNorthing = getValue("FALSE_NORTHING");
-                final OperationMethod method = DefaultFactories.forBuildin(CoordinateOperationFactory.class)
-                        .getOperationMethod("Polar Stereographic (variant B)");
-                final ParameterValueGroup psParameters = method.getParameters().createValue();
-                psParameters.parameter(Constants.STANDARD_PARALLEL_1).setValue(Double.valueOf(trueLatitudeScale));
-                psParameters.parameter(Constants.CENTRAL_MERIDIAN).setValue(Double.valueOf(originLongitude));
-                psParameters.parameter(Constants.FALSE_EASTING).setValue(Double.valueOf(falseEasting));
-                psParameters.parameter(Constants.FALSE_NORTHING).setValue(Double.valueOf(falseNorthing));
-
-                final Map<String, String> properties = Collections.singletonMap("name", "Landsat 8 polar stereographic");
-                //-- define mathematical formula to pass from Geographic Base CRS to projected Coordinate space.
-                final DefaultConversion projection = new DefaultConversion(properties, method, null, psParameters);
-                coordinate = new DefaultProjectedCRS(properties, CommonCRS.WGS84.normalizedGeographic(), projection, null);
-
-                break;
-            }
-            default:
-                throw new IllegalStateException("Comportement not supported : expected MAP_PROJECTION values are : PS or UTM, found : " + projType);
-        }
-        return coordinate;
-    }
-
-    /**
-     * Gets the data quality {@code null} if none.
-     *
-     * @return the data quality {@code null} if none.
-     */
-    private DataQuality getQuality() {
-        final DefaultDataQuality quali = new DefaultDataQuality();
-        final DefaultLineage lineage = new DefaultLineage();
-        final String level = getValue("DATA_TYPE");
-        final DefaultCitation citation = new DefaultCitation();
-        citation.setTitle(new DefaultInternationalString(level));
-        final String version = getValue("GROUND_CONTROL_POINTS_VERSION");
-        citation.setEdition(new DefaultInternationalString(version));
-        final DefaultSeries seri = new DefaultSeries();
-        final String gcpmodel = getValue("GROUND_CONTROL_POINTS_MODEL");
-        seri.setIssueIdentification(new DefaultInternationalString("Number of GCPs used in the precision"
-                + "correction process is :" + gcpmodel));
-        citation.setSeries(seri);
-        lineage.setAdditionalDocumentation(Collections.singleton(citation));
-
-        final AbstractElement abs = new AbstractElement();
-        final String cloudcover = getValue("CLOUD_COVER");
-        if (cloudcover != null) {
-            abs.setNamesOfMeasure(Collections.singleton(new DefaultInternationalString("Cloud cover ")));
-            abs.setMeasureDescription(new DefaultInternationalString(cloudcover));
-            quali.getReports().add(abs);
-        }
-        final AbstractElement abs2 = new AbstractElement();
-        final String cloudcoland = getValue("CLOUD_COVER_LAND");
-        if (cloudcoland != null) {
-            abs2.setNamesOfMeasure(Collections.singleton(new DefaultInternationalString("Cloud cover land")));
-            abs2.setMeasureDescription(new DefaultInternationalString(cloudcoland));
-            quali.getReports().add(abs2);
-        }
-        final AbstractElement abs3 = new AbstractElement();
-        final String qualioli = getValue("IMAGE_QUALITY_OLI");
-        if (qualioli != null) {
-            abs3.setNamesOfMeasure(Collections.singleton(new DefaultInternationalString("Image quality OLI")));
-            abs3.setMeasureDescription(new DefaultInternationalString(qualioli));
-            quali.getReports().add(abs3);
-        }
-        final AbstractElement abs4 = new AbstractElement();
-        final String qualitirs = getValue("IMAGE_QUALITY_TIRS");
-        if (qualitirs != null) {
-            abs4.setNamesOfMeasure(Collections.singleton(new DefaultInternationalString("Image quality TIRS")));
-            abs4.setMeasureDescription(new DefaultInternationalString(qualitirs));
-            quali.getReports().add(abs4);
-        }
-        final AbstractElement abs5 = new AbstractElement();
-        final String tirsssm = getValue("TIRS_SSM_POSITION_STATUS");
-        if (tirsssm != null) {
-            abs5.setNamesOfMeasure(Collections.singleton(new DefaultInternationalString("TIRS SSM position status")));
-            abs5.setMeasureDescription(new DefaultInternationalString(tirsssm));
-            quali.getReports().add(abs5);
-        }
-        final AbstractElement abs6 = new AbstractElement();
-        final String rollangle = getValue("ROLL_ANGLE");
-        if (rollangle != null) {
-            abs6.setNamesOfMeasure(Collections.singleton(new DefaultInternationalString("Roll angle")));
-            abs6.setMeasureDescription(new DefaultInternationalString(rollangle));
-            quali.getReports().add(abs6);
-        }
-        final AbstractElement abs7 = new AbstractElement();
-        final String sunazimuth = getValue("SUN_AZIMUTH");
-        if (sunazimuth != null) {
-            abs7.setNamesOfMeasure(Collections.singleton(new DefaultInternationalString("Sun azimuth")));
-            abs7.setMeasureDescription(new DefaultInternationalString(sunazimuth));
-            quali.getReports().add(abs7);
-        }
-        final AbstractElement abs8 = new AbstractElement();
-        final String sunelevation = getValue("SUN_ELEVATION");
-        if (sunelevation != null) {
-            abs8.setNamesOfMeasure(Collections.singleton(new DefaultInternationalString("Sun elevation")));
-            abs8.setMeasureDescription(new DefaultInternationalString(sunelevation));
-            quali.getReports().add(abs8);
-        }
-        final AbstractElement abs9 = new AbstractElement();
-        final String earthsun = getValue("EARTH_SUN_DISTANCE");
-        if (earthsun != null) {
-            abs9.setNamesOfMeasure(Collections.singleton(new DefaultInternationalString("Earth sun distance")));
-            abs9.setMeasureDescription(new DefaultInternationalString(earthsun));
-            quali.getReports().add(abs9);
-        }
-        final AbstractElement abs10 = new AbstractElement();
-        final String gcpverify = getValue("GROUND_CONTROL_POINTS_VERIFY");
-        if (gcpverify != null) {
-            abs10.setNamesOfMeasure(Collections.singleton(new DefaultInternationalString("Ground control points verify")));
-            abs10.setMeasureDescription(new DefaultInternationalString(gcpverify));
-            quali.getReports().add(abs10);
-        }
-        final AbstractElement abs11 = new AbstractElement();
-        final String rmsverify = getValue("GEOMETRIC_RMSE_VERIFY");
-        if (rmsverify != null) {
-            abs11.setNamesOfMeasure(Collections.singleton(new DefaultInternationalString("Geometric RMSE verify")));
-            abs11.setMeasureDescription(new DefaultInternationalString(rmsverify));
-            quali.getReports().add(abs11);
-        }
-        final AbstractElement abs12 = new AbstractElement();
-        final String rmsemodel = getValue("GEOMETRIC_RMSE_MODEL");
-        if (rmsemodel != null) {
-            abs12.setNamesOfMeasure(Collections.singleton(new DefaultInternationalString("Geometric RMSE model")));
-            abs12.setMeasureDescription(new DefaultInternationalString(rmsemodel));
-            quali.getReports().add(abs12);
-        }
-        final AbstractElement abs13 = new AbstractElement();
-        final String rmsemodely = getValue("GEOMETRIC_RMSE_MODEL_Y");
-        if (rmsemodely != null) {
-            abs13.setNamesOfMeasure(Collections.singleton(new DefaultInternationalString("Geometric RMSE Model Y")));
-            abs13.setMeasureDescription(new DefaultInternationalString(rmsemodely));
-            quali.getReports().add(abs13);
-        }
-        final AbstractElement abs14 = new AbstractElement();
-        final String rmsemodelx = getValue("GEOMETRIC_RMSE_MODEL_X");
-        if (rmsemodelx != null) {
-            abs14.setNamesOfMeasure(Collections.singleton(new DefaultInternationalString("Geometric RMSE Model X")));
-            abs14.setMeasureDescription(new DefaultInternationalString(rmsemodelx));
-            quali.getReports().add(abs14);
-        }
-
-        quali.setLineage(lineage);
-        return quali;
-    }
-
-    /**
      * Read which defines metadata about a resource or resources. {@code null}
      * if none.
      *
@@ -806,11 +418,10 @@ public class LandsatReader {
      * @throws IOException Signals that an I/O exception of some sort has
      * occurred.
      */
-
     public Metadata read() throws IOException, ParseException, DataStoreException, FactoryException {
         final DefaultMetadata metadata = new DefaultMetadata();
         metadata.setMetadataStandards(Citations.ISO_19115);
-        metadata.setDateInfo(Collections.singleton(new DefaultCitationDate(getDates(),DateType.CREATION)));
+        metadata.setDateInfo(Collections.singleton(new DefaultCitationDate(getDates(), DateType.CREATION)));
 //        final Identifier identifier = getFileIdentifier();
 //        metadata.setMetadataIdentifier(identifier);
         final Identification identification = getIdentification();
@@ -819,12 +430,6 @@ public class LandsatReader {
         metadata.getContentInfo().add(creat);
         final AcquisitionInformation Ai = getAcquisitionInformation();
         metadata.setAcquisitionInformation(Collections.singleton(Ai));
-//        final GridSpatialRepresentation grid = createSpatialRepresentationInfo();
-//        metadata.setSpatialRepresentationInfo(Collections.singleton(grid));
-//        final CoordinateReferenceSystem a = getReferenceSystem();
-//        metadata.setReferenceSystemInfo(Collections.singleton(a));
-//        final DataQuality quali = getQuality();
-//        metadata.setDataQualityInfo(Collections.singleton(quali));
         return metadata;
     }
 
