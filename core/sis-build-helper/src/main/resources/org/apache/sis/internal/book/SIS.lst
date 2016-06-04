@@ -3,6 +3,7 @@ AngleFormat
 DefaultEllipsoid
 DefaultGeodeticDatum
 DefaultMetadata
+DefaultProjectedCRS
 Envelopes
 GeneralEnvelope
 GridGeometry

@@ -249,7 +249,7 @@ public final class Messages extends IndexedResourceBundle {
         public static final short MisnamedParameter_1 = 18;
 
         /**
-         * Formatting of “{0}” is not conform to the format standard.
+         * This “{0}” formatting is a departure from standard format.
          */
         public static final short NonConformFormatting_1 = 15;
 

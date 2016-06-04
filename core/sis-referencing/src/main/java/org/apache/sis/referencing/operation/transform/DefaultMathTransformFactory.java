@@ -93,7 +93,7 @@ import org.apache.sis.util.resources.Messages;
  * <div class="section">Standard parameters</div>
  * {@code MathTransform} instances are created from {@linkplain DefaultParameterValueGroup parameter values}.
  * The parameters expected by each operation available in a default Apache SIS installation is
- * <a href="http://sis.apache.org/book/tables/CoordinateOperationMethods.html">listed here</a>.
+ * <a href="http://sis.apache.org/tables/CoordinateOperationMethods.html">listed here</a>.
  * The set of parameters varies for each operation or projection, but the following can be considered typical:
  *
  * <ul>
@@ -1179,35 +1179,6 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
         final Context context = ReferencingUtilities.createTransformContext(baseCRS, null, null);
         context.setTarget(derivedCS);
         return createParameterizedTransform(parameters, context);
-    }
-
-    /**
-     * Creates a transform from a base to a derived CS using an existing parameterized transform.
-     * The given {@code parameterized} transform shall expect
-     * {@linkplain org.apache.sis.referencing.cs.AxesConvention#NORMALIZED normalized} input coordinates and
-     * produce normalized output coordinates.
-     *
-     * @param  baseCS        The source coordinate system.
-     * @param  parameterized A <cite>base to derived</cite> transform for normalized input and output coordinates.
-     * @param  derivedCS     The target coordinate system.
-     * @return The transform from {@code baseCS} to {@code derivedCS}, including unit conversions and axis swapping.
-     * @throws FactoryException if the object creation failed. This exception is thrown
-     *         if some required parameter has not been supplied, or has illegal value.
-     *
-     * @deprecated Replaced by {@link #swapAndScaleAxes(MathTransform, Context)}.
-     */
-    @Deprecated
-    public MathTransform createBaseToDerived(final CoordinateSystem baseCS,
-            final MathTransform parameterized, final CoordinateSystem derivedCS)
-            throws FactoryException
-    {
-        ArgumentChecks.ensureNonNull("baseCS",        baseCS);
-        ArgumentChecks.ensureNonNull("parameterized", parameterized);
-        ArgumentChecks.ensureNonNull("derivedCS",     derivedCS);
-        final Context context = new Context();
-        context.setSource(baseCS);
-        context.setTarget(derivedCS);
-        return swapAndScaleAxes(parameterized, context);
     }
 
     /**

@@ -54,7 +54,7 @@ import org.opengis.metadata.Identifier;
 
 /**
  * Generates a list of projection parameters in a HTML page. This class is used for updating the
- * <a href="http://sis.apache.org/book/tables/CoordinateOperationMethods.html">CoordinateOperationMethods.html</a> page.
+ * <a href="http://sis.apache.org/tables/CoordinateOperationMethods.html">CoordinateOperationMethods.html</a> page.
  * The {@linkplain #main(String[])} method creates the "{@code CoordinateOperationMethods.html}" file in the current
  * default directory if it does not already exists. Users is responsible for moving the generated file to the Apache
  * SIS {@code "content/"} site directory.

@@ -151,7 +151,7 @@ public final class Errors extends IndexedResourceBundle {
         public static final short CanNotRead_1 = 9;
 
         /**
-         * Can not represent “{1}” in the {0} format.
+         * Can not represent “{1}” in a strictly standard-compliant {0} format.
          */
         public static final short CanNotRepresentInFormat_2 = 10;
 
