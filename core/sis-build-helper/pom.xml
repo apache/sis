@@ -45,9 +45,9 @@
   <!-- Left alignment because this description will be copied in META-INF/MANIFEST.MF
        The leading space after the first line is necessary for proper formatting. -->
 Define Maven Mojos and Javadoc taglets for generating resource files
- or formatting the Javadoc. While any project could use it, this module
- is primarily for internal use by Apache SIS and may change in any
- future version.
+ formatting the Javadoc or creating ".oxt" files for OpenOffice.org.
+ While any project could use it, this module is primarily for internal
+ use by Apache SIS and may change in any future version.
   </description>
 
 
