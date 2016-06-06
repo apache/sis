@@ -25,11 +25,14 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Collections;
+import static java.util.Collections.singleton;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import javax.measure.unit.Unit;
+import javax.xml.bind.JAXBException;
+import org.apache.sis.internal.util.TemporalUtilities;
 import org.apache.sis.metadata.iso.DefaultIdentifier;
 import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.metadata.iso.acquisition.DefaultAcquisitionInformation;
@@ -45,9 +48,16 @@ import org.apache.sis.metadata.iso.content.DefaultImageDescription;
 import org.apache.sis.metadata.iso.distribution.DefaultFormat;
 import org.apache.sis.metadata.iso.extent.DefaultExtent;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
+import org.apache.sis.metadata.iso.extent.DefaultTemporalExtent;
 import org.apache.sis.metadata.iso.identification.AbstractIdentification;
+import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.iso.DefaultInternationalString;
+import org.apache.sis.xml.XML;
+import org.geotoolkit.temporal.object.DefaultInstant;
+import org.geotoolkit.temporal.object.DefaultPeriod;
+import org.geotoolkit.temporal.object.DefaultTemporalPrimitive;
+import org.geotoolkit.temporal.util.TimeParser;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.Metadata;
 import org.opengis.metadata.acquisition.AcquisitionInformation;
@@ -58,6 +68,11 @@ import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.metadata.identification.Identification;
 import org.opengis.util.FactoryException;
+import org.opengis.temporal.Instant;
+import org.opengis.temporal.Period;
+import org.opengis.temporal.TemporalFactory;
+import org.opengis.referencing.IdentifiedObject;
+import org.opengis.temporal.TemporalPrimitive;
 
 /**
  *
@@ -240,24 +255,30 @@ public class LandsatReader {
         return content;
     }
 
-    /**
-     * Gets the date the image was acquired.
+   /**
+     * Returns the data acquisition {@link Date}.<br>
      *
-     * @return the date the image was acquired.
-     * @throws ParseException returns the position where the error was found. if
-     * the error was found..
+     * May returns {@code null} if no date are stipulate from metadata file.
+     *
+     * @return the data acquisition {@link Date}.
+     * @throws ParseException if problem during Date parsing.
      */
     private Date getAcquisitionDate() throws ParseException {
+       Date date  ;
+
+        /**
+         * Get temporales acquisition informations.
+         */
         //-- year month day
-        final String dateAcquired = getValue("DATE_ACQUIRED");
+        final String dateAcquired  = getValue("DATE_ACQUIRED");
         //-- hh mm ss:ms
         final String sceneCenterTime = getValue("SCENE_CENTER_TIME");
+
         String strDate = dateAcquired;
-        if (sceneCenterTime != null) {
-            strDate = dateAcquired + "T" + sceneCenterTime;
-        }
-        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.sssssss'Z'");
-        final Date date = formatter.parse(strDate);
+        if (sceneCenterTime != null)
+            strDate = dateAcquired+"T"+sceneCenterTime;
+
+        date = TimeParser.toDate(strDate);
         return date;
     }
 
@@ -306,11 +327,27 @@ public class LandsatReader {
      * @return the data extent in Indentification infor {@code null} if none.
      * @throws DataStoreException if data can not be read.
      */
+    
     private Extent getExtent() throws DataStoreException, ParseException, UnsupportedOperationException {
 
-        final DefaultExtent ex = new DefaultExtent();
+        DefaultExtent ex = new DefaultExtent();
         final GeographicBoundingBox box = getGeographicBoundingBox();
         ex.getGeographicElements().add(box);
+        final DefaultTemporalExtent tex = new DefaultTemporalExtent();
+        final Date startTime  = getAcquisitionDate();
+        final Date endTime  = getDates();
+       
+        if (startTime != null || endTime != null) try {
+            final DefaultTemporalExtent t = new DefaultTemporalExtent();
+            t.setBounds(startTime, endTime);
+            if (ex == null) {
+                ex = new DefaultExtent();
+            }
+            ex.setTemporalElements(singleton(t));
+        } catch (UnsupportedOperationException e) {
+            
+        }
+        
         return ex;
     }
 
@@ -418,7 +455,7 @@ public class LandsatReader {
      * @throws IOException Signals that an I/O exception of some sort has
      * occurred.
      */
-    public Metadata read() throws IOException, ParseException, DataStoreException, FactoryException {
+    public Metadata read() throws IOException, ParseException, DataStoreException, FactoryException, JAXBException {
         final DefaultMetadata metadata = new DefaultMetadata();
         metadata.setMetadataStandards(Citations.ISO_19115);
         metadata.setDateInfo(Collections.singleton(new DefaultCitationDate(getDates(), DateType.CREATION)));
@@ -430,7 +467,9 @@ public class LandsatReader {
         metadata.getContentInfo().add(creat);
         final AcquisitionInformation Ai = getAcquisitionInformation();
         metadata.setAcquisitionInformation(Collections.singleton(Ai));
+        XML.marshal(metadata, System.out);
         return metadata;
+        
     }
 
     public static void main(String[] args) throws Exception {
@@ -440,5 +479,6 @@ public class LandsatReader {
         }
         System.out.println("The Metadata of LC81230522014071LGN00_MTL.txt is:");
         System.out.println(reader.read());
+        
     }
 }
