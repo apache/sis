@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one
+  or more contributor license agreements.  See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership.  The ASF licenses this file
+  to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License.  You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing,
+  software distributed under the License is distributed on an
+  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  KIND, either express or implied.  See the License for the
+  specific language governing permissions and limitations
+  under the License.
+-->
+
+<html>
+  <head>
+    <title>OpenOffice.org add-in build instructions</title>
+    <meta charset="UTF-8">
+  </head>
+  <body>
+    <h1>OpenOffice.org add-in build instructions</h1>
+    <p>
+      All <code>XFoo</code> Java interfaces are generated from IDL files with the same name.
+      As long as <code>XFoo</code> Java/IDL interfaces are not modified, there is no need for the OpenOffice.org SDK.
+      But if any <code>XFoo</code> interface is modified, then the steps documented below must be done.
+      The last step shall be executed on the client machine
+      (users can also use the <i>"Tools / Package manager"</i> menu from OpenOffice.org GUI).
+    </p>
+
+    <p>
+      See the requirement section in the <a href="http://www.geoapi.org/geoapi-openoffice/build.html">GeoAPI build page</a>
+      for a list of required tools.
+    </p>
+
+    <p>
+      Replace <var>ooo-path</var> by the path to the OpenOffice.org installation directory.
+      That directory should contain the <code>program</code> and <code>ure-link</code> sub-directories.
+      The OpenOffice.org SDK shall be installed as a sub-directory of the OpenOffice.org root directory.
+      If the name of that SDK directory is different than <code>OpenOffice.org3.3_SDK</code>,
+      then modify the <code>OO_SDK_HOME</code> value below accordingly.
+    </p>
+
+<blockquote><pre>export OFFICE_BASE_HOME=ooo-path
+export OO_SDK_HOME=$OFFICE_BASE_HOME/OpenOffice.org3.3_SDK
+export PATH=$OFFICE_BASE_HOME/ure-link/bin:$OO_SDK_HOME/bin:$PATH</pre></blockquote>
+
+
+<p>Compiles the UNO <code>.urd</code> binary file:</p>
+<blockquote><pre>cd modules/analytics/sis-openoffice/src/main/java
+idlc -C -cid -w -I $OO_SDK_HOME/idl org/opengis/openoffice/*.idl org/apache.sis/openoffice/*.idl</pre></blockquote>
+
+
+<p>Compiles the UNO <code>.rdb</code> registry file:</p>
+<blockquote><pre>regmerge ../unopkg/sis.rdb /UCR org/opengis/openoffice/*.urd org/apache.sis/openoffice/*.urd
+rm org/opengis/openoffice/*.urd org/apache.sis/openoffice/*.urd
+cd ../unopkg</pre></blockquote>
+
+
+<p>Creates the <code>.class</code> file for Java interfaces:</p>
+<blockquote><pre>javamaker -BUCR -nD sis.rdb $OFFICE_BASE_HOME/ure-link/share/misc/types.rdb \
+    -Torg.opengis.openoffice.XReferencing \
+    -Torg.apache.sis.openoffice.XReferencing \
+    -Torg.apache.sis.openoffice.XNature</pre></blockquote>
+
+
+<p>Derives a <code>.java</code> source from the <code>.class</code> file:</p>
+<blockquote><pre>javap org.opengis.openoffice.XReferencing \
+   org.apache.sis.openoffice.XReferencing org.apache.sis.openoffice.XNature</pre></blockquote>
+
+
+<p>Build:</p>
+<blockquote><pre>cd ../../..
+mvn install</pre></blockquote>
+
+
+<p>deploy:</p>
+<blockquote><pre>cd target
+unopkg add sis-0.8-SNAPSHOT.oxt --log-file log.txt</pre></blockquote>
+
+  </body>
+</html>
