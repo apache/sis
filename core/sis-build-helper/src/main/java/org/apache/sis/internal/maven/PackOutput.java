@@ -118,11 +118,10 @@ final class PackOutput implements Closeable {
      * Opens the given JAR file for writing and creates its manifest.
      *
      * @param  projectName The project name, or {@code null} if none.
-     * @param  projectURL  The project URL, or {@code null} if none.
      * @param  version     The project version, or {@code null} if none.
      * @throws IOException if the file can't be open.
      */
-    void open(final String projectName, final String projectURL, final String version) throws IOException {
+    void open(final String projectName, final String version) throws IOException {
         final Manifest manifest = new Manifest();
         Attributes attributes = manifest.getMainAttributes();
         attributes.put(Attributes.Name.MANIFEST_VERSION, "1.0");
@@ -131,9 +130,6 @@ final class PackOutput implements Closeable {
             attributes.put(Attributes.Name.SPECIFICATION_VENDOR,   projectName);
             attributes.put(Attributes.Name.IMPLEMENTATION_TITLE,   projectName);
             attributes.put(Attributes.Name.IMPLEMENTATION_VENDOR,  projectName);
-        }
-        if (projectURL != null) {
-            attributes.put(Attributes.Name.IMPLEMENTATION_URL, projectURL);
         }
         if (version != null) {
             attributes.put(Attributes.Name.SPECIFICATION_VERSION,  version);
@@ -181,8 +177,7 @@ final class PackOutput implements Closeable {
                             copy(src, attributes, Attributes.Name.SPECIFICATION_VERSION)  |
                             copy(src, attributes, Attributes.Name.IMPLEMENTATION_TITLE)   |
                             copy(src, attributes, Attributes.Name.IMPLEMENTATION_VENDOR)  |
-                            copy(src, attributes, Attributes.Name.IMPLEMENTATION_VERSION) |
-                            copy(src, attributes, Attributes.Name.IMPLEMENTATION_URL))
+                            copy(src, attributes, Attributes.Name.IMPLEMENTATION_VERSION))
                         {
                             manifest.getEntries().put(packageName, attributes);
                         }
@@ -324,11 +319,13 @@ final class PackOutput implements Closeable {
         final File inputFile = outputJAR;
         final Pack200.Packer packer = Pack200.newPacker();
         final Map<String,String> p = packer.properties();
-        p.put(EFFORT, String.valueOf(9));  // Maximum compression level.
-        p.put(KEEP_FILE_ORDER,    FALSE);  // Reorder files for better compression.
-        p.put(MODIFICATION_TIME,  LATEST); // Smear modification times to a single value.
-        p.put(DEFLATE_HINT,       TRUE);   // Ignore all JAR deflation requests.
-        p.put(UNKNOWN_ATTRIBUTE,  ERROR);  // Throw an error if an attribute is unrecognized
+        p.put(EFFORT, String.valueOf(9));           // Maximum compression level.
+        p.put(SEGMENT_LIMIT,     "-1");             // use largest-possible archive segments (>10% better compression).
+        p.put(KEEP_FILE_ORDER,    FALSE);           // Reorder files for better compression.
+        p.put(MODIFICATION_TIME,  LATEST);          // Smear modification times to a single value.
+        p.put(DEFLATE_HINT,       TRUE);            // Ignore all JAR deflation requests.
+        p.put(UNKNOWN_ATTRIBUTE,  ERROR);           // Throw an error if an attribute is unrecognized
+        p.put(CODE_ATTRIBUTE_PFX+"LocalVariableTable", STRIP);        // discard debug attributes.
         try (JarFile jarFile = new JarFile(inputFile)) {
             try (OutputStream deflater = new GZIPOutputStream(out)) {
                 packer.pack(jarFile, deflater);
