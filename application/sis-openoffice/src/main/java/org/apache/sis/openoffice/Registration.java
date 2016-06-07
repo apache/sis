@@ -21,18 +21,20 @@ import java.io.IOException;
 import java.io.FilenameFilter;
 import java.io.FileOutputStream;
 import java.net.URI;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.net.URISyntaxException;
 import java.util.jar.Pack200;
 import java.util.jar.JarOutputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.LogRecord;
+import java.lang.reflect.InvocationTargetException;
 
 import com.sun.star.lang.XSingleServiceFactory;
 import com.sun.star.lang.XMultiServiceFactory;
 import com.sun.star.comp.loader.FactoryHelper;
 import com.sun.star.registry.XRegistryKey;
-import org.apache.sis.referencing.CRS;
 
 
 /**
@@ -89,21 +91,32 @@ public final class Registration implements FilenameFilter {
     /**
      * Ensures that the {@code sis.pack} files have been uncompressed.
      *
-     * @throws URISyntaxException if the path to the add-in JAR file does not have the expected syntax.
-     * @throws IOException if an error occurred while uncompressing the PACK200 file.
+     * @param  caller the public caller method, for logging purpose only.
+     * @return {@code true} on success.
      */
-    private static void ensureInstalled() throws URISyntaxException, IOException {
-        final File directory = getInstallDirectory();
+    private static boolean ensureInstalled(final String caller) {
+        final File directory;
+        try {
+            directory = getInstallDirectory();
+        } catch (URISyntaxException e) {
+            fatalException(caller, "Can not locate the installation directory.", e);
+            return false;
+        }
         final String[] content = directory.list(new Registration());
         if (content != null && content.length != 0) {
-            final Pack200.Unpacker unpacker = Pack200.newUnpacker();
-            for (final String filename : content) {
-                final File packFile = new File(directory, filename);
-                final File jarFile  = new File(directory, filename.substring(0, filename.length() - PACK.length()) + "jar");
-                try (JarOutputStream out = new JarOutputStream(new FileOutputStream(jarFile))) {
-                    unpacker.unpack(packFile, out);
+            try {
+                final Pack200.Unpacker unpacker = Pack200.newUnpacker();
+                for (final String filename : content) {
+                    final File packFile = new File(directory, filename);
+                    final File jarFile  = new File(directory, filename.substring(0, filename.length() - PACK.length()) + "jar");
+                    try (JarOutputStream out = new JarOutputStream(new FileOutputStream(jarFile))) {
+                        unpacker.unpack(packFile, out);
+                    }
+                    packFile.delete();
                 }
-                packFile.delete();
+            } catch (IOException e) {
+                fatalException(caller, "Can not uncompress the JAR files.", e);
+                return false;
             }
             /*
              * Ensures that the EPSG database is installed. We force the EPSG installation at add-in
@@ -116,26 +129,47 @@ public final class Registration implements FilenameFilter {
              * Remainder: no GeoAPI or Apache SIS classes in any method signature of this class!
              */
             try {
-                CRS.forCode("EPSG:4326");
-            } catch (Throwable e) {
-                unexpectedException(CRS.class, "forCode", e);
-                // Ignore. A new attempt to create the EPSG database will be performed
-                // when first needed, and the user may see the error at that time.
+                Class.forName("org.apache.sis.referencing.CRS")
+                     .getMethod("forCode", String.class)
+                     .invoke(null, "EPSG:4326");
+                return true;
+            } catch (InvocationTargetException e) {
+                fatalException(caller, "Failed to install EPSG geodetic dataset.", e.getTargetException());
+            } catch (ReflectiveOperationException | LinkageError e) {
+                classpathException(caller, e);
             }
         }
+        return false;
     }
 
     /**
-     * Logs the given exception.
+     * Logs the given exception before to abort installation. We use logging service instead than
+     * propagating the exception because OpenOffice does not report the exception message.
      */
-    private static void unexpectedException(final Class<?> classe, final String method, final Throwable exception) {
+    private static void fatalException(final String method, final String message, final Throwable exception) {
         final Logger logger = Logger.getLogger(LOGGER);
-        final LogRecord record = new LogRecord(Level.WARNING, exception.getLocalizedMessage());
-        record.setLoggerName(logger.getName());
-        record.setSourceClassName(classe.getName());
+        final LogRecord record = new LogRecord(Level.SEVERE, message);
+        record.setSourceClassName(Registration.class.getName());
         record.setSourceMethodName(method);
+        record.setLoggerName(LOGGER);
         record.setThrown(exception);
         logger.log(record);
+    }
+
+    /**
+     * Logs the given exception for a classpath problem.
+     */
+    private static void classpathException(final String method, final Throwable exception) {
+        final String lineSeparator = System.lineSeparator();
+        final StringBuilder message = new StringBuilder("Can not find Apache SIS classes.").append(lineSeparator)
+                .append("Classpath = ").append(System.getProperty("java.class.path"));
+        final ClassLoader loader = Referencing.class.getClassLoader();
+        if (loader instanceof URLClassLoader) {
+            for (final URL url : ((URLClassLoader) loader).getURLs()) {
+                message.append(lineSeparator).append("  + ").append(url);
+            }
+        }
+        fatalException(method, message.toString(), exception);
     }
 
     /**
@@ -157,17 +191,19 @@ public final class Registration implements FilenameFilter {
      * @param   factories the service manager to be used if needed.
      * @param   registry the registry key
      * @return  A factory for creating the component.
-     * @throws  URISyntaxException if the path to the add-in JAR file does not have the expected syntax.
-     * @throws  IOException if an error occurred while uncompressing the PACK200 file.
      */
     public static XSingleServiceFactory __getServiceFactory(
             final String               implementation,
             final XMultiServiceFactory factories,
-            final XRegistryKey         registry) throws URISyntaxException, IOException
+            final XRegistryKey         registry)
     {
-        ensureInstalled();
-        if (implementation.equals(Referencing.class.getName())) {
-            return FactoryHelper.getServiceFactory(Referencing.class, Referencing.__serviceName, factories, registry);
+        if (ensureInstalled("__getServiceFactory")) {
+            if (implementation.equals(Referencing.class.getName())) try {
+                return FactoryHelper.getServiceFactory(Referencing.class, Referencing.__serviceName, factories, registry);
+            } catch (LinkageError e) {
+                classpathException("__getServiceFactory", e);
+                throw e;
+            }
         }
         return null;
     }
@@ -178,14 +214,14 @@ public final class Registration implements FilenameFilter {
      *
      * @param  registry the registry key.
      * @return {@code true} if the operation succeeded.
-     * @throws URISyntaxException if the path to the add-in JAR file does not have the expected syntax.
-     * @throws IOException if an error occurred while uncompressing the PACK200 file.
      */
-    public static boolean __writeRegistryServiceInfo(final XRegistryKey registry)
-            throws URISyntaxException, IOException
-    {
-        ensureInstalled();
-        return register(Referencing.class, Referencing.__serviceName, registry);
+    public static boolean __writeRegistryServiceInfo(final XRegistryKey registry) {
+        if (ensureInstalled("__writeRegistryServiceInfo")) try {
+            return register(Referencing.class, Referencing.__serviceName, registry);
+        } catch (LinkageError e) {
+            classpathException("__writeRegistryServiceInfo", e);
+        }
+        return false;
     }
 
     /**

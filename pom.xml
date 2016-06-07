@@ -513,17 +513,22 @@ Apache SIS is a free software, Java language library for developing geospatial a
            INDEX.LIST file is incomplete (which seem to happen in practice). -->
       <plugin>
         <artifactId>maven-jar-plugin</artifactId>
+        <version>2.6</version>
+        <!-- Regression in maven-jar-plugin version 3.0: the class-path entry in MANIFEST.MF
+             has the "repository" layout in sis-openoffice artifact even if we explicitely
+             ask for the "simple" layout. https://issues.apache.org/jira/browse/MJAR-223 -->
+
         <configuration>
           <archive>
             <addMavenDescriptor>false</addMavenDescriptor>
             <index>false</index>
             <manifest>
               <addClasspath>true</addClasspath>
+              <classpathLayoutType>simple</classpathLayoutType>
               <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
             </manifest>
             <manifestEntries>
               <Built-On>${maven.build.timestamp}</Built-On>
-              <Implementation-URL>${project.url}</Implementation-URL>
               <Specification-Title>GeoAPI</Specification-Title>
               <Specification-Version>${geoapi.version}</Specification-Version>
               <Specification-Vendor>Open Geospatial Consortium</Specification-Vendor>
