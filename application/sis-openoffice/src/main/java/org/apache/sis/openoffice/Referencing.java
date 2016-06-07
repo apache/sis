@@ -66,7 +66,7 @@ final class Referencing extends CalcAddins implements XReferencing {
                 "xOptions",   "Provided by OpenOffice.",
                 "code",       "The code allocated by authority."
         }));
-        methods.put("getDomainOfValidity", new MethodInfo("Referencing", "CRS.VALID.AREA",
+        methods.put("getGeographicArea", new MethodInfo("Referencing", "GEOGRAPHIC.AREA",
             "Returns the valid area as a geographic bounding box for an identified object.",
             new String[] {
                 "xOptions",   "Provided by OpenOffice.",
@@ -87,7 +87,7 @@ final class Referencing extends CalcAddins implements XReferencing {
                 "target CRS",  "The target coordinate reference system.",
                 "coordinates", "The coordinate values to transform."
         }));
-        methods.put("transform", new MethodInfo("Referencing", "TRANSFORM.COORD",
+        methods.put("transform", new MethodInfo("Referencing", "TRANSFORM.POINTS",
             "Transform coordinates from the given source CRS to the given target CRS.",
             new String[] {
                 "xOptions",    "Provided by OpenOffice.",
@@ -245,7 +245,7 @@ final class Referencing extends CalcAddins implements XReferencing {
      * @return the object bounding box.
      */
     @Override
-    public double[][] getDomainOfValidity(final XPropertySet xOptions, final String codeOrPath) {
+    public double[][] getGeographicArea(final XPropertySet xOptions, final String codeOrPath) {
         final CacheKey<GeographicBoundingBox> key = new CacheKey<>(GeographicBoundingBox.class, codeOrPath, null, null);
         GeographicBoundingBox area = key.peek();
         if (area == null) {
@@ -259,7 +259,7 @@ final class Referencing extends CalcAddins implements XReferencing {
                         area = Extents.getGeographicBoundingBox((Extent) domain);
                     }
                 } catch (FactoryException exception) {
-                    reportException("getDomainOfValidity", exception, THROW_EXCEPTION);
+                    reportException("getGeographicArea", exception, THROW_EXCEPTION);
                 }
             } finally {
                 handler.putAndUnlock(area);

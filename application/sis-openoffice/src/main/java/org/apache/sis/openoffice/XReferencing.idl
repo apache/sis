@@ -46,7 +46,7 @@ module org {
           );
 
           /// Returns the domain of validity as a geographic bounding box for an identified object.
-          sequence< sequence< double > > getDomainOfValidity(
+          sequence< sequence< double > > getGeographicArea(
             [in] com::sun::star::beans::XPropertySet xOptions,
             /// The authority code (e.g. "EPSG:4326").
             [in] string authorityCode
