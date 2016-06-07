@@ -472,7 +472,7 @@ abstract class CalcAddins extends WeakBase implements XAddIn, XServiceName, XSer
      */
     protected static synchronized Logger getLogger() {
         if (logger == null) {
-            logger = Logging.getLogger("org.apache.sis.openoffice");
+            logger = Logging.getLogger(Registration.LOGGER);
         }
         return logger;
     }
