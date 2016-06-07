@@ -49,12 +49,12 @@ import org.apache.sis.internal.util.PatchedUnitFormat;
  * @version 0.8
  * @module
  */
-final class Referencing extends CalcAddins implements XReferencing {
+public class Referencing extends CalcAddins implements XReferencing {
     /**
      * The name for the registration of this component.
      * <strong>NOTE:</strong> OpenOffice expects a field with exactly that name; do not rename!
      */
-    static final String __serviceName = "org.apache.sis.openoffice.Referencing";
+    public static final String __serviceName = "org.apache.sis.openoffice.Referencing";
 
     /**
      * Constructs a default implementation of {@code XReferencing} interface.
@@ -77,7 +77,7 @@ final class Referencing extends CalcAddins implements XReferencing {
             new String[] {
                 "xOptions",   "Provided by OpenOffice.",
                 "code",       "The code allocated by authority.",
-                "dimension",  "The dimension (1, 2, ...)."
+                "dimension",  "The dimension (1, 2, …)."
         }));
         methods.put("getAccuracy", new MethodInfo("Referencing", "TRANSFORM.ACCURACY",
             "Returns the accuracy of a transformation between two coordinate reference systems.",
@@ -113,6 +113,8 @@ final class Referencing extends CalcAddins implements XReferencing {
 
     /**
      * The service name that can be used to create such an object by a factory.
+     *
+     * @return value of {@code __serviceName}.
      */
     @Override
     public String getServiceName() {

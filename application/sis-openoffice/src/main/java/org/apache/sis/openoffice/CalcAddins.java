@@ -49,7 +49,7 @@ import org.apache.sis.util.collection.BackingStoreException;
  * @version 0.8
  * @module
  */
-abstract class CalcAddins extends WeakBase implements XAddIn, XServiceName, XServiceInfo {
+public abstract class CalcAddins extends WeakBase implements XAddIn, XServiceName, XServiceInfo {
     /**
      * {@code true} for throwing an exception in case of failure, or {@code false} for returning {@code NaN} instead.
      * This apply only to numerical computations; formulas returning a text value will returns the exception message

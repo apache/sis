@@ -146,7 +146,6 @@
 
       <!-- Add a manifest entry for add-ins registration in OpenOffice -->
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jar-plugin</artifactId>
         <configuration>
           <archive>
@@ -165,7 +164,7 @@
         <artifactId>sis-build-helper</artifactId>
         <version>${project.version}</version>
         <configuration>
-          <oxtName>sis-${project.version}</oxtName>
+          <oxtName>apache-sis-${project.version}</oxtName>
           <pack200>true</pack200>
         </configuration>
         <executions>
