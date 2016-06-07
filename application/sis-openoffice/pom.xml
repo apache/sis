@@ -82,7 +82,7 @@
            otherwise they will not be included by sis-unopkg.
        =========================================================== -->
   <properties>
-    <openoffice.version>3.2.1</openoffice.version>
+    <openoffice.version>4.1.2</openoffice.version>
   </properties>
 
   <dependencies>
