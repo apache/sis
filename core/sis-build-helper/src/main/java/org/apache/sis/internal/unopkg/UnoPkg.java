@@ -119,7 +119,7 @@ public final class UnoPkg extends AbstractMojo implements FilenameFilter {
      */
     @Override
     public boolean accept(final File directory, final String name) {
-        if (name.endsWith("-sources.jar") || name.endsWith("-javadoc.jar")) {
+        if (name.endsWith("-sources.jar") || name.endsWith("-tests.jar") || name.endsWith("-javadoc.jar")) {
             return false;
         }
         return name.endsWith(".jar") || name.endsWith(".JAR") ||

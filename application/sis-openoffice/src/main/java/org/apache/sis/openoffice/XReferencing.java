@@ -69,7 +69,7 @@ public interface XReferencing extends XInterface {
      * @param  codeOrPath  the code allocated by an authority, or the path to a file.
      * @return the object bounding box.
      */
-    double[][] getDomainOfValidity(XPropertySet xOptions, String codeOrPath);
+    double[][] getGeographicArea(XPropertySet xOptions, String codeOrPath);
 
     /**
      * Returns the accuracy of a transformation between two coordinate reference systems.
