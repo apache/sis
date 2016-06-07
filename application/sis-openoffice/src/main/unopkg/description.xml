@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<description xmlns="http://openoffice.org/extensions/description/2006"
+           xmlns:d="http://openoffice.org/extensions/description/2006"
+       xmlns:xlink="http://www.w3.org/1999/xlink">
+
+  <identifier value="org.apache.sis.openoffice"/>
+  <version    value="4.00"/>
+  <platform   value="all"/>
+
+  <publisher>
+    <name lang="en" xlink:href="http://sis.apache.org/openoffice/">Apache SIS</name>
+  </publisher>
+
+  <display-name>
+    <name lang="en">Coordinate transformation services</name>
+    <name lang="fr">Services de transformation de coordonnées</name>
+  </display-name>
+
+  <icon>
+    <default xlink:href="sis.png" />
+  </icon>
+
+  <release-notes>
+    <src lang="en" xlink:href="http://sis.apache.org/openoffice/"/>
+  </release-notes>
+
+  <update-information>
+    <src xlink:href="http://sis.apache.org/openoffice/update.xml"/>
+  </update-information>
+
+</description>
