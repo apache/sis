@@ -19,8 +19,6 @@ package org.apache.sis.storage.geotiff;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
@@ -32,7 +30,6 @@ import java.util.Locale;
 import java.util.Map;
 import javax.measure.unit.Unit;
 import javax.xml.bind.JAXBException;
-import org.apache.sis.internal.util.TemporalUtilities;
 import org.apache.sis.metadata.iso.DefaultIdentifier;
 import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.metadata.iso.acquisition.DefaultAcquisitionInformation;
@@ -50,14 +47,9 @@ import org.apache.sis.metadata.iso.extent.DefaultExtent;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.metadata.iso.extent.DefaultTemporalExtent;
 import org.apache.sis.metadata.iso.identification.AbstractIdentification;
-import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.iso.DefaultInternationalString;
 import org.apache.sis.xml.XML;
-import org.geotoolkit.temporal.object.DefaultInstant;
-import org.geotoolkit.temporal.object.DefaultPeriod;
-import org.geotoolkit.temporal.object.DefaultTemporalPrimitive;
-import org.geotoolkit.temporal.util.TimeParser;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.Metadata;
 import org.opengis.metadata.acquisition.AcquisitionInformation;
@@ -68,11 +60,6 @@ import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.metadata.identification.Identification;
 import org.opengis.util.FactoryException;
-import org.opengis.temporal.Instant;
-import org.opengis.temporal.Period;
-import org.opengis.temporal.TemporalFactory;
-import org.opengis.referencing.IdentifiedObject;
-import org.opengis.temporal.TemporalPrimitive;
 
 /**
  *
@@ -264,22 +251,17 @@ public class LandsatReader {
      * @throws ParseException if problem during Date parsing.
      */
     private Date getAcquisitionDate() throws ParseException {
-       Date date  ;
-
-        /**
-         * Get temporales acquisition informations.
-         */
-        //-- year month day
         final String dateAcquired  = getValue("DATE_ACQUIRED");
+        if (dateAcquired == null)
+            return null;
         //-- hh mm ss:ms
         final String sceneCenterTime = getValue("SCENE_CENTER_TIME");
-
         String strDate = dateAcquired;
         if (sceneCenterTime != null)
             strDate = dateAcquired+"T"+sceneCenterTime;
-
-        date = TimeParser.toDate(strDate);
-        return date;
+       SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.sssssss'Z'");
+       final Date date = formatter.parse(strDate);
+       return date;
     }
 
     /**
@@ -329,24 +311,16 @@ public class LandsatReader {
      */
     
     private Extent getExtent() throws DataStoreException, ParseException, UnsupportedOperationException {
-
         DefaultExtent ex = new DefaultExtent();
         final GeographicBoundingBox box = getGeographicBoundingBox();
         ex.getGeographicElements().add(box);
         final DefaultTemporalExtent tex = new DefaultTemporalExtent();
         final Date startTime  = getAcquisitionDate();
-        final Date endTime  = getDates();
-       
-        if (startTime != null || endTime != null) try {
+        if(startTime !=null ){
             final DefaultTemporalExtent t = new DefaultTemporalExtent();
-            t.setBounds(startTime, endTime);
-            if (ex == null) {
-                ex = new DefaultExtent();
-            }
+            t.setBounds(startTime, startTime);    
             ex.setTemporalElements(singleton(t));
-        } catch (UnsupportedOperationException e) {
-            
-        }
+       }
         
         return ex;
     }
@@ -377,33 +351,6 @@ public class LandsatReader {
         dAi.setPlatforms(Collections.singleton(platF));
         return dAi;
 
-    }
-
-    /**
-     * Gets the information for the File Identifier {@code null} if none.
-     *
-     * @return the data for the File Identifier {@code null} if none.
-     * @throws IOException Signals that an I/O exception of some sort has
-     * occurred.
-     * @throws ParseException Signals that an error has been reached
-     * unexpectedly
-     */
-    private Identifier getFileIdentifier() throws IOException, ParseException {
-        final DefaultIdentifier iden = new DefaultIdentifier();
-        final DefaultCitation citation = new DefaultCitation();
-        final String namespace = getValue("ORIGIN");
-        citation.setTitle(new DefaultInternationalString(namespace));
-        final Date date = getDates();
-        citation.setDates(Collections.singleton(new DefaultCitationDate(date, DateType.CREATION)));
-        final String identifier = getValue("REQUEST_ID");
-        final String codespace = getValue("LANDSAT_SCENE_ID");
-        final String version = getValue("PROCESSING_SOFTWARE_VERSION");
-        iden.setCodeSpace(codespace);
-        iden.setAuthority(citation);
-        iden.setCode(identifier);
-        iden.setVersion(version);
-
-        return iden;
     }
 
     /**
@@ -459,15 +406,12 @@ public class LandsatReader {
         final DefaultMetadata metadata = new DefaultMetadata();
         metadata.setMetadataStandards(Citations.ISO_19115);
         metadata.setDateInfo(Collections.singleton(new DefaultCitationDate(getDates(), DateType.CREATION)));
-//        final Identifier identifier = getFileIdentifier();
-//        metadata.setMetadataIdentifier(identifier);
         final Identification identification = getIdentification();
         metadata.setIdentificationInfo(Collections.singleton(identification));
         final ImageDescription creat = createContentInfo();
         metadata.getContentInfo().add(creat);
         final AcquisitionInformation Ai = getAcquisitionInformation();
         metadata.setAcquisitionInformation(Collections.singleton(Ai));
-        XML.marshal(metadata, System.out);
         return metadata;
         
     }
