@@ -77,6 +77,16 @@ public final class Modules {
     public static final int MINOR_VERSION = 8;
 
     /**
+     * The prefix of all classnames in Apache SIS, including a trailing dot.
+     */
+    public static final String CLASSNAME_PREFIX = "org.apache.sis.";
+
+    /**
+     * The prefix of all internal classnames in Apache SIS, including a trailing dot.
+     */
+    public static final String INTERNAL_CLASSNAME_PREFIX = CLASSNAME_PREFIX + "internal.";
+
+    /**
      * Do not allow instantiation of this class.
      */
     private Modules() {

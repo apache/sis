@@ -22,6 +22,7 @@ import java.util.Iterator;
 import java.util.ServiceLoader;
 import java.util.NoSuchElementException;
 import org.apache.sis.util.Workaround;
+import org.apache.sis.internal.system.DefaultFactories;
 
 // Branch-specific imports
 import java.util.Objects;
@@ -44,9 +45,9 @@ import java.util.Objects;
  *
  * @param <E> The type of elements in the set.
  *
- * @author  Martin Desruisseaux (IRD)
+ * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.6
- * @version 0.7
+ * @version 0.8
  * @module
  */
 @Workaround(library="JDK", version="1.8.0_31-b13")
@@ -155,7 +156,7 @@ public class LazySet<E> extends SetOfUnknownSize<E> {
      */
     private boolean canPullMore() {
         if (sourceIterator == null && cachedElements == null) {
-            sourceIterator = ServiceLoader.load(service).iterator();
+            sourceIterator = DefaultFactories.createServiceLoader(service).iterator();
             if (createCache()) {
                 return true;
             }
