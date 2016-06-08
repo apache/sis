@@ -23,6 +23,7 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.io.IOException;
+import org.apache.sis.internal.system.Modules;
 import org.apache.sis.io.TableAppender;
 import org.junit.runner.Description;
 
@@ -96,7 +97,7 @@ final class LogRecordCollector extends Handler {
                 method = "<unknown>";
                 for (final StackTraceElement t : Thread.currentThread().getStackTrace()) {
                     final String c = t.getClassName();
-                    if (c.startsWith("org.apache.sis.") && c.endsWith(TestSuite.CLASSNAME_SUFFIX)) {
+                    if (c.startsWith(Modules.CLASSNAME_PREFIX) && c.endsWith(TestSuite.CLASSNAME_SUFFIX)) {
                         cname  = c;
                         method = t.getMethodName();
                         break;
