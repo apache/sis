@@ -46,7 +46,7 @@ import static org.apache.sis.test.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.7
- * @version 0.7
+ * @version 0.8
  * @module
  */
 public final strictfp class AuthorityFactoriesTest extends TestCase {
@@ -63,6 +63,20 @@ public final strictfp class AuthorityFactoriesTest extends TestCase {
     @After
     public void assertNoUnexpectedLog() {
         loggings.assertNoUnexpectedLog();
+    }
+
+    /**
+     * Tests {@link CRSAuthorityFactory#getDescriptionText(String)}.
+     *
+     * @throws FactoryException if the EPSG:4326 name can not be obtained.
+     *
+     * @since 0.8
+     */
+    @Test
+    public void testGetDescriptionText() throws FactoryException {
+        final CRSAuthorityFactory factory = AuthorityFactories.ALL;
+        assertEquals("WGS 84", factory.getDescriptionText("EPSG:4326").toString());
+        assertEquals("WGS 84", factory.getDescriptionText("urn:ogc:def:crs:epsg::4326").toString());
     }
 
     /**

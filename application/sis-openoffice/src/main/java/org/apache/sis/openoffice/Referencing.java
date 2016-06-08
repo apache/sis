@@ -18,6 +18,7 @@ package org.apache.sis.openoffice;
 
 import java.text.ParseException;
 
+import org.opengis.metadata.Metadata;
 import org.opengis.util.FactoryException;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.extent.Extent;
@@ -38,6 +39,10 @@ import org.apache.sis.util.Classes;
 import org.apache.sis.util.collection.Cache;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.util.PatchedUnitFormat;
+import org.apache.sis.internal.storage.CodeType;
+import org.apache.sis.storage.DataStore;
+import org.apache.sis.storage.DataStores;
+import org.apache.sis.storage.DataStoreException;
 
 
 /**
@@ -128,10 +133,14 @@ public class Referencing extends CalcAddins implements XReferencing {
      * This method caches the result.
      *
      * @param  codeOrPath  the code allocated by an authority, or the path to a file.
+     * @param  type        how to interpret {@code codeOrPath}, or {@code null} for guessing.
      * @return the identified object for the given code.
      * @throws FactoryException if an error occurred while creating the object.
+     * @throws DataStoreException if an error occurred while reading a data file.
      */
-    private static IdentifiedObject getIdentifiedObject(final String codeOrPath) throws FactoryException {
+    private IdentifiedObject getIdentifiedObject(final String codeOrPath, CodeType type)
+            throws FactoryException, DataStoreException
+    {
         final CacheKey<IdentifiedObject> key = new CacheKey<>(IdentifiedObject.class, codeOrPath, null, null);
         IdentifiedObject object = key.peek();
         if (object == null) {
@@ -139,9 +148,34 @@ public class Referencing extends CalcAddins implements XReferencing {
             try {
                 object = handler.peek();
                 if (object == null) {
-                    switch (CodeType.guess(codeOrPath)) {
-                        case URN: object = CRS.getAuthorityFactory(null).createObject(codeOrPath); break;
-                        default:  object = CRS.forCode(codeOrPath); break;
+                    if (type == null) {
+                        type = CodeType.guess(codeOrPath);
+                    }
+                    if (type.equals(CodeType.URN)) {
+                        object = CRS.getAuthorityFactory(null).createObject(codeOrPath);
+                    } else if (type.isCRS) {
+                        object = CRS.forCode(codeOrPath);
+                    } else {
+                        /*
+                         * Apparently not an AUTHORITY:CODE string.
+                         * Try to read a dataset from a file or URL, then get its CRS.
+                         */
+                        final Metadata metadata;
+                        try (DataStore store = DataStores.open(codeOrPath)) {
+                            metadata = store.getMetadata();
+                        }
+                        if (metadata != null) {
+                            for (final ReferenceSystem rs : metadata.getReferenceSystemInfo()) {
+                                if (rs instanceof CoordinateReferenceSystem) {
+                                    return rs;
+                                } else if (object == null) {
+                                    object = rs;                // Will be used as a fallback if we find no CRS.
+                                }
+                            }
+                        }
+                        if (object == null) {
+                            throw new FactoryException(Errors.getResources(getJavaLocale()).getString(Errors.Keys.UnspecifiedCRS));
+                        }
                     }
                 }
             } finally {
@@ -163,17 +197,18 @@ public class Referencing extends CalcAddins implements XReferencing {
         final InternationalString name;
         try {
             final IdentifiedObject object;
-            switch (CodeType.guess(codeOrPath)) {
-                case URN:
-                case CRS: object = new CacheKey<>(IdentifiedObject.class, codeOrPath, null, null).peek(); break;
-                default:  object = getIdentifiedObject(codeOrPath); break;
+            final CodeType type = CodeType.guess(codeOrPath);
+            if (type.isCRS) {
+                object = new CacheKey<>(IdentifiedObject.class, codeOrPath, null, null).peek();
+            } else {
+                object = getIdentifiedObject(codeOrPath, type);
             }
             if (object != null) {
                 return object.getName().getCode();
             }
             // In Apache SIS implementation, 'getDescriptionText' returns the name.
             name = CRS.getAuthorityFactory(null).getDescriptionText(codeOrPath);
-        } catch (FactoryException exception) {
+        } catch (Exception exception) {
             return getLocalizedMessage(exception);
         }
         return (name != null) ? name.toString(getJavaLocale()) : noResultString();
@@ -199,8 +234,8 @@ public class Referencing extends CalcAddins implements XReferencing {
                 if (name == null) {
                     final IdentifiedObject object;
                     try {
-                        object = getIdentifiedObject(codeOrPath);
-                    } catch (FactoryException exception) {
+                        object = getIdentifiedObject(codeOrPath, null);
+                    } catch (Exception exception) {
                         return getLocalizedMessage(exception);
                     }
                     final CoordinateSystemAxis axis;
@@ -255,12 +290,12 @@ public class Referencing extends CalcAddins implements XReferencing {
             try {
                 area = handler.peek();
                 if (area == null) try {
-                    final IdentifiedObject object = getIdentifiedObject(codeOrPath);
+                    final IdentifiedObject object = getIdentifiedObject(codeOrPath, null);
                     final Object domain = IdentifiedObjects.getProperties(object).get(ReferenceSystem.DOMAIN_OF_VALIDITY_KEY);
                     if (domain instanceof Extent) {
                         area = Extents.getGeographicBoundingBox((Extent) domain);
                     }
-                } catch (FactoryException exception) {
+                } catch (Exception exception) {
                     reportException("getGeographicArea", exception, THROW_EXCEPTION);
                 }
             } finally {
@@ -281,9 +316,10 @@ public class Referencing extends CalcAddins implements XReferencing {
      * @param  codeOrPath  the code allocated by an authority, or the path to a file.
      * @return the coordinate reference system for the given code.
      * @throws FactoryException if an error occurred while creating the object.
+     * @throws DataStoreException if an error occurred while reading a data file.
      */
-    final CoordinateReferenceSystem getCRS(final String codeOrPath) throws FactoryException {
-        final IdentifiedObject object = getIdentifiedObject(codeOrPath);
+    final CoordinateReferenceSystem getCRS(final String codeOrPath) throws FactoryException, DataStoreException {
+        final IdentifiedObject object = getIdentifiedObject(codeOrPath, null);
         if (object == null || object instanceof CoordinateReferenceSystem) {
             return (CoordinateReferenceSystem) object;
         }
@@ -307,7 +343,7 @@ public class Referencing extends CalcAddins implements XReferencing {
     {
         try {
             return new Transformer(this, getCRS(sourceCRS), targetCRS, points).getAccuracy();
-        } catch (FactoryException exception) {
+        } catch (Exception exception) {
             reportException("getAccuracy", exception, THROW_EXCEPTION);
             return Double.NaN;
         }
@@ -328,7 +364,7 @@ public class Referencing extends CalcAddins implements XReferencing {
     {
         try {
             return new Transformer(this, getCRS(sourceCRS), targetCRS, points).transform(points);
-        } catch (FactoryException exception) {
+        } catch (Exception exception) {
             reportException("transformCoordinates", exception, THROW_EXCEPTION);
             return getFailure(points.length, 2);
         }

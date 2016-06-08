@@ -86,6 +86,12 @@ public final class Logging extends Static {
      */
     private static volatile LoggerFactory<?> factory;
     static {
+        /*
+         * Use ServiceLoader.load(…), not DefaultFactories.createServiceLoader(…), for avoiding a never-ending
+         * loop if a warning occurs in DefaultFactories. This risk exists because DefaultFactories may use the
+         * logging services. Anyway, Apache SIS does not define any custom logger factory, so DefaultFactories
+         * is not needed in this case.
+         */
         LoggerFactory<?> factory = null;
         for (final LoggerFactory<?> found : ServiceLoader.load(LoggerFactory.class)) {
             if (factory == null) {
