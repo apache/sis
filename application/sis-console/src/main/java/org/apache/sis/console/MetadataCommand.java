@@ -16,11 +16,8 @@
  */
 package org.apache.sis.console;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
-import java.util.HashSet;
-import java.util.Set;
 import java.io.Console;
 import java.io.IOException;
 import javax.xml.bind.Marshaller;
@@ -39,6 +36,7 @@ import org.apache.sis.referencing.CRS;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStores;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.internal.storage.CodeType;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.collection.TreeTableFormat;
@@ -57,18 +55,6 @@ import org.apache.sis.xml.XML;
  * @module
  */
 class MetadataCommand extends CommandRunner {
-    /**
-     * The protocol part of the filename to be recognized as a CRS authority.
-     * In such case, this class will delegate to {@link CRS#forCode(String)}
-     * instead of opening the file.
-     */
-    static final Set<String> AUTHORITIES = new HashSet<>(Arrays.asList("URN", "EPSG", "CRS", "AUTO", "AUTO2"));
-
-    /**
-     * Length of the longest authority name declared in {@link #AUTHORITIES}.
-     */
-    static final int MAX_AUTHORITY_LENGTH = 5;
-
     /**
      * The output format.
      */
@@ -142,39 +128,7 @@ class MetadataCommand extends CommandRunner {
     }
 
     /**
-     * Returns {@code true} if the given argument begins with one of the known authorities
-     * ("URN", "EPSG", "CRS", "AUTO", <i>etc.</i>).
-     */
-    static boolean isAuthorityCode(final String code) {
-        final char[] authority = new char[MAX_AUTHORITY_LENGTH];
-        final int length = code.length();
-        int p = 0, i = 0;
-        while (i < length) {
-            final int c = code.codePointAt(i);
-            if (c == ':') {
-                if (!AUTHORITIES.contains(new String(authority, 0, p))) {
-                    break;
-                }
-                return true;
-            }
-            if (!Character.isWhitespace(c)) {
-                if (p >= MAX_AUTHORITY_LENGTH || !Character.isLetterOrDigit(c)) {
-                    break;
-                }
-                /*
-                 * Casting to char is okay because AUTHORITIES contains only ASCII values.
-                 * If 'c' was a supplemental Unicode value, then the result of the cast
-                 * would not match any AUTHORITIES value anyway.
-                 */
-                authority[p++] = (char) Character.toUpperCase(c);
-            }
-            i += Character.charCount(c);
-        }
-        return false;
-    }
-
-    /**
-     * If the given argument begins with one of the known authorities ("URN", "EPSG", "CRS", "AUTO", <i>etc.</i>),
+     * If the given argument seems to be an authority code ("URN", "EPSG", "CRS", "AUTO", <i>etc.</i>),
      * delegates to {@link CRS#forCode(String)}. Otherwise reads the metadata using a datastore.
      *
      * @return A {@link Metadata} or {@link CoordinateReferenceSystem} instance, or {@code null} if none.
@@ -189,7 +143,7 @@ class MetadataCommand extends CommandRunner {
             return null;
         } else {
             final String file = files.get(0);
-            if (isAuthorityCode(file)) {
+            if (CodeType.guess(file).isCRS) {
                 return CRS.forCode(file);
             } else {
                 try (DataStore store = DataStores.open(file)) {

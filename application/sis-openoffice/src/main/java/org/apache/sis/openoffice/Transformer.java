@@ -28,6 +28,7 @@ import org.apache.sis.util.collection.Cache;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.referencing.operation.AbstractCoordinateOperation;
+import org.apache.sis.storage.DataStoreException;
 
 
 /**
@@ -62,7 +63,7 @@ final class Transformer {
      * Creates a new transformer.
      */
     Transformer(final Referencing caller, final CoordinateReferenceSystem sourceCRS,
-            final String targetCRS, final double[][] points) throws FactoryException
+            final String targetCRS, final double[][] points) throws FactoryException, DataStoreException
     {
         /*
          * Computes the area of interest.
