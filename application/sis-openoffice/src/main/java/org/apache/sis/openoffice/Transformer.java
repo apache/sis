@@ -17,6 +17,7 @@
 package org.apache.sis.openoffice;
 
 import org.opengis.util.FactoryException;
+import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.CoordinateOperation;
@@ -78,22 +79,24 @@ final class Transformer {
                 southBoundLatitude = Double.POSITIVE_INFINITY;
                 eastBoundLongitude = Double.NEGATIVE_INFINITY;
                 northBoundLatitude = Double.NEGATIVE_INFINITY;
-                for (final double[] coord : points) {
-                    if (coord.length == dimension) {
-                        try {
-                            toDomainOfValidity.transform(coord, 0, domainCoord, 0, 1);
-                        } catch (TransformException e) {
-                            if (warning == null) {
-                                warning = e;
+                if (points != null) {
+                    for (final double[] coord : points) {
+                        if (coord != null && coord.length == dimension) {
+                            try {
+                                toDomainOfValidity.transform(coord, 0, domainCoord, 0, 1);
+                            } catch (TransformException e) {
+                                if (warning == null) {
+                                    warning = e;
+                                }
+                                continue;
                             }
-                            continue;
+                            final double x = domainCoord[0];
+                            final double y = domainCoord[1];
+                            if (x < westBoundLongitude) westBoundLongitude = x;
+                            if (x > eastBoundLongitude) eastBoundLongitude = x;
+                            if (y < southBoundLatitude) southBoundLatitude = y;
+                            if (y > northBoundLatitude) northBoundLatitude = y;
                         }
-                        final double x = domainCoord[0];
-                        final double y = domainCoord[1];
-                        if (x < westBoundLongitude) westBoundLongitude = x;
-                        if (x > eastBoundLongitude) eastBoundLongitude = x;
-                        if (y < southBoundLatitude) southBoundLatitude = y;
-                        if (y > northBoundLatitude) northBoundLatitude = y;
                     }
                 }
             }
@@ -112,9 +115,7 @@ final class Transformer {
                 operation = handler.peek();
                 if (operation == null) {
                     operation = CRS.findOperation(sourceCRS, caller.getCRS(targetCRS),
-                            hasAreaOfInterest ? new DefaultGeographicBoundingBox(
-                                    westBoundLongitude, eastBoundLongitude,
-                                    southBoundLatitude, northBoundLatitude) : null);
+                            hasAreaOfInterest ? getAreaOfInterest() : null);
                 }
             } finally {
                 handler.putAndUnlock(operation);
@@ -125,8 +126,17 @@ final class Transformer {
     /**
      * Returns {@code true} if the area of interest is non-empty.
      */
-    private boolean hasAreaOfInterest() {
+    final boolean hasAreaOfInterest() {
         return (westBoundLongitude < eastBoundLongitude) && (southBoundLatitude < northBoundLatitude);
+    }
+
+    /**
+     * Returns the area of interest. It is caller's responsibility to verify that
+     * {@link #hasAreaOfInterest()} returned {@code true} before to invoke this method.
+     */
+    final GeographicBoundingBox getAreaOfInterest() {
+        return new DefaultGeographicBoundingBox(westBoundLongitude, eastBoundLongitude,
+                                                southBoundLatitude, northBoundLatitude);
     }
 
     /**

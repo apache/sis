@@ -48,8 +48,9 @@ public interface XReferencing extends XInterface {
     String getName(XPropertySet xOptions, String codeOrPath);
 
     /**
-     * Returns the axis name and units for the specified dimension
-     * in a coordinate reference system or coordinate system.
+     * Returns the axis name and units for the specified dimension in a coordinate reference system or coordinate system.
+     * This method returns a short axis name as used in Well Known Text (WKT) format, for example <cite>"Latitude"</cite>
+     * instead of <cite>"Geodetic latitude"</cite>.
      *
      * @param  xOptions    provided by OpenOffice.
      * @param  codeOrPath  the code allocated by an authority, or the path to a file.

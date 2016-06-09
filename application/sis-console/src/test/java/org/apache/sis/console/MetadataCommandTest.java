@@ -39,7 +39,7 @@ public final strictfp class MetadataCommandTest extends TestCase {
     /**
      * Tests the sub-command on a NetCDF file.
      *
-     * @throws Exception Should never happen.
+     * @throws Exception if an error occurred while creating the command.
      */
     @Test
     public void testNetCDF() throws Exception {
@@ -65,7 +65,7 @@ public final strictfp class MetadataCommandTest extends TestCase {
     /**
      * Tests with the same file than {@link #testNetCDF()}, but producing a XML output.
      *
-     * @throws Exception Should never happen.
+     * @throws Exception if an error occurred while creating the command.
      */
     @Test
     @DependsOnMethod("testNetCDF")
