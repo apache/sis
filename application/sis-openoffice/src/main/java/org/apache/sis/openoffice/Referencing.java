@@ -35,6 +35,8 @@ import com.sun.star.lang.IllegalArgumentException;
 import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.IdentifiedObjects;
+import org.apache.sis.referencing.AbstractIdentifiedObject;
+import org.apache.sis.io.wkt.Transliterator;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.collection.Cache;
 import org.apache.sis.util.resources.Errors;
@@ -215,8 +217,9 @@ public class Referencing extends CalcAddins implements XReferencing {
     }
 
     /**
-     * Returns the axis name and units for the specified dimension
-     * in a coordinate reference system or coordinate system.
+     * Returns the axis name and units for the specified dimension in a coordinate reference system or coordinate system.
+     * This method returns a short axis name as used in Well Known Text (WKT) format, for example <cite>"Latitude"</cite>
+     * instead of <cite>"Geodetic latitude"</cite>.
      *
      * @param  xOptions    provided by OpenOffice.
      * @param  codeOrPath  the code allocated by an authority, or the path to a file.
@@ -238,18 +241,24 @@ public class Referencing extends CalcAddins implements XReferencing {
                     } catch (Exception exception) {
                         return getLocalizedMessage(exception);
                     }
+                    CoordinateSystem cs = null;
                     final CoordinateSystemAxis axis;
                     if (object instanceof CoordinateSystemAxis) {
                         axis = (CoordinateSystemAxis) object;
                     } else {
-                        final CoordinateSystem cs;
                         if (object instanceof CoordinateReferenceSystem) {
                             cs = ((CoordinateReferenceSystem) object).getCoordinateSystem();
                         } else if (object instanceof CoordinateSystem) {
                             cs = (CoordinateSystem) object;
                         } else {
+                            final Class<?> actual;
+                            if (object instanceof AbstractIdentifiedObject) {
+                                actual = ((AbstractIdentifiedObject) object).getInterface();
+                            } else {
+                                actual = Classes.getClass(object);
+                            }
                             return Errors.getResources(getJavaLocale()).getString(Errors.Keys.UnexpectedTypeForReference_3,
-                                    codeOrPath, CoordinateReferenceSystem.class, Classes.getClass(object));
+                                    codeOrPath, CoordinateReferenceSystem.class, actual);
                         }
                         if (dimension >= 1 && dimension <= cs.getDimension()) {
                             axis = cs.getAxis(dimension - 1);
@@ -258,7 +267,7 @@ public class Referencing extends CalcAddins implements XReferencing {
                         }
                     }
                     final String unit = PatchedUnitFormat.toString(axis.getUnit());
-                    name = axis.getName().getCode();
+                    name = Transliterator.DEFAULT.toShortAxisName(cs, axis.getDirection(), axis.getName().getCode());
                     if (unit != null && !unit.isEmpty()) {
                         name = name + " (" + unit + ')';
                     }
@@ -307,7 +316,8 @@ public class Referencing extends CalcAddins implements XReferencing {
         }
         return new double[][] {
             new double[] {area.getNorthBoundLatitude(), area.getWestBoundLongitude()},
-            new double[] {area.getSouthBoundLatitude(), area.getEastBoundLongitude()}};
+            new double[] {area.getSouthBoundLatitude(), area.getEastBoundLongitude()}
+        };
     }
 
     /**
@@ -362,7 +372,9 @@ public class Referencing extends CalcAddins implements XReferencing {
     public double[][] transformCoordinates(final XPropertySet xOptions,
             final String sourceCRS, final String targetCRS, final double[][] points)
     {
-        try {
+        if (points == null || points.length == 0) {
+            return new double[][] {};
+        } else try {
             return new Transformer(this, getCRS(sourceCRS), targetCRS, points).transform(points);
         } catch (Exception exception) {
             reportException("transformCoordinates", exception, THROW_EXCEPTION);

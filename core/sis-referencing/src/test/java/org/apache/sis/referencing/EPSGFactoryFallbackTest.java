@@ -26,6 +26,9 @@ import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.GeocentricCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.CRSAuthorityFactory;
+import org.opengis.referencing.datum.Datum;
+import org.opengis.referencing.datum.Ellipsoid;
+import org.opengis.referencing.datum.PrimeMeridian;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Utilities;
 
@@ -44,7 +47,7 @@ import static org.apache.sis.test.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.7
- * @version 0.7
+ * @version 0.8
  * @module
  */
 @DependsOn({
@@ -59,12 +62,58 @@ public final strictfp class EPSGFactoryFallbackTest extends TestCase {
      */
     @Test
     public void testGetAuthorityCodes() throws FactoryException {
+        assertSetEquals(Arrays.asList(StandardDefinitions.GREENWICH),
+                EPSGFactoryFallback.INSTANCE.getAuthorityCodes(PrimeMeridian.class));
+        assertSetEquals(Arrays.asList("7030", "7043", "7019", "7008", "7022", "7048"),
+                EPSGFactoryFallback.INSTANCE.getAuthorityCodes(Ellipsoid.class));
+        assertSetEquals(Arrays.asList("6326", "6322", "6269", "6267", "6258", "6230", "6047", "5100", "5103"),
+                EPSGFactoryFallback.INSTANCE.getAuthorityCodes(Datum.class));
         assertSetEquals(Arrays.asList("4978", "4984", "4936"),
                 EPSGFactoryFallback.INSTANCE.getAuthorityCodes(GeocentricCRS.class));
         assertSetEquals(Arrays.asList("4326", "4322", "4047", "4269", "4267", "4258", "4230", "4979", "4985", "4937"),
                 EPSGFactoryFallback.INSTANCE.getAuthorityCodes(GeographicCRS.class));
         assertSetEquals(Arrays.asList("5714", "5715", "5703"),
                 EPSGFactoryFallback.INSTANCE.getAuthorityCodes(VerticalCRS.class));
+    }
+
+    /**
+     * Tests {@link EPSGFactoryFallback#createPrimeMeridian(String)}.
+     *
+     * @throws FactoryException if a prime meridian can not be constructed.
+     */
+    @Test
+    public void testCreatePrimeMeridian() throws FactoryException {
+        verifyCreatePrimeMeridian(CommonCRS.WGS84.primeMeridian(), StandardDefinitions.GREENWICH);
+    }
+
+    /**
+     * Tests {@link EPSGFactoryFallback#createEllipsoid(String)}.
+     *
+     * @throws FactoryException if an ellipsoid can not be constructed.
+     */
+    @Test
+    public void testCreateEllipsoid() throws FactoryException {
+        verifyCreateEllipsoid(CommonCRS.WGS84 .ellipsoid(), "7030");
+        verifyCreateEllipsoid(CommonCRS.WGS72 .ellipsoid(), "7043");
+        verifyCreateEllipsoid(CommonCRS.NAD83 .ellipsoid(), "7019");
+        verifyCreateEllipsoid(CommonCRS.NAD27 .ellipsoid(), "7008");
+        verifyCreateEllipsoid(CommonCRS.ED50  .ellipsoid(), "7022");
+        verifyCreateEllipsoid(CommonCRS.SPHERE.ellipsoid(), "7048");
+    }
+
+    /**
+     * Tests {@link EPSGFactoryFallback#createEllipsoid(String)}.
+     *
+     * @throws FactoryException if an ellipsoid can not be constructed.
+     */
+    @Test
+    public void testCreateDatum() throws FactoryException {
+        verifyCreateDatum(CommonCRS.WGS84 .datum(), "6326");
+        verifyCreateDatum(CommonCRS.WGS72 .datum(), "6322");
+        verifyCreateDatum(CommonCRS.NAD83 .datum(), "6269");
+        verifyCreateDatum(CommonCRS.NAD27 .datum(), "6267");
+        verifyCreateDatum(CommonCRS.ED50  .datum(), "6230");
+        verifyCreateDatum(CommonCRS.SPHERE.datum(), "6047");
     }
 
     /**
@@ -77,30 +126,55 @@ public final strictfp class EPSGFactoryFallbackTest extends TestCase {
      */
     @Test
     public void testCreateCRS() throws FactoryException {
-        verifyCreate(CommonCRS.WGS84 .geographic(),            "4326");
-        verifyCreate(CommonCRS.WGS72 .geographic(),            "4322");
-        verifyCreate(CommonCRS.SPHERE.geographic(),            "4047");
-        verifyCreate(CommonCRS.NAD83 .geographic(),            "4269");
-        verifyCreate(CommonCRS.NAD27 .geographic(),            "4267");
-        verifyCreate(CommonCRS.ETRS89.geographic(),            "4258");
-        verifyCreate(CommonCRS.ED50  .geographic(),            "4230");
-        verifyCreate(CommonCRS.WGS84 .geocentric(),            "4978");
-        verifyCreate(CommonCRS.WGS72 .geocentric(),            "4984");
-        verifyCreate(CommonCRS.ETRS89.geocentric(),            "4936");
-        verifyCreate(CommonCRS.WGS84 .geographic(),       "EPSG:4326");
-        verifyCreate(CommonCRS.WGS72 .geographic(),      "EPSG::4322");
-        verifyCreate(CommonCRS.WGS84 .geographic3D(),          "4979");
-        verifyCreate(CommonCRS.WGS72 .geographic3D(),          "4985");
-        verifyCreate(CommonCRS.ETRS89.geographic3D(),          "4937");
-        verifyCreate(CommonCRS.Vertical.MEAN_SEA_LEVEL.crs(),  "5714");
-        verifyCreate(CommonCRS.Vertical.DEPTH.crs(),           "5715");
+        verifyCreateCRS(CommonCRS.WGS84 .geographic(),            "4326");
+        verifyCreateCRS(CommonCRS.WGS72 .geographic(),            "4322");
+        verifyCreateCRS(CommonCRS.SPHERE.geographic(),            "4047");
+        verifyCreateCRS(CommonCRS.NAD83 .geographic(),            "4269");
+        verifyCreateCRS(CommonCRS.NAD27 .geographic(),            "4267");
+        verifyCreateCRS(CommonCRS.ETRS89.geographic(),            "4258");
+        verifyCreateCRS(CommonCRS.ED50  .geographic(),            "4230");
+        verifyCreateCRS(CommonCRS.WGS84 .geocentric(),            "4978");
+        verifyCreateCRS(CommonCRS.WGS72 .geocentric(),            "4984");
+        verifyCreateCRS(CommonCRS.ETRS89.geocentric(),            "4936");
+        verifyCreateCRS(CommonCRS.WGS84 .geographic(),       "EPSG:4326");
+        verifyCreateCRS(CommonCRS.WGS72 .geographic(),      "EPSG::4322");
+        verifyCreateCRS(CommonCRS.WGS84 .geographic3D(),          "4979");
+        verifyCreateCRS(CommonCRS.WGS72 .geographic3D(),          "4985");
+        verifyCreateCRS(CommonCRS.ETRS89.geographic3D(),          "4937");
+        verifyCreateCRS(CommonCRS.Vertical.MEAN_SEA_LEVEL.crs(),  "5714");
+        verifyCreateCRS(CommonCRS.Vertical.DEPTH.crs(),           "5715");
     }
 
     /**
-     * Asserts that the result of {@link CommonCRS#forCode(String, String, FactoryException)} is the given CRS.
+     * Asserts that the result of {@link EPSGFactoryFallback#createObject(String)} is the given prime meridian.
      */
-    private static void verifyCreate(final SingleCRS expected, final String code) throws FactoryException {
+    private static void verifyCreatePrimeMeridian(final PrimeMeridian expected, final String code) throws FactoryException {
+        assertSame(code, expected, EPSGFactoryFallback.INSTANCE.createPrimeMeridian(code));
+        assertSame(code, expected, EPSGFactoryFallback.INSTANCE.createObject(code));
+    }
+
+    /**
+     * Asserts that the result of {@link EPSGFactoryFallback#createObject(String)} is the given ellipsoid.
+     */
+    private static void verifyCreateEllipsoid(final Ellipsoid expected, final String code) throws FactoryException {
+        assertSame(code, expected, EPSGFactoryFallback.INSTANCE.createEllipsoid(code));
+        assertSame(code, expected, EPSGFactoryFallback.INSTANCE.createObject(code));
+    }
+
+    /**
+     * Asserts that the result of {@link EPSGFactoryFallback#createObject(String)} is the given datum.
+     */
+    private static void verifyCreateDatum(final Datum expected, final String code) throws FactoryException {
+        assertSame(code, expected, EPSGFactoryFallback.INSTANCE.createDatum(code));
+        assertSame(code, expected, EPSGFactoryFallback.INSTANCE.createObject(code));
+    }
+
+    /**
+     * Asserts that the result of {@link EPSGFactoryFallback#createObject(String)} is the given CRS.
+     */
+    private static void verifyCreateCRS(final SingleCRS expected, final String code) throws FactoryException {
         assertSame(code, expected, EPSGFactoryFallback.INSTANCE.createCoordinateReferenceSystem(code));
+        assertSame(code, expected, EPSGFactoryFallback.INSTANCE.createObject(code));
     }
 
     /**

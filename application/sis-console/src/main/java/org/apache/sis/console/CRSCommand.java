@@ -37,7 +37,7 @@ import org.apache.sis.io.wkt.Convention;
  */
 final class CRSCommand extends MetadataCommand {
     /**
-     * Creates the {@code "metadata"}, {@code "crs"} or {@code "identifier"} sub-command.
+     * Creates the {@code "crs"} sub-command.
      */
     CRSCommand(final int commandIndex, final String... args) throws InvalidOptionException {
         super(commandIndex, args);

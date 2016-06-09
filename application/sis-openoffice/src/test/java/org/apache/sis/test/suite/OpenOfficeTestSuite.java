@@ -22,29 +22,25 @@ import org.junit.BeforeClass;
 
 
 /**
- * All tests from the {@code sis-console} module, in approximative dependency order.
+ * All tests from the {@code sis-openoffice} add-ins, in approximative dependency order.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
+ * @since   0.8
  * @version 0.8
  * @module
  */
 @Suite.SuiteClasses({
-    org.apache.sis.console.CommandRunnerTest.class,
-    org.apache.sis.console.HelpCommandTest.class,
-    org.apache.sis.console.AboutCommandTest.class,
-    org.apache.sis.console.MimeTypeCommandTest.class,
-    org.apache.sis.console.MetadataCommandTest.class,
-    org.apache.sis.console.CRSCommandTest.class
+    org.apache.sis.openoffice.TransformerTest.class,
+    org.apache.sis.openoffice.ReferencingTest.class
 })
-public final strictfp class ConsoleTestSuite extends TestSuite {
+public final strictfp class OpenOfficeTestSuite extends TestSuite {
     /**
      * Verifies the list of tests before to run the suite.
      * See {@link #verifyTestList(Class, Class[])} for more information.
      */
     @BeforeClass
     public static void verifyTestList() {
-        assertNoMissingTest(ConsoleTestSuite.class);
-        verifyTestList(ConsoleTestSuite.class);
+        assertNoMissingTest(OpenOfficeTestSuite.class);
+        verifyTestList(OpenOfficeTestSuite.class);
     }
 }
