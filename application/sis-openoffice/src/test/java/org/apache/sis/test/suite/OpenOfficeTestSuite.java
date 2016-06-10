@@ -31,7 +31,7 @@ import org.junit.BeforeClass;
  */
 @Suite.SuiteClasses({
     org.apache.sis.openoffice.TransformerTest.class,
-    org.apache.sis.openoffice.ReferencingTest.class
+    org.apache.sis.openoffice.ReferencingFunctionsTest.class
 })
 public final strictfp class OpenOfficeTestSuite extends TestSuite {
     /**

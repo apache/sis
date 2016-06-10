@@ -29,7 +29,8 @@ import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
-import com.sun.star.beans.XPropertySet;
+import com.sun.star.uno.AnyConverter;
+import com.sun.star.uno.XComponentContext;
 import com.sun.star.lang.IllegalArgumentException;
 
 import org.apache.sis.metadata.iso.extent.Extents;
@@ -56,76 +57,44 @@ import org.apache.sis.storage.DataStoreException;
  * @version 0.8
  * @module
  */
-public class Referencing extends CalcAddins implements XReferencing {
+public class ReferencingFunctions extends CalcAddins implements XReferencing {
     /**
      * The name for the registration of this component.
-     * <strong>NOTE:</strong> OpenOffice expects a field with exactly that name; do not rename!
      */
-    public static final String __serviceName = "org.apache.sis.openoffice.Referencing";
+    static final String SERVICE_NAME = "org.apache.sis.openoffice.Referencing";
 
     /**
-     * Constructs a default implementation of {@code XReferencing} interface.
+     * The implementation name, which shall be the {@link ReferencingFunctions} class name.
      */
-    public Referencing() {
-        methods.put("getName", new MethodInfo("Referencing", "CRS.NAME",
-            "Returns a description for an object identified by the given authority code.",
-            new String[] {
-                "xOptions",   "Provided by OpenOffice.",
-                "code",       "The code allocated by authority."
-        }));
-        methods.put("getGeographicArea", new MethodInfo("Referencing", "GEOGRAPHIC.AREA",
-            "Returns the valid area as a geographic bounding box for an identified object.",
-            new String[] {
-                "xOptions",   "Provided by OpenOffice.",
-                "code",       "The code allocated by authority."
-        }));
-        methods.put("getAxis", new MethodInfo("Referencing", "CRS.AXIS",
-            "Returns the axis name for the specified dimension in an identified object.",
-            new String[] {
-                "xOptions",   "Provided by OpenOffice.",
-                "code",       "The code allocated by authority.",
-                "dimension",  "The dimension (1, 2, …)."
-        }));
-        methods.put("getAccuracy", new MethodInfo("Referencing", "TRANSFORM.ACCURACY",
-            "Returns the accuracy of a transformation between two coordinate reference systems.",
-            new String[] {
-                "xOptions",    "Provided by OpenOffice.",
-                "source CRS",  "The source coordinate reference system.",
-                "target CRS",  "The target coordinate reference system.",
-                "coordinates", "The coordinate values to transform."
-        }));
-        methods.put("transform", new MethodInfo("Referencing", "TRANSFORM.POINTS",
-            "Transform coordinates from the given source CRS to the given target CRS.",
-            new String[] {
-                "xOptions",    "Provided by OpenOffice.",
-                "source CRS",  "The source coordinate reference system.",
-                "target CRS",  "The target coordinate reference system.",
-                "coordinates", "The coordinate values to transform."
-        }));
-        methods.put("parseAngle", new MethodInfo("Text", "VALUE.ANGLE",
-            "Converts text in degrees-minutes-seconds to an angle in decimal degrees.",
-            new String[] {
-                "xOptions",   "Provided by OpenOffice.",
-                "text",       "The text to be converted to an angle.",
-                "pattern",    "The text that describes the format (example: \"D°MM.m'\")."
-        }));
-        methods.put("formatAngle", new MethodInfo("Text", "TEXT.ANGLE",
-            "Converts an angle to text according to a given format.",
-            new String[] {
-                "xOptions",   "Provided by OpenOffice.",
-                "value",      "The angle value (in decimal degrees) to be converted.",
-                "pattern",    "The text that describes the format (example: \"D°MM.m'\")."
-        }));
+    static final String IMPLEMENTATION_NAME = "org.apache.sis.openoffice.ReferencingFunctions";
+
+    /**
+     * Constructs an implementation of {@code XReferencing} interface.
+     *
+     * @param context  the value to assign to the {@link #context} field.
+     */
+    public ReferencingFunctions(final XComponentContext context) {
+        super(context);
     }
 
     /**
      * The service name that can be used to create such an object by a factory.
      *
-     * @return value of {@code __serviceName}.
+     * @return unique name of the service.
      */
     @Override
     public String getServiceName() {
-        return __serviceName;
+        return SERVICE_NAME;
+    }
+
+    /**
+     * Provides the implementation name of the service.
+     *
+     * @return unique name of the implementation.
+     */
+    @Override
+    public String getImplementationName() {
+        return IMPLEMENTATION_NAME;
     }
 
     /**
@@ -190,12 +159,11 @@ public class Referencing extends CalcAddins implements XReferencing {
     /**
      * Returns the identified object name from an authority code.
      *
-     * @param  xOptions    provided by OpenOffice.
      * @param  codeOrPath  the code allocated by an authority, or the path to a file.
      * @return the object name.
      */
     @Override
-    public String getName(final XPropertySet xOptions, final String codeOrPath) {
+    public String getName(final String codeOrPath) {
         final InternationalString name;
         try {
             final IdentifiedObject object;
@@ -221,13 +189,12 @@ public class Referencing extends CalcAddins implements XReferencing {
      * This method returns a short axis name as used in Well Known Text (WKT) format, for example <cite>"Latitude"</cite>
      * instead of <cite>"Geodetic latitude"</cite>.
      *
-     * @param  xOptions    provided by OpenOffice.
      * @param  codeOrPath  the code allocated by an authority, or the path to a file.
      * @param  dimension   the dimension (1, 2, …).
      * @return the name of the requested axis.
      */
     @Override
-    public String getAxis(final XPropertySet xOptions, final String codeOrPath, final int dimension) {
+    public String getAxis(final String codeOrPath, final int dimension) {
         final CacheKey<String> key = new CacheKey<>(String.class, codeOrPath, dimension, null);
         String name = key.peek();
         if (name == null) {
@@ -286,12 +253,11 @@ public class Referencing extends CalcAddins implements XReferencing {
      * and the second row contains the latitude and longitude of bottom right corner.
      * Units are degrees.
      *
-     * @param  xOptions    provided by OpenOffice.
      * @param  codeOrPath  the code allocated by an authority, or the path to a file.
      * @return the object bounding box.
      */
     @Override
-    public double[][] getGeographicArea(final XPropertySet xOptions, final String codeOrPath) {
+    public double[][] getGeographicArea(final String codeOrPath) {
         final CacheKey<GeographicBoundingBox> key = new CacheKey<>(GeographicBoundingBox.class, codeOrPath, null, null);
         GeographicBoundingBox area = key.peek();
         if (area == null) {
@@ -341,18 +307,37 @@ public class Referencing extends CalcAddins implements XReferencing {
     /**
      * Returns the accuracy of a transformation between two coordinate reference systems.
      *
-     * @param  xOptions   provided by OpenOffice.
      * @param  sourceCRS  the authority code for the source coordinate reference system.
      * @param  targetCRS  the authority code for the target coordinate reference system.
      * @param  points     the coordinates to transform (for computing area of interest).
+     * @throws IllegalArgumentException if {@code points} is not a {@code double[][]} value or void.
      * @return the operation accuracy.
      */
     @Override
-    public double getAccuracy(final XPropertySet xOptions,
-            final String sourceCRS, final String targetCRS, final double[][] points)
+    public double getAccuracy(final String sourceCRS, final String targetCRS, final Object points)
+            throws IllegalArgumentException
     {
+        final double[][] coordinates;
+        if (AnyConverter.isVoid(points)) {
+            coordinates = null;
+        } else if (points instanceof double[][]) {
+            coordinates = (double[][]) points;
+        } else if (points instanceof Object[][]) {
+            final Object[][] values = (Object[][]) points;
+            coordinates = new double[values.length][];
+            for (int j=0; j<values.length; j++) {
+                final Object[] row = values[j];
+                final double[] coord = new double[row.length];
+                for (int i=0; i<row.length; i++) {
+                    coord[i] = AnyConverter.toDouble(row[i]);
+                }
+                coordinates[j] = coord;
+            }
+        } else {
+            throw new IllegalArgumentException();
+        }
         try {
-            return new Transformer(this, getCRS(sourceCRS), targetCRS, points).getAccuracy();
+            return new Transformer(this, getCRS(sourceCRS), targetCRS, coordinates).getAccuracy();
         } catch (Exception exception) {
             reportException("getAccuracy", exception, THROW_EXCEPTION);
             return Double.NaN;
@@ -362,22 +347,19 @@ public class Referencing extends CalcAddins implements XReferencing {
     /**
      * Transforms coordinates from the specified source CRS to the specified target CRS.
      *
-     * @param  xOptions   provided by OpenOffice.
      * @param  sourceCRS  the authority code for the source coordinate reference system.
      * @param  targetCRS  the authority code for the target coordinate reference system.
      * @param  points     the coordinates to transform.
      * @return The transformed coordinates.
      */
     @Override
-    public double[][] transformCoordinates(final XPropertySet xOptions,
-            final String sourceCRS, final String targetCRS, final double[][] points)
-    {
+    public double[][] transformPoints(final String sourceCRS, final String targetCRS, final double[][] points) {
         if (points == null || points.length == 0) {
             return new double[][] {};
         } else try {
             return new Transformer(this, getCRS(sourceCRS), targetCRS, points).transform(points);
         } catch (Exception exception) {
-            reportException("transformCoordinates", exception, THROW_EXCEPTION);
+            reportException("transformPoints", exception, THROW_EXCEPTION);
             return getFailure(points.length, 2);
         }
     }
@@ -386,18 +368,13 @@ public class Referencing extends CalcAddins implements XReferencing {
      * Converts text in degrees-minutes-seconds to an angle in decimal degrees.
      * See {@link org.apache.sis.measure.AngleFormat} for pattern description.
      *
-     * @param  xOptions  provided by OpenOffice.
-     * @param  text      the text to be converted to an angle.
-     * @param  pattern   an optional text that describes the format (example: "D°MM.m'").
+     * @param  text     the text to be converted to an angle.
+     * @param  pattern  an optional text that describes the format (example: "D°MM.m'").
      * @return the angle parsed as a number.
-     * @throws IllegalArgumentException if {@code pattern} is illegal.
+     * @throws IllegalArgumentException if {@code pattern} is not a string value or void.
      */
     @Override
-    public double parseAngle(final XPropertySet xOptions,
-                             final String       text,
-                             final Object       pattern)
-            throws IllegalArgumentException
-    {
+    public double parseAngle(final String text, final Object pattern) throws IllegalArgumentException {
         try {
             return new AnglePattern(pattern).parse(text, getJavaLocale());
         } catch (ParseException exception) {
@@ -415,18 +392,13 @@ public class Referencing extends CalcAddins implements XReferencing {
      *   <li>If the pattern ends with N or S, then the angle is formatted as a latitude.</li>
      * </ul>
      *
-     * @param  xOptions  provided by OpenOffice.
-     * @param  value     the angle value (in decimal degrees) to be converted.
-     * @param  pattern   an optional text that describes the format (example: "D°MM.m'").
+     * @param  value    the angle value (in decimal degrees) to be converted.
+     * @param  pattern  an optional text that describes the format (example: "D°MM.m'").
      * @return the angle formatted as a string.
-     * @throws IllegalArgumentException if {@code pattern} is illegal.
+     * @throws IllegalArgumentException if {@code pattern} is not a string value or void.
      */
     @Override
-    public String formatAngle(final XPropertySet xOptions,
-                              final double       value,
-                              final Object       pattern)
-            throws IllegalArgumentException
-    {
+    public String formatAngle(final double value, final Object pattern) throws IllegalArgumentException {
         return new AnglePattern(pattern).format(value, getJavaLocale());
     }
 }

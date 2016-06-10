@@ -63,7 +63,7 @@ final class Transformer {
     /**
      * Creates a new transformer.
      */
-    Transformer(final Referencing caller, final CoordinateReferenceSystem sourceCRS,
+    Transformer(final ReferencingFunctions caller, final CoordinateReferenceSystem sourceCRS,
             final String targetCRS, final double[][] points) throws FactoryException, DataStoreException
     {
         /*

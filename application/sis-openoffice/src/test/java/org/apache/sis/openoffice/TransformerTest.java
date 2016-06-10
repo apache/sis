@@ -42,19 +42,19 @@ public final strictfp class TransformerTest extends TestCase {
     /**
      * The instance to use for testing purpose.
      */
-    private static Referencing caller;
+    private static ReferencingFunctions caller;
 
     /**
-     * Creates a {@link Referencing} instance to use for all tests.
+     * Creates a {@link ReferencingFunctions} instance to use for all tests.
      */
     @BeforeClass
     public static void createReferencingInstance() {
-        caller = new Referencing();
+        caller = new ReferencingFunctions(null);
         caller.setLocale(new com.sun.star.lang.Locale("en", "US", null));
     }
 
     /**
-     * Disposes the {@link Referencing} instance after all tests completed.
+     * Disposes the {@link ReferencingFunctions} instance after all tests completed.
      */
     @AfterClass
     public static void disposeReferencingInstance() {
