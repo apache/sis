@@ -31,9 +31,8 @@ import java.util.logging.Logger;
 import java.util.logging.LogRecord;
 import java.lang.reflect.InvocationTargetException;
 
-import com.sun.star.lang.XSingleServiceFactory;
-import com.sun.star.lang.XMultiServiceFactory;
-import com.sun.star.comp.loader.FactoryHelper;
+import com.sun.star.lang.XSingleComponentFactory;
+import com.sun.star.lib.uno.helper.Factory;
 import com.sun.star.registry.XRegistryKey;
 
 
@@ -61,6 +60,11 @@ public final class Registration implements FilenameFilter {
      * Name of the logger to use for the add-ins.
      */
     static final String LOGGER = "org.apache.sis.openoffice";
+
+    /**
+     * Whether to force EPSG database startup early.
+     */
+    private static final boolean FORCE_EPSG_STARTUP = false;
 
     /**
      * Do not allow instantiation of this class, except for internal use.
@@ -103,43 +107,46 @@ public final class Registration implements FilenameFilter {
             return false;
         }
         final String[] content = directory.list(new Registration());
-        if (content != null && content.length != 0) {
-            try {
-                final Pack200.Unpacker unpacker = Pack200.newUnpacker();
-                for (final String filename : content) {
-                    final File packFile = new File(directory, filename);
-                    final File jarFile  = new File(directory, filename.substring(0, filename.length() - PACK.length()) + "jar");
-                    try (JarOutputStream out = new JarOutputStream(new FileOutputStream(jarFile))) {
-                        unpacker.unpack(packFile, out);
-                    }
-                    packFile.delete();
-                }
-            } catch (IOException e) {
-                fatalException(caller, "Can not uncompress the JAR files.", e);
-                return false;
-            }
-            /*
-             * Ensures that the EPSG database is installed. We force the EPSG installation at add-in
-             * installation time rather than the first time a user ask for a referencing operations,
-             * because users may be less surprised by a delay at installation time than at use time.
-             * However if the EPSG database is deleted after the installation, it will be recreated
-             * when first needed.
-             *
-             * Note: do not reach this code before all Pack200 files have been unpacked.
-             * Remainder: no GeoAPI or Apache SIS classes in any method signature of this class!
-             */
-            try {
-                Class.forName("org.apache.sis.referencing.CRS")
-                     .getMethod("forCode", String.class)
-                     .invoke(null, "EPSG:4326");
-                return true;
-            } catch (InvocationTargetException e) {
-                fatalException(caller, "Failed to install EPSG geodetic dataset.", e.getTargetException());
-            } catch (ReflectiveOperationException | LinkageError e) {
-                classpathException(caller, e);
-            }
+        if (content == null) {
+            fatalException(caller, "Directory " + directory + " not found.", null);
+            return false;
         }
-        return false;
+        if (content.length != 0) try {
+            final Pack200.Unpacker unpacker = Pack200.newUnpacker();
+            for (final String filename : content) {
+                final File packFile = new File(directory, filename);
+                final File jarFile  = new File(directory, filename.substring(0, filename.length() - PACK.length()) + "jar");
+                try (JarOutputStream out = new JarOutputStream(new FileOutputStream(jarFile))) {
+                    unpacker.unpack(packFile, out);
+                }
+                packFile.delete();
+            }
+        } catch (IOException e) {
+            fatalException(caller, "Can not uncompress the JAR files.", e);
+            return false;
+        }
+        /*
+         * Ensures that the EPSG database is installed. We force the EPSG installation at add-in
+         * installation time rather than the first time a user ask for a referencing operations,
+         * because users may be less surprised by a delay at installation time than at use time.
+         * However if the EPSG database is deleted after the installation, it will be recreated
+         * when first needed.
+         *
+         * Note: do not reach this code before all Pack200 files have been unpacked.
+         * Remainder: no GeoAPI or Apache SIS classes in any method signature of this class!
+         */
+        if (FORCE_EPSG_STARTUP) try {
+            Class.forName("org.apache.sis.referencing.CRS")
+                 .getMethod("forCode", String.class)
+                 .invoke(null, "EPSG:4326");
+        } catch (InvocationTargetException e) {
+            fatalException(caller, "Failed to install EPSG geodetic dataset.", e.getTargetException());
+            return false;
+        } catch (ReflectiveOperationException | LinkageError e) {
+            classpathException(caller, e);
+            return false;
+        }
+        return true;
     }
 
     /**
@@ -163,7 +170,7 @@ public final class Registration implements FilenameFilter {
         final String lineSeparator = System.lineSeparator();
         final StringBuilder message = new StringBuilder("Can not find Apache SIS classes.").append(lineSeparator)
                 .append("Classpath = ").append(System.getProperty("java.class.path"));
-        final ClassLoader loader = Referencing.class.getClassLoader();
+        final ClassLoader loader = ReferencingFunctions.class.getClassLoader();
         if (loader instanceof URLClassLoader) {
             for (final URL url : ((URLClassLoader) loader).getURLs()) {
                 message.append(lineSeparator).append("  + ").append(url);
@@ -188,20 +195,15 @@ public final class Registration implements FilenameFilter {
      * This method is called by the {@code com.sun.star.comp.loader.JavaLoader}; do not rename!
      *
      * @param   implementation the name of the implementation for which a service is desired.
-     * @param   factories the service manager to be used if needed.
-     * @param   registry the registry key
-     * @return  A factory for creating the component.
+     * @return  a factory for creating the component.
      */
-    public static XSingleServiceFactory __getServiceFactory(
-            final String               implementation,
-            final XMultiServiceFactory factories,
-            final XRegistryKey         registry)
-    {
-        if (ensureInstalled("__getServiceFactory")) {
-            if (implementation.equals(Referencing.class.getName())) try {
-                return FactoryHelper.getServiceFactory(Referencing.class, Referencing.__serviceName, factories, registry);
+    public static XSingleComponentFactory __getComponentFactory(final String implementation) {
+        if (implementation.equals(ReferencingFunctions.IMPLEMENTATION_NAME)) {
+            if (ensureInstalled("__getComponentFactory")) try {
+                return Factory.createComponentFactory(ReferencingFunctions.class,
+                        new String[] {ReferencingFunctions.SERVICE_NAME});
             } catch (LinkageError e) {
-                classpathException("__getServiceFactory", e);
+                classpathException("__getComponentFactory", e);
                 throw e;
             }
         }
@@ -217,21 +219,11 @@ public final class Registration implements FilenameFilter {
      */
     public static boolean __writeRegistryServiceInfo(final XRegistryKey registry) {
         if (ensureInstalled("__writeRegistryServiceInfo")) try {
-            return register(Referencing.class, Referencing.__serviceName, registry);
+            return Factory.writeRegistryServiceInfo(ReferencingFunctions.IMPLEMENTATION_NAME,
+                    new String[] {ReferencingFunctions.SERVICE_NAME}, registry);
         } catch (LinkageError e) {
             classpathException("__writeRegistryServiceInfo", e);
         }
         return false;
-    }
-
-    /**
-     * Helper method for the above {@link #__writeRegistryServiceInfo} method.
-     */
-    private static boolean register(final Class<? extends CalcAddins> classe,
-            final String serviceName, final XRegistryKey registry)
-    {
-        final String cn = classe.getName();
-        return FactoryHelper.writeRegistryServiceInfo(cn, serviceName, registry) &&
-               FactoryHelper.writeRegistryServiceInfo(cn, CalcAddins.ADDIN_SERVICE, registry);
     }
 }

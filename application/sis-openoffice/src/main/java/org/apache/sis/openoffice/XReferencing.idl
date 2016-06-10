@@ -19,64 +19,67 @@
 #define _org_apache_sis_openoffice_XReferencing_
 
 #include <com/sun/star/uno/XInterface.idl>
+#include <com/sun/star/lang/XLocalizable.idl>
 #include <com/sun/star/beans/XPropertySet.idl>
-#include <com/sun/star/sheet/AddIn.idl>
 
 
+/*
+ * Define the methods to be invoked by OpenOffice.
+ * This IDL file is converted in both a .urd file (used by OpenOffice) and a .class file (used by Java).
+ */
 module org {
   module apache {
     module sis {
       module openoffice {
         /// Methods from the org.apache.sis.referencing package to make available to OpenOffice.
-        interface XReferencing : com::sun::star::uno::XInterface {
+        interface XReferencing {
+          interface ::com::sun::star::uno::XInterface;
+
+          /// used to set an add-in locale for formatting messages.
+          [optional] interface ::com::sun::star::lang::XLocalizable;
+
           /// Returns an identified object name from an authority code.
           string getName(
-            [in] com::sun::star::beans::XPropertySet xOptions,
             /// The authority code (e.g. "EPSG:4326").
-            [in] string authorityCode
+            [in] string codeOrPath
           );
 
           /// Returns the axis name for the specified dimension in an identified object.
           string getAxis(
-            [in] com::sun::star::beans::XPropertySet xOptions,
             /// The authority code (e.g. "EPSG:4326").
-            [in] string authorityCode,
+            [in] string codeOrPath,
             /// The dimension (1, 2, ...).
             [in] long dimension
           );
 
           /// Returns the domain of validity as a geographic bounding box for an identified object.
           sequence< sequence< double > > getGeographicArea(
-            [in] com::sun::star::beans::XPropertySet xOptions,
             /// The authority code (e.g. "EPSG:4326").
-            [in] string authorityCode
+            [in] string codeOrPath
           );
 
           /// Returns the accuracy of a transformation between two coordinate reference systems.
           double getAccuracy(
-            [in] com::sun::star::beans::XPropertySet xOptions,
             /// The source coordinates to transform.
             [in] string sourceCRS,
             /// Authority code of the target coordinate reference system.
             [in] string targetCRS,
             /// The source coordinates to transform.
-            [in] sequence< sequence< double > > coordinates
-          );
+            [in] any points
+          ) raises (com::sun::star::lang::IllegalArgumentException);
 
           /// Transforms a list of coordinates from source CRS to target CRS.
-          sequence< sequence< double > > transformCoordinates(
-            [in] com::sun::star::beans::XPropertySet xOptions,
+          sequence< sequence< double > > transformPoints(
             /// Authority code of the source coordinate reference system.
             [in] string sourceCRS,
             /// Authority code of the target coordinate reference system.
             [in] string targetCRS,
             /// The source coordinates to transform.
-            [in] sequence< sequence< double > > coordinates
+            [in] sequence< sequence< double > > points
           );
 
           /// Converts text in degrees-minutes-seconds to an angle in decimal degrees.
           double parseAngle(
-            [in] com::sun::star::beans::XPropertySet xOptions,
             /// The text to be converted to an angle.
             [in] string text,
             /// The text that describes the format (example: "D MM.m'").
@@ -85,7 +88,6 @@ module org {
 
           /// Converts an angle to text according to a given format.
           string formatAngle(
-            [in] com::sun::star::beans::XPropertySet xOptions,
             /// The angle value (in decimal degrees) to be converted.
             [in] double value,
             /// The text that describes the format (example: "D MM.m'").
@@ -94,17 +96,10 @@ module org {
         };
 
         /*
-         * Exported interfaces:
-         * This is where we put all interfaces that this service exports.
+         * All interfaces exported by the referencing service.
          */
         service Referencing {
           interface XReferencing;
-
-          /*
-           * Necessary base service.
-           * All add-ins must implement this service.
-           */
-          service com::sun::star::sheet::AddIn;
         };
       };
     };

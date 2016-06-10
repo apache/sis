@@ -17,7 +17,6 @@
 package org.apache.sis.openoffice;
 
 import com.sun.star.uno.XInterface;
-import com.sun.star.beans.XPropertySet;
 import com.sun.star.lang.IllegalArgumentException;
 
 
@@ -41,23 +40,21 @@ public interface XReferencing extends XInterface {
     /**
      * Returns the identified object name from an authority code.
      *
-     * @param  xOptions    provided by OpenOffice.
      * @param  codeOrPath  the code allocated by an authority, or the path to a file.
      * @return the object name.
      */
-    String getName(XPropertySet xOptions, String codeOrPath);
+    String getName(String codeOrPath);
 
     /**
      * Returns the axis name and units for the specified dimension in a coordinate reference system or coordinate system.
      * This method returns a short axis name as used in Well Known Text (WKT) format, for example <cite>"Latitude"</cite>
      * instead of <cite>"Geodetic latitude"</cite>.
      *
-     * @param  xOptions    provided by OpenOffice.
      * @param  codeOrPath  the code allocated by an authority, or the path to a file.
      * @param  dimension   the dimension (1, 2, …).
      * @return the name of the requested axis.
      */
-    String getAxis(XPropertySet xOptions, String codeOrPath, int dimension);
+    String getAxis(String codeOrPath, int dimension);
 
     /**
      * Returns the domain of validity as a geographic bounding box for an identified object.
@@ -66,46 +63,42 @@ public interface XReferencing extends XInterface {
      * and the second row contains the latitude and longitude of bottom right corner.
      * Units are degrees.
      *
-     * @param  xOptions    provided by OpenOffice.
      * @param  codeOrPath  the code allocated by an authority, or the path to a file.
      * @return the object bounding box.
      */
-    double[][] getGeographicArea(XPropertySet xOptions, String codeOrPath);
+    double[][] getGeographicArea(String codeOrPath);
 
     /**
      * Returns the accuracy of a transformation between two coordinate reference systems.
      *
-     * @param  xOptions   provided by OpenOffice.
      * @param  sourceCRS  the authority code for the source coordinate reference system.
      * @param  targetCRS  the authority code for the target coordinate reference system.
      * @param  points     the coordinates to transform (for computing area of interest).
      * @return the operation accuracy.
+     * @throws IllegalArgumentException if {@code points} is not a {@code double[][]} value or void.
      */
-    double getAccuracy(XPropertySet xOptions, String sourceCRS, String targetCRS, double[][] points);
+    double getAccuracy(String sourceCRS, String targetCRS, Object points) throws IllegalArgumentException;
 
     /**
      * Transforms coordinates from the specified source CRS to the specified target CRS.
      *
-     * @param  xOptions   provided by OpenOffice.
      * @param  sourceCRS  the authority code for the source coordinate reference system.
      * @param  targetCRS  the authority code for the target coordinate reference system.
      * @param  points     the coordinates to transform.
      * @return The transformed coordinates.
      */
-    double[][] transformCoordinates(XPropertySet xOptions, String sourceCRS, String targetCRS, double[][] points);
+    double[][] transformPoints(String sourceCRS, String targetCRS, double[][] points);
 
     /**
      * Converts text in degrees-minutes-seconds to an angle in decimal degrees.
      * See {@link org.apache.sis.measure.AngleFormat} for pattern description.
      *
-     * @param  xOptions  provided by OpenOffice.
-     * @param  text      the text to be converted to an angle.
-     * @param  pattern   an optional text that describes the format (example: "D°MM.m'").
+     * @param  text       the text to be converted to an angle.
+     * @param  pattern    an optional text that describes the format (example: "D°MM.m'").
      * @return the angle parsed as a number.
-     * @throws IllegalArgumentException if {@code pattern} is illegal.
+     * @throws IllegalArgumentException if {@code pattern} is not a string value or void.
      */
-    double parseAngle(XPropertySet xOptions, String text, Object pattern)
-            throws IllegalArgumentException;
+    double parseAngle(String text, Object pattern) throws IllegalArgumentException;
 
     /**
      * Converts an angle to text according to a given format. This method uses the pattern
@@ -116,12 +109,10 @@ public interface XReferencing extends XInterface {
      *   <li>If the pattern ends with N or S, then the angle is formatted as a latitude.</li>
      * </ul>
      *
-     * @param  xOptions  provided by OpenOffice.
-     * @param  value     the angle value (in decimal degrees) to be converted.
-     * @param  pattern   an optional text that describes the format (example: "D°MM.m'").
+     * @param  value      the angle value (in decimal degrees) to be converted.
+     * @param  pattern    an optional text that describes the format (example: "D°MM.m'").
      * @return the angle formatted as a string.
-     * @throws IllegalArgumentException if {@code pattern} is illegal.
+     * @throws IllegalArgumentException if {@code pattern} is not a string value or void.
      */
-    String formatAngle(XPropertySet xOptions, double value, Object pattern)
-            throws IllegalArgumentException;
+    String formatAngle(double value, Object pattern) throws IllegalArgumentException;
 }
