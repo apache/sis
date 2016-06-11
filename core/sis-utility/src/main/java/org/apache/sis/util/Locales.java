@@ -103,10 +103,10 @@ public final class Locales extends Static {
      */
     private static final short[] ISO3, ISO2;
     static {
-        final Short CONFLICT = 0; // Sentinal value for conflicts (paranoiac safety).
+        final Short CONFLICT = 0;                           // Sentinal value for conflicts (paranoiac safety).
         final Map<Short,Short> map = new TreeMap<>();
         for (final Locale locale : POOL.values()) {
-            short type = LANGUAGE; // 0 for language, or leftmost bit set for country.
+            short type = LANGUAGE;                          // 0 for language, or leftmost bit set for country.
             do { // Executed exactly twice: once for language, than once for country.
                 final short alpha2 = toNumber((type == LANGUAGE) ? locale.getLanguage() : locale.getCountry(), type);
                 if (alpha2 != 0) {
@@ -114,7 +114,7 @@ public final class Locales extends Static {
                     try {
                         alpha3 = toNumber((type == LANGUAGE) ? locale.getISO3Language() : locale.getISO3Country(), type);
                     } catch (MissingResourceException e) {
-                        continue; // No 3-letters code to map for this locale.
+                        continue;                           // No 3-letters code to map for this locale.
                     }
                     if (alpha3 != 0 && alpha3 != alpha2) {
                         final Short p = map.put(alpha3, alpha2);
@@ -127,7 +127,7 @@ public final class Locales extends Static {
                 }
             } while ((type ^= COUNTRY) != LANGUAGE);
         }
-        while (map.values().remove(CONFLICT)); // Remove all conflicts that we may have found.
+        while (map.values().remove(CONFLICT));              // Remove all conflicts that we may have found.
         ISO3 = new short[map.size()];
         ISO2 = new short[map.size()];
         int i = 0;
@@ -298,8 +298,8 @@ filter: for (final Locale locale : locales) {
     }
 
     /**
-     * Converts a 3-letters ISO code to a 2-letters one. If the given code is not recognized,
-     * then this method returns {@code code} unmodified.
+     * Converts a 3-letters ISO code to a 2-letters one.
+     * If the given code is not recognized, then this method returns {@code code} unmodified.
      *
      * @param  code The 3-letters code.
      * @param  type Either {@link #LANGUAGE} or {@link #COUNTRY}.

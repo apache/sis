@@ -16,6 +16,7 @@
  */
 package org.apache.sis.openoffice;
 
+import java.util.Arrays;
 import org.opengis.util.FactoryException;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.referencing.crs.GeographicCRS;
@@ -23,6 +24,8 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
+import org.apache.sis.geometry.Envelopes;
+import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.GeneralDirectPosition;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.util.collection.Cache;
@@ -156,7 +159,7 @@ final class Transformer {
         final double[][] result = new double[points.length][];
         for (int j=0; j<points.length; j++) {
             final double[] coords = points[j];
-            if (coords != null) {
+            if (coords != null) {                                               // Paranoiac check.
                 for (int i=sourcePt.ordinates.length; --i>=0;) {
                     sourcePt.ordinates[i] = (i < coords.length) ? coords[i] : 0;
                 }
@@ -169,6 +172,9 @@ final class Transformer {
                      * we will report the failure for logging purpose, but only the first one since
                      * all subsequent failures are likely to be the same one.
                      */
+                    final double[] pad = new double[mt.getTargetDimensions()];
+                    Arrays.fill(pad, Double.NaN);
+                    result[j] = pad;
                     if (warning == null) {
                         warning = exception;
                     }
@@ -176,5 +182,29 @@ final class Transformer {
             }
         }
         return result;
+    }
+
+    /**
+     * Transforms the given envelope.
+     */
+    final double[][] transformEnvelope(final double[][] points) throws TransformException {
+        final double[] min = new double[operation.getMathTransform().getSourceDimensions()];
+        final double[] max = new double[min.length];
+        Arrays.fill(min, Double.POSITIVE_INFINITY);
+        Arrays.fill(max, Double.NEGATIVE_INFINITY);
+        for (final double[] p : points) {
+            if (p != null) {                                                    // Paranoiac check.
+                for (int i=Math.min(min.length, p.length); --i >= 0;) {
+                    final double v = p[i];
+                    if (v < min[i]) min[i] = v;
+                    if (v > max[i]) max[i] = v;
+                }
+            }
+        }
+        final GeneralEnvelope result = Envelopes.transform(operation, new GeneralEnvelope(min, max));
+        return new double[][] {
+            result.getLowerCorner().getCoordinate(),
+            result.getUpperCorner().getCoordinate()
+        };
     }
 }

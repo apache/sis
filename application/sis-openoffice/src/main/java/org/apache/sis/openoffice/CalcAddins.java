@@ -31,7 +31,6 @@ import com.sun.star.lib.uno.helper.WeakBase;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.logging.Logging;
-import org.apache.sis.util.collection.BackingStoreException;
 
 
 /**
@@ -43,13 +42,6 @@ import org.apache.sis.util.collection.BackingStoreException;
  * @module
  */
 public abstract class CalcAddins extends WeakBase implements XServiceName, XServiceInfo, XLocalizable {
-    /**
-     * {@code true} for throwing an exception in case of failure, or {@code false} for returning {@code NaN} instead.
-     * This apply only to numerical computations; formulas returning a text value will returns the exception message
-     * in case of failure.
-     */
-    static final boolean THROW_EXCEPTION = true;
-
     /**
      * Indirectly provides access to the service manager.
      * For example {@code com.sun.star.sdb.DatabaseContext} holds databases registered with OpenOffice.
@@ -216,9 +208,8 @@ public abstract class CalcAddins extends WeakBase implements XServiceName, XServ
      *
      * @param method     the method from which an exception occurred.
      * @param exception  the exception.
-     * @param rethrow    {@code true} for rethrowing the exception after the report.
      */
-    final void reportException(final String method, final Exception exception, final boolean rethrow) {
+    final void reportException(final String method, final Exception exception) {
         final Logger logger = getLogger();
         final LogRecord record = new LogRecord(Level.WARNING, getLocalizedMessage(exception));
         record.setLoggerName(logger.getName());
@@ -226,12 +217,6 @@ public abstract class CalcAddins extends WeakBase implements XServiceName, XServ
         record.setSourceMethodName(method);
         record.setThrown(exception);
         logger.log(record);
-        if (rethrow) {
-            if (exception instanceof RuntimeException) {
-                throw (RuntimeException) exception;
-            }
-            throw new BackingStoreException(exception);
-        }
     }
 
     /**

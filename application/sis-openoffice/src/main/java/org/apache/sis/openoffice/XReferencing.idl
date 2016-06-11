@@ -64,8 +64,8 @@ module org {
             [in] string sourceCRS,
             /// Authority code of the target coordinate reference system.
             [in] string targetCRS,
-            /// The source coordinates to transform.
-            [in] any points
+            /// An optional bounding box of source coordinates to transform.
+            [in] any areaOfInterest
           ) raises (com::sun::star::lang::IllegalArgumentException);
 
           /// Transforms a list of coordinates from source CRS to target CRS.
@@ -78,20 +78,34 @@ module org {
             [in] sequence< sequence< double > > points
           );
 
+          /// Transforms the envelope of given points from source CRS to target CRS.
+          sequence< sequence< double > > transformEnvelope(
+            /// Authority code of the source coordinate reference system.
+            [in] string sourceCRS,
+            /// Authority code of the target coordinate reference system.
+            [in] string targetCRS,
+            /// The source envelope to transform.
+            [in] sequence< sequence< double > > envelope
+          );
+
           /// Converts text in degrees-minutes-seconds to an angle in decimal degrees.
-          double parseAngle(
+          sequence< sequence< double > > parseAngle(
             /// The text to be converted to an angle.
-            [in] string text,
+            [in] sequence< sequence< string > > text,
             /// The text that describes the format (example: "D MM.m'").
-            [in] any pattern
+            [in] any pattern,
+            /// The locale (example: "en", "fr").
+            [in] any locale
           ) raises (com::sun::star::lang::IllegalArgumentException);
 
           /// Converts an angle to text according to a given format.
-          string formatAngle(
+          sequence< sequence< string > > formatAngle(
             /// The angle value (in decimal degrees) to be converted.
-            [in] double value,
+            [in] sequence< sequence< double > > value,
             /// The text that describes the format (example: "D MM.m'").
-            [in] any pattern
+            [in] any pattern,
+            /// The locale (example: "en", "fr").
+            [in] any locale
           ) raises (com::sun::star::lang::IllegalArgumentException);
         };
 

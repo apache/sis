@@ -16,8 +16,6 @@
  */
 package org.apache.sis.openoffice;
 
-import java.text.ParseException;
-
 import org.opengis.metadata.Metadata;
 import org.opengis.util.FactoryException;
 import org.opengis.util.InternationalString;
@@ -39,6 +37,7 @@ import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.io.wkt.Transliterator;
 import org.apache.sis.util.Classes;
+import org.apache.sis.util.Locales;
 import org.apache.sis.util.collection.Cache;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.util.PatchedUnitFormat;
@@ -271,14 +270,14 @@ public class ReferencingFunctions extends CalcAddins implements XReferencing {
                         area = Extents.getGeographicBoundingBox((Extent) domain);
                     }
                 } catch (Exception exception) {
-                    reportException("getGeographicArea", exception, THROW_EXCEPTION);
+                    reportException("getGeographicArea", exception);
                 }
             } finally {
                 handler.putAndUnlock(area);
             }
         }
         if (area == null) {
-            return getFailure(4,4);
+            return getFailure(2,2);
         }
         return new double[][] {
             new double[] {area.getNorthBoundLatitude(), area.getWestBoundLongitude()},
@@ -307,23 +306,23 @@ public class ReferencingFunctions extends CalcAddins implements XReferencing {
     /**
      * Returns the accuracy of a transformation between two coordinate reference systems.
      *
-     * @param  sourceCRS  the authority code for the source coordinate reference system.
-     * @param  targetCRS  the authority code for the target coordinate reference system.
-     * @param  points     the coordinates to transform (for computing area of interest).
+     * @param  sourceCRS       the authority code for the source coordinate reference system.
+     * @param  targetCRS       the authority code for the target coordinate reference system.
+     * @param  areaOfInterest  an optional bounding box of source coordinates to transform.
      * @throws IllegalArgumentException if {@code points} is not a {@code double[][]} value or void.
      * @return the operation accuracy.
      */
     @Override
-    public double getAccuracy(final String sourceCRS, final String targetCRS, final Object points)
+    public double getAccuracy(final String sourceCRS, final String targetCRS, final Object areaOfInterest)
             throws IllegalArgumentException
     {
         final double[][] coordinates;
-        if (AnyConverter.isVoid(points)) {
+        if (AnyConverter.isVoid(areaOfInterest)) {
             coordinates = null;
-        } else if (points instanceof double[][]) {
-            coordinates = (double[][]) points;
-        } else if (points instanceof Object[][]) {
-            final Object[][] values = (Object[][]) points;
+        } else if (areaOfInterest instanceof double[][]) {
+            coordinates = (double[][]) areaOfInterest;
+        } else if (areaOfInterest instanceof Object[][]) {
+            final Object[][] values = (Object[][]) areaOfInterest;
             coordinates = new double[values.length][];
             for (int j=0; j<values.length; j++) {
                 final Object[] row = values[j];
@@ -339,7 +338,7 @@ public class ReferencingFunctions extends CalcAddins implements XReferencing {
         try {
             return new Transformer(this, getCRS(sourceCRS), targetCRS, coordinates).getAccuracy();
         } catch (Exception exception) {
-            reportException("getAccuracy", exception, THROW_EXCEPTION);
+            reportException("getAccuracy", exception);
             return Double.NaN;
         }
     }
@@ -350,17 +349,46 @@ public class ReferencingFunctions extends CalcAddins implements XReferencing {
      * @param  sourceCRS  the authority code for the source coordinate reference system.
      * @param  targetCRS  the authority code for the target coordinate reference system.
      * @param  points     the coordinates to transform.
-     * @return The transformed coordinates.
+     * @return the transformed coordinates.
      */
     @Override
     public double[][] transformPoints(final String sourceCRS, final String targetCRS, final double[][] points) {
         if (points == null || points.length == 0) {
             return new double[][] {};
-        } else try {
-            return new Transformer(this, getCRS(sourceCRS), targetCRS, points).transform(points);
+        }
+        double[][] result;
+        Exception warning;
+        try {
+            final Transformer tr = new Transformer(this, getCRS(sourceCRS), targetCRS, points);
+            result  = tr.transform(points);
+            warning = tr.warning;
         } catch (Exception exception) {
-            reportException("transformPoints", exception, THROW_EXCEPTION);
-            return getFailure(points.length, 2);
+            result  = getFailure(points.length, 2);
+            warning = exception;
+        }
+        if (warning != null) {
+            reportException("transformPoints", warning);
+        }
+        return result;
+    }
+
+    /**
+     * Transforms an envelope from the specified source CRS to the specified target CRS.
+     *
+     * @param  sourceCRS  the authority code for the source coordinate reference system.
+     * @param  targetCRS  the authority code for the target coordinate reference system.
+     * @param  envelope   points inside the envelope to transform.
+     * @return the transformed envelope.
+     */
+    @Override
+    public double[][] transformEnvelope(String sourceCRS, String targetCRS, double[][] envelope) {
+        if (envelope == null || envelope.length == 0) {
+            return new double[][] {};
+        } else try {
+            return new Transformer(this, getCRS(sourceCRS), targetCRS, envelope).transformEnvelope(envelope);
+        } catch (Exception exception) {
+            reportException("transformEnvelope", exception);
+            return getFailure(envelope.length, 2);
         }
     }
 
@@ -370,17 +398,21 @@ public class ReferencingFunctions extends CalcAddins implements XReferencing {
      *
      * @param  text     the text to be converted to an angle.
      * @param  pattern  an optional text that describes the format (example: "D°MM.m'").
+     * @param  locale   the convention to use (e.g. decimal separator symbol).
      * @return the angle parsed as a number.
      * @throws IllegalArgumentException if {@code pattern} is not a string value or void.
      */
     @Override
-    public double parseAngle(final String text, final Object pattern) throws IllegalArgumentException {
-        try {
-            return new AnglePattern(pattern).parse(text, getJavaLocale());
-        } catch (ParseException exception) {
-            reportException("parseAngle", exception, THROW_EXCEPTION);
-            return Double.NaN;
+    public double[][] parseAngle(final String[][] text, final Object pattern, final Object locale)
+            throws IllegalArgumentException
+    {
+        final AnglePattern p = new AnglePattern(pattern);
+        final double[][] result = p.parse(text, AnyConverter.isVoid(locale)
+                ? getJavaLocale() : Locales.parse(AnyConverter.toString(locale)));
+        if (p.warning != null) {
+            reportException("parseAngle", p.warning);
         }
+        return result;
     }
 
     /**
@@ -394,11 +426,15 @@ public class ReferencingFunctions extends CalcAddins implements XReferencing {
      *
      * @param  value    the angle value (in decimal degrees) to be converted.
      * @param  pattern  an optional text that describes the format (example: "D°MM.m'").
+     * @param  locale   the convention to use (e.g. decimal separator symbol).
      * @return the angle formatted as a string.
      * @throws IllegalArgumentException if {@code pattern} is not a string value or void.
      */
     @Override
-    public String formatAngle(final double value, final Object pattern) throws IllegalArgumentException {
-        return new AnglePattern(pattern).format(value, getJavaLocale());
+    public String[][] formatAngle(final double[][] value, final Object pattern, final Object locale)
+            throws IllegalArgumentException
+    {
+        return new AnglePattern(pattern).format(value, AnyConverter.isVoid(locale)
+                ? getJavaLocale() : Locales.parse(AnyConverter.toString(locale)));
     }
 }
