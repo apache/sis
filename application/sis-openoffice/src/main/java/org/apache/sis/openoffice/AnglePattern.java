@@ -58,6 +58,11 @@ final class AnglePattern {
     private byte type;
 
     /**
+     * If an error occurred during parsing, the first error.
+     */
+    ParseException warning;
+
+    /**
      * Converts the given argument to a pattern valid for {@link AngleFormat}.
      *
      * @param  patternOrVoid the optional pattern argument from the OpenOffice formula.
@@ -106,48 +111,67 @@ final class AnglePattern {
     }
 
     /**
-     * Parses the given angle.
+     * Parses the given angle. This function is typically invoked for parsing only one value.
+     * But it is nevertheless defined as a matrix function for more efficient conversions of
+     * a bulk of angles.
      *
      * @param text    the angle to parse.
      * @param locale  the expected locale of the text to parse.
      */
-    double parse(final String text, final Locale locale) throws ParseException {
-        AngleFormat format = getAngleFormat(locale);
-        Angle angle;
-        try {
-            synchronized (format) {
-                angle = format.parse(text);
-            }
-        } catch (ParseException exception) {
-            // Parse failed. Try to parse as an unlocalized string.
-            format = getAngleFormat(Locale.ROOT);
-            try {
-                synchronized (format) {
-                    angle = format.parse(text);
+    double[][] parse(final String[][] text, final Locale locale) {
+        final AngleFormat format = getAngleFormat(locale);
+        final double[][] value = new double[text.length][];
+        synchronized (format) {
+            for (int j=0; j<text.length; j++) {
+                final String[] input = text[j];
+                if (input != null) {                                            // Paranoiac check.
+                    final double[] result = new double[input.length];
+                    for (int i=0; i<input.length; i++) {
+                        try {
+                            result[i] = format.parse(input[i]).degrees();
+                        } catch (ParseException e) {
+                            result[i] = Double.NaN;
+                            if (warning == null) {
+                                warning = e;
+                            }
+                        }
+                    }
+                    value[j] = result;
                 }
-            } catch (ParseException ignore) {
-                throw exception;
             }
         }
-        return angle.degrees();
+        return value;
     }
 
     /**
-     * Formats the given angle.
+     * Formats the given angle. This function is typically invoked for formatting only one value.
+     * But it is nevertheless defined as a matrix function for more efficient conversions of a bulk of angles.
      *
      * @param value   the value to format.
      * @param locale  the target locale.
      */
-    String format(final double value, final Locale locale) {
+    String[][] format(final double[][] value, final Locale locale) {
         final AngleFormat format = getAngleFormat(locale);
-        final Angle angle;
-        switch (type) {
-            default:        angle = new Angle    (value); break;
-            case LATITUDE:  angle = new Latitude (value); break;
-            case LONGITUDE: angle = new Longitude(value); break;
-        }
+        final String[][] text = new String[value.length][];
         synchronized (format) {
-            return format.format(angle);
+            for (int j=0; j<value.length; j++) {
+                final double[] input = value[j];
+                if (input != null) {                                            // Paranoiac check.
+                    final String[] result = new String[input.length];
+                    for (int i=0; i<input.length; i++) {
+                        final double v = input[i];
+                        final Angle angle;
+                        switch (type) {
+                            default:        angle = new Angle    (v); break;
+                            case LATITUDE:  angle = new Latitude (v); break;
+                            case LONGITUDE: angle = new Longitude(v); break;
+                        }
+                        result[i] = format.format(angle);
+                    }
+                    text[j] = result;
+                }
+            }
         }
+        return text;
     }
 }

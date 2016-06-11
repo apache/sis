@@ -71,13 +71,13 @@ public interface XReferencing extends XInterface {
     /**
      * Returns the accuracy of a transformation between two coordinate reference systems.
      *
-     * @param  sourceCRS  the authority code for the source coordinate reference system.
-     * @param  targetCRS  the authority code for the target coordinate reference system.
-     * @param  points     the coordinates to transform (for computing area of interest).
+     * @param  sourceCRS       the authority code for the source coordinate reference system.
+     * @param  targetCRS       the authority code for the target coordinate reference system.
+     * @param  areaOfInterest  an optional bounding box of source coordinates to transform.
      * @return the operation accuracy.
      * @throws IllegalArgumentException if {@code points} is not a {@code double[][]} value or void.
      */
-    double getAccuracy(String sourceCRS, String targetCRS, Object points) throws IllegalArgumentException;
+    double getAccuracy(String sourceCRS, String targetCRS, Object areaOfInterest) throws IllegalArgumentException;
 
     /**
      * Transforms coordinates from the specified source CRS to the specified target CRS.
@@ -85,20 +85,31 @@ public interface XReferencing extends XInterface {
      * @param  sourceCRS  the authority code for the source coordinate reference system.
      * @param  targetCRS  the authority code for the target coordinate reference system.
      * @param  points     the coordinates to transform.
-     * @return The transformed coordinates.
+     * @return the transformed coordinates.
      */
     double[][] transformPoints(String sourceCRS, String targetCRS, double[][] points);
+
+    /**
+     * Transforms an envelope from the specified source CRS to the specified target CRS.
+     *
+     * @param  sourceCRS  the authority code for the source coordinate reference system.
+     * @param  targetCRS  the authority code for the target coordinate reference system.
+     * @param  envelope   points inside the envelope to transform.
+     * @return the transformed envelope.
+     */
+    double[][] transformEnvelope(String sourceCRS, String targetCRS, double[][] envelope);
 
     /**
      * Converts text in degrees-minutes-seconds to an angle in decimal degrees.
      * See {@link org.apache.sis.measure.AngleFormat} for pattern description.
      *
-     * @param  text       the text to be converted to an angle.
-     * @param  pattern    an optional text that describes the format (example: "D°MM.m'").
+     * @param  text     the text to be converted to an angle.
+     * @param  pattern  an optional text that describes the format (example: "D°MM.m'").
+     * @param  locale   the convention to use (e.g. decimal separator symbol).
      * @return the angle parsed as a number.
      * @throws IllegalArgumentException if {@code pattern} is not a string value or void.
      */
-    double parseAngle(String text, Object pattern) throws IllegalArgumentException;
+    double[][] parseAngle(String[][] text, Object pattern, Object locale) throws IllegalArgumentException;
 
     /**
      * Converts an angle to text according to a given format. This method uses the pattern
@@ -109,10 +120,11 @@ public interface XReferencing extends XInterface {
      *   <li>If the pattern ends with N or S, then the angle is formatted as a latitude.</li>
      * </ul>
      *
-     * @param  value      the angle value (in decimal degrees) to be converted.
-     * @param  pattern    an optional text that describes the format (example: "D°MM.m'").
+     * @param  value    the angle value (in decimal degrees) to be converted.
+     * @param  pattern  an optional text that describes the format (example: "D°MM.m'").
+     * @param  locale   the convention to use (e.g. decimal separator symbol).
      * @return the angle formatted as a string.
      * @throws IllegalArgumentException if {@code pattern} is not a string value or void.
      */
-    String formatAngle(double value, Object pattern) throws IllegalArgumentException;
+    String[][] formatAngle(double[][] value, Object pattern, Object locale) throws IllegalArgumentException;
 }

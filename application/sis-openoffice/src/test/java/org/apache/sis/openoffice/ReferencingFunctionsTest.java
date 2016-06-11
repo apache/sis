@@ -150,15 +150,34 @@ public final strictfp class ReferencingFunctionsTest extends TestCase {
     }
 
     /**
+     * Tests {@link ReferencingFunctions#transformEnvelope(String, String, double[][])}.
+     */
+    @Test
+    public void testTransformEnvelope() {
+        final double[][] points = {
+            new double[] {30,  20,  4},
+            new double[] {34,  17, -3},
+            new double[] {27, -12, 12},
+            new double[] {32,  23, -1}
+        };
+        final double[][] result = {
+            new double[] {27, -12},
+            new double[] {34,  23}
+        };
+        TransformerTest.assertPointsEqual(result,
+                instance.transformEnvelope("EPSG:4979", "EPSG:4326", points), STRICT);
+    }
+
+    /**
      * Tests {@link ReferencingFunctions#parseAngle(String, Object)}.
      *
      * @throws IllegalArgumentException if the pattern used by the test is not a string or void.
      */
     @Test
     public void testParseAngle() throws IllegalArgumentException {
-        assertEquals(43.50, instance.parseAngle("43°30'", "D°MM.m'"), STRICT);
-        assertEquals(43.50, instance.parseAngle("4330",   "DMM"),     STRICT);
-        assertEquals(-3.25, instance.parseAngle("-3°15'", "D°MM.m'"), STRICT);
+        assertEquals(43.50, singleton(instance.parseAngle(new String[][] {{"43°30'"}}, "D°MM.m'", "en")), STRICT);
+        assertEquals(43.50, singleton(instance.parseAngle(new String[][] {{"4330"}},   "DMM",     "en")), STRICT);
+        assertEquals(-3.25, singleton(instance.parseAngle(new String[][] {{"-3°15'"}}, "D°MM.m'", "en")), STRICT);
     }
 
     /**
@@ -168,8 +187,26 @@ public final strictfp class ReferencingFunctionsTest extends TestCase {
      */
     @Test
     public void testFormatAngle() throws IllegalArgumentException {
-        assertEquals("43°30.0'", instance.formatAngle(43.50, "D°MM.m'"));
-        assertEquals("4330",     instance.formatAngle(43.50, "DMM"));
-        assertEquals("-3°15.0'", instance.formatAngle(-3.25, "D°MM.m'"));
+        assertEquals("43°30.0'", singleton(instance.formatAngle(new double[][] {{43.50}}, "D°MM.m'", "en")));
+        assertEquals("4330",     singleton(instance.formatAngle(new double[][] {{43.50}}, "DMM",     "en")));
+        assertEquals("-3°15.0'", singleton(instance.formatAngle(new double[][] {{-3.25}}, "D°MM.m'", "en")));
+    }
+
+    /**
+     * Ensures that the given array contains exactly one element and returns that element.
+     */
+    private static double singleton(final double[][] value) {
+        assertEquals("array length", 1, value.length);
+        assertEquals("array length", 1, value[0].length);
+        return value[0][0];
+    }
+
+    /**
+     * Ensures that the given array contains exactly one element and returns that element.
+     */
+    private static String singleton(final String[][] value) {
+        assertEquals("array length", 1, value.length);
+        assertEquals("array length", 1, value[0].length);
+        return value[0][0];
     }
 }
