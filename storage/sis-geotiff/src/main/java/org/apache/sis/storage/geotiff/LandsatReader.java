@@ -23,7 +23,6 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Collections;
-import static java.util.Collections.singleton;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
@@ -59,46 +58,40 @@ import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.metadata.identification.Identification;
 import org.opengis.util.FactoryException;
 
+import static java.util.Collections.singleton;
+
+
 /**
+ * Parses Landsat metadata as {@linkplain DefaultMetadata ISO-19115 Metadata} object.
  *
- * @author haonguyen
+ * @author  Thi Phuong Hao Nguyen
+ * @author  Remi Marechal (Geomatys)
+ * @since   0.8
+ * @version 0.8
+ * @module
  */
 public class LandsatReader {
-
     /**
-     * All properties found in the Landsat metadata file, except {@code GROUP}
-     * and {@code END_GROUP}. Example:
+     * All properties found in the Landsat metadata file, except {@code GROUP} and {@code END_GROUP}.
+     * Example:
      *
-     * {
-     *
-     * @preformat text
-     * DATE_ACQUIRED = 2014-03-12
-     * SCENE_CENTER_TIME =03:02:01.5339408Z
-     * CORNER_UL_LAT_PRODUCT = 12.61111
-     * CORNER_UL_LON_PRODUCT= 108.33624
-     * CORNER_UR_LAT_PRODUCT = 12.62381
-     * CORNER_UR_LON_PRODUCT =110.44017 }
-     */
-    /**
-     * Stores all properties found in the Landsat file read from the the given
-     * reader, except {@code GROUP} and {@code END_GROUP}.
-     *
-     * @param reader a reader opened on the Landsat file. It is caller's
-     * responsibility to close this reader.
-     * @throws IOException if an I/O error occurred while reading the given
-     * stream.
-     * @throws DataStoreException if the content is not a Landsat file.
+     * {@preformat text
+     *   DATE_ACQUIRED = 2014-03-12
+     *   SCENE_CENTER_TIME = 03:02:01.5339408Z
+     *   CORNER_UL_LAT_PRODUCT = 12.61111
+     *   CORNER_UL_LON_PRODUCT = 108.33624
+     *   CORNER_UR_LAT_PRODUCT = 12.62381
+     *   CORNER_UR_LON_PRODUCT = 110.44017
+     * }
      */
     private final Map<String, String> properties;
 
     /**
-     * Stores all properties found in the Landsat file read from the the given
-     * reader, except {@code GROUP} and {@code END_GROUP}.
+     * Stores all properties found in the Landsat file read from the the given reader,
+     * except {@code GROUP} and {@code END_GROUP}.
      *
-     * @param reader a reader opened on the Landsat file. It is caller's
-     * responsibility to close this reader.
-     * @throws IOException if an I/O error occurred while reading the given
-     * stream.
+     * @param  reader a reader opened on the Landsat file. It is caller's responsibility to close this reader.
+     * @throws IOException if an I/O error occurred while reading the given stream.
      * @throws DataStoreException if the content is not a Landsat file.
      */
     LandsatReader(final BufferedReader reader) throws IOException, DataStoreException {
@@ -153,26 +146,22 @@ public class LandsatReader {
     }
 
     /**
-     * Returns the property value associated to the given key, or {@code null}
-     * if none.
+     * Returns the property value associated to the given key, or {@code null} if none.
      *
-     * @param key the key for which to get the property value.
-     * @return the property value associated to the given key, {@code null} if
-     * none.
+     * @param  key  the key for which to get the property value.
+     * @return the property value associated to the given key, {@code null} if none.
      */
     private String getValue(String key) {
         return properties.get(key);
     }
 
     /**
-     * Returns the floating-point value associated to the given key, or
-     * {@code NaN} if none.
+     * Returns the floating-point value associated to the given key, or {@code NaN} if none.
      *
-     * @param key the key for which to get the floating-point value.
-     * @return the floating-point value associated to the given key,
-     * {@link Double#NaN} if none.
-     * @throws NumberFormatException if the property associated to the given key
-     * can not be parsed as a floating-point number.
+     * @param  key  the key for which to get the floating-point value.
+     * @return the floating-point value associated to the given key, {@link Double#NaN} if none.
+     * @throws NumberFormatException if the property associated to the given key can not be parsed
+     *         as a floating-point number.
      */
     private double getNumericValue(String key) throws NumberFormatException {
         String value = getValue(key);
@@ -182,14 +171,13 @@ public class LandsatReader {
     /**
      * Returns the minimal or maximal value associated to the given two keys.
      *
-     * @param key1 the key for which to get the first floating-point value.
-     * @param key2 the key for which to get the second floating-point value.
-     * @param max {@code true} for the maximal value, or {@code false} for the
-     * minimal value.
-     * @return the minimal (if {@code max} is false) or maximal (if {@code max}
-     * is true) floating-point value associated to the given keys.
-     * @throws NumberFormatException if the property associated to one of the
-     * given keys can not be parsed as a floating-point number.
+     * @param  key1  the key for which to get the first floating-point value.
+     * @param  key2  the key for which to get the second floating-point value.
+     * @param  max   {@code true} for the maximal value, or {@code false} for the minimal value.
+     * @return the minimal (if {@code max} is false) or maximal (if {@code max} is true) floating-point value
+     *         associated to the given keys.
+     * @throws NumberFormatException if the property associated to one of the given keys can not be parsed
+     *         as a floating-point number.
      */
     private double getExtremumValue(String key1, String key2, boolean max) throws NumberFormatException {
         double value1 = getNumericValue(key1);
@@ -202,24 +190,24 @@ public class LandsatReader {
     }
 
     /**
-     * Creat the attributeGroup the band
+     * Creates the description of all bands that can be included in a Landsat coverage.
      *
-     * @return Information about the band identification
+     * @return information about all bands identification.
      */
     private AttributeGroup coverage() {
         final DefaultAttributeGroup attribute = new DefaultAttributeGroup();
-        double[] wavelengths = {433.0, 482.0, 562.0,655.0,865.0,1610.0,2200.0,590.0,1375.0,10800.0,12000.0};
-        String[] nameband = {"Coastal Aerosol (Operational Land Imager (OLI))","Blue (OLI)",
-                             "Green (OLI)","Red (OLI)","Near-Infrared (NIR) (OLI)",
-                             "Short Wavelength Infrared (SWIR) 1 (OLI)","SWIR 2 (OLI)",
-                             "Panchromatic (OLI)","Cirrus (OLI)","Thermal Infrared Sensor (TIRS) 1","TIRS 2"};
-            for (int i=0; i<wavelengths.length; i++) {
-                final DefaultBand band = new DefaultBand();
-                band.setPeakResponse(wavelengths[i]);
-                band.setDescription(new DefaultInternationalString(nameband[i]));
-                band.setUnits(Unit.valueOf("nm"));
-                attribute.getAttributes().add(band);
-            }
+        double[] wavelengths = {433, 482, 562, 655, 865, 1610, 2200, 590, 1375, 10800, 12000};
+        String[] nameband = {"Coastal Aerosol (Operational Land Imager (OLI))", "Blue (OLI)",
+                             "Green (OLI)", "Red (OLI)", "Near-Infrared (NIR) (OLI)",
+                             "Short Wavelength Infrared (SWIR) 1 (OLI)", "SWIR 2 (OLI)",
+                             "Panchromatic (OLI)", "Cirrus (OLI)", "Thermal Infrared Sensor (TIRS) 1", "TIRS 2"};
+        for (int i=0; i<wavelengths.length; i++) {
+            final DefaultBand band = new DefaultBand();
+            band.setPeakResponse(wavelengths[i]);
+            band.setDescription(new DefaultInternationalString(nameband[i]));
+            band.setUnits(Unit.valueOf("nm"));
+            attribute.getAttributes().add(band);
+        }
         return attribute;
     }
 
@@ -241,59 +229,56 @@ public class LandsatReader {
     }
 
    /**
-     * Returns the data acquisition {@link Date}.<br>
+     * Returns the data acquisition date and time.
+     * May return {@code null} if no date are specified in the metadata file.
      *
-     * May returns {@code null} if no date are stipulate from metadata file.
-     *
-     * @return the data acquisition {@link Date}.
-     * @throws ParseException if problem during Date parsing.
+     * @return the data acquisition date and time, or {@code null} if none.
+     * @throws ParseException if the date can not be parsed.
      */
     private Date getAcquisitionDate() throws ParseException {
-        final String dateAcquired  = getValue("DATE_ACQUIRED");
-        if (dateAcquired == null)
-            return null;
-        //-- hh mm ss:ms
-        final String sceneCenterTime = getValue("SCENE_CENTER_TIME");
-        String strDate = dateAcquired;
-        if (sceneCenterTime != null)
-            strDate = dateAcquired+"T"+sceneCenterTime;
-       SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.sssssss'Z'");
-       final Date date = formatter.parse(strDate);
-       return date;
-    }
-
-    /**
-     * Gets the date when the metadata file for the L1G product set was created.
-     *
-     * @return the date the image was acquired.
-     * @throws ParseException returns the position where the error was found. if
-     * the error was found..
-     */
-    private Date getDates() throws ParseException {
-        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
-        final String dateInString = getValue("FILE_DATE");
-        final Date date = formatter.parse(dateInString);
-        if (dateInString == null) {
+        String dateAcquired = getValue("DATE_ACQUIRED");
+        if (dateAcquired == null) {
             return null;
         }
+        //-- hh mm ss:ms
+        final String sceneCenterTime = getValue("SCENE_CENTER_TIME");
+        if (sceneCenterTime != null) {
+            dateAcquired += 'T' + sceneCenterTime;
+        }
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.sssssss'Z'");
+        final Date date = formatter.parse(dateAcquired);
         return date;
     }
 
     /**
-     * Gets the data bounding box in degrees of longitude and latitude, or
-     * {@code null} if none.
+     * Gets the date when the metadata file for the Landsat product set was created.
      *
-     * @return the data domain in degrees of longitude and latitude, or
-     * {@code null} if none.
+     * @return the date the metadata file has been created, or {@code null} if none.
+     * @throws ParseException if the date can not be parsed.
+     */
+    private Date getDates() throws ParseException {
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+        final String dateInString = getValue("FILE_DATE");
+        if (dateInString == null) {
+            return null;
+        }
+        final Date date = formatter.parse(dateInString);
+        return date;
+    }
+
+    /**
+     * Gets the data bounding box in degrees of longitude and latitude, or {@code null} if none.
+     *
+     * @return the data domain in degrees of longitude and latitude, or {@code null} if none.
      * @throws DataStoreException if a longitude or a latitude can not be read.
      */
     private GeographicBoundingBox getGeographicBoundingBox() throws DataStoreException {
         final DefaultGeographicBoundingBox bbox;
         try {
             bbox = new DefaultGeographicBoundingBox(
-                    getExtremumValue("CORNER_UL_LON_PRODUCT", "CORNER_LL_LON_PRODUCT", false), // westBoundLongitude
-                    getExtremumValue("CORNER_UR_LON_PRODUCT", "CORNER_LR_LON_PRODUCT", true), // eastBoundLongitude
-                    getExtremumValue("CORNER_LL_LAT_PRODUCT", "CORNER_LR_LAT_PRODUCT", false), // southBoundLatitude
+                    getExtremumValue("CORNER_UL_LON_PRODUCT", "CORNER_LL_LON_PRODUCT", false),      // westBoundLongitude
+                    getExtremumValue("CORNER_UR_LON_PRODUCT", "CORNER_LR_LON_PRODUCT", true),       // eastBoundLongitude
+                    getExtremumValue("CORNER_LL_LAT_PRODUCT", "CORNER_LR_LAT_PRODUCT", false),      // southBoundLatitude
                     getExtremumValue("CORNER_UL_LAT_PRODUCT", "CORNER_UR_LAT_PRODUCT", true));      // northBoundLatitude
         } catch (NumberFormatException e) {
             throw new DataStoreException("Can not read the geographic bounding box.", e);
@@ -307,7 +292,6 @@ public class LandsatReader {
      * @return the data extent in Indentification infor {@code null} if none.
      * @throws DataStoreException if data can not be read.
      */
-
     private Extent getExtent() throws DataStoreException, ParseException, UnsupportedOperationException {
         DefaultExtent ex = new DefaultExtent();
         final GeographicBoundingBox box = getGeographicBoundingBox();
