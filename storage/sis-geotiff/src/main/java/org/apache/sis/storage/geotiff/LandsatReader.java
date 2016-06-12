@@ -49,8 +49,6 @@ import org.apache.sis.metadata.iso.extent.DefaultTemporalExtent;
 import org.apache.sis.metadata.iso.identification.AbstractIdentification;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.iso.DefaultInternationalString;
-import org.apache.sis.xml.XML;
-import org.opengis.metadata.Identifier;
 import org.opengis.metadata.Metadata;
 import org.opengis.metadata.acquisition.AcquisitionInformation;
 import org.opengis.metadata.citation.DateType;
@@ -73,11 +71,11 @@ public class LandsatReader {
      *
      * {
      *
-     * @preformat text 
-     * DATE_ACQUIRED = 2014-03-12 
-     * SCENE_CENTER_TIME =03:02:01.5339408Z 
+     * @preformat text
+     * DATE_ACQUIRED = 2014-03-12
+     * SCENE_CENTER_TIME =03:02:01.5339408Z
      * CORNER_UL_LAT_PRODUCT = 12.61111
-     * CORNER_UL_LON_PRODUCT= 108.33624 
+     * CORNER_UL_LON_PRODUCT= 108.33624
      * CORNER_UR_LAT_PRODUCT = 12.62381
      * CORNER_UR_LON_PRODUCT =110.44017 }
      */
@@ -309,7 +307,7 @@ public class LandsatReader {
      * @return the data extent in Indentification infor {@code null} if none.
      * @throws DataStoreException if data can not be read.
      */
-    
+
     private Extent getExtent() throws DataStoreException, ParseException, UnsupportedOperationException {
         DefaultExtent ex = new DefaultExtent();
         final GeographicBoundingBox box = getGeographicBoundingBox();
@@ -318,10 +316,10 @@ public class LandsatReader {
         final Date startTime  = getAcquisitionDate();
         if(startTime !=null ){
             final DefaultTemporalExtent t = new DefaultTemporalExtent();
-            t.setBounds(startTime, startTime);    
+            t.setBounds(startTime, startTime);
             ex.setTemporalElements(singleton(t));
        }
-        
+
         return ex;
     }
 
@@ -413,7 +411,7 @@ public class LandsatReader {
         final AcquisitionInformation Ai = getAcquisitionInformation();
         metadata.setAcquisitionInformation(Collections.singleton(Ai));
         return metadata;
-        
+
     }
 
     public static void main(String[] args) throws Exception {
@@ -423,6 +421,6 @@ public class LandsatReader {
         }
         System.out.println("The Metadata of LC81230522014071LGN00_MTL.txt is:");
         System.out.println(reader.read());
-        
+
     }
 }
