@@ -29,6 +29,7 @@ import org.apache.sis.util.logging.Logging;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.system.DelayedExecutor;
 import org.apache.sis.internal.system.DelayedRunnable;
+import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.jaxb.AdapterReplacement;
 import org.apache.sis.internal.jaxb.TypeRegistration;
 import org.apache.sis.util.ArgumentChecks;
@@ -57,7 +58,7 @@ import org.apache.sis.util.ArgumentChecks;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.3
+ * @version 0.8
  * @module
  *
  * @see XML
@@ -184,7 +185,7 @@ public class MarshallerPool {
     public MarshallerPool(final JAXBContext context, final Map<String,?> properties) throws JAXBException {
         ArgumentChecks.ensureNonNull("context", context);
         this.context = context;
-        replacements = ServiceLoader.load(AdapterReplacement.class);
+        replacements = DefaultFactories.createServiceLoader(AdapterReplacement.class);
         /*
          * Detects if we are using the endorsed JAXB implementation (i.e. the one provided in
          * separated JAR files) or the one bundled in JDK 6. We use the JAXB context package

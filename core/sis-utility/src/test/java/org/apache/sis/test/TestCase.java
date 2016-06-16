@@ -25,6 +25,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
+import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.logging.MonolineFormatter;
 import org.junit.runner.RunWith;
@@ -131,7 +132,7 @@ public abstract strictfp class TestCase {
      * The parent logger of all Apache SIS loggers.
      * Needs to be retained by strong reference.
      */
-    static final Logger LOGGER = Logger.getLogger("org.apache.sis");
+    static final Logger LOGGER = Logger.getLogger(Loggers.ROOT);
 
     /**
      * Initializes {@link MonolineFormatter} if it has been specified in the {@code logging.properties}
