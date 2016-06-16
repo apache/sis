@@ -111,7 +111,7 @@ public class ReferencingFunctions extends CalcAddins implements XReferencing {
     private IdentifiedObject getIdentifiedObject(final String codeOrPath, CodeType type)
             throws FactoryException, DataStoreException
     {
-        final CacheKey<IdentifiedObject> key = new CacheKey<>(IdentifiedObject.class, codeOrPath, null, null);
+        final CacheKey<IdentifiedObject> key = new CacheKey<IdentifiedObject>(IdentifiedObject.class, codeOrPath, null, null);
         IdentifiedObject object = key.peek();
         if (object == null) {
             final Cache.Handler<IdentifiedObject> handler = key.lock();
@@ -131,8 +131,11 @@ public class ReferencingFunctions extends CalcAddins implements XReferencing {
                          * Try to read a dataset from a file or URL, then get its CRS.
                          */
                         final Metadata metadata;
-                        try (DataStore store = DataStores.open(codeOrPath)) {
+                        final DataStore store = DataStores.open(codeOrPath);
+                        try {
                             metadata = store.getMetadata();
+                        } finally {
+                            store.close();
                         }
                         if (metadata != null) {
                             for (final ReferenceSystem rs : metadata.getReferenceSystemInfo()) {
@@ -168,7 +171,7 @@ public class ReferencingFunctions extends CalcAddins implements XReferencing {
             final IdentifiedObject object;
             final CodeType type = CodeType.guess(codeOrPath);
             if (type.isCRS) {
-                object = new CacheKey<>(IdentifiedObject.class, codeOrPath, null, null).peek();
+                object = new CacheKey<IdentifiedObject>(IdentifiedObject.class, codeOrPath, null, null).peek();
             } else {
                 object = getIdentifiedObject(codeOrPath, type);
             }
@@ -194,7 +197,7 @@ public class ReferencingFunctions extends CalcAddins implements XReferencing {
      */
     @Override
     public String getAxis(final String codeOrPath, final int dimension) {
-        final CacheKey<String> key = new CacheKey<>(String.class, codeOrPath, dimension, null);
+        final CacheKey<String> key = new CacheKey<String>(String.class, codeOrPath, dimension, null);
         String name = key.peek();
         if (name == null) {
             final Cache.Handler<String> handler = key.lock();
@@ -257,7 +260,7 @@ public class ReferencingFunctions extends CalcAddins implements XReferencing {
      */
     @Override
     public double[][] getGeographicArea(final String codeOrPath) {
-        final CacheKey<GeographicBoundingBox> key = new CacheKey<>(GeographicBoundingBox.class, codeOrPath, null, null);
+        final CacheKey<GeographicBoundingBox> key = new CacheKey<GeographicBoundingBox>(GeographicBoundingBox.class, codeOrPath, null, null);
         GeographicBoundingBox area = key.peek();
         if (area == null) {
             final Cache.Handler<GeographicBoundingBox> handler = key.lock();

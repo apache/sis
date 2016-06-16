@@ -108,7 +108,7 @@ final class Transformer {
          * Get the coordinate operation from the cache if possible, or compute it otherwise.
          */
         final boolean hasAreaOfInterest = hasAreaOfInterest();
-        final CacheKey<CoordinateOperation> key = new CacheKey<>(CoordinateOperation.class, targetCRS, sourceCRS,
+        final CacheKey<CoordinateOperation> key = new CacheKey<CoordinateOperation>(CoordinateOperation.class, targetCRS, sourceCRS,
                 hasAreaOfInterest ? new double[] {westBoundLongitude, eastBoundLongitude,
                                                   southBoundLatitude, northBoundLatitude} : null);
         operation = key.peek();
