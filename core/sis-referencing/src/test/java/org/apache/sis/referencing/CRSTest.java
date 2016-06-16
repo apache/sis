@@ -20,6 +20,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.GeodeticCRS;
 import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.util.FactoryException;
+import org.opengis.util.NoSuchIdentifierException;
 import org.apache.sis.referencing.crs.DefaultCompoundCRS;
 import org.apache.sis.referencing.crs.DefaultGeographicCRS;
 import org.apache.sis.referencing.crs.HardCodedCRS;
@@ -40,7 +41,7 @@ import static org.apache.sis.test.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.7
+ * @version 0.8
  * @module
  */
 @DependsOn({
@@ -103,6 +104,21 @@ public final strictfp class CRSTest extends TestCase {
         verifyForCode(CommonCRS.NAD27.normalizedGeographic(), "CRS:27");
         verifyForCode(CommonCRS.WGS84.normalizedGeographic(), "http://www.opengis.net/gml/srs/crs.xml#84");
         verifyForCode(CommonCRS.NAD83.normalizedGeographic(), "http://www.opengis.net/gml/srs/crs.xml#83");
+    }
+
+    /**
+     * Test {@link CRS#forCode(String)} with values that should be invalid.
+     *
+     * @throws FactoryException if an error other than {@link NoSuchIdentifierException} happened.
+     */
+    @Test
+    public void testForInvalidCode() throws FactoryException {
+        try {
+            CRS.forCode("EPSG:4");
+            fail("Should not find EPSG:4");
+        } catch (NoSuchIdentifierException e) {
+            assertEquals("4", e.getIdentifierCode());
+        }
     }
 
     /**

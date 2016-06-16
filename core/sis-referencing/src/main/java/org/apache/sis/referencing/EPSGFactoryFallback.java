@@ -22,6 +22,12 @@ import java.util.LinkedHashSet;
 import java.util.Locale;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
+import org.opengis.referencing.datum.DatumAuthorityFactory;
+import org.opengis.referencing.datum.PrimeMeridian;
+import org.opengis.referencing.datum.Ellipsoid;
+import org.opengis.referencing.datum.Datum;
+import org.opengis.referencing.datum.GeodeticDatum;
+import org.opengis.referencing.datum.VerticalDatum;
 import org.opengis.referencing.crs.GeocentricCRS;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.ProjectedCRS;
@@ -49,11 +55,11 @@ import org.apache.sis.util.Debug;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.7
- * @version 0.7
+ * @version 0.8
  * @module
  */
 @Fallback
-final class EPSGFactoryFallback extends GeodeticAuthorityFactory implements CRSAuthorityFactory {
+final class EPSGFactoryFallback extends GeodeticAuthorityFactory implements CRSAuthorityFactory, DatumAuthorityFactory {
     /**
      * Whether to disallow {@code CommonCRS} to use {@link org.apache.sis.referencing.factory.sql.EPSGFactory}
      * (in which case {@code CommonCRS} will fallback on hard-coded values).
@@ -65,7 +71,12 @@ final class EPSGFactoryFallback extends GeodeticAuthorityFactory implements CRSA
     /**
      * The singleton instance.
      */
-    static final CRSAuthorityFactory INSTANCE = new EPSGFactoryFallback();
+    static final EPSGFactoryFallback INSTANCE = new EPSGFactoryFallback();
+
+    /**
+     * Kinds of object created by this factory. Used as bitmask.
+     */
+    private static final int CRS = 1, DATUM = 2, ELLIPSOID = 4, PRIME_MERIDIAN = 8;
 
     /**
      * The authority, created when first needed.
@@ -107,17 +118,21 @@ final class EPSGFactoryFallback extends GeodeticAuthorityFactory implements CRSA
      */
     @Override
     public Set<String> getAuthorityCodes(Class<? extends IdentifiedObject> type) {
+        final boolean pm         = type.isAssignableFrom(PrimeMeridian.class);
+        final boolean ellipsoid  = type.isAssignableFrom(Ellipsoid    .class);
+        final boolean datum      = type.isAssignableFrom(GeodeticDatum.class);
         final boolean geographic = type.isAssignableFrom(GeographicCRS.class);
         final boolean geocentric = type.isAssignableFrom(GeocentricCRS.class);
         final boolean projected  = type.isAssignableFrom(ProjectedCRS .class);
         final Set<String> codes = new LinkedHashSet<>();
+        if (pm) codes.add(StandardDefinitions.GREENWICH);
         for (final CommonCRS crs : CommonCRS.values()) {
+            if (ellipsoid)  add(codes, crs.ellipsoid);
+            if (datum)      add(codes, crs.datum);
+            if (geocentric) add(codes, crs.geocentric);
             if (geographic) {
                 add(codes, crs.geographic);
                 add(codes, crs.geo3D);
-            }
-            if (geocentric) {
-                add(codes, crs.geocentric);
             }
             if (projected && (crs.northUTM != 0 || crs.southUTM != 0)) {
                 for (int zone = crs.firstZone; zone <= crs.lastZone; zone++) {
@@ -126,10 +141,13 @@ final class EPSGFactoryFallback extends GeodeticAuthorityFactory implements CRSA
                 }
             }
         }
-        if (type.isAssignableFrom(VerticalCRS.class)) {
+        final boolean vertical = type.isAssignableFrom(VerticalCRS  .class);
+        final boolean vdatum   = type.isAssignableFrom(VerticalDatum.class);
+        if (vertical || vdatum) {
             for (final CommonCRS.Vertical candidate : CommonCRS.Vertical.values()) {
                 if (candidate.isEPSG) {
-                    codes.add(Integer.toString(candidate.crs));
+                    if (vertical) codes.add(Integer.toString(candidate.crs));
+                    if (vdatum)   codes.add(Integer.toString(candidate.datum));
                 }
             }
         }
@@ -147,11 +165,55 @@ final class EPSGFactoryFallback extends GeodeticAuthorityFactory implements CRSA
     }
 
     /**
+     * Returns a prime meridian for the given EPSG code.
+     */
+    @Override
+    public PrimeMeridian createPrimeMeridian(final String code) throws NoSuchAuthorityCodeException {
+        return (PrimeMeridian) predefined(code, PRIME_MERIDIAN);
+    }
+
+    /**
+     * Returns an ellipsoid for the given EPSG code.
+     */
+    @Override
+    public Ellipsoid createEllipsoid(final String code) throws NoSuchAuthorityCodeException {
+        return (Ellipsoid) predefined(code, ELLIPSOID);
+    }
+
+    /**
+     * Returns a datum for the given EPSG code.
+     */
+    @Override
+    public Datum createDatum(final String code) throws NoSuchAuthorityCodeException {
+        return (Datum) predefined(code, DATUM);
+    }
+
+    /**
      * Returns a coordinate reference system for the given EPSG code. This method is invoked
      * as a fallback when {@link CRS#forCode(String)} can not create a CRS for a given code.
      */
     @Override
+    public CoordinateReferenceSystem createCoordinateReferenceSystem(final String code) throws NoSuchAuthorityCodeException {
+        return (CoordinateReferenceSystem) predefined(code, CRS);
+    }
+
+    /**
+     * Returns a coordinate reference system, datum or ellipsoid for the given EPSG code.
+     */
+    @Override
     public IdentifiedObject createObject(final String code) throws NoSuchAuthorityCodeException {
+        return predefined(code, -1);
+    }
+
+    /**
+     * Implementation of the {@code createFoo(String)} methods.
+     *
+     * @param  code  the EPSG code.
+     * @param  kind  any combination of {@link #CRS}, {@link #DATUM}, {@link #ELLIPSOID} or {@link #PRIME_MERIDIAN} bits.
+     * @return the requested object.
+     * @throws NoSuchAuthorityCodeException if no matching object has been found.
+     */
+    private IdentifiedObject predefined(final String code, final int kind) throws NoSuchAuthorityCodeException {
         NumberFormatException cause = null;
         try {
             /*
@@ -164,32 +226,55 @@ final class EPSGFactoryFallback extends GeodeticAuthorityFactory implements CRSA
             final int n = Integer.parseInt(CharSequences.trimWhitespaces(code,
                             code.lastIndexOf(DefaultNameSpace.DEFAULT_SEPARATOR) + 1,
                             code.length()).toString());
-            for (final CommonCRS crs : CommonCRS.values()) {
-                if (n == crs.geographic) return crs.geographic();
-                if (n == crs.geocentric) return crs.geocentric();
-                if (n == crs.geo3D)      return crs.geographic3D();
-                final double latitude;
-                int zone;
-                if (crs.northUTM != 0 && (zone = n - crs.northUTM) >= crs.firstZone && zone <= crs.lastZone) {
-                    latitude = +1;
-                } else if (crs.southUTM != 0 && (zone = n - crs.southUTM) >= crs.firstZone && zone <= crs.lastZone) {
-                    latitude = -1;
-                } else {
-                    continue;
-                }
-                return crs.UTM(latitude, TransverseMercator.centralMeridian(zone));
+            if ((kind & PRIME_MERIDIAN) != 0  &&  n == 8901) {
+                return CommonCRS.WGS84.primeMeridian();
             }
-            for (final CommonCRS.Vertical candidate : CommonCRS.Vertical.values()) {
-                if (candidate.isEPSG && candidate.crs == n) {
-                    return candidate.crs();
+            for (final CommonCRS crs : CommonCRS.values()) {
+                /*
+                 * In a complete EPSG dataset we could have an ambiguity below because the same code can be used
+                 * for datum, ellipsoid and CRS objects. However in the particular case of this EPSG-subset, we
+                 * ensured that there is no such collision - see CommonCRSTest.ensureNoCodeCollision().
+                 */
+                if ((kind & ELLIPSOID) != 0  &&  n == crs.ellipsoid) return crs.ellipsoid();
+                if ((kind & DATUM)     != 0  &&  n == crs.datum)     return crs.datum();
+                if ((kind & CRS) != 0) {
+                    if (n == crs.geographic) return crs.geographic();
+                    if (n == crs.geocentric) return crs.geocentric();
+                    if (n == crs.geo3D)      return crs.geographic3D();
+                    final double latitude;
+                    int zone;
+                    if (crs.northUTM != 0 && (zone = n - crs.northUTM) >= crs.firstZone && zone <= crs.lastZone) {
+                        latitude = +1;
+                    } else if (crs.southUTM != 0 && (zone = n - crs.southUTM) >= crs.firstZone && zone <= crs.lastZone) {
+                        latitude = -1;
+                    } else {
+                        continue;
+                    }
+                    return crs.UTM(latitude, TransverseMercator.centralMeridian(zone));
+                }
+            }
+            if ((kind & (DATUM | CRS)) != 0) {
+                for (final CommonCRS.Vertical candidate : CommonCRS.Vertical.values()) {
+                    if (candidate.isEPSG) {
+                        if ((kind & DATUM) != 0  &&  candidate.datum == n) return candidate.datum();
+                        if ((kind & CRS)   != 0  &&  candidate.crs   == n) return candidate.crs();
+                    }
                 }
             }
         } catch (NumberFormatException e) {
             cause = e;
         }
-        final String authority = Constants.EPSG + " subset";
+        final Class<?> type;
+        switch (kind) {
+            case CRS:            type = CoordinateReferenceSystem.class; break;
+            case DATUM:          type = Datum.class; break;
+            case ELLIPSOID:      type = Ellipsoid.class; break;
+            case PRIME_MERIDIAN: type = PrimeMeridian.class; break;
+            default:             type = IdentifiedObject.class; break;
+        }
+        final String authority = Constants.EPSG + "-subset";
         final NoSuchAuthorityCodeException e = new NoSuchAuthorityCodeException(Errors.format(
-                Errors.Keys.NoSuchAuthorityCode_3, authority, CoordinateReferenceSystem.class, code), authority, code);
+                Errors.Keys.NoSuchAuthorityCode_3, authority, type, code), authority, code);
         e.initCause(cause);
         throw e;
     }

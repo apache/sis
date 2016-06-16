@@ -17,7 +17,6 @@
 package org.apache.sis.referencing.factory.sql;
 
 import java.util.Locale;
-import java.util.ServiceLoader;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -32,6 +31,7 @@ import java.io.BufferedReader;
 import org.apache.sis.util.StringBuilders;
 import org.apache.sis.internal.metadata.sql.ScriptRunner;
 import org.apache.sis.internal.metadata.sql.SQLUtilities;
+import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.util.Fallback;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Exceptions;
@@ -52,7 +52,7 @@ import org.apache.sis.internal.jdk8.BiFunction;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.7
- * @version 0.7
+ * @version 0.8
  * @module
  */
 final class EPSGInstaller extends ScriptRunner {
@@ -275,7 +275,7 @@ final class EPSGInstaller extends ScriptRunner {
      */
     private static InstallationResources lookupProvider(final Locale locale) throws IOException {
         InstallationResources fallback = null;
-        for (final InstallationResources provider : ServiceLoader.load(InstallationResources.class)) {
+        for (final InstallationResources provider : DefaultFactories.createServiceLoader(InstallationResources.class)) {
             if (provider.getAuthorities().contains(EPSG)) {
                 if (provider.getClass().isAnnotationPresent(Fallback.class)) {
                     return provider;

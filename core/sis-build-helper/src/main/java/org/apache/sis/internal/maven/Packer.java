@@ -40,9 +40,9 @@ import static org.apache.sis.internal.maven.Filenames.*;
  */
 final class Packer implements FilenameFilter {
     /**
-     * The project name, URL and version to declare in the manifest file, or {@code null} if none.
+     * The project name and version to declare in the manifest file, or {@code null} if none.
      */
-    private final String projectName, projectURL, version;
+    private final String projectName, version;
 
     /**
      * The Maven target directory. Shall contain the {@code "binaries"} sub-directory,
@@ -59,16 +59,12 @@ final class Packer implements FilenameFilter {
      * Creates a packer.
      *
      * @param  projectName     The project name to declare in the manifest file, or {@code null} if none.
-     * @param  projectURL      The project URL to declare in the manifest file, or {@code null} if none.
      * @param  version         The project version to declare in the manifest file, or {@code null} if none.
      * @param  targetDirectory The Maven target directory.
      * @throws FileNotFoundException if the {@code target/binaries} directory is not found.
      */
-    Packer(final String projectName, final String projectURL, final String version,
-           final File targetDirectory) throws FileNotFoundException
-    {
+    Packer(final String projectName, final String version, final File targetDirectory) throws FileNotFoundException {
         this.projectName = projectName;
-        this.projectURL  = projectURL;
         this.version     = version;
         this.targetDirectory = targetDirectory;
         this.binariesDirectory = new File(targetDirectory, BINARIES_DIRECTORY);
@@ -130,7 +126,7 @@ final class Packer implements FilenameFilter {
         final File outDirectory = distributionDirectory(targetDirectory);
         final PackOutput output = new PackOutput(getInputJARs(), new File(outDirectory, outputJAR));
         try {
-            output.open(projectName, projectURL, version);
+            output.open(projectName, version);
             output.writeContent();
         } finally {
             output.close();
