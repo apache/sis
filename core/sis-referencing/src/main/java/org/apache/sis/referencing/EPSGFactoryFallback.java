@@ -213,7 +213,7 @@ final class EPSGFactoryFallback extends GeodeticAuthorityFactory implements CRSA
      * @return the requested object.
      * @throws NoSuchAuthorityCodeException if no matching object has been found.
      */
-    private IdentifiedObject predefined(final String code, final int kind) throws NoSuchAuthorityCodeException {
+    private IdentifiedObject predefined(String code, final int kind) throws NoSuchAuthorityCodeException {
         NumberFormatException cause = null;
         try {
             /*
@@ -223,9 +223,8 @@ final class EPSGFactoryFallback extends GeodeticAuthorityFactory implements CRSA
              * is used directly (not through MultiAuthoritiesFactory), which should be rare. The main case is
              * when using the factory returned by AuthorityFactories.fallback(…).
              */
-            final int n = Integer.parseInt(CharSequences.trimWhitespaces(code,
-                            code.lastIndexOf(DefaultNameSpace.DEFAULT_SEPARATOR) + 1,
-                            code.length()).toString());
+            code = CharSequences.trimWhitespaces(code, code.lastIndexOf(DefaultNameSpace.DEFAULT_SEPARATOR) + 1, code.length()).toString();
+            final int n = Integer.parseInt(code);
             if ((kind & PRIME_MERIDIAN) != 0  &&  n == 8901) {
                 return CommonCRS.WGS84.primeMeridian();
             }
