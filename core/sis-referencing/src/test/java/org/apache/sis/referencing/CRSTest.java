@@ -16,11 +16,11 @@
  */
 package org.apache.sis.referencing;
 
+import org.opengis.util.FactoryException;
+import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.GeodeticCRS;
 import org.opengis.referencing.crs.SingleCRS;
-import org.opengis.util.FactoryException;
-import org.opengis.util.NoSuchIdentifierException;
 import org.apache.sis.referencing.crs.DefaultCompoundCRS;
 import org.apache.sis.referencing.crs.DefaultGeographicCRS;
 import org.apache.sis.referencing.crs.HardCodedCRS;
@@ -109,15 +109,15 @@ public final strictfp class CRSTest extends TestCase {
     /**
      * Test {@link CRS#forCode(String)} with values that should be invalid.
      *
-     * @throws FactoryException if an error other than {@link NoSuchIdentifierException} happened.
+     * @throws FactoryException if an error other than {@link NoSuchAuthorityCodeException} happened.
      */
     @Test
     public void testForInvalidCode() throws FactoryException {
         try {
             CRS.forCode("EPSG:4");
             fail("Should not find EPSG:4");
-        } catch (NoSuchIdentifierException e) {
-            assertEquals("4", e.getIdentifierCode());
+        } catch (NoSuchAuthorityCodeException e) {
+            assertEquals("4", e.getAuthorityCode());
         }
     }
 
