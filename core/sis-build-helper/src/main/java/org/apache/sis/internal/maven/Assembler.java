@@ -91,7 +91,7 @@ public class Assembler extends AbstractMojo implements FilenameFilter {
                  * have been zipped.  Now generate the Pack200 file and zip it directly (without creating
                  * a temporary "sis.pack.gz" file).
                  */
-                final Packer packer = new Packer(project.getName(), project.getUrl(), version, targetDirectory);
+                final Packer packer = new Packer(project.getName(), version, targetDirectory);
                 final ZipArchiveEntry entry = new ZipArchiveEntry(
                         artifactBase + '/' + LIB_DIRECTORY + '/' + FATJAR_FILE + PACK_EXTENSION);
                 entry.setMethod(ZipArchiveEntry.STORED);

@@ -25,6 +25,7 @@ import org.apache.sis.util.Configuration;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.Classes;
+import org.apache.sis.internal.system.Modules;
 
 
 /**
@@ -85,6 +86,12 @@ public final class Logging extends Static {
      */
     private static volatile LoggerFactory<?> factory;
     static {
+        /*
+         * Use ServiceLoader.load(…), not DefaultFactories.createServiceLoader(…), for avoiding a never-ending
+         * loop if a warning occurs in DefaultFactories. This risk exists because DefaultFactories may use the
+         * logging services. Anyway, Apache SIS does not define any custom logger factory, so DefaultFactories
+         * is not needed in this case.
+         */
         LoggerFactory<?> factory = null;
         for (final LoggerFactory<?> found : ServiceLoader.load(LoggerFactory.class)) {
             if (factory == null) {
@@ -170,8 +177,9 @@ public final class Logging extends Static {
         String name = classe.getName();
         final int separator = name.lastIndexOf('.');
         name = (separator >= 1) ? name.substring(0, separator) : "";
-        if (name.startsWith("org.apache.sis.internal.")) {
-            name = "org.apache.sis" + name.substring(23);       // Remove the "internal" part from SIS package name.
+        if (name.startsWith(Modules.INTERNAL_CLASSNAME_PREFIX)) {
+            // Remove the "internal" part from Apache SIS package names.
+            name = Modules.CLASSNAME_PREFIX + name.substring(Modules.INTERNAL_CLASSNAME_PREFIX.length());
         }
         return getLogger(name);
     }
