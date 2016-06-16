@@ -21,7 +21,7 @@ import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
-import static org.apache.sis.test.Assert.*;
+import static org.junit.Assert.*;
 
 
 /**
@@ -35,20 +35,20 @@ import static org.apache.sis.test.Assert.*;
 @DependsOn(CommandRunnerTest.class)
 public final strictfp class CRSCommandTest extends TestCase {
     /**
-     * The Well Known Text for EPSG:4326.
+     * The Well Known Text for EPSG:4326 as a regular expression.
      */
     private static final String WGS84 =
-            "GeodeticCRS[\"WGS 84\",\n" +
+            "\\QGeodeticCRS[\"WGS 84\",\n" +
             "  Datum[\"World Geodetic System 1984\",\n" +
             "    Ellipsoid[\"WGS 84\", 6378137.0, 298.257223563]],\n" +
             "  CS[ellipsoidal, 2],\n" +
             "    Axis[\"Latitude (B)\", north],\n" +
             "    Axis[\"Longitude (L)\", east],\n" +
             "    Unit[\"degree\", 0.017453292519943295],\n" +
-            "  Scope[\"Horizontal component of 3D system. Used by the GPS satellite navigation system and for NATO military geodetic surveying.\"],\n" +
-            "  Area[\"World.\"],\n" +
+            "  Scope[\"Horizontal component of 3D system.\\E.*\\Q\"],\n" +                      // EPSG geodetic dataset provides more details here.
+            "  Area[\"\\E.*\\Q\"],\n" +                                                         // Language may vary because of SIS localization.
             "  BBox[-90.00, -180.00, 90.00, 180.00],\n" +
-            "  Id[\"EPSG\", 4326, \"8.9\", URI[\"urn:ogc:def:crs:EPSG:8.9:4326\"]]]\n";
+            "  Id[\"EPSG\", 4326,\\E.*\\Q URI[\"urn:ogc:def:crs:EPSG:\\E.*\\Q:4326\"]]]\n\\E";  // Version number of EPSG dataset may vary.
 
     /**
      * Tests fetching the CRS from a simple code ({@code "EPSG:4326"}).
@@ -59,7 +59,8 @@ public final strictfp class CRSCommandTest extends TestCase {
     public void testCode() throws Exception {
         final CRSCommand test = new CRSCommand(0, CommandRunner.TEST, "EPSG:4326");
         test.run();
-        assertMultilinesEquals(WGS84, test.outputBuffer.toString());
+        final String wkt = test.outputBuffer.toString();
+        assertTrue(wkt, wkt.matches(WGS84));
     }
 
     /**
@@ -72,7 +73,8 @@ public final strictfp class CRSCommandTest extends TestCase {
     public void testURN() throws Exception {
         final CRSCommand test = new CRSCommand(0, CommandRunner.TEST, "urn:ogc:def:crs:epsg::4326");
         test.run();
-        assertMultilinesEquals(WGS84, test.outputBuffer.toString());
+        final String wkt = test.outputBuffer.toString();
+        assertTrue(wkt, wkt.matches(WGS84));
     }
 
     /**
@@ -85,6 +87,7 @@ public final strictfp class CRSCommandTest extends TestCase {
     public void testHTTP() throws Exception {
         final CRSCommand test = new CRSCommand(0, CommandRunner.TEST, "http://www.opengis.net/gml/srs/epsg.xml#4326");
         test.run();
-        assertMultilinesEquals(WGS84, test.outputBuffer.toString());
+        final String wkt = test.outputBuffer.toString();
+        assertTrue(wkt, wkt.matches(WGS84));
     }
 }
