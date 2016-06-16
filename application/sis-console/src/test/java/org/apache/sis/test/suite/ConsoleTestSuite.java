@@ -26,7 +26,7 @@ import org.junit.BeforeClass;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.4
+ * @version 0.8
  * @module
  */
 @Suite.SuiteClasses({
@@ -34,7 +34,8 @@ import org.junit.BeforeClass;
     org.apache.sis.console.HelpCommandTest.class,
     org.apache.sis.console.AboutCommandTest.class,
     org.apache.sis.console.MimeTypeCommandTest.class,
-    org.apache.sis.console.MetadataCommandTest.class
+    org.apache.sis.console.MetadataCommandTest.class,
+    org.apache.sis.console.CRSCommandTest.class
 })
 public final strictfp class ConsoleTestSuite extends TestSuite {
     /**

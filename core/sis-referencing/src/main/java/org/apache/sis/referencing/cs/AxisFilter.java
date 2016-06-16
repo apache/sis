@@ -83,15 +83,6 @@ public interface AxisFilter {
     AxisDirection getDirectionReplacement(CoordinateSystemAxis axis, AxisDirection direction);
 
     /**
-     * @deprecated Use {@link #getDirectionReplacement(CoordinateSystemAxis, AxisDirection)} instead.
-     *
-     * @param  direction The original axis direction.
-     * @return The new axis direction, or {@code direction} if there is no change.
-     */
-    @Deprecated
-    AxisDirection getDirectionReplacement(AxisDirection direction);
-
-    /**
      * Returns a replacement for the given axis unit.
      *
      * <div class="note"><b>Example:</b>
@@ -116,13 +107,4 @@ public interface AxisFilter {
      * @since 0.7
      */
     Unit<?> getUnitReplacement(CoordinateSystemAxis axis, Unit<?> unit);
-
-    /**
-     * @deprecated Use {@link #getUnitReplacement(CoordinateSystemAxis, Unit)} instead.
-     *
-     * @param  unit The original axis unit.
-     * @return The new axis unit, or {@code unit} if there is no change.
-     */
-    @Deprecated
-    Unit<?> getUnitReplacement(Unit<?> unit);
 }
