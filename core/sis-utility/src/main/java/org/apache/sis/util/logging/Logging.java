@@ -25,6 +25,7 @@ import org.apache.sis.util.Configuration;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.Classes;
+import org.apache.sis.internal.system.Modules;
 
 
 /**
@@ -85,6 +86,12 @@ public final class Logging extends Static {
      */
     private static volatile LoggerFactory<?> factory;
     static {
+        /*
+         * Use ServiceLoader.load(…), not DefaultFactories.createServiceLoader(…), for avoiding a never-ending
+         * loop if a warning occurs in DefaultFactories. This risk exists because DefaultFactories may use the
+         * logging services. Anyway, Apache SIS does not define any custom logger factory, so DefaultFactories
+         * is not needed in this case.
+         */
         LoggerFactory<?> factory = null;
         for (final LoggerFactory<?> found : ServiceLoader.load(LoggerFactory.class)) {
             if (factory == null) {
@@ -170,8 +177,9 @@ public final class Logging extends Static {
         String name = classe.getName();
         final int separator = name.lastIndexOf('.');
         name = (separator >= 1) ? name.substring(0, separator) : "";
-        if (name.startsWith("org.apache.sis.internal.")) {
-            name = "org.apache.sis" + name.substring(23);       // Remove the "internal" part from SIS package name.
+        if (name.startsWith(Modules.INTERNAL_CLASSNAME_PREFIX)) {
+            // Remove the "internal" part from Apache SIS package names.
+            name = Modules.CLASSNAME_PREFIX + name.substring(Modules.INTERNAL_CLASSNAME_PREFIX.length());
         }
         return getLogger(name);
     }
@@ -208,24 +216,6 @@ public final class Logging extends Static {
             logger = getLogger(loggerName);
         }
         logger.log(record);
-    }
-
-    /**
-     * Invoked when an unexpected error occurred. This method logs a message at {@link Level#WARNING} to the
-     * specified logger. The originating class name and method name are inferred from the error stack trace,
-     * using the first {@linkplain StackTraceElement stack trace element} for which the class name is inside
-     * a package or sub-package of the logger name.
-     *
-     * @param  logger Where to log the error, or {@code null} for inferring a default value from other arguments.
-     * @param  error  The error that occurred, or {@code null} if none.
-     * @return {@code true} if the error has been logged, or {@code false} if the given {@code error}
-     *         was null or if the logger does not log anything at {@link Level#WARNING}.
-     *
-     * @deprecated Use {@link #unexpectedException(Logger, Class, String, Throwable)} instead.
-     */
-    @Deprecated
-    public static boolean unexpectedException(final Logger logger, final Throwable error) {
-        return unexpectedException(logger, null, null, error, Level.WARNING);
     }
 
     /**

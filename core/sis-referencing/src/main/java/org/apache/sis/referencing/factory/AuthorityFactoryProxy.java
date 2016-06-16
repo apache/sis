@@ -182,6 +182,9 @@ abstract class AuthorityFactoryProxy<T> {
             @Override InternationalString createFromAPI(AuthorityFactory factory, String code) throws FactoryException {
                 return factory.getDescriptionText(code);
             }
+            @Override AuthorityFactoryProxy<InternationalString> specialize(String typeName) {
+                return this;
+            }
     };
 
     /**

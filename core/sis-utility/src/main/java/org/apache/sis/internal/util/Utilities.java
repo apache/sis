@@ -28,7 +28,7 @@ import org.apache.sis.util.CharSequences;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.6
+ * @version 0.8
  * @module
  */
 public final class Utilities extends Static {
@@ -36,16 +36,6 @@ public final class Utilities extends Static {
      * Do not allow instantiation of this class.
      */
     private Utilities() {
-    }
-
-    /**
-     * Returns {@code true} if the given class is an Apache SIS class.
-     *
-     * @param  type The class to verify.
-     * @return {@code true} if the given class is an Apache SIS class.
-     */
-    public static boolean isSIS(final Class<?> type) {
-        return type.getName().startsWith("org.apache.sis.");
     }
 
     /**

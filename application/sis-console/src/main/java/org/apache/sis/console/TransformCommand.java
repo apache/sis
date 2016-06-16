@@ -53,6 +53,7 @@ import org.apache.sis.geometry.ImmutableEnvelope;
 import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.internal.referencing.DirectPositionView;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
+import org.apache.sis.internal.storage.CodeType;
 import org.apache.sis.internal.util.PatchedUnitFormat;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.CRS;
@@ -164,7 +165,7 @@ final class TransformCommand extends MetadataCommand {
             final String name = option.label();
             throw new InvalidOptionException(Errors.format(Errors.Keys.MissingValueForOption_1, name), name);
         }
-        if (isAuthorityCode(identifier)) try {
+        if (CodeType.guess(identifier).isCRS) try {
             return CRS.forCode(identifier);
         } catch (NoSuchAuthorityCodeException e) {
             final String name = option.label();

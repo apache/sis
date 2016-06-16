@@ -125,7 +125,7 @@ public final class DefinitionURI {
     /**
      * The domain of URLs in the OGC namespace.
      */
-    private static final String DOMAIN = "www.opengis.net";
+    public static final String DOMAIN = "www.opengis.net";
 
     /**
      * Server and path portions of HTTP URL for various types (currently {@code "crs"}).

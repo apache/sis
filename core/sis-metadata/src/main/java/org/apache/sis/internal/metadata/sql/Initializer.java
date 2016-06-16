@@ -19,7 +19,6 @@ package org.apache.sis.internal.metadata.sql;
 import java.util.Locale;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.ServiceLoader;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.security.AccessController;
@@ -37,6 +36,7 @@ import javax.naming.event.EventContext;
 import javax.naming.event.NamingEvent;
 import javax.naming.event.NamingExceptionEvent;
 import javax.naming.event.ObjectChangeListener;
+import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.system.DataDirectory;
 import org.apache.sis.internal.system.Shutdown;
 import org.apache.sis.internal.system.Loggers;
@@ -61,7 +61,7 @@ import org.apache.sis.internal.jdk7.Paths;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.7
- * @version 0.7
+ * @version 0.8
  * @module
  */
 public abstract class Initializer {
@@ -181,7 +181,7 @@ public abstract class Initializer {
                  */
                 Logging.recoverableException(Logging.getLogger(Loggers.SYSTEM), Listener.class, "objectChanged", e);
             }
-            for (Initializer init : ServiceLoader.load(Initializer.class)) {
+            for (Initializer init : DefaultFactories.createServiceLoader(Initializer.class)) {
                 init.dataSourceChanged();
             }
         }
@@ -299,7 +299,7 @@ public abstract class Initializer {
                 m.invoke(source, "create");
                 Connection c = source.getConnection();
                 try {
-                    for (Initializer init : ServiceLoader.load(Initializer.class)) {
+                    for (Initializer init : DefaultFactories.createServiceLoader(Initializer.class)) {
                         init.createSchema(c);
                     }
                 } finally {
