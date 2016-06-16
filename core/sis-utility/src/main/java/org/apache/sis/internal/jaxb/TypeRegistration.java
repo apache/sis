@@ -18,13 +18,13 @@ package org.apache.sis.internal.jaxb;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.ServiceLoader;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.system.SystemListener;
+import org.apache.sis.internal.system.DefaultFactories;
 
 
 /**
@@ -40,7 +40,7 @@ import org.apache.sis.internal.system.SystemListener;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.3
+ * @version 0.8
  * @module
  *
  * @see org.apache.sis.xml.MarshallerPool
@@ -92,7 +92,7 @@ public abstract class TypeRegistration {
          * 2) The ClassLoader between different invocations may be different in an OSGi context.
          */
         final ArrayList<Class<?>> types = new ArrayList<Class<?>>();
-        for (final TypeRegistration t : ServiceLoader.load(TypeRegistration.class)) {
+        for (final TypeRegistration t : DefaultFactories.createServiceLoader(TypeRegistration.class)) {
             t.getTypes(types);
         }
         return types.toArray(new Class<?>[types.size()]);

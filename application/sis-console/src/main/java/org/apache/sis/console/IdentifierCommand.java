@@ -95,7 +95,7 @@ final class IdentifierCommand extends MetadataCommand {
     }
 
     /**
-     * Creates the {@code "metadata"}, {@code "crs"} or {@code "identifier"} sub-command.
+     * Creates the {@code "identifier"} sub-command.
      */
     IdentifierCommand(final int commandIndex, final String... args) throws InvalidOptionException {
         super(commandIndex, args);

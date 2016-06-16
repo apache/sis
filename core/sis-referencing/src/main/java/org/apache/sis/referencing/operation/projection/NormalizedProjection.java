@@ -46,8 +46,8 @@ import org.apache.sis.referencing.operation.transform.MathTransformProvider;
 import org.apache.sis.internal.referencing.provider.MapProjection;
 import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.internal.referencing.Formulas;
+import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.util.Constants;
-import org.apache.sis.internal.util.Utilities;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.util.resources.Errors;
 
@@ -594,7 +594,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
             group = DESCRIPTORS.get(type);
             if (group == null) {
                 final ParameterBuilder builder = new ParameterBuilder().setRequired(true);
-                if (Utilities.isSIS(type)) {
+                if (type.getName().startsWith(Modules.CLASSNAME_PREFIX)) {
                     builder.setCodeSpace(Citations.SIS, Constants.SIS);
                 }
                 final String[] names = getInternalParameterNames();
