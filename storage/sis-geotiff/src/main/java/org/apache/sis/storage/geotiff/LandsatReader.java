@@ -22,19 +22,19 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
-import javax.measure.unit.Unit;
 import javax.xml.bind.JAXBException;
+import javax.measure.unit.Unit;
+import javax.measure.quantity.Length;
+import javax.measure.unit.SI;
 import org.apache.sis.metadata.iso.DefaultIdentifier;
 import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.metadata.iso.acquisition.DefaultAcquisitionInformation;
 import org.apache.sis.metadata.iso.acquisition.DefaultInstrument;
 import org.apache.sis.metadata.iso.acquisition.DefaultPlatform;
-import org.apache.sis.metadata.iso.acquisition.DefaultRequirement;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.citation.DefaultCitationDate;
@@ -50,13 +50,19 @@ import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.iso.DefaultInternationalString;
 import org.opengis.metadata.Metadata;
 import org.opengis.metadata.acquisition.AcquisitionInformation;
+import org.opengis.metadata.acquisition.OperationType;
 import org.opengis.metadata.citation.DateType;
 import org.opengis.metadata.content.AttributeGroup;
+import org.opengis.metadata.content.CoverageContentType;
 import org.opengis.metadata.content.ImageDescription;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.metadata.identification.Identification;
+import org.opengis.metadata.identification.Progress;
 import org.opengis.util.FactoryException;
+
+import org.apache.sis.metadata.iso.acquisition.DefaultEvent;
+import org.apache.sis.metadata.iso.acquisition.DefaultOperation;
 
 import static java.util.Collections.singleton;
 
@@ -196,16 +202,18 @@ public class LandsatReader {
      */
     private AttributeGroup coverage() {
         final DefaultAttributeGroup attribute = new DefaultAttributeGroup();
+        attribute.getContentTypes().add(CoverageContentType.PHYSICAL_MEASUREMENT);
         double[] wavelengths = {433, 482, 562, 655, 865, 1610, 2200, 590, 1375, 10800, 12000};
         String[] nameband = {"Coastal Aerosol (Operational Land Imager (OLI))", "Blue (OLI)",
                              "Green (OLI)", "Red (OLI)", "Near-Infrared (NIR) (OLI)",
                              "Short Wavelength Infrared (SWIR) 1 (OLI)", "SWIR 2 (OLI)",
                              "Panchromatic (OLI)", "Cirrus (OLI)", "Thermal Infrared Sensor (TIRS) 1", "TIRS 2"};
+        final Unit<Length> nm = SI.MetricPrefix.NANO(SI.METRE);
         for (int i=0; i<wavelengths.length; i++) {
             final DefaultBand band = new DefaultBand();
             band.setPeakResponse(wavelengths[i]);
             band.setDescription(new DefaultInternationalString(nameband[i]));
-            band.setUnits(Unit.valueOf("nm"));
+            band.setBoundUnits(nm);
             attribute.getAttributes().add(band);
         }
         return attribute;
@@ -224,7 +232,7 @@ public class LandsatReader {
         content.setIlluminationAzimuthAngle(azimuth);
         final double elevation = Double.valueOf(getValue("SUN_ELEVATION"));
         content.setIlluminationElevationAngle(elevation);
-        content.setAttributeGroups(Collections.singleton(coverage()));
+        content.setAttributeGroups(singleton(coverage()));
         return content;
     }
 
@@ -296,14 +304,14 @@ public class LandsatReader {
         DefaultExtent ex = new DefaultExtent();
         final GeographicBoundingBox box = getGeographicBoundingBox();
         ex.getGeographicElements().add(box);
-        final DefaultTemporalExtent tex = new DefaultTemporalExtent();
-        final Date startTime  = getAcquisitionDate();
-        if(startTime !=null ){
+        final Date startTime = getAcquisitionDate();
+        if (startTime != null) try {
             final DefaultTemporalExtent t = new DefaultTemporalExtent();
             t.setBounds(startTime, startTime);
             ex.setTemporalElements(singleton(t));
-       }
-
+        } catch (UnsupportedOperationException e) {
+            // TODO: report warning.
+        }
         return ex;
     }
 
@@ -315,22 +323,26 @@ public class LandsatReader {
      */
     private AcquisitionInformation getAcquisitionInformation() throws ParseException {
         final DefaultAcquisitionInformation dAi = new DefaultAcquisitionInformation();
-        final DefaultCitation citation = new DefaultCitation();
-        final DefaultRequirement requirement = new DefaultRequirement();
         final Date date = getAcquisitionDate();
-        citation.setDates(Collections.singleton(new DefaultCitationDate(date, DateType.PUBLICATION)));
-        requirement.setCitation(citation);
-        dAi.setAcquisitionRequirements(Collections.singleton(requirement));
+        final DefaultEvent event = new DefaultEvent();
+        event.setTime(date);
+        final DefaultOperation op = new DefaultOperation();
+        op.setSignificantEvents(singleton(event));
+        op.setType(OperationType.REAL);
+        op.setStatus(Progress.COMPLETED);
+        dAi.setOperations(singleton(op));
         final DefaultPlatform platF = new DefaultPlatform();
         final String space = getValue("SPACECRAFT_ID");
         if (space != null) {
-            platF.setCitation(new DefaultCitation(space));
+            platF.setIdentifier(new DefaultIdentifier(space));
         }
-        final DefaultInstrument instru = new DefaultInstrument();
         final String instrum = getValue("SENSOR_ID");
-        instru.setType(new DefaultInternationalString(instrum));;
-        platF.setInstruments(Collections.singleton(instru));
-        dAi.setPlatforms(Collections.singleton(platF));
+        if (instrum != null) {
+            final DefaultInstrument instru = new DefaultInstrument();
+            instru.setIdentifier(new DefaultIdentifier(instrum));;
+            platF.setInstruments(singleton(instru));
+        }
+        dAi.setPlatforms(singleton(platF));
         return dAi;
 
     }
@@ -349,22 +361,18 @@ public class LandsatReader {
         final AbstractIdentification abtract = new AbstractIdentification();
         final DefaultCitation citation = new DefaultCitation();
         final Date date = getDates();
-        citation.setDates(Collections.singleton(new DefaultCitationDate(date, DateType.PUBLICATION)));
+        citation.setDates(singleton(new DefaultCitationDate(date, DateType.PUBLICATION)));
         final String identifier = getValue("LANDSAT_SCENE_ID");
-        citation.setIdentifiers(Collections.singleton(new DefaultIdentifier(identifier)));
+        citation.setIdentifiers(singleton(new DefaultIdentifier(identifier)));
         final DefaultFormat format = new DefaultFormat();
         final String name = getValue("OUTPUT_FORMAT");
-        final String version = getValue("DATA_TYPE");
-        final String elevation = getValue("ELEVATION_SOURCE");
-        format.setName(new DefaultInternationalString(name));
-        format.setVersion(new DefaultInternationalString(version));
-        format.setAmendmentNumber(new DefaultInternationalString(elevation));
-        abtract.setResourceFormats(Collections.singleton(format));
+        format.setFormatSpecificationCitation(new DefaultCitation(name));
+        abtract.setResourceFormats(singleton(format));
         abtract.setCitation(citation);
         final Extent ex = getExtent();
         abtract.setExtents(Arrays.asList(ex));
         final String credit = getValue("ORIGIN");
-        abtract.setCredits(Collections.singleton(new DefaultInternationalString(credit)));
+        abtract.setCredits(singleton(new DefaultInternationalString(credit)));
 
         return abtract;
     }
@@ -387,15 +395,14 @@ public class LandsatReader {
     public Metadata read() throws IOException, ParseException, DataStoreException, FactoryException, JAXBException {
         final DefaultMetadata metadata = new DefaultMetadata();
         metadata.setMetadataStandards(Citations.ISO_19115);
-        metadata.setDateInfo(Collections.singleton(new DefaultCitationDate(getDates(), DateType.CREATION)));
+        metadata.setDateInfo(singleton(new DefaultCitationDate(getDates(), DateType.CREATION)));
         final Identification identification = getIdentification();
-        metadata.setIdentificationInfo(Collections.singleton(identification));
+        metadata.setIdentificationInfo(singleton(identification));
         final ImageDescription creat = createContentInfo();
         metadata.getContentInfo().add(creat);
         final AcquisitionInformation Ai = getAcquisitionInformation();
-        metadata.setAcquisitionInformation(Collections.singleton(Ai));
+        metadata.setAcquisitionInformation(singleton(Ai));
         return metadata;
-
     }
 
     public static void main(String[] args) throws Exception {
@@ -405,6 +412,5 @@ public class LandsatReader {
         }
         System.out.println("The Metadata of LC81230522014071LGN00_MTL.txt is:");
         System.out.println(reader.read());
-
     }
 }
