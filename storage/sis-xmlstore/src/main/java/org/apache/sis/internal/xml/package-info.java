@@ -14,40 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.xml;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
+ * Helper classes for reading and writing XML documents using STAX.
  *
- * @author Guilhem Legal (Geomatys)
- * @since   0.7
- * @version 0.7
+ * @author  Johann Sorel (Geomatys)
+ * @since   0.8
+ * @version 0.8
  * @module
  */
-public abstract class AbstractConfigurable {
-
-    /**
-     * Map of optional properties to configure the underlying object.
-     *
-     */
-    protected final Map<String, Object> properties = new HashMap<>();
-
-    /**
-     * 
-     * @param key property key
-     * @return value, may be null
-     */
-    public Object getProperty(final String key) {
-        return properties.get(key);
-    }
-    
-    /**
-     * @return the properties
-     */
-    public Map<String, Object> getProperties() {
-        return properties;
-    }
-
-}
+package org.apache.sis.internal.xml;

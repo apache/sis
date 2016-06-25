@@ -90,7 +90,7 @@ public abstract class DataStore implements Localized, AutoCloseable {
      * or distributor, data quality, update frequency, usage constraints and more.
      *
      * @return Information about the dataset, or {@code null} if none.
-     * @throws DataStoreException If an error occurred while reading the data.
+     * @throws DataStoreException if an error occurred while reading the data.
      */
     public abstract Metadata getMetadata() throws DataStoreException;
 
@@ -118,7 +118,7 @@ public abstract class DataStore implements Localized, AutoCloseable {
      * }
      *
      * @param  listener The listener to add.
-     * @throws IllegalArgumentException If the given listener is already registered in this data store.
+     * @throws IllegalArgumentException if the given listener is already registered in this data store.
      */
     public void addWarningListener(final WarningListener<? super DataStore> listener)
             throws IllegalArgumentException
@@ -130,7 +130,7 @@ public abstract class DataStore implements Localized, AutoCloseable {
      * Removes a previously registered listener.
      *
      * @param  listener The listener to remove.
-     * @throws NoSuchElementException If the given listener is not registered in this data store.
+     * @throws NoSuchElementException if the given listener is not registered in this data store.
      */
     public void removeWarningListener(final WarningListener<? super DataStore> listener)
             throws NoSuchElementException
@@ -141,7 +141,7 @@ public abstract class DataStore implements Localized, AutoCloseable {
     /**
      * Closes this data store and releases any underlying resources.
      *
-     * @throws DataStoreException If an error occurred while closing this data store.
+     * @throws DataStoreException if an error occurred while closing this data store.
      */
     @Override
     public abstract void close() throws DataStoreException;

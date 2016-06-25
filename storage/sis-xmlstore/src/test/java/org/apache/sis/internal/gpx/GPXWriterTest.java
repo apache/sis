@@ -29,6 +29,7 @@ import com.esri.core.geometry.Point;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.ImmutableEnvelope;
 import org.apache.sis.referencing.CommonCRS;
+import org.apache.sis.storage.StorageConnector;
 import org.junit.Test;
 
 import static org.apache.sis.internal.gpx.GPXConstants.*;
@@ -89,9 +90,8 @@ public final strictfp class GPXWriterTest {
         writer.writeEndDocument();
         writer.close();
 
-        try (GPXReader reader = new GPXReader()) {
-            reader.setInput(f);
-            assertEquals(metaData, reader.getMetadata());
+        try (GPXReader reader = new GPXReader(new StorageConnector(f))) {
+            assertEquals(metaData, reader.metadata);
         }
 
         if (f.exists()) f.delete();
@@ -250,8 +250,7 @@ public final strictfp class GPXWriterTest {
         writer.writeEndDocument();
         writer.close();
 
-        final GPXReader reader = new GPXReader();
-        reader.setInput(f);
+        final GPXReader reader = new GPXReader(new StorageConnector(f));
 
         //testing on toString since JTS geometry always fail on equals method.
         assertEquals(point1.toString(), reader.next().toString());
