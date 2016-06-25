@@ -205,7 +205,7 @@ public class NetcdfStoreProvider extends DataStoreProvider {
      *
      * @param  storage Information about the storage (URL, stream, {@link ucar.nc2.NetcdfFile} instance, <i>etc</i>).
      * @return A data store implementation associated with this provider for the given storage.
-     * @throws DataStoreException If an error occurred while creating the data store instance.
+     * @throws DataStoreException if an error occurred while creating the data store instance.
      */
     @Override
     public DataStore open(final StorageConnector storage) throws DataStoreException {
@@ -218,9 +218,9 @@ public class NetcdfStoreProvider extends DataStoreProvider {
      *
      * @param  listeners Where to send the warnings.
      * @param  storage Information about the input (file, input stream, <i>etc.</i>)
-     * @return The decoder for the given input.
-     * @throws IOException If an error occurred while opening the NetCDF file.
-     * @throws DataStoreException If a logical error (other than I/O) occurred.
+     * @return The decoder for the given input, or {@code null} if the input type is not recognized.
+     * @throws IOException if an error occurred while opening the NetCDF file.
+     * @throws DataStoreException if a logical error (other than I/O) occurred.
      */
     static Decoder decoder(final WarningListeners<?> listeners, final StorageConnector storage)
             throws IOException, DataStoreException
@@ -257,9 +257,9 @@ public class NetcdfStoreProvider extends DataStoreProvider {
      * @param  input  The NetCDF file object of filename string from which to read data.
      * @param  isUCAR {@code true} if {@code input} is an instance of the UCAR {@link ucar.nc2.NetcdfFile} object,
      *                or {@code false} if it is the filename as a {@code String}.
-     * @return The {@link DecoderWrapper} instance for the given input.
-     * @throws IOException If an error occurred while opening the NetCDF file.
-     * @throws DataStoreException If a logical error (other than I/O) occurred.
+     * @return The {@link DecoderWrapper} instance for the given input, or {@code null} if the input type is not recognized.
+     * @throws IOException if an error occurred while opening the NetCDF file.
+     * @throws DataStoreException if a logical error (other than I/O) occurred.
      */
     private static Decoder createByReflection(final WarningListeners<?> listeners, final Object input, final boolean isUCAR)
             throws IOException, DataStoreException
