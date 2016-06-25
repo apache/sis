@@ -64,12 +64,12 @@ import org.apache.sis.xml.Namespaces;
  * }
  * </pre>
  *
- * @author Johann Sorel (Geomatys)
- * @since   0.7
- * @version 0.7
+ * @author  Johann Sorel (Geomatys)
+ * @since   0.8
+ * @version 0.8
  * @module
  */
-public abstract class StaxStreamWriter extends AbstractConfigurable implements AutoCloseable {
+public abstract class StaxStreamWriter implements AutoCloseable {
 
     /**
      * Underlying stax writer.
