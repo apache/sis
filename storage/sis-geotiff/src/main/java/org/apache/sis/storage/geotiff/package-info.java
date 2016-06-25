@@ -16,7 +16,22 @@
  */
 
 /**
- * Maps ISO metadata elements from/to the GeoTIFF tags.
+ * Maps ISO metadata elements from/to the GeoTIFF tags and related formats.
+ * This package includes also a mapping from/to the following formats,
+ * which can been seen as GeoTIFF extensions:
+ *
+ * <table class="sis">
+ *   <caption>GeoTIFF extensions</caption>
+ *   <tr>
+ *     <th>Format</th>
+ *     <th>Provider</th>
+ *     <th>Apache SIS notes</th>
+ *   </tr><tr>
+ *     <td>Landsat 8 level 1</td>
+ *     <td>U.S. Geological Survey (USGS)</td>
+ *     <td><a href="doc-files/LandsatMetadata.html">Mapping from/to ISO 19115</a></td>
+ *   </tr>
+ * </table>
  *
  * @author  Thi Phuong Hao NGUYEN
  * @author  Minh Chinh VU
