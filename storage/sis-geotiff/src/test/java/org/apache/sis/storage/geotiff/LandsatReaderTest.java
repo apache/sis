@@ -19,10 +19,7 @@ package org.apache.sis.storage.geotiff;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.text.ParseException;
-import javax.xml.bind.JAXBException;
 import org.opengis.metadata.Metadata;
-import org.opengis.util.FactoryException;
 import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.test.TestCase;
@@ -45,7 +42,7 @@ public class LandsatReaderTest extends TestCase {
      * Tests {@link LandsatReader#read()}.
      */
     @Test
-    public void testRead() throws IOException, DataStoreException, ParseException, FactoryException, JAXBException {
+    public void testRead() throws IOException, DataStoreException {
         // TODO
         final Metadata reade;
         try (BufferedReader in = new BufferedReader(new FileReader("/home/haonguyen/data/LC81230522014071LGN00_MTL.txt"))) {
@@ -90,39 +87,39 @@ public class LandsatReaderTest extends TestCase {
             "  │       ├─Attribute (1 of 11)\n" +
             "  │       │   ├─Peak response……………………………… 433.0\n" +
             "  │       │   ├─Bound units…………………………………… nm\n" +
-            "  │       │   └─Description…………………………………… Coastal Aerosol (Operational Land Imager (OLI))\n" +
+            "  │       │   └─Description…………………………………… Coastal Aerosol\n" +
             "  │       ├─Attribute (2 of 11)\n" +
             "  │       │   ├─Peak response……………………………… 482.0\n" +
             "  │       │   ├─Bound units…………………………………… nm\n" +
-            "  │       │   └─Description…………………………………… Blue (OLI)\n" +
+            "  │       │   └─Description…………………………………… Blue\n" +
             "  │       ├─Attribute (3 of 11)\n" +
             "  │       │   ├─Peak response……………………………… 562.0\n" +
             "  │       │   ├─Bound units…………………………………… nm\n" +
-            "  │       │   └─Description…………………………………… Green (OLI)\n" +
+            "  │       │   └─Description…………………………………… Green\n" +
             "  │       ├─Attribute (4 of 11)\n" +
             "  │       │   ├─Peak response……………………………… 655.0\n" +
             "  │       │   ├─Bound units…………………………………… nm\n" +
-            "  │       │   └─Description…………………………………… Red (OLI)\n" +
+            "  │       │   └─Description…………………………………… Red\n" +
             "  │       ├─Attribute (5 of 11)\n" +
             "  │       │   ├─Peak response……………………………… 865.0\n" +
             "  │       │   ├─Bound units…………………………………… nm\n" +
-            "  │       │   └─Description…………………………………… Near-Infrared (NIR) (OLI)\n" +
+            "  │       │   └─Description…………………………………… Near-Infrared\n" +
             "  │       ├─Attribute (6 of 11)\n" +
             "  │       │   ├─Peak response……………………………… 1610.0\n" +
             "  │       │   ├─Bound units…………………………………… nm\n" +
-            "  │       │   └─Description…………………………………… Short Wavelength Infrared (SWIR) 1 (OLI)\n" +
+            "  │       │   └─Description…………………………………… Short Wavelength Infrared (SWIR) 1\n" +
             "  │       ├─Attribute (7 of 11)\n" +
             "  │       │   ├─Peak response……………………………… 2200.0\n" +
             "  │       │   ├─Bound units…………………………………… nm\n" +
-            "  │       │   └─Description…………………………………… SWIR 2 (OLI)\n" +
+            "  │       │   └─Description…………………………………… Short Wavelength Infrared (SWIR) 2\n" +
             "  │       ├─Attribute (8 of 11)\n" +
             "  │       │   ├─Peak response……………………………… 590.0\n" +
             "  │       │   ├─Bound units…………………………………… nm\n" +
-            "  │       │   └─Description…………………………………… Panchromatic (OLI)\n" +
+            "  │       │   └─Description…………………………………… Panchromatic\n" +
             "  │       ├─Attribute (9 of 11)\n" +
             "  │       │   ├─Peak response……………………………… 1375.0\n" +
             "  │       │   ├─Bound units…………………………………… nm\n" +
-            "  │       │   └─Description…………………………………… Cirrus (OLI)\n" +
+            "  │       │   └─Description…………………………………… Cirrus\n" +
             "  │       ├─Attribute (10 of 11)\n" +
             "  │       │   ├─Peak response……………………………… 10800.0\n" +
             "  │       │   ├─Bound units…………………………………… nm\n" +
@@ -130,7 +127,7 @@ public class LandsatReaderTest extends TestCase {
             "  │       └─Attribute (11 of 11)\n" +
             "  │           ├─Peak response……………………………… 12000.0\n" +
             "  │           ├─Bound units…………………………………… nm\n" +
-            "  │           └─Description…………………………………… TIRS 2\n" +
+            "  │           └─Description…………………………………… Thermal Infrared Sensor (TIRS) 2\n" +
             "  ├─Acquisition information\n" +
             "  │   ├─Operation\n" +
             "  │   │   ├─Status…………………………………………………………… Completed\n" +

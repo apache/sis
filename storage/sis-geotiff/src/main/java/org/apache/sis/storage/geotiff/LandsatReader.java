@@ -17,23 +17,38 @@
 package org.apache.sis.storage.geotiff;
 
 import java.io.BufferedReader;
-import java.io.FileReader;
 import java.io.IOException;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
-import javax.xml.bind.JAXBException;
+import java.time.LocalDate;
+import java.time.OffsetDateTime;
+import java.time.OffsetTime;
+import java.time.format.DateTimeParseException;
+import java.time.temporal.ChronoField;
 import javax.measure.unit.Unit;
 import javax.measure.quantity.Length;
 import javax.measure.unit.SI;
+
+import org.opengis.metadata.Metadata;
+import org.opengis.metadata.acquisition.AcquisitionInformation;
+import org.opengis.metadata.acquisition.OperationType;
+import org.opengis.metadata.citation.DateType;
+import org.opengis.metadata.content.AttributeGroup;
+import org.opengis.metadata.content.CoverageContentType;
+import org.opengis.metadata.content.ImageDescription;
+import org.opengis.metadata.extent.Extent;
+import org.opengis.metadata.identification.Identification;
+import org.opengis.metadata.identification.Progress;
+
 import org.apache.sis.metadata.iso.DefaultIdentifier;
 import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.metadata.iso.acquisition.DefaultAcquisitionInformation;
+import org.apache.sis.metadata.iso.acquisition.DefaultEvent;
 import org.apache.sis.metadata.iso.acquisition.DefaultInstrument;
+import org.apache.sis.metadata.iso.acquisition.DefaultOperation;
 import org.apache.sis.metadata.iso.acquisition.DefaultPlatform;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
@@ -45,38 +60,60 @@ import org.apache.sis.metadata.iso.distribution.DefaultFormat;
 import org.apache.sis.metadata.iso.extent.DefaultExtent;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.metadata.iso.extent.DefaultTemporalExtent;
-import org.apache.sis.metadata.iso.identification.AbstractIdentification;
+import org.apache.sis.metadata.iso.identification.DefaultDataIdentification;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.iso.DefaultInternationalString;
-import org.opengis.metadata.Metadata;
-import org.opengis.metadata.acquisition.AcquisitionInformation;
-import org.opengis.metadata.acquisition.OperationType;
-import org.opengis.metadata.citation.DateType;
-import org.opengis.metadata.content.AttributeGroup;
-import org.opengis.metadata.content.CoverageContentType;
-import org.opengis.metadata.content.ImageDescription;
-import org.opengis.metadata.extent.Extent;
-import org.opengis.metadata.extent.GeographicBoundingBox;
-import org.opengis.metadata.identification.Identification;
-import org.opengis.metadata.identification.Progress;
-import org.opengis.util.FactoryException;
-
-import org.apache.sis.metadata.iso.acquisition.DefaultEvent;
-import org.apache.sis.metadata.iso.acquisition.DefaultOperation;
+import org.apache.sis.util.logging.WarningListeners;
 
 import static java.util.Collections.singleton;
+import static org.apache.sis.storage.geotiff.LandsatKeys.*;
 
 
 /**
  * Parses Landsat metadata as {@linkplain DefaultMetadata ISO-19115 Metadata} object.
  *
- * @author  Thi Phuong Hao Nguyen
+ * @author  Thi Phuong Hao Nguyen (VNSC)
  * @author  Remi Marechal (Geomatys)
  * @since   0.8
  * @version 0.8
  * @module
  */
 public class LandsatReader {
+    /**
+     * The description of all bands that can be included in a Landsat coverage.
+     * This description is hard-coded and shared by all metadata instances.
+     */
+    private static final AttributeGroup BANDS;
+    static {
+        final double[] wavelengths = {433, 482, 562, 655, 865, 1610, 2200, 590, 1375, 10800, 12000};
+        final String[] nameband = {
+            "Coastal Aerosol",                      //   433 nm
+            "Blue",                                 //   482 nm
+            "Green",                                //   562 nm
+            "Red",                                  //   655 nm
+            "Near-Infrared",                        //   865 nm
+            "Short Wavelength Infrared (SWIR) 1",   //  1610 nm
+            "Short Wavelength Infrared (SWIR) 2",   //  2200 nm
+            "Panchromatic",                         //   590 nm
+            "Cirrus",                               //  1375 nm
+            "Thermal Infrared Sensor (TIRS) 1",     // 10800 nm
+            "Thermal Infrared Sensor (TIRS) 2"      // 12000 nm
+        };
+        final DefaultBand[] bands = new DefaultBand[wavelengths.length];
+        final Unit<Length> nm = SI.MetricPrefix.NANO(SI.METRE);
+        for (int i=0; i<bands.length; i++) {
+            final DefaultBand band = new DefaultBand();
+            band.setDescription(new DefaultInternationalString(nameband[i]));
+            band.setPeakResponse(wavelengths[i]);
+            band.setBoundUnits(nm);
+            bands[i] = band;
+        }
+        final DefaultAttributeGroup attributes = new DefaultAttributeGroup(CoverageContentType.PHYSICAL_MEASUREMENT, null);
+        attributes.setAttributes(Arrays.asList(bands));
+        attributes.freeze();
+        BANDS = attributes;
+    }
+
     /**
      * All properties found in the Landsat metadata file, except {@code GROUP} and {@code END_GROUP}.
      * Example:
@@ -93,14 +130,20 @@ public class LandsatReader {
     private final Map<String, String> properties;
 
     /**
-     * Stores all properties found in the Landsat file read from the the given reader,
-     * except {@code GROUP} and {@code END_GROUP}.
+     * Where to sends the warnings.
+     *
+     * @todo Set a reference given by the data store.
+     */
+    private WarningListeners<?> listeners;
+
+    /**
+     * Creates a new metadata parser from the given characters reader.
      *
      * @param  reader a reader opened on the Landsat file. It is caller's responsibility to close this reader.
      * @throws IOException if an I/O error occurred while reading the given stream.
      * @throws DataStoreException if the content is not a Landsat file.
      */
-    LandsatReader(final BufferedReader reader) throws IOException, DataStoreException {
+    public LandsatReader(final BufferedReader reader) throws IOException, DataStoreException {
         properties = new HashMap<>();
         String line;
         while ((line = reader.readLine()) != null) {
@@ -165,7 +208,7 @@ public class LandsatReader {
      * Returns the floating-point value associated to the given key, or {@code NaN} if none.
      *
      * @param  key  the key for which to get the floating-point value.
-     * @return the floating-point value associated to the given key, {@link Double#NaN} if none.
+     * @return the floating-point value associated to the given key, or {@link Double#NaN} if none.
      * @throws NumberFormatException if the property associated to the given key can not be parsed
      *         as a floating-point number.
      */
@@ -175,13 +218,13 @@ public class LandsatReader {
     }
 
     /**
-     * Returns the minimal or maximal value associated to the given two keys.
+     * Returns the minimal or maximal value associated to the given two keys, or {@code NaN} if none.
      *
      * @param  key1  the key for which to get the first floating-point value.
      * @param  key2  the key for which to get the second floating-point value.
      * @param  max   {@code true} for the maximal value, or {@code false} for the minimal value.
      * @return the minimal (if {@code max} is false) or maximal (if {@code max} is true) floating-point value
-     *         associated to the given keys.
+     *         associated to the given keys, or {@link Double#NaN} if none.
      * @throws NumberFormatException if the property associated to one of the given keys can not be parsed
      *         as a floating-point number.
      */
@@ -196,221 +239,228 @@ public class LandsatReader {
     }
 
     /**
-     * Creates the description of all bands that can be included in a Landsat coverage.
+     * Returns the date associated to the given key, or {@code null} if none.
+     * The date is expected to be formatted in ISO 8601 format.
      *
-     * @return information about all bands identification.
+     * @param  key  the key for which to get the date value.
+     * @return the date associated to the given key, or {@code null} if none.
+     * @throws DateTimeParseException if the date can not be parsed.
      */
-    private AttributeGroup coverage() {
-        final DefaultAttributeGroup attribute = new DefaultAttributeGroup();
-        attribute.getContentTypes().add(CoverageContentType.PHYSICAL_MEASUREMENT);
-        double[] wavelengths = {433, 482, 562, 655, 865, 1610, 2200, 590, 1375, 10800, 12000};
-        String[] nameband = {"Coastal Aerosol (Operational Land Imager (OLI))", "Blue (OLI)",
-                             "Green (OLI)", "Red (OLI)", "Near-Infrared (NIR) (OLI)",
-                             "Short Wavelength Infrared (SWIR) 1 (OLI)", "SWIR 2 (OLI)",
-                             "Panchromatic (OLI)", "Cirrus (OLI)", "Thermal Infrared Sensor (TIRS) 1", "TIRS 2"};
-        final Unit<Length> nm = SI.MetricPrefix.NANO(SI.METRE);
-        for (int i=0; i<wavelengths.length; i++) {
-            final DefaultBand band = new DefaultBand();
-            band.setPeakResponse(wavelengths[i]);
-            band.setDescription(new DefaultInternationalString(nameband[i]));
-            band.setBoundUnits(nm);
-            attribute.getAttributes().add(band);
+    private Date getDate(final String key) throws DateTimeParseException {
+        final String value = getValue(key);
+        if (value == null) {
+            return null;
         }
-        return attribute;
+        final OffsetDateTime time = OffsetDateTime.parse(value);
+        return new Date(time.toEpochSecond() * 1000 + time.getNano() / 1000000);
     }
 
     /**
-     * Gets Information about an image's suitability for use.
+     * Returns the date and time associated to the given key, or {@code null} if none.
+     * The date and time are expected to be in two separated fields,
+     * with each field formatted in ISO 8601 format.
      *
-     * @return the Information about an image's suitability for use.
+     * @param  dateKey  the key for which to get the date value.
+     * @param  timeKey  the key for which to get the time value.
+     * @return the date and time associated to the given keys, or {@code null} if none.
+     * @throws DateTimeParseException if the date can not be parsed.
      */
-    private ImageDescription createContentInfo() {
+    private Date getDate(final String dateKey, final String timeKey) throws DateTimeParseException {
+        String value = getValue(dateKey);
+        if (value == null) {
+            return null;
+        }
+        final LocalDate date = LocalDate.parse(value);
+        value = getValue(timeKey);
+        final long millis;
+        if (value == null) {
+            millis = date.getLong(ChronoField.INSTANT_SECONDS) * 1000;
+        } else {
+            final OffsetDateTime time = date.atTime(OffsetTime.parse(value));
+            millis = time.toEpochSecond() * 1000 + time.getNano() / 1000000;
+        }
+        return new Date(millis);
+    }
+
+    /**
+     * Gets information about an image's suitability for use.
+     *
+     * @throws DataStoreException if a property value can not be parsed as a number or a date.
+     */
+    private ImageDescription createImageDescription() throws DataStoreException {
         final DefaultImageDescription content = new DefaultImageDescription();
-        final double cloudcover = Double.valueOf(getValue("CLOUD_COVER"));
-        content.setCloudCoverPercentage(cloudcover);
-        final double azimuth = Double.valueOf(getValue("SUN_AZIMUTH"));
-        content.setIlluminationAzimuthAngle(azimuth);
-        final double elevation = Double.valueOf(getValue("SUN_ELEVATION"));
-        content.setIlluminationElevationAngle(elevation);
-        content.setAttributeGroups(singleton(coverage()));
+        try {
+            double value;
+            if (0     <=     (value = getNumericValue(CLOUD_COVER)))   content.setCloudCoverPercentage      (value);
+            if (!Double.isNaN(value = getNumericValue(SUN_AZIMUTH)))   content.setIlluminationAzimuthAngle  (value);
+            if (!Double.isNaN(value = getNumericValue(SUN_ELEVATION))) content.setIlluminationElevationAngle(value);
+        } catch (NumberFormatException e) {
+            throw new DataStoreException("Can not read content information.", e);
+        }
+        content.setAttributeGroups(singleton(BANDS));
         return content;
     }
 
-   /**
-     * Returns the data acquisition date and time.
-     * May return {@code null} if no date are specified in the metadata file.
-     *
-     * @return the data acquisition date and time, or {@code null} if none.
-     * @throws ParseException if the date can not be parsed.
-     */
-    private Date getAcquisitionDate() throws ParseException {
-        String dateAcquired = getValue("DATE_ACQUIRED");
-        if (dateAcquired == null) {
-            return null;
-        }
-        //-- hh mm ss:ms
-        final String sceneCenterTime = getValue("SCENE_CENTER_TIME");
-        if (sceneCenterTime != null) {
-            dateAcquired += 'T' + sceneCenterTime;
-        }
-        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.sssssss'Z'");
-        final Date date = formatter.parse(dateAcquired);
-        return date;
-    }
-
     /**
-     * Gets the date when the metadata file for the Landsat product set was created.
+     * Gets the geographic and temporal extent for identification info, or {@code null} if none.
+     * This method expects the data acquisition time in argument in order to avoid to compute it twice.
      *
-     * @return the date the metadata file has been created, or {@code null} if none.
-     * @throws ParseException if the date can not be parsed.
+     * @param  sceneTime  the data acquisition time, or {@code null} if none.
+     * @return the data extent in Identification info, or {@code null} if none.
+     * @throws DataStoreException if a property value can not be parsed as a number or a date.
      */
-    private Date getDates() throws ParseException {
-        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
-        final String dateInString = getValue("FILE_DATE");
-        if (dateInString == null) {
-            return null;
-        }
-        final Date date = formatter.parse(dateInString);
-        return date;
-    }
-
-    /**
-     * Gets the data bounding box in degrees of longitude and latitude, or {@code null} if none.
-     *
-     * @return the data domain in degrees of longitude and latitude, or {@code null} if none.
-     * @throws DataStoreException if a longitude or a latitude can not be read.
-     */
-    private GeographicBoundingBox getGeographicBoundingBox() throws DataStoreException {
-        final DefaultGeographicBoundingBox bbox;
+    private Extent createExtent(final Date sceneTime) throws DataStoreException {
+        final DefaultGeographicBoundingBox box;
         try {
-            bbox = new DefaultGeographicBoundingBox(
-                    getExtremumValue("CORNER_UL_LON_PRODUCT", "CORNER_LL_LON_PRODUCT", false),      // westBoundLongitude
-                    getExtremumValue("CORNER_UR_LON_PRODUCT", "CORNER_LR_LON_PRODUCT", true),       // eastBoundLongitude
-                    getExtremumValue("CORNER_LL_LAT_PRODUCT", "CORNER_LR_LAT_PRODUCT", false),      // southBoundLatitude
-                    getExtremumValue("CORNER_UL_LAT_PRODUCT", "CORNER_UR_LAT_PRODUCT", true));      // northBoundLatitude
+            box = new DefaultGeographicBoundingBox(
+                    getExtremumValue(CORNER_UL_LON_PRODUCT, CORNER_LL_LON_PRODUCT, false),      // westBoundLongitude
+                    getExtremumValue(CORNER_UR_LON_PRODUCT, CORNER_LR_LON_PRODUCT, true),       // eastBoundLongitude
+                    getExtremumValue(CORNER_LL_LAT_PRODUCT, CORNER_LR_LAT_PRODUCT, false),      // southBoundLatitude
+                    getExtremumValue(CORNER_UL_LAT_PRODUCT, CORNER_UR_LAT_PRODUCT, true));      // northBoundLatitude
         } catch (NumberFormatException e) {
             throw new DataStoreException("Can not read the geographic bounding box.", e);
         }
-        return bbox.isEmpty() ? null : bbox;
-    }
-
-    /**
-     * Gets the extent for Identification infor {@code null} if none.
-     *
-     * @return the data extent in Indentification infor {@code null} if none.
-     * @throws DataStoreException if data can not be read.
-     */
-    private Extent getExtent() throws DataStoreException, ParseException, UnsupportedOperationException {
-        DefaultExtent ex = new DefaultExtent();
-        final GeographicBoundingBox box = getGeographicBoundingBox();
-        ex.getGeographicElements().add(box);
-        final Date startTime = getAcquisitionDate();
-        if (startTime != null) try {
+        final DefaultExtent extent = new DefaultExtent();
+        final boolean isEmpty = box.isEmpty();
+        if (!isEmpty) {
+            extent.setGeographicElements(singleton(box));
+        }
+        if (sceneTime != null) try {
             final DefaultTemporalExtent t = new DefaultTemporalExtent();
-            t.setBounds(startTime, startTime);
-            ex.setTemporalElements(singleton(t));
+            t.setBounds(sceneTime, sceneTime);
+            extent.setTemporalElements(singleton(t));
         } catch (UnsupportedOperationException e) {
-            // TODO: report warning.
+            // May happen if the temporal module (which is optional) is not on the classpath.
+            warning(e);
+            if (isEmpty) {
+                return null;
+            }
         }
-        return ex;
+        return extent;
     }
 
     /**
-     * Gets the Information for the Acquisition Information {@code null} if
-     * none.
+     * Gets the acquisition information, or {@code null} if none.
+     * This method expects the data acquisition time in argument in order to avoid to compute it twice.
      *
-     * @return the data for the Acquisition Information {@code null} if none.
+     * @param  sceneTime  the data acquisition time, or {@code null} if none.
+     * @return the data for the Acquisition Information, or {@code null} if none.
      */
-    private AcquisitionInformation getAcquisitionInformation() throws ParseException {
-        final DefaultAcquisitionInformation dAi = new DefaultAcquisitionInformation();
-        final Date date = getAcquisitionDate();
-        final DefaultEvent event = new DefaultEvent();
-        event.setTime(date);
-        final DefaultOperation op = new DefaultOperation();
-        op.setSignificantEvents(singleton(event));
-        op.setType(OperationType.REAL);
-        op.setStatus(Progress.COMPLETED);
-        dAi.setOperations(singleton(op));
-        final DefaultPlatform platF = new DefaultPlatform();
-        final String space = getValue("SPACECRAFT_ID");
-        if (space != null) {
-            platF.setIdentifier(new DefaultIdentifier(space));
+    private AcquisitionInformation createAcquisitionInformation(final Date sceneTime) {
+        final DefaultAcquisitionInformation acquisition = new DefaultAcquisitionInformation();
+        final DefaultPlatform platform = new DefaultPlatform();
+        String value = getValue(SPACECRAFT_ID);
+        boolean isEmpty = true;
+        if (value != null) {
+            platform.setIdentifier(new DefaultIdentifier(value));
+            isEmpty = false;
         }
-        final String instrum = getValue("SENSOR_ID");
-        if (instrum != null) {
-            final DefaultInstrument instru = new DefaultInstrument();
-            instru.setIdentifier(new DefaultIdentifier(instrum));;
-            platF.setInstruments(singleton(instru));
+        value = getValue(SENSOR_ID);
+        if (value != null) {
+            final DefaultInstrument instrument = new DefaultInstrument();
+            instrument.setIdentifier(new DefaultIdentifier(value));
+            platform.setInstruments(singleton(instrument));
+            isEmpty = false;
         }
-        dAi.setPlatforms(singleton(platF));
-        return dAi;
-
+        if (!isEmpty) {
+            acquisition.setPlatforms(singleton(platform));
+        }
+        if (sceneTime != null) {
+            final DefaultEvent event = new DefaultEvent();
+            event.setTime(sceneTime);
+            final DefaultOperation op = new DefaultOperation();
+            op.setSignificantEvents(singleton(event));
+            op.setType(OperationType.REAL);
+            op.setStatus(Progress.COMPLETED);
+            acquisition.setOperations(singleton(op));
+            isEmpty = false;
+        }
+        return isEmpty ? null : acquisition;
     }
 
     /**
-     * Gets Basic information required to uniquely identify a resource or
-     * resources. {@code null} if none.
+     * Gets basic information required to uniquely identify the data, or {@code null} if none.
+     * This method expects the metadata and data acquisition time in arguments
+     * in order to avoid to compute them twice.
      *
-     * @return the data for the File Identifier {@code null} if none.
-     * @throws DataStoreException Thrown when a {@link DataStore} can not
-     * complete a read or write operation.
-     * @throws ParseException Signals that an error has been reached
-     * unexpectedly
+     * @param  metadataTime  the metadata file creation time, or {@code null} if none.
+     * @param  sceneTime     the data acquisition time, or {@code null} if none.
+     * @return the data identification information, or {@code null} if none.
+     * @throws DataStoreException if a property value can not be parsed as a number or a date.
      */
-    Identification getIdentification() throws ParseException, DataStoreException {
-        final AbstractIdentification abtract = new AbstractIdentification();
+    private Identification createIdentification(final Date metadataTime, final Date sceneTime) throws DataStoreException {
+        final DefaultDataIdentification identification = new DefaultDataIdentification();
         final DefaultCitation citation = new DefaultCitation();
-        final Date date = getDates();
-        citation.setDates(singleton(new DefaultCitationDate(date, DateType.PUBLICATION)));
-        final String identifier = getValue("LANDSAT_SCENE_ID");
-        citation.setIdentifiers(singleton(new DefaultIdentifier(identifier)));
-        final DefaultFormat format = new DefaultFormat();
-        final String name = getValue("OUTPUT_FORMAT");
-        format.setFormatSpecificationCitation(new DefaultCitation(name));
-        abtract.setResourceFormats(singleton(format));
-        abtract.setCitation(citation);
-        final Extent ex = getExtent();
-        abtract.setExtents(Arrays.asList(ex));
-        final String credit = getValue("ORIGIN");
-        abtract.setCredits(singleton(new DefaultInternationalString(credit)));
-
-        return abtract;
+        boolean isEmpty = true;
+        if (metadataTime != null) {
+            citation.setDates(singleton(new DefaultCitationDate(metadataTime, DateType.PUBLICATION)));
+            isEmpty = false;
+        }
+        String value = getValue(LANDSAT_SCENE_ID);
+        if (value != null) {
+            citation.setIdentifiers(singleton(new DefaultIdentifier(value)));
+            isEmpty = false;
+        }
+        if (!isEmpty) {
+            identification.setCitation(citation);
+        }
+        value = getValue(OUTPUT_FORMAT);
+        if (value != null) {
+            final DefaultFormat format = new DefaultFormat();
+            format.setFormatSpecificationCitation(new DefaultCitation(value));
+            identification.setResourceFormats(singleton(format));
+            isEmpty = false;
+        }
+        final Extent extent = createExtent(sceneTime);
+        if (extent != null) {
+            identification.setExtents(singleton(extent));
+            isEmpty = false;
+        }
+        value = getValue(ORIGIN);
+        if (value != null) {
+            identification.setCredits(singleton(new DefaultInternationalString(value)));
+            isEmpty = false;
+        }
+        return isEmpty ? null : identification;
     }
 
     /**
-     * Read which defines metadata about a resource or resources. {@code null}
-     * if none.
+     * Returns the metadata about the resources described in the Landsat file.
      *
-     * @return the data which defines metadata about a resource or resources.
-     * {@code null} if none.
-     * @throws FactoryException Thrown when a {@linkplain Factory factory} can't
-     * create an instance of the requested object.
-     * @throws DataStoreException Thrown when a {@link DataStore} can not
-     * complete a read or write operation.
-     * @throws ParseException Signals that an error has been reached
-     * unexpectedly
-     * @throws IOException Signals that an I/O exception of some sort has
-     * occurred.
+     * @return the metadata about Landsat resources.
+     * @throws DataStoreException if a property value can not be parsed as a number or a date.
      */
-    public Metadata read() throws IOException, ParseException, DataStoreException, FactoryException, JAXBException {
+    public Metadata read() throws DataStoreException {
         final DefaultMetadata metadata = new DefaultMetadata();
         metadata.setMetadataStandards(Citations.ISO_19115);
-        metadata.setDateInfo(singleton(new DefaultCitationDate(getDates(), DateType.CREATION)));
-        final Identification identification = getIdentification();
-        metadata.setIdentificationInfo(singleton(identification));
-        final ImageDescription creat = createContentInfo();
-        metadata.getContentInfo().add(creat);
-        final AcquisitionInformation Ai = getAcquisitionInformation();
-        metadata.setAcquisitionInformation(singleton(Ai));
+        final Date metadataTime = getDate(FILE_DATE);
+        if (metadataTime != null) {
+            metadata.setDateInfo(singleton(new DefaultCitationDate(metadataTime, DateType.CREATION)));
+        }
+        final Date sceneTime = getDate(DATE_ACQUIRED, SCENE_CENTER_TIME);
+        final Identification identification = createIdentification(metadataTime, sceneTime);
+        if (identification != null) {
+            metadata.setIdentificationInfo(singleton(identification));
+        }
+        final ImageDescription content = createImageDescription();
+        if (content != null) {
+            metadata.setContentInfo(singleton(content));
+        }
+        final AcquisitionInformation acquisition = createAcquisitionInformation(sceneTime);
+        if (acquisition != null) {
+            metadata.setAcquisitionInformation(singleton(acquisition));
+        }
         return metadata;
     }
 
-    public static void main(String[] args) throws Exception {
-        LandsatReader reader;
-        try (BufferedReader in = new BufferedReader(new FileReader("/home/haonguyen/data/LC81230522014071LGN00_MTL.txt"))) {
-            reader = new LandsatReader(in);
+    /**
+     * Invoked when a non-fatal exception occurred while reading metadata.
+     * This method sends a record to the registered listeners if any,
+     * or logs the record otherwise.
+     */
+    private void warning(final Exception e) {
+        if (listeners != null) {
+            listeners.warning(null, e);
         }
-        System.out.println("The Metadata of LC81230522014071LGN00_MTL.txt is:");
-        System.out.println(reader.read());
     }
 }
