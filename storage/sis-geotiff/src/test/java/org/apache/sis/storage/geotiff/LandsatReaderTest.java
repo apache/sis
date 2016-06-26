@@ -17,7 +17,7 @@
 package org.apache.sis.storage.geotiff;
 
 import java.io.BufferedReader;
-import java.io.FileReader;
+import java.io.InputStreamReader;
 import java.io.IOException;
 import org.opengis.metadata.Metadata;
 import org.apache.sis.metadata.iso.DefaultMetadata;
@@ -32,7 +32,7 @@ import static org.apache.sis.test.TestUtilities.formatNameAndValue;
 /**
  * Tests {@link LandsatReader}.
  *
- * @author  Thi Phuong Hao NGUYEN
+ * @author  Thi Phuong Hao Nguyen (VNSC)
  * @since   0.8
  * @version 0.8
  * @module
@@ -40,48 +40,43 @@ import static org.apache.sis.test.TestUtilities.formatNameAndValue;
 public class LandsatReaderTest extends TestCase {
     /**
      * Tests {@link LandsatReader#read()}.
+     *
+     * @throws IOException if an error occurred while reading the test file.
+     * @throws DataStoreException if a property value can not be parsed as a number or a date.
      */
     @Test
     public void testRead() throws IOException, DataStoreException {
-        // TODO
-        final Metadata reade;
-        try (BufferedReader in = new BufferedReader(new FileReader("/home/haonguyen/data/LC81230522014071LGN00_MTL.txt"))) {
-            reade = new LandsatReader(in).read();
+        final Metadata actual;
+        try (BufferedReader in = new BufferedReader(new InputStreamReader(LandsatReaderTest.class.getResourceAsStream("Sample.txt"), "UTF-8"))) {
+            actual = new LandsatReader(in).read();
         }
-        compareToExpected(reade);
-    }
-
-    /**
-     * Compares the string representation of the given metadata object with the expected one.
-     */
-    private static void compareToExpected(final Metadata actual) {
         final String text = formatNameAndValue(DefaultMetadata.castOrCopy(actual).asTreeTable());
         assertMultilinesEquals(
             "Metadata\n" +
             "  ├─Identification info\n" +
             "  │   ├─Citation\n" +
             "  │   │   ├─Date\n" +
-            "  │   │   │   ├─Date……………………………………………………… 2014-03-12 06:06:35\n" +
+            "  │   │   │   ├─Date……………………………………………………… 2016-06-27 16:48:12\n" +
             "  │   │   │   └─Date type………………………………………… Publication\n" +
             "  │   │   └─Identifier\n" +
-            "  │   │       └─Code……………………………………………………… LC81230522014071LGN00\n" +
-            "  │   ├─Credit……………………………………………………………………… Image courtesy of the U.S. Geological Survey\n" +
+            "  │   │       └─Code……………………………………………………… TestImage\n" +
+            "  │   ├─Credit……………………………………………………………………… Test file\n" +
             "  │   ├─Resource format\n" +
             "  │   │   └─Format specification citation\n" +
             "  │   │       └─Title…………………………………………………… GEOTIFF\n" +
             "  │   └─Extent\n" +
             "  │       ├─Geographic element\n" +
-            "  │       │   ├─West bound longitude…………… 108°20′10.464″E\n" +
-            "  │       │   ├─East bound longitude…………… 110°26′39.66″E\n" +
-            "  │       │   ├─South bound latitude…………… 10°29′59.604″N\n" +
-            "  │       │   ├─North bound latitude…………… 12°37′25.716″N\n" +
+            "  │       │   ├─West bound longitude…………… 108°20′24″E\n" +
+            "  │       │   ├─East bound longitude…………… 110°26′24″E\n" +
+            "  │       │   ├─South bound latitude…………… 10°30′N\n" +
+            "  │       │   ├─North bound latitude…………… 12°37′12″N\n" +
             "  │       │   └─Extent type code……………………… true\n" +
             "  │       └─Temporal element\n" +
             "  │           └─Extent………………………………………………… instant0\n" +
             "  ├─Content info\n" +
-            "  │   ├─Illumination elevation angle…………… 58.80866057\n" +
-            "  │   ├─Illumination azimuth angle………………… 116.88701534\n" +
-            "  │   ├─Cloud cover percentage…………………………… 8.34\n" +
+            "  │   ├─Illumination elevation angle…………… 58.8\n" +
+            "  │   ├─Illumination azimuth angle………………… 116.9\n" +
+            "  │   ├─Cloud cover percentage…………………………… 8.3\n" +
             "  │   └─Attribute group\n" +
             "  │       ├─Content type…………………………………………… Physical measurement\n" +
             "  │       ├─Attribute (1 of 11)\n" +
@@ -133,15 +128,15 @@ public class LandsatReaderTest extends TestCase {
             "  │   │   ├─Status…………………………………………………………… Completed\n" +
             "  │   │   ├─Type………………………………………………………………… Real\n" +
             "  │   │   └─Significant event\n" +
-            "  │   │       └─Time……………………………………………………… 2014-05-12 21:12:08\n" +
+            "  │   │       └─Time……………………………………………………… 2016-06-26 03:02:01\n" +
             "  │   └─Platform\n" +
             "  │       ├─Identifier\n" +
-            "  │       │   └─Code……………………………………………………… LANDSAT_8\n" +
+            "  │       │   └─Code……………………………………………………… LANDSAT\n" +
             "  │       └─Instrument\n" +
             "  │           └─Identifier\n" +
-            "  │               └─Code…………………………………………… OLI_TIRS\n" +
+            "  │               └─Code…………………………………………… PseudoSensor\n" +
             "  ├─Date info\n" +
-            "  │   ├─Date…………………………………………………………………………… 2014-03-12 06:06:35\n" +
+            "  │   ├─Date…………………………………………………………………………… 2016-06-27 16:48:12\n" +
             "  │   └─Date type……………………………………………………………… Creation\n" +
             "  ├─Metadata standard (1 of 2)\n" +
             "  │   ├─Title………………………………………………………………………… Geographic Information — Metadata Part 1: Fundamentals\n" +
