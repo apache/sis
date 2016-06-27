@@ -148,7 +148,7 @@ public class LandsatReader {
         String line;
         while ((line = reader.readLine()) != null) {
             line = line.trim();
-            if (!line.isEmpty()) {
+            if (!line.isEmpty() && line.charAt(0) != '#') {
                 /*
                  * Landsat metadata ends with the END keyword. If we find that keyword, stop reading.
                  * All remaining lines (if any) will be ignored.
