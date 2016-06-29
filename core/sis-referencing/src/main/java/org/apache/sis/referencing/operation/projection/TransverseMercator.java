@@ -313,13 +313,29 @@ public class TransverseMercator extends ConformalProjection {
                             final double[] dstPts, final int dstOff,
                             final boolean derivate) throws ProjectionException
     {
-        final double λ     = srcPts[srcOff  ];
+        final double λ = srcPts[srcOff];
+        if (abs(λ) > PI/2) {
+            /*
+             * The Transverse Mercator projection is conceptually a Mercator projection rotated by ±90°.
+             * In the Mercator projection, the y values tend toward infinity for latitudes close to ±90°.
+             * Likewise in the Transverse Mercator, x values tend toward infinity for longitudes close ±90°
+             * (at equator and after subtraction of central meridian). After we pass the 90° limit,
+             * the Transverse Mercator results at (90° + Δ) are the same as for (90° - Δ).
+             *
+             * Problem is that 90° is an ordinary longitude value, not even close to the limit of longitude
+             * values range (±180°). So having f(90°+Δ, φ) = f(90°-Δ, φ) results in wrong behavior in some
+             * algorithm likes the one used by Envelopes.transform(CoordinateOperation, Envelope).
+             * Since a distance of 90° from central meridian is way outside the Transverse Mercator domain
+             * of validity anyway, we do not let the user go further.
+             */
+            throw new ProjectionException(Errors.Keys.OutsideDomainOfValidity);
+        }
         final double φ     = srcPts[srcOff+1];
         final double sinλ  = sin(λ);
         final double ℯsinφ = sin(φ) * eccentricity;
         final double Q     = asinh(tan(φ)) - atanh(ℯsinφ) * eccentricity;
-        final double coshQ = cosh(Q);
-        final double η0    = atanh(sinλ / coshQ);
+        final double coshQ = cosh(Q);                                       // Can not be smaller than 1.
+        final double η0    = atanh(sinλ / coshQ);                           // Tends toward ±∞ if λ → ±90°.
         /*
          * Original formula: η0 = atanh(sin(λ) * cos(β)) where
          * cos(β) = cos(atan(sinh(Q)))

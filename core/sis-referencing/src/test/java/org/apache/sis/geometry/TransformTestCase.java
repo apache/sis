@@ -188,6 +188,29 @@ public abstract strictfp class TransformTestCase<G> extends TestCase {
     }
 
     /**
+     * Tests conversions of an envelope or rectangle which is <strong>not</strong> over a pole,
+     * but was wrongly considered as over a pole before SIS-329 fix.
+     *
+     * @throws FactoryException if an error occurred while creating the operation.
+     * @throws TransformException if an error occurred while transforming the envelope.
+     *
+     * @see <a href="https://issues.apache.org/jira/browse/SIS-329">SIS-329</a>
+     */
+    @Test
+    @DependsOnMethod("testTransform")
+    public final void testTransformNotOverPole() throws FactoryException, TransformException {
+        final ProjectedCRS  sourceCRS  = CommonCRS.WGS84.UTM(10, -3.5);
+        final GeographicCRS targetCRS  = sourceCRS.getBaseCRS();
+        final Conversion    conversion = inverse(sourceCRS.getConversionFromBase());
+        final G rectangle = createFromExtremums(sourceCRS, 199980, 4490220, 309780, 4600020);
+        final G expected  = createFromExtremums(targetCRS,
+                40.50846282536367, -6.594124551832373,          // Computed by SIS (not validated by external authority).
+                41.52923550023067, -5.246186118392847);
+        final G actual = transform(conversion, rectangle);
+        assertGeometryEquals(expected, actual, ANGULAR_TOLERANCE, ANGULAR_TOLERANCE);
+    }
+
+    /**
      * Returns the inverse of the given conversion. This method is not strictly correct
      * since we reuse the properties (name, aliases, etc.) from the given conversion.
      * However those properties are not significant for the purpose of this test.
