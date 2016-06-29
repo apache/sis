@@ -65,14 +65,12 @@ public class LandsatReaderTest extends TestCase {
             "  │   │   └─Format specification citation\n" +
             "  │   │       └─Title…………………………………………………… GEOTIFF\n" +
             "  │   └─Extent\n" +
-            "  │       ├─Geographic element\n" +
-            "  │       │   ├─West bound longitude…………… 108°20′24″E\n" +
-            "  │       │   ├─East bound longitude…………… 110°26′24″E\n" +
-            "  │       │   ├─South bound latitude…………… 10°30′N\n" +
-            "  │       │   ├─North bound latitude…………… 12°37′12″N\n" +
-            "  │       │   └─Extent type code……………………… true\n" +
-            "  │       └─Temporal element\n" +
-            "  │           └─Extent………………………………………………… instant0\n" +
+            "  │       └─Geographic element\n" +
+            "  │           ├─West bound longitude…………… 108°20′24″E\n" +
+            "  │           ├─East bound longitude…………… 110°26′24″E\n" +
+            "  │           ├─South bound latitude…………… 10°30′N\n" +
+            "  │           ├─North bound latitude…………… 12°37′12″N\n" +
+            "  │           └─Extent type code……………………… true\n" +
             "  ├─Content info\n" +
             "  │   ├─Illumination elevation angle…………… 58.8\n" +
             "  │   ├─Illumination azimuth angle………………… 116.9\n" +

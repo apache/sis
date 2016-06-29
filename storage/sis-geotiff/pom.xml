@@ -111,21 +111,14 @@ Bridge between GeoTIFF convention and ISO 19115 metadata.
 
 
   <!-- ===========================================================
-           Temporary dependency (to be removed)
+           Dependencies
        =========================================================== -->
   <dependencies>
     <dependency>
-      <groupId>org.geotoolkit</groupId>
-      <artifactId>geotk-temporal</artifactId>
-      <version>4.0-SNAPSHOT</version>
-      <optional>true</optional>
+      <groupId>org.apache.sis.storage</groupId>
+      <artifactId>sis-storage</artifactId>
+      <version>${project.version}</version>
     </dependency>
   </dependencies>
-  <repositories>
-    <repository>
-      <id>geotoolkit.org</id>
-      <name>Geotoolkit.org repository</name>
-      <url>http://maven.geotoolkit.org</url>
-    </repository>
-  </repositories>
+
 </project>
