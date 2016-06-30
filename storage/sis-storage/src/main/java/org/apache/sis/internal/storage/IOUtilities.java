@@ -390,7 +390,7 @@ public final class IOUtilities extends Static {
          */
         final Set<Object> optionSet;
         if (options == null || options.length == 0) {
-            optionSet = Collections.emptySet();
+            optionSet = Collections.<Object>singleton(StandardOpenOption.READ);
         } else {
             optionSet = new HashSet<Object>(Arrays.asList(options));
             optionSet.add(StandardOpenOption.READ);

@@ -355,8 +355,10 @@ public class Mercator extends ConformalProjection {
                 final double a = abs(φ);
                 if (a < PI/2) {
                     y = log(expOfNorthing(φ, eccentricity * sinφ));     // Snyder (7-7)
+                } else if (a <= (PI/2 + ANGULAR_TOLERANCE)) {
+                    y = copySign(POSITIVE_INFINITY, φ);
                 } else {
-                    y = copySign(a <= (PI/2 + ANGULAR_TOLERANCE) ? POSITIVE_INFINITY : NaN, φ);
+                    y = NaN;
                 }
             }
             dstPts[dstOff  ] = srcPts[srcOff];   // Scale will be applied by the denormalization matrix.
@@ -396,8 +398,10 @@ public class Mercator extends ConformalProjection {
                     final double y;
                     if (a < PI/2) {
                         y = log(expOfNorthing(φ, eccentricity * sin(φ)));
+                    } else if (a <= (PI/2 + ANGULAR_TOLERANCE)) {
+                        y = copySign(POSITIVE_INFINITY, φ);
                     } else {
-                        y = copySign(a <= (PI/2 + ANGULAR_TOLERANCE) ? POSITIVE_INFINITY : NaN, φ);
+                        y = NaN;
                     }
                     dstPts[dstOff] = y;
                 }
@@ -485,8 +489,10 @@ public class Mercator extends ConformalProjection {
                     final double a = abs(φ);
                     if (a < PI/2) {
                         y = log(tan(PI/4 + 0.5*φ));    // Part of Snyder (7-2)
+                    } else if (a <= (PI/2 + ANGULAR_TOLERANCE)) {
+                        y = copySign(POSITIVE_INFINITY, φ);
                     } else {
-                        y = copySign(a <= (PI/2 + ANGULAR_TOLERANCE) ? POSITIVE_INFINITY : NaN, φ);
+                        y = NaN;
                     }
                 }
                 dstPts[dstOff  ] = srcPts[srcOff];
@@ -519,8 +525,10 @@ public class Mercator extends ConformalProjection {
                         final double y;
                         if (a < PI/2) {
                             y = log(tan(PI/4 + 0.5*φ));     // Part of Snyder (7-2)
+                        } else if (a <= (PI/2 + ANGULAR_TOLERANCE)) {
+                            y = copySign(POSITIVE_INFINITY, φ);
                         } else {
-                            y = copySign(a <= (PI/2 + ANGULAR_TOLERANCE) ? POSITIVE_INFINITY : NaN, φ);
+                            y = NaN;
                         }
                         dstPts[dstOff] = y;
                     }

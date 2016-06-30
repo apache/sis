@@ -188,8 +188,8 @@ final class MetadataReader {
 
     /**
      * Invoked when a non-fatal exception occurred while reading metadata.
-     * This method will send a record to the registered listeners if any,
-     * or will log the record otherwise.
+     * This method sends a record to the registered listeners if any,
+     * or logs the record otherwise.
      */
     private void warning(final Exception e) {
         decoder.listeners.warning(null, e);

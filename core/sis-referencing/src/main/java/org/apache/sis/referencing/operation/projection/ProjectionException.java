@@ -78,14 +78,4 @@ public class ProjectionException extends TransformException {
     ProjectionException(final short code) {
         this(Errors.format(code));
     }
-
-    /**
-     * Constructs a new exception with the specified detail message.
-     *
-     * @param code One of the constants suitable for {@link Errors#format(short)}.
-     * @param value An argument value to be formatted.
-     */
-    ProjectionException(final short code, final Object value) {
-        this(Errors.format(code, value));
-    }
 }

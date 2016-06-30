@@ -201,6 +201,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final short CloneNotSupported_1 = 13;
 
         /**
+         * This {0} reader is closed.
+         */
+        public static final short ClosedReader_1 = 231;
+
+        /**
          * Axis directions {0} and {1} are colinear.
          */
         public static final short ColinearAxisDirections_2 = 14;
@@ -406,6 +411,11 @@ public final class Errors extends IndexedResourceBundle {
          * “{1}” is not a valid identifier for the “{0}” code space.
          */
         public static final short IllegalIdentifierForCodespace_2 = 208;
+
+        /**
+         * The {0} reader does not accept inputs of type ‘{1}’.
+         */
+        public static final short IllegalInputTypeForReader_2 = 230;
 
         /**
          * The “{0}” language is not recognized.
