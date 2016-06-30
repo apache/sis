@@ -277,7 +277,7 @@ public class ReferencingFunctions extends CalcAddins implements XReferencing {
             }
         }
         if (area == null) {
-            return getFailure(2,2);
+            return new double[][] {};
         }
         return new double[][] {
             new double[] {area.getNorthBoundLatitude(), area.getWestBoundLongitude()},
@@ -363,7 +363,7 @@ public class ReferencingFunctions extends CalcAddins implements XReferencing {
             result  = tr.transform(points);
             warning = tr.warning;
         } catch (Exception exception) {
-            result  = getFailure(points.length, 2);
+            result  = new double[][] {};
             warning = exception;
         }
         if (warning != null) {
@@ -382,14 +382,12 @@ public class ReferencingFunctions extends CalcAddins implements XReferencing {
      */
     @Override
     public double[][] transformEnvelope(String sourceCRS, String targetCRS, double[][] envelope) {
-        if (envelope == null || envelope.length == 0) {
-            return new double[][] {};
-        } else try {
+        if (envelope != null && envelope.length != 0) try {
             return new Transformer(this, getCRS(sourceCRS), targetCRS, envelope).transformEnvelope(envelope);
         } catch (Exception exception) {
             reportException("transformEnvelope", exception);
-            return getFailure(envelope.length, 2);
         }
+        return new double[][] {};
     }
 
     /**

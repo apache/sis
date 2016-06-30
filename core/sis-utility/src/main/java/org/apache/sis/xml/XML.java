@@ -22,6 +22,7 @@ import java.util.TimeZone;
 import java.util.logging.LogRecord; // For javadoc
 import java.net.URL;
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.StringReader;
@@ -33,12 +34,18 @@ import javax.xml.transform.Source;
 import javax.xml.transform.Result;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.Version;
+import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.logging.WarningListener;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.system.SystemListener;
 import org.apache.sis.internal.jaxb.TypeRegistration;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
+
+// Branch-dependent imports
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 
 
 /**
@@ -63,7 +70,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.4
+ * @version 0.8
  * @module
  */
 public final class XML extends Static {
@@ -353,7 +360,7 @@ public final class XML extends Static {
      *
      * @param  object The root of content tree to be marshalled.
      * @return The XML representation of the given object.
-     * @throws JAXBException If an error occurred during the marshalling.
+     * @throws JAXBException if an error occurred during the marshalling.
      */
     public static String marshal(final Object object) throws JAXBException {
         ensureNonNull("object", object);
@@ -370,7 +377,7 @@ public final class XML extends Static {
      *
      * @param  object The root of content tree to be marshalled.
      * @param  output The stream where to write.
-     * @throws JAXBException If an error occurred during the marshalling.
+     * @throws JAXBException if an error occurred during the marshalling.
      */
     public static void marshal(final Object object, final OutputStream output) throws JAXBException {
         ensureNonNull("object", object);
@@ -386,7 +393,7 @@ public final class XML extends Static {
      *
      * @param  object The root of content tree to be marshalled.
      * @param  output The file to be written.
-     * @throws JAXBException If an error occurred during the marshalling.
+     * @throws JAXBException if an error occurred during the marshalling.
      */
     public static void marshal(final Object object, final File output) throws JAXBException {
         ensureNonNull("object", object);
@@ -395,6 +402,26 @@ public final class XML extends Static {
         final Marshaller marshaller = pool.acquireMarshaller();
         marshaller.marshal(object, output);
         pool.recycle(marshaller);
+    }
+
+    /**
+     * Marshall the given object into a path.
+     *
+     * @param  object The root of content tree to be marshalled.
+     * @param  output The file to be written.
+     * @throws JAXBException if an error occurred during the marshalling.
+     */
+    public static void marshal(final Object object, final Path output) throws JAXBException {
+        ensureNonNull("object", object);
+        ensureNonNull("output", output);
+        try (OutputStream out = Files.newOutputStream(output, StandardOpenOption.CREATE, StandardOpenOption.WRITE)) {
+            final MarshallerPool pool = getPool();
+            final Marshaller marshaller = pool.acquireMarshaller();
+            marshaller.marshal(object, out);
+            pool.recycle(marshaller);
+        } catch (IOException e) {
+            throw new JAXBException(Errors.format(Errors.Keys.CanNotOpen_1, output), e);
+        }
     }
 
     /**
@@ -409,7 +436,7 @@ public final class XML extends Static {
      * @param  object The root of content tree to be marshalled.
      * @param  output The file to be written.
      * @param  properties An optional map of properties to give to the marshaller, or {@code null} if none.
-     * @throws JAXBException If a property has an illegal value, or if an error occurred during the marshalling.
+     * @throws JAXBException if a property has an illegal value, or if an error occurred during the marshalling.
      *
      * @since 0.4
      */
@@ -434,7 +461,7 @@ public final class XML extends Static {
      *
      * @param  xml The XML representation of an object.
      * @return The object unmarshalled from the given input.
-     * @throws JAXBException If an error occurred during the unmarshalling.
+     * @throws JAXBException if an error occurred during the unmarshalling.
      */
     public static Object unmarshal(final String xml) throws JAXBException {
         ensureNonNull("input", xml);
@@ -451,7 +478,7 @@ public final class XML extends Static {
      *
      * @param  input The stream from which to read a XML representation.
      * @return The object unmarshalled from the given input.
-     * @throws JAXBException If an error occurred during the unmarshalling.
+     * @throws JAXBException if an error occurred during the unmarshalling.
      */
     public static Object unmarshal(final InputStream input) throws JAXBException {
         ensureNonNull("input", input);
@@ -467,7 +494,7 @@ public final class XML extends Static {
      *
      * @param  input The URL from which to read a XML representation.
      * @return The object unmarshalled from the given input.
-     * @throws JAXBException If an error occurred during the unmarshalling.
+     * @throws JAXBException if an error occurred during the unmarshalling.
      */
     public static Object unmarshal(final URL input) throws JAXBException {
         ensureNonNull("input", input);
@@ -483,7 +510,7 @@ public final class XML extends Static {
      *
      * @param  input The file from which to read a XML representation.
      * @return The object unmarshalled from the given input.
-     * @throws JAXBException If an error occurred during the unmarshalling.
+     * @throws JAXBException if an error occurred during the unmarshalling.
      */
     public static Object unmarshal(final File input) throws JAXBException {
         ensureNonNull("input", input);
@@ -491,6 +518,27 @@ public final class XML extends Static {
         final Unmarshaller unmarshaller = pool.acquireUnmarshaller();
         final Object object = unmarshaller.unmarshal(input);
         pool.recycle(unmarshaller);
+        return object;
+    }
+
+    /**
+     * Unmarshall an object from the given path.
+     *
+     * @param  input The path from which to read a XML representation.
+     * @return The object unmarshalled from the given input.
+     * @throws JAXBException if an error occurred during the unmarshalling.
+     */
+    public static Object unmarshal(final Path input) throws JAXBException {
+        ensureNonNull("input", input);
+        final Object object;
+        try (InputStream in = Files.newInputStream(input, StandardOpenOption.READ)) {
+            final MarshallerPool pool = getPool();
+            final Unmarshaller unmarshaller = pool.acquireUnmarshaller();
+            object = unmarshaller.unmarshal(in);
+            pool.recycle(unmarshaller);
+        } catch (IOException e) {
+            throw new JAXBException(Errors.format(Errors.Keys.CanNotRead_1, input), e);
+        }
         return object;
     }
 
@@ -506,7 +554,7 @@ public final class XML extends Static {
      * @param  input The file from which to read a XML representation.
      * @param  properties An optional map of properties to give to the unmarshaller, or {@code null} if none.
      * @return The object unmarshalled from the given input.
-     * @throws JAXBException If a property has an illegal value, or if an error occurred during the unmarshalling.
+     * @throws JAXBException if a property has an illegal value, or if an error occurred during the unmarshalling.
      *
      * @since 0.4
      */

@@ -53,7 +53,7 @@ import java.util.Objects;
 
 
 /**
- * Base class for {@link Envelope} implementations.
+ * Default implementations of most {@code Envelope} methods, leaving the data storage to subclasses.
  * This base class does not hold any state and does not implement the {@link java.io.Serializable}
  * or {@link Cloneable} interfaces. The internal representation, and the choice to be cloneable or
  * serializable, is left to subclasses.
