@@ -148,8 +148,8 @@ final class AuthorityCodes extends AbstractMap<String,String> implements Seriali
             for (int i=0; i<table.subTypes.length; i++) {
                 final Class<?> candidate = table.subTypes[i];
                 if (candidate.isAssignableFrom(type)) {
-                    buffer.append(" WHERE (").append(table.typeColumn)
-                          .append(" LIKE '").append(table.typeNames[i]).append("%')");
+                    buffer.append(" WHERE (CAST(").append(table.typeColumn).append(" AS ").append(TableInfo.ENUM_REPLACEMENT)
+                          .append(") LIKE '").append(table.typeNames[i]).append("%')");
                     hasWhere = true;
                     tableType = candidate;
                     break;

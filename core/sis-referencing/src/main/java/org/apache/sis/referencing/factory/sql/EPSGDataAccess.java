@@ -3217,7 +3217,7 @@ next:               while (r.next()) {
                     "SELECT COORD_REF_SYS_CODE" +
                     " FROM [Coordinate Reference System]" +
                     " WHERE PROJECTION_CONV_CODE = ?" +
-                      " AND COORD_REF_SYS_KIND LIKE 'projected%'", code))
+                      " AND CAST(COORD_REF_SYS_KIND AS " + TableInfo.ENUM_REPLACEMENT + ") LIKE 'projected%'", code))
             {
                 projection = result.next();
             }

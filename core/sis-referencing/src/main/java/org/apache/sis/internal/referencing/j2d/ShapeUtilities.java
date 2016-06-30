@@ -63,9 +63,7 @@ public final class ShapeUtilities extends Static {
      * @param  by2 <var>y</var> value of the last  point on the second line.
      * @return The intersection point, or {@code null} if none.
      *
-     * @todo This method is used by Geotk (a sandbox for code that may migrate to SIS), but not yet by SIS.
-     *       We temporarily keep this code here, but may delete or move it elsewhere in a future SIS version
-     *       depending whether we port to SIS the sandbox code.
+     * @see org.apache.sis.geometry.Shapes2D#intersectionPoint(Line2D, Line2D)
      */
     public static Point2D.Double intersectionPoint(final double ax1, final double ay1, double ax2, double ay2,
                                                    final double bx1, final double by1, double bx2, double by2)
@@ -118,9 +116,7 @@ public final class ShapeUtilities extends Static {
      *
      * @see #colinearPoint(double,double , double,double , double,double , double)
      *
-     * @todo This method is used by Geotk (a sandbox for code that may migrate to SIS), but not yet by SIS.
-     *       We temporarily keep this code here, but may delete or move it elsewhere in a future SIS version
-     *       depending whether we port to SIS the sandbox code.
+     * @see org.apache.sis.geometry.Shapes2D#nearestColinearPoint(Line2D, Point2D)
      */
     public static Point2D.Double nearestColinearPoint(final double x1, final double y1,
                                                       final double x2, final double y2,
@@ -179,9 +175,7 @@ public final class ShapeUtilities extends Static {
      *
      * @see #nearestColinearPoint(double,double , double,double , double,double)
      *
-     * @todo This method is used by Geotk (a sandbox for code that may migrate to SIS), but not yet by SIS.
-     *       We temporarily keep this code here, but may delete or move it elsewhere in a future SIS version
-     *       depending whether we port to SIS the sandbox code.
+     * @see org.apache.sis.geometry.Shapes2D#colinearPoint(Line2D, Point2D, double)
      */
     public static Point2D.Double colinearPoint(double x1, double y1, double x2, double y2,
                                                double x, double y, double distance)
@@ -323,10 +317,10 @@ public final class ShapeUtilities extends Static {
         x2 -= x1;
         y2 -= y1;
         if (horizontal) {
-            final double a = (y2 - py*x2/px) / (x2-px); // Actually "a*x2"
+            final double a = (y2 - py*x2/px) / (x2-px);     // Actually "a*x2"
             final double check = abs(a);
-            if (!(check <= 1/EPS)) return null; // Two points have the same coordinates.
-            if (!(check >=   EPS)) return null; // The three points are co-linear.
+            if (!(check <= 1/EPS)) return null;             // Two points have the same coordinates.
+            if (!(check >=   EPS)) return null;             // The three points are co-linear.
             final double b = y2/x2 - a;
             px = (1 + b/(2*a))*x2 - y2/(2*a);
             py = y1 + b*px;
@@ -339,18 +333,18 @@ public final class ShapeUtilities extends Static {
             final double rx2 = x2;
             final double ry2 = y2;
             x2 = hypot(x2,y2);
-            y2 = (px*rx2 + py*ry2) / x2; // use 'y2' as a temporary variable for 'x1'
+            y2 = (px*rx2 + py*ry2) / x2;                    // use 'y2' as a temporary variable for 'x1'
             py = (py*rx2 - px*ry2) / x2;
             px = y2;
-            y2 = 0; // set as a matter of principle (but not used).
+            y2 = 0;                                         // set as a matter of principle (but not used).
             /*
              * Now compute the control point coordinates in our new coordinate system axis.
              */
-            final double x = 0.5;                       // Actually "x/x2"
-            final double y = (py*x*x2) / (px*(x2-px));  // Actually "y/y2"
+            final double x = 0.5;                           // Actually "x/x2"
+            final double y = (py*x*x2) / (px*(x2-px));      // Actually "y/y2"
             final double check = abs(y);
-            if (!(check <= 1/EPS)) return null; // Two points have the same coordinates.
-            if (!(check >=   EPS)) return null; // The three points are co-linear.
+            if (!(check <= 1/EPS)) return null;             // Two points have the same coordinates.
+            if (!(check >=   EPS)) return null;             // The three points are co-linear.
             /*
              * Applies the inverse rotation then a translation to bring
              * us back to the original coordinate system.
@@ -362,7 +356,7 @@ public final class ShapeUtilities extends Static {
     }
 
     /**
-     * Returns a circle passing by the 3 given points. The distance between the returned
+     * Returns the center of a circle passing by the 3 given points. The distance between the returned
      * point and any of the given points will be constant; it is the circle radius.
      *
      * @param  x1 <var>x</var> value of the first  point.
@@ -371,11 +365,9 @@ public final class ShapeUtilities extends Static {
      * @param  y2 <var>y</var> value of the second point.
      * @param  x3 <var>x</var> value of the third  point.
      * @param  y3 <var>y</var> value of the third  point.
-     * @return A circle passing by the given points.
+     * @return The center of a circle passing by the given points.
      *
-     * @todo This method is used by Geotk (a sandbox for code that may migrate to SIS), but not yet by SIS.
-     *       We temporarily keep this code here, but may delete or move it elsewhere in a future SIS version
-     *       depending whether we port to SIS the sandbox code.
+     * @see org.apache.sis.geometry.Shapes2D#circle(Point2D, Point2D, Point2D)
      */
     public static Point2D.Double circleCentre(double x1, double y1,
                                               double x2, double y2,

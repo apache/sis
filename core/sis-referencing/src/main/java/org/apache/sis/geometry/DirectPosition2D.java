@@ -33,7 +33,7 @@ import java.util.Objects;
 
 
 /**
- * A two-dimensional position on top of {@link Point2D}.
+ * A two-dimensional position on top of Java2D point.
  * This implementation is provided for inter-operability between Java2D and GeoAPI.
  *
  * <p>This class inherits {@linkplain #x x} and {@linkplain #y y} fields.

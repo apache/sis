@@ -26,7 +26,7 @@ import org.junit.BeforeClass;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.7
+ * @version 0.8
  * @module
  */
 @Suite.SuiteClasses({
@@ -233,6 +233,7 @@ import org.junit.BeforeClass;
     org.apache.sis.geometry.ImmutableEnvelopeTest.class,
     org.apache.sis.geometry.Envelope2DTest.class,
     org.apache.sis.geometry.CurveExtremumTest.class,
+    org.apache.sis.geometry.Shapes2DTest.class,                 // Simpler than EnvelopesTest.
     org.apache.sis.geometry.EnvelopesTest.class,
     org.apache.sis.internal.referencing.ServicesForMetadataTest.class,
 
