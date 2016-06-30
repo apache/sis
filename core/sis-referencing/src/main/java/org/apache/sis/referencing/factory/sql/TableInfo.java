@@ -162,8 +162,15 @@ final class TableInfo {
 
     /**
      * Column type for the type (usually with the {@code "_TYPE"} suffix), or {@code null}.
+     * {@link EPSGDataAccess} and {@link AuthorityCodes} assumes that values in this column
+     * have the maximal length described in the {@value #ENUM_REPLACEMENT} statement.
      */
     final String typeColumn;
+
+    /**
+     * The SQL type to use as a replacement for enumerated values on databases that do not support enumerations.
+     */
+    static final String ENUM_REPLACEMENT = "VARCHAR(24)";
 
     /**
      * Sub-interfaces of {@link #type} to handle, or {@code null} if none.

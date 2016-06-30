@@ -53,7 +53,7 @@ import org.apache.sis.internal.jdk7.Objects;
 
 
 /**
- * A two-dimensional envelope on top of {@link Rectangle2D}.
+ * A two-dimensional envelope on top of Java2D rectangle.
  * This implementation is provided for inter-operability between Java2D and GeoAPI.
  *
  * <p>This class inherits {@linkplain #x x} and {@linkplain #y y} fields.

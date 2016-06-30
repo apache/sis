@@ -554,7 +554,7 @@ public final class Envelopes extends Static {
          *    step. That ordinate is set to the minimal and maximal values of that axis.
          *
          *    Example: If the above steps found that the point (90°S, 30°W) need to be included,
-         *             then this step #3 will also test phe points (90°S, 180°W) and (90°S, 180°E).
+         *             then this step #3 will also test the points (90°S, 180°W) and (90°S, 180°E).
          *
          * NOTE: we test (-180°, centerY), (180°, centerY), (centerX, -90°) and (centerX, 90°)
          * at step #1 before to test (-180°, -90°), (180°, -90°), (-180°, 90°) and (180°, 90°)

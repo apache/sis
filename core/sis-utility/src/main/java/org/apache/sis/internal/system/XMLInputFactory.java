@@ -60,9 +60,9 @@ public final class XMLInputFactory extends Static {
     /**
      * Creates a new reader for the given stream.
      *
-     * @param  in Where to read from.
-     * @return The reader.
-     * @throws XMLStreamException If the reader can not be created.
+     * @param  in where to read from.
+     * @return the reader.
+     * @throws XMLStreamException if the reader can not be created.
      */
     public static XMLStreamReader createXMLStreamReader(final InputStream in) throws XMLStreamException {
         return FACTORY.createXMLStreamReader(in);
@@ -71,9 +71,9 @@ public final class XMLInputFactory extends Static {
     /**
      * Creates a new reader for the given stream.
      *
-     * @param  in Where to read from.
-     * @return The reader.
-     * @throws XMLStreamException If the reader can not be created.
+     * @param  in where to read from.
+     * @return the reader.
+     * @throws XMLStreamException if the reader can not be created.
      */
     public static XMLStreamReader createXMLStreamReader(final Reader in) throws XMLStreamException {
         return FACTORY.createXMLStreamReader(in);
@@ -82,9 +82,9 @@ public final class XMLInputFactory extends Static {
     /**
      * Creates a new reader for the given source.
      *
-     * @param  in Where to read from.
-     * @return The reader.
-     * @throws XMLStreamException If the reader can not be created.
+     * @param  in where to read from.
+     * @return the reader.
+     * @throws XMLStreamException if the reader can not be created.
      */
     public static XMLStreamReader createXMLStreamReader(final InputSource in) throws XMLStreamException {
         return FACTORY.createXMLStreamReader(new SAXSource(in));
@@ -93,9 +93,9 @@ public final class XMLInputFactory extends Static {
     /**
      * Creates a new reader for the given source.
      *
-     * @param  in Where to read from.
-     * @return The reader.
-     * @throws XMLStreamException If the reader can not be created.
+     * @param  in where to read from.
+     * @return the reader.
+     * @throws XMLStreamException if the reader can not be created.
      */
     public static XMLStreamReader createXMLStreamReader(final XMLEventReader in) throws XMLStreamException {
         return FACTORY.createXMLStreamReader(new StAXSource(in));
@@ -104,9 +104,9 @@ public final class XMLInputFactory extends Static {
     /**
      * Creates a new reader for the given source.
      *
-     * @param  in Where to read from.
-     * @return The reader.
-     * @throws XMLStreamException If the reader can not be created.
+     * @param  in where to read from.
+     * @return the reader.
+     * @throws XMLStreamException if the reader can not be created.
      */
     public static XMLStreamReader createXMLStreamReader(final Node in) throws XMLStreamException {
         return FACTORY.createXMLStreamReader(new DOMSource(in));
@@ -115,9 +115,9 @@ public final class XMLInputFactory extends Static {
     /**
      * Creates a new reader for the given source.
      *
-     * @param  in Where to read from.
-     * @return The reader.
-     * @throws XMLStreamException If the reader can not be created.
+     * @param  in where to read from.
+     * @return the reader.
+     * @throws XMLStreamException if the reader can not be created.
      */
     public static XMLStreamReader createXMLStreamReader(final Source in) throws XMLStreamException {
         return FACTORY.createXMLStreamReader(in);

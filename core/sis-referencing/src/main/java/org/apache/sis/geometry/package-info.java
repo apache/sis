@@ -45,6 +45,12 @@
  *   </tr>
  * </table>
  *
+ * <div class="section">Java2D dependency</div>
+ * All classes having a name that ends with "2D" are designed for inter-operability with Java2D.
+ * All other classes have no dependency to Java2D.
+ * This clear separation aims to make easier to use Apache SIS on platforms that do not support Java2D
+ * (for example Android) or to avoid loading Java2D classes when only JavaFX is desired.
+ *
  * <div class="section">Envelopes spanning the anti-meridian of a Geographic CRS</div>
  * The Web Coverage Service (WCS) 1.1 specification uses an extended interpretation
  * of the bounding box definition. In a WCS 1.1 data structure, the
@@ -77,7 +83,7 @@
  *
  * @author Martin Desruisseaux (IRD, Geomatys)
  * @since   0.3
- * @version 0.3
+ * @version 0.7
  * @module
  */
 package org.apache.sis.geometry;

@@ -324,7 +324,7 @@ public class DefaultBand extends DefaultSampleDimension implements Band {
 
     /**
      * Returns the wavelength at which the response is the highest.
-     * The units of measurement is given by {@link #getUnits()}.
+     * The units of measurement is given by {@link #getBoundUnits()}.
      *
      * @return Wavelength at which the response is the highest, or {@code null} if unspecified.
      */

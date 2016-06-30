@@ -17,6 +17,8 @@
 package org.apache.sis.referencing;
 
 import java.util.Date;
+import java.util.Map;
+import java.util.HashMap;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.crs.TemporalCRS;
 import org.opengis.referencing.crs.VerticalCRS;
@@ -49,7 +51,7 @@ import static org.apache.sis.test.TestUtilities.*;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4
- * @version 0.7
+ * @version 0.7.1
  * @module
  */
 @DependsOn({
@@ -62,6 +64,58 @@ public final strictfp class CommonCRSTest extends TestCase {
      * Length of a day in milliseconds.
      */
     private static final double DAY_LENGTH = 24 * 60 * 60 * 1000;
+
+    /**
+     * Verifies that the same EPSG code is not used for two objects. Collisions are not allowed between
+     * {@code geographic}, {@code geocentric}, {@code geo3D} and all UTM projections. Strictly speaking
+     * all the above-cited codes may collide with {@code datum} and {@code ellipsoid}, but we nevertheless
+     * avoid those collisions in order to simplify {@link EPSGFactoryFallback#createObject(String)} implementation.
+     */
+    @Test
+    public void ensureNoCodeCollision() {
+        final Map<Integer,Enum<?>> codes = new HashMap<Integer,Enum<?>>();
+        final CommonCRS[] values = CommonCRS.values();
+        for (final CommonCRS crs : values) {
+            assertNoCodeCollision(codes, crs, crs.geographic);
+            assertNoCodeCollision(codes, crs, crs.geocentric);
+            assertNoCodeCollision(codes, crs, crs.geo3D);
+            for (int zone = crs.firstZone; zone <= crs.lastZone; zone++) {
+                if (crs.northUTM != 0) assertNoCodeCollision(codes, crs, crs.northUTM + zone);
+                if (crs.southUTM != 0) assertNoCodeCollision(codes, crs, crs.southUTM + zone);
+            }
+        }
+        final CommonCRS.Vertical[] vertical = CommonCRS.Vertical.values();
+        for (final CommonCRS.Vertical crs : vertical) {
+            if (crs.isEPSG) {
+                assertNoCodeCollision(codes, crs, crs.crs);
+            }
+        }
+        /*
+         * Following restrictions are not strictly required, but their enforcement
+         * simplifies the EPSGFactoryFallback.createObject(String) implementation.
+         */
+        assertNull(codes.put(Integer.valueOf(StandardDefinitions.GREENWICH), CommonCRS.WGS84));
+        for (final CommonCRS crs : values) assertNull   (crs.name(),      codes.get(Integer.valueOf(crs.ellipsoid)));
+        for (final CommonCRS crs : values) assertNotSame(crs.name(), crs, codes.put(Integer.valueOf(crs.ellipsoid), crs));
+        for (final CommonCRS crs : values) assertNull   (crs.name(),      codes.get(Integer.valueOf(crs.datum)));
+        for (final CommonCRS.Vertical crs : vertical) {
+            if (crs.isEPSG) {
+                assertNull(crs.name(), codes.get(Integer.valueOf(crs.datum)));
+            }
+        }
+    }
+
+    /**
+     * Helper method for {@link #ensureNoCodeCollision()} only.
+     */
+    private static void assertNoCodeCollision(final Map<Integer,Enum<?>> codes, final Enum<?> crs, final int n) {
+        if (n != 0) {
+            final Enum<?> existing = codes.put(n, crs);
+            if (existing != null) {
+                fail(existing + " and " + crs + " both use the same EPSG:" + n + " code.");
+            }
+        }
+    }
 
     /**
      * Tests the {@link CommonCRS#geographic()} method.

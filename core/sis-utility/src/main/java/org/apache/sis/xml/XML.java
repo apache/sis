@@ -353,7 +353,7 @@ public final class XML extends Static {
      *
      * @param  object The root of content tree to be marshalled.
      * @return The XML representation of the given object.
-     * @throws JAXBException If an error occurred during the marshalling.
+     * @throws JAXBException if an error occurred during the marshalling.
      */
     public static String marshal(final Object object) throws JAXBException {
         ensureNonNull("object", object);
@@ -370,7 +370,7 @@ public final class XML extends Static {
      *
      * @param  object The root of content tree to be marshalled.
      * @param  output The stream where to write.
-     * @throws JAXBException If an error occurred during the marshalling.
+     * @throws JAXBException if an error occurred during the marshalling.
      */
     public static void marshal(final Object object, final OutputStream output) throws JAXBException {
         ensureNonNull("object", object);
@@ -386,7 +386,7 @@ public final class XML extends Static {
      *
      * @param  object The root of content tree to be marshalled.
      * @param  output The file to be written.
-     * @throws JAXBException If an error occurred during the marshalling.
+     * @throws JAXBException if an error occurred during the marshalling.
      */
     public static void marshal(final Object object, final File output) throws JAXBException {
         ensureNonNull("object", object);
@@ -409,7 +409,7 @@ public final class XML extends Static {
      * @param  object The root of content tree to be marshalled.
      * @param  output The file to be written.
      * @param  properties An optional map of properties to give to the marshaller, or {@code null} if none.
-     * @throws JAXBException If a property has an illegal value, or if an error occurred during the marshalling.
+     * @throws JAXBException if a property has an illegal value, or if an error occurred during the marshalling.
      *
      * @since 0.4
      */
@@ -434,7 +434,7 @@ public final class XML extends Static {
      *
      * @param  xml The XML representation of an object.
      * @return The object unmarshalled from the given input.
-     * @throws JAXBException If an error occurred during the unmarshalling.
+     * @throws JAXBException if an error occurred during the unmarshalling.
      */
     public static Object unmarshal(final String xml) throws JAXBException {
         ensureNonNull("input", xml);
@@ -451,7 +451,7 @@ public final class XML extends Static {
      *
      * @param  input The stream from which to read a XML representation.
      * @return The object unmarshalled from the given input.
-     * @throws JAXBException If an error occurred during the unmarshalling.
+     * @throws JAXBException if an error occurred during the unmarshalling.
      */
     public static Object unmarshal(final InputStream input) throws JAXBException {
         ensureNonNull("input", input);
@@ -467,7 +467,7 @@ public final class XML extends Static {
      *
      * @param  input The URL from which to read a XML representation.
      * @return The object unmarshalled from the given input.
-     * @throws JAXBException If an error occurred during the unmarshalling.
+     * @throws JAXBException if an error occurred during the unmarshalling.
      */
     public static Object unmarshal(final URL input) throws JAXBException {
         ensureNonNull("input", input);
@@ -483,7 +483,7 @@ public final class XML extends Static {
      *
      * @param  input The file from which to read a XML representation.
      * @return The object unmarshalled from the given input.
-     * @throws JAXBException If an error occurred during the unmarshalling.
+     * @throws JAXBException if an error occurred during the unmarshalling.
      */
     public static Object unmarshal(final File input) throws JAXBException {
         ensureNonNull("input", input);
@@ -506,7 +506,7 @@ public final class XML extends Static {
      * @param  input The file from which to read a XML representation.
      * @param  properties An optional map of properties to give to the unmarshaller, or {@code null} if none.
      * @return The object unmarshalled from the given input.
-     * @throws JAXBException If a property has an illegal value, or if an error occurred during the unmarshalling.
+     * @throws JAXBException if a property has an illegal value, or if an error occurred during the unmarshalling.
      *
      * @since 0.4
      */
