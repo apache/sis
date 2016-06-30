@@ -16,7 +16,6 @@
  */
 package org.apache.sis.openoffice;
 
-import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.LogRecord;
@@ -182,24 +181,6 @@ public abstract class CalcAddins extends WeakBase implements XServiceName, XServ
             return message;
         }
         return Classes.getShortClassName(exception);
-    }
-
-    /**
-     * Returns a table filled with {@link Double#NaN} values.
-     * This method is invoked when an operation failed for a whole table.
-     *
-     * @param  rows  the number of rows.
-     * @param  cols  the number of columns.
-     * @return A table of the given size filled with NaN values.
-     */
-    static double[][] getFailure(final int rows, final int cols) {
-        final double[][] dummy = new double[rows][];
-        for (int i=0; i<rows; i++) {
-            final double[] row = new double[cols];
-            Arrays.fill(row, Double.NaN);
-            dummy[i] = row;
-        }
-        return dummy;
     }
 
     /**
