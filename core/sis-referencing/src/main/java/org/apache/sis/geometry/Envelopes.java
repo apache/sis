@@ -103,7 +103,7 @@ public final class Envelopes extends Static {
     /**
      * Returns {@code true} if the given axis is of kind "Wrap Around".
      */
-    private static boolean isWrapAround(final CoordinateSystemAxis axis) {
+    static boolean isWrapAround(final CoordinateSystemAxis axis) {
         return RangeMeaning.WRAPAROUND.equals(axis.getRangeMeaning());
     }
 
@@ -111,8 +111,8 @@ public final class Envelopes extends Static {
      * Invoked when a recoverable exception occurred. Those exceptions must be minor enough
      * that they can be silently ignored in most cases.
      */
-    private static void recoverableException(final TransformException exception) {
-        Logging.recoverableException(Logging.getLogger(Loggers.GEOMETRY), Envelopes.class, "transform", exception);
+    static void recoverableException(final Class<? extends Static> caller, final TransformException exception) {
+        Logging.recoverableException(Logging.getLogger(Loggers.GEOMETRY), caller, "transform", exception);
     }
 
     /**
@@ -129,7 +129,7 @@ public final class Envelopes extends Static {
      * @throws TransformException If the point can not be transformed
      *         or if a problem occurred while calculating the derivative.
      */
-    private static Matrix derivativeAndTransform(final MathTransform transform, final double[] srcPts,
+    static Matrix derivativeAndTransform(final MathTransform transform, final double[] srcPts,
             final double[] dstPts, final int dstOff, final boolean derivate) throws TransformException
     {
         if (transform instanceof AbstractMathTransform) {
@@ -296,7 +296,7 @@ public final class Envelopes extends Static {
                 }
                 isDerivativeSupported = false;
                 transform.transform(sourcePt, 0, ordinates, offset, 1);
-                recoverableException(e);        // Log only if the above call was successful.
+                recoverableException(Envelopes.class, e);       // Log only if the above call was successful.
             }
             /*
              * The transformed point has been saved for future reuse after the enclosing
@@ -554,7 +554,7 @@ public final class Envelopes extends Static {
          *    step. That ordinate is set to the minimal and maximal values of that axis.
          *
          *    Example: If the above steps found that the point (90°S, 30°W) need to be included,
-         *             then this step #3 will also test phe points (90°S, 180°W) and (90°S, 180°E).
+         *             then this step #3 will also test the points (90°S, 180°W) and (90°S, 180°E).
          *
          * NOTE: we test (-180°, centerY), (180°, centerY), (centerX, -90°) and (centerX, 90°)
          * at step #1 before to test (-180°, -90°), (180°, -90°), (-180°, 90°) and (180°, 90°)
@@ -604,7 +604,7 @@ public final class Envelopes extends Static {
                          * lost dimensions. So we don't log any warning in this case.
                          */
                         if (dimension >= mt.getSourceDimensions()) {
-                            recoverableException(exception);
+                            recoverableException(Envelopes.class, exception);
                         }
                         return transformed;
                     }
@@ -720,7 +720,7 @@ public final class Envelopes extends Static {
             }
         }
         if (warning != null) {
-            recoverableException(warning);
+            recoverableException(Envelopes.class, warning);
         }
         return transformed;
     }

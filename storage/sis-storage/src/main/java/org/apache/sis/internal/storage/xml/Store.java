@@ -144,7 +144,7 @@ final class Store extends DataStore {
     private void unmarshal() throws DataStoreException {
         final StreamSource s = source;
         final Closeable in = input(s);
-        source = null; // Cleared first in case of error.
+        source = null;                          // Cleared first in case of error.
         if (in != null) try {
             try {
                 object = XML.unmarshal(s, properties());
@@ -197,7 +197,7 @@ final class Store extends DataStore {
     public void close() throws DataStoreException {
         object = null;
         final Closeable in = input(source);
-        source = null; // Cleared first in case of failure.
+        source = null;                          // Cleared first in case of failure.
         if (in != null) try {
             in.close();
         } catch (IOException e) {
