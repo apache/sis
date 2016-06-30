@@ -158,6 +158,10 @@ public final strictfp class TransverseMercatorTest extends MapProjectionTestCase
          */
         final double[] source = CoordinateDomain.GEOGRAPHIC_RADIANS_HALF_λ.generateRandomInput(new Random(5346144739450824145L), 2, 10);
         final double[] target = new double[source.length];
+        for (int i=0; i<source.length; i+=2) {
+            // A longitude range of [-90 … +90]° is still too wide for Transverse Mercator. Reduce to [-45 … +45]°.
+            source[i] /= 2;
+        }
         transform.transform(source, 0, target, 0, 10);
         transform = assertSerializedEquals(transform);
         tolerance = Formulas.LINEAR_TOLERANCE;

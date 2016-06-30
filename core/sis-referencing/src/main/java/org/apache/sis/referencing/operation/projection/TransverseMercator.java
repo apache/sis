@@ -59,7 +59,7 @@ import static org.apache.sis.internal.referencing.provider.TransverseMercator.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
  * @since   0.6
- * @version 0.7
+ * @version 0.8
  * @module
  *
  * @see Mercator
@@ -314,19 +314,24 @@ public class TransverseMercator extends ConformalProjection {
                             final boolean derivate) throws ProjectionException
     {
         final double λ = srcPts[srcOff];
-        if (abs(λ) > PI/2) {
+        if (abs(λ) >= (0.9*PI/2)) {
             /*
-             * The Transverse Mercator projection is conceptually a Mercator projection rotated by ±90°.
-             * In the Mercator projection, the y values tend toward infinity for latitudes close to ±90°.
-             * Likewise in the Transverse Mercator, x values tend toward infinity for longitudes close ±90°
-             * (at equator and after subtraction of central meridian). After we pass the 90° limit,
+             * The Transverse Mercator projection is conceptually a Mercator projection rotated by 90°.
+             * In Mercator projection, y values tend toward infinity for latitudes close to ±90°.
+             * In Transverse Mercator, x values tend toward infinity for longitudes close to ±90°
+             * at equator and after subtraction of central meridian. After we pass the 90° limit,
              * the Transverse Mercator results at (90° + Δ) are the same as for (90° - Δ).
              *
              * Problem is that 90° is an ordinary longitude value, not even close to the limit of longitude
-             * values range (±180°). So having f(90°+Δ, φ) = f(90°-Δ, φ) results in wrong behavior in some
-             * algorithm likes the one used by Envelopes.transform(CoordinateOperation, Envelope).
-             * Since a distance of 90° from central meridian is way outside the Transverse Mercator domain
-             * of validity anyway, we do not let the user go further.
+             * values range (±180°). So having f(π/2+Δ, φ) = f(π/2-Δ, φ) results in wrong behavior in some
+             * algorithms like the one used by Envelopes.transform(CoordinateOperation, Envelope).
+             * Since a distance of 90° from central meridian is far outside the Transverse Mercator
+             * domain of validity anyway, we do not let the user go further.
+             *
+             * In the particular case of ellipsoidal formulas, we put a limit of 81° instead of 90°
+             * because experience shows that results close to equator become chaotic after 85° when
+             * using WGS84 ellipsoid. We do not need to reduce the limit for the spherical formulas,
+             * because the mathematic are simpler and the function still smooth until 90°.
              */
             throw new ProjectionException(Errors.Keys.OutsideDomainOfValidity);
         }
@@ -611,7 +616,11 @@ public class TransverseMercator extends ConformalProjection {
                                 final double[] dstPts, final int dstOff,
                                 final boolean derivate) throws ProjectionException
         {
-            final double λ    = srcPts[srcOff  ];
+            final double λ = srcPts[srcOff  ];
+            if (abs(λ) > PI/2) {
+                // See comment in the overridden class.
+                throw new ProjectionException(Errors.Keys.OutsideDomainOfValidity);
+            }
             final double φ    = srcPts[srcOff+1];
             final double sinλ = sin(λ);
             final double cosλ = cos(λ);
