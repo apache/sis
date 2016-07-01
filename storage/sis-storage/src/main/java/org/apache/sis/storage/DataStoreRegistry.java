@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.LinkedList;
 import java.util.Iterator;
 import java.util.ServiceLoader;
+import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 
@@ -39,7 +40,7 @@ import org.apache.sis.util.resources.Errors;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.4
+ * @version 0.8
  * @module
  */
 final class DataStoreRegistry {
@@ -51,19 +52,20 @@ final class DataStoreRegistry {
     private final ServiceLoader<DataStoreProvider> loader;
 
     /**
-     * Creates a new registry which will use the current thread
-     * {@linkplain Thread#getContextClassLoader() context class loader}.
+     * Creates a new registry which will look for data stores accessible to the default class loader.
+     * The default is the current thread {@linkplain Thread#getContextClassLoader() context class loader},
+     * provided that it can access at least the Apache SIS stores.
      */
-    DataStoreRegistry() {
-        loader = ServiceLoader.load(DataStoreProvider.class);
+    public DataStoreRegistry() {
+        loader = DefaultFactories.createServiceLoader(DataStoreProvider.class);
     }
 
     /**
-     * Creates a new registry which will use the given class loader.
+     * Creates a new registry which will look for data stores accessible to the given class loader.
      *
      * @param loader The class loader to use for loading {@link DataStoreProvider} implementations.
      */
-    DataStoreRegistry(final ClassLoader loader) {
+    public DataStoreRegistry(final ClassLoader loader) {
         ArgumentChecks.ensureNonNull("loader", loader);
         this.loader = ServiceLoader.load(DataStoreProvider.class, loader);
     }

@@ -14,40 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.xml;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
+ * Apache SIS services made available to Apache <a href="http://www.openoffice.org">OpenOffice</a> or LibreOffice.
+ * Functions to make available in OpenOffice are defined in {@code X*.idl} files,
+ * which are converted to {@code X*.java} files for convenience.
  *
- * @author Guilhem Legal (Geomatys)
- * @since   0.7
- * @version 0.7
+ * <p>Note that the {@code X*.class} files to be included in the final JAR file
+ * shall be compiled from the {@code X*.idl} files, not from the {@code X*.java} files.
+ * See {@code application/sis-openoffice/src/main/unopkg/build-instruction.html} for more information.</p>
+ *
+ * @author  Martin Desruisseaux (IRD, Geomatys)
+ * @since   0.8
+ * @version 0.8
  * @module
  */
-public abstract class AbstractConfigurable {
-
-    /**
-     * Map of optional properties to configure the underlying object.
-     *
-     */
-    protected final Map<String, Object> properties = new HashMap<>();
-
-    /**
-     * 
-     * @param key property key
-     * @return value, may be null
-     */
-    public Object getProperty(final String key) {
-        return properties.get(key);
-    }
-    
-    /**
-     * @return the properties
-     */
-    public Map<String, Object> getProperties() {
-        return properties;
-    }
-
-}
+package org.apache.sis.openoffice;

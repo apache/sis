@@ -20,11 +20,15 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.io.IOException;
+import javax.xml.stream.XMLStreamException;
 import com.esri.core.geometry.Point;
 import org.opengis.geometry.Envelope;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.ImmutableEnvelope;
 import org.apache.sis.referencing.CommonCRS;
+import org.apache.sis.storage.StorageConnector;
+import org.apache.sis.storage.DataStoreException;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -50,6 +54,10 @@ public class GPXReaderTest {
     private static final double DELTA = 0.000001;
 
 
+    private static GPXReader create(final String resource) throws DataStoreException, IOException, XMLStreamException {
+        return new GPXReader(new StorageConnector(GPXReaderTest.class.getResource(resource)));
+    }
+
     /**
      * Tests GPX version 1.0.0 metadata tag parsing.
      *
@@ -57,12 +65,8 @@ public class GPXReaderTest {
      */
     @Test
     public void testMetadataRead100() throws Exception {
-
-        try (final GPXReader reader = new GPXReader()) {
-            reader.setInput(GPXReaderTest.class.getResource(
-                    "/org/apache/sis/gpx/sample_metadata100.xml"));
-
-            final MetaData data = reader.getMetadata();
+        try (final GPXReader reader = create("/org/apache/sis/gpx/sample_metadata100.xml")) {
+            final MetaData data = reader.metadata;
 
             assertEquals("sample", data.getName());
             assertEquals("sample gpx test file", data.getDescription());
@@ -88,12 +92,8 @@ public class GPXReaderTest {
      */
     @Test
     public void testMetadataRead110() throws Exception {
-
-        try (final GPXReader reader = new GPXReader()) {
-            reader.setInput(GPXReaderTest.class.getResource(
-                    "/org/apache/sis/gpx/sample_metadata110.xml"));
-
-            final MetaData data = reader.getMetadata();
+        try (final GPXReader reader = create("/org/apache/sis/gpx/sample_metadata110.xml")) {
+            final MetaData data = reader.metadata;
 
             assertEquals("sample", data.getName());
             assertEquals("sample gpx test file", data.getDescription());
@@ -124,12 +124,8 @@ public class GPXReaderTest {
      */
     @Test
     public void testWayPointRead100() throws Exception {
-
-        try (final GPXReader reader = new GPXReader()) {
-            reader.setInput(GPXReaderTest.class.getResource(
-                    "/org/apache/sis/gpx/sample_waypoint100.xml"));
-
-            final MetaData data = reader.getMetadata();
+        try (final GPXReader reader = create("/org/apache/sis/gpx/sample_waypoint100.xml")) {
+            final MetaData data = reader.metadata;
 
             assertNull(data.getName());
             assertNull(data.getDescription());
@@ -157,12 +153,8 @@ public class GPXReaderTest {
      */
     @Test
     public void testWayPointRead110() throws Exception {
-
-        try (final GPXReader reader = new GPXReader()) {
-            reader.setInput(GPXReaderTest.class.getResource(
-                    "/org/apache/sis/gpx/sample_waypoint110.xml"));
-
-            final MetaData data = reader.getMetadata();
+        try (final GPXReader reader = create("/org/apache/sis/gpx/sample_waypoint110.xml")) {
+            final MetaData data = reader.metadata;
 
             assertNull(data.getName());
             assertNull(data.getDescription());
@@ -191,12 +183,8 @@ public class GPXReaderTest {
      */
     @Test
     public void testRouteRead100() throws Exception {
-
-        try (final GPXReader reader = new GPXReader()) {
-            reader.setInput(GPXReaderTest.class.getResource(
-                    "/org/apache/sis/gpx/sample_route100.xml"));
-
-            final MetaData data = reader.getMetadata();
+        try (final GPXReader reader = create("/org/apache/sis/gpx/sample_route100.xml")) {
+            final MetaData data = reader.metadata;
 
             assertNull(data.getName());
             assertNull(data.getDescription());
@@ -260,12 +248,8 @@ public class GPXReaderTest {
      */
     @Test
     public void testRouteRead110() throws Exception {
-
-        try (final GPXReader reader = new GPXReader()) {
-            reader.setInput(GPXReaderTest.class.getResource(
-                    "/org/apache/sis/gpx/sample_route110.xml"));
-
-            final MetaData data = reader.getMetadata();
+        try (final GPXReader reader = create("/org/apache/sis/gpx/sample_route110.xml")) {
+            final MetaData data = reader.metadata;
 
             assertNull(data.getName());
             assertNull(data.getDescription());
@@ -331,12 +315,8 @@ public class GPXReaderTest {
      */
     @Test
     public void testTrackRead100() throws Exception {
-
-        try (final GPXReader reader = new GPXReader()) {
-            reader.setInput(GPXReaderTest.class.getResource(
-                    "/org/apache/sis/gpx/sample_track100.xml"));
-
-            final MetaData data = reader.getMetadata();
+        try (final GPXReader reader = create("/org/apache/sis/gpx/sample_track100.xml")) {
+            final MetaData data = reader.metadata;
 
             assertNull(data.getName());
             assertNull(data.getDescription());
@@ -405,12 +385,8 @@ public class GPXReaderTest {
      */
     @Test
     public void testTrackRead110() throws Exception {
-
-        try (final GPXReader reader = new GPXReader()) {
-            reader.setInput(GPXReaderTest.class.getResource(
-                    "/org/apache/sis/gpx/sample_track110.xml"));
-
-            final MetaData data = reader.getMetadata();
+        try (final GPXReader reader = create("/org/apache/sis/gpx/sample_track110.xml")) {
+            final MetaData data = reader.metadata;
 
             assertNull(data.getName());
             assertNull(data.getDescription());
@@ -601,6 +577,5 @@ public class GPXReaderTest {
         envelope.setRange(0, d0, d1);
         envelope.setRange(1, d2, d3);
         return new ImmutableEnvelope(envelope);
-
     }
 }

@@ -405,6 +405,26 @@ public final class XML extends Static {
     }
 
     /**
+     * Marshall the given object into a path.
+     *
+     * @param  object The root of content tree to be marshalled.
+     * @param  output The file to be written.
+     * @throws JAXBException if an error occurred during the marshalling.
+     */
+    public static void marshal(final Object object, final Path output) throws JAXBException {
+        ensureNonNull("object", object);
+        ensureNonNull("output", output);
+        try (OutputStream out = Files.newOutputStream(output, StandardOpenOption.CREATE, StandardOpenOption.WRITE)) {
+            final MarshallerPool pool = getPool();
+            final Marshaller marshaller = pool.acquireMarshaller();
+            marshaller.marshal(object, out);
+            pool.recycle(marshaller);
+        } catch (IOException e) {
+            throw new JAXBException(Errors.format(Errors.Keys.CanNotOpen_1, output), e);
+        }
+    }
+
+    /**
      * Marshall the given object to a stream, DOM or other destinations.
      * This is the most flexible marshalling method provided in this {@code XML} class.
      * The destination is specified by the {@code output} argument implementation, for example

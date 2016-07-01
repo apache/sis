@@ -19,7 +19,9 @@ package org.apache.sis.storage.netcdf;
 import java.io.IOException;
 import org.opengis.metadata.Metadata;
 import org.apache.sis.util.Debug;
+import org.apache.sis.util.Classes;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.resources.Errors;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.StorageConnector;
@@ -33,7 +35,7 @@ import org.apache.sis.metadata.ModifiableMetadata;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.3
+ * @version 0.8
  * @module
  *
  * @see NetcdfStoreProvider
@@ -56,7 +58,7 @@ public class NetcdfStore extends DataStore {
      * needed resource.
      *
      * @param  storage Information about the storage (URL, stream, {@link ucar.nc2.NetcdfFile} instance, <i>etc</i>).
-     * @throws DataStoreException If an error occurred while opening the NetCDF file.
+     * @throws DataStoreException if an error occurred while opening the NetCDF file.
      */
     public NetcdfStore(final StorageConnector storage) throws DataStoreException {
         ArgumentChecks.ensureNonNull("storage", storage);
@@ -64,6 +66,10 @@ public class NetcdfStore extends DataStore {
             decoder = NetcdfStoreProvider.decoder(listeners, storage);
         } catch (IOException e) {
             throw new DataStoreException(e);
+        }
+        if (decoder == null) {
+            throw new DataStoreException(Errors.format(Errors.Keys.IllegalInputTypeForReader_2,
+                    "NetCDF", Classes.getClass(storage.getStorage())));
         }
     }
 
@@ -73,7 +79,7 @@ public class NetcdfStore extends DataStore {
      * data quality, usage constraints and more.
      *
      * @return Information about the dataset.
-     * @throws DataStoreException If an error occurred while reading the data.
+     * @throws DataStoreException if an error occurred while reading the data.
      */
     @Override
     public Metadata getMetadata() throws DataStoreException {
@@ -92,7 +98,7 @@ public class NetcdfStore extends DataStore {
     /**
      * Closes this NetCDF store and releases any underlying resources.
      *
-     * @throws DataStoreException If an error occurred while closing the NetCDF file.
+     * @throws DataStoreException if an error occurred while closing the NetCDF file.
      */
     @Override
     public void close() throws DataStoreException {
