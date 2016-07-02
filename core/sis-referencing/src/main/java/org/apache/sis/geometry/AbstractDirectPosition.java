@@ -44,7 +44,7 @@ import java.util.Objects;
 
 
 /**
- * Base class for {@link DirectPosition} implementations.
+ * Default implementations of some {@code DirectPosition} methods, leaving the data storage to subclasses.
  * A direct position holds the coordinates for a position within some
  * {@linkplain org.apache.sis.referencing.crs.AbstractCRS coordinate reference system}.
  * This base class provides default implementations for {@link #toString()},

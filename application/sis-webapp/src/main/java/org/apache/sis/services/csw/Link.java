@@ -14,40 +14,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.xml;
+package org.apache.sis.services.csw;
 
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  *
- * @author Guilhem Legal (Geomatys)
- * @since   0.7
- * @version 0.7
+ *
+ * @author  Thi Phuong Hao Nguyen (VNSC)
+ * @since   0.8
+ * @version 0.8
  * @module
  */
-public abstract class AbstractConfigurable {
+final class Link {
+    private String link;
+    private String rel;
 
-    /**
-     * Map of optional properties to configure the underlying object.
-     *
-     */
-    protected final Map<String, Object> properties = new HashMap<>();
-
-    /**
-     * 
-     * @param key property key
-     * @return value, may be null
-     */
-    public Object getProperty(final String key) {
-        return properties.get(key);
-    }
-    
-    /**
-     * @return the properties
-     */
-    public Map<String, Object> getProperties() {
-        return properties;
+    public String getLink() {
+        return link;
     }
 
+    public void setLink(String link) {
+        this.link = link;
+    }
+
+    public String getRel() {
+        return rel;
+    }
+
+    public void setRel(String rel) {
+        this.rel = rel;
+    }
 }

@@ -26,10 +26,11 @@ import org.junit.BeforeClass;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.7
+ * @version 0.8
  * @module
  */
 @Suite.SuiteClasses({
+    org.apache.sis.internal.storage.CodeTypeTest.class,
     org.apache.sis.internal.storage.IOUtilitiesTest.class,
     org.apache.sis.internal.storage.ChannelDataInputTest.class,
     org.apache.sis.internal.storage.ChannelDataOutputTest.class,

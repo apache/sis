@@ -74,7 +74,7 @@ public class BundleCreator extends AbstractMojo {
         }
         final String version = project.getVersion();
         try {
-            final Packer packer = new Packer(project.getName(), project.getUrl(), version, targetDirectory);
+            final Packer packer = new Packer(project.getName(), version, targetDirectory);
             packer.preparePack200(FINALNAME_PREFIX + version + ".jar").pack();
         } catch (IOException e) {
             throw new MojoExecutionException(e.getLocalizedMessage(), e);

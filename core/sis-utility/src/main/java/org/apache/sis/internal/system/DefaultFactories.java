@@ -16,11 +16,13 @@
  */
 package org.apache.sis.internal.system;
 
+import java.util.Set;
 import java.util.Map;
+import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.ServiceLoader;
 import java.util.ServiceConfigurationError;
-import org.apache.sis.internal.util.Utilities;
+import org.apache.sis.util.logging.Logging;
 
 
 /**
@@ -31,7 +33,7 @@ import org.apache.sis.internal.util.Utilities;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Guilhem Legal (Geomatys)
  * @since   0.3
- * @version 0.7
+ * @version 0.8
  * @module
  *
  * @see <a href="https://jcp.org/en/jsr/detail?id=330">JSR-330</a>
@@ -87,8 +89,8 @@ public final class DefaultFactories extends SystemListener {
         T factory = type.cast(FACTORIES.get(type));
         if (factory == null && !FACTORIES.containsKey(type)) {
             T fallback = null;
-            for (final T candidate : ServiceLoader.load(type)) {
-                if (Utilities.isSIS(candidate.getClass())) {
+            for (final T candidate : createServiceLoader(type)) {
+                if (candidate.getClass().getName().startsWith(Modules.CLASSNAME_PREFIX)) {
                     if (factory != null) {
                         throw new ServiceConfigurationError("Found two implementations of " + type);
                     }
@@ -156,5 +158,78 @@ public final class DefaultFactories extends SystemListener {
                 + impl.getName() + "” in the Apache SIS namespace, but we found “" + factory.getClass().getName() + "”.");
         }
         return impl.cast(factory);
+    }
+
+    /**
+     * Returns a service loader for the given type using the default class loader.
+     * The default is the current thread {@linkplain Thread#getContextClassLoader() context class loader},
+     * provided that it can access at least the Apache SIS stores.
+     *
+     * @param  <T> The compile-time value of {@code service} argument.
+     * @param  service The interface or abstract class representing the service.
+     * @return A new service loader for the given service type.
+     *
+     * @since 0.8
+     */
+    public static <T> ServiceLoader<T> createServiceLoader(final Class<T> service) {
+        try {
+            return ServiceLoader.load(service, getContextClassLoader());
+        } catch (SecurityException e) {
+            /*
+             * We were not allowed to invoke Thread.currentThread().getContextClassLoader().
+             * But ServiceLoader.load(Class) may be allowed to, since it is part of JDK.
+             */
+            Logging.recoverableException(Logging.getLogger(Loggers.SYSTEM),
+                    DefaultFactories.class, "createServiceLoader", e);
+            return ServiceLoader.load(service);
+        }
+    }
+
+    /**
+     * Returns the context class loader, but makes sure that it has Apache SIS on its classpath.
+     * First, this method invokes {@link Thread#getContextClassLoader()} for the current thread.
+     * Then this method scans over all Apache SIS classes on the stack trace. For each SIS class,
+     * its loader is compared to the above-cited context class loader. If the context class loader
+     * is equal or is a child of the SIS loader, then it is left unchanged. Otherwise the context
+     * class loader is replaced by the SIS one.
+     *
+     * <p>The intend of this method is to ensure that {@link ServiceLoader#load(Class)} will find the
+     * Apache SIS services even in an environment that defined an unsuitable context class loader.</p>
+     *
+     * @return The context class loader if suitable, or another class loader otherwise.
+     * @throws SecurityException if this method is not allowed to get the current thread
+     *         context class loader or one of its parent.
+     *
+     * @since 0.8
+     */
+    private static ClassLoader getContextClassLoader() throws SecurityException {
+        final Thread thread = Thread.currentThread();
+        ClassLoader loader = thread.getContextClassLoader();
+        final Set<ClassLoader> parents = new HashSet<>();
+        for (ClassLoader c = loader; c != null; c = c.getParent()) {
+            parents.add(c);
+        }
+        boolean warnings = false;
+        for (final StackTraceElement trace : thread.getStackTrace()) {
+            final String element = trace.getClassName();
+            if (element.startsWith(Modules.CLASSNAME_PREFIX)) try {
+                ClassLoader c = Class.forName(element).getClassLoader();
+                if (!parents.contains(c)) {
+                    loader = c;
+                    parents.clear();
+                    while (c != null) {
+                        parents.add(c);
+                        c = c.getParent();
+                    }
+                }
+            } catch (SecurityException | ClassNotFoundException e) {
+                if (!warnings) {
+                    warnings = true;
+                    Logging.recoverableException(Logging.getLogger(Loggers.SYSTEM),
+                            DefaultFactories.class, "getContextClassLoader", e);
+                }
+            }
+        }
+        return loader;
     }
 }
