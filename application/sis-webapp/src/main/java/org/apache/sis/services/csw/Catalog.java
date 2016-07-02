@@ -63,7 +63,7 @@ public class Catalog {
                         final LandsatReader reader = new LandsatReader(in);
                         md = reader.read();
                     }
-                } else if (filename.endsWith(".xml")) try {
+                } else if (filename.endsWith(".iso19115")) try {
                     md = (Metadata) XML.unmarshal(file);
                 } catch (JAXBException e) {
                     throw new DataStoreException("Can not read " + file, e);
