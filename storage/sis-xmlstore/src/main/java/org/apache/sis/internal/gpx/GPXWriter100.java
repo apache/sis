@@ -60,8 +60,8 @@ public class GPXWriter100 extends StaxStreamWriter {
      *
      * @param creator file creator
      */
-    public GPXWriter100(final String creator) {
-        this(GPX_NAMESPACE_V10,creator);
+    public GPXWriter100(final String creator, final Object output) throws IOException, XMLStreamException {
+        this(GPX_NAMESPACE_V10, creator, output);
     }
 
     /**
@@ -69,7 +69,8 @@ public class GPXWriter100 extends StaxStreamWriter {
      * @param namespace gpx namespace
      * @param creator file creator
      */
-    protected  GPXWriter100(final String namespace,final String creator) {
+    protected  GPXWriter100(final String namespace, final String creator, final Object output) throws IOException, XMLStreamException {
+        super(output);
         ensureNonNull("creator", creator);
         this.creator = creator;
         this.namespace = namespace;

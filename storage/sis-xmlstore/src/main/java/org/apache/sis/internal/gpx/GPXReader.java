@@ -87,9 +87,8 @@ public class GPXReader extends StaxStreamReader {
      * @throws IOException if input failed to be opened for any IO reason
      * @throws XMLStreamException if input is not a valid XML stream
      */
-    public GPXReader(final StorageConnector storage) throws DataStoreException, IOException, XMLStreamException {
-        super(storage);
-        final Object input = storage.getStorage();
+    public GPXReader(final Object input, final StorageConnector storage) throws DataStoreException, IOException, XMLStreamException {
+        super(input, storage);
         final XMLStreamReader reader = getReader();
 
         //search for the bound tag to generate the envelope
@@ -154,7 +153,6 @@ public class GPXReader extends StaxStreamReader {
      *
      * @return Metadata or null if input is not set.
      */
-    @Override
     public Metadata getMetadata() {
         return null;    // TODO
     }
@@ -163,7 +161,7 @@ public class GPXReader extends StaxStreamReader {
      * {@inheritDoc }
      */
     @Override
-    public void close() throws DataStoreException {
+    public void close() throws IOException, XMLStreamException {
         super.close();
         metadata = null;
         current = null;
@@ -179,7 +177,7 @@ public class GPXReader extends StaxStreamReader {
      * @throws javax.xml.stream.XMLStreamException if xml parser encounter an invalid
      *                          element or underlying stream caused an exception
      */
-    public boolean hasNext() throws DataStoreException, XMLStreamException {
+    public boolean hasNext() throws IOException, XMLStreamException {
         findNext();
         return current != null;
     }
@@ -191,7 +189,7 @@ public class GPXReader extends StaxStreamReader {
      * @throws javax.xml.stream.XMLStreamException if xml parser encounter an invalid
      *                          element or underlying stream caused an exception
      */
-    public Feature next() throws DataStoreException, XMLStreamException {
+    public Feature next() throws IOException, XMLStreamException {
         findNext();
         final Feature ele = current;
         current = null;
@@ -202,7 +200,7 @@ public class GPXReader extends StaxStreamReader {
      * Search for the next feature in the stax stream.
      * This method will set the current local property if there is one.
      */
-    private void findNext() throws DataStoreException, XMLStreamException {
+    private void findNext() throws IOException, XMLStreamException {
         final XMLStreamReader reader = getReader();
         if(current != null) return;
 
@@ -239,7 +237,7 @@ public class GPXReader extends StaxStreamReader {
      *
      * @return MetaData
      */
-    private MetaData parseMetaData100() throws DataStoreException, XMLStreamException {
+    private MetaData parseMetaData100() throws IOException, XMLStreamException {
         final XMLStreamReader reader = getReader();
 
         final MetaData metadata = new MetaData();
@@ -294,7 +292,7 @@ public class GPXReader extends StaxStreamReader {
      *
      * @return MetaData
      */
-    private MetaData parseMetaData110() throws DataStoreException, XMLStreamException {
+    private MetaData parseMetaData110() throws IOException, XMLStreamException {
         final XMLStreamReader reader = getReader();
         final MetaData metadata = new MetaData();
 
@@ -340,7 +338,7 @@ public class GPXReader extends StaxStreamReader {
      *
      * @return CopyRight
      */
-    private CopyRight parseCopyRight() throws DataStoreException, XMLStreamException {
+    private CopyRight parseCopyRight() throws IOException, XMLStreamException {
         final XMLStreamReader reader = getReader();
         final CopyRight copyright = new CopyRight();
         copyright.setAuthor(reader.getAttributeValue(null, ATT_COPYRIGHT_AUTHOR));
@@ -378,7 +376,7 @@ public class GPXReader extends StaxStreamReader {
      *
      * @return URI
      */
-    private URI parseLink() throws DataStoreException, XMLStreamException {
+    private URI parseLink() throws IOException, XMLStreamException {
         final XMLStreamReader reader = getReader();
         String text = reader.getAttributeValue(null, ATT_LINK_HREF);
         String mime = null;
@@ -417,7 +415,7 @@ public class GPXReader extends StaxStreamReader {
      *
      * @return Person
      */
-    private Person parsePerson() throws DataStoreException, XMLStreamException {
+    private Person parsePerson() throws IOException, XMLStreamException {
         final XMLStreamReader reader = getReader();
         final Person person = new Person();
 
@@ -453,7 +451,7 @@ public class GPXReader extends StaxStreamReader {
      *
      * @return Envelope
      */
-    private Envelope parseBound() throws DataStoreException, XMLStreamException {
+    private Envelope parseBound() throws IOException, XMLStreamException {
         final XMLStreamReader reader = getReader();
         final String xmin = reader.getAttributeValue(null, ATT_BOUNDS_MINLON);
         final String xmax = reader.getAttributeValue(null, ATT_BOUNDS_MAXLON);
@@ -477,7 +475,7 @@ public class GPXReader extends StaxStreamReader {
      *
      * @return Feature
      */
-    private Feature parseWayPoint(final int index) throws DataStoreException, XMLStreamException {
+    private Feature parseWayPoint(final int index) throws IOException, XMLStreamException {
         final XMLStreamReader reader = getReader();
         final Feature feature = TYPE_WAYPOINT.newInstance();
         feature.setPropertyValue("index", index);
@@ -569,7 +567,7 @@ public class GPXReader extends StaxStreamReader {
      *
      * @return Feature
      */
-    private Feature parseRoute(final int index) throws DataStoreException, XMLStreamException {
+    private Feature parseRoute(final int index) throws IOException, XMLStreamException {
         final XMLStreamReader reader = getReader();
         final Feature feature = TYPE_ROUTE.newInstance();
         feature.setPropertyValue("index", index);
@@ -632,7 +630,7 @@ public class GPXReader extends StaxStreamReader {
      *
      * @return Feature
      */
-    private Feature parseTrackSegment(final int index) throws DataStoreException, XMLStreamException {
+    private Feature parseTrackSegment(final int index) throws IOException, XMLStreamException {
         final XMLStreamReader reader = getReader();
         final Feature feature = TYPE_TRACK_SEGMENT.newInstance();
         feature.setPropertyValue("index", index);
@@ -669,7 +667,7 @@ public class GPXReader extends StaxStreamReader {
      *
      * @return Feature
      */
-    private Feature parseTrack(final int index) throws DataStoreException, XMLStreamException {
+    private Feature parseTrack(final int index) throws IOException, XMLStreamException {
         final XMLStreamReader reader = getReader();
         final Feature feature = TYPE_TRACK.newInstance();
         feature.setPropertyValue("index", index);

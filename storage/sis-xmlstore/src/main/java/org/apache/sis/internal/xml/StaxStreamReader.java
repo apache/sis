@@ -20,10 +20,10 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.NoSuchElementException;
+import java.io.EOFException;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import javax.xml.stream.util.StreamReaderDelegate;
-import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.internal.system.XMLInputFactory;
@@ -34,13 +34,14 @@ import org.apache.sis.util.Classes;
 
 /**
  * Base class of Apache SIS readers of XML files using STAX parser.
+ * This is a helper class for {@link org.apache.sis.storage.DataStore} implementations.
  * Readers for a given specification should extend this class and provide appropriate read methods.
  *
  * <p>Example:</p>
- * {@preformat
+ * {@preformat java
  *     public class UserObjectReader extends StaxStreamReader {
  *         public UserObject read() throws XMLStreamException {
- *             // Actual STAX reading operations.
+ *             // Actual STAX read operations.
  *             return userObject;
  *         }
  *     }
@@ -48,12 +49,16 @@ import org.apache.sis.util.Classes;
  *
  * And should be used like below:
  *
- * {@preformat
+ * {@preformat java
  *     UserObject obj;
  *     try (UserObjectReader reader = new UserObjectReader(input)) {
  *         obj = instance.read();
  *     }
  * }
+ *
+ * <div class="section">Multi-threading</div>
+ * This class and subclasses are not tread-safe. Synchronization shall be done by the {@code DataStore}
+ * that contains the {@code StaxStreamReader} instance.
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
@@ -61,7 +66,7 @@ import org.apache.sis.util.Classes;
  * @version 0.8
  * @module
  */
-public abstract class StaxStreamReader extends DataStore {
+public abstract class StaxStreamReader extends StaxStream {
     /**
      * The XML stream reader.
      */
@@ -74,67 +79,73 @@ public abstract class StaxStreamReader extends DataStore {
     private Closeable sourceStream;
 
     /**
-     * Creates a new XML store from the given file, URL, stream or reader object.
-     * This constructor invokes {@link StorageConnector#closeAllExcept(Object)},
-     * keeping open only the needed resource.
+     * Creates a new XML reader from the given file, URL, stream or reader object.
+     * This constructor is used in two ways depending on whether the optional {@code storage} argument is null or not:
      *
-     * @param  storage information about the storage (URL, stream, <i>etc</i>).
-     * @throws DataStoreException if an error occurred while opening the XML file.
+     * <ul class="verbose">
+     *   <li>If the {@code storage} argument is {@code null}, then the {@code input} argument shall be an instance of
+     *       {@link javax.xml.stream.XMLStreamReader}, {@link javax.xml.stream.XMLEventReader},
+     *       {@link org.xml.sax.InputSource}, {@link java.io.InputStream}, {@link java.io.Reader},
+     *       {@link javax.xml.transform.Source} or {@link org.w3c.dom.Node},
+     *       otherwise a {@link DataStoreException} will be thrown.</li>
+     *
+     *   <li>If the {@code storage} argument is {@code null}, then the {@code input} argument should be the value of
+     *       {@link StorageConnector#getStorage()} (i.e. the input object as given by the user). If that value is not
+     *       recognized, then this constructor will fallback on {@link StorageConnector#getStorageAs(Class)} with the
+     *       {@link InputStream} type. In any cases, this constructor invokes
+     *       {@link StorageConnector#closeAllExcept(Object)} after the input has been set.</li>
+     * </ul>
+     *
+     * @param  input   value of {@code storage.getStorage()}.
+     * @param  storage information about the storage (URL, stream, <i>etc</i>), or {@code null} if unknown.
+     * @throws DataStoreException if the input type is not recognized.
+     * @throws XMLStreamException if an error occurred while opening the XML file.
      */
-    protected StaxStreamReader(final StorageConnector storage) throws DataStoreException {
-        ArgumentChecks.ensureNonNull("storage", storage);
-        Object obj = storage.getStorage();
-        try {
-            reader = XMLInputFactory.createFromAny(obj);
-            if (reader != null) {
-                if (obj instanceof Closeable) {
-                    sourceStream = (Closeable) obj;
-                }
-            } else {
-                final InputStream in = storage.getStorageAs(InputStream.class);
-                if (in == null) {
-                    throw new DataStoreException(Errors.format(Errors.Keys.IllegalInputTypeForReader_2, "XML", Classes.getClass(obj)));
-                }
+    protected StaxStreamReader(final Object input, final StorageConnector storage) throws DataStoreException, XMLStreamException {
+        ArgumentChecks.ensureNonNull("input", input);
+        reader = XMLInputFactory.createFromAny(input);
+        if (reader != null) {
+            if (input instanceof Closeable) {
+                sourceStream = (Closeable) input;
+            }
+            if (storage != null) {
+                storage.closeAllExcept(input);
+            }
+        } else {
+            final InputStream in;
+            if (storage != null && (in = storage.getStorageAs(InputStream.class)) != null) {
                 reader = XMLInputFactory.createXMLStreamReader(in);
                 sourceStream = in;
-                obj = in;
+                storage.closeAllExcept(in);
+            } else {
+                throw new DataStoreException(Errors.format(Errors.Keys.IllegalInputTypeForReader_2, "XML", Classes.getClass(input)));
             }
-        } catch (XMLStreamException e) {
-            throw new DataStoreException(e);
         }
-        storage.closeAllExcept(obj);
     }
 
     /**
-     * Returns the error resources in the current locale.
-     */
-    private Errors errors() {
-        return Errors.getResources(getLocale());
-    }
-
-    /**
-     * Returns the XML stream reader.
+     * Returns the XML stream reader if it is not closed.
      *
      * @return the XML stream reader (never null).
-     * @throws DataStoreException if this XML reader has been closed.
+     * @throws IOException if this XML reader has been closed.
      */
-    protected final XMLStreamReader getReader() throws DataStoreException {
+    protected final XMLStreamReader getReader() throws IOException {
         if (reader != null) {
             return reader;
         }
-        throw new DataStoreException(errors().getString(Errors.Keys.ClosedReader_1, "XML"));
+        throw new IOException(errors().getString(Errors.Keys.ClosedReader_1, "XML"));
     }
 
     /**
      * Returns a XML stream reader over only a portion of the document, from given position inclusive
-     * until the end of the given element exclusive. Nested elements of the same name, if any; will be
+     * until the end of the given element exclusive. Nested elements of the same name, if any, will be
      * ignored.
      *
      * @param  tagName name of the tag to close.
      * @return a reader over a portion of the stream.
-     * @throws DataStoreException if this XML reader has been closed.
+     * @throws IOException if this XML reader has been closed.
      */
-    protected final XMLStreamReader getSubReader(final String tagName) throws DataStoreException {
+    protected final XMLStreamReader getSubReader(final String tagName) throws IOException {
         return new StreamReaderDelegate(getReader()) {
             /** Increased every time a nested element of the same name is found. */
             private int nested;
@@ -164,10 +175,11 @@ public abstract class StaxStreamReader extends DataStore {
      * Nested tags of the same name, if any, are also skipped.
      *
      * @param  tagName name of the tag to close.
-     * @throws DataStoreException if end tag could not be found.
+     * @throws IOException if this XML reader has been closed.
+     * @throws EOFException if end tag could not be found.
      * @throws XMLStreamException if an error occurred while reading the XML stream.
      */
-    protected final void skipUntilEnd(final String tagName) throws DataStoreException, XMLStreamException {
+    protected final void skipUntilEnd(final String tagName) throws IOException, XMLStreamException {
         final XMLStreamReader reader = getReader();
         int nested = 0;
         while (reader.hasNext()) {
@@ -186,7 +198,7 @@ public abstract class StaxStreamReader extends DataStore {
                 }
             }
         }
-        throw new DataStoreException(errors().getString(Errors.Keys.UnexpectedEndOfFile_1, tagName));
+        throw new EOFException(errors().getString(Errors.Keys.UnexpectedEndOfFile_1, tagName));
     }
 
     /**
@@ -208,24 +220,21 @@ public abstract class StaxStreamReader extends DataStore {
     }
 
     /**
-     * Closes the input stream and releases any resources used by this data store.
-     * This data store can not be used anymore after this method has been invoked.
+     * Closes the input stream and releases any resources used by this XML reader.
+     * This reader can not be used anymore after this method has been invoked.
      *
-     * @throws DataStoreException if an error occurred while closing the stream or releasing the resources.
+     * @throws IOException if an error occurred while closing the input stream.
+     * @throws XMLStreamException if an error occurred while releasing XML reader/writer resources.
      */
     @Override
-    public synchronized void close() throws DataStoreException {
-        try {
-            if (reader != null) {
-                reader.close();
-                reader = null;
-            }
-            if (sourceStream != null) {
-                sourceStream.close();
-                sourceStream = null;
-            }
-        } catch (IOException | XMLStreamException e) {
-            throw new DataStoreException(e);
+    public void close() throws IOException, XMLStreamException {
+        if (reader != null) {
+            reader.close();
+            reader = null;
+        }
+        if (sourceStream != null) {
+            sourceStream.close();
+            sourceStream = null;
         }
     }
 }
