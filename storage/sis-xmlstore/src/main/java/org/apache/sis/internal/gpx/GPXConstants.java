@@ -228,7 +228,7 @@ public final class GPXConstants extends Static {
 
     static {
         final NameFactory   factory  = DefaultFactories.forBuildin(NameFactory.class);
-        final LocalName     geomName = AttributeConvention.DEFAULT_GEOMETRY_PROPERTY;
+        final LocalName     geomName = AttributeConvention.GEOMETRY_PROPERTY;
         final Map<String,?> geomInfo = Collections.singletonMap(AbstractIdentifiedType.NAME_KEY, geomName);
 
         //-------------------- GENERIC GPX ENTITY ------------------------------

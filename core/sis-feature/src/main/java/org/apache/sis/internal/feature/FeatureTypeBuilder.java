@@ -105,27 +105,27 @@ public class FeatureTypeBuilder extends Builder<FeatureTypeBuilder> {
 
     /**
      * If {@link #idAttributes} is non-null, an optional prefix or suffix to insert before
-     * or after the {@linkplain FeatureOperations#compound compound key} named {@code "@id"}.
+     * or after the {@linkplain FeatureOperations#compound compound key} named {@code "@identifier"}.
      */
     private String idPrefix, idSuffix;
 
     /**
      * If {@link #idAttributes} is non-null and contains more than one value, the separator to insert between
-     * each single component in a {@linkplain FeatureOperations#compound compound key} named {@code "@id"}.
+     * each single component in a {@linkplain FeatureOperations#compound compound key} named {@code "@identifier"}.
      */
     private String idDelimiter;
 
     /**
-     * The attributes to use in a {@linkplain FeatureOperations#compound compound key} named {@code "@id"},
+     * The attributes to use in a {@linkplain FeatureOperations#compound compound key} named {@code "@identifier"},
      * or {@code null} if none. If this array contains only one property and {@link #idPrefix} is null,
-     * then {@code "@id"} will be a {@linkplain FeatureOperations#link link} to {@code idAttributes[0]}.
+     * then {@code "@identifier"} will be a {@linkplain FeatureOperations#link link} to {@code idAttributes[0]}.
      */
     private final List<Property<?>> idAttributes;
 
     /**
      * The default geometry attribute, or {@code null} if none.
      *
-     * @see AttributeConvention#DEFAULT_GEOMETRY_PROPERTY
+     * @see AttributeConvention#GEOMETRY_PROPERTY
      */
     private Property<?> defaultGeometry;
 
@@ -261,11 +261,11 @@ public class FeatureTypeBuilder extends Builder<FeatureTypeBuilder> {
      * <ul>
      *   <li>If this method is never invoked, no attribute is marked as feature identifier.</li>
      *   <li>If this method is invoked exactly once, then a new attribute is created in the same way than
-     *       {@link #addAttribute(Class)} and a synthetic attribute named {@code "@id"} will be created as
-     *       a {@linkplain FeatureOperations#link link} to the new attribute.</li>
+     *       {@link #addAttribute(Class)} and a synthetic attribute named {@code "@identifier"}
+     *       will be created as a {@linkplain FeatureOperations#link link} to the new attribute.</li>
      *   <li>If this method is invoked more than once, then new attributes are created in the same way than
-     *       {@link #addAttribute(Class)} and a synthetic attribute named {@code "@id"} will be created as
-     *       a {@linkplain FeatureOperations#compound compound key} made of all identifiers.</li>
+     *       {@link #addAttribute(Class)} and a synthetic attribute named {@code "@identifier"} will be created
+     *       as a {@linkplain FeatureOperations#compound compound key} made of all identifiers.</li>
      * </ul>
      *
      * Callers shall invoke at least one of the {@code Property.setName(…)} methods on the returned instance.
@@ -301,7 +301,7 @@ public class FeatureTypeBuilder extends Builder<FeatureTypeBuilder> {
         }
         if (defaultGeometry != null) {
             throw new IllegalStateException(errors().getString(Errors.Keys.PropertyAlreadyExists_2,
-                    getDisplayName(), AttributeConvention.DEFAULT_GEOMETRY_PROPERTY));
+                    getDisplayName(), AttributeConvention.GEOMETRY_PROPERTY));
         }
         final Property<V> property = new Property<>(valueClass);
         defaultGeometry = property;
@@ -691,7 +691,7 @@ public class FeatureTypeBuilder extends Builder<FeatureTypeBuilder> {
             numSynthetic = 0;
         } else {
             identifierTypes = new PropertyType[idAttributes.size()];
-            numSynthetic = 1;                               // Reserve one slot for the synthetic property "@id".
+            numSynthetic = 1;                               // Reserve one slot for the synthetic property "@identifier".
         }
         if (defaultGeometry != null) {
             numSynthetic += 2;                              // One slot for "@defaultGeometry" and one for "@envelope".
@@ -712,19 +712,19 @@ public class FeatureTypeBuilder extends Builder<FeatureTypeBuilder> {
              */
             if (builder == defaultGeometry) {
                 final PropertyType geom;
-                if (AttributeConvention.DEFAULT_GEOMETRY_PROPERTY.equals(instance.getName())) {
+                if (AttributeConvention.GEOMETRY_PROPERTY.equals(instance.getName())) {
                     propertyTypes = ArraysExt.remove(propertyTypes, j--, 1);
                     geom = instance;
                 } else {
-                    geom = FeatureOperations.link(name(AttributeConvention.DEFAULT_GEOMETRY_PROPERTY), instance);
+                    geom = FeatureOperations.link(name(AttributeConvention.GEOMETRY_PROPERTY), instance);
                 }
                 propertyTypes[numSynthetic - 1] = geom;
             }
         }
         /*
-         * Create the "envelope" operation only after we created all other properties, except "@id" which is not needed
-         * for envelope. It is okay if the 'propertyTypes' array still contains null elements like the "@id" one, since
-         * FeatureOperations.envelope(…) constructor will ignore any property which is not for a value.
+         * Create the "envelope" operation only after we created all other properties, except "@identifier" which is not
+         * needed for envelope. It is okay if the 'propertyTypes' array still contains null elements like "@identifier",
+         * since FeatureOperations.envelope(…) constructor will ignore any property which is not for a value.
          */
         if (defaultGeometry != null) try {
             propertyTypes[numSynthetic - 2] = FeatureOperations.envelope(name(AttributeConvention.ENVELOPE_PROPERTY), null, propertyTypes);
@@ -732,7 +732,7 @@ public class FeatureTypeBuilder extends Builder<FeatureTypeBuilder> {
             throw new IllegalStateException(e);
         }
         if (identifierTypes != null) {
-            propertyTypes[0] = FeatureOperations.compound(name(AttributeConvention.ID_PROPERTY), idDelimiter, idPrefix, idSuffix, identifierTypes);
+            propertyTypes[0] = FeatureOperations.compound(name(AttributeConvention.IDENTIFIER_PROPERTY), idDelimiter, idPrefix, idSuffix, identifierTypes);
         }
         return new DefaultFeatureType(identification, isAbstract, superTypes.toArray(new FeatureType[superTypes.size()]), propertyTypes);
     }

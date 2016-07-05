@@ -142,7 +142,7 @@ final class EnvelopeOperation extends AbstractOperation {
                 final GenericName name = property.getName();
                 final String attributeName = (property instanceof LinkOperation)
                                              ? ((LinkOperation) property).referentName : name.toString();
-                final boolean isDefault = AttributeConvention.DEFAULT_GEOMETRY_PROPERTY.equals(name.tip());
+                final boolean isDefault = AttributeConvention.GEOMETRY_PROPERTY.equals(name.tip());
                 if (isDefault) {
                     defaultGeometry = attributeName;
                 }

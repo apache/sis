@@ -231,10 +231,10 @@ public final strictfp class FeatureTypeBuilderTest extends TestCase {
         final PropertyType a4 = it.next();
         assertFalse("properties count", it.hasNext());
 
-        assertEquals("name", AttributeConvention.ID_PROPERTY,                a0.getName());
-        assertEquals("name", AttributeConvention.ENVELOPE_PROPERTY,          a1.getName());
-        assertEquals("name", AttributeConvention.DEFAULT_GEOMETRY_PROPERTY,  a2.getName());
-        assertEquals("name", "name",                                         a3.getName().toString());
-        assertEquals("name", "shape",                                        a4.getName().toString());
+        assertEquals("name", AttributeConvention.IDENTIFIER_PROPERTY, a0.getName());
+        assertEquals("name", AttributeConvention.ENVELOPE_PROPERTY,   a1.getName());
+        assertEquals("name", AttributeConvention.GEOMETRY_PROPERTY,   a2.getName());
+        assertEquals("name", "name",                                  a3.getName().toString());
+        assertEquals("name", "shape",                                 a4.getName().toString());
     }
 }
