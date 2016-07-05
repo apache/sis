@@ -131,7 +131,7 @@ public final class FeatureOperations extends Static {
      * For example features of type <b>Country</b> may have identifiers named “ISO country code”
      * while features of type <b>Car</b> may have identifiers named “license plate number”.
      * In order to simplify identifier usages regardless of their name,
-     * an application could choose to add in all features a virtual property named {@code "@id"}
+     * an application could choose to add in all features a virtual property named {@code "identifier"}
      * which links to whatever property is used as an identifier in an arbitrary feature.
      * So the definition of the <b>Car</b> feature could contain the following code:
      *
@@ -139,7 +139,7 @@ public final class FeatureOperations extends Static {
      *   AttributeType licensePlateNumber = ...;            // Attribute creation omitted for brevity
      *   FeatureType car = new DefaultFeatureType(...,      // Arguments omitted for brevity
      *           licensePlateNumber, model, owner,
-     *           FeatureOperations.link(singletonMap(NAME_KEY, "@id"), licensePlateNumber);
+     *           FeatureOperations.link(singletonMap(NAME_KEY, "identifier"), licensePlateNumber);
      * }
      * </div>
      *
