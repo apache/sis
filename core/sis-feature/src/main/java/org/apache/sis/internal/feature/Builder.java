@@ -16,12 +16,17 @@
  */
 package org.apache.sis.internal.feature;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.HashMap;
+import java.util.Locale;
 import org.opengis.util.GenericName;
 import org.apache.sis.feature.AbstractIdentifiedType;
 import org.apache.sis.util.resources.Vocabulary;
-import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.NullArgumentException;
+import org.apache.sis.util.Localized;
+import org.apache.sis.util.Classes;
+import org.apache.sis.util.Debug;
 
 
 /**
@@ -34,20 +39,39 @@ import org.apache.sis.util.ArgumentChecks;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.7
- * @version 0.7
+ * @version 0.8
  * @module
  */
-abstract class Builder<T extends Builder<T>> {
+abstract class Builder<T extends Builder<T>> implements Localized {
     /**
      * The feature name, definition, designation and description.
      * The name is mandatory; all other information are optional.
      */
-    final Map<String,Object> identification = new HashMap<>(4);
+    private final Map<String,Object> identification = new HashMap<>(4);
+
+    /**
+     * Creates a new builder instance which will format error message using the given locale.
+     */
+    Builder(final Locale locale) {
+        setLocale(locale);
+    }
 
     /**
      * Creates a new builder instance.
      */
-    Builder() {
+    Builder(final Builder<?> parent) {
+        setLocale(parent.identification.get(Errors.LOCALE_KEY));
+    }
+
+    /**
+     * Sets the locale if non-null. This method should be invoked only when the {@link #identification} map is empty.
+     *
+     * @see #getLocale()
+     */
+    private void setLocale(final Object locale) {
+        if (locale != null) {
+            identification.put(Errors.LOCALE_KEY, locale);
+        }
     }
 
     /**
@@ -58,7 +82,9 @@ abstract class Builder<T extends Builder<T>> {
      */
     @SuppressWarnings("unchecked")
     public T clear() {
+        final Object locale = identification.get(Errors.LOCALE_KEY);
         identification.clear();
+        setLocale(locale);
         return (T) this;
     }
 
@@ -73,7 +99,42 @@ abstract class Builder<T extends Builder<T>> {
     abstract GenericName name(String scope, String localPart);
 
     /**
-     * Sets the feature type name as a simple string with the default scope.
+     * Returns a default name to use if the user did not specified a name. The first letter will be changed to
+     * lower case (unless the name looks like an acronym) for compliance with Java convention on property names.
+     */
+    String getDefaultName() {
+        return null;
+    }
+
+    /**
+     * Returns the map of properties to give to the {@code FeatureType} or {@code PropertyType} constructor.
+     * If the map does not contains a name, a default name may be generated.
+     */
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
+    final Map<String,Object> identification() {
+        if (identification.get(AbstractIdentifiedType.NAME_KEY) == null) {
+            String name = getDefaultName();
+            if (name != null) {
+                final int length = name.length();
+                if (length != 0) {
+                    final int c  = name.codePointAt(0);
+                    final int lc = Character.toLowerCase(c);
+                    if (c != lc) {
+                        final int n = Character.charCount(c);
+                        if (n >= length || Character.isLowerCase(name.codePointAt(n))) {
+                            final StringBuilder buffer = new StringBuilder(length);
+                            name = buffer.appendCodePoint(lc).append(name, n, length).toString();
+                        }
+                    }
+                    identification.put(AbstractIdentifiedType.NAME_KEY, name(null, name));
+                }
+            }
+        }
+        return identification;
+    }
+
+    /**
+     * Sets the name as a simple string with the default scope.
      * The default scope is the value specified by the last call to
      * {@link FeatureTypeBuilder#setDefaultScope(String)}.
      *
@@ -87,12 +148,12 @@ abstract class Builder<T extends Builder<T>> {
      * @return {@code this} for allowing method calls chaining.
      */
     public T setName(String localPart) {
-        ArgumentChecks.ensureNonEmpty("localPart", localPart);
+        ensureNonEmpty("localPart", localPart);
         return setName(name(null, localPart));
     }
 
     /**
-     * Sets the feature type name as a string in the given scope.
+     * Sets the name as a string in the given scope.
      * If a {@linkplain FeatureTypeBuilder#setDefaultScope(String) default scope} was specified,
      * this method override it.
      *
@@ -107,7 +168,7 @@ abstract class Builder<T extends Builder<T>> {
      * @return {@code this} for allowing method calls chaining.
      */
     public T setName(String scope, String localPart) {
-        ArgumentChecks.ensureNonEmpty("localPart", localPart);
+        ensureNonEmpty("localPart", localPart);
         if (scope == null) {
             scope = "";                                 // For preventing the use of default scope.
         }
@@ -115,7 +176,7 @@ abstract class Builder<T extends Builder<T>> {
     }
 
     /**
-     * Sets the feature type name as a generic name.
+     * Sets the name as a generic name.
      * If another name was defined before this method call, that previous value will be discarded.
      *
      * <div class="note"><b>Note for subclasses:</b>
@@ -129,19 +190,20 @@ abstract class Builder<T extends Builder<T>> {
      */
     @SuppressWarnings("unchecked")
     public T setName(GenericName name) {
-        ArgumentChecks.ensureNonNull("name", name);
+        ensureNonNull("name", name);
         identification.put(AbstractIdentifiedType.NAME_KEY, name);
         return (T) this;
     }
 
     /**
-     * Returns the current {@code FeatureType} name, or {@code null} if undefined.
-     * This method returns the value built from the last call to a {@code setName(…)} method.
+     * Returns the current name, or {@code null} if undefined.
+     * This method returns the value built from the last call to a {@code setName(…)} method,
+     * or a default name or {@code null} if no name has been explicitely specified.
      *
-     * @return the current {@code FeatureType} name, or {@code null} if the name has not yet been specified.
+     * @return the current name (may be a default name or {@code null}).
      */
     public GenericName getName() {
-        return (GenericName) identification.get(AbstractIdentifiedType.NAME_KEY);
+        return (GenericName) identification().get(AbstractIdentifiedType.NAME_KEY);
     }
 
     /**
@@ -194,5 +256,75 @@ abstract class Builder<T extends Builder<T>> {
     public T setDescription(CharSequence description) {
         identification.put(AbstractIdentifiedType.DESCRIPTION_KEY, description);
         return (T) this;
+    }
+
+    /**
+     * Returns the locale used for formatting error messages, or {@code null} if unspecified.
+     * If unspecified, the system default locale will be used.
+     *
+     * @return the locale used for formatting error messages, or {@code null} if unspecified.
+     */
+    @Override
+    public Locale getLocale() {
+        return (Locale) identification.get(Errors.LOCALE_KEY);
+    }
+
+    /**
+     * Returns a string representation of this object.
+     * The returned string is for debugging purpose only and may change in any future SIS version.
+     *
+     * @return a string representation of this object for debugging purpose.
+     */
+    @Debug
+    @Override
+    public String toString() {
+        final StringBuilder buffer = new StringBuilder(Classes.getShortClassName(this));
+        toStringInternal(buffer.append("[“").append(getDisplayName()).append('”'));
+        return buffer.append(']').toString();
+    }
+
+    /**
+     * Appends a text inside the value returned by {@link #toString()}, before the closing bracket.
+     */
+    void toStringInternal(StringBuilder buffer) {
+    }
+
+    /**
+     * Returns the resources for error messages.
+     */
+    final Errors errors() {
+        return Errors.getResources(identification);
+    }
+
+    /**
+     * Same as {@link org.apache.sis.util.ArgumentChecks#ensureNonNull(String, Object)},
+     * but uses the current locale in case of error.
+     *
+     * @param  name the name of the argument to be checked. Used only if an exception is thrown.
+     * @param  object the user argument to check against null value.
+     * @throws NullArgumentException if {@code object} is null.
+     */
+    final void ensureNonNull(final String name, final Object value) {
+        if (value == null) {
+            throw new NullArgumentException(errors().getString(Errors.Keys.NullArgument_1, name));
+        }
+    }
+
+    /**
+     * Same as {@link org.apache.sis.util.ArgumentChecks#ensureNonEmpty(String, CharSequence)},
+     * but uses the current locale in case of error.
+     *
+     * @param  name the name of the argument to be checked. Used only if an exception is thrown.
+     * @param  text the user argument to check against null value and empty sequences.
+     * @throws NullArgumentException if {@code text} is null.
+     * @throws IllegalArgumentException if {@code text} is empty.
+     */
+    final void ensureNonEmpty(final String name, final String text) {
+        if (text == null) {
+            throw new NullArgumentException(errors().getString(Errors.Keys.NullArgument_1, name));
+        }
+        if (text.length() == 0) {
+            throw new IllegalArgumentException(errors().getString(Errors.Keys.EmptyArgument_1, name));
+        }
     }
 }

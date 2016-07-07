@@ -47,14 +47,9 @@ public final strictfp class FeatureTypeBuilderTest extends TestCase {
      */
     @Test
     public void testEmptyProperty() {
-        final FeatureTypeBuilder.Property<String> builder = new FeatureTypeBuilder().addAttribute(String.class);
-        try {
-            builder.build();
-            fail("Builder should have failed if there is not at least a name set.");
-        } catch (IllegalArgumentException ex) {
-            final String message = ex.getMessage();
-            assertTrue(message, message.contains("name"));
-        }
+        final FeatureTypeBuilder.Attribute<String> builder = new FeatureTypeBuilder().addAttribute(String.class);
+        assertEquals("default name", "string", builder.getName().toString());
+
         builder.setName("myScope", "myName");
         final AttributeType<?> att = (AttributeType<?>) builder.build();
 
@@ -104,7 +99,7 @@ public final strictfp class FeatureTypeBuilderTest extends TestCase {
     @Test
     @DependsOnMethod("testEmptyProperty")
     public void testPropertyBuild() {
-        final FeatureTypeBuilder.Property<String> builder = new FeatureTypeBuilder().addAttribute(String.class);
+        final FeatureTypeBuilder.Attribute<String> builder = new FeatureTypeBuilder().addAttribute(String.class);
         builder.setName        ("myScope", "myName");
         builder.setDefinition  ("test definition");
         builder.setDesignation ("test designation");
@@ -216,8 +211,11 @@ public final strictfp class FeatureTypeBuilderTest extends TestCase {
         final FeatureTypeBuilder builder = new FeatureTypeBuilder();
         builder.setName("scope", "test");
         builder.setIdentifierDelimiters("-", "pref.", null);
-        builder.addIdentifier(String.class).setName("name");
-        builder.addDefaultGeometry(Geometry.class).setName("shape").setCRSCharacteristic(HardCodedCRS.WGS84);
+        builder.addAttribute(String.class).setName("name")
+                .addRole(FeatureTypeBuilder.AttributeRole.IDENTIFIER_COMPONENT);
+        builder.addAttribute(Geometry.class).setName("shape")
+                .setCRSCharacteristic(HardCodedCRS.WGS84)
+                .addRole(FeatureTypeBuilder.AttributeRole.DEFAULT_GEOMETRY);
 
         final FeatureType type = builder.build();
         assertEquals("name", "scope:test", type.getName().toString());
