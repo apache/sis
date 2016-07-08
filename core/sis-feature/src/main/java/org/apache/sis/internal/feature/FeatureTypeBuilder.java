@@ -65,7 +65,7 @@ import org.opengis.feature.FeatureAssociationRole;
  *
  * @see org.apache.sis.parameter.ParameterBuilder
  */
-public class FeatureTypeBuilder extends Builder<FeatureTypeBuilder> {
+public class FeatureTypeBuilder extends FeatureElementBuilder {
     /**
      * The factory to use for creating names.
      */
@@ -74,7 +74,7 @@ public class FeatureTypeBuilder extends Builder<FeatureTypeBuilder> {
     /**
      * Builders for the properties (attributes, associations or operations) of this feature.
      */
-    private final List<Property<?>> properties;
+    private final List<Property> properties;
 
     /**
      * The parent of the feature to create. By default, new features have no parent.
@@ -83,12 +83,16 @@ public class FeatureTypeBuilder extends Builder<FeatureTypeBuilder> {
 
     /**
      * Whether the feature type is abstract. The default value is {@code false}.
+     *
+     * @see #isAbstract()
+     * @see #setAbstract(boolean)
      */
     private boolean isAbstract;
 
     /**
      * The default scope to use when {@link #name(String, String)} is invoked with a null scope.
      *
+     * @see #getDefaultScope()
      * @see #setDefaultScope(String)
      */
     private String defaultScope;
@@ -180,7 +184,7 @@ public class FeatureTypeBuilder extends Builder<FeatureTypeBuilder> {
             isAbstract = template.isAbstract();
             superTypes.addAll(template.getSuperTypes());
             for (final PropertyType p : template.getProperties(false)) {
-                final Property<?> builder;
+                final Property builder;
                 if (p instanceof AttributeType<?>) {
                     builder = new Attribute<>(this, (AttributeType<?>) p);
                 } else if (p instanceof FeatureAssociationRole) {
@@ -194,7 +198,7 @@ public class FeatureTypeBuilder extends Builder<FeatureTypeBuilder> {
     }
 
     /**
-     * If a {@code FeatureType} has been created by the last call to {@link #build()} has been cached,
+     * If the {@code FeatureType} created by the last call to {@link #build()} has been cached,
      * clears that cache. This method must be invoked every time that a setter method is invoked.
      */
     @Override
@@ -203,10 +207,22 @@ public class FeatureTypeBuilder extends Builder<FeatureTypeBuilder> {
     }
 
     /**
-     * Sets whether the feature type is abstract.
+     * Returns {@code true} if the feature type to create will act as an abstract super-type.
+     * Abstract types can not be {@linkplain DefaultFeatureType#newInstance() instantiated}.
+     *
+     * @return {@code true} if the feature type to create will act as an abstract super-type.
+     *
+     * @see DefaultFeatureType#isAbstract()
+     */
+    public boolean isAbstract() {
+        return isAbstract;
+    }
+
+    /**
+     * Sets whether the feature type to create will be abstract.
      * If this method is not invoked, then the default value is {@code false}.
      *
-     * @param  isAbstract whether the feature type is abstract.
+     * @param  isAbstract whether the feature type will be abstract.
      * @return {@code this} for allowing method calls chaining.
      */
     public FeatureTypeBuilder setAbstract(final boolean isAbstract) {
@@ -215,6 +231,17 @@ public class FeatureTypeBuilder extends Builder<FeatureTypeBuilder> {
             clearCache();
         }
         return this;
+    }
+
+    /**
+     * Returns the direct parents of the feature type to create.
+     *
+     * @return the parents of the feature type to create, or an empty array if none.
+     *
+     * @see DefaultFeatureType#getSuperTypes()
+     */
+    public FeatureType[] getSuperTypes() {
+        return superTypes.toArray(new FeatureType[superTypes.size()]);
     }
 
     /**
@@ -236,7 +263,82 @@ public class FeatureTypeBuilder extends Builder<FeatureTypeBuilder> {
     }
 
     /**
-     * Sets the scope to use by default when {@link #setName(String)} is invoked.
+     * Sets the {@code FeatureType} name as a generic name.
+     * If another name was defined before this method call, that previous value will be discarded.
+     *
+     * <div class="note"><b>Note for subclasses:</b>
+     * all {@code setName(…)} convenience methods in this builder delegate to this method.
+     * Consequently this method can be used as a central place where to control the creation of all names.</div>
+     *
+     * @return {@code this} for allowing method calls chaining.
+     */
+    @Override
+    public FeatureTypeBuilder setName(final GenericName name) {
+        super.setName(name);
+        return this;
+    }
+
+    /**
+     * Sets the {@code FeatureType} name as a simple string with the default scope.
+     * The default scope is the value specified by the last call to {@link #setDefaultScope(String)}.
+     * The name will be a {@linkplain org.apache.sis.util.iso.DefaultLocalName local name} if no default scope
+     * has been specified, or a {@linkplain org.apache.sis.util.iso.DefaultScopedName scoped name} otherwise.
+     *
+     * <p>This convenience method creates a {@link GenericName} instance,
+     * then delegates to {@link #setName(GenericName)}.</p>
+     *
+     * @return {@code this} for allowing method calls chaining.
+     */
+    @Override
+    public FeatureTypeBuilder setName(final String localPart) {
+        super.setName(localPart);
+        return this;
+    }
+
+    /**
+     * Sets the {@code FeatureType} name as a string in the given scope.
+     * The name will be a {@linkplain org.apache.sis.util.iso.DefaultLocalName local name} if the given scope is
+     * {@code null} or empty, or a {@linkplain org.apache.sis.util.iso.DefaultScopedName scoped name} otherwise.
+     * If a {@linkplain #setDefaultScope(String) default scope} has been specified, then the
+     * {@code scope} argument overrides it.
+     *
+     * <p>This convenience method creates a {@link GenericName} instance,
+     * then delegates to {@link #setName(GenericName)}.</p>
+     *
+     * @return {@code this} for allowing method calls chaining.
+     */
+    @Override
+    public FeatureTypeBuilder setName(final String scope, final String localPart) {
+        super.setName(scope, localPart);
+        return this;
+    }
+
+    /**
+     * Invoked by {@link FeatureElementBuilder} for creating new {@code LocalName} or {@code GenericName} instances.
+     */
+    @Override
+    final GenericName name(String scope, final String localPart) {
+        if (scope == null) {
+            scope = getDefaultScope();
+        }
+        if (scope == null || scope.isEmpty()) {
+            return nameFactory.createLocalName(null, localPart);
+        } else {
+            return nameFactory.createGenericName(null, scope, localPart);
+        }
+    }
+
+    /**
+     * Returns the scope of the names created by {@code setName(String)} method calls.
+     *
+     * @return the scope to use by default when {@link #setName(String)} is invoked.
+     */
+    public String getDefaultScope() {
+        return defaultScope;
+    }
+
+    /**
+     * Sets the scope of the names created by {@code setName(String)} method calls.
      *
      * @param  scope  the new default scope, or {@code null} if none.
      * @return {@code this} for allowing method calls chaining.
@@ -401,11 +503,8 @@ public class FeatureTypeBuilder extends Builder<FeatureTypeBuilder> {
      *   <li>{@link FeatureTypeBuilder#addAssociation(FeatureType)}</li>
      *   <li>{@link FeatureTypeBuilder#addAssociation(GenericName)}</li>
      * </ul>
-     *
-     * @param <B> the property subclass. It is subclass responsibility to ensure that {@code this}
-     *            is assignable to {@code <B>}; this {@code Property} class can not verify that.
      */
-    static abstract class Property<B extends Property<B>> extends Builder<B> {
+    public static abstract class Property extends FeatureElementBuilder {
         /**
          * The feature type builder instance that created this {@code Property} builder.
          *
@@ -463,7 +562,7 @@ public class FeatureTypeBuilder extends Builder<FeatureTypeBuilder> {
          * @return {@code this} for allowing method calls chaining.
          */
         @SuppressWarnings("unchecked")
-        public B setCardinality(final int minimumOccurs, final int maximumOccurs) {
+        public Property setCardinality(final int minimumOccurs, final int maximumOccurs) {
             if (this.minimumOccurs != minimumOccurs || this.maximumOccurs != maximumOccurs) {
                 if (minimumOccurs < 0 || maximumOccurs < minimumOccurs) {
                     throw new IllegalArgumentException(errors().getString(Errors.Keys.IllegalRange_2, minimumOccurs, maximumOccurs));
@@ -472,7 +571,7 @@ public class FeatureTypeBuilder extends Builder<FeatureTypeBuilder> {
                 this.maximumOccurs = maximumOccurs;
                 clearCache();
             }
-            return (B) this;
+            return this;
         }
 
         /**
@@ -491,7 +590,7 @@ public class FeatureTypeBuilder extends Builder<FeatureTypeBuilder> {
         }
 
         /**
-         * If a {@code PropertyType} has been created by the last call to {@link #build()} has been cached,
+         * If the {@code PropertyType} created by the last call to {@link #build()} has been cached,
          * clears that cache. This method must be invoked every time that a setter method is invoked.
          */
         @Override
@@ -529,7 +628,7 @@ public class FeatureTypeBuilder extends Builder<FeatureTypeBuilder> {
      * @see FeatureTypeBuilder#addAssociation(FeatureType)
      * @see FeatureTypeBuilder#addAssociation(GenericName)
      */
-    public static final class Association extends Property<Association> {
+    public static final class Association extends Property {
         /**
          * The target feature type, or {@code null} if unknown.
          */
@@ -566,6 +665,14 @@ public class FeatureTypeBuilder extends Builder<FeatureTypeBuilder> {
         }
 
         /**
+         * Appends a text inside the value returned by {@link #toString()}, before the closing bracket.
+         */
+        @Override
+        final void toStringInternal(final StringBuilder buffer) {
+            buffer.append(" → ").append(typeName);
+        }
+
+        /**
          * Returns a default name to use if the user did not specified a name. The first letter will be changed to
          * lower case (unless the name looks like an acronym) for compliance with Java convention on property names.
          */
@@ -575,11 +682,72 @@ public class FeatureTypeBuilder extends Builder<FeatureTypeBuilder> {
         }
 
         /**
-         * Appends a text inside the value returned by {@link #toString()}, before the closing bracket.
+         * Sets the {@code FeatureAssociationRole} name as a generic name.
+         * If another name was defined before this method call, that previous value will be discarded.
+         *
+         * @return {@code this} for allowing method calls chaining.
          */
         @Override
-        final void toStringInternal(final StringBuilder buffer) {
-            buffer.append(" → ").append(typeName);
+        public Association setName(final GenericName name) {
+            super.setName(name);
+            return this;
+        }
+
+        /**
+         * Sets the {@code FeatureAssociationRole} name as a simple string with the default scope.
+         * The default scope is the value specified by the last call to
+         * {@link FeatureTypeBuilder#setDefaultScope(String)}.
+         * The name will be a {@linkplain org.apache.sis.util.iso.DefaultLocalName local name} if no default scope
+         * has been specified, or a {@linkplain org.apache.sis.util.iso.DefaultScopedName scoped name} otherwise.
+         *
+         * @return {@code this} for allowing method calls chaining.
+         */
+        @Override
+        public Association setName(final String localPart) {
+            super.setName(localPart);
+            return this;
+        }
+
+        /**
+         * Sets the {@code FeatureAssociationRole} name as a string in the given scope.
+         * The name will be a {@linkplain org.apache.sis.util.iso.DefaultLocalName local name} if the given scope is
+         * {@code null} or empty, or a {@linkplain org.apache.sis.util.iso.DefaultScopedName scoped name} otherwise.
+         * If a {@linkplain FeatureTypeBuilder#setDefaultScope(String) default scope} has been specified, then the
+         * {@code scope} argument overrides it.
+         *
+         * @return {@code this} for allowing method calls chaining.
+         */
+        @Override
+        public Association setName(final String scope, final String localPart) {
+            super.setName(scope, localPart);
+            return this;
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public Association setDefinition(final CharSequence definition) {
+            super.setDefinition(definition);
+            return this;
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public Association setDesignation(final CharSequence designation) {
+            super.setDesignation(designation);
+            return this;
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public Association setDescription(final CharSequence description) {
+            super.setDescription(description);
+            return this;
         }
 
         /**
@@ -607,7 +775,7 @@ public class FeatureTypeBuilder extends Builder<FeatureTypeBuilder> {
      *
      * @see FeatureTypeBuilder#addAttribute(Class)
      */
-    public static final class Attribute<V> extends Property<Attribute<V>> {
+    public static final class Attribute<V> extends Property {
         /**
          * The class of property values. Can not be changed after construction
          * because this value determines the parameterized type {@code <V>}.
@@ -668,6 +836,48 @@ public class FeatureTypeBuilder extends Builder<FeatureTypeBuilder> {
         @Override
         final String getDefaultName() {
             return Classes.getShortName(valueClass);
+        }
+
+        /**
+         * Sets the {@code AttributeType} name as a generic name.
+         * If another name was defined before this method call, that previous value will be discarded.
+         *
+         * @return {@code this} for allowing method calls chaining.
+         */
+        @Override
+        public Attribute<V> setName(final GenericName name) {
+            super.setName(name);
+            return this;
+        }
+
+        /**
+         * Sets the {@code AttributeType} name as a simple string with the default scope.
+         * The default scope is the value specified by the last call to
+         * {@link FeatureTypeBuilder#setDefaultScope(String)}.
+         * The name will be a {@linkplain org.apache.sis.util.iso.DefaultLocalName local name} if no default scope
+         * has been specified, or a {@linkplain org.apache.sis.util.iso.DefaultScopedName scoped name} otherwise.
+         *
+         * @return {@code this} for allowing method calls chaining.
+         */
+        @Override
+        public Attribute<V> setName(final String localPart) {
+            super.setName(localPart);
+            return this;
+        }
+
+        /**
+         * Sets the {@code AttributeType} name as a string in the given scope.
+         * The name will be a {@linkplain org.apache.sis.util.iso.DefaultLocalName local name} if the given scope is
+         * {@code null} or empty, or a {@linkplain org.apache.sis.util.iso.DefaultScopedName scoped name} otherwise.
+         * If a {@linkplain FeatureTypeBuilder#setDefaultScope(String) default scope} has been specified, then the
+         * {@code scope} argument overrides it.
+         *
+         * @return {@code this} for allowing method calls chaining.
+         */
+        @Override
+        public Attribute<V> setName(final String scope, final String localPart) {
+            super.setName(scope, localPart);
+            return this;
         }
 
         /**
@@ -883,6 +1093,33 @@ public class FeatureTypeBuilder extends Builder<FeatureTypeBuilder> {
         }
 
         /**
+         * {@inheritDoc}
+         */
+        @Override
+        public Attribute<V> setDefinition(final CharSequence definition) {
+            super.setDefinition(definition);
+            return this;
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public Attribute<V> setDesignation(final CharSequence designation) {
+            super.setDesignation(designation);
+            return this;
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public Attribute<V> setDescription(final CharSequence description) {
+            super.setDescription(description);
+            return this;
+        }
+
+        /**
          * Appends a text inside the value returned by {@link #toString()}, before the closing bracket.
          */
         @Override
@@ -917,7 +1154,7 @@ public class FeatureTypeBuilder extends Builder<FeatureTypeBuilder> {
      *
      * @param <V> the class of characteristic values.
      */
-    public static final class Characteristic<V> extends Builder<Characteristic<V>> {
+    public static final class Characteristic<V> extends FeatureElementBuilder {
         /**
          * The attribute type builder instance that created this {@code Characteristic} builder.
          */
@@ -966,7 +1203,7 @@ public class FeatureTypeBuilder extends Builder<FeatureTypeBuilder> {
         }
 
         /**
-         * If an {@code AttributeType<V>} has been created by the last call to {@link #build()} has been cached,
+         * If the {@code AttributeType<V>} created by the last call to {@link #build()} has been cached,
          * clears that cache. This method must be invoked every time that a setter method is invoked.
          */
         @Override
@@ -982,6 +1219,48 @@ public class FeatureTypeBuilder extends Builder<FeatureTypeBuilder> {
         @Override
         final String getDefaultName() {
             return Classes.getShortName(valueClass);
+        }
+
+        /**
+         * Sets the characteristic name as a generic name.
+         * If another name was defined before this method call, that previous value will be discarded.
+         *
+         * @return {@code this} for allowing method calls chaining.
+         */
+        @Override
+        public Characteristic<V> setName(final GenericName name) {
+            super.setName(name);
+            return this;
+        }
+
+        /**
+         * Sets the characteristic name as a simple string with the default scope.
+         * The default scope is the value specified by the last call to
+         * {@link FeatureTypeBuilder#setDefaultScope(String)}.
+         * The name will be a {@linkplain org.apache.sis.util.iso.DefaultLocalName local name} if no default scope
+         * has been specified, or a {@linkplain org.apache.sis.util.iso.DefaultScopedName scoped name} otherwise.
+         *
+         * @return {@code this} for allowing method calls chaining.
+         */
+        @Override
+        public Characteristic<V> setName(final String localPart) {
+            super.setName(localPart);
+            return this;
+        }
+
+        /**
+         * Sets the characteristic name as a string in the given scope.
+         * The name will be a {@linkplain org.apache.sis.util.iso.DefaultLocalName local name} if the given scope is
+         * {@code null} or empty, or a {@linkplain org.apache.sis.util.iso.DefaultScopedName scoped name} otherwise.
+         * If a {@linkplain FeatureTypeBuilder#setDefaultScope(String) default scope} has been specified, then the
+         * {@code scope} argument overrides it.
+         *
+         * @return {@code this} for allowing method calls chaining.
+         */
+        @Override
+        public Characteristic<V> setName(final String scope, final String localPart) {
+            super.setName(scope, localPart);
+            return this;
         }
 
         /**
@@ -1014,6 +1293,33 @@ public class FeatureTypeBuilder extends Builder<FeatureTypeBuilder> {
         }
 
         /**
+         * {@inheritDoc}
+         */
+        @Override
+        public Characteristic<V> setDefinition(final CharSequence definition) {
+            super.setDefinition(definition);
+            return this;
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public Characteristic<V> setDesignation(final CharSequence designation) {
+            super.setDesignation(designation);
+            return this;
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public Characteristic<V> setDescription(final CharSequence description) {
+            super.setDescription(description);
+            return this;
+        }
+
+        /**
          * Creates a new characteristic from the current setting.
          */
         final AttributeType<V> build() {
@@ -1026,6 +1332,33 @@ public class FeatureTypeBuilder extends Builder<FeatureTypeBuilder> {
 
 
 
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public FeatureTypeBuilder setDefinition(final CharSequence definition) {
+        super.setDefinition(definition);
+        return this;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public FeatureTypeBuilder setDesignation(final CharSequence designation) {
+        super.setDesignation(designation);
+        return this;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public FeatureTypeBuilder setDescription(final CharSequence description) {
+        super.setDescription(description);
+        return this;
+    }
 
     /**
      * Builds the feature type from the information and properties specified to this builder.
@@ -1064,7 +1397,7 @@ public class FeatureTypeBuilder extends Builder<FeatureTypeBuilder> {
             int propertyCursor = numSynthetic;
             int identifierCursor = 0;
             for (int i=0; i<numSpecified; i++) {
-                final Property<?>  builder = properties.get(i);
+                final Property     builder = properties.get(i);
                 final PropertyType instance = builder.build();
                 propertyTypes[propertyCursor] = instance;
                 /*
@@ -1124,7 +1457,7 @@ public class FeatureTypeBuilder extends Builder<FeatureTypeBuilder> {
                             idDelimiter, idPrefix, idSuffix, identifierTypes);
                 }
             }
-            feature = new DefaultFeatureType(identification(), isAbstract,
+            feature = new DefaultFeatureType(identification(), isAbstract(),
                     superTypes.toArray(new FeatureType[superTypes.size()]),
                     ArraysExt.resize(propertyTypes, propertyCursor));
         }
@@ -1134,23 +1467,8 @@ public class FeatureTypeBuilder extends Builder<FeatureTypeBuilder> {
     /**
      * Helper method for creating identification info of synthetic attributes.
      */
-    private static Map<String,?> name(final GenericName name) {
+    static Map<String,?> name(final GenericName name) {
         return Collections.singletonMap(AbstractOperation.NAME_KEY, name);
-    }
-
-    /**
-     * Invoked by {@link Builder} for creating new {@code LocalName} or {@code GenericName} instances.
-     */
-    @Override
-    final GenericName name(String scope, final String localPart) {
-        if (scope == null) {
-            scope = defaultScope;
-        }
-        if (scope == null || scope.isEmpty()) {
-            return nameFactory.createLocalName(null, localPart);
-        } else {
-            return nameFactory.createGenericName(null, scope, localPart);
-        }
     }
 
     /**
@@ -1158,7 +1476,7 @@ public class FeatureTypeBuilder extends Builder<FeatureTypeBuilder> {
      */
     @Override
     final void toStringInternal(final StringBuilder buffer) {
-        if (isAbstract) {
+        if (isAbstract()) {
             buffer.insert(buffer.indexOf("[") + 1, "abstract ");
         }
         String separator = " : ";
@@ -1168,7 +1486,7 @@ public class FeatureTypeBuilder extends Builder<FeatureTypeBuilder> {
         }
         buffer.append(" {");
         separator = System.lineSeparator();
-        for (final Property<?> p : properties) {
+        for (final Property p : properties) {
             p.toString(buffer.append(separator).append("    ").append(p.getClass().getSimpleName()));
         }
         buffer.append(separator).append('}');

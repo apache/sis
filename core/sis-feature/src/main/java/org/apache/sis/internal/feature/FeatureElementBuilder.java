@@ -34,11 +34,7 @@ import org.opengis.feature.IdentifiedType;
 
 
 /**
- * Base class of feature and attribute builders.
- * This base class provide the method needed for filling the {@code identification} map.
- *
- * @param <B> the builder subclass. It is subclass responsibility to ensure that {@code this}
- *            is assignable to {@code <B>}; this {@code Builder} class can not verify that.
+ * Base class of feature type, and attribute type, association role and characteristic builders.
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
@@ -46,7 +42,7 @@ import org.opengis.feature.IdentifiedType;
  * @version 0.8
  * @module
  */
-abstract class Builder<B extends Builder<B>> implements Localized {
+public abstract class FeatureElementBuilder implements Localized {
     /**
      * The feature name, definition, designation and description.
      * The name is mandatory; all other information are optional.
@@ -56,7 +52,7 @@ abstract class Builder<B extends Builder<B>> implements Localized {
     /**
      * Creates a new builder initialized to the values of an existing type.
      */
-    Builder(final IdentifiedType template, final Locale locale) {
+    FeatureElementBuilder(final IdentifiedType template, final Locale locale) {
         putIfNonNull(Errors.LOCALE_KEY, locale);
         if (template != null) {
             putIfNonNull(AbstractIdentifiedType.NAME_KEY,        template.getName());
@@ -75,29 +71,6 @@ abstract class Builder<B extends Builder<B>> implements Localized {
         if (value != null) {
             identification.put(key, value);
         }
-    }
-
-    /**
-     * If the object created by the last call to {@code build()} has been cached, clears that cache.
-     */
-    abstract void clearCache();
-
-    /**
-     * Creates a generic name from the given scope and local part.
-     * An empty scope means no scope. A {@code null} scope means the
-     * {@linkplain FeatureTypeBuilder#setDefaultScope(String) default scope}.
-     *
-     * @param scope      the scope of the name to create, or {@code null} if the name is local.
-     * @param localPart  the local part of the generic name (can not be {@code null}).
-     */
-    abstract GenericName name(String scope, String localPart);
-
-    /**
-     * Returns a default name to use if the user did not specified a name. The first letter will be changed to
-     * lower case (unless the name looks like an acronym) for compliance with Java convention on property names.
-     */
-    String getDefaultName() {
-        return null;
     }
 
     /**
@@ -128,78 +101,39 @@ abstract class Builder<B extends Builder<B>> implements Localized {
     }
 
     /**
-     * Sets the name as a simple string with the default scope.
-     * The default scope is the value specified by the last call to
-     * {@link FeatureTypeBuilder#setDefaultScope(String)}.
-     *
-     * <p>The name will be an instance of {@link org.opengis.util.LocalName} if no default scope
-     * has been specified, or an instance of {@link org.opengis.util.ScopedName} otherwise.</p>
-     *
-     * <p>This convenience method creates a {@link GenericName} instance,
-     * then delegates to {@link #setName(GenericName)}.</p>
-     *
-     * @param  localPart  the local part of the generic name (can not be {@code null}).
-     * @return {@code this} for allowing method calls chaining.
+     * If the object created by the last call to {@code build()} has been cached, clears that cache.
      */
-    public B setName(final String localPart) {
-        ensureNonEmpty("localPart", localPart);
-        return setName(name(null, localPart));
-    }
+    abstract void clearCache();
 
     /**
-     * Sets the name as a string in the given scope.
-     * If a {@linkplain FeatureTypeBuilder#setDefaultScope(String) default scope} was specified,
-     * this method override it.
+     * Creates a generic name from the given scope and local part.
+     * An empty scope means no scope. A {@code null} scope means the
+     * {@linkplain FeatureTypeBuilder#setDefaultScope(String) default scope}.
      *
-     * <p>The name will be an instance of {@link org.opengis.util.LocalName} if the given scope
-     * is {@code null} or empty, or an instance of {@link org.opengis.util.ScopedName} otherwise.</p>
-     *
-     * <p>This convenience method creates a {@link GenericName} instance,
-     * then delegates to {@link #setName(GenericName)}.</p>
-     *
-     * @param  scope      the scope of the name to create, or {@code null} if the name is local.
-     * @param  localPart  the local part of the generic name (can not be {@code null}).
-     * @return {@code this} for allowing method calls chaining.
+     * @param scope      the scope of the name to create, or {@code null} if the name is local.
+     * @param localPart  the local part of the generic name (can not be {@code null}).
      */
-    public B setName(String scope, final String localPart) {
-        ensureNonEmpty("localPart", localPart);
-        if (scope == null) {
-            scope = "";                                 // For preventing the use of default scope.
-        }
-        return setName(name(scope, localPart));
-    }
+    abstract GenericName name(String scope, String localPart);
 
     /**
-     * Sets the name as a generic name.
-     * If another name was defined before this method call, that previous value will be discarded.
-     *
-     * <div class="note"><b>Note for subclasses:</b>
-     * all {@code setName(…)} convenience methods in this builder delegate to this method.
-     * Consequently this method can be used as a central place where to control the creation of all names.</div>
-     *
-     * @param  name  the generic name (can not be {@code null}).
-     * @return {@code this} for allowing method calls chaining.
-     *
-     * @see AbstractIdentifiedType#NAME_KEY
-     */
-    @SuppressWarnings("unchecked")
-    public B setName(final GenericName name) {
-        ensureNonNull("name", name);
-        if (!name.equals(identification.put(AbstractIdentifiedType.NAME_KEY, name))) {
-            clearCache();
-        }
-        return (B) this;
-    }
-
-    /**
-     * Returns the current name, or {@code null} if undefined.
+     * Returns the name of the {@code IdentifiedType} to create, or {@code null} if undefined.
      * This method returns the value built from the last call to a {@code setName(…)} method,
      * or a default name or {@code null} if no name has been explicitely specified.
      *
-     * @return the current name (may be a default name or {@code null}).
+     * @return the name of the {@code IdentifiedType} to create (may be a default name or {@code null}).
+     *
+     * @see AbstractIdentifiedType#getName()
      */
     public GenericName getName() {
         return (GenericName) identification().get(AbstractIdentifiedType.NAME_KEY);
+    }
+
+    /**
+     * Returns a default name to use if the user did not specified a name. The first letter will be changed to
+     * lower case (unless the name looks like an acronym) for compliance with Java convention on property names.
+     */
+    String getDefaultName() {
+        return null;
     }
 
     /**
@@ -211,19 +145,107 @@ abstract class Builder<B extends Builder<B>> implements Localized {
     }
 
     /**
+     * Sets the {@code IdentifiedType} name as a generic name.
+     * If another name was defined before this method call, that previous value will be discarded.
+     *
+     * <div class="note"><b>Note for subclasses:</b>
+     * all {@code setName(…)} convenience methods in this builder delegate to this method.
+     * Consequently this method can be used as a central place where to control the creation of all names.</div>
+     *
+     * @param  name  the generic name (can not be {@code null}).
+     * @return {@code this} for allowing method calls chaining.
+     *
+     * @see #getName()
+     * @see AbstractIdentifiedType#NAME_KEY
+     */
+    public FeatureElementBuilder setName(final GenericName name) {
+        ensureNonNull("name", name);
+        if (!name.equals(identification.put(AbstractIdentifiedType.NAME_KEY, name))) {
+            clearCache();
+        }
+        return this;
+    }
+
+    /**
+     * Sets the {@code IdentifiedType} name as a simple string with the default scope.
+     * The default scope is the value specified by the last call to {@link FeatureTypeBuilder#setDefaultScope(String)}.
+     * The name will be a {@linkplain org.apache.sis.util.iso.DefaultLocalName local name} if no default scope
+     * has been specified, or a {@linkplain org.apache.sis.util.iso.DefaultScopedName scoped name} otherwise.
+     *
+     * <p>This convenience method creates a {@link GenericName} instance,
+     * then delegates to {@link #setName(GenericName)}.</p>
+     *
+     * @param  localPart  the local part of the generic name (can not be {@code null}).
+     * @return {@code this} for allowing method calls chaining.
+     *
+     * @see #getName()
+     */
+    public FeatureElementBuilder setName(final String localPart) {
+        ensureNonEmpty("localPart", localPart);
+        return setName(name(null, localPart));
+    }
+
+    /**
+     * Sets the {@code IdentifiedType} name as a string in the given scope.
+     * The name will be a {@linkplain org.apache.sis.util.iso.DefaultLocalName local name} if the given scope is
+     * {@code null} or empty, or a {@linkplain org.apache.sis.util.iso.DefaultScopedName scoped name} otherwise.
+     * If a {@linkplain FeatureTypeBuilder#setDefaultScope(String) default scope} has been specified, then the
+     * {@code scope} argument overrides it.
+     *
+     * <p>This convenience method creates a {@link GenericName} instance,
+     * then delegates to {@link #setName(GenericName)}.</p>
+     *
+     * @param  scope      the scope of the name to create, or {@code null} if the name is local.
+     * @param  localPart  the local part of the generic name (can not be {@code null}).
+     * @return {@code this} for allowing method calls chaining.
+     *
+     * @see #getName()
+     */
+    public FeatureElementBuilder setName(String scope, final String localPart) {
+        ensureNonEmpty("localPart", localPart);
+        if (scope == null) {
+            scope = "";                                 // For preventing the use of default scope.
+        }
+        return setName(name(scope, localPart));
+    }
+
+    /**
+     * Returns a concise definition of the element.
+     *
+     * @return concise definition of the element, or {@code null} if none.
+     *
+     * @see AbstractIdentifiedType#getDefinition()
+     */
+    public CharSequence getDefinition() {
+        return (CharSequence) identification.get(AbstractIdentifiedType.DEFINITION_KEY);
+    }
+
+    /**
      * Sets a concise definition of the element.
      *
      * @param  definition a concise definition of the element, or {@code null} if none.
      * @return {@code this} for allowing method calls chaining.
      *
+     * @see #getDefinition()
      * @see AbstractIdentifiedType#DEFINITION_KEY
      */
-    @SuppressWarnings("unchecked")
-    public B setDefinition(final CharSequence definition) {
+    public FeatureElementBuilder setDefinition(final CharSequence definition) {
         if (!Objects.equals(definition, identification.put(AbstractIdentifiedType.DEFINITION_KEY, definition))) {
             clearCache();
         }
-        return (B) this;
+        return this;
+    }
+
+    /**
+     * Returns a natural language designator for the element.
+     * This can be used as an alternative to the {@linkplain #getName() name} in user interfaces.
+     *
+     * @return natural language designator for the element, or {@code null} if none.
+     *
+     * @see AbstractIdentifiedType#getDesignation()
+     */
+    public CharSequence getDesignation() {
+        return (CharSequence) identification.get(AbstractIdentifiedType.DESIGNATION_KEY);
     }
 
     /**
@@ -233,14 +255,26 @@ abstract class Builder<B extends Builder<B>> implements Localized {
      * @param  designation a natural language designator for the element, or {@code null} if none.
      * @return {@code this} for allowing method calls chaining.
      *
+     * @see #getDesignation()
      * @see AbstractIdentifiedType#DESIGNATION_KEY
      */
-    @SuppressWarnings("unchecked")
-    public B setDesignation(final CharSequence designation) {
+    public FeatureElementBuilder setDesignation(final CharSequence designation) {
         if (!Objects.equals(designation, identification.put(AbstractIdentifiedType.DESIGNATION_KEY, designation))) {
             clearCache();
         }
-        return (B) this;
+        return this;
+    }
+
+    /**
+     * Returns optional information beyond that required for concise definition of the element.
+     * The description may assist in understanding the element scope and application.
+     *
+     * @return information beyond that required for concise definition of the element, or {@code null} if none.
+     *
+     * @see AbstractIdentifiedType#getDescription()
+     */
+    public CharSequence getDescription() {
+        return (CharSequence) identification.get(AbstractIdentifiedType.DESCRIPTION_KEY);
     }
 
     /**
@@ -250,14 +284,14 @@ abstract class Builder<B extends Builder<B>> implements Localized {
      * @param  description  information beyond that required for concise definition of the element, or {@code null} if none.
      * @return {@code this} for allowing method calls chaining.
      *
+     * @see #getDescription()
      * @see AbstractIdentifiedType#DESCRIPTION_KEY
      */
-    @SuppressWarnings("unchecked")
-    public B setDescription(final CharSequence description) {
+    public FeatureElementBuilder setDescription(final CharSequence description) {
         if (!Objects.equals(description, identification.put(AbstractIdentifiedType.DESCRIPTION_KEY, description))) {
             clearCache();
         }
-        return (B) this;
+        return this;
     }
 
     /**
