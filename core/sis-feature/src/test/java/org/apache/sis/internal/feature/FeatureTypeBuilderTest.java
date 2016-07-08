@@ -31,6 +31,7 @@ import org.opengis.feature.AttributeType;
 import org.opengis.feature.FeatureType;
 import org.opengis.feature.PropertyType;
 import org.apache.sis.feature.DefaultFeatureTypeTest;
+import org.apache.sis.test.TestUtilities;
 
 
 /**
@@ -144,7 +145,7 @@ public final strictfp class FeatureTypeBuilderTest extends TestCase {
         builder.addAttribute(String .class).setName("name");
         builder.addAttribute(Integer.class).setName("age");
         builder.addAttribute(Point  .class).setName("location").setCRSCharacteristic(HardCodedCRS.WGS84);
-        builder.addAttribute(Double .class).setName("score").setCardinality(5, 50).setDefaultValue(10.0);
+        builder.addAttribute(Double .class).setName("score").setDefaultValue(10.0).setCardinality(5, 50);
 
         final FeatureType type = builder.build();
         assertEquals("name",        "myScope:myName",   type.getName().toString());
@@ -227,10 +228,13 @@ public final strictfp class FeatureTypeBuilderTest extends TestCase {
 
     /**
      * Tests creation of a builder from an existing feature type.
+     * This method also acts as a test of {@code FeatureTypeBuilder} getter methods.
      */
     @Test
     public void testCreateFromTemplate() {
         final FeatureTypeBuilder builder = new FeatureTypeBuilder(DefaultFeatureTypeTest.capital());
-        assertEquals("name", "Capital", builder.getName().toString());
+        assertEquals("name",       "Capital", builder.getName().toString());
+        assertEquals("superTypes", "City",    TestUtilities.getSingleton(builder.getSuperTypes()).getName().toString());
+        assertFalse ("isAbstract",            builder.isAbstract());
     }
 }
