@@ -232,7 +232,7 @@ public final class GPXConstants extends Static {
         final Map<String,?> geomInfo = Collections.singletonMap(AbstractIdentifiedType.NAME_KEY, geomName);
 
         //-------------------- GENERIC GPX ENTITY ------------------------------
-        final FeatureTypeBuilder builder = new FeatureTypeBuilder(factory, null);
+        FeatureTypeBuilder builder = new FeatureTypeBuilder(null, factory, null);
         builder.setDefaultScope(GPX_NAMESPACE).setName("GPXEntity").setAbstract(true);
         builder.addAttribute(Integer.class).setName("index");
         TYPE_GPX_ENTITY = builder.build();
@@ -261,10 +261,11 @@ public final class GPXConstants extends Static {
          * <dgpsid> dgpsStationType </dgpsid> [0..1] ?
          * <extensions> extensionsType </extensions> [0..1] ?
          */
-        builder.clear().setDefaultScope(GPX_NAMESPACE).setName("WayPoint").setSuperTypes(TYPE_GPX_ENTITY);
+        builder = new FeatureTypeBuilder(null, factory, null);
+        builder.setDefaultScope(GPX_NAMESPACE).setName("WayPoint").setSuperTypes(TYPE_GPX_ENTITY);
         builder.addAttribute(Point.class).setName(geomName)
                 .setCRSCharacteristic(CommonCRS.defaultGeographic())
-                .addRole(FeatureTypeBuilder.AttributeRole.DEFAULT_GEOMETRY);
+                .addRole(FeatureTypeBuilder.Attribute.Role.DEFAULT_GEOMETRY);
         builder.setDefaultCardinality(0, 1);
         builder.addAttribute(Double  .class).setName(TAG_WPT_ELE);
         builder.addAttribute(Temporal.class).setName(TAG_WPT_TIME);

@@ -28,13 +28,17 @@ import org.apache.sis.util.Localized;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Debug;
 
+// Branch-dependent imports
+import java.util.Objects;
+import org.opengis.feature.IdentifiedType;
+
 
 /**
  * Base class of feature and attribute builders.
  * This base class provide the method needed for filling the {@code identification} map.
  *
- * @param <T> the builder subclass. It is subclass responsibility to ensure that {@code this}
- *            is assignable to {@code <T>}; this {@code Builder} class can not verify that.
+ * @param <B> the builder subclass. It is subclass responsibility to ensure that {@code this}
+ *            is assignable to {@code <B>}; this {@code Builder} class can not verify that.
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
@@ -42,7 +46,7 @@ import org.apache.sis.util.Debug;
  * @version 0.8
  * @module
  */
-abstract class Builder<T extends Builder<T>> implements Localized {
+abstract class Builder<B extends Builder<B>> implements Localized {
     /**
      * The feature name, definition, designation and description.
      * The name is mandatory; all other information are optional.
@@ -50,43 +54,33 @@ abstract class Builder<T extends Builder<T>> implements Localized {
     private final Map<String,Object> identification = new HashMap<>(4);
 
     /**
-     * Creates a new builder instance which will format error message using the given locale.
+     * Creates a new builder initialized to the values of an existing type.
      */
-    Builder(final Locale locale) {
-        setLocale(locale);
-    }
-
-    /**
-     * Creates a new builder instance.
-     */
-    Builder(final Builder<?> parent) {
-        setLocale(parent.identification.get(Errors.LOCALE_KEY));
-    }
-
-    /**
-     * Sets the locale if non-null. This method should be invoked only when the {@link #identification} map is empty.
-     *
-     * @see #getLocale()
-     */
-    private void setLocale(final Object locale) {
-        if (locale != null) {
-            identification.put(Errors.LOCALE_KEY, locale);
+    Builder(final IdentifiedType template, final Locale locale) {
+        putIfNonNull(Errors.LOCALE_KEY, locale);
+        if (template != null) {
+            putIfNonNull(AbstractIdentifiedType.NAME_KEY,        template.getName());
+            putIfNonNull(AbstractIdentifiedType.DEFINITION_KEY,  template.getDefinition());
+            putIfNonNull(AbstractIdentifiedType.DESIGNATION_KEY, template.getDesignation());
+            putIfNonNull(AbstractIdentifiedType.DESCRIPTION_KEY, template.getDescription());
         }
     }
 
     /**
-     * Resets this builder to its initial state. After invocation of this method,
-     * this builder is in the same state than after construction.
-     *
-     * @return {@code this} for allowing method calls chaining.
+     * Puts the given value in the {@link #identification} map if the value is non-null.
+     * This method should be invoked only when the {@link #identification} map is known
+     * to not contain any value for the given key.
      */
-    @SuppressWarnings("unchecked")
-    public T clear() {
-        final Object locale = identification.get(Errors.LOCALE_KEY);
-        identification.clear();
-        setLocale(locale);
-        return (T) this;
+    private void putIfNonNull(final String key, final Object value) {
+        if (value != null) {
+            identification.put(key, value);
+        }
     }
+
+    /**
+     * If the object created by the last call to {@code build()} has been cached, clears that cache.
+     */
+    abstract void clearCache();
 
     /**
      * Creates a generic name from the given scope and local part.
@@ -147,7 +141,7 @@ abstract class Builder<T extends Builder<T>> implements Localized {
      * @param  localPart  the local part of the generic name (can not be {@code null}).
      * @return {@code this} for allowing method calls chaining.
      */
-    public T setName(String localPart) {
+    public B setName(final String localPart) {
         ensureNonEmpty("localPart", localPart);
         return setName(name(null, localPart));
     }
@@ -167,7 +161,7 @@ abstract class Builder<T extends Builder<T>> implements Localized {
      * @param  localPart  the local part of the generic name (can not be {@code null}).
      * @return {@code this} for allowing method calls chaining.
      */
-    public T setName(String scope, String localPart) {
+    public B setName(String scope, final String localPart) {
         ensureNonEmpty("localPart", localPart);
         if (scope == null) {
             scope = "";                                 // For preventing the use of default scope.
@@ -189,10 +183,12 @@ abstract class Builder<T extends Builder<T>> implements Localized {
      * @see AbstractIdentifiedType#NAME_KEY
      */
     @SuppressWarnings("unchecked")
-    public T setName(GenericName name) {
+    public B setName(final GenericName name) {
         ensureNonNull("name", name);
-        identification.put(AbstractIdentifiedType.NAME_KEY, name);
-        return (T) this;
+        if (!name.equals(identification.put(AbstractIdentifiedType.NAME_KEY, name))) {
+            clearCache();
+        }
+        return (B) this;
     }
 
     /**
@@ -223,9 +219,11 @@ abstract class Builder<T extends Builder<T>> implements Localized {
      * @see AbstractIdentifiedType#DEFINITION_KEY
      */
     @SuppressWarnings("unchecked")
-    public T setDefinition(CharSequence definition) {
-        identification.put(AbstractIdentifiedType.DEFINITION_KEY, definition);
-        return (T) this;
+    public B setDefinition(final CharSequence definition) {
+        if (!Objects.equals(definition, identification.put(AbstractIdentifiedType.DEFINITION_KEY, definition))) {
+            clearCache();
+        }
+        return (B) this;
     }
 
     /**
@@ -238,9 +236,11 @@ abstract class Builder<T extends Builder<T>> implements Localized {
      * @see AbstractIdentifiedType#DESIGNATION_KEY
      */
     @SuppressWarnings("unchecked")
-    public T setDesignation(CharSequence designation) {
-        identification.put(AbstractIdentifiedType.DESIGNATION_KEY, designation);
-        return (T) this;
+    public B setDesignation(final CharSequence designation) {
+        if (!Objects.equals(designation, identification.put(AbstractIdentifiedType.DESIGNATION_KEY, designation))) {
+            clearCache();
+        }
+        return (B) this;
     }
 
     /**
@@ -253,9 +253,11 @@ abstract class Builder<T extends Builder<T>> implements Localized {
      * @see AbstractIdentifiedType#DESCRIPTION_KEY
      */
     @SuppressWarnings("unchecked")
-    public T setDescription(CharSequence description) {
-        identification.put(AbstractIdentifiedType.DESCRIPTION_KEY, description);
-        return (T) this;
+    public B setDescription(final CharSequence description) {
+        if (!Objects.equals(description, identification.put(AbstractIdentifiedType.DESCRIPTION_KEY, description))) {
+            clearCache();
+        }
+        return (B) this;
     }
 
     /**
@@ -267,26 +269,6 @@ abstract class Builder<T extends Builder<T>> implements Localized {
     @Override
     public Locale getLocale() {
         return (Locale) identification.get(Errors.LOCALE_KEY);
-    }
-
-    /**
-     * Returns a string representation of this object.
-     * The returned string is for debugging purpose only and may change in any future SIS version.
-     *
-     * @return a string representation of this object for debugging purpose.
-     */
-    @Debug
-    @Override
-    public String toString() {
-        final StringBuilder buffer = new StringBuilder(Classes.getShortClassName(this));
-        toStringInternal(buffer.append("[“").append(getDisplayName()).append('”'));
-        return buffer.append(']').toString();
-    }
-
-    /**
-     * Appends a text inside the value returned by {@link #toString()}, before the closing bracket.
-     */
-    void toStringInternal(StringBuilder buffer) {
     }
 
     /**
@@ -326,5 +308,32 @@ abstract class Builder<T extends Builder<T>> implements Localized {
         if (text.length() == 0) {
             throw new IllegalArgumentException(errors().getString(Errors.Keys.EmptyArgument_1, name));
         }
+    }
+
+    /**
+     * Returns a string representation of this object.
+     * The returned string is for debugging purpose only and may change in any future SIS version.
+     *
+     * @return a string representation of this object for debugging purpose.
+     */
+    @Debug
+    @Override
+    public String toString() {
+        return toString(new StringBuilder(Classes.getShortClassName(this))).toString();
+    }
+
+    /**
+     * Partial implementation of {@link #toString()}. This method assumes that the class name
+     * has already been written in the buffer.
+     */
+    final StringBuilder toString(final StringBuilder buffer) {
+        toStringInternal(buffer.append("[“").append(getDisplayName()).append('”'));
+        return buffer.append(']');
+    }
+
+    /**
+     * Appends a text inside the value returned by {@link #toString()}, before the closing bracket.
+     */
+    void toStringInternal(StringBuilder buffer) {
     }
 }
