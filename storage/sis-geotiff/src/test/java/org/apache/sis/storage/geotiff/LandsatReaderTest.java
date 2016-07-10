@@ -17,8 +17,11 @@
 package org.apache.sis.storage.geotiff;
 
 import java.io.BufferedReader;
+import java.io.FileReader;
 import java.io.InputStreamReader;
 import java.io.IOException;
+import java.text.ParseException;
+import javax.xml.bind.JAXBException;
 import org.opengis.metadata.Metadata;
 import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.storage.DataStoreException;
@@ -27,6 +30,7 @@ import org.junit.Test;
 
 import static org.apache.sis.test.Assert.assertMultilinesEquals;
 import static org.apache.sis.test.TestUtilities.formatNameAndValue;
+import org.opengis.util.FactoryException;
 
 
 /**
@@ -45,25 +49,41 @@ public class LandsatReaderTest extends TestCase {
      * @throws DataStoreException if a property value can not be parsed as a number or a date.
      */
     @Test
-    public void testRead() throws IOException, DataStoreException {
-        final Metadata actual;
-        try (BufferedReader in = new BufferedReader(new InputStreamReader(LandsatReaderTest.class.getResourceAsStream("Sample.txt"), "UTF-8"))) {
-            actual = new LandsatReader(in).read();
-        }
+    public void testRead() throws IOException, DataStoreException, ParseException, FactoryException, JAXBException { 
+        // TODO 
+        final Metadata reade; 
+        try (BufferedReader in = new BufferedReader(new FileReader("/home/haonguyen/data/LC81230522014071LGN00_MTL.txt"))) { 
+            reade = new LandsatReader(in).read(); 
+        } 
+         System.out.println("The Metadata of LC81230522014071LGN00_MTL.txt is:"); 
+         System.out.println(reade); 
+         compareToExpected(reade); 
+    } 
+    static void compareToExpected(final Metadata actual) {  {
         final String text = formatNameAndValue(DefaultMetadata.castOrCopy(actual).asTreeTable());
         assertMultilinesEquals(
-            "Metadata\n" +
-            "  ├─Identification info\n" +
-            "  │   ├─Citation\n" +
-            "  │   │   ├─Date\n" +
-            "  │   │   │   ├─Date……………………………………………………… 2016-06-27 16:48:12\n" +
-            "  │   │   │   └─Date type………………………………………… Publication\n" +
-            "  │   │   └─Identifier\n" +
-            "  │   │       └─Code……………………………………………………… TestImage\n" +
-            "  │   ├─Credit……………………………………………………………………… Test file\n" +
-            "  │   ├─Resource format\n" +
-            "  │   │   └─Format specification citation\n" +
-            "  │   │       └─Title…………………………………………………… GEOTIFF\n" +
+            "Metadata\n"+
+            "  ├─Language…………………………………………………………………………… en\n" +
+            "  ├─Identification info\n"+ 
+            "  │   ├─Citation                         \n" +
+            "  │   │   ├─Title……………………………………………………………… Image courtesy of the U.S. Geological Survey\n" +
+            "  │   │   └─Date                         \n" +
+            "  │   │       ├─Date……………………………………………………… Mar 12, 2014 1:06:35 PM\n" +
+            "  │   │       └─Date type………………………………………… Publication\n"+
+            "  │   ├─Point of contact (1 of 3)\n"+        
+            "  │   │   ├─Role………………………………………………………………… Originator\n"+
+            "  │   │   └─Party\n"+ 
+            "  │   │       └─Name……………………………………………………… Image courtesy of the U.S. Geological Survey\n"+
+            "  │   ├─Point of contact (2 of 3)\n"+        
+            "  │   │   ├─Role………………………………………………………………… Publisher\n"+
+            "  │   │   └─Party\n"+                        
+            "  │   │       └─Name……………………………………………………… Image courtesy of the U.S. Geological Survey\n"+
+            "  │   ├─Point of contact (3 of 3)\n"+        
+            "  │   │   ├─Role………………………………………………………………… Author\n"+
+            "  │   │   └─Party\n"+                        
+            "  │   │       └─Name……………………………………………………… Image courtesy of the U.S. Geological Survey\n"+
+            "  │   ├─Descriptive keywords\n"+             
+            "  │   │   └─Keyword………………………………………………………… GLS2000\n"+
             "  │   └─Extent\n" +
             "  │       └─Geographic element\n" +
             "  │           ├─West bound longitude…………… 108°20′24″E\n" +
@@ -121,6 +141,10 @@ public class LandsatReaderTest extends TestCase {
             "  │           ├─Peak response……………………………… 12000.0\n" +
             "  │           ├─Bound units…………………………………… nm\n" +
             "  │           └─Description…………………………………… Thermal Infrared Sensor (TIRS) 2\n" +
+            "  ├─Distribution info\n" + 
+            "  │   └─Distribution format\n" +
+            "  │       └─Format specification citation\n" +
+            "  │           └─Alternate title………………………… GEOTIFF\n" +
             "  ├─Acquisition information\n" +
             "  │   ├─Operation\n" +
             "  │   │   ├─Status…………………………………………………………… Completed\n" +
@@ -136,6 +160,8 @@ public class LandsatReaderTest extends TestCase {
             "  ├─Date info\n" +
             "  │   ├─Date…………………………………………………………………………… 2016-06-27 16:48:12\n" +
             "  │   └─Date type……………………………………………………………… Creation\n" +
+            "  ├─Metadata identifier\n" +      
+            "  │   └─Code…………………………………………………………………………… LANDSAT_SCENE_ID\n" +
             "  ├─Metadata standard (1 of 2)\n" +
             "  │   ├─Title………………………………………………………………………… Geographic Information — Metadata Part 1: Fundamentals\n" +
             "  │   ├─Cited responsible party\n" +
@@ -161,4 +187,5 @@ public class LandsatReaderTest extends TestCase {
             "      │   └─Version………………………………………………………… 2009(E)\n" +
             "      └─Presentation form………………………………………… Document digital\n", text);
     }
+}
 }

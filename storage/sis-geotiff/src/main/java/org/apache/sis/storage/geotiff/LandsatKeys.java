@@ -165,4 +165,5 @@ final class LandsatKeys {
      * Note: for reflectance calculation, the sun zenith angle is needed, which is 90 - sun elevation angle.
      */
     static final String SUN_ELEVATION = "SUN_ELEVATION";
+    static final String ELEVATION_SOURCE="ELEVATION_SOURCE";
 }

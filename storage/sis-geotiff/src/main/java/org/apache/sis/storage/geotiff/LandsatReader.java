@@ -17,6 +17,7 @@
 package org.apache.sis.storage.geotiff;
 
 import java.io.BufferedReader;
+import java.io.FileReader;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Date;
@@ -66,42 +67,53 @@ import org.apache.sis.util.iso.DefaultInternationalString;
 import org.apache.sis.util.logging.WarningListeners;
 
 import static java.util.Collections.singleton;
+import org.apache.sis.metadata.iso.citation.DefaultResponsibility;
+import org.apache.sis.metadata.iso.citation.DefaultResponsibleParty;
+import org.apache.sis.metadata.iso.distribution.DefaultDistribution;
+import org.apache.sis.metadata.iso.identification.AbstractIdentification;
+import org.apache.sis.metadata.iso.identification.DefaultAggregateInformation;
+import org.apache.sis.metadata.iso.identification.DefaultKeywords;
 import static org.apache.sis.storage.geotiff.LandsatKeys.*;
-
+import org.opengis.metadata.citation.Role;
+import org.opengis.metadata.distribution.Distribution;
+import org.opengis.util.InternationalString;
 
 /**
- * Parses Landsat metadata as {@linkplain DefaultMetadata ISO-19115 Metadata} object.
+ * Parses Landsat metadata as {@linkplain DefaultMetadata ISO-19115 Metadata}
+ * object.
  *
- * @author  Thi Phuong Hao Nguyen (VNSC)
- * @author  Remi Marechal (Geomatys)
- * @since   0.8
+ * @author Thi Phuong Hao Nguyen (VNSC)
+ * @author Remi Marechal (Geomatys)
+ * @since 0.8
  * @version 0.8
  * @module
  */
 public class LandsatReader {
+
     /**
      * The description of all bands that can be included in a Landsat coverage.
      * This description is hard-coded and shared by all metadata instances.
      */
     private static final AttributeGroup BANDS;
+
     static {
         final double[] wavelengths = {433, 482, 562, 655, 865, 1610, 2200, 590, 1375, 10800, 12000};
         final String[] nameband = {
-            "Coastal Aerosol",                      //   433 nm
-            "Blue",                                 //   482 nm
-            "Green",                                //   562 nm
-            "Red",                                  //   655 nm
-            "Near-Infrared",                        //   865 nm
-            "Short Wavelength Infrared (SWIR) 1",   //  1610 nm
-            "Short Wavelength Infrared (SWIR) 2",   //  2200 nm
-            "Panchromatic",                         //   590 nm
-            "Cirrus",                               //  1375 nm
-            "Thermal Infrared Sensor (TIRS) 1",     // 10800 nm
-            "Thermal Infrared Sensor (TIRS) 2"      // 12000 nm
+            "Coastal Aerosol", //   433 nm
+            "Blue", //   482 nm
+            "Green", //   562 nm
+            "Red", //   655 nm
+            "Near-Infrared", //   865 nm
+            "Short Wavelength Infrared (SWIR) 1", //  1610 nm
+            "Short Wavelength Infrared (SWIR) 2", //  2200 nm
+            "Panchromatic", //   590 nm
+            "Cirrus", //  1375 nm
+            "Thermal Infrared Sensor (TIRS) 1", // 10800 nm
+            "Thermal Infrared Sensor (TIRS) 2" // 12000 nm
         };
         final DefaultBand[] bands = new DefaultBand[wavelengths.length];
         final Unit<Length> nm = SI.MetricPrefix.NANO(SI.METRE);
-        for (int i=0; i<bands.length; i++) {
+        for (int i = 0; i < bands.length; i++) {
             final DefaultBand band = new DefaultBand();
             band.setDescription(new DefaultInternationalString(nameband[i]));
             band.setPeakResponse(wavelengths[i]);
@@ -115,17 +127,15 @@ public class LandsatReader {
     }
 
     /**
-     * All properties found in the Landsat metadata file, except {@code GROUP} and {@code END_GROUP}.
-     * Example:
+     * All properties found in the Landsat metadata file, except {@code GROUP}
+     * and {@code END_GROUP}. Example:
      *
-     * {@preformat text
-     *   DATE_ACQUIRED = 2014-03-12
-     *   SCENE_CENTER_TIME = 03:02:01.5339408Z
-     *   CORNER_UL_LAT_PRODUCT = 12.61111
-     *   CORNER_UL_LON_PRODUCT = 108.33624
-     *   CORNER_UR_LAT_PRODUCT = 12.62381
-     *   CORNER_UR_LON_PRODUCT = 110.44017
-     * }
+     * {
+     *
+     * @preformat text DATE_ACQUIRED = 2014-03-12 SCENE_CENTER_TIME =
+     * 03:02:01.5339408Z CORNER_UL_LAT_PRODUCT = 12.61111 CORNER_UL_LON_PRODUCT
+     * = 108.33624 CORNER_UR_LAT_PRODUCT = 12.62381 CORNER_UR_LON_PRODUCT =
+     * 110.44017 }
      */
     private final Map<String, String> properties;
 
@@ -139,8 +149,10 @@ public class LandsatReader {
     /**
      * Creates a new metadata parser from the given characters reader.
      *
-     * @param  reader a reader opened on the Landsat file. It is caller's responsibility to close this reader.
-     * @throws IOException if an I/O error occurred while reading the given stream.
+     * @param reader a reader opened on the Landsat file. It is caller's
+     * responsibility to close this reader.
+     * @throws IOException if an I/O error occurred while reading the given
+     * stream.
      * @throws DataStoreException if the content is not a Landsat file.
      */
     public LandsatReader(final BufferedReader reader) throws IOException, DataStoreException {
@@ -195,22 +207,26 @@ public class LandsatReader {
     }
 
     /**
-     * Returns the property value associated to the given key, or {@code null} if none.
+     * Returns the property value associated to the given key, or {@code null}
+     * if none.
      *
-     * @param  key  the key for which to get the property value.
-     * @return the property value associated to the given key, {@code null} if none.
+     * @param key the key for which to get the property value.
+     * @return the property value associated to the given key, {@code null} if
+     * none.
      */
     private String getValue(String key) {
         return properties.get(key);
     }
 
     /**
-     * Returns the floating-point value associated to the given key, or {@code NaN} if none.
+     * Returns the floating-point value associated to the given key, or
+     * {@code NaN} if none.
      *
-     * @param  key  the key for which to get the floating-point value.
-     * @return the floating-point value associated to the given key, or {@link Double#NaN} if none.
-     * @throws NumberFormatException if the property associated to the given key can not be parsed
-     *         as a floating-point number.
+     * @param key the key for which to get the floating-point value.
+     * @return the floating-point value associated to the given key, or
+     * {@link Double#NaN} if none.
+     * @throws NumberFormatException if the property associated to the given key
+     * can not be parsed as a floating-point number.
      */
     private double getNumericValue(String key) throws NumberFormatException {
         String value = getValue(key);
@@ -218,15 +234,18 @@ public class LandsatReader {
     }
 
     /**
-     * Returns the minimal or maximal value associated to the given two keys, or {@code NaN} if none.
+     * Returns the minimal or maximal value associated to the given two keys, or
+     * {@code NaN} if none.
      *
-     * @param  key1  the key for which to get the first floating-point value.
-     * @param  key2  the key for which to get the second floating-point value.
-     * @param  max   {@code true} for the maximal value, or {@code false} for the minimal value.
-     * @return the minimal (if {@code max} is false) or maximal (if {@code max} is true) floating-point value
-     *         associated to the given keys, or {@link Double#NaN} if none.
-     * @throws NumberFormatException if the property associated to one of the given keys can not be parsed
-     *         as a floating-point number.
+     * @param key1 the key for which to get the first floating-point value.
+     * @param key2 the key for which to get the second floating-point value.
+     * @param max {@code true} for the maximal value, or {@code false} for the
+     * minimal value.
+     * @return the minimal (if {@code max} is false) or maximal (if {@code max}
+     * is true) floating-point value associated to the given keys, or
+     * {@link Double#NaN} if none.
+     * @throws NumberFormatException if the property associated to one of the
+     * given keys can not be parsed as a floating-point number.
      */
     private double getExtremumValue(String key1, String key2, boolean max) throws NumberFormatException {
         double value1 = getNumericValue(key1);
@@ -242,7 +261,7 @@ public class LandsatReader {
      * Returns the date associated to the given key, or {@code null} if none.
      * The date is expected to be formatted in ISO 8601 format.
      *
-     * @param  key  the key for which to get the date value.
+     * @param key the key for which to get the date value.
      * @return the date associated to the given key, or {@code null} if none.
      * @throws DateTimeParseException if the date can not be parsed.
      */
@@ -256,13 +275,14 @@ public class LandsatReader {
     }
 
     /**
-     * Returns the date and time associated to the given key, or {@code null} if none.
-     * The date and time are expected to be in two separated fields,
-     * with each field formatted in ISO 8601 format.
+     * Returns the date and time associated to the given key, or {@code null} if
+     * none. The date and time are expected to be in two separated fields, with
+     * each field formatted in ISO 8601 format.
      *
-     * @param  dateKey  the key for which to get the date value.
-     * @param  timeKey  the key for which to get the time value.
-     * @return the date and time associated to the given keys, or {@code null} if none.
+     * @param dateKey the key for which to get the date value.
+     * @param timeKey the key for which to get the time value.
+     * @return the date and time associated to the given keys, or {@code null}
+     * if none.
      * @throws DateTimeParseException if the date can not be parsed.
      */
     private Date getDate(final String dateKey, final String timeKey) throws DateTimeParseException {
@@ -285,15 +305,22 @@ public class LandsatReader {
     /**
      * Gets information about an image's suitability for use.
      *
-     * @throws DataStoreException if a property value can not be parsed as a number or a date.
+     * @throws DataStoreException if a property value can not be parsed as a
+     * number or a date.
      */
     private ImageDescription createImageDescription() throws DataStoreException {
         final DefaultImageDescription content = new DefaultImageDescription();
         try {
             double value;
-            if (0     <=     (value = getNumericValue(CLOUD_COVER)))   content.setCloudCoverPercentage      (value);
-            if (!Double.isNaN(value = getNumericValue(SUN_AZIMUTH)))   content.setIlluminationAzimuthAngle  (value);
-            if (!Double.isNaN(value = getNumericValue(SUN_ELEVATION))) content.setIlluminationElevationAngle(value);
+            if (0 <= (value = getNumericValue(CLOUD_COVER))) {
+                content.setCloudCoverPercentage(value);
+            }
+            if (!Double.isNaN(value = getNumericValue(SUN_AZIMUTH))) {
+                content.setIlluminationAzimuthAngle(value);
+            }
+            if (!Double.isNaN(value = getNumericValue(SUN_ELEVATION))) {
+                content.setIlluminationElevationAngle(value);
+            }
         } catch (NumberFormatException e) {
             throw new DataStoreException("Can not read content information.", e);
         }
@@ -302,20 +329,22 @@ public class LandsatReader {
     }
 
     /**
-     * Gets the geographic and temporal extent for identification info, or {@code null} if none.
-     * This method expects the data acquisition time in argument in order to avoid to compute it twice.
+     * Gets the geographic and temporal extent for identification info, or
+     * {@code null} if none. This method expects the data acquisition time in
+     * argument in order to avoid to compute it twice.
      *
-     * @param  sceneTime  the data acquisition time, or {@code null} if none.
+     * @param sceneTime the data acquisition time, or {@code null} if none.
      * @return the data extent in Identification info, or {@code null} if none.
-     * @throws DataStoreException if a property value can not be parsed as a number or a date.
+     * @throws DataStoreException if a property value can not be parsed as a
+     * number or a date.
      */
     private Extent createExtent(final Date sceneTime) throws DataStoreException {
         final DefaultGeographicBoundingBox box;
         try {
             box = new DefaultGeographicBoundingBox(
-                    getExtremumValue(CORNER_UL_LON_PRODUCT, CORNER_LL_LON_PRODUCT, false),      // westBoundLongitude
-                    getExtremumValue(CORNER_UR_LON_PRODUCT, CORNER_LR_LON_PRODUCT, true),       // eastBoundLongitude
-                    getExtremumValue(CORNER_LL_LAT_PRODUCT, CORNER_LR_LAT_PRODUCT, false),      // southBoundLatitude
+                    getExtremumValue(CORNER_UL_LON_PRODUCT, CORNER_LL_LON_PRODUCT, false), // westBoundLongitude
+                    getExtremumValue(CORNER_UR_LON_PRODUCT, CORNER_LR_LON_PRODUCT, true), // eastBoundLongitude
+                    getExtremumValue(CORNER_LL_LAT_PRODUCT, CORNER_LR_LAT_PRODUCT, false), // southBoundLatitude
                     getExtremumValue(CORNER_UL_LAT_PRODUCT, CORNER_UR_LAT_PRODUCT, true));      // northBoundLatitude
         } catch (NumberFormatException e) {
             throw new DataStoreException("Can not read the geographic bounding box.", e);
@@ -325,26 +354,30 @@ public class LandsatReader {
         if (!isEmpty) {
             extent.setGeographicElements(singleton(box));
         }
-        if (sceneTime != null) try {
-            final DefaultTemporalExtent t = new DefaultTemporalExtent();
-            t.setBounds(sceneTime, sceneTime);
-            extent.setTemporalElements(singleton(t));
-        } catch (UnsupportedOperationException e) {
-            // May happen if the temporal module (which is optional) is not on the classpath.
-            warning(e);
-            if (isEmpty) {
-                return null;
+        if (sceneTime != null) {
+            try {
+                final DefaultTemporalExtent t = new DefaultTemporalExtent();
+                t.setBounds(sceneTime, sceneTime);
+                extent.setTemporalElements(singleton(t));
+            } catch (UnsupportedOperationException e) {
+                // May happen if the temporal module (which is optional) is not on the classpath.
+                warning(e);
+                if (isEmpty) {
+                    return null;
+                }
             }
         }
         return extent;
     }
 
     /**
-     * Gets the acquisition information, or {@code null} if none.
-     * This method expects the data acquisition time in argument in order to avoid to compute it twice.
+     * Gets the acquisition information, or {@code null} if none. This method
+     * expects the data acquisition time in argument in order to avoid to
+     * compute it twice.
      *
-     * @param  sceneTime  the data acquisition time, or {@code null} if none.
-     * @return the data for the Acquisition Information, or {@code null} if none.
+     * @param sceneTime the data acquisition time, or {@code null} if none.
+     * @return the data for the Acquisition Information, or {@code null} if
+     * none.
      */
     private AcquisitionInformation createAcquisitionInformation(final Date sceneTime) {
         final DefaultAcquisitionInformation acquisition = new DefaultAcquisitionInformation();
@@ -379,18 +412,36 @@ public class LandsatReader {
     }
 
     /**
-     * Gets basic information required to uniquely identify the data, or {@code null} if none.
-     * This method expects the metadata and data acquisition time in arguments
-     * in order to avoid to compute them twice.
+     * Get basic Information about the distributor of and options for obtaining
+     * the resource.
      *
-     * @param  metadataTime  the metadata file creation time, or {@code null} if none.
-     * @param  sceneTime     the data acquisition time, or {@code null} if none.
+     * @return the data distributor information, or {@code null} if none.
+     */
+    private Distribution createDistribution() {
+        DefaultDistribution distribution = new DefaultDistribution();
+        DefaultFormat format = new DefaultFormat();
+        String value = getValue(OUTPUT_FORMAT);
+        format.setName(new DefaultInternationalString(value));
+        distribution.setDistributionFormats(singleton(format));
+        return distribution;
+    }
+
+    /**
+     * Gets basic information required to uniquely identify the data, or
+     * {@code null} if none. This method expects the metadata and data
+     * acquisition time in arguments in order to avoid to compute them twice.
+     *
+     * @param metadataTime the metadata file creation time, or {@code null} if
+     * none.
+     * @param sceneTime the data acquisition time, or {@code null} if none.
      * @return the data identification information, or {@code null} if none.
-     * @throws DataStoreException if a property value can not be parsed as a number or a date.
+     * @throws DataStoreException if a property value can not be parsed as a
+     * number or a date.
      */
     private Identification createIdentification(final Date metadataTime, final Date sceneTime) throws DataStoreException {
-        final DefaultDataIdentification identification = new DefaultDataIdentification();
+//        final DefaultDataIdentification identification = new DefaultDataIdentification();
         final DefaultCitation citation = new DefaultCitation();
+        final AbstractIdentification identification = new AbstractIdentification();
         boolean isEmpty = true;
         if (metadataTime != null) {
             citation.setDates(singleton(new DefaultCitationDate(metadataTime, DateType.PUBLICATION)));
@@ -398,17 +449,17 @@ public class LandsatReader {
         }
         String value = getValue(LANDSAT_SCENE_ID);
         if (value != null) {
-            citation.setIdentifiers(singleton(new DefaultIdentifier(value)));
+            citation.setTitle(new DefaultInternationalString(value));
             isEmpty = false;
         }
+
         if (!isEmpty) {
             identification.setCitation(citation);
         }
-        value = getValue(OUTPUT_FORMAT);
+        value = getValue(ELEVATION_SOURCE);
         if (value != null) {
-            final DefaultFormat format = new DefaultFormat();
-            format.setFormatSpecificationCitation(new DefaultCitation(value));
-            identification.setResourceFormats(singleton(format));
+            final DefaultKeywords keyword = new DefaultKeywords(value);
+            identification.setDescriptiveKeywords(singleton(keyword));
             isEmpty = false;
         }
         final Extent extent = createExtent(sceneTime);
@@ -418,9 +469,28 @@ public class LandsatReader {
         }
         value = getValue(ORIGIN);
         if (value != null) {
-            identification.setCredits(singleton(new DefaultInternationalString(value)));
+            DefaultResponsibleParty responsible = new DefaultResponsibleParty();
+            responsible.setOrganisationName(new DefaultInternationalString(value));
+            responsible.setRole(Role.ORIGINATOR);
+            DefaultResponsibleParty responsiblepublisher = new DefaultResponsibleParty();
+            responsiblepublisher.setOrganisationName(new DefaultInternationalString(value));
+            responsiblepublisher.setRole(Role.PUBLISHER);
+            DefaultResponsibleParty responsiblecontributor = new DefaultResponsibleParty();
+            responsiblecontributor.setOrganisationName(new DefaultInternationalString(value));
+            responsiblecontributor.setRole(Role.AUTHOR);
+            identification.getPointOfContacts().add(responsible);
+            identification.getPointOfContacts().add(responsiblepublisher);
+            identification.getPointOfContacts().add(responsiblecontributor);
             isEmpty = false;
         }
+        value = getValue(ORIGIN);
+        if (value != null) {
+            DefaultAggregateInformation aggregateInformation = new DefaultAggregateInformation();
+            citation.setTitle(new DefaultInternationalString(value));
+            aggregateInformation.setAggregateDataSetName(citation);
+            isEmpty = false;
+        }
+
         return isEmpty ? null : identification;
     }
 
@@ -428,15 +498,20 @@ public class LandsatReader {
      * Returns the metadata about the resources described in the Landsat file.
      *
      * @return the metadata about Landsat resources.
-     * @throws DataStoreException if a property value can not be parsed as a number or a date.
+     * @throws DataStoreException if a property value can not be parsed as a
+     * number or a date.
      */
     public Metadata read() throws DataStoreException {
         final DefaultMetadata metadata = new DefaultMetadata();
         metadata.setMetadataStandards(Citations.ISO_19115);
         final Date metadataTime = getDate(FILE_DATE);
         if (metadataTime != null) {
-            metadata.setDateInfo(singleton(new DefaultCitationDate(metadataTime, DateType.CREATION)));
+            metadata.setDateStamp(metadataTime);
         }
+        metadata.setLanguage(Locale.ENGLISH);
+        metadata.setFileIdentifier(LANDSAT_SCENE_ID);
+        final Distribution metadataDistribution = createDistribution();
+        metadata.setDistributionInfo(singleton(metadataDistribution));
         final Date sceneTime = getDate(DATE_ACQUIRED, SCENE_CENTER_TIME);
         final Identification identification = createIdentification(metadataTime, sceneTime);
         if (identification != null) {
@@ -454,13 +529,24 @@ public class LandsatReader {
     }
 
     /**
-     * Invoked when a non-fatal exception occurred while reading metadata.
-     * This method sends a record to the registered listeners if any,
-     * or logs the record otherwise.
+     * Invoked when a non-fatal exception occurred while reading metadata. This
+     * method sends a record to the registered listeners if any, or logs the
+     * record otherwise.
      */
     private void warning(final Exception e) {
         if (listeners != null) {
             listeners.warning(null, e);
         }
     }
+
+    public static void main(String[] args) throws IOException, DataStoreException {
+        LandsatReader read;
+        try (BufferedReader in = new BufferedReader(new FileReader("/home/haonguyen/data/LC81230522014071LGN00_MTL.txt"))) {
+            read = new LandsatReader(in);
+        }
+        System.out.println("The Metadata of LC81230522014071LGN00_MTL.txt is:");
+        System.out.println(read.read());
+
+    }
+
 }
