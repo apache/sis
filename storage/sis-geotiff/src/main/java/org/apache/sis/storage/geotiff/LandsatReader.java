@@ -73,9 +73,11 @@ import org.apache.sis.metadata.iso.distribution.DefaultDistribution;
 import org.apache.sis.metadata.iso.identification.AbstractIdentification;
 import org.apache.sis.metadata.iso.identification.DefaultAggregateInformation;
 import org.apache.sis.metadata.iso.identification.DefaultKeywords;
+import org.apache.sis.metadata.iso.maintenance.DefaultScope;
 import static org.apache.sis.storage.geotiff.LandsatKeys.*;
 import org.opengis.metadata.citation.Role;
 import org.opengis.metadata.distribution.Distribution;
+import org.opengis.metadata.maintenance.ScopeCode;
 import org.opengis.util.InternationalString;
 
 /**
@@ -410,7 +412,15 @@ public class LandsatReader {
         }
         return isEmpty ? null : acquisition;
     }
-
+    /**
+     * Get the nature or genre of the content of the resources
+     *
+     * @return the type of product, or {@code null} if none.
+     */
+    private ScopeCode getScopeCode(){
+       ScopeCode type = ScopeCode.valueOf(getValue(DATA_TYPE));
+        return type;
+    }
     /**
      * Get basic Information about the distributor of and options for obtaining
      * the resource.
@@ -524,6 +534,10 @@ public class LandsatReader {
         final AcquisitionInformation acquisition = createAcquisitionInformation(sceneTime);
         if (acquisition != null) {
             metadata.setAcquisitionInformation(singleton(acquisition));
+        }
+        final ScopeCode type= getScopeCode();
+        if(type!=null){
+        metadata.setHierarchyLevels(singleton(type));
         }
         return metadata;
     }

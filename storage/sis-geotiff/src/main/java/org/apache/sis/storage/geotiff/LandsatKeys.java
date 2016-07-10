@@ -166,4 +166,5 @@ final class LandsatKeys {
      */
     static final String SUN_ELEVATION = "SUN_ELEVATION";
     static final String ELEVATION_SOURCE="ELEVATION_SOURCE";
+    static final String DATA_TYPE="DATA_TYPE";
 }
