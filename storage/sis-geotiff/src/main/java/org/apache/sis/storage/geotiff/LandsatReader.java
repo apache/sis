@@ -509,7 +509,7 @@ public class LandsatReader {
             metadata.setDateStamp(metadataTime);
         }
         metadata.setLanguage(Locale.ENGLISH);
-        metadata.setFileIdentifier(LANDSAT_SCENE_ID);
+        metadata.setFileIdentifier(getValue(LANDSAT_SCENE_ID));
         final Distribution metadataDistribution = createDistribution();
         metadata.setDistributionInfo(singleton(metadataDistribution));
         final Date sceneTime = getDate(DATE_ACQUIRED, SCENE_CENTER_TIME);
