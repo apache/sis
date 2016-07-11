@@ -28,7 +28,9 @@ import org.apache.sis.feature.AbstractIdentifiedType;
 import org.apache.sis.feature.DefaultAttributeType;
 import org.apache.sis.feature.DefaultFeatureType;
 import org.apache.sis.feature.DefaultAssociationRole;
-import org.apache.sis.internal.feature.FeatureTypeBuilder;
+import org.apache.sis.feature.FeatureOperations;
+import org.apache.sis.feature.builder.FeatureTypeBuilder;
+import org.apache.sis.feature.builder.AttributeRole;
 import org.apache.sis.internal.feature.AttributeConvention;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.referencing.CommonCRS;
@@ -37,7 +39,6 @@ import org.apache.sis.util.Static;
 // Branch-dependent imports
 import org.opengis.feature.FeatureType;
 import org.opengis.feature.PropertyType;
-import org.apache.sis.feature.FeatureOperations;
 
 
 /**
@@ -264,8 +265,8 @@ public final class GPXConstants extends Static {
         builder = new FeatureTypeBuilder(null, factory, null);
         builder.setDefaultScope(GPX_NAMESPACE).setName("WayPoint").setSuperTypes(TYPE_GPX_ENTITY);
         builder.addAttribute(Point.class).setName(geomName)
-                .setCRSCharacteristic(CommonCRS.defaultGeographic())
-                .addRole(FeatureTypeBuilder.Attribute.Role.DEFAULT_GEOMETRY);
+                .setCRS(CommonCRS.defaultGeographic())
+                .addRole(AttributeRole.DEFAULT_GEOMETRY);
         builder.setDefaultCardinality(0, 1);
         builder.addAttribute(Double  .class).setName(TAG_WPT_ELE);
         builder.addAttribute(Temporal.class).setName(TAG_WPT_TIME);
