@@ -63,13 +63,13 @@ public class LandsatReaderTest extends TestCase {
 
     static void compareToExpected(final Metadata actual) {
         {
-            final String text = formatNameAndValue(DefaultMetadata.castOrCopy(actual).asTreeTable()); 
-        assertMultilinesEquals(
+            final String text = formatNameAndValue(DefaultMetadata.castOrCopy(actual).asTreeTable());
+            assertMultilinesEquals(
                     "Metadata\n"
                     + "  ├─Language…………………………………………………………………………… en\n"
                     + "  ├─Identification info\n"
                     + "  │   ├─Citation                         \n"
-                    + "  │   │   ├─Title……………………………………………………………… Image courtesy of the U.S. Geological Survey\n"
+                    + "  │   │   ├─Title……………………………………………………………… LC81230522014071LGN00\n"
                     + "  │   │   └─Date                         \n"
                     + "  │   │       ├─Date……………………………………………………… 2014-03-12 06:06:35\n"
                     + "  │   │       └─Date type………………………………………… Publication\n"
@@ -87,13 +87,16 @@ public class LandsatReaderTest extends TestCase {
                     + "  │   │       └─Name……………………………………………………… Image courtesy of the U.S. Geological Survey\n"
                     + "  │   ├─Descriptive keywords\n"
                     + "  │   │   └─Keyword………………………………………………………… GLS2000\n"
-                    + "  │   └─Extent\n"
-                    + "  │       └─Geographic element\n"
-                    + "  │           ├─West bound longitude…………… 108°20′10.464″E\n"
-                    + "  │           ├─East bound longitude…………… 110°26′39.66″E\n"
-                    + "  │           ├─South bound latitude…………… 10°29′59.604″N\n"
-                    + "  │           ├─North bound latitude…………… 12°37′25.716″N\n"
-                    + "  │           └─Extent type code……………………… true\n"
+                    + "  │   ├─Extent\n"
+                    + "  │   │   └─Geographic element\n"
+                    + "  │   │       ├─West bound longitude…………… 108°20′10.464″E\n"
+                    + "  │   │       ├─East bound longitude…………… 110°26′39.66″E\n"
+                    + "  │   │       ├─South bound latitude…………… 10°29′59.604″N\n"
+                    + "  │   │       ├─North bound latitude…………… 12°37′25.716″N\n"
+                    + "  │   │       └─Extent type code……………………… true\n"
+                    + "  │   └─Associated resource\n" 
+                    + "  │       └─Name\n"
+                    + "  │           └─Title…………………………………………………… Image courtesy of the U.S. Geological Survey\n"
                     + "  ├─Content info\n"
                     + "  │   ├─Illumination elevation angle…………… 58.80866057\n"
                     + "  │   ├─Illumination azimuth angle………………… 116.88701534\n"
@@ -190,7 +193,11 @@ public class LandsatReaderTest extends TestCase {
                     + "      │   ├─Code………………………………………………………………… 19115-2\n"
                     + "      │   ├─Code space………………………………………………… ISO\n"
                     + "      │   └─Version………………………………………………………… 2009(E)\n"
-                    + "      └─Presentation form………………………………………… Document digital\n", text);
+                    + "      └─Presentation form………………………………………… Document digital\n", text
+        
+    
+
+);
         }
     }
 }
