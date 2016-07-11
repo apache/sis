@@ -43,6 +43,7 @@ import org.opengis.feature.PropertyType;
  *
  * @param <V> the class of property values.
  *
+ * @see org.apache.sis.feature.DefaultAttributeType
  * @see FeatureTypeBuilder#addAttribute(Class)
  */
 public final class AttributeTypeBuilder<V> extends PropertyTypeBuilder {

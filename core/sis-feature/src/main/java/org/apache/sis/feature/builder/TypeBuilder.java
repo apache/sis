@@ -44,7 +44,8 @@ import org.opengis.feature.IdentifiedType;
  *   <li>the description — information beyond that required for concise definition of the element.</li>
  * </ul>
  *
- * In many cases, all names of the {@code FeatureType} to create share the same namespace.
+ * In many cases, the names of all {@code AttributeType}s and {@code AssociationRole}s to create
+ * within a {@code FeatureType} share the same namespace.
  * For making name creations more convenient, a default namespace can be
  * {@linkplain FeatureTypeBuilder#setDefaultScope specified once} and applied automatically
  * to all names created by the {@link #setName(String)} method.
