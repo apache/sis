@@ -253,7 +253,7 @@ public final class AttributeConvention extends Static {
      * @throws ClassCastException if {@link #CRS_CHARACTERISTIC} has been found but is associated
      *         to an object which is not a {@link CoordinateReferenceSystem} instance.
      *
-     * @see org.apache.sis.internal.feature.FeatureTypeBuilder.Property#setCRSCharacteristic(CoordinateReferenceSystem)
+     * @see org.apache.sis.feature.builder.AttributeTypeBuilder#setCRS(CoordinateReferenceSystem)
      */
     public static CoordinateReferenceSystem getCRSCharacteristic(final Property attribute) {
         return (CoordinateReferenceSystem) getCharacteristic(attribute, CRS_CHARACTERISTIC.toString());
@@ -280,7 +280,7 @@ public final class AttributeConvention extends Static {
      * @throws ClassCastException if {@link #MAXIMAL_LENGTH_CHARACTERISTIC} has been found but is associated
      *         to an object which is not an {@link Integer} instance.
      *
-     * @see org.apache.sis.internal.feature.FeatureTypeBuilder.Property#setMaximalLengthCharacteristic(Integer)
+     * @see org.apache.sis.feature.builder.AttributeTypeBuilder#setMaximalLength(Integer)
      */
     public static Integer getMaximalLengthCharacteristic(final Property attribute) {
         return (Integer) getCharacteristic(attribute, MAXIMAL_LENGTH_CHARACTERISTIC.toString());

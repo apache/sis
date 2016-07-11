@@ -51,7 +51,7 @@ import org.junit.BeforeClass;
     org.apache.sis.filter.DefaultLiteralTest.class,
     org.apache.sis.filter.DefaultPropertyNameTest.class,
     org.apache.sis.internal.feature.AttributeConventionTest.class,
-    org.apache.sis.internal.feature.FeatureTypeBuilderTest.class
+    org.apache.sis.feature.builder.FeatureTypeBuilderTest.class
 })
 public final strictfp class FeatureTestSuite extends TestSuite {
     /**
