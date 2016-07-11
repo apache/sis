@@ -333,7 +333,15 @@ public class FeatureTypeBuilder extends TypeBuilder {
     }
 
     /**
-     * Sets the scope of the names created by {@code setName(String)} method calls.
+     * Sets the scope of the next names created by {@code setName(String)} method calls.
+     * This method applies only to the next calls to {@code setName(String)};
+     * the result of all previous calls stay unmodified.
+     *
+     * <p>There is different conventions about the use of name scopes. ISO 19109 suggests that the scope of all
+     * {@code AttributeType} names is the name of the enclosing {@code FeatureType}, but this is not mandatory.
+     * Users who want to apply this convention can invoke {@code setDefaultScope(featureName)} after
+     * <code>{@linkplain #setName(String) FeatureTypeBuilder.setName}(featureName)</code> but before
+     * <code>{@linkplain AttributeTypeBuilder#setName(String) AttributeTypeBuilder.setName}(attributeName)</code>.</p>
      *
      * @param  scope  the new default scope, or {@code null} if none.
      * @return {@code this} for allowing method calls chaining.
@@ -346,9 +354,10 @@ public class FeatureTypeBuilder extends TypeBuilder {
     }
 
     /**
-     * Sets the default minimum and maximum number of property values.
+     * Sets the default minimum and maximum number of next attributes and associations to add.
      * Those defaults will applied to newly created attributes or associations,
      * for example in next calls to {@link #addAttribute(Class)}.
+     * Attributes and associations added before this method call are not modified.
      *
      * <p>If this method is not invoked, then the default cardinality is [1 … 1].</p>
      *

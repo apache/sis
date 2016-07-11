@@ -43,7 +43,7 @@ import org.opengis.feature.FeatureAssociationRole;
  * @version 0.8
  * @module
  */
-abstract class PropertyTypeBuilder extends TypeBuilder {
+public abstract class PropertyTypeBuilder extends TypeBuilder {
     /**
      * The feature type builder instance that created this {@code PropertyTypeBuilder}.
      */

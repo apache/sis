@@ -82,6 +82,12 @@ import org.opengis.feature.PropertyNotFoundException;
  * which are implicitly <cite>covariant</cite> (i.e. {@code String[]} can be casted to {@code CharSequence[]}, which
  * is safe for read operations but not for write operations — the later may throw {@link ArrayStoreException}).</div>
  *
+ * <div class="section">Instantiation</div>
+ * {@code DefaultFeatureType} can be instantiated directly by a call to its {@linkplain #DefaultFeatureType constructor}.
+ * But a more convenient approach may be to use the {@link org.apache.sis.feature.builder.FeatureTypeBuilder} instead,
+ * which provides shortcuts for frequently-used operations like creating various {@link org.opengis.util.GenericName}
+ * instances sharing the same namespace.
+ *
  * <div class="section">Immutability and thread safety</div>
  * Instances of this class are immutable if all properties ({@link GenericName} and {@link InternationalString}
  * instances) and all arguments ({@link AttributeType} instances) given to the constructor are also immutable.
@@ -93,6 +99,8 @@ import org.opengis.feature.PropertyNotFoundException;
  * @version 0.6
  * @module
  *
+ * @see DefaultAttributeType
+ * @see DefaultAssociationRole
  * @see AbstractFeature
  */
 public class DefaultFeatureType extends AbstractIdentifiedType implements FeatureType {
@@ -233,6 +241,8 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
      * @param superTypes     The parents of this feature type, or {@code null} or empty if none.
      * @param properties     Any feature operation, any feature attribute type and any feature
      *                       association role that carries characteristics of a feature type.
+     *
+     * @see org.apache.sis.feature.builder.FeatureTypeBuilder
      */
     @SuppressWarnings("ThisEscapedInObjectConstruction")
     public DefaultFeatureType(final Map<String,?> identification, final boolean isAbstract,
