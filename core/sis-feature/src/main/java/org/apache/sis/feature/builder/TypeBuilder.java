@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.feature;
+package org.apache.sis.feature.builder;
 
 import java.util.Map;
 import java.util.HashMap;
@@ -34,15 +34,28 @@ import org.opengis.feature.IdentifiedType;
 
 
 /**
- * Base class of feature type, and attribute type, association role and characteristic builders.
+ * Properties common to all kind of types (feature, association, characteristics).
+ * Those properties are:
+ *
+ * <ul>
+ *   <li>the name        — a unique name which can be defined within a scope (or namespace).</li>
+ *   <li>the definition  — a concise definition of the element.</li>
+ *   <li>the designation — a natural language designator for the element for user interfaces.</li>
+ *   <li>the description — information beyond that required for concise definition of the element.</li>
+ * </ul>
+ *
+ * In many cases, all names of the {@code FeatureType} to create share the same namespace.
+ * For making name creations more convenient, a default namespace can be
+ * {@linkplain FeatureTypeBuilder#setDefaultScope specified once} and applied automatically
+ * to all names created by the {@link #setName(String)} method.
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.7
+ * @since   0.8
  * @version 0.8
  * @module
  */
-public abstract class FeatureElementBuilder implements Localized {
+public abstract class TypeBuilder implements Localized {
     /**
      * The feature name, definition, designation and description.
      * The name is mandatory; all other information are optional.
@@ -52,7 +65,7 @@ public abstract class FeatureElementBuilder implements Localized {
     /**
      * Creates a new builder initialized to the values of an existing type.
      */
-    FeatureElementBuilder(final IdentifiedType template, final Locale locale) {
+    TypeBuilder(final IdentifiedType template, final Locale locale) {
         putIfNonNull(Errors.LOCALE_KEY, locale);
         if (template != null) {
             putIfNonNull(AbstractIdentifiedType.NAME_KEY,        template.getName());
@@ -158,7 +171,7 @@ public abstract class FeatureElementBuilder implements Localized {
      * @see #getName()
      * @see AbstractIdentifiedType#NAME_KEY
      */
-    public FeatureElementBuilder setName(final GenericName name) {
+    public TypeBuilder setName(final GenericName name) {
         ensureNonNull("name", name);
         if (!name.equals(identification.put(AbstractIdentifiedType.NAME_KEY, name))) {
             clearCache();
@@ -180,7 +193,7 @@ public abstract class FeatureElementBuilder implements Localized {
      *
      * @see #getName()
      */
-    public FeatureElementBuilder setName(final String localPart) {
+    public TypeBuilder setName(final String localPart) {
         ensureNonEmpty("localPart", localPart);
         return setName(name(null, localPart));
     }
@@ -201,7 +214,7 @@ public abstract class FeatureElementBuilder implements Localized {
      *
      * @see #getName()
      */
-    public FeatureElementBuilder setName(String scope, final String localPart) {
+    public TypeBuilder setName(String scope, final String localPart) {
         ensureNonEmpty("localPart", localPart);
         if (scope == null) {
             scope = "";                                 // For preventing the use of default scope.
@@ -229,7 +242,7 @@ public abstract class FeatureElementBuilder implements Localized {
      * @see #getDefinition()
      * @see AbstractIdentifiedType#DEFINITION_KEY
      */
-    public FeatureElementBuilder setDefinition(final CharSequence definition) {
+    public TypeBuilder setDefinition(final CharSequence definition) {
         if (!Objects.equals(definition, identification.put(AbstractIdentifiedType.DEFINITION_KEY, definition))) {
             clearCache();
         }
@@ -258,7 +271,7 @@ public abstract class FeatureElementBuilder implements Localized {
      * @see #getDesignation()
      * @see AbstractIdentifiedType#DESIGNATION_KEY
      */
-    public FeatureElementBuilder setDesignation(final CharSequence designation) {
+    public TypeBuilder setDesignation(final CharSequence designation) {
         if (!Objects.equals(designation, identification.put(AbstractIdentifiedType.DESIGNATION_KEY, designation))) {
             clearCache();
         }
@@ -287,7 +300,7 @@ public abstract class FeatureElementBuilder implements Localized {
      * @see #getDescription()
      * @see AbstractIdentifiedType#DESCRIPTION_KEY
      */
-    public FeatureElementBuilder setDescription(final CharSequence description) {
+    public TypeBuilder setDescription(final CharSequence description) {
         if (!Objects.equals(description, identification.put(AbstractIdentifiedType.DESCRIPTION_KEY, description))) {
             clearCache();
         }
