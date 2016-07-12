@@ -74,19 +74,16 @@ public class RegionalMercator extends AbstractMercator {
     static {
         final ParameterBuilder builder = builder();
 
-        LATITUDE_OF_FALSE_ORIGIN = createLatitude(exceptEPSG(Mercator1SP.LATITUDE_OF_ORIGIN, builder
-                .addIdentifier("8821")
-                .addName("Latitude of false origin"))
+        LATITUDE_OF_FALSE_ORIGIN = createLatitude(
+                 rename(Mercator1SP.LATITUDE_OF_ORIGIN, "8821", "Latitude of false origin", builder)
                 .rename(Citations.GEOTIFF, "FalseOriginLat"), false);
 
-        EASTING_AT_FALSE_ORIGIN = createShift(exceptEPSG(FALSE_EASTING, builder
-                .addIdentifier("8826")
-                .addName("Easting at false origin"))
+        EASTING_AT_FALSE_ORIGIN = createShift(
+                 rename(FALSE_EASTING, "8826", "Easting at false origin", builder)
                 .rename(Citations.GEOTIFF, "FalseOriginEasting"));
 
-        NORTHING_AT_FALSE_ORIGIN = createShift(exceptEPSG(FALSE_NORTHING, builder
-                .addIdentifier("8827")
-                .addName("Northing at false origin"))
+        NORTHING_AT_FALSE_ORIGIN = createShift(
+                 rename(FALSE_NORTHING, "8827", "Northing at false origin", builder)
                 .rename(Citations.GEOTIFF, "FalseOriginNorthing"));
 
         PARAMETERS = builder

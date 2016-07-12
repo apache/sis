@@ -155,7 +155,7 @@ public strictfp class CoordinateOperationMethods extends HTMLGenerator {
      * @throws IOException if an error occurred while writing to the file.
      */
     public CoordinateOperationMethods() throws IOException {
-        super("CoordinateOperationMethods.html", "Apache SIS Coordinate Operation Methods");
+        super("CoordinateOperationMethods.html", "Apache SIS Coordinate Operation Methods", "authority-codes.css");
         domainOfValidity = Collections.emptyMap();      // TODO: not yet available.
         rangeFormat = new RangeFormat(LOCALE);
         final int header = openTag("header");
