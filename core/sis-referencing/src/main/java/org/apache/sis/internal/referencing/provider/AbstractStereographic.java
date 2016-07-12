@@ -31,7 +31,7 @@ import org.apache.sis.referencing.operation.projection.PolarStereographic;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.6
- * @version 0.6
+ * @version 0.8
  * @module
  */
 @XmlTransient
@@ -40,12 +40,6 @@ abstract class AbstractStereographic extends MapProjection {
      * For cross-version compatibility.
      */
     private static final long serialVersionUID = -8797654778436582119L;
-
-    /**
-     * The operation parameter descriptor for the <cite>Scale factor at natural origin</cite> (k₀) parameter value.
-     * Valid values range is (0 … ∞) and default value is 1.
-     */
-    public static final ParameterDescriptor<Double> SCALE_FACTOR = Mercator1SP.SCALE_FACTOR;
 
     /**
      * The operation parameter descriptor for the <cite>False easting</cite> (FE) parameter value.

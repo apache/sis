@@ -99,8 +99,9 @@ final class Initializer {
      *
      * @param method     Description of the map projection parameters.
      * @param parameters The parameters of the projection to be created.
-     * @param roles Parameters to look for <cite>central meridian</cite>, <cite>scale factor</cite>,
-     *        <cite>false easting</cite>, <cite>false northing</cite> and other values.
+     * @param roles      Parameters to look for <cite>central meridian</cite>, <cite>scale factor</cite>,
+     *                   <cite>false easting</cite>, <cite>false northing</cite> and other values.
+     * @param variant    Convenience field left at the discretion of {@link NormalizedProjection} subclasses.
      */
     Initializer(final OperationMethod method, final Parameters parameters,
             final Map<ParameterRole, ? extends ParameterDescriptor<? extends Number>> roles,
@@ -239,7 +240,7 @@ final class Initializer {
         final Number defaultValue = descriptor.getDefaultValue();
         if (defaultValue == null || !defaultValue.equals(value)) {
             MapProjection.validate(descriptor, value);
-            context.parameter(descriptor.getName().getCode()).setValue(value);
+            context.getOrCreate(descriptor).setValue(value);
         }
         return value;
     }
@@ -255,7 +256,7 @@ final class Initializer {
             return defaultValue;
         }
         MapProjection.validate(descriptor, value);
-        context.parameter(descriptor.getName().getCode()).setValue(value);
+        context.getOrCreate(descriptor).setValue(value);
         return value;
     }
 

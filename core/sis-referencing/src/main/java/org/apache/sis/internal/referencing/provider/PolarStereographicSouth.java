@@ -44,22 +44,18 @@ public final class PolarStereographicSouth extends AbstractStereographic {
     private static final long serialVersionUID = -6173635411676914083L;
 
     /**
-     * Copies all names and identifiers, but using the ESRI authority as the primary name.
-     * This is a convenience method for defining the parameters of an ESRI-specific projection
-     * using the EPSG parameters as template.
-     */
-    private static ParameterBuilder addNamesAndIdentifiers(final ParameterDescriptor<Double> source, final ParameterBuilder builder) {
-        return except(source, Citations.ESRI, null, builder.addName(sameNameAs(Citations.ESRI, source)).addName(source.getName()));
-    }
-
-    /**
-     * Returns the same parameter than the given one, except that the primary name is the ESRI name
-     * instead than the EPSG one.
+     * Returns the same parameter than the given one, except that the alias of the ESRI authority
+     * is promoted as the primary name. The old primary name and identifiers (which are usually the
+     * EPSG ones) are discarded.
+     *
+     * @param  template    the parameter from which to copy the names and identifiers.
+     * @param  builder     an initially clean builder where to add the names.
+     * @return the given {@code builder}, for method call chaining.
      */
     @SuppressWarnings("unchecked")
-    private static ParameterDescriptor<Double> forESRI(final ParameterDescriptor<Double> source, final ParameterBuilder builder) {
-        return addNamesAndIdentifiers(source, builder).createBounded((MeasurementRange<Double>)
-                ((DefaultParameterDescriptor<Double>) source).getValueDomain(), source.getDefaultValue());
+    private static ParameterDescriptor<Double> forESRI(final ParameterDescriptor<Double> template, final ParameterBuilder builder) {
+        return alternativeAuthority(template, Citations.ESRI, builder).createBounded((MeasurementRange<Double>)
+                ((DefaultParameterDescriptor<Double>) template).getValueDomain(), template.getDefaultValue());
     }
 
     /**
@@ -69,11 +65,11 @@ public final class PolarStereographicSouth extends AbstractStereographic {
     static {
         final ParameterBuilder builder = builder();
         final ParameterDescriptor<?>[] parameters = {
-            addNamesAndIdentifiers(PolarStereographicB.STANDARD_PARALLEL, builder)
+            alternativeAuthority(PolarStereographicB.STANDARD_PARALLEL, Citations.ESRI, builder)
                    .createBounded(Latitude.MIN_VALUE, 0, Latitude.MIN_VALUE, NonSI.DEGREE_ANGLE),
 
             forESRI(PolarStereographicB.LONGITUDE_OF_ORIGIN, builder),
-            forESRI(PolarStereographicB.SCALE_FACTOR, builder),
+                    PolarStereographicB.SCALE_FACTOR,                   // Not formally a parameter of this projection.
             forESRI(PolarStereographicB.FALSE_EASTING, builder),
             forESRI(PolarStereographicB.FALSE_NORTHING, builder)
         };

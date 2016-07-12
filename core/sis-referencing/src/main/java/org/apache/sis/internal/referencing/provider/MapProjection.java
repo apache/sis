@@ -57,7 +57,7 @@ import static org.opengis.metadata.Identifier.AUTHORITY_KEY;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.6
- * @version 0.7
+ * @version 0.8
  * @module
  */
 @XmlTransient
@@ -244,47 +244,105 @@ public abstract class MapProjection extends AbstractProvider {
     }
 
     /**
-     * Copies all aliases and identifiers except the ones for the given authority.
-     * If the given replacement is non-null, then it will be used instead of the
-     * first occurrence of the omitted name.
+     * Rename the primary name and identifier of the given descriptor. Aliases are copied as-is.
      *
-     * <p>This method does not copy the primary name. It is caller's responsibility to add it first.</p>
+     * @param  template    the parameter from which to copy the aliases.
+     * @param  identifier  the new EPSG identifier.
+     * @param  name        the new EPSG name.
+     * @param  builder     an initially clean builder where to add the names.
+     * @return the given {@code builder}, for method call chaining.
      *
-     * @param  source      The parameter from which to copy the names.
-     * @param  except      The authority of the name to omit. Can not be EPSG.
-     * @param  replacement The name to use instead of the omitted one, or {@code null} if none.
-     * @param  builder     Where to add the names.
-     * @return The given {@code builder}, for method call chaining.
-     *
-     * @since 0.7
+     * @since 0.8
      */
-    static ParameterBuilder except(final ParameterDescriptor<Double> source, final Citation except,
-            GenericName replacement, final ParameterBuilder builder)
+    static ParameterBuilder rename(final ParameterDescriptor<?> template, final String identifier, final String name,
+            final ParameterBuilder builder)
     {
-        for (GenericName alias : source.getAlias()) {
-            if (((Identifier) alias).getAuthority() == except) {
-                if (replacement == null) continue;
-                alias = replacement;
-                replacement = null;
-            }
-            builder.addName(alias);
-        }
-        for (final Identifier id : source.getIdentifiers()) {
+        return exceptEPSG(template, builder.addIdentifier(identifier).addName(name));
+    }
+
+    /**
+     * Copies name, aliases and identifiers of the given {@code template}, except the alias of the given authority
+     * which is replaced by the alias of the same authority in {@code replacement}.
+     *
+     * @param  template     the parameter from which to copy names and identifiers.
+     * @param  toRename     authority of the alias to rename.
+     * @param  replacement  the parameter from which to get the new name for the alias to rename.
+     * @param  builder      an initially clean builder where to add the names and identifiers.
+     * @return the given {@code builder}, for method call chaining.
+     *
+     * @since 0.8
+     */
+    static ParameterBuilder renameAlias(final ParameterDescriptor<Double> template, final Citation toRename,
+            final ParameterDescriptor<Double> replacement, final ParameterBuilder builder)
+    {
+        copyAliases(template, toRename, sameNameAs(toRename, replacement), builder.addName(template.getName()));
+        for (final Identifier id : template.getIdentifiers()) {
             builder.addIdentifier(id);
         }
         return builder;
     }
 
     /**
-     * Copies all names except the EPSG one from the given parameter into the builder.
-     * The EPSG name is presumed the first name and identifier (this is not verified).
+     * Copies all aliases except the ones for the given authority. If the given replacement is non-null,
+     * then it will be used instead of the first occurrence of the omitted name.
      *
-     * @param  source  The parameter from which to copy the names.
-     * @param  builder Where to add the names.
-     * @return The given {@code builder}, for method call chaining.
+     * <p>This method does not copy the primary name. It is caller's responsibility to add it first.</p>
+     *
+     * @param  template     the parameter from which to copy the aliases.
+     * @param  exclude      the authority of the alias to omit. Can not be EPSG.
+     * @param  replacement  the alias to use instead of the omitted one, or {@code null} if none.
+     * @param  builder      where to add the aliases.
+     * @return the given {@code builder}, for method call chaining.
      */
-    static ParameterBuilder exceptEPSG(final ParameterDescriptor<?> source, final ParameterBuilder builder) {
-        for (final GenericName alias : source.getAlias()) {
+    private static ParameterBuilder copyAliases(final ParameterDescriptor<Double> template, final Citation exclude,
+            GenericName replacement, final ParameterBuilder builder)
+    {
+        for (GenericName alias : template.getAlias()) {
+            if (((Identifier) alias).getAuthority() == exclude) {
+                if (replacement == null) continue;
+                alias = replacement;
+                replacement = null;
+            }
+            builder.addName(alias);
+        }
+        return builder;
+    }
+
+    /**
+     * Copies all aliases and identifiers, but using the alias specified by the given authority as the primary name.
+     * The old primary name (usually the EPSG name) is discarded. Identifier are <strong>not</strong> copied, which
+     * usually implies that only the EPSG identifier is ignored (because it is usually the only parameter identifier).
+     *
+     * <p>This is a convenience method for defining the parameters of an ESRI-specific (or any other authority)
+     * projection using the EPSG parameters as template. Note that in the particular case where the desired
+     * authority is OGC, {@link #exceptEPSG(ParameterDescriptor, ParameterBuilder)} is more efficient.</p>
+     *
+     * @param  template    the parameter from which to copy the names.
+     * @param  authority   the authority to use for the primary name.
+     * @param  builder     an initially clean builder where to add the names.
+     * @return the given {@code builder}, for method call chaining.
+     *
+     * @since 0.8
+     */
+    static ParameterBuilder alternativeAuthority(final ParameterDescriptor<Double> template,
+            final Citation authority, final ParameterBuilder builder)
+    {
+        return copyAliases(template, authority, null, builder.addName(sameNameAs(authority, template)));
+    }
+
+    /**
+     * Copies all names except the EPSG one from the given parameter into the builder.
+     * The EPSG information are presumed to be the primary name and the only identifier (this is not verified).
+     *
+     * <p>If this method is invoking with a "clean" builder, then the result is to promote the first alias as
+     * the primary name. The first alias is usually the OGC name.</p>
+     *
+     * @param  template  the parameter from which to copy the names.
+     * @param  builder   where to add the names.
+     * @return the given {@code builder}, for method call chaining.
+     */
+    static ParameterBuilder exceptEPSG(final ParameterDescriptor<?> template, final ParameterBuilder builder) {
+        for (final GenericName alias : template.getAlias()) {
             builder.addName(alias);
         }
         return builder;
@@ -293,8 +351,8 @@ public abstract class MapProjection extends AbstractProvider {
     /**
      * Creates a remarks for parameters that are not formally EPSG parameter.
      *
-     * @param  origin The name of the projection for where the parameter is formally used.
-     * @return A remarks saying that the parameter is actually defined in {@code origin}.
+     * @param  origin  the name of the projection for where the parameter is formally used.
+     * @return a remarks saying that the parameter is actually defined in {@code origin}.
      */
     static InternationalString notFormalParameter(final String origin) {
         return Messages.formatInternational(Messages.Keys.NotFormalProjectionParameter_1, origin);
