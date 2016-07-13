@@ -53,8 +53,8 @@ import org.apache.sis.internal.jdk7.Path;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.7.1
- * @version 0.7.1
+ * @since   0.7
+ * @version 0.7
  * @module
  */
 @Fallback
@@ -62,7 +62,7 @@ public class ResourcesDownloader extends InstallationResources {
     /**
      * Where to download the EPSG scripts after user has approved the terms of use.
      */
-    private static final String DOWNLOAD_URL = "http://repo1.maven.org/maven2/org/apache/sis/non-free/sis-epsg/0.7.1/sis-epsg-0.7.1.jar";
+    private static final String DOWNLOAD_URL = "http://repo1.maven.org/maven2/org/apache/sis/non-free/sis-epsg/0.7/sis-epsg-0.7.jar";
 
     /**
      * Estimation of the EPSG database size after installation, in mega-bytes.
