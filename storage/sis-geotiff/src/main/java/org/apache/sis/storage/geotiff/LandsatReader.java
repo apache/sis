@@ -67,19 +67,15 @@ import org.apache.sis.util.iso.DefaultInternationalString;
 import org.apache.sis.util.logging.WarningListeners;
 
 import static java.util.Collections.singleton;
-import javax.xml.bind.JAXBException;
 import org.apache.sis.metadata.iso.citation.DefaultResponsibility;
 import org.apache.sis.metadata.iso.citation.DefaultResponsibleParty;
 import org.apache.sis.metadata.iso.distribution.DefaultDistribution;
 import org.apache.sis.metadata.iso.identification.AbstractIdentification;
 import org.apache.sis.metadata.iso.identification.DefaultAggregateInformation;
 import org.apache.sis.metadata.iso.identification.DefaultKeywords;
-import org.apache.sis.metadata.iso.maintenance.DefaultScope;
 import static org.apache.sis.storage.geotiff.LandsatKeys.*;
-import org.apache.sis.xml.XML;
 import org.opengis.metadata.citation.Role;
 import org.opengis.metadata.distribution.Distribution;
-import org.opengis.metadata.maintenance.ScopeCode;
 import org.opengis.util.InternationalString;
 
 /**
@@ -416,16 +412,6 @@ public class LandsatReader {
     }
 
     /**
-     * Get the nature or genre of the content of the resources
-     *
-     * @return the type of product, or {@code null} if none.
-     */
-    private ScopeCode getScopeCode() {
-        ScopeCode type = ScopeCode.valueOf(getValue(DATA_TYPE));
-        return type;
-    }
-
-    /**
      * Get basic Information about the distributor of and options for obtaining
      * the resource.
      *
@@ -500,10 +486,8 @@ public class LandsatReader {
         value = getValue(ORIGIN);
         if (value != null) {
             DefaultAggregateInformation aggregateInformation = new DefaultAggregateInformation();
-            final DefaultCitation citation1 = new DefaultCitation();
-            citation1.setTitle(new DefaultInternationalString(value));
-            aggregateInformation.setAggregateDataSetName(citation1);
-            identification.setAggregationInfo(singleton(aggregateInformation));
+            citation.setTitle(new DefaultInternationalString(value));
+            aggregateInformation.setAggregateDataSetName(citation);
             isEmpty = false;
         }
 
@@ -517,7 +501,7 @@ public class LandsatReader {
      * @throws DataStoreException if a property value can not be parsed as a
      * number or a date.
      */
-    public Metadata read() throws DataStoreException, JAXBException {
+    public Metadata read() throws DataStoreException {
         final DefaultMetadata metadata = new DefaultMetadata();
         metadata.setMetadataStandards(Citations.ISO_19115);
         final Date metadataTime = getDate(FILE_DATE);
@@ -541,10 +525,6 @@ public class LandsatReader {
         if (acquisition != null) {
             metadata.setAcquisitionInformation(singleton(acquisition));
         }
-        final ScopeCode type = getScopeCode();
-        if (type != null) {
-            metadata.setHierarchyLevels(singleton(type));
-        }
         return metadata;
     }
 
@@ -559,7 +539,7 @@ public class LandsatReader {
         }
     }
 
-    public static void main(String[] args) throws IOException, DataStoreException, JAXBException {
+    public static void main(String[] args) throws IOException, DataStoreException {
         LandsatReader read;
         try (BufferedReader in = new BufferedReader(new FileReader("/home/haonguyen/data/LC81230522014071LGN00_MTL.txt"))) {
             read = new LandsatReader(in);

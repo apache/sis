@@ -13,15 +13,32 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
  * See the License for the specific language governing permissions and 
  * limitations under the License. 
- */
-@XmlSchema(
-        xmlns = {
-            @XmlNs(prefix = "csw", namespaceURI = "http://www.opengis.net/cat/csw/2.0.2"),
-            @XmlNs(prefix = "ows", namespaceURI = "http://www.opengis.net/ows"),
-            @XmlNs(prefix = "dc", namespaceURI = "http://purl.org/dc/elements/1.1/"),
-            @XmlNs(prefix = "dct", namespaceURI = "http://purl.org/dc/terms")
-        })
+ */ 
 package org.apache.sis.services.csw;
 
-import javax.xml.bind.annotation.XmlNs;
-import javax.xml.bind.annotation.XmlSchema;
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ *
+ * @author haonguyen
+ */
+public class CapabilitiesRequest {
+
+    public CapabilitiesRequest() {
+    }
+
+    public List<GetCapabilitie> GetCapabilitiesRequest() {
+        List<GetCapabilitie> m1 = new ArrayList<>();
+        String[] version = {"2.0.2", "2.0.0", "1.0.7"};
+        String[] ouputformat = {"application/xml"};
+        Capacibilities a1 = new Capacibilities();
+        a1.setVersion(version);
+        Capacibilities a2 = new Capacibilities();
+        a2.setOutputFormat(ouputformat);
+        GetCapabilitie m2 = new GetCapabilitie(a1, a2);
+        m1.add(m2);//cai nay da thay set may cai east + bound dau?
+        return m1;
+    }
+     
+}

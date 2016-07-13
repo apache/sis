@@ -1,265 +1,182 @@
-/*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+/* 
+ * Licensed to the Apache Software Foundation (ASF) under one or more 
+ * contributor license agreements.  See the NOTICE file distributed with 
+ * this work for additional information regarding copyright ownership. 
+ * The ASF licenses this file to You under the Apache License, Version 2.0 
+ * (the "License"); you may not use this file except in compliance with 
+ * the License.  You may obtain a copy of the License at 
+ * 
+ *     http://www.apache.org/licenses/LICENSE-2.0 
+ * 
+ * Unless required by applicable law or agreed to in writing, software 
+ * distributed under the License is distributed on an "AS IS" BASIS, 
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
+ * See the License for the specific language governing permissions and 
+ * limitations under the License. 
+ */ 
 package org.apache.sis.services.csw;
 
-import java.util.Collection;
 import java.util.Date;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Locale;
-import java.util.Set;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import org.opengis.util.InternationalString;
-import org.opengis.metadata.Identifier;
-import org.opengis.metadata.Metadata;
-import org.opengis.metadata.MetadataScope;
-import org.opengis.metadata.citation.Citation;
-import org.opengis.metadata.citation.CitationDate;
-import org.opengis.metadata.citation.DateType;
-import org.opengis.metadata.distribution.Distribution;
-import org.opengis.metadata.distribution.Format;
-import org.opengis.metadata.extent.Extent;
-import org.opengis.metadata.extent.GeographicBoundingBox;
-import org.opengis.metadata.extent.GeographicExtent;
-import org.opengis.metadata.identification.Identification;
-import org.opengis.metadata.maintenance.ScopeCode;
-import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
-import org.apache.sis.referencing.IdentifiedObjects;
-import org.apache.sis.util.iso.Types;
-
 
 /**
- * Summary of an ISO 19115 metadata record. The summary is composed in part from Dublin Core elements.
- * The mapping from ISO 19115 metadata to {@code SummaryRecord} is defined in:
  *
- * <blockquote>
- * OpenGIS Catalog Service Specification — ISO metadata application profile (OGC 07-045),
- * table 6 at page 41.
- * </blockquote>
- *
- * @author  Thi Phuong Hao Nguyen (VNSC)
- * @since   0.8
- * @version 0.8
- * @module
+ * @author haonguyen
  */
-@XmlRootElement(name = "Record")
-final class SummaryRecord extends Element {
-    /**
-     * A name given to the resource.
-     * This is mapped to the {@code metadata/identificationInfo/citation/title} property of ISO 19115.
-     * If the metadata contains information about more than one resource, then the titles of all resources
-     * (omitting duplicated values) are included in this field, separated by new-line characters.
-     */
-    @XmlElement(namespace = Element.DUBLIN_CORE, name = "title")
-    private String title;
+@XmlRootElement(namespace = "http://www.opengis.net/cat/csw/2.0.2",name="Record")
+public class SummaryRecord {
 
-    /**
-     * The physical or digital manifestation of the resource.
-     * Typically, Format may include the media-type or dimensions of the resource.
-     * Format may be used to determine the software, hardware or other equipment
-     * needed to display or operate the resource.
-     *
-     * <p>This is mapped to
-     * {@code metadata/distributionInfo/distributionFormat/formatSpecificationCitation/alternateTitles}.
-     * If the metadata cites more than one format, then the titles of all formats (omitting duplicated values)
-     * are included in this field, separated by new-line characters.</p>
-     */
-    @XmlElement(namespace = Element.DUBLIN_CORE, name = "format")
-    private String format;
-
-    /**
-     * An unique reference to the record within the catalogue.
-     * This is mapped to the {@code metadata/metadataIdentifier} property of ISO 19115.
-     */
-    @XmlElement(namespace = Element.DUBLIN_CORE, name = "identifier")
+    private long id;
     private String identifier;
-
-    /**
-     * Date on which the record was created or updated within the catalogue.
-     * This is a DCMI metadata term {@code <http://dublincore.org/documents/dcmi-terms/>}.
-     * mapped to the {@code metadata/dateInfo} property of ISO 19115, taking in account
-     * only dates associated to {@link DateType#CREATION} or {@link DateType#LAST_UPDATE}.
-     * If more than one date exist for those types, then only the latest date is retained.
-     */
-    @XmlElement(namespace = DUBLIN_TERMS, name = "modified")
-    private Date modified;
-
-    /**
-     * The nature or genre of the content of the resource.
-     * Type can include general categories, genres or aggregation levels of content.
-     * This is mapped to the {@code metadata/metadataScope/resourceScope} property of ISO 19115.
-     * If more than one scope is provided, only the first one is retained.
-     */
-    @XmlElement(namespace = Element.DUBLIN_CORE, name = "type")
+    private String title;
     private String type;
-
-    /**
-     * A bounding box for identifying a geographic area of interest.
-     */
-    @XmlElement(namespace = OWS, name = "BoundingBox")
-    private BoundingBox boundingBox;
-
-    /**
-     * Creates an initially empty summary record.
-     * This constructor is invoked by JAXB at unmarshalling time.
-     */
-    SummaryRecord() {
+    private String format;
+    private Date modified;
+    private String subject;
+    private String creator;
+    private String publisher;
+    private String contributor;
+    private String language;
+    private String relation;
+    private String name;
+@XmlElement(namespace = "http://purl.org/dc/elements/1.1/", name = "name")
+    public String getName() {
+        return name;
     }
 
-    /**
-     * Creates a summary record initialized to the values extracted from the given ISO 19115 metadata.
-     * This constructor is invoked before marshalling with JAXB.
-     *
-     * @param metadata  the root ISO 19115 metadata instance where to get information.
-     * @param locale    the locale to use for converting {@link InternationalString} to {@link String},
-     *                  or {@code null} for the system default.
-     */
-    public SummaryRecord(final Metadata metadata, final Locale locale) {
-        /*
-         * Get identifier and date information from the root metadata object. Note that:
-         *
-         *   - Identifier is optional in ISO 19115 but mandatory in <csw:Record>.
-         *   - Date information is mandatory in ISO 19115.
-         *
-         * First, try to get those information from the paths specified by OGC 07-045.
-         * They should be there, but if for some reason those information are missing,
-         * then the loop below will search for fallbacks in resource citations.
-         */
-        identifier = IdentifiedObjects.toString(metadata.getMetadataIdentifier());              // May be null.
-        setModified(metadata.getDateInfo());
-        /*
-         * Collect all titles, ignoring duplicated values. Opportunistically search for
-         * dates and identifier to use as fallbacks if the above code did not found them.
-         * Those fallbacks are specific to Apache SIS (not part of OGC 07-045).
-         */
-        GeographicBoundingBox bbox = null;
-        DefaultGeographicBoundingBox union = null;
-        final Set<String> titles = new HashSet<>();
-        for (final Identification identification : metadata.getIdentificationInfo()) {
-            if (identification != null) {
-                final Citation citation = identification.getCitation();
-                if (citation != null) {
-                    final InternationalString i18n = citation.getTitle();
-                    if (i18n != null) {
-                        titles.add(i18n.toString(locale));
-                    }
-                    if (identifier == null) {
-                        for (final Identifier id : citation.getIdentifiers()) {
-                            identifier = IdentifiedObjects.toString(id);
-                            if (identifier != null) break;                      // Stop at the first identifier.
-                        }
-                    }
-                    if (modified == null) {
-                        setModified(citation.getDates());
-                    }
-                }
-                for (final Extent extent : identification.getExtents()) {
-                    for (final GeographicExtent geo : extent.getGeographicElements()) {
-                        if (geo instanceof GeographicBoundingBox) {
-                            if (bbox == null) {
-                                bbox = (GeographicBoundingBox) geo;
-                            } else {
-                                if (union == null) {
-                                    bbox = union = new DefaultGeographicBoundingBox(bbox);
-                                }
-                                union.add((GeographicBoundingBox) geo);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        if (bbox != null) {
-            boundingBox = new BoundingBox(bbox);
-        }
-        title = toString(titles, System.lineSeparator());
-        titles.clear();
+    public void setName(String name) {
+        this.name = name;
+    }
+    private BoundingBox BoundingBox;
 
-        // Collect all formats, ignoring duplicated values.
-        for (final Distribution distribution : metadata.getDistributionInfo()) {
-            for (final Format df : distribution.getDistributionFormats()) {
-                final Citation citation = df.getFormatSpecificationCitation();
-                if (citation != null) {
-                    for (final InternationalString i18n : citation.getAlternateTitles()) {
-                        if (i18n != null) {
-                            titles.add(i18n.toString(locale));
-                        }
-                    }
-                }
-            }
-        }
-        format = toString(titles, ", ");
-        titles.clear();
+   
 
-        // Retain only the first type, if any.
-        ScopeCode code = null;
-        for (final MetadataScope scope : metadata.getMetadataScopes()) {
-            code = scope.getResourceScope();
-            if (code != null) break;
-        }
-        if (code == null) {
-            code = ScopeCode.DATASET;       // Default value specified by OGC 07-045.
-        }
-        type = Types.getCodeName(code);
+@XmlElement(namespace = "http://purl.org/dc/elements/1.1/", name = "subject")
+    public String getSubject() {
+        return subject;
     }
 
-    /**
-     * Sets the {@link #modified} field to the latest {@code CREATION} or {@code LAST_UPDATE} date
-     * found in the given collection. If the given is null or empty, then this method does nothing.
-     */
-    private void setModified(final Collection<? extends CitationDate> dates) {
-        if (dates != null) {                            // Paranoiac check.
-            for (final CitationDate date : dates) {
-                final DateType dt = date.getDateType();
-                if (DateType.CREATION.equals(dt) || DateType.LAST_UPDATE.equals(dt)) {
-                    final Date t = date.getDate();
-                    if (t != null) {
-                        if (modified == null || t.after(modified)) {
-                            modified = t;
-                        }
-                    }
-                }
-            }
-        }
+    public void setSubject(String suject) {
+        this.subject = suject;
     }
 
-    /**
-     * Formats the elements in the given set as a list separated by the given string.
-     * This method avoid to create a temporary buffer when the set contains 0 or 1 elements.
-     *
-     * @param  items      the items to format as a list.
-     * @param  separator  the separator to put between items (comma or new line).
-     * @return the given set formatted as a list.
-     */
-    private static String toString(final Set<String> items, final String separator) {
-        items.remove(null);         // Safety in case the user metadata contains null elements.
-        final Iterator<String> it = items.iterator();
-        if (!it.hasNext()) {
-            return null;
-        }
-        final String first = it.next();
-        if (!it.hasNext()) {
-            return first;            // Most common case: only one item in the set.
-        }
-        final StringBuilder buffer = new StringBuilder(first);
-        while (it.hasNext()) {
-            buffer.append(separator).append(it.next());
-        }
-        return buffer.toString();
+@XmlElement(namespace = "http://purl.org/dc/elements/1.1/", name = "creator")
+    public String getCreator() {
+        return creator;
     }
+
+    public void setCreator(String creator) {
+        this.creator = creator;
+    }
+
+@XmlElement(namespace = "http://purl.org/dc/elements/1.1/", name = "publisher")
+    public String getPublisher() {
+        return publisher;
+    }
+
+    public void setPublisher(String publisher) {
+        this.publisher = publisher;
+    }
+
+@XmlElement(namespace = "http://purl.org/dc/elements/1.1/", name = "contributor")
+    public String getContributor() {
+        return contributor;
+    }
+
+    public void setContributor(String contributor) {
+        this.contributor = contributor;
+    }
+@XmlElement(namespace = "http://purl.org/dc/elements/1.1/", name = "language")
+    public String getLanguage() {
+        return language;
+    }
+
+    public void setLanguage(String language) {
+        this.language = language;
+    }
+@XmlElement(namespace = "http://purl.org/dc/elements/1.1/", name = "relation")
+    public String getRelation() {
+        return relation;
+    }
+
+    public void setRelation(String relation) {
+        this.relation = relation;
+    }
+@XmlElement(namespace = "http://purl.org/dc/elements/1.1/", name = "id")
+    public long getId() {
+        return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
+    }
+@XmlElement(namespace = "http://purl.org/dc/elements/1.1/", name = "identifier")
+    public String getIdentifier() {
+        return identifier;
+    }
+
+    public void setIdentifier(String identifier) {
+        this.identifier = identifier;
+    }
+@XmlElement(namespace = "http://purl.org/dc/elements/1.1/", name = "title")
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+@XmlElement(namespace = "http://purl.org/dc/elements/1.1/", name = "type")
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+@XmlElement(namespace = "http://purl.org/dc/elements/1.1/", name = "format")
+    public String getFormat() {
+        return format;
+    }
+
+    public void setFormat(String format) {
+        this.format = format;
+    }
+@XmlElement(namespace = "http://purl.org/dc/terms", name = "modified")
+    public Date getModified() {
+        return modified;
+    }
+
+    public void setModified(Date modified) {
+        this.modified = modified;
+    }
+@XmlElement(namespace = "http://www.opengis.net/ows", name = "BoundingBox")
+    public BoundingBox getBoundingBox() {
+        return BoundingBox;
+    }
+
+    public void setBoundingBox(BoundingBox BoundingBox) {
+        this.BoundingBox = BoundingBox;
+    }
+ public SummaryRecord() {
+
+    }
+    public SummaryRecord(long id,String name, String identifier, String title, String type, String format, Date modified, String subject, String creator, String publisher, String contributor, String language, String relation, BoundingBox BoundingBox) {
+        this.id = id;
+        this.identifier = identifier;
+        this.title = title;
+        this.type = type;
+        this.format = format;
+        this.modified = modified;
+        this.subject = subject;
+        this.creator = creator;
+        this.publisher = publisher;
+        this.contributor = contributor;
+        this.language = language;
+        this.relation = relation;
+        this.BoundingBox = BoundingBox;
+        this.name = name;
+    }
+
 }
