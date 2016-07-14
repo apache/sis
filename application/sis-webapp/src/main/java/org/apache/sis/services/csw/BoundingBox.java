@@ -13,88 +13,76 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
  * See the License for the specific language governing permissions and 
  * limitations under the License. 
- */ 
+ */
 package org.apache.sis.services.csw;
 
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlType;
+import org.opengis.metadata.extent.GeographicBoundingBox;
 
 /**
  * @author Thi Phuong Hao NGUYEN
  * @author Minh Chinh VU
  */
-@XmlRootElement(namespace = "http://www.opengis.net/ows")
+@XmlAccessorType(XmlAccessType.FIELD)
+@XmlType(propOrder = {"LowerCorner", "UpperCorner"})
+
 public class BoundingBox {
 
-    private String[] Version;
-    private String[] OutputFormat;
-    private String parameterName;
-    private double westBoundLongitude;
-    private double northBoundLatitude;
-    private double southBoundLatitude;
-    private double eastBoundLongitude;
+   
+   /**
+     * A space-separated list of minimal coordinate values for each dimension.
+     */
+    @XmlElement(namespace = Element.OWS)
+    private String LowerCorner;
+    /**
+     * A space-separated list of maximal coordinate values for each dimension.
+     */
+    @XmlElement(namespace = Element.OWS)
+    private String UpperCorner;
 
-    @XmlElement(namespace = "http://www.opengis.net/ows", name = "Version")
-    public String[] getVersion() {
-        return Version;
+    public String getLowerCorner() {
+        return LowerCorner;
     }
 
-    public void setVersion(String[] Version) {
-        this.Version = Version;
+    public void setLowerCorner(String LowerCorner) {
+        this.LowerCorner = LowerCorner;
     }
 
-    @XmlElement(namespace = "http://www.opengis.net/ows", name = "westBoundLongitude")
-    public double getWestBoundLongitude() {
-        return westBoundLongitude;
+    public void setUpperCorner(String UpperCorner) {
+        this.UpperCorner = UpperCorner;
     }
 
-    public void setWestBoundLongitude(double westBoundLongitude) {
-        this.westBoundLongitude = westBoundLongitude;
+    /* Creates a new, initially empty, bounding box.
+     * This constructor is invoked by JAXB at unmarshalling time.
+     */
+    public String getUpperCorner() {
+        return UpperCorner;
     }
 
-    @XmlElement(namespace = "http://www.opengis.net/ows", name = "northBoundLatitude")
-    public double getNorthBoundLatitude() {
-        return northBoundLatitude;
+    BoundingBox() {
     }
 
-    public void setNorthBoundLatitude(double northBoundLongitude) {
-        this.northBoundLatitude = northBoundLongitude;
+    /**
+     * Creates a new bounding box initialized to the values given by an ISO
+     * 19115 geographic extent. This constructor is invoked before marshalling
+     * with JAXB.
+     */
+    BoundingBox(final GeographicBoundingBox bbox) {
+        final StringBuilder buffer = new StringBuilder(20);
+        this.LowerCorner = format(buffer, bbox.getWestBoundLongitude(), bbox.getSouthBoundLatitude());
+        this.UpperCorner = format(buffer, bbox.getEastBoundLongitude(), bbox.getNorthBoundLatitude());
     }
 
-    @XmlElement(namespace = "http://www.opengis.net/ows", name = "southBoundLatitude")
-    public double getSouthBoundLatitude() {
-        return southBoundLatitude;
-    }
+    /**
+     * Formats a corner.
+     */
+    private static String format(final StringBuilder buffer, final double min, final double max) {
+        final String coord = buffer.append(min).append(' ').append(max).toString();
+        buffer.setLength(0);
+        return coord;
 
-    public void setSouthBoundLatitude(double southBoundLongitude) {
-        this.southBoundLatitude = southBoundLongitude;
     }
-
-    @XmlElement(namespace = "http://www.opengis.net/ows", name = "eastBoundLongitude")
-    public double getEastBoundLongitude() {
-        return eastBoundLongitude;
-    }
-
-    public void setEastBoundLongitude(double eastBoundLongitude) {
-        this.eastBoundLongitude = eastBoundLongitude;
-    }
-
-    @XmlElement(namespace = "http://www.opengis.net/ows", name = "OutputFormat")
-    public String[] getOutputFormat() {
-        return OutputFormat;
-    }
-
-    public void setOutputFormat(String[] OutputFormat) {
-        this.OutputFormat = OutputFormat;
-    }
-
-    @XmlElement(namespace = "http://www.opengis.net/ows", name = "parameterName")
-    public String getParameterName() {
-        return parameterName;
-    }
-
-    public void setParameterName(String parameterName) {
-        this.parameterName = parameterName;
-    }
-
 }

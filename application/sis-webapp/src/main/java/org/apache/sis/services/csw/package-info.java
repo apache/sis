@@ -16,10 +16,10 @@
  */
 @XmlSchema(
         xmlns = {
-            @XmlNs(prefix = "csw", namespaceURI = "http://www.opengis.net/cat/csw/2.0.2"),
-            @XmlNs(prefix = "ows", namespaceURI = "http://www.opengis.net/ows"),
-            @XmlNs(prefix = "dc", namespaceURI = "http://purl.org/dc/elements/1.1/"),
-            @XmlNs(prefix = "dct", namespaceURI = "http://purl.org/dc/terms")
+            @XmlNs(prefix = "csw", namespaceURI = Element.CSW),
+            @XmlNs(prefix = "ows", namespaceURI =  Element.OWS),
+            @XmlNs(prefix = "dc", namespaceURI =  Element.DUBLIN_CORE),
+            @XmlNs(prefix = "dct", namespaceURI = Element.DUBLIN_TERMS)
         })
 package org.apache.sis.services.csw;
 

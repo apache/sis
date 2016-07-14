@@ -27,14 +27,18 @@ package org.apache.sis.services.csw;
  */
 abstract class Element {
     /**
+     * The namespace of CSW .
+     */
+    static final String CSW = "http://www.opengis.net/cat/csw/2.0.2";
+    /**
      * The namespace of Dublin Core elements.
      */
-    static final String DUBLIN_CORE = "http://purl.org/dc/elements/1.1";
+    static final String DUBLIN_CORE = "http://purl.org/dc/elements/1.1/";
 
     /**
      * The namespace of Dublin Core terms.
      */
-    static final String DUBLIN_TERMS = "http://purl.org/dc/terms";
+    static final String DUBLIN_TERMS = "http://purl.org/dc/terms/";
 
     /**
      * The namespace of OGC common objects.

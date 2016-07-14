@@ -28,7 +28,7 @@ import java.util.List;
  * @author Minh Chinh VU
  */
 public class AnyText {
-    String format;
+String format;
     String identifier;
     BoundingBox bbox = new BoundingBox();
     String startDate;
@@ -46,10 +46,8 @@ public class AnyText {
     }
 
     public void setBbox(double west , double east, double south, double north) {
-        bbox.setEastBoundLongitude(east);
-        bbox.setWestBoundLongitude(west);
-        bbox.setNorthBoundLatitude(north);
-        bbox.setSouthBoundLatitude(south);
+        bbox.setLowerCorner(west + " " + south);
+        bbox.setUpperCorner(east + " " + north);
     }
     
     public AnyText(String format, String identifier, String startDate, String rangeDate) throws Exception {
@@ -68,10 +66,13 @@ public class AnyText {
     */
     
     public boolean checkBBOX(double east, double west, double south, double north, BoundingBox bound){
-        double itWest = bound.getWestBoundLongitude();
-        double itNorth = bound.getNorthBoundLatitude();
-        double itSouth = bound.getSouthBoundLatitude();
-        double itEast = bound.getEastBoundLongitude();
+        String lower[] = bound.getLowerCorner().split(" ");
+        String upper[] = bound.getUpperCorner().split(" ");
+              
+        double itWest = Double.parseDouble(lower[0]);
+        double itNorth = Double.parseDouble(upper[1 ]);
+        double itSouth = Double.parseDouble(lower[1]);
+        double itEast = Double.parseDouble(upper[0]);
         
         if(east < itWest) return false;
         if(west > itEast)return false;
@@ -96,14 +97,17 @@ public class AnyText {
     }
      
     public void filter() throws Exception{
-        double east = bbox.getEastBoundLongitude();
-        double west = bbox.getWestBoundLongitude();
-        double south = bbox.getSouthBoundLatitude();
-        double north = bbox.getNorthBoundLatitude();
+        String lower[] = bbox.getLowerCorner().split(" ");
+        String upper[] = bbox.getUpperCorner().split(" ");
+
+        double west = Double.parseDouble(lower[0]);
+        double north = Double.parseDouble(upper[1]);
+        double south = Double.parseDouble(lower[1]);
+        double east = Double.parseDouble(upper[0]);
         
-        for (Iterator<SummaryRecord> it=data.iterator(); it.hasNext();) {
+        for (Iterator<SummaryRecord> it = data.iterator(); it.hasNext();) {
             SummaryRecord itSum = it.next();
-           
+            
             //Remove Out of range Date
             if(!this.checkDate(startDate,rangeDate,itSum)){
                 it.remove();
@@ -132,12 +136,14 @@ public class AnyText {
     }
     
 //    public static void main(String[] args) throws Exception {
-//        AnyText a= new AnyText("","","2009-04-04","2015-05-05");
-//        AnyText b= new AnyText();
-//        a.setBbox(5,130 , 5, 130);
-//        a.filter();
-//        System.out.println(a.getData().size());
-////        System.out.println(a.getData().get(0).getIdentifier());
+////        AnyText a= new AnyText("","","2009-04-04","2015-05-05");
+////        AnyText b= new AnyText();
+////        a.setBbox(5,130 , 5, 130);
+////        a.filter();
+////        System.out.println(a.getData().size());
+////        String test[];
+////        test = a.getData().get(0).getBoundingBox().getUpperCorner().split(" ");
+////        System.out.println(test[1]+"  " + test[0]);
 ////        System.out.println(a.getData().get(0).getBoundingBox().getWestBoundLongitude());
 ////        System.out.println(a.getData().get(0).getBoundingBox().getEastBoundLongitude());
 ////        System.out.println(a.getData().get(0).getBoundingBox().getSouthBoundLongitude());

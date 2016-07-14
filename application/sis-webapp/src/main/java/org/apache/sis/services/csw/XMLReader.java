@@ -22,7 +22,9 @@ import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import javax.xml.bind.JAXBException;
 import static org.apache.sis.internal.util.CollectionsExt.first;
+import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.geotiff.LandsatReader;
 import org.apache.sis.xml.XML;
 import org.opengis.metadata.Metadata;
@@ -49,37 +51,29 @@ public class XMLReader {
         int i = 1;
         for (File file : fList) {
             if (file.isFile() && file.getName().endsWith(".iso19115")) {
-                Metadata ModisMD = (Metadata) XML.unmarshal(new File(file.getPath()));
-                Identification id = first(ModisMD.getIdentificationInfo());
-                Extent et = first(id.getExtents());
-                GeographicBoundingBox gbd = (GeographicBoundingBox) first(et.getGeographicElements());
-                String name = file.getName();
-                String identifier = ModisMD.getFileIdentifier();
-
-                String format = id.getCitation().getTitle().toString();
-                String title = id.getCitation().getTitle().toString();
-                String type = first(ModisMD.getHierarchyLevels()).name();
-                Date modified = ModisMD.getDateStamp();
-                String suject = first(id.getTopicCategories()).IMAGERY_BASE_MAPS_EARTH_COVER.toString();
+                    Metadata ModisMD = (Metadata) XML.unmarshal(new File(file.getPath()));
+                    Identification id = first(ModisMD.getIdentificationInfo());
+                    String identifier = ModisMD.getFileIdentifier();
+                    String format = id.getCitation().getTitle().toString();
+                    String title = file.getName();
+                    String type = first(ModisMD.getHierarchyLevels()).name();
+                    Date modified = ModisMD.getDateStamp();
+                    String subject = first(id.getTopicCategories()).IMAGERY_BASE_MAPS_EARTH_COVER.toString();
 //                List<Responsibility> responsibility = new ArrayList<>(first(ModisMD.getIdentificationInfo()).getPointOfContacts());
-                String creator = "";
-                String publisher = "";
-                String contributor = "";
+                    String creator = "";
+                    String publisher = "";
+                    String contributor = "";
 //
-                String language = ModisMD.getLanguage().toString();
-                String relation = first(id.getAggregationInfo()).getAggregateDataSetName().getTitle().toString();
-                double west = gbd.getWestBoundLongitude();
-                double east = gbd.getEastBoundLongitude();
-                double south = gbd.getSouthBoundLatitude();
-                double north = gbd.getNorthBoundLatitude();
-                BoundingBox bbox = new BoundingBox();
-                bbox.setWestBoundLongitude(west);
-                bbox.setEastBoundLongitude(east);
-                bbox.setSouthBoundLatitude(south);
-                bbox.setNorthBoundLatitude(north);
-                SummaryRecord m1 = new SummaryRecord(i, name, identifier, title, type, format, modified, suject, creator, publisher, contributor, language, relation, bbox);
-                record.add(m1);
-                i++;
+                    String language = ModisMD.getLanguage().toString();
+                    String relation = first(id.getAggregationInfo()).getAggregateDataSetName().getTitle().toString();
+                    Extent et = first(id.getExtents());
+                    GeographicBoundingBox gbd = (GeographicBoundingBox) first(et.getGeographicElements());
+                    BoundingBox bbox = new BoundingBox(gbd);
+                    
+                    SummaryRecord m1 = new SummaryRecord(creator, contributor, publisher, subject, identifier, relation, type, title, modified, language, format, bbox);
+                    record.add(m1);
+                    i++;
+                
             }
         }
 
@@ -96,38 +90,25 @@ public class XMLReader {
         int i = 1000;
         for (File file : fList) {
             if (file.isFile() && file.getName().endsWith(".txt")) {
-
                 BufferedReader in = new BufferedReader(new FileReader(file.getPath()));
                 Metadata LandsatMD = new LandsatReader(in).read();
-
                 Identification id = first(LandsatMD.getIdentificationInfo());
-                Extent et = first(id.getExtents());
-                GeographicBoundingBox gbd = (GeographicBoundingBox) first(et.getGeographicElements());
-                String name = file.getName();
                 String identifier = LandsatMD.getFileIdentifier();
-
                 String format = first(first(LandsatMD.getDistributionInfo()).getDistributionFormats()).getName().toString();
-                String title = id.getCitation().getTitle().toString();
+                String title = file.getName();
                 String type = first(LandsatMD.getHierarchyLevels()).name();
                 Date modified = LandsatMD.getDateStamp();
-                String suject = first(first(id.getDescriptiveKeywords()).getKeywords()).toString();
+                String subject = first(first(id.getDescriptiveKeywords()).getKeywords()).toString();
                 List<Responsibility> responsibility = new ArrayList<>(first(LandsatMD.getIdentificationInfo()).getPointOfContacts());
                 String creator = first(responsibility.get(0).getParties()).getName().toString();
                 String publisher = first(responsibility.get(1).getParties()).getName().toString();
                 String contributor = first(responsibility.get(2).getParties()).getName().toString();
-
                 String language = LandsatMD.getLanguage().toString();
                 String relation = first(id.getAggregationInfo()).getAggregateDataSetName().getTitle().toString();
-                double west = gbd.getWestBoundLongitude();
-                double east = gbd.getEastBoundLongitude();
-                double south = gbd.getSouthBoundLatitude();
-                double north = gbd.getNorthBoundLatitude();
-                BoundingBox bbox = new BoundingBox();
-                bbox.setWestBoundLongitude(west);
-                bbox.setEastBoundLongitude(east);
-                bbox.setSouthBoundLatitude(south);
-                bbox.setNorthBoundLatitude(north);
-                SummaryRecord m1 = new SummaryRecord(i, name, identifier, title, type, format, modified, suject, creator, publisher, contributor, language, relation, bbox);
+                Extent et = first(id.getExtents());
+                GeographicBoundingBox gbd = (GeographicBoundingBox) first(et.getGeographicElements());
+                BoundingBox bbox = new BoundingBox(gbd);
+                SummaryRecord m1 = new SummaryRecord(creator, contributor, publisher, subject, identifier, relation, type, title, modified, language, format, bbox);
                 record.add(m1);
                 i++;
             }

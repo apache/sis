@@ -37,7 +37,7 @@ public class CapabilitiesRequest {
         Capacibilities a2 = new Capacibilities();
         a2.setOutputFormat(ouputformat);
         GetCapabilitie m2 = new GetCapabilitie(a1, a2);
-        m1.add(m2);//cai nay da thay set may cai east + bound dau?
+        m1.add(m2);
         return m1;
     }
      

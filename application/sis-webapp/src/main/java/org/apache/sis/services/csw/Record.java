@@ -95,7 +95,7 @@ public class Record {
         b.addAll(a.listModis());
         SummaryRecord messagesById = new SummaryRecord();
         for (SummaryRecord message : b) {
-            if (id == message.getId()) {
+            if (message.getIdentifier().equals(id)) {
                 messagesById.setFormat(message.getFormat());
                 messagesById.setTitle(message.getTitle());
                 messagesById.setType(message.getType());
@@ -106,30 +106,10 @@ public class Record {
                 messagesById.setContributor(message.getContributor());
                 messagesById.setCreator(message.getCreator());
                 messagesById.setPublisher(message.getPublisher());
-                messagesById.setName(message.getName());
                 messagesById.setRelation(message.getRelation());
-                messagesById.setId(message.getId());
 
             }
         }
         return messagesById;
-    }
-
-    public List<SummaryRecord> BoundingBox(double west, double east, double south, double north) throws Exception {
-        XMLReader a = new XMLReader();
-        List<SummaryRecord> b = new ArrayList<SummaryRecord>();
-        b.addAll(a.listGeotiff());
-        b.addAll(a.listModis());
-        List<SummaryRecord> messageSearch = new ArrayList<>();
-        for (SummaryRecord message : b) {
-            double west1 = message.getBoundingBox().getWestBoundLongitude();
-            double east1 = message.getBoundingBox().getEastBoundLongitude();
-            double south1 = message.getBoundingBox().getSouthBoundLatitude();
-            double north1 = message.getBoundingBox().getNorthBoundLatitude();
-            if (west1 >= west && east1 <= east && south1 >= south && north1 <= north) {
-                messageSearch.add(message);
-            }
-        }
-        return messageSearch;
     }
 }
