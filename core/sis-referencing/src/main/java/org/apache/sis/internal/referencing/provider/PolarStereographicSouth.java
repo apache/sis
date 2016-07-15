@@ -70,8 +70,8 @@ public final class PolarStereographicSouth extends AbstractStereographic {
 
             forESRI(PolarStereographicB.LONGITUDE_OF_ORIGIN, builder),
                     PolarStereographicB.SCALE_FACTOR,                   // Not formally a parameter of this projection.
-            forESRI(PolarStereographicB.FALSE_EASTING, builder),
-            forESRI(PolarStereographicB.FALSE_NORTHING, builder)
+            forESRI(CylindricalEqualArea.FALSE_EASTING, builder),
+            forESRI(CylindricalEqualArea.FALSE_NORTHING, builder)
         };
 
         PARAMETERS = builder
