@@ -32,35 +32,58 @@ import org.w3c.dom.Document;
  * @author haonguyen
  */
 public class Xpath {
-private DocumentBuilder builder; 
-  private Document document; 
-   
-  public Xpath(String xmlData) throws Exception 
-  { 
-    builder = DocumentBuilderFactory.newInstance().newDocumentBuilder(); 
-    ByteArrayInputStream stream = new ByteArrayInputStream(xmlData.getBytes()); 
-    document = builder.parse(stream); 
-  } 
-   
-  public Xpath(File file) throws Exception 
-  { 
-    builder = DocumentBuilderFactory.newInstance().newDocumentBuilder(); 
-    document = builder.parse(new FileInputStream(file)); 
-  } 
-   
-  public String getValue(String xpathExpression) throws Exception 
-  { 
-    XPathFactory xPathfactory = XPathFactory.newInstance(); 
-    XPath xpath = xPathfactory.newXPath(); 
-    XPathExpression expr = xpath.compile(xpathExpression); 
-    return (String)expr.evaluate(document, XPathConstants.STRING); 
-  } 
-   
-  public Node getNode(String xpathExpression) throws Exception 
-  { 
-    XPathFactory xPathfactory = XPathFactory.newInstance(); 
-    XPath xpath = xPathfactory.newXPath(); 
-    XPathExpression expr = xpath.compile(xpathExpression); 
-    return (Node)expr.evaluate(document, XPathConstants.NODE); 
-  } 
+
+    private DocumentBuilder builder;
+    private Document document;
+
+    /**
+     * Constructor accepts XML string
+     *
+     * @param xmlData
+     * @throws Exception
+     */
+    public Xpath(String xmlData) throws Exception {
+        builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+        ByteArrayInputStream stream = new ByteArrayInputStream(xmlData.getBytes());
+        document = builder.parse(stream);
+    }
+
+    /**
+     * Constructor allows you to pass an XML file for parsing
+     *
+     * @param file
+     * @throws Exception
+     */
+    public Xpath(File file) throws Exception {
+        builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+        document = builder.parse(new FileInputStream(file));
+    }
+
+    /**
+     * Return a value by evaluating the string parameter using XPath
+     *
+     * @param xpathExpression
+     * @return a value by evaluating the string parameter using XPath
+     * @throws Exception
+     */
+    public String getValue(String xpathExpression) throws Exception {
+        XPathFactory xPathfactory = XPathFactory.newInstance();
+        XPath xpath = xPathfactory.newXPath();
+        XPathExpression expr = xpath.compile(xpathExpression);
+        return (String) expr.evaluate(document, XPathConstants.STRING);
+    }
+
+    /**
+     * Return a Node by evaluating the string parameter using XPath
+     *
+     * @param xpathExpression
+     * @return a Node by evaluating the string parameter using XPath
+     * @throws Exception
+     */
+    public Node getNode(String xpathExpression) throws Exception {
+        XPathFactory xPathfactory = XPathFactory.newInstance();
+        XPath xpath = xPathfactory.newXPath();
+        XPathExpression expr = xpath.compile(xpathExpression);
+        return (Node) expr.evaluate(document, XPathConstants.NODE);
+    }
 }

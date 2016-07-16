@@ -52,8 +52,28 @@ import org.opengis.metadata.maintenance.ScopeCode;
  */
 public class ModisReader {
 
+    /**
+     * All properties found in the Modis metadata file, except {@code GROUP} and
+     * {@code END_GROUP}. Example:
+     *
+     * {
+     *
+     * @preformat text DATE_ACQUIRED = 2014-03-12 SCENE_CENTER_TIME =
+     * 03:02:01.5339408Z CORNER_UL_LAT_PRODUCT = 12.61111 CORNER_UL_LON_PRODUCT
+     * = 108.33624 CORNER_UR_LAT_PRODUCT = 12.62381 CORNER_UR_LON_PRODUCT =
+     * 110.44017 }
+     */
     private final Map<String, String> properties;
 
+    /**
+     * Creates a new metadata parser from the given characters reader.
+     *
+     * @param reader a reader opened on the Modis file. It is caller's
+     * responsibility to close this reader.
+     * @throws IOException if an I/O error occurred while reading the given
+     * stream.
+     * @throws DataStoreException if the content is not a Modis file.
+     */
     public ModisReader(File xml) throws Exception {
         properties = new HashMap();
         Xpath read = new Xpath(xml);
@@ -65,15 +85,47 @@ public class ModisReader {
 
     }
 
+    /**
+     * Returns the property value associated to the given key, or {@code null}
+     * if none.
+     *
+     * @param key the key for which to get the property value.
+     * @return the property value associated to the given key, {@code null} if
+     * none.
+     */
     private String getValue(String key) {
         return properties.get(key);
     }
 
+    /**
+     * Returns the floating-point value associated to the given key, or
+     * {@code NaN} if none.
+     *
+     * @param key the key for which to get the floating-point value.
+     * @return the floating-point value associated to the given key, or
+     * {@link Double#NaN} if none.
+     * @throws NumberFormatException if the property associated to the given key
+     * can not be parsed as a floating-point number.
+     */
     private double getNumericValue(String key) throws NumberFormatException {
         String value = getValue(key);
         return (value != null) ? Double.parseDouble(value) : Double.NaN;
     }
 
+    /**
+     * Returns the minimal or maximal value associated to the given two keys, or
+     * {@code NaN} if none.
+     *
+     * @param key1 the key for which to get the first floating-point value.
+     * @param key2 the key for which to get the second floating-point value.
+     * @param max {@code true} for the maximal value, or {@code false} for the
+     * minimal value.
+     * @return the minimal (if {@code max} is false) or maximal (if {@code max}
+     * is true) floating-point value associated to the given keys, or
+     * {@link Double#NaN} if none.
+     * @throws NumberFormatException if the property associated to one of the
+     * given keys can not be parsed as a floating-point number.
+     */
     private double getExtremumValue(String key1, String key2, boolean max) throws NumberFormatException {
         double value1 = getNumericValue(key1);
         double value2 = getNumericValue(key2);
@@ -84,6 +136,12 @@ public class ModisReader {
         }
     }
 
+    /**
+     * Returns the date associated to the given key, or {@code null} if none.
+     *
+     * @return the date associated to the given key, or {@code null} if none.
+     * @throws DateTimeParseException if the date can not be parsed.
+     */
     private Date getDate() throws DateTimeParseException, Exception {
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
         final String dateInString = getValue(ModisPath.ProductionDateTime);
@@ -94,6 +152,12 @@ public class ModisReader {
         return date;
     }
 
+    /**
+     * Get basic Information about the distributor of and options for obtaining
+     * the resource.
+     *
+     * @return the data distributor information, or {@code null} if none.
+     */
     private Distribution createDistribution() {
         DefaultDistribution distribution = new DefaultDistribution();
         DefaultFormat format = new DefaultFormat();
@@ -103,6 +167,16 @@ public class ModisReader {
         return distribution;
     }
 
+    /**
+     * Gets the geographic and temporal extent for identification info, or
+     * {@code null} if none. This method expects the data acquisition time in
+     * argument in order to avoid to compute it twice.
+     *
+     * @param sceneTime the data acquisition time, or {@code null} if none.
+     * @return the data extent in Identification info, or {@code null} if none.
+     * @throws DataStoreException if a property value can not be parsed as a
+     * number or a date.
+     */
     private Extent createExtent() throws DataStoreException, Exception {
         final DefaultGeographicBoundingBox box;
         try {
@@ -122,6 +196,18 @@ public class ModisReader {
         return extent;
     }
 
+    /**
+     * Gets basic information required to uniquely identify the data, or
+     * {@code null} if none. This method expects the metadata and data
+     * acquisition time in arguments in order to avoid to compute them twice.
+     *
+     * @param metadataTime the metadata file creation time, or {@code null} if
+     * none.
+     * @param sceneTime the data acquisition time, or {@code null} if none.
+     * @return the data identification information, or {@code null} if none.
+     * @throws DataStoreException if a property value can not be parsed as a
+     * number or a date.
+     */
     private Identification createIdentification(final Date metadataTime) throws DataStoreException, Exception {
         final DefaultCitation citation = new DefaultCitation();
         final AbstractIdentification identification = new AbstractIdentification();
@@ -177,7 +263,13 @@ public class ModisReader {
 
         return isEmpty ? null : identification;
     }
-
+ /**
+     * Returns the metadata about the resources described in the Modis file.
+     *
+     * @return the metadata about Modis resources.
+     * @throws DataStoreException if a property value can not be parsed as a
+     * number or a date.
+     */
     public Metadata read() throws DataStoreException, Exception {
         final DefaultMetadata metadata = new DefaultMetadata();
         metadata.setMetadataStandards(Citations.ISO_19115);
@@ -202,9 +294,9 @@ public class ModisReader {
 //        if (acquisition != null) {
 //            metadata.setAcquisitionInformation(singleton(acquisition));
 //        }
-        if(getValue(ModisPath.PlatformShortName) != null){
-        
-        metadata.setHierarchyLevels(singleton(ScopeCode.valueOf(getValue(ModisPath.PlatformShortName))));
+        if (getValue(ModisPath.PlatformShortName) != null) {
+
+            metadata.setHierarchyLevels(singleton(ScopeCode.valueOf(getValue(ModisPath.PlatformShortName))));
         }
         return metadata;
     }
