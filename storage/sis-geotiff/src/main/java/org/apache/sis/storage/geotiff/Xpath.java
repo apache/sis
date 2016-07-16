@@ -27,9 +27,13 @@ import javax.xml.xpath.XPathFactory;
 import org.apache.sis.util.collection.TreeTable.Node;
 import org.w3c.dom.Document;
 
+
 /**
  *
- * @author haonguyen
+ * @author  Thi Phuong Hao Nguyen (VNSC)
+ * @since   0.8
+ * @version 0.8
+ * @module
  */
 public class Xpath {
 

@@ -24,13 +24,14 @@ import org.junit.BeforeClass;
 /**
  * All tests from the {@code sis-geotiff} module, in approximative dependency order.
  *
+ * @author  Thi Phuong Hao Nguyen (VNSC)
  * @since   0.8
  * @version 0.8
  * @module
  */
 @Suite.SuiteClasses({
     org.apache.sis.storage.geotiff.LandsatReaderTest.class,
-        org.apache.sis.storage.geotiff.ModisReaderTest.class
+    org.apache.sis.storage.geotiff.ModisReaderTest.class
 })
 public final strictfp class GeotiffTestSuite extends TestSuite {
     /**

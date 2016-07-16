@@ -1,18 +1,18 @@
-/* 
- * Licensed to the Apache Software Foundation (ASF) under one or more 
- * contributor license agreements.  See the NOTICE file distributed with 
- * this work for additional information regarding copyright ownership. 
- * The ASF licenses this file to You under the Apache License, Version 2.0 
- * (the "License"); you may not use this file except in compliance with 
- * the License.  You may obtain a copy of the License at 
- * 
- *     http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, software 
- * distributed under the License is distributed on an "AS IS" BASIS, 
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
- * See the License for the specific language governing permissions and 
- * limitations under the License. 
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package org.apache.sis.services.csw;
 
@@ -24,8 +24,18 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
 /**
+ * Summary of an ISO 19115 metadata record. The summary is composed in part from Dublin Core elements.
+ * The mapping from ISO 19115 metadata to {@code SummaryRecord} is defined in:
  *
- * @author haonguyen
+ * <blockquote>
+ * OpenGIS Catalog Service Specification — ISO metadata application profile (OGC 07-045),
+ * table 6 at page 41.
+ * </blockquote>
+ *
+ * @author  Thi Phuong Hao Nguyen (VNSC)
+ * @since   0.8
+ * @version 0.8
+ * @module
  */
 @XmlRootElement(namespace = Element.CSW, name = "Record")
 @XmlAccessorType(XmlAccessType.FIELD)
@@ -43,14 +53,13 @@ import javax.xml.bind.annotation.XmlType;
     "format",
     "BoundingBox"
 })
-
 public class SummaryRecord {
-
     /**
      * An entity primarily responsible for making the content of the resource .
      */
     @XmlElement(namespace = Element.DUBLIN_CORE)
     private String creator;
+
     /**
      * An entity responsible contributions to the content of the resource.
      */
@@ -70,7 +79,8 @@ public class SummaryRecord {
     private String subject;
 
     /**
-     * A unique reference to the record within the catalogue.
+     * An unique reference to the record within the catalogue.
+     * This is mapped to the {@code metadata/metadataIdentifier} property of ISO 19115.
      */
     @XmlElement(namespace = Element.DUBLIN_CORE)
     private String identifier;
@@ -82,8 +92,10 @@ public class SummaryRecord {
     private String relation;
 
     /**
-     * The nature or genre of the content of the resource. Type can include
-     * general categories, genres or aggregation levels of content.
+     * The nature or genre of the content of the resource.
+     * Type can include general categories, genres or aggregation levels of content.
+     * This is mapped to the {@code metadata/metadataScope/resourceScope} property of ISO 19115.
+     * If more than one scope is provided, only the first one is retained.
      */
     @XmlElement(namespace = Element.DUBLIN_CORE)
     private String type;
@@ -96,6 +108,10 @@ public class SummaryRecord {
 
     /**
      * Date on which the record was created or updated within the catalogue.
+     * This is a DCMI metadata term {@code <http://dublincore.org/documents/dcmi-terms/>}.
+     * mapped to the {@code metadata/dateInfo} property of ISO 19115, taking in account
+     * only dates associated to {@link DateType#CREATION} or {@link DateType#LAST_UPDATE}.
+     * If more than one date exist for those types, then only the latest date is retained.
      */
     @XmlElement(namespace = Element.DUBLIN_TERMS)
     private Date modified;
@@ -108,12 +124,20 @@ public class SummaryRecord {
 
     /**
      * The physical or digital manifestation of the resource.
+     * Typically, Format may include the media-type or dimensions of the resource.
+     * Format may be used to determine the software, hardware or other equipment
+     * needed to display or operate the resource.
+     *
+     * <p>This is mapped to
+     * {@code metadata/distributionInfo/distributionFormat/formatSpecificationCitation/alternateTitles}.
+     * If the metadata cites more than one format, then the titles of all formats (omitting duplicated values)
+     * are included in this field, separated by new-line characters.</p>
      */
     @XmlElement(namespace = Element.DUBLIN_CORE)
     private String format;
 
     /**
-     * A bouding box for identifying a geographic area of interest.
+     * A bounding box for identifying a geographic area of interest.
      */
     @XmlElement(namespace = Element.OWS)
     private BoundingBox BoundingBox;
@@ -313,5 +337,4 @@ public class SummaryRecord {
     public void setBoundingBox(BoundingBox BoundingBox) {
         this.BoundingBox = BoundingBox;
     }
-
 }
