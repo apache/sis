@@ -27,8 +27,8 @@ import javax.xml.bind.annotation.XmlRootElement;
  * @version 0.8
  * @module
  */
-@XmlRootElement(name = "GetCapabilities", namespace = "http://www.opengis.net/cat/csw/2.0.2")
-public class GetCapabilitie {
+@XmlRootElement(name = "GetCapabilities")
+public class GetCapabilitie extends Element {
     /**
      * Accept version use to in service.
      */
@@ -59,7 +59,7 @@ public class GetCapabilitie {
      *
      * @return Accept version use to in service.
      */
-    @XmlElement(name = "AcceptVersion", namespace = "http://www.opengis.net/ows")
+    @XmlElement(name = "AcceptVersion", namespace = OWS)
     public Capacibilities getAcceptversion() {
         return acceptversion;
     }
@@ -78,7 +78,7 @@ public class GetCapabilitie {
      *
      * @return
      */
-    @XmlElement(name = "AcceptFormat", namespace = "http://www.opengis.net/ows")
+    @XmlElement(name = "AcceptFormat", namespace = OWS)
     public Capacibilities getAcceptformat() {
         return acceptformat;
     }

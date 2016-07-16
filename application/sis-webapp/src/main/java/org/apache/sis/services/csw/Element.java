@@ -16,6 +16,8 @@
  */
 package org.apache.sis.services.csw;
 
+import javax.xml.bind.annotation.XmlTransient;
+
 
 /**
  * Base class of XML elements used by Catalog Services on the Web.
@@ -25,11 +27,8 @@ package org.apache.sis.services.csw;
  * @version 0.8
  * @module
  */
+@XmlTransient
 abstract class Element {
-    /**
-     * The namespace of CSW .
-     */
-    static final String CSW = "http://www.opengis.net/cat/csw/2.0.2";
     /**
      * The namespace of Dublin Core elements.
      */

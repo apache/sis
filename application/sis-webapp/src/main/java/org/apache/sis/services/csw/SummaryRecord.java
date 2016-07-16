@@ -22,8 +22,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Locale;
 import java.util.Set;
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
@@ -60,9 +58,8 @@ import org.apache.sis.util.iso.Types;
  * @version 0.8
  * @module
  */
-@XmlRootElement(namespace = Element.CSW, name = "Record")
-@XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "", propOrder = {
+@XmlRootElement(name = "Record")
+@XmlType(name = "RecordType", propOrder = {
     "creator",
     "contributor",
     "publisher",
@@ -76,42 +73,42 @@ import org.apache.sis.util.iso.Types;
     "format",
     "BoundingBox"
 })
-public class SummaryRecord {
+public class SummaryRecord extends Element {
     /**
      * An entity primarily responsible for making the content of the resource .
      */
-    @XmlElement(namespace = Element.DUBLIN_CORE)
+    @XmlElement(namespace = DUBLIN_CORE)
     private String creator;
 
     /**
      * An entity responsible contributions to the content of the resource.
      */
-    @XmlElement(namespace = Element.DUBLIN_CORE)
+    @XmlElement(namespace = DUBLIN_CORE)
     private String contributor;
 
     /**
      * An entity responsible for making the resource avaible.
      */
-    @XmlElement(namespace = Element.DUBLIN_CORE)
+    @XmlElement(namespace = DUBLIN_CORE)
     private String publisher;
 
     /**
      * A topic of the content of the resource.
      */
-    @XmlElement(namespace = Element.DUBLIN_CORE)
+    @XmlElement(namespace = DUBLIN_CORE)
     private String subject;
 
     /**
      * An unique reference to the record within the catalogue.
      * This is mapped to the {@code metadata/metadataIdentifier} property of ISO 19115.
      */
-    @XmlElement(namespace = Element.DUBLIN_CORE)
+    @XmlElement(namespace = DUBLIN_CORE)
     private String identifier;
 
     /**
      * A reference to a related resource.
      */
-    @XmlElement(namespace = Element.DUBLIN_CORE)
+    @XmlElement(namespace = DUBLIN_CORE)
     private String relation;
 
     /**
@@ -120,13 +117,13 @@ public class SummaryRecord {
      * This is mapped to the {@code metadata/metadataScope/resourceScope} property of ISO 19115.
      * If more than one scope is provided, only the first one is retained.
      */
-    @XmlElement(namespace = Element.DUBLIN_CORE)
+    @XmlElement(namespace = DUBLIN_CORE)
     private String type;
 
     /**
      * A name given to the resource.
      */
-    @XmlElement(namespace = Element.DUBLIN_CORE)
+    @XmlElement(namespace = DUBLIN_CORE)
     private String title;
 
     /**
@@ -136,13 +133,13 @@ public class SummaryRecord {
      * only dates associated to {@link DateType#CREATION} or {@link DateType#LAST_UPDATE}.
      * If more than one date exist for those types, then only the latest date is retained.
      */
-    @XmlElement(namespace = Element.DUBLIN_TERMS)
+    @XmlElement(namespace = DUBLIN_TERMS)
     private Date modified;
 
     /**
      * A language of the intellectual content of the catalog record.
      */
-    @XmlElement(namespace = Element.DUBLIN_CORE)
+    @XmlElement(namespace = DUBLIN_CORE)
     private String language;
 
     /**
@@ -156,13 +153,13 @@ public class SummaryRecord {
      * If the metadata cites more than one format, then the titles of all formats (omitting duplicated values)
      * are included in this field, separated by new-line characters.</p>
      */
-    @XmlElement(namespace = Element.DUBLIN_CORE)
+    @XmlElement(namespace = DUBLIN_CORE)
     private String format;
 
     /**
      * A bounding box for identifying a geographic area of interest.
      */
-    @XmlElement(namespace = Element.OWS)
+    @XmlElement(namespace = OWS)
     private BoundingBox BoundingBox;
 
     /**

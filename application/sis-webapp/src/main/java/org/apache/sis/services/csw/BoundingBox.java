@@ -16,8 +16,6 @@
  */
 package org.apache.sis.services.csw;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 import org.opengis.metadata.extent.GeographicBoundingBox;
@@ -32,19 +30,18 @@ import org.opengis.metadata.extent.GeographicBoundingBox;
  * @version 0.8
  * @module
  */
-@XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(propOrder = {"LowerCorner", "UpperCorner"})
-public class BoundingBox {
+@XmlType(propOrder = {"lowerCorner", "upperCorner"})
+public class BoundingBox extends Element {
     /**
      * A space-separated list of minimal coordinate values for each dimension.
      */
-    @XmlElement(namespace = Element.OWS, name = "LowerCorner")
+    @XmlElement(namespace = OWS, name = "LowerCorner")
     private String lowerCorner;
 
     /**
      * A space-separated list of maximal coordinate values for each dimension.
      */
-    @XmlElement(namespace = Element.OWS, name = "UpperCorner")
+    @XmlElement(namespace = OWS, name = "UpperCorner")
     private String upperCorner;
 
     /**
