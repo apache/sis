@@ -491,6 +491,7 @@ public class LandsatReader {
             DefaultAggregateInformation aggregateInformation = new DefaultAggregateInformation();
             citation1.setTitle(new DefaultInternationalString(value));
             aggregateInformation.setAggregateDataSetName(citation1);
+            identification.setAggregationInfo(singleton(aggregateInformation));
             isEmpty = false;
         }
 
