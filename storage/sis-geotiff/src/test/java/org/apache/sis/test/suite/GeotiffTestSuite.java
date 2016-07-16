@@ -29,7 +29,8 @@ import org.junit.BeforeClass;
  * @module
  */
 @Suite.SuiteClasses({
-    org.apache.sis.storage.geotiff.LandsatReaderTest.class
+    org.apache.sis.storage.geotiff.LandsatReaderTest.class,
+        org.apache.sis.storage.geotiff.ModisReaderTest.class
 })
 public final strictfp class GeotiffTestSuite extends TestSuite {
     /**
