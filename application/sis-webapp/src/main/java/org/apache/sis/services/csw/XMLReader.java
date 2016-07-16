@@ -36,14 +36,29 @@ import org.opengis.metadata.identification.Identification;
  */
 public class XMLReader {
 
+    /**
+     * Configuration the path use to saved metadata.
+     */
     ConfigurationReader path = new ConfigurationReader();
 
+    /**
+     * Return all the metadata in path
+     *
+     * @return
+     * @throws Exception
+     */
     public List<SummaryRecord> Metadata() throws Exception {
-        //get all the files from a directory
+        /**
+         * Get all the files from a directory.
+         *
+         */
         ConfigurationReader path = new ConfigurationReader();
         List<SummaryRecord> record = new ArrayList<>();
         File directory = new File(path.getPropValues());
-        //get all the files from a directory
+        /**
+         * Get all the files from a directory.
+         *
+         */
         File[] fList = directory.listFiles();
         for (File file : fList) {
             final Metadata md;
@@ -58,36 +73,32 @@ public class XMLReader {
                 final ModisReader read = new ModisReader(xml);
                 md = read.read();
             } else {
-                continue; 
+                continue;
             }
             Identification id = first(md.getIdentificationInfo());
             SummaryRecord summary = new SummaryRecord();
-            summary.setIdentifier(md.getFileIdentifier()); 
-
+            summary.setIdentifier(md.getFileIdentifier());
             summary.setFormat(first(first(md.getDistributionInfo()).getDistributionFormats()).getName().toString());
-            summary.setTitle(id.getCitation().getTitle().toString()); 
-            summary.setType(first(md.getHierarchyLevels()).name()); 
+            summary.setTitle(id.getCitation().getTitle().toString());
+            summary.setType(first(md.getHierarchyLevels()).name());
             summary.setModified(md.getDateStamp());
-            summary.setSubject(first(first(id.getDescriptiveKeywords()).getKeywords()).toString()); 
+            summary.setSubject(first(first(id.getDescriptiveKeywords()).getKeywords()).toString());
             List<Responsibility> responsibility = new ArrayList<>(first(md.getIdentificationInfo()).getPointOfContacts());
-            summary.setCreator(first(responsibility.get(0).getParties()).getName().toString()); 
-            summary.setPublisher(first(responsibility.get(1).getParties()).getName().toString()); 
-            summary.setContributor(first(responsibility.get(2).getParties()).getName().toString()); 
-
-            summary.setLanguage(md.getLanguage().toString()); 
+            summary.setCreator(first(responsibility.get(0).getParties()).getName().toString());
+            summary.setPublisher(first(responsibility.get(1).getParties()).getName().toString());
+            summary.setContributor(first(responsibility.get(2).getParties()).getName().toString());
+            summary.setLanguage(md.getLanguage().toString());
             summary.setRelation(first(id.getAggregationInfo()).getAggregateDataSetName().getTitle().toString());
             Extent et = first(id.getExtents());
             GeographicBoundingBox gbd = (GeographicBoundingBox) first(et.getGeographicElements());
-            summary.setBoundingBox(new BoundingBox(gbd)); 
+            summary.setBoundingBox(new BoundingBox(gbd));
             record.add(summary);
         }
         return record;
     }
+
     public static void main(String[] args) throws Exception {
-
         XMLReader test = new XMLReader();
-
-        //      System.out.println(test.listGeotiff());
         System.out.println(test.Metadata());
 
     }

@@ -13,7 +13,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
  * See the License for the specific language governing permissions and 
  * limitations under the License. 
- */ 
+ */
 package org.apache.sis.services.csw;
 
 import java.util.ArrayList;
@@ -28,6 +28,11 @@ public class CapabilitiesRequest {
     public CapabilitiesRequest() {
     }
 
+    /**
+     * Return get capabilities
+     *
+     * @return
+     */
     public List<GetCapabilitie> GetCapabilitiesRequest() {
         List<GetCapabilitie> m1 = new ArrayList<>();
         String[] version = {"2.0.2", "2.0.0", "1.0.7"};
@@ -40,5 +45,5 @@ public class CapabilitiesRequest {
         m1.add(m2);
         return m1;
     }
-     
+
 }

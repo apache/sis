@@ -31,36 +31,52 @@ import org.opengis.metadata.extent.GeographicBoundingBox;
 
 public class BoundingBox {
 
-   /**
+    /**
      * A space-separated list of minimal coordinate values for each dimension.
      */
-    @XmlElement(namespace = Element.OWS,name="LowerCorner")
+    @XmlElement(namespace = Element.OWS, name = "LowerCorner")
     private String lowerCorner;
     /**
      * A space-separated list of maximal coordinate values for each dimension.
      */
-    @XmlElement(namespace = Element.OWS,name="UpperCorner")
+    @XmlElement(namespace = Element.OWS, name = "UpperCorner")
     private String upperCorner;
 
+    /**
+     * Return a space-separated list of minimal coordinate values for each
+     * dimension.
+     */
     public String getLowerCorner() {
         return lowerCorner;
     }
 
+    /**
+     * Set a space-separated list of minimal coordinate values for each
+     * dimension.
+     */
     public void setLowerCorner(String LowerCorner) {
         this.lowerCorner = LowerCorner;
     }
 
+    /**
+     * Return a space-separated list of maximal coordinate values for each
+     * dimension.
+     */
     public void setUpperCorner(String UpperCorner) {
         this.upperCorner = UpperCorner;
     }
 
-    /* Creates a new, initially empty, bounding box.
-     * This constructor is invoked by JAXB at unmarshalling time.
+    /**
+     * Set a space-separated list of maximal coordinate values for each
+     * dimension.
      */
     public String getUpperCorner() {
         return upperCorner;
     }
 
+    /**
+     * Contructor.
+     */
     BoundingBox() {
     }
 
