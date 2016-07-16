@@ -67,6 +67,7 @@ import org.apache.sis.util.iso.DefaultInternationalString;
 import org.apache.sis.util.logging.WarningListeners;
 
 import static java.util.Collections.singleton;
+import java.util.List;
 import org.apache.sis.metadata.iso.citation.DefaultResponsibility;
 import org.apache.sis.metadata.iso.citation.DefaultResponsibleParty;
 import org.apache.sis.metadata.iso.distribution.DefaultDistribution;
@@ -76,6 +77,7 @@ import org.apache.sis.metadata.iso.identification.DefaultKeywords;
 import static org.apache.sis.storage.geotiff.LandsatKeys.*;
 import org.opengis.metadata.citation.Role;
 import org.opengis.metadata.distribution.Distribution;
+import org.opengis.metadata.maintenance.ScopeCode;
 import org.opengis.util.InternationalString;
 
 /**
@@ -447,7 +449,7 @@ public class LandsatReader {
             citation.setDates(singleton(new DefaultCitationDate(metadataTime, DateType.PUBLICATION)));
             isEmpty = false;
         }
-        String value = getValue(LANDSAT_SCENE_ID);
+        String value = getValue(METADATA_FILE_NAME);
         if (value != null) {
             citation.setTitle(new DefaultInternationalString(value));
             isEmpty = false;
@@ -485,9 +487,10 @@ public class LandsatReader {
         }
         value = getValue(ORIGIN);
         if (value != null) {
+            DefaultCitation citation1 = new DefaultCitation();
             DefaultAggregateInformation aggregateInformation = new DefaultAggregateInformation();
-            citation.setTitle(new DefaultInternationalString(value));
-            aggregateInformation.setAggregateDataSetName(citation);
+            citation1.setTitle(new DefaultInternationalString(value));
+            aggregateInformation.setAggregateDataSetName(citation1);
             isEmpty = false;
         }
 
@@ -524,6 +527,12 @@ public class LandsatReader {
         final AcquisitionInformation acquisition = createAcquisitionInformation(sceneTime);
         if (acquisition != null) {
             metadata.setAcquisitionInformation(singleton(acquisition));
+            
+        }
+        
+        if(getValue(DATA_TYPE) != null){
+        
+        metadata.setHierarchyLevels(singleton(ScopeCode.valueOf(getValue(DATA_TYPE))));
         }
         return metadata;
     }
