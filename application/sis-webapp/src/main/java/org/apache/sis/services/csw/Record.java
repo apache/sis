@@ -35,16 +35,14 @@ public class Record {
     public List<SummaryRecord> getAllRecord() throws Exception {
         XMLReader a = new XMLReader();
         List<SummaryRecord> b = new ArrayList<SummaryRecord>();
-        b.addAll(a.listGeotiff());
-        b.addAll(a.listModis());
+        b.addAll(a.Metadata());
         return b;
     }
 
     public List<SummaryRecord> getRecordByText(String format) throws Exception {
         XMLReader a = new XMLReader();
         List<SummaryRecord> b = new ArrayList<SummaryRecord>();
-        b.addAll(a.listGeotiff());
-        b.addAll(a.listModis());
+        b.addAll(a.Metadata());
         List<SummaryRecord> messagesByText = new ArrayList<>();
         for (SummaryRecord message : b) {
             if (message.getFormat().equals(format)) {
@@ -57,8 +55,7 @@ public class Record {
     public List<SummaryRecord> SearchDate(String date1, String date2) throws Exception {
         XMLReader a = new XMLReader();
         List<SummaryRecord> b = new ArrayList<SummaryRecord>();
-        b.addAll(a.listGeotiff());
-        b.addAll(a.listModis());
+        b.addAll(a.Metadata());
         List<SummaryRecord> messagesForYear = new ArrayList<>();
         DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
         Date da1 = df.parse(date1);
@@ -79,8 +76,7 @@ public class Record {
     public List<SummaryRecord> getAllRecordPaginated(int start, int size) throws Exception {
         XMLReader a = new XMLReader();
         List<SummaryRecord> b = new ArrayList<SummaryRecord>();
-        b.addAll(a.listGeotiff());
-        b.addAll(a.listModis());
+        b.addAll(a.Metadata());
         ArrayList<SummaryRecord> list = new ArrayList<SummaryRecord>(b);
         if (start + size > list.size()) {
             return new ArrayList<SummaryRecord>();
@@ -91,8 +87,7 @@ public class Record {
     public SummaryRecord getRecordById(long id) throws Exception {
         XMLReader a = new XMLReader();
         List<SummaryRecord> b = new ArrayList<SummaryRecord>();
-        b.addAll(a.listGeotiff());
-        b.addAll(a.listModis());
+        b.addAll(a.Metadata());
         SummaryRecord messagesById = new SummaryRecord();
         for (SummaryRecord message : b) {
             if (message.getIdentifier().equals(id)) {

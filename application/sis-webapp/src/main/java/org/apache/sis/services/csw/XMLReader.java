@@ -20,13 +20,10 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
-import javax.xml.bind.JAXBException;
 import static org.apache.sis.internal.util.CollectionsExt.first;
-import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.geotiff.LandsatReader;
-import org.apache.sis.xml.XML;
+import org.apache.sis.storage.geotiff.ModisReader;
 import org.opengis.metadata.Metadata;
 import org.opengis.metadata.citation.Responsibility;
 import org.opengis.metadata.extent.Extent;
@@ -41,88 +38,57 @@ public class XMLReader {
 
     ConfigurationReader path = new ConfigurationReader();
 
-    public List<SummaryRecord> listModis() throws Exception {
+    public List<SummaryRecord> Metadata() throws Exception {
         //get all the files from a directory
         ConfigurationReader path = new ConfigurationReader();
         List<SummaryRecord> record = new ArrayList<>();
         File directory = new File(path.getPropValues());
         //get all the files from a directory
         File[] fList = directory.listFiles();
-        int i = 1;
         for (File file : fList) {
-            if (file.isFile() && file.getName().endsWith(".iso19115")) {
-                    Metadata ModisMD = (Metadata) XML.unmarshal(new File(file.getPath()));
-                    Identification id = first(ModisMD.getIdentificationInfo());
-                    String identifier = ModisMD.getFileIdentifier();
-                    String format = id.getCitation().getTitle().toString();
-                    String title = file.getName();
-                    String type = first(ModisMD.getHierarchyLevels()).name();
-                    Date modified = ModisMD.getDateStamp();
-                    String subject = first(id.getTopicCategories()).IMAGERY_BASE_MAPS_EARTH_COVER.toString();
-//                List<Responsibility> responsibility = new ArrayList<>(first(ModisMD.getIdentificationInfo()).getPointOfContacts());
-                    String creator = "";
-                    String publisher = "";
-                    String contributor = "";
-//
-                    String language = ModisMD.getLanguage().toString();
-                    String relation = first(id.getAggregationInfo()).getAggregateDataSetName().getTitle().toString();
-                    Extent et = first(id.getExtents());
-                    GeographicBoundingBox gbd = (GeographicBoundingBox) first(et.getGeographicElements());
-                    BoundingBox bbox = new BoundingBox(gbd);
-                    
-                    SummaryRecord m1 = new SummaryRecord(creator, contributor, publisher, subject, identifier, relation, type, title, modified, language, format, bbox);
-                    record.add(m1);
-                    i++;
-                
-            }
-        }
-
-        return record;
-    }
-
-    public List<SummaryRecord> listGeotiff() throws Exception {
-        //get all the files from a directory
-
-        List<SummaryRecord> record = new ArrayList<>();
-        File directory = new File(path.getPropValues());
-        //get all the files from a directory
-        File[] fList = directory.listFiles();
-        int i = 1000;
-        for (File file : fList) {
+            final Metadata md;
             if (file.isFile() && file.getName().endsWith(".txt")) {
-                BufferedReader in = new BufferedReader(new FileReader(file.getPath()));
-                Metadata LandsatMD = new LandsatReader(in).read();
-                Identification id = first(LandsatMD.getIdentificationInfo());
-                String identifier = LandsatMD.getFileIdentifier();
-                String format = first(first(LandsatMD.getDistributionInfo()).getDistributionFormats()).getName().toString();
-                String title = file.getName();
-                String type = first(LandsatMD.getHierarchyLevels()).name();
-                Date modified = LandsatMD.getDateStamp();
-                String subject = first(first(id.getDescriptiveKeywords()).getKeywords()).toString();
-                List<Responsibility> responsibility = new ArrayList<>(first(LandsatMD.getIdentificationInfo()).getPointOfContacts());
-                String creator = first(responsibility.get(0).getParties()).getName().toString();
-                String publisher = first(responsibility.get(1).getParties()).getName().toString();
-                String contributor = first(responsibility.get(2).getParties()).getName().toString();
-                String language = LandsatMD.getLanguage().toString();
-                String relation = first(id.getAggregationInfo()).getAggregateDataSetName().getTitle().toString();
-                Extent et = first(id.getExtents());
-                GeographicBoundingBox gbd = (GeographicBoundingBox) first(et.getGeographicElements());
-                BoundingBox bbox = new BoundingBox(gbd);
-                SummaryRecord m1 = new SummaryRecord(creator, contributor, publisher, subject, identifier, relation, type, title, modified, language, format, bbox);
-                record.add(m1);
-                i++;
-            }
-        }
 
+                try (BufferedReader in = new BufferedReader(new FileReader(file.getPath()))) {
+                    final LandsatReader reader = new LandsatReader(in);
+                    md = reader.read();
+                }
+            } else if (file.isFile() && file.getName().endsWith(".xml")) {
+                File xml = new File(file.getPath());
+                final ModisReader read = new ModisReader(xml);
+                md = read.read();
+            } else {
+                continue; 
+            }
+            Identification id = first(md.getIdentificationInfo());
+            SummaryRecord summary = new SummaryRecord();
+            summary.setIdentifier(md.getFileIdentifier()); 
+
+            summary.setFormat(first(first(md.getDistributionInfo()).getDistributionFormats()).getName().toString());
+            summary.setTitle(id.getCitation().getTitle().toString()); 
+            summary.setType(first(md.getHierarchyLevels()).name()); 
+            summary.setModified(md.getDateStamp());
+            summary.setSubject(first(first(id.getDescriptiveKeywords()).getKeywords()).toString()); 
+            List<Responsibility> responsibility = new ArrayList<>(first(md.getIdentificationInfo()).getPointOfContacts());
+            summary.setCreator(first(responsibility.get(0).getParties()).getName().toString()); 
+            summary.setPublisher(first(responsibility.get(1).getParties()).getName().toString()); 
+            summary.setContributor(first(responsibility.get(2).getParties()).getName().toString()); 
+
+            summary.setLanguage(md.getLanguage().toString()); 
+            summary.setRelation(first(id.getAggregationInfo()).getAggregateDataSetName().getTitle().toString());
+            Extent et = first(id.getExtents());
+            GeographicBoundingBox gbd = (GeographicBoundingBox) first(et.getGeographicElements());
+            summary.setBoundingBox(new BoundingBox(gbd)); 
+            record.add(summary);
+        }
         return record;
     }
+    public static void main(String[] args) throws Exception {
 
-//    public static void main(String[] args) throws Exception {
-//
-//     XMLReader test = new XMLReader() ;
-//    
-//        System.out.println(test.listGeotiff());
-//        System.out.println(test.listModis());
-//
-//    }
+        XMLReader test = new XMLReader();
+
+        //      System.out.println(test.listGeotiff());
+        System.out.println(test.Metadata());
+
+    }
 }

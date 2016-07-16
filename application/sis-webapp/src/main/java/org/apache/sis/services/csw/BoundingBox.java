@@ -31,35 +31,34 @@ import org.opengis.metadata.extent.GeographicBoundingBox;
 
 public class BoundingBox {
 
-   
    /**
      * A space-separated list of minimal coordinate values for each dimension.
      */
-    @XmlElement(namespace = Element.OWS)
-    private String LowerCorner;
+    @XmlElement(namespace = Element.OWS,name="LowerCorner")
+    private String lowerCorner;
     /**
      * A space-separated list of maximal coordinate values for each dimension.
      */
-    @XmlElement(namespace = Element.OWS)
-    private String UpperCorner;
+    @XmlElement(namespace = Element.OWS,name="UpperCorner")
+    private String upperCorner;
 
     public String getLowerCorner() {
-        return LowerCorner;
+        return lowerCorner;
     }
 
     public void setLowerCorner(String LowerCorner) {
-        this.LowerCorner = LowerCorner;
+        this.lowerCorner = LowerCorner;
     }
 
     public void setUpperCorner(String UpperCorner) {
-        this.UpperCorner = UpperCorner;
+        this.upperCorner = UpperCorner;
     }
 
     /* Creates a new, initially empty, bounding box.
      * This constructor is invoked by JAXB at unmarshalling time.
      */
     public String getUpperCorner() {
-        return UpperCorner;
+        return upperCorner;
     }
 
     BoundingBox() {
@@ -72,8 +71,8 @@ public class BoundingBox {
      */
     BoundingBox(final GeographicBoundingBox bbox) {
         final StringBuilder buffer = new StringBuilder(20);
-        this.LowerCorner = format(buffer, bbox.getWestBoundLongitude(), bbox.getSouthBoundLatitude());
-        this.UpperCorner = format(buffer, bbox.getEastBoundLongitude(), bbox.getNorthBoundLatitude());
+        this.lowerCorner = format(buffer, bbox.getWestBoundLongitude(), bbox.getSouthBoundLatitude());
+        this.upperCorner = format(buffer, bbox.getEastBoundLongitude(), bbox.getNorthBoundLatitude());
     }
 
     /**

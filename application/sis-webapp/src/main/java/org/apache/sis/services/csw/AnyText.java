@@ -37,8 +37,7 @@ String format;
 
     public AnyText() throws Exception {
         XMLReader a = new XMLReader();
-        data.addAll(a.listGeotiff());
-        data.addAll(a.listModis());
+        data.addAll(a.Metadata());
     }
     
     public List<SummaryRecord> getData(){
@@ -52,8 +51,7 @@ String format;
     
     public AnyText(String format, String identifier, String startDate, String rangeDate) throws Exception {
         XMLReader a = new XMLReader();
-        data.addAll(a.listGeotiff());
-        data.addAll(a.listModis());
+        data.addAll(a.Metadata());
         this.format = format;
         this.identifier = identifier;
         this.startDate = startDate;
