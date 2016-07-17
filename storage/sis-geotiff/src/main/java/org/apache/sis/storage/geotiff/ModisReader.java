@@ -18,7 +18,6 @@ package org.apache.sis.storage.geotiff;
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.time.format.DateTimeParseException;
-import static java.util.Collections.singleton;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
@@ -36,7 +35,6 @@ import org.apache.sis.metadata.iso.identification.AbstractIdentification;
 import org.apache.sis.metadata.iso.identification.DefaultAggregateInformation;
 import org.apache.sis.metadata.iso.identification.DefaultKeywords;
 import org.apache.sis.storage.DataStoreException;
-import static org.apache.sis.storage.geotiff.ModisPath.DataCenterId;
 import org.apache.sis.util.iso.DefaultInternationalString;
 import org.opengis.metadata.Metadata;
 import org.opengis.metadata.citation.DateType;
@@ -46,9 +44,16 @@ import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.identification.Identification;
 import org.opengis.metadata.maintenance.ScopeCode;
 
+import static java.util.Collections.singleton;
+import static org.apache.sis.storage.geotiff.ModisPath.DataCenterId;
+
+
 /**
  *
- * @author haonguyen
+ * @author  Thi Phuong Hao Nguyen (VNSC)
+ * @since   0.8
+ * @version 0.8
+ * @module
  */
 public class ModisReader {
 
