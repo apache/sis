@@ -17,7 +17,6 @@
 package org.apache.sis.storage.geotiff;
 
 import java.io.BufferedReader;
-import java.io.FileReader;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Date;
@@ -66,7 +65,6 @@ import org.apache.sis.metadata.iso.distribution.DefaultDistribution;
 import org.apache.sis.metadata.iso.extent.DefaultExtent;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.metadata.iso.extent.DefaultTemporalExtent;
-import org.apache.sis.metadata.iso.identification.AbstractIdentification;
 import org.apache.sis.metadata.iso.identification.DefaultAggregateInformation;
 import org.apache.sis.metadata.iso.identification.DefaultKeywords;
 import org.apache.sis.storage.DataStoreException;
@@ -74,6 +72,7 @@ import org.apache.sis.util.iso.DefaultInternationalString;
 import org.apache.sis.util.logging.WarningListeners;
 
 import static java.util.Collections.singleton;
+import org.apache.sis.metadata.iso.identification.DefaultDataIdentification;
 import static org.apache.sis.storage.geotiff.LandsatKeys.*;
 
 
@@ -420,8 +419,8 @@ public class LandsatReader {
      * @throws DataStoreException if a property value can not be parsed as a number or a date.
      */
     private Identification createIdentification(final Date metadataTime, final Date sceneTime) throws DataStoreException {
-//      final DefaultDataIdentification identification = new DefaultDataIdentification();
-        final AbstractIdentification identification = new AbstractIdentification();
+      final DefaultDataIdentification identification = new DefaultDataIdentification();
+       
         final DefaultCitation citation = new DefaultCitation();
         boolean isEmpty = true;
         if (metadataTime != null) {
@@ -436,12 +435,10 @@ public class LandsatReader {
         if (!isEmpty) {
             identification.setCitation(citation);
         }
-        value = getValue(ELEVATION_SOURCE);
-        if (value != null) {
-            final DefaultKeywords keyword = new DefaultKeywords(value);
+
+            final DefaultKeywords keyword = new DefaultKeywords("Multispectral image data > Raster > Projected");
             identification.setDescriptiveKeywords(singleton(keyword));
-            isEmpty = false;
-        }
+  
         final Extent extent = createExtent(sceneTime);
         if (extent != null) {
             identification.setExtents(singleton(extent));
@@ -453,7 +450,7 @@ public class LandsatReader {
             responsible.setOrganisationName(new DefaultInternationalString(value));
             responsible.setRole(Role.ORIGINATOR);
             DefaultResponsibleParty responsiblepublisher = new DefaultResponsibleParty();
-            responsiblepublisher.setOrganisationName(new DefaultInternationalString(value));
+            responsiblepublisher.setOrganisationName(new DefaultInternationalString(LandsatKeys.PUBLISHER));
             responsiblepublisher.setRole(Role.PUBLISHER);
             DefaultResponsibleParty responsiblecontributor = new DefaultResponsibleParty();
             responsiblecontributor.setOrganisationName(new DefaultInternationalString(value));
@@ -486,7 +483,7 @@ public class LandsatReader {
         metadata.setMetadataStandards(Citations.ISO_19115);
         final Date metadataTime = getDate(FILE_DATE);
         if (metadataTime != null) {
-            metadata.setDateStamp(metadataTime);
+            metadata.setDateInfo(singleton(new DefaultCitationDate(metadataTime,DateType.CREATION)));
         }
         metadata.setLanguage(Locale.ENGLISH);
         metadata.setFileIdentifier(getValue(LANDSAT_SCENE_ID));
@@ -520,14 +517,5 @@ public class LandsatReader {
         if (listeners != null) {
             listeners.warning(null, e);
         }
-    }
-
-    public static void main(String[] args) throws IOException, DataStoreException {
-        LandsatReader read;
-        try (BufferedReader in = new BufferedReader(new FileReader("/home/haonguyen/data/LC81230522014071LGN00_MTL.txt"))) {
-            read = new LandsatReader(in);
-        }
-        System.out.println("The Metadata of LC81230522014071LGN00_MTL.txt is:");
-        System.out.println(read.read());
     }
 }

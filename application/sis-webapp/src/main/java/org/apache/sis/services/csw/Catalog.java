@@ -25,6 +25,8 @@ import java.io.IOException;
 import java.nio.file.Path; 
 import java.nio.file.Files; 
 import java.nio.file.DirectoryStream; 
+import java.util.ArrayList;
+import java.util.List;
 import javax.xml.bind.JAXBException; 
 import org.opengis.metadata.Metadata; 
 import org.apache.sis.storage.DataStoreException; 
@@ -43,6 +45,7 @@ import org.apache.sis.xml.XML;
  * @module 
  */ 
 public class Catalog { 
+    
     
     /**
      * All metadata known to this {@code Catalog} class. Keys are the metadata
@@ -68,7 +71,6 @@ public class Catalog {
          */
         File[] fList = directory.listFiles();
         for (File file : fList) {
-            //final String filename = file.getName().toString();
             final Metadata md;
             if (file.isFile() && file.getName().endsWith(".txt")) {
                 try (BufferedReader in = new BufferedReader(new FileReader(file.getPath()))) {
@@ -88,6 +90,15 @@ public class Catalog {
             }
             metadata.put(md.getFileIdentifier(), md);
         }
+    }
+
+    /**
+     * Return all metadata tree 
+     *
+     * @return all metadata tree
+     */
+    public List<Metadata> getAllMetadata() {
+        return new ArrayList<Metadata>(metadata.values());
     }
 
     /**

@@ -38,6 +38,10 @@ public class GetCapabilitie extends Element {
      * Accept format use to in service.
      */
     private Capacibilities acceptformat;
+    
+    /**
+     * Contructor's GetCapabilitie.
+     */
 
     public GetCapabilitie() {
 
@@ -46,8 +50,8 @@ public class GetCapabilitie extends Element {
     /**
      * Creates get capabilities
      *
-     * @param acceptversion
-     * @param acceptformat
+     * @param acceptversion Accept version use to in service
+     * @param acceptformat Accept format use to in service.
      */
     public GetCapabilitie(Capacibilities acceptversion, Capacibilities acceptformat) {
         this.acceptversion = acceptversion;
@@ -67,7 +71,7 @@ public class GetCapabilitie extends Element {
     /**
      * Set Accept version
      *
-     * @param acceptversion
+     * @param acceptversion Accept version use to in service
      */
     public void setAcceptversion(Capacibilities acceptversion) {
         this.acceptversion = acceptversion;
@@ -76,7 +80,7 @@ public class GetCapabilitie extends Element {
     /**
      * Get Accept format
      *
-     * @return
+     * @return Accept format
      */
     @XmlElement(name = "AcceptFormat", namespace = OWS)
     public Capacibilities getAcceptformat() {
@@ -86,7 +90,7 @@ public class GetCapabilitie extends Element {
     /**
      * Set Acceptformat
      *
-     * @param acceptformat
+     * @param acceptformat Accept format use to in service
      */
     public void setAcceptformat(Capacibilities acceptformat) {
         this.acceptformat = acceptformat;

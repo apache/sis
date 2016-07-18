@@ -42,6 +42,11 @@ public class ConfigurationReader {
 
     /**
      * Return the values in propeties.
+     *
+     * @return the values in propeties
+     * @throws IOException Signals that an I/O exception of some sort has
+     * occurred. This class is the general class of exceptions produced by
+     * failed or interrupted I/O operations.
      */
     public String getPropValues() throws IOException {
         try {
@@ -61,8 +66,6 @@ public class ConfigurationReader {
              */
             String path = prop.getProperty("Path");
             result = path;
-        } catch (Exception e) {
-            System.out.println("Exception: " + e);
         } finally {
             inputStream.close();
         }

@@ -41,6 +41,7 @@ public class Capacibilities extends Element {
 
     /**
      * Return version for service.
+     * @return version for service.
      */
     @XmlElement(namespace = OWS, name = "Version")
     public String[] getVersion() {
@@ -49,6 +50,7 @@ public class Capacibilities extends Element {
 
     /**
      * Set version for service.
+     * @param Version version for service
      */
     public void setVersion(String[] Version) {
         this.Version = Version;
@@ -56,6 +58,7 @@ public class Capacibilities extends Element {
 
     /**
      * Return format that service reponse.
+     * @return format that service reponse
      */
     @XmlElement(namespace = OWS, name = "OutputFormat")
     public String[] getOutputFormat() {
@@ -64,6 +67,7 @@ public class Capacibilities extends Element {
 
     /**
      * Set format that service reponse.
+     * @param OutputFormat format that service reponse
      */
     public void setOutputFormat(String[] OutputFormat) {
         this.OutputFormat = OutputFormat;

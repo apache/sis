@@ -43,8 +43,11 @@ public class Xpath {
     /**
      * Constructor accepts XML string
      *
-     * @param xmlData
-     * @throws Exception
+     * @param xmlData XML string
+     * @throws Exception checked exceptions. Checked exceptions need to be
+     * declared in a method or constructor's {@code throws} clause if they can
+     * be thrown by the execution of the method or constructor and propagate
+     * outside the method or constructor boundary.
      */
     public Xpath(String xmlData) throws Exception {
         builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
@@ -55,20 +58,26 @@ public class Xpath {
     /**
      * Constructor allows you to pass an XML file for parsing
      *
-     * @param file
-     * @throws Exception
+     * @param file XML file for parsing
+     * @throws Exception checked exceptions. Checked exceptions need to be
+     * declared in a method or constructor's {@code throws} clause if they can
+     * be thrown by the execution of the method or constructor and propagate
+     * outside the method or constructor boundary.
      */
     public Xpath(File file) throws Exception {
         builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-        document = builder.parse(new FileInputStream(file));
+        document = builder.parse(file);
     }
 
     /**
      * Return a value by evaluating the string parameter using XPath
      *
-     * @param xpathExpression
+     * @param xpathExpression value by evaluating the string parameter using XPath
      * @return a value by evaluating the string parameter using XPath
-     * @throws Exception
+     * @throws Exception checked exceptions. Checked exceptions need to be
+     * declared in a method or constructor's {@code throws} clause if they can
+     * be thrown by the execution of the method or constructor and propagate
+     * outside the method or constructor boundary.
      */
     public String getValue(String xpathExpression) throws Exception {
         XPathFactory xPathfactory = XPathFactory.newInstance();
@@ -80,9 +89,12 @@ public class Xpath {
     /**
      * Return a Node by evaluating the string parameter using XPath
      *
-     * @param xpathExpression
+     * @param xpathExpression the string parameter using XPath
      * @return a Node by evaluating the string parameter using XPath
-     * @throws Exception
+     * @throws Exception checked exceptions. Checked exceptions need to be
+     * declared in a method or constructor's {@code throws} clause if they can
+     * be thrown by the execution of the method or constructor and propagate
+     * outside the method or constructor boundary.
      */
     public Node getNode(String xpathExpression) throws Exception {
         XPathFactory xPathfactory = XPathFactory.newInstance();

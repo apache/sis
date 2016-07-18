@@ -63,21 +63,31 @@ public class ModisReader {
      *
      * {
      *
-     * @preformat text DATE_ACQUIRED = 2014-03-12 SCENE_CENTER_TIME =
-     * 03:02:01.5339408Z CORNER_UL_LAT_PRODUCT = 12.61111 CORNER_UL_LON_PRODUCT
-     * = 108.33624 CORNER_UR_LAT_PRODUCT = 12.62381 CORNER_UR_LON_PRODUCT =
-     * 110.44017 }
+     * @preformat xml 
+     * <ProductionDateTime>2010-01-27 02:32:53.000</ProductionDateTime>
+     * <Point>
+     * <PointLongitude>-101.553684488169</PointLongitude>
+     * <PointLatitude>9.94386756646215</PointLatitude>
+     * </Point>
+     * <Point>
+     * <PointLongitude>-106.41777723682</PointLongitude>
+     * <PointLatitude>19.9999999982039</PointLatitude>
+     * </Point>
+     * <Point><PointLongitude>-95.4045474214342</PointLongitude>
+     * <PointLatitude>20.0267062793293</PointLatitude>
+     * </Point>
+     * <Point>
+     * <PointLongitude>-91.0455775282882</PointLongitude>
+     * <PointLatitude>9.97147681168364</PointLatitude>
+     * </Point>}
      */
     private final Map<String, String> properties;
 
     /**
      * Creates a new metadata parser from the given characters reader.
      *
-     * @param reader a reader opened on the Modis file. It is caller's
+     * @param xml a xml opened on the Modis file. It is caller's
      * responsibility to close this reader.
-     * @throws IOException if an I/O error occurred while reading the given
-     * stream.
-     * @throws DataStoreException if the content is not a Modis file.
      */
     public ModisReader(File xml) throws Exception {
         properties = new HashMap();
@@ -176,8 +186,6 @@ public class ModisReader {
      * Gets the geographic and temporal extent for identification info, or
      * {@code null} if none. This method expects the data acquisition time in
      * argument in order to avoid to compute it twice.
-     *
-     * @param sceneTime the data acquisition time, or {@code null} if none.
      * @return the data extent in Identification info, or {@code null} if none.
      * @throws DataStoreException if a property value can not be parsed as a
      * number or a date.
@@ -208,7 +216,6 @@ public class ModisReader {
      *
      * @param metadataTime the metadata file creation time, or {@code null} if
      * none.
-     * @param sceneTime the data acquisition time, or {@code null} if none.
      * @return the data identification information, or {@code null} if none.
      * @throws DataStoreException if a property value can not be parsed as a
      * number or a date.
@@ -229,12 +236,10 @@ public class ModisReader {
         if (!isEmpty) {
             identification.setCitation(citation);
         }
-        final String value1 = getValue(ModisPath.ReprocessingActual);
-        if (value1 != null) {
-            final DefaultKeywords keyword = new DefaultKeywords(value1);
+        
+            final DefaultKeywords keyword = new DefaultKeywords("Land/Water Mask > Cloud Mask > Atmospheric > Land Cover > Snow Cover");
             identification.setDescriptiveKeywords(singleton(keyword));
-            isEmpty = false;
-        }
+        
         final Extent extent = createExtent();
         if (extent != null) {
             identification.setExtents(singleton(extent));
@@ -246,7 +251,7 @@ public class ModisReader {
             responsible.setOrganisationName(new DefaultInternationalString(value));
             responsible.setRole(Role.ORIGINATOR);
             DefaultResponsibleParty responsiblepublisher = new DefaultResponsibleParty();
-            responsiblepublisher.setOrganisationName(new DefaultInternationalString(value));
+            responsiblepublisher.setOrganisationName(new DefaultInternationalString(ModisPath.PUBLISHER));
             responsiblepublisher.setRole(Role.PUBLISHER);
             DefaultResponsibleParty responsiblecontributor = new DefaultResponsibleParty();
             responsiblecontributor.setOrganisationName(new DefaultInternationalString(value));
@@ -280,7 +285,9 @@ public class ModisReader {
         metadata.setMetadataStandards(Citations.ISO_19115);
         final Date metadataTime = getDate();
         if (metadataTime != null) {
-            metadata.setDateStamp(metadataTime);
+            
+            metadata.setDateInfo(singleton(new DefaultCitationDate(metadataTime,DateType.CREATION)));
+        
         }
         metadata.setLanguage(Locale.ENGLISH);
         metadata.setFileIdentifier(getValue(ModisPath.LocalGranuleID));
@@ -291,27 +298,10 @@ public class ModisReader {
         if (identification != null) {
             metadata.setIdentificationInfo(singleton(identification));
         }
-//        final ImageDescription content = createImageDescription();
-//        if (content != null) {
-//            metadata.setContentInfo(singleton(content));
-//        }
-//        final AcquisitionInformation acquisition = createAcquisitionInformation(sceneTime);
-//        if (acquisition != null) {
-//            metadata.setAcquisitionInformation(singleton(acquisition));
-//        }
         if (getValue(ModisPath.PlatformShortName) != null) {
 
             metadata.setHierarchyLevels(singleton(ScopeCode.valueOf(getValue(ModisPath.PlatformShortName))));
         }
         return metadata;
-    }
-
-    public static void main(String argv[]) throws Exception {
-
-        File xml = new File("/home/haonguyen/data/MOD09Q1.A2010009.h08v07.005.2010027023253.hdf.xml");
-        ModisReader a = new ModisReader(xml);
-
-        System.out.println(a.read());
-        System.out.println(a.getValue(ModisPath.ReprocessingActual));
     }
 }

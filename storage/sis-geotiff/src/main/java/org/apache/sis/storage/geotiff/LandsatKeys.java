@@ -181,4 +181,12 @@ final class LandsatKeys {
      * The identifier to inform the user of the product type.
      */
     static final String DATA_TYPE = "DATA_TYPE";
+    /**
+     * The keyword  of the GeoTIFF.
+     */
+    static final String KEY_WORDS = "Model/Raster/Projected ";
+    /**
+     * The publisher .
+     */
+    static final String PUBLISHER ="VNSC-Vietnam National Satellite Center";
 }

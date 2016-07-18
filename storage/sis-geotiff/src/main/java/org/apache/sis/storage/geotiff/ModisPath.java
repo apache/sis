@@ -117,6 +117,10 @@ public class ModisPath {
      * Path for Input Granule.
      */
     static final String InputGranule = "DataFileContainer";
+    /**
+     * The publisher .
+     */
+    static final String PUBLISHER ="VNSC-Vietnam National Satellite Center";
 
     /**
      * List all the path use to mapping metadata
@@ -144,10 +148,5 @@ public class ModisPath {
         a.add(ReprocessingActual);
 
         return a;
-    }
-
-    public static void main(String[] args) {
-        ModisPath path = new ModisPath();
-        System.out.println(path.path());
     }
 }

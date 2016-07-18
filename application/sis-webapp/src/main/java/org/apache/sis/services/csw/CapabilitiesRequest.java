@@ -29,13 +29,16 @@ import java.util.List;
  */
 public class CapabilitiesRequest {
 
+    /**
+     * Contructor's CapabilitiesRequest.
+     */
     public CapabilitiesRequest() {
     }
 
     /**
      * Return get capabilities
      *
-     * @return
+     * @return capabilities.
      */
     public List<GetCapabilitie> GetCapabilitiesRequest() {
         List<GetCapabilitie> m1 = new ArrayList<>();

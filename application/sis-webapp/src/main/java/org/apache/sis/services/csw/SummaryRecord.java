@@ -16,15 +16,18 @@
  */
 package org.apache.sis.services.csw;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
+import static org.apache.sis.internal.util.CollectionsExt.first;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.Metadata;
@@ -42,6 +45,7 @@ import org.opengis.metadata.maintenance.ScopeCode;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.util.iso.Types;
+import org.opengis.metadata.citation.Responsibility;
 
 
 /**
@@ -166,7 +170,23 @@ public class SummaryRecord extends Element {
      * Creates an initially empty summary record.
      * This constructor is invoked by JAXB at unmarshalling time.
      */
-    SummaryRecord() {
+    SummaryRecord(final Metadata object) {
+        List<Responsibility> responsibility = new ArrayList<>(first(object.getIdentificationInfo()).getPointOfContacts());
+        this.creator = first(responsibility.get(0).getParties()).getName().toString();
+        this.publisher = first(responsibility.get(1).getParties()).getName().toString();
+        this.contributor = first(responsibility.get(2).getParties()).getName().toString();
+        this.subject=first(first(first(object.getIdentificationInfo()).getDescriptiveKeywords()).getKeywords()).toString();
+        this.identifier=object.getFileIdentifier();
+        this.relation=first(first(object.getIdentificationInfo()).getAggregationInfo()).getAggregateDataSetName().getTitle().toString();
+        this.title=first(object.getIdentificationInfo()).getCitation().getTitle().toString();
+        this.type=first(object.getHierarchyLevels()).name();
+        this.format=first(first(object.getDistributionInfo()).getDistributionFormats()).getName().toString();
+        this.language=object.getLanguage().toString();
+        this.modified = first(object.getDateInfo()).getDate();
+        Extent et = first(first(object.getIdentificationInfo()).getExtents());
+        GeographicBoundingBox gbd = (GeographicBoundingBox) first(et.getGeographicElements());
+        this.BoundingBox = new BoundingBox(gbd);
+                
     }
 
     /**
@@ -309,24 +329,6 @@ public class SummaryRecord extends Element {
             buffer.append(separator).append(it.next());
         }
         return buffer.toString();
-    }
-
-    /**
-     * Constructs SummaryRecord to create all of the values.
-     */
-    public SummaryRecord(String creator, String contributor, String publisher, String subject, String identifier, String relation, String type, String title, Date modified, String language, String format, BoundingBox BoundingBox) {
-        this.creator = creator;
-        this.contributor = contributor;
-        this.publisher = publisher;
-        this.subject = subject;
-        this.identifier = identifier;
-        this.relation = relation;
-        this.type = type;
-        this.title = title;
-        this.modified = modified;
-        this.language = language;
-        this.format = format;
-        this.BoundingBox = BoundingBox;
     }
 
     /**

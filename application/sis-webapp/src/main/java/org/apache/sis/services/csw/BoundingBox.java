@@ -71,32 +71,32 @@ public class BoundingBox extends Element {
     }
 
     /**
-     * Return a space-separated list of minimal coordinate values for each
-     * dimension.
+     * Return a space-separated list of minimal coordinate values for each dimension.
+     * @return space-separated list of minimal coordinate values for each dimension
      */
     public String getLowerCorner() {
         return lowerCorner;
     }
 
     /**
-     * Set a space-separated list of minimal coordinate values for each
-     * dimension.
+     * Set a space-separated list of minimal coordinate values for each dimension.
+     * @param LowerCorner a space-separated list of minimal coordinate values for each dimension
      */
     public void setLowerCorner(String LowerCorner) {
         this.lowerCorner = LowerCorner;
     }
 
     /**
-     * Return a space-separated list of maximal coordinate values for each
-     * dimension.
+     * Return a space-separated list of maximal coordinate values for each dimension.
+     * @param UpperCorner a space-separated list of maximal coordinate values for each dimension
      */
     public void setUpperCorner(String UpperCorner) {
         this.upperCorner = UpperCorner;
     }
 
     /**
-     * Set a space-separated list of maximal coordinate values for each
-     * dimension.
+     * Set a space-separated list of maximal coordinate values for each dimension.
+     * @return a space-separated list of maximal coordinate values for each dimension.
      */
     public String getUpperCorner() {
         return upperCorner;

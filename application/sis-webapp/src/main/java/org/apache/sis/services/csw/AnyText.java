@@ -23,16 +23,15 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
-
 /**
- * @author  Thi Phuong Hao Nguyen (VNSC)
- * @author  Minh Chinh Vu (VNSC)
- * @since   0.8
+ * @author Thi Phuong Hao Nguyen (VNSC)
+ * @author Minh Chinh Vu (VNSC)
+ * @since 0.8
  * @version 0.8
  * @module
  */
 public class AnyText {
- 
+
     /**
      * The physical or digital manifestation of the resource use to search.
      */
@@ -56,39 +55,51 @@ public class AnyText {
     String rangeDate;
     List<SummaryRecord> data = new ArrayList<SummaryRecord>();
 
+    /**
+     * Constructor for AnyText
+     *
+     * @throws Exception checked exceptions. Checked exceptions need to be
+     * declared in a method or constructor's {@code throws} clause if they can
+     * be thrown by the execution of the method or constructor and propagate
+     * outside the method or constructor boundary.
+     */
     public AnyText() throws Exception {
         Record a = new Record();
         data.addAll(a.getAllRecord());
     }
 
     /**
+     * Return metadata
      *
-     * @return
+     * @return data
      */
     public List<SummaryRecord> getData() {
         return data;
     }
 
     /**
-     * Set a bouding box use to search record
+     * Sets a bounding box use to search record.
      *
-     * @param west
-     * @param east
-     * @param south
-     * @param north
+     * @param west The value is expressed in longitude in decimal degrees
+     * (positive east)
+     * @param east The value is expressed in longitude in decimal degrees
+     * (positive east)
+     * @param south The value is expressed in latitude in decimal degrees
+     * (positive north).
+     * @param north The value is expressed in latitude in decimal degrees
+     * (positive north).
      */
     public void setBbox(double west, double east, double south, double north) {
         bbox.setLowerCorner(west + " " + south);
         bbox.setUpperCorner(east + " " + north);
     }
-
-    /**
-     * AnyText use to search
+/**
+     * AnyText used to search.
      *
-     * @param format
-     * @param identifier
-     * @param startDate
-     * @param rangeDate
+     * @param format the physical or digital manifestation of the resource
+     * @param identifier a unique reference to the record within the catalogue
+     * @param startDate date from
+     * @param rangeDate date to
      * @throws Exception Constructs a new exception with the specified detail
      * message.
      */
@@ -102,14 +113,17 @@ public class AnyText {
     }
 
     /**
-     * CheckBox
-     *
-     * @param east
-     * @param west
-     * @param south
-     * @param north
-     * @param bound
-     * @return true
+     * Set Bouding Box 
+     * @param west The value is expressed in longitude in decimal degrees
+     * (positive east)
+     * @param east The value is expressed in longitude in decimal degrees
+     * (positive east)
+     * @param south The value is expressed in latitude in decimal degrees
+     * (positive north).
+     * @param north The value is expressed in latitude in decimal degrees
+     * (positive north).
+     * @param bound bounding box
+     * @return bounding box define 
      */
     public boolean checkBBOX(double east, double west, double south, double north, BoundingBox bound) {
         String lower[] = bound.getLowerCorner().split(" ");
@@ -139,11 +153,14 @@ public class AnyText {
     /**
      * CheckDate
      *
-     * @param date1
-     * @param date2
-     * @param record
-     * @return
-     * @throws Exception
+     * @param date1 set the date value start
+     * @param date2 set the date value final
+     * @param record set the record define
+     * @return the record define
+     * @throws Exception checked exceptions. Checked exceptions need to be
+     * declared in a method or constructor's {@code throws} clause if they can
+     * be thrown by the execution of the method or constructor and propagate
+     * outside the method or constructor boundary.
      */
     public boolean checkDate(String date1, String date2, SummaryRecord record) throws Exception {
         DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
@@ -161,8 +178,11 @@ public class AnyText {
     }
 
     /**
-     * Filter a bouding box for identifying a geographic area of interest use to
-     * search.
+     * Filter a bounding box for identifying a geographic area of interest use to search.
+     * @throws Exception  Exception checked exceptions. Checked exceptions need to be
+     * declared in a method or constructor's {@code throws} clause if they can
+     * be thrown by the execution of the method or constructor and propagate
+     * outside the method or constructor boundary.
      */
     public void filter() throws Exception {
         String lower[] = bbox.getLowerCorner().split(" ");
