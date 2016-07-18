@@ -20,6 +20,7 @@ import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.test.ToleranceModifier;
 import org.apache.sis.internal.referencing.Formulas;
+import org.apache.sis.internal.referencing.provider.LambertCylindricalEqualArea;
 import org.junit.Test;
 
 
@@ -38,7 +39,7 @@ public final strictfp class CylindricalEqualAreaTest extends MapProjectionTestCa
     private void createCompleteProjection(final boolean ellipse,
             final double centralMeridian, final double standardParallel) throws FactoryException
     {
-        createCompleteProjection(new org.apache.sis.internal.referencing.provider.CylindricalEqualArea(),
+        createCompleteProjection(new LambertCylindricalEqualArea(),
                 ellipse, centralMeridian, 0, standardParallel, 1, 0, 0);
     }
 
