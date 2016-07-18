@@ -25,11 +25,13 @@ import org.opengis.parameter.GeneralParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.ParameterValueGroup;
 import org.apache.sis.referencing.IdentifiedObjects;
+import org.apache.sis.util.Classes;
 import org.apache.sis.util.Debug;
 
 // Branch-dependent imports
 import org.apache.sis.internal.jdk7.Objects;
 import org.opengis.feature.Attribute;
+import org.opengis.feature.AttributeType;
 import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureAssociation;
 import org.opengis.feature.IdentifiedType;
@@ -57,8 +59,10 @@ import org.opengis.feature.Property;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.6
- * @version 0.6
+ * @version 0.8
  * @module
+ *
+ * @see DefaultFeatureType
  */
 public abstract class AbstractOperation extends AbstractIdentifiedType implements Operation {
     /**
@@ -84,7 +88,11 @@ public abstract class AbstractOperation extends AbstractIdentifiedType implement
 
     /**
      * Returns a map that can be used for creating the {@link #getResult()} type.
-     * This method can be invoked for subclass constructor.
+     * This method can be invoked for subclass constructor with the user-supplied map in argument.
+     * If the given map contains at least one key prefixed by {@value #RESULT_PREFIX}, then the values
+     * associated to those keys will be used.
+     *
+     * @param identification the map given by user to sub-class constructor.
      */
     final Map<String,Object> resultIdentification(final Map<String,?> identification) {
         final Map<String,Object> properties = new HashMap<String,Object>(6);
@@ -205,12 +213,12 @@ public abstract class AbstractOperation extends AbstractIdentifiedType implement
      * Returns a string representation of this operation.
      * The returned string is for debugging purpose and may change in any future SIS version.
      *
-     * @return A string representation of this operation for debugging purpose.
+     * @return a string representation of this operation for debugging purpose.
      */
     @Debug
     @Override
     public String toString() {
-        final StringBuilder buffer = new StringBuilder(40).append("Operation").append('[');
+        final StringBuilder buffer = new StringBuilder(40).append(Classes.getShortClassName(this)).append('[');
         final GenericName name = getName();
         if (name != null) {
             buffer.append('“');
@@ -224,13 +232,31 @@ public abstract class AbstractOperation extends AbstractIdentifiedType implement
             buffer.append(separator).append(IdentifiedObjects.toString(param.getName()));
             separator = ", ";
         }
-        if (separator == ", ") { // Identity comparaison is okay here.
+        if (separator == ", ") {                    // Identity comparaison is okay here.
             buffer.append(')');
         }
         final IdentifiedType result = getResult();
         if (result != null) {
-            buffer.append(" : ").append(result.getName());
+            final Object type;
+            if (result instanceof AttributeType<?>) {
+                type = Classes.getShortName(((AttributeType<?>) result).getValueClass());
+            } else {
+                type = result.getName();
+            }
+            buffer.append(" : ").append(type);
         }
-        return buffer.append(']').toString();
+        formatResultFormula(buffer.append(']'));
+        return buffer.toString();
+    }
+
+    /**
+     * Appends a string representation of the "formula" used for computing the result.
+     * The "formula" may be for example a link to another property.
+     *
+     * @param  buffer where to format the "formula".
+     * @return {@code true} if this method has formatted a formula, or {@code false} otherwise.
+     */
+    boolean formatResultFormula(Appendable buffer) {
+        return false;
     }
 }

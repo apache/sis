@@ -92,8 +92,8 @@ public final class Molodensky extends GeocentricAffineBetweenGeographic {
     public static final ParameterDescriptorGroup PARAMETERS;
     static {
         final ParameterBuilder builder = builder();
-        AXIS_LENGTH_DIFFERENCE = builder.addName("Semi-major axis length difference").create(Double.NaN, SI.METRE);
-        FLATTENING_DIFFERENCE  = builder.addName("Flattening difference").createBounded(-1, +1, Double.NaN, Unit.ONE);
+        AXIS_LENGTH_DIFFERENCE = builder.addIdentifier("8654").addName("Semi-major axis length difference").create(Double.NaN, SI.METRE);
+        FLATTENING_DIFFERENCE  = builder.addIdentifier("8655").addName("Flattening difference").createBounded(-1, +1, Double.NaN, Unit.ONE);
         PARAMETERS = builder.setRequired(true)
                 .addIdentifier("9604")
                 .addName("Molodensky")

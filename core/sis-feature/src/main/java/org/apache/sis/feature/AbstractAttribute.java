@@ -73,7 +73,8 @@ import org.apache.sis.internal.jdk7.JDK7;
  * @version 0.6
  * @module
  *
- * @see DefaultAttributeType#newInstance()
+ * @see AbstractFeature
+ * @see DefaultAttributeType
  */
 public abstract class AbstractAttribute<V> extends Field<V> implements Attribute<V>, Cloneable, Serializable {
     /**

@@ -20,6 +20,7 @@ import java.util.Map;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterNotFoundException;
 import org.opengis.referencing.operation.OperationMethod;
+import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.internal.referencing.provider.MapProjection;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.parameter.Parameters;
@@ -88,19 +89,33 @@ final class Initializer {
     final DoubleDouble eccentricitySquared;
 
     /**
-     * Map projection variant. This is a convenience field left at
-     * the discretion of {@link NormalizedProjection} subclasses.
+     * Map projection variant.
+     * Values from 0 to 127 inclusive are convenience values at the discretion of {@link NormalizedProjection} subclasses.
+     * Values from 128 to 255 inclusive are values handled in a special way by {@link Initializer} constructor.
      */
     final byte variant;
+
+    /**
+     * A {@link #variant} value telling the constructor to computing the authalic radius instead than using
+     * the semi-major and semi-minor axis lengths directly.
+     *
+     * <p>Note that this value is not necessarily equivalent to the {@code SPHERICAL} value defined in some
+     * map projection, because EPSG guidance notes recommend different approaches for spherical implementations.
+     * For example the Mercator projection will use the radius of conformal sphere instead than the authalic radius.</p>
+     */
+    static final byte AUTHALIC_RADIUS = (byte) 128;
 
     /**
      * Creates a new initializer. The parameters are described in
      * {@link NormalizedProjection#NormalizedProjection(OperationMethod, Parameters, Map)}.
      *
-     * @param method     Description of the map projection parameters.
-     * @param parameters The parameters of the projection to be created.
-     * @param roles Parameters to look for <cite>central meridian</cite>, <cite>scale factor</cite>,
-     *        <cite>false easting</cite>, <cite>false northing</cite> and other values.
+     * @param method      description of the map projection parameters.
+     * @param parameters  the parameters of the projection to be created.
+     * @param roles       parameters to look for <cite>central meridian</cite>, <cite>scale factor</cite>,
+     *                    <cite>false easting</cite>, <cite>false northing</cite> and other values.
+     * @param variant     convenience field left at the discretion of {@link NormalizedProjection} subclasses.
+     *                    Values equal to greater than 128 are special values recognized by this constructor
+     *                    (see {@link #AUTHALIC_RADIUS}).
      */
     Initializer(final OperationMethod method, final Parameters parameters,
             final Map<ParameterRole, ? extends ParameterDescriptor<? extends Number>> roles,
@@ -114,8 +129,7 @@ final class Initializer {
         this.variant    = variant;
         /*
          * Note: we do not use Map.getOrDefault(K,V) below because the user could have explicitly associated
-         * a null value to keys (we are paranoiac...) and because it conflicts with the "? extends" part of
-         * in this constructor signature.
+         * a null value to keys (we are paranoiac...) and because it conflicts with the "? extends" parts.
          */
         ParameterDescriptor<? extends Number> semiMajor = roles.get(ParameterRole.SEMI_MAJOR);
         ParameterDescriptor<? extends Number> semiMinor = roles.get(ParameterRole.SEMI_MINOR);
@@ -133,65 +147,70 @@ final class Initializer {
         eccentricitySquared = new DoubleDouble();
         DoubleDouble k = new DoubleDouble(a);  // The value by which to multiply all results of normalized projection.
         if (a != b) {
-            /*
-             * (1) Using axis lengths:  ℯ² = 1 - (b/a)²
-             * (2) Using flattening;    ℯ² = 2f - f²     where f is the (NOT inverse) flattening factor.
-             *
-             * If the inverse flattening factor is the definitive factor for the ellipsoid, we use (2).
-             * Otherwise use (1). With double-double arithmetic, this makes a difference in the 3 last
-             * digits for the WGS84 ellipsoid.
-             */
-            boolean isIvfDefinitive;
-            try {
-                isIvfDefinitive = parameters.parameter(Constants.IS_IVF_DEFINITIVE).booleanValue();
-            } catch (ParameterNotFoundException e) {
-                /*
-                 * Should never happen with Apache SIS implementation, but may happen if the given parameters come
-                 * from another implementation. We can safely abandon our attempt to get the inverse flattening value,
-                 * since it was redundant with semi-minor axis length.
-                 */
-                isIvfDefinitive = false;
-            }
-            /*
-             * The ellipsoid parameters (a, b or ivf) are assumed accurate in base 10 rather than in base 2,
-             * because they are defined by authorities. For example the semi-major axis length of the WGS84
-             * ellipsoid is equal to exactly 6378137 metres by definition of that ellipsoid. The DoubleDouble
-             * constructor applies corrections for making those values more accurate in base 10 rather than 2.
-             */
-            if (isIvfDefinitive) {
-                final DoubleDouble f = new DoubleDouble(parameters.parameter(Constants.INVERSE_FLATTENING).doubleValue());
-                f.inverseDivide(1,0);
-                eccentricitySquared.setFrom(f);
-                eccentricitySquared.multiply(2,0);
-                f.square();
-                eccentricitySquared.subtract(f);
+            if (variant == AUTHALIC_RADIUS) {
+                k.value = Formulas.getAuthalicRadius(a, b);
+                k.error = 0;
             } else {
-                final DoubleDouble rs = new DoubleDouble(b);
-                rs.divide(k);    // rs = b/a
-                rs.square();
-                eccentricitySquared.value = 1;
-                eccentricitySquared.subtract(rs);
-            }
-            final ParameterDescriptor<? extends Number> radius = roles.get(ParameterRole.LATITUDE_OF_CONFORMAL_SPHERE_RADIUS);
-            if (radius != null) {
                 /*
-                 * EPSG said: R is the radius of the sphere and will normally be one of the CRS parameters.
-                 * If the figure of the earth used is an ellipsoid rather than a sphere then R should be calculated
-                 * as the radius of the conformal sphere at the projection origin at latitude φ₀ using the formula
-                 * for Rc given in section 1.2, table 3.
+                 * (1) Using axis lengths:  ℯ² = 1 - (b/a)²
+                 * (2) Using flattening;    ℯ² = 2f - f²     where f is the (NOT inverse) flattening factor.
                  *
-                 * Table 3 gives:
-                 * Radius of conformal sphere Rc = a √(1 – ℯ²) / (1 – ℯ²⋅sin²φ)
-                 *
-                 * Using √(1 – ℯ²) = b/a we rewrite as: Rc = b / (1 – ℯ²⋅sin²φ)
-                 *
-                 * Equivalent Java code:
-                 *
-                 *     final double sinφ = sin(toRadians(parameters.doubleValue(radius)));
-                 *     k = b / (1 - eccentricitySquared * (sinφ*sinφ));
+                 * If the inverse flattening factor is the definitive factor for the ellipsoid, we use (2).
+                 * Otherwise use (1). With double-double arithmetic, this makes a difference in the 3 last
+                 * digits for the WGS84 ellipsoid.
                  */
-                k = rν2(sin(toRadians(parameters.doubleValue(radius))));
-                k.inverseDivide(b, 0);
+                boolean isIvfDefinitive;
+                try {
+                    isIvfDefinitive = parameters.parameter(Constants.IS_IVF_DEFINITIVE).booleanValue();
+                } catch (ParameterNotFoundException e) {
+                    /*
+                     * Should never happen with Apache SIS implementation, but may happen if the given parameters come
+                     * from another implementation. We can safely abandon our attempt to get the inverse flattening value,
+                     * since it was redundant with semi-minor axis length.
+                     */
+                    isIvfDefinitive = false;
+                }
+                /*
+                 * The ellipsoid parameters (a, b or ivf) are assumed accurate in base 10 rather than in base 2,
+                 * because they are defined by authorities. For example the semi-major axis length of the WGS84
+                 * ellipsoid is equal to exactly 6378137 metres by definition of that ellipsoid. The DoubleDouble
+                 * constructor applies corrections for making those values more accurate in base 10 rather than 2.
+                 */
+                if (isIvfDefinitive) {
+                    final DoubleDouble f = new DoubleDouble(parameters.parameter(Constants.INVERSE_FLATTENING).doubleValue());
+                    f.inverseDivide(1,0);
+                    eccentricitySquared.setFrom(f);
+                    eccentricitySquared.multiply(2,0);
+                    f.square();
+                    eccentricitySquared.subtract(f);
+                } else {
+                    final DoubleDouble rs = new DoubleDouble(b);
+                    rs.divide(k);    // rs = b/a
+                    rs.square();
+                    eccentricitySquared.value = 1;
+                    eccentricitySquared.subtract(rs);
+                }
+                final ParameterDescriptor<? extends Number> radius = roles.get(ParameterRole.LATITUDE_OF_CONFORMAL_SPHERE_RADIUS);
+                if (radius != null) {
+                    /*
+                     * EPSG said: R is the radius of the sphere and will normally be one of the CRS parameters.
+                     * If the figure of the earth used is an ellipsoid rather than a sphere then R should be calculated
+                     * as the radius of the conformal sphere at the projection origin at latitude φ₀ using the formula
+                     * for Rc given in section 1.2, table 3.
+                     *
+                     * Table 3 gives:
+                     * Radius of conformal sphere Rc = a √(1 – ℯ²) / (1 – ℯ²⋅sin²φ)
+                     *
+                     * Using √(1 – ℯ²) = b/a we rewrite as: Rc = b / (1 – ℯ²⋅sin²φ)
+                     *
+                     * Equivalent Java code:
+                     *
+                     *     final double sinφ = sin(toRadians(parameters.doubleValue(radius)));
+                     *     k = b / (1 - eccentricitySquared * (sinφ*sinφ));
+                     */
+                    k = rν2(sin(toRadians(parameters.doubleValue(radius))));
+                    k.inverseDivide(b, 0);
+                }
             }
         }
         /*
@@ -239,7 +258,7 @@ final class Initializer {
         final Number defaultValue = descriptor.getDefaultValue();
         if (defaultValue == null || !defaultValue.equals(value)) {
             MapProjection.validate(descriptor, value);
-            context.parameter(descriptor.getName().getCode()).setValue(value);
+            context.getOrCreate(descriptor).setValue(value);
         }
         return value;
     }
@@ -255,7 +274,7 @@ final class Initializer {
             return defaultValue;
         }
         MapProjection.validate(descriptor, value);
-        context.parameter(descriptor.getName().getCode()).setValue(value);
+        context.getOrCreate(descriptor).setValue(value);
         return value;
     }
 
@@ -291,8 +310,8 @@ final class Initializer {
      *       (otherwise we get {@link Double#NaN}).</li>
      * </ul>
      *
-     * @param  sinφ The sine of the φ latitude.
-     * @return Reciprocal squared of the radius of curvature of the ellipsoid
+     * @param  sinφ  the sine of the φ latitude.
+     * @return reciprocal squared of the radius of curvature of the ellipsoid
      *         perpendicular to the meridian at latitude φ.
      */
     private DoubleDouble rν2(final double sinφ) {
@@ -321,8 +340,8 @@ final class Initializer {
      * the use of φ₀ (or φ₁ as relevant to method) for φ is suggested, except if the projection is
      * equal area when the radius of authalic sphere should be used.
      *
-     * @param  sinφ The sine of the φ latitude.
-     * @return Radius of the conformal sphere at latitude φ.
+     * @param  sinφ  the sine of the φ latitude.
+     * @return radius of the conformal sphere at latitude φ.
      */
     final double radiusOfConformalSphere(final double sinφ) {
         final DoubleDouble Rc = verbatim(1);
@@ -340,9 +359,9 @@ final class Initializer {
      * The result is returned as a {@code double} because the limited precision of {@code sinφ} and {@code cosφ}
      * makes the error term meaningless. We use double-double arithmetic only for intermediate calculation.
      *
-     * @param  sinφ The sine of the φ latitude.
-     * @param  cosφ The cosine of the φ latitude.
-     * @return Scale factor at latitude φ.
+     * @param  sinφ  the sine of the φ latitude.
+     * @param  cosφ  the cosine of the φ latitude.
+     * @return scale factor at latitude φ.
      */
     final double scaleAtφ(final double sinφ, final double cosφ) {
         final DoubleDouble s = rν2(sinφ);

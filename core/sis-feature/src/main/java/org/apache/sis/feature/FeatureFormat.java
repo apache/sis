@@ -47,6 +47,7 @@ import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
 import org.opengis.feature.FeatureAssociationRole;
 import org.opengis.feature.Operation;
+import org.apache.sis.util.CharSequences;
 
 
 /**
@@ -213,7 +214,7 @@ header: for (int i=0; ; i++) {
         final StringBuffer  buffer  = new StringBuffer();
         final FieldPosition dummyFP = new FieldPosition(-1);
         for (final PropertyType propertyType : featureType.getProperties(true)) {
-            Object value;
+            Object value = null;
             if (feature != null) {
                 value = feature.getPropertyValue(propertyType.getName().toString());
                 if (value == null) {
@@ -230,8 +231,11 @@ header: for (int i=0; ; i++) {
                 }
             } else if (propertyType instanceof AttributeType<?>) {
                 value = ((AttributeType<?>) propertyType).getDefaultValue();
-            } else {
-                value = null;
+            } else if (propertyType instanceof AbstractOperation) {
+                if (((AbstractOperation) propertyType).formatResultFormula(buffer)) {
+                    value = CharSequences.trimWhitespaces(buffer).toString();
+                    buffer.setLength(0);
+                }
             }
             /*
              * Column 0 - Name.
@@ -241,31 +245,31 @@ header: for (int i=0; ; i++) {
             /*
              * Column 1 and 2 - Type and cardinality.
              */
-            final String   valueType;
-            final Class<?> valueClass;
-            final int minimumOccurs, maximumOccurs;
-            if (propertyType instanceof AttributeType<?>) {
-                final AttributeType<?> pt = (AttributeType<?>) propertyType;
+            final String   valueType;                       // The value to write in the type column.
+            final Class<?> valueClass;                      // AttributeType.getValueClass() if applicable.
+            final int minimumOccurs, maximumOccurs;         // Negative values mean no cardinality.
+            final IdentifiedType resultType;                // Result of operation if applicable.
+            if (propertyType instanceof Operation) {
+                resultType = ((Operation) propertyType).getResult();
+            } else {
+                resultType = propertyType;
+            }
+            if (resultType instanceof AttributeType<?>) {
+                final AttributeType<?> pt = (AttributeType<?>) resultType;
                 minimumOccurs = pt.getMinimumOccurs();
                 maximumOccurs = pt.getMaximumOccurs();
                 valueClass    = pt.getValueClass();
                 valueType     = getFormat(Class.class).format(valueClass, buffer, dummyFP).toString();
                 buffer.setLength(0);
-            } else if (propertyType instanceof FeatureAssociationRole) {
-                final FeatureAssociationRole pt = (FeatureAssociationRole) propertyType;
+            } else if (resultType instanceof FeatureAssociationRole) {
+                final FeatureAssociationRole pt = (FeatureAssociationRole) resultType;
                 minimumOccurs = pt.getMinimumOccurs();
                 maximumOccurs = pt.getMaximumOccurs();
                 valueType     = toString(DefaultAssociationRole.getValueTypeName(pt));
                 valueClass    = Feature.class;
-            } else if (propertyType instanceof Operation) {
-                final IdentifiedType resultType = ((Operation) propertyType).getResult();
-                valueType   = toString(resultType.getName());
-                valueClass  = null;
-                minimumOccurs = -1;
-                maximumOccurs = -1;
             } else {
-                valueType   = "";
-                valueClass  = null;
+                valueType  = toString(resultType.getName());
+                valueClass = null;
                 minimumOccurs = -1;
                 maximumOccurs = -1;
             }

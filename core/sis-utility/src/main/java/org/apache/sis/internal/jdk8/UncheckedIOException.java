@@ -14,16 +14,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.sis.internal.jdk8;
+
+import java.io.IOException;
+
 
 /**
- * Generates some HTML reports for the Apache SIS library. The classes in this package iterate
- * over some kind of services declared by theSIS library (for example the list of map projections)
- * and produce HTML reports to be copied on the web server.
- * The reports are for example the list of all supported EPSG codes.
- *
- * @author  Martin Desruisseaux (Geomatys)
- * @since   0.7
- * @version 0.8
- * @module
+ * Placeholder for the {@link java.io.UncheckedIOException}.
  */
-package org.apache.sis.referencing.report;
+@SuppressWarnings("serial")
+public class UncheckedIOException extends RuntimeException {
+    /**
+     * Wraps the given I/O exception.
+     *
+     * @param e the I/O exception to wrap.
+     */
+    public UncheckedIOException(IOException e) {
+        super(e);
+    }
+
+    /**
+     * Returns the I/O exception.
+     *
+     * @return the I/O exception specified at construction time.
+     */
+    @Override
+    public IOException getCause() {
+        return (IOException) super.getCause();
+    }
+}
