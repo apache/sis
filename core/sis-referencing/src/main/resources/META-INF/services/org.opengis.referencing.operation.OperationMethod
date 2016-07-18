@@ -28,6 +28,7 @@ org.apache.sis.internal.referencing.provider.PseudoMercator
 org.apache.sis.internal.referencing.provider.RegionalMercator
 org.apache.sis.internal.referencing.provider.MillerCylindrical
 org.apache.sis.internal.referencing.provider.LambertCylindricalEqualArea
+org.apache.sis.internal.referencing.provider.LambertCylindricalEqualAreaSpherical
 org.apache.sis.internal.referencing.provider.LambertConformal1SP
 org.apache.sis.internal.referencing.provider.LambertConformal2SP
 org.apache.sis.internal.referencing.provider.LambertConformalWest
