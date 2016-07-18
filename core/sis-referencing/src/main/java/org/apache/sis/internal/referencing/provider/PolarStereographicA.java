@@ -29,7 +29,7 @@ import org.apache.sis.parameter.ParameterBuilder;
  * @author  Rueben Schulz (UBC)
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.6
- * @version 0.7
+ * @version 0.8
  * @module
  *
  * @see <a href="http://www.remotesensing.org/geotiff/proj_list/polar_stereographic.html">Polar Stereographic on RemoteSensing.org</a>
@@ -62,6 +62,12 @@ public final class PolarStereographicA extends AbstractStereographic {
      * Valid values range is [-180 … 180]° and default value is 0°.
      */
     public static final ParameterDescriptor<Double> LONGITUDE_OF_ORIGIN;
+
+    /**
+     * The operation parameter descriptor for the <cite>Scale factor at natural origin</cite> (k₀) parameter value.
+     * Valid values range is (0 … ∞) and default value is 1.
+     */
+    public static final ParameterDescriptor<Double> SCALE_FACTOR = Mercator1SP.SCALE_FACTOR;
 
     /**
      * The group of all parameters expected by this coordinate operation.

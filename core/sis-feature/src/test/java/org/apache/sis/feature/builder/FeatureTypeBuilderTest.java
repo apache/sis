@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.feature;
+package org.apache.sis.feature.builder;
 
 import java.util.Iterator;
 import com.esri.core.geometry.Geometry;
@@ -30,6 +30,9 @@ import static org.junit.Assert.*;
 import org.opengis.feature.AttributeType;
 import org.opengis.feature.FeatureType;
 import org.opengis.feature.PropertyType;
+import org.apache.sis.feature.DefaultFeatureTypeTest;
+import org.apache.sis.internal.feature.AttributeConvention;
+import org.apache.sis.test.TestUtilities;
 
 
 /**
@@ -37,8 +40,8 @@ import org.opengis.feature.PropertyType;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.7
- * @version 0.7
+ * @since   0.8
+ * @version 0.8
  * @module
  */
 public final strictfp class FeatureTypeBuilderTest extends TestCase {
@@ -47,25 +50,20 @@ public final strictfp class FeatureTypeBuilderTest extends TestCase {
      */
     @Test
     public void testEmptyProperty() {
-        final FeatureTypeBuilder.Property<String> builder = new FeatureTypeBuilder().addAttribute(String.class);
-        try {
-            builder.build();
-            fail("Builder should have failed if there is not at least a name set.");
-        } catch (IllegalArgumentException ex) {
-            final String message = ex.getMessage();
-            assertTrue(message, message.contains("name"));
-        }
+        final AttributeTypeBuilder<String> builder = new FeatureTypeBuilder().addAttribute(String.class);
+        assertEquals("default name", "string", builder.getName().toString());
+
         builder.setName("myScope", "myName");
         final AttributeType<?> att = (AttributeType<?>) builder.build();
 
-        assertEquals("name",       "myScope:myName", att.getName().toString());
-        assertEquals("valueClass", String.class,     att.getValueClass());
-        assertNull  ("defaultValue",                 att.getDefaultValue());
-        assertNull  ("definition",                   att.getDefinition());
-        assertNull  ("description",                  att.getDescription());
-        assertNull  ("designation",                  att.getDesignation());
-        assertEquals("minimumOccurs", 1,             att.getMinimumOccurs());
-        assertEquals("maximumOccurs", 1,             att.getMaximumOccurs());
+        assertEquals("name", "myScope:myName",   att.getName().toString());
+        assertEquals("valueClass", String.class, att.getValueClass());
+        assertNull  ("defaultValue",             att.getDefaultValue());
+        assertNull  ("definition",               att.getDefinition());
+        assertNull  ("description",              att.getDescription());
+        assertNull  ("designation",              att.getDesignation());
+        assertEquals("minimumOccurs", 1,         att.getMinimumOccurs());
+        assertEquals("maximumOccurs", 1,         att.getMaximumOccurs());
     }
 
     /**
@@ -104,14 +102,14 @@ public final strictfp class FeatureTypeBuilderTest extends TestCase {
     @Test
     @DependsOnMethod("testEmptyProperty")
     public void testPropertyBuild() {
-        final FeatureTypeBuilder.Property<String> builder = new FeatureTypeBuilder().addAttribute(String.class);
+        final AttributeTypeBuilder<String> builder = new FeatureTypeBuilder().addAttribute(String.class);
         builder.setName        ("myScope", "myName");
         builder.setDefinition  ("test definition");
         builder.setDesignation ("test designation");
         builder.setDescription ("test description");
         builder.setDefaultValue("test default value.");
         builder.setCardinality(10, 60);
-        builder.setMaximalLengthCharacteristic(80);
+        builder.setMaximalLength(80);
         final AttributeType<?> att = (AttributeType<?>) builder.build();
 
         assertEquals("name",          "myScope:myName",      att.getName().toString());
@@ -147,8 +145,8 @@ public final strictfp class FeatureTypeBuilderTest extends TestCase {
         builder.setAbstract(true);
         builder.addAttribute(String .class).setName("name");
         builder.addAttribute(Integer.class).setName("age");
-        builder.addAttribute(Point  .class).setName("location").setCRSCharacteristic(HardCodedCRS.WGS84);
-        builder.addAttribute(Double .class).setName("score").setCardinality(5, 50).setDefaultValue(10.0);
+        builder.addAttribute(Point  .class).setName("location").setCRS(HardCodedCRS.WGS84);
+        builder.addAttribute(Double .class).setName("score").setDefaultValue(10.0).setCardinality(5, 50);
 
         final FeatureType type = builder.build();
         assertEquals("name",        "myScope:myName",   type.getName().toString());
@@ -196,18 +194,6 @@ public final strictfp class FeatureTypeBuilderTest extends TestCase {
     }
 
     /**
-     * Test {@link FeatureTypeBuilder#clear()}.
-     */
-    @Test
-    @DependsOnMethod({"testEmptyFeature", "testAddProperties"})
-    public void testClear() {
-        final FeatureTypeBuilder builder = new FeatureTypeBuilder();
-        testAddProperties(builder);
-        builder.clear();
-        testEmptyFeature(builder);
-    }
-
-    /**
      * Tests {@link FeatureTypeBuilder#addIdentifier(Class)}.
      */
     @Test
@@ -216,8 +202,11 @@ public final strictfp class FeatureTypeBuilderTest extends TestCase {
         final FeatureTypeBuilder builder = new FeatureTypeBuilder();
         builder.setName("scope", "test");
         builder.setIdentifierDelimiters("-", "pref.", null);
-        builder.addIdentifier(String.class).setName("name");
-        builder.addDefaultGeometry(Geometry.class).setName("shape").setCRSCharacteristic(HardCodedCRS.WGS84);
+        builder.addAttribute(String.class).setName("name")
+                .addRole(AttributeRole.IDENTIFIER_COMPONENT);
+        builder.addAttribute(Geometry.class).setName("shape")
+                .setCRS(HardCodedCRS.WGS84)
+                .addRole(AttributeRole.DEFAULT_GEOMETRY);
 
         final FeatureType type = builder.build();
         assertEquals("name", "scope:test", type.getName().toString());
@@ -231,10 +220,22 @@ public final strictfp class FeatureTypeBuilderTest extends TestCase {
         final PropertyType a4 = it.next();
         assertFalse("properties count", it.hasNext());
 
-        assertEquals("name", AttributeConvention.ID_PROPERTY,                a0.getName());
-        assertEquals("name", AttributeConvention.ENVELOPE_PROPERTY,          a1.getName());
-        assertEquals("name", AttributeConvention.DEFAULT_GEOMETRY_PROPERTY,  a2.getName());
-        assertEquals("name", "name",                                         a3.getName().toString());
-        assertEquals("name", "shape",                                        a4.getName().toString());
+        assertEquals("name", AttributeConvention.IDENTIFIER_PROPERTY, a0.getName());
+        assertEquals("name", AttributeConvention.ENVELOPE_PROPERTY,   a1.getName());
+        assertEquals("name", AttributeConvention.GEOMETRY_PROPERTY,   a2.getName());
+        assertEquals("name", "name",                                  a3.getName().toString());
+        assertEquals("name", "shape",                                 a4.getName().toString());
+    }
+
+    /**
+     * Tests creation of a builder from an existing feature type.
+     * This method also acts as a test of {@code FeatureTypeBuilder} getter methods.
+     */
+    @Test
+    public void testCreateFromTemplate() {
+        final FeatureTypeBuilder builder = new FeatureTypeBuilder(DefaultFeatureTypeTest.capital());
+        assertEquals("name",       "Capital", builder.getName().toString());
+        assertEquals("superTypes", "City",    TestUtilities.getSingleton(builder.getSuperTypes()).getName().toString());
+        assertFalse ("isAbstract",            builder.isAbstract());
     }
 }
