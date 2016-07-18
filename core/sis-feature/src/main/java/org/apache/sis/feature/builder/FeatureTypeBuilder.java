@@ -35,7 +35,8 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArraysExt;
 
 // Branch-dependent imports
-import java.util.Objects;
+import org.apache.sis.internal.jdk7.JDK7;
+import org.apache.sis.internal.jdk7.Objects;
 import org.apache.sis.feature.AbstractFeature;
 import org.apache.sis.feature.AbstractIdentifiedType;
 import org.apache.sis.feature.DefaultAssociationRole;
@@ -707,7 +708,7 @@ public class FeatureTypeBuilder extends TypeBuilder {
             separator = ", ";
         }
         buffer.append(" {");
-        separator = System.lineSeparator();
+        separator = JDK7.lineSeparator();
         for (final PropertyTypeBuilder p : properties) {
             p.toString(buffer.append(separator).append("    ").append(p.getClass().getSimpleName()));
         }
