@@ -23,7 +23,7 @@
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.7
- * @version 0.7
+ * @version 0.8
  * @module
  */
 package org.apache.sis.referencing.report;
