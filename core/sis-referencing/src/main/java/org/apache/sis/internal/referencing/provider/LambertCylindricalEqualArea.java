@@ -20,14 +20,13 @@ import javax.xml.bind.annotation.XmlTransient;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.referencing.operation.CylindricalProjection;
-import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.referencing.operation.projection.NormalizedProjection;
 
 
 /**
- * The provider for <cite>"Cylindrical Equal Area"</cite> projection.
+ * The provider for <cite>"Lambert Cylindrical Equal Area"</cite> projection (EPSG:9835).
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.8
@@ -37,7 +36,7 @@ import org.apache.sis.referencing.operation.projection.NormalizedProjection;
  * @see <a href="http://www.remotesensing.org/geotiff/proj_list/cylindrical_equal_area.html">Cylindrical Equal Area on RemoteSensing.org</a>
  */
 @XmlTransient
-public final class CylindricalEqualArea extends MapProjection {
+public final class LambertCylindricalEqualArea extends MapProjection {
     /**
      * For cross-version compatibility.
      */
@@ -47,37 +46,34 @@ public final class CylindricalEqualArea extends MapProjection {
      * The operation parameter descriptor for the <cite>Latitude of 1st standard parallel</cite> (φ₁) parameter value.
      * Valid values range is (-90 … 90)° and default value is 0°.
      */
-    public static final ParameterDescriptor<Double> STANDARD_PARALLEL;
+    public static final ParameterDescriptor<Double> STANDARD_PARALLEL = Equirectangular.STANDARD_PARALLEL;
 
     /**
      * The operation parameter descriptor for the <cite>Longitude of natural origin</cite> (λ₀) parameter value.
      * Valid values range is [-180 … 180]° and default value is 0°.
      */
-    public static final ParameterDescriptor<Double> LONGITUDE_OF_ORIGIN;
+    public static final ParameterDescriptor<Double> LONGITUDE_OF_ORIGIN = Mercator1SP.LONGITUDE_OF_ORIGIN;
 
     /**
      * The operation parameter descriptor for the <cite>False easting</cite> (FE) parameter value.
      * Valid values range is unrestricted and default value is 0 metre.
      */
-    public static final ParameterDescriptor<Double> FALSE_EASTING;
+    public static final ParameterDescriptor<Double> FALSE_EASTING = Equirectangular.FALSE_EASTING;
 
     /**
      * The operation parameter descriptor for the <cite>False northing</cite> (FN) parameter value.
      * Valid values range is unrestricted and default value is 0 metre.
      */
-    public static final ParameterDescriptor<Double> FALSE_NORTHING;
+    public static final ParameterDescriptor<Double> FALSE_NORTHING = Equirectangular.FALSE_NORTHING;
 
     /**
      * The group of all parameters expected by this coordinate operation.
      */
     static final ParameterDescriptorGroup PARAMETERS;
     static {
-        final ParameterBuilder builder = builder();
-        STANDARD_PARALLEL   = createLatitude (exceptEPSG(Equirectangular.STANDARD_PARALLEL, builder), false);
-        LONGITUDE_OF_ORIGIN = createLongitude(exceptEPSG(Mercator1SP.LONGITUDE_OF_ORIGIN,   builder));
-        FALSE_EASTING       = createShift    (exceptEPSG(Equirectangular.FALSE_EASTING,     builder));
-        FALSE_NORTHING      = createShift    (exceptEPSG(Equirectangular.FALSE_NORTHING,    builder));
-        PARAMETERS = builder
+        PARAMETERS = builder()
+                .addIdentifier(             "9835")
+                .addName(                   "Lambert Cylindrical Equal Area")
                 .addName(Citations.OGC,     "Cylindrical_Equal_Area")
                 .addName(Citations.ESRI,    "Cylindrical_Equal_Area")
                 .addName(Citations.GEOTIFF, "CT_CylindricalEqualArea")
@@ -86,7 +82,7 @@ public final class CylindricalEqualArea extends MapProjection {
                 .createGroupForMapProjection(
                         STANDARD_PARALLEL,
                         LONGITUDE_OF_ORIGIN,
-                        Mercator2SP.SCALE_FACTOR,           // Not formally a CylindricalEqualArea parameter.
+                        Mercator2SP.SCALE_FACTOR,           // Not formally a Cylindrical Equal Area parameter.
                         FALSE_EASTING,
                         FALSE_NORTHING);
     }
@@ -94,7 +90,7 @@ public final class CylindricalEqualArea extends MapProjection {
     /**
      * Constructs a new provider.
      */
-    public CylindricalEqualArea() {
+    public LambertCylindricalEqualArea() {
         super(PARAMETERS);
     }
 

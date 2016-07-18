@@ -34,11 +34,11 @@ import org.apache.sis.util.Workaround;
 
 import static java.lang.Math.*;
 import static org.apache.sis.internal.util.DoubleDouble.verbatim;
-import static org.apache.sis.internal.referencing.provider.CylindricalEqualArea.*;
+import static org.apache.sis.internal.referencing.provider.LambertCylindricalEqualArea.*;
 
 
 /**
- * <cite>Cylindrical Equal Area</cite> projection.
+ * <cite>Cylindrical Equal Area</cite> projection (EPSG codes 9834, 9835).
  * This is the simplest equal-area projection.
  * This projection has various names depending on its standard parallel:
  *
