@@ -65,7 +65,7 @@ import org.opengis.metadata.Identifier;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.6
- * @version 0.7
+ * @version 0.8
  * @module
  */
 public strictfp class CoordinateOperationMethods extends HTMLGenerator {
