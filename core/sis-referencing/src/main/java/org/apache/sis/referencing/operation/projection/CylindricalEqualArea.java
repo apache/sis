@@ -25,6 +25,7 @@ import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.util.FactoryException;
 import org.apache.sis.internal.referencing.provider.Mercator1SP;
+import org.apache.sis.internal.referencing.provider.LambertCylindricalEqualAreaSpherical;
 import org.apache.sis.internal.util.DoubleDouble;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.referencing.operation.matrix.Matrix2;
@@ -69,6 +70,33 @@ public class CylindricalEqualArea extends EqualAreaProjection {
     private static final long serialVersionUID = 8840395516658904421L;
 
     /**
+     * Returns the variant of the projection based on the name and identifier of the given operation method.
+     * See {@link #variant} for the list of possible values.
+     */
+    private static byte getVariant(final OperationMethod method) {
+        if (identMatch(method, "(?i).*\\bSpherical\\b.*", LambertCylindricalEqualAreaSpherical.IDENTIFIER)) {
+            return Initializer.AUTHALIC_RADIUS;
+        }
+        return 0;
+    }
+
+    /**
+     * The type of Cylindrical Equal Area projection. Possible values are:
+     *
+     * <ul>
+     *   <li>0 if this projection is a default variant.</li>
+     *   <li>{@link Initializer#AUTHALIC_RADIUS} if this projection is the "Lambert Cylindrical Equal Area (Spherical)"
+     *       case, in which case the semi-major and semi-minor axis lengths should be replaced by the authalic radius
+     *       (this replacement is performed by the {@link Initializer} constructor).</li>
+     * </ul>
+     *
+     * Other cases may be added in the future.
+     *
+     * @see #getVariant(OperationMethod)
+     */
+    private final byte variant;
+
+    /**
      * Value of {@link #qm(double)} function (part of Snyder equation (3-12)) at pole (sinφ = 1).
      *
      * @see #computeCoefficients()
@@ -99,7 +127,7 @@ public class CylindricalEqualArea extends EqualAreaProjection {
          */
         roles.put(ParameterRole.FALSE_EASTING,  FALSE_EASTING);
         roles.put(ParameterRole.FALSE_NORTHING, FALSE_NORTHING);
-        return new Initializer(method, parameters, roles, (byte) 0);
+        return new Initializer(method, parameters, roles, getVariant(method));
     }
 
     /**
@@ -109,6 +137,7 @@ public class CylindricalEqualArea extends EqualAreaProjection {
     @Workaround(library="JDK", version="1.7")
     private CylindricalEqualArea(final Initializer initializer) {
         super(initializer);
+        variant = initializer.variant;
         final MatrixSIS denormalize = context.getMatrix(ContextualParameters.MatrixRole.DENORMALIZATION);
         /*
          * The longitude of origin is normally subtracted in the 'normalize' matrix. But in the particular of case
@@ -164,6 +193,7 @@ public class CylindricalEqualArea extends EqualAreaProjection {
      */
     CylindricalEqualArea(final CylindricalEqualArea other) {
         super(other);
+        variant = other.variant;
         qmPolar = other.qmPolar;
     }
 
@@ -182,7 +212,7 @@ public class CylindricalEqualArea extends EqualAreaProjection {
     @Override
     public MathTransform createMapProjection(final MathTransformFactory factory) throws FactoryException {
         CylindricalEqualArea kernel = this;
-        if (eccentricity == 0) {
+        if (variant == Initializer.AUTHALIC_RADIUS || eccentricity == 0) {
             kernel = new Spherical(this);
         }
         return context.completeTransform(factory, kernel);
@@ -211,7 +241,7 @@ public class CylindricalEqualArea extends EqualAreaProjection {
         /*
          * End of map projection. Now compute the derivative, if requested.
          */
-        return derivate ? new Matrix2(1, 0, 0, 2*dqm_dφ(sinφ, cos(φ))) : null;
+        return derivate ? new Matrix2(1, 0, 0, dqm_dφ(sinφ, cos(φ))) : null;
     }
 
     /**

@@ -17,55 +17,32 @@
 package org.apache.sis.internal.referencing.provider;
 
 import javax.xml.bind.annotation.XmlTransient;
-import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.referencing.operation.CylindricalProjection;
-import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.referencing.operation.projection.NormalizedProjection;
 import org.apache.sis.referencing.operation.projection.CylindricalEqualArea;
 
 
 /**
- * The provider for <cite>"Lambert Cylindrical Equal Area"</cite> projection (EPSG:9835).
+ * The provider for <cite>"Lambert Cylindrical Equal Area (Spherical)"</cite> projection (EPSG:9834).
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.8
  * @version 0.8
  * @module
- *
- * @see <a href="http://www.remotesensing.org/geotiff/proj_list/cylindrical_equal_area.html">Cylindrical Equal Area on RemoteSensing.org</a>
  */
 @XmlTransient
-public final class LambertCylindricalEqualArea extends MapProjection {
+public final class LambertCylindricalEqualAreaSpherical extends MapProjection {
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = -672278344635217838L;
+    private static final long serialVersionUID = 1456941129750586197L;
 
     /**
-     * The operation parameter descriptor for the <cite>Latitude of 1st standard parallel</cite> (φ₁) parameter value.
-     * Valid values range is (-90 … 90)° and default value is 0°.
+     * The EPSG identifier, to be preferred to the name when available.
      */
-    public static final ParameterDescriptor<Double> STANDARD_PARALLEL = Equirectangular.STANDARD_PARALLEL;
-
-    /**
-     * The operation parameter descriptor for the <cite>Longitude of natural origin</cite> (λ₀) parameter value.
-     * Valid values range is [-180 … 180]° and default value is 0°.
-     */
-    public static final ParameterDescriptor<Double> LONGITUDE_OF_ORIGIN = Mercator1SP.LONGITUDE_OF_ORIGIN;
-
-    /**
-     * The operation parameter descriptor for the <cite>False easting</cite> (FE) parameter value.
-     * Valid values range is unrestricted and default value is 0 metre.
-     */
-    public static final ParameterDescriptor<Double> FALSE_EASTING = Equirectangular.FALSE_EASTING;
-
-    /**
-     * The operation parameter descriptor for the <cite>False northing</cite> (FN) parameter value.
-     * Valid values range is unrestricted and default value is 0 metre.
-     */
-    public static final ParameterDescriptor<Double> FALSE_NORTHING = Equirectangular.FALSE_NORTHING;
+    public static final String IDENTIFIER = "9834";
 
     /**
      * The group of all parameters expected by this coordinate operation.
@@ -73,25 +50,20 @@ public final class LambertCylindricalEqualArea extends MapProjection {
     static final ParameterDescriptorGroup PARAMETERS;
     static {
         PARAMETERS = builder()
-                .addIdentifier(             "9835")
-                .addName(                   "Lambert Cylindrical Equal Area")
-                .addName(Citations.OGC,     "Cylindrical_Equal_Area")
-                .addName(Citations.ESRI,    "Cylindrical_Equal_Area")
-                .addName(Citations.GEOTIFF, "CT_CylindricalEqualArea")
-                .addName(Citations.PROJ4,   "cea")
-                .addIdentifier(Citations.GEOTIFF, "28")
+                .addIdentifier(IDENTIFIER)
+                .addName("Lambert Cylindrical Equal Area (Spherical)")
                 .createGroupForMapProjection(
-                        STANDARD_PARALLEL,
-                        LONGITUDE_OF_ORIGIN,
+                        LambertCylindricalEqualArea.STANDARD_PARALLEL,
+                        LambertCylindricalEqualArea.LONGITUDE_OF_ORIGIN,
                         Mercator2SP.SCALE_FACTOR,           // Not formally a Cylindrical Equal Area parameter.
-                        FALSE_EASTING,
-                        FALSE_NORTHING);
+                        LambertCylindricalEqualArea.FALSE_EASTING,
+                        LambertCylindricalEqualArea.FALSE_NORTHING);
     }
 
     /**
      * Constructs a new provider.
      */
-    public LambertCylindricalEqualArea() {
+    public LambertCylindricalEqualAreaSpherical() {
         super(PARAMETERS);
     }
 
