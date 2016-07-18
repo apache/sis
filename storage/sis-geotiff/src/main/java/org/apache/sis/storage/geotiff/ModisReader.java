@@ -58,28 +58,7 @@ import static org.apache.sis.storage.geotiff.ModisPath.DataCenterId;
 public class ModisReader {
 
     /**
-     * All properties found in the Modis metadata file, except {@code GROUP} and
-     * {@code END_GROUP}. Example:
-     *
-     * {
-     *
-     * @preformat xml 
-     * <ProductionDateTime>2010-01-27 02:32:53.000</ProductionDateTime>
-     * <Point>
-     * <PointLongitude>-101.553684488169</PointLongitude>
-     * <PointLatitude>9.94386756646215</PointLatitude>
-     * </Point>
-     * <Point>
-     * <PointLongitude>-106.41777723682</PointLongitude>
-     * <PointLatitude>19.9999999982039</PointLatitude>
-     * </Point>
-     * <Point><PointLongitude>-95.4045474214342</PointLongitude>
-     * <PointLatitude>20.0267062793293</PointLatitude>
-     * </Point>
-     * <Point>
-     * <PointLongitude>-91.0455775282882</PointLongitude>
-     * <PointLatitude>9.97147681168364</PointLatitude>
-     * </Point>}
+     * All properties found in the Modis metadata file.
      */
     private final Map<String, String> properties;
 
@@ -88,6 +67,7 @@ public class ModisReader {
      *
      * @param xml a xml opened on the Modis file. It is caller's
      * responsibility to close this reader.
+     * @throws Exception 
      */
     public ModisReader(File xml) throws Exception {
         properties = new HashMap();
@@ -101,7 +81,7 @@ public class ModisReader {
     }
 
     /**
-     * Returns the property value associated to the given key, or {@code null}
+     *  Returns the property value associated to the given key, or {@code null}
      * if none.
      *
      * @param key the key for which to get the property value.
@@ -114,11 +94,8 @@ public class ModisReader {
 
     /**
      * Returns the floating-point value associated to the given key, or
-     * {@code NaN} if none.
-     *
      * @param key the key for which to get the floating-point value.
-     * @return the floating-point value associated to the given key, or
-     * {@link Double#NaN} if none.
+     * @return
      * @throws NumberFormatException if the property associated to the given key
      * can not be parsed as a floating-point number.
      */
@@ -128,16 +105,13 @@ public class ModisReader {
     }
 
     /**
-     * Returns the minimal or maximal value associated to the given two keys, or
-     * {@code NaN} if none.
-     *
+     * Returns the minimal or maximal value associated to the given two keys
      * @param key1 the key for which to get the first floating-point value.
      * @param key2 the key for which to get the second floating-point value.
      * @param max {@code true} for the maximal value, or {@code false} for the
      * minimal value.
      * @return the minimal (if {@code max} is false) or maximal (if {@code max}
      * is true) floating-point value associated to the given keys, or
-     * {@link Double#NaN} if none.
      * @throws NumberFormatException if the property associated to one of the
      * given keys can not be parsed as a floating-point number.
      */
@@ -221,8 +195,9 @@ public class ModisReader {
      * number or a date.
      */
     private Identification createIdentification(final Date metadataTime) throws DataStoreException, Exception {
-        final DefaultCitation citation = new DefaultCitation();
+        
         final AbstractIdentification identification = new AbstractIdentification();
+        final DefaultCitation citation = new DefaultCitation();
         boolean isEmpty = true;
         if (metadataTime != null) {
             citation.setDates(singleton(new DefaultCitationDate(metadataTime, DateType.PUBLICATION)));

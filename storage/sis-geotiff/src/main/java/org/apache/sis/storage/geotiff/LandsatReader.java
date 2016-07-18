@@ -17,6 +17,7 @@
 package org.apache.sis.storage.geotiff;
 
 import java.io.BufferedReader;
+import java.io.FileReader;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Date;
@@ -518,4 +519,5 @@ public class LandsatReader {
             listeners.warning(null, e);
         }
     }
+    
 }

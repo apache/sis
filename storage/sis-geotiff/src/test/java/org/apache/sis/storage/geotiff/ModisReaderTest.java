@@ -34,7 +34,7 @@ import static org.apache.sis.test.TestUtilities.formatNameAndValue;
  */
 public class ModisReaderTest extends TestCase {
     /**
-     * Tests {@link LandsatReader#read()}.
+     * Tests {@link ModisReader#read()}.
      *
      * @throws IOException if an error occurred while reading the test file.
      * @throws DataStoreException if a property value can not be parsed as a
