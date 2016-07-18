@@ -105,6 +105,7 @@ import org.apache.sis.internal.jdk7.Objects;
  * @version 0.5
  * @module
  *
+ * @see DefaultFeatureType
  * @see AbstractAttribute
  */
 public class DefaultAttributeType<V> extends FieldType {
@@ -179,6 +180,8 @@ public class DefaultAttributeType<V> extends FieldType {
      *                        For example if this new {@code DefaultAttributeType} describes a measurement,
      *                        then {@code characterizedBy} could holds the measurement accuracy.
      *                        See <cite>"Attribute characterization"</cite> in class Javadoc for more information.
+     *
+     * @see org.apache.sis.feature.builder.AttributeTypeBuilder
      */
     public DefaultAttributeType(final Map<String,?> identification, final Class<V> valueClass,
             final int minimumOccurs, final int maximumOccurs, final V defaultValue,

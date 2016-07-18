@@ -16,10 +16,15 @@
  */
 package org.apache.sis.internal.feature;
 
+import java.util.logging.Level;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import com.esri.core.geometry.Geometry;
 import com.esri.core.geometry.Envelope2D;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.util.Static;
+import org.apache.sis.util.logging.Logging;
+import org.apache.sis.internal.system.Loggers;
 
 
 /**
@@ -32,10 +37,51 @@ import org.apache.sis.util.Static;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.7
- * @version 0.7
+ * @version 0.8
  * @module
  */
 public final class Geometries extends Static {
+    /**
+     * The geometry object from Java Topology Suite (JTS),
+     * or {@code null} if the JTS library is not on the classpath.
+     */
+    private static final Class<?> JTS;
+
+    /**
+     * Getter methods on JTS envelopes, or {@code null} if the JTS library is not on the classpath.
+     * Each methods take no argument and return a {@code double} value.
+     */
+    private static final Method INTERNAL, MIN_X, MIN_Y, MAX_X, MAX_Y;
+
+    static {
+        Class<?> type;
+        Method genv, xmin, ymin, xmax, ymax;
+        try {
+            final Class<?> envt;
+            type = Class.forName("com.vividsolutions.jts.geom.Geometry");
+            genv = type.getMethod("getEnvelopeInternal", (Class[]) null);
+            envt = genv.getReturnType();
+            xmin = envt.getMethod("getMinX", (Class[]) null);
+            ymin = envt.getMethod("getMinY", (Class[]) null);
+            xmax = envt.getMethod("getMaxX", (Class[]) null);
+            ymax = envt.getMethod("getMaxY", (Class[]) null);
+        } catch (Exception e) {     // (ClassNotFoundException | NoSuchMethodException) on the JDK7 branch.
+            Logging.getLogger(Loggers.GEOMETRY).log(Level.CONFIG, e.toString());
+            type = null;
+            genv = null;
+            xmin = null;
+            xmax = null;
+            ymin = null;
+            ymax = null;
+        }
+        JTS = type;
+        INTERNAL = genv;
+        MIN_X = xmin;
+        MIN_Y = ymin;
+        MAX_X = xmax;
+        MAX_Y = ymax;
+    }
+
     /**
      * Do not allow instantiation of this class.
      */
@@ -49,7 +95,7 @@ public final class Geometries extends Static {
      * @return {@code true} if the given type is one of the geometry type known to SIS.
      */
     public static boolean isKnownType(final Class<?> type) {
-        return Geometry.class.isAssignableFrom(type);
+        return Geometry.class.isAssignableFrom(type) || (JTS != null && JTS.isAssignableFrom(type));
     }
 
     /**
@@ -61,16 +107,43 @@ public final class Geometries extends Static {
      *         a recognized geometry or its envelope is empty.
      */
     public static GeneralEnvelope getEnvelope(final Object geometry) {
+        final double xmin, ymin, xmax, ymax;
         if (geometry instanceof Geometry) {
             final Envelope2D bounds = new Envelope2D();
             ((Geometry) geometry).queryEnvelope2D(bounds);
-            if (!bounds.isEmpty()) {                                    // Test if there is NaN values.
-                final GeneralEnvelope env = new GeneralEnvelope(2);
-                env.setRange(0, bounds.xmin, bounds.xmax);
-                env.setRange(1, bounds.ymin, bounds.ymax);
-                return env;
+            if (bounds.isEmpty()) {                                     // Test if there is NaN values.
+                return null;
             }
+            xmin = bounds.xmin;
+            ymin = bounds.ymin;
+            xmax = bounds.xmax;
+            ymax = bounds.ymax;
+        } else if (JTS != null && JTS.isInstance(geometry)) {
+            try {
+                final Object env = INTERNAL.invoke(geometry, (Object[]) null);
+                xmin = (Double) MIN_X.invoke(env, (Object[]) null);
+                ymin = (Double) MIN_Y.invoke(env, (Object[]) null);
+                xmax = (Double) MAX_X.invoke(env, (Object[]) null);
+                ymax = (Double) MAX_Y.invoke(env, (Object[]) null);
+            } catch (ReflectiveOperationException e) {
+                if (e instanceof InvocationTargetException) {
+                    final Throwable cause = e.getCause();
+                    if (cause instanceof RuntimeException) {
+                        throw (RuntimeException) cause;
+                    }
+                    if (cause instanceof Error) {
+                        throw (Error) cause;
+                    }
+                }
+                // Should never happen unless JTS's API changed.
+                throw (Error) new IncompatibleClassChangeError(e.toString()).initCause(e);
+            }
+        } else {
+            return null;
         }
-        return null;
+        final GeneralEnvelope env = new GeneralEnvelope(2);
+        env.setRange(0, xmin, xmax);
+        env.setRange(1, ymin, ymax);
+        return env;
     }
 }

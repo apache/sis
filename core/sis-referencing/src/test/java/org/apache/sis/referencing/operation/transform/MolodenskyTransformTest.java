@@ -302,11 +302,11 @@ public final strictfp class MolodenskyTransformTest extends MathTransformTestCas
                 "  Param_MT[“Molodensky (radians domain)”,\n" +
                 "    Parameter[“src_semi_major”, 6378137.0],\n" +
                 "    Parameter[“src_semi_minor”, 6356752.314245179],\n" +
-                "    Parameter[“Semi-major axis length difference”, 251.0],\n" +
-                "    Parameter[“Flattening difference”, 1.4192702255886284E-5],\n" +
-                "    Parameter[“X-axis translation”, 84.87],\n" +
-                "    Parameter[“Y-axis translation”, 96.49],\n" +
-                "    Parameter[“Z-axis translation”, 116.95],\n" +
+                "    Parameter[“Semi-major axis length difference”, 251.0, Id[“EPSG”, 8654]],\n" +
+                "    Parameter[“Flattening difference”, 1.4192702255886284E-5, Id[“EPSG”, 8655]],\n" +
+                "    Parameter[“X-axis translation”, 84.87, Id[“EPSG”, 8605]],\n" +
+                "    Parameter[“Y-axis translation”, 96.49, Id[“EPSG”, 8606]],\n" +
+                "    Parameter[“Z-axis translation”, 116.95, Id[“EPSG”, 8607]],\n" +
                 "    Parameter[“abridged”, TRUE],\n" +
                 "    Parameter[“dim”, 3]],\n" +
                 "  Param_MT[“Affine”,\n" +

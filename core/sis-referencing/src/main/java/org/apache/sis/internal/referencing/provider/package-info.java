@@ -22,7 +22,7 @@
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.6
- * @version 0.7
+ * @version 0.8
  * @module
  *
  * @see org.apache.sis.referencing.operation.transform.MathTransformProvider

@@ -50,6 +50,7 @@ import static org.apache.sis.util.ArgumentChecks.*;
  * @version 0.5
  * @module
  *
+ * @see DefaultFeatureType
  * @see AbstractAssociation
  */
 public class DefaultAssociationRole extends FieldType {
@@ -113,6 +114,8 @@ public class DefaultAssociationRole extends FieldType {
      * @param minimumOccurs  The minimum number of occurrences of the association within its containing entity.
      * @param maximumOccurs  The maximum number of occurrences of the association within its containing entity,
      *                       or {@link Integer#MAX_VALUE} if there is no restriction.
+     *
+     * @see org.apache.sis.feature.builder.AssociationRoleBuilder
      */
     public DefaultAssociationRole(final Map<String,?> identification, final DefaultFeatureType valueType,
             final int minimumOccurs, final int maximumOccurs)

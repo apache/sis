@@ -40,10 +40,10 @@ import org.apache.sis.feature.DefaultAttributeType;
  * appropriate "real" property in the feature.
  *
  * <div class="note"><b>Example:</b>
- * one of the most frequently used synthetic property is {@code "@id"}, which contains a unique
+ * one of the most frequently used synthetic property is {@code "@identifier"}, which contains a unique
  * identifier (or primary key) for the feature. This property is usually (but not necessarily)
  * a {@linkplain org.apache.sis.feature.FeatureOperations#link link to an existing attribute}.
- * By using the {@code "@id"} alias, users do not need to know the name of the "real" attribute.
+ * By using the {@code "@identifier"} alias, users do not need to know the name of the "real" attribute.
  * </div>
  *
  * This class defines names for two kinds of usage:
@@ -60,7 +60,7 @@ import org.apache.sis.feature.DefaultAttributeType;
  * but we may refactor this class in future SIS versions if there is a need to support different conventions.
  *
  * <p>In order to reduce the risk of name collision with properties in user-defined features
- * (e.g. the user may already have an attribute named {@code "id"} for his own purpose),
+ * (e.g. the user may already have an attribute named {@code "identifier"} for his own purpose),
  * all names defined in this class begin with the {@code "@"} character.</p>
  *
  * @author  Johann Sorel (Geomatys)
@@ -89,7 +89,7 @@ public final class AttributeConvention extends Static {
      * <p>The {@linkplain org.apache.sis.feature.DefaultAttributeType#getValueClass() value class} is usually
      * {@link String}, {@link Integer}, {@link java.util.UUID} or other types commonly used as identifiers.</p>
      */
-    public static final LocalName ID_PROPERTY;
+    public static final LocalName IDENTIFIER_PROPERTY;
 
     /**
      * Conventional name for a property containing the geometric object to use by default.
@@ -106,11 +106,11 @@ public final class AttributeConvention extends Static {
      *
      * @see #isGeometryAttribute(IdentifiedType)
      */
-    public static final LocalName DEFAULT_GEOMETRY_PROPERTY;
+    public static final LocalName GEOMETRY_PROPERTY;
 
     /**
      * Conventional name for fetching the envelope encompassing all geometries in a feature. Most {@code FeatureType}s
-     * have at most one geometry, which is also the {@linkplain #DEFAULT_GEOMETRY_PROPERTY default geometry}.
+     * have at most one geometry, which is also the {@link #GEOMETRY_PROPERTY default geometry}.
      * But if several geometries exist, then the value for this synthetic property is the union of all geometries.
      *
      * <p>Properties of this name are usually
@@ -125,10 +125,10 @@ public final class AttributeConvention extends Static {
      * Conventional name for fetching the Coordinate Reference System (CRS) of a geometry or a coverage.
      * This characteristic is typically an entry in the map returned by a call to the
      * {@link org.apache.sis.feature.DefaultAttributeType#characteristics()} method
-     * on the attribute referenced by {@link #DEFAULT_GEOMETRY_PROPERTY}.
+     * on the attribute referenced by {@link #GEOMETRY_PROPERTY}.
      *
      * <p>While it is technically possible to have different CRS for different feature instances,
-     * in most cases the CRS is the same for all geometries found in {@code DEFAULT_GEOMETRY_PROPERTY}.
+     * in most cases the CRS is the same for all geometries found in {@code GEOMETRY_PROPERTY}.
      * In such cases, the CRS can be specified only once as the
      * {@linkplain org.apache.sis.feature.DefaultAttributeType#getDefaultValue() default value}
      * of this {@code CRS_CHARACTERISTIC}.</p>
@@ -167,8 +167,8 @@ public final class AttributeConvention extends Static {
         final NameFactory factory = DefaultFactories.forBuildin(NameFactory.class);
         NAMESPACE                     = factory.createGenericName(null, "Apache", Constants.SIS);
         NameSpace ns                  = factory.createNameSpace(NAMESPACE, null);
-        ID_PROPERTY                   = factory.createLocalName(ns, "@identifier");
-        DEFAULT_GEOMETRY_PROPERTY     = factory.createLocalName(ns, "@geometry");
+        IDENTIFIER_PROPERTY           = factory.createLocalName(ns, "@identifier");
+        GEOMETRY_PROPERTY             = factory.createLocalName(ns, "@geometry");
         ENVELOPE_PROPERTY             = factory.createLocalName(ns, "@envelope");
         CRS_CHARACTERISTIC            = factory.createLocalName(ns, "@crs");
         MAXIMAL_LENGTH_CHARACTERISTIC = factory.createLocalName(ns, "@maximalLength");
@@ -222,7 +222,7 @@ public final class AttributeConvention extends Static {
      * @return {@code true} if the given type is (directly or indirectly) an attribute type
      *         for one of the recognized geometry types.
      *
-     * @see #DEFAULT_GEOMETRY_PROPERTY
+     * @see #GEOMETRY_PROPERTY
      */
     public static boolean isGeometryAttribute(AbstractIdentifiedType type) {
         while (type instanceof AbstractOperation) {
@@ -252,7 +252,7 @@ public final class AttributeConvention extends Static {
      * @throws ClassCastException if {@link #CRS_CHARACTERISTIC} has been found but is associated
      *         to an object which is not a {@link CoordinateReferenceSystem} instance.
      *
-     * @see org.apache.sis.internal.feature.FeatureTypeBuilder.Property#setCRSCharacteristic(CoordinateReferenceSystem)
+     * @see org.apache.sis.feature.builder.AttributeTypeBuilder#setCRS(CoordinateReferenceSystem)
      */
     public static CoordinateReferenceSystem getCRSCharacteristic(final Object attribute) {
         return (CoordinateReferenceSystem) getCharacteristic(attribute, CRS_CHARACTERISTIC.toString());
@@ -279,7 +279,7 @@ public final class AttributeConvention extends Static {
      * @throws ClassCastException if {@link #MAXIMAL_LENGTH_CHARACTERISTIC} has been found but is associated
      *         to an object which is not an {@link Integer} instance.
      *
-     * @see org.apache.sis.internal.feature.FeatureTypeBuilder.Property#setMaximalLengthCharacteristic(Integer)
+     * @see org.apache.sis.feature.builder.AttributeTypeBuilder#setMaximalLength(Integer)
      */
     public static Integer getMaximalLengthCharacteristic(final Object attribute) {
         return (Integer) getCharacteristic(attribute, MAXIMAL_LENGTH_CHARACTERISTIC.toString());

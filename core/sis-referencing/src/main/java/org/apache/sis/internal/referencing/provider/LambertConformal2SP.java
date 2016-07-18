@@ -107,9 +107,8 @@ public final class LambertConformal2SP extends AbstractLambert {
          * NetCDF:  longitude_of_central_meridian
          * GeoTIFF: FalseOriginLong
          */
-        LONGITUDE_OF_FALSE_ORIGIN = createLongitude(exceptEPSG(LambertConformal1SP.LONGITUDE_OF_ORIGIN, builder
-                .addIdentifier("8822")
-                .addName("Longitude of false origin"))
+        LONGITUDE_OF_FALSE_ORIGIN = createLongitude(
+                 rename(LambertConformal1SP.LONGITUDE_OF_ORIGIN, "8822", "Longitude of false origin", builder)
                 .rename(Citations.NETCDF, "longitude_of_central_meridian")
                 .rename(Citations.GEOTIFF, "FalseOriginLong"));
         /*

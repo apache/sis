@@ -32,6 +32,7 @@ import org.opengis.util.InternationalString;
 import org.opengis.util.GenericName;
 import org.apache.sis.io.TableAppender;
 import org.apache.sis.io.TabularFormat;
+import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
@@ -202,7 +203,7 @@ header: for (int i=0; ; i++) {
         final StringBuffer  buffer  = new StringBuffer();
         final FieldPosition dummyFP = new FieldPosition(-1);
         for (final AbstractIdentifiedType propertyType : featureType.getProperties(true)) {
-            Object value;
+            Object value = null;
             if (feature != null) {
                 value = feature.getPropertyValue(propertyType.getName().toString());
                 if (value == null) {
@@ -212,8 +213,11 @@ header: for (int i=0; ; i++) {
                 }
             } else if (propertyType instanceof DefaultAttributeType<?>) {
                 value = ((DefaultAttributeType<?>) propertyType).getDefaultValue();
-            } else {
-                value = null;
+            } else if (propertyType instanceof AbstractOperation) {
+                if (((AbstractOperation) propertyType).formatResultFormula(buffer)) {
+                    value = CharSequences.trimWhitespaces(buffer).toString();
+                    buffer.setLength(0);
+                }
             }
             /*
              * Column 0 - Name.
@@ -223,31 +227,31 @@ header: for (int i=0; ; i++) {
             /*
              * Column 1 and 2 - Type and cardinality.
              */
-            final String   valueType;
-            final Class<?> valueClass;
-            final int minimumOccurs, maximumOccurs;
-            if (propertyType instanceof DefaultAttributeType<?>) {
-                final DefaultAttributeType<?> pt = (DefaultAttributeType<?>) propertyType;
+            final String   valueType;                       // The value to write in the type column.
+            final Class<?> valueClass;                      // AttributeType.getValueClass() if applicable.
+            final int minimumOccurs, maximumOccurs;         // Negative values mean no cardinality.
+            final AbstractIdentifiedType resultType;        // Result of operation if applicable.
+            if (propertyType instanceof AbstractOperation) {
+                resultType = ((AbstractOperation) propertyType).getResult();
+            } else {
+                resultType = propertyType;
+            }
+            if (resultType instanceof DefaultAttributeType<?>) {
+                final DefaultAttributeType<?> pt = (DefaultAttributeType<?>) resultType;
                 minimumOccurs = pt.getMinimumOccurs();
                 maximumOccurs = pt.getMaximumOccurs();
                 valueClass    = pt.getValueClass();
                 valueType     = getFormat(Class.class).format(valueClass, buffer, dummyFP).toString();
                 buffer.setLength(0);
-            } else if (propertyType instanceof DefaultAssociationRole) {
-                final DefaultAssociationRole pt = (DefaultAssociationRole) propertyType;
+            } else if (resultType instanceof DefaultAssociationRole) {
+                final DefaultAssociationRole pt = (DefaultAssociationRole) resultType;
                 minimumOccurs = pt.getMinimumOccurs();
                 maximumOccurs = pt.getMaximumOccurs();
                 valueType     = toString(DefaultAssociationRole.getValueTypeName(pt));
                 valueClass    = AbstractFeature.class;
-            } else if (propertyType instanceof AbstractOperation) {
-                final AbstractIdentifiedType resultType = ((AbstractOperation) propertyType).getResult();
-                valueType   = toString(resultType.getName());
-                valueClass  = null;
-                minimumOccurs = -1;
-                maximumOccurs = -1;
             } else {
-                valueType   = "";
-                valueClass  = null;
+                valueType  = toString(resultType.getName());
+                valueClass = null;
                 minimumOccurs = -1;
                 maximumOccurs = -1;
             }
@@ -305,7 +309,7 @@ header: for (int i=0; ; i++) {
                         Object c = attribute.getDefaultValue();
                         if (feature != null) {
                             final Object p = feature.getProperty(propertyType.getName().toString());
-                            if (p instanceof AbstractAttribute<?>) {    // Should always be true, but we are paranoiac.
+                            if (p instanceof AbstractAttribute<?>) {      // Should always be true, but we are paranoiac.
                                 c = ((AbstractAttribute<?>) p).characteristics().get(attribute.getName().toString());
                             }
                         }
