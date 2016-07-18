@@ -125,7 +125,7 @@ public final class Geometries extends Static {
                 ymin = (Double) MIN_Y.invoke(env, (Object[]) null);
                 xmax = (Double) MAX_X.invoke(env, (Object[]) null);
                 ymax = (Double) MAX_Y.invoke(env, (Object[]) null);
-            } catch (ReflectiveOperationException e) {
+            } catch (Exception e) {                                     // (ReflectiveOperationException) on JDK7 branch.
                 if (e instanceof InvocationTargetException) {
                     final Throwable cause = e.getCause();
                     if (cause instanceof RuntimeException) {

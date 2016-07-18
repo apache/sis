@@ -30,7 +30,7 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.Classes;
 
 // Branch-dependent imports
-import java.util.Objects;
+import org.apache.sis.internal.jdk7.Objects;
 import org.opengis.feature.AttributeType;
 import org.opengis.feature.Feature;
 import org.opengis.feature.PropertyType;
@@ -178,7 +178,6 @@ public final class AttributeTypeBuilder<V> extends PropertyTypeBuilder {
      * @see #characteristics()
      * @see AttributeConvention#VALID_VALUES_CHARACTERISTIC
      */
-    @SafeVarargs
     public final AttributeTypeBuilder<V> setValidValues(final V... values) {
         return setCharacteristic(AttributeConvention.VALID_VALUES_CHARACTERISTIC,
                 Set.class, CollectionsExt.immutableSet(false, values));
