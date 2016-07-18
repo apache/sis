@@ -375,6 +375,11 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     /**
      * Returns a unique identifier for this metadata record.
      *
+     * <div class="note"><b>Note:</b>
+     * OGC 07-045 (Catalog Service Specification — ISO metadata application profile) recommends usage
+     * of a UUID (Universal Unique Identifier) as specified by <a href="http://www.ietf.org">IETF</a>
+     * to ensure identifier’s uniqueness.</div>
+     *
      * @return Unique identifier for this metadata record, or {@code null}.
      *
      * @since 0.5
@@ -611,7 +616,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
 
     /**
      * Returns an identification of the parent metadata record.
-     * This is non-null if this metadata is a subset (child) of another metadata.
+     * This is non-null if this metadata is a subset (child) of another metadata that is described elsewhere.
      *
      * @return Identification of the parent metadata record, or {@code null} if none.
      *

@@ -78,7 +78,7 @@ public final strictfp class EnvelopeOperationTest extends TestCase {
             null,
             null
         };
-        attributes[4] = FeatureOperations.link(name(AttributeConvention.DEFAULT_GEOMETRY_PROPERTY), attributes[defaultGeometry]);
+        attributes[4] = FeatureOperations.link(name(AttributeConvention.GEOMETRY_PROPERTY), attributes[defaultGeometry]);
         attributes[5] = FeatureOperations.envelope(name("bounds"), null, attributes);
         return new DefaultFeatureType(name("school"), false, null, attributes);
     }

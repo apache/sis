@@ -31,7 +31,7 @@ import org.apache.sis.parameter.ParameterBuilder;
  * @author  Rueben Schulz (UBC)
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.6
- * @version 0.6
+ * @version 0.8
  * @module
  */
 @XmlTransient
@@ -67,7 +67,6 @@ public final class PolarStereographicB extends AbstractStereographic {
      * because it is sometime used in Well Known Text (WKT). However it shall be interpreted as a
      * <cite>Scale factor at the standard parallel</cite> rather than at the natural origin.</p>
      */
-    @SuppressWarnings("FieldNameHidesFieldInSuperclass")
     static final ParameterDescriptor<Double> SCALE_FACTOR;
 
     /**
@@ -77,8 +76,7 @@ public final class PolarStereographicB extends AbstractStereographic {
     static {
         final ParameterBuilder builder = builder();
         LONGITUDE_OF_ORIGIN = createLongitude(
-                exceptEPSG(PolarStereographicA.LONGITUDE_OF_ORIGIN,
-                builder.addIdentifier("8833").addName("Longitude of origin")));
+                rename(PolarStereographicA.LONGITUDE_OF_ORIGIN, "8833", "Longitude of origin", builder));
 
         STANDARD_PARALLEL = createMandatoryLatitude(builder
                 .addIdentifier("8832").addName("Latitude of standard parallel")
@@ -98,7 +96,7 @@ public final class PolarStereographicB extends AbstractStereographic {
                 .createGroupForMapProjection(
                         STANDARD_PARALLEL,
                         LONGITUDE_OF_ORIGIN,
-                        SCALE_FACTOR,       // Not formally a parameter of this projection.
+                        SCALE_FACTOR,                   // Not formally a parameter of this projection.
                         FALSE_EASTING,
                         FALSE_NORTHING);
     }

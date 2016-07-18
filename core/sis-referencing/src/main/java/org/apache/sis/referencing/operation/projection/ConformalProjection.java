@@ -167,10 +167,10 @@ abstract class ConformalProjection extends NormalizedProjection {
          * For each line below, add the smallest values first in order to reduce rounding errors.
          * The smallest values are the one using the eccentricity raised to the highest power.
          */
-        ci2  =    13/   360.* e8  +   1/ 12.* e6  +  5/24.* e4  +  e2/2;
-        ci4  =   811/ 11520.* e8  +  29/240.* e6  +  7/48.* e4;
-        ci6  =    81/  1120.* e8  +   7/120.* e6;
-        ci8  =  4279/161280.* e8;
+        ci2  =    13/   360. * e8  +   1/ 12. * e6  +  5/24. * e4  +  e2/2;
+        ci4  =   811/ 11520. * e8  +  29/240. * e6  +  7/48. * e4;
+        ci6  =    81/  1120. * e8  +   7/120. * e6;
+        ci8  =  4279/161280. * e8;
         /*
          * When rewriting equations using trigonometric identities, some constants appear.
          * For example sin(2θ) = 2⋅sinθ⋅cosθ, so we can factor out the 2 constant into the
@@ -257,7 +257,7 @@ abstract class ConformalProjection extends NormalizedProjection {
                + ci2 * sin(2*φ);
         } else {
             /*
-             * Same formula than above, be rewriten using trigonometric identities in order to have only two
+             * Same formula than above, but rewriten using trigonometric identities in order to have only two
              * calls to Math.sin/cos instead than 5. The performance gain is twice faster on tested machine.
              */
             final double sin_2φ = sin(2*φ);

@@ -95,8 +95,8 @@ public class Mercator extends ConformalProjection {
      *
      * @see #getVariant(OperationMethod)
      */
-    private static final byte SPHERICAL = 1, PSEUDO = 3,    // Must be odd and SPHERICAL must be 1.
-                              REGIONAL  = 2, MILLER = 4;    // Must be even.
+    private static final byte SPHERICAL = 1, PSEUDO = 3,            // Must be odd and SPHERICAL must be 1.
+                              REGIONAL  = 2, MILLER = 4;            // Must be even.
 
     /**
      * Returns the variant of the projection based on the name and identifier of the given operation method.
@@ -291,7 +291,7 @@ public class Mercator extends ConformalProjection {
         if (φ0 == 0 && isPositive(φ1 != 0 ? φ1 : φ0)) {
             final Number reverseSign = verbatim(-1);
             normalize  .convertBefore(1, reverseSign, null);
-            denormalize.convertBefore(1, reverseSign, null);  // Must be before false easting/northing.
+            denormalize.convertBefore(1, reverseSign, null);        // Must be before false easting/northing.
         }
     }
 
@@ -354,7 +354,7 @@ public class Mercator extends ConformalProjection {
                 // about why we perform explicit checks for the pole cases.
                 final double a = abs(φ);
                 if (a < PI/2) {
-                    y = log(expOfNorthing(φ, eccentricity * sinφ));     // Snyder (7-7)
+                    y = log(expOfNorthing(φ, eccentricity * sinφ));                 // Snyder (7-7)
                 } else if (a <= (PI/2 + ANGULAR_TOLERANCE)) {
                     y = copySign(POSITIVE_INFINITY, φ);
                 } else {
@@ -390,7 +390,7 @@ public class Mercator extends ConformalProjection {
         } else {
             dstOff--;
             while (--numPts >= 0) {
-                final double φ = dstPts[dstOff += 2]; // Same as srcPts[srcOff + 1].
+                final double φ = dstPts[dstOff += 2];                           // Same as srcPts[srcOff + 1].
                 if (φ != 0) {
                     // See the javadoc of the Spherical inner class for a note
                     // about why we perform explicit checks for the pole cases.
@@ -420,8 +420,8 @@ public class Mercator extends ConformalProjection {
                                     final double[] dstPts, final int dstOff)
             throws ProjectionException
     {
-        final double y   = srcPts[srcOff+1];    // Must be before writing x.
-        dstPts[dstOff  ] = srcPts[srcOff  ];    // Must be before writing y.
+        final double y   = srcPts[srcOff+1];            // Must be before writing x.
+        dstPts[dstOff  ] = srcPts[srcOff  ];            // Must be before writing y.
         dstPts[dstOff+1] = φ(exp(-y));
     }
 
@@ -488,7 +488,7 @@ public class Mercator extends ConformalProjection {
                     // See class javadoc for a note about explicit check for poles.
                     final double a = abs(φ);
                     if (a < PI/2) {
-                        y = log(tan(PI/4 + 0.5*φ));    // Part of Snyder (7-2)
+                        y = log(tan(PI/4 + 0.5*φ));                             // Part of Snyder (7-2)
                     } else if (a <= (PI/2 + ANGULAR_TOLERANCE)) {
                         y = copySign(POSITIVE_INFINITY, φ);
                     } else {
@@ -518,13 +518,13 @@ public class Mercator extends ConformalProjection {
             } else {
                 dstOff--;
                 while (--numPts >= 0) {
-                    final double φ = dstPts[dstOff += 2];   // Same as srcPts[srcOff + 1].
+                    final double φ = dstPts[dstOff += 2];                       // Same as srcPts[srcOff + 1].
                     if (φ != 0) {
                         // See class javadoc for a note about explicit check for poles.
                         final double a = abs(φ);
                         final double y;
                         if (a < PI/2) {
-                            y = log(tan(PI/4 + 0.5*φ));     // Part of Snyder (7-2)
+                            y = log(tan(PI/4 + 0.5*φ));                         // Part of Snyder (7-2)
                         } else if (a <= (PI/2 + ANGULAR_TOLERANCE)) {
                             y = copySign(POSITIVE_INFINITY, φ);
                         } else {
@@ -544,9 +544,9 @@ public class Mercator extends ConformalProjection {
                                         final double[] dstPts, final int dstOff)
                 throws ProjectionException
         {
-            final double y = srcPts[srcOff+1];           // Must be before writing x.
-            dstPts[dstOff  ] = srcPts[srcOff];           // Must be before writing y.
-            dstPts[dstOff+1] = PI/2 - 2*atan(exp(-y));  // Part of Snyder (7-4);
+            final double y = srcPts[srcOff+1];                      // Must be before writing x.
+            dstPts[dstOff  ] = srcPts[srcOff];                      // Must be before writing y.
+            dstPts[dstOff+1] = PI/2 - 2*atan(exp(-y));              // Part of Snyder (7-4);
         }
     }
 }

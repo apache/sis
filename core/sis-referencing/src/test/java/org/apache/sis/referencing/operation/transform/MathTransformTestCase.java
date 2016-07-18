@@ -181,7 +181,7 @@ public abstract strictfp class MathTransformTestCase extends TransformTestCase {
         final float[] asFloats = Numerics.copyAsFloats(coordinates);
         final float[] result   = verifyConsistency(asFloats);
         for (int i=0; i<coordinates.length; i++) {
-            assertEquals("Detected change in source coordinates.", (float) coordinates[i], asFloats[i], 0f); // Paranoiac check.
+            assertEquals("Detected change in source coordinates.", (float) coordinates[i], asFloats[i], 0f);    // Paranoiac check.
         }
         /*
          * The comparison below needs a higher tolerance threshold, because we converted the source
@@ -195,7 +195,7 @@ public abstract strictfp class MathTransformTestCase extends TransformTestCase {
             for (int i=0; i<expected.length; i++) {
                 final double e = expected[i];
                 double tol = 1E-6 * abs(e);
-                if (!(tol > tolerance)) {   // Use '!' for replacing NaN by 'tolerance'.
+                if (!(tol > tolerance)) {               // Use '!' for replacing NaN by 'tolerance'.
                     tol = tolerance;
                 }
                 assertEquals(e, result[i], tol);

@@ -127,7 +127,7 @@ public final strictfp class MercatorTest extends MapProjectionTestCase {
     /**
      * Tests the projection at some special latitudes (0, ±π/2, NaN).
      *
-     * @throws ProjectionException Should never happen.
+     * @throws ProjectionException if an error occurred while projecting a point.
      */
     @Test
     public void testSpecialLatitudes() throws ProjectionException {
@@ -157,7 +157,7 @@ public final strictfp class MercatorTest extends MapProjectionTestCase {
      * Tests the derivatives at a few points. This method compares the derivatives computed by
      * the projection with an estimation of derivatives computed by the finite differences method.
      *
-     * @throws TransformException Should never happen.
+     * @throws TransformException if an error occurred while projecting a point.
      */
     @Test
     @DependsOnMethod("testSpecialLatitudes")

@@ -44,7 +44,8 @@ import org.apache.sis.util.resources.Errors;
  * @version 0.6
  * @module
  *
- * @see DefaultAssociationRole#newInstance()
+ * @see AbstractFeature
+ * @see DefaultAssociationRole
  */
 public abstract class AbstractAssociation extends Field<AbstractFeature> implements Cloneable, Serializable {
     /**
