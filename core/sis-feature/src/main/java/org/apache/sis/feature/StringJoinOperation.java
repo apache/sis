@@ -19,6 +19,7 @@ package org.apache.sis.feature;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Set;
+import java.io.IOException;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.util.GenericName;
@@ -33,6 +34,7 @@ import org.apache.sis.util.Classes;
 
 // Branch-dependent imports
 import java.util.Objects;
+import org.apache.sis.internal.jdk8.UncheckedIOException;
 import org.opengis.feature.AttributeType;
 import org.opengis.feature.Feature;
 import org.opengis.feature.IdentifiedType;
@@ -420,5 +422,27 @@ final class StringJoinOperation extends AbstractOperation {
                   Objects.equals(this.suffix,         that.suffix);
         }
         return false;
+    }
+
+    /**
+     * Appends a string representation of the "formula" used for computing the result.
+     *
+     * @param  buffer where to format the "formula".
+     * @return {@code true} since this method has formatted a formula.
+     */
+    @Override
+    boolean formatResultFormula(final Appendable buffer) {
+        try {
+            buffer.append(" → ");
+            String separator = "(";
+            for (final String element : attributeNames) {
+                buffer.append(separator).append(element);
+                separator = ", ";
+            }
+            buffer.append(')');
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+        return true;
     }
 }

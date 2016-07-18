@@ -364,6 +364,8 @@ public final class MathFunctions extends Static {
         /*
          * The classical formulas is log((1+x)/(1-x))/2, but the following is more
          * accurate if the (1+x)/(1-x) ratio is close to 1, i.e. if x is close to 0.
+         * This is often the case in Apache SIS since x is often a value close to the
+         * Earth excentricity, which is a small value (0 would be a perfect sphere).
          */
         return 0.5 * Math.log1p(2*x / (1-x));
     }

@@ -115,8 +115,8 @@ public final strictfp class InterpolatedMolodenskyTransformTest extends Interpol
                 "  Param_MT[“Molodensky inverse interpolation (radians domain)”,\n" +
                 "    Parameter[“src_semi_major”, 6378249.2],\n" +
                 "    Parameter[“src_semi_minor”, 6356515.0],\n" +
-                "    Parameter[“Semi-major axis length difference”, -112.2],\n" +
-                "    Parameter[“Flattening difference”, -5.4738838833299144E-5],\n" +
+                "    Parameter[“Semi-major axis length difference”, -112.2, Id[“EPSG”, 8654]],\n" +
+                "    Parameter[“Flattening difference”, -5.4738838833299144E-5, Id[“EPSG”, 8655]],\n" +
                 "    ParameterFile[“Geocentric translation file”, “\\E.*\\W\\Q" +
                                    FranceGeocentricInterpolationTest.TEST_FILE + "”, Id[“EPSG”, 8727]],\n" +
                 "    Parameter[“dim”, 2]],\n" +
