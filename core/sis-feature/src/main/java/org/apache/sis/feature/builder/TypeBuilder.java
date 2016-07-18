@@ -29,7 +29,7 @@ import org.apache.sis.util.Classes;
 import org.apache.sis.util.Debug;
 
 // Branch-dependent imports
-import java.util.Objects;
+import org.apache.sis.internal.jdk7.Objects;
 import org.opengis.feature.IdentifiedType;
 
 

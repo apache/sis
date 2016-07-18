@@ -21,7 +21,7 @@ import org.apache.sis.feature.DefaultAttributeType;
 import org.apache.sis.util.Classes;
 
 // Branch-dependent imports
-import java.util.Objects;
+import org.apache.sis.internal.jdk7.Objects;
 import org.opengis.feature.AttributeType;
 
 
