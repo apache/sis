@@ -16,8 +16,23 @@
  */
 package org.apache.sis.services.csw;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import static org.apache.sis.internal.util.CollectionsExt.first;
+import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.geotiff.LandsatReader;
+import org.apache.sis.storage.geotiff.ModisReader;
+import org.opengis.metadata.Metadata;
+import org.opengis.metadata.citation.Responsibility;
+import org.opengis.metadata.extent.Extent;
+import org.opengis.metadata.extent.GeographicBoundingBox;
+import org.opengis.metadata.identification.Identification;
 
 
 /**
@@ -29,22 +44,62 @@ import java.util.List;
  * @module
  */
 public class Record {
+    
+    Map<String, SummaryRecord> record;
+    public Record() throws IOException, DataStoreException, Exception {
+        ConfigurationReader path = new ConfigurationReader();
+        File directory = new File(path.getPropValues());
+        record = new HashMap();
+        /**
+         * Get all the files from a directory.
+         *
+         */
+        File[] fList = directory.listFiles();
+        for (File file : fList) {
+            final Metadata md;
+            if (file.isFile() && file.getName().endsWith(".txt")) {
 
-    public Record() {
+                try (BufferedReader in = new BufferedReader(new FileReader(file.getPath()))) {
+                    final LandsatReader reader = new LandsatReader(in);
+                    md = reader.read();
+                }
+            } else if (file.isFile() && file.getName().endsWith(".xml")) {
+                File xml = new File(file.getPath());
+                final ModisReader read = new ModisReader(xml);
+                md = read.read();
+            } else {
+                continue;
+            }
+            Identification id = first(md.getIdentificationInfo());
+            SummaryRecord summary = new SummaryRecord();
+            String key = md.getFileIdentifier();
+            summary.setIdentifier(md.getFileIdentifier());
+            summary.setFormat(first(first(md.getDistributionInfo()).getDistributionFormats()).getName().toString());
+            summary.setTitle(id.getCitation().getTitle().toString());
+            summary.setType(first(md.getHierarchyLevels()).name());
+            summary.setModified(md.getDateStamp());
+            summary.setSubject(first(first(id.getDescriptiveKeywords()).getKeywords()).toString());
+            List<Responsibility> responsibility = new ArrayList<>(first(md.getIdentificationInfo()).getPointOfContacts());
+            summary.setCreator(first(responsibility.get(0).getParties()).getName().toString());
+            summary.setPublisher(first(responsibility.get(1).getParties()).getName().toString());
+            summary.setContributor(first(responsibility.get(2).getParties()).getName().toString());
+            summary.setLanguage(md.getLanguage().toString());
+            summary.setRelation(first(id.getAggregationInfo()).getAggregateDataSetName().getTitle().toString());
+            Extent et = first(id.getExtents());
+            GeographicBoundingBox gbd = (GeographicBoundingBox) first(et.getGeographicElements());
+            summary.setBoundingBox(new BoundingBox(gbd));
+            record.put(key, summary);
+        }
     }
-
     /**
      * Return all record of metadata
      *
      * @return
      * @throws Exception
      */
-    public List<SummaryRecord> getAllRecord() throws Exception {
-        XMLReader a = new XMLReader();
-        List<SummaryRecord> b = new ArrayList<SummaryRecord>();
-        b.addAll(a.Metadata());
-        return b;
-    }
+    public List<SummaryRecord> getAllRecord() { 
+        return new ArrayList<SummaryRecord>(record.values()); 
+    } 
 
     /**
      * Return All Record Paginated
@@ -55,13 +110,10 @@ public class Record {
      * @throws Exception
      */
     public List<SummaryRecord> getAllRecordPaginated(int start, int size) throws Exception {
-        XMLReader a = new XMLReader();
-        List<SummaryRecord> b = new ArrayList<SummaryRecord>();
-        b.addAll(a.Metadata());
-        ArrayList<SummaryRecord> list = new ArrayList<SummaryRecord>(b);
-        if (start + size > list.size()) {
+        ArrayList<SummaryRecord> list = new ArrayList<SummaryRecord>(record.values()); 
+        if (start + size > list.size()) 
             return new ArrayList<SummaryRecord>();
-        }
+        
         return list.subList(start, start + size);
     }
 
@@ -73,25 +125,6 @@ public class Record {
      * @throws Exception
      */
     public SummaryRecord getRecordById(String id) throws Exception {
-        XMLReader a = new XMLReader();
-        List<SummaryRecord> b = new ArrayList<SummaryRecord>();
-        b.addAll(a.Metadata());
-        SummaryRecord messagesById = new SummaryRecord();
-        for (SummaryRecord message : b) {
-            if (message.getIdentifier().equals(id)) {
-                messagesById.setFormat(message.getFormat());
-                messagesById.setTitle(message.getTitle());
-                messagesById.setType(message.getType());
-                messagesById.setSubject(message.getSubject());
-                messagesById.setIdentifier(message.getIdentifier());
-                messagesById.setModified(message.getModified());
-                messagesById.setBoundingBox(message.getBoundingBox());
-                messagesById.setContributor(message.getContributor());
-                messagesById.setCreator(message.getCreator());
-                messagesById.setPublisher(message.getPublisher());
-                messagesById.setRelation(message.getRelation());
-            }
-        }
-        return messagesById;
+        return record.get(id);
     }
 }

@@ -43,15 +43,10 @@ public class ModisReaderTest extends TestCase {
     @Test
     public void testRead() throws Exception {
         // TODO
-        final Metadata reade;
-        File in = new File("/home/haonguyen/data/MOD09Q1.A2010009.h08v07.005.2010027023253.hdf.xml");
-        reade = new ModisReader(in).read();
-
-        System.out.println(reade);
-        compareToExpected(reade);
-    }
-
-    static void compareToExpected(final Metadata actual) {
+        final Metadata actual;
+        File in = new File(ModisReader.class.getResource("Modis.xml").toURI());
+         actual = new ModisReader(in).read();
+        
         final String text = formatNameAndValue(DefaultMetadata.castOrCopy(actual).asTreeTable());
         assertMultilinesEquals(
                 "Metadata\n"

@@ -32,36 +32,33 @@ import java.util.List;
  * @module
  */
 public class AnyText {
+ 
     /**
      * The physical or digital manifestation of the resource use to search.
      */
     String format;
-
     /**
      * A unique reference to the record within the catalogue use to search.
      */
     String identifier;
-
     /**
-     * A bouding box for identifying a geographic area of interest use to search.
+     * A bouding box for identifying a geographic area of interest use to
+     * search.
      */
     BoundingBox bbox = new BoundingBox();
-
     /**
      * The value startDate use to search .
      */
     String startDate;
-
     /**
      * The value rangeDate use to search .
      */
     String rangeDate;
-
-    List<SummaryRecord> data = new ArrayList<>();
+    List<SummaryRecord> data = new ArrayList<SummaryRecord>();
 
     public AnyText() throws Exception {
-        XMLReader a = new XMLReader();
-        data.addAll(a.Metadata());
+        Record a = new Record();
+        data.addAll(a.getAllRecord());
     }
 
     /**
@@ -73,7 +70,7 @@ public class AnyText {
     }
 
     /**
-     * Sets a bounding box use to search record.
+     * Set a bouding box use to search record
      *
      * @param west
      * @param east
@@ -86,17 +83,18 @@ public class AnyText {
     }
 
     /**
-     * AnyText used to search.
+     * AnyText use to search
      *
      * @param format
      * @param identifier
      * @param startDate
      * @param rangeDate
-     * @throws Exception Constructs a new exception with the specified detail message.
+     * @throws Exception Constructs a new exception with the specified detail
+     * message.
      */
     public AnyText(String format, String identifier, String startDate, String rangeDate) throws Exception {
-        XMLReader a = new XMLReader();
-        data.addAll(a.Metadata());
+        Record a = new Record();
+        data.addAll(a.getAllRecord());
         this.format = format;
         this.identifier = identifier;
         this.startDate = startDate;
@@ -134,6 +132,7 @@ public class AnyText {
         if (south > itNorth) {
             return false;
         }
+
         return true;
     }
 
@@ -162,50 +161,57 @@ public class AnyText {
     }
 
     /**
-     * Filter a bounding box for identifying a geographic area of interest use to search.
+     * Filter a bouding box for identifying a geographic area of interest use to
+     * search.
      */
     public void filter() throws Exception {
         String lower[] = bbox.getLowerCorner().split(" ");
         String upper[] = bbox.getUpperCorner().split(" ");
 
-        double west  = Double.parseDouble(lower[0]);
+        double west = Double.parseDouble(lower[0]);
         double north = Double.parseDouble(upper[1]);
         double south = Double.parseDouble(lower[1]);
-        double east  = Double.parseDouble(upper[0]);
+        double east = Double.parseDouble(upper[0]);
 
         for (Iterator<SummaryRecord> it = data.iterator(); it.hasNext();) {
             SummaryRecord itSum = it.next();
-            /*
+
+            /**
              * Remove Out of range Date.
              */
             if (!this.checkDate(startDate, rangeDate, itSum)) {
                 it.remove();
                 continue;
             }
-            /*
+
+            /**
              * Check by identifier.
              */
             if (!itSum.getIdentifier().contains(identifier)) {
                 it.remove();
                 continue;
             }
-            /*
+
+            /**
              * Check by format type.
              */
             if (!itSum.getFormat().contains(format)) {
                 it.remove();
                 continue;
-                /*
+                /**
                  * NOTE: Iterator's remove method, not ArrayList's, is used.
+                 *
                  */
             }
-            /*
+
+            /**
              * Remove picture out of BBOX range.
              */
             if (!checkBBOX(east, west, south, north, itSum.getBoundingBox())) {
                 it.remove();
                 continue;
             }
+
         }
     }
 }

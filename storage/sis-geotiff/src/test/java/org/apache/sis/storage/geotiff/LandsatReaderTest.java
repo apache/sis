@@ -17,8 +17,14 @@
 package org.apache.sis.storage.geotiff;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.URISyntaxException;
 import org.opengis.metadata.Metadata;
 import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.storage.DataStoreException;
@@ -47,54 +53,48 @@ public class LandsatReaderTest extends TestCase {
     @Test
     public void testRead() throws IOException, DataStoreException {
         // TODO
-        final Metadata reade;
-        try (BufferedReader in = new BufferedReader(new FileReader("/home/haonguyen/data/LC81230522014071LGN00_MTL.txt"))) {
-            reade = new LandsatReader(in).read();
+        final Metadata actual;
+        try (BufferedReader in = new BufferedReader(new InputStreamReader(LandsatReaderTest.class.getResourceAsStream("Sample.txt"), "UTF-8"))) {
+            actual = new LandsatReader(in).read();
         }
-        System.out.println("The Metadata of LC81230522014071LGN00_MTL.txt is:");
-        System.out.println(reade);
-        compareToExpected(reade);
-    }
-
-    static void compareToExpected(final Metadata actual) {
         final String text = formatNameAndValue(DefaultMetadata.castOrCopy(actual).asTreeTable());
         assertMultilinesEquals(
                 "Metadata\n"
                 + "  ├─Language…………………………………………………………………………… en\n"
                 + "  ├─Identification info\n"
                 + "  │   ├─Citation\n"
-                + "  │   │   ├─Title……………………………………………………………… LC81230522014071LGN00_MTL.txt\n"
+                + "  │   │   ├─Title……………………………………………………………… TestImage_MTL.txt\n"
                 + "  │   │   └─Date\n"
-                + "  │   │       ├─Date……………………………………………………… 2014-03-12 06:06:35\n"
+                + "  │   │       ├─Date……………………………………………………… 2016-06-27 16:48:12\n"
                 + "  │   │       └─Date type………………………………………… Publication\n"
                 + "  │   ├─Point of contact (1 of 3)\n"
                 + "  │   │   ├─Role………………………………………………………………… Originator\n"
                 + "  │   │   └─Party\n"
-                + "  │   │       └─Name……………………………………………………… Image courtesy of the U.S. Geological Survey\n"
+                + "  │   │       └─Name……………………………………………………… Test file\n"
                 + "  │   ├─Point of contact (2 of 3)\n"
                 + "  │   │   ├─Role………………………………………………………………… Publisher\n"
                 + "  │   │   └─Party\n"
-                + "  │   │       └─Name……………………………………………………… Image courtesy of the U.S. Geological Survey\n"
+                + "  │   │       └─Name……………………………………………………… Test file\n"
                 + "  │   ├─Point of contact (3 of 3)\n"
                 + "  │   │   ├─Role………………………………………………………………… Author\n"
                 + "  │   │   └─Party\n"
-                + "  │   │       └─Name……………………………………………………… Image courtesy of the U.S. Geological Survey\n"
+                + "  │   │       └─Name……………………………………………………… Test file\n"
                 + "  │   ├─Descriptive keywords\n"
-                + "  │   │   └─Keyword………………………………………………………… GLS2000\n"
+                + "  │   │   └─Keyword………………………………………………………… None\n"
                 + "  │   ├─Extent\n"
                 + "  │   │   └─Geographic element\n"
-                + "  │   │       ├─West bound longitude…………… 108°20′10.464″E\n"
-                + "  │   │       ├─East bound longitude…………… 110°26′39.66″E\n"
-                + "  │   │       ├─South bound latitude…………… 10°29′59.604″N\n"
-                + "  │   │       ├─North bound latitude…………… 12°37′25.716″N\n"
+                + "  │   │       ├─West bound longitude…………… 108°20′24″E\n"
+                + "  │   │       ├─East bound longitude…………… 110°26′24″E\n"
+                + "  │   │       ├─South bound latitude…………… 10°30′N\n"
+                + "  │   │       ├─North bound latitude…………… 12°37′12″N\n"
                 + "  │   │       └─Extent type code……………………… true\n"
                 + "  │   └─Associated resource\n"
                 + "  │       └─Name\n"
-                + "  │           └─Title…………………………………………………… Image courtesy of the U.S. Geological Survey\n"
+                + "  │           └─Title…………………………………………………… Test file\n"
                 + "  ├─Content info\n"
-                + "  │   ├─Illumination elevation angle…………… 58.80866057\n"
-                + "  │   ├─Illumination azimuth angle………………… 116.88701534\n"
-                + "  │   ├─Cloud cover percentage…………………………… 8.34\n"
+                + "  │   ├─Illumination elevation angle…………… 58.8\n"
+                + "  │   ├─Illumination azimuth angle………………… 116.9\n"
+                + "  │   ├─Cloud cover percentage…………………………… 8.3\n"
                 + "  │   └─Attribute group\n"
                 + "  │       ├─Content type…………………………………………… Physical measurement\n"
                 + "  │       ├─Attribute (1 of 11)\n"
@@ -150,20 +150,20 @@ public class LandsatReaderTest extends TestCase {
                 + "  │   │   ├─Status…………………………………………………………… Completed\n"
                 + "  │   │   ├─Type………………………………………………………………… Real\n"
                 + "  │   │   └─Significant event\n"
-                + "  │   │       └─Time……………………………………………………… 2014-03-12 03:02:01\n"
+                + "  │   │       └─Time……………………………………………………… 2016-06-26 03:02:01\n"
                 + "  │   └─Platform\n"
                 + "  │       ├─Identifier\n"
-                + "  │       │   └─Code……………………………………………………… LANDSAT_8\n"
+                + "  │       │   └─Code……………………………………………………… LANDSAT\n"
                 + "  │       └─Instrument\n"
                 + "  │           └─Identifier\n"
-                + "  │               └─Code…………………………………………… OLI_TIRS\n"
+                + "  │               └─Code…………………………………………… PseudoSensor\n"
                 + "  ├─Date info\n"
-                + "  │   ├─Date…………………………………………………………………………… 2014-03-12 06:06:35\n"
+                + "  │   ├─Date…………………………………………………………………………… 2016-06-27 16:48:12\n"
                 + "  │   └─Date type……………………………………………………………… Creation\n"
                 + "  ├─Metadata scope\n"
-                + "  │   └─Resource scope………………………………………………… L1T\n"
+                + "  │   └─Resource scope………………………………………………… Synthetic\n"
                 + "  ├─Metadata identifier\n"
-                + "  │   └─Code…………………………………………………………………………… LC81230522014071LGN00\n"
+                + "  │   └─Code…………………………………………………………………………… TestImage\n"
                 + "  ├─Metadata standard (1 of 2)\n"
                 + "  │   ├─Title………………………………………………………………………… Geographic Information — Metadata Part 1: Fundamentals\n"
                 + "  │   ├─Cited responsible party\n"
