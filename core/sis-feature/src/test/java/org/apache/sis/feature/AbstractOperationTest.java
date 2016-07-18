@@ -31,7 +31,7 @@ import static org.apache.sis.test.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.6
- * @version 0.6
+ * @version 0.8
  * @module
  */
 @DependsOn(SingletonAttributeTest.class)
@@ -62,6 +62,6 @@ public final strictfp class AbstractOperationTest extends TestCase {
      */
     @Test
     public void testToString() {
-        assertEquals("Operation[“found city” (founder) : city]", foundCity().toString());
+        assertEquals("NoOperation[“found city” (founder) : String]", foundCity().toString());
     }
 }

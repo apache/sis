@@ -83,11 +83,12 @@ abstract strictfp class HTMLGenerator implements Closeable {
      * Creates a new instance which will write in the given file.
      * This constructor immediately writes the HTML header up to the {@code <body>} line, inclusive.
      *
-     * @param  filename The name of the file where to write.
-     * @param  title The document title.
+     * @param  filename  the name of the file where to write.
+     * @param  title     the document title.
+     * @param  path      path to the CSS file.
      * @throws IOException if the file can not be created (e.g. because it already exists).
      */
-    HTMLGenerator(final String filename, final String title) throws IOException {
+    HTMLGenerator(final String filename, final String title, final String css) throws IOException {
         final File file = new File(filename);
         if (file.exists()) {
             throw new IOException("File " + file.getAbsolutePath() + " already exists.");
@@ -112,7 +113,11 @@ abstract strictfp class HTMLGenerator implements Closeable {
         out.newLine();
         println("title", title);
         openTag("style type=\"text/css\" media=\"all\"");
-        println("@import url(\"../tables.css\");");
+        out.write(margin);
+        out.write("@import url(\"");
+        out.write(css);
+        out.write("\");");
+        out.newLine();
         closeTags(head);
         openTag("body");
     }

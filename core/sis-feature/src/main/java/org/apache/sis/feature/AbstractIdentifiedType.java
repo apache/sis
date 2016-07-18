@@ -230,7 +230,7 @@ public class AbstractIdentifiedType implements IdentifiedType, Serializable {
      * Returns a natural language designator for the element.
      * This can be used as an alternative to the {@linkplain #getName() name} in user interfaces.
      *
-     * @return Natural language designator for the element.
+     * @return Natural language designator for the element, or {@code null} if none.
      */
     @Override
     public InternationalString getDesignation() {

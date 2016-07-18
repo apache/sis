@@ -160,7 +160,7 @@
  * @author  Rémi Maréchal (Geomatys)
  * @author  Adrian Custer (Geomatys)
  * @since   0.6
- * @version 0.7
+ * @version 0.8
  * @module
  *
  * @see <a href="http://www.remotesensing.org/geotiff/proj_list">Projections list on RemoteSensing.org</a>

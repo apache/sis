@@ -569,7 +569,7 @@ next:   for (int i=components.size(); --i >= 0;) {
          * from ISO 19111 since 'SingleOperation' is conceptually abstract.  But we do that as a way to said that
          * we are missing this important piece of information but still go ahead.
          *
-         * It is unconvenient to guarantee that the created operation is an instance of 'baseType' since the user
+         * It is inconvenient to guarantee that the created operation is an instance of 'baseType' since the user
          * could have specified an implementation class or a custom sub-interface. We will perform the type check
          * only after object creation.
          */
