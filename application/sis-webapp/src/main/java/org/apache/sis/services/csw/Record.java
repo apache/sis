@@ -24,15 +24,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import static org.apache.sis.internal.util.CollectionsExt.first;
 import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.storage.geotiff.LandsatReader;
-import org.apache.sis.storage.geotiff.ModisReader;
 import org.opengis.metadata.Metadata;
-import org.opengis.metadata.citation.Responsibility;
-import org.opengis.metadata.extent.Extent;
-import org.opengis.metadata.extent.GeographicBoundingBox;
-import org.opengis.metadata.identification.Identification;
 
 
 /**
@@ -58,8 +51,8 @@ public class Record {
      * be thrown by the execution of the method or constructor and propagate
      * outside the method or constructor boundary. 
      */
-    public Record() throws IOException, DataStoreException, Exception {
-        Catalog catalog = new Catalog();
+    public Record(String path) throws IOException, DataStoreException, Exception {
+        Catalog catalog = new Catalog(path);
         record = new HashMap();
         /**
          * Get all the files from a directory.

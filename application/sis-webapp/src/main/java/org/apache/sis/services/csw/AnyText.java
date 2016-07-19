@@ -63,8 +63,8 @@ public class AnyText {
      * be thrown by the execution of the method or constructor and propagate
      * outside the method or constructor boundary.
      */
-    public AnyText() throws Exception {
-        Record a = new Record();
+    public AnyText(String path) throws Exception {
+        Record a = new Record(path);
         data.addAll(a.getAllRecord());
     }
 
@@ -103,8 +103,8 @@ public class AnyText {
      * @throws Exception Constructs a new exception with the specified detail
      * message.
      */
-    public AnyText(String format, String identifier, String startDate, String rangeDate) throws Exception {
-        Record a = new Record();
+    public AnyText(String path,String format, String identifier, String startDate, String rangeDate) throws Exception {
+        Record a = new Record(path);
         data.addAll(a.getAllRecord());
         this.format = format;
         this.identifier = identifier;

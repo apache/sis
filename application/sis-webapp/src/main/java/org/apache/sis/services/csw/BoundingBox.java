@@ -20,18 +20,18 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 
-
 /**
  * Bounding box for identifying a geographic area of interest.
  *
- * @author  Thi Phuong Hao Nguyen (VNSC)
- * @author  Minh Chinh Vu (VNSC)
- * @since   0.8
+ * @author Thi Phuong Hao Nguyen (VNSC)
+ * @author Minh Chinh Vu (VNSC)
+ * @since 0.8
  * @version 0.8
  * @module
  */
 @XmlType(propOrder = {"lowerCorner", "upperCorner"})
 public class BoundingBox extends Element {
+
     /**
      * A space-separated list of minimal coordinate values for each dimension.
      */
@@ -45,15 +45,16 @@ public class BoundingBox extends Element {
     private String upperCorner;
 
     /**
-     * Creates a new, initially empty, bounding box.
-     * This constructor is invoked by JAXB at unmarshalling time.
+     * Creates a new, initially empty, bounding box. This constructor is invoked
+     * by JAXB at unmarshalling time.
      */
     BoundingBox() {
     }
 
     /**
-     * Creates a new bounding box initialized to the values given by an ISO 19115 geographic extent.
-     * This constructor is invoked before marshalling with JAXB.
+     * Creates a new bounding box initialized to the values given by an ISO
+     * 19115 geographic extent. This constructor is invoked before marshalling
+     * with JAXB.
      */
     BoundingBox(final GeographicBoundingBox bbox) {
         final StringBuilder buffer = new StringBuilder(20);
@@ -71,32 +72,44 @@ public class BoundingBox extends Element {
     }
 
     /**
-     * Return a space-separated list of minimal coordinate values for each dimension.
-     * @return space-separated list of minimal coordinate values for each dimension
+     * Return a space-separated list of minimal coordinate values for each
+     * dimension.
+     *
+     * @return space-separated list of minimal coordinate values for each
+     * dimension
      */
     public String getLowerCorner() {
         return lowerCorner;
     }
 
     /**
-     * Set a space-separated list of minimal coordinate values for each dimension.
-     * @param LowerCorner a space-separated list of minimal coordinate values for each dimension
+     * Set a space-separated list of minimal coordinate values for each
+     * dimension.
+     *
+     * @param LowerCorner a space-separated list of minimal coordinate values
+     * for each dimension
      */
     public void setLowerCorner(String LowerCorner) {
         this.lowerCorner = LowerCorner;
     }
 
     /**
-     * Return a space-separated list of maximal coordinate values for each dimension.
-     * @param UpperCorner a space-separated list of maximal coordinate values for each dimension
+     * Return a space-separated list of maximal coordinate values for each
+     * dimension.
+     *
+     * @param UpperCorner a space-separated list of maximal coordinate values
+     * for each dimension
      */
     public void setUpperCorner(String UpperCorner) {
         this.upperCorner = UpperCorner;
     }
 
     /**
-     * Set a space-separated list of maximal coordinate values for each dimension.
-     * @return a space-separated list of maximal coordinate values for each dimension.
+     * Set a space-separated list of maximal coordinate values for each
+     * dimension.
+     *
+     * @return a space-separated list of maximal coordinate values for each
+     * dimension.
      */
     public String getUpperCorner() {
         return upperCorner;
