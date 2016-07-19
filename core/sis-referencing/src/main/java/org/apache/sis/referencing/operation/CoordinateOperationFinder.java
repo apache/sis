@@ -354,8 +354,10 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
         final CoordinateOperation step1;
         try {
             step1 = inverse(sourceCRS.getConversionFromBase());
-        } catch (NoninvertibleTransformException exception) {
-            throw new OperationNotFoundException(notFoundMessage(sourceCRS, targetCRS), exception);
+        } catch (OperationNotFoundException exception) {
+            throw exception;
+        } catch (FactoryException | NoninvertibleTransformException exception) {
+            throw new OperationNotFoundException(canNotInvert(sourceCRS), exception);
         }
         return concatenate(step1, step2);
     }
@@ -385,8 +387,10 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
         final CoordinateOperation step1;
         try {
             step1 = inverse(sourceCRS.getConversionFromBase());
-        } catch (NoninvertibleTransformException exception) {
-            throw new OperationNotFoundException(notFoundMessage(sourceCRS, targetCRS), exception);
+        } catch (OperationNotFoundException exception) {
+            throw exception;
+        } catch (FactoryException | NoninvertibleTransformException exception) {
+            throw new OperationNotFoundException(canNotInvert(sourceCRS), exception);
         }
         return concatenate(step1, step2, step3);
     }
@@ -1057,5 +1061,16 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
      */
     private static String notFoundMessage(final IdentifiedObject source, final IdentifiedObject target) {
         return Errors.format(Errors.Keys.CoordinateOperationNotFound_2, CRSPair.label(source), CRSPair.label(target));
+    }
+
+    /**
+     * Returns an error message for "Can not invert operation XYZ.".
+     * This is used for the construction of {@link OperationNotFoundException}.
+     *
+     * @param  crs  the CRS having a conversion that can not be inverted.
+     * @return A default error message.
+     */
+    private static String canNotInvert(final GeneralDerivedCRS crs) {
+        return Errors.format(Errors.Keys.NonInvertibleOperation_1, crs.getConversionFromBase().getName().getCode());
     }
 }
