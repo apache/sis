@@ -19,6 +19,7 @@ package org.apache.sis.referencing.operation.projection;
 import javax.measure.unit.NonSI;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.datum.Ellipsoid;
+import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.test.referencing.ParameterizedTransformTest;
 import org.apache.sis.parameter.Parameters;
@@ -28,6 +29,7 @@ import org.apache.sis.referencing.operation.DefaultOperationMethod;
 import org.apache.sis.referencing.operation.transform.CoordinateDomain;
 import org.apache.sis.referencing.operation.transform.MathTransformTestCase;
 import org.apache.sis.referencing.operation.transform.MathTransformFactoryMock;
+import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.datum.GeodeticDatumMock;
 
 import static java.lang.StrictMath.*;
@@ -39,7 +41,7 @@ import static org.junit.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.6
- * @version 0.6
+ * @version 0.8
  * @module
  */
 strictfp class MapProjectionTestCase extends MathTransformTestCase {
@@ -57,9 +59,9 @@ strictfp class MapProjectionTestCase extends MathTransformTestCase {
     /**
      * Returns the parameters to use for instantiating the projection to test.
      *
-     * @param  provider The provider of the projection to test.
-     * @param  ellipse {@code false} for a sphere, or {@code true} for WGS84 ellipsoid.
-     * @return The parameters to use for instantiating the projection.
+     * @param  provider  the provider of the projection to test.
+     * @param  ellipse   {@code false} for a sphere, or {@code true} for WGS84 ellipsoid.
+     * @return the parameters to use for instantiating the projection.
      */
     static Parameters parameters(final DefaultOperationMethod provider, final boolean ellipse) {
         final Parameters parameters = Parameters.castOrWrap(provider.getParameters().createValue());
@@ -75,8 +77,8 @@ strictfp class MapProjectionTestCase extends MathTransformTestCase {
     /**
      * Instantiates the object to use for running GeoAPI test.
      *
-     * @param  provider The provider of the projection to test.
-     * @return The GeoAPI test class using the given provider.
+     * @param  provider  the provider of the projection to test.
+     * @return the GeoAPI test class using the given provider.
      */
     static ParameterizedTransformTest createGeoApiTest(final MapProjection provider) {
         return new ParameterizedTransformTest(new MathTransformFactoryMock(provider));
@@ -107,11 +109,26 @@ strictfp class MapProjectionTestCase extends MathTransformTestCase {
     }
 
     /**
+     * Returns the {@code NormalizedProjection} component of the current transform.
+     */
+    final NormalizedProjection getKernel() {
+        NormalizedProjection kernel = null;
+        for (final MathTransform component : MathTransforms.getSteps(transform)) {
+            if (component instanceof NormalizedProjection) {
+                assertNull("Found more than one kernel.", kernel);
+                kernel = (NormalizedProjection) component;
+            }
+        }
+        assertNotNull("Kernel not found.", kernel);
+        return kernel;
+    }
+
+    /**
      * Projects the given latitude value. The longitude is fixed to zero.
      * This method is useful for testing the behavior close to poles in a simple case.
      *
-     * @param  φ The latitude.
-     * @return The northing.
+     * @param  φ  the latitude.
+     * @return the northing.
      * @throws ProjectionException if the projection failed.
      */
     final double transform(final double φ) throws ProjectionException {
@@ -129,8 +146,8 @@ strictfp class MapProjectionTestCase extends MathTransformTestCase {
      * Inverse projects the given northing value. The easting is fixed to zero.
      * This method is useful for testing the behavior close to poles in a simple case.
      *
-     * @param  y The northing.
-     * @return The latitude.
+     * @param  y  the northing.
+     * @return the latitude.
      * @throws ProjectionException if the projection failed.
      */
     final double inverseTransform(final double y) throws ProjectionException {
@@ -159,9 +176,9 @@ strictfp class MapProjectionTestCase extends MathTransformTestCase {
      * The spherical formulas are arbitrarily selected as the reference implementation because they are simpler,
      * so less bug-prone, than the elliptical formulas.
      *
-     * @param  domain The domain of the numbers to be generated.
-     * @param  randomSeed The seed for the random number generator, or 0 for choosing a random seed.
-     * @throws TransformException If a conversion, transformation or derivative failed.
+     * @param  domain      the domain of the numbers to be generated.
+     * @param  randomSeed  the seed for the random number generator, or 0 for choosing a random seed.
+     * @throws TransformException if a conversion, transformation or derivative failed.
      */
     final void compareEllipticalWithSpherical(final CoordinateDomain domain, final long randomSeed)
             throws TransformException
