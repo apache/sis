@@ -16,7 +16,6 @@
  */
 package org.apache.sis.referencing.operation.projection;
 
-import javax.measure.unit.NonSI;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.operation.MathTransform;
@@ -32,6 +31,7 @@ import org.apache.sis.referencing.operation.transform.MathTransformFactoryMock;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.datum.GeodeticDatumMock;
 
+import static java.lang.Double.isNaN;
 import static java.lang.StrictMath.*;
 import static org.junit.Assert.*;
 
@@ -44,7 +44,17 @@ import static org.junit.Assert.*;
  * @version 0.8
  * @module
  */
-strictfp class MapProjectionTestCase extends MathTransformTestCase {
+abstract strictfp class MapProjectionTestCase extends MathTransformTestCase {
+    /**
+     * Semi-major axis length of WGS84 ellipsoid.
+     */
+    static final double WGS84_A = 6378137;
+
+    /**
+     * Semi-minor axis length of WGS84 ellipsoid.
+     */
+    static final double WGS84_B = 6356752.314245179;
+
     /**
      * Tolerance level for comparing formulas on the unitary sphere or ellipsoid.
      */
@@ -57,7 +67,18 @@ strictfp class MapProjectionTestCase extends MathTransformTestCase {
     }
 
     /**
+     * Instantiates the object to use for running GeoAPI test.
+     *
+     * @param  provider  the provider of the projection to test.
+     * @return the GeoAPI test class using the given provider.
+     */
+    static ParameterizedTransformTest createGeoApiTest(final MapProjection provider) {
+        return new ParameterizedTransformTest(new MathTransformFactoryMock(provider));
+    }
+
+    /**
      * Returns the parameters to use for instantiating the projection to test.
+     * The parameters are initialized with the ellipse semi-axis lengths.
      *
      * @param  provider  the provider of the projection to test.
      * @param  ellipse   {@code false} for a sphere, or {@code true} for WGS84 ellipsoid.
@@ -75,36 +96,33 @@ strictfp class MapProjectionTestCase extends MathTransformTestCase {
     }
 
     /**
-     * Instantiates the object to use for running GeoAPI test.
-     *
-     * @param  provider  the provider of the projection to test.
-     * @return the GeoAPI test class using the given provider.
-     */
-    static ParameterizedTransformTest createGeoApiTest(final MapProjection provider) {
-        return new ParameterizedTransformTest(new MathTransformFactoryMock(provider));
-    }
-
-    /**
      * Initializes a complete projection (including conversion from degrees to radians) for the given provider.
-     * This method uses arbitrary central meridian, scale factor, false easting and false northing for increasing
-     * the chances to detect a mismatch. The result is stored in the {@link #transform} field.
      */
-    final void createCompleteProjection(final DefaultOperationMethod provider, final boolean ellipse,
+    final void createCompleteProjection(final DefaultOperationMethod provider,
+            final double semiMajor,
+            final double semiMinor,
             final double centralMeridian,
             final double latitudeOfOrigin,
-            final double standardParallel,
+            final double standardParallel1,
+            final double standardParallel2,
             final double scaleFactor,
             final double falseEasting,
             final double falseNorthing) throws FactoryException
     {
-        final Parameters parameters = parameters(provider, ellipse);
-        if (centralMeridian  != 0) parameters.parameter(Constants.CENTRAL_MERIDIAN)   .setValue(centralMeridian, NonSI.DEGREE_ANGLE);
-        if (latitudeOfOrigin != 0) parameters.parameter(Constants.LATITUDE_OF_ORIGIN) .setValue(latitudeOfOrigin);
-        if (standardParallel != 0) parameters.parameter(Constants.STANDARD_PARALLEL_1).setValue(standardParallel);
-        if (scaleFactor      != 1) parameters.parameter(Constants.SCALE_FACTOR)       .setValue(scaleFactor);
-        if (falseEasting     != 0) parameters.parameter(Constants.FALSE_EASTING)      .setValue(falseEasting);
-        if (falseNorthing    != 0) parameters.parameter(Constants.FALSE_NORTHING)     .setValue(falseNorthing);
-        transform = new MathTransformFactoryMock(provider).createParameterizedTransform(parameters);
+        final Parameters values = Parameters.castOrWrap(provider.getParameters().createValue());
+        values.parameter(Constants.SEMI_MAJOR).setValue(semiMajor);
+        values.parameter(Constants.SEMI_MINOR).setValue(semiMinor);
+        if (semiMajor == WGS84_A && semiMinor == WGS84_B) {
+            values.parameter(Constants.INVERSE_FLATTENING).setValue(298.257223563);
+        }
+        if (!isNaN(centralMeridian))   values.parameter(Constants.CENTRAL_MERIDIAN)   .setValue(centralMeridian);
+        if (!isNaN(latitudeOfOrigin))  values.parameter(Constants.LATITUDE_OF_ORIGIN) .setValue(latitudeOfOrigin);
+        if (!isNaN(standardParallel1)) values.parameter(Constants.STANDARD_PARALLEL_1).setValue(standardParallel1);
+        if (!isNaN(standardParallel2)) values.parameter(Constants.STANDARD_PARALLEL_2).setValue(standardParallel2);
+        if (!isNaN(scaleFactor))       values.parameter(Constants.SCALE_FACTOR)       .setValue(scaleFactor);
+        if (!isNaN(falseEasting))      values.parameter(Constants.FALSE_EASTING)      .setValue(falseEasting);
+        if (!isNaN(falseNorthing))     values.parameter(Constants.FALSE_NORTHING)     .setValue(falseNorthing);
+        transform = new MathTransformFactoryMock(provider).createParameterizedTransform(values);
         validate();
     }
 
@@ -136,7 +154,7 @@ strictfp class MapProjectionTestCase extends MathTransformTestCase {
         coordinate[1] = φ;
         ((NormalizedProjection) transform).transform(coordinate, 0, coordinate, 0, false);
         final double y = coordinate[1];
-        if (!Double.isNaN(y) && !Double.isInfinite(y)) {
+        if (!isNaN(y) && !Double.isInfinite(y)) {
             assertEquals(0, coordinate[0], tolerance);
         }
         return y;
@@ -155,7 +173,7 @@ strictfp class MapProjectionTestCase extends MathTransformTestCase {
         coordinate[1] = y;
         ((NormalizedProjection) transform).inverseTransform(coordinate, 0, coordinate, 0);
         final double φ = coordinate[1];
-        if (!Double.isNaN(φ)) {
+        if (!isNaN(φ)) {
             /*
              * Opportunistically verify that the longitude is still zero. However the longitude value is meaningless
              * at poles. We can not always use coordinate[0] for testing if we are at a pole because its calculation
