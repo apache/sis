@@ -250,6 +250,31 @@ abstract class EqualAreaProjection extends NormalizedProjection {
                 return φ;
             }
         }
+        /*
+         * In the Albers Equal Area discussion, Synder said that above algorithm does not converge if
+         *
+         *   q = ±(1 - (1-ℯ²)/(2ℯ) ⋅ ln((1-ℯ)/(1+ℯ)))
+         *
+         * which we rewrite as
+         *
+         *   q = ±(1 + (1-ℯ²)⋅atanh(ℯ)/ℯ)
+         *
+         * Given that y = q/(1-ℯ²)  (see above comment), we rewrite as
+         *
+         *   y  =  ±(1/(1-ℯ²) + atanh(ℯ)/ℯ)  =  ±qmPolar
+         *
+         * which implies  sinβ = ±1. This is consistent with Synder discussion of Cylndrical Equal Area
+         * projection, where he said exactly that about the same formula (that it does not converge for
+         * β = ±90°). In both case, Synder said that the result is φ = β, with the same sign.
+         */
+        final double as = abs(sinβ);
+        if (abs(as - 1) < ANGULAR_TOLERANCE) {
+            return copySign(PI/2, y);               // Value is at a pole.
+        }
+        if (as >= 1 || Double.isNaN(y)) {
+            return Double.NaN;                      // Value "after" the pole.
+        }
+        // Value should have converged but did not.
         throw new ProjectionException(Errors.format(Errors.Keys.NoConvergence));
     }
 

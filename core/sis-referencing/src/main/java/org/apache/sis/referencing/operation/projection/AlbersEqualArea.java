@@ -259,6 +259,11 @@ public class AlbersEqualArea extends EqualAreaProjection {
     {
         final double x = srcPts[srcOff  ];
         final double y = srcPts[srcOff+1];
+        /*
+         * Note: Synder suggests to reverse the sign of x, y and ρ₀ if n is negative. It should not done in Apache SIS
+         * implementation because (x,y) are premultiplied by n (by the normalization affine transform) before to enter
+         * in this method, so if n was negative those values have already their sign reverted.
+         */
         dstPts[dstOff  ] = atan2(x, y);
         dstPts[dstOff+1] = φ((C - (x*x + y*y)) / nm);
         /*
