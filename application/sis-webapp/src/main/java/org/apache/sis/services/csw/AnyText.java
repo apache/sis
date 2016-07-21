@@ -89,6 +89,7 @@ public class AnyText {
      * @param north The value is expressed in latitude in decimal degrees
      * (positive north).
      */
+
     public void setBbox(double west, double east, double south, double north) {
         bbox.setLowerCorner(west + " " + south);
         bbox.setUpperCorner(east + " " + north);
@@ -105,6 +106,9 @@ public class AnyText {
      * message.
      */
     public AnyText(String path, String format, String identifier, String startDate, String rangeDate) throws Exception {
+        bbox.setLowerCorner(-180 + " " + -180);
+        bbox.setUpperCorner(180 + " " + 180);
+
         Record a = new Record(path);
         data.addAll(a.getAllRecord());
         this.format = format;
@@ -127,7 +131,7 @@ public class AnyText {
      * @param bound bounding box
      * @return bounding box define
      */
-    public boolean checkBBOX(double east, double west, double south, double north, BoundingBox bound) {
+    public boolean checkBBOX(BoundingBox bound) {
         String lower[] = bound.getLowerCorner().split(" ");
         String upper[] = bound.getUpperCorner().split(" ");
 
@@ -135,6 +139,14 @@ public class AnyText {
         double itNorth = Double.parseDouble(upper[1]);
         double itSouth = Double.parseDouble(lower[1]);
         double itEast = Double.parseDouble(upper[0]);
+
+        String bboxLower[] = bbox.getLowerCorner().split(" ");
+        String bboxUpper[] = bbox.getUpperCorner().split(" ");
+
+        double west = Double.parseDouble(lower[0]);
+        double north = Double.parseDouble(upper[1]);
+        double south = Double.parseDouble(lower[1]);
+        double east = Double.parseDouble(upper[0]);
 
         if (east < itWest) {
             return false;
@@ -189,17 +201,9 @@ public class AnyText {
      * outside the method or constructor boundary.
      */
     public void filter() throws Exception {
-        String lower[] = bbox.getLowerCorner().split(" ");
-        String upper[] = bbox.getUpperCorner().split(" ");
-
-        double west = Double.parseDouble(lower[0]);
-        double north = Double.parseDouble(upper[1]);
-        double south = Double.parseDouble(lower[1]);
-        double east = Double.parseDouble(upper[0]);
 
         for (Iterator<SummaryRecord> it = data.iterator(); it.hasNext();) {
             SummaryRecord itSum = it.next();
-
             /**
              * Remove Out of range Date.
              */
@@ -231,11 +235,10 @@ public class AnyText {
             /**
              * Remove picture out of BBOX range.
              */
-            if (!checkBBOX(east, west, south, north, itSum.getBoundingBox())) {
+            if (!checkBBOX(itSum.getBoundingBox())) {
                 it.remove();
                 continue;
             }
-
         }
     }
 }

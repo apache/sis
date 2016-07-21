@@ -15,7 +15,7 @@
         <meta name="viewport" content="width=devide-width,initial-scale=1.0"
     </head>
 
-    <body background="image/bg.jpg" class="mainBody" >
+    <body background="images/bg.jpg" class="mainBody" >
         <header class="mainheader">
         <div>
             <div class="links-top row"> 
@@ -25,7 +25,7 @@
                 <span class="col-md-1 link-box"><a class="link-text" href="#">About</a></span>
             </div>
             <div class="row background-title">
-                <div class="col-md-4"><img style="width:80%" src="image/image.png"></div>
+                <div class="col-md-4"><img style="width:80%" src="images/image.png"></div>
                 <div></div>
                 <div class="col-md-7 title"><marquee direction="right"> Trung Tâm Vệ Tinh Quốc Gia</marquee></div>
             </div>

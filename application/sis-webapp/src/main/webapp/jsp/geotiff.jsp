@@ -84,12 +84,14 @@
                             "<img class='image' src='http://localhost:8080/sis/VNSC/wcs/image/" +
                             x[i].getElementsByTagName("identifier")[0].childNodes[0].nodeValue + ".jpg'/>" +
                             "</td><td>" +
-                            "<a href='#' onclick='loadMetadata(" + x[i].getElementsByTagName("id")[0].childNodes[0].nodeValue + ")'>" +
+                            "<a href='detail.jsp?identifier=" +x[i].getElementsByTagName("identifier")[0].childNodes[0].nodeValue+"'>"+
                             x[i].getElementsByTagName("title")[0].childNodes[0].nodeValue + "</a>" +
                             "</td><td>" +
                             x[i].getElementsByTagName("format")[0].childNodes[0].nodeValue +
                             "</td><td>" +
-                            "<a href = 'http://localhost:8080/sis/VNSC/csw/2.0.2/download/" + x[i].getElementsByTagName("name")[0].childNodes[0].nodeValue + "'><button >Download</button></a>" +
+                            "<a href = 'http://localhost:8080/sis/VNSC/csw/2.0.2/download/" + 
+                            x[i].getElementsByTagName("title")[0].childNodes[0].nodeValue + 
+                            "'><button >Download</button></a>" +
                             "</td></tr>";
                 }
                 //  console.log(table);
@@ -117,8 +119,7 @@
 
                 console.log(bbox[0].getElementsByTagName("eastBoundLongitude")[0].childNodes[0].nodeValue);
                 var table = "<tr><th>Field</th><th>Detail</th></tr>";
-                table += "<tr><td>ID</td><td>" + metadata.getElementsByTagName("id")[0].childNodes[0].nodeValue + "</td></tr>" +
-                        "<tr><td>Name</td><td>" + metadata.getElementsByTagName("name")[0].childNodes[0].nodeValue + "</td></tr>" +
+                table += 
                         "<tr><td>Title</td><td>" + metadata.getElementsByTagName("title")[0].childNodes[0].nodeValue + "</td></tr>" +
                         "<tr><td>Subject</td><td>" + metadata.getElementsByTagName("Subject")[0].childNodes[0].nodeValue + "</td></tr>" +
                         "<tr><td>Date</td><td>" + metadata.getElementsByTagName("modified")[0].childNodes[0].nodeValue + "</td></tr>" +
