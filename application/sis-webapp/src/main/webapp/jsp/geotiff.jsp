@@ -63,7 +63,7 @@
                     north = "";
                 }
 
-                xhttp.open("GET", "http://localhost:8080/MavenWebProject/VNSC/csw/2.0.2/GetRecord?format="+format+"&identifier="+identifier+"&west=" + west + "&east=" + east + "&south=" + south + "&north=" + north + "&startDate=<%= request.getParameter("date1")%>&rangeDate=<%= request.getParameter("date2")%>", true);
+                xhttp.open("GET", "http://localhost:8080/sis/VNSC/csw/2.0.2/GetRecord?format="+format+"&identifier="+identifier+"&west=" + west + "&east=" + east + "&south=" + south + "&north=" + north + "&startDate=<%= request.getParameter("date1")%>&rangeDate=<%= request.getParameter("date2")%>", true);
                 xhttp.send();
 //                document.write("http://localhost:8080/MavenWebProject/VNSC/csw/Search?format="+format+"&identifier=&west=" +west + "&east=" + east + "&south=" + south + "&north=" + north + "&startDate="+date1+"&rangeDate="+date2);
             }
@@ -81,7 +81,7 @@
                     table += "<tr><td>" +
                             stt +
                             "</td><td>" +
-                            "<img class='image' src='http://localhost:8080/MavenWebProject/VNSC/wcs/image/" +
+                            "<img class='image' src='http://localhost:8080/sis/VNSC/wcs/image/" +
                             x[i].getElementsByTagName("identifier")[0].childNodes[0].nodeValue + ".jpg'/>" +
                             "</td><td>" +
                             "<a href='#' onclick='loadMetadata(" + x[i].getElementsByTagName("id")[0].childNodes[0].nodeValue + ")'>" +
@@ -89,7 +89,7 @@
                             "</td><td>" +
                             x[i].getElementsByTagName("format")[0].childNodes[0].nodeValue +
                             "</td><td>" +
-                            "<a href = 'http://localhost:8080/MavenWebProject/VNSC/csw/2.0.2/download/" + x[i].getElementsByTagName("name")[0].childNodes[0].nodeValue + "'><button >Download</button></a>" +
+                            "<a href = 'http://localhost:8080/sis/VNSC/csw/2.0.2/download/" + x[i].getElementsByTagName("name")[0].childNodes[0].nodeValue + "'><button >Download</button></a>" +
                             "</td></tr>";
                 }
                 //  console.log(table);
@@ -106,7 +106,7 @@
                         tableMetadata(getXML);
                     }
                 };
-                getXML.open("GET", "http://localhost:8080/MavenWebProject/VNSC/csw/2.0.2/GetRecordById?Id=" + id, true);
+                getXML.open("GET", "http://localhost:8080/sis/VNSC/csw/2.0.2/GetRecordById?Id=" + id, true);
                 getXML.send();
             }
 
