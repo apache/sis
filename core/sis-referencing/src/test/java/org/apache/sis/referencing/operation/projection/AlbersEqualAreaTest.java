@@ -195,6 +195,36 @@ public final strictfp class AlbersEqualAreaTest extends MapProjectionTestCase {
     }
 
     /**
+     * Tests a few "special" points which need special care in inverse projection algorithm.
+     *
+     * @throws FactoryException if an error occurred while creating the map projection.
+     * @throws TransformException if an error occurred while projecting a point.
+     */
+    @Test
+    @DependsOnMethod("testEllipse")
+    public void testSingularity() throws FactoryException, TransformException {
+        createCompleteProjection(new org.apache.sis.internal.referencing.provider.AlbersEqualArea(),
+                WGS84_A,    // Semi-major axis length
+                WGS84_B,    // Semi-minor axis length
+                0,          // Central meridian
+                0,          // Latitude of origin
+                0,          // Standard parallel 1
+                2,          // Standard parallel 2
+                NaN,        // Scale factor (none)
+                0,          // False easting
+                0);         // False northing
+
+        tolerance = Formulas.LINEAR_TOLERANCE;
+        toleranceModifier = ToleranceModifier.PROJECTION;
+        verifyTransform(new double[] {0,        0,
+                                      0,      +90,
+                                      0,      -90},
+                        new double[] {0,        0,
+                                      0, +6420271.594575703,    // Computed empirically with SIS (not from an external source).
+                                      0, -6309429.217});
+    }
+
+    /**
      * Tests conversion of random points with non-zero central meridian, standard parallel
      * and false easting/northing.
      *
@@ -202,6 +232,7 @@ public final strictfp class AlbersEqualAreaTest extends MapProjectionTestCase {
      * @throws TransformException if an error occurred while projecting a point.
      */
     @Test
+    @DependsOnMethod("testEllipse")
     public void testRandomPoints() throws FactoryException, TransformException {
         createCompleteProjection(new org.apache.sis.internal.referencing.provider.AlbersEqualArea(),
                 WGS84_A,    // Semi-major axis length
