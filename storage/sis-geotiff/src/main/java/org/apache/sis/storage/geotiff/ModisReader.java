@@ -225,14 +225,10 @@ public class ModisReader {
             DefaultResponsibleParty responsible = new DefaultResponsibleParty();
             responsible.setOrganisationName(new DefaultInternationalString(value));
             responsible.setRole(Role.ORIGINATOR);
-            DefaultResponsibleParty responsiblepublisher = new DefaultResponsibleParty();
-            responsiblepublisher.setOrganisationName(new DefaultInternationalString(ModisPath.PUBLISHER));
-            responsiblepublisher.setRole(Role.PUBLISHER);
             DefaultResponsibleParty responsiblecontributor = new DefaultResponsibleParty();
             responsiblecontributor.setOrganisationName(new DefaultInternationalString(value));
             responsiblecontributor.setRole(Role.AUTHOR);
             identification.getPointOfContacts().add(responsible);
-            identification.getPointOfContacts().add(responsiblepublisher);
             identification.getPointOfContacts().add(responsiblecontributor);
             isEmpty = false;
         }

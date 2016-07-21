@@ -16,7 +16,7 @@ License for the specific language governing permissions and limitations under
 the License.
 -->
 <web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://java.sun.com/xml/ns/javaee" xmlns:web="http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" id="WebApp_ID" version="2.5">
-  <display-name>Apache SIS</display-name>
+<!--  <display-name>Apache SIS</display-name>
   <context-param>
     <param-name>org.apache.sis.services.config.filePath</param-name>
     <param-value>/path/to/sis-location-config.xml</param-value>
@@ -28,5 +28,54 @@ the License.
   <servlet-mapping>
     <servlet-name>LocationServlet</servlet-name>
     <url-pattern>/location</url-pattern>
-  </servlet-mapping>
+      </servlet-mapping>-->
+  <session-config>
+        <session-timeout>
+            30
+        </session-timeout>
+    </session-config>
+       <context-param>
+        <param-name>contextConfigLocation</param-name>
+        <param-value>/WEB-INF/applicationContext.xml</param-value>
+    </context-param>
+<!--    <context-param>
+        <param-name>propertyfile</param-name>
+        <param-value>config.properties</param-value>
+    </context-param>-->
+    <listener>
+        <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+    </listener>
+    <servlet>
+        <servlet-name>dispatcher</servlet-name>
+        <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+        <load-on-startup>2</load-on-startup>
+    </servlet>
+    <servlet>
+        <servlet-name>Jersey Web Application</servlet-name>
+        <servlet-class>com.sun.jersey.spi.container.servlet.ServletContainer</servlet-class>
+        <init-param>
+            <param-name>com.sun.jersey.config.property.packages</param-name>
+            <param-value>org.apache.sis.services</param-value>
+        </init-param>
+        <init-param>
+        <param-name>com.sun.jersey.config.property.JSPTemplatesBasePath</param-name>
+        <param-value>/WEB-INF/jsp</param-value>
+    </init-param>
+    <init-param>
+        <param-name>com.sun.jersey.config.property.WebPageContentRegex</param-name>
+        <param-value>/(resources|(WEB-INF/jsp))/.*</param-value>
+    </init-param>
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>Jersey Web Application</servlet-name>
+        <url-pattern>/VNSC/*</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>dispatcher</servlet-name>
+        <url-pattern>*.htm</url-pattern>
+    </servlet-mapping>
+    <welcome-file-list>
+        <welcome-file>redirect.jsp</welcome-file>
+    </welcome-file-list>
 </web-app>

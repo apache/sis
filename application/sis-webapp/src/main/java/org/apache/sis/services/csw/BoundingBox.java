@@ -30,7 +30,7 @@ import org.opengis.metadata.extent.GeographicBoundingBox;
  * @module
  */
 @XmlType(propOrder = {"lowerCorner", "upperCorner"})
-public class BoundingBox extends Element {
+class BoundingBox extends Element {
 
     /**
      * A space-separated list of minimal coordinate values for each dimension.

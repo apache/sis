@@ -185,8 +185,5 @@ final class LandsatKeys {
      * The keyword  of the GeoTIFF.
      */
     static final String KEY_WORDS = "Model/Raster/Projected ";
-    /**
-     * The publisher .
-     */
-    static final String PUBLISHER ="VNSC-Vietnam National Satellite Center";
+    
 }

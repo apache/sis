@@ -93,7 +93,8 @@ public class AnyText {
         bbox.setLowerCorner(west + " " + south);
         bbox.setUpperCorner(east + " " + north);
     }
-/**
+
+    /**
      * AnyText used to search.
      *
      * @param format the physical or digital manifestation of the resource
@@ -103,7 +104,7 @@ public class AnyText {
      * @throws Exception Constructs a new exception with the specified detail
      * message.
      */
-    public AnyText(String path,String format, String identifier, String startDate, String rangeDate) throws Exception {
+    public AnyText(String path, String format, String identifier, String startDate, String rangeDate) throws Exception {
         Record a = new Record(path);
         data.addAll(a.getAllRecord());
         this.format = format;
@@ -113,7 +114,8 @@ public class AnyText {
     }
 
     /**
-     * Set Bouding Box 
+     * Set Bouding Box
+     *
      * @param west The value is expressed in longitude in decimal degrees
      * (positive east)
      * @param east The value is expressed in longitude in decimal degrees
@@ -123,7 +125,7 @@ public class AnyText {
      * @param north The value is expressed in latitude in decimal degrees
      * (positive north).
      * @param bound bounding box
-     * @return bounding box define 
+     * @return bounding box define
      */
     public boolean checkBBOX(double east, double west, double south, double north, BoundingBox bound) {
         String lower[] = bound.getLowerCorner().split(" ");
@@ -178,10 +180,12 @@ public class AnyText {
     }
 
     /**
-     * Filter a bounding box for identifying a geographic area of interest use to search.
-     * @throws Exception  Exception checked exceptions. Checked exceptions need to be
-     * declared in a method or constructor's {@code throws} clause if they can
-     * be thrown by the execution of the method or constructor and propagate
+     * Filter a bounding box for identifying a geographic area of interest use
+     * to search.
+     *
+     * @throws Exception Exception checked exceptions. Checked exceptions need
+     * to be declared in a method or constructor's {@code throws} clause if they
+     * can be thrown by the execution of the method or constructor and propagate
      * outside the method or constructor boundary.
      */
     public void filter() throws Exception {

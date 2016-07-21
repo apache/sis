@@ -56,6 +56,9 @@
       <fileset dir="${project.root}/application/sis-console/src/main/resources">
         <include name="**/*.properties"/>
       </fileset>
+	<fileset dir="${project.root}/application/sis-webapp/src/main/resources">
+        <include name="**/*.properties"/>
+      </fileset>
     </copy>
 
 

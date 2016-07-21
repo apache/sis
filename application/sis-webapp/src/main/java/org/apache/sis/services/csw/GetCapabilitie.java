@@ -19,16 +19,16 @@ package org.apache.sis.services.csw;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
-
 /**
  *
- * @author  Thi Phuong Hao Nguyen (VNSC)
- * @since   0.8
+ * @author Thi Phuong Hao Nguyen (VNSC)
+ * @since 0.8
  * @version 0.8
  * @module
  */
 @XmlRootElement(name = "GetCapabilities")
 public class GetCapabilitie extends Element {
+
     /**
      * Accept version use to in service.
      */
@@ -38,11 +38,10 @@ public class GetCapabilitie extends Element {
      * Accept format use to in service.
      */
     private Capacibilities acceptformat;
-    
+
     /**
      * Contructor's GetCapabilitie.
      */
-
     public GetCapabilitie() {
 
     }

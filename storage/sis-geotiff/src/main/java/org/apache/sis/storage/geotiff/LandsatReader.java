@@ -421,6 +421,7 @@ public class LandsatReader {
      */
     private Identification createIdentification(final Date metadataTime, final Date sceneTime) throws DataStoreException {
       final DefaultDataIdentification identification = new DefaultDataIdentification();
+     
        
         final DefaultCitation citation = new DefaultCitation();
         boolean isEmpty = true;
@@ -447,20 +448,18 @@ public class LandsatReader {
         }
         value = getValue(ORIGIN);
         if (value != null) {
+            
             DefaultResponsibleParty responsible = new DefaultResponsibleParty();
             responsible.setOrganisationName(new DefaultInternationalString(value));
             responsible.setRole(Role.ORIGINATOR);
-            DefaultResponsibleParty responsiblepublisher = new DefaultResponsibleParty();
-            responsiblepublisher.setOrganisationName(new DefaultInternationalString(LandsatKeys.PUBLISHER));
-            responsiblepublisher.setRole(Role.PUBLISHER);
             DefaultResponsibleParty responsiblecontributor = new DefaultResponsibleParty();
             responsiblecontributor.setOrganisationName(new DefaultInternationalString(value));
             responsiblecontributor.setRole(Role.AUTHOR);
             identification.getPointOfContacts().add(responsible);
-            identification.getPointOfContacts().add(responsiblepublisher);
             identification.getPointOfContacts().add(responsiblecontributor);
             isEmpty = false;
         }
+       
         value = getValue(ORIGIN);
         if (value != null) {
             DefaultCitation citation1 = new DefaultCitation();
@@ -519,5 +518,12 @@ public class LandsatReader {
             listeners.warning(null, e);
         }
     }
-    
+     public static void main(String[] args) throws IOException, DataStoreException {
+        LandsatReader read;
+        try (BufferedReader in = new BufferedReader(new FileReader("/home/haonguyen/data/LC81230522014071LGN00_MTL.txt"))) {
+            read = new LandsatReader(in);
+        }
+        System.out.println("The Metadata of LC81230522014071LGN00_MTL.txt is:");
+        System.out.println(read.read());
+    }
 }

@@ -79,11 +79,6 @@ import org.opengis.metadata.citation.Responsibility;
 })
 public class SummaryRecord extends Element {
 
-    public SummaryRecord() 
-
-    {
-
-    }
     /**
      * An entity primarily responsible for making the content of the resource .
      */
@@ -176,6 +171,158 @@ public class SummaryRecord extends Element {
      */
     @XmlElement(namespace = OWS)
     private BoundingBox BoundingBox;
+
+    public SummaryRecord() {
+
+    }
+
+    /**
+     * Creates an initially empty summary record. This constructor is invoked by
+     * JAXB at unmarshalling time.
+     */
+    SummaryRecord(final Metadata object) {
+        List<Responsibility> responsibility = new ArrayList<>(first(object.getIdentificationInfo()).getPointOfContacts());
+        this.creator = first(responsibility.get(0).getParties()).getName().toString();
+        this.contributor = first(responsibility.get(2).getParties()).getName().toString();
+        this.publisher =  new ConfigurationReader().getValue("PUBLISHER");
+        this.subject = first(first(first(object.getIdentificationInfo()).getDescriptiveKeywords()).getKeywords()).toString();
+        this.identifier = object.getFileIdentifier();
+        this.relation = first(first(object.getIdentificationInfo()).getAggregationInfo()).getAggregateDataSetName().getTitle().toString();
+        this.type = first(object.getHierarchyLevels()).name();
+        this.title = first(object.getIdentificationInfo()).getCitation().getTitle().toString();
+        this.modified = first(object.getDateInfo()).getDate();
+        this.language = object.getLanguage().toString();
+        this.format = first(first(object.getDistributionInfo()).getDistributionFormats()).getName().toString();
+        Extent et = first(first(object.getIdentificationInfo()).getExtents());
+        GeographicBoundingBox gbd = (GeographicBoundingBox) first(et.getGeographicElements());
+        this.BoundingBox = new BoundingBox(gbd);
+
+    }
+
+    /**
+     * Creates a summary record initialized to the values extracted from the
+     * given ISO 19115 metadata. This constructor is invoked before marshalling
+     * with JAXB.
+     *
+     * @param metadata the root ISO 19115 metadata instance where to get
+     * information.
+     * @param locale the locale to use for converting
+     * {@link InternationalString} to {@link String}, or {@code null} for the
+     * system default.
+     */
+    public SummaryRecord(final Metadata metadata, final Locale locale) {
+        /*
+         * Get identifier and date information from the root metadata object. Note that:
+         *
+         *   - Identifier is optional in ISO 19115 but mandatory in <csw:Record>.
+         *   - Date information is mandatory in ISO 19115.
+         *
+         * First, try to get those information from the paths specified by OGC 07-045.
+         * They should be there, but if for some reason those information are missing,
+         * then the loop below will search for fallbacks in resource citations.
+         */
+        identifier = IdentifiedObjects.toString(metadata.getMetadataIdentifier());              // May be null.
+        setModified(metadata.getDateInfo());
+        /*
+         * Collect all titles, ignoring duplicated values. Opportunistically search for
+         * dates and identifier to use as fallbacks if the above code did not found them.
+         * Those fallbacks are specific to Apache SIS (not part of OGC 07-045).
+         */
+        GeographicBoundingBox bbox = null;
+        DefaultGeographicBoundingBox union = null;
+        final Set<String> titles = new HashSet<>();
+        for (final Identification identification : metadata.getIdentificationInfo()) {
+            if (identification != null) {
+                final Citation citation = identification.getCitation();
+                if (citation != null) {
+                    final InternationalString i18n = citation.getTitle();
+                    if (i18n != null) {
+                        titles.add(i18n.toString(locale));
+                    }
+                    if (identifier == null) {
+                        for (final Identifier id : citation.getIdentifiers()) {
+                            identifier = IdentifiedObjects.toString(id);
+                            if (identifier != null) {
+                                break;                      // Stop at the first identifier.
+                            }
+                        }
+                    }
+                    if (modified == null) {
+                        setModified(citation.getDates());
+                    }
+                }
+                for (final Extent extent : identification.getExtents()) {
+                    for (final GeographicExtent geo : extent.getGeographicElements()) {
+                        if (geo instanceof GeographicBoundingBox) {
+                            if (bbox == null) {
+                                bbox = (GeographicBoundingBox) geo;
+                            } else {
+                                if (union == null) {
+                                    bbox = union = new DefaultGeographicBoundingBox(bbox);
+                                }
+                                union.add((GeographicBoundingBox) geo);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        if (bbox != null) {
+            BoundingBox = new BoundingBox(bbox);
+        }
+        title = toString(titles, System.lineSeparator());
+        titles.clear();
+
+        // Collect all formats, ignoring duplicated values.
+        for (final Distribution distribution : metadata.getDistributionInfo()) {
+            for (final Format df : distribution.getDistributionFormats()) {
+                final Citation citation = df.getFormatSpecificationCitation();
+                if (citation != null) {
+                    for (final InternationalString i18n : citation.getAlternateTitles()) {
+                        if (i18n != null) {
+                            titles.add(i18n.toString(locale));
+                        }
+                    }
+                }
+            }
+        }
+        format = toString(titles, ", ");
+        titles.clear();
+
+        // Retain only the first type, if any.
+        ScopeCode code = null;
+        for (final MetadataScope scope : metadata.getMetadataScopes()) {
+            code = scope.getResourceScope();
+            if (code != null) {
+                break;
+            }
+        }
+        if (code == null) {
+            code = ScopeCode.DATASET;       // Default value specified by OGC 07-045.
+        }
+        type = Types.getCodeName(code);
+    }
+
+    /**
+     * Sets the {@link #modified} field to the latest {@code CREATION} or
+     * {@code LAST_UPDATE} date found in the given collection. If the given is
+     * null or empty, then this method does nothing.
+     */
+    private void setModified(final Collection<? extends CitationDate> dates) {
+        if (dates != null) {                            // Paranoiac check.
+            for (final CitationDate date : dates) {
+                final DateType dt = date.getDateType();
+                if (DateType.CREATION.equals(dt) || DateType.LAST_UPDATE.equals(dt)) {
+                    final Date t = date.getDate();
+                    if (t != null) {
+                        if (modified == null || t.after(modified)) {
+                            modified = t;
+                        }
+                    }
+                }
+            }
+        }
+    }
 
     /**
      * Returns a entity primarily responsible for making the content of the
@@ -350,154 +497,6 @@ public class SummaryRecord extends Element {
      */
     public void setBoundingBox(BoundingBox BoundingBox) {
         this.BoundingBox = BoundingBox;
-    }
-
-    /**
-     * Creates an initially empty summary record. This constructor is invoked by
-     * JAXB at unmarshalling time.
-     */
-    SummaryRecord(final Metadata object) {
-        List<Responsibility> responsibility = new ArrayList<>(first(object.getIdentificationInfo()).getPointOfContacts());
-        this.creator = first(responsibility.get(0).getParties()).getName().toString();
-        this.contributor = first(responsibility.get(2).getParties()).getName().toString();
-        this.publisher = first(responsibility.get(1).getParties()).getName().toString();
-        this.subject = first(first(first(object.getIdentificationInfo()).getDescriptiveKeywords()).getKeywords()).toString();
-        this.identifier = object.getFileIdentifier();
-        this.relation = first(first(object.getIdentificationInfo()).getAggregationInfo()).getAggregateDataSetName().getTitle().toString();
-        this.type = first(object.getHierarchyLevels()).name();
-        this.title = first(object.getIdentificationInfo()).getCitation().getTitle().toString();
-        this.modified = first(object.getDateInfo()).getDate();
-        this.language = object.getLanguage().toString();
-        this.format = first(first(object.getDistributionInfo()).getDistributionFormats()).getName().toString();
-        Extent et = first(first(object.getIdentificationInfo()).getExtents());
-        GeographicBoundingBox gbd = (GeographicBoundingBox) first(et.getGeographicElements());
-        this.BoundingBox = new BoundingBox(gbd);
-
-    }
-
-    /**
-     * Creates a summary record initialized to the values extracted from the
-     * given ISO 19115 metadata. This constructor is invoked before marshalling
-     * with JAXB.
-     *
-     * @param metadata the root ISO 19115 metadata instance where to get
-     * information.
-     * @param locale the locale to use for converting
-     * {@link InternationalString} to {@link String}, or {@code null} for the
-     * system default.
-     */
-    public SummaryRecord(final Metadata metadata, final Locale locale) {
-        /*
-         * Get identifier and date information from the root metadata object. Note that:
-         *
-         *   - Identifier is optional in ISO 19115 but mandatory in <csw:Record>.
-         *   - Date information is mandatory in ISO 19115.
-         *
-         * First, try to get those information from the paths specified by OGC 07-045.
-         * They should be there, but if for some reason those information are missing,
-         * then the loop below will search for fallbacks in resource citations.
-         */
-        identifier = IdentifiedObjects.toString(metadata.getMetadataIdentifier());              // May be null.
-        setModified(metadata.getDateInfo());
-        /*
-         * Collect all titles, ignoring duplicated values. Opportunistically search for
-         * dates and identifier to use as fallbacks if the above code did not found them.
-         * Those fallbacks are specific to Apache SIS (not part of OGC 07-045).
-         */
-        GeographicBoundingBox bbox = null;
-        DefaultGeographicBoundingBox union = null;
-        final Set<String> titles = new HashSet<>();
-        for (final Identification identification : metadata.getIdentificationInfo()) {
-            if (identification != null) {
-                final Citation citation = identification.getCitation();
-                if (citation != null) {
-                    final InternationalString i18n = citation.getTitle();
-                    if (i18n != null) {
-                        titles.add(i18n.toString(locale));
-                    }
-                    if (identifier == null) {
-                        for (final Identifier id : citation.getIdentifiers()) {
-                            identifier = IdentifiedObjects.toString(id);
-                            if (identifier != null) {
-                                break;                      // Stop at the first identifier.
-                            }
-                        }
-                    }
-                    if (modified == null) {
-                        setModified(citation.getDates());
-                    }
-                }
-                for (final Extent extent : identification.getExtents()) {
-                    for (final GeographicExtent geo : extent.getGeographicElements()) {
-                        if (geo instanceof GeographicBoundingBox) {
-                            if (bbox == null) {
-                                bbox = (GeographicBoundingBox) geo;
-                            } else {
-                                if (union == null) {
-                                    bbox = union = new DefaultGeographicBoundingBox(bbox);
-                                }
-                                union.add((GeographicBoundingBox) geo);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        if (bbox != null) {
-            BoundingBox = new BoundingBox(bbox);
-        }
-        title = toString(titles, System.lineSeparator());
-        titles.clear();
-
-        // Collect all formats, ignoring duplicated values.
-        for (final Distribution distribution : metadata.getDistributionInfo()) {
-            for (final Format df : distribution.getDistributionFormats()) {
-                final Citation citation = df.getFormatSpecificationCitation();
-                if (citation != null) {
-                    for (final InternationalString i18n : citation.getAlternateTitles()) {
-                        if (i18n != null) {
-                            titles.add(i18n.toString(locale));
-                        }
-                    }
-                }
-            }
-        }
-        format = toString(titles, ", ");
-        titles.clear();
-
-        // Retain only the first type, if any.
-        ScopeCode code = null;
-        for (final MetadataScope scope : metadata.getMetadataScopes()) {
-            code = scope.getResourceScope();
-            if (code != null) {
-                break;
-            }
-        }
-        if (code == null) {
-            code = ScopeCode.DATASET;       // Default value specified by OGC 07-045.
-        }
-        type = Types.getCodeName(code);
-    }
-
-    /**
-     * Sets the {@link #modified} field to the latest {@code CREATION} or
-     * {@code LAST_UPDATE} date found in the given collection. If the given is
-     * null or empty, then this method does nothing.
-     */
-    private void setModified(final Collection<? extends CitationDate> dates) {
-        if (dates != null) {                            // Paranoiac check.
-            for (final CitationDate date : dates) {
-                final DateType dt = date.getDateType();
-                if (DateType.CREATION.equals(dt) || DateType.LAST_UPDATE.equals(dt)) {
-                    final Date t = date.getDate();
-                    if (t != null) {
-                        if (modified == null || t.after(modified)) {
-                            modified = t;
-                        }
-                    }
-                }
-            }
-        }
     }
 
     /**

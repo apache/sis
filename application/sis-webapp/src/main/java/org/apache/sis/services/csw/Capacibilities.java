@@ -19,16 +19,16 @@ package org.apache.sis.services.csw;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
-
 /**
  *
- * @author  Thi Phuong Hao Nguyen (VNSC)
- * @since   0.8
+ * @author Thi Phuong Hao Nguyen (VNSC)
+ * @since 0.8
  * @version 0.8
  * @module
  */
 @XmlRootElement(namespace = Element.OWS)
-public class Capacibilities extends Element {
+class Capacibilities extends Element {
+
     /**
      * Version for service.
      */
@@ -41,6 +41,7 @@ public class Capacibilities extends Element {
 
     /**
      * Return version for service.
+     *
      * @return version for service.
      */
     @XmlElement(namespace = OWS, name = "Version")
@@ -50,6 +51,7 @@ public class Capacibilities extends Element {
 
     /**
      * Set version for service.
+     *
      * @param Version version for service
      */
     public void setVersion(String[] Version) {
@@ -58,6 +60,7 @@ public class Capacibilities extends Element {
 
     /**
      * Return format that service reponse.
+     *
      * @return format that service reponse
      */
     @XmlElement(namespace = OWS, name = "OutputFormat")
@@ -67,6 +70,7 @@ public class Capacibilities extends Element {
 
     /**
      * Set format that service reponse.
+     *
      * @param OutputFormat format that service reponse
      */
     public void setOutputFormat(String[] OutputFormat) {

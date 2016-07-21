@@ -16,9 +16,6 @@
  */
 package org.apache.sis.services.csw;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -27,29 +24,29 @@ import java.util.Map;
 import org.apache.sis.storage.DataStoreException;
 import org.opengis.metadata.Metadata;
 
-
 /**
  *
- * @author  Thi Phuong Hao Nguyen (VNSC)
- * @author  Minh Chinh Vu (VNSC)
- * @since   0.8
+ * @author Thi Phuong Hao Nguyen (VNSC)
+ * @author Minh Chinh Vu (VNSC)
+ * @since 0.8
  * @version 0.8
  * @module
  */
 public class Record {
-    
-    
+
     Map<String, SummaryRecord> record;
+
     /**
      * Contructor's Record
+     *
      * @throws IOException the general class of exceptions produced by failed or
      * interrupted I/O operations
      * @throws DataStoreException if an error occurred while reading a metadata
      * file.
-     * @throws Exception Exception checked exceptions. Checked exceptions need to be
-     * declared in a method or constructor's {@code throws} clause if they can
-     * be thrown by the execution of the method or constructor and propagate
-     * outside the method or constructor boundary. 
+     * @throws Exception Exception checked exceptions. Checked exceptions need
+     * to be declared in a method or constructor's {@code throws} clause if they
+     * can be thrown by the execution of the method or constructor and propagate
+     * outside the method or constructor boundary.
      */
     public Record(String path) throws IOException, DataStoreException, Exception {
         Catalog catalog = new Catalog(path);
@@ -61,27 +58,28 @@ public class Record {
         for (Metadata id : catalog.getAllMetadata()) {
             SummaryRecord summary = new SummaryRecord(id);
             String key = id.getFileIdentifier();
-            record.put(key,  summary);
+            record.put(key, summary);
         }
     }
+
     /**
      * Return all record of metadata
      *
      * @return all record of metadata
-     * @throws Exception  Exception checked exceptions. Checked exceptions need to be
-     * declared in a method or constructor's {@code throws} clause if they can
-     * be thrown by the execution of the method or constructor and propagate
+     * @throws Exception Exception checked exceptions. Checked exceptions need
+     * to be declared in a method or constructor's {@code throws} clause if they
+     * can be thrown by the execution of the method or constructor and propagate
      * outside the method or constructor boundary.
      */
-    public List<SummaryRecord> getAllRecord() { 
-        return new ArrayList<SummaryRecord>(record.values()); 
-    } 
+    public List<SummaryRecord> getAllRecord() {
+        return new ArrayList<SummaryRecord>(record.values());
+    }
 
     /**
      * Return All Record Paginated
      *
-     * @param start start record 
-     * @param size size list record 
+     * @param start start record
+     * @param size size list record
      * @return All Record Paginated
      * @throws Exception checked exceptions. Checked exceptions need to be
      * declared in a method or constructor's {@code throws} clause if they can
@@ -89,10 +87,11 @@ public class Record {
      * outside the method or constructor boundary.
      */
     public List<SummaryRecord> getAllRecordPaginated(int start, int size) throws Exception {
-        ArrayList<SummaryRecord> list = new ArrayList<SummaryRecord>(record.values()); 
-        if (start + size > list.size()) 
+        ArrayList<SummaryRecord> list = new ArrayList<SummaryRecord>(record.values());
+        if (start + size > list.size()) {
             return new ArrayList<SummaryRecord>();
-        
+        }
+
         return list.subList(start, start + size);
     }
 
@@ -110,5 +109,5 @@ public class Record {
     public SummaryRecord getRecordById(String id) throws Exception {
         return record.get(id);
     }
-    
+
 }

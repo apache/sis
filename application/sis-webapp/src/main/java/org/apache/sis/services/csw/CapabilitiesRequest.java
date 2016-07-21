@@ -19,11 +19,10 @@ package org.apache.sis.services.csw;
 import java.util.ArrayList;
 import java.util.List;
 
-
 /**
  *
- * @author  Thi Phuong Hao Nguyen (VNSC)
- * @since   0.8
+ * @author Thi Phuong Hao Nguyen (VNSC)
+ * @since 0.8
  * @version 0.8
  * @module
  */

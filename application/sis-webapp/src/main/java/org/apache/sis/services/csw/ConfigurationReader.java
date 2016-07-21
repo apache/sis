@@ -1,3 +1,4 @@
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -16,25 +17,22 @@
  */
 package org.apache.sis.services.csw;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
-
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
- * @author  Thi Phuong Hao Nguyen (VNSC)
- * @since   0.8
+ * @author Thi Phuong Hao Nguyen (VNSC)
+ * @since 0.8
  * @version 0.8
  * @module
  */
 public class ConfigurationReader {
-    /**
-     * The values in propeties.
-     */
-    String result = "";
 
+    String value = "";
     /**
      * The propeties is used.
      */
@@ -48,27 +46,27 @@ public class ConfigurationReader {
      * occurred. This class is the general class of exceptions produced by
      * failed or interrupted I/O operations.
      */
-    public String getPropValues() throws IOException {
+    public String getValue(String key) {
+        Properties prop = new Properties();
+
         try {
-            Properties prop = new Properties();
+
             String propFileName = "config.properties";
 
-            inputStream = getClass().getClassLoader().getResourceAsStream(propFileName);
+            inputStream = ConfigurationReader.class.getResourceAsStream(propFileName);
 
             if (inputStream != null) {
                 prop.load(inputStream);
-            } else {
-                throw new FileNotFoundException("property file '" + propFileName + "' not found in the classpath");
+                value = prop.getProperty(key);
             }
             /**
              * Get the property value and print it out.
              *
              */
-            String path = prop.getProperty("Path");
-            result = path;
-        } finally {
-            inputStream.close();
+        } catch (IOException ex) {
+            Logger.getLogger(ConfigurationReader.class.getName()).log(Level.SEVERE, null, ex);
         }
-        return result;
+
+        return value;
     }
 }

@@ -18,15 +18,15 @@ package org.apache.sis.storage.geotiff;
 import java.util.ArrayList;
 import java.util.List;
 
-
 /**
  *
- * @author  Thi Phuong Hao Nguyen (VNSC)
- * @since   0.8
+ * @author Thi Phuong Hao Nguyen (VNSC)
+ * @since 0.8
  * @version 0.8
  * @module
  */
 public class ModisPath {
+
     /**
      * Do not allow instantiation of this class.
      */
@@ -117,10 +117,6 @@ public class ModisPath {
      * Path for Input Granule.
      */
     static final String InputGranule = "DataFileContainer";
-    /**
-     * The publisher .
-     */
-    static final String PUBLISHER ="VNSC-Vietnam National Satellite Center";
 
     /**
      * List all the path use to mapping metadata

@@ -22,10 +22,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.net.URISyntaxException;
-import java.nio.file.Path;
-import java.nio.file.Files;
-import java.nio.file.DirectoryStream;
 import java.util.ArrayList;
 import java.util.List;
 import javax.xml.bind.JAXBException;
@@ -33,7 +29,6 @@ import org.opengis.metadata.Metadata;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.geotiff.LandsatReader;
 import org.apache.sis.storage.geotiff.ModisReader;
-import org.apache.sis.xml.XML;
 
 /**
  * Collection of ISO 19115 metadata. Current implementation parses the metadata

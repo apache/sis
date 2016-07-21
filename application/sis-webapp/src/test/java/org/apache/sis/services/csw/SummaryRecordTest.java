@@ -30,10 +30,10 @@ import org.apache.sis.metadata.iso.extent.DefaultExtent;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.metadata.iso.identification.DefaultServiceIdentification;
 import org.apache.sis.test.TestCase;
-import org.junit.Test;
 
 import static java.util.Collections.singleton;
 import static org.apache.sis.test.TestUtilities.date;
+import org.junit.Test;
 
 
 /**
