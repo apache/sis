@@ -51,6 +51,14 @@ abstract class EqualAreaProjection extends NormalizedProjection {
      *
      * Note that since this boolean is static final, the compiler should exclude the code in the branch that is never
      * executed (no need to comment-out that code).
+     *
+     *
+     * <p><b>BENCHMARK AND ANALYSIS:</b>
+     * as of July 2016, benchmarking shows no benefit in using trigonometric identities for {@code EqualAreaProjection}
+     * (contrarily to {@link ConformalProjection} where we did measured a benefit). This may be because in this class,
+     * the series expansion is unconditionally followed by iterative method in order to reach the centimetric precision.
+     * We observe that the original series expansion allows convergence in only one iteration, while the formulas using
+     * trigonometric identifies often requires two iterations. Consequently we disallow those modifications for now.</p>
      */
     private static final boolean ALLOW_TRIGONOMETRIC_IDENTITIES = false;
 
@@ -212,9 +220,9 @@ abstract class EqualAreaProjection extends NormalizedProjection {
             final double t4β = 0.5 - sin2_β;                                        // = sin(4β) / ( 4⋅sin(2β))
             final double t8β = (cos2_β - sin2_β)*(cos2_β*cos2_β - cos2_β + 1./8);   // = sin(8β) / (32⋅sin(2β))
 
-            assert identityEquals(t2β, sin(2*β) / ( 2      ));
-            assert identityEquals(t4β, sin(4*β) / ( 8 * t2β));
-            assert identityEquals(t8β, sin(8*β) / (64 * t2β));
+            assert ConformalProjection.identityEquals(t2β, sin(2*β) / ( 2      ));
+            assert ConformalProjection.identityEquals(t4β, sin(4*β) / ( 8 * t2β));
+            assert ConformalProjection.identityEquals(t8β, sin(8*β) / (64 * t2β));
 
             φ = (ci8*t8β  +  ci4*t4β  +  ci2) * t2β  +  β;
         }
@@ -243,18 +251,6 @@ abstract class EqualAreaProjection extends NormalizedProjection {
             }
         }
         throw new ProjectionException(Errors.format(Errors.Keys.NoConvergence));
-    }
-
-    /**
-     * Verifies if a trigonometric identity produced the expected value. This method is used in assertions only.
-     * The tolerance threshold is approximatively 1.5E-12 (note that it still about 7000 time greater than
-     * {@code Math.ulp(1.0)}).
-     *
-     * @see #ALLOW_TRIGONOMETRIC_IDENTITIES
-     */
-    private static boolean identityEquals(final double actual, final double expected) {
-        // Use !(a > b) instead of (a <= b) in order to tolerate NaN.
-        return !(abs(actual - expected) > (ANGULAR_TOLERANCE / 1000));
     }
 
     /**
