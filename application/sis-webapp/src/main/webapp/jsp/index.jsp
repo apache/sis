@@ -43,10 +43,11 @@
                             <div class="col-md-3"><label>Name</label></div>
                             <div class="col-md-9"><input class="form-control" type="text" name="identifier"/></div>
                         </div>
-                        <div class="row content-search">
+                        <div class="row content-search" onchange="getCheckedCheckboxesFor()">
                             <div class="col-md-3"><label>Format</label></div>
-                            <div class="col-md-3"><label class="checkbox-inline"><input type="checkbox" value="GEOTIFF" name="format">Geotiff</label></div>
-                            <div class="col-md-3"><label class="checkbox-inline"><input type="checkbox" value="MOD" name="format">Modis</label></div>              
+                            <div class="col-md-3"><label class="checkbox-inline"><input type="checkbox" value="GEOTIFF" name="formatType">Geotiff</label></div>
+                            <div class="col-md-3"><label class="checkbox-inline"><input type="checkbox" value="MOD" name="formatType">Modis</label></div>
+                            <div style="display:none"><input id="format" name="format"/></div>
                         </div>
                         
                     <label style="font-size:20px;">Date</label>
