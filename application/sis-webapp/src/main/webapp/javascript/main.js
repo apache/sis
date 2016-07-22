@@ -52,4 +52,13 @@ function showNewRect(event) {
 
     infoWindow.open(map);
 }
+
+function getCheckedCheckboxesFor() {
+    var checkboxes = document.querySelectorAll('input[name="formatType"]:checked'), values = [];
+    Array.prototype.forEach.call(checkboxes, function(el) {
+        values.push(el.value);
+    });
+    console.log(values);
+    document.getElementById("format").value = values;
+}
    

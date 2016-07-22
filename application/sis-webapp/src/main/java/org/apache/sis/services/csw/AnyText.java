@@ -54,7 +54,8 @@ public class AnyText {
      */
     String rangeDate;
     List<SummaryRecord> data = new ArrayList<SummaryRecord>();
-
+    static ConfigurationReader path = new ConfigurationReader();
+    
     /**
      * Constructor for AnyText
      *
@@ -163,7 +164,30 @@ public class AnyText {
 
         return true;
     }
-
+    
+    /**
+     * CheckFormat
+     *
+     * @param itFormat set the date value start
+     * @return true itFormat have value in format 
+     */
+    
+    public boolean checkFormat(String itFormat) {
+        if(format.contains(",")){
+            String[] result = format.split(",");
+            for(int i = 0; i < result.length; i++) {
+                if(itFormat.contains(result[i])) {
+                    return true;
+                }
+            }
+        } else {
+            if(itFormat.contains(format)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
     /**
      * CheckDate
      *
@@ -223,7 +247,7 @@ public class AnyText {
             /**
              * Check by format type.
              */
-            if (!itSum.getFormat().contains(format)) {
+            if (!checkFormat(itSum.getFormat())) {
                 it.remove();
                 continue;
                 /**
