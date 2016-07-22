@@ -18,6 +18,8 @@ package org.apache.sis.storage.geotiff;
 
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Locale;
 import java.io.IOException;
 import java.nio.ByteOrder;
 import org.apache.sis.internal.storage.ChannelDataInput;
@@ -56,9 +58,20 @@ final class Reader extends GeoTIFF {
     private final long origin;
 
     /**
-     * {@code true} if the file uses the BigTIFF format, or (@code false} for standard TIFF.
+     * A multiplication factor for the size of pointers, expressed as a power of 2.
+     * The pointer size in bytes is given by {@code Integer.BYTES << pointerExpansion}.
+     *
+     * <p>Values can be:</p>
+     * <ul>
+     *   <li>0 for the classical TIFF format, which uses 4 bytes.</li>
+     *   <li>1 for the BigTIFF format, which uses 8 bytes.</li>
+     *   <li>2 for 16 bytes (not yet used, but the BigTIFF specification makes provision for it).
+     * </ul>
+     *
+     * Those values are defined that way for making easier (like a boolean flag) to test if
+     * the file is a BigTIFF format, with statement like {@code if (intSizeExpansion != 0)}.
      */
-    private final boolean isBigTIFF;
+    private final byte intSizeExpansion;
 
     /**
      * Positions of each <cite>Image File Directory</cite> (IFD) in this file. Those positions are fetched
@@ -73,7 +86,8 @@ final class Reader extends GeoTIFF {
      * @throws IOException if an error occurred while reading bytes from the stream.
      * @throws DataStoreException if the file is not encoded in the TIFF or BigTIFF format.
      */
-    Reader(final ChannelDataInput input) throws IOException, DataStoreException {
+    Reader(final ChannelDataInput input, final Locale locale) throws IOException, DataStoreException {
+        super(locale);
         this.input = input;
         origin = input.getStreamPosition();
         /*
@@ -93,16 +107,37 @@ final class Reader extends GeoTIFF {
              * Currently, that pointer type canonly be the Java Long type (8 bytes),
              * but a future BigTIFF version may allow 16 bytes wide pointers.
              */
-            final short magicNumber = input.readShort();
-            if (isBigTIFF = (magicNumber == 43)) {
-                if (input.readShort() == Long.BYTES && input.readShort() == 0) {
+            switch (input.readShort()) {
+                case 42: {                                          // Magic number of classical format.
+                    intSizeExpansion = 0;
                     return;
                 }
-            } else if (magicNumber == 42) {
-                return;
+                case 43: {                                          // Magic number of BigTIFF format.
+                    final int numBits  = input.readUnsignedShort();
+                    final int powerOf2 = Integer.numberOfTrailingZeros(numBits);    // In the [0 … 32] range.
+                    if (numBits == (1L << powerOf2) && input.readShort() == 0) {
+                        intSizeExpansion = (byte) (powerOf2 - 2);
+                        if (intSizeExpansion == 1) {
+                            /*
+                             * Above 'intSizeExpension' calculation was a little bit useless since we accept only
+                             * one result in the end, but we did that generic computation anyway for keeping the
+                             * code almost ready if the BigTIFF specification adds support for 16 bytes pointer.
+                             */
+                            return;
+                        }
+                    }
+                }
             }
         }
-        throw new DataStoreException(Errors.format(Errors.Keys.UnexpectedFileFormat_2, "TIFF", input.filename));
+        throw new DataStoreException(Errors.getResources(locale).getString(
+                Errors.Keys.UnexpectedFileFormat_2, "TIFF", input.filename));
+    }
+
+    /**
+     * Returns a default message for parsing error.
+     */
+    private String canNotRead() {
+        return Errors.getResources(locale).getString(Errors.Keys.CanNotParseFile_2, "TIFF", input.filename);
     }
 
     /**
@@ -111,8 +146,15 @@ final class Reader extends GeoTIFF {
      *
      * @return The next pointer value.
      */
-    private long readPointer() throws IOException {
-        return isBigTIFF ? input.readLong() : input.readUnsignedInt();
+    private long readUnsignedInt() throws IOException, DataStoreException {
+        if (intSizeExpansion == 0) {
+            return input.readUnsignedInt();         // Classical format.
+        }
+        final long pointer = input.readLong();      // BigTIFF format.
+        if (pointer >= 0) {
+            return pointer;
+        }
+        throw new DataStoreException(canNotRead());
     }
 
     /**
@@ -121,23 +163,66 @@ final class Reader extends GeoTIFF {
      *
      * @return The next directory entry value.
      */
-    final long readDirectoryEntry() throws IOException {
-        return isBigTIFF ? input.readLong() : input.readUnsignedShort();
+    private long readUnsignedShort() throws IOException, DataStoreException {
+        if (intSizeExpansion == 0) {
+            return input.readUnsignedShort();       // Classical format.
+        }
+        final long entry = input.readLong();        // BigTIFF format.
+        if (entry >= 0) {
+            return entry;
+        }
+        throw new DataStoreException(canNotRead());
     }
 
     /**
-     * Reads the next bytes in the {@linkplain #input}, which must be the 32 or 64 bits offset to the
-     * next <cite>Image File Directory</cite> (IFD).
+     * Reads the next bytes in the {@linkplain #input}, which must be the 32 or 64 bits
+     * offset to the next <cite>Image File Directory</cite> (IFD), then parses that IFD.
+     * The IFD consists of a 2 (classical) or 8 (BigTiff)-bytes count of the number of
+     * directory entries, followed by a sequence of 12-byte field entries, followed by
+     * a pointer to the next IFD (or 0 if none).
+     *
+     * <p>The parsed entry is added to the {@link #imageFileDirectories} list.</p>
      *
      * @return {@code true} if we found a new IFD, or {@code false} if there is no more IFD.
+     * @throws ArithmeticException if the pointer to the next IFD is too far.
      */
-    private boolean readImageFileDirectory() throws IOException {
-        final long offset = readPointer();
+    private boolean nextImageFileDirectory() throws IOException, DataStoreException {
+        final long offset = readUnsignedInt();
         if (offset == 0) {
             return false;
         }
-        input.seek(offset);
-        return imageFileDirectories.add(new ImageFileDirectory(this, offset));
+        /*
+         * Design note: we parse the Image File Directory entry now because even if we were
+         * not interrested in that IFD, we need to go anyway after its last record in order
+         * to get the pointer to the next IFD.
+         */
+        input.seek(Math.addExact(origin, offset));
+        final int offsetSize = Integer.BYTES << intSizeExpansion;
+        final ImageFileDirectory dir = new ImageFileDirectory(offset);
+        final Collection<long[]> deferred = new ArrayList<>(4);
+        for (long remaining = readUnsignedShort(); --remaining >= 0;) {
+            /*
+             * Each entry in the Image File Directory has the following format:
+             *   - The tag that identifies the field (see constants in the Tags class).
+             *   - The field type (see constants inherited from the GeoTIFF class).
+             *   - The number of values of the indicated type.
+             *   - The value, or the file offset to the value elswhere in the file.
+             */
+            final int   tag   = input.readUnsignedShort();
+            final short type  = input.readShort();
+            final long  count = readUnsignedInt();
+            final long  size  = Math.multiplyExact(Types.size(type), count);
+            final long  value = readUnsignedInt();
+            if (size <= offsetSize) {
+                // offset is the real value(s).
+                dir.addEntry(tag, type, value);
+            } else {
+                // offset from beginning of file where the values are stored.
+                deferred.add(new long[] {tag, type, count, value});
+            }
+        }
+        // TODO: process deferred data.
+        return imageFileDirectories.add(dir);
     }
 
     /**

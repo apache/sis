@@ -59,7 +59,7 @@ public class GeoTiffStore extends DataStore {
         }
         storage.closeAllExcept(input);
         try {
-            reader = new Reader(input);
+            reader = new Reader(input, super.getLocale());
         } catch (IOException e) {
             throw new DataStoreException(e);
         }
@@ -84,7 +84,7 @@ public class GeoTiffStore extends DataStore {
      * @throws DataStoreException if an error occurred while closing the GeoTIFF file.
      */
     @Override
-    public void close() throws DataStoreException {
+    public synchronized void close() throws DataStoreException {
         final Reader r = reader;
         reader = null;
         if (r != null) try {
