@@ -16,8 +16,6 @@
  */
 package org.apache.sis.storage.geotiff;
 
-import java.io.IOException;
-
 
 /**
  * An Image File Directory (FID) in a TIFF image.
@@ -32,19 +30,21 @@ import java.io.IOException;
  */
 final class ImageFileDirectory {
     /**
-     * The offset (in bytes) of the Image File Directory (FID).
+     * The offset (in bytes since the beginning of the TIFF stream) of the Image File Directory (FID).
      * The directory may be at any location in the file after the header.
      * In particular, an Image File Directory may follow the image that it describes.
      */
     final long offset;
 
     /**
-     * The size of the image described by this FID.
+     * The size of the image described by this FID, or 0 if the information has not been found.
+     * Should be interpreted as an unsigned value.
      */
     private int imageWidth, imageHeight;
 
     /**
-     * The size of each tile.
+     * The size of each tile, or 0 if the information has not be found.
+     * Should be interpreted as an unsigned value.
      */
     private int tileWidth, tileHeight;
 
@@ -53,7 +53,11 @@ final class ImageFileDirectory {
     /**
      * Creates a new image file directory located at the given offset (in bytes) in the TIFF file.
      */
-    ImageFileDirectory(final Reader reader, long offset) throws IOException {
+    ImageFileDirectory(final long offset) {
         this.offset = offset;
+    }
+
+    void addEntry(final int tag, final int type, final long value) {
+        // TODO
     }
 }
