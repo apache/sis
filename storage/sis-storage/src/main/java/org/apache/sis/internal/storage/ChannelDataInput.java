@@ -76,12 +76,12 @@ public class ChannelDataInput extends ChannelData {
      * If the buffer already contains some data, then the {@code filled} argument shall be {@code true}.
      * Otherwise (e.g. if it is a newly created buffer), then {@code filled} shall be {@code false}.
      *
-     * @param  filename A file identifier used only for formatting error message.
-     * @param  channel  The channel from where data are read.
-     * @param  buffer   The buffer where to copy the data.
-     * @param  filled   {@code true} if the buffer already contains data, or {@code false} if it needs
-     *                  to be initially filled with some content read from the channel.
-     * @throws IOException If an error occurred while reading the channel.
+     * @param  filename  a file identifier used only for formatting error message.
+     * @param  channel   the channel from where data are read.
+     * @param  buffer    the buffer where to copy the data.
+     * @param  filled    {@code true} if the buffer already contains data, or {@code false} if it needs
+     *                   to be initially filled with some content read from the channel.
+     * @throws IOException if an error occurred while reading the channel.
      */
     public ChannelDataInput(final String filename, final ReadableByteChannel channel, final ByteBuffer buffer,
             final boolean filled) throws IOException
@@ -101,8 +101,8 @@ public class ChannelDataInput extends ChannelData {
      * <cite>end of stream</cite>. Otherwise this method reads an arbitrary amount of bytes not greater
      * than the space available in the buffer, and returns the amount bytes actually read.
      *
-     * @return The number of bytes read, or -2 if the buffer is full, or -1 on <cite>end of stream</cite>.
-     * @throws IOException If an error occurred while reading the bytes.
+     * @return the number of bytes read, or -2 if the buffer is full, or -1 on <cite>end of stream</cite>.
+     * @throws IOException if an error occurred while reading the bytes.
      *
      * @since 0.4
      */
@@ -130,7 +130,7 @@ public class ChannelDataInput extends ChannelData {
      * the channel has reached the end of stream, then this method returns {@code false}.
      *
      * @return {@code true} if the buffer contains at least one remaining byte.
-     * @throws IOException If it was necessary to read from the channel and this operation failed.
+     * @throws IOException if it was necessary to read from the channel and this operation failed.
      */
     public final boolean hasRemaining() throws IOException {
         if (buffer.hasRemaining()) {
@@ -152,9 +152,9 @@ public class ChannelDataInput extends ChannelData {
      * It is caller's responsibility to ensure that the given number of bytes is
      * not greater than the {@linkplain ByteBuffer#capacity() buffer capacity}.
      *
-     * @param  n The minimal number of bytes needed in the {@linkplain #buffer buffer}.
-     * @throws EOFException If the channel has reached the end of stream.
-     * @throws IOException If an other kind of error occurred while reading.
+     * @param  n  the minimal number of bytes needed in the {@linkplain #buffer buffer}.
+     * @throws EOFException if the channel has reached the end of stream.
+     * @throws IOException if an other kind of error occurred while reading.
      */
     public final void ensureBufferContains(int n) throws EOFException, IOException {
         assert n >= 0 && n <= buffer.capacity() : n;
@@ -179,8 +179,8 @@ public class ChannelDataInput extends ChannelData {
     /**
      * Makes sure that the buffer contains at least one remaining byte.
      *
-     * @throws EOFException If the channel has reached the end of stream.
-     * @throws IOException If an other kind of error occurred while reading.
+     * @throws EOFException if the channel has reached the end of stream.
+     * @throws IOException if an other kind of error occurred while reading.
      */
     private void ensureNonEmpty() throws IOException {
         if (!hasRemaining()) {
@@ -207,8 +207,8 @@ public class ChannelDataInput extends ChannelData {
      * Reads a single bit from the stream. The bit to be read depends on the
      * {@linkplain #getBitOffset() current bit offset}.
      *
-     * @return The value of the next bit from the stream.
-     * @throws IOException If an error occurred while reading (including EOF).
+     * @return the value of the next bit from the stream.
+     * @throws IOException if an error occurred while reading (including EOF).
      */
     public final int readBit() throws IOException {
         return (int) readBits(1);
@@ -218,9 +218,9 @@ public class ChannelDataInput extends ChannelData {
      * Reads many bits from the stream. The first bit to be read depends on the
      * {@linkplain #getBitOffset() current bit offset}.
      *
-     * @param  numBits The number of bits to read.
-     * @return The value of the next bits from the stream.
-     * @throws IOException If an error occurred while reading (including EOF).
+     * @param  numBits  the number of bits to read.
+     * @return the value of the next bits from the stream.
+     * @throws IOException if an error occurred while reading (including EOF).
      */
     public final long readBits(int numBits) throws IOException {
         ensureBetween("numBits", 0, Long.SIZE, numBits);
@@ -253,8 +253,8 @@ public class ChannelDataInput extends ChannelData {
      * least 1 byte remaining in the buffer, reading new bytes from the channel if necessary,
      * then delegates to {@link ByteBuffer#get()}.
      *
-     * @return The value of the next byte from the stream.
-     * @throws IOException If an error (including EOF) occurred while reading the stream.
+     * @return the value of the next byte from the stream.
+     * @throws IOException if an error (including EOF) occurred while reading the stream.
      */
     public final byte readByte() throws IOException {
         ensureBufferContains(Byte.BYTES);
@@ -269,8 +269,8 @@ public class ChannelDataInput extends ChannelData {
      *     return Byte.toUnsignedInt(readByte());
      * }
      *
-     * @return The value of the next unsigned byte from the stream.
-     * @throws IOException If an error (including EOF) occurred while reading the stream.
+     * @return the value of the next unsigned byte from the stream.
+     * @throws IOException if an error (including EOF) occurred while reading the stream.
      */
     public final int readUnsignedByte() throws IOException {
         return Byte.toUnsignedInt(readByte());
@@ -281,8 +281,8 @@ public class ChannelDataInput extends ChannelData {
      * least 2 bytes remaining in the buffer, reading new bytes from the channel if necessary,
      * then delegates to {@link ByteBuffer#getShort()}.
      *
-     * @return The value of the next short from the stream.
-     * @throws IOException If an error (including EOF) occurred while reading the stream.
+     * @return the value of the next short from the stream.
+     * @throws IOException if an error (including EOF) occurred while reading the stream.
      */
     public final short readShort() throws IOException {
         ensureBufferContains(Short.BYTES);
@@ -297,8 +297,8 @@ public class ChannelDataInput extends ChannelData {
      *     return Short.toUnsignedInt(readShort());
      * }
      *
-     * @return The value of the next unsigned short from the stream.
-     * @throws IOException If an error (including EOF) occurred while reading the stream.
+     * @return the value of the next unsigned short from the stream.
+     * @throws IOException if an error (including EOF) occurred while reading the stream.
      */
     public final int readUnsignedShort() throws IOException {
         return Short.toUnsignedInt(readShort());
@@ -309,8 +309,8 @@ public class ChannelDataInput extends ChannelData {
      * least 2 bytes remaining in the buffer, reading new bytes from the channel if necessary,
      * then delegates to {@link ByteBuffer#getChar()}.
      *
-     * @return The value of the next character from the stream.
-     * @throws IOException If an error (including EOF) occurred while reading the stream.
+     * @return the value of the next character from the stream.
+     * @throws IOException if an error (including EOF) occurred while reading the stream.
      */
     public final char readChar() throws IOException {
         ensureBufferContains(Character.BYTES);
@@ -322,8 +322,8 @@ public class ChannelDataInput extends ChannelData {
      * least 4 bytes remaining in the buffer, reading new bytes from the channel if necessary, then
      * delegates to {@link ByteBuffer#getInt()}.
      *
-     * @return The value of the next integer from the stream.
-     * @throws IOException If an error (including EOF) occurred while reading the stream.
+     * @return the value of the next integer from the stream.
+     * @throws IOException if an error (including EOF) occurred while reading the stream.
      */
     public final int readInt() throws IOException {
         ensureBufferContains(Integer.BYTES);
@@ -338,8 +338,8 @@ public class ChannelDataInput extends ChannelData {
      *     return Integer.toUnsignedLong(readInt());
      * }
      *
-     * @return The value of the next unsigned integer from the stream.
-     * @throws IOException If an error (including EOF) occurred while reading the stream.
+     * @return the value of the next unsigned integer from the stream.
+     * @throws IOException if an error (including EOF) occurred while reading the stream.
      */
     public final long readUnsignedInt() throws IOException {
         return Integer.toUnsignedLong(readInt());
@@ -350,8 +350,8 @@ public class ChannelDataInput extends ChannelData {
      * least 8 bytes remaining in the buffer, reading new bytes from the channel if necessary,
      * then delegates to {@link ByteBuffer#getLong()}.
      *
-     * @return The value of the next integer from the stream.
-     * @throws IOException If an error (including EOF) occurred while reading the stream.
+     * @return the value of the next integer from the stream.
+     * @throws IOException if an error (including EOF) occurred while reading the stream.
      */
     public final long readLong() throws IOException {
         ensureBufferContains(Long.BYTES);
@@ -363,8 +363,8 @@ public class ChannelDataInput extends ChannelData {
      * least 4 bytes remaining in the buffer, reading new bytes from the channel if necessary,
      * then delegates to {@link ByteBuffer#getFloat()}.
      *
-     * @return The value of the next float from the stream.
-     * @throws IOException If an error (including EOF) occurred while reading the stream.
+     * @return the value of the next float from the stream.
+     * @throws IOException if an error (including EOF) occurred while reading the stream.
      */
     public final float readFloat() throws IOException {
         ensureBufferContains(Float.BYTES);
@@ -376,8 +376,8 @@ public class ChannelDataInput extends ChannelData {
      * least 8 bytes remaining in the buffer, reading new bytes from the channel if necessary,
      * then delegates to {@link ByteBuffer#getDouble()}.
      *
-     * @return The value of the next double from the stream.
-     * @throws IOException If an error (including EOF) occurred while reading the stream.
+     * @return the value of the next double from the stream.
+     * @throws IOException if an error (including EOF) occurred while reading the stream.
      */
     public final double readDouble() throws IOException {
         ensureBufferContains(Double.BYTES);
@@ -389,8 +389,8 @@ public class ChannelDataInput extends ChannelData {
      * This is a convenience method for {@link #readFully(byte[], int, int)} with a new array.
      *
      * @param  length The number of bytes to read.
-     * @return The next bytes in a newly allocated array of the given length.
-     * @throws IOException If an error (including EOF) occurred while reading the stream.
+     * @return the next bytes in a newly allocated array of the given length.
+     * @throws IOException if an error (including EOF) occurred while reading the stream.
      */
     public final byte[] readBytes(final int length) throws IOException {
         final byte[] array = new byte[length];
@@ -403,8 +403,8 @@ public class ChannelDataInput extends ChannelData {
      * This is a convenience method for {@link #readFully(char[], int, int)} with a new array.
      *
      * @param  length The number of characters to read.
-     * @return The next characters in a newly allocated array of the given length.
-     * @throws IOException If an error (including EOF) occurred while reading the stream.
+     * @return the next characters in a newly allocated array of the given length.
+     * @throws IOException if an error (including EOF) occurred while reading the stream.
      */
     public final char[] readChars(final int length) throws IOException {
         final char[] array = new char[length];
@@ -417,8 +417,8 @@ public class ChannelDataInput extends ChannelData {
      * This is a convenience method for {@link #readFully(short[], int, int)} with a new array.
      *
      * @param  length The number of shorts to read.
-     * @return The next shorts in a newly allocated array of the given length.
-     * @throws IOException If an error (including EOF) occurred while reading the stream.
+     * @return the next shorts in a newly allocated array of the given length.
+     * @throws IOException if an error (including EOF) occurred while reading the stream.
      */
     public final short[] readShorts(final int length) throws IOException {
         final short[] array = new short[length];
@@ -431,8 +431,8 @@ public class ChannelDataInput extends ChannelData {
      * This is a convenience method for {@link #readFully(int[], int, int)} with a new array.
      *
      * @param  length The number of integers to read.
-     * @return The next integers in a newly allocated array of the given length.
-     * @throws IOException If an error (including EOF) occurred while reading the stream.
+     * @return the next integers in a newly allocated array of the given length.
+     * @throws IOException if an error (including EOF) occurred while reading the stream.
      */
     public final int[] readInts(final int length) throws IOException {
         final int[] array = new int[length];
@@ -445,8 +445,8 @@ public class ChannelDataInput extends ChannelData {
      * This is a convenience method for {@link #readFully(long[], int, int)} with a new array.
      *
      * @param  length The number of longs to read.
-     * @return The next longs in a newly allocated array of the given length.
-     * @throws IOException If an error (including EOF) occurred while reading the stream.
+     * @return the next longs in a newly allocated array of the given length.
+     * @throws IOException if an error (including EOF) occurred while reading the stream.
      */
     public final long[] readLongs(final int length) throws IOException {
         final long[] array = new long[length];
@@ -459,8 +459,8 @@ public class ChannelDataInput extends ChannelData {
      * This is a convenience method for {@link #readFully(float[], int, int)} with a new array.
      *
      * @param  length The number of floats to read.
-     * @return The next floats in a newly allocated array of the given length.
-     * @throws IOException If an error (including EOF) occurred while reading the stream.
+     * @return the next floats in a newly allocated array of the given length.
+     * @throws IOException if an error (including EOF) occurred while reading the stream.
      */
     public final float[] readFloats(final int length) throws IOException {
         final float[] array = new float[length];
@@ -473,8 +473,8 @@ public class ChannelDataInput extends ChannelData {
      * This is a convenience method for {@link #readFully(double[], int, int)} with a new array.
      *
      * @param  length The number of doubles to read.
-     * @return The next doubles in a newly allocated array of the given length.
-     * @throws IOException If an error (including EOF) occurred while reading the stream.
+     * @return the next doubles in a newly allocated array of the given length.
+     * @throws IOException if an error (including EOF) occurred while reading the stream.
      */
     public final double[] readDoubles(final int length) throws IOException {
         final double[] array = new double[length];
@@ -491,7 +491,7 @@ public class ChannelDataInput extends ChannelData {
      * }
      *
      * @param  dest An array of bytes to be written to.
-     * @throws IOException If an error (including EOF) occurred while reading the stream.
+     * @throws IOException if an error (including EOF) occurred while reading the stream.
      */
     public final void readFully(final byte[] dest) throws IOException {
         readFully(dest, 0, dest.length);
@@ -501,10 +501,10 @@ public class ChannelDataInput extends ChannelData {
      * Reads {@code length} bytes from the stream, and stores them into
      * {@code dest} starting at index {@code offset}.
      *
-     * @param  dest   An array of bytes to be written to.
-     * @param  offset The starting position within {@code dest} to write.
-     * @param  length The number of bytes to read.
-     * @throws IOException If an error (including EOF) occurred while reading the stream.
+     * @param  dest    an array of bytes to be written to.
+     * @param  offset  the starting position within {@code dest} to write.
+     * @param  length  the number of bytes to read.
+     * @throws IOException if an error (including EOF) occurred while reading the stream.
      */
     public final void readFully(final byte[] dest, int offset, int length) throws IOException {
         while (length != 0) {
@@ -567,9 +567,9 @@ public class ChannelDataInput extends ChannelData {
          * the full content of {@link ChannelDataInput#buffer} (i.e. the view element at index 0 shall be
          * defined by the buffer elements starting at index 0).</p>
          *
-         * @param  view     Existing buffer to use as a view over {@link ChannelDataInput#buffer}, or {@code null}.
-         * @param  offset   The starting position within {@code dest} to write.
-         * @param  length   The number of values to read.
+         * @param  view     existing buffer to use as a view over {@link ChannelDataInput#buffer}, or {@code null}.
+         * @param  offset   the starting position within {@code dest} to write.
+         * @param  length   the number of values to read.
          * @throws IOException if an error (including EOF) occurred while reading the stream.
          */
         @Override
@@ -738,7 +738,7 @@ public class ChannelDataInput extends ChannelData {
      * @param  dest   An array of characters to be written to.
      * @param  offset The starting position within {@code dest} to write.
      * @param  length The number of characters to read.
-     * @throws IOException If an error (including EOF) occurred while reading the stream.
+     * @throws IOException if an error (including EOF) occurred while reading the stream.
      */
     public final void readFully(final char[] dest, final int offset, final int length) throws IOException {
         new CharsReader(dest).readFully(null, offset, length);
@@ -751,7 +751,7 @@ public class ChannelDataInput extends ChannelData {
      * @param  dest   An array of short integers to be written to.
      * @param  offset The starting position within {@code dest} to write.
      * @param  length The number of short integers to read.
-     * @throws IOException If an error (including EOF) occurred while reading the stream.
+     * @throws IOException if an error (including EOF) occurred while reading the stream.
      */
     public final void readFully(final short[] dest, final int offset, final int length) throws IOException {
         new ShortsReader(dest).readFully(null, offset, length);
@@ -761,10 +761,10 @@ public class ChannelDataInput extends ChannelData {
      * Reads {@code length} integers from the stream, and stores them into
      * {@code dest} starting at index {@code offset}.
      *
-     * @param  dest   An array of integers to be written to.
-     * @param  offset The starting position within {@code dest} to write.
-     * @param  length The number of integers to read.
-     * @throws IOException If an error (including EOF) occurred while reading the stream.
+     * @param  dest    an array of integers to be written to.
+     * @param  offset  the starting position within {@code dest} to write.
+     * @param  length  the number of integers to read.
+     * @throws IOException if an error (including EOF) occurred while reading the stream.
      */
     public final void readFully(final int[] dest, final int offset, final int length) throws IOException {
         new IntsReader(dest).readFully(null, offset, length);
@@ -774,10 +774,10 @@ public class ChannelDataInput extends ChannelData {
      * Reads {@code length} long integers from the stream, and stores them into
      * {@code dest} starting at index {@code offset}.
      *
-     * @param  dest   An array of long integers to be written to.
-     * @param  offset The starting position within {@code dest} to write.
-     * @param  length The number of long integers to read.
-     * @throws IOException If an error (including EOF) occurred while reading the stream.
+     * @param  dest    an array of long integers to be written to.
+     * @param  offset  the starting position within {@code dest} to write.
+     * @param  length  the number of long integers to read.
+     * @throws IOException if an error (including EOF) occurred while reading the stream.
      */
     public final void readFully(final long[] dest, final int offset, final int length) throws IOException {
         new LongsReader(dest).readFully(null, offset, length);
@@ -787,10 +787,10 @@ public class ChannelDataInput extends ChannelData {
      * Reads {@code length} floats from the stream, and stores them into
      * {@code dest} starting at index {@code offset}.
      *
-     * @param  dest   An array of floats to be written to.
-     * @param  offset The starting position within {@code dest} to write.
-     * @param  length The number of floats to read.
-     * @throws IOException If an error (including EOF) occurred while reading the stream.
+     * @param  dest    an array of floats to be written to.
+     * @param  offset  the starting position within {@code dest} to write.
+     * @param  length  the number of floats to read.
+     * @throws IOException if an error (including EOF) occurred while reading the stream.
      */
     public final void readFully(final float[] dest, final int offset, final int length) throws IOException {
         new FloatsReader(dest).readFully(null, offset, length);
@@ -800,10 +800,10 @@ public class ChannelDataInput extends ChannelData {
      * Reads {@code length} doubles from the stream, and stores them into
      * {@code dest} starting at index {@code offset}.
      *
-     * @param  dest   An array of doubles to be written to.
-     * @param  offset The starting position within {@code dest} to write.
-     * @param  length The number of doubles to read.
-     * @throws IOException If an error (including EOF) occurred while reading the stream.
+     * @param  dest    an array of doubles to be written to.
+     * @param  offset  the starting position within {@code dest} to write.
+     * @param  length  the number of doubles to read.
+     * @throws IOException if an error (including EOF) occurred while reading the stream.
      */
     public final void readFully(final double[] dest, final int offset, final int length) throws IOException {
         new DoublesReader(dest).readFully(null, offset, length);
@@ -817,10 +817,10 @@ public class ChannelDataInput extends ChannelData {
      * to decode, for example attribute values in the file header. For large amount of data, consider using
      * {@link java.nio.charset.CharsetDecoder} instead.</p>
      *
-     * @param  length   Number of bytes to read.
-     * @param  encoding The character encoding.
-     * @return The string decoded from the {@code length} next bytes.
-     * @throws IOException If an error occurred while reading the bytes, or if the given encoding is invalid.
+     * @param  length    number of bytes to read.
+     * @param  encoding  the character encoding.
+     * @return the string decoded from the {@code length} next bytes.
+     * @throws IOException if an error occurred while reading the bytes, or if the given encoding is invalid.
      */
     public final String readString(final int length, final String encoding) throws IOException {
         if (buffer.hasArray() && length <= buffer.capacity()) {
@@ -836,8 +836,8 @@ public class ChannelDataInput extends ChannelData {
     /**
      * Moves to the given position in the stream, relative to the stream position at construction time.
      *
-     * @param  position The position where to move.
-     * @throws IOException If the stream can not be moved to the given position.
+     * @param  position  the position where to move.
+     * @throws IOException if the stream can not be moved to the given position.
      */
     @Override
     public final void seek(final long position) throws IOException {
@@ -878,8 +878,7 @@ public class ChannelDataInput extends ChannelData {
             buffer.position((int) p);
         } else {
             /*
-             * Requested position is before the current buffer limits
-             * and we can not seek.
+             * Requested position is before the current buffer limits and we can not seek.
              */
             throw new IOException(Errors.format(Errors.Keys.StreamIsForwardOnly_1, filename));
         }
