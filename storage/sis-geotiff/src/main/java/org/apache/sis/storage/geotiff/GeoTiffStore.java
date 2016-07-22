@@ -16,11 +16,15 @@
  */
 package org.apache.sis.storage.geotiff;
 
+import java.io.IOException;
 import org.opengis.metadata.Metadata;
+import org.apache.sis.internal.storage.ChannelDataInput;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.StorageConnector;
+import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.Classes;
 
 
 /**
@@ -34,6 +38,11 @@ import org.apache.sis.util.ArgumentChecks;
  */
 public class GeoTiffStore extends DataStore {
     /**
+     * The GeoTIFF reader implementation, or {@code null} if none.
+     */
+    private Reader reader;
+
+    /**
      * Creates a new GeoTIFF store from the given file, URL or stream object.
      * This constructor invokes {@link StorageConnector#closeAllExcept(Object)},
      * keeping open only the needed resource.
@@ -43,6 +52,17 @@ public class GeoTiffStore extends DataStore {
      */
     public GeoTiffStore(final StorageConnector storage) throws DataStoreException {
         ArgumentChecks.ensureNonNull("storage", storage);
+        final ChannelDataInput input = storage.getStorageAs(ChannelDataInput.class);
+        if (input == null) {
+            throw new DataStoreException(Errors.format(Errors.Keys.IllegalInputTypeForReader_2,
+                    "TIFF", Classes.getClass(storage.getStorage())));
+        }
+        storage.closeAllExcept(input);
+        try {
+            reader = new Reader(input);
+        } catch (IOException e) {
+            throw new DataStoreException(e);
+        }
     }
 
     /**
@@ -65,5 +85,12 @@ public class GeoTiffStore extends DataStore {
      */
     @Override
     public void close() throws DataStoreException {
+        final Reader r = reader;
+        reader = null;
+        if (r != null) try {
+            r.close();
+        } catch (IOException e) {
+            throw new DataStoreException(e);
+        }
     }
 }
