@@ -19,6 +19,7 @@ package org.apache.sis.internal.gpx;
 import java.net.URI;
 import java.time.temporal.Temporal;
 import java.util.Collection;
+import java.io.IOException;
 import javax.xml.stream.XMLStreamException;
 import static org.apache.sis.internal.gpx.GPXConstants.*;
 
@@ -37,8 +38,8 @@ public class GPXWriter110 extends GPXWriter100{
      *
      * @param creator gpx file creator
      */
-    public GPXWriter110(final String creator) {
-        super(GPX_NAMESPACE_V11, creator);
+    public GPXWriter110(final String creator, final Object output) throws IOException, XMLStreamException {
+        super(GPX_NAMESPACE_V11, creator, output);
     }
 
     /**
@@ -52,7 +53,7 @@ public class GPXWriter110 extends GPXWriter100{
 
     /**
      * Write metadata gpx tag.
-     * 
+     *
      * @param metadata not null
      * @throws XMLStreamException if underlying xml stax writer encounter an error
      */
@@ -87,7 +88,7 @@ public class GPXWriter110 extends GPXWriter100{
      */
     protected void writePerson(final Person person) throws XMLStreamException {
         if (person == null) return;
-        
+
         writer.writeStartElement(namespace, TAG_AUTHOR);
         writeSimpleTag(namespace, TAG_NAME, person.getName());
         writeSimpleTag(namespace, TAG_AUTHOR_EMAIL, person.getEmail());
@@ -97,7 +98,7 @@ public class GPXWriter110 extends GPXWriter100{
 
     /**
      * Write multiple links.
-     * 
+     *
      * @param links links to write
      * @throws XMLStreamException if underlying xml stax writer encounter an error
      */

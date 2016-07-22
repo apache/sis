@@ -65,7 +65,7 @@ import org.opengis.metadata.Identifier;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.6
- * @version 0.7
+ * @version 0.8
  * @module
  */
 public strictfp class CoordinateOperationMethods extends HTMLGenerator {
@@ -155,7 +155,7 @@ public strictfp class CoordinateOperationMethods extends HTMLGenerator {
      * @throws IOException if an error occurred while writing to the file.
      */
     public CoordinateOperationMethods() throws IOException {
-        super("CoordinateOperationMethods.html", "Apache SIS Coordinate Operation Methods");
+        super("CoordinateOperationMethods.html", "Apache SIS Coordinate Operation Methods", "authority-codes.css");
         domainOfValidity = Collections.emptyMap();      // TODO: not yet available.
         rangeFormat = new RangeFormat(LOCALE);
         final int header = openTag("header");

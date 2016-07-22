@@ -20,6 +20,7 @@ import java.util.Set;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Collections;
+import java.io.IOException;
 import org.opengis.metadata.Identifier;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptor;
@@ -29,6 +30,7 @@ import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.util.ArgumentChecks;
 
 // Branch-dependent imports
+import java.io.UncheckedIOException;
 import org.opengis.feature.Feature;
 import org.opengis.feature.IdentifiedType;
 import org.opengis.feature.Property;
@@ -150,5 +152,21 @@ final class LinkOperation extends AbstractOperation {
     public boolean equals(final Object obj) {
         // 'this.result' is compared (indirectly) by the super class.
         return super.equals(obj) && referentName.equals(((LinkOperation) obj).referentName);
+    }
+
+    /**
+     * Appends a string representation of the "formula" used for computing the result.
+     *
+     * @param  buffer where to format the "formula".
+     * @return {@code true} since this method has formatted a formula.
+     */
+    @Override
+    boolean formatResultFormula(final Appendable buffer) {
+        try {
+            buffer.append(" → ").append(referentName);
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+        return true;
     }
 }

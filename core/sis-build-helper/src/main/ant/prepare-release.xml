@@ -32,7 +32,7 @@
     <!-- Ensure that the "sis-build-helper" plugin used by the build is the released version. -->
     <replaceregexp file = "${user.dir}/pom.xml"
                   match = "&lt;sis\.plugin\.version&gt;.+&lt;/sis\.plugin\.version&gt;"
-                replace = "&lt;sis.plugin.version&gt;${sis.version}-SNAPSHOT&lt;/sis.plugin.version&gt;"/>
+                replace = "&lt;sis.plugin.version&gt;${branch.version}-SNAPSHOT&lt;/sis.plugin.version&gt;"/>
                 <!-- The -SNAPSHOT part will be removed later, at tag creation. -->
 
     <!-- Replace the version number in Java code. -->
@@ -44,9 +44,9 @@
     <replace dir="${user.dir}" failOnNoReplacements="true">
       <include name="**/pom.xml"/>
       <replacefilter token="svn.apache.org/repos/asf/sis/trunk"
-                     value="svn.apache.org/repos/asf/sis/branches/${sis.version}"/>
+                     value="svn.apache.org/repos/asf/sis/branches/${branch.version}"/>
       <replacefilter token="svn.apache.org/viewvc/sis/trunk"
-                     value="svn.apache.org/viewvc/sis/branches/${sis.version}"/>
+                     value="svn.apache.org/viewvc/sis/branches/${branch.version}"/>
     </replace>
   </target>
 
@@ -58,18 +58,18 @@
     <!-- Replace URL to branch by URL to the branch on Subversion. -->
     <replace dir="${user.dir}" failOnNoReplacements="true">
       <include name="**/pom.xml"/>
-      <replacefilter token="svn.apache.org/repos/asf/sis/branches/${sis.version}"
+      <replacefilter token="svn.apache.org/repos/asf/sis/branches/${branch.version}"
                      value="svn.apache.org/repos/asf/sis/tags/${sis.version}"/>
-      <replacefilter token="svn.apache.org/viewvc/sis/branches/${sis.version}"
+      <replacefilter token="svn.apache.org/viewvc/sis/branches/${branch.version}"
                      value="svn.apache.org/viewvc/sis/tags/${sis.version}"/>
     </replace>
 
     <!-- Replace version numbers. Note that no snapshot other than SIS can exist at this point. -->
     <replace dir="${user.dir}" failOnNoReplacements="true">
       <include name="**/pom.xml"/>
-      <replacefilter token="&lt;version&gt;${sis.version}-SNAPSHOT&lt;/version&gt;"
+      <replacefilter token="&lt;version&gt;${branch.version}-SNAPSHOT&lt;/version&gt;"
                      value="&lt;version&gt;${sis.version}&lt;/version&gt;"/>
-      <replacefilter token="&lt;sis.plugin.version&gt;${sis.version}-SNAPSHOT&lt;/sis.plugin.version&gt;"
+      <replacefilter token="&lt;sis.plugin.version&gt;${branch.version}-SNAPSHOT&lt;/sis.plugin.version&gt;"
                      value="&lt;sis.plugin.version&gt;${sis.version}&lt;/sis.plugin.version&gt;"/>
     </replace>
   </target>

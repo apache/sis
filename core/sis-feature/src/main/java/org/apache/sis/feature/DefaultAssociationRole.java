@@ -57,6 +57,7 @@ import org.opengis.feature.FeatureAssociationRole;
  * @version 0.5
  * @module
  *
+ * @see DefaultFeatureType
  * @see AbstractAssociation
  */
 public class DefaultAssociationRole extends FieldType implements FeatureAssociationRole {
@@ -120,6 +121,8 @@ public class DefaultAssociationRole extends FieldType implements FeatureAssociat
      * @param minimumOccurs  The minimum number of occurrences of the association within its containing entity.
      * @param maximumOccurs  The maximum number of occurrences of the association within its containing entity,
      *                       or {@link Integer#MAX_VALUE} if there is no restriction.
+     *
+     * @see org.apache.sis.feature.builder.AssociationRoleBuilder
      */
     public DefaultAssociationRole(final Map<String,?> identification, final FeatureType valueType,
             final int minimumOccurs, final int maximumOccurs)

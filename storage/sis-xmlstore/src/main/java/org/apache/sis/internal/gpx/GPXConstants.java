@@ -28,7 +28,9 @@ import org.apache.sis.feature.AbstractIdentifiedType;
 import org.apache.sis.feature.DefaultAttributeType;
 import org.apache.sis.feature.DefaultFeatureType;
 import org.apache.sis.feature.DefaultAssociationRole;
-import org.apache.sis.internal.feature.FeatureTypeBuilder;
+import org.apache.sis.feature.FeatureOperations;
+import org.apache.sis.feature.builder.FeatureTypeBuilder;
+import org.apache.sis.feature.builder.AttributeRole;
 import org.apache.sis.internal.feature.AttributeConvention;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.referencing.CommonCRS;
@@ -37,7 +39,6 @@ import org.apache.sis.util.Static;
 // Branch-dependent imports
 import org.opengis.feature.FeatureType;
 import org.opengis.feature.PropertyType;
-import org.apache.sis.feature.FeatureOperations;
 
 
 /**
@@ -228,11 +229,11 @@ public final class GPXConstants extends Static {
 
     static {
         final NameFactory   factory  = DefaultFactories.forBuildin(NameFactory.class);
-        final LocalName     geomName = AttributeConvention.DEFAULT_GEOMETRY_PROPERTY;
+        final LocalName     geomName = AttributeConvention.GEOMETRY_PROPERTY;
         final Map<String,?> geomInfo = Collections.singletonMap(AbstractIdentifiedType.NAME_KEY, geomName);
 
         //-------------------- GENERIC GPX ENTITY ------------------------------
-        final FeatureTypeBuilder builder = new FeatureTypeBuilder(factory);
+        FeatureTypeBuilder builder = new FeatureTypeBuilder(null, factory, null);
         builder.setDefaultScope(GPX_NAMESPACE).setName("GPXEntity").setAbstract(true);
         builder.addAttribute(Integer.class).setName("index");
         TYPE_GPX_ENTITY = builder.build();
@@ -261,8 +262,11 @@ public final class GPXConstants extends Static {
          * <dgpsid> dgpsStationType </dgpsid> [0..1] ?
          * <extensions> extensionsType </extensions> [0..1] ?
          */
-        builder.clear().setDefaultScope(GPX_NAMESPACE).setName("WayPoint").setSuperTypes(TYPE_GPX_ENTITY);
-        builder.addDefaultGeometry(Point.class).setName(geomName).setCRSCharacteristic(CommonCRS.defaultGeographic());
+        builder = new FeatureTypeBuilder(null, factory, null);
+        builder.setDefaultScope(GPX_NAMESPACE).setName("WayPoint").setSuperTypes(TYPE_GPX_ENTITY);
+        builder.addAttribute(Point.class).setName(geomName)
+                .setCRS(CommonCRS.defaultGeographic())
+                .addRole(AttributeRole.DEFAULT_GEOMETRY);
         builder.setDefaultCardinality(0, 1);
         builder.addAttribute(Double  .class).setName(TAG_WPT_ELE);
         builder.addAttribute(Temporal.class).setName(TAG_WPT_TIME);
