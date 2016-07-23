@@ -175,7 +175,7 @@ public final strictfp class ConformalProjectionTest extends TransformTestCase {
     /**
      * Tests the {@link NormalizedProjection#dy_dφ(double, double)} method.
      *
-     * @throws TransformException Should never happen.
+     * @throws TransformException if an error occurred while projecting a point.
      */
     @Test
     @DependsOnMethod("testExpOfNorthing")
@@ -232,7 +232,7 @@ public final strictfp class ConformalProjectionTest extends TransformTestCase {
      * In theory only the [-90° … +90°] range needs to be tested. However the function is still
      * consistent in the [-90° … +270°] range so we test that range for tracking this fact.
      *
-     * @throws ProjectionException Should never happen.
+     * @throws ProjectionException if an error occurred while projecting a point.
      */
     @Test
     @DependsOnMethod("testExpOfNorthing")

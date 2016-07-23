@@ -66,6 +66,7 @@ import org.apache.sis.metadata.iso.distribution.DefaultDistribution;
 import org.apache.sis.metadata.iso.extent.DefaultExtent;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.metadata.iso.extent.DefaultTemporalExtent;
+import org.apache.sis.metadata.iso.identification.DefaultDataIdentification;
 import org.apache.sis.metadata.iso.identification.DefaultAggregateInformation;
 import org.apache.sis.metadata.iso.identification.DefaultKeywords;
 import org.apache.sis.storage.DataStoreException;
@@ -73,7 +74,6 @@ import org.apache.sis.util.iso.DefaultInternationalString;
 import org.apache.sis.util.logging.WarningListeners;
 
 import static java.util.Collections.singleton;
-import org.apache.sis.metadata.iso.identification.DefaultDataIdentification;
 import static org.apache.sis.storage.geotiff.LandsatKeys.*;
 
 
@@ -420,9 +420,7 @@ public class LandsatReader {
      * @throws DataStoreException if a property value can not be parsed as a number or a date.
      */
     private Identification createIdentification(final Date metadataTime, final Date sceneTime) throws DataStoreException {
-      final DefaultDataIdentification identification = new DefaultDataIdentification();
-     
-       
+        final DefaultDataIdentification identification = new DefaultDataIdentification();
         final DefaultCitation citation = new DefaultCitation();
         boolean isEmpty = true;
         if (metadataTime != null) {
@@ -440,7 +438,7 @@ public class LandsatReader {
 
             final DefaultKeywords keyword = new DefaultKeywords("Multispectral image data > Raster > Projected");
             identification.setDescriptiveKeywords(singleton(keyword));
-  
+
         final Extent extent = createExtent(sceneTime);
         if (extent != null) {
             identification.setExtents(singleton(extent));
@@ -448,7 +446,7 @@ public class LandsatReader {
         }
         value = getValue(ORIGIN);
         if (value != null) {
-            
+
             DefaultResponsibleParty responsible = new DefaultResponsibleParty();
             responsible.setOrganisationName(new DefaultInternationalString(value));
             responsible.setRole(Role.ORIGINATOR);
@@ -459,7 +457,7 @@ public class LandsatReader {
             identification.getPointOfContacts().add(responsiblecontributor);
             isEmpty = false;
         }
-       
+
         value = getValue(ORIGIN);
         if (value != null) {
             DefaultCitation citation1 = new DefaultCitation();

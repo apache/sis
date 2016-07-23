@@ -195,7 +195,7 @@
       </fileset>
       <fileset dir="${project.root}/storage/sis-geotiff/src/test/resources">
         <include name="**/*.txt"/>
- 	<include name="**/*.xml"/>
+        <include name="**/*.xml"/>
       </fileset>
       <fileset dir="${project.root}/storage/sis-shapefile/src/test/resources">
         <include name="**/*.dbf"/>

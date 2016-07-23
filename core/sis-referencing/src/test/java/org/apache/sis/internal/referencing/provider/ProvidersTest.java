@@ -37,7 +37,7 @@ import static org.junit.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.6
- * @version 0.7
+ * @version 0.8
  * @module
  */
 @DependsOn({
@@ -84,6 +84,9 @@ public final strictfp class ProvidersTest extends TestCase {
             LambertConformalWest.class,
             LambertConformalBelgium.class,
             LambertConformalMichigan.class,
+            LambertCylindricalEqualArea.class,
+            LambertCylindricalEqualAreaSpherical.class,
+            AlbersEqualArea.class,
             TransverseMercator.class,
             TransverseMercatorSouth.class,
             PolarStereographicA.class,

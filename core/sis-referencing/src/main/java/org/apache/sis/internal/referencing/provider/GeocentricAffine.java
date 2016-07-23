@@ -128,13 +128,13 @@ public abstract class GeocentricAffine extends GeodeticOperation {
     static final ParameterDescriptor<Double> DS;
     static {
         final ParameterBuilder builder = builder();
-        TX = createShift(builder.addName("X-axis translation").addName(Citations.OGC, "dx"));
-        TY = createShift(builder.addName("Y-axis translation").addName(Citations.OGC, "dy"));
-        TZ = createShift(builder.addName("Z-axis translation").addName(Citations.OGC, "dz"));
-        RX = createRotation(builder, "X-axis rotation", "ex");
-        RY = createRotation(builder, "Y-axis rotation", "ey");
-        RZ = createRotation(builder, "Z-axis rotation", "ez");
-        DS = builder.addName("Scale difference").addName(Citations.OGC, "ppm").create(1, Units.PPM);
+        TX = createShift(builder.addIdentifier("8605").addName("X-axis translation").addName(Citations.OGC, "dx"));
+        TY = createShift(builder.addIdentifier("8606").addName("Y-axis translation").addName(Citations.OGC, "dy"));
+        TZ = createShift(builder.addIdentifier("8607").addName("Z-axis translation").addName(Citations.OGC, "dz"));
+        RX = createRotation(builder.addIdentifier("8608"), "X-axis rotation", "ex");
+        RY = createRotation(builder.addIdentifier("8609"), "Y-axis rotation", "ey");
+        RZ = createRotation(builder.addIdentifier("8610"), "Z-axis rotation", "ez");
+        DS = builder.addIdentifier("8611").addName("Scale difference").addName(Citations.OGC, "ppm").create(1, Units.PPM);
     }
 
     /**

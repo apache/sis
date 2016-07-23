@@ -27,7 +27,6 @@ import java.util.Set;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
-import static org.apache.sis.internal.util.CollectionsExt.first;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.Metadata;
@@ -46,6 +45,9 @@ import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.util.iso.Types;
 import org.opengis.metadata.citation.Responsibility;
+
+import static org.apache.sis.internal.util.CollectionsExt.first;
+
 
 /**
  * Summary of an ISO 19115 metadata record. The summary is composed in part from
@@ -173,7 +175,6 @@ public class SummaryRecord extends Element {
     private BoundingBox BoundingBox;
 
     public SummaryRecord() {
-
     }
 
     /**

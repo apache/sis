@@ -35,44 +35,41 @@ import org.apache.sis.xml.Namespaces;
 
 
 /**
- * An abstract class for all stax stream writer.<br>
- * Writers for a given specification should extend this class and
- * provide appropriate write methods.<br>
- * <br>
- * Example : <br>
- * <pre>
- * {@code
- * public class UserWriter extends StaxStreamWriter{
+ * Base class of Apache SIS writers of XML files using STAX writer.
+ * This is a helper class for {@link org.apache.sis.storage.DataStore} implementations.
+ * Writers for a given specification should extend this class and provide appropriate write methods.
  *
- *   public void write(User user) throws XMLStreamException{
- *      //casual stax writing operations
- *      writer.writeStartElement(...
- *   }
+ * <p>Example:</p>
+ * {@preformat
+ *     public class UserWriter extends StaxStreamWriter {
+ *         public void write(User user) throws XMLStreamException {
+ *             // Actual STAX write operations.
+ *             writer.writeStartElement(…);
+ *         }
+ *     }
  * }
+ *
+ * And should be used like below:
+ *
+ * {@preformat java
+ *     try (UserWriter instance = new UserWriter()) {
+ *         instance.setOutput(stream);
+ *         instance.write(aUser);
+ *     }
  * }
- * </pre>
- * And should be used like : <br>
- * <pre>
- * {@code
- * final UserWriter instance = new UserWriter();
- * try{
- *     instance.setOutput(stream);
- *     instance.write(aUser);
- * }finally{
- *     instance.dispose();
- * }
- * }
- * </pre>
+ *
+ * <div class="section">Multi-threading</div>
+ * This class and subclasses are not tread-safe. Synchronization shall be done by the {@code DataStore}
+ * that contains the {@code StaxStream} instances.
  *
  * @author  Johann Sorel (Geomatys)
  * @since   0.8
  * @version 0.8
  * @module
  */
-public abstract class StaxStreamWriter implements AutoCloseable {
-
+public abstract class StaxStreamWriter extends StaxStream {
     /**
-     * Underlying stax writer.
+     * The XML stream writer.
      */
     protected XMLStreamWriter writer;
 
@@ -87,49 +84,7 @@ public abstract class StaxStreamWriter implements AutoCloseable {
     private final Map<String, String> unknowNamespaces = new HashMap<>();
 
     /**
-     * Acces the underlying stax writer.
-     * This method is used when several writer are wrapping a single writer.
-     * Like when an Symbology Encoding writer wraps a Filter writer.
-     * <br>
-     * It can also be used to write tag before or after this writer is used.
-     *
-     * @return underlying stax writer, can be null if input has not been set
-     */
-    public XMLStreamWriter getWriter() {
-        return writer;
-    }
-
-    /**
-     * close potentiel previous stream and cache if there are some.
-     * This way the writer can be reused for a different output later.
-     * The underlying stax writer will be closed.
-     * @throws java.io.IOException if previous source stream caused an exception on close
-     * @throws javax.xml.stream.XMLStreamException if previous stax reader caused an exception on close
-     */
-    public void reset() throws IOException, XMLStreamException {
-        if (writer != null) {
-            writer.close();
-            writer = null;
-        }
-        if (targetStream != null) {
-            targetStream.close();
-            targetStream = null;
-        }
-    }
-
-    /**
-     * Release potentiel locks or opened stream.
-     * Must be called when the writer is not needed anymore.
-     * It should not be used after this method has been called.
-     * @throws java.io.IOException if previous source stream caused an exception on close
-     * @throws javax.xml.stream.XMLStreamException if previous stax reader caused an exception on close
-     */
-    @Override
-    public void close() throws Exception{
-        reset();
-    }
-
-    /**
+     * Creates a new XML writer from the given file, URL, stream or reader object.
      * Set the output for this writer.<br>
      * Handle types are :<br>
      * - java.io.File<br>
@@ -142,9 +97,7 @@ public abstract class StaxStreamWriter implements AutoCloseable {
      * @throws IOException if output is not supported or caused an error
      * @throws XMLStreamException if output is not a valid XML stream, or closing previous stream caused an error
      */
-    public void setOutput(Object output) throws IOException, XMLStreamException {
-        reset();
-
+    protected StaxStreamWriter(Object output) throws IOException, XMLStreamException {
         if (output instanceof XMLStreamWriter) {
             writer = (XMLStreamWriter) output;
             return;
@@ -162,6 +115,19 @@ public abstract class StaxStreamWriter implements AutoCloseable {
         }
 
         writer = toWriter(output);
+    }
+
+    /**
+     * Acces the underlying stax writer.
+     * This method is used when several writer are wrapping a single writer.
+     * Like when an Symbology Encoding writer wraps a Filter writer.
+     * <br>
+     * It can also be used to write tag before or after this writer is used.
+     *
+     * @return underlying stax writer, can be null if input has not been set
+     */
+    public XMLStreamWriter getWriter() {
+        return writer;
     }
 
     /**
@@ -249,6 +215,25 @@ public abstract class StaxStreamWriter implements AutoCloseable {
         public Prefix(final boolean unknow, final String prefix) {
             this.prefix = prefix;
             this.unknow = unknow;
+        }
+    }
+
+    /**
+     * Closes the output stream and releases any resources used by this XML writer.
+     * This writer can not be used anymore after this method has been invoked.
+     *
+     * @throws IOException if an error occurred while closing the output stream.
+     * @throws XMLStreamException if an error occurred while releasing XML writer resources.
+     */
+    @Override
+    public void close() throws IOException, XMLStreamException {
+        if (writer != null) {
+            writer.close();
+            writer = null;
+        }
+        if (targetStream != null) {
+            targetStream.close();
+            targetStream = null;
         }
     }
 }
