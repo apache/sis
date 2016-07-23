@@ -22,7 +22,7 @@ package org.apache.sis.storage.geotiff;
  * For that reason, many of those field names do not follow usual Java convention for constants.
  *
  * <p>A useful (but unofficial) reference is the
- * <a href="http://www.awaresystems.be/imaging/tiff/tifftags.html">TIFF Tag Reference</a> page.
+ * <a href="http://www.awaresystems.be/imaging/tiff/tifftags.html">TIFF Tag Reference</a> page.</p>
  *
  * @author  Johann Sorel (Geomatys)
  * @since   0.8
