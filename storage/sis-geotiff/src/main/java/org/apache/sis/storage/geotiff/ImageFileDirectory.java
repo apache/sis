@@ -16,6 +16,9 @@
  */
 package org.apache.sis.storage.geotiff;
 
+import java.io.IOException;
+import org.apache.sis.internal.storage.ChannelDataInput;
+
 
 /**
  * An Image File Directory (FID) in a TIFF image.
@@ -37,18 +40,24 @@ final class ImageFileDirectory {
     final long offset;
 
     /**
-     * The size of the image described by this FID, or 0 if the information has not been found.
-     * Should be interpreted as an unsigned value.
+     * The size of the image described by this FID, or -1 if the information has not been found.
+     * The image may be much bigger than the memory capacity, in which case the image shall be tiled.
      */
-    private int imageWidth, imageHeight;
+    private long imageWidth = -1, imageHeight = -1;
 
     /**
-     * The size of each tile, or 0 if the information has not be found.
-     * Should be interpreted as an unsigned value.
+     * The size of each tile, or -1 if the information has not be found.
+     * Tiles should be small enough for fitting in memory.
      */
-    private int tileWidth, tileHeight;
+    private int tileWidth = -1, tileHeight = -1;
 
     private int samplesPerPixel;
+
+    /**
+     * The compression method, or {@code null} if unknown. If the compression method is unknown
+     * or unsupported we can not read the image, but we still can read the metadata.
+     */
+    private Compression compression;
 
     /**
      * Creates a new image file directory located at the given offset (in bytes) in the TIFF file.
@@ -57,7 +66,29 @@ final class ImageFileDirectory {
         this.offset = offset;
     }
 
-    void addEntry(final int tag, final int type, final long value) {
-        // TODO
+    /**
+     * Adds the value read from the current position in the given stream
+     * for the entry identified by the given GeoTIFF tag.
+     */
+    void addEntry(final ChannelDataInput input, final int tag, final Type type, final long count) throws IOException {
+        switch (tag) {
+            case Tags.PhotometricInterpretation: {
+                final boolean blackIsZero = (type.readLong(input, count) != 0);
+                // TODO
+                break;
+            }
+            case Tags.Compression: {
+                compression = Compression.valueOf(type.readLong(input, count));
+                break;
+            }
+            case Tags.ImageLength: {
+                imageHeight = type.readUnsignedLong(input, count);
+                break;
+            }
+            case Tags.ImageWidth: {
+                imageWidth = type.readUnsignedLong(input, count);
+                break;
+            }
+        }
     }
 }

@@ -18,7 +18,6 @@ package org.apache.sis.storage.geotiff;
 
 import java.util.List;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Locale;
 import java.io.IOException;
 import java.nio.ByteOrder;
@@ -199,7 +198,6 @@ final class Reader extends GeoTIFF {
         input.seek(Math.addExact(origin, offset));
         final int offsetSize = Integer.BYTES << intSizeExpansion;
         final ImageFileDirectory dir = new ImageFileDirectory(offset);
-        final Collection<long[]> deferred = new ArrayList<>(4);
         for (long remaining = readUnsignedShort(); --remaining >= 0;) {
             /*
              * Each entry in the Image File Directory has the following format:
@@ -209,19 +207,30 @@ final class Reader extends GeoTIFF {
              *   - The value, or the file offset to the value elswhere in the file.
              */
             final int   tag   = input.readUnsignedShort();
-            final short type  = input.readShort();
+            final Type  type  = Type.valueOf(input.readShort());        // May be null.
             final long  count = readUnsignedInt();
-            final long  size  = Math.multiplyExact(Types.size(type), count);
-            final long  value = readUnsignedInt();
+            final long  size  = (type != null) ? Math.multiplyExact(type.size, count) : 0;
             if (size <= offsetSize) {
-                // offset is the real value(s).
-                dir.addEntry(tag, type, value);
+                /*
+                 * If the value can fit inside the number of bytes given by 'offsetSize', then the value is
+                 * stored directly at that location. This is the most common way TIFF tag values are stored.
+                 */
+                final long position = input.getStreamPosition();
+                if (size != 0) {
+                    /*
+                     * A size of zero means that we have an unknown type, in which case the TIFF specification
+                     * recommends to ignore it (for allowing them to add new types in the future), or an entry
+                     * without value (count = 0) - in principle illegal but we make this reader tolerant.
+                     */
+                    dir.addEntry(input, tag, type, count);
+                }
+                input.seek(position + offsetSize);
             } else {
                 // offset from beginning of file where the values are stored.
-                deferred.add(new long[] {tag, type, count, value});
+                final long value = readUnsignedInt();
+                // TODO
             }
         }
-        // TODO: process deferred data.
         return imageFileDirectories.add(dir);
     }
 
