@@ -18,6 +18,13 @@
 /**
  * Maps ISO metadata elements from/to the GeoTIFF tags.
  *
+ * <p>References:</p>
+ * <ul>
+ *   <li><a href="http://partners.adobe.com/public/developer/en/tiff/TIFF6.pdf">TIFF specification</a>: baseline</li>
+ *   <li><a href="http://partners.adobe.com/public/developer/en/tiff/TIFFphotoshop.pdf">TIFF Tecnical Notes</a>: add new compressions</li>
+ *   <li><a href="http://www.awaresystems.be/imaging/tiff/tifftags.html">TIFF Tag Reference</a></li>
+ * </ul>
+ *
  * @author  Rémi Maréchal (Geomatys)
  * @author  Thi Phuong Hao Nguyen (VNSC)
  * @author  Minh Chinh Vu (VNSC)

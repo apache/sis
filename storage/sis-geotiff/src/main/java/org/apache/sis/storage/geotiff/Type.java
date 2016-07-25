@@ -157,7 +157,16 @@ enum Type {
             if (value >= 0) {
                 return value;
             }
-            return super.readLong(input, count);
+            throw new ArithmeticException(canNotConvert(Long.toUnsignedString(value)));
+        }
+
+        @Override double readDouble(final ChannelDataInput input, final long count) throws IOException {
+            ensureSingleton(count);
+            final long value = input.readLong();
+            if (value >= 0) {
+                return value;
+            }
+            return Double.parseDouble(Long.toUnsignedString(value));    // Inefficient but should be very rare.
         }
     },
 
@@ -176,7 +185,7 @@ enum Type {
             if (r == value) {
                 return r;
             }
-            return super.readLong(input, count);            // Throws the exception.
+            throw new ArithmeticException(canNotConvert(Float.toString(value)));
         }
 
         @Override double readDouble(final ChannelDataInput input, final long count) throws IOException {
@@ -200,7 +209,7 @@ enum Type {
             if (r == value) {
                 return r;
             }
-            return super.readLong(input, count);            // Throws the exception.
+            throw new ArithmeticException(canNotConvert(Double.toString(value)));
         }
 
         @Override double readDouble(final ChannelDataInput input, final long count) throws IOException {
@@ -224,7 +233,7 @@ enum Type {
             if ((numerator % denominator) == 0) {
                 return numerator / denominator;
             }
-            return super.readLong(input, count);            // Throws the exception.
+            throw new ArithmeticException(canNotConvert(toString(numerator, denominator)));
         }
 
         @Override double readDouble(final ChannelDataInput input, final long count) throws IOException {
@@ -235,7 +244,7 @@ enum Type {
         @Override String[] readString(final ChannelDataInput input, final long length, final Charset charset) throws IOException {
             ensureSingleton(length);
             return new String[] {
-                new StringBuilder().append(input.readInt()).append('/').append(input.readInt()).toString()
+                toString(input.readInt(), input.readInt())
             };
         }
     },
@@ -255,7 +264,7 @@ enum Type {
             if ((numerator % denominator) == 0) {
                 return numerator / denominator;
             }
-            return super.readLong(input, count);            // Throws the exception.
+            throw new ArithmeticException(canNotConvert(toString(numerator, denominator)));
         }
 
         @Override double readDouble(final ChannelDataInput input, final long count) throws IOException {
@@ -266,7 +275,7 @@ enum Type {
         @Override String[] readString(final ChannelDataInput input, final long length, final Charset charset) throws IOException {
             ensureSingleton(length);
             return new String[] {
-                new StringBuilder().append(input.readUnsignedInt()).append('/').append(input.readUnsignedInt()).toString()
+                toString(input.readUnsignedInt(), input.readUnsignedInt())
             };
         }
     },
@@ -299,21 +308,13 @@ enum Type {
         @Override long readLong(final ChannelDataInput input, final long count) throws IOException {
             final String[] lines = readString(input, count, StandardCharsets.US_ASCII);
             ensureSingleton(lines.length);
-            try {
-                return Long.parseLong(lines[0]);
-            } catch (NumberFormatException e) {
-                throw new InvalidTiffHeaderException(unparsable(lines), e);
-            }
+            return Long.parseLong(lines[0]);
         }
 
         @Override double readDouble(final ChannelDataInput input, final long count) throws IOException {
             final String[] lines = readString(input, count, StandardCharsets.US_ASCII);
             ensureSingleton(lines.length);
-            try {
-                return Double.parseDouble(lines[0]);
-            } catch (NumberFormatException e) {
-                throw new InvalidTiffHeaderException(unparsable(lines), e);
-            }
+            return Double.parseDouble(lines[0]);
         }
     };
 
@@ -358,11 +359,10 @@ enum Type {
     }
 
     /**
-     * Returns the error message for unparsable number.
+     * Formats a rational number. This is a helper method for {@link #RATIONAL} and {@link #URATIONAL} types.
      */
-    static String unparsable(final String[] lines) {
-        // TODO: replace "<?>" by the actual tag name.
-        return Errors.format(Errors.Keys.UnparsableStringInElement_2, "<?>", lines[0]);
+    static String toString(final long numerator, final long denominator) {
+        return new StringBuilder().append(numerator).append('/').append(denominator).toString();
     }
 
     /**
@@ -371,26 +371,38 @@ enum Type {
      * are treated differently.
      *
      * @param  count  the number of values to read.
-     * @throws InvalidTiffHeaderException if {@code count} does not have the expected value.
+     * @throws IllegalArgumentException if {@code count} does not have the expected value.
      */
-    static void ensureSingleton(final long count) throws IOException {
+    static void ensureSingleton(final long count) {
         if (count != 1) {
-            // TODO: replace "<?>" by the actual tag name.
-            throw new InvalidTiffHeaderException(Errors.format(Errors.Keys.TooManyOccurrences_2, 1, "<?>"));
+            // Even if the methods did not expected an array in argument, we are conceptually reading an array.
+            throw new IllegalArgumentException(Errors.format(Errors.Keys.UnexpectedArrayLength_2, 1, count));
         }
+    }
+
+    /**
+     * Formats an error message for a value that can not be converted.
+     */
+    final String canNotConvert(final String value) {
+        return Errors.format(Errors.Keys.CanNotConvertValue_2, value, name());
     }
 
     /**
      * Reads a single value which is expected to be positive. A negative value may be an encoding error in the
      * big TIFF file, or if it was really the intended value then something greater than what we can support.
+     *
+     * @throws IOException if an error occurred while reading the stream.
+     * @throws NumberFormatException if the value was stored in ASCII and can not be parsed.
+     * @throws ArithmeticException if the value can not be represented in the Java signed {@code long} type.
+     * @throws IllegalArgumentException if the value is not a singleton.
+     * @throws UnsupportedOperationException if this type is {@link #UNDEFINED}.
      */
     final long readUnsignedLong(final ChannelDataInput input, final long count) throws IOException {
         final long value = readLong(input, count);
         if (value >= 0) {
             return value;
         }
-        // TODO: replace "<?>" by the actual tag name.
-        throw new InvalidTiffHeaderException(Errors.format(Errors.Keys.UnexpectedValueInElement_2, "<?>", value));
+        throw new ArithmeticException(canNotConvert(Long.toUnsignedString(value)));
     }
 
     /**
@@ -404,12 +416,14 @@ enum Type {
      * @param  input  the input from where to read the value.
      * @param  count  the amount of values (normally exactly 1).
      * @return the value as a {@code long}.
-     * @throws InvalidTiffHeaderException if the value can not be converted to a {@code long}.
-     * @throws IOException if another error occurred while reading the stream.
+     * @throws IOException if an error occurred while reading the stream.
+     * @throws NumberFormatException if the value was stored in ASCII and can not be parsed.
+     * @throws ArithmeticException if the value can not be represented in the Java signed {@code long} type.
+     * @throws IllegalArgumentException if the value is not a singleton.
+     * @throws UnsupportedOperationException if this type is {@link #UNDEFINED}.
      */
     long readLong(ChannelDataInput input, long count) throws IOException {
-        // TODO: replace "<?>" by the actual tag name.
-        throw new InvalidTiffHeaderException(Errors.format(Errors.Keys.IllegalPropertyType_2, "<?>", name()));
+        throw new UnsupportedOperationException(name());
     }
 
     /**
@@ -423,8 +437,10 @@ enum Type {
      * @param  input  the input from where to read the value.
      * @param  count  the amount of values (normally exactly 1).
      * @return the value as a {@code double}.
-     * @throws InvalidTiffHeaderException if the value can not be converted to a {@code double}.
-     * @throws IOException if another error occurred while reading the stream.
+     * @throws IOException if an error occurred while reading the stream.
+     * @throws NumberFormatException if the value was stored in ASCII and can not be parsed.
+     * @throws IllegalArgumentException if the value is not a singleton.
+     * @throws UnsupportedOperationException if this type is {@link #UNDEFINED}.
      */
     double readDouble(ChannelDataInput input, long count) throws IOException {
         return readLong(input, count);
@@ -439,6 +455,7 @@ enum Type {
      * @return the value as a string.
      * @throws IOException if an error occurred while reading the stream.
      * @throws ArithmeticException if the given length is too large.
+     * @throws UnsupportedOperationException if this type is {@link #UNDEFINED}.
      */
     String[] readString(ChannelDataInput input, final long length, final Charset charset) throws IOException {
         final String[] s = new String[Math.toIntExact(length)];

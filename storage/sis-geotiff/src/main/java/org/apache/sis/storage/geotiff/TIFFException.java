@@ -16,39 +16,39 @@
  */
 package org.apache.sis.storage.geotiff;
 
-import java.io.IOException;
+import org.apache.sis.storage.DataStoreException;
 
 
 /**
- * Thrown when a TIFF Image File Directory can not be read because of a logical inconsistency.
+ * Thrown when a TIFF file can not be read because of a logical inconsistency.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.8
  * @version 0.8
  * @module
  */
-class InvalidTiffHeaderException extends IOException {
+public class TIFFException extends DataStoreException {
     /**
      * For cross-version compatibility.
      */
     private static final long serialVersionUID = 3469934460013440211L;
 
     /**
-     * Creates a new exception with the given error message.
+     * Creates an exception with the specified details message.
      *
-     * @param message the error message.
+     * @param message  the detail message.
      */
-    InvalidTiffHeaderException(String message) {
+    public TIFFException(String message) {
         super(message);
     }
 
     /**
-     * Creates a new exception with the given error message and error cause.
+     * Creates an exception with the specified details message and cause.
      *
-     * @param message  the error message.
-     * @param cause    the cause of this error.
+     * @param message  the detail message.
+     * @param cause    the cause for this exception.
      */
-    InvalidTiffHeaderException(String message, final Throwable cause) {
+    public TIFFException(String message, final Throwable cause) {
         super(message, cause);
     }
 }

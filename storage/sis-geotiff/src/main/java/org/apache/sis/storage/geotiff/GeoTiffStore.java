@@ -18,10 +18,11 @@ package org.apache.sis.storage.geotiff;
 
 import java.io.IOException;
 import org.opengis.metadata.Metadata;
-import org.apache.sis.internal.storage.ChannelDataInput;
+import org.apache.sis.setup.OptionKey;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.StorageConnector;
+import org.apache.sis.internal.storage.ChannelDataInput;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Classes;
@@ -59,7 +60,7 @@ public class GeoTiffStore extends DataStore {
         }
         storage.closeAllExcept(input);
         try {
-            reader = new Reader(input, super.getLocale());
+            reader = new Reader(input, storage.getOption(OptionKey.ENCODING), this);
         } catch (IOException e) {
             throw new DataStoreException(e);
         }
