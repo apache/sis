@@ -16,8 +16,9 @@
  */
 package org.apache.sis.storage.geotiff;
 
-import java.util.Locale;
 import java.io.Closeable;
+import org.apache.sis.util.Localized;
+import org.apache.sis.util.resources.Errors;
 
 
 /**
@@ -35,12 +36,19 @@ abstract class GeoTIFF implements Closeable {
     /**
      * The locale for formatting error messages.
      */
-    final Locale locale;
+    private final Localized owner;
 
     /**
      * For subclass constructors.
      */
-    GeoTIFF(final Locale locale) {
-        this.locale = locale;
+    GeoTIFF(final Localized owner) {
+        this.owner = owner;
+    }
+
+    /**
+     * Returns the resources to use for formatting error messages.
+     */
+    final Errors errors() {
+        return Errors.getResources(owner.getLocale());
     }
 }

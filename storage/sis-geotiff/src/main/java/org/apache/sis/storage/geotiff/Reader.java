@@ -18,12 +18,15 @@ package org.apache.sis.storage.geotiff;
 
 import java.util.List;
 import java.util.ArrayList;
-import java.util.Locale;
 import java.io.IOException;
 import java.nio.ByteOrder;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import org.apache.sis.internal.storage.ChannelDataInput;
+import org.apache.sis.internal.storage.MetadataBuilder;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.Localized;
 
 
 /**
@@ -49,7 +52,13 @@ final class Reader extends GeoTIFF {
     /**
      * The stream from which to read the data.
      */
-    private final ChannelDataInput input;
+    final ChannelDataInput input;
+
+    /**
+     * The encoding of strings in the metadata. The string specification said that is shall be US-ASCII,
+     * but Apache SIS nevertheless let the user specifies an alternative encoding if needed.
+     */
+    final Charset encoding;
 
     /**
      * Stream position of the first byte of the GeoTIFF file. This is usually zero.
@@ -73,10 +82,15 @@ final class Reader extends GeoTIFF {
     private final byte intSizeExpansion;
 
     /**
-     * Positions of each <cite>Image File Directory</cite> (IFD) in this file. Those positions are fetched
-     * when first needed.
+     * Positions of each <cite>Image File Directory</cite> (IFD) in this file.
+     * Those positions are fetched when first needed.
      */
     private final List<ImageFileDirectory> imageFileDirectories = new ArrayList<>();
+
+    /**
+     * Builder for the metadata.
+     */
+    final MetadataBuilder metadata;
 
     /**
      * Creates a new GeoTIFF reader which will read data from the given input.
@@ -85,10 +99,14 @@ final class Reader extends GeoTIFF {
      * @throws IOException if an error occurred while reading bytes from the stream.
      * @throws DataStoreException if the file is not encoded in the TIFF or BigTIFF format.
      */
-    Reader(final ChannelDataInput input, final Locale locale) throws IOException, DataStoreException {
-        super(locale);
+    Reader(final ChannelDataInput input, final Charset encoding, final Localized owner)
+            throws IOException, DataStoreException
+    {
+        super(owner);
         this.input = input;
         origin = input.getStreamPosition();
+        metadata = new MetadataBuilder();
+        this.encoding = (encoding != null) ? encoding : StandardCharsets.US_ASCII;
         /*
          * A TIFF file begins with either "II" (0x4949) or "MM" (0x4D4D) characters.
          * Those characters identify the byte order. Note we we do not need to care
@@ -128,15 +146,15 @@ final class Reader extends GeoTIFF {
                 }
             }
         }
-        throw new DataStoreException(Errors.getResources(locale).getString(
-                Errors.Keys.UnexpectedFileFormat_2, "TIFF", input.filename));
+        // Do not invoke errors() yet because GeoTiffStore construction may not be finished.
+        throw new DataStoreException(Errors.format(Errors.Keys.UnexpectedFileFormat_2, "TIFF", input.filename));
     }
 
     /**
      * Returns a default message for parsing error.
      */
     private String canNotRead() {
-        return Errors.getResources(locale).getString(Errors.Keys.CanNotParseFile_2, "TIFF", input.filename);
+        return errors().getString(Errors.Keys.CanNotParseFile_2, "TIFF", input.filename);
     }
 
     /**
@@ -222,7 +240,7 @@ final class Reader extends GeoTIFF {
                      * recommends to ignore it (for allowing them to add new types in the future), or an entry
                      * without value (count = 0) - in principle illegal but we make this reader tolerant.
                      */
-                    dir.addEntry(input, tag, type, count);
+                    dir.addEntry(this, tag, type, count);
                 }
                 input.seek(position + offsetSize);
             } else {
