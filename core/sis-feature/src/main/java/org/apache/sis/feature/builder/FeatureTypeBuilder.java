@@ -41,6 +41,7 @@ import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
 import org.opengis.feature.PropertyType;
 import org.opengis.feature.FeatureAssociationRole;
+import org.opengis.feature.Operation;
 
 
 /**
@@ -519,6 +520,23 @@ public class FeatureTypeBuilder extends TypeBuilder {
     public AssociationRoleBuilder addAssociation(final FeatureAssociationRole template) {
         ensureNonNull("template", template);
         final AssociationRoleBuilder property = new AssociationRoleBuilder(this, template);
+        properties.add(property);
+        clearCache();
+        return property;
+    }
+
+    /**
+     * Adds the given operation in the feature type properties. The given operation object will be added verbatim
+     * in the {@code FeatureType}; this builder does not create new operations.
+     *
+     * @param  operation  the operation to add to the feature type.
+     * @return a read-only accessor on the operation properties.
+     *
+     * @see #properties()
+     */
+    public PropertyTypeBuilder addOperation(final Operation operation) {
+        ensureNonNull("operation", operation);
+        final PropertyTypeBuilder property = new OperationWrapper(this, operation);
         properties.add(property);
         clearCache();
         return property;
