@@ -17,6 +17,7 @@
 package org.apache.sis.storage.geotiff;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
 import org.opengis.metadata.Metadata;
 import org.apache.sis.setup.OptionKey;
 import org.apache.sis.storage.DataStore;
@@ -39,6 +40,12 @@ import org.apache.sis.util.Classes;
  */
 public class GeoTiffStore extends DataStore {
     /**
+     * The encoding of strings in the metadata. The string specification said that is shall be US-ASCII,
+     * but Apache SIS nevertheless let the user specifies an alternative encoding if needed.
+     */
+    final Charset encoding;
+
+    /**
      * The GeoTIFF reader implementation, or {@code null} if none.
      */
     private Reader reader;
@@ -53,6 +60,7 @@ public class GeoTiffStore extends DataStore {
      */
     public GeoTiffStore(final StorageConnector storage) throws DataStoreException {
         ArgumentChecks.ensureNonNull("storage", storage);
+        encoding = storage.getOption(OptionKey.ENCODING);
         final ChannelDataInput input = storage.getStorageAs(ChannelDataInput.class);
         if (input == null) {
             throw new DataStoreException(Errors.format(Errors.Keys.IllegalInputTypeForReader_2,
@@ -60,7 +68,7 @@ public class GeoTiffStore extends DataStore {
         }
         storage.closeAllExcept(input);
         try {
-            reader = new Reader(input, storage.getOption(OptionKey.ENCODING), this);
+            reader = new Reader(this, input);
         } catch (IOException e) {
             throw new DataStoreException(e);
         }
@@ -75,7 +83,7 @@ public class GeoTiffStore extends DataStore {
      * @throws DataStoreException if an error occurred while reading the data.
      */
     @Override
-    public Metadata getMetadata() throws DataStoreException {
+    public synchronized Metadata getMetadata() throws DataStoreException {
         return null;
     }
 
@@ -93,5 +101,16 @@ public class GeoTiffStore extends DataStore {
         } catch (IOException e) {
             throw new DataStoreException(e);
         }
+    }
+
+    /**
+     * Reports a warning represented by the given message and exception.
+     * At least one of {@code message} and {@code exception} shall be non-null.
+     *
+     * @param message    the message to log, or {@code null} if none.
+     * @param exception  the exception to log, or {@code null} if none.
+     */
+    final void warning(final String message, final Exception exception) {
+        listeners.warning(message, exception);
     }
 }

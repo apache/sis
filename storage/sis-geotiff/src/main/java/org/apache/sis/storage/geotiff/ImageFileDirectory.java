@@ -17,6 +17,8 @@
 package org.apache.sis.storage.geotiff;
 
 import java.io.IOException;
+import java.text.ParseException;
+import org.opengis.metadata.citation.DateType;
 
 
 /**
@@ -29,6 +31,8 @@ import java.io.IOException;
  * @since   0.8
  * @version 0.8
  * @module
+ *
+ * @see <a href="http://www.awaresystems.be/imaging/tiff/tifftags.html">TIFF Tag Reference</a>
  */
 final class ImageFileDirectory {
     /**
@@ -82,21 +86,88 @@ final class ImageFileDirectory {
      * @param  count    the number of values to read.
      * @return {@code true} on success, or {@code false} for unrecognized value.
      * @throws IOException if an error occurred while reading the stream.
-     * @throws NumberFormatException if the value was stored in ASCII and can not be parsed.
+     * @throws ParseException if the value need to be parsed as date and the parsing failed.
+     * @throws NumberFormatException if the value need to be parsed as number and the parsing failed.
      * @throws ArithmeticException if the value can not be represented in the expected Java type.
      * @throws IllegalArgumentException if a value which was expected to be a singleton is not.
      * @throws UnsupportedOperationException if the given type is {@link Type#UNDEFINED}.
      */
-    boolean addEntry(final Reader reader, final int tag, final Type type, final long count) throws IOException {
+    boolean addEntry(final Reader reader, final int tag, final Type type, final long count) throws IOException, ParseException {
         switch (tag) {
+
+            ////////////////////////////////////////////////////////////////////////////////////////////////
+            ////                                                                                        ////
+            ////    Essential information for being able to read the image at least as grayscale.       ////
+            ////    In Java2D, following information are needed for building the SampleModel.           ////
+            ////                                                                                        ////
+            ////////////////////////////////////////////////////////////////////////////////////////////////
+
             /*
-             * Person who created the image. Some older TIFF files used this tag for storing
-             * Copyright information, but Apache SIS does not support this legacy practice.
+             * How the components of each pixel are stored.
+             * 1 = Chunky format. The component values for each pixel are stored contiguously (for example RGBRGBRGB).
+             * 2 = Planar format. For example one plane of Red components, one plane of Green and one plane if Blue.
              */
-            case Tags.Artist: {
-                for (final String value : type.readString(reader.input, count, reader.encoding)) {
-                    reader.metadata.addAuthorName(value);
+            case Tags.PlanarConfiguration: {
+                final long value = type.readLong(reader.input, count);
+                if (value < 1 || value > 2) {
+                    return false;
                 }
+                isPlanar = (value == 2);
+                break;
+            }
+            /*
+             * The number of columns in the image, i.e., the number of pixels per row.
+             */
+            case Tags.ImageWidth: {
+                imageWidth = type.readUnsignedLong(reader.input, count);
+                break;
+            }
+            /*
+             * The number of rows of pixels in the image.
+             */
+            case Tags.ImageLength: {
+                imageHeight = type.readUnsignedLong(reader.input, count);
+                break;
+            }
+            /*
+             * The number of rows per strip. RowsPerStrip and ImageLength together tell us the number of strips
+             * in the entire image: StripsPerImage = floor((ImageLength + RowsPerStrip - 1) / RowsPerStrip).
+             */
+            case Tags.RowsPerStrip: {
+                // TODO
+                break;
+            }
+            /*
+             * For each strip, the number of bytes in the strip after compression.
+             */
+            case Tags.StripByteCounts: {
+                // TODO
+                break;
+            }
+            /*
+             * For each strip, the byte offset of that strip relative to the beginning of the TIFF file.
+             */
+            case Tags.StripOffsets: {
+                // TODO
+                break;
+            }
+            /*
+             * Compression scheme used on the image data.
+             */
+            case Tags.Compression: {
+                final long value = type.readLong(reader.input, count);
+                compression = Compression.valueOf(value);
+                if (compression == null) {
+                    return false;
+                }
+                break;
+            }
+            /*
+             * The logical order of bits within a byte. If this value is 2, then bits order shall be reversed in every
+             * bytes before decompression.
+             */
+            case Tags.FillOrder: {
+                // TODO
                 break;
             }
             /*
@@ -109,18 +180,40 @@ final class ImageFileDirectory {
                 break;
             }
             /*
-             * The height of the dithering or halftoning matrix used to create a dithered or halftoned
-             * bilevel file. Meaningful only if Threshholding = 2.
+             * The number of components per pixel. Ssually 1 for bilevel, grayscale, and palette-color images,
+             * and 3 for RGB images. Default value is 1.
              */
-            case Tags.CellLength: {
+            case Tags.SamplesPerPixel: {
                 // TODO
                 break;
             }
             /*
-             * The width of the dithering or halftoning matrix used to create a dithered or halftoned
-             * bilevel file. Meaningful only if Threshholding = 2.
+             * Specifies that each pixel has N extra components. When this field is used, the SamplesPerPixel field
+             * has a value greater than the PhotometricInterpretation field suggests. For example, a full-color RGB
+             * image normally has SamplesPerPixel=3. If SamplesPerPixel is greater than 3, then the ExtraSamples field
+             * describes the meaning of the extra samples. It may be an alpha channel, but not necessarily.
              */
-            case Tags.CellWidth: {
+            case Tags.ExtraSamples: {
+                // TODO
+                break;
+            }
+
+            ////////////////////////////////////////////////////////////////////////////////////////////////
+            ////                                                                                        ////
+            ////    Information related to the color palette or the meaning of sample values.           ////
+            ////    In Java2D, following information are needed for building the ColorModel.            ////
+            ////                                                                                        ////
+            ////////////////////////////////////////////////////////////////////////////////////////////////
+
+            /*
+             * The color space of the image data.
+             * 0 = WhiteIsZero. For bilevel and grayscale images: 0 is imaged as white.
+             * 1 = BlackIsZero. For bilevel and grayscale images: 0 is imaged as black.
+             * 2 = RGB. RGB value of (0,0,0) represents black, and (255,255,255) represents white.
+             * 3 = Palette color. The value of the component is used as an index into the RGB valuesthe ColorMap.
+             * 4 = Transparency Mask the defines an irregularly shaped region of another image in the same TIFF file.
+             */
+            case Tags.PhotometricInterpretation: {
                 // TODO
                 break;
             }
@@ -137,44 +230,212 @@ final class ImageFileDirectory {
                 break;
             }
             /*
-             * Compression scheme used on the image data.
+             * The minimum component value used. Default is 0.
              */
-            case Tags.Compression: {
-                final long value = type.readLong(reader.input, count);
-                compression = Compression.valueOf(value);
-                if (compression == null) {
-                    return false;
+            case Tags.MinSampleValue: {
+                // TODO
+                break;
+            }
+            /*
+             * The maximum component value used. Default is {@code (1 << BitsPerSample) - 1}.
+             * This field is for statistical purposes and should not to be used to affect the
+             * visual appearance of an image, unless a map styling is applied.
+             */
+            case Tags.MaxSampleValue: {
+                // TODO
+                break;
+            }
+
+            ////////////////////////////////////////////////////////////////////////////////////////////////
+            ////                                                                                        ////
+            ////    Information useful for defining the image role in a multi-images context.           ////
+            ////                                                                                        ////
+            ////////////////////////////////////////////////////////////////////////////////////////////////
+
+            /*
+             * A general indication of the kind of data contained in this subfile, mainly useful when there
+             * are multiple subfiles in a single TIFF file. This field is made up of a set of 32 flag bits.
+             *
+             * Bit 0 is 1 if the image is a reduced-resolution version of another image in this TIFF file.
+             * Bit 1 is 1 if the image is a single page of a multi-page image (see PageNumber).
+             * Bit 2 is 1 if the image defines a transparency mask for another image in this TIFF file (see PhotometricInterpretation).
+             * Bit 4 indicates MRC imaging model as described in ITU-T recommendation T.44 [T.44] (See ImageLayer tag) - RFC 2301.
+             */
+            case Tags.NewSubfileType: {
+                // TODO
+                break;
+            }
+            /*
+             * Old version (now deprecated) of above NewSubfileType.
+             * 1 = full-resolution image data
+             * 2 = reduced-resolution image data
+             * 3 = a single page of a multi-page image (see PageNumber).
+             */
+            case Tags.SubfileType: {
+                // TODO
+                break;
+            }
+
+            ////////////////////////////////////////////////////////////////////////////////////////////////
+            ////                                                                                        ////
+            ////    Information related to the Coordinate Reference System and the bounding box.        ////
+            ////                                                                                        ////
+            ////////////////////////////////////////////////////////////////////////////////////////////////
+
+            /*
+             * The orientation of the image with respect to the rows and columns.
+             * This is an integer numeroted from 1 to 7 inclusive (see TIFF specification for meaning).
+             */
+            case Tags.Orientation: {
+                // TODO
+                break;
+            }
+
+
+            ////////////////////////////////////////////////////////////////////////////////////////////////
+            ////                                                                                        ////
+            ////    Metadata for discovery purposes, conditions of use, etc.                            ////
+            ////    Those metadata are not "critical" information for reading the image.                ////
+            ////                                                                                        ////
+            ////////////////////////////////////////////////////////////////////////////////////////////////
+
+            /*
+             * A string that describes the subject of the image.
+             * For example, a user may wish to attach a comment such as "1988 company picnic" to an image.
+             */
+            case Tags.ImageDescription: {
+                for (final String value : type.readString(reader.input, count, reader.owner.encoding)) {
+                    reader.metadata.addTitle(value);
+                }
+                break;
+            }
+            /*
+             * Person who created the image. Some older TIFF files used this tag for storing
+             * Copyright information, but Apache SIS does not support this legacy practice.
+             */
+            case Tags.Artist: {
+                for (final String value : type.readString(reader.input, count, reader.owner.encoding)) {
+                    reader.metadata.addAuthor(value);
                 }
                 break;
             }
             /*
              * Copyright notice of the person or organization that claims the copyright to the image.
+             * Example: “Copyright, John Smith, 1992. All rights reserved.”
              */
             case Tags.Copyright: {
-                for (final String value : type.readString(reader.input, count, reader.encoding)) {
+                for (final String value : type.readString(reader.input, count, reader.owner.encoding)) {
                     reader.metadata.parseLegalNotice(value);
                 }
                 break;
             }
-            case Tags.PlanarConfiguration: {
-                final long value = type.readLong(reader.input, count);
-                if (value < 1 || value > 2) {
-                    return false;
+            /*
+             * Date and time of image creation. The format is: "YYYY:MM:DD HH:MM:SS" with 24-hour clock.
+             */
+            case Tags.DateTime: {
+                for (final String value : type.readString(reader.input, count, reader.owner.encoding)) {
+                    reader.metadata.add(reader.getDateFormat().parse(value), DateType.CREATION);
                 }
-                isPlanar = (value == 2);
                 break;
             }
-            case Tags.PhotometricInterpretation: {
-                final boolean blackIsZero = (type.readLong(reader.input, count) != 0);
+            /*
+             * The computer and/or operating system in use at the time of image creation.
+             */
+            case Tags.HostComputer: {
                 // TODO
                 break;
             }
-            case Tags.ImageLength: {
-                imageHeight = type.readUnsignedLong(reader.input, count);
+            /*
+             * Name and version number of the software package(s) used to create the image.
+             */
+            case Tags.Software: {
+                // TODO
                 break;
             }
-            case Tags.ImageWidth: {
-                imageWidth = type.readUnsignedLong(reader.input, count);
+            /*
+             * Manufacturer of the scanner, video digitizer, or other type of equipment used to generate the image.
+             * Synthetic images should not include this field.
+             */
+            case Tags.Make: {
+                // TODO
+                break;
+            }
+            /*
+             * The model name or number of the scanner, video digitizer, or other type of equipment used to
+             * generate the image.
+             */
+            case Tags.Model: {
+                // TODO
+                break;
+            }
+            /*
+             * The number of pixels per ResolutionUnit in the ImageWidth direction.
+             */
+            case Tags.XResolution: {
+                // TODO
+                break;
+            }
+            /*
+             * The number of pixels per ResolutionUnit in the ImageLength direction.
+             */
+            case Tags.YResolution: {
+                // TODO
+                break;
+            }
+            /*
+             * The unit of measurement for XResolution and YResolution.
+             * 1 = None, 2 = Inch, 3 = Centimeter.
+             */
+            case Tags.ResolutionUnit: {
+                // TODO
+                break;
+            }
+            /*
+             * The technique used to convert from gray to black and white pixels (if applicable):
+             * 1 = No dithering or halftoning has been applied to the image data.
+             * 2 = An ordered dither or halftone technique has been applied to the image data.
+             * 3 = A randomized process such as error diffusion has been applied to the image data.
+             */
+            case Tags.Threshholding: {
+                // TODO
+                break;
+            }
+            /*
+             * The width of the dithering or halftoning matrix used to create a dithered or halftoned
+             * bilevel file. Meaningful only if Threshholding = 2.
+             */
+            case Tags.CellWidth: {
+                // TODO
+                break;
+            }
+            /*
+             * The height of the dithering or halftoning matrix used to create a dithered or halftoned
+             * bilevel file. Meaningful only if Threshholding = 2.
+             */
+            case Tags.CellLength: {
+                // TODO
+                break;
+            }
+
+            ////////////////////////////////////////////////////////////////////////////////////////////////
+            ////                                                                                        ////
+            ////    Defined by TIFF specification but currently ignored.                                ////
+            ////                                                                                        ////
+            ////////////////////////////////////////////////////////////////////////////////////////////////
+
+            /*
+             * For each string of contiguous unused bytes in a TIFF file, the number of bytes and the byte offset
+             * in the string. Those tags are deprecated and do not need to be supported.
+             */
+            case Tags.FreeByteCounts:
+            case Tags.FreeOffsets:
+            /*
+             * For grayscale data, the optical density of each possible pixel value, plus the precision of that
+             * information. This is ignored by most TIFF readers.
+             */
+            case Tags.GrayResponseCurve:
+            case Tags.GrayResponseUnit: {
+                // TODO: log a warning saying that this tag is ignored.
                 break;
             }
         }
