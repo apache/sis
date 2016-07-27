@@ -33,7 +33,6 @@ import java.util.List;
 import javax.xml.stream.XMLStreamException;
 import org.opengis.geometry.Envelope;
 import org.opengis.feature.Feature;
-import org.opengis.metadata.Metadata;
 
 import javax.xml.stream.XMLStreamReader;
 import org.apache.sis.geometry.ImmutableEnvelope;
@@ -67,12 +66,12 @@ import static org.apache.sis.internal.gpx.GPXConstants.*;
  *
  * @author Johann Sorel (Geomatys)
  * @since   0.7
- * @version 0.7
+ * @version 0.8
  * @module
  */
 public class GPXReader extends StaxStreamReader {
 
-    MetaData metadata; // TODO
+    private MetaData metadata;
     private Feature current;
     private int wayPointInc = 0;
     private int routeInc = 0;
@@ -153,8 +152,8 @@ public class GPXReader extends StaxStreamReader {
      *
      * @return Metadata or null if input is not set.
      */
-    public Metadata getMetadata() {
-        return null;    // TODO
+    public MetaData getMetadata() {
+        return metadata;
     }
 
     /**
@@ -250,29 +249,29 @@ public class GPXReader extends StaxStreamReader {
                 case START_ELEMENT:
                     final String localName = reader.getLocalName();
                     if(TAG_NAME.equalsIgnoreCase(localName)){
-                        metadata.setName(reader.getElementText());
-                    }else if(TAG_DESC.equalsIgnoreCase(localName)){
-                        metadata.setDescription(reader.getElementText());
-                    }else if(TAG_AUTHOR.equalsIgnoreCase(localName)){
-                        if(metadata.getPerson()==null) metadata.setPerson(new Person());
-                        metadata.getPerson().setName(reader.getElementText());
-                    }else if(TAG_AUTHOR_EMAIL.equalsIgnoreCase(localName)){
-                        if(metadata.getPerson()==null) metadata.setPerson(new Person());
-                        metadata.getPerson().setEmail(reader.getElementText());
+                        metadata.name = reader.getElementText();
+                    }else if(TAG_DESC.equalsIgnoreCase(localName)) {
+                        metadata.description = reader.getElementText();
+                    }else if(TAG_AUTHOR.equalsIgnoreCase(localName)) {
+                        if(metadata.person == null) metadata.person = new Person();
+                        metadata.person.name = reader.getElementText();
+                    }else if(TAG_AUTHOR_EMAIL.equalsIgnoreCase(localName)) {
+                        if(metadata.person == null) metadata.person = new Person();
+                        metadata.person.email = reader.getElementText();
                     }else if(TAG_URL.equalsIgnoreCase(localName)){
                         try {
-                            metadata.getLinks().add(new URI(reader.getElementText()));
+                            metadata.links.add(new URI(reader.getElementText()));
                         } catch (URISyntaxException ex) {
                             throw new XMLStreamException(ex);
                         }
                     }else if(TAG_URLNAME.equalsIgnoreCase(localName)){
                         //reader.getElementText();
                     }else if(TAG_METADATA_TIME.equalsIgnoreCase(localName)){
-                        metadata.setTime(parseTime(reader.getElementText()));
+                        metadata.time = parseTime(reader.getElementText());
                     }else if(TAG_METADATA_KEYWORDS.equalsIgnoreCase(localName)){
-                        metadata.setKeywords(reader.getElementText());
+                        metadata.keywords = reader.getElementText();
                     }else if(TAG_BOUNDS.equalsIgnoreCase(localName)){
-                        metadata.setBounds(parseBound());
+                        metadata.bounds = parseBound();
                     }else if(  TAG_WPT.equalsIgnoreCase(localName)
                             || TAG_TRK.equalsIgnoreCase(localName)
                             || TAG_RTE.equalsIgnoreCase(localName)){
@@ -303,21 +302,21 @@ public class GPXReader extends StaxStreamReader {
                 case START_ELEMENT:
                     final String localName = reader.getLocalName();
                     if(TAG_NAME.equalsIgnoreCase(localName)){
-                        metadata.setName(reader.getElementText());
+                        metadata.name = reader.getElementText();
                     }else if(TAG_DESC.equalsIgnoreCase(localName)){
-                        metadata.setDescription(reader.getElementText());
+                        metadata.description = reader.getElementText();
                     }else if(TAG_AUTHOR.equalsIgnoreCase(localName)){
-                        metadata.setPerson(parsePerson());
+                        metadata.person = parsePerson();
                     }else if(TAG_COPYRIGHT.equalsIgnoreCase(localName)){
-                        metadata.setCopyRight(parseCopyRight());
+                        metadata.copyRight = parseCopyRight();
                     }else if(TAG_LINK.equalsIgnoreCase(localName)){
-                        metadata.getLinks().add(parseLink());
+                        metadata.links.add(parseLink());
                     }else if(TAG_METADATA_TIME.equalsIgnoreCase(localName)){
-                        metadata.setTime(parseTime(reader.getElementText()));
+                        metadata.time = parseTime(reader.getElementText());
                     }else if(TAG_METADATA_KEYWORDS.equalsIgnoreCase(localName)){
-                        metadata.setKeywords(reader.getElementText());
+                        metadata.keywords = reader.getElementText();
                     }else if(TAG_BOUNDS.equalsIgnoreCase(localName)){
-                        metadata.setBounds(parseBound());
+                        metadata.bounds = parseBound();
                     }
                     break;
                 case END_ELEMENT:
@@ -341,7 +340,7 @@ public class GPXReader extends StaxStreamReader {
     private CopyRight parseCopyRight() throws IOException, XMLStreamException {
         final XMLStreamReader reader = getReader();
         final CopyRight copyright = new CopyRight();
-        copyright.setAuthor(reader.getAttributeValue(null, ATT_COPYRIGHT_AUTHOR));
+        copyright.author = reader.getAttributeValue(null, ATT_COPYRIGHT_AUTHOR);
 
         while (reader.hasNext()) {
             final int type = reader.next();
@@ -350,10 +349,10 @@ public class GPXReader extends StaxStreamReader {
                 case START_ELEMENT:
                     final String localName = reader.getLocalName();
                     if(TAG_COPYRIGHT_YEAR.equalsIgnoreCase(localName)){
-                        copyright.setYear(Integer.valueOf(reader.getElementText()));
+                        copyright.year = Integer.valueOf(reader.getElementText());
                     }else if(TAG_COPYRIGHT_LICENSE.equalsIgnoreCase(localName)){
                         try {
-                            copyright.setLicense( new URI(reader.getElementText()));
+                            copyright.license = new URI(reader.getElementText());
                         } catch (URISyntaxException ex) {
                             throw new XMLStreamException(ex);
                         }
@@ -426,11 +425,11 @@ public class GPXReader extends StaxStreamReader {
                 case START_ELEMENT:
                     final String localName = reader.getLocalName();
                     if(TAG_NAME.equalsIgnoreCase(localName)){
-                        person.setName(reader.getElementText());
+                        person.name = reader.getElementText();
                     }else if(TAG_AUTHOR_EMAIL.equalsIgnoreCase(localName)){
-                        person.setEmail(reader.getElementText());
+                        person.email = reader.getElementText();
                     }else if(TAG_LINK.equalsIgnoreCase(localName)){
-                        person.setLink(parseLink());
+                        person.link = parseLink();
                     }
                     break;
                 case END_ELEMENT:
