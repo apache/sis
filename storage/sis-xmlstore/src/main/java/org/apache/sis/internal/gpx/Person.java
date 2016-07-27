@@ -17,74 +17,145 @@
 package org.apache.sis.internal.gpx;
 
 import java.net.URI;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Objects;
+import org.apache.sis.metadata.iso.citation.DefaultOnlineResource;
+import org.apache.sis.util.iso.SimpleInternationalString;
+import org.opengis.metadata.citation.Address;
+import org.opengis.metadata.citation.Contact;
+import org.opengis.metadata.citation.OnlineResource;
+import org.opengis.metadata.citation.Party;
+import org.opengis.metadata.citation.Responsibility;
+import org.opengis.metadata.citation.Role;
+import org.opengis.metadata.citation.Telephone;
+import org.opengis.metadata.extent.Extent;
+import org.opengis.util.InternationalString;
 
 /**
  * Person object as defined in GPX.
  * 
  * @author Johann Sorel (Geomatys)
  * @since   0.7
- * @version 0.7
+ * @version 0.8
  * @module
  */
-public class Person {
+public class Person implements Party, Contact, Address, Responsibility {
 
-    private String name;
-    private String email;
-    private URI link;
+    public String name;
+    public String email;
+    public URI link;
 
-    /**
-     * Returns the person name.
-     *
-     * @return name, may be null
-     */
-    public String getName() {
-        return name;
+    @Override
+    public Collection<? extends Contact> getContactInfo() {
+        return Collections.singleton(this);
     }
 
-    /**
-     * Set person name.
-     *
-     * @param name, can be null
-     */
-    public void setName(String name) {
-        this.name = name;
+    @Override
+    public Collection<? extends Telephone> getPhones() {
+        return Collections.EMPTY_LIST;
     }
 
-    /**
-     * Returns the person email.
-     *
-     * @return email, may be null
-     */
-    public String getEmail() {
-        return email;
+    @Override
+    public Telephone getPhone() {
+        return null;
     }
 
-    /**
-     * Set person email.
-     *
-     * @param email, can be null
-     */
-    public void setEmail(String email) {
-        this.email = email;
+    @Override
+    public Collection<? extends Address> getAddresses() {
+        return Collections.singleton(this);
     }
 
-    /**
-     * Returns the person information link.
-     *
-     * @return uri, may be null
-     */
-    public URI getLink() {
-        return link;
+    @Override
+    public Address getAddress() {
+        return this;
     }
 
-    /**
-     * Set person information link.
-     *
-     * @param link, can be null
-     */
-    public void setLink(URI link) {
-        this.link = link;
+    @Override
+    public Collection<? extends OnlineResource> getOnlineResources() {
+        if (link!=null) {
+            return Collections.singleton(new DefaultOnlineResource(link));
+        }
+        return Collections.EMPTY_LIST;
+    }
+
+    @Override
+    public OnlineResource getOnlineResource() {
+        if (link!=null) {
+            return new DefaultOnlineResource(link);
+        }
+        return null;
+    }
+
+    @Override
+    public Collection<? extends InternationalString> getHoursOfService() {
+        return Collections.EMPTY_LIST;
+    }
+
+    @Override
+    public InternationalString getContactInstructions() {
+        return null;
+    }
+
+    @Override
+    public InternationalString getContactType() {
+        return null;
+    }
+
+    @Override
+    public InternationalString getName() {
+        if (name!=null) {
+            return new SimpleInternationalString(name);
+        }
+        return null;
+    }
+
+    @Override
+    public Collection<? extends InternationalString> getDeliveryPoints() {
+        return Collections.EMPTY_LIST;
+    }
+
+    @Override
+    public InternationalString getCity() {
+        return null;
+    }
+
+    @Override
+    public InternationalString getAdministrativeArea() {
+        return null;
+    }
+
+    @Override
+    public String getPostalCode() {
+        return null;
+    }
+
+    @Override
+    public InternationalString getCountry() {
+        return null;
+    }
+
+    @Override
+    public Collection<String> getElectronicMailAddresses() {
+        if (email != null) {
+            return Collections.singleton(email);
+        }
+        return Collections.EMPTY_LIST;
+    }
+
+    @Override
+    public Role getRole() {
+        return Role.ORIGINATOR;
+    }
+
+    @Override
+    public Collection<? extends Extent> getExtents() {
+        return Collections.EMPTY_LIST;
+    }
+
+    @Override
+    public Collection<? extends Party> getParties() {
+        return Collections.singleton(this);
     }
 
     @Override

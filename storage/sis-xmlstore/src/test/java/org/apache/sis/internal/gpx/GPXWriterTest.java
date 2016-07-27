@@ -26,12 +26,17 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import com.esri.core.geometry.Point;
+import java.io.IOException;
+import javax.xml.stream.XMLStreamException;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.ImmutableEnvelope;
 import org.apache.sis.referencing.CommonCRS;
 import org.junit.Test;
 
 import static org.apache.sis.internal.gpx.GPXConstants.*;
+import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.StorageConnector;
+import org.apache.sis.test.TestCase;
 import static org.junit.Assert.*;
 
 // Branch-dependent imports
@@ -46,7 +51,14 @@ import org.opengis.feature.Feature;
  * @version 0.7
  * @module
  */
-public final strictfp class GPXWriterTest {
+public final strictfp class GPXWriterTest extends TestCase{
+
+
+    private static GPXReader create(final File resource) throws DataStoreException, IOException, XMLStreamException {
+        StorageConnector storage = new StorageConnector(resource);
+        return new GPXReader(storage.getStorage(), storage);
+    }
+
     /**
      * Test writing gpx metadata.
      *
@@ -60,36 +72,36 @@ public final strictfp class GPXWriterTest {
         final GPXWriter110 writer = new GPXWriter110("Apache SIS", f);
 
         final Person person = new Person();
-        person.setName("Jean-Pierre");
-        person.setEmail("jean-pierre@test.com");
-        person.setLink(new URI("http://son-site.com"));
+        person.name = "Jean-Pierre";
+        person.email = "jean-pierre@test.com";
+        person.link = new URI("http://son-site.com");
 
         final CopyRight copyright = new CopyRight();
-        copyright.setAuthor("GNU");
-        copyright.setYear(2010);
-        copyright.setLicense(new URI("http://gnu.org"));
+        copyright.author = "GNU";
+        copyright.year = 2010;
+        copyright.license = new URI("http://gnu.org");
 
         final GeneralEnvelope bounds = new GeneralEnvelope(CommonCRS.defaultGeographic());
         bounds.setRange(0, -10, 20);
         bounds.setRange(1, -30, 40);
 
         final MetaData metaData = new MetaData();
-        metaData.setName("name");
-        metaData.setDescription("description");
-        metaData.setPerson(person);
-        metaData.setCopyRight(copyright);
-        metaData.getLinks().addAll(Arrays.asList(new URI("http://adress1.org"),new URI("http://adress2.org")));
-        metaData.setTime(Instant.now());
-        metaData.setKeywords("test,sample");
-        metaData.setBounds(new ImmutableEnvelope(bounds));
+        metaData.name = "name";
+        metaData.description = "description";
+        metaData.person = person;
+        metaData.copyRight = copyright;
+        metaData.links.addAll(Arrays.asList(new URI("http://adress1.org"),new URI("http://adress2.org")));
+        metaData.time = Instant.now();
+        metaData.keywords = "test,sample";
+        metaData.bounds = new ImmutableEnvelope(bounds);
 
         writer.writeStartDocument();
         writer.write(metaData, null, null, null);
         writer.writeEndDocument();
         writer.close();
 
-        try (GPXReader reader = new GPXReader(f, null)) {
-            assertEquals(metaData, reader.metadata);
+        try (GPXReader reader = create(f)) {
+            assertEquals(metaData, reader.getMetadata());
         }
 
         if (f.exists()) f.delete();
@@ -247,7 +259,7 @@ public final strictfp class GPXWriterTest {
         writer.writeEndDocument();
         writer.close();
 
-        final GPXReader reader = new GPXReader(f, null);
+        final GPXReader reader = create(f);
 
         //testing on toString since JTS geometry always fail on equals method.
         assertEquals(point1.toString(), reader.next().toString());
