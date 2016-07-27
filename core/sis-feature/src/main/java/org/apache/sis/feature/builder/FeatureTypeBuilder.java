@@ -526,20 +526,36 @@ public class FeatureTypeBuilder extends TypeBuilder {
     }
 
     /**
-     * Adds the given operation in the feature type properties. The given operation object will be added verbatim
-     * in the {@code FeatureType}; this builder does not create new operations.
+     * Adds the given property in the feature type properties.
+     * The given property shall be an instance of one of the following types:
+     * <ul>
+     *   <li>{@link AttributeType}, in which case this method delegate to {@link #addAttribute(AttributeType)}.</li>
+     *   <li>{@link FeatureAssociationRole}, in which case this method delegate to {@link #addAssociation(FeatureAssociationRole)}.</li>
+     *   <li>{@link Operation}, in which case the given operation object will be added verbatim in the {@code FeatureType};
+     *       this builder does not create new operations.</li>
+     * </ul>
      *
-     * @param  operation  the operation to add to the feature type.
-     * @return a read-only accessor on the operation properties.
+     * @param  template  the property to add to the feature type.
+     * @return a builder initialized to the given builder.
+     *         In the {@code Operation} case, the builder is a read-only accessor on the operation properties.
      *
      * @see #properties()
      */
-    public PropertyTypeBuilder addOperation(final Operation operation) {
-        ensureNonNull("operation", operation);
-        final PropertyTypeBuilder property = new OperationWrapper(this, operation);
-        properties.add(property);
-        clearCache();
-        return property;
+    public PropertyTypeBuilder addProperty(final PropertyType template) {
+        ensureNonNull("template", template);
+        if (template instanceof AttributeType<?>) {
+            return addAttribute((AttributeType<?>) template);
+        } else if (template instanceof FeatureAssociationRole) {
+            return addAssociation((FeatureAssociationRole) template);
+        } else if (template instanceof Operation) {
+            final PropertyTypeBuilder property = new OperationWrapper(this, (Operation) template);
+            properties.add(property);
+            clearCache();
+            return property;
+        } else {
+            throw new IllegalArgumentException(errors().getString(
+                    Errors.Keys.IllegalArgumentClass_2, "template", template.getClass()));
+        }
     }
 
     /**
