@@ -20,13 +20,11 @@ import java.util.List;
 import java.util.ArrayList;
 import java.io.IOException;
 import java.nio.ByteOrder;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
+import java.text.ParseException;
 import org.apache.sis.internal.storage.ChannelDataInput;
 import org.apache.sis.internal.storage.MetadataBuilder;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.Localized;
 
 
 /**
@@ -53,12 +51,6 @@ final class Reader extends GeoTIFF {
      * The stream from which to read the data.
      */
     final ChannelDataInput input;
-
-    /**
-     * The encoding of strings in the metadata. The string specification said that is shall be US-ASCII,
-     * but Apache SIS nevertheless let the user specifies an alternative encoding if needed.
-     */
-    final Charset encoding;
 
     /**
      * Stream position of the first byte of the GeoTIFF file. This is usually zero.
@@ -99,14 +91,11 @@ final class Reader extends GeoTIFF {
      * @throws IOException if an error occurred while reading bytes from the stream.
      * @throws DataStoreException if the file is not encoded in the TIFF or BigTIFF format.
      */
-    Reader(final ChannelDataInput input, final Charset encoding, final Localized owner)
-            throws IOException, DataStoreException
-    {
+    Reader(final GeoTiffStore owner, final ChannelDataInput input) throws IOException, DataStoreException {
         super(owner);
-        this.input = input;
-        origin = input.getStreamPosition();
-        metadata = new MetadataBuilder();
-        this.encoding = (encoding != null) ? encoding : StandardCharsets.US_ASCII;
+        this.input    = input;
+        this.origin   = input.getStreamPosition();
+        this.metadata = new MetadataBuilder();
         /*
          * A TIFF file begins with either "II" (0x4949) or "MM" (0x4D4D) characters.
          * Those characters identify the byte order. Note we we do not need to care
@@ -227,26 +216,30 @@ final class Reader extends GeoTIFF {
             final int   tag   = input.readUnsignedShort();
             final Type  type  = Type.valueOf(input.readShort());        // May be null.
             final long  count = readUnsignedInt();
-            final long  size  = (type != null) ? Math.multiplyExact(type.size, count) : 0;
-            if (size <= offsetSize) {
-                /*
-                 * If the value can fit inside the number of bytes given by 'offsetSize', then the value is
-                 * stored directly at that location. This is the most common way TIFF tag values are stored.
-                 */
-                final long position = input.getStreamPosition();
-                if (size != 0) {
+            try {
+                final long  size  = (type != null) ? Math.multiplyExact(type.size, count) : 0;
+                if (size <= offsetSize) {
                     /*
-                     * A size of zero means that we have an unknown type, in which case the TIFF specification
-                     * recommends to ignore it (for allowing them to add new types in the future), or an entry
-                     * without value (count = 0) - in principle illegal but we make this reader tolerant.
+                     * If the value can fit inside the number of bytes given by 'offsetSize', then the value is
+                     * stored directly at that location. This is the most common way TIFF tag values are stored.
                      */
-                    dir.addEntry(this, tag, type, count);
+                    final long position = input.getStreamPosition();
+                    if (size != 0) {
+                        /*
+                         * A size of zero means that we have an unknown type, in which case the TIFF specification
+                         * recommends to ignore it (for allowing them to add new types in the future), or an entry
+                         * without value (count = 0) - in principle illegal but we make this reader tolerant.
+                         */
+                        dir.addEntry(this, tag, type, count);
+                    }
+                    input.seek(position + offsetSize);
+                } else {
+                    // offset from beginning of file where the values are stored.
+                    final long value = readUnsignedInt();
+                    // TODO
                 }
-                input.seek(position + offsetSize);
-            } else {
-                // offset from beginning of file where the values are stored.
-                final long value = readUnsignedInt();
-                // TODO
+            } catch (IOException | ParseException | RuntimeException e) {
+                owner.warning(errors().getString(Errors.Keys.CanNotSetPropertyValue_1, Tags.name(tag)), e);
             }
         }
         return imageFileDirectories.add(dir);

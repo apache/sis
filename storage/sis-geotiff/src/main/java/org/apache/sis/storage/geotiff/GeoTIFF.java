@@ -16,13 +16,18 @@
  */
 package org.apache.sis.storage.geotiff;
 
+import java.util.Locale;
+import java.util.TimeZone;
 import java.io.Closeable;
-import org.apache.sis.util.Localized;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import org.apache.sis.util.resources.Errors;
 
 
 /**
  * Base class of GeoTIFF image reader and writer.
+ * Those readers and writers are <strong>not</strong> thread safe.
+ * The {@link GeoTiffStore} class is responsible for synchronization if needed.
  *
  * @author  Rémi Marechal (Geomatys)
  * @author  Alexis Manin (Geomatys)
@@ -34,14 +39,25 @@ import org.apache.sis.util.resources.Errors;
  */
 abstract class GeoTIFF implements Closeable {
     /**
-     * The locale for formatting error messages.
+     * The timezone specified at construction time, or {@code null} for the default.
+     * This is not yet configurable, but may become in a future version.
      */
-    private final Localized owner;
+    private static final TimeZone TIMEZONE = null;
+
+    /**
+     * The store which created this reader or writer.
+     */
+    final GeoTiffStore owner;
+
+    /**
+     * The object to use for parsing and formatting dates. Created when first needed.
+     */
+    private transient DateFormat dateFormat;
 
     /**
      * For subclass constructors.
      */
-    GeoTIFF(final Localized owner) {
+    GeoTIFF(final GeoTiffStore owner) {
         this.owner = owner;
     }
 
@@ -50,5 +66,18 @@ abstract class GeoTIFF implements Closeable {
      */
     final Errors errors() {
         return Errors.getResources(owner.getLocale());
+    }
+
+    /**
+     * Returns the object to use for parsing and formatting dates.
+     */
+    final DateFormat getDateFormat() {
+        if (dateFormat == null) {
+            dateFormat = new SimpleDateFormat("yyy:MM:dd HH:mm:ss", Locale.US);
+            if (TIMEZONE != null) {
+                dateFormat.setTimeZone(TIMEZONE);
+            }
+        }
+        return dateFormat;
     }
 }

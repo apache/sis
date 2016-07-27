@@ -20,6 +20,7 @@ import java.util.Date;
 import java.util.Collection;
 import java.util.Collections;
 import java.nio.charset.Charset;
+import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Role;
 import org.opengis.metadata.citation.DateType;
 import org.opengis.metadata.constraint.Restriction;
@@ -275,17 +276,90 @@ public class MetadataBuilder {
     }
 
     /**
+     * Adds a date of the given type.
+     *
+     * @param date  the date to add, or {@code null}.
+     * @param type  the type of the date to add, or {@code null}.
+     */
+    public final void add(final Date date, final DateType type) {
+        if (date != null) {
+            citation().getDates().add(new DefaultCitationDate(date, type));
+        }
+    }
+
+    /**
+     * Returns the given character sequence as a non-empty character string with leading and trailing spaces removed.
+     * If the given character sequence is null, empty or blank, then this method returns {@code null}.
+     */
+    private static InternationalString trim(CharSequence string) {
+        string = CharSequences.trimWhitespaces(string);
+        if (string != null && string.length() != 0) {
+            return Types.toInternationalString(string);
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Returns the concatenation of the given string. The previous string may be {@code null}.
+     * This method does nothing if the previous string already contains the one to append.
+     */
+    private static InternationalString append(final InternationalString previous, final InternationalString toAdd) {
+        if (previous == null) {
+            return toAdd;
+        }
+        final String p = previous.toString();
+        final String a = toAdd.toString();
+        if (p.contains(a)) {
+            return previous;
+        }
+        return Types.toInternationalString(p + System.lineSeparator() + a);
+    }
+
+    /**
+     * Adds a title of the resource.
+     *
+     * @param title  the resource title, or {@code null} if none.
+     */
+    public final void addTitle(final CharSequence title) {
+        final InternationalString i18n = trim(title);
+        if (i18n != null) {
+            final DefaultCitation citation = citation();
+            if (citation.getTitle() == null) {
+                citation.setTitle(i18n);
+            } else {
+                citation.getAlternateTitles().add(i18n);
+            }
+        }
+    }
+
+    /**
+     * Adds a brief narrative summary of the resource(s).
+     * If a summary already existed, the new one will be appended after a new line.
+     *
+     * @param description  the summary of resource(s), or {@code null} if none.
+     */
+    public final void addAbstract(final CharSequence description) {
+        final InternationalString i18n = trim(description);
+        if (i18n != null) {
+            final DefaultDataIdentification identification = identification();
+            identification.setAbstract(append(identification.getAbstract(), i18n));
+        }
+    }
+
+    /**
      * Adds an author name.
      *
      * @param  author  the name of the author or publisher, or {@code null} if none.
      */
-    public final void addAuthorName(final CharSequence author) {
-        if (author != null) {
+    public final void addAuthor(final CharSequence author) {
+        final InternationalString i18n = trim(author);
+        if (i18n != null) {
             if (party != null) {
-                responsibility().getParties().add(party);
+                responsibility().getParties().add(party);       // Save the previous party before to create a new one.
                 party = null;
             }
-            party().setName(Types.toInternationalString(author));
+            party().setName(i18n);
         }
     }
 
