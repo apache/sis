@@ -31,9 +31,10 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import org.apache.sis.services.csw.AnyText;
 import org.apache.sis.services.csw.CapabilitiesRequest;
+import org.apache.sis.services.csw.DescribeRecord;
 import org.apache.sis.services.csw.GetCapabilitie;
 import org.apache.sis.services.csw.Record;
-import org.apache.sis.services.csw.SummaryRecord;
+import org.apache.sis.services.csw.GetRecord;
 
 /**
  *
@@ -58,7 +59,20 @@ public class CSW {
     @GET
     @Path("/DescribeRecord")
     @Produces(MediaType.APPLICATION_XML)
-    public List<SummaryRecord> DescribeRecord() throws ParseException, Exception {
+    public DescribeRecord DescribeRecord()  throws ParseException, Exception {
+        DescribeRecord a= new DescribeRecord();
+        a.setService(path.getValue("service"));
+        a.setVersion(path.getValue("version"));
+        a.setOutputFormat(path.getValue("outputFormat"));
+        a.setSchemaLanguage(path.getValue("schemaLanguage"));
+        a.setTypename("csw:Record");
+        
+        return a;
+    }
+    @GET
+    @Path("/GetRecords")
+    @Produces(MediaType.APPLICATION_XML)
+    public List<GetRecord> GetRecords()  throws ParseException, Exception {
         Record record = new Record(path.getValue("Path"));
         return record.getAllRecord();
     }
@@ -66,16 +80,16 @@ public class CSW {
     @GET
     @Path("/GetRecordById")
     @Produces(MediaType.APPLICATION_XML)
-    public SummaryRecord getRecordById(@QueryParam("Id") String id) throws ParseException, Exception {
+    public GetRecord getRecordById(@QueryParam("Id") String id) throws ParseException, Exception {
         Record record = new Record(path.getValue("Path"));
-        SummaryRecord a = record.getRecordById(id);
+        GetRecord a = record.getRecordById(id);
         return a;
     }
 
     @GET
     @Path("/GetRecord")
     @Produces(MediaType.APPLICATION_XML)
-    public List<SummaryRecord> getRecordAllField(
+    public List<GetRecord> getRecordAllField(
             @QueryParam("format") String format,
             @QueryParam("identifier") String identifier,
             @QueryParam("west") double west,

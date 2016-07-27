@@ -47,6 +47,7 @@ import org.apache.sis.util.iso.Types;
 import org.opengis.metadata.citation.Responsibility;
 
 import static org.apache.sis.internal.util.CollectionsExt.first;
+import org.apache.sis.xml.Namespaces;
 
 
 /**
@@ -64,7 +65,7 @@ import static org.apache.sis.internal.util.CollectionsExt.first;
  * @version 0.8
  * @module
  */
-@XmlRootElement(name = "Record")
+@XmlRootElement(name = "Record", namespace= Namespaces.CSW)
 @XmlType(name = "RecordType", propOrder = {
     "creator",
     "contributor",
@@ -79,7 +80,7 @@ import static org.apache.sis.internal.util.CollectionsExt.first;
     "format",
     "BoundingBox"
 })
-public class SummaryRecord extends Element {
+public class GetRecord extends Element {
 
     /**
      * An entity primarily responsible for making the content of the resource .
@@ -174,17 +175,17 @@ public class SummaryRecord extends Element {
     @XmlElement(namespace = OWS)
     private BoundingBox BoundingBox;
 
-    public SummaryRecord() {
+    public GetRecord() {
     }
 
     /**
      * Creates an initially empty summary record. This constructor is invoked by
      * JAXB at unmarshalling time.
      */
-    SummaryRecord(final Metadata object) {
+    GetRecord(final Metadata object) {
         List<Responsibility> responsibility = new ArrayList<>(first(object.getIdentificationInfo()).getPointOfContacts());
         this.creator = first(responsibility.get(0).getParties()).getName().toString();
-        this.contributor = first(responsibility.get(2).getParties()).getName().toString();
+        this.contributor = first(responsibility.get(1).getParties()).getName().toString();
         this.publisher =  new ConfigurationReader().getValue("PUBLISHER");
         this.subject = first(first(first(object.getIdentificationInfo()).getDescriptiveKeywords()).getKeywords()).toString();
         this.identifier = object.getFileIdentifier();
@@ -211,7 +212,7 @@ public class SummaryRecord extends Element {
      * {@link InternationalString} to {@link String}, or {@code null} for the
      * system default.
      */
-    public SummaryRecord(final Metadata metadata, final Locale locale) {
+    public GetRecord(final Metadata metadata, final Locale locale) {
         /*
          * Get identifier and date information from the root metadata object. Note that:
          *

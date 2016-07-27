@@ -53,7 +53,7 @@ public class AnyText {
      * The value rangeDate use to search .
      */
     String rangeDate;
-    List<SummaryRecord> data = new ArrayList<SummaryRecord>();
+    List<GetRecord> data = new ArrayList<GetRecord>();
     static ConfigurationReader path = new ConfigurationReader();
     
     /**
@@ -74,7 +74,7 @@ public class AnyText {
      *
      * @return data
      */
-    public List<SummaryRecord> getData() {
+    public List<GetRecord> getData() {
         return data;
     }
 
@@ -200,7 +200,7 @@ public class AnyText {
      * be thrown by the execution of the method or constructor and propagate
      * outside the method or constructor boundary.
      */
-    public boolean checkDate(String date1, String date2, SummaryRecord record) throws Exception {
+    public boolean checkDate(String date1, String date2, GetRecord record) throws Exception {
         DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
         Date da1 = df.parse(date1);
         Date da2 = df.parse(date2);
@@ -226,8 +226,8 @@ public class AnyText {
      */
     public void filter() throws Exception {
 
-        for (Iterator<SummaryRecord> it = data.iterator(); it.hasNext();) {
-            SummaryRecord itSum = it.next();
+        for (Iterator<GetRecord> it = data.iterator(); it.hasNext();) {
+            GetRecord itSum = it.next();
             /**
              * Remove Out of range Date.
              */

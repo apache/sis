@@ -25,7 +25,7 @@
  * @version 0.8
  * @module
  */
-@XmlSchema(elementFormDefault = XmlNsForm.QUALIFIED, namespace = Namespaces.CSW, xmlns = {
+@XmlSchema( xmlns = {
     @XmlNs(prefix = "csw", namespaceURI = Namespaces.CSW),
     @XmlNs(prefix = "ows", namespaceURI = Element.OWS),
     @XmlNs(prefix = "dc",  namespaceURI = Element.DUBLIN_CORE),

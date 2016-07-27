@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.xml.bind.annotation.XmlRootElement;
 import org.apache.sis.storage.DataStoreException;
 import org.opengis.metadata.Metadata;
 
@@ -34,7 +35,7 @@ import org.opengis.metadata.Metadata;
  */
 public class Record {
 
-    Map<String, SummaryRecord> record;
+    Map<String, GetRecord> record;
 
     /**
      * Contructor's Record
@@ -56,7 +57,7 @@ public class Record {
          *
          */
         for (Metadata id : catalog.getAllMetadata()) {
-            SummaryRecord summary = new SummaryRecord(id);
+            GetRecord summary = new GetRecord(id);
             String key = id.getFileIdentifier();
             record.put(key, summary);
         }
@@ -71,8 +72,8 @@ public class Record {
      * can be thrown by the execution of the method or constructor and propagate
      * outside the method or constructor boundary.
      */
-    public List<SummaryRecord> getAllRecord() {
-        return new ArrayList<SummaryRecord>(record.values());
+    public List<GetRecord> getAllRecord() {
+        return new ArrayList<GetRecord>(record.values());
     }
 
     /**
@@ -86,10 +87,10 @@ public class Record {
      * be thrown by the execution of the method or constructor and propagate
      * outside the method or constructor boundary.
      */
-    public List<SummaryRecord> getAllRecordPaginated(int start, int size) throws Exception {
-        ArrayList<SummaryRecord> list = new ArrayList<SummaryRecord>(record.values());
+    public List<GetRecord> getAllRecordPaginated(int start, int size) throws Exception {
+        ArrayList<GetRecord> list = new ArrayList<GetRecord>(record.values());
         if (start + size > list.size()) {
-            return new ArrayList<SummaryRecord>();
+            return new ArrayList<GetRecord>();
         }
 
         return list.subList(start, start + size);
@@ -106,7 +107,7 @@ public class Record {
      * be thrown by the execution of the method or constructor and propagate
      * outside the method or constructor boundary.
      */
-    public SummaryRecord getRecordById(String id) throws Exception {
+    public GetRecord getRecordById(String id) throws Exception {
         return record.get(id);
     }
 
