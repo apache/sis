@@ -32,6 +32,7 @@ import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.junit.Test;
 
+import static java.lang.Double.NaN;
 import static java.lang.StrictMath.*;
 
 
@@ -40,7 +41,7 @@ import static java.lang.StrictMath.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.6
- * @version 0.6
+ * @version 0.8
  * @module
  */
 @DependsOn(NormalizedProjectionTest.class)
@@ -169,11 +170,14 @@ public final strictfp class PolarStereographicTest extends MapProjectionTestCase
     private void compareEllipticalWithSpherical(final CoordinateDomain domain, final double latitudeOfOrigin,
             final long randomSeed) throws FactoryException, TransformException
     {
-        createCompleteProjection(new PolarStereographicA(), false,
-                  0.5,              // Central meridian
-                 latitudeOfOrigin,  // Latitude of origin
-                  0,                // Standard parallel (none)
-                  0.994,            // Scale factor
+        createCompleteProjection(new PolarStereographicA(),
+                6371007,            // Semi-major axis length
+                6371007,            // Semi-minor axis length
+                0.5,                // Central meridian
+                latitudeOfOrigin,   // Latitude of origin
+                NaN,                // Standard parallel 1 (none)
+                NaN,                // Standard parallel 2 (none)
+                0.994,              // Scale factor
                 200,                // False easting
                 100);               // False northing
         tolerance = Formulas.LINEAR_TOLERANCE;

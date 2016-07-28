@@ -117,7 +117,7 @@ public class LambertConicConformal extends ConformalProjection {
     }
 
     /**
-     * Internal coefficients for computation, depending only on values of standards parallels.
+     * Internal coefficients for computation, depending only on eccentricity and values of standards parallels.
      * This is defined as {@literal n = (ln m₁ – ln m₂) / (ln t₁ – ln t₂)} in §1.3.1.1 of
      * IOGP Publication 373-7-2 – Geomatics Guidance Note number 7, part 2 – April 2015.
      *
@@ -150,8 +150,8 @@ public class LambertConicConformal extends ConformalProjection {
      *   <li><cite>"Lambert Conic Conformal (2SP Michigan)"</cite>.</li>
      * </ul>
      *
-     * @param method     Description of the projection parameters.
-     * @param parameters The parameter values of the projection to create.
+     * @param method      description of the projection parameters.
+     * @param parameters  the parameter values of the projection to create.
      */
     public LambertConicConformal(final OperationMethod method, final Parameters parameters) {
         this(initializer(method, parameters));
@@ -275,11 +275,11 @@ public class LambertConicConformal extends ConformalProjection {
          * for reducing the amount of calls to the logarithmic function. Note that this equation
          * tends toward 0/0 if φ₁ ≈ φ₂, which force us to do a special check for the SP1 case.
          */
-        if (abs(φ1 - φ2) >= ANGULAR_TOLERANCE) {  // Should be 'true' for 2SP case.
+        if (abs(φ1 - φ2) >= ANGULAR_TOLERANCE) {                    // Should be 'true' for 2SP case.
             final double sinφ2 = sin(φ2);
             final double m2 = initializer.scaleAtφ(sinφ2, cos(φ2));
             final double t2 = expOfNorthing(φ2, eccentricity*sinφ2);
-            n = log(m1/m2) / log(t1/t2);    // Tend toward 0/0 if φ1 ≈ φ2.
+            n = log(m1/m2) / log(t1/t2);                            // Tend toward 0/0 if φ1 ≈ φ2.
         } else {
             n = -sinφ1;
         }
@@ -376,8 +376,8 @@ public class LambertConicConformal extends ConformalProjection {
      * <p>The non-linear part of the returned transform will be {@code this} transform, except if the ellipsoid
      * is spherical. In the later case, {@code this} transform will be replaced by a simplified implementation.</p>
      *
-     * @param  factory The factory to use for creating the transform.
-     * @return The map projection from (λ,φ) to (<var>x</var>,<var>y</var>) coordinates.
+     * @param  factory  the factory to use for creating the transform.
+     * @return the map projection from (λ,φ) to (<var>x</var>,<var>y</var>) coordinates.
      * @throws FactoryException if an error occurred while creating a transform.
      */
     @Override
@@ -561,7 +561,7 @@ public class LambertConicConformal extends ConformalProjection {
             double x = srcPts[srcOff  ];
             double y = srcPts[srcOff+1];
             final double ρ = hypot(x, y);
-            dstPts[dstOff  ] = atan2(x, y);  // Really (x,y), not (y,x);
+            dstPts[dstOff  ] = atan2(x, y);                     // Really (x,y), not (y,x);
             dstPts[dstOff+1] = PI/2 - 2*atan(pow(1/ρ, 1/n));
         }
     }

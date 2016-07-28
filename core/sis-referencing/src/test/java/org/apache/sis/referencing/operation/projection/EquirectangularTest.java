@@ -27,6 +27,7 @@ import org.apache.sis.referencing.operation.transform.MathTransformFactoryMock;
 import org.apache.sis.test.ReferencingAssert;
 import org.junit.Test;
 
+import static java.lang.Double.NaN;
 import static java.lang.StrictMath.toRadians;
 import static org.apache.sis.internal.metadata.ReferencingServices.AUTHALIC_RADIUS;
 
@@ -38,7 +39,7 @@ import static org.apache.sis.internal.metadata.ReferencingServices.AUTHALIC_RADI
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.6
- * @version 0.6
+ * @version 0.8
  * @module
  */
 public final strictfp class EquirectangularTest extends MapProjectionTestCase {
@@ -61,7 +62,7 @@ public final strictfp class EquirectangularTest extends MapProjectionTestCase {
      * an affine transform, the WKT formatter should handle this projection in a special way and shows the
      * projection parameters instead than the affine transform parameters (except in "show internal" mode).
      *
-     * @throws FactoryException should never happen.
+     * @throws FactoryException if an error occurred while creating the map projection.
      */
     @Test
     public void testWKT() throws FactoryException {
@@ -90,19 +91,19 @@ public final strictfp class EquirectangularTest extends MapProjectionTestCase {
     /**
      * Tests a simple transform on a sphere.
      *
-     * @throws FactoryException should never happen.
-     * @throws TransformException should never happen.
+     * @throws FactoryException if an error occurred while creating the map projection.
+     * @throws TransformException if an error occurred while projecting a point.
      */
     @Test
     public void testSimpleTransform() throws FactoryException, TransformException {
         createCompleteProjection();
         verifyTransform(
-                new double[] {  // (λ,φ) coordinates in degrees to project.
+                new double[] {          // (λ,φ) coordinates in degrees to project.
                     0, 0,
                     2, 0,
                     0, 3
                 },
-                new double[] {  // Expected (x,y) results in metres.
+                new double[] {          // Expected (x,y) results in metres.
                     0,                            0,
                     AUTHALIC_RADIUS*toRadians(2), 0,
                     0, AUTHALIC_RADIUS*toRadians(3)
@@ -113,18 +114,21 @@ public final strictfp class EquirectangularTest extends MapProjectionTestCase {
      * Tests conversion of random points. This test is actually of limited interest since the Equirectangular
      * projection is implemented by an affine transform, which has been tested elsewhere.
      *
-     * @throws FactoryException should never happen.
-     * @throws TransformException should never happen.
+     * @throws FactoryException if an error occurred while creating the map projection.
+     * @throws TransformException if an error occurred while projecting a point.
      */
     @Test
     public void testRandomPoints() throws FactoryException, TransformException {
-        createCompleteProjection(new Equirectangular(), true,
-                  0.5,  // Central meridian
-                  0,    // Latitude of origin (none)
-                 20,    // Standard parallel
-                  1,    // Scale factor (none)
-                200,    // False easting
-                100);   // False northing
+        createCompleteProjection(new Equirectangular(),
+                WGS84_A,    // Semi-major axis length
+                WGS84_B,    // Semi-minor axis length
+                0.5,        // Central meridian
+                0,          // Latitude of origin (none)
+                20,         // Standard parallel 1
+                NaN,        // Standard parallel 2
+                NaN,        // Scale factor (none)
+                200,        // False easting
+                100);       // False northing
         tolerance = Formulas.LINEAR_TOLERANCE;  // Not NORMALIZED_TOLERANCE since this is not a NormalizedProjection.
         derivativeDeltas = new double[] {100, 100};
         verifyInDomain(CoordinateDomain.GEOGRAPHIC, 0);
