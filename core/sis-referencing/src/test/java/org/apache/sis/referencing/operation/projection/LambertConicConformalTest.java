@@ -49,7 +49,7 @@ import static org.apache.sis.test.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
  * @since   0.6
- * @version 0.7
+ * @version 0.8
  * @module
  */
 @DependsOn(ConformalProjectionTest.class)
@@ -112,12 +112,12 @@ public final strictfp class LambertConicConformalTest extends MapProjectionTestC
     /**
      * Tests the projection at some special latitudes (0, ±π/2, NaN and others).
      *
-     * @throws ProjectionException Should never happen.
+     * @throws ProjectionException if an error occurred while projecting a point.
      */
     @Test
     public void testSpecialLatitudes() throws ProjectionException {
-        if (transform == null) {    // May have been initialized by 'testSphericalCase'.
-            createNormalizedProjection(true, 40);  // Elliptical case
+        if (transform == null) {                        // May have been initialized by 'testSphericalCase'.
+            createNormalizedProjection(true, 40);       // Elliptical case
         }
         final double INF = POSITIVE_INFINITY;
         assertEquals ("Not a number",     NaN, transform(NaN),            NORMALIZED_TOLERANCE);
@@ -161,7 +161,7 @@ public final strictfp class LambertConicConformalTest extends MapProjectionTestC
      * Tests the derivatives at a few points. This method compares the derivatives computed by
      * the projection with an estimation of derivatives computed by the finite differences method.
      *
-     * @throws TransformException Should never happen.
+     * @throws TransformException if an error occurred while projecting a point.
      */
     @Test
     @DependsOnMethod("testSpecialLatitudes")
@@ -246,28 +246,34 @@ public final strictfp class LambertConicConformalTest extends MapProjectionTestC
     @Test
     @DependsOnMethod("testLambertConicConformal1SP")
     public void testLambertConicConformalWestOrientated() throws FactoryException, TransformException {
-        createCompleteProjection(new LambertConformal1SP(), false,
-                  0.5,    // Central meridian
-                 40,      // Latitude of origin
-                  0,      // Standard parallel (none)
-                  0.997,  // Scale factor
-                200,      // False easting
-                100);     // False northing
+        createCompleteProjection(new LambertConformal1SP(),
+                WGS84_A,    // Semi-major axis length
+                WGS84_B,    // Semi-minor axis length
+                0.5,        // Central meridian
+                40,         // Latitude of origin
+                NaN,        // Standard parallel 1
+                NaN,        // Standard parallel 2
+                0.997,      // Scale factor
+                200,        // False easting
+                100);       // False northing
         final MathTransform reference = transform;
 
-        createCompleteProjection(new LambertConformalWest(), false,
-                  0.5,    // Central meridian
-                 40,      // Latitude of origin
-                  0,      // Standard parallel (none)
-                  0.997,  // Scale factor
-                200,      // False easting
-                100);     // False northing
+        createCompleteProjection(new LambertConformalWest(),
+                WGS84_A,    // Semi-major axis length
+                WGS84_B,    // Semi-minor axis length
+                0.5,        // Central meridian
+                40,         // Latitude of origin
+                NaN,        // Standard parallel 1
+                NaN,        // Standard parallel 2
+                0.997,      // Scale factor
+                200,        // False easting
+                100);       // False northing
 
         final Random random = TestUtilities.createRandomNumberGenerator();
         final double[] sources = new double[20];
         for (int i=0; i<sources.length;) {
-            sources[i++] = 20 * random.nextDouble();      // Longitude
-            sources[i++] = 10 * random.nextDouble() + 35; // Latitude
+            sources[i++] = 20 * random.nextDouble();            // Longitude
+            sources[i++] = 10 * random.nextDouble() + 35;       // Latitude
         }
         final double[] expected = new double[sources.length];
         reference.transform(sources, 0, expected, 0, sources.length/2);
@@ -326,13 +332,16 @@ public final strictfp class LambertConicConformalTest extends MapProjectionTestC
     @Test
     @DependsOnMethod("testSphericalCase")
     public void compareEllipticalWithSpherical() throws FactoryException, TransformException {
-        createCompleteProjection(new LambertConformal1SP(), false,
-                  0.5,    // Central meridian
-                 40,      // Latitude of origin
-                  0,      // Standard parallel (none)
-                  0.997,  // Scale factor
-                200,      // False easting
-                100);     // False northing
+        createCompleteProjection(new LambertConformal1SP(),
+                6371007,    // Semi-major axis length
+                6371007,    // Semi-minor axis length
+                0.5,        // Central meridian
+                40,         // Latitude of origin
+                NaN,        // Standard parallel 1
+                NaN,        // Standard parallel 2
+                0.997,      // Scale factor
+                200,        // False easting
+                100);       // False northing
         tolerance = Formulas.LINEAR_TOLERANCE;
         compareEllipticalWithSpherical(CoordinateDomain.GEOGRAPHIC_SAFE, 0);
     }
