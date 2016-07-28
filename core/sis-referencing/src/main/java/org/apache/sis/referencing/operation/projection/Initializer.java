@@ -295,7 +295,7 @@ final class Initializer {
      *
      * <blockquote>ν = 1 / √(1 - ℯ²⋅sin²φ)</blockquote>
      *
-     * This method returns 1/ν².
+     * This method returns 1/ν², which is the (1 - ℯ²⋅sin²φ) part of above equation.
      *
      * <div class="section">Relationship with Snyder</div>
      * This is related to functions (14-15) from Snyder (used for computation of scale factors

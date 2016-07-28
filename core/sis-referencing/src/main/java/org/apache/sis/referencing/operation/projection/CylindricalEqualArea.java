@@ -97,13 +97,6 @@ public class CylindricalEqualArea extends EqualAreaProjection {
     private final byte variant;
 
     /**
-     * Value of {@link #qm(double)} function (part of Snyder equation (3-12)) at pole (sinφ = 1).
-     *
-     * @see #computeCoefficients()
-     */
-    private transient double qmPolar;
-
-    /**
      * Creates a Cylindrical Equal Area projection from the given parameters.
      *
      * @param method     Description of the projection parameters.
@@ -176,16 +169,7 @@ public class CylindricalEqualArea extends EqualAreaProjection {
         ik.divide(k0);
         denormalize.convertAfter(0, k0, null);
         denormalize.convertAfter(1, ik, null);
-        computeCoefficients();
-    }
-
-    /**
-     * Invoked at construction time or on deserialization for computing the transient fields.
-     */
-    @Override
-    final void computeCoefficients() {
         super.computeCoefficients();
-        qmPolar = qm(1);
     }
 
     /**
@@ -194,7 +178,6 @@ public class CylindricalEqualArea extends EqualAreaProjection {
     CylindricalEqualArea(final CylindricalEqualArea other) {
         super(other);
         variant = other.variant;
-        qmPolar = other.qmPolar;
     }
 
     /**
@@ -235,8 +218,8 @@ public class CylindricalEqualArea extends EqualAreaProjection {
         final double φ    = srcPts[srcOff+1];
         final double sinφ = sin(φ);
         if (dstPts != null) {
-            dstPts[dstOff  ] = srcPts[srcOff];  // Multiplication by k₀ will be applied by the denormalization matrix.
-            dstPts[dstOff+1] = qm(sinφ);        // Multiplication by (1-ℯ²)/(2k₀) will be applied by the denormalization matrix.
+            dstPts[dstOff  ] = srcPts[srcOff];      // Multiplication by k₀ will be applied by the denormalization matrix.
+            dstPts[dstOff+1] = qm_ellipsoid(sinφ);  // Multiplication by (1-ℯ²)/(2k₀) will be applied by the denormalization matrix.
         }
         /*
          * End of map projection. Now compute the derivative, if requested.
@@ -265,7 +248,7 @@ public class CylindricalEqualArea extends EqualAreaProjection {
             dstOff--;
             while (--numPts >= 0) {
                 final double φ = dstPts[dstOff += 2];                   // Same as srcPts[srcOff + 1].
-                dstPts[dstOff] = qm(sin(φ));                            // Part of Synder equation (10-15)
+                dstPts[dstOff] = qm_ellipsoid(sin(φ));                  // Part of Synder equation (10-15)
             }
         }
     }
@@ -283,7 +266,7 @@ public class CylindricalEqualArea extends EqualAreaProjection {
     {
         final double y   = srcPts[srcOff+1];            // Must be before writing x.
         dstPts[dstOff  ] = srcPts[srcOff  ];            // Must be before writing y.
-        dstPts[dstOff+1] = φ(y / qmPolar);
+        dstPts[dstOff+1] = φ(y);
         /*
          * Equation 10-26 of Synder gives β = asin(2y⋅k₀/(a⋅qPolar)).
          * In our case it simplifies to sinβ = (y/qmPolar) because:

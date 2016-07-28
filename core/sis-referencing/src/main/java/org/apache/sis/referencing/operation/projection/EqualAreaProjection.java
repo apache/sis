@@ -18,6 +18,7 @@ package org.apache.sis.referencing.operation.projection;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import org.apache.sis.util.resources.Errors;
 
 import static java.lang.Math.*;
 import static org.apache.sis.math.MathFunctions.atanh;
@@ -50,6 +51,14 @@ abstract class EqualAreaProjection extends NormalizedProjection {
      *
      * Note that since this boolean is static final, the compiler should exclude the code in the branch that is never
      * executed (no need to comment-out that code).
+     *
+     *
+     * <p><b>BENCHMARK AND ANALYSIS:</b>
+     * as of July 2016, benchmarking shows no benefit in using trigonometric identities for {@code EqualAreaProjection}
+     * (contrarily to {@link ConformalProjection} where we did measured a benefit). This may be because in this class,
+     * the series expansion is unconditionally followed by iterative method in order to reach the centimetric precision.
+     * We observe that the original series expansion allows convergence in only one iteration, while the formulas using
+     * trigonometric identifies often requires two iterations. Consequently we disallow those modifications for now.</p>
      */
     private static final boolean ALLOW_TRIGONOMETRIC_IDENTITIES = false;
 
@@ -70,6 +79,13 @@ abstract class EqualAreaProjection extends NormalizedProjection {
     private transient double ci2, ci4, ci8;
 
     /**
+     * Value of {@link #qm(double)} function (part of Snyder equation (3-12)) at pole (sinφ = 1).
+     *
+     * @see #computeCoefficients()
+     */
+    private transient double qmPolar;
+
+    /**
      * Creates a new normalized projection from the parameters computed by the given initializer.
      *
      * @param initializer The initializer for computing map projection internal parameters.
@@ -84,8 +100,8 @@ abstract class EqualAreaProjection extends NormalizedProjection {
      */
     void computeCoefficients() {
         final double e2 = eccentricitySquared;
-        final double e4 = e2 * e2;
-        final double e6 = e2 * e4;
+        final double e4  = e2 * e2;
+        final double e6  = e2 * e4;
         ci2  =  517/5040.  * e6  +  31/180. * e4  +  1/3. * e2;
         ci4  =  251/3780.  * e6  +  23/360. * e4;
         ci8  =  761/45360. * e6;
@@ -100,6 +116,7 @@ abstract class EqualAreaProjection extends NormalizedProjection {
             ci4 *=  8;
             ci8 *= 64;
         }
+        qmPolar = qm(1);
     }
 
     /**
@@ -113,12 +130,15 @@ abstract class EqualAreaProjection extends NormalizedProjection {
         ci2 = other.ci2;
         ci4 = other.ci4;
         ci8 = other.ci8;
+        qmPolar = other.qmPolar;
     }
 
     /**
      * Calculates <strong>part</strong> of <var>q</var> from Snyder equation (3-12).
      * In order to get the <var>q</var> function, this method output must be multiplied
      * by <code>(1 - {@linkplain #eccentricitySquared})</code>.
+     *
+     * <p>The <var>q</var> variable is named <var>α</var> in EPSG guidance notes.</p>
      *
      * <p>This equation has the following properties:</p>
      *
@@ -130,13 +150,28 @@ abstract class EqualAreaProjection extends NormalizedProjection {
      *   <li>q(0) = 0</li>
      * </ul>
      *
-     * In the spherical case, <var>q</var> = 2⋅sinφ. It is caller responsibility to ensure that this
-     * method is not invoked in the spherical case, since this implementation does not work in such case.
+     * In the spherical case, <var>q</var> = 2⋅sinφ.
      *
      * @param  sinφ sine of the latitude <var>q</var> is calculated for.
      * @return <var>q</var> from Snyder equation (3-12).
      */
     final double qm(final double sinφ) {
+        /*
+         * Check for zero eccentricity is required because qm_ellipsoid(sinφ) would
+         * simplify to sinφ + atanh(0) / 0 == sinφ + 0/0, thus producing NaN.
+         */
+        return (eccentricity == 0) ? 2*sinφ : qm_ellipsoid(sinφ);
+    }
+
+    /**
+     * Same as {@link #qm(double)} but without check about whether the map projection is a spherical case.
+     * It is caller responsibility to ensure that this method is not invoked in the spherical case, since
+     * this implementation does not work in such case.
+     *
+     * @param  sinφ sine of the latitude <var>q</var> is calculated for.
+     * @return <var>q</var> from Snyder equation (3-12).
+     */
+    final double qm_ellipsoid(final double sinφ) {
         final double ℯsinφ = eccentricity * sinφ;
         return sinφ / (1 - ℯsinφ*ℯsinφ) + atanh(ℯsinφ) / eccentricity;
     }
@@ -151,23 +186,29 @@ abstract class EqualAreaProjection extends NormalizedProjection {
      * @return the {@code qm} derivative at the specified latitude.
      */
     final double dqm_dφ(final double sinφ, final double cosφ) {
-        final double ℯsinφ2 = eccentricitySquared * (sinφ*sinφ);
-        return (cosφ / (1 - ℯsinφ2)) * (1 + ((1 + ℯsinφ2) / (1 - ℯsinφ2)));
+        final double t = 1 - eccentricitySquared*(sinφ*sinφ);
+        return 2*cosφ / (t*t);
     }
 
     /**
-     * Computes the latitude using equation 3-18 from Synder.
+     * Computes the latitude using equation 3-18 from Synder, followed by iterative resolution of Synder 3-16.
+     * If theory, the series expansion given by equation 3-18 (φ ≈ c₂⋅sin(2β) + c₄⋅sin(4β) + c₈⋅sin(8β)) should
+     * be used in replacement of the iterative method. However in practice the series expansion seems to not
+     * have a sufficient amount of terms for achieving the centimetric precision, so we "finish" it by the
+     * iterative method. The series expansion is nevertheless useful for reducing the number of iterations.
      *
-     * @param  sinβ see Synder equation 10-26.
+     * @param  y in the cylindrical case, this is northing on the normalized ellipsoid.
      * @return the latitude in radians.
      */
-    final double φ(final double sinβ) {
+    final double φ(final double y) throws ProjectionException {
+        final double sinβ = y / qmPolar;
         final double β = asin(sinβ);
+        double φ;
         if (!ALLOW_TRIGONOMETRIC_IDENTITIES) {
-            return ci8 * sin(8*β)
-                 + ci4 * sin(4*β)
-                 + ci2 * sin(2*β)
-                 + β;                                                               // Synder 3-18
+            φ = ci8 * sin(8*β)
+              + ci4 * sin(4*β)
+              + ci2 * sin(2*β)
+              + β;                                                                  // Synder 3-18
         } else {
             /*
              * Same formula than above, but rewriten using trigonometric identities in order to avoid
@@ -179,24 +220,62 @@ abstract class EqualAreaProjection extends NormalizedProjection {
             final double t4β = 0.5 - sin2_β;                                        // = sin(4β) / ( 4⋅sin(2β))
             final double t8β = (cos2_β - sin2_β)*(cos2_β*cos2_β - cos2_β + 1./8);   // = sin(8β) / (32⋅sin(2β))
 
-            assert identityEquals(t2β, sin(2*β) / ( 2      ));
-            assert identityEquals(t4β, sin(4*β) / ( 8 * t2β));
-            assert identityEquals(t8β, sin(8*β) / (64 * t2β));
+            assert ConformalProjection.identityEquals(t2β, sin(2*β) / ( 2      ));
+            assert ConformalProjection.identityEquals(t4β, sin(4*β) / ( 8 * t2β));
+            assert ConformalProjection.identityEquals(t8β, sin(8*β) / (64 * t2β));
 
-            return (ci8*t8β  +  ci4*t4β  +  ci2) * t2β  +  β;
+            φ = (ci8*t8β  +  ci4*t4β  +  ci2) * t2β  +  β;
         }
-    }
-
-    /**
-     * Verifies if a trigonometric identity produced the expected value. This method is used in assertions only.
-     * The tolerance threshold is approximatively 1.5E-12 (note that it still about 7000 time greater than
-     * {@code Math.ulp(1.0)}).
-     *
-     * @see #ALLOW_TRIGONOMETRIC_IDENTITIES
-     */
-    private static boolean identityEquals(final double actual, final double expected) {
-        // Use !(a > b) instead of (a <= b) in order to tolerate NaN.
-        return !(abs(actual - expected) > (ANGULAR_TOLERANCE / 1000));
+        /*
+         * At this point φ is close to the desired value, but may have an error of a few centimetres.
+         * Use the iterative method for reaching the last part of missing accuracy. Usually this loop
+         * will perform exactly one iteration, no more, because φ is already quite close to the result.
+         *
+         * Mathematical note: Synder 3-16 gives q/(1-ℯ²) instead of y in the calculation of Δφ below.
+         * For Cylindrical Equal Area projection, Synder 10-17 gives  q = (qPolar⋅sinβ), which simplifies
+         * as y.
+         *
+         * For Albers Equal Area projection, Synder 14-19 gives  q = (C - ρ²n²/a²)/n,  which we rewrite
+         * as  q = (C - ρ²)/n  (see comment in AlbersEqualArea.inverseTransform(…) for the mathematic).
+         * The y value given to this method is y = (C - ρ²) / (n⋅(1-ℯ²)) = q/(1-ℯ²), the desired value.
+         */
+        for (int i=0; i<MAXIMUM_ITERATIONS; i++) {
+            final double sinφ  = sin(φ);
+            final double cosφ  = cos(φ);
+            final double ℯsinφ = eccentricity * sinφ;
+            final double ome   = 1 - ℯsinφ*ℯsinφ;
+            final double Δφ    = ome*ome/(2*cosφ) * (y - sinφ/ome - atanh(ℯsinφ)/eccentricity);
+            φ += Δφ;
+            if (abs(Δφ) <= ITERATION_TOLERANCE) {
+                return φ;
+            }
+        }
+        /*
+         * In the Albers Equal Area discussion, Synder said that above algorithm does not converge if
+         *
+         *   q = ±(1 - (1-ℯ²)/(2ℯ) ⋅ ln((1-ℯ)/(1+ℯ)))
+         *
+         * which we rewrite as
+         *
+         *   q = ±(1 + (1-ℯ²)⋅atanh(ℯ)/ℯ)
+         *
+         * Given that y = q/(1-ℯ²)  (see above comment), we rewrite as
+         *
+         *   y  =  ±(1/(1-ℯ²) + atanh(ℯ)/ℯ)  =  ±qmPolar
+         *
+         * which implies  sinβ = ±1. This is consistent with Synder discussion of Cylndrical Equal Area
+         * projection, where he said exactly that about the same formula (that it does not converge for
+         * β = ±90°). In both case, Synder said that the result is φ = β, with the same sign.
+         */
+        final double as = abs(sinβ);
+        if (abs(as - 1) < ANGULAR_TOLERANCE) {
+            return copySign(PI/2, y);               // Value is at a pole.
+        }
+        if (as >= 1 || Double.isNaN(y)) {
+            return Double.NaN;                      // Value "after" the pole.
+        }
+        // Value should have converged but did not.
+        throw new ProjectionException(Errors.format(Errors.Keys.NoConvergence));
     }
 
     /**
