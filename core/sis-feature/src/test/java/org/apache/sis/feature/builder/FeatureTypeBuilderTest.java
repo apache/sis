@@ -46,10 +46,10 @@ import org.opengis.feature.PropertyType;
  */
 public final strictfp class FeatureTypeBuilderTest extends TestCase {
     /**
-     * Tests a {@code FeatureTypeBuilder.Property} with the minimum number of parameters.
+     * Tests a {@code AttributeTypeBuilder} with the minimum number of parameters.
      */
     @Test
-    public void testEmptyProperty() {
+    public void testAttributeTypeBuilderInitialization() {
         final AttributeTypeBuilder<String> builder = new FeatureTypeBuilder().addAttribute(String.class);
         assertEquals("default name", "string", builder.getName().toString());
 
@@ -70,8 +70,8 @@ public final strictfp class FeatureTypeBuilderTest extends TestCase {
      * Tests a {@code FeatureTypeBuilder} with the minimum number of parameters (no property and no super type).
      */
     @Test
-    @DependsOnMethod("testEmptyProperty")
-    public void testEmptyFeature() {
+    @DependsOnMethod("testAttributeTypeBuilderInitialization")
+    public void testFeatureTypeBuilderInitialization() {
         final FeatureTypeBuilder builder = new FeatureTypeBuilder();
         try {
             builder.build();
@@ -80,13 +80,6 @@ public final strictfp class FeatureTypeBuilderTest extends TestCase {
             final String message = ex.getMessage();
             assertTrue(message, message.contains("name"));
         }
-        testEmptyFeature(builder);
-    }
-
-    /**
-     * Implementation of {@link #testEmptyFeature()} using the given pre-existing builder.
-     */
-    private static void testEmptyFeature(final FeatureTypeBuilder builder) {
         builder.setName("scope", "test");
         final FeatureType type = builder.build();
 
@@ -97,11 +90,11 @@ public final strictfp class FeatureTypeBuilderTest extends TestCase {
     }
 
     /**
-     * Test creation of a single property.
+     * Test creation of a single attribute.
      */
     @Test
-    @DependsOnMethod("testEmptyProperty")
-    public void testPropertyBuild() {
+    @DependsOnMethod("testAttributeTypeBuilderInitialization")
+    public void testAttributeTypeBuilder() {
         final AttributeTypeBuilder<String> builder = new FeatureTypeBuilder().addAttribute(String.class);
         builder.setName        ("myScope", "myName");
         builder.setDefinition  ("test definition");
@@ -129,15 +122,9 @@ public final strictfp class FeatureTypeBuilderTest extends TestCase {
      * Tests {@link FeatureTypeBuilder#addAttribute(Class)}.
      */
     @Test
-    @DependsOnMethod("testEmptyFeature")
-    public void testAddProperties() {
-        testAddProperties(new FeatureTypeBuilder());
-    }
-
-    /**
-     * Implementation of {@link #testAddProperties()} using the given pre-existing builder.
-     */
-    private static void testAddProperties(final FeatureTypeBuilder builder) {
+    @DependsOnMethod("testAttributeTypeBuilder")
+    public void testAddAttribute() {
+        final FeatureTypeBuilder builder = new FeatureTypeBuilder();
         builder.setName("myScope", "myName");
         builder.setDefinition ("test definition");
         builder.setDesignation("test designation");
@@ -194,11 +181,12 @@ public final strictfp class FeatureTypeBuilderTest extends TestCase {
     }
 
     /**
-     * Tests {@link FeatureTypeBuilder#addIdentifier(Class)}.
+     * Tests {@link FeatureTypeBuilder#addAttribute(Class)} where one property is an identifier
+     * and another property is the geometry.
      */
     @Test
-    @DependsOnMethod("testAddProperties")
-    public void testAddIdentifier() {
+    @DependsOnMethod("testAddAttribute")
+    public void testAddIdentifierAndGeometry() {
         final FeatureTypeBuilder builder = new FeatureTypeBuilder();
         builder.setName("scope", "test");
         builder.setIdentifierDelimiters("-", "pref.", null);
@@ -225,6 +213,54 @@ public final strictfp class FeatureTypeBuilderTest extends TestCase {
         assertEquals("name", AttributeConvention.GEOMETRY_PROPERTY,   a2.getName());
         assertEquals("name", "name",                                  a3.getName().toString());
         assertEquals("name", "shape",                                 a4.getName().toString());
+    }
+
+    /**
+     * Tests {@link FeatureTypeBuilder#addAttribute(Class)} where one attribute is an identifier that already has
+     * the {@code "@identifier"} name. This is called "anonymous" because identifiers with an explicit name in the
+     * data file should use that name instead in the feature type.
+     */
+    @Test
+    @DependsOnMethod("testAddIdentifierAndGeometry")
+    public void testAddAnonymousIdentifier() {
+        final FeatureTypeBuilder builder = new FeatureTypeBuilder();
+        builder.setName("City");
+        builder.addAttribute(String.class).setName(AttributeConvention.IDENTIFIER_PROPERTY).addRole(AttributeRole.IDENTIFIER_COMPONENT);
+        builder.addAttribute(Integer.class).setName("population");
+        final FeatureType type = builder.build();
+        final Iterator<? extends PropertyType> it = type.getProperties(true).iterator();
+        final PropertyType a0 = it.next();
+        final PropertyType a1 = it.next();
+        assertFalse("properties count", it.hasNext());
+        assertEquals("name", AttributeConvention.IDENTIFIER_PROPERTY, a0.getName());
+        assertEquals("type", String.class,  ((AttributeType<?>) a0).getValueClass());
+        assertEquals("name", "population", a1.getName().toString());
+        assertEquals("type", Integer.class, ((AttributeType<?>) a1).getValueClass());
+    }
+
+    /**
+     * Tests {@link FeatureTypeBuilder#addAttribute(Class)} where one attribute is a geometry that already has
+     * the {@code "@geometry"} name. This is called "anonymous" because geometries with an explicit name in the
+     * data file should use that name instead in the feature type.
+     */
+    @Test
+    @DependsOnMethod("testAddIdentifierAndGeometry")
+    public void testAddAnonymousGeometry() {
+        final FeatureTypeBuilder builder = new FeatureTypeBuilder();
+        builder.setName("City");
+        builder.addAttribute(Point.class).setName(AttributeConvention.GEOMETRY_PROPERTY).addRole(AttributeRole.DEFAULT_GEOMETRY);
+        builder.addAttribute(Integer.class).setName("population");
+        final FeatureType type = builder.build();
+        final Iterator<? extends PropertyType> it = type.getProperties(true).iterator();
+        final PropertyType a0 = it.next();
+        final PropertyType a1 = it.next();
+        final PropertyType a2 = it.next();
+        assertFalse("properties count", it.hasNext());
+        assertEquals("name", AttributeConvention.ENVELOPE_PROPERTY, a0.getName());
+        assertEquals("name", AttributeConvention.GEOMETRY_PROPERTY, a1.getName());
+        assertEquals("type", Point.class,   ((AttributeType<?>) a1).getValueClass());
+        assertEquals("name", "population", a2.getName().toString());
+        assertEquals("type", Integer.class, ((AttributeType<?>) a2).getValueClass());
     }
 
     /**
