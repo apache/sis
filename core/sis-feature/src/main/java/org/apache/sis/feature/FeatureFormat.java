@@ -32,6 +32,7 @@ import org.opengis.util.InternationalString;
 import org.opengis.util.GenericName;
 import org.apache.sis.io.TableAppender;
 import org.apache.sis.io.TabularFormat;
+import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
@@ -47,7 +48,6 @@ import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
 import org.opengis.feature.FeatureAssociationRole;
 import org.opengis.feature.Operation;
-import org.apache.sis.util.CharSequences;
 
 
 /**

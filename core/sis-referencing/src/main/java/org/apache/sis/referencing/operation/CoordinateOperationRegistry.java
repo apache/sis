@@ -494,23 +494,51 @@ class CoordinateOperationRegistry {
 
     /**
      * Creates the inverse of the given single operation.
+     * If this operation succeed, then the returned coordinate operations has the following properties:
+     *
+     * <ul>
+     *   <li>Its {@code sourceCRS} is the {@code targetCRS} of the given operation.</li>
+     *   <li>Its {@code targetCRS} is the {@code sourceCRS} of the given operation.</li>
+     *   <li>Its {@code interpolationCRS} is {@code null}.</li>
+     *   <li>Its {@code MathTransform} is the
+     *       {@linkplain org.apache.sis.referencing.operation.transform.AbstractMathTransform#inverse() inverse}
+     *       of the {@code MathTransform} of this operation.</li>
+     *   <li>Its domain of validity and accuracy is the same.</li>
+     * </ul>
+     *
+     * <div class="note"><b>Note:</b>
+     * in many cases, the inverse operation is numerically less accurate than the direct operation because it
+     * uses approximations like series expansions or iterative methods. However the numerical errors caused by
+     * those approximations are not of interest here, because they are usually much smaller than the inaccuracy
+     * due to the stochastic nature of coordinate transformations (not to be confused with coordinate conversions;
+     * see ISO 19111 for more information).</div>
      */
     final CoordinateOperation inverse(final SingleOperation op) throws NoninvertibleTransformException, FactoryException {
         final CoordinateReferenceSystem sourceCRS = op.getSourceCRS();
         final CoordinateReferenceSystem targetCRS = op.getTargetCRS();
         final MathTransform transform = op.getMathTransform().inverse();
+        final OperationMethod method = InverseOperationMethod.create(op.getMethod());
+        final Map<String,Object> properties = properties(INVERSE_OPERATION);
+        InverseOperationMethod.properties(op, properties);
+        /*
+         * Find a hint about whether the coordinate operation is a transformation or a conversion,
+         * but do not set any conversion subtype. In particular, do not specify a Projection type,
+         * because the inverse of a Projection does not implement the Projection interface.
+         */
         Class<? extends CoordinateOperation> type = null;
         if (op instanceof Transformation)  type = Transformation.class;
         else if (op instanceof Conversion) type = Conversion.class;
-        final Map<String,Object> properties = properties(INVERSE_OPERATION);
-        InverseOperationMethod.putMetadata(op, properties);
-        InverseOperationMethod.putParameters(op, properties);
-        return createFromMathTransform(properties, targetCRS, sourceCRS,
-                transform, InverseOperationMethod.create(op.getMethod()), null, type);
+        return createFromMathTransform(properties, targetCRS, sourceCRS, transform, method, null, type);
     }
 
     /**
      * Creates the inverse of the given operation, which may be single or compound.
+     *
+     * <p><b>Design note:</b>
+     * we do not provide a {@code AbstractCoordinateOperation.inverse()} method. If the user wants an inverse method,
+     * he should invoke {@code CRS.findOperation(targetCRS, sourceCRS, null)} or something equivalent. This is because
+     * a new query of EPSG database may be necessary, and if no explicit definition is found there is too many arbitrary
+     * values to set in a default inverse operation for making that API public.</p>
      *
      * @param  operation The operation to invert, or {@code null}.
      * @return The inverse of {@code operation}, or {@code null} if none.
