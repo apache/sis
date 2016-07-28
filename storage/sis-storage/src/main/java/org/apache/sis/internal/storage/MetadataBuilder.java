@@ -30,6 +30,9 @@ import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.geometry.AbstractEnvelope;
 import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.metadata.iso.extent.DefaultExtent;
+import org.apache.sis.metadata.iso.content.DefaultAttributeGroup;
+import org.apache.sis.metadata.iso.content.DefaultSampleDimension;
+import org.apache.sis.metadata.iso.content.DefaultCoverageDescription;
 import org.apache.sis.metadata.iso.citation.AbstractParty;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.citation.DefaultCitationDate;
@@ -42,11 +45,6 @@ import org.apache.sis.util.iso.Types;
 
 // Branch-dependent imports
 import java.time.LocalDate;
-import org.apache.sis.metadata.iso.content.DefaultAttributeGroup;
-import org.apache.sis.metadata.iso.content.DefaultBand;
-import org.apache.sis.metadata.iso.content.DefaultCoverageDescription;
-import org.apache.sis.metadata.iso.content.DefaultRangeDimension;
-import org.apache.sis.metadata.iso.content.DefaultSampleDimension;
 
 
 /**
@@ -54,6 +52,7 @@ import org.apache.sis.metadata.iso.content.DefaultSampleDimension;
  * This class creates the metadata objects only when first needed.
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @author  Rémi Marechal (Geomatys)
  * @since   0.8
  * @version 0.8
  * @module
@@ -85,14 +84,14 @@ public class MetadataBuilder {
     private AbstractParty party;
 
     /**
-     * The extent information that are part of {@linkplain #identification}, or {@code null} if none.
-     */
-    private DefaultExtent extent;
-
-    /**
      * Copyright information, or {@code null} if none.
      */
     private DefaultLegalConstraints constraints;
+
+    /**
+     * The extent information that are part of {@linkplain #identification}, or {@code null} if none.
+     */
+    private DefaultExtent extent;
 
     /**
      * Information about the content of a grid data cell, or {@code null} if none.
@@ -159,6 +158,7 @@ public class MetadataBuilder {
         }
         if (sampleDimension != null) {
             attributGroup().getAttributes().add(sampleDimension);
+            sampleDimension = null;
         }
         if (attributGroup != null) {
             coverageDescription().getAttributeGroups().add(attributGroup);
@@ -238,18 +238,6 @@ public class MetadataBuilder {
     }
 
     /**
-     * Creates the extent information object if it does not already exists, then return it.
-     *
-     * @return the extent information (never {@code null}).
-     */
-    private DefaultExtent extent() {
-        if (extent == null) {
-            extent = new DefaultExtent();
-        }
-        return extent;
-    }
-
-    /**
      * Creates the constraints information object if it does not already exists, then return it.
      *
      * @return the constraints information (never {@code null}).
@@ -262,9 +250,21 @@ public class MetadataBuilder {
     }
 
     /**
-     * Creates the band information object if it does not already exists, then return it.
+     * Creates the extent information object if it does not already exists, then return it.
      *
-     * @return the band information (never {@code null}).
+     * @return the extent information (never {@code null}).
+     */
+    private DefaultExtent extent() {
+        if (extent == null) {
+            extent = new DefaultExtent();
+        }
+        return extent;
+    }
+
+    /**
+     * Creates the sample dimension object if it does not already exists, then return it.
+     *
+     * @return the sample dimension (never {@code null}).
      */
     private DefaultSampleDimension sampleDimension() {
         if (sampleDimension == null) {
@@ -274,9 +274,9 @@ public class MetadataBuilder {
     }
 
     /**
-     * Creates the attributGroup information object if it does not already exists, then return it.
+     * Creates the attribut group object if it does not already exists, then return it.
      *
-     * @return the attributGroup information (never {@code null}).
+     * @return the attribut group (never {@code null}).
      */
     private DefaultAttributeGroup attributGroup() {
         if (attributGroup == null) {
@@ -286,9 +286,9 @@ public class MetadataBuilder {
     }
 
     /**
-     * Creates the coverageDescription information object if it does not already exists, then return it.
+     * Creates the coverage description object if it does not already exists, then return it.
      *
-     * @return the coverageDescription information (never {@code null}).
+     * @return the coverage description (never {@code null}).
      */
     private DefaultCoverageDescription coverageDescription() {
         if (coverageDescription == null) {
@@ -427,11 +427,6 @@ public class MetadataBuilder {
                 party = null;
             }
             party().setName(i18n);
-        }
-    }
-
-    public final void addMinimumSampleValue(final double minimumSampleValue) {
-        if (!Double.isNaN(minimumSampleValue)) {
         }
     }
 
@@ -644,6 +639,38 @@ parse:      for (int i = 0; i < length;) {
     public final void parseLegalNotice(final String notice) {
         if (notice != null) {
             LegalSymbols.parse(notice, constraints());
+        }
+    }
+
+    /**
+     * Adds a minimal value for the current sample dimension. If a minimal value was already defined, then
+     * the new value will set only if it is smaller than the existing one. {@code NaN} values are ignored.
+     *
+     * @param value  the minimal value to add to the existing range of sample values, or {@code NaN}.
+     */
+    public final void addMinimumSampleValue(final double value) {
+        if (!Double.isNaN(value)) {
+            final DefaultSampleDimension sampleDimension = sampleDimension();
+            final Double current = sampleDimension.getMinValue();
+            if (current == null || value < current) {
+                sampleDimension.setMinValue(value);
+            }
+        }
+    }
+
+    /**
+     * Adds a maximal value for the current sample dimension. If a maximal value was already defined, then
+     * the new value will set only if it is greater than the existing one. {@code NaN} values are ignored.
+     *
+     * @param value  the maximal value to add to the existing range of sample values, or {@code NaN}.
+     */
+    public final void addMaximumSampleValue(final double value) {
+        if (!Double.isNaN(value)) {
+            final DefaultSampleDimension sampleDimension = sampleDimension();
+            final Double current = sampleDimension.getMaxValue();
+            if (current == null || value > current) {
+                sampleDimension.setMaxValue(value);
+            }
         }
     }
 }

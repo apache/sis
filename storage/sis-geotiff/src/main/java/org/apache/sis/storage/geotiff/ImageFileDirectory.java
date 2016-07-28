@@ -233,8 +233,7 @@ final class ImageFileDirectory {
              * The minimum component value used. Default is 0.
              */
             case Tags.MinSampleValue: {
-                final double value = type.readDouble(reader.input, count);
-                // TODO
+                reader.metadata.addMinimumSampleValue(type.readDouble(reader.input, count));
                 break;
             }
             /*
@@ -243,7 +242,7 @@ final class ImageFileDirectory {
              * visual appearance of an image, unless a map styling is applied.
              */
             case Tags.MaxSampleValue: {
-                // TODO
+                reader.metadata.addMaximumSampleValue(type.readDouble(reader.input, count));
                 break;
             }
 
