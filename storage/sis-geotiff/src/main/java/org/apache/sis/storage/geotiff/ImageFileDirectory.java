@@ -233,6 +233,7 @@ final class ImageFileDirectory {
              * The minimum component value used. Default is 0.
              */
             case Tags.MinSampleValue: {
+                final double value = type.readDouble(reader.input, count);
                 // TODO
                 break;
             }

@@ -42,6 +42,11 @@ import org.apache.sis.util.iso.Types;
 
 // Branch-dependent imports
 import java.time.LocalDate;
+import org.apache.sis.metadata.iso.content.DefaultAttributeGroup;
+import org.apache.sis.metadata.iso.content.DefaultBand;
+import org.apache.sis.metadata.iso.content.DefaultCoverageDescription;
+import org.apache.sis.metadata.iso.content.DefaultRangeDimension;
+import org.apache.sis.metadata.iso.content.DefaultSampleDimension;
 
 
 /**
@@ -90,6 +95,21 @@ public class MetadataBuilder {
     private DefaultLegalConstraints constraints;
 
     /**
+     * Information about the content of a grid data cell, or {@code null} if none.
+     */
+    private DefaultCoverageDescription coverageDescription;
+
+    /**
+     * Information about content type for groups of attributes for a specific range dimension, or {@code null} if none.
+     */
+    private DefaultAttributeGroup attributGroup;
+
+    /**
+     * The characteristic of each dimension (layer) included in the resource, or {@code null} if none.
+     */
+    private DefaultSampleDimension sampleDimension;
+
+    /**
      * Creates a new metadata reader.
      */
     public MetadataBuilder() {
@@ -136,6 +156,17 @@ public class MetadataBuilder {
         if (constraints != null) {
             identification().getResourceConstraints().add(constraints);
             constraints = null;
+        }
+        if (sampleDimension != null) {
+            attributGroup().getAttributes().add(sampleDimension);
+        }
+        if (attributGroup != null) {
+            coverageDescription().getAttributeGroups().add(attributGroup);
+            attributGroup = null;
+        }
+        if (coverageDescription != null) {
+            metadata().getContentInfo().add(coverageDescription);
+            coverageDescription = null;
         }
         if (identification != null) {
             metadata().getIdentificationInfo().add(identification);
@@ -228,6 +259,42 @@ public class MetadataBuilder {
             constraints = new DefaultLegalConstraints();
         }
         return constraints;
+    }
+
+    /**
+     * Creates the band information object if it does not already exists, then return it.
+     *
+     * @return the band information (never {@code null}).
+     */
+    private DefaultSampleDimension sampleDimension() {
+        if (sampleDimension == null) {
+            sampleDimension = new DefaultSampleDimension();
+        }
+        return sampleDimension;
+    }
+
+    /**
+     * Creates the attributGroup information object if it does not already exists, then return it.
+     *
+     * @return the attributGroup information (never {@code null}).
+     */
+    private DefaultAttributeGroup attributGroup() {
+        if (attributGroup == null) {
+            attributGroup = new DefaultAttributeGroup();
+        }
+        return attributGroup;
+    }
+
+    /**
+     * Creates the coverageDescription information object if it does not already exists, then return it.
+     *
+     * @return the coverageDescription information (never {@code null}).
+     */
+    private DefaultCoverageDescription coverageDescription() {
+        if (coverageDescription == null) {
+            coverageDescription = new DefaultCoverageDescription();
+        }
+        return coverageDescription;
     }
 
     /**
@@ -360,6 +427,11 @@ public class MetadataBuilder {
                 party = null;
             }
             party().setName(i18n);
+        }
+    }
+
+    public final void addMinimumSampleValue(final double minimumSampleValue) {
+        if (!Double.isNaN(minimumSampleValue)) {
         }
     }
 
