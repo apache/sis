@@ -39,6 +39,7 @@ import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.crs.TemporalCRS;
 import org.opengis.referencing.crs.VerticalCRS;
 import org.opengis.referencing.crs.EngineeringCRS;
+import org.opengis.referencing.operation.OperationNotFoundException;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.extent.GeographicBoundingBox;
@@ -282,11 +283,17 @@ public final class CRS extends Static {
      *       for checking if the operation has sufficient accuracy for caller's purpose.</li>
      * </ul>
      *
+     * If the source and target CRS are equivalent, then this method returns an operation backed by an
+     * {@linkplain org.apache.sis.referencing.operation.transform.AbstractMathTransform#isIdentity() identity}
+     * transform. If there is no known operation between the given pair of CRS, then this method throws an
+     * {@link OperationNotFoundException}.
+     *
      * @param  sourceCRS      the CRS of source coordinates.
      * @param  targetCRS      the CRS of target coordinates.
      * @param  areaOfInterest the area of interest, or {@code null} if none.
      * @return the mathematical operation from {@code sourceCRS} to {@code targetCRS}.
-     * @throws FactoryException if the operation can not be created.
+     * @throws OperationNotFoundException if no operation was found between the given pair of CRS.
+     * @throws FactoryException if the operation can not be created for another reason.
      *
      * @see DefaultCoordinateOperationFactory#createOperation(CoordinateReferenceSystem, CoordinateReferenceSystem, CoordinateOperationContext)
      *

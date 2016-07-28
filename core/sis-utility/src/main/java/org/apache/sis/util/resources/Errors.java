@@ -807,6 +807,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final short NonInvertibleMatrix_2 = 81;
 
         /**
+         * Can not invert the “{0}” operation.
+         */
+        public static final short NonInvertibleOperation_1 = 232;
+
+        /**
          * Transform is not invertible.
          */
         public static final short NonInvertibleTransform = 82;

@@ -27,6 +27,7 @@ import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.junit.Test;
 
+import static java.lang.Double.NaN;
 import static java.lang.StrictMath.toRadians;
 import static org.apache.sis.test.Assert.*;
 
@@ -96,13 +97,16 @@ public final strictfp class TransverseMercatorTest extends MapProjectionTestCase
     @Test
     @DependsOnMethod("testTransverseMercator")
     public void compareEllipticalWithSpherical() throws FactoryException, TransformException {
-        createCompleteProjection(new org.apache.sis.internal.referencing.provider.TransverseMercator(), false,
-                  0.5,    // Central meridian
-                  2.5,    // Latitude of origin
-                  0,      // Standard parallel (none)
-                  0.997,  // Scale factor
-                200,      // False easting
-                100);     // False northing
+        createCompleteProjection(new org.apache.sis.internal.referencing.provider.TransverseMercator(),
+                6371007,    // Semi-major axis length
+                6371007,    // Semi-minor axis length
+                0.5,        // Central meridian
+                2.5,        // Latitude of origin
+                NaN,        // Standard parallel 1 (none)
+                NaN,        // Standard parallel 1 (none)
+                0.997,      // Scale factor
+                200,        // False easting
+                100);       // False northing
         tolerance = Formulas.LINEAR_TOLERANCE;
         compareEllipticalWithSpherical(CoordinateDomain.RANGE_10, 0);
     }
@@ -110,7 +114,7 @@ public final strictfp class TransverseMercatorTest extends MapProjectionTestCase
     /**
      * Creates a projection and derivates a few points.
      *
-     * @throws TransformException Should never happen.
+     * @throws TransformException if an error occurred while projecting a point.
      */
     @Test
     public void testSphericalDerivative() throws TransformException {
@@ -127,7 +131,7 @@ public final strictfp class TransverseMercatorTest extends MapProjectionTestCase
     /**
      * Creates a projection and derivates a few points.
      *
-     * @throws TransformException Should never happen.
+     * @throws TransformException if an error occurred while projecting a point.
      */
     @Test
     public void testEllipsoidalDerivative() throws TransformException {
