@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.services.csw;
+package org.apache.sis.services.csw.request;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -27,22 +27,22 @@ import javax.xml.bind.annotation.XmlRootElement;
  * @module
  */
 @XmlRootElement(name = "GetCapabilities")
-public class GetCapabilitie extends Element {
+public class GetCapabilitieRequest extends Element {
 
     /**
      * Accept version use to in service.
      */
-    private Capacibilities acceptversion;
+    private Capabilities acceptversion;
 
     /**
      * Accept format use to in service.
      */
-    private Capacibilities acceptformat;
+    private Capabilities acceptformat;
 
     /**
      * Contructor's GetCapabilitie.
      */
-    public GetCapabilitie() {
+    public GetCapabilitieRequest() {
 
     }
 
@@ -52,7 +52,7 @@ public class GetCapabilitie extends Element {
      * @param acceptversion Accept version use to in service
      * @param acceptformat Accept format use to in service.
      */
-    public GetCapabilitie(Capacibilities acceptversion, Capacibilities acceptformat) {
+    public GetCapabilitieRequest(Capabilities acceptversion, Capabilities acceptformat) {
         this.acceptversion = acceptversion;
         this.acceptformat = acceptformat;
     }
@@ -63,7 +63,7 @@ public class GetCapabilitie extends Element {
      * @return Accept version use to in service.
      */
     @XmlElement(name = "AcceptVersion", namespace = OWS)
-    public Capacibilities getAcceptversion() {
+    public Capabilities getAcceptversion() {
         return acceptversion;
     }
 
@@ -72,7 +72,7 @@ public class GetCapabilitie extends Element {
      *
      * @param acceptversion Accept version use to in service
      */
-    public void setAcceptversion(Capacibilities acceptversion) {
+    public void setAcceptversion(Capabilities acceptversion) {
         this.acceptversion = acceptversion;
     }
 
@@ -82,7 +82,7 @@ public class GetCapabilitie extends Element {
      * @return Accept format
      */
     @XmlElement(name = "AcceptFormat", namespace = OWS)
-    public Capacibilities getAcceptformat() {
+    public Capabilities getAcceptformat() {
         return acceptformat;
     }
 
@@ -91,7 +91,7 @@ public class GetCapabilitie extends Element {
      *
      * @param acceptformat Accept format use to in service
      */
-    public void setAcceptformat(Capacibilities acceptformat) {
+    public void setAcceptformat(Capabilities acceptformat) {
         this.acceptformat = acceptformat;
     }
 }

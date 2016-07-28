@@ -16,6 +16,7 @@
  */
 package org.apache.sis.services.csw;
 
+import org.apache.sis.services.csw.request.SummaryRecord;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -37,13 +38,13 @@ import org.junit.Test;
 
 
 /**
- * Tests {@link GetRecord}.
+ * Tests {@link SummaryRecord}.
  *
  * @since   0.8
  * @version 0.8
  * @module
  */
-public final class GetRecordTest extends TestCase {
+public final class SummaryRecordTest extends TestCase {
     /**
      * Programmatically create the metadata for part of the {@code <csw:Record>} example
      * given in section 6.3.3 of OGC 07-006r1 (Catalog Service Specification version 2.0.2).
@@ -74,7 +75,7 @@ public final class GetRecordTest extends TestCase {
      */
     @Test
     public void testMarshalling() throws JAXBException {
-        final JAXBContext context = JAXBContext.newInstance(GetRecord.class);
+        final JAXBContext context = JAXBContext.newInstance(SummaryRecord.class);
         final Marshaller m = context.createMarshaller();
         m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
         final DefaultMetadata metadata = createMetadata();
@@ -82,6 +83,6 @@ public final class GetRecordTest extends TestCase {
         // TODO: temporary debugging code.
         System.out.println(metadata);
         System.out.println();
-        m.marshal(new GetRecord(metadata, null), System.out);
+        m.marshal(new SummaryRecord(metadata, null), System.out);
     }
 }

@@ -25,14 +25,14 @@
  * @version 0.8
  * @module
  */
-@XmlSchema( xmlns = {
+@XmlSchema(elementFormDefault = XmlNsForm.QUALIFIED, namespace = Namespaces.CSW, xmlns = {
     @XmlNs(prefix = "csw", namespaceURI = Namespaces.CSW),
     @XmlNs(prefix = "ows", namespaceURI = Element.OWS),
     @XmlNs(prefix = "dc",  namespaceURI = Element.DUBLIN_CORE),
     @XmlNs(prefix = "dct", namespaceURI = Element.DUBLIN_TERMS)
 })
 @XmlAccessorType(XmlAccessType.NONE)
-package org.apache.sis.services.csw;
+package org.apache.sis.services.csw.reponse;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;

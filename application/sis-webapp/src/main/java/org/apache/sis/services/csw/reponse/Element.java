@@ -14,21 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.services.csw;
+package org.apache.sis.services.csw.reponse;
 
+import org.apache.sis.services.csw.request.*;
 import javax.xml.bind.annotation.XmlTransient;
-
 
 /**
  * Base class of XML elements used by Catalog Services on the Web.
  *
- * @author  Thi Phuong Hao Nguyen (VNSC)
- * @since   0.8
+ * @author Thi Phuong Hao Nguyen (VNSC)
+ * @since 0.8
  * @version 0.8
  * @module
  */
 @XmlTransient
-abstract class Element {
+public abstract class Element {
+
     /**
      * The namespace of Dublin Core elements.
      */

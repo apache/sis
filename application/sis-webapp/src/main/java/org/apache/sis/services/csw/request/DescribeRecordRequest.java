@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.services.csw;
+package org.apache.sis.services.csw.request;
 
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
@@ -33,14 +33,14 @@ import org.apache.sis.xml.Namespaces;
     "schemaLanguage",
     "typename"
 })
-public class DescribeRecord {
+public class DescribeRecordRequest {
     private String service;
     private String version;
     private String outputFormat;
     private String schemaLanguage;
     private String typename;
 
-    public DescribeRecord() {
+    public DescribeRecordRequest() {
     }
     @XmlAttribute
     public String getService() {
@@ -74,7 +74,7 @@ public class DescribeRecord {
     public void setSchemaLanguage(String schemaLanguage) {
         this.schemaLanguage = schemaLanguage;
     }
-    @XmlElement( name="TypeName")
+    @XmlElement( name="TypeName" , namespace=Namespaces.CSW)
     public String getTypename() {
         return typename;
     }

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.services.csw;
+package org.apache.sis.services.csw.request;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -22,6 +22,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import org.apache.sis.services.csw.ConfigurationReader;
+import org.apache.sis.services.csw.Record;
 
 /**
  * @author Thi Phuong Hao Nguyen (VNSC)
@@ -53,7 +55,7 @@ public class AnyText {
      * The value rangeDate use to search .
      */
     String rangeDate;
-    List<GetRecord> data = new ArrayList<GetRecord>();
+    List<SummaryRecord> data = new ArrayList<SummaryRecord>();
     static ConfigurationReader path = new ConfigurationReader();
     
     /**
@@ -64,8 +66,8 @@ public class AnyText {
      * be thrown by the execution of the method or constructor and propagate
      * outside the method or constructor boundary.
      */
-    public AnyText(String path) throws Exception {
-        Record a = new Record(path);
+    public AnyText(String path,String version,String service) throws Exception {
+        Record a = new Record(path,version,service);
         data.addAll(a.getAllRecord());
     }
 
@@ -74,7 +76,7 @@ public class AnyText {
      *
      * @return data
      */
-    public List<GetRecord> getData() {
+    public List<SummaryRecord> getData() {
         return data;
     }
 
@@ -106,11 +108,11 @@ public class AnyText {
      * @throws Exception Constructs a new exception with the specified detail
      * message.
      */
-    public AnyText(String path, String format, String identifier, String startDate, String rangeDate) throws Exception {
+    public AnyText(String path,String version,String service, String format, String identifier, String startDate, String rangeDate) throws Exception {
         bbox.setLowerCorner(-180 + " " + -180);
         bbox.setUpperCorner(180 + " " + 180);
 
-        Record a = new Record(path);
+        Record a = new Record(path,version,service);
         data.addAll(a.getAllRecord());
         this.format = format;
         this.identifier = identifier;
@@ -200,7 +202,7 @@ public class AnyText {
      * be thrown by the execution of the method or constructor and propagate
      * outside the method or constructor boundary.
      */
-    public boolean checkDate(String date1, String date2, GetRecord record) throws Exception {
+    public boolean checkDate(String date1, String date2, SummaryRecord record) throws Exception {
         DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
         Date da1 = df.parse(date1);
         Date da2 = df.parse(date2);
@@ -226,8 +228,8 @@ public class AnyText {
      */
     public void filter() throws Exception {
 
-        for (Iterator<GetRecord> it = data.iterator(); it.hasNext();) {
-            GetRecord itSum = it.next();
+        for (Iterator<SummaryRecord> it = data.iterator(); it.hasNext();) {
+            SummaryRecord itSum = it.next();
             /**
              * Remove Out of range Date.
              */

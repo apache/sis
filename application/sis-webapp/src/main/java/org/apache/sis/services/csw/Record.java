@@ -16,12 +16,14 @@
  */
 package org.apache.sis.services.csw;
 
+import org.apache.sis.services.csw.request.SummaryRecord;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import javax.xml.bind.annotation.XmlRootElement;
+import org.apache.sis.services.csw.reponse.GetRecordByIdReponse;
+import org.apache.sis.services.csw.reponse.GetRecordsReponse;
 import org.apache.sis.storage.DataStoreException;
 import org.opengis.metadata.Metadata;
 
@@ -35,7 +37,7 @@ import org.opengis.metadata.Metadata;
  */
 public class Record {
 
-    Map<String, GetRecord> record;
+    Map<String, SummaryRecord> record;
 
     /**
      * Contructor's Record
@@ -49,7 +51,7 @@ public class Record {
      * can be thrown by the execution of the method or constructor and propagate
      * outside the method or constructor boundary.
      */
-    public Record(String path) throws IOException, DataStoreException, Exception {
+    public Record(String path,String version,String service) throws IOException, DataStoreException, Exception {
         Catalog catalog = new Catalog(path);
         record = new HashMap();
         /**
@@ -57,7 +59,7 @@ public class Record {
          *
          */
         for (Metadata id : catalog.getAllMetadata()) {
-            GetRecord summary = new GetRecord(id);
+            SummaryRecord summary = new SummaryRecord(id,version,service);
             String key = id.getFileIdentifier();
             record.put(key, summary);
         }
@@ -72,8 +74,8 @@ public class Record {
      * can be thrown by the execution of the method or constructor and propagate
      * outside the method or constructor boundary.
      */
-    public List<GetRecord> getAllRecord() {
-        return new ArrayList<GetRecord>(record.values());
+    public List<SummaryRecord> getAllRecord() {
+        return new ArrayList<SummaryRecord>(record.values());
     }
 
     /**
@@ -87,13 +89,15 @@ public class Record {
      * be thrown by the execution of the method or constructor and propagate
      * outside the method or constructor boundary.
      */
-    public List<GetRecord> getAllRecordPaginated(int start, int size) throws Exception {
-        ArrayList<GetRecord> list = new ArrayList<GetRecord>(record.values());
+    public GetRecordsReponse getAllRecordPaginated(int start, int size) throws Exception {
+        GetRecordsReponse reponse = new GetRecordsReponse();
+        ArrayList<SummaryRecord> list = new ArrayList<SummaryRecord>(record.values());
         if (start + size > list.size()) {
-            return new ArrayList<GetRecord>();
+            reponse.setRecord(new ArrayList<SummaryRecord>());
+            return reponse; 
         }
-
-        return list.subList(start, start + size);
+        reponse.setRecord(list.subList(start, start + size));
+        return reponse;
     }
 
     /**
@@ -107,8 +111,10 @@ public class Record {
      * be thrown by the execution of the method or constructor and propagate
      * outside the method or constructor boundary.
      */
-    public GetRecord getRecordById(String id) throws Exception {
-        return record.get(id);
+    public GetRecordByIdReponse getRecordById(String id) throws Exception {
+        GetRecordByIdReponse reponse = new GetRecordByIdReponse();
+        reponse.setRecordid(record.get(id));
+        return reponse;
     }
 
 }

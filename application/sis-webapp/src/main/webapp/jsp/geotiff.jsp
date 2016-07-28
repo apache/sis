@@ -63,7 +63,7 @@
                     north = "";
                 }
 
-                xhttp.open("GET", "http://localhost:8080/sis/VNSC/csw/2.0.2/GetRecord?format="+format+"&identifier="+identifier+"&west=" + west + "&east=" + east + "&south=" + south + "&north=" + north + "&startDate=<%= request.getParameter("date1")%>&rangeDate=<%= request.getParameter("date2")%>", true);
+                xhttp.open("GET", "http://localhost:8080/sis/VNSC/csw/2.0.2/filter?service=CSW&version=2.0.2&request=GetRecords&format="+format+"&identifier="+identifier+"&west=" + west + "&east=" + east + "&south=" + south + "&north=" + north + "&startDate=<%= request.getParameter("date1")%>&rangeDate=<%= request.getParameter("date2")%>", true);
                 xhttp.send();
 //                document.write("http://localhost:8080/MavenWebProject/VNSC/csw/Search?format="+format+"&identifier=&west=" +west + "&east=" + east + "&south=" + south + "&north=" + north + "&startDate="+date1+"&rangeDate="+date2);
             }
@@ -108,7 +108,7 @@
                         tableMetadata(getXML);
                     }
                 };
-                getXML.open("GET", "http://localhost:8080/sis/VNSC/csw/2.0.2/GetRecordById?Id=" + id, true);
+                getXML.open("GET", "http://localhost:8080/sis/VNSC/csw/2.0.2/getrecordbyid?service=CSW&version=2.0.1&request=GetRecordById&Id=" + id, true);
                 getXML.send();
             }
 

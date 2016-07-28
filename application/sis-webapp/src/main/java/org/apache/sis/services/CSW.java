@@ -29,12 +29,14 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
-import org.apache.sis.services.csw.AnyText;
-import org.apache.sis.services.csw.CapabilitiesRequest;
-import org.apache.sis.services.csw.DescribeRecord;
-import org.apache.sis.services.csw.GetCapabilitie;
+import org.apache.sis.services.csw.request.AnyText;
+import org.apache.sis.services.csw.request.DescribeRecordRequest;
+import org.apache.sis.services.csw.request.GetCapabilitieRequest;
 import org.apache.sis.services.csw.Record;
-import org.apache.sis.services.csw.GetRecord;
+import org.apache.sis.services.csw.reponse.GetRecordByIdReponse;
+import org.apache.sis.services.csw.reponse.GetRecordsReponse;
+import org.apache.sis.services.csw.request.Capabilities;
+import org.apache.sis.services.csw.request.SummaryRecord;
 
 /**
  *
@@ -43,53 +45,79 @@ import org.apache.sis.services.csw.GetRecord;
 @Path("/csw/2.0.2")
 public class CSW {
 
-    CapabilitiesRequest d = new CapabilitiesRequest();
     ConfigurationReader path = new ConfigurationReader();
 
     @GET
-    @Path("/GetCapabilities")
+    @Path("/getcapabilities")
     @Produces(MediaType.APPLICATION_XML)
-    public List<GetCapabilitie> getCapabilities(@QueryParam("REQUEST") String request, @QueryParam("AcceptVersion") String Version, @QueryParam("AcceptFormat") String format) {
-        if (request == "GetCapabilities" && Version == "2.0.2,2.0.0,1.0.7" && format == "application/xml") {
-            return d.GetCapabilitiesRequest();
+    public GetCapabilitieRequest getCapabilities(@QueryParam("service") String service, @QueryParam("version") String Version, @QueryParam("request") String request) {
+     if(request.equals("GetCapabilities")){
+            Capabilities version = new Capabilities();
+            version.setVersion(new String[]{Version});
+            Capabilities outputformat = new Capabilities();
+            outputformat.setOutputFormat(new String[]{path.getValue("outputFormat")});
+            GetCapabilitieRequest capabilite = new GetCapabilitieRequest(version, outputformat);
+            return capabilite;
+     }
+        return null;
+    }
+
+    @GET
+    @Produces(MediaType.APPLICATION_XML)
+    @Path("/describerecord")
+    public DescribeRecordRequest DescribeRecord(@QueryParam("service") String service, @QueryParam("version") String Version, @QueryParam("request") String request) throws ParseException, Exception {
+        if (request.equals("DescribeRecord")) {
+            DescribeRecordRequest a = new DescribeRecordRequest();
+            a.setService(service);
+            a.setVersion(Version);
+            a.setOutputFormat(path.getValue("outputFormat"));
+            a.setSchemaLanguage(path.getValue("schemaLanguage"));
+            a.setTypename("Record");
+
+            return a;
         }
-        return d.GetCapabilitiesRequest();
+        return null;
     }
 
     @GET
-    @Path("/DescribeRecord")
+    @Path("/getrecords")
     @Produces(MediaType.APPLICATION_XML)
-    public DescribeRecord DescribeRecord()  throws ParseException, Exception {
-        DescribeRecord a= new DescribeRecord();
-        a.setService(path.getValue("service"));
-        a.setVersion(path.getValue("version"));
-        a.setOutputFormat(path.getValue("outputFormat"));
-        a.setSchemaLanguage(path.getValue("schemaLanguage"));
-        a.setTypename("csw:Record");
-        
-        return a;
-    }
-    @GET
-    @Path("/GetRecords")
-    @Produces(MediaType.APPLICATION_XML)
-    public List<GetRecord> GetRecords()  throws ParseException, Exception {
-        Record record = new Record(path.getValue("Path"));
-        return record.getAllRecord();
+    public GetRecordsReponse GetRecords(
+            @QueryParam("service") String service,
+            @QueryParam("version") String Version,
+            @QueryParam("request") String request,
+            @QueryParam("startPosition") int start,
+            @QueryParam("maxRecords") int size) throws ParseException, Exception {
+         if (request.equals("GetRecords") && start >= 0 && size > 0){
+        Record record = new Record(path.getValue("Path"),Version,service);
+        return record.getAllRecordPaginated(start, size);
+         }
+         return null;
     }
 
     @GET
-    @Path("/GetRecordById")
+    @Path("/getrecordbyid")
     @Produces(MediaType.APPLICATION_XML)
-    public GetRecord getRecordById(@QueryParam("Id") String id) throws ParseException, Exception {
-        Record record = new Record(path.getValue("Path"));
-        GetRecord a = record.getRecordById(id);
-        return a;
+    public GetRecordByIdReponse getRecordById(
+            @QueryParam("service") String service,
+            @QueryParam("version") String Version,
+            @QueryParam("request") String request,
+            @QueryParam("Id") String id) throws ParseException, Exception {
+        if (request.equals("GetRecordById")) {
+            Record record = new Record(path.getValue("Path"),Version,service);
+            GetRecordByIdReponse a = record.getRecordById(id);
+            return a;
+        }
+        return null;
     }
 
     @GET
-    @Path("/GetRecord")
+    @Path("/filter")
     @Produces(MediaType.APPLICATION_XML)
-    public List<GetRecord> getRecordAllField(
+    public GetRecordsReponse getRecordAllField(
+            @QueryParam("service") String service,
+            @QueryParam("version") String Version,
+            @QueryParam("request") String request,
             @QueryParam("format") String format,
             @QueryParam("identifier") String identifier,
             @QueryParam("west") double west,
@@ -98,13 +126,18 @@ public class CSW {
             @QueryParam("north") double north,
             @QueryParam("startDate") String date1,
             @QueryParam("rangeDate") String date2) throws Exception {
-
-        AnyText record = new AnyText(path.getValue("Path"), format, identifier, date1, date2);
-        record.setBbox(west, east, south, north);
-        record.setBbox(5, 130, 5, 130);
-        record.filter();
-
-        return record.getData();
+        
+        if (request.equals("GetRecords")) {
+            
+            AnyText record = new AnyText(path.getValue("Path"),Version,service, format, identifier, date1, date2);
+            record.setBbox(west, east, south, north);
+            record.setBbox(5, 130, 5, 130);
+            record.filter();
+             GetRecordsReponse a = new GetRecordsReponse();
+             a.setRecord(record.getData());
+            return a;
+        }
+        return null;
     }
 
     @GET

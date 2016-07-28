@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.services.csw;
+package org.apache.sis.services.csw.request;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -24,6 +24,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
@@ -43,12 +44,11 @@ import org.opengis.metadata.identification.Identification;
 import org.opengis.metadata.maintenance.ScopeCode;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.referencing.IdentifiedObjects;
+import org.apache.sis.services.csw.ConfigurationReader;
 import org.apache.sis.util.iso.Types;
 import org.opengis.metadata.citation.Responsibility;
-
 import static org.apache.sis.internal.util.CollectionsExt.first;
 import org.apache.sis.xml.Namespaces;
-
 
 /**
  * Summary of an ISO 19115 metadata record. The summary is composed in part from
@@ -65,7 +65,7 @@ import org.apache.sis.xml.Namespaces;
  * @version 0.8
  * @module
  */
-@XmlRootElement(name = "Record", namespace= Namespaces.CSW)
+@XmlRootElement(name = "Record", namespace = Namespaces.CSW)
 @XmlType(name = "RecordType", propOrder = {
     "creator",
     "contributor",
@@ -80,8 +80,12 @@ import org.apache.sis.xml.Namespaces;
     "format",
     "BoundingBox"
 })
-public class GetRecord extends Element {
+public class SummaryRecord extends Element {
+    @XmlAttribute
+    private String service;
 
+    @XmlAttribute
+    private String version;
     /**
      * An entity primarily responsible for making the content of the resource .
      */
@@ -175,18 +179,20 @@ public class GetRecord extends Element {
     @XmlElement(namespace = OWS)
     private BoundingBox BoundingBox;
 
-    public GetRecord() {
+    public SummaryRecord() {
     }
 
     /**
      * Creates an initially empty summary record. This constructor is invoked by
      * JAXB at unmarshalling time.
      */
-    GetRecord(final Metadata object) {
+    public SummaryRecord(final Metadata object, String version, String service) {
+        this.version = version;
+        this.service = service;
         List<Responsibility> responsibility = new ArrayList<>(first(object.getIdentificationInfo()).getPointOfContacts());
         this.creator = first(responsibility.get(0).getParties()).getName().toString();
         this.contributor = first(responsibility.get(1).getParties()).getName().toString();
-        this.publisher =  new ConfigurationReader().getValue("PUBLISHER");
+        this.publisher = new ConfigurationReader().getValue("PUBLISHER");
         this.subject = first(first(first(object.getIdentificationInfo()).getDescriptiveKeywords()).getKeywords()).toString();
         this.identifier = object.getFileIdentifier();
         this.relation = first(first(object.getIdentificationInfo()).getAggregationInfo()).getAggregateDataSetName().getTitle().toString();
@@ -212,7 +218,7 @@ public class GetRecord extends Element {
      * {@link InternationalString} to {@link String}, or {@code null} for the
      * system default.
      */
-    public GetRecord(final Metadata metadata, final Locale locale) {
+    public SummaryRecord(final Metadata metadata, final Locale locale) {
         /*
          * Get identifier and date information from the root metadata object. Note that:
          *
@@ -304,12 +310,27 @@ public class GetRecord extends Element {
         }
         type = Types.getCodeName(code);
     }
+     public String getService() {
+        return service;
+    }
 
+    public void setService(String service) {
+        this.service = service;
+    }
+
+    public String getVersion() {
+        return version;
+    }
+
+    public void setVersion(String version) {
+        this.version = version;
+    }
     /**
      * Sets the {@link #modified} field to the latest {@code CREATION} or
      * {@code LAST_UPDATE} date found in the given collection. If the given is
      * null or empty, then this method does nothing.
      */
+    
     private void setModified(final Collection<? extends CitationDate> dates) {
         if (dates != null) {                            // Paranoiac check.
             for (final CitationDate date : dates) {
