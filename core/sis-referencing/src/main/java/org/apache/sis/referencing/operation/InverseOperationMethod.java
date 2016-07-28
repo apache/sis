@@ -45,7 +45,7 @@ import org.apache.sis.util.Deprecable;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.7
- * @version 0.7
+ * @version 0.8
  * @module
  */
 @XmlTransient
@@ -107,7 +107,15 @@ final class InverseOperationMethod extends DefaultOperationMethod {
     }
 
     /**
-     * Copies accuracy and domain of validity metadata from the given operation into the given properties map.
+     * Infers the properties to give to an inverse coordinate operation.
+     * The returned map will contains three kind of information:
+     *
+     * <ul>
+     *   <li>Metadata (domain of validity, accuracy)</li>
+     *   <li>Parameter values, if possible</li>
+     * </ul>
+     *
+     * This method copies accuracy and domain of validity metadata from the given operation.
      * We presume that the inverse operation has the same accuracy than the direct operation.
      *
      * <div class="note"><b>Note:</b>
@@ -116,25 +124,25 @@ final class InverseOperationMethod extends DefaultOperationMethod {
      * those approximations are not of interest here, because they are usually much smaller than the inaccuracy
      * due to the stochastic nature of coordinate transformations (not to be confused with coordinate conversions;
      * see ISO 19111 for more information).</div>
+     *
+     * If the inverse of the given operation can be represented by inverting the sign of all numerical
+     * parameter values, then this method copies also those parameters in a {@code "parameters"} entry.
+     *
+     * @param source  the operation for which to get the inverse parameters.
+     * @param target  where to store the inverse parameters.
      */
-    static void putMetadata(final SingleOperation source, final Map<String,Object> target) {
+    static void properties(final SingleOperation source, final Map<String,Object> target) {
         target.put(SingleOperation.DOMAIN_OF_VALIDITY_KEY, source.getDomainOfValidity());
         final Collection<PositionalAccuracy> accuracy = source.getCoordinateOperationAccuracy();
         if (!Containers.isNullOrEmpty(accuracy)) {
             target.put(SingleOperation.COORDINATE_OPERATION_ACCURACY_KEY,
                     accuracy.toArray(new PositionalAccuracy[accuracy.size()]));
         }
-    }
-
-    /**
-     * If the inverse of the given operation can be represented by inverting the sign of all numerical
-     * parameter values, copies those parameters in a {@code "parameters"} entry in the given map.
-     * Otherwise does nothing.
-     *
-     * @param source  the operation for which to get the inverse parameters.
-     * @param target  where to store the inverse parameters.
-     */
-    static void putParameters(final SingleOperation source, final Map<String,Object> target) {
+        /*
+         * If the inverse of the given operation can be represented by inverting the sign of all numerical
+         * parameter values, copies those parameters in a "parameters" entry in the properties map.
+         * Otherwise does nothing.
+         */
         final boolean isInvertible = isInvertible(source.getMethod());
         final ParameterValueGroup parameters = source.getParameterValues();
         final ParameterValueGroup copy = parameters.getDescriptor().createValue();

@@ -44,7 +44,7 @@ import static org.apache.sis.referencing.operation.projection.ConformalProjectio
  * @author  Simon Reynard (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
  * @since   0.6
- * @version 0.7
+ * @version 0.8
  * @module
  */
 @DependsOn(ConformalProjectionTest.class)
@@ -70,7 +70,7 @@ public final strictfp class MercatorTest extends MapProjectionTestCase {
      * the ellipsoid eccentricity. We expect nothing else because all other parameters are used
      * by the (de)normalization affine transforms instead than the {@link Mercator} class itself.
      *
-     * @throws NoninvertibleTransformException should never happen.
+     * @throws NoninvertibleTransformException if the transform can not be inverted.
      *
      * @see LambertConicConformalTest#testNormalizedWKT()
      */
@@ -90,18 +90,21 @@ public final strictfp class MercatorTest extends MapProjectionTestCase {
      * Tests WKT of a complete map projection.
      *
      * @throws FactoryException if an error occurred while creating the map projection.
-     * @throws NoninvertibleTransformException should never happen.
+     * @throws NoninvertibleTransformException if the transform can not be inverted.
      */
     @Test
     @DependsOnMethod("testNormalizedWKT")
     public void testCompleteWKT() throws FactoryException, NoninvertibleTransformException {
-        createCompleteProjection(new Mercator1SP(), true,
-                  0.5,    // Central meridian
-                  0,      // Latitude of origin (none)
-                  0,      // Standard parallel (none)
-                  0.997,  // Scale factor
-                200,      // False easting
-                100);     // False northing
+        createCompleteProjection(new Mercator1SP(),
+                WGS84_A,    // Semi-major axis length
+                WGS84_B,    // Semi-minor axis length
+                0.5,        // Central meridian
+                NaN,        // Latitude of origin (none)
+                NaN,        // Standard parallel 1 (none)
+                NaN,        // Standard parallel 2 (none)
+                0.997,      // Scale factor
+                200,        // False easting
+                100);       // False northing
 
         assertWktEquals("PARAM_MT[“Mercator_1SP”,\n" +
                         "  PARAMETER[“semi_major”, 6378137.0],\n" +
@@ -289,13 +292,16 @@ public final strictfp class MercatorTest extends MapProjectionTestCase {
     @Test
     @DependsOnMethod("testSphericalCase")
     public void compareEllipticalWithSpherical() throws FactoryException, TransformException {
-        createCompleteProjection(new Mercator1SP(), false,
-                  0.5,    // Central meridian
-                  0,      // Latitude of origin (none)
-                  0,      // Standard parallel (none)
-                  0.997,  // Scale factor
-                200,      // False easting
-                100);     // False northing
+        createCompleteProjection(new Mercator1SP(),
+                6371007,    // Semi-major axis length
+                6371007,    // Semi-minor axis length
+                0.5,        // Central meridian
+                NaN,        // Latitude of origin (none)
+                NaN,        // Standard parallel 1 (none)
+                NaN,        // Standard parallel 2 (none)
+                0.997,      // Scale factor
+                200,        // False easting
+                100);       // False northing
         tolerance = Formulas.LINEAR_TOLERANCE;
         compareEllipticalWithSpherical(CoordinateDomain.GEOGRAPHIC_SAFE, 0);
     }

@@ -22,10 +22,12 @@ import org.opengis.test.ToleranceModifier;
 import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.internal.referencing.provider.LambertCylindricalEqualArea;
 import org.apache.sis.internal.referencing.provider.LambertCylindricalEqualAreaSpherical;
+import org.apache.sis.referencing.operation.transform.CoordinateDomain;
 import org.apache.sis.test.DependsOnMethod;
 import org.junit.Test;
 
 import static java.lang.StrictMath.*;
+import static java.lang.Double.NaN;
 
 
 /**
@@ -37,16 +39,6 @@ import static java.lang.StrictMath.*;
  * @module
  */
 public final strictfp class CylindricalEqualAreaTest extends MapProjectionTestCase {
-    /**
-     * Creates a map projection.
-     */
-    private void createCompleteProjection(final boolean ellipse,
-            final double centralMeridian, final double standardParallel) throws FactoryException
-    {
-        createCompleteProjection(new LambertCylindricalEqualArea(),
-                ellipse, centralMeridian, 0, standardParallel, 1, 0, 0);
-    }
-
     /**
      * Tests the derivatives at a few points. This method compares the derivatives computed by
      * the projection with an estimation of derivatives computed by the finite differences method.
@@ -69,7 +61,16 @@ public final strictfp class CylindricalEqualAreaTest extends MapProjectionTestCa
      */
     @Test
     public void testEllipsoidal() throws FactoryException, TransformException {
-        createCompleteProjection(true, 0, 0);
+        createCompleteProjection(new LambertCylindricalEqualArea(),
+                WGS84_A,    // Semi-major axis length
+                WGS84_B,    // Semi-minor axis length
+                0,          // Central meridian
+                NaN,        // Latitude of origin
+                0,          // Standard parallel 1
+                NaN,        // Standard parallel 2
+                NaN,        // Scale factor (none)
+                0,          // False easting
+                0);         // False northing
         tolerance = Formulas.LINEAR_TOLERANCE;
         toleranceModifier = ToleranceModifier.PROJECTION;
         final double λ = 2;
@@ -90,7 +91,16 @@ public final strictfp class CylindricalEqualAreaTest extends MapProjectionTestCa
     @Test
     @DependsOnMethod("testEllipsoidal")
     public void testSpherical() throws FactoryException, TransformException {
-        createCompleteProjection(false, 0, 0);
+        createCompleteProjection(new LambertCylindricalEqualArea(),
+                6371007,    // Semi-major axis length
+                6371007,    // Semi-minor axis length
+                0,          // Central meridian
+                NaN,        // Latitude of origin
+                0,          // Standard parallel 1
+                NaN,        // Standard parallel 2
+                NaN,        // Scale factor (none)
+                0,          // False easting
+                0);         // False northing
         tolerance = Formulas.LINEAR_TOLERANCE;
         toleranceModifier = ToleranceModifier.PROJECTION;
         final double λ = 2;
@@ -114,7 +124,16 @@ public final strictfp class CylindricalEqualAreaTest extends MapProjectionTestCa
     @Test
     @DependsOnMethod("testSpherical")
     public void testSphericalWithConformalSphereRadius() throws FactoryException, TransformException {
-        createCompleteProjection(new LambertCylindricalEqualAreaSpherical(), true, 0, 0, 0, 1, 0, 0);
+        createCompleteProjection(new LambertCylindricalEqualAreaSpherical(),
+                WGS84_A,    // Semi-major axis length
+                WGS84_B,    // Semi-minor axis length
+                0,          // Central meridian
+                NaN,        // Latitude of origin
+                0,          // Standard parallel 1
+                NaN,        // Standard parallel 2
+                NaN,        // Scale factor (none)
+                0,          // False easting
+                0);         // False northing
         tolerance = Formulas.LINEAR_TOLERANCE;
         toleranceModifier = ToleranceModifier.PROJECTION;
         final double λ = 2;
@@ -124,5 +143,33 @@ public final strictfp class CylindricalEqualAreaTest extends MapProjectionTestCa
         verifyTransform(new double[] {λ, φ,  -λ, φ,  λ, -φ,  -λ, -φ},
                         new double[] {x, y,  -x, y,  x, -y,  -x, -y});
         testDerivative();
+    }
+
+    /**
+     * Tests conversion of random points with non-zero central meridian, standard parallel
+     * and false easting/northing.
+     *
+     * @throws FactoryException if an error occurred while creating the map projection.
+     * @throws TransformException if an error occurred while projecting a point.
+     */
+    @Test
+    public void testRandomPoints() throws FactoryException, TransformException {
+        createCompleteProjection(new LambertCylindricalEqualArea(),
+                WGS84_A,    // Semi-major axis length
+                WGS84_B,    // Semi-minor axis length
+                12,         // Central meridian
+                NaN,        // Latitude of origin (none)
+                24,         // Standard parallel 1
+                NaN,        // Standard parallel 2
+                NaN,        // Scale factor (none)
+                300,        // False easting
+                200);       // False northing
+
+        tolerance = Formulas.LINEAR_TOLERANCE;
+        toleranceModifier = ToleranceModifier.PROJECTION;
+        derivativeDeltas = new double[] {100, 100};
+        final double delta = toRadians(100.0 / 60) / 1852;      // Approximatively 100 metres.
+        derivativeDeltas = new double[] {delta, delta};
+        verifyInDomain(CoordinateDomain.GEOGRAPHIC_SAFE, 0);
     }
 }

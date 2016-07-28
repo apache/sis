@@ -19,8 +19,11 @@ package org.apache.sis.feature.builder;
 import java.util.Iterator;
 import com.esri.core.geometry.Geometry;
 import com.esri.core.geometry.Point;
+import org.apache.sis.internal.feature.AttributeConvention;
+import org.apache.sis.feature.DefaultFeatureTypeTest;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.test.DependsOnMethod;
+import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -30,9 +33,6 @@ import static org.junit.Assert.*;
 import org.opengis.feature.AttributeType;
 import org.opengis.feature.FeatureType;
 import org.opengis.feature.PropertyType;
-import org.apache.sis.feature.DefaultFeatureTypeTest;
-import org.apache.sis.internal.feature.AttributeConvention;
-import org.apache.sis.test.TestUtilities;
 
 
 /**

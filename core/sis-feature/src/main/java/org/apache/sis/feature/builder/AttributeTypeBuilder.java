@@ -32,7 +32,6 @@ import org.apache.sis.util.Classes;
 // Branch-dependent imports
 import org.apache.sis.internal.jdk7.Objects;
 import org.opengis.feature.AttributeType;
-import org.opengis.feature.Feature;
 import org.opengis.feature.PropertyType;
 
 
@@ -254,9 +253,6 @@ public final class AttributeTypeBuilder<V> extends PropertyTypeBuilder {
      * @see #characteristics()
      */
     public <C> CharacteristicTypeBuilder<C> addCharacteristic(final Class<C> type) {
-        if (valueClass == Feature.class) {
-            throw new UnsupportedOperationException(errors().getString(Errors.Keys.IllegalOperationForValueClass_1, valueClass));
-        }
         ensureNonNull("type", type);
         final CharacteristicTypeBuilder<C> characteristic = new CharacteristicTypeBuilder<C>(this, type);
         characteristics.add(characteristic);
