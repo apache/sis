@@ -39,4 +39,4 @@
  * @version 0.8
  * @module
  */
-package org.apache.sis.storage.geotiff;
+package org.apache.sis.storage.earthobservation;

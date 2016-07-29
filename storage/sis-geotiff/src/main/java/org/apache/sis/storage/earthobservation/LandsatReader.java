@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.storage.geotiff;
+package org.apache.sis.storage.earthobservation;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -74,7 +74,7 @@ import org.apache.sis.util.iso.DefaultInternationalString;
 import org.apache.sis.util.logging.WarningListeners;
 
 import static java.util.Collections.singleton;
-import static org.apache.sis.storage.geotiff.LandsatKeys.*;
+import static org.apache.sis.storage.earthobservation.LandsatKeys.*;
 
 
 /**
