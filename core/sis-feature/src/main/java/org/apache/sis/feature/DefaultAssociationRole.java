@@ -116,11 +116,11 @@ public class DefaultAssociationRole extends FieldType implements FeatureAssociat
      *   </tr>
      * </table>
      *
-     * @param identification The name and other information to be given to this association role.
-     * @param valueType      The type of feature values.
-     * @param minimumOccurs  The minimum number of occurrences of the association within its containing entity.
-     * @param maximumOccurs  The maximum number of occurrences of the association within its containing entity,
-     *                       or {@link Integer#MAX_VALUE} if there is no restriction.
+     * @param identification  the name and other information to be given to this association role.
+     * @param valueType       the type of feature values.
+     * @param minimumOccurs   the minimum number of occurrences of the association within its containing entity.
+     * @param maximumOccurs   the maximum number of occurrences of the association within its containing entity,
+     *                        or {@link Integer#MAX_VALUE} if there is no restriction.
      *
      * @see org.apache.sis.feature.builder.AssociationRoleBuilder
      */
@@ -162,11 +162,11 @@ public class DefaultAssociationRole extends FieldType implements FeatureAssociat
      * If more than one {@code FeatureType} instance of the given name is found at resolution time, the selected one
      * is undetermined.
      *
-     * @param identification The name and other information to be given to this association role.
-     * @param valueType      The name of the type of feature values.
-     * @param minimumOccurs  The minimum number of occurrences of the association within its containing entity.
-     * @param maximumOccurs  The maximum number of occurrences of the association within its containing entity,
-     *                       or {@link Integer#MAX_VALUE} if there is no restriction.
+     * @param identification  the name and other information to be given to this association role.
+     * @param valueType       the name of the type of feature values.
+     * @param minimumOccurs   the minimum number of occurrences of the association within its containing entity.
+     * @param maximumOccurs   the maximum number of occurrences of the association within its containing entity,
+     *                        or {@link Integer#MAX_VALUE} if there is no restriction.
      */
     public DefaultAssociationRole(final Map<String,?> identification, final GenericName valueType,
             final int minimumOccurs, final int maximumOccurs)
@@ -184,7 +184,7 @@ public class DefaultAssociationRole extends FieldType implements FeatureAssociat
      * to feature <var>B</var> which has an association back to <var>A</var>. It may also be <var>A</var>
      * having an association to itself, <i>etc.</i>
      *
-     * @param  creating The feature type in process of being constructed.
+     * @param  creating  the feature type in process of being constructed.
      * @return {@code true} if this association references a resolved feature type after this method call.
      */
     final boolean resolve(final DefaultFeatureType creating) {
@@ -225,10 +225,10 @@ public class DefaultAssociationRole extends FieldType implements FeatureAssociat
      * <p>Current implementation does not check that there is no duplicated names.
      * See {@link #deepSearch(List, GenericName)} for a rational.</p>
      *
-     * @param  feature The feature in which to search.
-     * @param  name The name of the feature to search.
-     * @param  deferred Where to store {@code FeatureType}s to be eventually used for a deep search.
-     * @return The feature of the given name, or {@code null} if none.
+     * @param  feature   the feature in which to search.
+     * @param  name      the name of the feature to search.
+     * @param  deferred  where to store {@code FeatureType}s to be eventually used for a deep search.
+     * @return the feature of the given name, or {@code null} if none.
      */
     @SuppressWarnings("null")
     private static FeatureType search(final FeatureType feature, final GenericName name, final List<FeatureType> deferred) {
@@ -281,10 +281,10 @@ public class DefaultAssociationRole extends FieldType implements FeatureAssociat
      * later. We rather put a warning in {@link #DefaultAssociationRole(Map, GenericName, int, int)}
      * javadoc.</p>
      *
-     * @param  feature The feature in which to search.
-     * @param  name The name of the feature to search.
-     * @param  done The feature types collected by {@link #search(FeatureType, GenericName, List)}.
-     * @return The feature of the given name, or {@code null} if none.
+     * @param  feature  the feature in which to search.
+     * @param  name     the name of the feature to search.
+     * @param  done     the feature types collected by {@link #search(FeatureType, GenericName, List)}.
+     * @return the feature of the given name, or {@code null} if none.
      */
     private static FeatureType deepSearch(final List<FeatureType> deferred, final GenericName name) {
         final Map<FeatureType,Boolean> done = new IdentityHashMap<>(8);
@@ -305,7 +305,7 @@ public class DefaultAssociationRole extends FieldType implements FeatureAssociat
     /**
      * Returns the type of feature values.
      *
-     * @return The type of feature values.
+     * @return the type of feature values.
      * @throws IllegalStateException if the feature type has been specified
      *         {@linkplain #DefaultAssociationRole(Map, GenericName, int, int) only by its name}
      *         and not yet resolved.
@@ -369,7 +369,7 @@ public class DefaultAssociationRole extends FieldType implements FeatureAssociat
      * Returns the minimum number of occurrences of the association within its containing entity.
      * The returned value is greater than or equal to zero.
      *
-     * @return The minimum number of occurrences of the association within its containing entity.
+     * @return the minimum number of occurrences of the association within its containing entity.
      */
     @Override
     public final int getMinimumOccurs() {
@@ -381,7 +381,7 @@ public class DefaultAssociationRole extends FieldType implements FeatureAssociat
      * The returned value is greater than or equal to the {@link #getMinimumOccurs()} value.
      * If there is no maximum, then this method returns {@link Integer#MAX_VALUE}.
      *
-     * @return The maximum number of occurrences of the association within its containing entity,
+     * @return the maximum number of occurrences of the association within its containing entity,
      *         or {@link Integer#MAX_VALUE} if none.
      */
     @Override
@@ -392,7 +392,7 @@ public class DefaultAssociationRole extends FieldType implements FeatureAssociat
     /**
      * Creates a new association instance of this role.
      *
-     * @return A new association instance.
+     * @return a new association instance.
      *
      * @see AbstractAssociation#create(FeatureAssociationRole)
      */
@@ -437,11 +437,11 @@ public class DefaultAssociationRole extends FieldType implements FeatureAssociat
      * Returns a string representation of this association role.
      * The returned string is for debugging purpose and may change in any future SIS version.
      *
-     * @return A string representation of this association role for debugging purpose.
+     * @return a string representation of this association role for debugging purpose.
      */
     @Debug
     @Override
     public String toString() {
-        return toString("FeatureAssociationRole", this, valueType.getName()).toString();
+        return toString("FeatureAssociationRole", getName(), valueType.getName()).toString();
     }
 }

@@ -81,6 +81,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final short CanNotAddToExclusiveSet_2 = 0;
 
         /**
+         * Can not assign characteristics to the “{0}” property.
+         */
+        public static final short CanNotAssignCharacteristics_1 = 233;
+
+        /**
          * Can not assign units “{1}” to dimension “{0}”.
          */
         public static final short CanNotAssignUnitToDimension_2 = 168;
