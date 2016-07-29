@@ -86,7 +86,7 @@ public class CSW {
             @QueryParam("service") String service,
             @QueryParam("version") String Version,
             @QueryParam("request") String request,
-            @QueryParam("startPosition") int start,
+            @QueryParam("sãaxRecordstartPosition") int start,
             @QueryParam("maxRecords") int size) throws ParseException, Exception {
          if (request.equals("GetRecords") && start >= 0 && size > 0){
         Record record = new Record(path.getValue("Path"),Version,service);
@@ -118,8 +118,7 @@ public class CSW {
             @QueryParam("service") String service,
             @QueryParam("version") String Version,
             @QueryParam("request") String request,
-            @QueryParam("format") String format,
-            @QueryParam("identifier") String identifier,
+            @QueryParam("constraint") String constraint,
             @QueryParam("west") double west,
             @QueryParam("east") double east,
             @QueryParam("south") double south,
@@ -129,9 +128,9 @@ public class CSW {
         
         if (request.equals("GetRecords")) {
             
-            AnyText record = new AnyText(path.getValue("Path"),Version,service, format, identifier, date1, date2);
+            AnyText record = new AnyText(path.getValue("Path"), Version, service, constraint, date1, date2);
+            System.out.println(constraint);
             record.setBbox(west, east, south, north);
-            record.setBbox(5, 130, 5, 130);
             record.filter();
              GetRecordsReponse a = new GetRecordsReponse();
              a.setRecord(record.getData());
