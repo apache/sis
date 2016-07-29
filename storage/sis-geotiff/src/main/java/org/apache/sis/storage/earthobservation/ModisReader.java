@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.storage.geotiff;
+package org.apache.sis.storage.earthobservation;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
@@ -45,7 +45,7 @@ import org.opengis.metadata.identification.Identification;
 import org.opengis.metadata.maintenance.ScopeCode;
 
 import static java.util.Collections.singleton;
-import static org.apache.sis.storage.geotiff.ModisPath.DataCenterId;
+import static org.apache.sis.storage.earthobservation.ModisPath.DataCenterId;
 
 
 /**

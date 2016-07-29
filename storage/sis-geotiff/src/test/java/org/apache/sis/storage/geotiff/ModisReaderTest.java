@@ -15,6 +15,7 @@
  */
 package org.apache.sis.storage.geotiff;
 
+import org.apache.sis.storage.earthobservation.ModisReader;
 import java.io.File;
 import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.test.TestCase;

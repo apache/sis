@@ -16,6 +16,7 @@
  */
 package org.apache.sis.storage.geotiff;
 
+import org.apache.sis.storage.earthobservation.LandsatReader;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
