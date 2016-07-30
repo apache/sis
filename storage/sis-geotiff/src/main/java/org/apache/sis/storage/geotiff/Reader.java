@@ -18,6 +18,8 @@ package org.apache.sis.storage.geotiff;
 
 import java.util.List;
 import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.Iterator;
 import java.io.IOException;
 import java.nio.ByteOrder;
 import java.text.ParseException;
@@ -74,10 +76,26 @@ final class Reader extends GeoTIFF {
     private final byte intSizeExpansion;
 
     /**
+     * Offset (relative to the beginning of the TIFF file) of the next Image File Directory (IFD)
+     * to read, or 0 if we have finished to read all of them.
+     */
+    private long nextIFD;
+
+    /**
      * Positions of each <cite>Image File Directory</cite> (IFD) in this file.
      * Those positions are fetched when first needed.
      */
     private final List<ImageFileDirectory> imageFileDirectories = new ArrayList<>();
+
+    /**
+     * Entries having a value that can not be read immediately, but instead have a pointer
+     * to a value stored elsewhere in the file. Those values will be read only when needed.
+     *
+     * <div class="note"><b>Implementation note:</b>
+     * we use a {@code LinkedList} because we will perform frequent additions and removals,
+     * but no random access.</div>
+     */
+    private final LinkedList<DeferredEntry> deferredEntries = new LinkedList<>();
 
     /**
      * Builder for the metadata.
@@ -116,6 +134,7 @@ final class Reader extends GeoTIFF {
             switch (input.readShort()) {
                 case 42: {                                          // Magic number of classical format.
                     intSizeExpansion = 0;
+                    nextIFD = input.readUnsignedInt();
                     return;
                 }
                 case 43: {                                          // Magic number of BigTIFF format.
@@ -129,6 +148,7 @@ final class Reader extends GeoTIFF {
                              * one result in the end, but we did that generic computation anyway for keeping the
                              * code almost ready if the BigTIFF specification adds support for 16 bytes pointer.
                              */
+                            nextIFD = readUnsignedInt();
                             return;
                         }
                     }
@@ -136,13 +156,13 @@ final class Reader extends GeoTIFF {
             }
         }
         // Do not invoke errors() yet because GeoTiffStore construction may not be finished.
-        throw new DataStoreException(Errors.format(Errors.Keys.UnexpectedFileFormat_2, "TIFF", input.filename));
+        throw new TIFFException(Errors.format(Errors.Keys.UnexpectedFileFormat_2, "TIFF", input.filename));
     }
 
     /**
      * Returns a default message for parsing error.
      */
-    private String canNotRead() {
+    final String canNotDecode() {
         return errors().getString(Errors.Keys.CanNotParseFile_2, "TIFF", input.filename);
     }
 
@@ -160,7 +180,7 @@ final class Reader extends GeoTIFF {
         if (pointer >= 0) {
             return pointer;
         }
-        throw new DataStoreException(canNotRead());
+        throw new TIFFException(canNotDecode());
     }
 
     /**
@@ -177,47 +197,46 @@ final class Reader extends GeoTIFF {
         if (entry >= 0) {
             return entry;
         }
-        throw new DataStoreException(canNotRead());
+        throw new TIFFException(canNotDecode());
     }
 
     /**
-     * Reads the next bytes in the {@linkplain #input}, which must be the 32 or 64 bits
-     * offset to the next <cite>Image File Directory</cite> (IFD), then parses that IFD.
-     * The IFD consists of a 2 (classical) or 8 (BigTiff)-bytes count of the number of
-     * directory entries, followed by a sequence of 12-byte field entries, followed by
-     * a pointer to the next IFD (or 0 if none).
+     * Returns the <cite>Image File Directory</cite> (IFD) at the given index.
+     * If the IFD has already been read, then it is returned.
+     * Otherwise this method reads the IFD now and returns it.
      *
-     * <p>The parsed entry is added to the {@link #imageFileDirectories} list.</p>
+     * <p>The IFD consists of a 2 (classical) or 8 (BigTiff)-bytes count of the number of directory entries,
+     * followed by a sequence of 12-byte field entries, followed by a pointer to the next IFD (or 0 if none).</p>
      *
-     * @return {@code true} if we found a new IFD, or {@code false} if there is no more IFD.
-     * @throws ArithmeticException if the pointer to the next IFD is too far.
+     * @return the IFD if we found it, or {@code null} if there is no more IFD at the given index.
+     * @throws ArithmeticException if the pointer to a next IFD is too far.
      */
-    private boolean nextImageFileDirectory() throws IOException, DataStoreException {
-        final long offset = readUnsignedInt();
-        if (offset == 0) {
-            return false;
-        }
-        /*
-         * Design note: we parse the Image File Directory entry now because even if we were
-         * not interrested in that IFD, we need to go anyway after its last record in order
-         * to get the pointer to the next IFD.
-         */
-        input.seek(Math.addExact(origin, offset));
-        final int offsetSize = Integer.BYTES << intSizeExpansion;
-        final ImageFileDirectory dir = new ImageFileDirectory(offset);
-        for (long remaining = readUnsignedShort(); --remaining >= 0;) {
+    final ImageFileDirectory getImageFileDirectory(final int index) throws IOException, DataStoreException {
+        while (index >= imageFileDirectories.size()) {
+            if (nextIFD == 0) {
+                return null;
+            }
+            input.seek(Math.addExact(origin, nextIFD));
+            nextIFD = 0;               // Prevent trying other IFD if we fail to read this one.
             /*
-             * Each entry in the Image File Directory has the following format:
-             *   - The tag that identifies the field (see constants in the Tags class).
-             *   - The field type (see constants inherited from the GeoTIFF class).
-             *   - The number of values of the indicated type.
-             *   - The value, or the file offset to the value elswhere in the file.
+             * Design note: we parse the Image File Directory entry now because even if we were
+             * not interrested in that IFD, we need to go anyway after its last record in order
+             * to get the pointer to the next IFD.
              */
-            final int   tag   = input.readUnsignedShort();
-            final Type  type  = Type.valueOf(input.readShort());        // May be null.
-            final long  count = readUnsignedInt();
-            try {
-                final long  size  = (type != null) ? Math.multiplyExact(type.size, count) : 0;
+            final int offsetSize = Integer.BYTES << intSizeExpansion;
+            final ImageFileDirectory dir = new ImageFileDirectory();
+            for (long remaining = readUnsignedShort(); --remaining >= 0;) {
+                /*
+                 * Each entry in the Image File Directory has the following format:
+                 *   - The tag that identifies the field (see constants in the Tags class).
+                 *   - The field type (see constants inherited from the GeoTIFF class).
+                 *   - The number of values of the indicated type.
+                 *   - The value, or the file offset to the value elswhere in the file.
+                 */
+                final int  tag   = input.readUnsignedShort();
+                final Type type  = Type.valueOf(input.readShort());        // May be null.
+                final long count = readUnsignedInt();
+                final long size  = (type != null) ? Math.multiplyExact(type.size, count) : 0;
                 if (size <= offsetSize) {
                     /*
                      * If the value can fit inside the number of bytes given by 'offsetSize', then the value is
@@ -225,24 +244,93 @@ final class Reader extends GeoTIFF {
                      */
                     final long position = input.getStreamPosition();
                     if (size != 0) {
-                        /*
-                         * A size of zero means that we have an unknown type, in which case the TIFF specification
-                         * recommends to ignore it (for allowing them to add new types in the future), or an entry
-                         * without value (count = 0) - in principle illegal but we make this reader tolerant.
-                         */
-                        dir.addEntry(this, tag, type, count);
+                        Object error;
+                        try {
+                            /*
+                             * A size of zero means that we have an unknown type, in which case the TIFF specification
+                             * recommends to ignore it (for allowing them to add new types in the future), or an entry
+                             * without value (count = 0) - in principle illegal but we make this reader tolerant.
+                             */
+                            error = dir.addEntry(this, tag, type, count);
+                        } catch (ParseException | RuntimeException e) {
+                            error = e;
+                        }
+                        if (error != null) {
+                            warning(tag, error);
+                        }
                     }
-                    input.seek(position + offsetSize);
+                    input.seek(position + offsetSize);      // Usually just move the buffer position by a few bytes.
                 } else {
-                    // offset from beginning of file where the values are stored.
-                    final long value = readUnsignedInt();
-                    // TODO
+                    // Offset from beginning of TIFF file where the values are stored.
+                    deferredEntries.add(new DeferredEntry(dir, tag, type, count, readUnsignedInt()));
+                    dir.hasDeferredEntries = true;
                 }
-            } catch (IOException | ParseException | RuntimeException e) {
-                owner.warning(errors().getString(Errors.Keys.CanNotSetPropertyValue_1, Tags.name(tag)), e);
             }
+            imageFileDirectories.add(dir);
+            nextIFD = readUnsignedInt();                    // Zero if the IFD that we just read was the last one.
         }
-        return imageFileDirectories.add(dir);
+        /*
+         * At this point we got the requested IFD. But maybe some deferred entries need to be read.
+         * The values of those entries may be anywhere in the TIFF file, in any order. Given that
+         * seek operations in the input stream may be costly or even not possible, we try to read
+         * all values in sequential order, including values of other IFD if there is some before
+         * our IFD of interest.
+         */
+        final ImageFileDirectory dir = imageFileDirectories.get(index);
+        if (dir.hasDeferredEntries) {
+            deferredEntries.sort(null);                                         // Sequential order in input stream.
+            final long ignoreBefore = input.getStreamPosition() - origin;       // Avoid seeking back, unless we need to.
+            DeferredEntry stopAfter = null;                                     // Avoid reading more entries than needed.
+            Iterator<DeferredEntry> it = deferredEntries.descendingIterator();
+            while (it.hasNext()) {
+                stopAfter = it.next();
+                if (stopAfter.owner == dir) break;
+            }
+            it = deferredEntries.iterator();
+            while (it.hasNext()) {
+                final DeferredEntry entry = it.next();
+                if (entry.owner == dir || entry.offset >= ignoreBefore) {
+                    input.seek(Math.addExact(origin, entry.offset));
+                    Object error;
+                    try {
+                        error = entry.owner.addEntry(this, entry.tag, entry.type, entry.count);
+                    } catch (ParseException | RuntimeException e) {
+                        error = e;
+                    }
+                    if (error != null) {
+                        warning(entry.tag, error);
+                    }
+                    it.remove();            // Remove only on success, but before we try to read other entries.
+                }
+                if (entry == stopAfter) break;
+            }
+            dir.hasDeferredEntries = false;
+        }
+        return dir;
+    }
+
+    /**
+     * Logs a warning about a tag that can not be read, but does not interrupt the TIFF reading.
+     *
+     * @param tag    the tag than can not be read.
+     * @param error  the value than can not be understand, or the exception that we got while trying to parse it.
+     */
+    private void warning(final int tag, final Object error) {
+        final short key;
+        final Object[] args;
+        final Exception exception;
+        if (error instanceof Exception) {
+            key = Errors.Keys.CanNotSetPropertyValue_1;
+            args = new Object[1];
+            exception = (Exception) error;
+        } else {
+            key = Errors.Keys.UnknownEnumValue_2;
+            args = new Object[2];
+            args[1] = error;
+            exception = null;
+        }
+        args[0] = Tags.name(tag);
+        owner.warning(errors().getString(key, args), exception);
     }
 
     /**

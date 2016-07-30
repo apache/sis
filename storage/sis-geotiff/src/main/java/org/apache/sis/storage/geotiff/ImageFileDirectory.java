@@ -36,11 +36,10 @@ import org.opengis.metadata.citation.DateType;
  */
 final class ImageFileDirectory {
     /**
-     * The offset (in bytes since the beginning of the TIFF stream) of the Image File Directory (FID).
-     * The directory may be at any location in the file after the header.
-     * In particular, an Image File Directory may follow the image that it describes.
+     * {@code true} if this {@code ImageFileDirectory} has not yet read all deferred entries.
+     * When this flag is {@code true}, the {@code ImageFileDirectory} is not yet ready for use.
      */
-    final long offset;
+    boolean hasDeferredEntries;
 
     /**
      * The size of the image described by this FID, or -1 if the information has not been found.
@@ -70,10 +69,9 @@ final class ImageFileDirectory {
     private Compression compression;
 
     /**
-     * Creates a new image file directory located at the given offset (in bytes) in the TIFF file.
+     * Creates a new image file directory.
      */
-    ImageFileDirectory(final long offset) {
-        this.offset = offset;
+    ImageFileDirectory() {
     }
 
     /**
@@ -84,7 +82,7 @@ final class ImageFileDirectory {
      * @param  tag      the GeoTIFF tag to decode.
      * @param  type     the GeoTIFF type of the value to read.
      * @param  count    the number of values to read.
-     * @return {@code true} on success, or {@code false} for unrecognized value.
+     * @return {@code null} on success, or the unrecognized value otherwise.
      * @throws IOException if an error occurred while reading the stream.
      * @throws ParseException if the value need to be parsed as date and the parsing failed.
      * @throws NumberFormatException if the value need to be parsed as number and the parsing failed.
@@ -92,7 +90,7 @@ final class ImageFileDirectory {
      * @throws IllegalArgumentException if a value which was expected to be a singleton is not.
      * @throws UnsupportedOperationException if the given type is {@link Type#UNDEFINED}.
      */
-    boolean addEntry(final Reader reader, final int tag, final Type type, final long count) throws IOException, ParseException {
+    Object addEntry(final Reader reader, final int tag, final Type type, final long count) throws IOException, ParseException {
         switch (tag) {
 
             ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -110,7 +108,7 @@ final class ImageFileDirectory {
             case Tags.PlanarConfiguration: {
                 final long value = type.readLong(reader.input, count);
                 if (value < 1 || value > 2) {
-                    return false;
+                    return value;
                 }
                 isPlanar = (value == 2);
                 break;
@@ -158,7 +156,7 @@ final class ImageFileDirectory {
                 final long value = type.readLong(reader.input, count);
                 compression = Compression.valueOf(value);
                 if (compression == null) {
-                    return false;
+                    return value;
                 }
                 break;
             }
@@ -439,6 +437,6 @@ final class ImageFileDirectory {
                 break;
             }
         }
-        return true;
+        return null;
     }
 }
