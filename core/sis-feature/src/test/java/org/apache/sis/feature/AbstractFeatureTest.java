@@ -48,20 +48,23 @@ import org.opengis.feature.PropertyType;
 })
 public final strictfp class AbstractFeatureTest extends FeatureTestCase {
     /**
-     * A minimalist feature implementation on top of {@link AbstractFeature}. In order to get the tests to pass,
-     * we need to reproduce in this class some of the verifications performed by the more sophisticated
-     * {@link SingletonAttribute} and {@link MultiValuedAttribute} implementations.
-     * However other developers that provide their own implementations may not perform all those checks.
+     * A feature implementation on top of {@link AbstractFeature}. This class has more code than strictly necessary
+     * since we need to reproduce some of the verifications performed by the Apache SIS supported implementations
+     * in order to get the tests to pass.
      */
     @SuppressWarnings("serial")
     private static final class CustomFeature extends AbstractFeature implements Cloneable {
         /**
-         * All property values.
+         * All property values. For this test we use a {@code java.util.Map}. However users who want to provide
+         * their own {@link AbstractFeature} implementation should consider to use plain Java fields instead.
+         * If a feature backed by a {@code java.util.Map} is really wanted, then {@link SparseFeature} should
+         * be considered.
          */
         private HashMap<String,Object> values = new HashMap<>();
 
         /**
-         * Creates a new feature of the given type.
+         * Creates a new feature of the given type. This constructor adds immediately the default values into
+         * the {@link #values} map and a modifiable list (even if empty) for all properties that are collections.
          */
         CustomFeature(final DefaultFeatureType type) {
             super(type);
@@ -85,11 +88,24 @@ public final strictfp class AbstractFeatureTest extends FeatureTestCase {
             return (pt instanceof AttributeType<?>) && (((AttributeType<?>) pt).getMaximumOccurs() > 1);
         }
 
+        /**
+         * Returns the value for the property of the given name, or {@code null} if none.
+         * This method does not verify if it should return the default value or a collection.
+         * In this simple implementation, those verifications are done at construction time.
+         *
+         * <p>A robust implementation would verify that the given name is legal.
+         * For this test, be skip that verification.</p>
+         */
         @Override
         public Object getPropertyValue(final String name) {
             return values.get(name);
         }
 
+        /**
+         * Sets the value for the property of the given name. In order to allow the tests to pass,
+         * we need to reproduce in this method some of the verifications performed by the
+         * {@link SingletonAttribute} and {@link MultiValuedAttribute} implementations.
+         */
         @Override
         public void setPropertyValue(final String name, Object value) {
             final PropertyType type = getType().getProperty(name);
@@ -113,6 +129,9 @@ public final strictfp class AbstractFeatureTest extends FeatureTestCase {
             values.put(name, value);
         }
 
+        /**
+         * Returns a close of this feature.
+         */
         @Override
         @SuppressWarnings("unchecked")
         public CustomFeature clone() {
