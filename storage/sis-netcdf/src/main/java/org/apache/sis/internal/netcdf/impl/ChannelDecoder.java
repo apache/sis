@@ -40,6 +40,7 @@ import org.apache.sis.internal.netcdf.GridGeometry;
 import org.apache.sis.internal.storage.ChannelDataInput;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.util.iso.DefaultNameSpace;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
@@ -60,7 +61,7 @@ import java.util.function.Function;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.3
+ * @version 0.8
  * @module
  *
  * @see <a href="http://portal.opengeospatial.org/files/?artifact_id=43734">NetCDF Classic and 64-bit Offset Format (1.0)</a>
@@ -202,7 +203,7 @@ public final class ChannelDecoder extends Decoder {
          */
         int version = input.readInt();
         if ((version & 0xFFFFFF00) != MAGIC_NUMBER) {
-            throw new DataStoreException(errors().getString(Errors.Keys.UnexpectedFileFormat_2, "NetCDF", input.filename));
+            throw new DataStoreContentException(errors().getString(Errors.Keys.UnexpectedFileFormat_2, "NetCDF", input.filename));
         }
         /*
          * Check the version number.
@@ -211,7 +212,7 @@ public final class ChannelDecoder extends Decoder {
         switch (version) {
             case 1:  is64bits = false; break;
             case 2:  is64bits = true;  break;
-            default: throw new DataStoreException(errors().getString(Errors.Keys.UnsupportedVersion_1, version));
+            default: throw new DataStoreContentException(errors().getString(Errors.Keys.UnsupportedVersion_1, version));
             // If more cases are added, remember to increment the MAX_VERSION constant.
         }
         numrecs = input.readInt();
@@ -272,7 +273,7 @@ public final class ChannelDecoder extends Decoder {
      * that the file should be a NetCDF one, but we found some inconsistency or unknown tags.
      */
     private DataStoreException malformedHeader() {
-        return new DataStoreException(errors().getString(Errors.Keys.CanNotParseFile_2, "NetCDF", input.filename));
+        return new DataStoreContentException(errors().getString(Errors.Keys.CanNotParseFile_2, "NetCDF", input.filename));
     }
 
     /**
@@ -280,7 +281,7 @@ public final class ChannelDecoder extends Decoder {
      */
     private void ensureNonNegative(final int nelems, final int tag) throws DataStoreException {
         if (nelems < 0) {
-            throw new DataStoreException(errors().getString(Errors.Keys.NegativeArrayLength_1,
+            throw new DataStoreContentException(errors().getString(Errors.Keys.NegativeArrayLength_1,
                     input.filename + DefaultNameSpace.DEFAULT_SEPARATOR + tagName(tag)));
         }
     }
@@ -305,7 +306,7 @@ public final class ChannelDecoder extends Decoder {
         if (size > input.buffer.capacity()) {
             name = input.filename + DefaultNameSpace.DEFAULT_SEPARATOR + name;
             final Errors errors = errors();
-            throw new DataStoreException(n < 0 ?
+            throw new DataStoreContentException(n < 0 ?
                     errors.getString(Errors.Keys.NegativeArrayLength_1, name) :
                     errors.getString(Errors.Keys.ExcessiveListSize_2, name, n));
         }
@@ -416,7 +417,7 @@ public final class ChannelDecoder extends Decoder {
             if (length == 0) {
                 length = numrecs;
                 if (length == STREAMING) {
-                    throw new DataStoreException(errors().getString(Errors.Keys.MissingValueForProperty_1, "numrecs"));
+                    throw new DataStoreContentException(errors().getString(Errors.Keys.MissingValueForProperty_1, "numrecs"));
                 }
             }
             dimensions[i] = new Dimension(name, length);
@@ -535,7 +536,7 @@ public final class ChannelDecoder extends Decoder {
         try {
             return CollectionsExt.toCaseInsensitiveNameMap(Arrays.asList(elements), nameFunction, NAME_LOCALE);
         } catch (InvalidParameterCardinalityException e) {
-            throw new DataStoreException(errors().getString(Errors.Keys.ValueAlreadyDefined_1, e.getParameterName()));
+            throw new DataStoreContentException(errors().getString(Errors.Keys.ValueAlreadyDefined_1, e.getParameterName()));
         }
     }
 

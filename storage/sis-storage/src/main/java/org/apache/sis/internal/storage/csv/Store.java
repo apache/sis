@@ -50,6 +50,7 @@ import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.CharSequences;
@@ -205,14 +206,14 @@ public final class Store extends DataStore {
                 switch (keyword.toLowerCase(Locale.US)) {
                     case "@stboundedby": {
                         if (envelope != null) {
-                            throw new DataStoreException(duplicated("@stboundedby"));
+                            throw new DataStoreContentException(duplicated("@stboundedby"));
                         }
                         envelope = parseEnvelope(elements);
                         break;
                     }
                     case "@columns": {
                         if (featureType != null) {
-                            throw new DataStoreException(duplicated("@columns"));
+                            throw new DataStoreContentException(duplicated("@columns"));
                         }
                         featureType = parseFeatureType(elements);
                         if (foliation == null) {
@@ -222,7 +223,7 @@ public final class Store extends DataStore {
                     }
                     case "@foliation": {
                         if (foliation != null) {
-                            throw new DataStoreException(duplicated("@foliation"));
+                            throw new DataStoreContentException(duplicated("@foliation"));
                         }
                         foliation = parseFoliation(elements);
                         break;
@@ -282,7 +283,7 @@ public final class Store extends DataStore {
                         case "hour":     timeUnit = NonSI.HOUR;   break;
                         case "day":      timeUnit = NonSI.DAY;    break;
                         case "absolute": isTimeAbsolute = true;   break;
-                        default: throw new DataStoreException(errors().getString(Errors.Keys.UnknownUnit_1, unit));
+                        default: throw new DataStoreContentException(errors().getString(Errors.Keys.UnknownUnit_1, unit));
                     }
                     // Fall through
             case 7: endTime     = Instant      .parse(       elements.get(6));
@@ -294,7 +295,7 @@ public final class Store extends DataStore {
                         case "":   // Default to 2D.
                         case "2D": break;
                         case "3D": is3D = true; break;
-                        default: throw new DataStoreException(errors().getString(
+                        default: throw new DataStoreContentException(errors().getString(
                                         Errors.Keys.IllegalCoordinateSystem_1, dimension));
                     }
                     // Fall through
@@ -345,7 +346,7 @@ public final class Store extends DataStore {
                 if ((dim = lowerCorner.length) != spatialDimension ||
                     (dim = upperCorner.length) != spatialDimension)
                 {
-                    throw new DataStoreException(errors().getString(
+                    throw new DataStoreContentException(errors().getString(
                             Errors.Keys.MismatchedDimension_2, dim, spatialDimension));
                 }
                 for (int i=0; i<spatialDimension; i++) {
@@ -389,7 +390,7 @@ public final class Store extends DataStore {
                         case "string":   type = String .class; break;
                         case "datetime": type = Instant.class; break;
                         case "anyuri":   type = URI    .class; break;
-                        default: throw new DataStoreException(errors().getString(Errors.Keys.UnknownType_1, tn));
+                        default: throw new DataStoreContentException(errors().getString(Errors.Keys.UnknownType_1, tn));
                     }
                 }
             }
@@ -469,7 +470,7 @@ public final class Store extends DataStore {
             try {
                 builder.add(envelope);
             } catch (TransformException e) {
-                throw new DataStoreException(errors().getString(Errors.Keys.CanNotParseFile_2, "CSV", name), e);
+                throw new DataStoreContentException(errors().getString(Errors.Keys.CanNotParseFile_2, "CSV", name), e);
             }
             metadata = builder.result();
         }

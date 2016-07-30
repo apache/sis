@@ -32,6 +32,7 @@ import org.apache.sis.io.wkt.Warnings;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.CharSequences;
@@ -44,7 +45,7 @@ import org.apache.sis.referencing.CRS;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.7
- * @version 0.7
+ * @version 0.8
  * @module
  */
 final class Store extends DataStore {
@@ -103,7 +104,7 @@ final class Store extends DataStore {
                 while ((n = in.read(buffer, length, buffer.length - length)) >= 0) {
                     if ((length += n) >= buffer.length) {
                         if (n >= Integer.MAX_VALUE / 1024) {     // Arbitrary size limit.
-                            throw new DataStoreException(Errors.format(Errors.Keys.ExcessiveStringSize));
+                            throw new DataStoreContentException(Errors.format(Errors.Keys.ExcessiveStringSize));
                         }
                         buffer = Arrays.copyOf(buffer, n << 1);
                     }
