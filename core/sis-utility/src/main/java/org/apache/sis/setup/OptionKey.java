@@ -78,8 +78,8 @@ public class OptionKey<T> implements Serializable {
      * For example this option can be used when reading plain text files, but is ignored when
      * reading XML files having a {@code <?xml version="1.0" encoding="…"?>} declaration.
      *
-     * <p>If this option is not provided, then the default value is the
-     * {@link Charset#defaultCharset() platform default}.</p>
+     * <p>If this option is not provided, then the default value is format specific.
+     * That default is often, but not necessarily, the {@link Charset#defaultCharset() platform default}.</p>
      *
      * @since 0.4
      */
@@ -160,8 +160,8 @@ public class OptionKey<T> implements Serializable {
     /**
      * Creates a new key of the given name for values of the given type.
      *
-     * @param name The key name.
-     * @param type The type of values.
+     * @param name  the key name.
+     * @param type  the type of values.
      */
     protected OptionKey(final String name, final Class<T> type) {
         ArgumentChecks.ensureNonEmpty("name", name);
@@ -173,7 +173,7 @@ public class OptionKey<T> implements Serializable {
     /**
      * Returns the name of this option key.
      *
-     * @return The name of this option key.
+     * @return the name of this option key.
      */
     public String getName() {
         return name;
@@ -182,7 +182,7 @@ public class OptionKey<T> implements Serializable {
     /**
      * Returns the type of values associated to this option key.
      *
-     * @return The type of values.
+     * @return the type of values.
      */
     public final Class<T> getElementType() {
         return type;
@@ -199,8 +199,8 @@ public class OptionKey<T> implements Serializable {
      *     }
      * }
      *
-     * @param  options The map where to search for the value, or {@code null} if not yet created.
-     * @return The current value in the map for the this option, or {@code null} if none.
+     * @param  options  the map where to search for the value, or {@code null} if not yet created.
+     * @return the current value in the map for the this option, or {@code null} if none.
      */
     public T getValueFrom(final Map<OptionKey<?>,?> options) {
         return (options != null) ? type.cast(options.get(this)) : null;
@@ -217,9 +217,9 @@ public class OptionKey<T> implements Serializable {
      *     }
      * }
      *
-     * @param  options The map where to set the value, or {@code null} if not yet created.
-     * @param  value   The new value for the given option, or {@code null} for removing the value.
-     * @return The given map of options, or a new map if the given map was null. The returned value
+     * @param  options  the map where to set the value, or {@code null} if not yet created.
+     * @param  value    the new value for the given option, or {@code null} for removing the value.
+     * @return the given map of options, or a new map if the given map was null. The returned value
      *         may be null if the given map and the given value are both null.
      */
     public Map<OptionKey<?>,Object> setValueInto(Map<OptionKey<?>,Object> options, final T value) {
@@ -237,7 +237,7 @@ public class OptionKey<T> implements Serializable {
     /**
      * Returns {@code true} if the given object is an instance of the same class having the same name and type.
      *
-     * @param object The object to compare with this {@code OptionKey} for equality.
+     * @param object  the object to compare with this {@code OptionKey} for equality.
      */
     @Override
     public boolean equals(final Object object) {
@@ -272,7 +272,7 @@ public class OptionKey<T> implements Serializable {
      * Resolves this option key on deserialization. This method is invoked
      * only for instance of the exact {@code OptionKey} class, not subclasses.
      *
-     * @return The unique {@code OptionKey} instance.
+     * @return  the unique {@code OptionKey} instance.
      */
     private Object readResolve() {
         try {

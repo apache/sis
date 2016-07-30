@@ -25,11 +25,14 @@ import org.junit.BeforeClass;
  * All tests from the {@code sis-geotiff} module, in approximative dependency order.
  *
  * @author  Thi Phuong Hao Nguyen (VNSC)
+ * @author  Martin Desruisseaux (Geomatys)
  * @since   0.8
  * @version 0.8
  * @module
  */
 @Suite.SuiteClasses({
+    org.apache.sis.storage.geotiff.TypeTest.class,
+    org.apache.sis.storage.geotiff.CompressionTest.class,
     org.apache.sis.storage.earthobservation.LandsatReaderTest.class,
     org.apache.sis.storage.earthobservation.ModisReaderTest.class
 })

@@ -26,6 +26,7 @@ import org.apache.sis.internal.storage.ChannelDataInput;
 import org.apache.sis.internal.storage.HyperRectangleReader;
 import org.apache.sis.internal.storage.Region;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.Numbers;
 
@@ -36,7 +37,7 @@ import org.apache.sis.util.Numbers;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.7
+ * @version 0.8
  * @module
  */
 final class VariableInfo extends Variable {
@@ -309,14 +310,14 @@ final class VariableInfo extends Variable {
     @Override
     public Object read() throws IOException, DataStoreException {
         if (reader == null) {
-            throw new DataStoreException(unknownType());
+            throw new DataStoreContentException(unknownType());
         }
         long length = 1;
         for (final Dimension dimension : dimensions) {
             length *= dimension.length;
         }
         if (length > Integer.MAX_VALUE) {
-            throw new DataStoreException(Errors.format(Errors.Keys.ExcessiveListSize_2, name, length));
+            throw new DataStoreContentException(Errors.format(Errors.Keys.ExcessiveListSize_2, name, length));
         }
         final int dimension = dimensions.length;
         final long[] size  = new long[dimension];
@@ -339,7 +340,7 @@ final class VariableInfo extends Variable {
     @Override
     public Object read(int[] areaLower, int[] areaUpper, int[] subsampling) throws IOException, DataStoreException {
         if (reader == null) {
-            throw new DataStoreException(unknownType());
+            throw new DataStoreContentException(unknownType());
         }
         /*
          * NetCDF sorts datas in reverse dimension order. Example:

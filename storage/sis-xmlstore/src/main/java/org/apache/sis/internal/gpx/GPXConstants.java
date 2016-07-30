@@ -35,6 +35,7 @@ import org.apache.sis.internal.feature.AttributeConvention;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.util.Static;
+import org.apache.sis.util.iso.Names;
 
 // Branch-dependent imports
 import org.opengis.feature.FeatureType;
@@ -46,7 +47,7 @@ import org.opengis.feature.PropertyType;
  *
  * @author Johann Sorel (Geomatys)
  * @since   0.7
- * @version 0.7
+ * @version 0.8
  * @module
  */
 public final class GPXConstants extends Static {
@@ -229,13 +230,13 @@ public final class GPXConstants extends Static {
 
     static {
         final NameFactory   factory  = DefaultFactories.forBuildin(NameFactory.class);
-        final LocalName     geomName = AttributeConvention.GEOMETRY_PROPERTY;
+        final LocalName     geomName = Names.createTypeName(null, ":", "geometry");
         final Map<String,?> geomInfo = Collections.singletonMap(AbstractIdentifiedType.NAME_KEY, geomName);
 
         //-------------------- GENERIC GPX ENTITY ------------------------------
         FeatureTypeBuilder builder = new FeatureTypeBuilder(null, factory, null);
         builder.setDefaultScope(GPX_NAMESPACE).setName("GPXEntity").setAbstract(true);
-        builder.addAttribute(Integer.class).setName("index");
+        builder.addAttribute(Integer.class).setName("index").addRole(AttributeRole.IDENTIFIER_COMPONENT);
         TYPE_GPX_ENTITY = builder.build();
 
         //------------------- WAY POINT TYPE -----------------------------------

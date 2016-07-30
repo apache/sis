@@ -95,7 +95,7 @@ public class DefaultConstraints extends ISOMetadata implements Constraints {
     private Collection<Citation> references;
 
     /**
-     * Citation for the limitation of constraint.
+     * Information concerning the parties to whom the resource can or cannot be released.
      */
     private Releasability releasability;
 
@@ -277,7 +277,7 @@ public class DefaultConstraints extends ISOMetadata implements Constraints {
     /**
      * Returns information concerning the parties to whom the resource can or cannot be released.
      *
-     * @return Information concerning the parties to whom the resource, or {@code null} if none.
+     * @return Information concerning the parties to whom the resource can or cannot be released, or {@code null} if none.
      *
      * @since 0.5
      */
@@ -290,7 +290,7 @@ public class DefaultConstraints extends ISOMetadata implements Constraints {
     /**
      * Sets the information concerning the parties to whom the resource.
      *
-     * @param newValue The new information concerning the parties to whom the resource.
+     * @param newValue The new information concerning the parties to whom the resource can or cannot be released.
      *
      * @since 0.5
      */

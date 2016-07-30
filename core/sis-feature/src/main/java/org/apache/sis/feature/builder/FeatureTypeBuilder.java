@@ -41,6 +41,7 @@ import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
 import org.opengis.feature.PropertyType;
 import org.opengis.feature.FeatureAssociationRole;
+import org.opengis.feature.Operation;
 
 
 /**
@@ -525,6 +526,39 @@ public class FeatureTypeBuilder extends TypeBuilder {
     }
 
     /**
+     * Adds the given property in the feature type properties.
+     * The given property shall be an instance of one of the following types:
+     * <ul>
+     *   <li>{@link AttributeType}, in which case this method delegate to {@link #addAttribute(AttributeType)}.</li>
+     *   <li>{@link FeatureAssociationRole}, in which case this method delegate to {@link #addAssociation(FeatureAssociationRole)}.</li>
+     *   <li>{@link Operation}, in which case the given operation object will be added verbatim in the {@code FeatureType};
+     *       this builder does not create new operations.</li>
+     * </ul>
+     *
+     * @param  template  the property to add to the feature type.
+     * @return a builder initialized to the given builder.
+     *         In the {@code Operation} case, the builder is a read-only accessor on the operation properties.
+     *
+     * @see #properties()
+     */
+    public PropertyTypeBuilder addProperty(final PropertyType template) {
+        ensureNonNull("template", template);
+        if (template instanceof AttributeType<?>) {
+            return addAttribute((AttributeType<?>) template);
+        } else if (template instanceof FeatureAssociationRole) {
+            return addAssociation((FeatureAssociationRole) template);
+        } else if (template instanceof Operation) {
+            final PropertyTypeBuilder property = new OperationWrapper(this, (Operation) template);
+            properties.add(property);
+            clearCache();
+            return property;
+        } else {
+            throw new IllegalArgumentException(errors().getString(
+                    Errors.Keys.IllegalArgumentClass_2, "template", template.getClass()));
+        }
+    }
+
+    /**
      * {@inheritDoc}
      */
     @Override
@@ -580,9 +614,10 @@ public class FeatureTypeBuilder extends TypeBuilder {
                 identifierTypes = new PropertyType[identifierCount];
             }
             if (defaultGeometry != null) {
-                envelopeIndex = numSynthetic;
-                geometryIndex = numSynthetic + 1;
-                numSynthetic += 2;
+                envelopeIndex = numSynthetic++;
+                if (!AttributeConvention.GEOMETRY_PROPERTY.equals(defaultGeometry.getName())) {
+                    geometryIndex = numSynthetic++;
+                }
             }
             final PropertyType[] propertyTypes = new PropertyType[numSynthetic + numSpecified];
             int propertyCursor = numSynthetic;
@@ -604,17 +639,11 @@ public class FeatureTypeBuilder extends TypeBuilder {
                  * It may happen that the property created by the user is already named "@geometry",
                  * in which case we will avoid to duplicate the property.
                  */
-                if (builder == defaultGeometry) {
+                if (builder == defaultGeometry && geometryIndex >= 0) {
                     if (propertyTypes[geometryIndex] != null) {
                         // Assuming that there is no bug in our implementation, this error could happen if the user
                         // has modified this FeatureTypeBuilder in another thread during this build() execution.
                         throw new CorruptedObjectException();
-                    }
-                    if (AttributeConvention.GEOMETRY_PROPERTY.equals(instance.getName())) {
-                        System.arraycopy(propertyTypes, geometryIndex, propertyTypes, geometryIndex-1, (numSynthetic - geometryIndex) + i);
-                        geometryIndex = -1;
-                        numSynthetic--;
-                        continue;           // Skip the increment of propertyCursor.
                     }
                     propertyTypes[geometryIndex] = FeatureOperations.link(name(AttributeConvention.GEOMETRY_PROPERTY), instance);
                 }
@@ -641,7 +670,11 @@ public class FeatureTypeBuilder extends TypeBuilder {
                     // has modified this FeatureTypeBuilder in another thread during this build() execution.
                     throw new CorruptedObjectException();
                 }
-                if (identifierCursor == 1 && AttributeConvention.IDENTIFIER_PROPERTY.equals(identifierTypes[0].getName())) {
+                if (AttributeConvention.IDENTIFIER_PROPERTY.equals(identifierTypes[0].getName())) {
+                    if (identifierCursor > 1) {
+                        throw new IllegalStateException(Errors.format(Errors.Keys.PropertyAlreadyExists_2,
+                                getDisplayName(), AttributeConvention.IDENTIFIER_PROPERTY));
+                    }
                     System.arraycopy(propertyTypes, 1, propertyTypes, 0, --propertyCursor);
                 } else {
                     propertyTypes[0] = FeatureOperations.compound(name(AttributeConvention.IDENTIFIER_PROPERTY),
