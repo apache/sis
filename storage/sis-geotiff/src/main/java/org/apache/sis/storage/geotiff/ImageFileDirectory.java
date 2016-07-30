@@ -16,9 +16,11 @@
  */
 package org.apache.sis.storage.geotiff;
 
+import java.util.Locale;
 import java.io.IOException;
 import java.text.ParseException;
 import org.opengis.metadata.citation.DateType;
+import org.apache.sis.internal.storage.MetadataBuilder;
 
 
 /**
@@ -438,5 +440,15 @@ final class ImageFileDirectory {
             }
         }
         return null;
+    }
+
+    /**
+     * Completes the metadata with the information stored in the field of this IFD.
+     * This method is invoked only if the user requested the ISO 19115 metadata.
+     */
+    final void completeMetadata(final MetadataBuilder metadata, final Locale locale) {
+        if (compression != null) {
+            metadata.addCompression(compression.name().toLowerCase(locale));
+        }
     }
 }

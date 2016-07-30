@@ -39,6 +39,8 @@ import org.apache.sis.metadata.iso.citation.DefaultCitationDate;
 import org.apache.sis.metadata.iso.citation.DefaultResponsibility;
 import org.apache.sis.metadata.iso.constraint.DefaultLegalConstraints;
 import org.apache.sis.metadata.iso.identification.DefaultDataIdentification;
+import org.apache.sis.metadata.iso.distribution.DefaultDistribution;
+import org.apache.sis.metadata.iso.distribution.DefaultFormat;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.iso.Types;
@@ -109,6 +111,16 @@ public class MetadataBuilder {
     private DefaultSampleDimension sampleDimension;
 
     /**
+     * The distribution format, or {@code null} if none.
+     */
+    private DefaultFormat format;
+
+    /**
+     * Information about distribution (including the {@linkplain #format}), or {@code null} if none.
+     */
+    private DefaultDistribution distribution;
+
+    /**
      * Creates a new metadata reader.
      */
     public MetadataBuilder() {
@@ -171,6 +183,14 @@ public class MetadataBuilder {
         if (identification != null) {
             metadata().getIdentificationInfo().add(identification);
             identification = null;
+        }
+        if (format != null) {
+            distribution().getDistributionFormats().add(format);
+            format = null;
+        }
+        if (distribution != null) {
+            metadata().getDistributionInfo().add(distribution);
+            distribution = null;
         }
     }
 
@@ -295,6 +315,30 @@ public class MetadataBuilder {
             coverageDescription = new DefaultCoverageDescription();
         }
         return coverageDescription;
+    }
+
+    /**
+     * Creates the distribution format object if it does not already exists, then return it.
+     *
+     * @return the distribution format (never {@code null}).
+     */
+    private DefaultFormat format() {
+        if (format == null) {
+            format = new DefaultFormat();
+        }
+        return format;
+    }
+
+    /**
+     * Creates the distribution information object if it does not already exists, then return it.
+     *
+     * @return the distribution information (never {@code null}).
+     */
+    private DefaultDistribution distribution() {
+        if (distribution == null) {
+            distribution = new DefaultDistribution();
+        }
+        return distribution;
     }
 
     /**
@@ -671,6 +715,19 @@ parse:      for (int i = 0; i < length;) {
             if (current == null || value > current) {
                 sampleDimension.setMaxValue(value);
             }
+        }
+    }
+
+    /**
+     * Adds a compression name.
+     *
+     * @param value  the compression name, or {@code null}.
+     */
+    public final void addCompression(final CharSequence value) {
+        final InternationalString i18n = trim(value);
+        if (i18n != null) {
+            final DefaultFormat format = format();
+            format.setFileDecompressionTechnique(append(format.getFileDecompressionTechnique(), i18n));
         }
     }
 }

@@ -94,7 +94,7 @@ import org.apache.sis.xml.Namespaces;
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
  * @since   0.3
- * @version 0.5
+ * @version 0.8
  * @module
  */
 @XmlType(name = "MD_Metadata_Type", propOrder = {
@@ -1265,7 +1265,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      */
     @Override
     @XmlElement(name = "distributionInfo")
-    public Collection<? extends Distribution> getDistributionInfo() {
+    public Collection<Distribution> getDistributionInfo() {
         return distributionInfo = nonNullCollection(distributionInfo, Distribution.class);
     }
 

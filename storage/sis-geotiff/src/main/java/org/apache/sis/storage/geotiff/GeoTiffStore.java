@@ -16,13 +16,15 @@
  */
 package org.apache.sis.storage.geotiff;
 
+import java.util.Locale;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import org.opengis.metadata.Metadata;
 import org.apache.sis.setup.OptionKey;
 import org.apache.sis.storage.DataStore;
-import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.StorageConnector;
+import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.internal.storage.ChannelDataInput;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
@@ -92,15 +94,17 @@ public class GeoTiffStore extends DataStore {
     @Override
     public synchronized Metadata getMetadata() throws DataStoreException {
         if (metadata == null) try {
-            int index = 0;
-            while (reader.getImageFileDirectory(index) != null) {
-                index++;
+            int n = 0;
+            ImageFileDirectory dir;
+            final Locale locale = getLocale();
+            while ((dir = reader.getImageFileDirectory(n++)) != null) {
+                dir.completeMetadata(reader.metadata, locale);
             }
             metadata = reader.metadata.result();
         } catch (IOException e) {
-            throw new TIFFException(reader.errors().getString(Errors.Keys.CanNotRead_1, reader.input.filename), e);
+            throw new DataStoreException(reader.errors().getString(Errors.Keys.CanNotRead_1, reader.input.filename), e);
         } catch (ArithmeticException e) {
-            throw new TIFFException(reader.canNotDecode(), e);
+            throw new DataStoreContentException(reader.canNotDecode(), e);
         }
         return metadata;
     }

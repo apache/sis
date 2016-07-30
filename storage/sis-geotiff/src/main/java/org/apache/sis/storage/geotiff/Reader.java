@@ -23,9 +23,10 @@ import java.util.Iterator;
 import java.io.IOException;
 import java.nio.ByteOrder;
 import java.text.ParseException;
+import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.internal.storage.ChannelDataInput;
 import org.apache.sis.internal.storage.MetadataBuilder;
-import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.resources.Errors;
 
 
@@ -98,6 +99,12 @@ final class Reader extends GeoTIFF {
     private final LinkedList<DeferredEntry> deferredEntries = new LinkedList<>();
 
     /**
+     * Whether {@link #deferredEntries} needs to be stored. This flag is set to {@code true} when
+     * at least one new deferred entry has been added, and cleared after the sort has been done.
+     */
+    private boolean deferredNeedsSort;
+
+    /**
      * Builder for the metadata.
      */
     final MetadataBuilder metadata;
@@ -156,7 +163,7 @@ final class Reader extends GeoTIFF {
             }
         }
         // Do not invoke errors() yet because GeoTiffStore construction may not be finished.
-        throw new TIFFException(Errors.format(Errors.Keys.UnexpectedFileFormat_2, "TIFF", input.filename));
+        throw new DataStoreContentException(Errors.format(Errors.Keys.UnexpectedFileFormat_2, "TIFF", input.filename));
     }
 
     /**
@@ -180,7 +187,7 @@ final class Reader extends GeoTIFF {
         if (pointer >= 0) {
             return pointer;
         }
-        throw new TIFFException(canNotDecode());
+        throw new DataStoreContentException(canNotDecode());
     }
 
     /**
@@ -197,7 +204,7 @@ final class Reader extends GeoTIFF {
         if (entry >= 0) {
             return entry;
         }
-        throw new TIFFException(canNotDecode());
+        throw new DataStoreContentException(canNotDecode());
     }
 
     /**
@@ -216,6 +223,7 @@ final class Reader extends GeoTIFF {
             if (nextIFD == 0) {
                 return null;
             }
+            resolveDeferredEntries(null, nextIFD);
             input.seek(Math.addExact(origin, nextIFD));
             nextIFD = 0;               // Prevent trying other IFD if we fail to read this one.
             /*
@@ -264,6 +272,7 @@ final class Reader extends GeoTIFF {
                     // Offset from beginning of TIFF file where the values are stored.
                     deferredEntries.add(new DeferredEntry(dir, tag, type, count, readUnsignedInt()));
                     dir.hasDeferredEntries = true;
+                    deferredNeedsSort = true;
                 }
             }
             imageFileDirectories.add(dir);
@@ -278,35 +287,53 @@ final class Reader extends GeoTIFF {
          */
         final ImageFileDirectory dir = imageFileDirectories.get(index);
         if (dir.hasDeferredEntries) {
-            deferredEntries.sort(null);                                         // Sequential order in input stream.
-            final long ignoreBefore = input.getStreamPosition() - origin;       // Avoid seeking back, unless we need to.
-            DeferredEntry stopAfter = null;                                     // Avoid reading more entries than needed.
-            Iterator<DeferredEntry> it = deferredEntries.descendingIterator();
-            while (it.hasNext()) {
-                stopAfter = it.next();
-                if (stopAfter.owner == dir) break;
-            }
-            it = deferredEntries.iterator();
-            while (it.hasNext()) {
-                final DeferredEntry entry = it.next();
-                if (entry.owner == dir || entry.offset >= ignoreBefore) {
-                    input.seek(Math.addExact(origin, entry.offset));
-                    Object error;
-                    try {
-                        error = entry.owner.addEntry(this, entry.tag, entry.type, entry.count);
-                    } catch (ParseException | RuntimeException e) {
-                        error = e;
-                    }
-                    if (error != null) {
-                        warning(entry.tag, error);
-                    }
-                    it.remove();            // Remove only on success, but before we try to read other entries.
-                }
-                if (entry == stopAfter) break;
-            }
+            resolveDeferredEntries(dir, Long.MAX_VALUE);
             dir.hasDeferredEntries = false;
         }
         return dir;
+    }
+
+    /**
+     * Reads some of the entries that has been deferred. If the given {@code dir} argument is non-null,
+     * then this method resolves all entries needed by this IFD no matter where the entry value is located.
+     * For other entries, this method may opportunistically resolve some values but make no guarantees.
+     * Generally, values of IFD other than {@code this} will not be resolved if they are located before
+     * the current stream position or after the {@code ignoreAfter} value.
+     *
+     * @param dir  the IFD for which to resolve deferred entries regardless stream position or {@code ignoreAfter} value.
+     * @param ignoreAfter  offset relative to the beginning of TIFF file at which entries should be ignored.
+     *        This hint does not apply to the IFD specified by the {@code dir} argument.
+     */
+    private void resolveDeferredEntries(final ImageFileDirectory dir, final long ignoreAfter) throws IOException {
+        if (deferredNeedsSort) {
+            deferredEntries.sort(null);                                 // Sequential order in input stream.
+            deferredNeedsSort = false;
+        }
+        final long ignoreBefore = input.getStreamPosition() - origin;   // Avoid seeking back, unless we need to.
+        DeferredEntry stopAfter = null;                                 // Avoid reading more entries than needed.
+        if (dir != null) {
+            for (final Iterator<DeferredEntry> it = deferredEntries.descendingIterator(); it.hasNext();) {
+                stopAfter = it.next();
+                if (stopAfter.owner == dir) break;
+            }
+        }
+        for (final Iterator<DeferredEntry> it = deferredEntries.iterator(); it.hasNext();) {
+            final DeferredEntry entry = it.next();
+            if (entry.owner == dir || (entry.offset >= ignoreBefore && entry.offset <= ignoreAfter)) {
+                input.seek(Math.addExact(origin, entry.offset));
+                Object error;
+                try {
+                    error = entry.owner.addEntry(this, entry.tag, entry.type, entry.count);
+                } catch (ParseException | RuntimeException e) {
+                    error = e;
+                }
+                if (error != null) {
+                    warning(entry.tag, error);
+                }
+                it.remove();            // Remove only on success, but before we try to read other entries.
+            }
+            if (entry == stopAfter) break;
+        }
     }
 
     /**

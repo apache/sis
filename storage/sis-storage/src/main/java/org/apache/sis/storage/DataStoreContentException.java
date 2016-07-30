@@ -14,20 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.storage.geotiff;
-
-import org.apache.sis.storage.DataStoreException;
+package org.apache.sis.storage;
 
 
 /**
- * Thrown when a TIFF file can not be read because of a logical inconsistency.
+ * Thrown when a store can not be read because the stream contains invalid data.
+ * It may be for example a logical inconsistency, or a reference not found,
+ * or an unsupported file format version, <i>etc.</i>
+ *
+ * <div class="note"><b>Note:</b>
+ * exceptions that are caused by {@link java.io.IOException} or {@link java.sql.SQLException}
+ * should generally be wrapped by another type of {@link DataStoreException}, unless the data
+ * store can determine that the error was caused by a problem with the stream content rather
+ * than some I/O problems.</div>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.8
  * @version 0.8
  * @module
  */
-public class TIFFException extends DataStoreException {
+public class DataStoreContentException extends DataStoreException {
     /**
      * For cross-version compatibility.
      */
@@ -38,8 +44,17 @@ public class TIFFException extends DataStoreException {
      *
      * @param message  the detail message.
      */
-    public TIFFException(String message) {
+    public DataStoreContentException(String message) {
         super(message);
+    }
+
+    /**
+     * Creates an exception with the specified cause.
+     *
+     * @param cause  the cause for this exception.
+     */
+    public DataStoreContentException(Throwable cause) {
+        super(cause);
     }
 
     /**
@@ -48,7 +63,7 @@ public class TIFFException extends DataStoreException {
      * @param message  the detail message.
      * @param cause    the cause for this exception.
      */
-    public TIFFException(String message, final Throwable cause) {
+    public DataStoreContentException(String message, Throwable cause) {
         super(message, cause);
     }
 }
