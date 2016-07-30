@@ -51,6 +51,13 @@ public class GeoTiffStore extends DataStore {
     private Reader reader;
 
     /**
+     * The metadata, or {@code null} if not yet created.
+     *
+     * @see #getMetadata()
+     */
+    private Metadata metadata;
+
+    /**
      * Creates a new GeoTIFF store from the given file, URL or stream object.
      * This constructor invokes {@link StorageConnector#closeAllExcept(Object)},
      * keeping open only the needed resource.
@@ -84,7 +91,18 @@ public class GeoTiffStore extends DataStore {
      */
     @Override
     public synchronized Metadata getMetadata() throws DataStoreException {
-        return null;
+        if (metadata == null) try {
+            int index = 0;
+            while (reader.getImageFileDirectory(index) != null) {
+                index++;
+            }
+            metadata = reader.metadata.result();
+        } catch (IOException e) {
+            throw new TIFFException(reader.errors().getString(Errors.Keys.CanNotRead_1, reader.input.filename), e);
+        } catch (ArithmeticException e) {
+            throw new TIFFException(reader.canNotDecode(), e);
+        }
+        return metadata;
     }
 
     /**
