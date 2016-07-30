@@ -36,14 +36,14 @@ import org.junit.BeforeClass;
     org.apache.sis.storage.earthobservation.LandsatReaderTest.class,
     org.apache.sis.storage.earthobservation.ModisReaderTest.class
 })
-public final strictfp class GeotiffTestSuite extends TestSuite {
+public final strictfp class GeoTiffTestSuite extends TestSuite {
     /**
      * Verifies the list of tests before to run the suite.
      * See {@link #verifyTestList(Class, Class[])} for more information.
      */
     @BeforeClass
     public static void verifyTestList() {
-        assertNoMissingTest(GeotiffTestSuite.class);
-        verifyTestList(GeotiffTestSuite.class);
+        assertNoMissingTest(GeoTiffTestSuite.class);
+        verifyTestList(GeoTiffTestSuite.class);
     }
 }
