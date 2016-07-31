@@ -14,9 +14,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.storage.geotiff;
+package org.apache.sis.storage.earthobservation;
 
-import org.apache.sis.storage.earthobservation.LandsatReader;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;

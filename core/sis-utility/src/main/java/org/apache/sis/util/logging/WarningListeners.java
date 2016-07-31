@@ -81,8 +81,8 @@ public class WarningListeners<S> implements Localized {
      * Creates a new instance with initially no listener.
      * Warnings will be logger to the given logger, unless at least one listener is registered.
      *
-     * @param source The declared source of warnings. This is not necessarily the real source,
-     *               but this is the source that the implementor wants to declare as public API.
+     * @param source  the declared source of warnings. This is not necessarily the real source,
+     *                but this is the source that the implementor wants to declare as public API.
      */
     public WarningListeners(final S source) {
         ArgumentChecks.ensureNonNull("source", source);
@@ -104,7 +104,7 @@ public class WarningListeners<S> implements Localized {
      * the package name of the {@code source} object. Subclasses should override this method if they
      * can provide a fixed logger instance (typically a static final constant).
      *
-     * @return The logger where to send the warnings when there is no registered listeners.
+     * @return  the logger where to send the warnings when there is no registered listeners.
      */
     public Logger getLogger() {
         return Logging.getLogger(source.getClass());
@@ -114,7 +114,7 @@ public class WarningListeners<S> implements Localized {
      * Reports a warning represented by the given log record. The default implementation notifies the listeners
      * if any, or logs the message to the logger returned by {@link #getLogger()} otherwise.
      *
-     * @param record The warning as a log record.
+     * @param record  the warning as a log record.
      */
     public void warning(final LogRecord record) {
         final WarningListener<?>[] current;
@@ -151,8 +151,8 @@ public class WarningListeners<S> implements Localized {
      *   <li>register a listener which will log the record itself.</li>
      * </ul>
      *
-     * @param message    The message to log, or {@code null} if none.
-     * @param exception  The exception to log, or {@code null} if none.
+     * @param message    the message to log, or {@code null} if none.
+     * @param exception  the exception to log, or {@code null} if none.
      */
     public void warning(String message, final Exception exception) {
         final LogRecord record;
@@ -186,7 +186,7 @@ public class WarningListeners<S> implements Localized {
      * <p>The current implementation compares the class name against a hard-coded list of classes to hide.
      * This implementation may change in any future SIS version.</p>
      *
-     * @param  e A stack trace element.
+     * @param  e  a stack trace element.
      * @return {@code true} if the class and method specified by the given element can be considered public API.
      */
     private static boolean isPublic(final StackTraceElement e) {
@@ -207,8 +207,8 @@ public class WarningListeners<S> implements Localized {
      *       and the warning is <strong>not</strong> logged by this object.</li>
      * </ul>
      *
-     * @param  listener The listener to add.
-     * @throws IllegalArgumentException If the given listener is already registered.
+     * @param  listener  the listener to add.
+     * @throws IllegalArgumentException if the given listener is already registered.
      */
     public synchronized void addWarningListener(final WarningListener<? super S> listener)
             throws IllegalArgumentException
@@ -233,8 +233,8 @@ public class WarningListeners<S> implements Localized {
     /**
      * Removes a previously registered listener.
      *
-     * @param  listener The listener to remove.
-     * @throws NoSuchElementException If the given listener is not registered.
+     * @param  listener  the listener to remove.
+     * @throws NoSuchElementException if the given listener is not registered.
      */
     public synchronized void removeWarningListener(final WarningListener<? super S> listener)
             throws NoSuchElementException

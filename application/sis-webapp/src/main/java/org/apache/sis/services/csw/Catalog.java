@@ -1,18 +1,18 @@
-/* 
- * Licensed to the Apache Software Foundation (ASF) under one or more 
- * contributor license agreements.  See the NOTICE file distributed with 
- * this work for additional information regarding copyright ownership. 
- * The ASF licenses this file to You under the Apache License, Version 2.0 
- * (the "License"); you may not use this file except in compliance with 
- * the License.  You may obtain a copy of the License at 
- * 
- *     http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, software 
- * distributed under the License is distributed on an "AS IS" BASIS, 
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
- * See the License for the specific language governing permissions and 
- * limitations under the License. 
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package org.apache.sis.services.csw;
 
@@ -27,8 +27,9 @@ import java.util.List;
 import javax.xml.bind.JAXBException;
 import org.opengis.metadata.Metadata;
 import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.storage.geotiff.LandsatReader;
-import org.apache.sis.storage.geotiff.ModisReader;
+import org.apache.sis.storage.earthobservation.LandsatReader;
+import org.apache.sis.storage.earthobservation.ModisReader;
+
 
 /**
  * Collection of ISO 19115 metadata. Current implementation parses the metadata
@@ -80,7 +81,7 @@ public class Catalog {
                     throw new DataStoreException("Can not read " + file, e);
                 }
             } else {
-                continue;   // Ignore (for now) unrecognized format. 
+                continue;   // Ignore (for now) unrecognized format.
             }
             metadata.put(md.getFileIdentifier(), md);
         }

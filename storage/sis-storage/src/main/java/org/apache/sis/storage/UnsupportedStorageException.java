@@ -41,7 +41,7 @@ public class UnsupportedStorageException extends DataStoreException {
     /**
      * Creates an exception with the specified details message.
      *
-     * @param message The detail message.
+     * @param message  the detail message.
      */
     public UnsupportedStorageException(final String message) {
         super(message);
@@ -50,7 +50,7 @@ public class UnsupportedStorageException extends DataStoreException {
     /**
      * Creates an exception with the specified cause and no details message.
      *
-     * @param cause The cause for this exception.
+     * @param cause  the cause for this exception.
      */
     public UnsupportedStorageException(final Throwable cause) {
         super(cause);
@@ -59,8 +59,8 @@ public class UnsupportedStorageException extends DataStoreException {
     /**
      * Creates an exception with the specified details message and cause.
      *
-     * @param message The detail message.
-     * @param cause The cause for this exception.
+     * @param message  the detail message.
+     * @param cause    the cause for this exception.
      */
     public UnsupportedStorageException(final String message, final Throwable cause) {
         super(message, cause);

@@ -31,6 +31,10 @@ import org.junit.Test;
 
 import static org.apache.sis.test.Assert.*;
 
+// Branch-dependent imports
+import org.opengis.feature.Attribute;
+import org.opengis.feature.Property;
+
 
 /**
  * Tests common to {@link DenseFeatureTest} and {@link SparseFeatureTest}.
@@ -38,7 +42,7 @@ import static org.apache.sis.test.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Marc le Bihan
  * @since   0.5
- * @version 0.6
+ * @version 0.8
  * @module
  */
 public abstract strictfp class FeatureTestCase extends TestCase {
@@ -70,29 +74,50 @@ public abstract strictfp class FeatureTestCase extends TestCase {
     abstract AbstractFeature cloneFeature() throws CloneNotSupportedException;
 
     /**
+     * Asserts that {@link AbstractFeature#getProperty(String)} returns the given instance.
+     * This assertion is verified after a call to {@link AbstractFeature#setProperty(Property)}
+     * and should be true for all Apache SIS concrete implementations. But it is not guaranteed
+     * to be true for non-SIS implementations, for example built on top of {@code AbstractFeature}
+     * without overriding {@code setProperty(Property)}.
+     * Consequently, this assertion needs to be relaxed by {@link AbstractFeatureTest}.
+     *
+     * @param name      the property name to check.
+     * @param expected  the expected property instance.
+     * @param modified  {@code true} if {@code expected} has been modified <strong>after</strong> it has been set
+     *                  to the {@link #feature} instance. Not all feature implementations can see such changes.
+     * @return {@code true} if the property is the expected instance, or {@code false} if it is another instance.
+     */
+    boolean assertSameProperty(final String name, final Property expected, final boolean modified) {
+        assertSame(name, expected, feature.getProperty(name));
+        return true;
+    }
+
+    /**
      * Returns the attribute value of the current {@link #feature} for the given name.
      */
     private Object getAttributeValue(final String name) {
         final Object value = feature.getPropertyValue(name);
         if (getValuesFromProperty) {
-            final AbstractAttribute<?> property = (AbstractAttribute<?>) feature.getProperty(name);
-
-            // The AttributeType shall be the same than the one provided by FeatureType for the given name.
+            /*
+             * Verifies consistency with the Attribute instance:
+             *   - The AttributeType shall be the same than the one provided by FeatureType for the given name.
+             *   - Attribute value shall be the same than the one we got at the beginning of this method.
+             *   - Attribute values (as a collection) is either empty or contains the same value.
+             */
+            final Attribute<?> property = (Attribute<?>) feature.getProperty(name);
             assertSame(name, feature.getType().getProperty(name), property.getType());
-
-            // Attribute value shall be the same than the one provided by FeatureType convenience method.
             assertSame(name, value, property.getValue());
-
-            // Collection view shall contains the same value, or be empty.
             final Collection<?> values = property.getValues();
             if (value != null) {
                 assertSame(name, value, TestUtilities.getSingleton(values));
             } else {
                 assertTrue(name, values.isEmpty());
             }
-
-            // Invoking getProperty(name) twice shall return the same Property instance.
-            assertSame(name, property, feature.getProperty(name));
+            /*
+             * Invoking getProperty(name) twice should return the same Property instance at least with
+             * Apache SIS Feature implementations. Other implementations may relax this requirement.
+             */
+            assertSameProperty(name, property, false);
         }
         return value;
     }
@@ -102,9 +127,9 @@ public abstract strictfp class FeatureTestCase extends TestCase {
      * First, this method verifies that the previous value is equals to the given one.
      * Then, this method set the attribute to the given value and check if the result.
      *
-     * @param name     The name of the attribute to set.
-     * @param oldValue The expected old value (may be {@code null}).
-     * @param newValue The new value to set.
+     * @param name      the name of the attribute to set.
+     * @param oldValue  the expected old value (may be {@code null}).
+     * @param newValue  the new value to set.
      */
     private void setAttributeValue(final String name, final Object oldValue, final Object newValue) {
         assertEquals(name, oldValue, getAttributeValue(name));
@@ -125,7 +150,7 @@ public abstract strictfp class FeatureTestCase extends TestCase {
     @Test
     public void testGetProperty() {
         final DefaultFeatureType type = new DefaultFeatureType(
-                Collections.singletonMap(DefaultFeatureType.NAME_KEY, "My shapefile"), false, (DefaultFeatureType[]) null,
+                Collections.singletonMap(DefaultFeatureType.NAME_KEY, "My shapefile"), false, null,
                 DefaultAttributeTypeTest.attribute("COMMUNE"),
                 DefaultAttributeTypeTest.attribute("REF_INSEE"),
                 DefaultAttributeTypeTest.attribute("CODE_POSTAL"));
@@ -146,14 +171,31 @@ public abstract strictfp class FeatureTestCase extends TestCase {
 
     /**
      * Tests the {@link AbstractFeature#getPropertyValue(String)} method on a simple feature without super-types.
-     * This method also tests that attempts to set a value of the wrong type throw an exception and leave the
-     * previous value unchanged, that the feature is cloneable and that serialization works.
+     * This method:
+     *
+     * <ul>
+     *   <li>Verifies setting attribute values.</li>
+     *   <li>Verifies that attempts to set an attribute value of the wrong type throw an exception
+     *       and leave the previous value unchanged.</li>
+     *   <li>Verifies feature clone.</li>
+     *   <li>Verifies serialization.</li>
+     * </ul>
      */
     @Test
     @DependsOnMethod("testGetProperty")
-    public void testSimpleValues() {
+    public final void testSimpleValues() {
         feature = createFeature(DefaultFeatureTypeTest.city());
         setAttributeValue("city", "Utopia", "Atlantide");
+        /*
+         * At this point we have the following "City" feature:
+         *   ┌────────────┬─────────┬─────────────┬───────────┐
+         *   │ Name       │ Type    │ Cardinality │ Value     │
+         *   ├────────────┼─────────┼─────────────┼───────────┤
+         *   │ city       │ String  │ [1 … 1]     │ Atlantide │
+         *   │ population │ Integer │ [1 … 1]     │           │
+         *   └────────────┴─────────┴─────────────┴───────────┘
+         * Verify that attempt to set an illegal value fail.
+         */
         try {
             feature.setPropertyValue("city", 2000);
             fail("Shall not be allowed to set a value of the wrong type.");
@@ -167,9 +209,9 @@ public abstract strictfp class FeatureTestCase extends TestCase {
          * Before we set the population attribute, the feature should be considered invalid.
          * After we set it, the feature should be valid since all mandatory attributes are set.
          */
-        assertQualityReports("population");
+        verifyQualityReports("population");
         setAttributeValue("population", null, 1000);
-        assertQualityReports();
+        verifyQualityReports();
         /*
          * Opportunist tests using the existing instance.
          */
@@ -242,15 +284,15 @@ public abstract strictfp class FeatureTestCase extends TestCase {
          * Before we set the 'isGlobal' attribute, the feature should be considered invalid.
          * After we set it, the feature should be valid since all mandatory attributes are set.
          */
-        assertQualityReports("isGlobal", "temperature");
+        verifyQualityReports("isGlobal", "temperature");
         setAttributeValue("isGlobal", null, Boolean.TRUE);
-        assertQualityReports("temperature");
+        verifyQualityReports("temperature");
         /*
          * Opportunist tests using the existing instance.
          */
         testSerialization();
         try {
-            testClone("population", 8405837, 8405838); // A birth...
+            testClone("population", 8405837, 8405838);          // A birth...
         } catch (CloneNotSupportedException e) {
             throw new AssertionError(e);
         }
@@ -277,33 +319,34 @@ public abstract strictfp class FeatureTestCase extends TestCase {
             assertTrue(message, message.contains("parliament"));
             assertTrue(message, message.contains("City"));
         }
-        assertSame(city, feature.getProperty("city"));
-        /*
-         * The quality report is expected to contains a custom element.
-         */
-        int numOccurrences = 0;
-        final DataQuality quality = assertQualityReports("population");
-        for (final Element report : quality.getReports()) {
-            final String identifier = report.getMeasureIdentification().toString();
-            if (identifier.equals("city")) {
-                numOccurrences++;
-                final Result result = TestUtilities.getSingleton(report.getResults());
-                assertInstanceOf("result", QuantitativeResult.class, result);
-                assertEquals("quality.report.result.errorStatistic",
-                        CustomAttribute.ADDITIONAL_QUALITY_INFO,
-                        String.valueOf(((QuantitativeResult) result).getErrorStatistic()));
+        if (assertSameProperty("city", city, true)) {
+            /*
+             * The quality report is expected to contains a custom element.
+             */
+            int numOccurrences = 0;
+            final DataQuality quality = verifyQualityReports("population");
+            for (final Element report : quality.getReports()) {
+                final String identifier = report.getMeasureIdentification().toString();
+                if (identifier.equals("city")) {
+                    numOccurrences++;
+                    final Result result = TestUtilities.getSingleton(report.getResults());
+                    assertInstanceOf("result", QuantitativeResult.class, result);
+                    assertEquals("quality.report.result.errorStatistic",
+                            CustomAttribute.ADDITIONAL_QUALITY_INFO,
+                            String.valueOf(((QuantitativeResult) result).getErrorStatistic()));
+                }
             }
+            assertEquals("Number of reports.", 1, numOccurrences);
         }
-        assertEquals("Number of reports.", 1, numOccurrences);
     }
 
     /**
      * Asserts that {@link AbstractFeature#quality()} reports no anomaly, or only anomalies for the given properties.
      *
-     * @param  anomalousProperties The property for which we expect a report.
-     * @return The data quality report.
+     * @param  anomalousProperties  the property for which we expect a report.
+     * @return the data quality report.
      */
-    private DataQuality assertQualityReports(final String... anomalousProperties) {
+    private DataQuality verifyQualityReports(final String... anomalousProperties) {
         int anomalyIndex  = 0;
         final DataQuality quality = feature.quality();
         for (final Element report : quality.getReports()) {
@@ -327,9 +370,9 @@ public abstract strictfp class FeatureTestCase extends TestCase {
      * Tests the {@link AbstractFeature#clone()} method on the current {@link #feature} instance.
      * This method is invoked from other test methods using the existing feature instance in an opportunist way.
      *
-     * @param  property The name of a property to change.
-     * @param  oldValue The old value of the given property.
-     * @param  newValue The new value of the given property.
+     * @param  property  the name of a property to change.
+     * @param  oldValue  the old value of the given property.
+     * @param  newValue  the new value of the given property.
      * @throws CloneNotSupportedException Should never happen.
      */
     private void testClone(final String property, final Object oldValue, final Object newValue)

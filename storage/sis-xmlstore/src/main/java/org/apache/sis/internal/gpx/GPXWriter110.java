@@ -29,7 +29,7 @@ import static org.apache.sis.internal.gpx.GPXConstants.*;
  *
  * @author Johann Sorel (Geomatys)
  * @since   0.7
- * @version 0.7
+ * @version 0.8
  * @module
  */
 public class GPXWriter110 extends GPXWriter100{
@@ -60,21 +60,21 @@ public class GPXWriter110 extends GPXWriter100{
     @Override
     public void write(final MetaData metadata) throws XMLStreamException {
         writer.writeStartElement(namespace, TAG_METADATA);
-        writeSimpleTag(namespace, TAG_NAME, metadata.getName());
-        writeSimpleTag(namespace, TAG_DESC, metadata.getDescription());
-        writePerson(metadata.getPerson());
-        writeCopyRight(metadata.getCopyRight());
-        for (URI uri : metadata.getLinks()) {
+        writeSimpleTag(namespace, TAG_NAME, metadata.name);
+        writeSimpleTag(namespace, TAG_DESC, metadata.description);
+        writePerson(metadata.person);
+        writeCopyRight(metadata.copyRight);
+        for (URI uri : metadata.links) {
             writeLink(uri);
         }
 
-        final Temporal d = metadata.getTime();
+        final Temporal d = metadata.time;
         if (d != null) {
             writeSimpleTag(namespace, TAG_METADATA_TIME, toString(d));
         }
 
-        writeSimpleTag(namespace, TAG_METADATA_KEYWORDS, metadata.getKeywords());
-        writeBounds(metadata.getBounds());
+        writeSimpleTag(namespace, TAG_METADATA_KEYWORDS, metadata.keywords);
+        writeBounds(metadata.bounds);
 
         writer.writeEndElement();
         writer.flush();
@@ -91,8 +91,8 @@ public class GPXWriter110 extends GPXWriter100{
 
         writer.writeStartElement(namespace, TAG_AUTHOR);
         writeSimpleTag(namespace, TAG_NAME, person.getName());
-        writeSimpleTag(namespace, TAG_AUTHOR_EMAIL, person.getEmail());
-        writeLink(person.getLink());
+        writeSimpleTag(namespace, TAG_AUTHOR_EMAIL, person.email);
+        writeLink(person.link);
         writer.writeEndElement();
     }
 
@@ -136,12 +136,12 @@ public class GPXWriter110 extends GPXWriter100{
         if (copyRight == null) return;
 
         writer.writeStartElement(namespace, TAG_COPYRIGHT);
-        final String author = copyRight.getAuthor();
+        final String author = copyRight.author;
         if (author != null) {
             writer.writeAttribute(ATT_COPYRIGHT_AUTHOR, author);
         }
-        writeSimpleTag(namespace, TAG_COPYRIGHT_YEAR, copyRight.getYear());
-        writeSimpleTag(namespace, TAG_COPYRIGHT_LICENSE, copyRight.getLicense());
+        writeSimpleTag(namespace, TAG_COPYRIGHT_YEAR, copyRight.year);
+        writeSimpleTag(namespace, TAG_COPYRIGHT_LICENSE, copyRight.license);
         writer.writeEndElement();
     }
 

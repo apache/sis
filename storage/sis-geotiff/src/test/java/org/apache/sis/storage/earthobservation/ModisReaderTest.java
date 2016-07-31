@@ -13,9 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.storage.geotiff;
+package org.apache.sis.storage.earthobservation;
 
-import org.apache.sis.storage.earthobservation.ModisReader;
 import java.io.File;
 import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.test.TestCase;
@@ -47,7 +46,7 @@ public class ModisReaderTest extends TestCase {
         final Metadata actual;
         File in = new File(ModisReader.class.getResource("Modis.xml").toURI());
          actual = new ModisReader(in).read();
-        
+
         final String text = formatNameAndValue(DefaultMetadata.castOrCopy(actual).asTreeTable());
         assertMultilinesEquals(
                 "Metadata\n"

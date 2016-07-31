@@ -22,6 +22,7 @@ import java.io.IOException;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.util.Debug;
 
 
@@ -33,7 +34,7 @@ import org.apache.sis.util.Debug;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.7
- * @version 0.7
+ * @version 0.8
  * @module
  */
 public final class HyperRectangleReader {
@@ -66,7 +67,7 @@ public final class HyperRectangleReader {
             case Numbers.LONG:      reader = input.new LongsReader  ((long[])   null); break;
             case Numbers.FLOAT:     reader = input.new FloatsReader ((float[])  null); break;
             case Numbers.DOUBLE:    reader = input.new DoublesReader((double[]) null); break;
-            default: throw new DataStoreException(Errors.format(Errors.Keys.UnknownType_1, dataType));
+            default: throw new DataStoreContentException(Errors.format(Errors.Keys.UnknownType_1, dataType));
         }
         this.origin = origin;
         final ByteBuffer buffer = input.buffer;

@@ -51,10 +51,23 @@ Bridge between GeoTIFF convention and ISO 19115 metadata.
        =========================================================== -->
   <developers>
     <developer>
-      <name>Thi Phuong Hao NGUYEN</name>
+      <name>Thi Phuong Hao Nguyen</name>
       <id>haonguyen</id>
       <email>nguyenthiphuonghao243@gmail.com</email>
+      <organization>VNSC</organization>
+      <organizationUrl>http://vnsc.org.vn</organizationUrl>
       <timezone>+7</timezone>
+      <roles>
+        <role>developer</role>
+      </roles>
+    </developer>
+    <developer>
+      <name>Martin Desruisseaux</name>
+      <id>desruisseaux</id>
+      <email>desruisseaux@apache.org</email>
+      <organization>Geomatys</organization>
+      <organizationUrl>http://www.geomatys.com</organizationUrl>
+      <timezone>+1</timezone>
       <roles>
         <role>developer</role>
       </roles>
@@ -62,8 +75,8 @@ Bridge between GeoTIFF convention and ISO 19115 metadata.
   </developers>
   <contributors>
     <contributor>
-      <name>Martin Desruisseaux</name>
-      <email>desruisseaux@apache.org</email>
+      <name>Rémi Maréchal</name>
+      <email>remi.marechal@geomatys.com</email>
       <organization>Geomatys</organization>
       <organizationUrl>http://www.geomatys.com</organizationUrl>
       <timezone>+1</timezone>
@@ -72,18 +85,10 @@ Bridge between GeoTIFF convention and ISO 19115 metadata.
       </roles>
     </contributor>
     <contributor>
-      <name>Rémi Maréchal</name>
-      <email>remi.marechal@geomatys.com</email>
-      <organization>Geomatys</organization>
-      <organizationUrl>http://www.geomatys.com/</organizationUrl>
-      <timezone>+1</timezone>
-      <roles>
-        <role>developer</role>
-      </roles>
-    </contributor>
-    <contributor>
-      <name>Minh Chinh VU</name>
+      <name>Minh Chinh Vu</name>
       <email>chinhvm.uet.1995@gmail.com</email>
+      <organization>VNSC</organization>
+      <organizationUrl>http://vnsc.org.vn</organizationUrl>
       <timezone>+7</timezone>
       <roles>
         <role>developer</role>

@@ -45,7 +45,7 @@ import org.opengis.feature.Property;
  *
  * @author Johann Sorel (Geomatys)
  * @since   0.7
- * @version 0.7
+ * @version 0.8
  * @module
  */
 public class GPXWriter100 extends StaxStreamWriter {
@@ -204,25 +204,23 @@ public class GPXWriter100 extends StaxStreamWriter {
      * @throws XMLStreamException if underlying xml stax writer encounter an error
      */
     public void write(final MetaData metadata) throws XMLStreamException {
-        writeSimpleTag(namespace, TAG_NAME, metadata.getName());
-        writeSimpleTag(namespace, TAG_DESC, metadata.getDescription());
+        writeSimpleTag(namespace, TAG_NAME, metadata.name);
+        writeSimpleTag(namespace, TAG_DESC, metadata.description);
 
-        final Person person = metadata.getPerson();
-        if (person != null) {
-            writeSimpleTag(namespace, TAG_AUTHOR, person.getName());
-            writeSimpleTag(namespace, TAG_AUTHOR_EMAIL, person.getEmail());
+        if (metadata.person != null) {
+            writeSimpleTag(namespace, TAG_AUTHOR, metadata.person.name);
+            writeSimpleTag(namespace, TAG_AUTHOR_EMAIL, metadata.person.email);
         }
 
         //model is based on 1.1 so not all attributs can be written
-        writeLinkURIs(metadata.getLinks());
+        writeLinkURIs(metadata.links);
 
-        final Temporal d = metadata.getTime();
-        if (d != null) {
-            writeSimpleTag(namespace, TAG_METADATA_TIME, toString(d));
+        if (metadata.time != null) {
+            writeSimpleTag(namespace, TAG_METADATA_TIME, toString(metadata.time));
         }
 
-        writeSimpleTag(namespace, TAG_METADATA_KEYWORDS, metadata.getKeywords());
-        writeBounds(metadata.getBounds());
+        writeSimpleTag(namespace, TAG_METADATA_KEYWORDS, metadata.keywords);
+        writeBounds(metadata.bounds);
         writer.flush();
     }
 

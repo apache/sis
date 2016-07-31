@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.test.suite;
+package org.apache.sis.internal.gpx;
 
 import org.apache.sis.test.TestSuite;
 import org.junit.runners.Suite;
@@ -22,25 +22,20 @@ import org.junit.BeforeClass;
 
 
 /**
- * All tests from the {@code sis-geotiff} module, in approximative dependency order.
- *
- * @author  Thi Phuong Hao Nguyen (VNSC)
- * @since   0.8
- * @version 0.8
- * @module
+ * All tests from the {@code sis-xmlstore} module, in approximative dependency order.
  */
 @Suite.SuiteClasses({
-    org.apache.sis.storage.geotiff.LandsatReaderTest.class,
-    org.apache.sis.storage.geotiff.ModisReaderTest.class
+    org.apache.sis.internal.gpx.GPXReaderTest.class,
+    org.apache.sis.internal.gpx.GPXWriterTest.class
 })
-public final strictfp class GeotiffTestSuite extends TestSuite {
+public final strictfp class GPXTestSuite extends TestSuite {
     /**
      * Verifies the list of tests before to run the suite.
      * See {@link #verifyTestList(Class, Class[])} for more information.
      */
     @BeforeClass
     public static void verifyTestList() {
-        assertNoMissingTest(GeotiffTestSuite.class);
-        verifyTestList(GeotiffTestSuite.class);
+        assertNoMissingTest(GPXTestSuite.class);
+        verifyTestList(GPXTestSuite.class);
     }
 }
