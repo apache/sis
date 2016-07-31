@@ -36,6 +36,9 @@ public class AnyText {
     
     String constraint;
     String text;
+    String identifier;
+    String format;
+    String constraintLanguage;
     /**
      * A bouding box for identifying a geographic area of interest use to
      * search.
@@ -102,18 +105,30 @@ public class AnyText {
      * @throws Exception Constructs a new exception with the specified detail
      * message.
      */
-    public AnyText(String path,String version, String service, String constraint, String startDate, String rangeDate) throws Exception {
+    public AnyText(String path, String version, String service, String constraintLanguage, String constraint) throws Exception {
         bbox.setLowerCorner(-180 + " " + -180);
         bbox.setUpperCorner(180 + " " + 180);
 
         Record a = new Record(path,version,service);
         data.addAll(a.getAllRecord());
+        this.constraintLanguage = constraintLanguage;
         this.constraint = constraint;
         this.text = convertConstraint(constraint);
+    }
+    
+    public AnyText(String path,String version, String service,String constraintLanguage, String format, String identifier, String startDate, String rangeDate) throws Exception {
+        bbox.setLowerCorner(-180 + " " + -180);
+        bbox.setUpperCorner(180 + " " + 180);
+
+        Record a = new Record(path,version,service);
+        data.addAll(a.getAllRecord());
+        this.constraintLanguage = constraintLanguage;
+        this.identifier = identifier;
+        this.format = format;
         this.startDate = startDate;
         this.rangeDate = rangeDate;
     }
-
+    
     public String convertConstraint(String cons) {
         String result = "";
         boolean check = false;
@@ -183,7 +198,23 @@ public class AnyText {
      * @return true itFormat have value in format 
      */
     
-     public boolean checkConstraint(SummaryRecord rec) {
+    public boolean checkFormat(String itFormat) {
+        if(format.contains(",")){
+            String[] result = format.split(",");
+            for(int i = 0; i < result.length; i++) {
+                if(itFormat.contains(result[i])) {
+                    return true;
+                }
+            }
+        } else {
+             if(itFormat.contains(format)) {
+                 return true;
+            }
+        }
+        return false;
+    }
+    
+    public boolean checkConstraint(SummaryRecord rec) {
         if(text.startsWith("%") && text.endsWith("%")) {
             String temp = text.replaceAll("%", "");
             if(rec.getFormat().contains(temp)) return true;
@@ -245,42 +276,57 @@ public class AnyText {
      * outside the method or constructor boundary.
      */
     public void filter() throws Exception {
-
+        
         for (Iterator<SummaryRecord> it = data.iterator(); it.hasNext();) {
             SummaryRecord itSum = it.next();
             
-            checkConstraint(itSum);
             /**
              * Remove Out of range Date.
              */
-            if (!this.checkDate(startDate, rangeDate, itSum)) {
-                it.remove();
-                continue;
+            if(constraintLanguage.equals("CQL_TEXT")) {
+                if (!checkConstraint(itSum)) {
+    //                System.out.println("format");
+                    it.remove();
+                    continue;
+                }
             }
+            
+            if(constraintLanguage.toUpperCase().equals("FILTER")){
+                if(this.startDate != "" && this.rangeDate != ""){
+                    if (!this.checkDate(startDate, rangeDate, itSum)) {
+                        it.remove();
+                        continue;
+                    }
+                }
 
             /**
              * Check by constraint.
              */
-            if (!checkConstraint(itSum)) {
-//                System.out.println("format");
-                it.remove();
-                continue;
+                if (!itSum.getIdentifier().contains(identifier)) {
+                    it.remove();
+                    continue;
+                }
+
+                if (!checkFormat(itSum.getFormat())) {
+                    it.remove();
+                    continue;
+                }
+                /**
+                 * Remove picture out of BBOX range.
+                 */
+                if (!checkBBOX(itSum.getBoundingBox())) {
+                    it.remove();
+                    continue;
+                }
             }
             
-            /**
-             * Remove picture out of BBOX range.
-             */
-            if (!checkBBOX(itSum.getBoundingBox())) {
-                it.remove();
-                continue;
-            }
         }
     }
     
     public static void main(String[] args) throws Exception {
-        AnyText t = new AnyText(path.getValue("Path"), "2.0./2", "GetRecords", "csw:AnyText Like '%2405020%'","2000-07-10","2016-07-28");
+        AnyText t = new AnyText(path.getValue("Path"), "2.0.2", "GetRecords", "filter", "GEO" , "", "", "");
         t.filter();
-         for(int i = 0; i < t.getData().size(); i++) {
+        for(int i = 0; i < t.getData().size(); i++) {
             System.out.println(t.getData().get(i).getIdentifier());
         }
         

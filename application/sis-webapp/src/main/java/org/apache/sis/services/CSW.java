@@ -86,7 +86,7 @@ public class CSW {
             @QueryParam("service") String service,
             @QueryParam("version") String Version,
             @QueryParam("request") String request,
-            @QueryParam("sãaxRecordstartPosition") int start,
+            @QueryParam("startPosition") int start,
             @QueryParam("maxRecords") int size) throws ParseException, Exception {
          if (request.equals("GetRecords") && start >= 0 && size > 0){
         Record record = new Record(path.getValue("Path"),Version,service);
@@ -118,7 +118,9 @@ public class CSW {
             @QueryParam("service") String service,
             @QueryParam("version") String Version,
             @QueryParam("request") String request,
-            @QueryParam("constraint") String constraint,
+            @QueryParam("constraintLanguage") String constraintLanguage,
+            @QueryParam("format") String format,
+            @QueryParam("identifier") String identifier,
             @QueryParam("west") double west,
             @QueryParam("east") double east,
             @QueryParam("south") double south,
@@ -126,10 +128,9 @@ public class CSW {
             @QueryParam("startDate") String date1,
             @QueryParam("rangeDate") String date2) throws Exception {
         
-        if (request.equals("GetRecords")) {
+        if (request.equals("GetRecords") && constraintLanguage.toLowerCase().equals("filter")) {
             
-            AnyText record = new AnyText(path.getValue("Path"), Version, service, constraint, date1, date2);
-            System.out.println(constraint);
+            AnyText record = new AnyText(path.getValue("Path"), Version, service, constraintLanguage, format, identifier, date1, date2);
             record.setBbox(west, east, south, north);
             record.filter();
              GetRecordsReponse a = new GetRecordsReponse();
