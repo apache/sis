@@ -61,12 +61,22 @@ public abstract class TypeBuilder implements Localized {
      * The feature name, definition, designation and description.
      * The name is mandatory; all other information are optional.
      */
-    private final Map<String,Object> identification = new HashMap<>(4);
+    private final Map<String,Object> identification;
+
+    /**
+     * Creates a new builder initialized to the values of the given builder.
+     *
+     * @param builder  the builder from which to copy information.
+     */
+    TypeBuilder(final TypeBuilder builder) {
+        identification = new HashMap<>(builder.identification);
+    }
 
     /**
      * Creates a new builder initialized to the values of an existing type.
      */
     TypeBuilder(final IdentifiedType template, final Locale locale) {
+        identification = new HashMap<>(4);
         putIfNonNull(Errors.LOCALE_KEY, locale);
         if (template != null) {
             putIfNonNull(AbstractIdentifiedType.NAME_KEY,        template.getName());
@@ -137,6 +147,7 @@ public abstract class TypeBuilder implements Localized {
      * @return the name of the {@code IdentifiedType} to create (may be a default name or {@code null}).
      *
      * @see AbstractIdentifiedType#getName()
+     * @see #setName(GenericName)
      */
     public GenericName getName() {
         return (GenericName) identification().get(AbstractIdentifiedType.NAME_KEY);
@@ -170,6 +181,7 @@ public abstract class TypeBuilder implements Localized {
      * @return {@code this} for allowing method calls chaining.
      *
      * @see #getName()
+     * @see #setName(String)
      * @see AbstractIdentifiedType#NAME_KEY
      */
     public TypeBuilder setName(final GenericName name) {
@@ -193,6 +205,7 @@ public abstract class TypeBuilder implements Localized {
      * @return {@code this} for allowing method calls chaining.
      *
      * @see #getName()
+     * @see #setName(String, String)
      */
     public TypeBuilder setName(final String localPart) {
         ensureNonEmpty("localPart", localPart);
@@ -214,6 +227,7 @@ public abstract class TypeBuilder implements Localized {
      * @return {@code this} for allowing method calls chaining.
      *
      * @see #getName()
+     * @see #setName(String)
      */
     public TypeBuilder setName(String scope, final String localPart) {
         ensureNonEmpty("localPart", localPart);
@@ -337,6 +351,17 @@ public abstract class TypeBuilder implements Localized {
     final void ensureNonNull(final String name, final Object value) {
         if (value == null) {
             throw new NullArgumentException(errors().getString(Errors.Keys.NullArgument_1, name));
+        }
+    }
+
+    /**
+     * Ensures that this instance is still alive.
+     *
+     * @param owner  the owner of this instance. A value of null means that this instance should not be used any more.
+     */
+    final void ensureAlive(final TypeBuilder owner) {
+        if (owner == null) {
+            throw new IllegalStateException(errors().getString(Errors.Keys.DisposedInstanceOf_1, getClass()));
         }
     }
 

@@ -425,6 +425,20 @@ public class FeatureTypeBuilder extends TypeBuilder {
     }
 
     /**
+     * Replaces the given attribute by a new one. Exactly one instance of the old attribute
+     * shall exist (this is not verified).
+     *
+     * @see AttributeTypeBuilder#setValueClass(Class)
+     */
+    final void replace(final AttributeTypeBuilder<?> old, final AttributeTypeBuilder<?> n) {
+        /*
+         * We do not verify if lastIndexOf(old) >= 0 because
+         * an element not found would be a bug in our algorithm.
+         */
+        properties.set(properties.lastIndexOf(old), n);
+    }
+
+    /**
      * Creates a new {@code AttributeType} builder for values of the given class.
      * The default attribute name is the name of the given type, but callers should invoke one
      * of the {@code AttributeTypeBuilder.setName(…)} methods on the returned instance with a better name.

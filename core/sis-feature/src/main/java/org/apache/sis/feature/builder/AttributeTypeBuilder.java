@@ -17,8 +17,11 @@
 package org.apache.sis.feature.builder;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.lang.reflect.Array;
 import org.opengis.util.GenericName;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.feature.DefaultAttributeType;
@@ -28,6 +31,8 @@ import org.apache.sis.internal.feature.AttributeConvention;
 import org.apache.sis.internal.feature.Geometries;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.Classes;
+import org.apache.sis.util.ObjectConverters;
+import org.apache.sis.util.UnconvertibleObjectException;
 
 // Branch-dependent imports
 import java.util.Objects;
@@ -40,20 +45,26 @@ import org.opengis.feature.PropertyType;
  * A different instance of {@code AttributeTypeBuilder} exists for each feature attribute to describe.
  * Those instances are created by {@link FeatureTypeBuilder#addAttribute(Class)}.
  *
- * @param <V> the class of property values.
+ * @param <V> the class of attribute values.
+ *
+ * @author  Johann Sorel (Geomatys)
+ * @author  Martin Desruisseaux (Geomatys)
+ * @since   0.8
+ * @version 0.8
+ * @module
  *
  * @see org.apache.sis.feature.DefaultAttributeType
  * @see FeatureTypeBuilder#addAttribute(Class)
  */
 public final class AttributeTypeBuilder<V> extends PropertyTypeBuilder {
     /**
-     * The class of property values. Can not be changed after construction
+     * The class of attribute values. Can not be changed after construction
      * because this value determines the parameterized type {@code <V>}.
      */
     private final Class<V> valueClass;
 
     /**
-     * The default value for the property, or {@code null} if none.
+     * The default value for the attribute, or {@code null} if none.
      */
     private V defaultValue;
 
@@ -70,23 +81,40 @@ public final class AttributeTypeBuilder<V> extends PropertyTypeBuilder {
     /**
      * Builders for the characteristics associated to the attribute.
      */
-    private final List<CharacteristicTypeBuilder<?>> characteristics = new ArrayList<>();
+    private final List<CharacteristicTypeBuilder<?>> characteristics;
+
+    /**
+     * Creates a new builder initialized to the values of the given builder.
+     * This constructor is for {@link #setValueClass(Class)} implementation only.
+     *
+     * @throws UnconvertibleObjectException if the default value can not be converted to the given class.
+     */
+    private AttributeTypeBuilder(final AttributeTypeBuilder<?> builder, final Class<V> valueClass)
+            throws UnconvertibleObjectException
+    {
+        super(builder);
+        this.valueClass = valueClass;
+        defaultValue = ObjectConverters.convert(builder.defaultValue, valueClass);
+        isIdentifier = builder.isIdentifier;
+        characteristics = builder.characteristics;
+    }
 
     /**
      * Creates a new {@code AttributeType} builder for values of the given class.
      *
-     * @param owner      the builder of the {@code FeatureType} for which to add this property.
-     * @param valueClass the class of property values.
+     * @param owner      the builder of the {@code FeatureType} for which to add the attribute.
+     * @param valueClass the class of attribute values.
      */
     AttributeTypeBuilder(final FeatureTypeBuilder owner, final Class<V> valueClass) {
         super(owner, null);
         this.valueClass = valueClass;
+        characteristics = new ArrayList<>();
     }
 
     /**
      * Creates a new {@code AttributeType} builder initialized to the values of an existing attribute.
      *
-     * @param owner  the builder of the {@code FeatureType} for which to add this property.
+     * @param owner  the builder of the {@code FeatureType} for which to add the attribute.
      */
     AttributeTypeBuilder(final FeatureTypeBuilder owner, final AttributeType<V> template) {
         super(owner, template);
@@ -94,14 +122,16 @@ public final class AttributeTypeBuilder<V> extends PropertyTypeBuilder {
         maximumOccurs = template.getMaximumOccurs();
         valueClass    = template.getValueClass();
         defaultValue  = template.getDefaultValue();
-        for (final AttributeType<?> c : template.characteristics().values()) {
+        final Map<String, AttributeType<?>> tc = template.characteristics();
+        characteristics = new ArrayList<>(tc.size());
+        for (final AttributeType<?> c : tc.values()) {
             characteristics.add(new CharacteristicTypeBuilder<>(this, c));
         }
     }
 
     /**
      * Returns a default name to use if the user did not specified a name. The first letter will be changed to
-     * lower case (unless the name looks like an acronym) for compliance with Java convention on property names.
+     * lower case (unless the name looks like an acronym) for compliance with Java convention on attribute names.
      */
     @Override
     final String getDefaultName() {
@@ -151,10 +181,62 @@ public final class AttributeTypeBuilder<V> extends PropertyTypeBuilder {
     }
 
     /**
-     * Sets the default value for the property.
+     * Returns the class of attribute values.
      *
-     * @param  value  default property value, or {@code null} if none.
+     * @return the class of attribute values.
+     *
+     * @see #setValueClass(Class)
+     */
+    public Class<V> getValueClass() {
+        return valueClass;
+    }
+
+    /**
+     * Sets the class of attribute values. Callers <strong>must</strong> use the builder returned by this method
+     * instead of {@code this} builder after this method call, since the returned builder may be a new instance.
+     *
+     * @param  <N>   the compile-time value of the {@code type} argument.
+     * @param  type  the new class of attribute values.
+     * @return the attribute builder — <em>not necessarily this instance.</em>
+     * @throws UnconvertibleObjectException if the {@linkplain #getDefaultValue() default value}
+     *         can not be converted to the given {@code <N>} class.
+     *
+     * @see #getValueClass()
+     */
+    @SuppressWarnings("unchecked")
+    public <N> AttributeTypeBuilder<N> setValueClass(final Class<N> type) throws UnconvertibleObjectException {
+        final FeatureTypeBuilder owner = owner();
+        ensureNonNull("type", type);
+        if (type == valueClass) {
+            return (AttributeTypeBuilder<N>) this;
+        }
+        final AttributeTypeBuilder<N> n = new AttributeTypeBuilder<>(this, type);
+        for (final CharacteristicTypeBuilder<?> c : n.characteristics) {
+            c.owner = n;
+        }
+        owner.replace(this, n);
+        dispose();
+        return n;
+    }
+
+    /**
+     * Returns the default value for the attribute, or {@code null} if none.
+     *
+     * @return the default attribute value, or {@code null} if none.
+     *
+     * @see #setDefaultValue(Object)
+     */
+    public V getDefaultValue() {
+        return defaultValue;
+    }
+
+    /**
+     * Sets the default value for the attribute.
+     *
+     * @param  value  default attribute value, or {@code null} if none.
      * @return {@code this} for allowing method calls chaining.
+     *
+     * @see #getDefaultValue()
      */
     public AttributeTypeBuilder<V> setDefaultValue(final V value) {
         if (!Objects.equals(defaultValue, value)) {
@@ -165,14 +247,30 @@ public final class AttributeTypeBuilder<V> extends PropertyTypeBuilder {
     }
 
     /**
-     * Sets an enumeration of valid values for this attribute.
+     * Returns an enumeration of valid values for the attribute, or an empty array if none.
+     *
+     * @return valid values for the attribute, or an empty array if none.
+     */
+    @SuppressWarnings("unchecked")
+    public V[] getValidValues() {
+        final Collection<?> c = CollectionsExt.nonNull((Collection<?>)
+                getCharacteristic(AttributeConvention.VALID_VALUES_CHARACTERISTIC));
+        final V[] values = (V[]) Array.newInstance(valueClass, c.size());
+        int index = 0;
+        for (final Object value : c) {
+            values[index++] = (V) value;        // ArrayStoreException if 'value' is not the expected type.
+        }
+        return values;
+    }
+
+    /**
+     * Sets an enumeration of valid values for the attribute.
      *
      * <p>This is a convenience method for {@link #addCharacteristic(Class)} with a value
      * of type {@link Set} and a conventional name.</p>
      *
      * @param  values valid values.
      * @return {@code this} for allowing method calls chaining.
-     * @throws UnsupportedOperationException if this property does not support characteristics.
      *
      * @see #characteristics()
      * @see AttributeConvention#VALID_VALUES_CHARACTERISTIC
@@ -193,7 +291,6 @@ public final class AttributeTypeBuilder<V> extends PropertyTypeBuilder {
      *
      * @param  length  maximal length of {@link CharSequence} attribute values, or {@code null}.
      * @return {@code this} for allowing method calls chaining.
-     * @throws UnsupportedOperationException if this property does not support length characteristics.
      *
      * @see #characteristics()
      * @see AttributeConvention#MAXIMAL_LENGTH_CHARACTERISTIC
@@ -212,13 +309,24 @@ public final class AttributeTypeBuilder<V> extends PropertyTypeBuilder {
      *
      * @param  crs  coordinate reference system associated to attribute values, or {@code null}.
      * @return {@code this} for allowing method calls chaining.
-     * @throws UnsupportedOperationException if this property does not support CRS characteristics.
      *
      * @see #characteristics()
      * @see AttributeConvention#CRS_CHARACTERISTIC
      */
     public AttributeTypeBuilder<V> setCRS(final CoordinateReferenceSystem crs) {
         return setCharacteristic(AttributeConvention.CRS_CHARACTERISTIC, CoordinateReferenceSystem.class, crs);
+    }
+
+    /**
+     * Implementation of all getter methods for characteristics.
+     */
+    private Object getCharacteristic(final GenericName name) {
+        for (final CharacteristicTypeBuilder<?> characteristic : characteristics) {
+            if (name.equals(characteristic.getName())) {
+                return characteristic.getDefaultValue();
+            }
+        }
+        return null;
     }
 
     /**
@@ -285,6 +393,7 @@ public final class AttributeTypeBuilder<V> extends PropertyTypeBuilder {
      * @param role the role to add to this attribute (shall not be null).
      */
     public void addRole(final AttributeRole role) {
+        final FeatureTypeBuilder owner = owner();
         ensureNonNull("role", role);
         switch (role) {
             case IDENTIFIER_COMPONENT: {
@@ -338,6 +447,20 @@ public final class AttributeTypeBuilder<V> extends PropertyTypeBuilder {
     }
 
     /**
+     * Replaces the given characteristic by a new one. Exactly one instance of the old characteristic
+     * shall exist (this is not verified).
+     *
+     * @see CharacteristicTypeBuilder#setValueClass(Class)
+     */
+    final void replace(final CharacteristicTypeBuilder<?> old, final CharacteristicTypeBuilder<?> n) {
+        /*
+         * We do not verify if lastIndexOf(old) >= 0 because
+         * an element not found would be a bug in our algorithm.
+         */
+        characteristics.set(characteristics.lastIndexOf(old), n);
+    }
+
+    /**
      * {@inheritDoc}
      */
     @Override
@@ -373,7 +496,7 @@ public final class AttributeTypeBuilder<V> extends PropertyTypeBuilder {
     }
 
     /**
-     * Creates a new property type from the current setting.
+     * Creates a new attribute type from the current setting.
      */
     @Override
     final PropertyType create() {
