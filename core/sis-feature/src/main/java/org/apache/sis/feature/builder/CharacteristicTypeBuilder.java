@@ -19,6 +19,8 @@ package org.apache.sis.feature.builder;
 import org.opengis.util.GenericName;
 import org.apache.sis.feature.DefaultAttributeType;
 import org.apache.sis.util.Classes;
+import org.apache.sis.util.ObjectConverters;
+import org.apache.sis.util.UnconvertibleObjectException;
 
 // Branch-dependent imports
 import java.util.Objects;
@@ -45,11 +47,12 @@ import org.opengis.feature.AttributeType;
 public final class CharacteristicTypeBuilder<V> extends TypeBuilder {
     /**
      * The attribute type builder instance that created this {@code CharacteristicTypeBuilder} builder.
+     * This is set at construction time and considered as immutable until it is set to {@code null}.
      */
-    private final AttributeTypeBuilder<?> owner;
+    AttributeTypeBuilder<?> owner;
 
     /**
-     * The class of attribute values. Can not be changed after construction
+     * The class of characteristic values. Can not be changed after construction
      * because this value determines the parameterized type {@code <V>}.
      */
     private final Class<V> valueClass;
@@ -64,6 +67,22 @@ public final class CharacteristicTypeBuilder<V> extends TypeBuilder {
      * This field must be cleared every time that a setter method is invoked on this builder.
      */
     private transient AttributeType<V> characteristic;
+
+    /**
+     * Creates a new builder initialized to the values of the given builder but a different type.
+     * This constructor is for {@link #setValueClass(Class)} implementation only.
+     *
+     * @throws UnconvertibleObjectException if the default value can not be converted to the given class.
+     */
+    private CharacteristicTypeBuilder(final CharacteristicTypeBuilder<?> builder, final Class<V> valueClass)
+            throws UnconvertibleObjectException
+    {
+        super(builder);
+        this.owner        = builder.owner;
+        this.valueClass   = valueClass;
+        this.defaultValue = ObjectConverters.convert(builder.defaultValue, valueClass);
+        // Do not copy the 'characteristic' reference since the 'valueClass' is different.
+    }
 
     /**
      * Creates a new characteristic builder for values of the given class.
@@ -97,6 +116,7 @@ public final class CharacteristicTypeBuilder<V> extends TypeBuilder {
     @Override
     final void clearCache() {
         characteristic = null;
+        ensureAlive(owner);
         owner.clearCache();
     }
 
@@ -156,14 +176,55 @@ public final class CharacteristicTypeBuilder<V> extends TypeBuilder {
      */
     @Override
     final GenericName name(final String scope, final String localPart) {
+        ensureAlive(owner);
         return owner.name(scope, localPart);
     }
 
     /**
-     * Sets the default value with check of the value class.
+     * Returns the class of characteristic values.
+     *
+     * @return the class of characteristic values.
+     *
+     * @see #setValueClass(Class)
      */
-    final void set(final Object value) {
-        setDefaultValue(valueClass.cast(value));
+    public Class<V> getValueClass() {
+        return valueClass;
+    }
+
+    /**
+     * Sets the class of characteristic values. Callers <strong>must</strong> use the builder returned by this method
+     * instead of {@code this} builder after this method call, since the returned builder may be a new instance.
+     *
+     * @param  <N>   the compile-time value of the {@code type} argument.
+     * @param  type  the new class of characteristic values.
+     * @return the characteristic builder — <em>not necessarily this instance.</em>
+     * @throws UnconvertibleObjectException if the {@linkplain #getDefaultValue() default value}
+     *         can not be converted to the given {@code <N>} class.
+     *
+     * @see #getValueClass()
+     */
+    @SuppressWarnings("unchecked")
+    public <N> CharacteristicTypeBuilder<N> setValueClass(final Class<N> type) throws UnconvertibleObjectException {
+        ensureAlive(owner);
+        ensureNonNull("type", type);
+        if (type == valueClass) {
+            return (CharacteristicTypeBuilder<N>) this;
+        }
+        final CharacteristicTypeBuilder<N> n = new CharacteristicTypeBuilder<>(this, type);
+        owner.replace(this, n);
+        owner = null;
+        return n;
+    }
+
+    /**
+     * Returns the default value for the characteristic, or {@code null} if none.
+     *
+     * @return the default characteristic value, or {@code null} if none.
+     *
+     * @see #setDefaultValue(Object)
+     */
+    public V getDefaultValue() {
+        return defaultValue;
     }
 
     /**
@@ -171,6 +232,8 @@ public final class CharacteristicTypeBuilder<V> extends TypeBuilder {
      *
      * @param  value  characteristic default value, or {@code null} if none.
      * @return {@code this} for allowing method calls chaining.
+     *
+     * @see #getDefaultValue()
      */
     public CharacteristicTypeBuilder<V> setDefaultValue(final V value) {
         if (!Objects.equals(defaultValue, value)) {
@@ -178,6 +241,13 @@ public final class CharacteristicTypeBuilder<V> extends TypeBuilder {
             clearCache();
         }
         return this;
+    }
+
+    /**
+     * Sets the default value with check of the value class.
+     */
+    final void set(final Object value) {
+        setDefaultValue(valueClass.cast(value));
     }
 
     /**

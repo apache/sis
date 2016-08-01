@@ -48,8 +48,11 @@ import org.opengis.feature.FeatureAssociationRole;
 public abstract class PropertyTypeBuilder extends TypeBuilder {
     /**
      * The feature type builder instance that created this {@code PropertyTypeBuilder}.
+     * This is set at construction time and considered as immutable until it is set to {@code null}.
+     *
+     * @see #owner()
      */
-    final FeatureTypeBuilder owner;
+    private FeatureTypeBuilder owner;
 
     /**
      * The minimum number of property values.
@@ -74,6 +77,20 @@ public abstract class PropertyTypeBuilder extends TypeBuilder {
     private transient PropertyType property;
 
     /**
+     * Creates a new builder initialized to the values of the given builder.
+     * This constructor is for {@link AttributeTypeBuilder#setValueClass(Class)} implementation.
+     *
+     * @param builder  the builder from which to copy values.
+     */
+    PropertyTypeBuilder(final PropertyTypeBuilder builder) {
+        super(builder);
+        owner         = builder.owner;
+        minimumOccurs = builder.minimumOccurs;
+        maximumOccurs = builder.maximumOccurs;
+        // Do not copy the 'property' reference since the 'valueClass' is different.
+    }
+
+    /**
      * Creates a new {@code PropertyType} builder initialized to the values of an existing property.
      *
      * @param owner     the builder of the {@code FeatureType} for which to add this property.
@@ -85,6 +102,21 @@ public abstract class PropertyTypeBuilder extends TypeBuilder {
         minimumOccurs = owner.defaultMinimumOccurs;
         maximumOccurs = owner.defaultMaximumOccurs;
         property      = template;
+    }
+
+    /**
+     * Returns the feature type builder instance that created this {@code PropertyTypeBuilder}.
+     */
+    final FeatureTypeBuilder owner() {
+        ensureAlive(owner);
+        return owner;
+    }
+
+    /**
+     * Flags this builder as a disposed one. The builder should not be used anymore after this method call.
+     */
+    final void dispose() {
+        owner = null;
     }
 
     /**
@@ -123,6 +155,7 @@ public abstract class PropertyTypeBuilder extends TypeBuilder {
      */
     @Override
     final GenericName name(final String scope, final String localPart) {
+        ensureAlive(owner);
         return owner.name(scope, localPart);
     }
 
@@ -133,6 +166,7 @@ public abstract class PropertyTypeBuilder extends TypeBuilder {
     @Override
     final void clearCache() {
         property = null;
+        ensureAlive(owner);
         owner.clearCache();
     }
 
