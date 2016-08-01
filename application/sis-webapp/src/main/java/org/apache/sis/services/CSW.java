@@ -94,26 +94,26 @@ public class CSW {
          }
          return null;
     }
-
-    @GET
-    @Path("/getrecordbyid")
-    @Produces(MediaType.APPLICATION_XML)
-    public GetRecordByIdReponse getRecordById(
+    
+    public GetRecordsReponse GetRecordsCQL(
             @QueryParam("service") String service,
             @QueryParam("version") String Version,
             @QueryParam("request") String request,
-            @QueryParam("Id") String id) throws ParseException, Exception {
-        if (request.equals("GetRecordById")) {
-            Record record = new Record(path.getValue("Path"),Version,service);
-            GetRecordByIdReponse a = record.getRecordById(id);
+            @QueryParam("constraintLanguage") String constraintLanguage,
+            @QueryParam("constraint") String constraint,
+            @QueryParam("startPosition") int start,
+            @QueryParam("maxRecords") int size) throws ParseException, Exception {
+         if (request.equals("GetRecords") && constraintLanguage.toUpperCase().equals("CQL_TEXT")) {
+            
+            AnyText record = new AnyText(path.getValue("Path"), Version, service, constraintLanguage,constraint);
+            record.filter();
+            GetRecordsReponse a = new GetRecordsReponse();
+            a.setRecord(record.getData());
             return a;
         }
         return null;
     }
-
-    @GET
-    @Path("/filter")
-    @Produces(MediaType.APPLICATION_XML)
+    
     public GetRecordsReponse getRecordAllField(
             @QueryParam("service") String service,
             @QueryParam("version") String Version,
@@ -135,6 +135,22 @@ public class CSW {
             record.filter();
              GetRecordsReponse a = new GetRecordsReponse();
              a.setRecord(record.getData());
+            return a;
+        }
+        return null;
+    }
+
+    @GET
+    @Path("/getrecordbyid")
+    @Produces(MediaType.APPLICATION_XML)
+    public GetRecordByIdReponse getRecordById(
+            @QueryParam("service") String service,
+            @QueryParam("version") String Version,
+            @QueryParam("request") String request,
+            @QueryParam("Id") String id) throws ParseException, Exception {
+        if (request.equals("GetRecordById")) {
+            Record record = new Record(path.getValue("Path"),Version,service);
+            GetRecordByIdReponse a = record.getRecordById(id);
             return a;
         }
         return null;
