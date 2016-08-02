@@ -21,12 +21,13 @@
  * their attributes and associations.
  *
  * <p>The starting point is {@link org.apache.sis.feature.builder.FeatureTypeBuilder}.
- * Example:</p>
+ * The following example creates a feature type for a capital, as a special kind of city,
+ * named "Utopia" by default:</p>
  *
  * {@preformat java
  *     // Create a feature type for a city, which contains a name and a population.
  *     FeatureTypeBuilder builder = new FeatureTypeBuilder().setName("City");
- *     builder.addAttribute(String.class).setName("name");
+ *     builder.addAttribute(String.class).setName("name").setDefaultValue("Utopia");
  *     builder.addAttribute(Integer.class).setName("population");
  *     FeatureType city = builder.build();
  *
@@ -34,6 +35,19 @@
  *     builder = new FeatureTypeBuilder().setName("Capital").setSuperTypes(city);
  *     builder.addAttribute(String.class).setName("parliament");
  *     FeatureType capital = builder.build();
+ * }
+ *
+ * A call to {@code System.out.println(capital)} prints the following table:
+ *
+ * {@preformat text
+ *   Capital ⇾ City
+ *   ┌────────────┬─────────┬─────────────┬───────────────┐
+ *   │ Name       │ Type    │ Cardinality │ Default value │
+ *   ├────────────┼─────────┼─────────────┼───────────────┤
+ *   │ name       │ String  │ [1 … 1]     │ Utopia        │
+ *   │ population │ Integer │ [1 … 1]     │               │
+ *   │ parliament │ String  │ [1 … 1]     │               │
+ *   └────────────┴─────────┴─────────────┴───────────────┘
  * }
  *
  * @author  Johann Sorel (Geomatys)
