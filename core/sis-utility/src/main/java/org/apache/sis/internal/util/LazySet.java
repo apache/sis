@@ -43,7 +43,7 @@ import java.util.Objects;
  *
  * <p>This class is not thread-safe. Synchronization, if desired, shall be done by the caller.</p>
  *
- * @param <E> The type of elements in the set.
+ * @param <E> the type of elements in the set.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.6
@@ -86,7 +86,7 @@ public class LazySet<E> extends SetOfUnknownSize<E> {
      * only when first needed, and at most one iteration will be performed (unless {@link #reload()}
      * is invoked).
      *
-     * @param service  the type of service to request with {@link ServiceLoader}, or {@code null} if unknown.
+     * @param  service  the type of service to request with {@link ServiceLoader}, or {@code null} if unknown.
      */
     public LazySet(final Class<E> service) {
         Objects.requireNonNull(service);
@@ -97,7 +97,7 @@ public class LazySet<E> extends SetOfUnknownSize<E> {
      * Constructs a set to be filled using the specified iterator.
      * Iteration with the given iterator will occur only when needed.
      *
-     * @param iterator The iterator to use for filling this set.
+     * @param  iterator  the iterator to use for filling this set.
      */
     public LazySet(final Iterator<? extends E> iterator) {
         Objects.requireNonNull(iterator);
@@ -123,7 +123,7 @@ public class LazySet<E> extends SetOfUnknownSize<E> {
      * {@code LazySet} will not write in that array ({@code LazySet} will create a new array if
      * it needs to add more values).
      *
-     * @return Values to prepend before the source {@code Iterable}, or {@code null} if none.
+     * @return values to prepend before the source {@code Iterable}, or {@code null} if none.
      *
      * @since 0.7
      */
@@ -184,7 +184,7 @@ public class LazySet<E> extends SetOfUnknownSize<E> {
      * Returns the number of elements in this set. Invoking this method
      * forces the set to immediately iterates through all remaining elements.
      *
-     * @return Number of elements in the iterator.
+     * @return number of elements in the iterator.
      */
     @Override
     public final int size() {
@@ -201,7 +201,7 @@ public class LazySet<E> extends SetOfUnknownSize<E> {
      * Caches a new element. Subclasses can override this method is they want to substitute the given value
      * by another value.
      *
-     * @param element The element to add to the cache.
+     * @param  element  The element to add to the cache.
      */
     protected void cache(final E element) {
         if (numCached >= cachedElements.length) {
@@ -214,7 +214,7 @@ public class LazySet<E> extends SetOfUnknownSize<E> {
      * Returns an unmodifiable view over the elements cached so far.
      * The returned list does not contain any elements that were not yet fetched from the source.
      *
-     * @return  the elements cached so far.
+     * @return the elements cached so far.
      */
     protected final List<E> cached() {
         return UnmodifiableArrayList.wrap(cachedElements, 0, numCached);
@@ -235,8 +235,8 @@ public class LazySet<E> extends SetOfUnknownSize<E> {
     /**
      * Returns the element at the specified position in this set.
      *
-     * @param index The index at which to get an element.
-     * @return The element at the requested index.
+     * @param  index  the index at which to get an element.
+     * @return the element at the requested index.
      */
     final E get(final int index) {
         if (index >= numCached) {
@@ -253,7 +253,7 @@ public class LazySet<E> extends SetOfUnknownSize<E> {
      * Returns an iterator over the elements contained in this set.
      * This is not the same iterator than the one given to the constructor.
      *
-     * @return An iterator over the elements in this set.
+     * @return an iterator over the elements in this set.
      */
     @Override
     public final Iterator<E> iterator() {
