@@ -32,7 +32,7 @@ import static org.apache.sis.test.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5
- * @version 0.6
+ * @version 0.8
  * @module
  */
 @DependsOn({
@@ -48,7 +48,7 @@ public final strictfp class FeatureFormatTest extends TestCase {
         final DefaultFeatureType feature = DefaultFeatureTypeTest.worldMetropolis();
         final FeatureFormat format = new FeatureFormat(Locale.US, null);
         final String text = format.format(feature);
-        assertMultilinesEquals("World metropolis\n" +
+        assertMultilinesEquals("World metropolis ⇾ Metropolis, University city\n" +
                 "┌──────────────┬─────────────────────┬─────────────┬───────────────┬────────────────────────────┐\n" +
                 "│ Name         │ Type                │ Cardinality │ Default value │ Characteristics            │\n" +
                 "├──────────────┼─────────────────────┼─────────────┼───────────────┼────────────────────────────┤\n" +
