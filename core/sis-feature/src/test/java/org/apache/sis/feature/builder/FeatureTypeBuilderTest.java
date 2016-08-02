@@ -23,6 +23,7 @@ import org.apache.sis.internal.feature.AttributeConvention;
 import org.apache.sis.feature.DefaultFeatureTypeTest;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.test.DependsOnMethod;
+import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
@@ -44,34 +45,13 @@ import org.opengis.feature.PropertyType;
  * @version 0.8
  * @module
  */
+@DependsOn(AttributeTypeBuilderTest.class)
 public final strictfp class FeatureTypeBuilderTest extends TestCase {
     /**
-     * Tests a {@code AttributeTypeBuilder} with the minimum number of parameters.
+     * Tests with the minimum number of parameters (no property and no super type).
      */
     @Test
-    public void testAttributeTypeBuilderInitialization() {
-        final AttributeTypeBuilder<String> builder = new FeatureTypeBuilder().addAttribute(String.class);
-        assertEquals("default name", "string", builder.getName().toString());
-
-        builder.setName("myScope", "myName");
-        final AttributeType<?> att = (AttributeType<?>) builder.build();
-
-        assertEquals("name", "myScope:myName",   att.getName().toString());
-        assertEquals("valueClass", String.class, att.getValueClass());
-        assertNull  ("defaultValue",             att.getDefaultValue());
-        assertNull  ("definition",               att.getDefinition());
-        assertNull  ("description",              att.getDescription());
-        assertNull  ("designation",              att.getDesignation());
-        assertEquals("minimumOccurs", 1,         att.getMinimumOccurs());
-        assertEquals("maximumOccurs", 1,         att.getMaximumOccurs());
-    }
-
-    /**
-     * Tests a {@code FeatureTypeBuilder} with the minimum number of parameters (no property and no super type).
-     */
-    @Test
-    @DependsOnMethod("testAttributeTypeBuilderInitialization")
-    public void testFeatureTypeBuilderInitialization() {
+    public void testInitialization() {
         final FeatureTypeBuilder builder = new FeatureTypeBuilder();
         try {
             builder.build();
@@ -80,7 +60,7 @@ public final strictfp class FeatureTypeBuilderTest extends TestCase {
             final String message = ex.getMessage();
             assertTrue(message, message.contains("name"));
         }
-        builder.setName("scope", "test");
+        assertSame(builder, builder.setName("scope", "test"));
         final FeatureType type = builder.build();
 
         assertEquals("name", "scope:test",   type.getName().toString());
@@ -90,46 +70,17 @@ public final strictfp class FeatureTypeBuilderTest extends TestCase {
     }
 
     /**
-     * Test creation of a single attribute.
-     */
-    @Test
-    @DependsOnMethod("testAttributeTypeBuilderInitialization")
-    public void testAttributeTypeBuilder() {
-        final AttributeTypeBuilder<String> builder = new FeatureTypeBuilder().addAttribute(String.class);
-        builder.setName        ("myScope", "myName");
-        builder.setDefinition  ("test definition");
-        builder.setDesignation ("test designation");
-        builder.setDescription ("test description");
-        builder.setDefaultValue("test default value.");
-        builder.setCardinality(10, 60);
-        builder.setMaximalLength(80);
-        final AttributeType<?> att = (AttributeType<?>) builder.build();
-
-        assertEquals("name",          "myScope:myName",      att.getName().toString());
-        assertEquals("definition",    "test definition",     att.getDefinition().toString());
-        assertEquals("description",   "test description",    att.getDescription().toString());
-        assertEquals("designation",   "test designation",    att.getDesignation().toString());
-        assertEquals("valueClass",    String.class,          att.getValueClass());
-        assertEquals("defaultValue",  "test default value.", att.getDefaultValue());
-        assertEquals("minimumOccurs", 10,                    att.getMinimumOccurs());
-        assertEquals("maximumOccurs", 60,                    att.getMaximumOccurs());
-        assertTrue  ("characterizedByMaximalLength", AttributeConvention.characterizedByMaximalLength(att));
-        assertEquals("maximalLengthCharacteristic", Integer.valueOf(80),
-                AttributeConvention.getMaximalLengthCharacteristic(att.newInstance()));
-    }
-
-    /**
      * Tests {@link FeatureTypeBuilder#addAttribute(Class)}.
      */
     @Test
-    @DependsOnMethod("testAttributeTypeBuilder")
+    @DependsOnMethod("testInitialization")
     public void testAddAttribute() {
         final FeatureTypeBuilder builder = new FeatureTypeBuilder();
-        builder.setName("myScope", "myName");
-        builder.setDefinition ("test definition");
-        builder.setDesignation("test designation");
-        builder.setDescription("test description");
-        builder.setAbstract(true);
+        assertSame(builder, builder.setName("myScope", "myName"));
+        assertSame(builder, builder.setDefinition ("test definition"));
+        assertSame(builder, builder.setDesignation("test designation"));
+        assertSame(builder, builder.setDescription("test description"));
+        assertSame(builder, builder.setAbstract(true));
         builder.addAttribute(String .class).setName("name");
         builder.addAttribute(Integer.class).setName("age");
         builder.addAttribute(Point  .class).setName("location").setCRS(HardCodedCRS.WGS84);
@@ -188,8 +139,8 @@ public final strictfp class FeatureTypeBuilderTest extends TestCase {
     @DependsOnMethod("testAddAttribute")
     public void testAddIdentifierAndGeometry() {
         final FeatureTypeBuilder builder = new FeatureTypeBuilder();
-        builder.setName("scope", "test");
-        builder.setIdentifierDelimiters("-", "pref.", null);
+        assertSame(builder, builder.setName("scope", "test"));
+        assertSame(builder, builder.setIdentifierDelimiters("-", "pref.", null));
         builder.addAttribute(String.class).setName("name")
                 .addRole(AttributeRole.IDENTIFIER_COMPONENT);
         builder.addAttribute(Geometry.class).setName("shape")
@@ -224,7 +175,7 @@ public final strictfp class FeatureTypeBuilderTest extends TestCase {
     @DependsOnMethod("testAddIdentifierAndGeometry")
     public void testAddAnonymousIdentifier() {
         final FeatureTypeBuilder builder = new FeatureTypeBuilder();
-        builder.setName("City");
+        assertSame(builder, builder.setName("City"));
         builder.addAttribute(String.class).setName(AttributeConvention.IDENTIFIER_PROPERTY).addRole(AttributeRole.IDENTIFIER_COMPONENT);
         builder.addAttribute(Integer.class).setName("population");
         final FeatureType type = builder.build();
@@ -247,7 +198,7 @@ public final strictfp class FeatureTypeBuilderTest extends TestCase {
     @DependsOnMethod("testAddIdentifierAndGeometry")
     public void testAddAnonymousGeometry() {
         final FeatureTypeBuilder builder = new FeatureTypeBuilder();
-        builder.setName("City");
+        assertSame(builder, builder.setName("City"));
         builder.addAttribute(Point.class).setName(AttributeConvention.GEOMETRY_PROPERTY).addRole(AttributeRole.DEFAULT_GEOMETRY);
         builder.addAttribute(Integer.class).setName("population");
         final FeatureType type = builder.build();

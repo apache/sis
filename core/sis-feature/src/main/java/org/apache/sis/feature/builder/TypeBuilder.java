@@ -18,7 +18,9 @@ package org.apache.sis.feature.builder;
 
 import java.util.Map;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
+import org.opengis.util.ScopedName;
 import org.opengis.util.GenericName;
 import org.apache.sis.feature.AbstractIdentifiedType;
 import org.apache.sis.util.resources.Vocabulary;
@@ -34,8 +36,8 @@ import org.opengis.feature.IdentifiedType;
 
 
 /**
- * Properties common to all kind of types (feature, association, characteristics).
- * Those properties are:
+ * Information common to all kind of types (feature, association, characteristics).
+ * Those information are:
  *
  * <ul>
  *   <li>the name        — a unique name which can be defined within a scope (or namespace).</li>
@@ -44,6 +46,7 @@ import org.opengis.feature.IdentifiedType;
  *   <li>the description — information beyond that required for concise definition of the element.</li>
  * </ul>
  *
+ * <div class="section">Default namespace</div>
  * In many cases, the names of all {@code AttributeType}s and {@code AssociationRole}s to create
  * within a {@code FeatureType} share the same namespace.
  * For making name creations more convenient, a default namespace can be
@@ -323,6 +326,46 @@ public abstract class TypeBuilder implements Localized {
     }
 
     /**
+     * Returns the element of the given name in the given list. The given name does not need to contains
+     * all elements of a {@link ScopedName}; it can be only the tip (for example {@code "myName"} instead
+     * of {@code "myScope:myName"}) provided that ignoring the name head does not create ambiguity.
+     *
+     * @param  types  the collection where to search for an element of the given name.
+     * @param  name   name of the element to search.
+     * @return element of the given name, or {@code null} if none were found.
+     * @throws IllegalArgumentException if the given name is ambiguous.
+     */
+    final <E extends TypeBuilder> E forName(final List<E> types, final String name) {
+        E best      = null;                     // Best type found so far.
+        E ambiguity = null;                     // If two types are found at the same depth, the other type.
+        int depth   = Integer.MAX_VALUE;        // Number of path elements that we had to ignore in the GenericName.
+        for (final E type : types) {
+            GenericName candidate = type.getName();
+            for (int d=0; candidate != null; d++) {
+                if (name.equals(candidate.toString())) {
+                    if (d < depth) {
+                        best      = type;
+                        ambiguity = null;
+                        depth     = d;
+                        break;
+                    }
+                    if (d == depth) {
+                        ambiguity = type;
+                        break;
+                    }
+                }
+                if (!(candidate instanceof ScopedName)) break;
+                candidate = ((ScopedName) candidate).tail();
+            }
+        }
+        if (ambiguity != null) {
+            throw new IllegalArgumentException(errors().getString(
+                    Errors.Keys.AmbiguousName_3, best.getName(), ambiguity.getName(), name));
+        }
+        return best;
+    }
+
+    /**
      * Returns the locale used for formatting error messages, or {@code null} if unspecified.
      * If unspecified, the system default locale will be used.
      *
@@ -397,7 +440,7 @@ public abstract class TypeBuilder implements Localized {
 
     /**
      * Partial implementation of {@link #toString()}. This method assumes that the class name
-     * has already been written in the buffer.
+     * has already be written in the buffer.
      */
     final StringBuilder toString(final StringBuilder buffer) {
         toStringInternal(buffer.append("[“").append(getDisplayName()).append('”'));
@@ -408,5 +451,12 @@ public abstract class TypeBuilder implements Localized {
      * Appends a text inside the value returned by {@link #toString()}, before the closing bracket.
      */
     void toStringInternal(StringBuilder buffer) {
+    }
+
+    /**
+     * Invoked when a type builder has been removed from its parent.
+     * Subclasses should override this method in a way that flag the builder as not usable anymore.
+     */
+    void dispose() {
     }
 }
