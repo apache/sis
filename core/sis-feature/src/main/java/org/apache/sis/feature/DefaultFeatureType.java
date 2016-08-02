@@ -236,11 +236,11 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
      *   </tr>
      * </table>
      *
-     * @param identification The name and other information to be given to this feature type.
-     * @param isAbstract     If {@code true}, the feature type acts as an abstract super-type.
-     * @param superTypes     The parents of this feature type, or {@code null} or empty if none.
-     * @param properties     Any feature operation, any feature attribute type and any feature
-     *                       association role that carries characteristics of a feature type.
+     * @param identification  the name and other information to be given to this feature type.
+     * @param isAbstract      if {@code true}, the feature type acts as an abstract super-type.
+     * @param superTypes      the parents of this feature type, or {@code null} or empty if none.
+     * @param properties      any feature operation, any feature attribute type and any feature
+     *                        association role that carries characteristics of a feature type.
      *
      * @see org.apache.sis.feature.builder.FeatureTypeBuilder
      */
@@ -283,9 +283,9 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
     /**
      * Invoked on deserialization for restoring the {@link #byName} and other transient fields.
      *
-     * @param  in The input stream from which to deserialize a feature type.
-     * @throws IOException If an I/O error occurred while reading or if the stream contains invalid data.
-     * @throws ClassNotFoundException If the class serialized on the stream is not on the classpath.
+     * @param  in  the input stream from which to deserialize a feature type.
+     * @throws IOException if an I/O error occurred while reading or if the stream contains invalid data.
+     * @throws ClassNotFoundException if the class serialized on the stream is not on the classpath.
      */
     private void readObject(final ObjectInputStream in) throws IOException, ClassNotFoundException {
         in.defaultReadObject();
@@ -352,7 +352,7 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
         for (final PropertyType property : allProperties) {
             final GenericName name = property.getName();
             final LocalName tip = name.tip();
-            if (tip != name) {  // Slight optimization for a common case.
+            if (tip != name) {                                              // Slight optimization for a common case.
                 final String key = tip.toString();
                 if (key != null && !key.isEmpty() && !key.equals(name.toString())) {
                     aliases.put(key, aliases.containsKey(key) ? null : property);
@@ -400,7 +400,7 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
      * <p>{@code this} shall be the instance in process of being created, not any other instance
      * (i.e. recursive method invocations are performed on the same {@code this} instance).</p>
      *
-     * @param  source The feature from which to get properties.
+     * @param  source  the feature from which to get properties.
      * @throws IllegalArgumentException if two properties have the same name.
      */
     private void scanPropertiesFrom(final FeatureType source) {
@@ -453,8 +453,8 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
      * <p>{@code this} shall be the instance in process of being created, not other instance
      * (i.e. recursive method invocations are performed on the same {@code this} instance).</p>
      *
-     * @param  feature  The feature type for which to resolve the properties.
-     * @param  previous Previous results, for avoiding never ending loop.
+     * @param  feature   the feature type for which to resolve the properties.
+     * @param  previous  previous results, for avoiding never ending loop.
      * @return {@code true} if all names have been resolved.
      */
     private boolean resolve(final FeatureType feature, final Map<FeatureType,Boolean> previous) {
@@ -475,9 +475,9 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
     /**
      * Implementation of {@link #resolve(FeatureType, Map)}, also to be invoked from the constructor.
      *
-     * @param  feature  The feature type for which to resolve the properties.
-     * @param  previous Previous results, for avoiding never ending loop. Initially {@code null}.
-     * @param  resolved {@code true} if we already know that all names are resolved.
+     * @param  feature   the feature type for which to resolve the properties.
+     * @param  previous  previous results, for avoiding never ending loop. Initially {@code null}.
+     * @param  resolved  {@code true} if we already know that all names are resolved.
      * @return {@code true} if all names have been resolved.
      */
     private boolean resolve(final FeatureType feature, Map<FeatureType,Boolean> previous, boolean resolved) {
@@ -599,7 +599,7 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
      * if we compare {@code FeatureType} to {@link Class} in the Java language, then this method is equivalent
      * to {@link Class#isAssignableFrom(Class)}.</div>
      *
-     * @param  type The type to be checked.
+     * @param  type  the type to be checked.
      * @return {@code true} if instances of the given type can be assigned to association of this type.
      */
     @Override
@@ -691,7 +691,7 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
      * the stability of this collection.
      * </div>
      *
-     * @return The parents of this feature type, or an empty set if none.
+     * @return  the parents of this feature type, or an empty set if none.
      */
     @Override
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
@@ -713,7 +713,7 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
      *
      * @param  includeSuperTypes {@code true} for including the properties inherited from the super-types,
      *         or {@code false} for returning only the properties defined explicitely in this type.
-     * @return Feature operation, attribute type and association role that carries characteristics of this
+     * @return feature operation, attribute type and association role that carries characteristics of this
      *         feature type (not including parent types).
      */
     @Override
@@ -724,9 +724,9 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
     /**
      * Returns the attribute, operation or association role for the given name.
      *
-     * @param  name The name of the property to search.
-     * @return The property for the given name, or {@code null} if none.
-     * @throws PropertyNotFoundException If the given argument is not a property name of this feature.
+     * @param  name  the name of the property to search.
+     * @return the property for the given name, or {@code null} if none.
+     * @throws PropertyNotFoundException if the given argument is not a property name of this feature.
      *
      * @see AbstractFeature#getProperty(String)
      */
@@ -755,7 +755,7 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
      * if we compare {@code FeatureType} to {@link Class} and {@code Feature} to {@link Object} in the Java language,
      * then this method is equivalent to {@link Class#newInstance()}.</div>
      *
-     * @return A new feature instance.
+     * @return a new feature instance.
      * @throws FeatureInstantiationException if this feature type {@linkplain #isAbstract() is abstract}.
      */
     @Override
@@ -798,7 +798,7 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
     /**
      * Formats this feature in a tabular format.
      *
-     * @return A string representation of this feature in a tabular format.
+     * @return a string representation of this feature in a tabular format.
      *
      * @see FeatureFormat
      */
