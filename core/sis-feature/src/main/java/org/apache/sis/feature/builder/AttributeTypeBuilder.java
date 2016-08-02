@@ -18,6 +18,7 @@ package org.apache.sis.feature.builder;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -27,6 +28,8 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.feature.DefaultAttributeType;
 import org.apache.sis.feature.FeatureOperations;
 import org.apache.sis.internal.util.CollectionsExt;
+import org.apache.sis.internal.util.SetOfUnknownSize;
+import org.apache.sis.internal.util.AbstractIterator;
 import org.apache.sis.internal.feature.AttributeConvention;
 import org.apache.sis.internal.feature.Geometries;
 import org.apache.sis.util.resources.Errors;
@@ -440,48 +443,6 @@ public final class AttributeTypeBuilder<V> extends PropertyTypeBuilder {
     }
 
     /**
-     * Flags this attribute as an input of one of the pre-defined operations managed by {@code FeatureTypeBuilder}.
-     *
-     * @param role the role to add to this attribute (shall not be null).
-     */
-    public void addRole(final AttributeRole role) {
-        final FeatureTypeBuilder owner = owner();
-        ensureNonNull("role", role);
-        switch (role) {
-            case IDENTIFIER_COMPONENT: {
-                if (!isIdentifier) {
-                    isIdentifier = true;
-                    owner.identifierCount++;
-                    owner.clearCache();         // The change does not impact this attribute itself.
-                }
-                break;
-            }
-            case DEFAULT_GEOMETRY: {
-                if (owner.defaultGeometry != this) {
-                    if (!Geometries.isKnownType(valueClass)) {
-                        throw new IllegalStateException(errors().getString(Errors.Keys.UnsupportedImplementation_1, valueClass));
-                    }
-                    if (owner.defaultGeometry != null) {
-                        throw new IllegalStateException(errors().getString(Errors.Keys.PropertyAlreadyExists_2,
-                                owner.getDisplayName(), AttributeConvention.GEOMETRY_PROPERTY));
-                    }
-                    owner.defaultGeometry = this;
-                    owner.clearCache();         // The change does not impact this attribute itself.
-                }
-                break;
-            }
-        }
-    }
-
-    /**
-     * Returns {@code true} if {@link AttributeRole#IDENTIFIER_COMPONENT} has been associated to this attribute.
-     */
-    @Override
-    boolean isIdentifier() {
-        return isIdentifier;
-    }
-
-    /**
      * Returns a view of all characteristics added to the {@code AttributeType} to build.
      * The returned list is <cite>live</cite>: changes in this builder are reflected in that list and conversely.
      * However the returned list allows only {@linkplain List#remove(Object) remove} operations;
@@ -497,6 +458,121 @@ public final class AttributeTypeBuilder<V> extends PropertyTypeBuilder {
      */
     public List<CharacteristicTypeBuilder<?>> characteristics() {
         return new RemoveOnlyList<>(characteristics);
+    }
+
+    /**
+     * Returns the roles that the attribute play in the pre-defined operations managed by {@code AttributeTypeBuilder}.
+     * The set returned by this method is <cite>live</cite>: additions or removal on that set are reflected back on
+     * this builder, and conversely.
+     *
+     * @return the roles that the attribute play in the pre-defined operations managed by {@code AttributeTypeBuilder}.
+     */
+    public Set<AttributeRole> roles() {
+        return new SetOfUnknownSize<AttributeRole>() {
+            @Override public Iterator<AttributeRole> iterator() {return new RoleIter();}
+            @Override public boolean add(AttributeRole role)    {return addRole(role);}
+        };
+    }
+
+    /**
+     * The iterator returned by the {@link AttributeTypeBuilder#roles()} set.
+     */
+    private final class RoleIter extends AbstractIterator<AttributeRole> {
+        /**
+         * Index of the next {@code AttributeRole} to return.
+         */
+        private int index;
+
+        /**
+         * Prepares the next {@code AttributeRole} on which to iterate and returns
+         * {@code true} if such {@code AttributeRole} has been found.
+         */
+        @Override
+        @SuppressWarnings("fallthrough")
+        public boolean hasNext() {
+            if (next == null) {
+                switch (index) {
+                    case 0: {
+                        if (isIdentifier) {
+                            next = AttributeRole.IDENTIFIER_COMPONENT;
+                            break;
+                        }
+                        index++;        // Fall through for testing the case for next 'index' value.
+                    }
+                    case 1: {
+                        if (owner().defaultGeometry == AttributeTypeBuilder.this) {
+                            next = AttributeRole.DEFAULT_GEOMETRY;
+                            break;
+                        }
+                        index++;        // Fall through for testing the case for next 'index' value.
+                    }
+                    default: {
+                        return false;
+                    }
+                }
+                index++;
+            }
+            return true;
+        }
+
+        /**
+         * Removes the element returned by the last {@link #next()} method.
+         */
+        @Override
+        public void remove() {
+            switch (index) {
+                case 1: isIdentifier = false; break;
+                case 2: owner().defaultGeometry = null; break;
+                default: throw new IllegalStateException();
+            }
+        }
+    }
+
+    /**
+     * Flags this attribute as an input of one of the pre-defined operations managed by {@code AttributeTypeBuilder}.
+     * Invoking this method is equivalent to invoking <code>{@linkplain #roles()}.add(role)</code>.
+     *
+     * @param  role the role to add to the attribute (shall not be null).
+     * @return {@code true} if the given role has been added to the attribute.
+     */
+    public boolean addRole(final AttributeRole role) {
+        final FeatureTypeBuilder owner = owner();
+        ensureNonNull("role", role);
+        switch (role) {
+            case IDENTIFIER_COMPONENT: {
+                if (!isIdentifier) {
+                    isIdentifier = true;
+                    owner.identifierCount++;
+                    owner.clearCache();         // The change does not impact this attribute itself.
+                    return true;
+                }
+                break;
+            }
+            case DEFAULT_GEOMETRY: {
+                if (owner.defaultGeometry != this) {
+                    if (!Geometries.isKnownType(valueClass)) {
+                        throw new IllegalStateException(errors().getString(Errors.Keys.UnsupportedImplementation_1, valueClass));
+                    }
+                    if (owner.defaultGeometry != null) {
+                        throw new IllegalStateException(errors().getString(Errors.Keys.PropertyAlreadyExists_2,
+                                owner.getDisplayName(), AttributeConvention.GEOMETRY_PROPERTY));
+                    }
+                    owner.defaultGeometry = this;
+                    owner.clearCache();         // The change does not impact this attribute itself.
+                    return true;
+                }
+                break;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Returns {@code true} if {@link AttributeRole#IDENTIFIER_COMPONENT} has been associated to this attribute.
+     */
+    @Override
+    boolean isIdentifier() {
+        return isIdentifier;
     }
 
     /**

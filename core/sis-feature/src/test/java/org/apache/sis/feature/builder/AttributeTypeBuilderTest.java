@@ -16,7 +16,10 @@
  */
 package org.apache.sis.feature.builder;
 
+import java.util.Arrays;
+import java.util.Set;
 import java.util.Collections;
+import com.esri.core.geometry.Geometry;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.internal.feature.AttributeConvention;
 import org.apache.sis.test.DependsOnMethod;
@@ -209,5 +212,32 @@ public final strictfp class AttributeTypeBuilderTest extends TestCase {
             assertTrue(message, message.contains("a:temp"));
             assertTrue(message, message.contains("b:temp"));
         }
+    }
+
+    /**
+     * Tests {@link AttributeTypeBuilder#roles()}.
+     */
+    @Test
+    @DependsOnMethod("testOtherCharacteristics")
+    public void testRoles() {
+        final AttributeTypeBuilder<Geometry> builder = new FeatureTypeBuilder().addAttribute(Geometry.class);
+        final Set<AttributeRole> roles = builder.roles();
+        assertTrue("isEmpty", roles.isEmpty());
+
+        assertTrue("add(DEFAULT_GEOMETRY)", builder.addRole(AttributeRole.DEFAULT_GEOMETRY));
+        assertSetEquals(Collections.singleton(AttributeRole.DEFAULT_GEOMETRY), roles);
+        assertFalse("add(DEFAULT_GEOMETRY)", builder.addRole(AttributeRole.DEFAULT_GEOMETRY));
+
+        assertTrue("add(IDENTIFIER_COMPONENT)", roles.add(AttributeRole.IDENTIFIER_COMPONENT));
+        assertSetEquals(Arrays.asList(AttributeRole.DEFAULT_GEOMETRY, AttributeRole.IDENTIFIER_COMPONENT), roles);
+        assertFalse("add(IDENTIFIER_COMPONENT)", roles.add(AttributeRole.IDENTIFIER_COMPONENT));
+
+        assertTrue("remove(DEFAULT_GEOMETRY)", roles.remove(AttributeRole.DEFAULT_GEOMETRY));
+        assertSetEquals(Collections.singleton(AttributeRole.IDENTIFIER_COMPONENT), roles);
+        assertFalse("remove(DEFAULT_GEOMETRY)", roles.remove(AttributeRole.DEFAULT_GEOMETRY));
+
+        assertTrue("remove(IDENTIFIER_COMPONENT)", roles.remove(AttributeRole.IDENTIFIER_COMPONENT));
+        assertTrue("isEmpty", roles.isEmpty());
+        assertFalse("remove(IDENTIFIER_COMPONENT)", roles.remove(AttributeRole.IDENTIFIER_COMPONENT));
     }
 }
