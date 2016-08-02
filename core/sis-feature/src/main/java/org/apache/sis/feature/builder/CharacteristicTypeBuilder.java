@@ -28,13 +28,14 @@ import org.opengis.feature.AttributeType;
 
 
 /**
- * Describes one characteristic of an {@code AttributeType} to be built by the enclosing {@code FeatureTypeBuilder}.
- * A different instance of {@code CharacteristicTypeBuilder} exists for each characteristic to describe.
- * Those instances are created by:
+ * Describes one characteristic of the {@code AttributeType} will will be built by a {@code FeatureTypeBuilder}.
+ * Characteristics can describe additional information useful for interpreting an attribute value, like
+ * the units of measurement and uncertainties of a numerical value, or the coordinate reference system
+ * (CRS) of a geometry.
  *
- * <ul>
- *   <li>{@link AttributeTypeBuilder#addCharacteristic(Class)}</li>
- * </ul>
+ * <p>In many cases, all instances of the same {@code AttributeType} have the same characteristics.
+ * For example all values of the "temperature" attribute typically have the same units of measurement.
+ * Such common value can be specified as the characteristic {@linkplain #setDefaultValue(Object) default value}.</p>
  *
  * @param <V> the class of characteristic values.
  *
@@ -43,13 +44,15 @@ import org.opengis.feature.AttributeType;
  * @since   0.8
  * @version 0.8
  * @module
+ *
+ * @see AttributeTypeBuilder#addCharacteristic(Class)
  */
 public final class CharacteristicTypeBuilder<V> extends TypeBuilder {
     /**
      * The attribute type builder instance that created this {@code CharacteristicTypeBuilder} builder.
      * This is set at construction time and considered as immutable until it is set to {@code null}.
      */
-    AttributeTypeBuilder<?> owner;
+    private AttributeTypeBuilder<?> owner;
 
     /**
      * The class of characteristic values. Can not be changed after construction
@@ -210,10 +213,11 @@ public final class CharacteristicTypeBuilder<V> extends TypeBuilder {
         if (type == valueClass) {
             return (CharacteristicTypeBuilder<N>) this;
         }
-        final CharacteristicTypeBuilder<N> n = new CharacteristicTypeBuilder<>(this, type);
-        owner.replace(this, n);
-        owner = null;
-        return n;
+        final CharacteristicTypeBuilder<N> newb = new CharacteristicTypeBuilder<>(this, type);
+        owner.characteristics.set(owner.characteristics.lastIndexOf(this), newb);
+        // Note: a negative lastIndexOf(old) would be a bug in our algorithm.
+        dispose();
+        return newb;
     }
 
     /**
@@ -285,5 +289,37 @@ public final class CharacteristicTypeBuilder<V> extends TypeBuilder {
             characteristic = new DefaultAttributeType<>(identification(), valueClass, 0, 1, defaultValue);
         }
         return characteristic;
+    }
+
+    /**
+     * Sets a new owner.
+     */
+    final void owner(final AttributeTypeBuilder<?> newb) {
+        owner = newb;
+    }
+
+    /**
+     * Flags this builder as a disposed one. The builder should not be used anymore after this method call.
+     *
+     * @see #remove()
+     */
+    @Override
+    final void dispose() {
+        owner = null;
+    }
+
+    /**
+     * Removes this characteristics from the {@code AttributeTypeBuilder}.
+     * After this method has been invoked, this {@code CharacteristicTypeBuilder} instance
+     * is no longer in the list returned by {@link AttributeTypeBuilder#characteristics()}
+     * and attempts to invoke any setter method on {@code this} will cause an
+     * {@link IllegalStateException} to be thrown.
+     */
+    public void remove() {
+        if (owner != null) {
+            owner.characteristics.remove(owner.characteristics.lastIndexOf(this));
+            // Note: a negative lastIndexOf(old) would be a bug in our algorithm.
+            dispose();
+        }
     }
 }

@@ -70,7 +70,7 @@ public class FeatureTypeBuilder extends TypeBuilder {
     /**
      * Builders for the properties (attributes, associations or operations) of this feature.
      */
-    private final List<PropertyTypeBuilder> properties;
+    final List<PropertyTypeBuilder> properties;
 
     /**
      * The parent of the feature to create. By default, new features have no parent.
@@ -414,6 +414,7 @@ public class FeatureTypeBuilder extends TypeBuilder {
      *
      * @return a live list over the properties declared to this builder.
      *
+     * @see #getProperty(String)
      * @see #addAttribute(Class)
      * @see #addAttribute(AttributeType)
      * @see #addAssociation(FeatureType)
@@ -425,17 +426,18 @@ public class FeatureTypeBuilder extends TypeBuilder {
     }
 
     /**
-     * Replaces the given attribute by a new one. Exactly one instance of the old attribute
-     * shall exist (this is not verified).
+     * Returns the builder for the property of the given name. The given name does not need to contains all elements
+     * of a {@link org.opengis.util.ScopedName}; it is okay to specify only the tip (for example {@code "myName"}
+     * instead of {@code "myScope:myName"}) provided that ignoring the name head does not create ambiguity.
      *
-     * @see AttributeTypeBuilder#setValueClass(Class)
+     * @param  name   name of the property to search.
+     * @return property of the given name, or {@code null} if none.
+     * @throws IllegalArgumentException if the given name is ambiguous.
+     *
+     * @see #addProperty(PropertyType)
      */
-    final void replace(final AttributeTypeBuilder<?> old, final AttributeTypeBuilder<?> n) {
-        /*
-         * We do not verify if lastIndexOf(old) >= 0 because
-         * an element not found would be a bug in our algorithm.
-         */
-        properties.set(properties.lastIndexOf(old), n);
+    public PropertyTypeBuilder getProperty(final String name) {
+        return forName(properties, name);
     }
 
     /**
@@ -554,6 +556,7 @@ public class FeatureTypeBuilder extends TypeBuilder {
      *         In the {@code Operation} case, the builder is a read-only accessor on the operation properties.
      *
      * @see #properties()
+     * @see #getProperty(String)
      */
     public PropertyTypeBuilder addProperty(final PropertyType template) {
         ensureNonNull("template", template);

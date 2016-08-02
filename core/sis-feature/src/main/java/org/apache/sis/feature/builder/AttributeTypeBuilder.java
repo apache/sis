@@ -41,9 +41,22 @@ import org.opengis.feature.PropertyType;
 
 
 /**
- * Describes one attribute of the {@code FeatureType} to be built by the enclosing {@code FeatureTypeBuilder}.
- * A different instance of {@code AttributeTypeBuilder} exists for each feature attribute to describe.
- * Those instances are created by {@link FeatureTypeBuilder#addAttribute(Class)}.
+ * Describes one {@code AttributeType} which will be part of the feature type to be built by
+ * a {@code FeatureTypeBuilder}. An attribute can be for example a city name, a temperature
+ * (together with its units of measurement and uncertainty if desired) or a geometric shape.
+ * Attribute types contain the following information:
+ *
+ * <ul>
+ *   <li>the name        — a unique name which can be defined within a scope (or namespace).</li>
+ *   <li>the definition  — a concise definition of the element.</li>
+ *   <li>the designation — a natural language designator for the element for user interfaces.</li>
+ *   <li>the description — information beyond that required for concise definition of the element.</li>
+ *   <li>the value class — often {@link String}, {@link Float} or {@link com.esri.core.geometry.Geometry}.
+ *       Must be specified at {@linkplain FeatureTypeBuilder#addAttribute(Class) construction time}.</li>
+ *   <li>a default value — to be used when an attribute instance does not provide an explicit value.</li>
+ *   <li>characteristics — for example the units of measurement for all attributes of the same type.</li>
+ *   <li>cardinality     — the minimum and maximum occurrences of attribute values.</li>
+ * </ul>
  *
  * @param <V> the class of attribute values.
  *
@@ -53,8 +66,8 @@ import org.opengis.feature.PropertyType;
  * @version 0.8
  * @module
  *
- * @see org.apache.sis.feature.DefaultAttributeType
  * @see FeatureTypeBuilder#addAttribute(Class)
+ * @see org.apache.sis.feature.DefaultAttributeType
  */
 public final class AttributeTypeBuilder<V> extends PropertyTypeBuilder {
     /**
@@ -81,7 +94,7 @@ public final class AttributeTypeBuilder<V> extends PropertyTypeBuilder {
     /**
      * Builders for the characteristics associated to the attribute.
      */
-    private final List<CharacteristicTypeBuilder<?>> characteristics;
+    final List<CharacteristicTypeBuilder<?>> characteristics;
 
     /**
      * Creates a new builder initialized to the values of the given builder.
@@ -210,13 +223,14 @@ public final class AttributeTypeBuilder<V> extends PropertyTypeBuilder {
         if (type == valueClass) {
             return (AttributeTypeBuilder<N>) this;
         }
-        final AttributeTypeBuilder<N> n = new AttributeTypeBuilder<>(this, type);
-        for (final CharacteristicTypeBuilder<?> c : n.characteristics) {
-            c.owner = n;
+        final AttributeTypeBuilder<N> newb = new AttributeTypeBuilder<>(this, type);
+        for (final CharacteristicTypeBuilder<?> c : characteristics) {
+            c.owner(newb);
         }
-        owner.replace(this, n);
+        owner.properties.set(owner.properties.lastIndexOf(this), newb);
+        // Note: a negative lastIndexOf(old) would be a bug in our algorithm.
         dispose();
-        return n;
+        return newb;
     }
 
     /**
@@ -248,6 +262,7 @@ public final class AttributeTypeBuilder<V> extends PropertyTypeBuilder {
 
     /**
      * Returns an enumeration of valid values for the attribute, or an empty array if none.
+     * This convenience method returns the value of the characteristic set by {@link #setValidValues(Object...)}.
      *
      * @return valid values for the attribute, or an empty array if none.
      */
@@ -282,6 +297,16 @@ public final class AttributeTypeBuilder<V> extends PropertyTypeBuilder {
     }
 
     /**
+     * Returns the maximal length that characterizes the {@link CharSequence} values of this attribute.
+     * This convenience method returns the value of the characteristic set by {@link #setMaximalLength(Integer)}.
+     *
+     * @return the maximal length of {@link CharSequence} attribute values, or {@code null}.
+     */
+    public Integer getMaximalLength() {
+        return (Integer) getCharacteristic(AttributeConvention.MAXIMAL_LENGTH_CHARACTERISTIC);
+    }
+
+    /**
      * Sets the maximal length that characterizes the {@link CharSequence} values of this attribute.
      * While this characteristic can be applied to any kind of attribute, it is meaningful only with
      * character sequences.
@@ -297,6 +322,16 @@ public final class AttributeTypeBuilder<V> extends PropertyTypeBuilder {
      */
     public AttributeTypeBuilder<V> setMaximalLength(final Integer length) {
         return setCharacteristic(AttributeConvention.MAXIMAL_LENGTH_CHARACTERISTIC, Integer.class, length);
+    }
+
+    /**
+     * Returns the coordinate reference system associated to attribute values.
+     * This convenience method returns the value of the characteristic set by {@link #setCRS(CoordinateReferenceSystem)}.
+     *
+     * @return the coordinate reference system associated to attribute values, or {@code null}.
+     */
+    public CoordinateReferenceSystem getCRS() {
+        return (CoordinateReferenceSystem) getCharacteristic(AttributeConvention.CRS_CHARACTERISTIC);
     }
 
     /**
@@ -336,11 +371,28 @@ public final class AttributeTypeBuilder<V> extends PropertyTypeBuilder {
         for (final CharacteristicTypeBuilder<?> characteristic : characteristics) {
             if (name.equals(characteristic.getName())) {
                 characteristic.set(value);
+                clearCache();
                 return this;
             }
         }
         addCharacteristic(type).setDefaultValue(value).setName(name);
         return this;
+    }
+
+    /**
+     * Returns the builder for the characteristic of the given name. The given name does not need to contains
+     * all elements of a {@link org.opengis.util.ScopedName}; it is okay to specify only the tip (for example
+     * {@code "myName"} instead of {@code "myScope:myName"}) provided that ignoring the name head does not
+     * create ambiguity.
+     *
+     * @param  name   name of the characteristic to search.
+     * @return characteristic of the given name, or {@code null} if none.
+     * @throws IllegalArgumentException if the given name is ambiguous.
+     *
+     * @see #characteristics()
+     */
+    public CharacteristicTypeBuilder<?> getCharacteristic(final String name) {
+        return forName(characteristics, name);
     }
 
     /**
@@ -437,6 +489,7 @@ public final class AttributeTypeBuilder<V> extends PropertyTypeBuilder {
      *
      * @return a live list over the characteristics declared to this builder.
      *
+     * @see #getCharacteristic(String)
      * @see #addCharacteristic(Class)
      * @see #addCharacteristic(AttributeType)
      * @see #setValidValues(Object...)
@@ -444,20 +497,6 @@ public final class AttributeTypeBuilder<V> extends PropertyTypeBuilder {
      */
     public List<CharacteristicTypeBuilder<?>> characteristics() {
         return new RemoveOnlyList<>(characteristics);
-    }
-
-    /**
-     * Replaces the given characteristic by a new one. Exactly one instance of the old characteristic
-     * shall exist (this is not verified).
-     *
-     * @see CharacteristicTypeBuilder#setValueClass(Class)
-     */
-    final void replace(final CharacteristicTypeBuilder<?> old, final CharacteristicTypeBuilder<?> n) {
-        /*
-         * We do not verify if lastIndexOf(old) >= 0 because
-         * an element not found would be a bug in our algorithm.
-         */
-        characteristics.set(characteristics.lastIndexOf(old), n);
     }
 
     /**

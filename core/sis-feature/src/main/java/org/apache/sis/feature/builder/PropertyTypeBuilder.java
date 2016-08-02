@@ -113,13 +113,6 @@ public abstract class PropertyTypeBuilder extends TypeBuilder {
     }
 
     /**
-     * Flags this builder as a disposed one. The builder should not be used anymore after this method call.
-     */
-    final void dispose() {
-        owner = null;
-    }
-
-    /**
      * Sets the minimum and maximum number of property values. Those numbers must be equal or greater than zero.
      *
      * <p>If this method is not invoked, then the default values are the cardinality specified by the last call
@@ -185,4 +178,27 @@ public abstract class PropertyTypeBuilder extends TypeBuilder {
      * Creates a new property type from the current setting.
      */
     abstract PropertyType create();
+
+    /**
+     * Flags this builder as a disposed one. The builder should not be used anymore after this method call.
+     */
+    @Override
+    final void dispose() {
+        owner = null;
+    }
+
+    /**
+     * Removes this property from the {@code FeatureTypeBuilder}.
+     * After this method has been invoked, this {@code PropertyTypeBuilder} instance
+     * is no longer in the list returned by {@link FeatureTypeBuilder#properties()}
+     * and attempts to invoke any setter method on {@code this} will cause an
+     * {@link IllegalStateException} to be thrown.
+     */
+    public void remove() {
+        if (owner != null) {
+            owner.properties.remove(owner.properties.lastIndexOf(this));
+            // Note: a negative lastIndexOf(old) would be a bug in our algorithm.
+            dispose();
+        }
+    }
 }
