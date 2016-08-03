@@ -18,57 +18,74 @@ package org.apache.sis.storage.geotiff;
 
 import java.util.Locale;
 import java.io.IOException;
+import static java.lang.Math.pow;
+import static java.lang.Math.sqrt;
+import java.net.MalformedURLException;
 import java.text.ParseException;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import org.opengis.metadata.citation.DateType;
 import org.apache.sis.internal.storage.MetadataBuilder;
-
 
 /**
  * An Image File Directory (FID) in a TIFF image.
  *
- * @author  Rémi Marechal (Geomatys)
- * @author  Alexis Manin (Geomatys)
- * @author  Johann Sorel (Geomatys)
- * @author  Martin Desruisseaux (Geomatys)
- * @since   0.8
+ * @author Rémi Marechal (Geomatys)
+ * @author Alexis Manin (Geomatys)
+ * @author Johann Sorel (Geomatys)
+ * @author Martin Desruisseaux (Geomatys)
+ * @since 0.8
  * @version 0.8
  * @module
  *
- * @see <a href="http://www.awaresystems.be/imaging/tiff/tifftags.html">TIFF Tag Reference</a>
+ * @see <a href="http://www.awaresystems.be/imaging/tiff/tifftags.html">TIFF Tag
+ * Reference</a>
  */
 final class ImageFileDirectory {
+
+    private double[] ModelTiePoint;
     /**
-     * {@code true} if this {@code ImageFileDirectory} has not yet read all deferred entries.
-     * When this flag is {@code true}, the {@code ImageFileDirectory} is not yet ready for use.
+     * {@code true} if this {@code ImageFileDirectory} has not yet read all
+     * deferred entries. When this flag is {@code true}, the
+     * {@code ImageFileDirectory} is not yet ready for use.
      */
     boolean hasDeferredEntries;
 
     /**
-     * The size of the image described by this FID, or -1 if the information has not been found.
-     * The image may be much bigger than the memory capacity, in which case the image shall be tiled.
+     * The size of the image described by this FID, or -1 if the information has
+     * not been found. The image may be much bigger than the memory capacity, in
+     * which case the image shall be tiled.
      */
-    private long imageWidth = -1, imageHeight = -1;
+    private long imageWidth, imageHeight = -1;
 
     /**
-     * The size of each tile, or -1 if the information has not be found.
-     * Tiles should be small enough for fitting in memory.
+     * The size of each tile, or -1 if the information has not be found. Tiles
+     * should be small enough for fitting in memory.
      */
     private int tileWidth = -1, tileHeight = -1;
-
-    private int samplesPerPixel;
+    private short ushortvalue = 0;
+    private int samplesPerPixel = -1;
+    private int bitsPerSample = -1;
+    private int minSampleValue = 0, maxSampleValue = 0, RowsPerStrip = 0, NewSubfileType = 0;
 
     /**
-     * If {@code true}, the components are stored in separate “component planes”.
-     * The default is {@code false}, which stands for the "chunky" format
-     * (for example RGB data stored as RGBRGBRGB).
+     * If {@code true}, the components are stored in separate “component
+     * planes”. The default is {@code false}, which stands for the "chunky"
+     * format (for example RGB data stored as RGBRGBRGB).
      */
     private boolean isPlanar;
 
     /**
-     * The compression method, or {@code null} if unknown. If the compression method is unknown
-     * or unsupported we can not read the image, but we still can read the metadata.
+     * The compression method, or {@code null} if unknown. If the compression
+     * method is unknown or unsupported we can not read the image, but we still
+     * can read the metadata.
      */
     private Compression compression;
+    //private Map<Integer,String> propeties = new HashMap<>();
+    private String a;
+    private long XResolution;
+    private long YResolution;
 
     /**
      * Creates a new image file directory.
@@ -77,22 +94,29 @@ final class ImageFileDirectory {
     }
 
     /**
-     * Adds the value read from the current position in the given stream
-     * for the entry identified by the given GeoTIFF tag.
+     * Adds the value read from the current position in the given stream for the
+     * entry identified by the given GeoTIFF tag.
      *
-     * @param  reader   the input stream to read, the metadata and the character encoding.
-     * @param  tag      the GeoTIFF tag to decode.
-     * @param  type     the GeoTIFF type of the value to read.
-     * @param  count    the number of values to read.
+     * @param reader the input stream to read, the metadata and the character
+     * encoding.
+     * @param tag the GeoTIFF tag to decode.
+     * @param type the GeoTIFF type of the value to read.
+     * @param count the number of values to read.
      * @return {@code null} on success, or the unrecognized value otherwise.
      * @throws IOException if an error occurred while reading the stream.
-     * @throws ParseException if the value need to be parsed as date and the parsing failed.
-     * @throws NumberFormatException if the value need to be parsed as number and the parsing failed.
-     * @throws ArithmeticException if the value can not be represented in the expected Java type.
-     * @throws IllegalArgumentException if a value which was expected to be a singleton is not.
-     * @throws UnsupportedOperationException if the given type is {@link Type#UNDEFINED}.
+     * @throws ParseException if the value need to be parsed as date and the
+     * parsing failed.
+     * @throws NumberFormatException if the value need to be parsed as number
+     * and the parsing failed.
+     * @throws ArithmeticException if the value can not be represented in the
+     * expected Java type.
+     * @throws IllegalArgumentException if a value which was expected to be a
+     * singleton is not.
+     * @throws UnsupportedOperationException if the given type is
+     * {@link Type#UNDEFINED}.
      */
     Object addEntry(final Reader reader, final int tag, final Type type, final long count) throws IOException, ParseException {
+
         switch (tag) {
 
             ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -111,10 +135,17 @@ final class ImageFileDirectory {
                 final long value = type.readLong(reader.input, count);
                 if (value < 1 || value > 2) {
                     return value;
+
                 }
+
                 isPlanar = (value == 2);
                 break;
             }
+            case Tags.ModelTiePoint: {
+                ModelTiePoint = type.readDouble(reader.input, count, reader.owner.encoding);
+            }
+            break;
+
             /*
              * The number of columns in the image, i.e., the number of pixels per row.
              */
@@ -130,10 +161,25 @@ final class ImageFileDirectory {
                 break;
             }
             /*
+            GeoAsciiParamsTag
+             */
+            case Tags.GeoAsciiParamsTag: {
+                String a = null;
+                for (String value : type.readString(reader.input, count, reader.owner.encoding)) {
+                    if (value != null) {
+                        a = value;
+                    }
+                    return a;
+                }
+                
+                break;
+            }
+            /*
              * The number of rows per strip. RowsPerStrip and ImageLength together tell us the number of strips
              * in the entire image: StripsPerImage = floor((ImageLength + RowsPerStrip - 1) / RowsPerStrip).
              */
             case Tags.RowsPerStrip: {
+                RowsPerStrip = (int) type.readUnsignedLong(reader.input, count);
                 // TODO
                 break;
             }
@@ -141,6 +187,8 @@ final class ImageFileDirectory {
              * For each strip, the number of bytes in the strip after compression.
              */
             case Tags.StripByteCounts: {
+                //StripByteCounts
+                // TODOStripByteCounts
                 // TODO
                 break;
             }
@@ -176,15 +224,33 @@ final class ImageFileDirectory {
              * But the TIFF specification allows different values.
              */
             case Tags.BitsPerSample: {
-                // TODO
+                final long value = type.readLong(reader.input, count);
+                bitsPerSample = (int) value;
+                if (bitsPerSample == -1) {
+                    return value;
+                }
                 break;
+
             }
             /*
              * The number of components per pixel. Ssually 1 for bilevel, grayscale, and palette-color images,
              * and 3 for RGB images. Default value is 1.
              */
             case Tags.SamplesPerPixel: {
-                // TODO
+                final long value = type.readLong(reader.input, count);
+                samplesPerPixel = (int) value;
+                if (samplesPerPixel == -1) {
+                    return value;
+                }
+                break;
+            }
+            case Tags.ProjectedCSType: {
+                double[] num = null;
+                int i = 0;
+                for (final double value : type.readDouble(reader.input, count, reader.owner.encoding)) {
+                    num[i] = value;
+                    i++;
+                }
                 break;
             }
             /*
@@ -214,6 +280,7 @@ final class ImageFileDirectory {
              * 4 = Transparency Mask the defines an irregularly shaped region of another image in the same TIFF file.
              */
             case Tags.PhotometricInterpretation: {
+
                 // TODO
                 break;
             }
@@ -233,7 +300,11 @@ final class ImageFileDirectory {
              * The minimum component value used. Default is 0.
              */
             case Tags.MinSampleValue: {
-                reader.metadata.addMinimumSampleValue(type.readDouble(reader.input, count));
+                for (final double value : type.readDouble(reader.input, count, reader.owner.encoding)) {
+                    if (value != 0) {
+                        minSampleValue = (int) value;
+                    }
+                }
                 break;
             }
             /*
@@ -242,7 +313,11 @@ final class ImageFileDirectory {
              * visual appearance of an image, unless a map styling is applied.
              */
             case Tags.MaxSampleValue: {
-                reader.metadata.addMaximumSampleValue(type.readDouble(reader.input, count));
+                for (final double value : type.readDouble(reader.input, count, reader.owner.encoding)) {
+                    if (value != 0) {
+                        maxSampleValue = (int) value;
+                    }
+                }
                 break;
             }
 
@@ -262,6 +337,7 @@ final class ImageFileDirectory {
              * Bit 4 indicates MRC imaging model as described in ITU-T recommendation T.44 [T.44] (See ImageLayer tag) - RFC 2301.
              */
             case Tags.NewSubfileType: {
+                NewSubfileType = (int) type.readUnsignedLong(reader.input, count);
                 // TODO
                 break;
             }
@@ -291,7 +367,6 @@ final class ImageFileDirectory {
                 break;
             }
 
-
             ////////////////////////////////////////////////////////////////////////////////////////////////
             ////                                                                                        ////
             ////    Metadata for discovery purposes, conditions of use, etc.                            ////
@@ -304,9 +379,8 @@ final class ImageFileDirectory {
              * For example, a user may wish to attach a comment such as "1988 company picnic" to an image.
              */
             case Tags.ImageDescription: {
-                for (final String value : type.readString(reader.input, count, reader.owner.encoding)) {
-                    reader.metadata.addTitle(value);
-                }
+
+                //a=value;
                 break;
             }
             /*
@@ -314,9 +388,7 @@ final class ImageFileDirectory {
              * Copyright information, but Apache SIS does not support this legacy practice.
              */
             case Tags.Artist: {
-                for (final String value : type.readString(reader.input, count, reader.owner.encoding)) {
-                    reader.metadata.addAuthor(value);
-                }
+
                 break;
             }
             /*
@@ -324,18 +396,14 @@ final class ImageFileDirectory {
              * Example: “Copyright, John Smith, 1992. All rights reserved.”
              */
             case Tags.Copyright: {
-                for (final String value : type.readString(reader.input, count, reader.owner.encoding)) {
-                    reader.metadata.parseLegalNotice(value);
-                }
+
                 break;
             }
             /*
              * Date and time of image creation. The format is: "YYYY:MM:DD HH:MM:SS" with 24-hour clock.
              */
             case Tags.DateTime: {
-                for (final String value : type.readString(reader.input, count, reader.owner.encoding)) {
-                    reader.metadata.add(reader.getDateFormat().parse(value), DateType.CREATION);
-                }
+
                 break;
             }
             /*
@@ -349,7 +417,6 @@ final class ImageFileDirectory {
              * Name and version number of the software package(s) used to create the image.
              */
             case Tags.Software: {
-                // TODO
                 break;
             }
             /*
@@ -372,6 +439,7 @@ final class ImageFileDirectory {
              * The number of pixels per ResolutionUnit in the ImageWidth direction.
              */
             case Tags.XResolution: {
+                XResolution = type.readLong(reader.input, count);
                 // TODO
                 break;
             }
@@ -379,6 +447,7 @@ final class ImageFileDirectory {
              * The number of pixels per ResolutionUnit in the ImageLength direction.
              */
             case Tags.YResolution: {
+                YResolution = type.readLong(reader.input, count);
                 // TODO
                 break;
             }
@@ -443,12 +512,23 @@ final class ImageFileDirectory {
     }
 
     /**
-     * Completes the metadata with the information stored in the field of this IFD.
-     * This method is invoked only if the user requested the ISO 19115 metadata.
+     * Completes the metadata with the information stored in the field of this
+     * IFD. This method is invoked only if the user requested the ISO 19115
+     * metadata.
      */
-    final void completeMetadata(final MetadataBuilder metadata, final Locale locale) {
+    final void completeMetadata(final MetadataBuilder metadata, Reader reader, final Locale locale) throws MalformedURLException, IOException {
         if (compression != null) {
-            metadata.addCompression(compression.name().toLowerCase(locale));
+            metadata.addCompression(compression.name().toLowerCase(locale), reader.file.toURL().openConnection().getContentType());
+            metadata.add(new Date(reader.file.lastModified()), DateType.CREATION);
+            metadata.addTitle(reader.file.getName());
+            final String[] b = reader.file.getName().split("_");
+            metadata.addIdentifier(b[0]);
+            if (maxSampleValue == 0) {
+                maxSampleValue = (int) (pow(2, bitsPerSample) - 1);
+            }
+            metadata.addMaximumSampleValue(maxSampleValue);
+            metadata.addMinimumSampleValue(minSampleValue);
         }
     }
+
 }

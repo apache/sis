@@ -202,6 +202,11 @@ enum Type {
      * </ul>
      */
     DOUBLE(12, Double.BYTES) {
+        @Override
+        double[] readDouble(final ChannelDataInput input, final long length, final Charset charset) throws IOException{
+            final double[] bytes = input.readDoubles(Math.toIntExact(length));
+            return bytes;
+        }
         @Override long readLong(final ChannelDataInput input, final long count) throws IOException {
             ensureSingleton(count);
             final double value = input.readDouble();
@@ -462,6 +467,10 @@ enum Type {
         for (int i=0; i<s.length; i++) {
             s[i] = String.valueOf(readLong(input, 1));
         }
+        return s;
+    }
+    double[] readDouble(ChannelDataInput input, final long length, final Charset charset) throws IOException {
+        final double[] s = input.readDoubles(Math.toIntExact(length));
         return s;
     }
 }

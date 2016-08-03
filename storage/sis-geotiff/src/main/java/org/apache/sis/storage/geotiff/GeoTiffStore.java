@@ -16,6 +16,7 @@
  */
 package org.apache.sis.storage.geotiff;
 
+import java.io.File;
 import java.util.Locale;
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -26,6 +27,8 @@ import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.internal.storage.ChannelDataInput;
+import org.apache.sis.internal.storage.MetadataBuilder;
+import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Classes;
@@ -41,6 +44,7 @@ import org.apache.sis.util.Classes;
  * @module
  */
 public class GeoTiffStore extends DataStore {
+    final StorageConnector storage;
     /**
      * The encoding of strings in the metadata. The string specification said that is shall be US-ASCII,
      * but Apache SIS nevertheless let the user specifies an alternative encoding if needed.
@@ -57,7 +61,7 @@ public class GeoTiffStore extends DataStore {
      *
      * @see #getMetadata()
      */
-    private Metadata metadata;
+    private DefaultMetadata metadata;
 
     /**
      * Creates a new GeoTIFF store from the given file, URL or stream object.
@@ -69,6 +73,7 @@ public class GeoTiffStore extends DataStore {
      */
     public GeoTiffStore(final StorageConnector storage) throws DataStoreException {
         ArgumentChecks.ensureNonNull("storage", storage);
+        this.storage = storage;
         encoding = storage.getOption(OptionKey.ENCODING);
         final ChannelDataInput input = storage.getStorageAs(ChannelDataInput.class);
         if (input == null) {
@@ -82,7 +87,9 @@ public class GeoTiffStore extends DataStore {
             throw new DataStoreException(e);
         }
     }
-
+    public Object getPath(){
+        return storage.getStorage();
+    }
     /**
      * Returns information about the dataset as a whole. The returned metadata object can contain information
      * such as the spatiotemporal extent of the dataset, contact information about the creator or distributor,
@@ -98,7 +105,7 @@ public class GeoTiffStore extends DataStore {
             ImageFileDirectory dir;
             final Locale locale = getLocale();
             while ((dir = reader.getImageFileDirectory(n++)) != null) {
-                dir.completeMetadata(reader.metadata, locale);
+                dir.completeMetadata(reader.metadata,reader, locale);
             }
             metadata = reader.metadata.result();
         } catch (IOException e) {

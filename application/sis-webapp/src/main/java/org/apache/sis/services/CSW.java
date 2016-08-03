@@ -51,14 +51,14 @@ public class CSW {
     @Path("/getcapabilities")
     @Produces(MediaType.APPLICATION_XML)
     public GetCapabilitieRequest getCapabilities(@QueryParam("service") String service, @QueryParam("version") String Version, @QueryParam("request") String request) {
-     if(request.equals("GetCapabilities")){
+        if (request.equals("GetCapabilities")) {
             Capabilities version = new Capabilities();
             version.setVersion(new String[]{Version});
             Capabilities outputformat = new Capabilities();
             outputformat.setOutputFormat(new String[]{path.getValue("outputFormat")});
             GetCapabilitieRequest capabilite = new GetCapabilitieRequest(version, outputformat);
             return capabilite;
-     }
+        }
         return null;
     }
 
@@ -88,17 +88,18 @@ public class CSW {
             @QueryParam("request") String request,
             @QueryParam("startPosition") int start,
             @QueryParam("maxRecords") int size) throws ParseException, Exception {
-         if (request.equals("GetRecords") && start >= 0 && size > 0){
-        Record record = new Record(path.getValue("Path"),Version,service);
-        return record.getAllRecordPaginated(start, size);
-         }
-         return null;
+        if (request.equals("GetRecords") && start >= 0 && size > 0) {
+            Record record = new Record(path.getValue("Path"), Version, service);
+            return record.getAllRecordPaginated(start, size);
+        }
+        return null;
     }
     
     public GetRecordsReponse GetRecordsCQL(
             @QueryParam("service") String service,
             @QueryParam("version") String Version,
             @QueryParam("request") String request,
+<<<<<<< Updated upstream
             @QueryParam("constraintLanguage") String constraintLanguage,
             @QueryParam("constraint") String constraint,
             @QueryParam("startPosition") int start,
@@ -109,6 +110,12 @@ public class CSW {
             record.filter();
             GetRecordsReponse a = new GetRecordsReponse();
             a.setRecord(record.getData());
+=======
+            @QueryParam("Id") String id) throws ParseException, Exception {
+        if (request.equals("GetRecordById")) {
+            Record record = new Record(path.getValue("Path"), Version, service);
+            GetRecordByIdReponse a = record.getRecordById(id);
+>>>>>>> Stashed changes
             return a;
         }
         return null;
@@ -127,14 +134,14 @@ public class CSW {
             @QueryParam("north") double north,
             @QueryParam("startDate") String date1,
             @QueryParam("rangeDate") String date2) throws Exception {
-        
+
         if (request.equals("GetRecords") && constraintLanguage.toLowerCase().equals("filter")) {
-            
+
             AnyText record = new AnyText(path.getValue("Path"), Version, service, constraintLanguage, format, identifier, date1, date2);
             record.setBbox(west, east, south, north);
             record.filter();
-             GetRecordsReponse a = new GetRecordsReponse();
-             a.setRecord(record.getData());
+            GetRecordsReponse a = new GetRecordsReponse();
+            a.setRecord(record.getData());
             return a;
         }
         return null;

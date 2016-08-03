@@ -16,6 +16,7 @@
  */
 package org.apache.sis.storage.geotiff;
 
+import java.io.File;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -27,6 +28,7 @@ import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.internal.storage.ChannelDataInput;
 import org.apache.sis.internal.storage.MetadataBuilder;
+import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.util.resources.Errors;
 
 
@@ -50,6 +52,7 @@ import org.apache.sis.util.resources.Errors;
  * @module
  */
 final class Reader extends GeoTIFF {
+    final File file;
     /**
      * The stream from which to read the data.
      */
@@ -108,6 +111,7 @@ final class Reader extends GeoTIFF {
      * Builder for the metadata.
      */
     final MetadataBuilder metadata;
+    //final DefaultMetadata metadata;
 
     /**
      * Creates a new GeoTIFF reader which will read data from the given input.
@@ -118,6 +122,7 @@ final class Reader extends GeoTIFF {
      */
     Reader(final GeoTiffStore owner, final ChannelDataInput input) throws IOException, DataStoreException {
         super(owner);
+        this.file = new File(owner.getPath().toString());
         this.input    = input;
         this.origin   = input.getStreamPosition();
         this.metadata = new MetadataBuilder();
