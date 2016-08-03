@@ -18,9 +18,11 @@ package org.apache.sis.storage.geotiff;
 
 import java.util.Locale;
 import java.io.IOException;
+import static java.lang.Math.floor;
 import static java.lang.Math.pow;
 import static java.lang.Math.sqrt;
 import java.net.MalformedURLException;
+import java.nio.charset.Charset;
 import java.text.ParseException;
 import java.util.Date;
 import java.util.HashMap;
@@ -66,9 +68,12 @@ final class ImageFileDirectory {
     private int tileWidth = -1, tileHeight = -1;
     private short ushortvalue = 0;
     private int samplesPerPixel = -1;
+    private int sampleFormat = -1;
     private int bitsPerSample = -1;
     private int minSampleValue = 0, maxSampleValue = 0, RowsPerStrip = 0, NewSubfileType = 0;
-
+    private int photometricInterpretation = 0;
+    private int[] stripOffsets;
+    
     /**
      * If {@code true}, the components are stored in separate “component
      * planes”. The default is {@code false}, which stands for the "chunky"
@@ -116,7 +121,7 @@ final class ImageFileDirectory {
      * {@link Type#UNDEFINED}.
      */
     Object addEntry(final Reader reader, final int tag, final Type type, final long count) throws IOException, ParseException {
-
+        System.out.println(tag);
         switch (tag) {
 
             ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -133,6 +138,7 @@ final class ImageFileDirectory {
              */
             case Tags.PlanarConfiguration: {
                 final long value = type.readLong(reader.input, count);
+                System.out.println(tag + ": PlanarConfig : " + value);
                 if (value < 1 || value > 2) {
                     return value;
 
@@ -151,6 +157,7 @@ final class ImageFileDirectory {
              */
             case Tags.ImageWidth: {
                 imageWidth = type.readUnsignedLong(reader.input, count);
+                System.out.println(tag + ": Width: " + imageWidth);
                 break;
             }
             /*
@@ -158,13 +165,15 @@ final class ImageFileDirectory {
              */
             case Tags.ImageLength: {
                 imageHeight = type.readUnsignedLong(reader.input, count);
+                System.out.println(tag + ": IMAGE HEIGHT : " + imageHeight);
                 break;
             }
+            
             /*
             GeoAsciiParamsTag
              */
             case Tags.GeoAsciiParamsTag: {
-                String a = null;
+                a = null;
                 for (String value : type.readString(reader.input, count, reader.owner.encoding)) {
                     if (value != null) {
                         a = value;
@@ -180,7 +189,7 @@ final class ImageFileDirectory {
              */
             case Tags.RowsPerStrip: {
                 RowsPerStrip = (int) type.readUnsignedLong(reader.input, count);
-                // TODO
+                System.out.println(tag + ": RowsPerStrip : " + RowsPerStrip);
                 break;
             }
             /*
@@ -197,6 +206,16 @@ final class ImageFileDirectory {
              */
             case Tags.StripOffsets: {
                 // TODO
+                long StripsPerImage =(long) floor ((imageHeight + RowsPerStrip - 1) / RowsPerStrip);
+                stripOffsets = new int[10];
+                String[] result = type.readString(reader.input, imageHeight, Charset.defaultCharset());
+                
+                System.out.println("ZZZZ"+StripsPerImage);
+                for(int i = 1; i < StripsPerImage; i++) {
+                    stripOffsets[i] = Integer.parseInt(result[i]);
+                    System.out.print(stripOffsets[i] + ", ");
+                }
+                
                 break;
             }
             /*
@@ -205,6 +224,8 @@ final class ImageFileDirectory {
             case Tags.Compression: {
                 final long value = type.readLong(reader.input, count);
                 compression = Compression.valueOf(value);
+
+                System.out.println( tag+" : Compression : "+compression);
                 if (compression == null) {
                     return value;
                 }
@@ -226,6 +247,7 @@ final class ImageFileDirectory {
             case Tags.BitsPerSample: {
                 final long value = type.readLong(reader.input, count);
                 bitsPerSample = (int) value;
+                System.out.println( tag+" : BitPerSample : "+value);
                 if (bitsPerSample == -1) {
                     return value;
                 }
@@ -239,9 +261,11 @@ final class ImageFileDirectory {
             case Tags.SamplesPerPixel: {
                 final long value = type.readLong(reader.input, count);
                 samplesPerPixel = (int) value;
+                System.out.println( tag+" : SamplesPerPixel : "+value);
                 if (samplesPerPixel == -1) {
                     return value;
                 }
+                
                 break;
             }
             case Tags.ProjectedCSType: {
@@ -263,7 +287,23 @@ final class ImageFileDirectory {
                 // TODO
                 break;
             }
-
+            
+            /*
+             * SampleFormat=SamplesPerPixel
+             * 1 = unsigned integer data
+             * 2 = two's complement signed integer data
+             * 3 = IEEE floating point data
+             * 4 = undefined data format
+             */
+            case Tags.SampleFormat: {
+                sampleFormat = samplesPerPixel;
+                if(samplesPerPixel >= 4 && samplesPerPixel < 0) {
+                    sampleFormat = 4;
+                }
+                
+                System.out.println( tag+" : SampleFormat : "+sampleFormat);
+                break;
+            }
             ////////////////////////////////////////////////////////////////////////////////////////////////
             ////                                                                                        ////
             ////    Information related to the color palette or the meaning of sample values.           ////
@@ -280,8 +320,11 @@ final class ImageFileDirectory {
              * 4 = Transparency Mask the defines an irregularly shaped region of another image in the same TIFF file.
              */
             case Tags.PhotometricInterpretation: {
-
-                // TODO
+                final long value = type.readLong(reader.input, count);
+              
+                System.out.println( tag+" : PhotometricInterpretation: "+value);
+                photometricInterpretation = (int) value;
+                
                 break;
             }
             /*
@@ -293,7 +336,9 @@ final class ImageFileDirectory {
              * then the color space may be different than RGB.
              */
             case Tags.ColorMap: {
+                final long value = type.readLong(reader.input, count);
                 // TODO
+                System.out.println( tag + " : "+value);
                 break;
             }
             /*

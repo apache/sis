@@ -99,7 +99,6 @@ public class CSW {
             @QueryParam("service") String service,
             @QueryParam("version") String Version,
             @QueryParam("request") String request,
-<<<<<<< Updated upstream
             @QueryParam("constraintLanguage") String constraintLanguage,
             @QueryParam("constraint") String constraint,
             @QueryParam("startPosition") int start,
@@ -110,12 +109,6 @@ public class CSW {
             record.filter();
             GetRecordsReponse a = new GetRecordsReponse();
             a.setRecord(record.getData());
-=======
-            @QueryParam("Id") String id) throws ParseException, Exception {
-        if (request.equals("GetRecordById")) {
-            Record record = new Record(path.getValue("Path"), Version, service);
-            GetRecordByIdReponse a = record.getRecordById(id);
->>>>>>> Stashed changes
             return a;
         }
         return null;
