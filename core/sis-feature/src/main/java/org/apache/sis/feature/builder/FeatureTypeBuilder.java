@@ -70,7 +70,7 @@ public class FeatureTypeBuilder extends TypeBuilder {
     /**
      * Builders for the properties (attributes, associations or operations) of this feature.
      */
-    final List<PropertyTypeBuilder> properties;
+    private final List<PropertyTypeBuilder> properties;
 
     /**
      * The parent of the feature to create. By default, new features have no parent.
@@ -607,10 +607,13 @@ public class FeatureTypeBuilder extends TypeBuilder {
      * One of the {@code setName(…)} methods must have been invoked before this {@code build()} method (mandatory).
      * All other methods are optional, but some calls to a {@code add} method are usually needed.
      *
-     * @return the new feature type.
-     * @throws IllegalStateException if the feature type contains incompatible
-     *         {@linkplain AttributeTypeBuilder#setCRS CRS characteristics}.
+     * <p>If a feature type has already been built and this builder state has not changed since the
+     * feature type creation, then the previously created {@code FeatureType} instance is returned.</p>
+     *
+     * @return the feature type.
+     * @throws IllegalStateException if the builder contains inconsistent information.
      */
+    @Override
     public FeatureType build() throws IllegalStateException {
         if (feature == null) {
             /*
@@ -708,8 +711,25 @@ public class FeatureTypeBuilder extends TypeBuilder {
     /**
      * Helper method for creating identification info of synthetic attributes.
      */
-    static Map<String,?> name(final GenericName name) {
+    private static Map<String,?> name(final GenericName name) {
         return Collections.singletonMap(AbstractOperation.NAME_KEY, name);
+    }
+
+    /**
+     * Replaces the given builder instance by a new instance, or delete the old instance.
+     * This builder should contain exactly one instance of the given {@code old} builder.
+     *
+     * @param old  the instance to replace.
+     * @param replacement  the replacement, or {@code null} for deleting the old instance.
+     */
+    final void replace(final PropertyTypeBuilder old, final PropertyTypeBuilder replacement) {
+        final int index = properties.lastIndexOf(old);
+        if (index < 0 || (replacement != null ? properties.set(index, replacement) : properties.remove(index)) != old) {
+            // Assuming that there is no bug in our algorithm, this exception should never happen
+            // unless builder state has been changed in another thread before this method completed.
+            throw new CorruptedObjectException();
+        }
+        clearCache();
     }
 
     /**

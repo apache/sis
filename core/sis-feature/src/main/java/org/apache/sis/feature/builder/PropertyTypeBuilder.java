@@ -71,12 +71,6 @@ public abstract class PropertyTypeBuilder extends TypeBuilder {
     int maximumOccurs;
 
     /**
-     * The attribute or association created by this builder, or {@code null} if not yet created.
-     * This field must be cleared every time that a setter method is invoked on this builder.
-     */
-    private transient PropertyType property;
-
-    /**
      * Creates a new builder initialized to the values of the given builder.
      * This constructor is for {@link AttributeTypeBuilder#setValueClass(Class)} implementation.
      *
@@ -101,7 +95,6 @@ public abstract class PropertyTypeBuilder extends TypeBuilder {
         this.owner    = owner;
         minimumOccurs = owner.defaultMinimumOccurs;
         maximumOccurs = owner.defaultMaximumOccurs;
-        property      = template;
     }
 
     /**
@@ -157,27 +150,22 @@ public abstract class PropertyTypeBuilder extends TypeBuilder {
      * clears that cache. This method must be invoked every time that a setter method is invoked.
      */
     @Override
-    final void clearCache() {
-        property = null;
+    void clearCache() {
         ensureAlive(owner);
         owner.clearCache();
     }
 
     /**
-     * Returns the property type from the current setting.
-     * This method may return an existing property if it was already created.
+     * Builds the property type from the information specified to this builder.
+     * If a type has already been built and this builder state has not changed since the type creation,
+     * then the previously created {@code PropertyType} instance is returned
+     * (see {@link AttributeTypeBuilder#build()} for more information).
+     *
+     * @return the property type.
+     * @throws IllegalStateException if the builder contains inconsistent information.
      */
-    final PropertyType build() {
-        if (property == null) {
-            property = create();
-        }
-        return property;
-    }
-
-    /**
-     * Creates a new property type from the current setting.
-     */
-    abstract PropertyType create();
+    @Override
+    public abstract PropertyType build() throws IllegalStateException;
 
     /**
      * Flags this builder as a disposed one. The builder should not be used anymore after this method call.
@@ -196,8 +184,7 @@ public abstract class PropertyTypeBuilder extends TypeBuilder {
      */
     public void remove() {
         if (owner != null) {
-            owner.properties.remove(owner.properties.lastIndexOf(this));
-            // Note: a negative lastIndexOf(old) would be a bug in our algorithm.
+            owner.replace(this, null);
             dispose();
         }
     }

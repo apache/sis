@@ -107,9 +107,9 @@ public final class CharacteristicTypeBuilder<V> extends TypeBuilder {
     CharacteristicTypeBuilder(final AttributeTypeBuilder<?> owner, final AttributeType<V> template) {
         super(template, owner.getLocale());
         this.owner     = owner;
+        characteristic = template;
         valueClass     = template.getValueClass();
         defaultValue   = template.getDefaultValue();
-        characteristic = template;
     }
 
     /**
@@ -282,9 +282,14 @@ public final class CharacteristicTypeBuilder<V> extends TypeBuilder {
     }
 
     /**
-     * Creates a new characteristic from the current setting.
+     * Builds the characteristic type from the information specified to this builder.
+     * If a type has already been built and this builder state has not changed since the type creation,
+     * then the previously created {@code AttributeType} instance is returned.
+     *
+     * @return the characteristic type.
      */
-    final AttributeType<V> build() {
+    @Override
+    public AttributeType<V> build() {
         if (characteristic == null) {
             characteristic = new DefaultAttributeType<>(identification(), valueClass, 0, 1, defaultValue);
         }

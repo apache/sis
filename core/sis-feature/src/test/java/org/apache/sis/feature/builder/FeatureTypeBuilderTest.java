@@ -225,4 +225,27 @@ public final strictfp class FeatureTypeBuilderTest extends TestCase {
         assertEquals("superTypes", "City",    TestUtilities.getSingleton(builder.getSuperTypes()).getName().toString());
         assertFalse ("isAbstract",            builder.isAbstract());
     }
+
+    /**
+     * Verifies that {@code build()} method returns the previously created instance when possible.
+     * See {@link AttributeTypeBuilder#build()} javadoc for a rational.
+     */
+    @Test
+    @DependsOnMethod("testAddAttribute")
+    public void testBuildCache() {
+        final FeatureTypeBuilder builder = new FeatureTypeBuilder().setName("City");
+        final AttributeType<String> name = builder.addAttribute(String.class).setName("name").build();
+        final FeatureType city = builder.build();
+        assertSame("Should return the existing AttributeType.", name, city.getProperty("name"));
+        assertSame("Should return the existing FeatureType.", city, builder.build());
+
+        assertSame("Should return the existing AttributeType since we didn't changed anything.",
+                   name, builder.getProperty("name").build());
+
+        assertNotSame("Should return a new AttributeType since we changed something.",
+                      name, builder.getProperty("name").setDescription("Name of the city").build());
+
+        assertNotSame("Should return a new FeatureType since we changed an attribute.",
+                      city, builder.build());
+    }
 }

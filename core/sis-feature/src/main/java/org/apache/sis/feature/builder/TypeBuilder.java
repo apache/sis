@@ -459,4 +459,14 @@ public abstract class TypeBuilder implements Localized {
      */
     void dispose() {
     }
+
+    /**
+     * Builds the feature or property type from the information specified to this builder.
+     * If a type has already been built and this builder state has not changed since the type creation,
+     * then the previously created {@code IdentifiedType} instance is returned.
+     *
+     * @return the feature or property type.
+     * @throws IllegalStateException if the builder contains inconsistent information.
+     */
+    public abstract IdentifiedType build() throws IllegalStateException;
 }

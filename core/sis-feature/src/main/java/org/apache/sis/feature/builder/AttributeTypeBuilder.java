@@ -40,7 +40,6 @@ import org.apache.sis.util.UnconvertibleObjectException;
 // Branch-dependent imports
 import java.util.Objects;
 import org.opengis.feature.AttributeType;
-import org.opengis.feature.PropertyType;
 
 
 /**
@@ -100,6 +99,12 @@ public final class AttributeTypeBuilder<V> extends PropertyTypeBuilder {
     final List<CharacteristicTypeBuilder<?>> characteristics;
 
     /**
+     * The attribute type created by this builder, or {@code null} if not yet created.
+     * This field must be cleared every time that a setter method is invoked on this builder.
+     */
+    private transient AttributeType<V> property;
+
+    /**
      * Creates a new builder initialized to the values of the given builder.
      * This constructor is for {@link #setValueClass(Class)} implementation only.
      *
@@ -134,6 +139,7 @@ public final class AttributeTypeBuilder<V> extends PropertyTypeBuilder {
      */
     AttributeTypeBuilder(final FeatureTypeBuilder owner, final AttributeType<V> template) {
         super(owner, template);
+        property      = template;
         minimumOccurs = template.getMinimumOccurs();
         maximumOccurs = template.getMaximumOccurs();
         valueClass    = template.getValueClass();
@@ -143,6 +149,16 @@ public final class AttributeTypeBuilder<V> extends PropertyTypeBuilder {
         for (final AttributeType<?> c : tc.values()) {
             characteristics.add(new CharacteristicTypeBuilder<>(this, c));
         }
+    }
+
+    /**
+     * If the {@code AttributeType} created by the last call to {@link #build()} has been cached,
+     * clears that cache. This method must be invoked every time that a setter method is invoked.
+     */
+    @Override
+    final void clearCache() {
+        property = null;
+        super.clearCache();
     }
 
     /**
@@ -230,8 +246,7 @@ public final class AttributeTypeBuilder<V> extends PropertyTypeBuilder {
         for (final CharacteristicTypeBuilder<?> c : characteristics) {
             c.owner(newb);
         }
-        owner.properties.set(owner.properties.lastIndexOf(this), newb);
-        // Note: a negative lastIndexOf(old) would be a bug in our algorithm.
+        owner.replace(this, newb);
         dispose();
         return newb;
     }
@@ -611,14 +626,40 @@ public final class AttributeTypeBuilder<V> extends PropertyTypeBuilder {
     }
 
     /**
-     * Creates a new attribute type from the current setting.
+     * Builds the attribute type from the information specified to this builder.
+     * If a type has already been built and this builder state has not changed since the type creation,
+     * then the previously created {@code AttributeType} instance is returned.
+     *
+     * <div class="note"><b>Example:</b>
+     * the following lines of code add a "name" attribute to a "City" feature, then get the corresponding
+     * {@code AttributeType<String>} instance. If no setter method is invoked on the builder of the "name"
+     * attribute after those lines, then the {@code name} variable below will reference the same instance
+     * than the "name" attribute in the {@code city} type.
+     *
+     * {@preformat java
+     *   FeatureTypeBuilder builder = new FeatureTypeBuilder().setName("City");
+     *   AttributeType<String> name = builder.addAttribute(String.class).setName("name").build();
+     *   FeatureType city = builder.build();
+     *
+     *   assert city.getProperty("name") == name : "AttributeType instance should be the same.";
+     * }
+     *
+     * Note that {@code city.getProperty("name")} returns {@code AttributeType<?>},
+     * i.e. the {@linkplain #getValueClass() value class} is lost at compile-time.
+     * By comparison, this {@code build()} method has a more accurate return type.
+     * </div>
+     *
+     * @return the attribute type.
      */
     @Override
-    final PropertyType create() {
-        final AttributeType<?>[] chrts = new AttributeType<?>[characteristics.size()];
-        for (int i=0; i<chrts.length; i++) {
-            chrts[i] = characteristics.get(i).build();
+    public AttributeType<V> build() {
+        if (property == null) {
+            final AttributeType<?>[] chrts = new AttributeType<?>[characteristics.size()];
+            for (int i=0; i<chrts.length; i++) {
+                chrts[i] = characteristics.get(i).build();
+            }
+            property = new DefaultAttributeType<>(identification(), valueClass, minimumOccurs, maximumOccurs, defaultValue, chrts);
         }
-        return new DefaultAttributeType<>(identification(), valueClass, minimumOccurs, maximumOccurs, defaultValue, chrts);
+        return property;
     }
 }
