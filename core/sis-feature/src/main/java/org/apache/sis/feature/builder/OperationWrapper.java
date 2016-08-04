@@ -52,7 +52,7 @@ final class OperationWrapper extends PropertyTypeBuilder {
      * Returns the wrapped operation.
      */
     @Override
-    PropertyType create() {
+    public PropertyType build() {
         return operation;
     }
 
