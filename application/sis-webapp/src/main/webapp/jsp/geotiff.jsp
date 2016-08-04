@@ -1,14 +1,21 @@
 <!DOCTYPE html>
 <html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <title>JSP Page</title>
+       <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+        <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+    </head>
     <style>
-        table,th,td {
+/*        table,th,td {
             border : 1px solid black;
             border-collapse: collapse;
-        }
+        }*/
 
-        th,td {
+/*        th,td {
             padding: 5px;
-        }
+        }*/
 
         .image{
             height:50px;
@@ -16,33 +23,37 @@
         }
     </style>
     <body onload="loadDoc()">
-        <br><br>
-        <table id="demo"></table>
-        <table id="detail"></table>
+        <center>
+            <h1>Result</h1><br><br>
+            <img id="loading" class="image" src="../images/loading.gif"/>
+        </center>
+        <table class="table table-striped" style="margin-left: 20px; margin-right: 20px;" id="demo"></table>
 
         <!--       105.19,109.55,14.7,17.9-->
 
         <script>
 
 
-
+            document.getElementById('loading').style.display = "";
             function loadDoc() {
                 var xhttp = new XMLHttpRequest();
-
+                
                 xhttp.onreadystatechange = function () {
                     if (xhttp.readyState === 4 && xhttp.status === 200) {
-
+                        document.getElementById('loading').style.display = "none";
                         myFunction(xhttp);
                     }
                 };
+                
                 var format = "<%= request.getParameter("format")%>";
                 if (format==='null'){
-                format = "";
-    }
-    var identifier = "<%= request.getParameter("identifier")%>";
-     if (identifier==='null'){
-                identifier = "";
-    }
+                    format = "";
+                }
+                
+                var identifier = "<%= request.getParameter("identifier")%>";
+                 if (identifier==='null'){
+                            identifier = "";
+                }
                 var myString = "<%= request.getParameter("divid")%>";
                 var mySplitResult;
                 mySplitResult = myString.split(",");
@@ -63,9 +74,9 @@
                     north = "";
                 }
 
-                xhttp.open("GET", "http://localhost:8080/sis/VNSC/csw/2.0.2/filter?service=CSW&version=2.0.2&request=GetRecords&format="+format+"&identifier="+identifier+"&west=" + west + "&east=" + east + "&south=" + south + "&north=" + north + "&startDate=<%= request.getParameter("date1")%>&rangeDate=<%= request.getParameter("date2")%>", true);
+                xhttp.open("GET", "http://localhost:8084/sis/VNSC/csw/2.0.2/filter?service=CSW&version=2.0.2&request=GetRecords&constraintLanguage=filter&format="+format+"&identifier="+identifier+"&west=" + west + "&east=" + east + "&south=" + south + "&north=" + north + "&startDate=<%= request.getParameter("date1")%>&rangeDate=<%= request.getParameter("date2")%>", true);
                 xhttp.send();
-//                document.write("http://localhost:8080/MavenWebProject/VNSC/csw/Search?format="+format+"&identifier=&west=" +west + "&east=" + east + "&south=" + south + "&north=" + north + "&startDate="+date1+"&rangeDate="+date2);
+//                document.write("http://localhost:8084/MavenWebProject/VNSC/csw/Search?format="+format+"&identifier=&west=" +west + "&east=" + east + "&south=" + south + "&north=" + north + "&startDate="+date1+"&rangeDate="+date2);
             }
             function myFunction(xml) {
                 var i;
@@ -81,15 +92,15 @@
                     table += "<tr><td>" +
                             stt +
                             "</td><td>" +
-                            "<img class='image' src='http://localhost:8080/sis/VNSC/wcs/image/" +
+                            "<img class='image' src='http://localhost:8084/sis/VNSC/wcs/image/" +
                             x[i].getElementsByTagName("identifier")[0].childNodes[0].nodeValue + ".jpg'/>" +
                             "</td><td>" +
-                            "<a href='detail.jsp?identifier=" +x[i].getElementsByTagName("identifier")[0].childNodes[0].nodeValue+"'>"+
+                            "<a href='detail.jsp?identifier=" +x[i].getElementsByTagName("identifier")[0].childNodes[0].nodeValue+"&format="+ x[i].getElementsByTagName("format")[0].childNodes[0].nodeValue+"'>"+
                             x[i].getElementsByTagName("title")[0].childNodes[0].nodeValue + "</a>" +
                             "</td><td>" +
                             x[i].getElementsByTagName("format")[0].childNodes[0].nodeValue +
                             "</td><td>" +
-                            "<a href = 'http://localhost:8080/sis/VNSC/csw/2.0.2/download/" + 
+                            "<a href = 'http://localhost:8084/sis/VNSC/csw/2.0.2/download/" + 
                             x[i].getElementsByTagName("title")[0].childNodes[0].nodeValue + 
                             "'><button >Download</button></a>" +
                             "</td></tr>";
@@ -98,43 +109,6 @@
                 document.getElementById("demo").innerHTML = table;
             }
 
-            function loadMetadata(id) {
-                document.getElementById("demo").innerHTML = "";
-                var getXML = new XMLHttpRequest();
-
-                getXML.onreadystatechange = function () {
-                    if (getXML.readyState === 4 && getXML.status === 200) {
-                        console.log(getXML);
-                        tableMetadata(getXML);
-                    }
-                };
-                getXML.open("GET", "http://localhost:8080/sis/VNSC/csw/2.0.2/getrecordbyid?service=CSW&version=2.0.1&request=GetRecordById&Id=" + id, true);
-                getXML.send();
-            }
-
-            function tableMetadata(x) {
-                var doc = x.responseXML;
-                var metadata = doc.getElementsByTagName("Record")[0];
-                var bbox = metadata.getElementsByTagName("BoundingBox");
-
-                console.log(bbox[0].getElementsByTagName("eastBoundLongitude")[0].childNodes[0].nodeValue);
-                var table = "<tr><th>Field</th><th>Detail</th></tr>";
-                table += 
-                        "<tr><td>Title</td><td>" + metadata.getElementsByTagName("title")[0].childNodes[0].nodeValue + "</td></tr>" +
-                        "<tr><td>Subject</td><td>" + metadata.getElementsByTagName("Subject")[0].childNodes[0].nodeValue + "</td></tr>" +
-                        "<tr><td>Date</td><td>" + metadata.getElementsByTagName("modified")[0].childNodes[0].nodeValue + "</td></tr>" +
-                        "<tr><td>Type</td><td>" + metadata.getElementsByTagName("type")[0].childNodes[0].nodeValue + "</td></tr>" +
-                        "<tr><td>Format</td><td>" + metadata.getElementsByTagName("format")[0].childNodes[0].nodeValue + "</td></tr>" +
-                        "<tr><td>Identifier</td><td>" + metadata.getElementsByTagName("identifier")[0].childNodes[0].nodeValue + "</td></tr>" +
-                        "<tr><td>Language</td><td>" + metadata.getElementsByTagName("language")[0].childNodes[0].nodeValue + "</td></tr>" +
-                        "<tr><td>east</td><td>" + bbox[0].getElementsByTagName("eastBoundLongitude")[0].childNodes[0].nodeValue + "</td></tr>" +
-                        "<tr><td>west</td><td>" + bbox[0].getElementsByTagName("westBoundLongitude")[0].childNodes[0].nodeValue + "</td></tr>" +
-                        "<tr><td>south</td><td>" + bbox[0].getElementsByTagName("southBoundLatitude")[0].childNodes[0].nodeValue + "</td></tr>" +
-                        "<tr><td>north</td><td>" + bbox[0].getElementsByTagName("northBoundLatitude")[0].childNodes[0].nodeValue + "</td></tr>";
-
-
-                document.getElementById("detail").innerHTML = table;
-            }
         </script>
 
     </body>

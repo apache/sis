@@ -114,6 +114,9 @@ public class CSW {
         return null;
     }
     
+     @GET
+    @Path("/filter")
+    @Produces(MediaType.APPLICATION_XML)
     public GetRecordsReponse getRecordAllField(
             @QueryParam("service") String service,
             @QueryParam("version") String Version,

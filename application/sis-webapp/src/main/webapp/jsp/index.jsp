@@ -64,7 +64,7 @@
                         
                     <label style="font-size:20px;">Coordinate</label>
                     <div class="row content-search">
-                        <div class="col-md-3"><label>BoundingBox</label></div>
+                        <div class="col-md-3"><label>BBox</label></div>
                         <div class="col-md-9"><input class="form-control" id="divId" name="divid" ></div>
                     </div>
                         <div class="Button">
