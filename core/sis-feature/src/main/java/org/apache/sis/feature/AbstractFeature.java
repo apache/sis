@@ -349,6 +349,11 @@ public abstract class AbstractFeature implements Feature, Serializable {
      * number of occurrences} and does not depend on the actual number of values. If an attribute allows more than one
      * value, then this method will always return a collection for that attribute even if the collection is empty.</div>
      *
+     * In the case of multi-valued properties (“max. occurs” &gt; 1), the collection returned by this method may
+     * or may not be modifiable, at implementation choice. Generally the caller can not add new elements into the
+     * returned collection anyway since {@code Collection<?>} does not allow such operations, and more specific
+     * casts (e.g. {@code Collection<String>} can not be checked at runtime (at least as of Java 8).
+     *
      * @param  name  the property name.
      * @return the value for the given property, or {@code null} if none.
      * @throws PropertyNotFoundException if the given argument is not an attribute or association name of this feature.
