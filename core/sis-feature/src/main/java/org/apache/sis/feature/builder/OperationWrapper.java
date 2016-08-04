@@ -16,7 +16,6 @@
  */
 package org.apache.sis.feature.builder;
 
-import org.opengis.feature.Operation;
 import org.opengis.feature.PropertyType;
 import org.opengis.util.GenericName;
 import org.apache.sis.util.resources.Errors;
@@ -36,12 +35,12 @@ final class OperationWrapper extends PropertyTypeBuilder {
     /**
      * The wrapped operation.
      */
-    private final Operation operation;
+    private final PropertyType operation;
 
     /**
      * Creates a new wrapper for the given operation.
      */
-    OperationWrapper(final FeatureTypeBuilder owner, final Operation operation) {
+    OperationWrapper(final FeatureTypeBuilder owner, final PropertyType operation) {
         super(owner, operation);
         this.operation = operation;
         minimumOccurs = 1;

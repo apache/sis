@@ -224,6 +224,46 @@ public final strictfp class FeatureTypeBuilderTest extends TestCase {
         assertEquals("name",       "Capital", builder.getName().toString());
         assertEquals("superTypes", "City",    TestUtilities.getSingleton(builder.getSuperTypes()).getName().toString());
         assertFalse ("isAbstract",            builder.isAbstract());
+
+        // The list of properties does not include super-type properties.
+        final AttributeTypeBuilder<?> a0 = (AttributeTypeBuilder<?>) TestUtilities.getSingleton(builder.properties());
+        assertEquals("name",  "parliament",  a0.getName().toString());
+        assertEquals("type",  String.class,  a0.getValueClass());
+        assertTrue  ("roles",                a0.roles().isEmpty());
+    }
+
+    /**
+     * Tests creation of a builder from an existing feature type with some attributes having {@link AttributeRole}s.
+     */
+    @Test
+    @DependsOnMethod("testCreateFromTemplate")
+    public void testCreateFromTemplateWithRoles() {
+        FeatureTypeBuilder builder = new FeatureTypeBuilder().setName("City");
+        builder.addAttribute(String  .class).setName("name").roles().add(AttributeRole.IDENTIFIER_COMPONENT);
+        builder.addAttribute(Integer .class).setName("population");
+        builder.addAttribute(Geometry.class).setName("area").roles().add(AttributeRole.DEFAULT_GEOMETRY);
+
+        final FeatureType type = builder.build();
+        builder = new FeatureTypeBuilder(type);
+        assertEquals("name",       "City", builder.getName().toString());
+        assertEquals("superTypes", 0, builder.getSuperTypes().length);
+
+        final Iterator<PropertyTypeBuilder> it = builder.properties().iterator();
+        final AttributeTypeBuilder<?> a0 = (AttributeTypeBuilder<?>) it.next();
+        final AttributeTypeBuilder<?> a1 = (AttributeTypeBuilder<?>) it.next();
+        final AttributeTypeBuilder<?> a2 = (AttributeTypeBuilder<?>) it.next();
+        assertFalse("properties count", it.hasNext());
+        assertEquals("name", "name",       a0.getName().toString());
+        assertEquals("name", "population", a1.getName().toString());
+        assertEquals("name", "area",       a2.getName().toString());
+
+        assertEquals("type", String.class,   a0.getValueClass());
+        assertEquals("type", Integer.class,  a1.getValueClass());
+        assertEquals("type", Geometry.class, a2.getValueClass());
+
+        assertTrue  ("roles", a1.roles().isEmpty());
+        assertEquals("roles", AttributeRole.IDENTIFIER_COMPONENT, TestUtilities.getSingleton(a0.roles()));
+        assertEquals("roles", AttributeRole.DEFAULT_GEOMETRY,     TestUtilities.getSingleton(a2.roles()));
     }
 
     /**
