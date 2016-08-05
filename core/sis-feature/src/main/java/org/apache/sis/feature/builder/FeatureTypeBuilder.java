@@ -423,7 +423,8 @@ public class FeatureTypeBuilder extends TypeBuilder {
      * @param  maximumOccurs  new default maximum number of property values.
      * @return {@code this} for allowing method calls chaining.
      *
-     * @see AttributeTypeBuilder#setCardinality(int, int)
+     * @see PropertyTypeBuilder#setMinimumOccurs(int)
+     * @see PropertyTypeBuilder#setMaximumOccurs(int)
      */
     public FeatureTypeBuilder setDefaultCardinality(final int minimumOccurs, final int maximumOccurs) {
         if (minimumOccurs < 0 || maximumOccurs < minimumOccurs) {

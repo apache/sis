@@ -153,6 +153,34 @@ public final class AssociationRoleBuilder extends PropertyTypeBuilder {
     }
 
     /**
+     * Sets the minimum number of associations. If the given number is greater than the
+     * {@linkplain #getMaximumOccurs() maximal number} of associations, than the maximum
+     * is also set to that value.
+     *
+     * @param  occurs the new minimum number of associations.
+     * @return {@code this} for allowing method calls chaining.
+     */
+    @Override
+    public AssociationRoleBuilder setMinimumOccurs(final int occurs) {
+        super.setMinimumOccurs(occurs);
+        return this;
+    }
+
+    /**
+     * Sets the maximum number of associations. If the given number is less than the
+     * {@linkplain #getMinimumOccurs() minimal number} of associations, than the minimum
+     * is also set to that value.
+     *
+     * @param  occurs the new maximum number of associations.
+     * @return {@code this} for allowing method calls chaining.
+     */
+    @Override
+    public AssociationRoleBuilder setMaximumOccurs(final int occurs) {
+        super.setMaximumOccurs(occurs);
+        return this;
+    }
+
+    /**
      * {@inheritDoc}
      */
     @Override
