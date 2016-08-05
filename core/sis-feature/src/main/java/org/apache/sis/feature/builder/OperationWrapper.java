@@ -58,7 +58,9 @@ final class OperationWrapper extends PropertyTypeBuilder {
     /**
      * Do not allow a change of cardinality.
      */
-    @Override
+    @Override public PropertyTypeBuilder setMinimumOccurs(int occurs) {if (occurs == 1) return this; throw readOnly();}
+    @Override public PropertyTypeBuilder setMaximumOccurs(int occurs) {if (occurs == 1) return this; throw readOnly();}
+    @Override @Deprecated
     public PropertyTypeBuilder setCardinality(final int minimumOccurs, final int maximumOccurs) {
         if (minimumOccurs != 1 || maximumOccurs != 1) {
             throw readOnly();

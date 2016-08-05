@@ -213,6 +213,34 @@ public final class AttributeTypeBuilder<V> extends PropertyTypeBuilder {
     }
 
     /**
+     * Sets the minimum number of attribute values. If the given number is greater than the
+     * {@linkplain #getMaximumOccurs() maximal number} of attribute values, than the maximum
+     * is also set to that value.
+     *
+     * @param  occurs the new minimum number of attribute values.
+     * @return {@code this} for allowing method calls chaining.
+     */
+    @Override
+    public AttributeTypeBuilder<V> setMinimumOccurs(final int occurs) {
+        super.setMinimumOccurs(occurs);
+        return this;
+    }
+
+    /**
+     * Sets the maximum number of attribute values. If the given number is less than the
+     * {@linkplain #getMinimumOccurs() minimal number} of attribute values, than the minimum
+     * is also set to that value.
+     *
+     * @param  occurs the new maximum number of attribute values.
+     * @return {@code this} for allowing method calls chaining.
+     */
+    @Override
+    public AttributeTypeBuilder<V> setMaximumOccurs(final int occurs) {
+        super.setMaximumOccurs(occurs);
+        return this;
+    }
+
+    /**
      * Returns the class of attribute values.
      *
      * @return the class of attribute values.

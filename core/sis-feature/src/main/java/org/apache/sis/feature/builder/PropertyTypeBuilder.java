@@ -58,7 +58,7 @@ public abstract class PropertyTypeBuilder extends TypeBuilder {
      * The minimum number of property values.
      * The default value is 1, unless otherwise specified by {@link #setDefaultCardinality(int, int)}.
      *
-     * @see #setCardinality(int, int)
+     * @see #getMinimumOccurs()
      */
     int minimumOccurs;
 
@@ -66,7 +66,7 @@ public abstract class PropertyTypeBuilder extends TypeBuilder {
      * The maximum number of property values.
      * The default value is 1, unless otherwise specified by {@link #setDefaultCardinality(int, int)}.
      *
-     * @see #setCardinality(int, int)
+     * @see #getMaximumOccurs()
      */
     int maximumOccurs;
 
@@ -106,6 +106,79 @@ public abstract class PropertyTypeBuilder extends TypeBuilder {
     }
 
     /**
+     * Returns the minimum number of property values.
+     * The returned value is greater than or equal to zero.
+     *
+     * @return the minimum number of property values.
+     *
+     * @see org.apache.sis.feature.DefaultAttributeType#getMinimumOccurs()
+     */
+    public int getMinimumOccurs() {
+        return minimumOccurs;
+    }
+
+    /**
+     * Sets the minimum number of property values. If the given number is greater than the
+     * {@linkplain #getMaximumOccurs() maximal number} of property values, than the maximum
+     * is also set to that value.
+     *
+     * @param  occurs the new minimum number of property values.
+     * @return {@code this} for allowing method calls chaining.
+     *
+     * @see #getMinimumOccurs()
+     */
+    public PropertyTypeBuilder setMinimumOccurs(final int occurs) {
+        if (occurs != minimumOccurs) {
+            if (occurs < 0) {
+                throw new IllegalArgumentException(errors().getString(Errors.Keys.NegativeArgument_2, "occurs", occurs));
+            }
+            minimumOccurs = occurs;
+            if (occurs > maximumOccurs) {
+                maximumOccurs = occurs;
+            }
+            clearCache();
+        }
+        return this;
+    }
+
+    /**
+     * Returns the maximum number of property values.
+     * The returned value is greater than or equal to the {@link #getMinimumOccurs()} value.
+     * If there is no maximum, then this method returns {@link Integer#MAX_VALUE}.
+     *
+     * @return the maximum number of property values, or {@link Integer#MAX_VALUE} if none.
+     *
+     * @see org.apache.sis.feature.DefaultAttributeType#getMaximumOccurs()
+     */
+    public final int getMaximumOccurs() {
+        return maximumOccurs;
+    }
+
+    /**
+     * Sets the maximum number of property values. If the given number is less than the
+     * {@linkplain #getMinimumOccurs() minimal number} of property values, than the minimum
+     * is also set to that value.
+     *
+     * @param  occurs the new maximum number of property values.
+     * @return {@code this} for allowing method calls chaining.
+     *
+     * @see #getMaximumOccurs()
+     */
+    public PropertyTypeBuilder setMaximumOccurs(final int occurs) {
+        if (occurs != maximumOccurs) {
+            if (occurs < 0) {
+                throw new IllegalArgumentException(errors().getString(Errors.Keys.NegativeArgument_2, "occurs", occurs));
+            }
+            maximumOccurs = occurs;
+            if (occurs < minimumOccurs) {
+                minimumOccurs = occurs;
+            }
+            clearCache();
+        }
+        return this;
+    }
+
+    /**
      * Sets the minimum and maximum number of property values. Those numbers must be equal or greater than zero.
      *
      * <p>If this method is not invoked, then the default values are the cardinality specified by the last call
@@ -115,7 +188,10 @@ public abstract class PropertyTypeBuilder extends TypeBuilder {
      * @param  minimumOccurs  new minimum number of property values.
      * @param  maximumOccurs  new maximum number of property values.
      * @return {@code this} for allowing method calls chaining.
+     *
+     * @deprecated Replaced by {@link #setMinimumOccurs(int)} and {@link #setMaximumOccurs(int)}.
      */
+    @Deprecated
     @SuppressWarnings("unchecked")
     public PropertyTypeBuilder setCardinality(final int minimumOccurs, final int maximumOccurs) {
         if (this.minimumOccurs != minimumOccurs || this.maximumOccurs != maximumOccurs) {
