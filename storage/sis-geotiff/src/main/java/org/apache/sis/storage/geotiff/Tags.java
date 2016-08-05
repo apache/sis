@@ -115,7 +115,8 @@ final class Tags {
     public static final int Copyright                   = 0x8298;
     public static final int ModelTiePoint               = 0x8482; 
     public static final int GeoAsciiParamsTag           = 0x87B1;
-
+    public static final int GeoKeyDirectoryTag          = 0x87AF;
+    public static final int ModelPixelScaleTag          = 0x830E;
 
 
     /////////////////////////////////////////////////////////

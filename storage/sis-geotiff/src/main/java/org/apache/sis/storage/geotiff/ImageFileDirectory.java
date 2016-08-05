@@ -22,8 +22,16 @@ import static java.lang.Math.pow;
 import java.net.MalformedURLException;
 import java.text.ParseException;
 import java.util.Date;
+import org.apache.sis.geometry.DirectPosition2D;
 import org.opengis.metadata.citation.DateType;
 import org.apache.sis.internal.storage.MetadataBuilder;
+import org.apache.sis.referencing.CRS;
+import org.opengis.geometry.DirectPosition;
+import org.opengis.geometry.MismatchedDimensionException;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.operation.CoordinateOperation;
+import org.opengis.referencing.operation.TransformException;
+import org.opengis.util.FactoryException;
 
 
 /**
@@ -72,11 +80,13 @@ final class ImageFileDirectory {
      * or unsupported we can not read the image, but we still can read the metadata.
      */
     private Compression compression;
-    private double[] ModelTiePoint;
+    private int[] ModelTiePoint;
     private int RowsPerStrip;
     private int bitsPerSample;
     private int minSampleValue;
     private int maxSampleValue;
+    private double[] PixelScaleTag;
+    private int[] Directory;
 
     /**
      * Creates a new image file directory.
@@ -210,7 +220,7 @@ final class ImageFileDirectory {
             case Tags.ExtraSamples: {
                 double[] num = null; 
                 int i = 0; 
-                for (final double value : type.readDouble(reader.input, count, reader.owner.encoding)) { 
+                for (final double value : type.readDoubles(reader.input, count)) { 
                     num[i] = value; 
                     i++; 
                 } 
@@ -252,7 +262,7 @@ final class ImageFileDirectory {
              * The minimum component value used. Default is 0.
              */
             case Tags.MinSampleValue: {
-                for (final double value : type.readDouble(reader.input, count, reader.owner.encoding)) { 
+                for (final double value : type.readDoubles(reader.input, count)) { 
                     if (value != 0) { 
                         minSampleValue = (int) value; 
                     } 
@@ -266,7 +276,7 @@ final class ImageFileDirectory {
              * visual appearance of an image, unless a map styling is applied.
              */
             case Tags.MaxSampleValue: {
-                for (final double value : type.readDouble(reader.input, count, reader.owner.encoding)) { 
+                for (final double value : type.readDoubles(reader.input, count)) { 
                     if (value != 0) { 
                         maxSampleValue = (int) value; 
                     } 
@@ -467,19 +477,91 @@ final class ImageFileDirectory {
                 // TODO: log a warning saying that this tag is ignored.
                 break;
             }
-            case Tags.ModelTiePoint: { 
-                ModelTiePoint = type.readDouble(reader.input, count, reader.owner.encoding); 
-            } 
-            break; 
+            case Tags.ModelTiePoint: {
+                ModelTiePoint = type.readInts(reader.input, count);
+            }
+            break;
+            case Tags.GeoKeyDirectoryTag: {
+                Directory = type.readInts(reader.input, count) ;
+                    
+
+            }
+            break;
+            case Tags.GeoAsciiParamsTag: {
+                
+            }
+            break;
+            case Tags.ModelPixelScaleTag: {
+                PixelScaleTag = type.readDoubles(reader.input, count);
+            }
+            break;
         }
         return null;
     }
 
     /**
+     * Returns the minimal or maximal value associated to the given two keys, or {@code NaN} if none.
+     *
+     * @param key1 the key for which to get the first floating-point value.
+     * @param key2 the key for which to get the second floating-point value.
+     * @param  max   {@code true} for the maximal value, or {@code false} for the minimal value.
+     * @return the minimal (if {@code max} is false) or maximal (if {@code max} is true) floating-point value
+     *         associated to the given keys, or {@link Double#NaN} if none.
+     * @throws NumberFormatException if the property associated to one of the given keys can not be parsed
+     *         as a floating-point number.
+     */
+    private double getExtremumValue(double key1, double key2, boolean max) throws NumberFormatException {
+        if (max ? (key2 > key1) : (key2 < key1)) {
+            return key2;
+        } else {
+            return key1;
+        }
+    }
+    /**
+     * Return the value use for bounding box
+     * @return the value use for bounding box
+     * @throws MismatchedDimensionException
+     * @throws TransformException
+     * @throws FactoryException 
+     */
+    public double[] getBoundingBox() throws FactoryException, MismatchedDimensionException, TransformException  {
+        CoordinateReferenceSystem sourceCRS = CRS.forCode("EPSG:"+Directory[27]);
+        CoordinateReferenceSystem targetCRS = CRS.forCode("CRS:84");
+        CoordinateOperation op = CRS.findOperation(sourceCRS, targetCRS, null);
+        double xscale  = PixelScaleTag[0];
+        double yscale  = PixelScaleTag[1];
+        double UL_x = ModelTiePoint[3];
+        double UL_y = ModelTiePoint[4];
+        double UR_x = UL_x + (xscale * (imageWidth-1));
+        double UR_y = UL_y;
+        double LL_x = UL_x;
+        double LL_y = UL_y- (yscale * (imageHeight-1));
+        double LR_x = UL_x + (xscale * (imageWidth-1));
+        double LR_y = UL_y- (yscale * (imageHeight-1));
+        double[] x = {UL_x,UR_x,LL_x,LR_x}; 
+        double[] y = {UL_y,UR_y,LL_y,LR_y}; 
+        double[] lat =new double[4] ;
+        double[] lon =new double[4] ;
+        
+        for(int i =0; i< x.length;i++){
+            DirectPosition sourcePt = new DirectPosition2D(x[i], y[i]);
+            DirectPosition targetPt = op.getMathTransform().transform(sourcePt, null);
+            lon[i] = targetPt.getCoordinate()[0];
+            lat[i] = targetPt.getCoordinate()[1];
+        }
+        double[] bbox = new double[4];
+        
+        bbox[0]= getExtremumValue(lon[0],lon[2],false);//westBoundLongitude
+        bbox[1]= getExtremumValue(lon[1],lon[3],true);//eastBoundLongitude
+        bbox[2]= getExtremumValue(lat[2],lat[3],false);//southBoundLatitude
+        bbox[3]= getExtremumValue(lat[0],lat[1],true);//northBoundLatitude
+        return bbox;
+    }
+    /**
      * Completes the metadata with the information stored in the field of this IFD.
      * This method is invoked only if the user requested the ISO 19115 metadata.
      */
-    final void completeMetadata(final MetadataBuilder metadata,Reader reader, final Locale locale) throws MalformedURLException, IOException {
+    final void completeMetadata(final MetadataBuilder metadata,Reader reader, final Locale locale) throws MalformedURLException, IOException, FactoryException, MismatchedDimensionException, TransformException {
         if (compression != null) {
             metadata.addCompression(compression.name().toLowerCase(locale),reader.file.toURL().openConnection().getContentType());
         }
@@ -492,6 +574,8 @@ final class ImageFileDirectory {
             } 
             metadata.addMaximumSampleValue(maxSampleValue); 
             metadata.addMinimumSampleValue(minSampleValue); 
+            double[] box = getBoundingBox();
+            metadata.addBoundingBox(box[0], box[1], box[2], box[3]);
     }
     
 }

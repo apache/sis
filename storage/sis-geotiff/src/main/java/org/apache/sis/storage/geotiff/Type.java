@@ -203,7 +203,7 @@ enum Type {
      */
     DOUBLE(12, Double.BYTES) {
         @Override
-        double[] readDouble(final ChannelDataInput input, final long length, final Charset charset) throws IOException{
+        double[] readDoubles(final ChannelDataInput input, final long length) throws IOException{
             final double[] bytes = input.readDoubles(Math.toIntExact(length));
             return bytes;
         }
@@ -469,8 +469,18 @@ enum Type {
         }
         return s;
     }
-    double[] readDouble(ChannelDataInput input, final long length, final Charset charset) throws IOException {
-        final double[] s = input.readDoubles(Math.toIntExact(length));
+    double[] readDoubles(ChannelDataInput input, final long length) throws IOException {
+        final double[] s = new double[Math.toIntExact(length)];
+        for (int i=0; i<s.length; i++) {
+            s[i] = readDouble(input, 1);
+        }
+        return s;
+    }
+    int[] readInts(ChannelDataInput input, final long length) throws IOException {
+        final int[] s = new int[Math.toIntExact(length)];
+        for (int i=0; i<s.length; i++) {
+            s[i] = (int) readLong(input, 1);
+        }
         return s;
     }
 }

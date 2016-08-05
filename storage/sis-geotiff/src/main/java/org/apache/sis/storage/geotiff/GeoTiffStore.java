@@ -20,6 +20,9 @@ import java.io.File;
 import java.util.Locale;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.text.ParseException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.opengis.metadata.Metadata;
 import org.apache.sis.setup.OptionKey;
 import org.apache.sis.storage.DataStore;
@@ -29,9 +32,13 @@ import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.internal.storage.ChannelDataInput;
 import org.apache.sis.internal.storage.MetadataBuilder;
 import org.apache.sis.metadata.iso.DefaultMetadata;
+import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Classes;
+import org.opengis.geometry.MismatchedDimensionException;
+import org.opengis.referencing.operation.TransformException;
+import org.opengis.util.FactoryException;
 
 
 /**
@@ -112,6 +119,12 @@ public class GeoTiffStore extends DataStore {
             throw new DataStoreException(reader.errors().getString(Errors.Keys.CanNotRead_1, reader.input.filename), e);
         } catch (ArithmeticException e) {
             throw new DataStoreContentException(reader.canNotDecode(), e);
+        } catch (TransformException ex) {
+            Logger.getLogger(GeoTiffStore.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (FactoryException ex) {
+            Logger.getLogger(GeoTiffStore.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (MismatchedDimensionException ex) {
+            Logger.getLogger(GeoTiffStore.class.getName()).log(Level.SEVERE, null, ex);
         }
         return metadata;
     }

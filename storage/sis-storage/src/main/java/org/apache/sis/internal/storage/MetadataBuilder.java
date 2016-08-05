@@ -47,7 +47,9 @@ import org.apache.sis.util.iso.Types;
 
 // Branch-dependent imports
 import java.time.LocalDate;
+import static java.util.Collections.singleton;
 import org.apache.sis.metadata.iso.DefaultIdentifier;
+import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 
 
 /**
@@ -490,6 +492,27 @@ public class MetadataBuilder {
                 party = null;
             }
             party().setName(i18n);
+        }
+    }
+
+    /**
+     * Add a BoundingBox value for metadata
+     * @param xmin westBoundLongitude
+     * @param ymin eastBoundLongitude
+     * @param xmax southBoundLatitude
+     * @param ymax northBoundLatitude
+     */
+    public final void addBoundingBox(final double xmin, final double xmax, final double ymin, final double ymax) {
+        final DefaultExtent extent = extent();
+        final DefaultGeographicBoundingBox box;
+
+        box = new DefaultGeographicBoundingBox(
+                xmin, xmax, ymin, ymax 
+        );
+
+        final boolean isEmpty = box.isEmpty();
+        if (!isEmpty) {
+            extent.setGeographicElements(singleton(box));
         }
     }
 

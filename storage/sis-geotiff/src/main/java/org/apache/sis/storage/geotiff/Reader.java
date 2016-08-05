@@ -30,6 +30,8 @@ import org.apache.sis.internal.storage.ChannelDataInput;
 import org.apache.sis.internal.storage.MetadataBuilder;
 import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.util.resources.Errors;
+import org.opengis.geometry.MismatchedDimensionException;
+import org.opengis.referencing.operation.TransformException;
 
 
 /**
@@ -223,7 +225,7 @@ final class Reader extends GeoTIFF {
      * @return the IFD if we found it, or {@code null} if there is no more IFD at the given index.
      * @throws ArithmeticException if the pointer to a next IFD is too far.
      */
-    final ImageFileDirectory getImageFileDirectory(final int index) throws IOException, DataStoreException {
+    final ImageFileDirectory getImageFileDirectory(final int index) throws IOException, DataStoreException, TransformException {
         while (index >= imageFileDirectories.size()) {
             if (nextIFD == 0) {
                 return null;
@@ -309,7 +311,7 @@ final class Reader extends GeoTIFF {
      * @param ignoreAfter  offset relative to the beginning of TIFF file at which entries should be ignored.
      *        This hint does not apply to the IFD specified by the {@code dir} argument.
      */
-    private void resolveDeferredEntries(final ImageFileDirectory dir, final long ignoreAfter) throws IOException {
+    private void resolveDeferredEntries(final ImageFileDirectory dir, final long ignoreAfter) throws IOException, MismatchedDimensionException, TransformException {
         if (deferredNeedsSort) {
             deferredEntries.sort(null);                                 // Sequential order in input stream.
             deferredNeedsSort = false;
