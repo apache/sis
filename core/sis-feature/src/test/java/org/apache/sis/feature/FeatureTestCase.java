@@ -351,14 +351,17 @@ public abstract strictfp class FeatureTestCase extends TestCase {
         feature = createFeature(new DefaultFeatureType(
                 Collections.singletonMap(DefaultFeatureType.NAME_KEY, "City"),
                 false, null, DefaultAttributeTypeTest.universities()));
-
-        feature.setPropertyValue("universities", Arrays.asList("UCAR", "Marie-Curie"));
         /*
          * The value below is an instance of Collection<String>. But as of Java 8, the <String> parameterized type
          * can not be verified at runtime. The best check we can have is Collection<?>, which does not allow addition
          * of new values.
          */
-        final Collection<?> values = (Collection<?>) feature.getPropertyValue("universities");
+        Collection<?> values = (Collection<?>) feature.getPropertyValue("universities");
+        assertTrue("isEmpty", values.isEmpty());
+        // Can not perform values.add("something") here.
+
+        feature.setPropertyValue("universities", Arrays.asList("UCAR", "Marie-Curie"));
+        values = (Collection<?>) feature.getPropertyValue("universities");
         assertArrayEquals(new String[] {"UCAR", "Marie-Curie"}, values.toArray());
     }
 
