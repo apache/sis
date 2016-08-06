@@ -16,7 +16,6 @@
  */
 package org.apache.sis.feature.builder;
 
-import org.opengis.feature.Operation;
 import org.opengis.feature.PropertyType;
 import org.opengis.util.GenericName;
 import org.apache.sis.util.resources.Errors;
@@ -36,12 +35,12 @@ final class OperationWrapper extends PropertyTypeBuilder {
     /**
      * The wrapped operation.
      */
-    private final Operation operation;
+    private final PropertyType operation;
 
     /**
      * Creates a new wrapper for the given operation.
      */
-    OperationWrapper(final FeatureTypeBuilder owner, final Operation operation) {
+    OperationWrapper(final FeatureTypeBuilder owner, final PropertyType operation) {
         super(owner, operation);
         this.operation = operation;
         minimumOccurs = 1;
@@ -52,14 +51,16 @@ final class OperationWrapper extends PropertyTypeBuilder {
      * Returns the wrapped operation.
      */
     @Override
-    PropertyType create() {
+    public PropertyType build() {
         return operation;
     }
 
     /**
      * Do not allow a change of cardinality.
      */
-    @Override
+    @Override public PropertyTypeBuilder setMinimumOccurs(int occurs) {if (occurs == 1) return this; throw readOnly();}
+    @Override public PropertyTypeBuilder setMaximumOccurs(int occurs) {if (occurs == 1) return this; throw readOnly();}
+    @Override @Deprecated
     public PropertyTypeBuilder setCardinality(final int minimumOccurs, final int maximumOccurs) {
         if (minimumOccurs != 1 || maximumOccurs != 1) {
             throw readOnly();

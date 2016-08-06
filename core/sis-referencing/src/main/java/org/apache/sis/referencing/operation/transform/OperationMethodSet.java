@@ -73,8 +73,8 @@ final class OperationMethodSet extends SetOfUnknownSize<OperationMethod> {
      * Constructs a set wrapping the given iterable.
      * The caller musts holds the lock on {@code methods} when invoking this constructor.
      *
-     * @param type The type of coordinate operation for which to retain methods.
-     * @param methods The {@link DefaultMathTransformFactory#methods} used for fetching the initial methods.
+     * @param  type     the type of coordinate operation for which to retain methods.
+     * @param  methods  the {@link DefaultMathTransformFactory#methods} used for fetching the initial methods.
      */
     OperationMethodSet(final Class<? extends SingleOperation> type,
             final Iterable<? extends OperationMethod> methods)

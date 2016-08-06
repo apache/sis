@@ -128,21 +128,18 @@ public abstract class AbstractFeature implements Feature, Serializable {
      * method may return the result of {@linkplain AbstractOperation#apply executing} the operation
      * on this feature, at implementation choice.
      *
-     * <div class="note"><b>Tip:</b> This method returns the property <em>instance</em>. If only the property
-     * <em>value</em> is desired, then {@link #getPropertyValue(String)} is preferred since it gives to SIS a
-     * chance to avoid the creation of {@link AbstractAttribute} or {@link AbstractAssociation} instances.</div>
+     * <p>This method returns the property <em>instance</em>. If only the property <em>value</em> is
+     * desired, then {@link #getPropertyValue(String)} is preferred since it gives to SIS a chance to
+     * avoid the creation of {@link AbstractAttribute} or {@link AbstractAssociation} instances.</p>
      *
      * <div class="note"><b>Note for subclass implementors:</b>
      * the default implementation returns an instance that redirect all read and write operations to
      * {@link #getPropertyValue(String)} and {@link #setPropertyValue(String, Object)} respectively.
      * That default implementation is intended to make easier for developers to create their own
      * customized <code>AbstractFacture</code> implementations, but has drawbacks:
-     *
-     * <ul>
-     *   <li>A new {@code Property} instance is created every time that this {@code getProperty(String)} method is invoked.</li>
-     *   <li>The returned {@code Property} implementation is not very efficient since it has to perform multiple lookups and type checks.</li>
-     * </ul>
-     *
+     * a new {@code Property} instance is created every time that this {@code getProperty(String)} method is invoked,
+     * and the returned {@code Property} implementation is not very efficient
+     * since it has to perform multiple lookups and type checks.
      * Implementors are encouraged to override this method if they can provide a more efficient implementation.
      * Note that this is already the case when using implementations created by {@link DefaultFeatureType#newInstance()}.</div>
      *
@@ -174,9 +171,9 @@ public abstract class AbstractFeature implements Feature, Serializable {
      *     assert property.getType() == getType().getProperty(property.getName());
      * }
      *
-     * <div class="note"><b>Note:</b> This method is useful for storing non-default {@code Attribute} or
-     * {@code FeatureAssociation} implementations in this feature. When default implementations are sufficient,
-     * the {@link #setPropertyValue(String, Object)} method is preferred.</div>
+     * This method is useful for storing non-default {@code Attribute} or {@code FeatureAssociation} implementations
+     * in this feature. When default implementations are sufficient, the {@link #setPropertyValue(String, Object)}
+     * method is preferred.
      *
      * <div class="note"><b>Note for subclass implementors:</b>
      * the default implementation verifies that the given property has the expected type and a null or empty
@@ -184,12 +181,8 @@ public abstract class AbstractFeature implements Feature, Serializable {
      * {@link #setPropertyValue(String, Object)}.
      * That default implementation is intended to make easier for developers to create their own
      * customized <code>AbstractFacture</code> implementations, but has drawbacks:
-     *
-     * <ul>
-     *   <li>The given {@code Property} instance is not retained; only its {@linkplain AbstractAttribute#getValue() value} is stored.</li>
-     *   <li>The given {@code Property} instance can not have custom {@linkplain AbstractAttribute#characteristics() characteristics}.</li>
-     * </ul>
-     *
+     * the given {@code Property} instance is not stored (only its {@linkplain AbstractAttribute#getValue() value}
+     * is stored), and it can not have custom {@linkplain AbstractAttribute#characteristics() characteristics}.
      * Implementors are encouraged to override this method if they can provide a better implementation.
      * Note that this is already the case when using implementations created by {@link DefaultFeatureType#newInstance()}.</div>
      *
@@ -348,6 +341,18 @@ public abstract class AbstractFeature implements Feature, Serializable {
      * <div class="note"><b>Note:</b> “max. occurs” is the {@linkplain DefaultAttributeType#getMaximumOccurs() maximum
      * number of occurrences} and does not depend on the actual number of values. If an attribute allows more than one
      * value, then this method will always return a collection for that attribute even if the collection is empty.</div>
+     *
+     * <div class="section">Multi-valued properties and collections</div>
+     * In the case of multi-valued properties (“max. occurs” &gt; 1), the collection returned by this method may
+     * or may not be modifiable, at implementation choice. Generally the caller can not add new elements into the
+     * returned collection anyway since {@code Collection<?>} does not allow such operations, and more specific
+     * casts (e.g. {@code Collection<String>} can not be checked at runtime (at least as of Java 8).
+     * If a type-safe modifiable collection is desired, the following approach can be used instead:
+     *
+     * {@preformat java
+     *   Attribute<String> attribute = Features.cast((Attribute<?>) feature.getProperty(name), String.class);
+     *   Collection<String> values = attribute.getValues();    // This collection is guaranteed to be "live".
+     * }
      *
      * @param  name  the property name.
      * @return the value for the given property, or {@code null} if none.

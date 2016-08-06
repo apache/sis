@@ -32,7 +32,8 @@
             <div class="links-bottom"></div>
         </div>
         </header>
-
+            
+       
     <div class="mainContent" >
         <div  class="content">
             <article class="left-content">
@@ -76,8 +77,7 @@
             </article>
         </div>
     </div>
-
-    <aside class="top-sidebar">
+     <aside class="top-sidebar">
         <article>
             <div id="map"></div>
         </article>

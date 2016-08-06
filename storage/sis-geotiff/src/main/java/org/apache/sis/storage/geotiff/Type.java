@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import org.apache.sis.internal.storage.ChannelDataInput;
+import org.apache.sis.math.Vector;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.resources.Errors;
 
@@ -59,6 +60,10 @@ enum Type {
             ensureSingleton(count);
             return input.readByte();
         }
+
+        @Override Object readArray(final ChannelDataInput input, final int count) throws IOException {
+            return input.readBytes(count);
+        }
     },
 
     /**
@@ -86,6 +91,10 @@ enum Type {
         @Override long readLong(final ChannelDataInput input, final long count) throws IOException {
             ensureSingleton(count);
             return input.readShort();
+        }
+
+        @Override Object readArray(final ChannelDataInput input, final int count) throws IOException {
+            return input.readShorts(count);
         }
     },
 
@@ -115,6 +124,10 @@ enum Type {
             ensureSingleton(count);
             return input.readInt();
         }
+
+        @Override Object readArray(final ChannelDataInput input, final int count) throws IOException {
+            return input.readInts(count);
+        }
     },
 
     /**
@@ -141,6 +154,10 @@ enum Type {
         @Override long readLong(final ChannelDataInput input, final long count) throws IOException {
             ensureSingleton(count);
             return input.readLong();
+        }
+
+        @Override Object readArray(final ChannelDataInput input, final int count) throws IOException {
+            return input.readLongs(count);
         }
     },
 
@@ -192,6 +209,10 @@ enum Type {
             ensureSingleton(count);
             return input.readFloat();
         }
+
+        @Override Object readArray(final ChannelDataInput input, final int count) throws IOException {
+            return input.readFloats(count);
+        }
     },
 
     /**
@@ -202,11 +223,6 @@ enum Type {
      * </ul>
      */
     DOUBLE(12, Double.BYTES) {
-        @Override
-        double[] readDoubles(final ChannelDataInput input, final long length) throws IOException{
-            final double[] bytes = input.readDoubles(Math.toIntExact(length));
-            return bytes;
-        }
         @Override long readLong(final ChannelDataInput input, final long count) throws IOException {
             ensureSingleton(count);
             final double value = input.readDouble();
@@ -220,6 +236,10 @@ enum Type {
         @Override double readDouble(final ChannelDataInput input, final long count) throws IOException {
             ensureSingleton(count);
             return input.readDouble();
+        }
+
+        @Override Object readArray(final ChannelDataInput input, final int count) throws IOException {
+            return input.readDoubles(count);
         }
     },
 
@@ -462,25 +482,41 @@ enum Type {
      * @throws ArithmeticException if the given length is too large.
      * @throws UnsupportedOperationException if this type is {@link #UNDEFINED}.
      */
-    String[] readString(ChannelDataInput input, final long length, final Charset charset) throws IOException {
+    String[] readString(final ChannelDataInput input, final long length, final Charset charset) throws IOException {
         final String[] s = new String[Math.toIntExact(length)];
         for (int i=0; i<s.length; i++) {
             s[i] = String.valueOf(readLong(input, 1));
         }
         return s;
     }
-    double[] readDoubles(ChannelDataInput input, final long length) throws IOException {
-        final double[] s = new double[Math.toIntExact(length)];
-        for (int i=0; i<s.length; i++) {
-            s[i] = readDouble(input, 1);
-        }
-        return s;
+
+    /**
+     * Reads an arbitrary amount of values as a Java array.
+     *
+     * @param  input  the input from where to read the values.
+     * @param  count  the amount of values.
+     * @return the value as a Java array.
+     * @throws IOException if an error occurred while reading the stream.
+     * @throws UnsupportedOperationException if this type is {@link #UNDEFINED}.
+     */
+    Object readArray(ChannelDataInput input, int count) throws IOException {
+        throw new UnsupportedOperationException(name());
     }
-    int[] readInts(ChannelDataInput input, final long length) throws IOException {
-        final int[] s = new int[Math.toIntExact(length)];
-        for (int i=0; i<s.length; i++) {
-            s[i] = (int) readLong(input, 1);
-        }
-        return s;
+
+    /**
+     * Reads an arbitrary amount of values as a wrapper around a Java array of primitive type.
+     * This wrapper provide a more convenient way to access array elements than the object
+     * returned by {@link #readArray(ChannelDataInput, int)}.
+     *
+     * @param  input  the input from where to read the values.
+     * @param  count  the amount of values.
+     * @return the value as a wrapper around a Java array of primitive type.
+     * @throws IOException if an error occurred while reading the stream.
+     * @throws ArithmeticException if the given count is too large.
+     * @throws NumberFormatException if the value was stored in ASCII and can not be parsed.
+     * @throws UnsupportedOperationException if this type is {@link #UNDEFINED}.
+     */
+    final Vector readVector(final ChannelDataInput input, final long count) throws IOException {
+        return Vector.create(readArray(input, Math.toIntExact(count)));
     }
 }

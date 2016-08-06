@@ -17,7 +17,6 @@
 package org.apache.sis.feature.builder;
 
 import java.util.AbstractList;
-import java.util.Iterator;
 import java.util.List;
 
 
@@ -30,7 +29,7 @@ import java.util.List;
  * @version 0.8
  * @module
  */
-final class RemoveOnlyList<E> extends AbstractList<E> {
+final class RemoveOnlyList<E extends TypeBuilder> extends AbstractList<E> {
     /**
      * The original list to wrap.
      */
@@ -43,9 +42,40 @@ final class RemoveOnlyList<E> extends AbstractList<E> {
         this.elements = elements;
     }
 
-    @Override public void        clear()           {       elements.clear();}
-    @Override public int         size()            {return elements.size();}
-    @Override public E           get(int index)    {return elements.get(index);}
-    @Override public E           remove(int index) {return elements.get(index);}
-    @Override public Iterator<E> iterator()        {return elements.iterator();}
+    /**
+     * Returns the number of elements in this list.
+     */
+    @Override
+    public int size() {
+        return elements.size();
+    }
+
+    /**
+     * Returns the element at the given index.
+     */
+    @Override
+    public E get(int index) {
+        return elements.get(index);
+    }
+
+    /**
+     * Removes the element at the given index. The removed element is flagged as not usable anymore.
+     */
+    @Override
+    public E remove(int index) {
+        final E element = elements.get(index);
+        if (element != null) {
+            element.dispose();
+        }
+        return element;
+    }
+
+    /**
+     * Flags all elements as not usable anymore, then remove all of them.
+     */
+    @Override
+    public void clear() {
+        elements.forEach(TypeBuilder::dispose);
+        elements.clear();
+    }
 }

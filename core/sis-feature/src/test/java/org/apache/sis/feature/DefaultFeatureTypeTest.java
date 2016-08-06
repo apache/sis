@@ -34,6 +34,7 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
 
 // Branch-dependent imports
 import org.opengis.feature.PropertyType;
+import org.opengis.feature.AttributeType;
 
 
 /**
@@ -41,7 +42,7 @@ import org.opengis.feature.PropertyType;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5
- * @version 0.6
+ * @version 0.8
  * @module
  */
 @DependsOn(DefaultAttributeTypeTest.class)
@@ -308,8 +309,8 @@ public final strictfp class DefaultFeatureTypeTest extends TestCase {
 
         final Map<String,String> identification = singletonMap(DefaultAttributeType.NAME_KEY, "City");
         try {
-            new DefaultFeatureType(identification, false, null, city, population, cityId);
-            fail("Duplicated attribute names shall not be allowed.");
+            final Object t = new DefaultFeatureType(identification, false, null, city, population, cityId);
+            fail("Duplicated attribute names shall not be allowed:\n" + t);
         } catch (IllegalArgumentException e) {
             final String message = e.getMessage();
             assertTrue(message, message.contains("name"));      // Property name.
@@ -416,7 +417,7 @@ public final strictfp class DefaultFeatureTypeTest extends TestCase {
         assertPropertiesEquals(metroCapital, false, "country");
         assertPropertiesEquals(metroCapital, true, "city", "population", "region", "isGlobal", "parliament", "country");
         assertEquals("property(“region”).valueClass", CharSequence.class,
-                ((DefaultAttributeType) metroCapital.getProperty("region")).getValueClass());
+                ((AttributeType<?>) metroCapital.getProperty("region")).getValueClass());
 
         // Check based only on name.
         assertTrue ("maybeAssignableFrom", DefaultFeatureType.maybeAssignableFrom(capital, metroCapital));
@@ -460,7 +461,7 @@ public final strictfp class DefaultFeatureTypeTest extends TestCase {
         assertPropertiesEquals(worldMetropolis, false, "region", "temperature");
         assertPropertiesEquals(worldMetropolis, true, "city", "population", "region", "isGlobal", "universities", "temperature");
         assertEquals("property(“region”).valueClass", InternationalString.class,
-                ((DefaultAttributeType) worldMetropolis.getProperty("region")).getValueClass());
+                ((AttributeType<?>) worldMetropolis.getProperty("region")).getValueClass());
 
         // Check based only on name.
         assertTrue ("maybeAssignableFrom", DefaultFeatureType.maybeAssignableFrom(metropolis, worldMetropolis));

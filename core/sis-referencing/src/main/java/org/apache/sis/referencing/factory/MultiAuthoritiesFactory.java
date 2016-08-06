@@ -199,10 +199,10 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
      * but does not cache the objects created by those factories.
      * This constructor assumes that the given factories already do their own caching.
      *
-     * @param crsFactories   The factories for creating {@link CoordinateReferenceSystem} objects, or null if none.
-     * @param csFactories    The factories for creating {@link CoordinateSystem} objects, or null if none.
-     * @param datumFactories The factories for creating {@link Datum} objects, or null if none.
-     * @param copFactories   The factories for creating {@link CoordinateOperation} objects, or null if none.
+     * @param crsFactories    the factories for creating {@link CoordinateReferenceSystem} objects, or null if none.
+     * @param csFactories     the factories for creating {@link CoordinateSystem} objects, or null if none.
+     * @param datumFactories  the factories for creating {@link Datum} objects, or null if none.
+     * @param copFactories    the factories for creating {@link CoordinateOperation} objects, or null if none.
      */
     @SuppressWarnings({"unchecked", "rawtypes", "empty-statement"})    // Generic array creation.
     public MultiAuthoritiesFactory(final Iterable<? extends CRSAuthorityFactory> crsFactories,
@@ -244,7 +244,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
      * The default value is {@code false}, which means that an exception will be thrown
      * if there is no factory specifically for the requested version.
      *
-     * @return Whether this factory should relax some rules when processing a given authority code.
+     * @return whether this factory should relax some rules when processing a given authority code.
      */
     public boolean isLenient() {
         return isLenient;
@@ -253,7 +253,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
     /**
      * Sets whether this factory should relax some rules when processing a given code.
      *
-     * @param lenient Whether this factory should relax some rules when processing a given authority code.
+     * @param lenient whether this factory should relax some rules when processing a given authority code.
      */
     public void setLenient(final boolean lenient) {
         isLenient = lenient;
@@ -289,8 +289,8 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
      *       since it may be costly.</li>
      * </ul>
      *
-     * @param  type The spatial reference objects type.
-     * @return The set of authority codes for spatial reference objects of the given type.
+     * @param  type  the spatial reference objects type.
+     * @return the set of authority codes for spatial reference objects of the given type.
      * @throws FactoryException if access to an underlying factory failed.
      */
     @Override
@@ -465,7 +465,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
      * the current implementation may be relatively costly since it implies instantiation of all factories.
      * </div>
      *
-     * @return The code spaces of all factories.
+     * @return the code spaces of all factories.
      */
     @Override
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
@@ -509,9 +509,9 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
      * Caches the given factory, but without replacing existing instance if any.
      * This method returns the factory that we should use, either the given instance of the cached one.
      *
-     * @param  identifier The type, authority and version of the factory to cache.
-     * @param  factory The factory to cache.
-     * @return The given {@code factory} if no previous instance was cached, or the existing instance otherwise.
+     * @param  identifier  the type, authority and version of the factory to cache.
+     * @param  factory     the factory to cache.
+     * @return the given {@code factory} if no previous instance was cached, or the existing instance otherwise.
      */
     private AuthorityFactory cache(final AuthorityFactoryIdentifier identifier, final AuthorityFactory factory) {
         final AuthorityFactory existing = factories.putIfAbsent(identifier.intern(), factory);
@@ -536,13 +536,13 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
     /**
      * Returns the factory identified by the given type, authority and version.
      *
-     * @param  <T>        The compile-time value of {@code type}.
-     * @param  type       The type of the desired factory as one of the {@link CRSAuthorityFactory}, {@link CSAuthorityFactory},
+     * @param  <T>        the compile-time value of {@code type}.
+     * @param  type       the type of the desired factory as one of the {@link CRSAuthorityFactory}, {@link CSAuthorityFactory},
      *                    {@link DatumAuthorityFactory} or {@link CoordinateOperationFactory} interfaces.
-     * @param  authority  The namespace or authority identifier of the desired factory.
+     * @param  authority  the namespace or authority identifier of the desired factory.
      *                    Examples: {@code "EPSG"}, {@code "CRS"} or {@code "AUTO2"}.
-     * @param  version    The version of the desired factory, or {@code null} for the default version.
-     * @return The factory for the given type, authority and version.
+     * @param  version    the version of the desired factory, or {@code null} for the default version.
+     * @return the factory for the given type, authority and version.
      * @throws NoSuchAuthorityFactoryException if no suitable factory has been found.
      */
     /*
@@ -562,8 +562,8 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
      * Returns the factory identified by the given type, authority and version. If no such factory is found in
      * the cache, then this method iterates over the factories created by the providers given at construction time.
      *
-     * @param  request The type, authority and version of the desired factory.
-     * @return The factory for the given type, authority and version.
+     * @param  request  the type, authority and version of the desired factory.
+     * @return the factory for the given type, authority and version.
      * @throws NoSuchAuthorityFactoryException if no suitable factory has been found.
      */
     private AuthorityFactory getAuthorityFactory(final AuthorityFactoryIdentifier request)
@@ -721,10 +721,10 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
     /**
      * Creates an object from a code using the given proxy.
      *
-     * @param  <T>   The type of the object to be returned.
-     * @param  proxy The proxy to use for creating the object.
-     * @param  code  The code of the object to create.
-     * @return The object from one of the authority factory specified at construction time.
+     * @param  <T>    the type of the object to be returned.
+     * @param  proxy  the proxy to use for creating the object.
+     * @param  code   the code of the object to create.
+     * @return the object from one of the authority factory specified at construction time.
      * @throws FactoryException If an error occurred while creating the object.
      */
     final <T> T create(AuthorityFactoryProxy<? extends T> proxy, String code) throws FactoryException {
@@ -814,7 +814,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
      *   <li>{@code http://www.opengis.net/gml/srs/}<var>authority</var>{@code .xml#}<var>code</var></li>
      * </ul>
      *
-     * @return A description of the object, or {@code null} if the object
+     * @return a description of the object, or {@code null} if the object
      *         corresponding to the specified {@code code} has no description.
      * @throws FactoryException if an error occurred while fetching the description.
      */
@@ -837,7 +837,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
      * The two first formats are ambiguous when used with this {@code createObject(String)} method
      * because different kinds of objects can have the same code.
      *
-     * @return The object for the given code.
+     * @return the object for the given code.
      * @throws FactoryException if the object creation failed.
      */
     @Override
@@ -856,7 +856,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
      *   <li>{@code http://www.opengis.net/gml/srs/}<var>authority</var>{@code .xml#}<var>code</var></li>
      * </ul>
      *
-     * @return The coordinate reference system for the given code.
+     * @return the coordinate reference system for the given code.
      * @throws FactoryException if the object creation failed.
      */
     @Override
@@ -875,7 +875,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
      *   <li>{@code http://www.opengis.net/gml/srs/}<var>authority</var>{@code .xml#}<var>code</var></li>
      * </ul>
      *
-     * @return The coordinate reference system for the given code.
+     * @return the coordinate reference system for the given code.
      * @throws FactoryException if the object creation failed.
      */
     @Override
@@ -894,7 +894,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
      *   <li>{@code http://www.opengis.net/gml/srs/}<var>authority</var>{@code .xml#}<var>code</var></li>
      * </ul>
      *
-     * @return The coordinate reference system for the given code.
+     * @return the coordinate reference system for the given code.
      * @throws FactoryException if the object creation failed.
      */
     @Override
@@ -913,7 +913,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
      *   <li>{@code http://www.opengis.net/gml/srs/}<var>authority</var>{@code .xml#}<var>code</var></li>
      * </ul>
      *
-     * @return The coordinate reference system for the given code.
+     * @return the coordinate reference system for the given code.
      * @throws FactoryException if the object creation failed.
      */
     @Override
@@ -932,7 +932,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
      *   <li>{@code http://www.opengis.net/gml/srs/}<var>authority</var>{@code .xml#}<var>code</var></li>
      * </ul>
      *
-     * @return The coordinate reference system for the given code.
+     * @return the coordinate reference system for the given code.
      * @throws FactoryException if the object creation failed.
      */
     @Override
@@ -951,7 +951,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
      *   <li>{@code http://www.opengis.net/gml/srs/}<var>authority</var>{@code .xml#}<var>code</var></li>
      * </ul>
      *
-     * @return The coordinate reference system for the given code.
+     * @return the coordinate reference system for the given code.
      * @throws FactoryException if the object creation failed.
      */
     @Override
@@ -970,7 +970,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
      *   <li>{@code http://www.opengis.net/gml/srs/}<var>authority</var>{@code .xml#}<var>code</var></li>
      * </ul>
      *
-     * @return The coordinate reference system for the given code.
+     * @return the coordinate reference system for the given code.
      * @throws FactoryException if the object creation failed.
      */
     @Override
@@ -989,7 +989,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
      *   <li>{@code http://www.opengis.net/gml/srs/}<var>authority</var>{@code .xml#}<var>code</var></li>
      * </ul>
      *
-     * @return The coordinate reference system for the given code.
+     * @return the coordinate reference system for the given code.
      * @throws FactoryException if the object creation failed.
      */
     @Override
@@ -1008,7 +1008,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
      *   <li>{@code http://www.opengis.net/gml/srs/}<var>authority</var>{@code .xml#}<var>code</var></li>
      * </ul>
      *
-     * @return The coordinate reference system for the given code.
+     * @return the coordinate reference system for the given code.
      * @throws FactoryException if the object creation failed.
      */
     @Override
@@ -1027,7 +1027,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
      *   <li>{@code http://www.opengis.net/gml/srs/}<var>authority</var>{@code .xml#}<var>code</var></li>
      * </ul>
      *
-     * @return The coordinate reference system for the given code.
+     * @return the coordinate reference system for the given code.
      * @throws FactoryException if the object creation failed.
      */
     @Override
@@ -1045,7 +1045,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
      *   <li><code>http://www.opengis.net/def/<b>datum</b>/</code><var>authority</var>{@code /}<var>version</var>{@code /}<var>code</var></li>
      * </ul>
      *
-     * @return The datum for the given code.
+     * @return the datum for the given code.
      * @throws FactoryException if the object creation failed.
      */
     @Override
@@ -1063,7 +1063,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
      *   <li><code>http://www.opengis.net/def/<b>datum</b>/</code><var>authority</var>{@code /}<var>version</var>{@code /}<var>code</var></li>
      * </ul>
      *
-     * @return The datum for the given code.
+     * @return the datum for the given code.
      * @throws FactoryException if the object creation failed.
      */
     @Override
@@ -1081,7 +1081,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
      *   <li><code>http://www.opengis.net/def/<b>datum</b>/</code><var>authority</var>{@code /}<var>version</var>{@code /}<var>code</var></li>
      * </ul>
      *
-     * @return The datum for the given code.
+     * @return the datum for the given code.
      * @throws FactoryException if the object creation failed.
      */
     @Override
@@ -1099,7 +1099,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
      *   <li><code>http://www.opengis.net/def/<b>datum</b>/</code><var>authority</var>{@code /}<var>version</var>{@code /}<var>code</var></li>
      * </ul>
      *
-     * @return The datum for the given code.
+     * @return the datum for the given code.
      * @throws FactoryException if the object creation failed.
      */
     @Override
@@ -1117,7 +1117,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
      *   <li><code>http://www.opengis.net/def/<b>datum</b>/</code><var>authority</var>{@code /}<var>version</var>{@code /}<var>code</var></li>
      * </ul>
      *
-     * @return The datum for the given code.
+     * @return the datum for the given code.
      * @throws FactoryException if the object creation failed.
      */
     @Override
@@ -1135,7 +1135,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
      *   <li><code>http://www.opengis.net/def/<b>datum</b>/</code><var>authority</var>{@code /}<var>version</var>{@code /}<var>code</var></li>
      * </ul>
      *
-     * @return The datum for the given code.
+     * @return the datum for the given code.
      * @throws FactoryException if the object creation failed.
      */
     @Override
@@ -1153,7 +1153,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
      *   <li><code>http://www.opengis.net/def/<b>ellipsoid</b>/</code><var>authority</var>{@code /}<var>version</var>{@code /}<var>code</var></li>
      * </ul>
      *
-     * @return The ellipsoid for the given code.
+     * @return the ellipsoid for the given code.
      * @throws FactoryException if the object creation failed.
      */
     @Override
@@ -1171,7 +1171,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
      *   <li><code>http://www.opengis.net/def/<b>meridian</b>/</code><var>authority</var>{@code /}<var>version</var>{@code /}<var>code</var></li>
      * </ul>
      *
-     * @return The prime meridian for the given code.
+     * @return the prime meridian for the given code.
      * @throws FactoryException if the object creation failed.
      */
     @Override
@@ -1187,7 +1187,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
      *   <li><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
      * </ul>
      *
-     * @return The extent for the given code.
+     * @return the extent for the given code.
      * @throws FactoryException if the object creation failed.
      */
     @Override
@@ -1205,7 +1205,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
      *   <li><code>http://www.opengis.net/def/<b>cs</b>/</code><var>authority</var>{@code /}<var>version</var>{@code /}<var>code</var></li>
      * </ul>
      *
-     * @return The coordinate system for the given code.
+     * @return the coordinate system for the given code.
      * @throws FactoryException if the object creation failed.
      */
     @Override
@@ -1223,7 +1223,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
      *   <li><code>http://www.opengis.net/def/<b>cs</b>/</code><var>authority</var>{@code /}<var>version</var>{@code /}<var>code</var></li>
      * </ul>
      *
-     * @return The coordinate system for the given code.
+     * @return the coordinate system for the given code.
      * @throws FactoryException if the object creation failed.
      */
     @Override
@@ -1241,7 +1241,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
      *   <li><code>http://www.opengis.net/def/<b>cs</b>/</code><var>authority</var>{@code /}<var>version</var>{@code /}<var>code</var></li>
      * </ul>
      *
-     * @return The coordinate system for the given code.
+     * @return the coordinate system for the given code.
      * @throws FactoryException if the object creation failed.
      */
     @Override
@@ -1259,7 +1259,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
      *   <li><code>http://www.opengis.net/def/<b>cs</b>/</code><var>authority</var>{@code /}<var>version</var>{@code /}<var>code</var></li>
      * </ul>
      *
-     * @return The coordinate system for the given code.
+     * @return the coordinate system for the given code.
      * @throws FactoryException if the object creation failed.
      */
     @Override
@@ -1277,7 +1277,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
      *   <li><code>http://www.opengis.net/def/<b>cs</b>/</code><var>authority</var>{@code /}<var>version</var>{@code /}<var>code</var></li>
      * </ul>
      *
-     * @return The coordinate system for the given code.
+     * @return the coordinate system for the given code.
      * @throws FactoryException if the object creation failed.
      */
     @Override
@@ -1295,7 +1295,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
      *   <li><code>http://www.opengis.net/def/<b>cs</b>/</code><var>authority</var>{@code /}<var>version</var>{@code /}<var>code</var></li>
      * </ul>
      *
-     * @return The coordinate system for the given code.
+     * @return the coordinate system for the given code.
      * @throws FactoryException if the object creation failed.
      */
     @Override
@@ -1314,7 +1314,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
      *   <li><code>http://www.opengis.net/def/<b>cs</b>/</code><var>authority</var>{@code /}<var>version</var>{@code /}<var>code</var></li>
      * </ul>
      *
-     * @return The coordinate system for the given code.
+     * @return the coordinate system for the given code.
      * @throws FactoryException if the object creation failed.
      */
     @Override
@@ -1333,7 +1333,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
      *   <li><code>http://www.opengis.net/def/<b>cs</b>/</code><var>authority</var>{@code /}<var>version</var>{@code /}<var>code</var></li>
      * </ul>
      *
-     * @return The coordinate system for the given code.
+     * @return the coordinate system for the given code.
      * @throws FactoryException if the object creation failed.
      */
     @Override
@@ -1351,7 +1351,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
      *   <li><code>http://www.opengis.net/def/<b>axis</b>/</code><var>authority</var>{@code /}<var>version</var>{@code /}<var>code</var></li>
      * </ul>
      *
-     * @return The axis for the given code.
+     * @return the axis for the given code.
      * @throws FactoryException if the object creation failed.
      */
     @Override
@@ -1369,7 +1369,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
      *   <li><code>http://www.opengis.net/def/<b>uom</b>/</code><var>authority</var>{@code /}<var>version</var>{@code /}<var>code</var></li>
      * </ul>
      *
-     * @return The unit of measurement for the given code.
+     * @return the unit of measurement for the given code.
      * @throws FactoryException if the object creation failed.
      */
     @Override
@@ -1387,7 +1387,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
      *   <li><code>http://www.opengis.net/def/<b>parameter</b>/</code><var>authority</var>{@code /}<var>version</var>{@code /}<var>code</var></li>
      * </ul>
      *
-     * @return The parameter descriptor for the given code.
+     * @return the parameter descriptor for the given code.
      * @throws FactoryException if the object creation failed.
      */
     @Override
@@ -1405,7 +1405,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
      *   <li><code>http://www.opengis.net/def/<b>method</b>/</code><var>authority</var>{@code /}<var>version</var>{@code /}<var>code</var></li>
      * </ul>
      *
-     * @return The operation method for the given code.
+     * @return the operation method for the given code.
      * @throws FactoryException if the object creation failed.
      */
     @Override
@@ -1423,7 +1423,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
      *   <li><code>http://www.opengis.net/def/<b>coordinateOperation</b>/</code><var>authority</var>{@code /}<var>version</var>{@code /}<var>code</var></li>
      * </ul>
      *
-     * @return The operation for the given code.
+     * @return the operation for the given code.
      * @throws FactoryException if the object creation failed.
      */
     @Override
@@ -1486,7 +1486,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
      * Creates a finder which can be used for looking up unidentified objects.
      * The default implementation delegates the lookups to the underlying factories.
      *
-     * @return A finder to use for looking up unidentified objects.
+     * @return a finder to use for looking up unidentified objects.
      * @throws FactoryException if the finder can not be created.
      */
     @Override

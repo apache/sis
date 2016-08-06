@@ -241,6 +241,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final short DirectoryNotExpected_1 = 165;
 
         /**
+         * This instance of ‘{0}’ has been disposed.
+         */
+        public static final short DisposedInstanceOf_1 = 234;
+
+        /**
          * Element “{0}” is duplicated.
          */
         public static final short DuplicatedElement_1 = 16;

@@ -43,7 +43,7 @@ import org.opengis.feature.PropertyNotFoundException;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5
- * @version 0.6
+ * @version 0.8
  * @module
  *
  * @see DenseFeature
@@ -105,7 +105,7 @@ final class SparseFeature extends AbstractFeature implements Cloneable {
     /**
      * Creates a new feature of the given type.
      *
-     * @param type Information about the feature (name, characteristics, <i>etc.</i>).
+     * @param type  information about the feature (name, characteristics, <i>etc.</i>).
      */
     public SparseFeature(final DefaultFeatureType type) {
         super(type);
@@ -117,10 +117,10 @@ final class SparseFeature extends AbstractFeature implements Cloneable {
      * Returns the index for the property of the given name, or {@link DefaultFeatureType#OPERATION_INDEX}
      * if the property is a parameterless operation.
      *
-     * @param  name The property name.
-     * @return The index for the property of the given name,
+     * @param  name  the property name.
+     * @return the index for the property of the given name,
      *         or a negative value if the property is a parameterless operation.
-     * @throws PropertyNotFoundException If the given argument is not a property name of this feature.
+     * @throws PropertyNotFoundException if the given argument is not a property name of this feature.
      */
     private int getIndex(final String name) throws PropertyNotFoundException {
         final Integer index = indices.get(name);
@@ -150,7 +150,7 @@ final class SparseFeature extends AbstractFeature implements Cloneable {
      */
     private void requireMapOfProperties() {
         if (valuesKind != PROPERTIES) {
-            if (!properties.isEmpty()) { // The map is typically empty when this method is first invoked.
+            if (!properties.isEmpty()) {        // The map is typically empty when this method is first invoked.
                 if (valuesKind != VALUES) {
                     throw new CorruptedObjectException(getName());
                 }
@@ -163,16 +163,16 @@ final class SparseFeature extends AbstractFeature implements Cloneable {
                     }
                 }
             }
-            valuesKind = PROPERTIES; // Set only on success.
+            valuesKind = PROPERTIES;            // Set only on success.
         }
     }
 
     /**
      * Returns the property (attribute, operation or association) of the given name.
      *
-     * @param  name The property name.
-     * @return The property of the given name.
-     * @throws PropertyNotFoundException If the given argument is not a property name of this feature.
+     * @param  name  the property name.
+     * @return the property of the given name.
+     * @throws PropertyNotFoundException if the given argument is not a property name of this feature.
      */
     @Override
     public Property getProperty(final String name) throws PropertyNotFoundException {
@@ -202,7 +202,7 @@ final class SparseFeature extends AbstractFeature implements Cloneable {
     /**
      * Sets the property (attribute, operation or association).
      *
-     * @param  property The property to set.
+     * @param  property  the property to set.
      * @throws IllegalArgumentException if the type of the given property is not one of the types
      *         known to this feature, or if the property can not be set for another reason.
      */
@@ -222,9 +222,9 @@ final class SparseFeature extends AbstractFeature implements Cloneable {
     /**
      * Returns the value for the property of the given name.
      *
-     * @param  name The property name.
-     * @return The value for the given property, or {@code null} if none.
-     * @throws PropertyNotFoundException If the given argument is not an attribute or association name of this feature.
+     * @param  name  the property name.
+     * @return the value for the given property, or {@code null} if none.
+     * @throws PropertyNotFoundException if the given argument is not an attribute or association name of this feature.
      */
     @Override
     public Object getPropertyValue(final String name) throws PropertyNotFoundException {
@@ -247,7 +247,7 @@ final class SparseFeature extends AbstractFeature implements Cloneable {
                 throw new CorruptedObjectException(getName());
             }
         } else if (properties.containsKey(index)) {
-            return null; // Null has been explicitely set.
+            return null;                                                // Null has been explicitely set.
         } else {
             return getDefaultValue(name);
         }
@@ -256,10 +256,10 @@ final class SparseFeature extends AbstractFeature implements Cloneable {
     /**
      * Sets the value for the property of the given name.
      *
-     * @param  name  The attribute name.
-     * @param  value The new value for the given attribute (may be {@code null}).
-     * @throws ClassCastException If the value is not assignable to the expected value class.
-     * @throws IllegalArgumentException If the given value can not be assigned for another reason.
+     * @param  name   the attribute name.
+     * @param  value  the new value for the given attribute (may be {@code null}).
+     * @throws ClassCastException if the value is not assignable to the expected value class.
+     * @throws IllegalArgumentException if the given value can not be assigned for another reason.
      */
     @Override
     public void setPropertyValue(final String name, final Object value) throws IllegalArgumentException {
@@ -296,9 +296,9 @@ final class SparseFeature extends AbstractFeature implements Cloneable {
     /**
      * Sets a value in the {@link #properties} map.
      *
-     * @param index    The key of the property to set.
-     * @param oldValue The old value, used for verification purpose.
-     * @param newValue The new value.
+     * @param index     the key of the property to set.
+     * @param oldValue  the old value, used for verification purpose.
+     * @param newValue  the new value.
      */
     private void replace(final Integer index, final Object oldValue, final Object newValue) {
         if (properties.put(index, newValue) != oldValue) {
@@ -320,9 +320,7 @@ final class SparseFeature extends AbstractFeature implements Cloneable {
             }
             return v.quality;
         }
-        /*
-         * Slower path when there is a possibility that user overridden the Property.quality() methods.
-         */
+        // Slower path when there is a possibility that user overridden the Property.quality() methods.
         return super.quality();
     }
 
@@ -333,7 +331,7 @@ final class SparseFeature extends AbstractFeature implements Cloneable {
      * the clone operation is <cite>deep</cite> or <cite>shallow</cite>) depends on the behavior or
      * property {@code clone()} methods.
      *
-     * @return A clone of this attribute.
+     * @return a clone of this attribute.
      * @throws CloneNotSupportedException if this feature can not be cloned, typically because
      *         {@code clone()} on a property instance failed.
      */
@@ -345,7 +343,7 @@ final class SparseFeature extends AbstractFeature implements Cloneable {
         switch (clone.valuesKind) {
             default:        throw new AssertionError(clone.valuesKind);
             case CORRUPTED: throw new CorruptedObjectException(clone.getName());
-            case VALUES:    break; // Nothing to do.
+            case VALUES:    break;                             // Nothing to do.
             case PROPERTIES: {
                 final Cloner cloner = new Cloner();
                 for (final Map.Entry<Integer,Object> entry : clone.properties.entrySet()) {
@@ -366,7 +364,7 @@ final class SparseFeature extends AbstractFeature implements Cloneable {
      * in order to keep the hash code value stable before and after the {@code properties} map is (conceptually)
      * promoted from the {@code Map<Integer,Object>} type to the {@code Map<Integer,Property>} type.
      *
-     * @return A hash code value.
+     * @return a hash code value.
      */
     @Override
     public int hashCode() {

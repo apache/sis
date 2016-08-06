@@ -18,22 +18,23 @@ package org.apache.sis.storage.geotiff;
 
 import java.util.Locale;
 import java.io.IOException;
-import static java.lang.Math.pow;
 import java.net.MalformedURLException;
 import java.text.ParseException;
-import static java.util.Collections.singleton;
 import java.util.Date;
-import org.apache.sis.geometry.DirectPosition2D;
-import org.opengis.metadata.citation.DateType;
-import org.apache.sis.internal.storage.MetadataBuilder;
-import org.apache.sis.referencing.CRS;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.MismatchedDimensionException;
+import org.opengis.metadata.citation.DateType;
 import org.opengis.metadata.maintenance.ScopeCode;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.util.FactoryException;
+import org.apache.sis.internal.storage.MetadataBuilder;
+import org.apache.sis.geometry.DirectPosition2D;
+import org.apache.sis.math.Vector;
+import org.apache.sis.referencing.CRS;
+
+import static java.util.Collections.singleton;
 
 
 /**
@@ -43,6 +44,7 @@ import org.opengis.util.FactoryException;
  * @author  Alexis Manin (Geomatys)
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
+ * @author  Thi Phuong Hao Nguyen (VNSC)
  * @since   0.8
  * @version 0.8
  * @module
@@ -69,7 +71,7 @@ final class ImageFileDirectory {
      */
     private int tileWidth = -1, tileHeight = -1;
 
-    private int samplesPerPixel = 1;
+    private short samplesPerPixel = 1;
 
     /**
      * If {@code true}, the components are stored in separate “component planes”.
@@ -83,13 +85,13 @@ final class ImageFileDirectory {
      * or unsupported we can not read the image, but we still can read the metadata.
      */
     private Compression compression;
-    private int[] ModelTiePoint;
-    private int RowsPerStrip;
-    private int bitsPerSample;
-    private int minSampleValue;
-    private int maxSampleValue;
-    private double[] PixelScaleTag;
-    private int[] Directory;
+    private Vector modelTiePoints;
+    private long rowsPerStrip = Long.MAX_VALUE;
+    private Vector bitsPerSample;
+    private Vector minSampleValues;
+    private Vector maxSampleValues;
+    private Vector pixelScaleTag;
+    private Vector directory;
 
     /**
      * Creates a new image file directory.
@@ -155,7 +157,7 @@ final class ImageFileDirectory {
              * in the entire image: StripsPerImage = floor((ImageLength + RowsPerStrip - 1) / RowsPerStrip).
              */
             case Tags.RowsPerStrip: {
-                RowsPerStrip = (int) type.readUnsignedLong(reader.input, count); 
+                rowsPerStrip = type.readUnsignedLong(reader.input, count);
                 break;
             }
             /*
@@ -197,21 +199,19 @@ final class ImageFileDirectory {
              * But the TIFF specification allows different values.
              */
             case Tags.BitsPerSample: {
-                final long value = type.readLong(reader.input, count); 
-                bitsPerSample = (int) value; 
-                if (bitsPerSample == -1) { 
-                    return value; 
-                } 
+                bitsPerSample = type.readVector(reader.input, count);
                 break;
             }
             /*
-             * The number of components per pixel. Ssually 1 for bilevel, grayscale, and palette-color images,
+             * The number of components per pixel. Usually 1 for bilevel, grayscale, and palette-color images,
              * and 3 for RGB images. Default value is 1.
              */
             case Tags.SamplesPerPixel: {
-                final long value = type.readLong(reader.input, count); 
-                samplesPerPixel = (int) value; 
-                
+                final long value = type.readLong(reader.input, count);
+                if (value <= 0 || value > Short.MAX_VALUE) {
+                    return value;                               // Illegal value, to be reported by the caller.
+                }
+                samplesPerPixel = (short) value;
                 break;
             }
             /*
@@ -221,12 +221,7 @@ final class ImageFileDirectory {
              * describes the meaning of the extra samples. It may be an alpha channel, but not necessarily.
              */
             case Tags.ExtraSamples: {
-                double[] num = null; 
-                int i = 0; 
-                for (final double value : type.readDoubles(reader.input, count)) { 
-                    num[i] = value; 
-                    i++; 
-                } 
+                Vector num = type.readVector(reader.input, count);
                 break;
             }
 
@@ -265,12 +260,7 @@ final class ImageFileDirectory {
              * The minimum component value used. Default is 0.
              */
             case Tags.MinSampleValue: {
-                for (final double value : type.readDoubles(reader.input, count)) { 
-                    if (value != 0) { 
-                        minSampleValue = (int) value; 
-                    } 
-                } 
-                reader.metadata.addMinimumSampleValue(type.readDouble(reader.input, count));
+                minSampleValues = type.readVector(reader.input, count);
                 break;
             }
             /*
@@ -279,12 +269,7 @@ final class ImageFileDirectory {
              * visual appearance of an image, unless a map styling is applied.
              */
             case Tags.MaxSampleValue: {
-                for (final double value : type.readDoubles(reader.input, count)) { 
-                    if (value != 0) { 
-                        maxSampleValue = (int) value; 
-                    } 
-                } 
-                reader.metadata.addMaximumSampleValue(type.readDouble(reader.input, count));
+                maxSampleValues = type.readVector(reader.input, count);
                 break;
             }
 
@@ -481,23 +466,20 @@ final class ImageFileDirectory {
                 break;
             }
             case Tags.ModelTiePoint: {
-                ModelTiePoint = type.readInts(reader.input, count);
+                modelTiePoints = type.readVector(reader.input, count);
+                break;
             }
-            break;
             case Tags.GeoKeyDirectoryTag: {
-                Directory = type.readInts(reader.input, count) ;
-                    
-
+                directory = type.readVector(reader.input, count) ;
+                break;
             }
-            break;
             case Tags.GeoAsciiParamsTag: {
-                
+                break;
             }
-            break;
             case Tags.ModelPixelScaleTag: {
-                PixelScaleTag = type.readDoubles(reader.input, count);
+                pixelScaleTag = type.readVector(reader.input, count);
+                break;
             }
-            break;
         }
         return null;
     }
@@ -525,24 +507,24 @@ final class ImageFileDirectory {
      * @return the value use for bounding box
      */
     public double[] getBoundingBox() throws FactoryException, MismatchedDimensionException, TransformException  {
-        CoordinateReferenceSystem sourceCRS = CRS.forCode("EPSG:"+Directory[27]);
+        CoordinateReferenceSystem sourceCRS = CRS.forCode("EPSG:"+directory.intValue(27));
         CoordinateReferenceSystem targetCRS = CRS.forCode("CRS:84");
         CoordinateOperation op = CRS.findOperation(sourceCRS, targetCRS, null);
-        double xscale  = PixelScaleTag[0];
-        double yscale  = PixelScaleTag[1];
-        double UL_x = ModelTiePoint[3];
-        double UL_y = ModelTiePoint[4];
+        double xscale  = pixelScaleTag.doubleValue(0);
+        double yscale  = pixelScaleTag.doubleValue(1);
+        double UL_x = modelTiePoints.doubleValue(3);
+        double UL_y = modelTiePoints.doubleValue(4);
         double UR_x = UL_x + (xscale * (imageWidth-1));
         double UR_y = UL_y;
         double LL_x = UL_x;
         double LL_y = UL_y- (yscale * (imageHeight-1));
         double LR_x = UL_x + (xscale * (imageWidth-1));
         double LR_y = UL_y- (yscale * (imageHeight-1));
-        double[] x = {UL_x,UR_x,LL_x,LR_x}; 
-        double[] y = {UL_y,UR_y,LL_y,LR_y}; 
+        double[] x = {UL_x, UR_x, LL_x, LR_x};
+        double[] y = {UL_y, UR_y, LL_y, LR_y};
         double[] lat =new double[4] ;
         double[] lon =new double[4] ;
-        
+
         for(int i =0; i< x.length;i++){
             DirectPosition sourcePt = new DirectPosition2D(x[i], y[i]);
             DirectPosition targetPt = op.getMathTransform().transform(sourcePt, null);
@@ -550,36 +532,47 @@ final class ImageFileDirectory {
             lat[i] = targetPt.getCoordinate()[1];
         }
         double[] bbox = new double[4];
-        
+
         bbox[0]= getExtremumValue(lon[0],lon[2],false);//westBoundLongitude
         bbox[1]= getExtremumValue(lon[1],lon[3],true);//eastBoundLongitude
         bbox[2]= getExtremumValue(lat[2],lat[3],false);//southBoundLatitude
         bbox[3]= getExtremumValue(lat[0],lat[1],true);//northBoundLatitude
         return bbox;
     }
+
     /**
      * Completes the metadata with the information stored in the field of this IFD.
      * This method is invoked only if the user requested the ISO 19115 metadata.
      */
     final void completeMetadata(final MetadataBuilder metadata,Reader reader, final Locale locale) throws MalformedURLException, IOException, FactoryException, MismatchedDimensionException, TransformException {
         if (compression != null) {
-            metadata.addCompression(compression.name().toLowerCase(locale),reader.file.toURL().openConnection().getContentType());
+            metadata.addCompression(compression.name().toLowerCase(locale), "TIFF");
         }
-            metadata.add(new Date(reader.file.lastModified()), DateType.CREATION); 
-            metadata.addTitle(reader.file.getName()); 
-            final String[] b = reader.file.getName().split("_"); 
-            metadata.addIdentifier(b[0]); 
-            if (maxSampleValue == 0) { 
-                maxSampleValue = (int) (pow(2, bitsPerSample) - 1); 
+        metadata.add(new Date(reader.file.lastModified()), DateType.CREATION);
+        metadata.addTitle(reader.file.getName());
+        final String[] b = reader.file.getName().split("_");
+        metadata.addIdentifier(b[0]);
+        metadata.addAuthor(ORIGIN);
+        for (int i=0; i<samplesPerPixel; i++) {
+            int nb = 1;
+            if (bitsPerSample != null && i < bitsPerSample.size()) {
+                nb = bitsPerSample.intValue(i);
             }
-            metadata.addAuthor(ORIGIN);
-            metadata.addMaximumSampleValue(maxSampleValue); 
-            metadata.addMinimumSampleValue(minSampleValue); 
-            double[] box = getBoundingBox();
-            metadata.addBoundingBox(box[0], box[1], box[2], box[3]);
-            metadata.addLanguage(Locale.ENGLISH);
-            metadata.addScopeCode(singleton(ScopeCode.DATASET));
-            metadata.addStandard();
+            double max = (1 << nb) - 1;
+            if (maxSampleValues != null && i < maxSampleValues.size()) {
+                max = maxSampleValues.doubleValue(i);
+            }
+            double min = 0;
+            if (minSampleValues != null && i < minSampleValues.size()) {
+                min = minSampleValues.doubleValue(i);
+            }
+            metadata.addMaximumSampleValue(max);
+            metadata.addMinimumSampleValue(min);
+        }
+        double[] box = getBoundingBox();
+        metadata.addBoundingBox(box[0], box[1], box[2], box[3]);
+        metadata.addLanguage(Locale.ENGLISH);
+        metadata.addScopeCode(singleton(ScopeCode.DATASET));
+        metadata.addStandard();
     }
-    
 }

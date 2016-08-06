@@ -40,7 +40,7 @@ import org.apache.sis.xml.Namespaces;
  * Writers for a given specification should extend this class and provide appropriate write methods.
  *
  * <p>Example:</p>
- * {@preformat
+ * {@preformat java
  *     public class UserWriter extends StaxStreamWriter {
  *         public void write(User user) throws XMLStreamException {
  *             // Actual STAX write operations.
