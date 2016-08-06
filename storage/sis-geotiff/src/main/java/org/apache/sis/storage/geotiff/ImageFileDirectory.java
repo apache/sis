@@ -21,6 +21,7 @@ import java.io.IOException;
 import static java.lang.Math.pow;
 import java.net.MalformedURLException;
 import java.text.ParseException;
+import static java.util.Collections.singleton;
 import java.util.Date;
 import org.apache.sis.geometry.DirectPosition2D;
 import org.opengis.metadata.citation.DateType;
@@ -28,6 +29,7 @@ import org.apache.sis.internal.storage.MetadataBuilder;
 import org.apache.sis.referencing.CRS;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.MismatchedDimensionException;
+import org.opengis.metadata.maintenance.ScopeCode;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.TransformException;
@@ -48,6 +50,8 @@ import org.opengis.util.FactoryException;
  * @see <a href="http://www.awaresystems.be/imaging/tiff/tifftags.html">TIFF Tag Reference</a>
  */
 final class ImageFileDirectory {
+    private String ORIGIN = "Image courtesy of the U.S.Geological Survey";
+    private String TYPE= "L1 production";
     /**
      * {@code true} if this {@code ImageFileDirectory} has not yet read all deferred entries.
      * When this flag is {@code true}, the {@code ImageFileDirectory} is not yet ready for use.
@@ -520,9 +524,6 @@ final class ImageFileDirectory {
     /**
      * Return the value use for bounding box
      * @return the value use for bounding box
-     * @throws MismatchedDimensionException
-     * @throws TransformException
-     * @throws FactoryException 
      */
     public double[] getBoundingBox() throws FactoryException, MismatchedDimensionException, TransformException  {
         CoordinateReferenceSystem sourceCRS = CRS.forCode("EPSG:"+Directory[27]);
@@ -571,11 +572,15 @@ final class ImageFileDirectory {
             metadata.addIdentifier(b[0]); 
             if (maxSampleValue == 0) { 
                 maxSampleValue = (int) (pow(2, bitsPerSample) - 1); 
-            } 
+            }
+            metadata.addAuthor(ORIGIN);
             metadata.addMaximumSampleValue(maxSampleValue); 
             metadata.addMinimumSampleValue(minSampleValue); 
             double[] box = getBoundingBox();
             metadata.addBoundingBox(box[0], box[1], box[2], box[3]);
+            metadata.addLanguage(Locale.ENGLISH);
+            metadata.addScopeCode(singleton(ScopeCode.DATASET));
+            metadata.addStandard();
     }
     
 }

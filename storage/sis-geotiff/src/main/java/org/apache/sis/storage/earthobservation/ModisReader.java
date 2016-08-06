@@ -15,7 +15,9 @@
  */
 package org.apache.sis.storage.earthobservation;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.text.SimpleDateFormat;
 import java.time.format.DateTimeParseException;
 import java.util.Date;
@@ -45,6 +47,8 @@ import org.opengis.metadata.identification.Identification;
 import org.opengis.metadata.maintenance.ScopeCode;
 
 import static java.util.Collections.singleton;
+import org.apache.sis.metadata.iso.citation.AbstractParty;
+import org.apache.sis.metadata.iso.citation.DefaultResponsibility;
 import static org.apache.sis.storage.earthobservation.ModisPath.DataCenterId;
 
 
@@ -211,10 +215,6 @@ public class ModisReader {
         if (!isEmpty) {
             identification.setCitation(citation);
         }
-        
-            final DefaultKeywords keyword = new DefaultKeywords("Land/Water Mask > Cloud Mask > Atmospheric > Land Cover > Snow Cover");
-            identification.setDescriptiveKeywords(singleton(keyword));
-        
         final Extent extent = createExtent();
         if (extent != null) {
             identification.setExtents(singleton(extent));
@@ -222,14 +222,11 @@ public class ModisReader {
         }
         value = getValue(ModisPath.DataCenterId);
         if (value != null) {
-            DefaultResponsibleParty responsible = new DefaultResponsibleParty();
-            responsible.setOrganisationName(new DefaultInternationalString(value));
-            responsible.setRole(Role.ORIGINATOR);
-            DefaultResponsibleParty responsiblecontributor = new DefaultResponsibleParty();
-            responsiblecontributor.setOrganisationName(new DefaultInternationalString(value));
-            responsiblecontributor.setRole(Role.AUTHOR);
-            identification.getPointOfContacts().add(responsible);
-            identification.getPointOfContacts().add(responsiblecontributor);
+            DefaultResponsibility responsibility = new DefaultResponsibility();
+            AbstractParty party = new AbstractParty();
+            party.setName(new DefaultInternationalString(value));
+            responsibility.getParties().add(party);
+            citation.getCitedResponsibleParties().add(responsibility);
             isEmpty = false;
         }
         value = getValue(DataCenterId);
@@ -271,8 +268,16 @@ public class ModisReader {
         }
         if (getValue(ModisPath.PlatformShortName) != null) {
 
-            metadata.setHierarchyLevels(singleton(ScopeCode.valueOf(getValue(ModisPath.PlatformShortName))));
+            metadata.setHierarchyLevels(singleton(ScopeCode.METADATA));
         }
         return metadata;
+    }
+    public static void main(String[] args) throws Exception {
+        ModisReader read;
+        File file = new File("/home/haonguyen/data/MOD09Q1.A2010009.h08v07.005.2010027023253.hdf.xml");
+            read = new ModisReader(file);
+        
+        System.out.println("The Metadata of LC81230522014071LGN00_MTL.txt is:");
+        System.out.println(read.read());
     }
 }

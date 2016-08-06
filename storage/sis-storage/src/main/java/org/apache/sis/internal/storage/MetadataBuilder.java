@@ -48,8 +48,12 @@ import org.apache.sis.util.iso.Types;
 // Branch-dependent imports
 import java.time.LocalDate;
 import static java.util.Collections.singleton;
+import java.util.Locale;
 import org.apache.sis.metadata.iso.DefaultIdentifier;
+import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
+import static org.apache.sis.util.resources.Vocabulary.Keys.Locale;
+import org.opengis.metadata.maintenance.ScopeCode;
 
 
 /**
@@ -494,6 +498,34 @@ public class MetadataBuilder {
             party().setName(i18n);
         }
     }
+    /**
+     * Adds the language for metadata.
+     *
+     * @param  locale  the local of metadata, or {@code null} if none.
+     */
+    public final void addLanguage(Locale locale) {
+        if (locale != null) {
+            metadata().setLanguage(locale);
+            
+        }
+    }
+    /**
+     * Adds the standard for metadata.
+     *
+     */
+    public final void addStandard() {
+            metadata().setMetadataStandards(Citations.ISO_19115);
+    }
+    /**
+     * Adds the scope for metadata.
+     *
+     * @param  scope  the scope of metadata, or {@code null} if none.
+     */
+    public final void addScopeCode(final Collection<? extends ScopeCode> scopecode) {
+        if (scopecode != null) {
+            metadata().setHierarchyLevels(scopecode);
+        }
+    }
 
     /**
      * Add a BoundingBox value for metadata
@@ -791,5 +823,10 @@ parse:      for (int i = 0; i < length;) {
                 creatformat.setFormatSpecificationCitation(new DefaultCitation(i)); 
             } 
         }
+    }
+    public static void main(String[] args) {
+        MetadataBuilder a = new MetadataBuilder();
+        a.addStandard();
+        System.out.println(a.result());
     }
 }
