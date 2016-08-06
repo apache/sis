@@ -20,7 +20,6 @@ import java.io.Serializable;
 import java.util.Arrays;
 import java.util.AbstractList;
 import java.util.RandomAccess;
-import org.apache.sis.util.Numbers;
 import org.apache.sis.util.resources.Errors;
 
 import static org.apache.sis.util.ArgumentChecks.ensureValidIndex;
@@ -32,10 +31,9 @@ import static org.apache.sis.util.ArgumentChecks.ensureValidIndex;
  * Often the two above-cited cases are used together, for example in a time series where:
  *
  * <ul>
- *   <li><var>x</var>[<var>i</var>] is a linear function of <var>i</var>
+ *   <li><var>x[i]</var> is a linear function of <var>i</var>
  *       (e.g. the sampling time of measurements performed at a fixed time interval)</li>
- *   <li><var>y</var>[<var>i</var>] is the measurement of a phenomenon at time
- *       <var>x</var>[<var>i</var>].</li>
+ *   <li><var>y[i]</var> is the measurement of a phenomenon at time <var>x[i]</var>.</li>
  * </ul>
  *
  * Instances of {@code Vector} are created by calls to the {@link #create(Object)} static method.
@@ -49,6 +47,21 @@ import static org.apache.sis.util.ArgumentChecks.ensureValidIndex;
  *     Vector v = Vector.create(array).subList(lower, upper)
  * }
  *
+ * <div class="note"><b>Note:</b>
+ * the above functionalities look like similar functionalities provided by {@link java.nio.ByteBuffer}
+ * in standard Java, but they actually serve different purposes. The {@code ByteBuffer} getter methods
+ * (for example {@code getShort(int)}, {@code getLong(int)}, <i>etc.</i>) allow to decode a sequence of
+ * bytes in a way determined by the type of the value to decode (2 bytes for a {@code short}, 8 bytes
+ * for a {@code long}, <i>etc.</i>) – the type of the stored value must be known before to read it.
+ * By contrast, this {@code Vector} class is used in situations where <em>the decoding has already been done</em>
+ * by the code that <em>create</em> a {@code Vector} object, but the data type may not be known
+ * by the code that will <em>use</em> the {@code Vector} object.
+ * For example a method performing a numerical calculation may want to see the data as {@code double} values
+ * without concern about whether the data were really stored as {@code double} or as {@code float} values.</div>
+ *
+ * The methods that are most often used after {@code Vector} creation are {@link #size()} and
+ * {@link #doubleValue(int)} or {@link #intValue(int)}.
+ *
  * @author  Martin Desruisseaux (MPO, Geomatys)
  * @since   0.8
  * @version 0.8
@@ -60,37 +73,59 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
      *
      * <ul>
      *   <li>An array of a primitive type, like {@code float[]}.</li>
-     *   <li>An array of a wrapper type, like <code>{@linkplain Float}[]</code>.</li>
      *   <li>A {@code Vector}, in which case it is returned unchanged.</li>
      *   <li>The {@code null} value, in which case {@code null} is returned.</li>
      * </ul>
      *
-     * The argument is not cloned. Consequently changes in the underlying array are reflected
-     * in this vector, and vis-versa.
+     * The given argument is not cloned.
+     * Consequently changes in the underlying array are reflected in this vector, and vis-versa.
      *
-     * @param  array  the object to wrap in a vector, or {@code null}.
+     * @param  array       the object to wrap in a vector, or {@code null}.
+     * @param  isUnsigned  {@code true} if integer types should be interpreted as unsigned integers.
+     *         This argument is ignored if the given array is not a {@code byte[]}, {@code short[]},
+     *         {@code int[]} or {@code long[]} array.
      * @return the given object wrapped in a vector, or {@code null} if the argument was {@code null}.
      * @throws IllegalArgumentException if the type of the given object is not recognized by the method.
      */
-    public static Vector create(final Object array) throws IllegalArgumentException {
+    public static Vector create(final Object array, final boolean isUnsigned) throws IllegalArgumentException {
         if (array instanceof double[]) {
             return new ArrayVector.Double((double[]) array);
         }
         if (array instanceof float[]) {
             return new ArrayVector.Float((float[]) array);
         }
+        if (array instanceof long[]) {
+            if (isUnsigned) {
+                return new ArrayVector.UnsignedLong((long[]) array);
+            } else {
+                return new ArrayVector.Long((long[]) array);
+            }
+        }
+        if (array instanceof int[]) {
+            if (isUnsigned) {
+                return new ArrayVector.UnsignedInteger((int[]) array);
+            } else {
+                return new ArrayVector.Integer((int[]) array);
+            }
+        }
+        if (array instanceof short[]) {
+            if (isUnsigned) {
+                return new ArrayVector.UnsignedShort((short[]) array);
+            } else {
+                return new ArrayVector.Short((short[]) array);
+            }
+        }
+        if (array instanceof byte[]) {
+            if (isUnsigned) {
+                return new ArrayVector.UnsignedByte((byte[]) array);
+            } else {
+                return new ArrayVector.Byte((byte[]) array);
+            }
+        }
         if (array == null || array instanceof Vector) {
             return (Vector) array;
         }
-        final Class<?> type = array.getClass();
-        Class<?> component = type.getComponentType();
-        if (component != null) {
-            component = Numbers.primitiveToWrapper(component);
-            if (Number.class.isAssignableFrom(component)) {
-                return new ArrayVector(array);
-            }
-        }
-        throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalParameterType_2, "array", type));
+        throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalParameterType_2, "array", array.getClass()));
     }
 
     /**
@@ -119,14 +154,6 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
     }
 
     /**
-     * Returns the number of elements in this vector.
-     *
-     * @return the number of elements in this vector.
-     */
-    @Override
-    public abstract int size();
-
-    /**
      * Returns the type of elements in this vector. If this vector is backed by an array of a primitive type,
      * then this method returns the <em>wrapper</em> class, not the primitive type. For example if this vector
      * is backed by an array of type {@code float[]}, then this method returns {@code Float.class},
@@ -135,6 +162,23 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
      * @return the type of elements in this vector.
      */
     public abstract Class<? extends Number> getElementType();
+
+    /**
+     * Returns {@code true} if integer values shall be interpreted as unsigned values.
+     * Java has no primitive type for unsigned integers, but {@code Vector} implementations
+     * can simulate them by applying the necessary bit masks.
+     *
+     * @return {@code true} if the integer values shall be interpreted as unsigned values.
+     */
+    public abstract boolean isUnsigned();
+
+    /**
+     * Returns the number of elements in this vector.
+     *
+     * @return the number of elements in this vector.
+     */
+    @Override
+    public abstract int size();
 
     /**
      * Returns {@code true} if the value at the given index is {@code NaN}.
@@ -262,6 +306,7 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
      * Otherwise returns {@code this}. If this method is overridden, it should be
      * together with the {@link #toBacking(int[])} method.
      */
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
     Vector backingVector() {
         return this;
     }
@@ -380,6 +425,7 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
      * @throws IndexOutOfBoundsException if {@code first} or {@code first + step*(length-1)}
      *         is outside the [0 … {@linkplain #size size}-1] range.
      */
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
     public Vector subList(final int first, final int step, final int length) throws IndexOutOfBoundsException {
         if (step == 1 && first == 0 && length == size()) {
             return this;
@@ -402,6 +448,7 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
      * @param  toAppend the vector to concatenate at the end of this vector.
      * @return the concatenation of this vector with the given vector.
      */
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
     public Vector concatenate(final Vector toAppend) {
         if (toAppend.isEmpty()) {
             return this;
@@ -458,6 +505,11 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
         /** Returns the type of elements in this vector. */
         @Override public Class<? extends Number> getElementType() {
             return Vector.this.getElementType();
+        }
+
+        /** Returns whether the type should be interpreted as an unsigned integer type. */
+        @Override public boolean isUnsigned() {
+            return Vector.this.isUnsigned();
         }
 
         /** Returns the length of this view. */
@@ -612,6 +664,11 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
         /** Returns the type of elements in this vector. */
         @Override public Class<? extends Number> getElementType() {
             return Vector.this.getElementType();
+        }
+
+        /** Returns whether the type should be interpreted as an unsigned integer type. */
+        @Override public boolean isUnsigned() {
+            return Vector.this.isUnsigned();
         }
 
         /** Returns the length of this subvector. */

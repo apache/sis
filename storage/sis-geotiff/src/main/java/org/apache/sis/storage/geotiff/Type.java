@@ -46,7 +46,7 @@ enum Type {
      *   <li>TIFF code: 7</li>
      * </ul>
      */
-    UNDEFINED(7, Byte.BYTES),
+    UNDEFINED(7, Byte.BYTES, false),
 
     /**
      * An 8-bits signed (twos-complement) integer.
@@ -55,7 +55,7 @@ enum Type {
      *   <li>TIFF code: 6</li>
      * </ul>
      */
-    BYTE(6, Byte.BYTES) {
+    BYTE(6, Byte.BYTES, false) {
         @Override long readLong(final ChannelDataInput input, final long count) throws IOException {
             ensureSingleton(count);
             return input.readByte();
@@ -73,10 +73,14 @@ enum Type {
      *   <li>TIFF code: 1</li>
      * </ul>
      */
-    UBYTE(1, Byte.BYTES) {
+    UBYTE(1, Byte.BYTES, true) {
         @Override long readLong(final ChannelDataInput input, final long count) throws IOException {
             ensureSingleton(count);
             return input.readUnsignedByte();
+        }
+
+        @Override Object readArray(final ChannelDataInput input, final int count) throws IOException {
+            return input.readBytes(count);
         }
     },
 
@@ -87,7 +91,7 @@ enum Type {
      *   <li>TIFF code: 8</li>
      * </ul>
      */
-    SHORT(8, Short.BYTES) {
+    SHORT(8, Short.BYTES, false) {
         @Override long readLong(final ChannelDataInput input, final long count) throws IOException {
             ensureSingleton(count);
             return input.readShort();
@@ -105,10 +109,14 @@ enum Type {
      *   <li>TIFF code: 3</li>
      * </ul>
      */
-    USHORT(3, Short.BYTES) {
+    USHORT(3, Short.BYTES, true) {
         @Override long readLong(final ChannelDataInput input, final long count) throws IOException {
             ensureSingleton(count);
             return input.readUnsignedShort();
+        }
+
+        @Override Object readArray(final ChannelDataInput input, final int count) throws IOException {
+            return input.readShorts(count);
         }
     },
 
@@ -119,7 +127,7 @@ enum Type {
      *   <li>TIFF code: 9</li>
      * </ul>
      */
-    INT(9, Integer.BYTES) {
+    INT(9, Integer.BYTES, false) {
         @Override long readLong(final ChannelDataInput input, final long count) throws IOException {
             ensureSingleton(count);
             return input.readInt();
@@ -137,10 +145,14 @@ enum Type {
      *   <li>TIFF code: 4</li>
      * </ul>
      */
-    UINT(4, Integer.BYTES) {
+    UINT(4, Integer.BYTES, true) {
         @Override long readLong(final ChannelDataInput input, final long count) throws IOException {
             ensureSingleton(count);
             return input.readUnsignedInt();
+        }
+
+        @Override Object readArray(final ChannelDataInput input, final int count) throws IOException {
+            return input.readInts(count);
         }
     },
 
@@ -150,7 +162,7 @@ enum Type {
      *   <li>TIFF code: 17</li>
      * </ul>
      */
-    LONG(17, Long.BYTES) {
+    LONG(17, Long.BYTES, false) {
         @Override long readLong(final ChannelDataInput input, final long count) throws IOException {
             ensureSingleton(count);
             return input.readLong();
@@ -167,7 +179,7 @@ enum Type {
      *   <li>TIFF code: 16</li>
      * </ul>
      */
-    ULONG(16, Long.BYTES) {
+    ULONG(16, Long.BYTES, true) {
         @Override long readLong(final ChannelDataInput input, final long count) throws IOException {
             ensureSingleton(count);
             final long value = input.readLong();
@@ -185,6 +197,10 @@ enum Type {
             }
             return Double.parseDouble(Long.toUnsignedString(value));    // Inefficient but should be very rare.
         }
+
+        @Override Object readArray(final ChannelDataInput input, final int count) throws IOException {
+            return input.readLongs(count);
+        }
     },
 
     /**
@@ -194,7 +210,7 @@ enum Type {
      *   <li>TIFF code: 11</li>
      * </ul>
      */
-    FLOAT(11, Float.BYTES) {
+    FLOAT(11, Float.BYTES, false) {
         @Override long readLong(final ChannelDataInput input, final long count) throws IOException {
             ensureSingleton(count);
             final float value = input.readFloat();
@@ -222,7 +238,7 @@ enum Type {
      *   <li>TIFF code: 12</li>
      * </ul>
      */
-    DOUBLE(12, Double.BYTES) {
+    DOUBLE(12, Double.BYTES, false) {
         @Override long readLong(final ChannelDataInput input, final long count) throws IOException {
             ensureSingleton(count);
             final double value = input.readDouble();
@@ -250,7 +266,7 @@ enum Type {
      *   <li>TIFF code: 10</li>
      * </ul>
      */
-    RATIONAL(10, (2*Integer.BYTES)) {
+    RATIONAL(10, (2*Integer.BYTES), false) {
         @Override long readLong(final ChannelDataInput input, final long count) throws IOException {
             ensureSingleton(count);
             final int numerator   = input.readInt();
@@ -281,7 +297,7 @@ enum Type {
      *   <li>TIFF code: 5</li>
      * </ul>
      */
-    URATIONAL(5, (2*Integer.BYTES)) {
+    URATIONAL(5, (2*Integer.BYTES), true) {
         @Override long readLong(final ChannelDataInput input, final long count) throws IOException {
             ensureSingleton(count);
             final long numerator   = input.readUnsignedInt();
@@ -314,7 +330,7 @@ enum Type {
      *   <li>TIFF code: 2</li>
      * </ul>
      */
-    ASCII(2, Byte.BYTES) {
+    ASCII(2, Byte.BYTES, false) {
         @Override String[] readString(final ChannelDataInput input, final long length, final Charset charset) throws IOException {
             final byte[] chars = input.readBytes(Math.toIntExact(length));
             String[] lines = new String[1];                     // We will usually have exactly one string.
@@ -354,11 +370,17 @@ enum Type {
     final int size;
 
     /**
+     * Whether this type is an unsigned integer.
+     */
+    final boolean isUnsigned;
+
+    /**
      * Creates a new enumeration
      */
-    private Type(final int code, final int size) {
+    private Type(final int code, final int size, final boolean isUnsigned) {
         this.code = code;
         this.size = size;
+        this.isUnsigned = isUnsigned;
     }
 
     /**
@@ -517,6 +539,6 @@ enum Type {
      * @throws UnsupportedOperationException if this type is {@link #UNDEFINED}.
      */
     final Vector readVector(final ChannelDataInput input, final long count) throws IOException {
-        return Vector.create(readArray(input, Math.toIntExact(count)));
+        return Vector.create(readArray(input, Math.toIntExact(count)), isUnsigned);
     }
 }

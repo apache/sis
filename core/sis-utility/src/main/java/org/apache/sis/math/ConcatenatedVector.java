@@ -65,6 +65,14 @@ final class ConcatenatedVector extends Vector implements Serializable {
     }
 
     /**
+     * Returns {@code true} only if both vectors are unsigned.
+     */
+    @Override
+    public boolean isUnsigned() {
+        return first.isUnsigned() && second.isUnsigned();
+    }
+
+    /**
      * Returns the length of this vector.
      */
     @Override
