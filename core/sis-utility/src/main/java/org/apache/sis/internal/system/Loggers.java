@@ -36,7 +36,7 @@ import org.apache.sis.util.logging.Logging;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.6
- * @version 0.7
+ * @version 0.8
  * @module
  */
 public final class Loggers extends Static {
@@ -89,6 +89,12 @@ public final class Loggers extends Static {
      * This is a child of the logger for all referencing operations.
      */
     public static final String COORDINATE_OPERATION = "org.apache.sis.referencing.operation";
+
+    /**
+     * The logger name for operation related to the {@code sis-referencing} modules that do not fit
+     * into the {@link #CRS_FACTORY} or {@link #COORDINATE_OPERATION} categories.
+     */
+    public static final String REFERENCING = "org.apache.sis.referencing";
 
     /**
      * The logger name for operation related to localization.

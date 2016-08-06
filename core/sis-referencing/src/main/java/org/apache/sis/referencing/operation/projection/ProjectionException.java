@@ -60,7 +60,7 @@ public class ProjectionException extends TransformException {
     /**
      * Constructs a new exception with the specified detail message.
      *
-     * @param message The details message, or {@code null} if none.
+     * @param  message  the details message, or {@code null} if none.
      */
     public ProjectionException(final String message) {
         super(message);
@@ -70,7 +70,7 @@ public class ProjectionException extends TransformException {
      * Constructs a new exception with the specified cause.
      * The details message is copied from the cause.
      *
-     * @param cause The cause, or {@code null} if none.
+     * @param  cause  the cause, or {@code null} if none.
      */
     public ProjectionException(final Throwable cause) {
         super(cause.getLocalizedMessage(), cause);
@@ -79,8 +79,8 @@ public class ProjectionException extends TransformException {
     /**
      * Constructs a new exception with the specified detail message and cause.
      *
-     * @param message The details message, or {@code null} if none.
-     * @param cause   The cause, or {@code null} if none.
+     * @param  message  the details message, or {@code null} if none.
+     * @param  cause    the cause, or {@code null} if none.
      */
     public ProjectionException(final String message, final Throwable cause) {
         super(message, cause);
@@ -89,7 +89,7 @@ public class ProjectionException extends TransformException {
     /**
      * Constructs a new exception with the specified detail message.
      *
-     * @param code One of the constants suitable for {@link Errors#format(short)}.
+     * @param  code  one of the constants suitable for {@link Errors#format(short)}.
      */
     ProjectionException(final short code) {
         this(Errors.format(code));
