@@ -17,219 +17,64 @@
 package org.apache.sis.math;
 
 import java.io.Serializable;
-import java.lang.reflect.Array;
-import org.apache.sis.util.Classes;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.collection.CheckedContainer;
 
 
 /**
- * A vector backed by an array. This class does not copy the array, so changes in the underlying
- * array is reflected in this vector and vis-versa. The backing array is typically an array of a
- * primitive type, but array of wrappers are also accepted.
+ * A vector backed by an array of a primitive type. This class does not copy the array,
+ * so changes in the underlying array is reflected in this vector and vis-versa.
  *
  * @author  Martin Desruisseaux (MPO, Geomatys)
  * @since   0.8
  * @version 0.8
  * @module
  */
-final class ArrayVector extends Vector implements Serializable {
-    /**
-     * For cross-version compatibility.
-     */
+abstract class ArrayVector<E extends Number> extends Vector implements CheckedContainer<E>, Serializable {
+    /** For cross-version compatibility. */
     private static final long serialVersionUID = 3496467575389288163L;
 
-    /**
-     * The backing array. This is typically an array of a primitive type,
-     * but can also be an array of wrappers.
-     */
-    private final Object array;
+    /** For sub-classes constructor. */
+    ArrayVector() {}
 
-    /**
-     * Creates a new vector for the given array.
-     */
-    ArrayVector(final Object array) {
-        this.array = array;
+    /** Default implementation for the convenience of direct sub-types. */
+    @Override public boolean isUnsigned() {
+        return false;
     }
 
-    /**
-     * Returns the type of elements in the backing array.
-     * This method returns alway the wrapper type, as documented in the parent class.
-     */
-    @Override
-    public Class<? extends Number> getElementType() {
-        return Numbers.primitiveToWrapper(array.getClass().getComponentType()).asSubclass(Number.class);
-    }
-
-    /**
-     * Returns the length of the backing array.
-     */
-    @Override
-    public int size() {
-        return Array.getLength(array);
-    }
-
-    /**
-     * Returns {@code true} if the value at the given index is {@code NaN}. The default implementation
-     * returns {@code true} if {@code get(index)} returned {@code null} or {@link Double#NaN}. However
-     * subclasses will typically provide more efficient implementations. For example vectors of integer
-     * type return {@code false} unconditionally.
-     *
-     * @param  index the index in the [0…{@linkplain #size size}-1] range.
-     * @return {@code true} if the value at the given index is {@code NaN}.
-     * @throws IndexOutOfBoundsException if the given index is out of bounds.
-     */
-    @Override
-    public boolean isNaN(final int index) throws IndexOutOfBoundsException {
-        final Number n = get(index);
-        return (n == null) || java.lang.Double.isNaN(n.doubleValue());
-    }
-
-    /**
-     * Returns the value at the given index.
-     *
-     * @throws ArrayIndexOutOfBoundsException if the given index is out of bounds.
-     * @throws ClassCastException if the component type can not be converted to a
-     *         {@code double} by an identity or widening conversion.
-     */
-    @Override
-    public double doubleValue(final int index) throws ArrayIndexOutOfBoundsException, ClassCastException {
-        try {
-            return Array.getDouble(array, index);
-        } catch (IllegalArgumentException cause) {
-            throw canNotConvert(double.class, cause);
-        }
-    }
-
-    /**
-     * Returns the value at the given index.
-     *
-     * @throws ArrayIndexOutOfBoundsException if the given index is out of bounds.
-     * @throws ClassCastException if the component type can not be converted to a
-     *         {@code float} by an identity or widening conversion.
-     */
-    @Override
-    public float floatValue(final int index) throws ArrayIndexOutOfBoundsException, ClassCastException {
-        try {
-            return Array.getFloat(array, index);
-        } catch (IllegalArgumentException cause) {
-            throw canNotConvert(float.class, cause);
-        }
-    }
-
-    /**
-     * Returns the value at the given index.
-     *
-     * @throws ArrayIndexOutOfBoundsException if the given index is out of bounds.
-     * @throws ClassCastException if the component type can not be converted to a
-     *         {@code long} by an identity or widening conversion.
-     */
-    @Override
-    public long longValue(final int index) throws ArrayIndexOutOfBoundsException, ClassCastException {
-        try {
-            return Array.getLong(array, index);
-        } catch (IllegalArgumentException cause) {
-            throw canNotConvert(long.class, cause);
-        }
-    }
-
-    /**
-     * Returns the value at the given index.
-     *
-     * @throws ArrayIndexOutOfBoundsException if the given index is out of bounds.
-     * @throws ClassCastException if the component type can not be converted to an
-     *         {@code int} by an identity or widening conversion.
-     */
-    @Override
-    public int intValue(final int index) throws ArrayIndexOutOfBoundsException, ClassCastException {
-        try {
-            return Array.getInt(array, index);
-        } catch (IllegalArgumentException cause) {
-            throw canNotConvert(int.class, cause);
-        }
-    }
-
-    /**
-     * Returns the value at the given index.
-     *
-     * @throws ArrayIndexOutOfBoundsException if the given index is out of bounds.
-     * @throws ClassCastException if the component type can not be converted to a
-     *         {@code short} by an identity or widening conversion.
-     */
-    @Override
-    public short shortValue(final int index) throws ArrayIndexOutOfBoundsException, ClassCastException {
-        try {
-            return Array.getShort(array, index);
-        } catch (IllegalArgumentException cause) {
-            throw canNotConvert(short.class, cause);
-        }
-    }
-
-    /**
-     * Returns the value at the given index.
-     *
-     * @throws ArrayIndexOutOfBoundsException if the given index is out of bounds.
-     * @throws ClassCastException if the component type can not be converted to a
-     *         {@code byte} by an identity or widening conversion.
-     */
-    @Override
-    public byte byteValue(final int index) throws ArrayIndexOutOfBoundsException, ClassCastException {
-        try {
-            return Array.getByte(array, index);
-        } catch (IllegalArgumentException cause) {
-            throw canNotConvert(byte.class, cause);
-        }
-    }
+    /** Default implementation for the convenience of wrapper of integer types. */
+    @Override public boolean    isNaN(int index) {return false;}
+    @Override public long   longValue(int index) {throw canNotConvert(long .class);}
+    @Override public int     intValue(int index) {throw canNotConvert(int  .class);}
+    @Override public short shortValue(int index) {throw canNotConvert(short.class);}
+    @Override public byte   byteValue(int index) {throw canNotConvert(byte .class);}
 
     /**
      * Returns the exception to be thrown when the component type in the backing array can
      * not be converted to the requested type through an identity or widening conversion.
      */
-    private ClassCastException canNotConvert(final Class<?> target, final IllegalArgumentException cause) {
-        final ClassCastException exception = new ClassCastException(Errors.format(
-                Errors.Keys.CanNotConvertFromType_2, array.getClass().getComponentType(), target));
-        exception.initCause(cause);
-        return exception;
+    private ClassCastException canNotConvert(final Class<?> target) {
+        return new ClassCastException(Errors.format(Errors.Keys.CanNotConvertFromType_2,
+                Numbers.wrapperToPrimitive(getElementType()), target));
     }
 
     /**
-     * Returns the value at the given index.
-     *
-     * @throws ArrayIndexOutOfBoundsException if the given index is out of bounds.
+     * Verifies that a value of the given type can be casted to the expected type.
+     * The expected type must be one of the {@link Numbers} constants.
      */
-    @Override
-    public Number get(final int index) throws ArrayIndexOutOfBoundsException {
-        return (Number) Array.get(array, index);
-    }
-
-    /**
-     * Sets the value at the given index.
-     *
-     * @throws ArrayIndexOutOfBoundsException if the given index is out of bounds.
-     * @throws ArrayStoreException if the backing array can not store the given object.
-     */
-    @Override
-    public Number set(final int index, final Number value)
-            throws ArrayIndexOutOfBoundsException, ArrayStoreException
-    {
-        final Number old = (Number) Array.get(array, index);
-        try {
-            Array.set(array, index, value);
-        } catch (IllegalArgumentException cause) {
-            throw (ArrayStoreException) new ArrayStoreException(Errors.format(Errors.Keys.CanNotConvertFromType_2,
-                    Classes.getClass(value), array.getClass().getComponentType())).initCause(cause);
+    final void verifyType(final Class<? extends Number> type, final byte expected) {
+        final byte t = Numbers.getEnumConstant(type);
+        if (t < Numbers.BYTE || t > expected) {
+            throw new ArrayStoreException(Errors.format(Errors.Keys.CanNotConvertFromType_2,
+                type, Numbers.wrapperToPrimitive(getElementType())));
         }
-        return old;
     }
 
-
-
-
     /**
-     * A vector backed by an array of type {@code double[]}. This class does not copy the
-     * array, so changes in the underlying array is reflected in this vector and vis-versa.
+     * A vector backed by an array of type {@code double[]}.
      */
-    static final class Double extends Vector implements Serializable {
+    static final class Double extends ArrayVector<java.lang.Double> {
         /** For cross-version compatibility. */
         private static final long serialVersionUID = -2900375382498345812L;
 
@@ -252,12 +97,12 @@ final class ArrayVector extends Vector implements Serializable {
         }
 
         /** Returns {@code true} if the value at the given index is {@code NaN}. */
-        @Override public boolean isNaN(final int index) throws ArrayIndexOutOfBoundsException {
+        @Override public boolean isNaN(final int index) {
             return java.lang.Double.isNaN(array[index]);
         }
 
         /** Returns the value at the given index. */
-        @Override public double doubleValue(final int index) throws ArrayIndexOutOfBoundsException {
+        @Override public double doubleValue(final int index) {
             return array[index];
         }
 
@@ -266,59 +111,34 @@ final class ArrayVector extends Vector implements Serializable {
          * result of the cast is not completely wrong (at worst we get zero of infinity values
          * if the magnitude of the {@code double} value was too small or too large).
          */
-        @Override public float floatValue(int index) throws ArrayIndexOutOfBoundsException {
+        @Override public float floatValue(int index) {
             return (float) array[index];
         }
 
-        /** Can not cast safely to integer values. */
-        @Override public long   longValue(int index) throws ClassCastException {throw canNotConvert(long .class);}
-        @Override public int     intValue(int index) throws ClassCastException {throw canNotConvert(int  .class);}
-        @Override public short shortValue(int index) throws ClassCastException {throw canNotConvert(short.class);}
-        @Override public byte   byteValue(int index) throws ClassCastException {throw canNotConvert(byte .class);}
-
-        /**
-         * Returns the exception to be thrown when the component type in the backing array can
-         * not be converted to the requested type through an identity or widening conversion.
-         */
-        private static ClassCastException canNotConvert(final Class<?> target) {
-            return new ClassCastException(Errors.format(
-                    Errors.Keys.CanNotConvertFromType_2, double.class, target));
-        }
-
         /** Returns the value at the given index. */
-        @Override public java.lang.Double get(final int index) throws ArrayIndexOutOfBoundsException {
+        @Override public Number get(final int index) {
             return array[index];
         }
 
         /** Sets the value at the given index. */
-        @Override public java.lang.Double set(final int index, final Number value) throws ArrayIndexOutOfBoundsException {
+        @Override public Number set(final int index, final Number value) {
             final double old = array[index];
             array[index] = value.doubleValue();
             return old;
         }
     }
 
-
-
-
     /**
-     * A vector backed by an array of type {@code float[]}. This class does not copy the
-     * array, so changes in the underlying array is reflected in this vector and vis-versa.
+     * A vector backed by an array of type {@code float[]}.
      */
-    static final class Float extends Vector implements Serializable {
-        /**
-         * For cross-version compatibility.
-         */
+    static final class Float extends ArrayVector<java.lang.Float> {
+        /** For cross-version compatibility. */
         private static final long serialVersionUID = 5395284704294981455L;
 
-        /**
-         * The backing array.
-         */
+        /** The backing array. */
         private final float[] array;
 
-        /**
-         * Creates a new vector for the given array.
-         */
+        /** Creates a new vector for the given array. */
         Float(final float[] array) {
             this.array = array;
         }
@@ -334,45 +154,272 @@ final class ArrayVector extends Vector implements Serializable {
         }
 
         /** Returns {@code true} if the value at the given index is {@code NaN}. */
-        @Override public boolean isNaN(final int index) throws ArrayIndexOutOfBoundsException {
+        @Override public boolean isNaN(final int index) {
             return java.lang.Float.isNaN(array[index]);
         }
 
         /** Returns the value at the given index. */
-        @Override public double doubleValue(final int index) throws ArrayIndexOutOfBoundsException {
-            return array[index];
-        }
-
-        /** Returns the value at the given index. */
-        @Override public float floatValue(int index) throws ArrayIndexOutOfBoundsException {
-            return array[index];
-        }
-
-        /** Can not cast safely to integer values. */
-        @Override public long   longValue(int index) throws ClassCastException {throw canNotConvert(long .class);}
-        @Override public int     intValue(int index) throws ClassCastException {throw canNotConvert(int  .class);}
-        @Override public short shortValue(int index) throws ClassCastException {throw canNotConvert(short.class);}
-        @Override public byte   byteValue(int index) throws ClassCastException {throw canNotConvert(byte .class);}
-
-        /**
-         * Returns the exception to be thrown when the component type in the backing array can
-         * not be converted to the requested type through an identity or widening conversion.
-         */
-        private static ClassCastException canNotConvert(final Class<?> target) {
-            return new ClassCastException(Errors.format(
-                    Errors.Keys.CanNotConvertFromType_2, float.class, target));
-        }
-
-        /** Returns the value at the given index. */
-        @Override public java.lang.Float get(final int index) throws ArrayIndexOutOfBoundsException {
-            return array[index];
-        }
+        @Override public double doubleValue(int index) {return array[index];}
+        @Override public float   floatValue(int index) {return array[index];}
+        @Override public Number         get(int index) {return array[index];}
 
         /** Sets the value at the given index. */
-        @Override public java.lang.Float set(final int index, final Number value) throws ArrayIndexOutOfBoundsException {
+        @Override public Number set(final int index, final Number value) {
             final float old = array[index];
             array[index] = value.floatValue();
             return old;
+        }
+    }
+
+    /**
+     * A vector backed by an array of type {@code long[]}.
+     */
+    static class Long extends ArrayVector<java.lang.Long> {
+        /** For cross-version compatibility. */
+        private static final long serialVersionUID = 338413429037224587L;
+
+        /** The backing array. */
+        private final long[] array;
+
+        /** Creates a new vector for the given array. */
+        Long(final long[] array) {
+            this.array = array;
+        }
+
+        /** Returns the type of elements in the backing array. */
+        @Override public final Class<java.lang.Long> getElementType() {
+            return java.lang.Long.class;
+        }
+
+        @Override public final int     size()          {return array.length;}
+        @Override public double doubleValue(int index) {return array[index];}
+        @Override public float   floatValue(int index) {return array[index];}
+        @Override public long     longValue(int index) {return array[index];}
+        @Override public final Number   get(int index) {return longValue(index);}
+        @Override public final Number   set(int index, final Number value) {
+            verifyType(value.getClass(), Numbers.LONG);
+            final long old = array[index];
+            array[index] = value.longValue();
+            return old;
+        }
+    }
+
+    /**
+     * A vector backed by an array of type {@code int[]}.
+     */
+    static class Integer extends ArrayVector<java.lang.Integer> {
+        /** For cross-version compatibility. */
+        private static final long serialVersionUID = -1292641147544275801L;
+
+        /** The backing array. */
+        private final int[] array;
+
+        /** Creates a new vector for the given array. */
+        Integer(final int[] array) {
+            this.array = array;
+        }
+
+        /** Returns the type of elements in the backing array. */
+        @Override public final Class<java.lang.Integer> getElementType() {
+            return java.lang.Integer.class;
+        }
+
+        @Override public final int     size()          {return array.length;}
+        @Override public double doubleValue(int index) {return array[index];}
+        @Override public float   floatValue(int index) {return array[index];}
+        @Override public long     longValue(int index) {return array[index];}
+        @Override public int       intValue(int index) {return array[index];}
+        @Override public final Number   get(int index) {return intValue(index);}
+        @Override public final Number   set(int index, final Number value) {
+            verifyType(value.getClass(), Numbers.INTEGER);
+            final int old = array[index];
+            array[index] = value.intValue();
+            return old;
+        }
+    }
+
+    /**
+     * A vector backed by an array of type {@code short[]}.
+     */
+    static class Short extends ArrayVector<java.lang.Short> {
+        /** For cross-version compatibility. */
+        private static final long serialVersionUID = -126825963332296000L;
+
+        /** The backing array. */
+        private final short[] array;
+
+        /** Creates a new vector for the given array. */
+        Short(final short[] array) {
+            this.array = array;
+        }
+
+        /** Returns the type of elements in the backing array. */
+        @Override public final Class<java.lang.Short> getElementType() {
+            return java.lang.Short.class;
+        }
+
+        @Override public final int     size()          {return array.length;}
+        @Override public double doubleValue(int index) {return array[index];}
+        @Override public float   floatValue(int index) {return array[index];}
+        @Override public long     longValue(int index) {return array[index];}
+        @Override public int       intValue(int index) {return array[index];}
+        @Override public short   shortValue(int index) {return array[index];}
+        @Override public final Number   get(int index) {return shortValue(index);}
+        @Override public final Number   set(int index, final Number value) {
+            verifyType(value.getClass(), Numbers.SHORT);
+            final short old = array[index];
+            array[index] = value.shortValue();
+            return old;
+        }
+    }
+
+    /**
+     * A vector backed by an array of type {@code byte[]}.
+     */
+    static class Byte extends ArrayVector<java.lang.Byte> {
+        /** For cross-version compatibility. */
+        private static final long serialVersionUID = 7933568876180528548L;
+
+        /** The backing array. */
+        private final byte[] array;
+
+        /** Creates a new vector for the given array. */
+        Byte(final byte[] array) {
+            this.array = array;
+        }
+
+        /** Returns the type of elements in the backing array. */
+        @Override public final Class<java.lang.Byte> getElementType() {
+            return java.lang.Byte.class;
+        }
+
+        @Override public final int     size()          {return array.length;}
+        @Override public double doubleValue(int index) {return array[index];}
+        @Override public float   floatValue(int index) {return array[index];}
+        @Override public long     longValue(int index) {return array[index];}
+        @Override public int       intValue(int index) {return array[index];}
+        @Override public short   shortValue(int index) {return array[index];}
+        @Override public byte     byteValue(int index) {return array[index];}
+        @Override public final Number   get(int index) {return shortValue(index);}
+        @Override public final Number   set(int index, final Number value) {
+            verifyType(value.getClass(), Numbers.BYTE);
+            final byte old = array[index];
+            array[index] = value.byteValue();
+            return old;
+        }
+    }
+
+    /**
+     * A vector backed by an array of type {@code long[]} to be interpreted as unsigned values.
+     */
+    static final class UnsignedLong extends Long {
+        /** For cross-version compatibility. */
+        private static final long serialVersionUID = 712968674526282882L;
+
+        /** Creates a new vector for the given array. */
+        UnsignedLong(final long[] array) {
+            super(array);
+        }
+
+        /** Declares this vector as unsigned. */
+        @Override public boolean isUnsigned() {return true;}
+
+        /** Returns the unsigned long as a {@code double} value. */
+        @Override public double doubleValue(final int index) {
+            final long value = super.longValue(index);
+            if (value >= 0) {
+                return value;
+            }
+            // This hack is inefficient, but should be rarely needed.
+            return java.lang.Double.parseDouble(java.lang.Long.toUnsignedString(value));
+        }
+
+        /** Returns the unsigned long as a {@code float} value. */
+        @Override public float floatValue(final int index) {
+            final long value = super.longValue(index);
+            if (value >= 0) {
+                return value;
+            }
+            // This hack is inefficient, but should be rarely needed.
+            return java.lang.Float.parseFloat(java.lang.Long.toUnsignedString(value));
+        }
+
+        /** Returns the unsigned long as a {@code long} value, if possible. */
+        @Override public long longValue(final int index) {
+            final long value = super.longValue(index);
+            if (value >= 0) return value;
+            throw new ArithmeticException();
+        }
+    }
+
+    /**
+     * A vector backed by an array of type {@code int[]} to be interpreted as unsigned values.
+     */
+    static final class UnsignedInteger extends Integer {
+        /** For cross-version compatibility. */
+        private static final long serialVersionUID = 8420585724189054050L;
+
+        /** Creates a new vector for the given array. */
+        UnsignedInteger(final int[] array) {
+            super(array);
+        }
+
+        /** Declares this vector as unsigned. */
+        @Override public boolean isUnsigned()          {return true;}
+        @Override public double doubleValue(int index) {return longValue(index);}
+        @Override public float   floatValue(int index) {return longValue(index);}
+        @Override public long     longValue(int index) {return java.lang.Integer.toUnsignedLong(super.intValue(index));}
+        @Override public int       intValue(int index) {
+            final int value = super.intValue(index);
+            if (value >= 0) return value;
+            throw new ArithmeticException();
+        }
+    }
+
+    /**
+     * A vector backed by an array of type {@code short[]} to be interpreted as unsigned values.
+     */
+    static final class UnsignedShort extends Short {
+        /** For cross-version compatibility. */
+        private static final long serialVersionUID = 8219060080494444776L;
+
+        UnsignedShort(final short[] array) {
+            super(array);
+        }
+
+        @Override public boolean isUnsigned()          {return true;}
+        @Override public double doubleValue(int index) {return intValue(index);}
+        @Override public float   floatValue(int index) {return intValue(index);}
+        @Override public long     longValue(int index) {return java.lang.Short.toUnsignedLong(super.shortValue(index));}
+        @Override public int       intValue(int index) {return java.lang.Short.toUnsignedInt (super.shortValue(index));}
+        @Override public short   shortValue(int index) {
+            final short value = super.shortValue(index);
+            if (value >= 0) return value;
+            throw new ArithmeticException();
+        }
+    }
+
+    /**
+     * A vector backed by an array of type {@code byte[]} to be interpreted as unsigned values.
+     */
+    static final class UnsignedByte extends Byte {
+        /** For cross-version compatibility. */
+        private static final long serialVersionUID = -2150064612523948331L;
+
+        UnsignedByte(final byte[] array) {
+            super(array);
+        }
+
+        @Override public boolean isUnsigned()          {return true;}
+        @Override public double doubleValue(int index) {return intValue(index);}
+        @Override public float   floatValue(int index) {return intValue(index);}
+        @Override public long     longValue(int index) {return java.lang.Byte.toUnsignedLong (super.byteValue(index));}
+        @Override public int       intValue(int index) {return java.lang.Byte.toUnsignedInt  (super.byteValue(index));}
+        @Override public short   shortValue(int index) {return (short) intValue(index);}
+        @Override public byte     byteValue(int index) {
+            final byte value = super.byteValue(index);
+            if (value >= 0) return value;
+            throw new ArithmeticException();
         }
     }
 }

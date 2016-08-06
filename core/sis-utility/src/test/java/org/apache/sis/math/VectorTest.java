@@ -64,9 +64,9 @@ public final strictfp class VectorTest extends TestCase {
         for (int i=0; i<array.length; i++) {
             array[i] = (short) ((i + 100) * 10);
         }
-        Vector vector = Vector.create(array);
+        Vector vector = Vector.create(array, false);
         assertTrue(vector instanceof ArrayVector);
-        assertSame(vector, Vector.create(vector));
+        assertSame(vector, Vector.create(vector, false));
         assertEquals(array.length, vector.size());
         assertEquals(Short.class, vector.getElementType());
         /*
@@ -126,9 +126,9 @@ public final strictfp class VectorTest extends TestCase {
         for (int i=0; i<array.length; i++) {
             array[i] = (i + 100) * 10;
         }
-        Vector vector = Vector.create(array);
+        Vector vector = Vector.create(array, false);
         assertTrue(vector instanceof ArrayVector.Float);
-        assertSame(vector, Vector.create(vector));
+        assertSame(vector, Vector.create(vector, false));
         assertEquals(array.length, vector.size());
         assertEquals(Float.class, vector.getElementType());
         /*
@@ -149,9 +149,9 @@ public final strictfp class VectorTest extends TestCase {
         for (int i=0; i<array.length; i++) {
             array[i] = (i + 100) * 10;
         }
-        Vector vector = Vector.create(array);
+        Vector vector = Vector.create(array, false);
         assertTrue(vector instanceof ArrayVector.Double);
-        assertSame(vector, Vector.create(vector));
+        assertSame(vector, Vector.create(vector, false));
         assertEquals(array.length, vector.size());
         assertEquals(Double.class, vector.getElementType());
         /*
@@ -170,7 +170,8 @@ public final strictfp class VectorTest extends TestCase {
     public void testReverse() {
         final double[] array    = {2, 3, 8};
         final double[] expected = {8, 3, 2};
-        assertEquals(Vector.create(expected), Vector.create(array).reverse());
+        assertEquals(Vector.create(expected, false),
+                     Vector.create(array, false).reverse());
     }
 
     /**
@@ -186,8 +187,8 @@ public final strictfp class VectorTest extends TestCase {
         for (int i=0; i<extra.length; i++) {
             extra[i] = (i + 40) * 10;
         }
-        Vector v1 = Vector.create(array);
-        Vector v2 = Vector.create(extra);
+        Vector v1 = Vector.create(array, false);
+        Vector v2 = Vector.create(extra, false);
         Vector v3 = v1.concatenate(v2);
         assertEquals("Length of V3 should be the sum of V1 and V2 length.", 60, v3.size());
         assertEquals("Component type should be the widest of V1 and V2.", Float.class, v3.getElementType());

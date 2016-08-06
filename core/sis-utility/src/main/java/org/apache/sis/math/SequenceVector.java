@@ -83,20 +83,28 @@ final class SequenceVector extends Vector implements Serializable {
     }
 
     /**
-     * Returns the vector size.
-     */
-    @Override
-    public int size() {
-        return length;
-    }
-
-    /**
      * Returns the type of elements.
      */
     @Override
     public Class<? extends Number> getElementType() {
         // Float is the smallest type capable to hold NaN.
         return (type != null) ? type : Float.class;
+    }
+
+    /**
+     * {@code SequenceVector} values are always interpreted as signed values.
+     */
+    @Override
+    public boolean isUnsigned() {
+        return false;
+    }
+
+    /**
+     * Returns the vector size.
+     */
+    @Override
+    public int size() {
+        return length;
     }
 
     /**
