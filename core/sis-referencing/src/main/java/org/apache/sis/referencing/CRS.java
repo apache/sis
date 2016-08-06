@@ -397,7 +397,7 @@ public final class CRS extends Static {
      * @param  crs  the coordinate reference system for which to get the domain of validity, or {@code null}.
      * @return the geographic area where the coordinate reference system is valid, or {@code null} if unspecified.
      *
-     * @see #getEnvelope(CoordinateReferenceSystem)
+     * @see #getDomainOfValidity(CoordinateReferenceSystem)
      * @see Extents#getGeographicBoundingBox(Extent)
      *
      * @category information
@@ -412,14 +412,14 @@ public final class CRS extends Static {
      * argument.
      *
      * <p>This method looks in two places:</p>
-     * <ul>
+     * <ol>
      *   <li>First, it checks the {@linkplain org.apache.sis.referencing.crs.AbstractCRS#getDomainOfValidity()
      *       domain of validity} associated with the given CRS. Only geographic extents that are instances of
      *       {@link BoundingPolygon} associated to the given CRS are taken in account for this first step.</li>
      *   <li>If the above step did not found found any bounding polygon, then the
      *       {@linkplain #getGeographicBoundingBox(CoordinateReferenceSystem) geographic bounding boxes}
      *       are used as a fallback and tranformed to the given CRS.</li>
-     * </ul>
+     * </ol>
      *
      * @param  crs  the coordinate reference system, or {@code null}.
      * @return the envelope with coordinates in the given CRS, or {@code null} if none.

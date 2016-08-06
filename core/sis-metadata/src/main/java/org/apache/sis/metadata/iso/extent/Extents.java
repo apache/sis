@@ -115,6 +115,8 @@ public final class Extents extends Static {
      *
      * @param  extent  the extent to convert to a geographic bounding box, or {@code null}.
      * @return a geographic bounding box extracted from the given extent, or {@code null} if none.
+     *
+     * @see org.apache.sis.referencing.CRS#getDomainOfValidity(CoordinateReferenceSystem)
      */
     public static GeographicBoundingBox getGeographicBoundingBox(final Extent extent) {
         GeographicBoundingBox bounds = null;
