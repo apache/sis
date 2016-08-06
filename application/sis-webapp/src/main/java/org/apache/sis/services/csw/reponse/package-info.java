@@ -27,11 +27,11 @@
  */
 @XmlSchema(elementFormDefault = XmlNsForm.QUALIFIED, namespace = Namespaces.CSW, xmlns = {
     @XmlNs(prefix = "csw", namespaceURI = Namespaces.CSW),
-    @XmlNs(prefix = "ows", namespaceURI = Element.OWS),
-    @XmlNs(prefix = "dc",  namespaceURI = Element.DUBLIN_CORE),
-    @XmlNs(prefix = "dct", namespaceURI = Element.DUBLIN_TERMS)
+    @XmlNs(prefix = "ows", namespaceURI = CswConfigure.OWS),
+    @XmlNs(prefix = "dc",  namespaceURI = CswConfigure.DUBLIN_CORE),
+    @XmlNs(prefix = "dct", namespaceURI =CswConfigure.DUBLIN_TERMS)
 })
-@XmlAccessorType(XmlAccessType.NONE)
+@XmlAccessorType(XmlAccessType.FIELD)
 package org.apache.sis.services.csw.reponse;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -39,4 +39,5 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlNs;
 import javax.xml.bind.annotation.XmlNsForm;
 import javax.xml.bind.annotation.XmlSchema;
+import org.apache.sis.services.csw.CswConfigure;
 import org.apache.sis.xml.Namespaces;

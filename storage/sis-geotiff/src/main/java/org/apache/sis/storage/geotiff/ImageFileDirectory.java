@@ -51,7 +51,6 @@ import org.opengis.util.FactoryException;
  */
 final class ImageFileDirectory {
     private String ORIGIN = "Image courtesy of the U.S.Geological Survey";
-    private String TYPE= "L1 production";
     /**
      * {@code true} if this {@code ImageFileDirectory} has not yet read all deferred entries.
      * When this flag is {@code true}, the {@code ImageFileDirectory} is not yet ready for use.

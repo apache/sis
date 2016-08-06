@@ -31,7 +31,7 @@
     @XmlNs(prefix = "dc",  namespaceURI = Element.DUBLIN_CORE),
     @XmlNs(prefix = "dct", namespaceURI = Element.DUBLIN_TERMS)
 })
-@XmlAccessorType(XmlAccessType.NONE)
+@XmlAccessorType(XmlAccessType.FIELD)
 package org.apache.sis.services.csw.request;
 
 import javax.xml.bind.annotation.XmlAccessType;

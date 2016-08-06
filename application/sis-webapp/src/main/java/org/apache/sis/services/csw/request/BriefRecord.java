@@ -14,47 +14,38 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.services.csw.reponse;
+package org.apache.sis.services.csw.request;
 
-import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import org.apache.sis.services.csw.request.AbstractRecord;
+import javax.xml.bind.annotation.XmlType;
+import org.apache.sis.xml.Namespaces;
+import org.opengis.metadata.Metadata;
 
 /**
  *
  * @author haonguyen
  */
-@XmlRootElement(name = "GetRecordByIdReponse")
-public class GetRecordByIdReponse {
+@XmlRootElement(name = "BriefRecord", namespace = Namespaces.CSW)
+@XmlType(name = "BriefRecordType")
+public class BriefRecord extends AbstractRecord {
 
-    @XmlElement(name="BriefRecord")
-    private AbstractRecord brief;
-    @XmlElement(name="SummaryRecord")
-    private AbstractRecord summary;
-    @XmlElement(name="Record")
-    private AbstractRecord record;
+    public BriefRecord() {
 
-    public AbstractRecord getBrief() {
-        return brief;
     }
 
-    public void setBrief(AbstractRecord brief) {
-        this.brief = brief;
+    public BriefRecord(Metadata object, String version, String service) {
+        super(object, version, service);
     }
 
-    public AbstractRecord getSummary() {
-        return summary;
+    public AbstractRecord BriefRecord(AbstractRecord ab) {
+        AbstractRecord a = new AbstractRecord();
+        a.version = ab.getVersion();
+        a.service = ab.getService();
+        a.identifier = ab.getIdentifier();
+        a.BoundingBox = ab.getBoundingBox();
+        a.title=ab.getTitle();
+        a.type=ab.getType();
+        return a;
     }
 
-    public void setSummary(AbstractRecord summary) {
-        this.summary = summary;
-    }
-
-    public AbstractRecord getRecord() {
-        return record;
-    }
-
-    public void setRecord(AbstractRecord record) {
-        this.record = record;
-    }
 }

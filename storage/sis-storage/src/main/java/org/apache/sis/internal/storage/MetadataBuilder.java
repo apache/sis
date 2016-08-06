@@ -52,7 +52,6 @@ import java.util.Locale;
 import org.apache.sis.metadata.iso.DefaultIdentifier;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
-import static org.apache.sis.util.resources.Vocabulary.Keys.Locale;
 import org.opengis.metadata.maintenance.ScopeCode;
 
 
@@ -823,10 +822,5 @@ parse:      for (int i = 0; i < length;) {
                 creatformat.setFormatSpecificationCitation(new DefaultCitation(i)); 
             } 
         }
-    }
-    public static void main(String[] args) {
-        MetadataBuilder a = new MetadataBuilder();
-        a.addStandard();
-        System.out.println(a.result());
     }
 }

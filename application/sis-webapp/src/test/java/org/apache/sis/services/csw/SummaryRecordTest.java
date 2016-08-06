@@ -33,6 +33,7 @@ import org.apache.sis.metadata.iso.identification.DefaultServiceIdentification;
 import org.apache.sis.test.TestCase;
 
 import static java.util.Collections.singleton;
+import org.apache.sis.services.csw.request.AbstractRecord;
 import static org.apache.sis.test.TestUtilities.date;
 import org.junit.Test;
 
@@ -83,6 +84,6 @@ public final class SummaryRecordTest extends TestCase {
         // TODO: temporary debugging code.
         System.out.println(metadata);
         System.out.println();
-        m.marshal(new SummaryRecord(metadata, null), System.out);
+        m.marshal(new AbstractRecord(metadata, null), System.out);
     }
 }
