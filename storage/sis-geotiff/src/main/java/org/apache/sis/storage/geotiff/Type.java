@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import org.apache.sis.internal.storage.ChannelDataInput;
+import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.math.Vector;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.resources.Errors;
@@ -191,11 +192,7 @@ enum Type {
 
         @Override double readDouble(final ChannelDataInput input, final long count) throws IOException {
             ensureSingleton(count);
-            final long value = input.readLong();
-            if (value >= 0) {
-                return value;
-            }
-            return Double.parseDouble(Long.toUnsignedString(value));    // Inefficient but should be very rare.
+            return Numerics.toUnsignedDouble(input.readLong());
         }
 
         @Override Object readArray(final ChannelDataInput input, final int count) throws IOException {

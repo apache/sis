@@ -20,6 +20,7 @@ import java.io.Serializable;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.CheckedContainer;
+import org.apache.sis.internal.util.Numerics;
 
 
 /**
@@ -326,22 +327,12 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
 
         /** Returns the unsigned long as a {@code double} value. */
         @Override public double doubleValue(final int index) {
-            final long value = super.longValue(index);
-            if (value >= 0) {
-                return value;
-            }
-            // This hack is inefficient, but should be rarely needed.
-            return java.lang.Double.parseDouble(java.lang.Long.toUnsignedString(value));
+            return Numerics.toUnsignedDouble(super.longValue(index));
         }
 
         /** Returns the unsigned long as a {@code float} value. */
         @Override public float floatValue(final int index) {
-            final long value = super.longValue(index);
-            if (value >= 0) {
-                return value;
-            }
-            // This hack is inefficient, but should be rarely needed.
-            return java.lang.Float.parseFloat(java.lang.Long.toUnsignedString(value));
+            return Numerics.toUnsignedFloat(super.longValue(index));
         }
 
         /** Returns the unsigned long as a {@code long} value, if possible. */

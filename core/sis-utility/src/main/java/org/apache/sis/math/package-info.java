@@ -25,6 +25,9 @@
  *       and {@linkplain org.apache.sis.math.StatisticsFormat tabular formatting}.</li>
  *   <li>Simple equations for {@link org.apache.sis.math.Line} and {@link org.apache.sis.math.Plane}
  *       with capability to determine the coefficients from a set of coordinates.</li>
+ *   <li>{@link org.apache.sis.math.Vector} as views over arrays of primitive types.
+ *       Those views make abstraction of the data type (e.g. {@code float} or {@code double})
+ *       and whether the integer types are signed or unsigned.</li>
  * </ul>
  *
  * <div class="note"><b>Note:</b>
