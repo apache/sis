@@ -31,7 +31,7 @@ import static java.lang.Math.abs;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.6
+ * @version 0.8
  * @module
  */
 public final class Numerics extends Static {
@@ -133,9 +133,9 @@ public final class Numerics extends Static {
      * If the given value is presents in the cache, returns the cached value.
      * Otherwise returns the given value as-is.
      *
-     * @param  <T> The type of the given value.
-     * @param  value The given value for which to get a cached instance, if one exists.
-     * @return An object equals to the given value (may be the given instance itself).
+     * @param  <T>    the type of the given value.
+     * @param  value  the given value for which to get a cached instance, if one exists.
+     * @return an object equals to the given value (may be the given instance itself).
      */
     @SuppressWarnings("unchecked")
     public static <T> T cached(final T value) {
@@ -146,8 +146,8 @@ public final class Numerics extends Static {
     /**
      * Wraps the given {@code value} in a {@link Double} wrapper, using one of the cached instance if possible.
      *
-     * @param  value The value to get as a {@code Double}.
-     * @return The given value as a {@code Double}.
+     * @param  value  the value to get as a {@code Double}.
+     * @return the given value as a {@code Double}.
      */
     public static Double valueOf(final double value) {
         final Double boxed = value;
@@ -158,9 +158,9 @@ public final class Numerics extends Static {
     /**
      * Returns a copy of the given array where each value has been casted to the {@code float} type.
      *
-     * @param  data The array to copy, or {@code null}.
-     * @return A copy of the given array with values casted to the {@code float} type, or
-     *         {@code null} if the given array was null.
+     * @param  data  the array to copy, or {@code null}.
+     * @return a copy of the given array with values casted to the {@code float} type,
+     *         or {@code null} if the given array was null.
      */
     public static float[] copyAsFloats(final double[] data) {
         if (data == null) return null;
@@ -175,9 +175,9 @@ public final class Numerics extends Static {
      * Returns a copy of the given array where each value has been
      * {@linkplain Math#round(double) rounded} to the {@code int} type.
      *
-     * @param  data The array to copy, or {@code null}.
-     * @return A copy of the given array with values rounded to the {@code int} type, or
-     *         {@code null} if the given array was null.
+     * @param  data  the array to copy, or {@code null}.
+     * @return a copy of the given array with values rounded to the {@code int} type,
+     *         or {@code null} if the given array was null.
      */
     public static int[] copyAsInts(final double[] data) {
         if (data == null) return null;
@@ -192,8 +192,8 @@ public final class Numerics extends Static {
      * Returns {@code true} if the given floats are equals. Positive and negative zero are
      * considered different, while a NaN value is considered equal to all other NaN values.
      *
-     * @param  v1 The first value to compare.
-     * @param  v2 The second value to compare.
+     * @param  v1  the first value to compare.
+     * @param  v2  the second value to compare.
      * @return {@code true} if both values are equal.
      *
      * @see Float#equals(Object)
@@ -207,8 +207,8 @@ public final class Numerics extends Static {
      * Positive and negative zeros are considered different.
      * NaN values are considered equal to all other NaN values.
      *
-     * @param  v1 The first value to compare.
-     * @param  v2 The second value to compare.
+     * @param  v1  the first value to compare.
+     * @param  v2  the second value to compare.
      * @return {@code true} if both values are equal.
      *
      * @see Double#equals(Object)
@@ -221,8 +221,8 @@ public final class Numerics extends Static {
      * Returns {@code true} if the given doubles are equal, ignoring the sign of zero values.
      * NaN values are considered equal to all other NaN values.
      *
-     * @param  v1 The first value to compare.
-     * @param  v2 The second value to compare.
+     * @param  v1  the first value to compare.
+     * @param  v2  the second value to compare.
      * @return {@code true} if both values are equal.
      */
     public static boolean equalsIgnoreZeroSign(final double v1, final double v2) {
@@ -232,9 +232,9 @@ public final class Numerics extends Static {
     /**
      * Returns {@code true} if the given values are approximatively equal, up to the given comparison threshold.
      *
-     * @param  v1 The first value to compare.
-     * @param  v2 The second value to compare.
-     * @param  threshold The comparison threshold.
+     * @param  v1  the first value to compare.
+     * @param  v2  the second value to compare.
+     * @param  threshold  the comparison threshold.
      * @return {@code true} if both values are approximatively equal.
      */
     public static boolean epsilonEqual(final double v1, final double v2, final double threshold) {
@@ -249,9 +249,9 @@ public final class Numerics extends Static {
      * <p>This method does not thrown {@link AssertionError} in {@link ComparisonMode#DEBUG}.
      * It is caller responsibility to handle the {@code DEBUG} case.</p>
      *
-     * @param  v1   The first value to compare.
-     * @param  v2   The second value to compare.
-     * @param  mode The comparison mode to use for comparing the numbers.
+     * @param  v1    the first value to compare.
+     * @param  v2    the second value to compare.
+     * @param  mode  the comparison mode to use for comparing the numbers.
      * @return {@code true} if both values are considered equal for the given comparison mode.
      */
     public static boolean epsilonEqual(final double v1, final double v2, final ComparisonMode mode) {
@@ -268,10 +268,10 @@ public final class Numerics extends Static {
      * Creates a messages to put in {@link AssertionError} when two values differ in an unexpected way.
      * This is a helper method for debugging purpose only, typically used with {@code assert} statements.
      *
-     * @param name The name of the property which differ, or {@code null} if unknown.
-     * @param v1   The first value.
-     * @param v2   The second value.
-     * @return The message to put in {@code AssertionError}.
+     * @param  name  the name of the property which differ, or {@code null} if unknown.
+     * @param  v1    the first value.
+     * @param  v2    the second value.
+     * @return the message to put in {@code AssertionError}.
      *
      * @since 0.6
      */
@@ -292,11 +292,45 @@ public final class Numerics extends Static {
     /**
      * Returns a hash code value for the given long.
      *
-     * @param  c The value to hash.
-     * @return Hash code value for the given long.
+     * @param  c  the value to hash.
+     * @return hash code value for the given long.
      */
     public static int hashCode(final long c) {
         return ((int) c) ^ (int) (c >>> Integer.SIZE);
+    }
+
+    /**
+     * Converts an unsigned {@code long} to a {@code float} value.
+     *
+     * @param  value  the unsigned {@code long} value.
+     * @return the given unsigned {@code long} as a {@code float} value.
+     *
+     * @since 0.8
+     */
+    public static float toUnsignedFloat(final long value) {
+        if (value >= 0) {
+            return value;
+        } else {
+            // Following hack is inefficient, but should rarely be needed.
+            return Float.parseFloat(Long.toUnsignedString(value));
+        }
+    }
+
+    /**
+     * Converts an unsigned {@code long} to a {@code double} value.
+     *
+     * @param  value  the unsigned {@code long} value.
+     * @return the given unsigned {@code long} as a {@code double} value.
+     *
+     * @since 0.8
+     */
+    public static double toUnsignedDouble(final long value) {
+        if (value >= 0) {
+            return value;
+        } else {
+            // Following hack is inefficient, but should rarely be needed.
+            return Double.parseDouble(Long.toUnsignedString(value));
+        }
     }
 
     /**
@@ -317,8 +351,8 @@ public final class Numerics extends Static {
      * which must be compensated by a smaller {@code exp2} value such as {@code toExp10(exp2) < n}. Note that if the
      * {@code getExponent(…)} argument is not a power of 10, then the result can be either <var>n</var> or <var>n</var>-1.
      *
-     * @param  exp2 The power of 2 to convert Must be in the [-2620 … 2620] range.
-     * @return The power of 10, rounded toward negative infinity.
+     * @param  exp2  the power of 2 to convert Must be in the [-2620 … 2620] range.
+     * @return the power of 10, rounded toward negative infinity.
      *
      * @see org.apache.sis.math.MathFunctions#LOG10_2
      * @see org.apache.sis.math.MathFunctions#getExponent(double)
@@ -350,8 +384,8 @@ public final class Numerics extends Static {
      *
      * For negative values, this method behaves as if the value was positive.
      *
-     * @param  value The value for which to get the significand.
-     * @return The significand of the given value.
+     * @param  value  the value for which to get the significand.
+     * @return the significand of the given value.
      */
     public static long getSignificand(final double value) {
         long bits = Double.doubleToRawLongBits(value);
@@ -380,8 +414,8 @@ public final class Numerics extends Static {
      *
      * For negative values, this method behaves as if the value was positive.
      *
-     * @param  value The value for which to get the significand.
-     * @return The significand of the given value.
+     * @param  value  the value for which to get the significand.
+     * @return the significand of the given value.
      */
     public static int getSignificand(final float value) {
         int bits = Float.floatToRawIntBits(value);

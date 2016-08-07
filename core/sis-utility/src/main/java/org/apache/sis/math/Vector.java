@@ -36,9 +36,8 @@ import static org.apache.sis.util.ArgumentChecks.ensureValidIndex;
  *   <li><var>y[i]</var> is the measurement of a phenomenon at time <var>x[i]</var>.</li>
  * </ul>
  *
- * Instances of {@code Vector} are created by calls to the {@link #create(Object)} static method.
- * The supplied array is not cloned – changes to the primitive array are reflected in the vector,
- * and vis-versa.
+ * Instances of {@code Vector} are created by calls to the {@link #create(Object, boolean)} static method.
+ * The supplied array is not cloned – changes to the primitive array are reflected in the vector, and vis-versa.
  *
  * Vectors can be created over a subrange of an array, provides a view of the elements in reverse
  * order, <i>etc</i>. The example below creates a view over a subrange:
@@ -80,10 +79,16 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
      * The given argument is not cloned.
      * Consequently changes in the underlying array are reflected in this vector, and vis-versa.
      *
+     * <div class="section">Unsigned integers</div>
+     * Java has no primitive support for unsigned integers. But some file formats use unsigned integers,
+     * which can be simulated in Java by the use of bit masks or methods like {@link Integer#toUnsignedLong(int)}.
+     * This {@code Vector} class applies automatically those masks (unless otherwise noticed in method Javadoc)
+     * if the {@code isUnsigned} argument is {@code true}.
+     * That argument applies only to {@code byte[]}, {@code short[]}, {@code int[]} or {@code long[]} arrays
+     * and is ignored for all other kind of arrays.
+     *
      * @param  array       the object to wrap in a vector, or {@code null}.
      * @param  isUnsigned  {@code true} if integer types should be interpreted as unsigned integers.
-     *         This argument is ignored if the given array is not a {@code byte[]}, {@code short[]},
-     *         {@code int[]} or {@code long[]} array.
      * @return the given object wrapped in a vector, or {@code null} if the argument was {@code null}.
      * @throws IllegalArgumentException if the type of the given object is not recognized by the method.
      */
@@ -159,14 +164,21 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
      * is backed by an array of type {@code float[]}, then this method returns {@code Float.class},
      * not {@link Float#TYPE}.
      *
+     * <p>Users of the {@link #doubleValue(int)} method do not need to care about this information since
+     * {@code Vector} will perform automatically the type conversion. Users of other methods may want to
+     * verify this information for avoiding {@link ClassCastException}.</p>
+     *
      * @return the type of elements in this vector.
      */
     public abstract Class<? extends Number> getElementType();
 
     /**
      * Returns {@code true} if integer values shall be interpreted as unsigned values.
-     * Java has no primitive type for unsigned integers, but {@code Vector} implementations
-     * can simulate them by applying the necessary bit masks.
+     * This method may return {@code true} only for data stored in {@code byte[]},
+     * {@code short[]}, {@code int[]} or {@code long[]} arrays.
+     *
+     * <p>Unless otherwise noticed in Javadoc, users do not need to care about this information since
+     * {@code Vector} methods will perform automatically the operations needed for unsigned integers.</p>
      *
      * @return {@code true} if the integer values shall be interpreted as unsigned values.
      */
@@ -191,14 +203,14 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
 
     /**
      * Returns the value at the given index as a {@code double}.
+     * This is the safest method since all primitive types supported by {@code Vector}
+     * are convertible to the {@code double} type.
      *
      * @param  index the index in the [0 … {@linkplain #size size}-1] range.
      * @return the value at the given index.
      * @throws IndexOutOfBoundsException if the given index is out of bounds.
-     * @throws ClassCastException if the component type can not be converted to a
-     *         {@code double} by an identity or widening conversion.
      */
-    public abstract double doubleValue(final int index) throws IndexOutOfBoundsException, ClassCastException;
+    public abstract double doubleValue(final int index) throws IndexOutOfBoundsException;
 
     /**
      * Returns the value at the given index as a {@code float}.

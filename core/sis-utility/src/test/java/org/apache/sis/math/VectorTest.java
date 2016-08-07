@@ -32,19 +32,28 @@ import static org.junit.Assert.*;
  */
 public final strictfp class VectorTest extends TestCase {
     /**
-     * Tests {@link SequenceVector}.
+     * The tested vector.
+     */
+    private Vector vector;
+
+    /**
+     * Tests {@link SequenceVector} with byte values.
      */
     @Test
-    public void testSequence() {
-        Vector vector = Vector.createSequence(100, 2, 10);
+    public void testSequenceOfBytes() {
+        vector = Vector.createSequence(100, 2, 10);
         assertEquals(Byte.class, vector.getElementType());
         assertEquals(10, vector.size());
         for (int i=0; i<vector.size(); i++) {
             assertEquals(100 + 2*i, vector.byteValue(i));
         }
-        /*
-         * Same tests, using double values.
-         */
+    }
+
+    /**
+     * Tests {@link SequenceVector} with float values.
+     */
+    @Test
+    public void testSequenceOfFloats() {
         vector = Vector.createSequence(100, 0.1, 10);
         assertEquals(Double.class, vector.getElementType());
         assertEquals(10, vector.size());
@@ -55,32 +64,29 @@ public final strictfp class VectorTest extends TestCase {
 
     /**
      * Tests {@link ArrayVector} backed by an array of primitive type.
-     * We use the {@code short} type since it doesn't have specialized
-     * vector implementation.
+     * We use the {@code short} type for this test.
      */
     @Test
-    public void testPrimitiveTypeArray() {
+    public void testShortArray() {
         final short[] array = new short[400];
         for (int i=0; i<array.length; i++) {
             array[i] = (short) ((i + 100) * 10);
         }
-        Vector vector = Vector.create(array, false);
+        vector = Vector.create(array, false);
         assertTrue(vector instanceof ArrayVector);
         assertSame(vector, Vector.create(vector, false));
         assertEquals(array.length, vector.size());
         assertEquals(Short.class, vector.getElementType());
-        /*
-         * Tests element values.
-         */
+
+        // Verifies element values.
         for (int i=0; i<array.length; i++) {
             assertEquals(array[i], vector.shortValue (i));
             assertEquals(array[i], vector.intValue   (i));
-            assertEquals(array[i], vector.floatValue (i), 0);
-            assertEquals(array[i], vector.doubleValue(i), 0);
+            assertEquals(array[i], vector.floatValue (i), 0f);
+            assertEquals(array[i], vector.doubleValue(i), STRICT);
         }
-        /*
-         * Tests exception.
-         */
+
+        // Tests exception.
         try {
             vector.floatValue(array.length);
             fail("Expected an IndexOutOfBoundsException");
@@ -93,13 +99,12 @@ public final strictfp class VectorTest extends TestCase {
         } catch (ClassCastException e) {
             // This is the expected exception.
         }
-        /*
-         * Tests subvector in the range [100:2:298].
-         */
+
+        // Tests subvector in the range [100:2:298].
         vector = vector.subList(100, 2, 100);
         assertEquals(100, vector.size());
         for (int i=0; i<100; i++) {
-            assertEquals(array[i*2 + 100], vector.shortValue(i), 0);
+            assertEquals(array[i*2 + 100], vector.shortValue(i));
         }
         try {
             vector.shortValue(100);
@@ -107,14 +112,13 @@ public final strictfp class VectorTest extends TestCase {
         } catch (IndexOutOfBoundsException e) {
             // This is the expected exception.
         }
-        /*
-         * Tests subvector at specific indexes.
-         */
+
+        // Tests subvector at specific indexes.
         vector = vector.view(10, 20, 25);
         assertEquals(3, vector.size());
-        assertEquals(array[120], vector.shortValue(0), 0);
-        assertEquals(array[140], vector.shortValue(1), 0);
-        assertEquals(array[150], vector.shortValue(2), 0);
+        assertEquals(array[120], vector.shortValue(0));
+        assertEquals(array[140], vector.shortValue(1));
+        assertEquals(array[150], vector.shortValue(2));
     }
 
     /**
@@ -126,7 +130,7 @@ public final strictfp class VectorTest extends TestCase {
         for (int i=0; i<array.length; i++) {
             array[i] = (i + 100) * 10;
         }
-        Vector vector = Vector.create(array, false);
+        vector = Vector.create(array, false);
         assertTrue(vector instanceof ArrayVector.Float);
         assertSame(vector, Vector.create(vector, false));
         assertEquals(array.length, vector.size());
@@ -135,8 +139,8 @@ public final strictfp class VectorTest extends TestCase {
          * Tests element values.
          */
         for (int i=0; i<array.length; i++) {
-            assertEquals(array[i], vector.floatValue (i), 0);
-            assertEquals(array[i], vector.doubleValue(i), 0);
+            assertEquals(array[i], vector.floatValue (i), 0f);
+            assertEquals(array[i], vector.doubleValue(i), STRICT);
         }
     }
 
@@ -149,7 +153,7 @@ public final strictfp class VectorTest extends TestCase {
         for (int i=0; i<array.length; i++) {
             array[i] = (i + 100) * 10;
         }
-        Vector vector = Vector.create(array, false);
+        vector = Vector.create(array, false);
         assertTrue(vector instanceof ArrayVector.Double);
         assertSame(vector, Vector.create(vector, false));
         assertEquals(array.length, vector.size());
@@ -158,8 +162,8 @@ public final strictfp class VectorTest extends TestCase {
          * Tests element values.
          */
         for (int i=0; i<array.length; i++) {
-            assertEquals(array[i], vector.floatValue (i), 0);
-            assertEquals(array[i], vector.doubleValue(i), 0);
+            assertEquals(array[i], vector.floatValue (i), 0f);
+            assertEquals(array[i], vector.doubleValue(i), STRICT);
         }
     }
 
