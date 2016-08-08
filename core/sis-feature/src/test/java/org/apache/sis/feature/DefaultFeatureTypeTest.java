@@ -362,6 +362,33 @@ public final strictfp class DefaultFeatureTypeTest extends TestCase {
     }
 
     /**
+     * Tests inclusion of a property of kind operation.
+     */
+    @Test
+    public void testOperationProperty() {
+        final Map<String,String> featureName = singletonMap(DefaultFeatureType.NAME_KEY, "Identified city");
+        final Map<String,String> identifierName = singletonMap(DefaultAttributeType.NAME_KEY, "identifier");
+        final DefaultFeatureType[] parent = {city()};
+        final DefaultFeatureType city = new DefaultFeatureType(featureName, false,
+                parent, new LinkOperation(identifierName, parent[0].getProperty("city")));
+        assertPropertiesEquals(city, true, "city", "population", "identifier");
+        /*
+         * Try to add an operation that depends on a non-existent property.
+         * Such construction shall not be allowed.
+         */
+        final PropertyType parliament = new LinkOperation(identifierName, DefaultAttributeTypeTest.parliament());
+        try {
+            final DefaultFeatureType illegal = new DefaultFeatureType(featureName, false, parent, parliament);
+            fail("Should not have been allowed to create this feature:\n" + illegal);
+        } catch (IllegalArgumentException e) {
+            final String message = e.getLocalizedMessage();
+            assertTrue(message, message.contains("identifier"));
+            assertTrue(message, message.contains("parliament"));
+            assertTrue(message, message.contains("Identified city"));
+        }
+    }
+
+    /**
      * Tests a feature type which inherit from an other feature type, but without property overriding.
      *
      * <p>Current implementation performs its tests on the {@link #capital()} feature.</p>

@@ -83,7 +83,7 @@ public abstract class AbstractOperation extends AbstractIdentifiedType implement
      * Constructs an operation from the given properties. The identification map is given unchanged to
      * the {@linkplain AbstractIdentifiedType#AbstractIdentifiedType(Map) super-class constructor}.
      *
-     * @param identification The name and other information to be given to this operation.
+     * @param  identification  the name and other information to be given to this operation.
      */
     public AbstractOperation(final Map<String,?> identification) {
         super(identification);
@@ -95,7 +95,7 @@ public abstract class AbstractOperation extends AbstractIdentifiedType implement
      * If the given map contains at least one key prefixed by {@value #RESULT_PREFIX}, then the values
      * associated to those keys will be used.
      *
-     * @param identification the map given by user to sub-class constructor.
+     * @param  identification  the map given by user to sub-class constructor.
      */
     final Map<String,Object> resultIdentification(final Map<String,?> identification) {
         final Map<String,Object> properties = new HashMap<>(6);
@@ -117,7 +117,7 @@ public abstract class AbstractOperation extends AbstractIdentifiedType implement
     /**
      * Returns a description of the input parameters.
      *
-     * @return Description of the input parameters.
+     * @return description of the input parameters.
      */
     @Override
     public abstract ParameterDescriptorGroup getParameters();
@@ -125,7 +125,7 @@ public abstract class AbstractOperation extends AbstractIdentifiedType implement
     /**
      * Returns the expected result type, or {@code null} if none.
      *
-     * @return The type of the result, or {@code null} if none.
+     * @return the type of the result, or {@code null} if none.
      */
     @Override
     public abstract IdentifiedType getResult();
@@ -151,11 +151,11 @@ public abstract class AbstractOperation extends AbstractIdentifiedType implement
      * in the Java language, and may be {@code null} if the operation does not need a feature instance
      * (like static methods in the Java language).</div>
      *
-     * @param  feature    The feature on which to execute the operation.
-     *                    Can be {@code null} if the operation does not need feature instance.
-     * @param  parameters The parameters to use for executing the operation.
-     *                    Can be {@code null} if the operation does not take any parameters.
-     * @return The operation result, or {@code null} if this operation does not produce any result.
+     * @param  feature     the feature on which to execute the operation.
+     *                     Can be {@code null} if the operation does not need feature instance.
+     * @param  parameters  the parameters to use for executing the operation.
+     *                     Can be {@code null} if the operation does not take any parameters.
+     * @return the operation result, or {@code null} if this operation does not produce any result.
      */
     @Override
     public abstract Property apply(Feature feature, ParameterValueGroup parameters);
@@ -174,7 +174,7 @@ public abstract class AbstractOperation extends AbstractIdentifiedType implement
      *
      * The default implementation returns an empty set.
      *
-     * @return The names of feature properties needed by this operation for performing its task.
+     * @return the names of feature properties needed by this operation for performing its task.
      */
     public Set<String> getDependencies() {
         return Collections.emptySet();
@@ -256,7 +256,7 @@ public abstract class AbstractOperation extends AbstractIdentifiedType implement
      * Appends a string representation of the "formula" used for computing the result.
      * The "formula" may be for example a link to another property.
      *
-     * @param  buffer where to format the "formula".
+     * @param  buffer  where to format the "formula".
      * @return {@code true} if this method has formatted a formula, or {@code false} otherwise.
      */
     boolean formatResultFormula(Appendable buffer) {
