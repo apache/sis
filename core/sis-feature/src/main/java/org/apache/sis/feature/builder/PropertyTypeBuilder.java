@@ -246,7 +246,6 @@ public abstract class PropertyTypeBuilder extends TypeBuilder {
     /**
      * Flags this builder as a disposed one. The builder should not be used anymore after this method call.
      */
-    @Override
     final void dispose() {
         owner = null;
     }
@@ -258,6 +257,7 @@ public abstract class PropertyTypeBuilder extends TypeBuilder {
      * and attempts to invoke any setter method on {@code this} will cause an
      * {@link IllegalStateException} to be thrown.
      */
+    @Override
     public void remove() {
         if (owner != null) {
             owner.replace(this, null);
