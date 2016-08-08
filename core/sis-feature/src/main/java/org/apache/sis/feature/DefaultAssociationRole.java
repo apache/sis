@@ -192,7 +192,7 @@ public class DefaultAssociationRole extends FieldType implements FeatureAssociat
         if (type instanceof NamedFeatureType) {
             final GenericName name = type.getName();
             if (name.equals(creating.getName())) {
-                type = creating; // This is the most common case.
+                type = creating;                                        // This is the most common case.
             } else {
                 /*
                  * The feature that we need to resolve is not the one we just created. Maybe we can find
@@ -243,7 +243,7 @@ public class DefaultAssociationRole extends FieldType implements FeatureAssociat
                 if (property instanceof DefaultAssociationRole) {
                     valueType = ((DefaultAssociationRole) property).valueType;
                     if (valueType instanceof NamedFeatureType) {
-                        continue; // Skip unresolved feature types.
+                        continue;                                   // Skip unresolved feature types.
                     }
                 } else {
                     valueType = ((FeatureAssociationRole) property).getValueType();
