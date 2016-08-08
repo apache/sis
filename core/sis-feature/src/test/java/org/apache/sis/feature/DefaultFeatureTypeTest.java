@@ -251,11 +251,11 @@ public final strictfp class DefaultFeatureTypeTest extends TestCase {
         final Map<String,Object> identification = new HashMap<>();
         final DefaultAttributeType<String>  city       = DefaultAttributeTypeTest.city(identification);
         final DefaultAttributeType<Integer> population = DefaultAttributeTypeTest.population(identification);
-        testComplex(city, population, 0, 0); // Simple
+        testComplex(city, population, 0, 0);    // Simple
         testComplex(city, population, 0, 1);
         testComplex(city, population, 0, 2);
         testComplex(city, population, 1, 2);
-        testComplex(city, population, 1, 1); // Simple
+        testComplex(city, population, 1, 1);    // Simple
     }
 
     /**
@@ -470,6 +470,22 @@ public final strictfp class DefaultFeatureTypeTest extends TestCase {
         // Public API.
         assertTrue ("isAssignableFrom", metropolis.isAssignableFrom(worldMetropolis));
         assertFalse("isAssignableFrom", worldMetropolis.isAssignableFrom(metropolis));
+    }
+
+    /**
+     * Tests the ommission of a property that duplicate a property already declared in the parent.
+     * This is a little bit different than {@link #testPropertyOverride()} since the duplicated property
+     * should be completely omitted.
+     */
+    @Test
+    @DependsOnMethod("testPropertyOverride")
+    public void testPropertyDuplication() {
+        DefaultFeatureType city = city();
+        city = new DefaultFeatureType(singletonMap(DefaultFeatureType.NAME_KEY, "New-City"),
+                false, new DefaultFeatureType[] {city()}, city.getProperty("city"));
+
+        assertPropertiesEquals(city, false);
+        assertPropertiesEquals(city, true, "city", "population");
     }
 
     /**

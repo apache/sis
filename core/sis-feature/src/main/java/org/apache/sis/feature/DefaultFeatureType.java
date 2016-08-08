@@ -16,7 +16,7 @@
  */
 package org.apache.sis.feature;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.HashSet;
@@ -25,6 +25,7 @@ import java.util.LinkedHashMap;
 import java.util.IdentityHashMap;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import org.opengis.util.NameFactory;
@@ -40,6 +41,7 @@ import org.apache.sis.internal.util.UnmodifiableArrayList;
 
 // Branch-dependent imports
 import java.util.Objects;
+import org.opengis.feature.IdentifiedType;
 import org.opengis.feature.PropertyType;
 import org.opengis.feature.AttributeType;
 import org.opengis.feature.Feature;
@@ -96,7 +98,7 @@ import org.opengis.feature.PropertyNotFoundException;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5
- * @version 0.6
+ * @version 0.8
  * @module
  *
  * @see DefaultAttributeType
@@ -165,6 +167,7 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
     /**
      * Any feature operation, any feature attribute type and any feature association role
      * that carries characteristics of a feature type.
+     * This list does not include the properties inherited from the super-types.
      *
      * @see #getProperties(boolean)
      */
@@ -262,13 +265,25 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
                 }
             }
         }
-        switch (properties.length) {
-            case 0:  this.properties = Collections.emptyList(); break;
-            case 1:  this.properties = Collections.singletonList(properties[0]); break;
-            default: this.properties = UnmodifiableArrayList.wrap(Arrays.copyOf(properties, properties.length, PropertyType[].class)); break;
+        /*
+         * We need to copy the properties in a temporary modifiable list in order to allow removal of elements
+         * in case of duplicated values. Opportunistically verify for null values. The same verification could
+         * be done in the scanPropertiesFrom(…) method, but doing it here produces a less confusing stacktrace.
+         */
+        final List<PropertyType> sourceProperties = new ArrayList<>(properties.length);
+        for (int i=0; i<properties.length; i++) {
+            final PropertyType property = properties[i];
+            ArgumentChecks.ensureNonNullElement("properties", i, property);
+            sourceProperties.add(property);
         }
-        computeTransientFields();
-        isResolved = resolve(this, null, isSimple);
+        computeTransientFields(sourceProperties);
+        final int size = sourceProperties.size();
+        switch (size) {
+            case 0:  this.properties = Collections.emptyList(); break;
+            case 1:  this.properties = Collections.singletonList(sourceProperties.get(0)); break;
+            default: this.properties = UnmodifiableArrayList.wrap(sourceProperties.toArray(new PropertyType[size])); break;
+        }
+        isResolved = resolve(this, this.properties, null, isSimple);
     }
 
     /**
@@ -289,8 +304,13 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
      */
     private void readObject(final ObjectInputStream in) throws IOException, ClassNotFoundException {
         in.defaultReadObject();
-        computeTransientFields();
-        isResolved = isSimple; // Conservative value. The 'resolve' method will compute a more accurate value if needed.
+        computeTransientFields(properties);
+        /*
+         * Set isResolved to a conservative value. The 'resolve' method will compute a more accurate value if needed,
+         * the first time that another DefaultFeatureType will have a dependency to this DefaultFeatureType through a
+         * DefaultAssociationRole.
+         */
+        isResolved = isSimple;
     }
 
     /**
@@ -298,15 +318,18 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
      *
      * <p>As a side effect, this method checks for missing or duplicated names.</p>
      *
+     * @param  properties  same content as {@link #properties} (may be the reference to the same list), but
+     *         optionally in a temporarily modifiable list if we want to allow removal of duplicated values.
+     *         See {@link #scanPropertiesFrom(FeatureType, Collection)} javadoc for more explanation.
      * @throws IllegalArgumentException if two properties have the same name.
      */
-    private void computeTransientFields() {
+    private void computeTransientFields(final List<PropertyType> properties) {
         final int capacity = Containers.hashMapCapacity(properties.size());
         byName       = new LinkedHashMap<>(capacity);
         indices      = new LinkedHashMap<>(capacity);
         assignableTo = new HashSet<>(4);
         assignableTo.add(super.getName());
-        scanPropertiesFrom(this);
+        scanPropertiesFrom(this, properties);
         allProperties = UnmodifiableArrayList.wrap(byName.values().toArray(new PropertyType[byName.size()]));
         /*
          * Now check if the feature is simple/complex or dense/sparse. We perform this check after we finished
@@ -315,7 +338,7 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
          */
         isSimple = true;
         int index = 0;
-        int mandatory = 0; // Count of mandatory properties.
+        int mandatory = 0;                                                  // Count of mandatory properties.
         for (final Map.Entry<String,PropertyType> entry : byName.entrySet()) {
             final int minimumOccurs, maximumOccurs;
             final PropertyType property = entry.getValue();
@@ -331,7 +354,7 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
                 if (isParameterlessOperation(property)) {
                     indices.put(entry.getKey(), OPERATION_INDEX);
                 }
-                continue; // For feature operations, maximumOccurs is implicitly 0.
+                continue;                           // For feature operations, maximumOccurs is implicitly 0.
             }
             if (maximumOccurs != 0) {
                 isSimple &= (maximumOccurs == 1);
@@ -352,7 +375,7 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
         for (final PropertyType property : allProperties) {
             final GenericName name = property.getName();
             final LocalName tip = name.tip();
-            if (tip != name) {                                              // Slight optimization for a common case.
+            if (tip != name) {                                          // Slight optimization for a common case.
                 final String key = tip.toString();
                 if (key != null && !key.isEmpty() && !key.equals(name.toString())) {
                     aliases.put(key, aliases.containsKey(key) ? null : property);
@@ -400,23 +423,38 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
      * <p>{@code this} shall be the instance in process of being created, not any other instance
      * (i.e. recursive method invocations are performed on the same {@code this} instance).</p>
      *
-     * @param  source  the feature from which to get properties.
+     * <p>This method requires that the caller gives {@code source.getProperties(false)} himself for two reasons:</p>
+     * <ul>
+     *   <li>Avoid a call to the user-overrideable {@link #getProperties(boolean)} method
+     *       while this {@code DefaultFeatureType} instance is still under constructor.</li>
+     *   <li>Allow the {@link #DefaultFeatureType(Map, boolean, FeatureType[], PropertyType[])} constructor
+     *       to pass a temporary modifiable list that allow element removal.</li>
+     * </ul>
+     *
+     * @param  source            the feature from which to get properties.
+     * @param  sourceProperties  {@code source.getProperties(false)} (see above method javadoc).
      * @throws IllegalArgumentException if two properties have the same name.
      */
-    private void scanPropertiesFrom(final FeatureType source) {
+    private void scanPropertiesFrom(final FeatureType source, final Collection<? extends PropertyType> sourceProperties) {
         for (final FeatureType parent : source.getSuperTypes()) {
             if (assignableTo.add(parent.getName())) {
-                scanPropertiesFrom(parent);
+                scanPropertiesFrom(parent, parent.getProperties(false));
             }
         }
         int index = -1;
-        for (final PropertyType property : source.getProperties(false)) {
-            ArgumentChecks.ensureNonNullElement("properties", ++index, property);
-            final String name = toString(property.getName(), source, "properties", index);
+        final Iterator<? extends PropertyType> it = sourceProperties.iterator();
+        while (it.hasNext()) {
+            final PropertyType property = it.next();
+            final String name = toString(property.getName(), source, "properties", ++index);
             final PropertyType previous = byName.put(name, property);
             if (previous != null) {
-                if (!isAssignableIgnoreName(previous, property)) {
-                    final GenericName owner = ownerOf(this, previous);
+                if (previous.equals(property)) {
+                    byName.put(name, previous);         // Keep the instance declared in super-type.
+                    if (source == this) {
+                        it.remove();                    // Remove duplicated values in instance under construction.
+                    }
+                } else if (!isAssignableIgnoreName(previous, property)) {
+                    final GenericName owner = ownerOf(this, sourceProperties, previous);
                     throw new IllegalArgumentException(Errors.format(Errors.Keys.PropertyAlreadyExists_2,
                             (owner != null) ? owner : "?", name));
                 }
@@ -429,12 +467,14 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
      * This method is for information purpose when producing an error message - its implementation does
      * not need to be efficient.
      */
-    private static GenericName ownerOf(final FeatureType type, final PropertyType property) {
-        if (type.getProperties(false).contains(property)) {
+    private static GenericName ownerOf(final FeatureType type, final Collection<? extends PropertyType> properties,
+            final PropertyType toSearch)
+    {
+        if (properties.contains(toSearch)) {
             return type.getName();
         }
         for (final FeatureType superType : type.getSuperTypes()) {
-            final GenericName owner = ownerOf(superType, property);
+            final GenericName owner = ownerOf(superType, superType.getProperties(false), toSearch);
             if (owner != null) {
                 return owner;
             }
@@ -466,27 +506,33 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
          */
         if (feature instanceof DefaultFeatureType) {
             final DefaultFeatureType dt = (DefaultFeatureType) feature;
-            return dt.isResolved = resolve(feature, previous, dt.isResolved);
+            return dt.isResolved = resolve(feature, dt.properties, previous, dt.isResolved);
         } else {
-            return resolve(feature, previous, feature.isSimple());
+            return resolve(feature, feature.getProperties(false), previous, feature.isSimple());
         }
     }
 
     /**
      * Implementation of {@link #resolve(FeatureType, Map)}, also to be invoked from the constructor.
      *
-     * @param  feature   the feature type for which to resolve the properties.
-     * @param  previous  previous results, for avoiding never ending loop. Initially {@code null}.
-     * @param  resolved  {@code true} if we already know that all names are resolved.
+     * <p>{@code this} shall be the instance in process of being created, not other instance
+     * (i.e. recursive method invocations are performed on the same {@code this} instance).</p>
+     *
+     * @param  feature     the feature type for which to resolve the properties.
+     * @param  toUpdate    {@code feature.getProperties(false)}, which may contain the associations to update.
+     * @param  previous    previous results, for avoiding never ending loop. Initially {@code null}.
+     * @param  resolved    {@code true} if we already know that all names are resolved.
      * @return {@code true} if all names have been resolved.
      */
-    private boolean resolve(final FeatureType feature, Map<FeatureType,Boolean> previous, boolean resolved) {
+    private boolean resolve(final FeatureType feature, final Collection<? extends PropertyType> toUpdate,
+            Map<FeatureType,Boolean> previous, boolean resolved)
+    {
         if (!resolved) {
             resolved = true;
             for (final FeatureType type : feature.getSuperTypes()) {
                 resolved &= resolve(type, previous);
             }
-            for (final PropertyType property : feature.getProperties(false)) {
+            for (final PropertyType property : toUpdate) {
                 if (property instanceof FeatureAssociationRole) {
                     if (property instanceof DefaultAssociationRole) {
                         if (!((DefaultAssociationRole) property).resolve(this)) {
@@ -605,7 +651,7 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
     @Override
     public boolean isAssignableFrom(final FeatureType type) {
         if (type == this) {
-            return true; // Optimization for a common case.
+            return true;                            // Optimization for a common case.
         }
         ArgumentChecks.ensureNonNull("type", type);
         if (!maybeAssignableFrom(this, type)) {
@@ -668,9 +714,31 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
                 }
                 final FeatureType f0 = p0.getValueType();
                 final FeatureType f1 = p1.getValueType();
-                if (f0 != f1) {
-                    if (!f0.isAssignableFrom(f1)) {
-                        return false;
+                if (f0 != f1 && !f0.isAssignableFrom(f1)) {
+                    return false;
+                }
+            }
+            if (base instanceof Operation) {
+                if (!(other instanceof Operation)) {
+                    return false;
+                }
+                final Operation p0 = (Operation) base;
+                final Operation p1 = (Operation) other;
+                if (!Objects.equals(p0.getParameters(), p1.getParameters())) {
+                    return false;
+                }
+                final IdentifiedType r0 = p0.getResult();
+                final IdentifiedType r1 = p1.getResult();
+                if (r0 != r1) {
+                    if (r0 instanceof FeatureType) {
+                        if (!(r1 instanceof FeatureType) || !((FeatureType) r0).isAssignableFrom((FeatureType) r1)) {
+                            return false;
+                        }
+                    }
+                    if (r0 instanceof PropertyType) {
+                        if (!(r1 instanceof PropertyType) || !isAssignableIgnoreName((PropertyType) r0, (PropertyType) r1)) {
+                            return false;
+                        }
                     }
                 }
             }
@@ -705,19 +773,13 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
      * inherited from the {@linkplain #getSuperTypes() super-types} only if {@code includeSuperTypes}
      * is {@code true}.
      *
-     * <div class="note"><b>Note for subclasses:</b>
-     * this method is final because it is invoked (indirectly) by constructors, and invoking a user-overrideable
-     * method at construction time is not recommended. Furthermore, many Apache SIS methods need guarantees about
-     * the stability of this collection.
-     * </div>
-     *
      * @param  includeSuperTypes {@code true} for including the properties inherited from the super-types,
      *         or {@code false} for returning only the properties defined explicitely in this type.
      * @return feature operation, attribute type and association role that carries characteristics of this
      *         feature type (not including parent types).
      */
     @Override
-    public final Collection<PropertyType> getProperties(final boolean includeSuperTypes) {
+    public Collection<PropertyType> getProperties(final boolean includeSuperTypes) {
         return includeSuperTypes ? allProperties : properties;
     }
 
