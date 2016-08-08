@@ -17,7 +17,7 @@
 package org.apache.sis.math;
 
 import java.io.Serializable;
-import org.apache.sis.util.Numbers;
+import org.apache.sis.util.Classes;
 
 
 /**
@@ -57,11 +57,11 @@ final class ConcatenatedVector extends Vector implements Serializable {
     }
 
     /**
-     * Returns widest type of the two vectors.
+     * Returns the parent type of the two vectors.
      */
     @Override
     public Class<? extends Number> getElementType() {
-        return Numbers.widestClass(first.getElementType(), second.getElementType());
+        return Classes.findCommonClass(first.getElementType(), second.getElementType()).asSubclass(Number.class);
     }
 
     /**
@@ -186,6 +186,21 @@ final class ConcatenatedVector extends Vector implements Serializable {
     }
 
     /**
+     * Returns the string representation at the given index.
+     */
+    @Override
+    public String toString(int index) {
+        final Vector v;
+        if (index < limit) {
+            v = first;
+        } else {
+            v = second;
+            index -= limit;
+        }
+        return v.toString(index);
+    }
+
+    /**
      * Returns the value at the given index.
      *
      * @throws ArrayIndexOutOfBoundsException if the given index is out of bounds.
@@ -221,14 +236,14 @@ final class ConcatenatedVector extends Vector implements Serializable {
      * Delegates to the backing vectors if possible.
      */
     @Override
-    Vector createSubList(final int first, final int step, final int length) {
+    Vector createSubSampling(final int first, final int step, final int length) {
         if (first >= limit) {
-            return second.subList(first - limit, step, length);
+            return second.subSampling(first - limit, step, length);
         }
         if (first + step*length <= limit) {
-            return this.first.subList(first, step, length);
+            return this.first.subSampling(first, step, length);
         }
-        return super.createSubList(first, step, length);
+        return super.createSubSampling(first, step, length);
     }
 
     /**
