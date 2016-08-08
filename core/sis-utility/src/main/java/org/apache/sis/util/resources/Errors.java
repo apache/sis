@@ -236,6 +236,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final short DeadThread_1 = 15;
 
         /**
+         * Operation “{0}” requires a “{1}” property, but no such property has been found in “{2}”.
+         */
+        public static final short DependencyNotFound_3 = 235;
+
+        /**
          * The “{0}” file points to a directory instead of a regular file.
          */
         public static final short DirectoryNotExpected_1 = 165;

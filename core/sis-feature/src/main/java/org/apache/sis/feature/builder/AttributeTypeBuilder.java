@@ -658,8 +658,9 @@ public final class AttributeTypeBuilder<V> extends PropertyTypeBuilder {
      */
     @Override
     public void remove() {
-        if (isIdentifier && owner()!=null) {
-            owner().identifierCount--;
+        if (isIdentifier) {
+            isIdentifier = false;
+            owner().identifierCount--;      // Owner should never be null since we set 'isIdentifier' to false.
         }
         super.remove();
     }

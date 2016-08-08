@@ -283,6 +283,21 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
             case 1:  this.properties = Collections.singletonList(sourceProperties.get(0)); break;
             default: this.properties = UnmodifiableArrayList.wrap(sourceProperties.toArray(new PropertyType[size])); break;
         }
+        /*
+         * Before to resolve cyclic associations, verify that operations depend only on existing properties.
+         * Note: the 'allProperties' collection has been created by computeTransientFields(…) above.
+         */
+        for (final PropertyType property : allProperties) {
+            if (property instanceof AbstractOperation) {
+                for (final String dependency : ((AbstractOperation) property).getDependencies()) {
+                    if (!byName.containsKey(dependency)) {
+                        throw new IllegalArgumentException(Errors.format(Errors.Keys.DependencyNotFound_3,
+                                property.getName(), dependency, super.getName()));
+                    }
+                }
+            }
+        }
+        // Do not invoke before DefaultFeatureType construction succeed.
         isResolved = resolve(this, this.properties, null, isSimple);
     }
 
