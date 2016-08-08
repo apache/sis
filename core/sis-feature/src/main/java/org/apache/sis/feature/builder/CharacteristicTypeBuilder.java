@@ -216,7 +216,7 @@ public final class CharacteristicTypeBuilder<V> extends TypeBuilder {
         final CharacteristicTypeBuilder<N> newb = new CharacteristicTypeBuilder<>(this, type);
         owner.characteristics.set(owner.characteristics.lastIndexOf(this), newb);
         // Note: a negative lastIndexOf(old) would be a bug in our algorithm.
-        dispose();
+        owner = null;
         return newb;
     }
 
@@ -304,27 +304,18 @@ public final class CharacteristicTypeBuilder<V> extends TypeBuilder {
     }
 
     /**
-     * Flags this builder as a disposed one. The builder should not be used anymore after this method call.
-     *
-     * @see #remove()
-     */
-    @Override
-    final void dispose() {
-        owner = null;
-    }
-
-    /**
      * Removes this characteristics from the {@code AttributeTypeBuilder}.
      * After this method has been invoked, this {@code CharacteristicTypeBuilder} instance
      * is no longer in the list returned by {@link AttributeTypeBuilder#characteristics()}
      * and attempts to invoke any setter method on {@code this} will cause an
      * {@link IllegalStateException} to be thrown.
      */
+    @Override
     public void remove() {
         if (owner != null) {
             owner.characteristics.remove(owner.characteristics.lastIndexOf(this));
             // Note: a negative lastIndexOf(old) would be a bug in our algorithm.
-            dispose();
+            owner = null;
         }
     }
 }

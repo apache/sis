@@ -65,17 +65,8 @@ final class RemoveOnlyList<E extends TypeBuilder> extends AbstractList<E> {
     public E remove(int index) {
         final E element = elements.get(index);
         if (element != null) {
-            element.dispose();
+            element.remove();
         }
         return element;
-    }
-
-    /**
-     * Flags all elements as not usable anymore, then remove all of them.
-     */
-    @Override
-    public void clear() {
-        elements.forEach(TypeBuilder::dispose);
-        elements.clear();
     }
 }

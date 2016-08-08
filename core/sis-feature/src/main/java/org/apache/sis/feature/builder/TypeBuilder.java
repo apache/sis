@@ -457,7 +457,7 @@ public abstract class TypeBuilder implements Localized {
      * Invoked when a type builder has been removed from its parent.
      * Subclasses should override this method in a way that flag the builder as not usable anymore.
      */
-    void dispose() {
+    void remove() {
     }
 
     /**
