@@ -784,6 +784,9 @@ public class FeatureTypeBuilder extends TypeBuilder {
             // unless builder state has been changed in another thread before this method completed.
             throw new CorruptedObjectException();
         }
+        if (old == defaultGeometry) {
+            defaultGeometry = (AttributeTypeBuilder<?>) replacement;
+        }
         clearCache();
     }
 
