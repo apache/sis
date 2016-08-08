@@ -165,6 +165,14 @@ final class SequenceVector extends Vector implements Serializable {
     }
 
     /**
+     * Returns the string representation of the value at the given index.
+     */
+    @Override
+    public String toString(final int index) throws IndexOutOfBoundsException {
+        return String.valueOf(doubleValue(index));
+    }
+
+    /**
      * Computes the value at the given index.
      */
     @Override
@@ -184,7 +192,7 @@ final class SequenceVector extends Vector implements Serializable {
      * Creates a new sequence.
      */
     @Override
-    Vector createSubList(final int first, final int step, final int length) {
+    Vector createSubSampling(final int first, final int step, final int length) {
         return new SequenceVector(doubleValue(first), increment*step, length);
     }
 }

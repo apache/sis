@@ -95,13 +95,16 @@ public final strictfp class VectorTest extends TestCase {
         }
         try {
             vector.byteValue(0);
-            fail("Expected a ClassCastException");
-        } catch (ClassCastException e) {
+            fail("Expected a ArithmeticException");
+        } catch (ArithmeticException e) {
             // This is the expected exception.
+            final String message = e.getMessage();
+            assertTrue(message, message.contains("short"));
+            assertTrue(message, message.contains("byte"));
         }
 
         // Tests subvector in the range [100:2:298].
-        vector = vector.subList(100, 2, 100);
+        vector = vector.subSampling(100, 2, 100);
         assertEquals(100, vector.size());
         for (int i=0; i<100; i++) {
             assertEquals(array[i*2 + 100], vector.shortValue(i));
@@ -195,7 +198,7 @@ public final strictfp class VectorTest extends TestCase {
         Vector v2 = Vector.create(extra, false);
         Vector v3 = v1.concatenate(v2);
         assertEquals("Length of V3 should be the sum of V1 and V2 length.", 60, v3.size());
-        assertEquals("Component type should be the widest of V1 and V2.", Float.class, v3.getElementType());
+        assertEquals("Component type should be the common parent of V1 and V2.", Number.class, v3.getElementType());
         assertEquals("Sample from V1.", Float  .valueOf(200), v3.get(20));
         assertEquals("Sample from V2.", Integer.valueOf(500), v3.get(50));
         for (int i=0; i<60; i++) {
