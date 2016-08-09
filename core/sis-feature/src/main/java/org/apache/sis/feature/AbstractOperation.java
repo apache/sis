@@ -35,6 +35,7 @@ import org.opengis.feature.Attribute;
 import org.opengis.feature.AttributeType;
 import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureAssociation;
+import org.opengis.feature.FeatureOperationException;
 import org.opengis.feature.IdentifiedType;
 import org.opengis.feature.Operation;
 import org.opengis.feature.Property;
@@ -156,9 +157,10 @@ public abstract class AbstractOperation extends AbstractIdentifiedType implement
      * @param  parameters  the parameters to use for executing the operation.
      *                     Can be {@code null} if the operation does not take any parameters.
      * @return the operation result, or {@code null} if this operation does not produce any result.
+     * @throws FeatureOperationException if the operation execution can not complete.
      */
     @Override
-    public abstract Property apply(Feature feature, ParameterValueGroup parameters);
+    public abstract Property apply(Feature feature, ParameterValueGroup parameters) throws FeatureOperationException;
 
     /**
      * Returns the names of feature properties that this operation needs for performing its task.
