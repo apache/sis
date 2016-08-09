@@ -87,6 +87,7 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
      *
      * <ul>
      *   <li>An array of a primitive type, like {@code float[]}.</li>
+     *   <li>A {@code String[]} array (not recommended, but happen with some file formats).</li>
      *   <li>A {@code Vector}, in which case it is returned unchanged.</li>
      *   <li>The {@code null} value, in which case {@code null} is returned.</li>
      * </ul>
@@ -142,10 +143,35 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
                 return new ArrayVector.Byte((byte[]) array);
             }
         }
+        if (array instanceof String[]) {
+            return new ArrayVector.ASCII((String[]) array);
+        }
         if (array == null || array instanceof Vector) {
             return (Vector) array;
         }
         throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalParameterType_2, "array", array.getClass()));
+    }
+
+    /**
+     * Wraps the given {@code float[]} array in a vector that preserve the string representations in base 10.
+     * For example the 0.1 {@code float} value casted to {@code double} normally produces 0.10000000149011612
+     * because of the way IEEE 754 arithmetic represents numbers (in base 2 instead than base 10). But the
+     * vector returned by this method will convert the 0.1 {@code float} value into the 0.1 {@code double} value.
+     * Note that despite the appearance, this is <strong>not</strong> more accurate than the normal cast,
+     * because base 10 is not more privileged in nature than base 2.
+     *
+     * <div class="section">When to use</div>
+     * This method can be used when there is good reasons to think that the {@code float} numbers were parsed
+     * from decimal representations, for example an ASCII file. There is usually no reason to use this method
+     * if the values are the result of some numerical computations.
+     *
+     * @param  array  the object to wrap in a vector, or {@code null}.
+     * @return the given array wrapped in a vector, or {@code null} if the argument was {@code null}.
+     *
+     * @see DecimalFunctions#floatToDouble(float)
+     */
+    public static Vector createForDecimal(final float[] array) {
+        return (array != null) ? new ArrayVector.Decimal(array) : null;
     }
 
     /**
@@ -216,7 +242,7 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
      * @return {@code true} if the value at the given index is {@code NaN}.
      * @throws IndexOutOfBoundsException if the given index is out of bounds.
      */
-    public abstract boolean isNaN(int index) throws IndexOutOfBoundsException;
+    public abstract boolean isNaN(int index);
 
     /**
      * Returns the value at the given index as a {@code double}.
@@ -226,8 +252,9 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
      * @param  index  the index in the [0 … {@linkplain #size() size}-1] range.
      * @return the value at the given index.
      * @throws IndexOutOfBoundsException if the given index is out of bounds.
+     * @throws NumberFormatException if the value is stored as a {@code String} and can not be parsed.
      */
-    public abstract double doubleValue(int index) throws IndexOutOfBoundsException;
+    public abstract double doubleValue(int index);
 
     /**
      * Returns the value at the given index as a {@code float}.
@@ -237,8 +264,9 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
      * @param  index  the index in the [0 … {@linkplain #size() size}-1] range.
      * @return the value at the given index.
      * @throws IndexOutOfBoundsException if the given index is out of bounds.
+     * @throws NumberFormatException if the value is stored as a {@code String} and can not be parsed.
      */
-    public abstract float floatValue(int index) throws IndexOutOfBoundsException;
+    public abstract float floatValue(int index);
 
     /**
      * Returns the value at the given index as a {@code long}.
@@ -251,6 +279,7 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
      * @param  index  the index in the [0 … {@linkplain #size() size}-1] range.
      * @return the value at the given index.
      * @throws IndexOutOfBoundsException if the given index is out of bounds.
+     * @throws NumberFormatException if the value is stored as a {@code String} and can not be parsed.
      * @throws ArithmeticException if the value is too large for the capacity of the {@code long} type.
      */
     public long longValue(final int index) {
@@ -273,6 +302,7 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
      * @param  index  the index in the [0 … {@linkplain #size() size}-1] range.
      * @return the value at the given index.
      * @throws IndexOutOfBoundsException if the given index is out of bounds.
+     * @throws NumberFormatException if the value is stored as a {@code String} and can not be parsed.
      * @throws ArithmeticException if the value is too large for the capacity of the {@code int} type.
      */
     public int intValue(final int index) {
@@ -294,6 +324,7 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
      * @param  index  the index in the [0 … {@linkplain #size() size}-1] range.
      * @return the value at the given index.
      * @throws IndexOutOfBoundsException if the given index is out of bounds.
+     * @throws NumberFormatException if the value is stored as a {@code String} and can not be parsed.
      * @throws ArithmeticException if the value is too large for the capacity of the {@code short} type.
      */
     public short shortValue(final int index) {
@@ -315,6 +346,7 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
      * @param  index  the index in the [0 … {@linkplain #size() size}-1] range.
      * @return the value at the given index.
      * @throws IndexOutOfBoundsException if the given index is out of bounds.
+     * @throws NumberFormatException if the value is stored as a {@code String} and can not be parsed.
      * @throws ArithmeticException if the value is too large for the capacity of the {@code byte} type.
      */
     public byte byteValue(final int index) {
@@ -343,7 +375,7 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
      * @return a string representation of the value at the given index.
      * @throws IndexOutOfBoundsException if the given index is out of bounds.
      */
-    public abstract String stringValue(int index) throws IndexOutOfBoundsException;
+    public abstract String stringValue(int index);
 
     /**
      * Returns the number at the given index, or {@code null} if none.
@@ -353,9 +385,10 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
      * @param  index  the index in the [0 … {@linkplain #size() size}-1] range.
      * @return the value at the given index.
      * @throws IndexOutOfBoundsException if the given index is out of bounds.
+     * @throws NumberFormatException if the value is stored as a {@code String} and can not be parsed.
      */
     @Override
-    public abstract Number get(int index) throws IndexOutOfBoundsException;
+    public abstract Number get(int index);
 
     /**
      * Sets the number at the given index.
@@ -366,9 +399,10 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
      * @return the value previously stored at the given index.
      * @throws IndexOutOfBoundsException if the given index is out of bounds.
      * @throws ClassCastException if the given value can not be stored in this vector.
+     * @throws NumberFormatException if the previous value was stored as a {@code String} and can not be parsed.
      */
     @Override
-    public abstract Number set(int index, Number value) throws IndexOutOfBoundsException, ClassCastException;
+    public abstract Number set(int index, Number value);
 
     /**
      * Returns a view which contain the values of this vector in the given index range.
@@ -382,10 +416,10 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
      * @param  lower  index of the first value to be included in the returned view.
      * @param  upper  index after the last value to be included in the returned view.
      * @return a view of this vector containing values in the given index range.
-     * @throws IndexOutOfBoundsException If an index is outside the [0 … {@linkplain #size() size}-1] range.
+     * @throws IndexOutOfBoundsException if an index is outside the [0 … {@linkplain #size() size}-1] range.
      */
     @Override
-    public final Vector subList(final int lower, final int upper) throws IndexOutOfBoundsException {
+    public final Vector subList(final int lower, final int upper) {
         return subSampling(lower, 1, upper - lower);
     }
 
@@ -409,7 +443,7 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
      *         is outside the [0 … {@linkplain #size() size}-1] range.
      */
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
-    public Vector subSampling(final int first, final int step, final int length) throws IndexOutOfBoundsException {
+    public Vector subSampling(final int first, final int step, final int length) {
         if (step == 1 && first == 0 && length == size()) {
             return this;
         }
@@ -453,13 +487,13 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
         }
 
         /** Returns the index where to look for the value in the enclosing vector. */
-        private int toBacking(final int index) throws IndexOutOfBoundsException {
+        private int toBacking(final int index) {
             ensureValidIndex(length, index);
             return index*step + first;
         }
 
         /** Returns the index where to look for the value in the enclosing vector. */
-        @Override int[] toBacking(final int[] index) throws IndexOutOfBoundsException {
+        @Override int[] toBacking(final int[] index) {
             final int[] ni = new int[index.length];
             for (int j=0; j<ni.length; j++) {
                 ni[j] = toBacking(index[j]);
@@ -530,7 +564,7 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
      * @return the indexes to use. Must be a new array in order to protect it from user changes.
      * @throws IndexOutOfBoundsException if at least one index is out of bounds.
      */
-    int[] toBacking(int[] indices) throws IndexOutOfBoundsException {
+    int[] toBacking(int[] indices) {
         indices = indices.clone();
         final int length = size();
         for (int i : indices) {
@@ -551,7 +585,7 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
      * @return a view of this vector containing values at the given indexes.
      * @throws IndexOutOfBoundsException if at least one index is out of bounds.
      */
-    public Vector pick(int... indices) throws IndexOutOfBoundsException {
+    public Vector pick(int... indices) {
         indices = toBacking(indices);
         final int first, step;
         switch (indices.length) {
@@ -607,7 +641,7 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
         }
 
         /** Returns the indexes where to look for the value in the enclosing vector. */
-        @Override int[] toBacking(final int[] i) throws IndexOutOfBoundsException {
+        @Override int[] toBacking(final int[] i) {
             final int[] ni = new int[i.length];
             for (int j=0; j<ni.length; j++) {
                 ni[j] = indices[i[j]];

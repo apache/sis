@@ -219,6 +219,20 @@ public final strictfp class VectorTest extends TestCase {
     }
 
     /**
+     * Tests a vector backed by an array of strings.
+     * This is not recommended, but happen in GDAL extensions of GeoTIFF.
+     * See {@link org.apache.sis.storage.geotiff.Type#ASCII}.
+     */
+    @Test
+    public void testStringArray() {
+        vector = Vector.create(new String[] {"100", "80", "-20"}, false);
+        assertEquals(  3, vector.size());
+        assertEquals(100, vector.intValue(0));
+        assertEquals( 80, vector.shortValue(1));
+        assertEquals(-20, vector.doubleValue(2), STRICT);
+    }
+
+    /**
      * Tests the {@link Vector#toString()} method on a vector of signed and unsigned bytes.
      */
     @Test
