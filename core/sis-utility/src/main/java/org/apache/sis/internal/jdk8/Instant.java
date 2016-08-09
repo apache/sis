@@ -38,7 +38,7 @@ public final class Instant {
     /**
      * Creates a new instant.
      *
-     * @param millis Number of milliseconds since January 1st, 1970 midnight UTC.
+     * @param  millis  number of milliseconds since January 1st, 1970 midnight UTC.
      */
     private Instant(final long millis) {
         this.millis = millis;
@@ -47,7 +47,7 @@ public final class Instant {
     /**
      * Parses the given text.
      *
-     * @param  text the text to parse.
+     * @param  text  the text to parse.
      * @return the instant.
      * @throws DateTimeException if the text can not be parsed.
      */
@@ -66,7 +66,7 @@ public final class Instant {
     /**
      * Creates a new instant for the given time in milliseconds.
      *
-     * @param  millis number of milliseconds since January 1st, 1970 midnight UTC.
+     * @param  millis  number of milliseconds since January 1st, 1970 midnight UTC.
      * @return the instant for the given time.
      */
     public static Instant ofEpochMilli(final long millis) {
@@ -76,7 +76,7 @@ public final class Instant {
     /**
      * Returns the number of milliseconds since January 1st, 1970 midnight UTC.
      *
-     * @return Number of milliseconds since January 1st, 1970 midnight UTC.
+     * @return number of milliseconds since January 1st, 1970 midnight UTC.
      */
     public long toEpochMilli() {
         return millis;
@@ -85,7 +85,7 @@ public final class Instant {
     /**
      * Not a JDK method - used as a replacement of {@code Date.from(Instant)}.
      *
-     * @return This instant as a legacy date object.
+     * @return this instant as a legacy date object.
      */
     public Date toDate() {
         return new Date(millis);

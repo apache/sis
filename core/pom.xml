@@ -71,7 +71,7 @@
       <id>rmarechal</id>
       <email>remi.marechal@geomatys.com</email>
       <organization>Geomatys</organization>
-      <organizationUrl>http://www.geomatys.com/</organizationUrl>
+      <organizationUrl>http://www.geomatys.com</organizationUrl>
       <timezone>+1</timezone>
       <roles>
         <role>developer</role>
@@ -117,7 +117,7 @@
       <name>Johann Sorel</name>
       <email>johann.sorel@geomatys.com</email>
       <organization>Geomatys</organization>
-      <organizationUrl>http://www.geomatys.com/</organizationUrl>
+      <organizationUrl>http://www.geomatys.com</organizationUrl>
       <timezone>+1</timezone>
       <roles>
         <role>developer</role>

@@ -65,8 +65,28 @@
       <name>Johann Sorel</name>
       <email>johann.sorel@geomatys.com</email>
       <organization>Geomatys</organization>
-      <organizationUrl>http://www.geomatys.com/</organizationUrl>
+      <organizationUrl>http://www.geomatys.com</organizationUrl>
       <timezone>+1</timezone>
+      <roles>
+        <role>developer</role>
+      </roles>
+    </contributor>
+    <contributor>
+      <name>Thi Phuong Hao Nguyen</name>
+      <email>nguyenthiphuonghao243@gmail.com</email>
+      <organization>VNSC</organization>
+      <organizationUrl>http://vnsc.org.vn</organizationUrl>
+      <timezone>+7</timezone>
+      <roles>
+        <role>developer</role>
+      </roles>
+    </contributor>
+    <contributor>
+      <name>Minh Chinh Vu</name>
+      <email>chinhvm.uet.1995@gmail.com</email>
+      <organization>VNSC</organization>
+      <organizationUrl>http://vnsc.org.vn</organizationUrl>
+      <timezone>+7</timezone>
       <roles>
         <role>developer</role>
       </roles>
@@ -138,6 +158,7 @@
     <module>sis-storage</module>
     <module>sis-shapefile</module>
     <module>sis-netcdf</module>
+    <module>sis-geotiff</module>
   </modules>
 
 </project>

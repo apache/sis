@@ -24,6 +24,7 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.metadata.ModifiableMetadata;
@@ -68,7 +69,7 @@ public class NetcdfStore extends DataStore {
             throw new DataStoreException(e);
         }
         if (decoder == null) {
-            throw new DataStoreException(Errors.format(Errors.Keys.IllegalInputTypeForReader_2,
+            throw new DataStoreContentException(Errors.format(Errors.Keys.IllegalInputTypeForReader_2,
                     "NetCDF", Classes.getClass(storage.getStorage())));
         }
     }

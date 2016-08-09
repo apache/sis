@@ -75,7 +75,7 @@ import org.opengis.feature.Operation;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5
- * @version 0.6
+ * @version 0.8
  * @module
  */
 public class FeatureFormat extends TabularFormat<Object> {
@@ -194,9 +194,20 @@ public class FeatureFormat extends TabularFormat<Object> {
             }
         }
         /*
-         * Format the column header.
+         * Format the feature type name. In the case of feature type, format also the names of super-type
+         * after the UML symbol for inheritance (an arrow with white head). We do not use the " : " ASCII
+         * character for avoiding confusion with the ":" separator in namespaces. After the feature (type)
+         * name, format the column header: property name, type, cardinality and (default) value.
          */
-        toAppendTo.append(toString(featureType.getName())).append(getLineSeparator());
+        toAppendTo.append(toString(featureType.getName()));
+        if (feature == null) {
+            String separator = " ⇾ ";   // UML symbol for inheritance.
+            for (final FeatureType parent : featureType.getSuperTypes()) {
+                toAppendTo.append(separator).append(toString(parent.getName()));
+                separator = ", ";
+            }
+        }
+        toAppendTo.append(getLineSeparator());
         final Vocabulary resources = Vocabulary.getResources(displayLocale);
         final TableAppender table = new TableAppender(toAppendTo, columnSeparator);
         table.setMultiLinesCells(true);

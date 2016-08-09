@@ -23,8 +23,6 @@ import org.apache.sis.xml.IdentifiedObject;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.metadata.InvalidMetadataException;
-import org.apache.sis.internal.jaxb.PrimitiveTypeProperties;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.util.Utilities;
 
@@ -34,7 +32,7 @@ import org.apache.sis.internal.util.Utilities;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.7
+ * @version 0.8
  * @module
  */
 public final class MetadataUtilities extends Static {
@@ -64,28 +62,6 @@ public final class MetadataUtilities extends Static {
      */
     public static Date toDate(final long value) {
         return (value != Long.MIN_VALUE) ? new Date(value) : null;
-    }
-
-    /**
-     * Makes sure that the given inclusion is non-nil, then returns its value.
-     * If the given inclusion is {@code null}, then the default value is {@code true}.
-     *
-     * @param  value The {@link org.opengis.metadata.extent.GeographicBoundingBox#getInclusion()} value.
-     * @return The given value as a primitive type.
-     * @throws InvalidMetadataException if the given value is nil.
-     */
-    @SuppressWarnings("NumberEquality")
-    public static boolean getInclusion(final Boolean value) throws InvalidMetadataException {
-        if (value == null) {
-            return true;
-        }
-        final boolean p = value;
-        // (value == Boolean.FALSE) is an optimization for a common case avoiding PrimitiveTypeProperties check.
-        // DO NOT REPLACE BY 'equals' OR 'booleanValue()' - the exact reference value matter.
-        if (p || (value == Boolean.FALSE) || !(PrimitiveTypeProperties.property(value) instanceof NilReason)) {
-            return p;
-        }
-        throw new InvalidMetadataException(Errors.format(Errors.Keys.MissingValueForProperty_1, "inclusion"));
     }
 
     /**

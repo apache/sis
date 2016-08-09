@@ -68,7 +68,7 @@ public class BackingStoreException extends RuntimeException {
     /**
      * Constructs a new exception with the specified detail message.
      *
-     * @param message The detail message, saved for later retrieval by the {@link #getMessage()} method.
+     * @param message  the detail message, saved for later retrieval by the {@link #getMessage()} method.
      */
     public BackingStoreException(final String message) {
         super(message);
@@ -77,7 +77,7 @@ public class BackingStoreException extends RuntimeException {
     /**
      * Constructs a new exception with the specified cause.
      *
-     * @param cause The cause, saved for later retrieval by the {@link #getCause()} method.
+     * @param cause  the cause, saved for later retrieval by the {@link #getCause()} method.
      */
     public BackingStoreException(final Throwable cause) {
         super(cause);
@@ -86,8 +86,8 @@ public class BackingStoreException extends RuntimeException {
     /**
      * Constructs a new exception with the specified detail message and cause.
      *
-     * @param message The detail message, saved for later retrieval by the {@link #getMessage()} method.
-     * @param cause The cause, saved for later retrieval by the {@link #getCause()} method.
+     * @param message  the detail message, saved for later retrieval by the {@link #getMessage()} method.
+     * @param cause    the cause, saved for later retrieval by the {@link #getCause()} method.
      */
     public BackingStoreException(final String message, final Throwable cause) {
         super(message, cause);
@@ -118,10 +118,10 @@ public class BackingStoreException extends RuntimeException {
      *     }
      * }
      *
-     * @param  <E>  The type of the exception to unwrap.
-     * @param  type The type of the exception to unwrap.
-     * @return The cause as an exception of the given type (never {@code null}).
-     * @throws RuntimeException If the cause is an instance of {@code RuntimeException},
+     * @param  <E>   the type of the exception to unwrap.
+     * @param  type  the type of the exception to unwrap.
+     * @return the cause as an exception of the given type (never {@code null}).
+     * @throws RuntimeException if the cause is an instance of {@code RuntimeException},
      *         in which case that instance is re-thrown.
      * @throws BackingStoreException if the cause is neither the given type or an instance
      *         of {@link RuntimeException}, in which case {@code this} exception is re-thrown.

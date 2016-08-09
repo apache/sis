@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import javax.measure.unit.NonSI;
 import org.opengis.util.FactoryException;
+import org.opengis.geometry.Envelope;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.cs.EllipsoidalCS;
@@ -42,13 +43,19 @@ import org.opengis.referencing.crs.EngineeringCRS;
 import org.opengis.referencing.operation.OperationNotFoundException;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.extent.Extent;
+import org.opengis.metadata.extent.BoundingPolygon;
 import org.opengis.metadata.extent.GeographicBoundingBox;
+import org.opengis.metadata.extent.GeographicExtent;
 import org.opengis.referencing.operation.CoordinateOperation;
+import org.opengis.referencing.operation.TransformException;
+import org.apache.sis.geometry.Envelopes;
+import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.internal.metadata.AxisDirections;
 import org.apache.sis.internal.referencing.PositionalAccuracyConstant;
 import org.apache.sis.internal.referencing.CoordinateOperations;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.system.DefaultFactories;
+import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.referencing.cs.DefaultVerticalCS;
 import org.apache.sis.referencing.cs.DefaultEllipsoidalCS;
 import org.apache.sis.referencing.crs.DefaultGeographicCRS;
@@ -61,11 +68,15 @@ import org.apache.sis.referencing.factory.UnavailableFactoryException;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.Static;
 
 import static java.util.Collections.singletonMap;
+
+// Branch-dependent imports
+import org.opengis.geometry.Geometry;
 
 
 /**
@@ -113,7 +124,7 @@ import static java.util.Collections.singletonMap;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.3
- * @version 0.7
+ * @version 0.8
  * @module
  */
 public final class CRS extends Static {
@@ -166,9 +177,9 @@ public final class CRS extends Static {
      * Note that the {@link IdentifiedObjects#lookupURN(IdentifiedObject, Citation)}
      * method can be seen as a converse of this method.
      *
-     * @param  code The authority code.
-     * @return The Coordinate Reference System for the given authority code.
-     * @throws NoSuchAuthorityCodeException If there is no known CRS associated to the given code.
+     * @param  code  the authority code.
+     * @return the Coordinate Reference System for the given authority code.
+     * @throws NoSuchAuthorityCodeException if there is no known CRS associated to the given code.
      * @throws FactoryException if the CRS creation failed for an other reason.
      *
      * @see #getAuthorityFactory(String)
@@ -228,8 +239,8 @@ public final class CRS extends Static {
      * Applications which need to parse a large amount of WKT strings should consider to use
      * the {@link org.apache.sis.io.wkt.WKTFormat} class instead than this method.
      *
-     * @param  text Coordinate system encoded in Well-Known Text format (version 1 or 2).
-     * @return The parsed Coordinate Reference System.
+     * @param  text  coordinate system encoded in Well-Known Text format (version 1 or 2).
+     * @return the parsed Coordinate Reference System.
      * @throws FactoryException if the given WKT can not be parsed.
      *
      * @see org.apache.sis.io.wkt
@@ -249,8 +260,8 @@ public final class CRS extends Static {
      * For reading XML documents from readers or input streams,
      * see static methods in the {@link org.apache.sis.xml.XML} class.
      *
-     * @param  xml Coordinate reference system encoded in XML format.
-     * @return The unmarshalled Coordinate Reference System.
+     * @param  xml  coordinate reference system encoded in XML format.
+     * @return the unmarshalled Coordinate Reference System.
      * @throws FactoryException if the object creation failed.
      *
      * @see org.apache.sis.xml.XML#unmarshal(String)
@@ -288,9 +299,9 @@ public final class CRS extends Static {
      * transform. If there is no known operation between the given pair of CRS, then this method throws an
      * {@link OperationNotFoundException}.
      *
-     * @param  sourceCRS      the CRS of source coordinates.
-     * @param  targetCRS      the CRS of target coordinates.
-     * @param  areaOfInterest the area of interest, or {@code null} if none.
+     * @param  sourceCRS       the CRS of source coordinates.
+     * @param  targetCRS       the CRS of target coordinates.
+     * @param  areaOfInterest  the area of interest, or {@code null} if none.
      * @return the mathematical operation from {@code sourceCRS} to {@code targetCRS}.
      * @throws OperationNotFoundException if no operation was found between the given pair of CRS.
      * @throws FactoryException if the operation can not be created for another reason.
@@ -338,8 +349,8 @@ public final class CRS extends Static {
      *
      * See {@link AbstractCoordinateOperation#getLinearAccuracy()} for more details on the above heuristic rules.
      *
-     * @param  operation The coordinate operation for which to get the accuracy estimation, or {@code null}.
-     * @return The accuracy estimation (always in meters), or NaN if unknown.
+     * @param  operation  the coordinate operation for which to get the accuracy estimation, or {@code null}.
+     * @return the accuracy estimation (always in meters), or NaN if unknown.
      *
      * @see #findOperation(CoordinateReferenceSystem, CoordinateReferenceSystem, GeographicBoundingBox)
      *
@@ -362,8 +373,8 @@ public final class CRS extends Static {
      * {@linkplain org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox#add(GeographicBoundingBox) added}
      * together.
      *
-     * @param  operation The coordinate operation for which to get the domain of validity, or {@code null}.
-     * @return The geographic area where the operation is valid, or {@code null} if unspecified.
+     * @param  operation  the coordinate operation for which to get the domain of validity, or {@code null}.
+     * @return the geographic area where the operation is valid, or {@code null} if unspecified.
      *
      * @see #findOperation(CoordinateReferenceSystem, CoordinateReferenceSystem, GeographicBoundingBox)
      * @see Extents#getGeographicBoundingBox(Extent)
@@ -383,16 +394,105 @@ public final class CRS extends Static {
      * {@linkplain org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox#add(GeographicBoundingBox) added}
      * together.
      *
-     * @param  crs The coordinate reference system for which to get the domain of validity, or {@code null}.
-     * @return The geographic area where the coordinate reference system is valid, or {@code null} if unspecified.
+     * @param  crs  the coordinate reference system for which to get the domain of validity, or {@code null}.
+     * @return the geographic area where the coordinate reference system is valid, or {@code null} if unspecified.
      *
-     * @see #getEnvelope(CoordinateReferenceSystem)
+     * @see #getDomainOfValidity(CoordinateReferenceSystem)
      * @see Extents#getGeographicBoundingBox(Extent)
      *
      * @category information
      */
     public static GeographicBoundingBox getGeographicBoundingBox(final CoordinateReferenceSystem crs) {
         return (crs != null) ? Extents.getGeographicBoundingBox(crs.getDomainOfValidity()) : null;
+    }
+
+    /**
+     * Returns the domain of validity of the specified coordinate reference system, or {@code null} if unknown.
+     * If non-null, then the returned envelope will use the same coordinate reference system them the given CRS
+     * argument.
+     *
+     * <p>This method looks in two places:</p>
+     * <ol>
+     *   <li>First, it checks the {@linkplain org.apache.sis.referencing.crs.AbstractCRS#getDomainOfValidity()
+     *       domain of validity} associated with the given CRS. Only geographic extents that are instances of
+     *       {@link BoundingPolygon} associated to the given CRS are taken in account for this first step.</li>
+     *   <li>If the above step did not found found any bounding polygon, then the
+     *       {@linkplain #getGeographicBoundingBox(CoordinateReferenceSystem) geographic bounding boxes}
+     *       are used as a fallback and tranformed to the given CRS.</li>
+     * </ol>
+     *
+     * @param  crs  the coordinate reference system, or {@code null}.
+     * @return the envelope with coordinates in the given CRS, or {@code null} if none.
+     *
+     * @see #getGeographicBoundingBox(CoordinateReferenceSystem)
+     *
+     * @category information
+     * @since 0.8
+     */
+    public static Envelope getDomainOfValidity(final CoordinateReferenceSystem crs) {
+        Envelope envelope = null;
+        GeneralEnvelope merged = null;
+        if (crs != null) {
+            final Extent domainOfValidity = crs.getDomainOfValidity();
+            if (domainOfValidity != null) {
+                for (final GeographicExtent extent : domainOfValidity.getGeographicElements()) {
+                    if (extent instanceof BoundingPolygon && !Boolean.FALSE.equals(extent.getInclusion())) {
+                        for (final Geometry geometry : ((BoundingPolygon) extent).getPolygons()) {
+                            final Envelope candidate = geometry.getEnvelope();
+                            if (candidate != null) {
+                                final CoordinateReferenceSystem sourceCRS = candidate.getCoordinateReferenceSystem();
+                                if (sourceCRS == null || Utilities.equalsIgnoreMetadata(sourceCRS, crs)) {
+                                    if (envelope == null) {
+                                        envelope = candidate;
+                                    } else {
+                                        if (merged == null) {
+                                            envelope = merged = new GeneralEnvelope(envelope);
+                                        }
+                                        merged.add(envelope);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        /*
+         * If no envelope was found, uses the geographic bounding box as a fallback. We will
+         * need to transform it from WGS84 to the supplied CRS. This step was not required in
+         * the previous block because the later selected only envelopes in the right CRS.
+         */
+        if (envelope == null) {
+            final GeographicBoundingBox bounds = getGeographicBoundingBox(crs);
+            if (bounds != null && !Boolean.FALSE.equals(bounds.getInclusion())) {
+                /*
+                 * We do not assign WGS84 unconditionally to the geographic bounding box, because
+                 * it is not defined to be on a particular datum; it is only approximative bounds.
+                 * We try to get the GeographicCRS from the user-supplied CRS in order to reduce
+                 * the amount of transformation needed.
+                 */
+                final SingleCRS targetCRS = getHorizontalComponent(crs);
+                final GeographicCRS sourceCRS = ReferencingUtilities.toNormalizedGeographicCRS(targetCRS);
+                if (sourceCRS != null) {
+                    envelope = merged = new GeneralEnvelope(bounds);
+                    merged.translate(-getGreenwichLongitude(sourceCRS), 0);
+                    merged.setCoordinateReferenceSystem(sourceCRS);
+                    try {
+                        envelope = Envelopes.transform(envelope, targetCRS);
+                    } catch (TransformException exception) {
+                        /*
+                         * The envelope is probably outside the range of validity for this CRS.
+                         * It should not occurs, since the envelope is supposed to describe the
+                         * CRS area of validity. Logs a warning and returns null, since it is a
+                         * legal return value according this method contract.
+                         */
+                        unexpectedException("getEnvelope", exception);
+                        envelope = null;
+                    }
+                }
+            }
+        }
+        return envelope;
     }
 
     /**
@@ -414,7 +514,7 @@ public final class CRS extends Static {
      *       Conversely, a future SIS versions may impose more conditions on <code>EngineeringCRS</code>.
      *       See <a href="http://issues.apache.org/jira/browse/SIS-161">SIS-161</a>.
      *
-     * @param  crs The coordinate reference system, or {@code null}.
+     * @param  crs  the coordinate reference system, or {@code null}.
      * @return {@code true} if the given CRS is non-null and likely horizontal, or {@code false} otherwise.
      *
      * @see #getHorizontalComponent(CoordinateReferenceSystem)
@@ -448,8 +548,8 @@ public final class CRS extends Static {
      * <p>In the special case where a three-dimensional geographic CRS is found, this method will create a
      * two-dimensional geographic CRS without the vertical axis.</p>
      *
-     * @param  crs The coordinate reference system, or {@code null}.
-     * @return The first horizontal CRS, or {@code null} if none.
+     * @param  crs  the coordinate reference system, or {@code null}.
+     * @return the first horizontal CRS, or {@code null} if none.
      *
      * @category information
      */
@@ -511,10 +611,10 @@ public final class CRS extends Static {
      * <em>in last resort</em>, only if it can not find an existing {@code VerticalCRS} instance.
      * <strong>Note that this is not a valid CRS according ISO 19111</strong> — use with care.</p>
      *
-     * @param  crs The coordinate reference system, or {@code null}.
+     * @param  crs  the coordinate reference system, or {@code null}.
      * @param  allowCreateEllipsoidal {@code true} for allowing the creation of orphan CRS for ellipsoidal heights.
      *         The recommended value is {@code false}.
-     * @return The first vertical CRS, or {@code null} if none.
+     * @return the first vertical CRS, or {@code null} if none.
      *
      * @category information
      */
@@ -560,8 +660,8 @@ public final class CRS extends Static {
      * Otherwise if the given CRS is compound, then this method searches for the first temporal component
      * in the order of the {@linkplain #getSingleComponents(CoordinateReferenceSystem) single components list}.
      *
-     * @param  crs The coordinate reference system, or {@code null}.
-     * @return The first temporal CRS, or {@code null} if none.
+     * @param  crs  the coordinate reference system, or {@code null}.
+     * @return the first temporal CRS, or {@code null} if none.
      *
      * @category information
      */
@@ -619,8 +719,8 @@ public final class CRS extends Static {
      * Note that such flat lists are the only one allowed by ISO/OGC standards for compound CRS.
      * The hierarchical structure is an Apache SIS flexibility.</div>
      *
-     * @param  crs The coordinate reference system, or {@code null}.
-     * @return The single coordinate reference systems, or an empty list if the given CRS is {@code null}.
+     * @param  crs  the coordinate reference system, or {@code null}.
+     * @return the single coordinate reference systems, or an empty list if the given CRS is {@code null}.
      * @throws ClassCastException if a CRS is neither a {@link SingleCRS} or a {@link CompoundCRS}.
      *
      * @see DefaultCompoundCRS#getSingleComponents()
@@ -666,12 +766,12 @@ public final class CRS extends Static {
      * This method does <strong>not</strong> attempt to build new CRS from the components.
      * For example it does not attempt to create a 3D geographic CRS from a 2D one + a vertical component.
      *
-     * @param  crs   The coordinate reference system to decompose, or {@code null}.
-     * @param  lower The first dimension to keep, inclusive.
-     * @param  upper The last  dimension to keep, exclusive.
-     * @return The sub-coordinate system, or {@code null} if the given {@code crs} was {@code null}
+     * @param  crs    the coordinate reference system to decompose, or {@code null}.
+     * @param  lower  the first dimension to keep, inclusive.
+     * @param  upper  the last  dimension to keep, exclusive.
+     * @return the sub-coordinate system, or {@code null} if the given {@code crs} was {@code null}
      *         or can not be decomposed for dimensions in the [{@code lower} … {@code upper}] range.
-     * @throws IndexOutOfBoundsException If the given index are out of bounds.
+     * @throws IndexOutOfBoundsException if the given index are out of bounds.
      *
      * @since 0.5
      *
@@ -706,8 +806,8 @@ check:  while (lower != 0 || upper != dimension) {
      * Returns the Greenwich longitude of the prime meridian of the given CRS in degrees.
      * If the prime meridian uses an other unit than degrees, then the value will be converted.
      *
-     * @param  crs The coordinate reference system from which to get the prime meridian.
-     * @return The Greenwich longitude (in degrees) of the prime meridian of the given CRS.
+     * @param  crs  the coordinate reference system from which to get the prime meridian.
+     * @return the Greenwich longitude (in degrees) of the prime meridian of the given CRS.
      *
      * @since 0.5
      *
@@ -738,10 +838,10 @@ check:  while (lower != 0 || upper != dimension) {
      *     META-INF/services/org.opengis.referencing.crs.CRSAuthorityFactory
      * }
      *
-     * @param  authority The authority of the desired factory (typically {@code "EPSG"} or {@code "OGC"}),
+     * @param  authority  the authority of the desired factory (typically {@code "EPSG"} or {@code "OGC"}),
      *         or {@code null} for the {@link org.apache.sis.referencing.factory.MultiAuthoritiesFactory}
      *         instance that manage all factories.
-     * @return The system-wide authority factory used by SIS for the given authority.
+     * @return the system-wide authority factory used by SIS for the given authority.
      * @throws FactoryException if no factory can be returned for the given authority.
      *
      * @see #forCode(String)
@@ -754,5 +854,13 @@ check:  while (lower != 0 || upper != dimension) {
             return AuthorityFactories.ALL;
         }
         return AuthorityFactories.ALL.getAuthorityFactory(CRSAuthorityFactory.class, authority, null);
+    }
+
+    /**
+     * Invoked when an unexpected exception occurred. Those exceptions must be non-fatal, i.e. the caller
+     * <strong>must</strong> have a reasonable fallback (otherwise it should propagate the exception).
+     */
+    private static void unexpectedException(final String methodName, final Exception exception) {
+        Logging.unexpectedException(Logging.getLogger(Loggers.REFERENCING), CRS.class, methodName, exception);
     }
 }

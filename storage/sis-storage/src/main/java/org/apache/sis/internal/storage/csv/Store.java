@@ -29,6 +29,7 @@ import java.io.BufferedReader;
 import java.io.LineNumberReader;
 import java.io.IOException;
 import java.net.URI;
+import java.nio.charset.Charset;
 import javax.measure.unit.Unit;
 import javax.measure.unit.SI;
 import javax.measure.unit.NonSI;
@@ -43,11 +44,12 @@ import org.apache.sis.feature.DefaultFeatureType;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.internal.referencing.GeodeticObjectBuilder;
-import org.apache.sis.internal.storage.MetadataHelper;
+import org.apache.sis.internal.storage.MetadataBuilder;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.CharSequences;
@@ -63,6 +65,7 @@ import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
 import org.opengis.feature.PropertyType;
 import org.opengis.feature.AttributeType;
+import org.apache.sis.setup.OptionKey;
 
 
 /**
@@ -71,7 +74,7 @@ import org.opengis.feature.AttributeType;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.7
- * @version 0.7
+ * @version 0.8
  * @module
  */
 public final class Store extends DataStore {
@@ -118,9 +121,14 @@ public final class Store extends DataStore {
     private BufferedReader source;
 
     /**
-     * The metadata object. Initialized to a minimal amount of information, then completed when first needed.
+     * The character encoding, or {@code null} if unspecified (in which case the platform default is assumed).
      */
-    private final DefaultMetadata metadata;
+    private final Charset encoding;
+
+    /**
+     * The metadata object, or {@code null} if not yet created.
+     */
+    private transient DefaultMetadata metadata;
 
     /**
      * The three- or four-dimensional envelope together with the CRS.
@@ -197,14 +205,14 @@ public final class Store extends DataStore {
                 switch (keyword.toLowerCase(Locale.US)) {
                     case "@stboundedby": {
                         if (envelope != null) {
-                            throw new DataStoreException(duplicated("@stboundedby"));
+                            throw new DataStoreContentException(duplicated("@stboundedby"));
                         }
                         envelope = parseEnvelope(elements);
                         break;
                     }
                     case "@columns": {
                         if (featureType != null) {
-                            throw new DataStoreException(duplicated("@columns"));
+                            throw new DataStoreContentException(duplicated("@columns"));
                         }
                         featureType = parseFeatureType(elements);
                         if (foliation == null) {
@@ -214,7 +222,7 @@ public final class Store extends DataStore {
                     }
                     case "@foliation": {
                         if (foliation != null) {
-                            throw new DataStoreException(duplicated("@foliation"));
+                            throw new DataStoreContentException(duplicated("@foliation"));
                         }
                         foliation = parseFoliation(elements);
                         break;
@@ -234,10 +242,10 @@ public final class Store extends DataStore {
         } catch (IOException | FactoryException | IllegalArgumentException | DateTimeException e) {
             throw new DataStoreException(errors().getString(Errors.Keys.CanNotParseFile_2, "CSV", name), e);
         }
+        this.encoding    = connector.getOption(OptionKey.ENCODING);
         this.envelope    = envelope;
         this.featureType = featureType;
         this.foliation   = foliation;
-        this.metadata    = MetadataHelper.createForTextFile(connector);
         this.features    = new ArrayList<>();
     }
 
@@ -274,7 +282,7 @@ public final class Store extends DataStore {
                         case "hour":     timeUnit = NonSI.HOUR;   break;
                         case "day":      timeUnit = NonSI.DAY;    break;
                         case "absolute": isTimeAbsolute = true;   break;
-                        default: throw new DataStoreException(errors().getString(Errors.Keys.UnknownUnit_1, unit));
+                        default: throw new DataStoreContentException(errors().getString(Errors.Keys.UnknownUnit_1, unit));
                     }
                     // Fall through
             case 7: endTime     = Instant      .parse(       elements.get(6));
@@ -286,7 +294,7 @@ public final class Store extends DataStore {
                         case "":   // Default to 2D.
                         case "2D": break;
                         case "3D": is3D = true; break;
-                        default: throw new DataStoreException(errors().getString(
+                        default: throw new DataStoreContentException(errors().getString(
                                         Errors.Keys.IllegalCoordinateSystem_1, dimension));
                     }
                     // Fall through
@@ -337,7 +345,7 @@ public final class Store extends DataStore {
                 if ((dim = lowerCorner.length) != spatialDimension ||
                     (dim = upperCorner.length) != spatialDimension)
                 {
-                    throw new DataStoreException(errors().getString(
+                    throw new DataStoreContentException(errors().getString(
                             Errors.Keys.MismatchedDimension_2, dim, spatialDimension));
                 }
                 for (int i=0; i<spatialDimension; i++) {
@@ -381,7 +389,7 @@ public final class Store extends DataStore {
                         case "string":   type = String .class; break;
                         case "datetime": type = Instant.class; break;
                         case "anyuri":   type = URI    .class; break;
-                        default: throw new DataStoreException(errors().getString(Errors.Keys.UnknownType_1, tn));
+                        default: throw new DataStoreContentException(errors().getString(Errors.Keys.UnknownType_1, tn));
                     }
                 }
             }
@@ -455,13 +463,15 @@ public final class Store extends DataStore {
      */
     @Override
     public Metadata getMetadata() throws DataStoreException {
-        if (metadata.isModifiable()) {
+        if (metadata == null) {
+            final MetadataBuilder builder = new MetadataBuilder();
+            builder.add(encoding);
             try {
-                MetadataHelper.add(metadata, envelope);
+                builder.add(envelope);
             } catch (TransformException e) {
-                throw new DataStoreException(errors().getString(Errors.Keys.CanNotParseFile_2, "CSV", name), e);
+                throw new DataStoreContentException(errors().getString(Errors.Keys.CanNotParseFile_2, "CSV", name), e);
             }
-            metadata.freeze();
+            metadata = builder.result();
         }
         return metadata;
     }
@@ -514,7 +524,7 @@ public final class Store extends DataStore {
                          *   Column 1 is the start time.
                          *   Column 2 is the end time.
                          *   Column 3 is the trajectory.
-                         *   Columns 4+ are custum attributes.
+                         *   Columns 4+ are custom attributes.
                          *
                          * TODO: we should replace that switch case by custom ObjectConverter.
                          */

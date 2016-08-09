@@ -82,10 +82,10 @@ final class Validator {
      * We are not strictly forbidden to use the same identifier for both the quality measurement than the measurement
      * itself. However strictly speaking, maybe we should use a different scope.</div>
      *
-     * @param  report      Where to add the result, or {@code null} if not yet created.
-     * @param  type        Description of the property for which a constraint violation has been found.
-     * @param  explanation Explanation of the constraint violation.
-     * @return The {@code report}, or a new report if {@code report} was null.
+     * @param  report       where to add the result, or {@code null} if not yet created.
+     * @param  type         description of the property for which a constraint violation has been found.
+     * @param  explanation  explanation of the constraint violation.
+     * @return the {@code report}, or a new report if {@code report} was null.
      */
     private AbstractElement addViolationReport(AbstractElement report,
             final PropertyType type, final InternationalString explanation)
@@ -128,10 +128,10 @@ final class Validator {
             } else if (property instanceof AbstractAssociation) {
                 pq = ((AbstractAssociation) property).quality();
             } else if (property instanceof Attribute<?>) {
-                validateAny(((Attribute<?>) property).getType(), ((Attribute<?>) property).getValues());
+                validate(((Attribute<?>) property).getType(), ((Attribute<?>) property).getValues());
                 continue;
             } else if (property instanceof FeatureAssociation) {
-                validateAny(((FeatureAssociation) property).getRole(), ((FeatureAssociation) property).getValues());
+                validate(((FeatureAssociation) property).getRole(), ((FeatureAssociation) property).getValues());
                 continue;
             } else {
                 continue;
@@ -202,7 +202,7 @@ final class Validator {
     /**
      * Verifies if the given value mets the cardinality constraint.
      *
-     * @param report Where to add the result, or {@code null} if not yet created.
+     * @param report  where to add the result, or {@code null} if not yet created.
      */
     private void verifyCardinality(final AbstractElement report, final PropertyType type,
             final int minimumOccurs, final int maximumOccurs, final int count)

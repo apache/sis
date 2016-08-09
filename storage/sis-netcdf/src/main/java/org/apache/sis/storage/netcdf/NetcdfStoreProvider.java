@@ -120,7 +120,7 @@ public class NetcdfStoreProvider extends DataStoreProvider {
      * only that there appears to be a reasonable chance of success based on a brief inspection of the
      * {@linkplain StorageConnector#getStorage() storage object} or contents.
      *
-     * @param  storage Information about the storage (URL, stream, {@link ucar.nc2.NetcdfFile} instance, <i>etc</i>).
+     * @param  storage  information about the storage (URL, stream, {@link ucar.nc2.NetcdfFile} instance, <i>etc</i>).
      * @return {@code SUPPORTED} if the given storage seems to be usable by the {@code NetcdfStore} instances.
      * @throws DataStoreException if an I/O error occurred.
      */
@@ -174,7 +174,7 @@ public class NetcdfStoreProvider extends DataStoreProvider {
                         Logging.recoverableException(Logging.getLogger(Modules.NETCDF), netcdfFileClass, "canOpen", cause);
                         return ProbeResult.UNSUPPORTED_STORAGE;
                     }
-                    throw new DataStoreException(e); // The cause may be IOException.
+                    throw new DataStoreException(e);                        // The cause may be IOException.
                 }
             } else {
                 /*
@@ -203,8 +203,8 @@ public class NetcdfStoreProvider extends DataStoreProvider {
     /**
      * Returns a {@link NetcdfStore} implementation associated with this provider.
      *
-     * @param  storage Information about the storage (URL, stream, {@link ucar.nc2.NetcdfFile} instance, <i>etc</i>).
-     * @return A data store implementation associated with this provider for the given storage.
+     * @param  storage information about the storage (URL, stream, {@link ucar.nc2.NetcdfFile} instance, <i>etc</i>).
+     * @return a data store implementation associated with this provider for the given storage.
      * @throws DataStoreException if an error occurred while creating the data store instance.
      */
     @Override
@@ -216,9 +216,9 @@ public class NetcdfStoreProvider extends DataStoreProvider {
      * Creates a decoder for the given input. This method invokes
      * {@link StorageConnector#closeAllExcept(Object)} after the decoder has been created.
      *
-     * @param  listeners Where to send the warnings.
-     * @param  storage Information about the input (file, input stream, <i>etc.</i>)
-     * @return The decoder for the given input, or {@code null} if the input type is not recognized.
+     * @param  listeners  where to send the warnings.
+     * @param  storage    information about the input (file, input stream, <i>etc.</i>)
+     * @return the decoder for the given input, or {@code null} if the input type is not recognized.
      * @throws IOException if an error occurred while opening the NetCDF file.
      * @throws DataStoreException if a logical error (other than I/O) occurred.
      */
@@ -253,11 +253,11 @@ public class NetcdfStoreProvider extends DataStoreProvider {
      * not create our embedded NetCDF decoder. This method uses reflection for creating the wrapper, in order
      * to keep the UCAR dependency optional.
      *
-     * @param  listeners Where to send the warnings.
-     * @param  input  The NetCDF file object of filename string from which to read data.
-     * @param  isUCAR {@code true} if {@code input} is an instance of the UCAR {@link ucar.nc2.NetcdfFile} object,
-     *                or {@code false} if it is the filename as a {@code String}.
-     * @return The {@link DecoderWrapper} instance for the given input, or {@code null} if the input type is not recognized.
+     * @param  listeners  where to send the warnings.
+     * @param  input      the NetCDF file object of filename string from which to read data.
+     * @param  isUCAR     {@code true} if {@code input} is an instance of the UCAR {@link ucar.nc2.NetcdfFile} object,
+     *                    or {@code false} if it is the filename as a {@code String}.
+     * @return the {@link DecoderWrapper} instance for the given input, or {@code null} if the input type is not recognized.
      * @throws IOException if an error occurred while opening the NetCDF file.
      * @throws DataStoreException if a logical error (other than I/O) occurred.
      */
@@ -327,7 +327,7 @@ public class NetcdfStoreProvider extends DataStoreProvider {
                     parameterTypes[1] = String.class;
                     createFromPath = wrapper.getConstructor(parameterTypes);
                 } catch (ReflectiveOperationException e) {
-                    throw new AssertionError(e); // Should never happen (shall be verified by the JUnit tests).
+                    throw new AssertionError(e);        // Should never happen (shall be verified by the JUnit tests).
                 }
             }
         }
