@@ -45,6 +45,55 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
     }
 
     /**
+     * Creates a new instance.
+     *
+     * @throws IllegalArgumentException if the type of the given object is not recognized by the method.
+     */
+    static Vector newInstance(final Object array, final boolean isUnsigned) throws IllegalArgumentException {
+        if (array instanceof double[]) {
+            return new ArrayVector.Double((double[]) array);
+        }
+        if (array instanceof float[]) {
+            return new ArrayVector.Float((float[]) array);
+        }
+        if (array instanceof long[]) {
+            if (isUnsigned) {
+                return new ArrayVector.UnsignedLong((long[]) array);
+            } else {
+                return new ArrayVector.Long((long[]) array);
+            }
+        }
+        if (array instanceof int[]) {
+            if (isUnsigned) {
+                return new ArrayVector.UnsignedInteger((int[]) array);
+            } else {
+                return new ArrayVector.Integer((int[]) array);
+            }
+        }
+        if (array instanceof short[]) {
+            if (isUnsigned) {
+                return new ArrayVector.UnsignedShort((short[]) array);
+            } else {
+                return new ArrayVector.Short((short[]) array);
+            }
+        }
+        if (array instanceof byte[]) {
+            if (isUnsigned) {
+                return new ArrayVector.UnsignedByte((byte[]) array);
+            } else {
+                return new ArrayVector.Byte((byte[]) array);
+            }
+        }
+        if (array instanceof Number[]) {
+            return new ArrayVector.Raw((Number[]) array);
+        }
+        if (array instanceof String[]) {
+            return new ArrayVector.ASCII((String[]) array);
+        }
+        throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalParameterType_2, "array", array.getClass()));
+    }
+
+    /**
      * Default implementation for the convenience of direct sub-types.
      */
     @Override
@@ -75,7 +124,7 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
     /**
      * A vector backed by an array of type {@code double[]}.
      */
-    static final class Double extends ArrayVector<java.lang.Double> {
+    private static final class Double extends ArrayVector<java.lang.Double> {
         /** For cross-version compatibility. */
         private static final long serialVersionUID = -2900375382498345812L;
 
@@ -130,6 +179,7 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
         @Override public Number set(final int index, final Number value) {
             final double old = array[index];
             array[index] = value.doubleValue();
+            modCount++;
             return old;
         }
     }
@@ -137,7 +187,7 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
     /**
      * A vector backed by an array of type {@code float[]}.
      */
-    static class Float extends ArrayVector<java.lang.Float> {
+    private static class Float extends ArrayVector<java.lang.Float> {
         /** For cross-version compatibility. */
         private static final long serialVersionUID = 5395284704294981455L;
 
@@ -178,6 +228,7 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
         @Override public final Number set(final int index, final Number value) {
             final float old = array[index];
             array[index] = value.floatValue();
+            modCount++;
             return old;
         }
     }
@@ -205,7 +256,7 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
     /**
      * A vector backed by an array of type {@code long[]}.
      */
-    static class Long extends ArrayVector<java.lang.Long> {
+    private static class Long extends ArrayVector<java.lang.Long> {
         /** For cross-version compatibility. */
         private static final long serialVersionUID = 338413429037224587L;
 
@@ -236,6 +287,7 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
             verifyType(value.getClass(), Numbers.LONG);
             final long old = array[index];
             array[index] = value.longValue();
+            modCount++;
             return old;
         }
     }
@@ -243,7 +295,7 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
     /**
      * A vector backed by an array of type {@code int[]}.
      */
-    static class Integer extends ArrayVector<java.lang.Integer> {
+    private static class Integer extends ArrayVector<java.lang.Integer> {
         /** For cross-version compatibility. */
         private static final long serialVersionUID = -1292641147544275801L;
 
@@ -275,6 +327,7 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
             verifyType(value.getClass(), Numbers.INTEGER);
             final int old = array[index];
             array[index] = value.intValue();
+            modCount++;
             return old;
         }
     }
@@ -282,7 +335,7 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
     /**
      * A vector backed by an array of type {@code short[]}.
      */
-    static class Short extends ArrayVector<java.lang.Short> {
+    private static class Short extends ArrayVector<java.lang.Short> {
         /** For cross-version compatibility. */
         private static final long serialVersionUID = -126825963332296000L;
 
@@ -315,6 +368,7 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
             verifyType(value.getClass(), Numbers.SHORT);
             final short old = array[index];
             array[index] = value.shortValue();
+            modCount++;
             return old;
         }
     }
@@ -322,7 +376,7 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
     /**
      * A vector backed by an array of type {@code byte[]}.
      */
-    static class Byte extends ArrayVector<java.lang.Byte> {
+    private static class Byte extends ArrayVector<java.lang.Byte> {
         /** For cross-version compatibility. */
         private static final long serialVersionUID = 7933568876180528548L;
 
@@ -356,6 +410,7 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
             verifyType(value.getClass(), Numbers.BYTE);
             final byte old = array[index];
             array[index] = value.byteValue();
+            modCount++;
             return old;
         }
     }
@@ -363,7 +418,7 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
     /**
      * A vector backed by an array of type {@code long[]} to be interpreted as unsigned values.
      */
-    static final class UnsignedLong extends Long {
+    private static final class UnsignedLong extends Long {
         /** For cross-version compatibility. */
         private static final long serialVersionUID = 712968674526282882L;
 
@@ -401,7 +456,7 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
     /**
      * A vector backed by an array of type {@code int[]} to be interpreted as unsigned values.
      */
-    static final class UnsignedInteger extends Integer {
+    private static final class UnsignedInteger extends Integer {
         /** For cross-version compatibility. */
         private static final long serialVersionUID = 8420585724189054050L;
 
@@ -430,14 +485,16 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
     /**
      * A vector backed by an array of type {@code short[]} to be interpreted as unsigned values.
      */
-    static final class UnsignedShort extends Short {
+    private static final class UnsignedShort extends Short {
         /** For cross-version compatibility. */
         private static final long serialVersionUID = 8219060080494444776L;
 
+        /** Creates a new vector for the given array. */
         UnsignedShort(final short[] array) {
             super(array);
         }
 
+        /** Declares this vector as unsigned. */
         @Override public boolean isUnsigned()          {return true;}
         @Override public double doubleValue(int index) {return intValue(index);}
         @Override public float   floatValue(int index) {return intValue(index);}
@@ -458,14 +515,16 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
     /**
      * A vector backed by an array of type {@code byte[]} to be interpreted as unsigned values.
      */
-    static final class UnsignedByte extends Byte {
+    private static final class UnsignedByte extends Byte {
         /** For cross-version compatibility. */
         private static final long serialVersionUID = -2150064612523948331L;
 
+        /** Creates a new vector for the given array. */
         UnsignedByte(final byte[] array) {
             super(array);
         }
 
+        /** Declares this vector as unsigned. */
         @Override public boolean isUnsigned()          {return true;}
         @Override public double doubleValue(int index) {return intValue(index);}
         @Override public float   floatValue(int index) {return intValue(index);}
@@ -488,7 +547,7 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
      * A vector backed by an array of type {@code String[]}.
      * This is not recommended, but happen for example in GDAL extensions for GeoTIFF files.
      */
-    static class ASCII extends ArrayVector<java.lang.Double> {
+    private static final class ASCII extends ArrayVector<java.lang.Double> {
         /** For cross-version compatibility. */
         private static final long serialVersionUID = 2801615620517491573L;
 
@@ -505,7 +564,22 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
             return java.lang.Double.class;
         }
 
-        @Override public final int     size()          {return array.length;}
+        /** Returns {@code true} if the element at the given index is null or NaN. */
+        @Override public boolean isNaN(final int index) {
+            String value = array[index];
+            if (value == null) return true;
+            if (value.contains("NaN")) {
+                value = value.trim();
+                switch (value.length()) {
+                    case 3: return true;
+                    case 4: final char c = value.charAt(0);
+                            return (c == '+') || (c == '-');
+                }
+            }
+            return false;
+        }
+
+        @Override public int           size()          {return array.length;}
         @Override public String stringValue(int index) {return array[index];}
         @Override public double doubleValue(int index) {return java.lang.Double .parseDouble(array[index]);}
         @Override public float   floatValue(int index) {return java.lang.Float  .parseFloat (array[index]);}
@@ -513,10 +587,68 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
         @Override public int       intValue(int index) {return java.lang.Integer.parseInt   (array[index]);}
         @Override public short   shortValue(int index) {return java.lang.Short  .parseShort (array[index]);}
         @Override public byte     byteValue(int index) {return java.lang.Byte   .parseByte  (array[index]);}
-        @Override public final Number   get(int index) {return doubleValue(index);}
-        @Override public final Number   set(int index, final Number value) {
+        @Override public Number         get(int index) {
+            final String value = array[index];
+            return (value != null) ? java.lang.Double.parseDouble(value) : null;
+        }
+
+        /** Stores the given value in this vector and returns the previous value. */
+        @Override public final Number set(final int index, final Number value) {
             final Number old = get(index);
             array[index] = value.toString();
+            modCount++;
+            return old;
+        }
+    }
+
+    /**
+     * A vector backed by an array of type {@code Number[]}.
+     */
+    private static final class Raw extends ArrayVector<Number> {
+        /** For cross-version compatibility. */
+        private static final long serialVersionUID = 5444263017359778157L;
+
+        /** The backing array. */
+        private final Number[] array;
+
+        /** Creates a new vector for the given array. */
+        Raw(final Number[] array) {
+            this.array = array;
+        }
+
+        /** Returns the type of elements in the backing array. */
+        @SuppressWarnings({"unchecked", "rawtypes"})
+        @Override public final Class getElementType() {
+            return array.getClass().getComponentType();
+        }
+
+        /** Returns {@code true} if the element at the given index is null or NaN. */
+        @Override public boolean isNaN(final int index) {
+            Number value = array[index];
+            if (value == null) return true;
+            if (value instanceof java.lang.Float)  return ((java.lang.Float)  value).isNaN();
+            if (value instanceof java.lang.Double) return ((java.lang.Double) value).isNaN();
+            return false;
+        }
+
+        @Override public int           size()          {return array.length;}
+        @Override public Number         get(int index) {return array[index];}
+        @Override public double doubleValue(int index) {return array[index].doubleValue();}
+        @Override public float   floatValue(int index) {return array[index].floatValue();}
+        @Override public long     longValue(int index) {return array[index].longValue();}
+        @Override public int       intValue(int index) {return array[index].intValue();}
+        @Override public short   shortValue(int index) {return array[index].shortValue();}
+        @Override public byte     byteValue(int index) {return array[index].byteValue();}
+        @Override public String stringValue(int index) {
+            final Number value = array[index];
+            return (value != null) ? value.toString() : null;
+        }
+
+        /** Stores the given value in this vector and returns the previous value. */
+        @Override public final Number set(final int index, final Number value) {
+            final Number old = array[index];
+            array[index] = value;
+            modCount++;
             return old;
         }
     }
