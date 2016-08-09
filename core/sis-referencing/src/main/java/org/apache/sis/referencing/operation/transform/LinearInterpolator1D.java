@@ -100,17 +100,21 @@ final class LinearInterpolator1D extends AbstractMathTransform1D implements Seri
         final int n = values.length - 1;
         final double offset = values[0];
         double slope = (values[n] - offset) / n;
+        final double as = Math.abs(slope);
         /*
          * If the increment between values is constant (with a small tolerance factor),
          * return a one-dimensional affine transform instead than an interpolator.
          * We need to perform this check before the sign reversal applied after this loop.
          */
-        final double tolerance = Math.abs(slope) * Numerics.COMPARISON_THRESHOLD;
-        for (int i=0; Numerics.epsilonEqual(values[++i]-offset, slope*i, tolerance);) {
-            if (i >= n) {
+        double value;
+        int i = 0;
+        do {
+            if (++i >= n) {
                 return LinearTransform1D.create(slope, offset);
             }
-        }
+            value = values[i];
+        } while (Numerics.epsilonEqual(value, offset + slope*i,
+                        Math.max(Math.abs(value), as) * Numerics.COMPARISON_THRESHOLD));
         /*
          * If the values are in decreasing order, reverse their sign so we get increasing order.
          * We will multiply the results by -1 after the transformation.
@@ -118,7 +122,7 @@ final class LinearInterpolator1D extends AbstractMathTransform1D implements Seri
         final boolean isReverted = (slope < 0);
         if (isReverted) {
             slope = -slope;
-            for (int i=0; i<=n; i++) {
+            for (i=0; i <= n; i++) {
                 values[i] = -values[i];
             }
         }
@@ -390,7 +394,7 @@ final class LinearInterpolator1D extends AbstractMathTransform1D implements Seri
      */
     @Override
     protected int computeHashCode() {
-        return super.hashCode() ^ Arrays.hashCode(values);
+        return super.computeHashCode() ^ Arrays.hashCode(values);
     }
 
     /**

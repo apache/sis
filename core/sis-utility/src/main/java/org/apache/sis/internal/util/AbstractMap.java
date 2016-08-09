@@ -63,8 +63,8 @@ import java.util.Objects;
  *   <li>{@link #addValue(Object)} (non-standard, optional method)</li>
  * </ul>
  *
- * @param <K> The type of keys maintained by the map.
- * @param <V> The type of mapped values.
+ * @param <K> the type of keys maintained by the map.
+ * @param <V> the type of mapped values.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5
@@ -82,8 +82,8 @@ public abstract class AbstractMap<K,V> implements Map<K,V> {
      *       instead than creating new {@code Map.Element} on each iterator.</li>
      * </ul>
      *
-     * @param <K> The type of keys maintained by the map.
-     * @param <V> The type of mapped values.
+     * @param <K> the type of keys maintained by the map.
+     * @param <V> the type of mapped values.
      *
      * @see AbstractMap#entryIterator()
      */
@@ -99,7 +99,7 @@ public abstract class AbstractMap<K,V> implements Map<K,V> {
          * Returns the key at the current iterator position.
          * This method is invoked only after {@link #next()}.
          *
-         * @return The key at the current iterator position.
+         * @return the key at the current iterator position.
          */
         protected abstract K getKey();
 
@@ -107,7 +107,7 @@ public abstract class AbstractMap<K,V> implements Map<K,V> {
          * Returns the value at the current iterator position.
          * This method is invoked only after {@link #next()}.
          *
-         * @return The value at the current iterator position.
+         * @return the value at the current iterator position.
          */
         protected abstract V getValue();
 
@@ -116,7 +116,7 @@ public abstract class AbstractMap<K,V> implements Map<K,V> {
          * This method is invoked only after {@link #next()}.
          * The default implementation creates an immutable entry with {@link #getKey()} and {@link #getValue()}.
          *
-         * @return The entry at the current iterator position.
+         * @return the entry at the current iterator position.
          */
         protected Entry<K,V> getEntry() {
             return new java.util.AbstractMap.SimpleImmutableEntry<>(getKey(), getValue());
@@ -139,8 +139,8 @@ public abstract class AbstractMap<K,V> implements Map<K,V> {
      * (which is consistent with the default implementation of {@link AbstractMap} methods).
      * Modifiable maps should override {@code remove()} themselves.</p>
      *
-     * @param <K> The type of keys maintained by the map.
-     * @param <V> The type of mapped values.
+     * @param <K> the type of keys maintained by the map.
+     * @param <V> the type of mapped values.
      *
      * @see AbstractMap#entryIterator()
      */
@@ -165,7 +165,7 @@ public abstract class AbstractMap<K,V> implements Map<K,V> {
         /**
          * Creates a new adapter initialized to the entry iterator of the given map.
          *
-         * @param map The map from which to return entries.
+         * @param map the map from which to return entries.
          */
         public IteratorAdapter(final Map<K,V> map) {
             it = map.entrySet().iterator();
@@ -246,7 +246,7 @@ public abstract class AbstractMap<K,V> implements Map<K,V> {
      * Returns {@code true} if this map contains a value for the given name.
      * The default implementation assumes that the map can not contain {@code null} values.
      *
-     * @param  key The key for which to test the presence of a value.
+     * @param  key  the key for which to test the presence of a value.
      * @return {@code true} if the map contains a non-null value for the given key.
      */
     @Override
@@ -258,7 +258,7 @@ public abstract class AbstractMap<K,V> implements Map<K,V> {
      * Returns {@code true} if this map contains the given value.
      * The default implementation iterates over all values using the {@link #entryIterator()}.
      *
-     * @param  value The value for which to test the presence.
+     * @param  value  the value for which to test the presence.
      * @return {@code true} if the map contains the given value.
      */
     @Override
@@ -295,8 +295,8 @@ public abstract class AbstractMap<K,V> implements Map<K,V> {
      * Removes the entry for the given key in this map.
      * The default operation throws {@link UnsupportedOperationException}.
      *
-     * @param  key The key of the entry to remove.
-     * @return The previous value, or {@code null} if none.
+     * @param  key  the key of the entry to remove.
+     * @return the previous value, or {@code null} if none.
      */
     @Override
     public V remove(Object key) throws UnsupportedOperationException {
@@ -307,9 +307,9 @@ public abstract class AbstractMap<K,V> implements Map<K,V> {
      * Adds an entry for the given key in this map.
      * The default operation throws {@link UnsupportedOperationException}.
      *
-     * @param  key The key of the entry to remove.
-     * @param  value The value to associate to the given key.
-     * @return The previous value, or {@code null} if none.
+     * @param  key    the key of the entry to remove.
+     * @param  value  the value to associate to the given key.
+     * @return the previous value, or {@code null} if none.
      */
     @Override
     public V put(K key, V value) throws UnsupportedOperationException {
@@ -319,7 +319,7 @@ public abstract class AbstractMap<K,V> implements Map<K,V> {
     /**
      * Puts all entries of the given map in this map.
      *
-     * @param map The other map from which to copy the entries.
+     * @param map  the other map from which to copy the entries.
      */
     @Override
     public void putAll(final Map<? extends K, ? extends V> map) throws UnsupportedOperationException {
@@ -332,7 +332,7 @@ public abstract class AbstractMap<K,V> implements Map<K,V> {
      * Adds the given key in this map. Implementation of this method shall generate a corresponding value.
      * The default operation throws {@link UnsupportedOperationException}.
      *
-     * @param  key The key to add.
+     * @param  key  the key to add.
      * @return {@code true} if this map changed as a result of this operation.
      */
     protected boolean addKey(final K key) throws UnsupportedOperationException {
@@ -343,7 +343,7 @@ public abstract class AbstractMap<K,V> implements Map<K,V> {
      * Adds the given value in this map. Implementation of this method shall generate a corresponding key.
      * The default operation throws {@link UnsupportedOperationException}.
      *
-     * @param  value The value to add.
+     * @param  value  the value to add.
      * @return {@code true} if this map changed as a result of this operation.
      */
     protected boolean addValue(final V value) throws UnsupportedOperationException {
@@ -358,7 +358,7 @@ public abstract class AbstractMap<K,V> implements Map<K,V> {
      * and usually not retained for a long time (we often want only its iterator). Caching the set would require
      * a {@code volatile} field for thread safety, which also has cost.</p>
      *
-     * @return A view of the keys in this map.
+     * @return a view of the keys in this map.
      */
     @Override
     public Set<K> keySet() {
@@ -406,7 +406,7 @@ public abstract class AbstractMap<K,V> implements Map<K,V> {
      * <p>The default implementation does not cache the collection on the assumption that it is very quick to create
      * and usually not retained for a long time.</p>
      *
-     * @return A view of the values in this map.
+     * @return a view of the values in this map.
      */
     @Override
     public Collection<V> values() {
@@ -429,7 +429,7 @@ public abstract class AbstractMap<K,V> implements Map<K,V> {
      * <p>The default implementation does not cache the set on the assumption that it is very quick to create
      * and usually not retained for a long time.</p>
      *
-     * @return A view of the entries in this map.
+     * @return a view of the entries in this map.
      */
     @Override
     public Set<Entry<K,V>> entrySet() {
@@ -485,7 +485,7 @@ public abstract class AbstractMap<K,V> implements Map<K,V> {
      * Returns an iterator over the entries in this map.
      * It is okay (but not required) to return {@code null} if the map is empty.
      *
-     * @return An iterator over the entries in this map, or {@code null}.
+     * @return an iterator over the entries in this map, or {@code null}.
      */
     protected abstract EntryIterator<K,V> entryIterator();
 
@@ -580,7 +580,7 @@ public abstract class AbstractMap<K,V> implements Map<K,V> {
     /**
      * Compares this map with the given object for equality.
      *
-     * @param  object The other object to compare with this map.
+     * @param  object  the other object to compare with this map.
      * @return {@code true} if both objects are equal.
      */
     @Override
@@ -614,7 +614,7 @@ public abstract class AbstractMap<K,V> implements Map<K,V> {
     /**
      * Computes a hash code value for this map.
      *
-     * @return A hash code value.
+     * @return a hash code value.
      */
     @Override
     public int hashCode() {
@@ -631,7 +631,7 @@ public abstract class AbstractMap<K,V> implements Map<K,V> {
      * {@code java.util.AbstractMap} one, as it uses a tabular format rather than formatting all entries
      * on a single line.
      *
-     * @return A string representation of this map.
+     * @return a string representation of this map.
      */
     @Override
     public String toString() {
