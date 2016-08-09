@@ -61,81 +61,13 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
     }
 
     /**
-     * The default implementation delegates to {@link #doubleValue(int)} and verifies if the result
-     * can be rounded to a {@code long}. Subclasses that are wrapper of integer types should override.
-     */
-    @Override
-    public long longValue(final int index) {
-        final double value = doubleValue(index);
-        final long result = Math.round(value);
-        if (Math.abs(result - value) <= 0.5) {
-            return result;
-        }
-        throw canNotConvert(long.class);
-    }
-
-    /**
-     * The default implementation delegates to {@link #longValue(int)} and verifies if the result
-     * can be casted to a {@code int}. Subclasses that are wrapper of type not wider should override.
-     */
-    @Override
-    public int intValue(final int index) {
-        final long value = longValue(index);
-        if (value >= java.lang.Integer.MIN_VALUE &&
-            value <= java.lang.Integer.MAX_VALUE)
-        {
-            return (int) value;
-        }
-        throw canNotConvert(int.class);
-    }
-
-    /**
-     * The default implementation delegates to {@link #longValue(int)} and verifies if the result
-     * can be casted to a {@code short}. Subclasses that are wrapper of type not wider should override.
-     */
-    @Override
-    public short shortValue(final int index) {
-        final long value = longValue(index);
-        if (value >= java.lang.Short.MIN_VALUE &&
-            value <= java.lang.Short.MAX_VALUE)
-        {
-            return (short) value;
-        }
-        throw canNotConvert(short.class);
-    }
-
-    /**
-     * The default implementation delegates to {@link #longValue(int)} and verifies if the result
-     * can be casted to a {@code byte}. Subclasses that are wrapper of type not wider should override.
-     */
-    @Override
-    public byte byteValue(final int index) {
-        final long value = longValue(index);
-        if (value >= java.lang.Byte.MIN_VALUE &&
-            value <= java.lang.Byte.MAX_VALUE)
-        {
-            return (byte) value;
-        }
-        throw canNotConvert(byte.class);
-    }
-
-    /**
-     * Returns the exception to be thrown when the component type in the backing array can
-     * not be converted to the requested type through an identity or widening conversion.
-     */
-    private ArithmeticException canNotConvert(final Class<?> target) {
-        return new ArithmeticException(Errors.format(Errors.Keys.CanNotConvertFromType_2,
-                Numbers.wrapperToPrimitive(getElementType()), target));
-    }
-
-    /**
      * Verifies that a value of the given type can be casted to the expected type.
      * The expected type must be one of the {@link Numbers} constants.
      */
     final void verifyType(final Class<? extends Number> type, final byte expected) {
         final byte t = Numbers.getEnumConstant(type);
         if (t < Numbers.BYTE || t > expected) {
-            throw new ArrayStoreException(Errors.format(Errors.Keys.CanNotConvertFromType_2,
+            throw new ClassCastException(Errors.format(Errors.Keys.CanNotConvertFromType_2,
                 type, Numbers.wrapperToPrimitive(getElementType())));
         }
     }
@@ -171,7 +103,7 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
         }
 
         /** Returns the string representation at the given index. */
-        @Override public String toString(final int index) {
+        @Override public String stringValue(final int index) {
             return java.lang.Double.toString(array[index]);
         }
 
@@ -233,7 +165,7 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
         }
 
         /** Returns the string representation at the given index. */
-        @Override public String toString(final int index) {
+        @Override public String stringValue(final int index) {
             return java.lang.Float.toString(array[index]);
         }
 
@@ -271,7 +203,7 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
         }
 
         /** Returns the string representation at the given index. */
-        @Override public String toString(final int index) {
+        @Override public String stringValue(final int index) {
             return java.lang.Long.toString(array[index]);
         }
 
@@ -309,7 +241,7 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
         }
 
         /** Returns the string representation at the given index. */
-        @Override public String toString(final int index) {
+        @Override public String stringValue(final int index) {
             return java.lang.Integer.toString(array[index]);
         }
 
@@ -348,7 +280,7 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
         }
 
         /** Returns the string representation at the given index. */
-        @Override public String toString(final int index) {
+        @Override public String stringValue(final int index) {
             return java.lang.Short.toString(array[index]);
         }
 
@@ -388,7 +320,7 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
         }
 
         /** Returns the string representation at the given index. */
-        @Override public String toString(final int index) {
+        @Override public String stringValue(final int index) {
             return java.lang.Byte.toString(array[index]);
         }
 
@@ -441,7 +373,7 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
         }
 
         /** Returns the string representation at the given index. */
-        @Override public String toString(final int index) {
+        @Override public String stringValue(final int index) {
             return java.lang.Long.toUnsignedString(super.longValue(index));
         }
     }
@@ -470,7 +402,7 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
         }
 
         /** Returns the string representation at the given index. */
-        @Override public String toString(final int index) {
+        @Override public String stringValue(final int index) {
             return java.lang.Integer.toUnsignedString(super.intValue(index));
         }
     }
@@ -498,7 +430,7 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
         }
 
         /** Returns the string representation at the given index. */
-        @Override public String toString(final int index) {
+        @Override public String stringValue(final int index) {
             return java.lang.Integer.toString(intValue(index));
         }
     }
@@ -527,7 +459,7 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
         }
 
         /** Returns the string representation at the given index. */
-        @Override public String toString(final int index) {
+        @Override public String stringValue(final int index) {
             return java.lang.Integer.toString(intValue(index));
         }
     }

@@ -133,42 +133,10 @@ final class SequenceVector extends Vector implements Serializable {
     }
 
     /**
-     * Computes the value at the given index.
-     */
-    @Override
-    public long longValue(final int index) throws IndexOutOfBoundsException {
-        return Math.round(doubleValue(index));
-    }
-
-    /**
-     * Computes the value at the given index.
-     */
-    @Override
-    public int intValue(final int index) throws IndexOutOfBoundsException {
-        return (int) longValue(index);
-    }
-
-    /**
-     * Computes the value at the given index.
-     */
-    @Override
-    public short shortValue(final int index) throws IndexOutOfBoundsException {
-        return (short) longValue(index);
-    }
-
-    /**
-     * Computes the value at the given index.
-     */
-    @Override
-    public byte byteValue(final int index) throws IndexOutOfBoundsException {
-        return (byte) longValue(index);
-    }
-
-    /**
      * Returns the string representation of the value at the given index.
      */
     @Override
-    public String toString(final int index) throws IndexOutOfBoundsException {
+    public String stringValue(final int index) throws IndexOutOfBoundsException {
         return String.valueOf(doubleValue(index));
     }
 
