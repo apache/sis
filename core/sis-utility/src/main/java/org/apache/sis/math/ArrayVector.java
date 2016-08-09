@@ -137,7 +137,7 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
     /**
      * A vector backed by an array of type {@code float[]}.
      */
-    static final class Float extends ArrayVector<java.lang.Float> {
+    static class Float extends ArrayVector<java.lang.Float> {
         /** For cross-version compatibility. */
         private static final long serialVersionUID = 5395284704294981455L;
 
@@ -150,35 +150,55 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
         }
 
         /** Returns the type of elements in the backing array. */
-        @Override public Class<java.lang.Float> getElementType() {
+        @Override public final Class<java.lang.Float> getElementType() {
             return java.lang.Float.class;
         }
 
         /** Returns the length of the backing array. */
-        @Override public int size() {
+        @Override public final int size() {
             return array.length;
         }
 
         /** Returns {@code true} if the value at the given index is {@code NaN}. */
-        @Override public boolean isNaN(final int index) {
+        @Override public final boolean isNaN(final int index) {
             return java.lang.Float.isNaN(array[index]);
         }
 
         /** Returns the string representation at the given index. */
-        @Override public String stringValue(final int index) {
+        @Override public final String stringValue(final int index) {
             return java.lang.Float.toString(array[index]);
         }
 
         /** Returns the value at the given index. */
-        @Override public double doubleValue(int index) {return array[index];}
-        @Override public float   floatValue(int index) {return array[index];}
-        @Override public Number         get(int index) {return array[index];}
+        @Override public       double doubleValue(int index) {return array[index];}
+        @Override public final float   floatValue(int index) {return array[index];}
+        @Override public final Number         get(int index) {return array[index];}
 
         /** Sets the value at the given index. */
-        @Override public Number set(final int index, final Number value) {
+        @Override public final Number set(final int index, final Number value) {
             final float old = array[index];
             array[index] = value.floatValue();
             return old;
+        }
+    }
+
+    /**
+     * A vector backed by an array of type {@code float[]} to be converted to {@code double} in a way that minimizes
+     * the errors when represented in base 10. This implementation should be used only when there is good reasons to
+     * believe that the {@code float} data where encoded in base 10 in the first place (for example in an ASCII file).
+     */
+    static final class Decimal extends Float {
+        /** For cross-version compatibility. */
+        private static final long serialVersionUID = 6085386820455858377L;
+
+        /** Creates a new vector for the given array. */
+        Decimal(final float[] array) {
+            super(array);
+        }
+
+        /** Returns the value at the given index. */
+        @Override public double doubleValue(final int index) {
+            return DecimalFunctions.floatToDouble(super.floatValue(index));
         }
     }
 
@@ -461,6 +481,43 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
         /** Returns the string representation at the given index. */
         @Override public String stringValue(final int index) {
             return java.lang.Integer.toString(intValue(index));
+        }
+    }
+
+    /**
+     * A vector backed by an array of type {@code String[]}.
+     * This is not recommended, but happen for example in GDAL extensions for GeoTIFF files.
+     */
+    static class ASCII extends ArrayVector<java.lang.Double> {
+        /** For cross-version compatibility. */
+        private static final long serialVersionUID = 2801615620517491573L;
+
+        /** The backing array. */
+        private final String[] array;
+
+        /** Creates a new vector for the given array. */
+        ASCII(final String[] array) {
+            this.array = array;
+        }
+
+        /** Returns the type of elements in the backing array. */
+        @Override public final Class<java.lang.Double> getElementType() {
+            return java.lang.Double.class;
+        }
+
+        @Override public final int     size()          {return array.length;}
+        @Override public String stringValue(int index) {return array[index];}
+        @Override public double doubleValue(int index) {return java.lang.Double .parseDouble(array[index]);}
+        @Override public float   floatValue(int index) {return java.lang.Float  .parseFloat (array[index]);}
+        @Override public long     longValue(int index) {return java.lang.Long   .parseLong  (array[index]);}
+        @Override public int       intValue(int index) {return java.lang.Integer.parseInt   (array[index]);}
+        @Override public short   shortValue(int index) {return java.lang.Short  .parseShort (array[index]);}
+        @Override public byte     byteValue(int index) {return java.lang.Byte   .parseByte  (array[index]);}
+        @Override public final Number   get(int index) {return doubleValue(index);}
+        @Override public final Number   set(int index, final Number value) {
+            final Number old = get(index);
+            array[index] = value.toString();
+            return old;
         }
     }
 }

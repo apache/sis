@@ -354,6 +354,10 @@ enum Type {
             ensureSingleton(lines.length);
             return Double.parseDouble(lines[0]);
         }
+
+        @Override Object readArray(final ChannelDataInput input, final int count) throws IOException {
+            return readString(input, count, StandardCharsets.US_ASCII);
+        }
     };
 
     /**
