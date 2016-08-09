@@ -134,7 +134,7 @@ public final strictfp class VectorTest extends TestCase {
             array[i] = (i + 100) * 10;
         }
         vector = Vector.create(array, false);
-        assertTrue(vector instanceof ArrayVector.Float);
+        assertEquals("Float", vector.getClass().getSimpleName());
         assertSame(vector, Vector.create(vector, false));
         assertEquals(array.length, vector.size());
         assertEquals(Float.class, vector.getElementType());
@@ -157,7 +157,7 @@ public final strictfp class VectorTest extends TestCase {
             array[i] = (i + 100) * 10;
         }
         vector = Vector.create(array, false);
-        assertTrue(vector instanceof ArrayVector.Double);
+        assertEquals("Double", vector.getClass().getSimpleName());
         assertSame(vector, Vector.create(vector, false));
         assertEquals(array.length, vector.size());
         assertEquals(Double.class, vector.getElementType());

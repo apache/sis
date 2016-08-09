@@ -229,7 +229,9 @@ final class ConcatenatedVector extends Vector implements Serializable {
             v = second;
             index -= limit;
         }
-        return v.set(index, value);
+        final Number old = v.set(index, value);
+        modCount++;
+        return old;
     }
 
     /**
