@@ -45,7 +45,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureValidIndex;
  * {@preformat java
  *     float[] array = new float[100];
  *     Vector v = Vector.create(array, false).subList(20, 40)
- *     // At this point, v.doubleValue(0) is equivalent to array[20].
+ *     // At this point, v.doubleValue(0) is equivalent to (double) array[20].
  * }
  *
  * <div class="section">Usage</div>
@@ -184,6 +184,8 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
      * verify this information for avoiding {@link ArithmeticException}.</p>
      *
      * @return the type of elements in this vector.
+     *
+     * @see org.apache.sis.util.collection.CheckedContainer#getElementType()
      */
     public abstract Class<? extends Number> getElementType();
 
@@ -229,7 +231,8 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
 
     /**
      * Returns the value at the given index as a {@code float}.
-     * This method may result in a lost of precision if the underlying storage is a {@code double[]} array.
+     * This method may result in a lost of precision if this vector
+     * stores or computes its values with the {@code double} type.
      *
      * @param  index  the index in the [0 … {@linkplain #size() size}-1] range.
      * @return the value at the given index.
@@ -241,45 +244,94 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
      * Returns the value at the given index as a {@code long}.
      * If this vector uses floating point values, the value is rounded to the nearest integer.
      *
+     * <p>The default implementation delegates to {@link #doubleValue(int)} and verifies
+     * if the result can be rounded to a {@code long} with an error not greater than 0.5.
+     * Subclasses that store or compute their values with an integer type should override this method.</p>
+     *
      * @param  index  the index in the [0 … {@linkplain #size() size}-1] range.
      * @return the value at the given index.
      * @throws IndexOutOfBoundsException if the given index is out of bounds.
      * @throws ArithmeticException if the value is too large for the capacity of the {@code long} type.
      */
-    public abstract long longValue(int index) throws IndexOutOfBoundsException, ArithmeticException;
+    public long longValue(final int index) {
+        final double value = doubleValue(index);
+        final long result = Math.round(value);
+        if (Math.abs(result - value) <= 0.5) {
+            return result;
+        }
+        throw canNotConvert(index, long.class);
+    }
 
     /**
      * Returns the value at the given index as an {@code int}.
      * If this vector uses floating point values, the value is rounded to the nearest integer.
+     *
+     * <p>The default implementation delegates to {@link #longValue(int)} and verifies if the result
+     * fits in the {@code int} type. Subclasses that store or compute their values with the {@code int},
+     * {@code short} or {@code byte} type should override this method.</p>
      *
      * @param  index  the index in the [0 … {@linkplain #size() size}-1] range.
      * @return the value at the given index.
      * @throws IndexOutOfBoundsException if the given index is out of bounds.
      * @throws ArithmeticException if the value is too large for the capacity of the {@code int} type.
      */
-    public abstract int intValue(int index) throws IndexOutOfBoundsException, ArithmeticException;
+    public int intValue(final int index) {
+        final long value = longValue(index);
+        if (value >= Integer.MIN_VALUE && value <= Integer.MAX_VALUE) {
+            return (int) value;
+        }
+        throw canNotConvert(index, int.class);
+    }
 
     /**
      * Returns the value at the given index as a {@code short}.
      * If this vector uses floating point values, the value is rounded to the nearest integer.
+     *
+     * <p>The default implementation delegates to {@link #longValue(int)} and verifies if the result
+     * fits in the {@code short} type. Subclasses that store or compute their values with the {@code short}
+     * or {@code byte} type should override this method.</p>
      *
      * @param  index  the index in the [0 … {@linkplain #size() size}-1] range.
      * @return the value at the given index.
      * @throws IndexOutOfBoundsException if the given index is out of bounds.
      * @throws ArithmeticException if the value is too large for the capacity of the {@code short} type.
      */
-    public abstract short shortValue(int index) throws IndexOutOfBoundsException, ArithmeticException;
+    public short shortValue(final int index) {
+        final long value = longValue(index);
+        if (value >= Short.MIN_VALUE && value <= Short.MAX_VALUE) {
+            return (short) value;
+        }
+        throw canNotConvert(index, short.class);
+    }
 
     /**
      * Returns the value at the given index as a {@code byte}.
      * If this vector uses floating point values, the value is rounded to the nearest integer.
+     *
+     * <p>The default implementation delegates to {@link #longValue(int)} and verifies if the result
+     * fits in the {@code byte} type. Subclasses that store or compute their values with the {@code byte}
+     * type should override this method.</p>
      *
      * @param  index  the index in the [0 … {@linkplain #size() size}-1] range.
      * @return the value at the given index.
      * @throws IndexOutOfBoundsException if the given index is out of bounds.
      * @throws ArithmeticException if the value is too large for the capacity of the {@code byte} type.
      */
-    public abstract byte byteValue(int index) throws IndexOutOfBoundsException, ArithmeticException;
+    public byte byteValue(final int index) {
+        final long value = longValue(index);
+        if (value >= Byte.MIN_VALUE && value <= Byte.MAX_VALUE) {
+            return (byte) value;
+        }
+        throw canNotConvert(index, byte.class);
+    }
+
+    /**
+     * Returns the exception to be thrown when the component type in the backing array can
+     * not be converted to the requested type through an identity or widening conversion.
+     */
+    private ArithmeticException canNotConvert(final int index, final Class<?> target) {
+        return new ArithmeticException(Errors.format(Errors.Keys.CanNotConvertValue_2, stringValue(index), target));
+    }
 
     /**
      * Returns a string representation of the value at the given index.
@@ -291,10 +343,12 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
      * @return a string representation of the value at the given index.
      * @throws IndexOutOfBoundsException if the given index is out of bounds.
      */
-    public abstract String toString(int index) throws IndexOutOfBoundsException;
+    public abstract String stringValue(int index) throws IndexOutOfBoundsException;
 
     /**
      * Returns the number at the given index, or {@code null} if none.
+     * If non-null, the object returned by this method will be an instance
+     * of the class returned by {@link #getElementType()} or a sub-class.
      *
      * @param  index  the index in the [0 … {@linkplain #size() size}-1] range.
      * @return the value at the given index.
@@ -305,104 +359,16 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
 
     /**
      * Sets the number at the given index.
+     * The given number should be an instance of the same type than the number returned by {@link #get(int)}.
      *
      * @param  index  the index in the [0 … {@linkplain #size() size}-1] range.
      * @param  value  the value to set at the given index.
      * @return the value previously stored at the given index.
      * @throws IndexOutOfBoundsException if the given index is out of bounds.
-     * @throws ArrayStoreException if the given value can not be stored in this vector.
+     * @throws ClassCastException if the given value can not be stored in this vector.
      */
     @Override
-    public abstract Number set(int index, Number value) throws IndexOutOfBoundsException, ArrayStoreException;
-
-    /**
-     * If this vector is a view over an other vector, returns the backing vector.
-     * Otherwise returns {@code this}. If this method is overridden, it should be
-     * together with the {@link #toBacking(int[])} method.
-     */
-    @SuppressWarnings("ReturnOfCollectionOrArrayField")
-    Vector backingVector() {
-        return this;
-    }
-
-    /**
-     * Converts an array of indexes used by this vector to the indexes used by the backing vector.
-     * If there is no such backing vector, then returns a clone of the given array.
-     * This method must also check index validity.
-     *
-     * <p>Only subclasses that are views of this vector will override this method.</p>
-     *
-     * @param  indices  the indexes given by the user.
-     * @return the indexes to use. Must be a new array in order to protect it from user changes.
-     * @throws IndexOutOfBoundsException if at least one index is out of bounds.
-     */
-    int[] toBacking(int[] indices) throws IndexOutOfBoundsException {
-        indices = indices.clone();
-        final int length = size();
-        for (int i : indices) {
-            ensureValidIndex(length, i);
-        }
-        return indices;
-    }
-
-    /**
-     * Returns a view which contains the values of this vector at the given indexes.
-     * This method does not copy the values, consequently any modification to the
-     * values of this vector will be reflected in the returned view and vis-versa.
-     *
-     * <p>The indexes do not need to be in any particular order. The same index can be repeated
-     * more than once. Thus it is possible to create a vector larger than the original vector.</p>
-     *
-     * @param  indices  indexes of the values to be returned.
-     * @return a view of this vector containing values at the given indexes.
-     * @throws IndexOutOfBoundsException if at least one index is out of bounds.
-     */
-    public Vector view(int... indices) throws IndexOutOfBoundsException {
-        indices = toBacking(indices);
-        final int first, step;
-        switch (indices.length) {
-            case 0: {
-                first = 0;
-                step  = 1;
-                break;
-            }
-            case 1: {
-                first = indices[0];
-                step  = 1;
-                break;
-            }
-            default: {
-                int limit;
-                first = indices[0];
-                limit = indices[1];
-                step  = limit - first;
-                for (int i=2; i<indices.length; i++) {
-                    final int current = indices[i];
-                    if (current - limit != step) {
-                        return backingVector().new View(indices);
-                    }
-                    limit = current;
-                }
-                break;
-            }
-        }
-        return subSampling(first, step, indices.length);
-    }
-
-    /**
-     * Returns a view which contains the values of this vector in reverse order.
-     *
-     * <div class="note"><b>Implementation note:</b> this method delegates its work
-     * to <code>{@linkplain #subSampling(int,int,int) subSampling}(size-1, -1, {@linkplain #size() size})</code>.
-     * It is declared final in order to force every subclasses to override the later method instead than this one.
-     * </div>
-     *
-     * @return the vector values in reverse order.
-     */
-    public final Vector reverse() {
-        final int length = size();
-        return (length != 0) ? subSampling(length-1, -1, length) : this;
-    }
+    public abstract Number set(int index, Number value) throws IndexOutOfBoundsException, ClassCastException;
 
     /**
      * Returns a view which contain the values of this vector in the given index range.
@@ -411,8 +377,7 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
      *
      * <div class="note"><b>Implementation note:</b> this method delegates its work
      * <code>{@linkplain #subSampling(int,int,int) subSampling}(lower, 1, upper - lower)</code>.
-     * It is declared final in order to force every subclasses to override the later method instead than this one.
-     * </div>
+     * This method is declared final in order to force subclasses to override {@code subSampling(…)} instead.</div>
      *
      * @param  lower  index of the first value to be included in the returned view.
      * @param  upper  index after the last value to be included in the returned view.
@@ -456,128 +421,6 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
      */
     Vector createSubSampling(final int first, final int step, final int length) {
         return new SubSampling(first, step, length);
-    }
-
-    /**
-     * Returns the concatenation of this vector with the given one. Indexes in the [0 … {@linkplain #size() size}-1]
-     * range will map to this vector, while indexes in the [size … size + toAppend.size] range while map to the
-     * given vector.
-     *
-     * @param  toAppend  the vector to concatenate at the end of this vector.
-     * @return the concatenation of this vector with the given vector.
-     */
-    @SuppressWarnings("ReturnOfCollectionOrArrayField")
-    public Vector concatenate(final Vector toAppend) {
-        if (toAppend.isEmpty()) {
-            return this;
-        }
-        if (isEmpty()) {
-            return toAppend;
-        }
-        return createConcatenate(toAppend);
-    }
-
-    /**
-     * Implementation of {@link #concatenate(Vector)} to be overridden by subclasses.
-     */
-    Vector createConcatenate(final Vector toAppend) {
-        return new ConcatenatedVector(this, toAppend);
-    }
-
-    /**
-     * A view over an other vector at pre-selected indexes.
-     */
-    private final class View extends Vector implements Serializable {
-        /** For cross-version compatibility. */
-        private static final long serialVersionUID = 6574040261355090760L;
-
-        /** The pre-selected indexes. */
-        private final int[] indices;
-
-        /**
-         * Creates a new view over the values at the given indexes. This constructor
-         * does not clone the array; it is caller responsibility to clone it if needed.
-         */
-        View(int[] indices) {
-            this.indices = indices;
-        }
-
-        /** Returns the backing vector. */
-        @Override Vector backingVector() {
-            return Vector.this;
-        }
-
-        /** Returns the indexes where to look for the value in the enclosing vector. */
-        @Override int[] toBacking(final int[] i) throws IndexOutOfBoundsException {
-            final int[] ni = new int[i.length];
-            for (int j=0; j<ni.length; j++) {
-                ni[j] = indices[i[j]];
-            }
-            return ni;
-        }
-
-        /** Returns the type of elements in this vector. */
-        @Override public Class<? extends Number> getElementType() {
-            return Vector.this.getElementType();
-        }
-
-        /** Delegates to the enclosing vector. */
-        @Override public int      size()                {return indices.length;}
-        @Override public boolean  isUnsigned()          {return Vector.this.isUnsigned();}
-        @Override public boolean  isNaN      (int i)    {return Vector.this.isNaN      (indices[i]);}
-        @Override public double   doubleValue(int i)    {return Vector.this.doubleValue(indices[i]);}
-        @Override public float    floatValue (int i)    {return Vector.this.floatValue (indices[i]);}
-        @Override public long     longValue  (int i)    {return Vector.this.longValue  (indices[i]);}
-        @Override public int      intValue   (int i)    {return Vector.this.intValue   (indices[i]);}
-        @Override public short    shortValue (int i)    {return Vector.this.shortValue (indices[i]);}
-        @Override public byte     byteValue  (int i)    {return Vector.this.byteValue  (indices[i]);}
-        @Override public String   toString   (int i)    {return Vector.this.toString   (indices[i]);}
-        @Override public Number   get        (int i)    {return Vector.this.get        (indices[i]);}
-        @Override public Number   set(int i, Number v)  {return Vector.this.set        (indices[i], v);}
-
-        /** Delegates to the enclosing vector. */
-        @Override Vector createSubSampling(int first, final int step, final int length) {
-            ensureValid(first, step, length);
-            final int[] ni = new int[length];
-            if (step == 1) {
-                System.arraycopy(indices, first, ni, 0, length);
-            } else for (int j=0; j<length; j++) {
-                ni[j] = indices[first];
-                first += step;
-            }
-            return Vector.this.view(ni);
-        }
-
-        /** Concatenates the indexes if possible. */
-        @Override Vector createConcatenate(final Vector toAppend) {
-            if (toAppend instanceof View && toAppend.backingVector() == Vector.this) {
-                final int[] other = ((View) toAppend).indices;
-                final int[] c = Arrays.copyOf(indices, indices.length + other.length);
-                System.arraycopy(other, 0, c, indices.length, other.length);
-                return Vector.this.view(c);
-            }
-            return super.createConcatenate(toAppend);
-        }
-    }
-
-    /**
-     * Ensures that the range created from the given parameters is valid.
-     */
-    static void ensureValid(final int first, final int step, final int length) {
-        if (length < 0) {
-            final short key;
-            final Object arg1, arg2;
-            if (step == 1) {
-                key  = Errors.Keys.IllegalRange_2;
-                arg1 = first;
-                arg2 = first + length;
-            } else {
-                key  = Errors.Keys.IllegalArgumentValue_2;
-                arg1 = "range";
-                arg2 = "[" + first + ':' + step + ':' + (first + step*length) + ']';
-            }
-            throw new IllegalArgumentException(Errors.format(key, arg1, arg2));
-        }
     }
 
     /**
@@ -643,7 +486,7 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
         @Override public int     intValue   (int index)     {return Vector.this.intValue   (toBacking(index));}
         @Override public short   shortValue (int index)     {return Vector.this.shortValue (toBacking(index));}
         @Override public byte    byteValue  (int index)     {return Vector.this.byteValue  (toBacking(index));}
-        @Override public String  toString   (int index)     {return Vector.this.toString   (toBacking(index));}
+        @Override public String  stringValue(int index)     {return Vector.this.stringValue(toBacking(index));}
         @Override public Number  get        (int index)     {return Vector.this.get        (toBacking(index));}
         @Override public Number  set(int index, Number v)   {return Vector.this.set        (toBacking(index), v);}
 
@@ -659,10 +502,240 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
             if (toAppend instanceof SubSampling && toAppend.backingVector() == Vector.this) {
                 final SubSampling other = (SubSampling) toAppend;
                 if (other.step == step && other.first == first + step*length) {
-                    return Vector.this.createSubSampling(first, step, length + other.length);
+                    return Vector.this.subSampling(first, step, length + other.length);
                 }
             }
             return super.createConcatenate(toAppend);
         }
+    }
+
+    /**
+     * If this vector is a view over another vector, returns the backing vector.
+     * Otherwise returns {@code this}. If this method is overridden, it should be
+     * together with the {@link #toBacking(int[])} method.
+     */
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
+    Vector backingVector() {
+        return this;
+    }
+
+    /**
+     * Converts an array of indexes used by this vector to the indexes used by the backing vector.
+     * If there is no such backing vector, then returns a clone of the given array.
+     * This method must also check index validity.
+     *
+     * <p>Only subclasses that are views of this vector will override this method.</p>
+     *
+     * @param  indices  the indexes given by the user.
+     * @return the indexes to use. Must be a new array in order to protect it from user changes.
+     * @throws IndexOutOfBoundsException if at least one index is out of bounds.
+     */
+    int[] toBacking(int[] indices) throws IndexOutOfBoundsException {
+        indices = indices.clone();
+        final int length = size();
+        for (int i : indices) {
+            ensureValidIndex(length, i);
+        }
+        return indices;
+    }
+
+    /**
+     * Returns a view which contains the values of this vector at the given indexes.
+     * This method does not copy the values, consequently any modification to the
+     * values of this vector will be reflected in the returned view and vis-versa.
+     *
+     * <p>The indexes do not need to be in any particular order. The same index can be repeated
+     * more than once. Thus it is possible to create a vector larger than the original vector.</p>
+     *
+     * @param  indices  indexes of the values to be returned.
+     * @return a view of this vector containing values at the given indexes.
+     * @throws IndexOutOfBoundsException if at least one index is out of bounds.
+     */
+    public Vector pick(int... indices) throws IndexOutOfBoundsException {
+        indices = toBacking(indices);
+        final int first, step;
+        switch (indices.length) {
+            case 0: {
+                first = 0;
+                step  = 1;
+                break;
+            }
+            case 1: {
+                first = indices[0];
+                step  = 1;
+                break;
+            }
+            default: {
+                int limit;
+                first = indices[0];
+                limit = indices[1];
+                step  = limit - first;
+                for (int i=2; i<indices.length; i++) {
+                    final int current = indices[i];
+                    if (current - limit != step) {
+                        return backingVector().new Pick(indices);
+                    }
+                    limit = current;
+                }
+                break;
+            }
+        }
+        return subSampling(first, step, indices.length);
+    }
+
+    /**
+     * A view over an other vector at pre-selected indexes.
+     */
+    private final class Pick extends Vector implements Serializable {
+        /** For cross-version compatibility. */
+        private static final long serialVersionUID = 6574040261355090760L;
+
+        /** The pre-selected indexes. */
+        private final int[] indices;
+
+        /**
+         * Creates a new view over the values at the given indexes. This constructor
+         * does not clone the array; it is caller responsibility to clone it if needed.
+         */
+        Pick(int[] indices) {
+            this.indices = indices;
+        }
+
+        /** Returns the backing vector. */
+        @Override Vector backingVector() {
+            return Vector.this;
+        }
+
+        /** Returns the indexes where to look for the value in the enclosing vector. */
+        @Override int[] toBacking(final int[] i) throws IndexOutOfBoundsException {
+            final int[] ni = new int[i.length];
+            for (int j=0; j<ni.length; j++) {
+                ni[j] = indices[i[j]];
+            }
+            return ni;
+        }
+
+        /** Returns the type of elements in this vector. */
+        @Override public Class<? extends Number> getElementType() {
+            return Vector.this.getElementType();
+        }
+
+        /** Delegates to the enclosing vector. */
+        @Override public int      size()                {return indices.length;}
+        @Override public boolean  isUnsigned()          {return Vector.this.isUnsigned();}
+        @Override public boolean  isNaN      (int i)    {return Vector.this.isNaN      (indices[i]);}
+        @Override public double   doubleValue(int i)    {return Vector.this.doubleValue(indices[i]);}
+        @Override public float    floatValue (int i)    {return Vector.this.floatValue (indices[i]);}
+        @Override public long     longValue  (int i)    {return Vector.this.longValue  (indices[i]);}
+        @Override public int      intValue   (int i)    {return Vector.this.intValue   (indices[i]);}
+        @Override public short    shortValue (int i)    {return Vector.this.shortValue (indices[i]);}
+        @Override public byte     byteValue  (int i)    {return Vector.this.byteValue  (indices[i]);}
+        @Override public String   stringValue(int i)    {return Vector.this.stringValue(indices[i]);}
+        @Override public Number   get        (int i)    {return Vector.this.get        (indices[i]);}
+        @Override public Number   set(int i, Number v)  {return Vector.this.set        (indices[i], v);}
+
+        /** Delegates to the enclosing vector. */
+        @Override Vector createSubSampling(int first, final int step, final int length) {
+            ensureValid(first, step, length);
+            final int[] ni = new int[length];
+            if (step == 1) {
+                System.arraycopy(indices, first, ni, 0, length);
+            } else for (int j=0; j<length; j++) {
+                ni[j] = indices[first];
+                first += step;
+            }
+            return Vector.this.pick(ni);
+        }
+
+        /** Concatenates the indexes if possible. */
+        @Override Vector createConcatenate(final Vector toAppend) {
+            if (toAppend instanceof Pick && toAppend.backingVector() == Vector.this) {
+                final int[] other = ((Pick) toAppend).indices;
+                final int[] c = Arrays.copyOf(indices, indices.length + other.length);
+                System.arraycopy(other, 0, c, indices.length, other.length);
+                return Vector.this.pick(c);
+            }
+            return super.createConcatenate(toAppend);
+        }
+    }
+
+    /**
+     * Ensures that the range created from the given parameters is valid.
+     */
+    static void ensureValid(final int first, final int step, final int length) {
+        if (length < 0) {
+            final short key;
+            final Object arg1, arg2;
+            if (step == 1) {
+                key  = Errors.Keys.IllegalRange_2;
+                arg1 = first;
+                arg2 = first + length;
+            } else {
+                key  = Errors.Keys.IllegalArgumentValue_2;
+                arg1 = "range";
+                arg2 = "[" + first + ':' + step + ':' + (first + step*length) + ']';
+            }
+            throw new IllegalArgumentException(Errors.format(key, arg1, arg2));
+        }
+    }
+
+    /**
+     * Returns the concatenation of this vector with the given one. Indexes in the [0 … {@link #size() size} - 1]
+     * range will map to this vector, while indexes in the [{@code size} … {@code size} + {@code toAppend.size}]
+     * range while map to the given vector.
+     *
+     * @param  toAppend  the vector to concatenate at the end of this vector.
+     * @return the concatenation of this vector with the given vector.
+     */
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
+    public Vector concatenate(final Vector toAppend) {
+        if (toAppend.isEmpty()) {
+            return this;
+        }
+        if (isEmpty()) {
+            return toAppend;
+        }
+        return createConcatenate(toAppend);
+    }
+
+    /**
+     * Implementation of {@link #concatenate(Vector)} to be overridden by subclasses.
+     */
+    Vector createConcatenate(final Vector toAppend) {
+        return new ConcatenatedVector(this, toAppend);
+    }
+
+    /**
+     * Returns a view which contains the values of this vector in reverse order.
+     *
+     * <div class="note"><b>Implementation note:</b> this method delegates its work
+     * to <code>{@linkplain #subSampling(int,int,int) subSampling}(size-1, -1, {@linkplain #size() size})</code>.
+     * This method is declared final in order to force subclasses to override {@code subSampling(…)} instead.</div>
+     *
+     * @return the vector values in reverse order.
+     */
+    public final Vector reverse() {
+        final int length = size();
+        return (length > 1) ? subSampling(length-1, -1, length) : this;
+    }
+
+    /**
+     * Returns a string representation of this vector.
+     *
+     * @return a string representation of this vector.
+     */
+    @Override
+    public String toString() {
+        final int length = size();
+        if (length == 0) {
+            return "[]";
+        }
+        final StringBuilder buffer = new StringBuilder();
+        String separator = "[";
+        for (int i=0; i<length; i++) {
+            buffer.append(separator).append(stringValue(i));
+            separator = ", ";
+        }
+        return buffer.append(']').toString();
     }
 }

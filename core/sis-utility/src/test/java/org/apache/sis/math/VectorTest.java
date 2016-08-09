@@ -99,7 +99,7 @@ public final strictfp class VectorTest extends TestCase {
         } catch (ArithmeticException e) {
             // This is the expected exception.
             final String message = e.getMessage();
-            assertTrue(message, message.contains("short"));
+            assertTrue(message, message.contains("1000"));
             assertTrue(message, message.contains("byte"));
         }
 
@@ -117,7 +117,7 @@ public final strictfp class VectorTest extends TestCase {
         }
 
         // Tests subvector at specific indexes.
-        vector = vector.view(10, 20, 25);
+        vector = vector.pick(10, 20, 25);
         assertEquals(3, vector.size());
         assertEquals(array[120], vector.shortValue(0));
         assertEquals(array[140], vector.shortValue(1));
@@ -210,11 +210,25 @@ public final strictfp class VectorTest extends TestCase {
          * Tests concatenation of views at fixed indices. Should be
          * implemented as the concatenation of the indices arrays when possible.
          */
-        final Vector expected = v3.view(10, 25, 30, 0, 35, 39);
-        v2 = v1.view( 0, 35, 39);
-        v1 = v1.view(10, 25, 30);
+        final Vector expected = v3.pick(10, 25, 30, 0, 35, 39);
+        v2 = v1.pick( 0, 35, 39);
+        v1 = v1.pick(10, 25, 30);
         v3 = v1.concatenate(v2);
         assertEquals(expected, v3);
         assertFalse("Expected concatenation of the indices.", v3 instanceof ConcatenatedVector);
+    }
+
+    /**
+     * Tests the {@link Vector#toString()} method on a vector of signed and unsigned bytes.
+     */
+    @Test
+    public void testToString() {
+        final byte[] array = new byte[] {(byte) 10, (byte) 100, (byte) 200};
+
+        vector = Vector.create(array, true);
+        assertEquals("[10, 100, 200]", vector.toString());
+
+        vector = Vector.create(array, false);
+        assertEquals("[10, 100, -56]", vector.toString());
     }
 }

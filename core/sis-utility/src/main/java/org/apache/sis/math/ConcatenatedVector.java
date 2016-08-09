@@ -189,7 +189,7 @@ final class ConcatenatedVector extends Vector implements Serializable {
      * Returns the string representation at the given index.
      */
     @Override
-    public String toString(int index) {
+    public String stringValue(int index) {
         final Vector v;
         if (index < limit) {
             v = first;
@@ -197,7 +197,7 @@ final class ConcatenatedVector extends Vector implements Serializable {
             v = second;
             index -= limit;
         }
-        return v.toString(index);
+        return v.stringValue(index);
     }
 
     /**
