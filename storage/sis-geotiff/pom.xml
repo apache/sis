@@ -51,6 +51,16 @@ Bridge between GeoTIFF convention and ISO 19115 metadata.
        =========================================================== -->
   <developers>
     <developer>
+      <name>Rémi Maréchal</name>
+      <email>remi.marechal@geomatys.com</email>
+      <organization>Geomatys</organization>
+      <organizationUrl>http://www.geomatys.com</organizationUrl>
+      <timezone>+1</timezone>
+      <roles>
+        <role>developer</role>
+      </roles>
+    </developer>
+    <developer>
       <name>Thi Phuong Hao Nguyen</name>
       <id>haonguyen</id>
       <email>nguyenthiphuonghao243@gmail.com</email>
@@ -74,16 +84,6 @@ Bridge between GeoTIFF convention and ISO 19115 metadata.
     </developer>
   </developers>
   <contributors>
-    <contributor>
-      <name>Rémi Maréchal</name>
-      <email>remi.marechal@geomatys.com</email>
-      <organization>Geomatys</organization>
-      <organizationUrl>http://www.geomatys.com</organizationUrl>
-      <timezone>+1</timezone>
-      <roles>
-        <role>developer</role>
-      </roles>
-    </contributor>
     <contributor>
       <name>Minh Chinh Vu</name>
       <email>chinhvm.uet.1995@gmail.com</email>
