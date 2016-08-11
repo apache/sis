@@ -39,6 +39,7 @@ import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.referencing.IdentifiedObjects;
 
 // Branch-dependent imports
+import java.io.UncheckedIOException;
 import org.opengis.feature.IdentifiedType;
 import org.opengis.feature.Property;
 import org.opengis.feature.PropertyType;
@@ -258,11 +259,19 @@ header: for (int i=0; ; i++) {
                 }
             } else if (propertyType instanceof AttributeType<?>) {
                 value = ((AttributeType<?>) propertyType).getDefaultValue();
-            } else if (propertyType instanceof AbstractOperation) {
-                if (((AbstractOperation) propertyType).formatResultFormula(buffer)) {
-                    value = CharSequences.trimWhitespaces(buffer).toString();
-                    buffer.setLength(0);
+            } else if (propertyType instanceof Operation) {
+                buffer.append(" = ");
+                try {
+                    if (propertyType instanceof AbstractOperation) {
+                        ((AbstractOperation) propertyType).formatResultFormula(buffer);
+                    } else {
+                        AbstractOperation.defaultFormula(((Operation) propertyType).getParameters(), buffer);
+                    }
+                } catch (IOException e) {
+                    throw new UncheckedIOException(e);      // Should never happen since we write in a StringBuffer.
                 }
+                value = CharSequences.trimWhitespaces(buffer).toString();
+                buffer.setLength(0);
             }
             /*
              * Column 0 - Name.
@@ -322,7 +331,7 @@ header: for (int i=0; ; i++) {
                 final boolean isInstance = valueClass != null && valueClass.isInstance(value);
                 final Format format = isInstance ? getFormat(valueClass) : null;
                 final Iterator<?> it = (!isInstance && (value instanceof Collection<?>)
-                        ? (Collection<?>) value : Collections.singleton(value)).iterator();
+                        ? (Iterable<?>) value : Collections.singleton(value)).iterator();
                 String separator = "";
                 while (it.hasNext()) {
                     value = it.next();
