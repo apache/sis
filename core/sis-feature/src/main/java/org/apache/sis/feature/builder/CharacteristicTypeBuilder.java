@@ -315,6 +315,7 @@ public final class CharacteristicTypeBuilder<V> extends TypeBuilder {
         if (owner != null) {
             owner.characteristics.remove(owner.characteristics.lastIndexOf(this));
             // Note: a negative lastIndexOf(old) would be a bug in our algorithm.
+            owner.clearCache();
             owner = null;
         }
     }
