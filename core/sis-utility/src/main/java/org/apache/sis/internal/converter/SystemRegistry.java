@@ -32,7 +32,7 @@ import org.apache.sis.internal.system.Modules;
  *
  * <ul>
  *   <li>Fetch the list of converters from the content of all
- *       {@code META-INF/services/org.apache.sis.util.converter.ObjectConverter} files found on the classpath.
+ *       {@code META-INF/services/org.apache.sis.util.ObjectConverter} files found on the classpath.
  *       The intend is to allow other modules to register their own converters.</li>
  *
  *   <li>Apply heuristic rules in addition to the explicitly registered converters.
