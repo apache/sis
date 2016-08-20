@@ -33,7 +33,6 @@ import org.opengis.metadata.acquisition.OperationType;
 import org.opengis.metadata.citation.DateType;
 import org.opengis.metadata.content.CoverageContentType;
 import org.opengis.metadata.content.ImageDescription;
-import org.opengis.metadata.distribution.Distribution;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.identification.Identification;
 import org.opengis.metadata.identification.Progress;
@@ -41,28 +40,25 @@ import org.opengis.metadata.maintenance.ScopeCode;
 
 import org.apache.sis.metadata.iso.DefaultIdentifier;
 import org.apache.sis.metadata.iso.DefaultMetadata;
+import org.apache.sis.metadata.iso.DefaultMetadataScope;
 import org.apache.sis.metadata.iso.acquisition.DefaultAcquisitionInformation;
 import org.apache.sis.metadata.iso.acquisition.DefaultEvent;
 import org.apache.sis.metadata.iso.acquisition.DefaultInstrument;
 import org.apache.sis.metadata.iso.acquisition.DefaultOperation;
 import org.apache.sis.metadata.iso.acquisition.DefaultPlatform;
 import org.apache.sis.metadata.iso.citation.Citations;
-import org.apache.sis.metadata.iso.citation.AbstractParty;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.citation.DefaultCitationDate;
-import org.apache.sis.metadata.iso.citation.DefaultResponsibility;
 import org.apache.sis.metadata.iso.content.DefaultAttributeGroup;
 import org.apache.sis.metadata.iso.content.DefaultBand;
 import org.apache.sis.metadata.iso.content.DefaultImageDescription;
 import org.apache.sis.metadata.iso.distribution.DefaultFormat;
-import org.apache.sis.metadata.iso.distribution.DefaultDistribution;
 import org.apache.sis.metadata.iso.extent.DefaultExtent;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.metadata.iso.extent.DefaultTemporalExtent;
 import org.apache.sis.metadata.iso.identification.DefaultDataIdentification;
-import org.apache.sis.metadata.iso.identification.DefaultAggregateInformation;
 import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.util.iso.DefaultInternationalString;
+import org.apache.sis.util.iso.SimpleInternationalString;
 import org.apache.sis.util.logging.WarningListeners;
 
 import static java.util.Collections.singleton;
@@ -74,11 +70,18 @@ import java.time.OffsetDateTime;
 import java.time.OffsetTime;
 import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoField;
+import org.opengis.metadata.acquisition.Context;
 import org.opengis.metadata.content.AttributeGroup;
 
 
 /**
  * Parses Landsat metadata as {@linkplain DefaultMetadata ISO-19115 Metadata} object.
+ * This class reads the content of a given {@link BufferedReader} from buffer position
+ * until the first occurrence of the {@code END} keyword. Lines beginning with the
+ * {@code #} character (ignoring spaces) are treated as comment lines and ignored.
+ *
+ * <p><b>NOTE FOR MAINTAINER:</b> if the work performed by this class is modified, consider updating
+ * <a href="./doc-files/LandsatMetadata.html">./doc-files/LandsatMetadata.html</a> accordingly.</p>
  *
  * @author  Thi Phuong Hao Nguyen (VNSC)
  * @author  Remi Marechal (Geomatys)
@@ -91,7 +94,7 @@ public class LandsatReader {
      * The description of all bands that can be included in a Landsat coverage.
      * This description is hard-coded and shared by all metadata instances.
      *
-     * @todo Move those information in a database.
+     * @todo Move those information in a database after we implemented the {@code org.apache.sis.metadata.sql} package.
      */
     private static final AttributeGroup BANDS;
     static {
@@ -113,7 +116,7 @@ public class LandsatReader {
         final Unit<Length> nm = SI.MetricPrefix.NANO(SI.METRE);
         for (int i = 0; i < bands.length; i++) {
             final DefaultBand band = new DefaultBand();
-            band.setDescription(new DefaultInternationalString(nameband[i]));
+            band.setDescription(new SimpleInternationalString(nameband[i]));
             band.setPeakResponse(wavelengths[i]);
             band.setBoundUnits(nm);
             bands[i] = band;
@@ -147,6 +150,7 @@ public class LandsatReader {
 
     /**
      * Creates a new metadata parser from the given characters reader.
+     * See class javadoc for more information on the expected format.
      *
      * @param  reader  a reader opened on the Landsat file.
      *         It is caller's responsibility to close this reader.
@@ -337,7 +341,7 @@ public class LandsatReader {
             throw new DataStoreException("Can not read the geographic bounding box.", e);
         }
         final DefaultExtent extent = new DefaultExtent();
-        final boolean isEmpty = box.isEmpty();
+        boolean isEmpty = box.isEmpty();
         if (!isEmpty) {
             extent.setGeographicElements(singleton(box));
         }
@@ -346,15 +350,13 @@ public class LandsatReader {
                 final DefaultTemporalExtent t = new DefaultTemporalExtent();
                 t.setBounds(sceneTime, sceneTime);
                 extent.setTemporalElements(singleton(t));
+                isEmpty = false;                            // Set only after the above succeed.
             } catch (UnsupportedOperationException e) {
                 // May happen if the temporal module (which is optional) is not on the classpath.
                 warning(e);
-                if (isEmpty) {
-                    return null;
-                }
             }
         }
-        return extent;
+        return isEmpty ? null : extent;
     }
 
     /**
@@ -385,6 +387,7 @@ public class LandsatReader {
         }
         if (sceneTime != null) {
             final DefaultEvent event = new DefaultEvent();
+            event.setContext(Context.ACQUISITION);
             event.setTime(sceneTime);
             final DefaultOperation op = new DefaultOperation();
             op.setSignificantEvents(singleton(event));
@@ -397,20 +400,6 @@ public class LandsatReader {
     }
 
     /**
-     * Get basic Information about the distributor of and options for obtaining the resource.
-     *
-     * @return the data distributor information, or {@code null} if none.
-     */
-    private Distribution createDistribution() {
-        DefaultDistribution distribution = new DefaultDistribution();
-        DefaultFormat format = new DefaultFormat();
-        String value = getValue(OUTPUT_FORMAT);
-        format.setName(new DefaultInternationalString(value));
-        distribution.setDistributionFormats(singleton(format));
-        return distribution;
-    }
-
-    /**
      * Gets basic information required to uniquely identify the data, or {@code null} if none.
      * This method expects the metadata and data acquisition time in argument in order to avoid
      * to compute them twice.
@@ -420,17 +409,17 @@ public class LandsatReader {
      * @return the data identification information, or {@code null} if none.
      * @throws DataStoreException if a property value can not be parsed as a number or a date.
      */
-    private Identification createIdentification(final Date metadataTime, final Date sceneTime) throws DataStoreException {
+    private Identification createIdentification(final DefaultCitationDate metadataTime, final Date sceneTime) throws DataStoreException {
         final DefaultDataIdentification identification = new DefaultDataIdentification();
         final DefaultCitation citation = new DefaultCitation();
         boolean isEmpty = true;
         if (metadataTime != null) {
-            citation.setDates(singleton(new DefaultCitationDate(metadataTime, DateType.PUBLICATION)));
+            citation.setDates(singleton(metadataTime));
             isEmpty = false;
         }
         String value = getValue(LANDSAT_SCENE_ID);
         if (value != null) {
-            citation.setTitle(new DefaultInternationalString(value + ".tar.gz"));
+            citation.setIdentifiers(singleton(new DefaultIdentifier(value)));
             isEmpty = false;
         }
         if (!isEmpty) {
@@ -443,20 +432,12 @@ public class LandsatReader {
         }
         value = getValue(ORIGIN);
         if (value != null) {
-            DefaultResponsibility responsibility = new DefaultResponsibility();
-            AbstractParty party = new AbstractParty();
-            party.setName(new DefaultInternationalString(value));
-            responsibility.getParties().add(party);
-            citation.getCitedResponsibleParties().add(responsibility);
+            identification.setCredits(singleton(new SimpleInternationalString(value)));
             isEmpty = false;
         }
-        value = getValue(ORIGIN);
+        value = getValue(OUTPUT_FORMAT);
         if (value != null) {
-            DefaultCitation citation1 = new DefaultCitation();
-            DefaultAggregateInformation aggregateInformation = new DefaultAggregateInformation();
-            citation1.setTitle(new DefaultInternationalString(value));
-            aggregateInformation.setAggregateDataSetName(citation1);
-            identification.setAggregationInfo(singleton(aggregateInformation));
+            identification.setResourceFormats(singleton(new DefaultFormat(value, null)));
             isEmpty = false;
         }
         return isEmpty ? null : identification;
@@ -471,14 +452,14 @@ public class LandsatReader {
     public Metadata read() throws DataStoreException {
         final DefaultMetadata metadata = new DefaultMetadata();
         metadata.setMetadataStandards(Citations.ISO_19115);
-        final Date metadataTime = getDate(FILE_DATE);
-        if (metadataTime != null) {
-            metadata.setDateInfo(singleton(new DefaultCitationDate(metadataTime, DateType.CREATION)));
+        final Date fileDate = getDate(FILE_DATE);
+        DefaultCitationDate metadataTime = null;
+        if (fileDate != null) {
+            metadataTime = new DefaultCitationDate(fileDate, DateType.CREATION);
+            metadata.setDateInfo(singleton(metadataTime));
         }
-        metadata.setLanguage(Locale.ENGLISH);
-        metadata.setFileIdentifier(getValue(LANDSAT_SCENE_ID));
-        final Distribution metadataDistribution = createDistribution();
-        metadata.setDistributionInfo(singleton(metadataDistribution));
+        metadata.setLanguages(singleton(Locale.ENGLISH));
+        metadata.setMetadataIdentifier(new DefaultIdentifier(getValue(LANDSAT_SCENE_ID)));
         final Date sceneTime = getDate(DATE_ACQUIRED, SCENE_CENTER_TIME);
         final Identification identification = createIdentification(metadataTime, sceneTime);
         if (identification != null) {
@@ -492,9 +473,7 @@ public class LandsatReader {
         if (acquisition != null) {
             metadata.setAcquisitionInformation(singleton(acquisition));
         }
-        if (getValue(DATA_TYPE) != null) {
-            metadata.setHierarchyLevels(singleton(ScopeCode.METADATA));
-        }
+        metadata.setMetadataScopes(singleton(new DefaultMetadataScope(ScopeCode.DATASET, null)));
         return metadata;
     }
 

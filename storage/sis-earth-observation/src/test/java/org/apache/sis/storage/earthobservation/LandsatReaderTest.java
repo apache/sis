@@ -41,13 +41,18 @@ public class LandsatReaderTest extends TestCase {
     /**
      * Tests {@link LandsatReader#read()}.
      *
+     * <p><b>NOTE FOR MAINTAINER:</b> if the result of this test changes, consider updating
+     * <a href="./doc-files/LandsatMetadata.html">./doc-files/LandsatMetadata.html</a> accordingly.</p>
+     *
      * @throws IOException if an error occurred while reading the test file.
      * @throws DataStoreException if a property value can not be parsed as a number or a date.
      */
     @Test
     public void testRead() throws IOException, DataStoreException {
         final Metadata actual;
-        try (BufferedReader in = new BufferedReader(new InputStreamReader(LandsatReaderTest.class.getResourceAsStream("LandsatTest.txt"), "UTF-8"))) {
+        try (BufferedReader in = new BufferedReader(new InputStreamReader(
+                LandsatReaderTest.class.getResourceAsStream("LandsatTest.txt"), "UTF-8")))
+        {
             actual = new LandsatReader(in).read();
         }
         final String text = formatNameAndValue(DefaultMetadata.castOrCopy(actual).asTreeTable());
@@ -56,23 +61,23 @@ public class LandsatReaderTest extends TestCase {
                 + "  ├─Language…………………………………………………………………………… en\n"
                 + "  ├─Identification info\n"
                 + "  │   ├─Citation\n"
-                + "  │   │   ├─Title……………………………………………………………… TestImage.tar.gz\n"
                 + "  │   │   ├─Date\n"
                 + "  │   │   │   ├─Date……………………………………………………… 2016-06-27 16:48:12\n"
-                + "  │   │   │   └─Date type………………………………………… Publication\n"
-                + "  │   │   └─Cited responsible party\n"
-                + "  │   │       └─Party\n"
-                + "  │   │           └─Name…………………………………………… Test file\n"
-                + "  │   ├─Extent\n"
-                + "  │   │   └─Geographic element\n"
-                + "  │   │       ├─West bound longitude…………… 108°20′24″E\n"
-                + "  │   │       ├─East bound longitude…………… 110°26′24″E\n"
-                + "  │   │       ├─South bound latitude…………… 10°30′N\n"
-                + "  │   │       ├─North bound latitude…………… 12°37′12″N\n"
-                + "  │   │       └─Extent type code……………………… true\n"
-                + "  │   └─Associated resource\n"
-                + "  │       └─Name\n"
-                + "  │           └─Title…………………………………………………… Test file\n"
+                + "  │   │   │   └─Date type………………………………………… Creation\n"
+                + "  │   │   └─Identifier\n"
+                + "  │   │       └─Code……………………………………………………… LandsatTest\n"
+                + "  │   ├─Credit……………………………………………………………………… Derived from U.S. Geological Survey data\n"
+                + "  │   ├─Resource format\n"
+                + "  │   │   └─Format specification citation\n"
+                + "  │   │       ├─Title…………………………………………………… GeoTIFF Coverage Encoding Profile\n"
+                + "  │   │       └─Alternate title………………………… GEOTIFF\n"
+                + "  │   └─Extent\n"
+                + "  │       └─Geographic element\n"
+                + "  │           ├─West bound longitude…………… 108°20′24″E\n"
+                + "  │           ├─East bound longitude…………… 110°26′24″E\n"
+                + "  │           ├─South bound latitude…………… 10°30′N\n"
+                + "  │           ├─North bound latitude…………… 12°37′12″N\n"
+                + "  │           └─Extent type code……………………… true\n"
                 + "  ├─Content info\n"
                 + "  │   ├─Illumination elevation angle…………… 58.8\n"
                 + "  │   ├─Illumination azimuth angle………………… 116.9\n"
@@ -123,29 +128,26 @@ public class LandsatReaderTest extends TestCase {
                 + "  │           ├─Peak response……………………………… 12000.0\n"
                 + "  │           ├─Bound units…………………………………… nm\n"
                 + "  │           └─Description…………………………………… Thermal Infrared Sensor (TIRS) 2\n"
-                + "  ├─Distribution info\n"
-                + "  │   └─Distribution format\n"
-                + "  │       └─Format specification citation\n"
-                + "  │           └─Alternate title………………………… GEOTIFF\n"
                 + "  ├─Acquisition information\n"
                 + "  │   ├─Operation\n"
                 + "  │   │   ├─Status…………………………………………………………… Completed\n"
                 + "  │   │   ├─Type………………………………………………………………… Real\n"
                 + "  │   │   └─Significant event\n"
+                + "  │   │       ├─Context……………………………………………… Acquisition\n"
                 + "  │   │       └─Time……………………………………………………… 2016-06-26 03:02:01\n"
                 + "  │   └─Platform\n"
                 + "  │       ├─Identifier\n"
-                + "  │       │   └─Code……………………………………………………… LANDSAT\n"
+                + "  │       │   └─Code……………………………………………………… Pseudo LANDSAT\n"
                 + "  │       └─Instrument\n"
                 + "  │           └─Identifier\n"
-                + "  │               └─Code…………………………………………… PseudoSensor\n"
+                + "  │               └─Code…………………………………………… Pseudo TIRS\n"
                 + "  ├─Date info\n"
                 + "  │   ├─Date…………………………………………………………………………… 2016-06-27 16:48:12\n"
                 + "  │   └─Date type……………………………………………………………… Creation\n"
                 + "  ├─Metadata scope\n"
-                + "  │   └─Resource scope………………………………………………… Metadata\n"
+                + "  │   └─Resource scope………………………………………………… Dataset\n"
                 + "  ├─Metadata identifier\n"
-                + "  │   └─Code…………………………………………………………………………… TestImage\n"
+                + "  │   └─Code…………………………………………………………………………… LandsatTest\n"
                 + "  ├─Metadata standard (1 of 2)\n"
                 + "  │   ├─Title………………………………………………………………………… Geographic Information — Metadata Part 1: Fundamentals\n"
                 + "  │   ├─Cited responsible party\n"
