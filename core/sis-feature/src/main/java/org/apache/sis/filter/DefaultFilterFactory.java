@@ -95,9 +95,9 @@ import org.opengis.util.GenericName;
 /**
  * Default implementation of GeoAPI filter factory.
  *
- * @author Johann Sorel (Geomatys)
- * @since   0.7
- * @version 0.7
+ * @author  Johann Sorel (Geomatys)
+ * @since   0.8
+ * @version 0.8
  * @module
  */
 public class DefaultFilterFactory implements FilterFactory2 {
@@ -109,7 +109,8 @@ public class DefaultFilterFactory implements FilterFactory2 {
      */
     @Override
     public BBOX bbox(final String propertyName, final double minx,
-            final double miny, final double maxx, final double maxy, final String srs) {
+            final double miny, final double maxx, final double maxy, final String srs)
+    {
         return bbox(property(propertyName), minx, miny, maxx, maxy, srs);
     }
 
@@ -118,7 +119,8 @@ public class DefaultFilterFactory implements FilterFactory2 {
      */
     @Override
     public BBOX bbox(final Expression e, final double minx, final double miny,
-            final double maxx, final double maxy, final String srs) {
+            final double maxx, final double maxy, final String srs)
+    {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
@@ -126,7 +128,8 @@ public class DefaultFilterFactory implements FilterFactory2 {
      * {@inheritDoc }
      */
     @Override
-    public BBOX bbox(final Expression e, final Envelope bounds) {
+    public BBOX bbox(final Expression e, final Envelope bounds)
+    {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
@@ -135,7 +138,8 @@ public class DefaultFilterFactory implements FilterFactory2 {
      */
     @Override
     public Beyond beyond(final String propertyName, final Geometry geometry,
-            final double distance, final String units) {
+            final double distance, final String units)
+    {
         final PropertyName name = property(propertyName);
         final Literal geom = literal(geometry);
         return beyond(name, geom, distance, units);
@@ -146,7 +150,8 @@ public class DefaultFilterFactory implements FilterFactory2 {
      */
     @Override
     public Beyond beyond(final Expression left, final Expression right,
-            final double distance, final String units) {
+            final double distance, final String units)
+    {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
@@ -716,7 +721,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
      */
     @Override
     public Literal literal(final Object value) {
-        return new DefaultLiteral(value);
+        return new DefaultLiteral<>(value);
     }
 
     /**
@@ -724,7 +729,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
      */
     @Override
     public Literal literal(final byte value) {
-        return new DefaultLiteral(value);
+        return new DefaultLiteral<>(value);
     }
 
     /**
@@ -732,7 +737,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
      */
     @Override
     public Literal literal(final short value) {
-        return new DefaultLiteral(value);
+        return new DefaultLiteral<>(value);
     }
 
     /**
@@ -740,7 +745,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
      */
     @Override
     public Literal literal(final int value) {
-        return new DefaultLiteral(value);
+        return new DefaultLiteral<>(value);
     }
 
     /**
@@ -748,7 +753,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
      */
     @Override
     public Literal literal(final long value) {
-        return new DefaultLiteral(value);
+        return new DefaultLiteral<>(value);
     }
 
     /**
@@ -756,7 +761,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
      */
     @Override
     public Literal literal(final float value) {
-        return new DefaultLiteral(value);
+        return new DefaultLiteral<>(value);
     }
 
     /**
@@ -764,7 +769,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
      */
     @Override
     public Literal literal(final double value) {
-        return new DefaultLiteral(value);
+        return new DefaultLiteral<>(value);
     }
 
     /**
@@ -772,7 +777,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
      */
     @Override
     public Literal literal(final char value) {
-        return new DefaultLiteral(value);
+        return new DefaultLiteral<>(value);
     }
 
     /**
@@ -780,7 +785,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
      */
     @Override
     public Literal literal(final boolean value) {
-        return new DefaultLiteral(value);
+        return new DefaultLiteral<>(value);
     }
 
     // SORT BY /////////////////////////////////////////////////////////////////
@@ -848,8 +853,7 @@ public class DefaultFilterFactory implements FilterFactory2 {
      * {@inheritDoc }
      */
     @Override
-    public ArithmeticOperators arithmeticOperators(final boolean simple,
-            final Functions functions) {
+    public ArithmeticOperators arithmeticOperators(final boolean simple, final Functions functions) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
@@ -858,7 +862,8 @@ public class DefaultFilterFactory implements FilterFactory2 {
      */
     @Override
     public ScalarCapabilities scalarCapabilities(final ComparisonOperators comparison,
-            final ArithmeticOperators arithmetic, final boolean logical) {
+            final ArithmeticOperators arithmetic, final boolean logical)
+    {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
@@ -867,7 +872,8 @@ public class DefaultFilterFactory implements FilterFactory2 {
      */
     @Override
     public SpatialCapabilities spatialCapabilities(
-            final GeometryOperand[] geometryOperands, final SpatialOperators spatial) {
+            final GeometryOperand[] geometryOperands, final SpatialOperators spatial)
+    {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
@@ -885,7 +891,8 @@ public class DefaultFilterFactory implements FilterFactory2 {
     @Override
     public FilterCapabilities capabilities(final String version,
             final ScalarCapabilities scalar, final SpatialCapabilities spatial,
-            final TemporalCapabilities temporal, final IdCapabilities id) {
+            final TemporalCapabilities temporal, final IdCapabilities id)
+    {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
@@ -896,5 +903,4 @@ public class DefaultFilterFactory implements FilterFactory2 {
     public TemporalCapabilities temporalCapabilities(TemporalOperand[] temporalOperands, TemporalOperators temporal) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
-
 }

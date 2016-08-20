@@ -17,20 +17,24 @@
 package org.apache.sis.filter;
 
 import java.util.Map;
-import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
+import org.apache.sis.util.ArgumentChecks;
+
+// Branch-dependent imports
+import java.util.Objects;
 import org.opengis.feature.Feature;
 import org.opengis.feature.PropertyNotFoundException;
 import org.opengis.filter.expression.ExpressionVisitor;
 import org.opengis.filter.expression.PropertyName;
+
 
 /**
  * Immutable property name expression.
  * A property name does not store any value, it acts as an indirection to a
  * property value of the evaluated feature.
  *
- * @author Johann Sorel (Geomatys)
- * @since   0.7
- * @version 0.7
+ * @author  Johann Sorel (Geomatys)
+ * @since   0.8
+ * @version 0.8
  * @module
  */
 public class DefaultPropertyName extends AbstractExpression implements PropertyName {
@@ -40,11 +44,11 @@ public class DefaultPropertyName extends AbstractExpression implements PropertyN
     private final String property;
 
     /**
-     * 
+     *
      * @param property attribute name
      */
     public DefaultPropertyName(final String property) {
-        ensureNonNull("property name", property);
+        ArgumentChecks.ensureNonNull("property", property);
         this.property = property;
     }
 
@@ -61,17 +65,15 @@ public class DefaultPropertyName extends AbstractExpression implements PropertyN
      */
     @Override
     public Object evaluate(final Object candidate) {
-
-        if(candidate instanceof Feature){
-            try{
+        if (candidate instanceof Feature) {
+            try {
                 return ((Feature) candidate).getPropertyValue(property);
-            }catch(PropertyNotFoundException ex){
+            } catch (PropertyNotFoundException ex) {
                 return null;
             }
-        }else if(candidate instanceof Map){
-            return ((Map) candidate).get(property);
+        } else if (candidate instanceof Map<?,?>) {
+            return ((Map<?,?>) candidate).get(property);
         }
-
         return null;
     }
 
@@ -88,7 +90,7 @@ public class DefaultPropertyName extends AbstractExpression implements PropertyN
      */
     @Override
     public String toString() {
-        return "{"+property+"}";
+        return '{' + property + '}';
     }
 
     /**
@@ -96,17 +98,10 @@ public class DefaultPropertyName extends AbstractExpression implements PropertyN
      */
     @Override
     public boolean equals(final Object obj) {
-        if (obj == null) {
+        if (obj == null || getClass() != obj.getClass()) {
             return false;
         }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final DefaultPropertyName other = (DefaultPropertyName) obj;
-        if ((this.property == null) ? (other.property != null) : !this.property.equals(other.property)) {
-            return false;
-        }
-        return true;
+        return Objects.equals(property, ((DefaultPropertyName) obj).property);
     }
 
     /**
@@ -114,8 +109,6 @@ public class DefaultPropertyName extends AbstractExpression implements PropertyN
      */
     @Override
     public int hashCode() {
-        int hash = 7;
-        hash = 73 * hash + (this.property != null ? this.property.hashCode() : 0);
-        return hash;
+        return Objects.hashCode(property) + 7;
     }
 }
