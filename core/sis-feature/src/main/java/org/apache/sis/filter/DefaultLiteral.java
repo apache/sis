@@ -16,18 +16,19 @@
  */
 package org.apache.sis.filter;
 
-import org.apache.sis.util.ObjectConverters;
-import org.apache.sis.util.UnconvertibleObjectException;
+import java.util.Objects;
 import org.opengis.filter.expression.ExpressionVisitor;
 import org.opengis.filter.expression.Literal;
+
 
 /**
  * Immutable literal expression.
  *
- * @author Johann Sorel (Geomatys)
  * @param <T> literal value type
- * @since   0.7
- * @version 0.7
+ *
+ * @author  Johann Sorel (Geomatys)
+ * @since   0.8
+ * @version 0.8
  * @module
  */
 public class DefaultLiteral<T> extends AbstractExpression implements Literal {
@@ -73,7 +74,7 @@ public class DefaultLiteral<T> extends AbstractExpression implements Literal {
      */
     @Override
     public String toString() {
-        return value == null ? "NULL" : value.toString();
+        return String.valueOf(value);
     }
 
     /**
@@ -81,32 +82,10 @@ public class DefaultLiteral<T> extends AbstractExpression implements Literal {
      */
     @Override
     public boolean equals(final Object obj) {
-        if (obj == null) {
+        if (obj == null || getClass() != obj.getClass()) {
             return false;
         }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final DefaultLiteral<T> other = (DefaultLiteral<T>) obj;
-
-        if (this.value == null && other.value == null) {
-            return true;
-        }
-        if (this.value == null) {
-            return false;
-        }
-        if (other.value == null) {
-            return false;
-        }
-
-        final Object otherVal;
-        try{
-            otherVal = ObjectConverters.convert(other.value, this.value.getClass());
-        }catch(UnconvertibleObjectException ex){
-            //type can not be matched
-            return false;
-        }
-        return this.value.equals(otherVal);
+        return Objects.equals(value, ((DefaultLiteral<?>) obj).value);
     }
 
     /**
@@ -114,9 +93,6 @@ public class DefaultLiteral<T> extends AbstractExpression implements Literal {
      */
     @Override
     public int hashCode() {
-        int hash = 3;
-        hash = 89 * hash + (this.value != null ? this.value.hashCode() : 0);
-        return hash;
+        return Objects.hashCode(value) + 3;
     }
-
 }

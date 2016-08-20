@@ -16,32 +16,32 @@
  */
 package org.apache.sis.filter;
 
-import java.util.HashMap;
 import java.util.Map;
-import static org.apache.sis.test.Assert.*;
-import org.apache.sis.test.TestCase;
-import org.apache.sis.util.iso.Names;
-import org.junit.Test;
+import java.util.HashMap;
 import org.opengis.filter.FilterFactory2;
 import org.opengis.filter.expression.PropertyName;
+import org.apache.sis.util.iso.Names;
+import org.apache.sis.test.TestCase;
+import org.junit.Test;
+
+import static org.apache.sis.test.Assert.*;
+
 
 /**
  * Tests {@link DefaultPropertyName}.
  *
  * @author Johann Sorel (Geomatys)
- * @since   0.7
- * @version 0.7
+ * @since   0.8
+ * @version 0.8
  * @module
  */
-public class DefaultPropertyNameTest extends TestCase {
-
+public final strictfp class DefaultPropertyNameTest extends TestCase {
     /**
      * Test factory.
      */
     @Test
     public void testConstructor() {
         final FilterFactory2 FF = new DefaultFilterFactory();
-
         assertNotNull(FF.property(Names.parseGenericName(null, ":", "type")));
         assertNotNull(FF.property("type"));
     }
@@ -51,7 +51,7 @@ public class DefaultPropertyNameTest extends TestCase {
      */
     @Test
     public void testEvaluate() {
-        final Map candidate = new HashMap();
+        final Map<String,String> candidate = new HashMap<>();
 
         final PropertyName prop = new DefaultPropertyName("type");
         assertEquals("type", prop.getPropertyName());
@@ -65,10 +65,9 @@ public class DefaultPropertyNameTest extends TestCase {
 
         candidate.put("type", "45.1");
         assertEquals("45.1", prop.evaluate(candidate));
-        assertEquals("45.1", prop.evaluate(candidate,null));
-        assertEquals("45.1", prop.evaluate(candidate,String.class));
-        assertEquals(45.1, prop.evaluate(candidate,Double.class), STRICT);
-
+        assertEquals("45.1", prop.evaluate(candidate, Object.class));
+        assertEquals("45.1", prop.evaluate(candidate, String.class));
+        assertEquals( 45.1,  prop.evaluate(candidate, Double.class), STRICT);
     }
 
     /**
@@ -78,6 +77,4 @@ public class DefaultPropertyNameTest extends TestCase {
     public void testSerialize() {
         assertSerializedEquals(new DefaultPropertyName("type"));
     }
-
 }
-

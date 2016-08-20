@@ -17,22 +17,21 @@
 package org.apache.sis.filter;
 
 import java.io.Serializable;
-
-import org.apache.sis.util.ObjectConverters;
-
-import org.apache.sis.util.UnconvertibleObjectException;
 import org.opengis.filter.expression.Expression;
+import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.ObjectConverters;
+import org.apache.sis.util.UnconvertibleObjectException;
+
 
 /**
  * Override evaluate(Object,Class) by using the converters system.
  *
- * @author Johann Sorel (Geomatys)
- * @since   0.7
- * @version 0.7
+ * @author  Johann Sorel (Geomatys)
+ * @since   0.8
+ * @version 0.8
  * @module
  */
 public abstract class AbstractExpression implements Expression,Serializable {
-
     /**
      * Use SIS object converters to convert the default result object
      * to the wished class.
@@ -42,15 +41,12 @@ public abstract class AbstractExpression implements Expression,Serializable {
      */
     @Override
     public <T> T evaluate(final Object candidate, final Class<T> target) {
+        ArgumentChecks.ensureNonNull("target", target);
         final Object value = evaluate(candidate);
-        if (target == null) {
-            return (T) value;
-        }
-        try{
+        try {
             return ObjectConverters.convert(value, target);
-        }catch (UnconvertibleObjectException ex){
+        } catch (UnconvertibleObjectException ex) {
             return null;
         }
     }
-
 }
