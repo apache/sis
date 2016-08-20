@@ -73,8 +73,8 @@ public class DefaultMetadataScope extends ISOMetadata implements MetadataScope {
     /**
      * Constructs a metadata scope initialized to the given value.
      *
-     * @param resourceScope code for the scope.
-     * @param name Description of the scope, or {@code null} if none.
+     * @param resourceScope  code for the scope.
+     * @param name  description of the scope, or {@code null} if none.
      */
     public DefaultMetadataScope(final ScopeCode resourceScope, final CharSequence name) {
         this.resourceScope = resourceScope;
@@ -86,7 +86,7 @@ public class DefaultMetadataScope extends ISOMetadata implements MetadataScope {
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from, or {@code null} if none.
+     * @param object  the metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(MetadataScope)
      */
@@ -112,8 +112,8 @@ public class DefaultMetadataScope extends ISOMetadata implements MetadataScope {
      *       metadata contained in the given object are not recursively copied.</li>
      * </ul>
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultMetadataScope castOrCopy(final MetadataScope object) {
@@ -124,9 +124,9 @@ public class DefaultMetadataScope extends ISOMetadata implements MetadataScope {
     }
 
     /**
-     * Return the code for the scope.
+     * Returns the code for the scope.
      *
-     * @return The ode for the scope.
+     * @return the code for the scope.
      */
     @Override
     @XmlElement(name = "resourceScope", required = true)
@@ -137,7 +137,7 @@ public class DefaultMetadataScope extends ISOMetadata implements MetadataScope {
     /**
      * Sets the code for the scope.
      *
-     * @param newValue The new code for the scope.
+     * @param  newValue  the new code for the scope.
      */
     public void setResourceScope(final ScopeCode newValue) {
         checkWritePermission();
@@ -145,9 +145,9 @@ public class DefaultMetadataScope extends ISOMetadata implements MetadataScope {
     }
 
     /**
-     * Return a description of the scope, or {@code null} if none.
+     * Returns a description of the scope, or {@code null} if none.
      *
-     * @return Description of the scope, or {@code null} if none.
+     * @return description of the scope, or {@code null} if none.
      */
     @Override
     @XmlElement(name = "name")
@@ -158,7 +158,7 @@ public class DefaultMetadataScope extends ISOMetadata implements MetadataScope {
     /**
      * Sets the description of the scope.
      *
-     * @param newValue The new description of the scope.
+     * @param  newValue  the new description of the scope.
      */
     public void setName(final InternationalString newValue) {
         checkWritePermission();
