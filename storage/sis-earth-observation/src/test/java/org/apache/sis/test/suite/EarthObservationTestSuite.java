@@ -31,7 +31,8 @@ import org.junit.BeforeClass;
  * @module
  */
 @Suite.SuiteClasses({
-    org.apache.sis.storage.earthobservation.LandsatReaderTest.class
+    org.apache.sis.storage.earthobservation.LandsatReaderTest.class,
+    org.apache.sis.storage.earthobservation.LandsatStoreProviderTest.class
 })
 public final strictfp class EarthObservationTestSuite extends TestSuite {
     /**

@@ -84,12 +84,12 @@ import org.opengis.metadata.content.AttributeGroup;
  * <a href="./doc-files/LandsatMetadata.html">./doc-files/LandsatMetadata.html</a> accordingly.</p>
  *
  * @author  Thi Phuong Hao Nguyen (VNSC)
- * @author  Remi Marechal (Geomatys)
+ * @author  Rémi Maréchal (Geomatys)
  * @since   0.8
  * @version 0.8
  * @module
  */
-public class LandsatReader {
+final class LandsatReader {
     /**
      * The description of all bands that can be included in a Landsat coverage.
      * This description is hard-coded and shared by all metadata instances.
