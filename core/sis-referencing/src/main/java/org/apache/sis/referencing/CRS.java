@@ -55,7 +55,7 @@ import org.apache.sis.internal.referencing.PositionalAccuracyConstant;
 import org.apache.sis.internal.referencing.CoordinateOperations;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.system.DefaultFactories;
-import org.apache.sis.internal.system.Loggers;
+import org.apache.sis.internal.system.Modules;
 import org.apache.sis.referencing.cs.DefaultVerticalCS;
 import org.apache.sis.referencing.cs.DefaultEllipsoidalCS;
 import org.apache.sis.referencing.crs.DefaultGeographicCRS;
@@ -861,6 +861,6 @@ check:  while (lower != 0 || upper != dimension) {
      * <strong>must</strong> have a reasonable fallback (otherwise it should propagate the exception).
      */
     private static void unexpectedException(final String methodName, final Exception exception) {
-        Logging.unexpectedException(Logging.getLogger(Loggers.REFERENCING), CRS.class, methodName, exception);
+        Logging.unexpectedException(Logging.getLogger(Modules.REFERENCING), CRS.class, methodName, exception);
     }
 }

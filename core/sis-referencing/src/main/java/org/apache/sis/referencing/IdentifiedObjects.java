@@ -36,7 +36,7 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.iso.DefaultNameSpace;
 import org.apache.sis.internal.util.Constants;
-import org.apache.sis.internal.system.Loggers;
+import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.metadata.NameMeaning;
 import org.apache.sis.internal.metadata.NameToIdentifier;
 import org.apache.sis.metadata.iso.citation.Citations;
@@ -476,7 +476,7 @@ public final class IdentifiedObjects extends Static {
                         return null;
                     }
                 } catch (NumberFormatException e) {
-                    Logging.recoverableException(Logging.getLogger(Loggers.REFERENCING), IdentifiedObjects.class, "lookupEPSG", e);
+                    Logging.recoverableException(Logging.getLogger(Modules.REFERENCING), IdentifiedObjects.class, "lookupEPSG", e);
                 }
             }
         }

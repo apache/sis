@@ -110,7 +110,7 @@ public class LandsatStore extends DataStore {
         if (metadata == null && source != null) try {
             try (BufferedReader reader = (source instanceof BufferedReader) ? (BufferedReader) source : new LineNumberReader(source)) {
                 source = null;      // Will be closed at the end of this try-catch block.
-                final LandsatReader parser = new LandsatReader(reader);
+                final LandsatReader parser = new LandsatReader(reader, listeners);
                 metadata = parser.read();
                 if (metadata instanceof ModifiableMetadata) {
                     ((ModifiableMetadata) metadata).freeze();

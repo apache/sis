@@ -90,11 +90,10 @@ public final class Loggers extends Static {
      */
     public static final String COORDINATE_OPERATION = "org.apache.sis.referencing.operation";
 
-    /**
-     * The logger name for operation related to the {@code sis-referencing} modules that do not fit
-     * into the {@link #CRS_FACTORY} or {@link #COORDINATE_OPERATION} categories.
+    /*
+     * For operations related to the sis-referencing modules that do not fit into
+     * the CRS_FACTORY or COORDINATE_OPERATION categories, use Modules.REFERENCING.
      */
-    public static final String REFERENCING = "org.apache.sis.referencing";
 
     /**
      * The logger name for operation related to localization.

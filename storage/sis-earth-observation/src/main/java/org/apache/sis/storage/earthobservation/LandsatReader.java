@@ -143,10 +143,8 @@ final class LandsatReader {
 
     /**
      * Where to send the warnings.
-     *
-     * @todo Set a reference given by the data store.
      */
-    private WarningListeners<?> listeners;
+    private final WarningListeners<?> listeners;
 
     /**
      * Creates a new metadata parser from the given characters reader.
@@ -157,7 +155,10 @@ final class LandsatReader {
      * @throws IOException if an I/O error occurred while reading the given stream.
      * @throws DataStoreException if the content is not a Landsat file.
      */
-    public LandsatReader(final BufferedReader reader) throws IOException, DataStoreException {
+    LandsatReader(final BufferedReader reader, final WarningListeners<?> listeners)
+            throws IOException, DataStoreException
+    {
+        this.listeners = listeners;
         properties = new HashMap<>();
         String line;
         while ((line = reader.readLine()) != null) {
@@ -482,8 +483,6 @@ final class LandsatReader {
      * sends a record to the registered listeners if any, or logs the record otherwise.
      */
     private void warning(final Exception e) {
-        if (listeners != null) {
-            listeners.warning(null, e);
-        }
+        listeners.warning(null, e);
     }
 }

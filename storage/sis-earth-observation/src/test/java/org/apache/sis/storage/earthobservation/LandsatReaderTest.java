@@ -16,12 +16,15 @@
  */
 package org.apache.sis.storage.earthobservation;
 
+import java.util.Locale;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import org.opengis.metadata.Metadata;
 import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.util.logging.EmptyWarningListeners;
+import org.apache.sis.internal.system.Modules;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -53,7 +56,7 @@ public class LandsatReaderTest extends TestCase {
         try (BufferedReader in = new BufferedReader(new InputStreamReader(
                 LandsatReaderTest.class.getResourceAsStream("LandsatTest.txt"), "UTF-8")))
         {
-            actual = new LandsatReader(in).read();
+            actual = new LandsatReader(in, new EmptyWarningListeners<>(Locale.US, Modules.EARTH_OBSERVATION)).read();
         }
         final String text = formatNameAndValue(DefaultMetadata.castOrCopy(actual).asTreeTable());
         assertMultilinesEquals(
