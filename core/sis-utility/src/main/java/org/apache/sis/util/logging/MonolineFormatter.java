@@ -41,6 +41,8 @@ import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Configuration;
 import org.apache.sis.util.Debug;
 
+import static org.apache.sis.internal.util.StandardDateFormat.UTC;
+
 
 /**
  * A formatter writing log messages on a single line. Compared to the JDK {@link SimpleFormatter},
@@ -425,7 +427,7 @@ loop:   for (int i=0; ; i++) {
             timeFormat = null;
         } else if (timeFormat == null) {
             timeFormat = new SimpleDateFormat(pattern);
-            timeFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+            timeFormat.setTimeZone(TimeZone.getTimeZone(UTC));
         } else {
             timeFormat.applyPattern(pattern);
         }
