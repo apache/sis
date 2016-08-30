@@ -32,6 +32,12 @@ import java.text.SimpleDateFormat;
  * <p>External users should use nothing else than the parsing and formating methods. The methods for
  * configuring the {@code DateFormat} may not be available between different SIS branches.</p>
  *
+ * <p>The main usage for this class is Well Known Text (WKT) parsing and formatting.
+ * ISO 19162 uses ISO 8601:2004 for the dates. Any precision is allowed: the date could have only the year,
+ * or only the year and month, <i>etc</i>. The clock part is optional and also have optional fields: can be
+ * only hours, or only hours and minutes, <i>etc</i>. ISO 19162 said that the timezone is restricted to UTC
+ * but nevertheless allows to specify a timezone.</p>
+ *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.6
  * @version 0.8
@@ -42,6 +48,11 @@ public final class StandardDateFormat extends SimpleDateFormat {
      * For cross-version compatibility.
      */
     private static final long serialVersionUID = 1552761359761440473L;
+
+    /**
+     * The {@value} timezone ID.
+     */
+    public static final String UTC = "UTC";
 
     /**
      * Short version of {@link #PATTERN}, to be used when formatting temporal extents
@@ -72,9 +83,9 @@ public final class StandardDateFormat extends SimpleDateFormat {
     public static final String PATTERN = SHORT_PATTERN + "'T'" + TIME_PATTERN;
 
     /**
-     * {@code false} if this {@code StandardDateFormat} object is parsing only the days, without time.
+     * {@code true} if the user has invoked {@link #applyPattern(String)} or {@link #applyLocalizedPattern(String)}.
      */
-    private boolean hasTime;
+    private boolean isUserSpecifiedPattern;
 
     /**
      * Creates a new format for a default locale in the UTC timezone.
@@ -89,23 +100,45 @@ public final class StandardDateFormat extends SimpleDateFormat {
      * @param locale  the locale of the format to create.
      */
     public StandardDateFormat(final Locale locale) {
-        this(locale, TimeZone.getTimeZone("UTC"));
+        this(locale, TimeZone.getTimeZone(UTC));
     }
 
     /**
      * Creates a new format for the given locale.
      *
-     * @param locale    the locale of the format to create.
-     * @param timezone  the timezone.
+     * @param locale  the locale of the format to create.
+     * @param zone    the timezone.
      */
-    public StandardDateFormat(final Locale locale, final TimeZone timezone) {
+    public StandardDateFormat(final Locale locale, final TimeZone zone) {
         super(PATTERN, locale);
-        super.setTimeZone(timezone);
-        hasTime = true;
+        super.setTimeZone(zone);
     }
 
     /**
-     * Formats the given date.
+     * Sets a user-specified pattern.
+     *
+     * @param pattern the user-specified pattern.
+     */
+    @Override
+    public void applyPattern(final String pattern) {
+        super.applyPattern(pattern);
+        isUserSpecifiedPattern = true;
+    }
+
+    /**
+     * Sets a user-specified pattern.
+     *
+     * @param pattern the user-specified pattern.
+     */
+    @Override
+    public void applyLocalizedPattern(final String pattern) {
+        super.applyLocalizedPattern(pattern);
+        isUserSpecifiedPattern = true;
+    }
+
+    /**
+     * Formats the given date. If hours, minutes, seconds and milliseconds are zero and the timezone is UTC,
+     * then this method omits the clock part (unless the user has overridden the pattern).
      *
      * @param  date    the date to format.
      * @param  buffer  where to format the date.
@@ -114,9 +147,13 @@ public final class StandardDateFormat extends SimpleDateFormat {
      */
     @Override
     public StringBuffer format(final Date date, final StringBuffer buffer, final FieldPosition pos) {
-        if (!hasTime) {
-            applyPattern(PATTERN);
-            hasTime = true;
+        if (!isUserSpecifiedPattern && (date.getTime() % (24*60*60*1000)) == 0 && UTC.equals(getTimeZone().getID())) {
+            try {
+                super.applyPattern(SHORT_PATTERN);
+                return super.format(date, buffer, pos);
+            } finally {
+                super.applyPattern(PATTERN);
+            }
         }
         return super.format(date, buffer, pos);
     }
@@ -129,18 +166,18 @@ public final class StandardDateFormat extends SimpleDateFormat {
      * @return the date, or {@code null} if we failed to parse it.
      */
     @Override
-    public Date parse(final String text, final ParsePosition position) {
-        final Fix fix = Fix.apply(text, position.getIndex(), 0);
-        if (fix == null) {
-            if (hasTime) {
-                applyPattern(SHORT_PATTERN);
-                hasTime = false;
-            }
+    public Date parse(String text, final ParsePosition position) {
+        if (isUserSpecifiedPattern) {
             return super.parse(text, position);
         }
-        if (!hasTime) {
-            applyPattern(PATTERN);
-            hasTime = true;
+        final Fix fix = Fix.apply(text, position.getIndex(), 0);
+        if (fix == null) {
+            try {
+                super.applyPattern(SHORT_PATTERN);
+                return super.parse(text, position);
+            } finally {
+                super.applyPattern(PATTERN);
+            }
         }
         final Date date = super.parse(fix.text, position);
         position.setIndex     (fix.adjustIndex(position.getIndex()));

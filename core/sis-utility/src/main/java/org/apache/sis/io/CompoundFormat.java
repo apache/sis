@@ -43,6 +43,8 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.internal.util.LocalizedParseException;
 
+import static org.apache.sis.internal.util.StandardDateFormat.UTC;
+
 
 /**
  * Base class of {@link Format} implementations which delegate part of their work to other
@@ -169,7 +171,7 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
      * @return The timezone used for this format, or UTC for unlocalized format.
      */
     public TimeZone getTimeZone() {
-        return timezone != null ? (TimeZone) timezone.clone() : TimeZone.getTimeZone("UTC");
+        return timezone != null ? (TimeZone) timezone.clone() : TimeZone.getTimeZone(UTC);
     }
 
     /**

@@ -37,6 +37,7 @@ import org.junit.Test;
 
 import static org.apache.sis.test.Assert.*;
 import static org.apache.sis.test.TestUtilities.getSingleton;
+import static org.apache.sis.internal.util.StandardDateFormat.UTC;
 
 
 /**
@@ -82,7 +83,7 @@ public final strictfp class LanguageCodeTest extends XMLTestCase {
     public static void createMarshallerPool() throws JAXBException {
         final Map<String,Object> properties = new HashMap<>(4);
         assertNull(properties.put(XML.LOCALE, Locale.UK));
-        assertNull(properties.put(XML.TIMEZONE, "UTC"));
+        assertNull(properties.put(XML.TIMEZONE, UTC));
         pool = new MarshallerPool(JAXBContext.newInstance(MetadataMock.class), properties);
     }
 
