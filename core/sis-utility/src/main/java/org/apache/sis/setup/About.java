@@ -60,6 +60,7 @@ import org.apache.sis.internal.system.DataDirectory;
 import static java.lang.System.getProperty;
 import static org.apache.sis.util.collection.TableColumn.NAME;
 import static org.apache.sis.util.collection.TableColumn.VALUE_AS_TEXT;
+import static org.apache.sis.internal.util.StandardDateFormat.UTC;
 
 // Branch-dependent imports
 import java.nio.file.Path;
@@ -266,7 +267,7 @@ fill:   for (int i=0; ; i++) {
                             final boolean inDaylightTime = current.inDaylightTime(now);
                             value = concatenate(current.getDisplayName(inDaylightTime, TimeZone.LONG, locale), current.getID(), true);
                             final DateFormat df = DateFormat.getTimeInstance(DateFormat.SHORT, formatLocale);
-                            df.setTimeZone(TimeZone.getTimeZone("UTC"));
+                            df.setTimeZone(TimeZone.getTimeZone(UTC));
                             int offset = current.getOffset(now.getTime());
                             StringBuffer buffer = format(df, offset, new StringBuffer("UTC "));
                             offset -= current.getRawOffset();

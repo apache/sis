@@ -38,6 +38,7 @@ import org.apache.sis.util.collection.TreeTableFormat;
 import org.apache.sis.internal.util.X364;
 
 import static org.junit.Assert.*;
+import static org.apache.sis.internal.util.StandardDateFormat.UTC;
 
 
 /**
@@ -69,7 +70,7 @@ public final strictfp class TestUtilities extends Static {
     private static final DateFormat dateFormat;
     static {
         dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.CANADA);
-        dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+        dateFormat.setTimeZone(TimeZone.getTimeZone(UTC));
         dateFormat.setLenient(false);
     };
 

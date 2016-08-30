@@ -65,6 +65,7 @@ public final strictfp class StandardDateFormatTest extends TestCase {
     public void testParse() throws ParseException {
         final long day = 1466985600000L;
         final StandardDateFormat f = new StandardDateFormat();
+        assertEquals("millis", day + ((16*60 + 48)*60     )*1000,      f.parse("2016-06-27T16:48Z")      .getTime());
         assertEquals("millis", day + ((16*60 + 48)*60 + 12)*1000,      f.parse("2016-06-27T16:48:12Z")   .getTime());
         assertEquals("millis", day,                                    f.parse("2016-06-27")             .getTime());
         assertEquals("millis", day + (( 3*60 +  2)*60 +  1)*1000 + 90, f.parse("2016-06-27T03:02:01.09Z").getTime());

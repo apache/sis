@@ -190,7 +190,7 @@ public final strictfp class DefaultCompoundCRSTest extends XMLTestCase {
                 "    AXIS[“Gravity-related height”, UP],\n" +
                 "    AUTHORITY[“EPSG”, “5714”]],\n" +   // SIS includes Identifier for component of CompoundCRS.
                 "  TIMECRS[“Time”,\n" +
-                "    TDATUM[“Modified Julian”, TIMEORIGIN[1858-11-17T00:00:00.000Z]],\n" +
+                "    TDATUM[“Modified Julian”, TIMEORIGIN[1858-11-17]],\n" +
                 "    TIMEUNIT[“day”, 86400],\n" +
                 "    AXIS[“Time”, FUTURE]]]",
                 HardCodedCRS.GEOID_4D);
@@ -219,7 +219,7 @@ public final strictfp class DefaultCompoundCRSTest extends XMLTestCase {
                 "      LENGTHUNIT[“metre”, 1],\n" +
                 "    ID[“EPSG”, 5714]],\n" +            // SIS includes Identifier for component of CompoundCRS.
                 "  TIMECRS[“Time”,\n" +
-                "    TDATUM[“Modified Julian”, TIMEORIGIN[1858-11-17T00:00:00.000Z]],\n" +
+                "    TDATUM[“Modified Julian”, TIMEORIGIN[1858-11-17]],\n" +
                 "    CS[temporal, 1],\n" +
                 "      AXIS[“Time (t)”, future, ORDER[1]],\n" +
                 "      TIMEUNIT[“day”, 86400]],\n" +
@@ -250,7 +250,7 @@ public final strictfp class DefaultCompoundCRSTest extends XMLTestCase {
                 "      Unit[“metre”, 1],\n" +
                 "    Id[“EPSG”, 5714]],\n" +            // SIS includes Identifier for component of CompoundCRS.
                 "  TimeCRS[“Time”,\n" +
-                "    TimeDatum[“Modified Julian”, TimeOrigin[1858-11-17T00:00:00.000Z]],\n" +
+                "    TimeDatum[“Modified Julian”, TimeOrigin[1858-11-17]],\n" +
                 "    CS[temporal, 1],\n" +
                 "      Axis[“Time (t)”, future],\n" +
                 "      TimeUnit[“day”, 86400]],\n" +
