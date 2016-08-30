@@ -39,6 +39,7 @@ import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.referencing.IdentifiedObjects;
 
 // Branch-dependent imports
+import org.apache.sis.internal.jdk8.UncheckedIOException;
 import org.opengis.feature.IdentifiedType;
 import org.opengis.feature.Property;
 import org.opengis.feature.PropertyType;
@@ -75,7 +76,7 @@ import org.opengis.feature.Operation;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5
- * @version 0.6
+ * @version 0.8
  * @module
  */
 public class FeatureFormat extends TabularFormat<Object> {
@@ -178,9 +179,20 @@ public class FeatureFormat extends TabularFormat<Object> {
             }
         }
         /*
-         * Format the column header.
+         * Format the feature type name. In the case of feature type, format also the names of super-type
+         * after the UML symbol for inheritance (an arrow with white head). We do not use the " : " ASCII
+         * character for avoiding confusion with the ":" separator in namespaces. After the feature (type)
+         * name, format the column header: property name, type, cardinality and (default) value.
          */
-        toAppendTo.append(toString(featureType.getName())).append(getLineSeparator());
+        toAppendTo.append(toString(featureType.getName()));
+        if (feature == null) {
+            String separator = " ⇾ ";   // UML symbol for inheritance.
+            for (final FeatureType parent : featureType.getSuperTypes()) {
+                toAppendTo.append(separator).append(toString(parent.getName()));
+                separator = ", ";
+            }
+        }
+        toAppendTo.append(getLineSeparator());
         final Vocabulary resources = Vocabulary.getResources(displayLocale);
         final TableAppender table = new TableAppender(toAppendTo, columnSeparator);
         table.setMultiLinesCells(true);
@@ -231,11 +243,19 @@ header: for (int i=0; ; i++) {
                 }
             } else if (propertyType instanceof AttributeType<?>) {
                 value = ((AttributeType<?>) propertyType).getDefaultValue();
-            } else if (propertyType instanceof AbstractOperation) {
-                if (((AbstractOperation) propertyType).formatResultFormula(buffer)) {
-                    value = CharSequences.trimWhitespaces(buffer).toString();
-                    buffer.setLength(0);
+            } else if (propertyType instanceof Operation) {
+                buffer.append(" = ");
+                try {
+                    if (propertyType instanceof AbstractOperation) {
+                        ((AbstractOperation) propertyType).formatResultFormula(buffer);
+                    } else {
+                        AbstractOperation.defaultFormula(((Operation) propertyType).getParameters(), buffer);
+                    }
+                } catch (IOException e) {
+                    throw new UncheckedIOException(e);      // Should never happen since we write in a StringBuffer.
                 }
+                value = CharSequences.trimWhitespaces(buffer).toString();
+                buffer.setLength(0);
             }
             /*
              * Column 0 - Name.
@@ -295,7 +315,7 @@ header: for (int i=0; ; i++) {
                 final boolean isInstance = valueClass != null && valueClass.isInstance(value);
                 final Format format = isInstance ? getFormat(valueClass) : null;
                 final Iterator<?> it = (!isInstance && (value instanceof Collection<?>)
-                        ? (Collection<?>) value : Collections.singleton(value)).iterator();
+                        ? (Iterable<?>) value : Collections.singleton(value)).iterator();
                 String separator = "";
                 while (it.hasNext()) {
                     value = it.next();

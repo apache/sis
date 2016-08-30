@@ -35,7 +35,7 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.5
+ * @version 0.8
  * @module
  */
 public final strictfp class DefaultTemporalDatumTest extends XMLTestCase {
@@ -76,14 +76,19 @@ public final strictfp class DefaultTemporalDatumTest extends XMLTestCase {
     /**
      * Tests {@link DefaultTemporalDatum#toWKT()}.
      *
+     * <p><b>Note:</b> ISO 19162 uses ISO 8601:2004 for the dates. Any precision is allowed:
+     * the date could have only the year, or only the year and month, <i>etc</i>. The clock
+     * part is optional and also have optional fields: can be only hours, or only hours and minutes, <i>etc</i>.
+     * ISO 19162 said that the timezone is restricted to UTC but nevertheless allows to specify a timezone.</p>
+     *
      * @since 0.5
      */
     @Test
     public void testToWKT() {
         final DefaultTemporalDatum datum = create();
-        assertWktEquals(Convention.WKT1, "TDATUM[“Modified Julian”, TIMEORIGIN[1858-11-17T00:00:00.0Z], AUTHORITY[“SIS”, “MJ”]]", datum);
-        assertWktEquals(Convention.WKT2, "TDATUM[“Modified Julian”, TIMEORIGIN[1858-11-17T00:00:00.0Z], ID[“SIS”, “MJ”]]", datum);
-        assertWktEquals(Convention.WKT2_SIMPLIFIED, "TimeDatum[“Modified Julian”, TimeOrigin[1858-11-17T00:00:00.0Z], Id[“SIS”, “MJ”]]", datum);
+        assertWktEquals(Convention.WKT1, "TDATUM[“Modified Julian”, TIMEORIGIN[1858-11-17], AUTHORITY[“SIS”, “MJ”]]", datum);
+        assertWktEquals(Convention.WKT2, "TDATUM[“Modified Julian”, TIMEORIGIN[1858-11-17], ID[“SIS”, “MJ”]]", datum);
+        assertWktEquals(Convention.WKT2_SIMPLIFIED, "TimeDatum[“Modified Julian”, TimeOrigin[1858-11-17], Id[“SIS”, “MJ”]]", datum);
     }
 
     /**

@@ -29,7 +29,7 @@
  * exactly the following name:
  *
  * {@preformat text
- *     META-INF/services/org.apache.sis.util.converter.ObjectConverter
+ *     META-INF/services/org.apache.sis.util.ObjectConverter
  * }
  *
  * Applications deployed in a modularization framework like OSGi shall use only the

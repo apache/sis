@@ -32,6 +32,7 @@ import org.apache.sis.io.wkt.Warnings;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.CharSequences;
@@ -44,7 +45,7 @@ import org.apache.sis.referencing.CRS;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.7
- * @version 0.7
+ * @version 0.8
  * @module
  */
 final class Store extends DataStore {
@@ -72,8 +73,8 @@ final class Store extends DataStore {
     /**
      * Creates a new WKT store from the given file, URL or stream.
      *
-     * @param  connector Information about the storage (URL, stream, <i>etc</i>).
-     * @throws DataStoreException If an error occurred while opening the stream.
+     * @param  connector information about the storage (URL, stream, <i>etc</i>).
+     * @throws DataStoreException if an error occurred while opening the stream.
      */
     public Store(final StorageConnector connector) throws DataStoreException {
         objects = new ArrayList<Object>();
@@ -97,13 +98,13 @@ final class Store extends DataStore {
             source = null;                                                  // Cleared first in case of error.
             final String wkt;
             try {
-                char[] buffer = new char[StoreProvider.READ_AHEAD_LIMIT];
+                char[] buffer = new char[FirstKeywordPeek.READ_AHEAD_LIMIT];
                 int length = 0;
                 int n;
                 while ((n = in.read(buffer, length, buffer.length - length)) >= 0) {
                     if ((length += n) >= buffer.length) {
                         if (n >= Integer.MAX_VALUE / 1024) {     // Arbitrary size limit.
-                            throw new DataStoreException(Errors.format(Errors.Keys.ExcessiveStringSize));
+                            throw new DataStoreContentException(Errors.format(Errors.Keys.ExcessiveStringSize));
                         }
                         buffer = Arrays.copyOf(buffer, n << 1);
                     }
@@ -137,7 +138,7 @@ final class Store extends DataStore {
      * The current implementation retains only instances of {@link ReferenceSystem}
      * and ignore other cases.
      *
-     * @return The metadata associated to the parsed object, or {@code null} if none.
+     * @return the metadata associated to the parsed object, or {@code null} if none.
      * @throws DataStoreException if an error occurred during the parsing process.
      */
     @Override
@@ -159,7 +160,7 @@ final class Store extends DataStore {
     /**
      * Closes this data store and releases any underlying resources.
      *
-     * @throws DataStoreException If an error occurred while closing this data store.
+     * @throws DataStoreException if an error occurred while closing this data store.
      */
     @Override
     public void close() throws DataStoreException {

@@ -36,7 +36,7 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.iso.DefaultNameSpace;
 import org.apache.sis.internal.util.Constants;
-import org.apache.sis.internal.system.Loggers;
+import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.metadata.NameMeaning;
 import org.apache.sis.internal.metadata.NameToIdentifier;
 import org.apache.sis.metadata.iso.citation.Citations;
@@ -106,9 +106,9 @@ public final class IdentifiedObjects extends Static {
      * values depend on the {@linkplain org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis#getUnit()
      * units of measurement}.</div>
      *
-     * @param  object The identified object to view as a properties map.
-     * @param  excludes The keys of properties to exclude from the map.
-     * @return A view of the identified object properties as an immutable map.
+     * @param  object    the identified object to view as a properties map.
+     * @param  excludes  the keys of properties to exclude from the map.
+     * @return a view of the identified object properties as an immutable map.
      */
     public static Map<String,?> getProperties(final IdentifiedObject object, final String... excludes) {
         ArgumentChecks.ensureNonNull("object", object);
@@ -122,9 +122,9 @@ public final class IdentifiedObjects extends Static {
      * stop at the first match. This method is useful in the rare cases where the same authority
      * declares more than one name, and all those names are of interest.
      *
-     * @param  object The object to get the names and aliases from, or {@code null}.
-     * @param  authority The authority for the names to return, or {@code null} for any authority.
-     * @return The object's names and aliases, or an empty set if no name or alias matching the
+     * @param  object     the object to get the names and aliases from, or {@code null}.
+     * @param  authority  the authority for the names to return, or {@code null} for any authority.
+     * @return the object's names and aliases, or an empty set if no name or alias matching the
      *         specified authority has been found.
      */
     public static Set<String> getNames(final IdentifiedObject object, final Citation authority) {
@@ -157,9 +157,9 @@ public final class IdentifiedObjects extends Static {
      * interfaces (for example {@link NamedIdentifier}). In such cases, the identifier view has
      * precedence.
      *
-     * @param  object The object to get the name from, or {@code null}.
-     * @param  authority The authority for the name to return, or {@code null} for any authority.
-     * @return The object's name (either an {@linkplain Identifier#getCode() identifier code}
+     * @param  object     the object to get the name from, or {@code null}.
+     * @param  authority  the authority for the name to return, or {@code null} for any authority.
+     * @return the object's name (either an {@linkplain Identifier#getCode() identifier code}
      *         or a {@linkplain GenericName#tip() name tip}), or {@code null} if no name matching the
      *         specified authority has been found.
      *
@@ -174,10 +174,10 @@ public final class IdentifiedObjects extends Static {
      * every properties are checked for null values, even the properties that are supposed to
      * be mandatory (not all implementation defines all mandatory values).
      *
-     * @param  object    The object to get the name from, or {@code null}.
-     * @param  authority The authority for the name to return, or {@code null} for any authority.
-     * @param  addTo     If non-null, the collection where to add all names found.
-     * @return The object's name (either an {@linkplain Identifier#getCode() identifier code}
+     * @param  object     the object to get the name from, or {@code null}.
+     * @param  authority  the authority for the name to return, or {@code null} for any authority.
+     * @param  addTo      if non-null, the collection where to add all names found.
+     * @return the object's name (either an {@linkplain Identifier#getCode() identifier code}
      *         or a {@linkplain GenericName#tip() name tip}), or {@code null} if no name matching the
      *         specified authority has been found.
      */
@@ -265,10 +265,10 @@ public final class IdentifiedObjects extends Static {
      * order and returns the first identifier with an {@linkplain NamedIdentifier#getAuthority() authority} citation
      * {@linkplain Citations#identifierMatches(Citation, Citation) matching} the specified authority.
      *
-     * @param  object The object to get the identifier from, or {@code null}.
-     * @param  authority The authority for the identifier to return, or {@code null} for
+     * @param  object     the object to get the identifier from, or {@code null}.
+     * @param  authority  the authority for the identifier to return, or {@code null} for
      *         the first identifier regardless its authority.
-     * @return The object's identifier, or {@code null} if no identifier matching the specified authority
+     * @return the object's identifier, or {@code null} if no identifier matching the specified authority
      *         has been found.
      *
      * @see AbstractIdentifiedObject#getIdentifier()
@@ -303,8 +303,8 @@ public final class IdentifiedObjects extends Static {
      *       database looking for a match, use one of the search methods defined below.</li>
      * </ul>
      *
-     * @param  object The identified object, or {@code null}.
-     * @return A string representation of the first identifier or name, or {@code null} if none.
+     * @param  object  the identified object, or {@code null}.
+     * @return a string representation of the first identifier or name, or {@code null} if none.
      *
      * @see #getIdentifier(IdentifiedObject, Citation)
      * @see #lookupURN(IdentifiedObject, Citation)
@@ -337,8 +337,8 @@ public final class IdentifiedObjects extends Static {
      *   <li><code>object.{@linkplain AbstractIdentifiedObject#getIdentifiers() getIdentifiers()}</code> in iteration order</li>
      * </ul>
      *
-     * @param  object The identified object, or {@code null}.
-     * @return The first name, alias or identifier which is a valid Unicode identifier, or {@code null} if none.
+     * @param  object  the identified object, or {@code null}.
+     * @return the first name, alias or identifier which is a valid Unicode identifier, or {@code null} if none.
      *
      * @see org.apache.sis.metadata.iso.ImmutableIdentifier
      * @see org.apache.sis.metadata.iso.citation.Citations#getUnicodeIdentifier(Citation)
@@ -397,11 +397,11 @@ public final class IdentifiedObjects extends Static {
      *
      * This method can be seen as a converse of {@link CRS#forCode(String)}.
      *
-     * @param  object The object (usually a {@linkplain org.apache.sis.referencing.crs.AbstractCRS
+     * @param  object  the object (usually a {@linkplain org.apache.sis.referencing.crs.AbstractCRS
      *         coordinate reference system}) whose identifier is to be found, or {@code null}.
-     * @param  authority The authority for the identifier to return, or {@code null} for
+     * @param  authority  the authority for the identifier to return, or {@code null} for
      *         the first identifier regardless its authority.
-     * @return The identifier, or {@code null} if none was found without ambiguity or if the given object was null.
+     * @return the identifier, or {@code null} if none was found without ambiguity or if the given object was null.
      * @throws FactoryException if an error occurred during the search.
      *
      * @see #newFinder(String)
@@ -455,9 +455,9 @@ public final class IdentifiedObjects extends Static {
      *
      * This method can be seen as a converse of {@link CRS#forCode(String)}.
      *
-     * @param  object The object (usually a {@linkplain org.apache.sis.referencing.crs.AbstractCRS
+     * @param  object  the object (usually a {@linkplain org.apache.sis.referencing.crs.AbstractCRS
      *         coordinate reference system}) whose EPSG code is to be found, or {@code null}.
-     * @return The EPSG code, or {@code null} if none was found without ambiguity or if the given object was null.
+     * @return the EPSG code, or {@code null} if none was found without ambiguity or if the given object was null.
      * @throws FactoryException if an error occurred during the search.
      *
      * @see #newFinder(String)
@@ -476,7 +476,7 @@ public final class IdentifiedObjects extends Static {
                         return null;
                     }
                 } catch (NumberFormatException e) {
-                    Logging.recoverableException(Logging.getLogger(Loggers.CRS_FACTORY), IdentifiedObjects.class, "lookupEPSG", e);
+                    Logging.recoverableException(Logging.getLogger(Modules.REFERENCING), IdentifiedObjects.class, "lookupEPSG", e);
                 }
             }
         }
@@ -512,9 +512,9 @@ public final class IdentifiedObjects extends Static {
      *     Set<IdentifiedObject> found = finder.find(object);
      * }</div>
      *
-     * @param  authority The authority of the objects to search (typically {@code "EPSG"} or {@code "OGC"}),
+     * @param  authority  the authority of the objects to search (typically {@code "EPSG"} or {@code "OGC"}),
      *         or {@code null} for searching among the objects created by all authorities.
-     * @return A finder to use for looking up unidentified objects.
+     * @return a finder to use for looking up unidentified objects.
      * @throws NoSuchAuthorityFactoryException if the given authority is not found.
      * @throws FactoryException if the finder can not be created for another reason.
      *
@@ -564,8 +564,8 @@ public final class IdentifiedObjects extends Static {
      *
      * If the {@code object} argument is {@code null}, then this method returns {@code false}.
      *
-     * @param  object The object for which to check the name or alias, or {@code null}.
-     * @param  name The name to compare with the object name or aliases.
+     * @param  object  the object for which to check the name or alias, or {@code null}.
+     * @param  name    the name to compare with the object name or aliases.
      * @return {@code true} if the primary name or at least one alias matches the specified {@code name}.
      *
      * @see AbstractIdentifiedObject#isHeuristicMatchForName(String)
@@ -636,9 +636,9 @@ public final class IdentifiedObjects extends Static {
      *
      * <p>The above tables may be expanded in any future SIS version.</p>
      *
-     * @param  type A type assignable to one of the types listed in above table.
-     * @param  identifier The identifier for which to format a URN, or {@code null}.
-     * @return The URN for the given identifier, or {@code null} if the given identifier was null
+     * @param  type  a type assignable to one of the types listed in above table.
+     * @param  identifier  the identifier for which to format a URN, or {@code null}.
+     * @return the URN for the given identifier, or {@code null} if the given identifier was null
      *         or can not be formatted by this method.
      *
      * @see #lookupURN(IdentifiedObject, Citation)
@@ -676,8 +676,8 @@ public final class IdentifiedObjects extends Static {
      * the {@link org.apache.sis.metadata.iso.DefaultIdentifier} implementation is formatted as a tree.
      * This static method can be used when a "name-like" representation is needed for any implementation.
      *
-     * @param  identifier The identifier, or {@code null}.
-     * @return A string representation of the given identifier, or {@code null}.
+     * @param  identifier  the identifier, or {@code null}.
+     * @return a string representation of the given identifier, or {@code null}.
      *
      * @see org.apache.sis.metadata.iso.ImmutableIdentifier#toString()
      * @see NamedIdentifier#toString()

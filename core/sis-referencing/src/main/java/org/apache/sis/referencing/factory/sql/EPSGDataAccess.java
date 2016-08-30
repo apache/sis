@@ -116,6 +116,7 @@ import org.apache.sis.measure.NumberRange;
 import org.apache.sis.measure.Units;
 
 import static org.apache.sis.util.Utilities.equalsIgnoreMetadata;
+import static org.apache.sis.internal.util.StandardDateFormat.UTC;
 import static org.apache.sis.internal.referencing.ServicesForMetadata.CONNECTION;
 
 // Branch-dependent imports
@@ -388,7 +389,7 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
     @SuppressWarnings("ReturnOfDateField")
     private Calendar getCalendar() {
         if (calendar == null) {
-            calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"), Locale.CANADA);
+            calendar = Calendar.getInstance(TimeZone.getTimeZone(UTC), Locale.CANADA);
             // Canada locale is closer to ISO than US.
         }
         calendar.clear();

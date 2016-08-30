@@ -97,7 +97,7 @@ public class TransformSeparator {
     /**
      * Constructs a separator for the given transform.
      *
-     * @param transform The transform to separate.
+     * @param transform  the transform to separate.
      */
     public TransformSeparator(final MathTransform transform) {
         this(transform, DefaultFactories.forBuildin(MathTransformFactory.class));
@@ -106,8 +106,8 @@ public class TransformSeparator {
     /**
      * Constructs a separator for the given transform and using the given factory.
      *
-     * @param transform The transform to separate.
-     * @param factory The factory to use for creating new math transforms.
+     * @param transform  the transform to separate.
+     * @param factory    the factory to use for creating new math transforms.
      */
     public TransformSeparator(final MathTransform transform, final MathTransformFactory factory) {
         ArgumentChecks.ensureNonNull("transform", transform);
@@ -136,8 +136,8 @@ public class TransformSeparator {
      * confusion as some users could expect the separated transform to use the dimensions in the order he specified
      * them).</div>
      *
-     * @param sequence   The {@link #sourceDimensions} or {@link #targetDimensions} sequence to update.
-     * @param dimension  The value to add to the given sequence.
+     * @param sequence   the {@link #sourceDimensions} or {@link #targetDimensions} sequence to update.
+     * @param dimension  the value to add to the given sequence.
      */
     private static int[] insert(int[] sequence, int dimension) throws IllegalArgumentException {
         if (sequence == null) {
@@ -158,9 +158,9 @@ public class TransformSeparator {
      * Adds the specified {@code dimensions} to the specified sequence.
      * Values must be given in strictly increasing order.
      *
-     * @param  sequence    The {@link #sourceDimensions} or {@link #targetDimensions} sequence to update.
-     * @param  dimensions  The user-supplied dimensions to add to the given sequence.
-     * @param  max         The maximal value allowed, exclusive.
+     * @param  sequence    the {@link #sourceDimensions} or {@link #targetDimensions} sequence to update.
+     * @param  dimensions  the user-supplied dimensions to add to the given sequence.
+     * @param  max         the maximal value allowed, exclusive.
      * @throws IllegalArgumentException if a {@code dimensions} value does not meet the conditions.
      */
     private static int[] add(int[] sequence, final int[] dimensions, final int max) throws IllegalArgumentException {
@@ -191,10 +191,10 @@ public class TransformSeparator {
     /**
      * Adds the specified range to the specified sequence.
      *
-     * @param  sequence  The {@link #sourceDimensions} or {@link #targetDimensions} sequence to update.
-     * @param  lower     The lower value of the range to add, inclusive.
-     * @param  upper     The upper value of the range to add, exclusive.
-     * @param  max       The maximal value allowed, exclusive.
+     * @param  sequence  the {@link #sourceDimensions} or {@link #targetDimensions} sequence to update.
+     * @param  lower     the lower value of the range to add, inclusive.
+     * @param  upper     the upper value of the range to add, exclusive.
+     * @param  max       the maximal value allowed, exclusive.
      * @throws IllegalArgumentException if the {@code lower} or {@code upper} value does not meet the conditions.
      */
     private static int[] add(int[] sequence, final int lower, final int upper, final int max) throws IllegalArgumentException {
@@ -246,7 +246,7 @@ public class TransformSeparator {
      *       of this method since construction or since the last call to {@link #clear()}.</li>
      * </ul>
      *
-     * @param  dimensions A sequence of source dimensions to keep, in strictly increasing order.
+     * @param  dimensions  a sequence of source dimensions to keep, in strictly increasing order.
      * @throws IllegalArgumentException if {@code dimensions} contains negative values
      *         or if values are not in a strictly increasing order.
      */
@@ -260,8 +260,8 @@ public class TransformSeparator {
      * The {@code lower} and {@code upper} values define a range of  <em>source</em> dimension indices
      * of the transform given to the constructor.
      *
-     * @param  lower The lower dimension, inclusive. Shall not be smaller than 0.
-     * @param  upper The upper dimension, exclusive. Shall be smaller than {@link MathTransform#getSourceDimensions()}.
+     * @param  lower  the lower dimension, inclusive. Shall not be smaller than 0.
+     * @param  upper  the upper dimension, exclusive. Shall be smaller than {@link MathTransform#getSourceDimensions()}.
      * @throws IllegalArgumentException if {@code lower} or {@code upper} are out of bounds.
      */
     public void addSourceDimensionRange(final int lower, final int upper) throws IllegalArgumentException {
@@ -284,7 +284,7 @@ public class TransformSeparator {
      *   <li>Otherwise an exception is thrown.</li>
      * </ol>
      *
-     * @return The input dimension as a sequence of strictly increasing values.
+     * @return the input dimension as a sequence of strictly increasing values.
      * @throws IllegalStateException if input dimensions have not been set and
      *         {@link #separate()} has not yet been invoked.
      */
@@ -307,7 +307,7 @@ public class TransformSeparator {
      *       of this method since construction or since the last call to {@link #clear()}.</li>
      * </ul>
      *
-     * @param  dimensions A sequence of target dimensions to keep, in strictly increasing order.
+     * @param  dimensions  a sequence of target dimensions to keep, in strictly increasing order.
      * @throws IllegalArgumentException if {@code dimensions} contains negative values
      *         or if values are not in a strictly increasing order.
      */
@@ -321,8 +321,8 @@ public class TransformSeparator {
      * The {@code lower} and {@code upper} values define a range of <em>target</em> dimension indices
      * of the transform given to the constructor.
      *
-     * @param  lower The lower dimension, inclusive. Shall not be smaller than 0.
-     * @param  upper The upper dimension, exclusive. Shall be smaller than {@link MathTransform#getTargetDimensions()}.
+     * @param  lower  the lower dimension, inclusive. Shall not be smaller than 0.
+     * @param  upper  the upper dimension, exclusive. Shall be smaller than {@link MathTransform#getTargetDimensions()}.
      * @throws IllegalArgumentException if {@code lower} or {@code upper} are out of bounds.
      */
     public void addTargetDimensionRange(final int lower, final int upper) throws IllegalArgumentException {
@@ -345,7 +345,7 @@ public class TransformSeparator {
      *   <li>Otherwise an exception is thrown.</li>
      * </ol>
      *
-     * @return The output dimension as a sequence of strictly increasing values.
+     * @return the output dimension as a sequence of strictly increasing values.
      * @throws IllegalStateException if output dimensions have not been set and
      *         {@link #separate()} has not yet been invoked.
      */
@@ -375,7 +375,7 @@ public class TransformSeparator {
      * The source and target dimensions actually used can be queried by calls to {@link #getSourceDimensions()}
      * or {@link #getTargetDimensions()} after this {@code separate()} method.
      *
-     * @return The separated math transform.
+     * @return the separated math transform.
      * @throws FactoryException if the transform can not be separated.
      */
     public MathTransform separate() throws FactoryException {
@@ -396,7 +396,7 @@ public class TransformSeparator {
              * Source dimensions are more difficult to process than target dimensions.
              */
             final int[] requested = targetDimensions;
-            tr = filterSourceDimensions(tr, sourceDimensions);  // May update targetDimensions.
+            tr = filterSourceDimensions(tr, sourceDimensions);            // May update targetDimensions.
             assert ArraysExt.isSorted(targetDimensions, true) : "targetDimensions";
             if (requested != null) {
                 final int[] inferred = targetDimensions;
@@ -456,9 +456,9 @@ public class TransformSeparator {
      *       {@code step.getTargetDimensions()} exclusive.</li>
      * </ul>
      *
-     * @param  step The transform for which to retain only a subset of the source dimensions.
-     * @param  dimensions Indices of the source dimensions of {@code step} to retain.
-     * @return A transform expecting only the given source dimensions.
+     * @param  step  the transform for which to retain only a subset of the source dimensions.
+     * @param  dimensions  indices of the source dimensions of {@code step} to retain.
+     * @return a transform expecting only the given source dimensions.
      * @throws FactoryException if the given transform is not separable.
      */
     @SuppressWarnings("AssignmentToCollectionOrArrayFieldFromParameter")
@@ -613,9 +613,9 @@ reduce:     for (int j=0; j <= numTgt; j++) {
      * transform may keep only the (<var>longitude</var>, <var>latitude</var>) part for the same inputs.
      * In most cases, the filtered transform is non-invertible since it loose informations.
      *
-     * @param  step The transform for which to retain only a subset of the target dimensions.
-     * @param  dimensions Indices of the target dimensions of {@code step} to retain.
-     * @return A transform producing only the given target dimensions.
+     * @param  step  the transform for which to retain only a subset of the target dimensions.
+     * @param  dimensions  indices of the target dimensions of {@code step} to retain.
+     * @return a transform producing only the given target dimensions.
      * @throws FactoryException if the given transform is not separable.
      */
     protected MathTransform filterTargetDimensions(MathTransform step, final int[] dimensions) throws FactoryException {
@@ -666,9 +666,9 @@ reduce:     for (int j=0; j <= numTgt; j++) {
      * Returns {@code true} if the given sequence contains all index in the range {@code lower} inclusive
      * to {@code upper} exclusive.
      *
-     * @param  sequence The {@link #sourceDimensions} or {@link #targetDimensions} sequence to test.
-     * @param  lower    The lower value, inclusive.
-     * @param  upper    The upper value, exclusive.
+     * @param  sequence  the {@link #sourceDimensions} or {@link #targetDimensions} sequence to test.
+     * @param  lower     the lower value, inclusive.
+     * @param  upper     the upper value, exclusive.
      * @return {@code true} if the full range was found in the sequence.
      */
     private static boolean containsAll(final int[] sequence, final int lower, int upper) {
@@ -691,9 +691,9 @@ reduce:     for (int j=0; j <= numTgt; j++) {
     /**
      * Returns {@code true} if the given sequence contains any value in the given range.
      *
-     * @param  sequence The {@link #sourceDimensions} or {@link #targetDimensions} sequence to test.
-     * @param  lower    The lower value, inclusive.
-     * @param  upper    The upper value, exclusive.
+     * @param  sequence  the {@link #sourceDimensions} or {@link #targetDimensions} sequence to test.
+     * @param  lower     the lower value, inclusive.
+     * @param  upper     the upper value, exclusive.
      * @return {@code true} if the sequence contains at least one value in the given range.
      */
     private static boolean containsAny(final int[] sequence, final int lower, final int upper) {

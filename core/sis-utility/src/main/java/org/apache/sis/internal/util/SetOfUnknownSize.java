@@ -28,11 +28,11 @@ import org.apache.sis.util.ArraysExt;
  * An alternative to {@code AbstractSet} for implementations having a costly {@link #size()} method.
  * This class overrides some methods in a way that avoid or reduce calls to {@link #size()}.
  *
- * @param <E> The type of elements in the set.
+ * @param <E> the type of elements in the set.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.7
- * @version 0.7
+ * @version 0.8
  * @module
  */
 public abstract class SetOfUnknownSize<E> extends AbstractSet<E> {
@@ -64,10 +64,29 @@ public abstract class SetOfUnknownSize<E> extends AbstractSet<E> {
     }
 
     /**
+     * Returns the number of elements in this set. The default implementation counts the number of elements
+     * returned by the {@link #iterator() iterator}. Subclasses are encouraged to cache this value if they
+     * know that the underlying storage is immutable.
+     *
+     * @return the number of elements in this set.
+     */
+    @Override
+    public int size() {
+        int count = 0;
+        for (final Iterator<E> it=iterator(); it.hasNext();) {
+            it.next();
+            if (++count == Integer.MAX_VALUE) {
+                break;
+            }
+        }
+        return count;
+    }
+
+    /**
      * Removes elements of the given collection from this set.
      * This method avoids to invoke {@link #size()}.
      *
-     * @param c The collection containing elements to remove.
+     * @param  c  the collection containing elements to remove.
      * @return {@code true} if at least one element has been removed.
      */
     @Override
@@ -89,7 +108,7 @@ public abstract class SetOfUnknownSize<E> extends AbstractSet<E> {
     /**
      * Returns the elements in an array.
      *
-     * @return An array containing all set elements.
+     * @return an array containing all set elements.
      */
     @Override
     public Object[] toArray() {
@@ -100,9 +119,9 @@ public abstract class SetOfUnknownSize<E> extends AbstractSet<E> {
      * Returns the elements in the given array, or in a new array of the same type
      * if it was necessary to allocate more space.
      *
-     * @param <T> The type array elements.
-     * @param  array Where to store the elements.
-     * @return An array containing all set elements.
+     * @param  <T>    the type array elements.
+     * @param  array  where to store the elements.
+     * @return an array containing all set elements.
      */
     @Override
     @SuppressWarnings("SuspiciousToArrayCall")
@@ -124,7 +143,7 @@ public abstract class SetOfUnknownSize<E> extends AbstractSet<E> {
                 array = Arrays.copyOf(array, Math.max(16, array.length) << 1);
                 trimToSize = true;
             }
-            array[i++] = (T) it.next();   // Will throw an ArrayStoreException if the type is incorrect.
+            array[i++] = (T) it.next();     // Will throw an ArrayStoreException if the type is incorrect.
         }
         if (trimToSize) {
             array = ArraysExt.resize(array, i);
@@ -139,7 +158,7 @@ public abstract class SetOfUnknownSize<E> extends AbstractSet<E> {
      * This method avoids to invoke {@link #size()} on this instance (but it still call that method
      * on the other instance).
      *
-     * @param object The object to compare with this set.
+     * @param  object  the object to compare with this set.
      * @return {@code true} if the two set have the same content.
      */
     @Override
