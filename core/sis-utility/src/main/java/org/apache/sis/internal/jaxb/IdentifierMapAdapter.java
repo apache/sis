@@ -108,7 +108,7 @@ public class IdentifierMapAdapter extends AbstractMap<Citation,String> implement
     /**
      * Creates a new map which will be a view over the given identifiers.
      *
-     * @param identifiers The identifiers to wrap in a map view.
+     * @param  identifiers  the identifiers to wrap in a map view.
      */
     public IdentifierMapAdapter(final Collection<Identifier> identifiers) {
         this.identifiers = identifiers;
@@ -118,8 +118,8 @@ public class IdentifierMapAdapter extends AbstractMap<Citation,String> implement
      * If the given authority is a special case, returns its {@link NonMarshalledAuthority} integer enum.
      * Otherwise returns -1. See javadoc for more information about special cases.
      *
-     * @param authority A {@link Citation} constant. The type is relaxed to {@code Object}
-     *        because the signature of some {@code Map} methods are that way.
+     * @param  authority  a {@link Citation} constant. The type is relaxed to {@code Object}
+     *         because the signature of some {@code Map} methods are that way.
      */
     static int specialCase(final Object authority) {
         if (authority == IdentifierSpace.HREF) return NonMarshalledAuthority.HREF;
@@ -148,7 +148,7 @@ public class IdentifierMapAdapter extends AbstractMap<Citation,String> implement
     /**
      * Returns the string representation of the given value, or {@code null} if none.
      *
-     * @param value The value returned be one of the above {@code getFoo()} methods.
+     * @param  value  the value returned be one of the above {@code getFoo()} methods.
      */
     private static String toString(final Object value) {
         return (value != null) ? value.toString() : null;
@@ -204,7 +204,7 @@ public class IdentifierMapAdapter extends AbstractMap<Citation,String> implement
     /**
      * Returns {@code true} if at least one identifier declares the given {@linkplain Identifier#getCode() code}.
      *
-     * @param  code The code to search, which should be an instance of {@link String}.
+     * @param  code  the code to search, which should be an instance of {@link String}.
      * @return {@code true} if at least one identifier uses the given code.
      */
     @Override
@@ -225,7 +225,7 @@ public class IdentifierMapAdapter extends AbstractMap<Citation,String> implement
      * Returns {@code true} if at least one identifier declares the given
      * {@linkplain Identifier#getAuthority() authority}.
      *
-     * @param  authority The authority to search, which should be an instance of {@link Citation}.
+     * @param  authority  the authority to search, which should be an instance of {@link Citation}.
      * @return {@code true} if at least one identifier uses the given authority.
      */
     @Override
@@ -276,8 +276,8 @@ public class IdentifierMapAdapter extends AbstractMap<Citation,String> implement
      * Returns the code of the first identifier associated with the given
      * {@linkplain Identifier#getAuthority() authority}, or {@code null} if no identifier was found.
      *
-     * @param  authority The authority to search, which should be an instance of {@link Citation}.
-     * @return The code of the identifier for the given authority, or {@code null} if none.
+     * @param  authority  the authority to search, which should be an instance of {@link Citation}.
+     * @return the code of the identifier for the given authority, or {@code null} if none.
      */
     @Override
     public final String get(final Object authority) {
@@ -297,8 +297,8 @@ public class IdentifierMapAdapter extends AbstractMap<Citation,String> implement
     /**
      * Removes all identifiers associated with the given {@linkplain Identifier#getAuthority() authority}.
      *
-     * @param  authority The authority to search, which should be an instance of {@link Citation}.
-     * @return The code of the identifier for the given authority, or {@code null} if none.
+     * @param  authority  the authority to search, which should be an instance of {@link Citation}.
+     * @return the code of the identifier for the given authority, or {@code null} if none.
      * @throws UnsupportedOperationException if the collection of identifiers is unmodifiable.
      */
     @Override
@@ -322,9 +322,9 @@ public class IdentifierMapAdapter extends AbstractMap<Citation,String> implement
      * If more than one identifier is found for the given authority, then all previous identifiers may be removed
      * in order to ensure that the new entry will be the first entry, so it can be find by the {@code get} method.
      *
-     * @param  authority The authority for which to set the code.
-     * @param  code The new code for the given authority, or {@code null} for removing the entry.
-     * @return The previous code for the given authority, or {@code null} if none.
+     * @param  authority  the authority for which to set the code.
+     * @param  code  the new code for the given authority, or {@code null} for removing the entry.
+     * @return the previous code for the given authority, or {@code null} if none.
      * @throws UnsupportedOperationException if the collection of identifiers is unmodifiable.
      */
     @Override
@@ -348,7 +348,7 @@ public class IdentifierMapAdapter extends AbstractMap<Citation,String> implement
      * If the backing collection contains many entries for the same authority, then only the first
      * occurrence is included.</p>
      *
-     * @return A view over the collection of identifiers.
+     * @return a view over the collection of identifiers.
      */
     @Override
     public Set<Entry<Citation,String>> entrySet() {

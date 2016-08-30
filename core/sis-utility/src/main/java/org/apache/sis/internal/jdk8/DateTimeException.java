@@ -21,7 +21,7 @@ package org.apache.sis.internal.jdk8;
  * Placeholder for the {@link java.time.DateTimeException} class.
  */
 @SuppressWarnings("serial")
-public final class DateTimeException extends RuntimeException {
+public class DateTimeException extends RuntimeException {
     /**
      * Constructs a new exception with the specified message.
      *

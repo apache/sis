@@ -105,7 +105,7 @@ abstract class MimeTypeDetector {
      * to read. We are typically not allowed to read the full stream because only a limited amount of bytes is
      * cached.
      *
-     * @return The character, or -1 on EOF.
+     * @return the character, or -1 on EOF.
      * @throws IOException if an error occurred while reading the byte or character.
      */
     abstract int read() throws IOException;
@@ -114,8 +114,8 @@ abstract class MimeTypeDetector {
      * Skips all bytes or characters up to {@code search}, then returns the character after it.
      * Characters inside quotes will be ignored.
      *
-     * @param  search The byte or character to skip.
-     * @return The byte or character after {@code search}, or -1 on EOF.
+     * @param  search the byte or character to skip.
+     * @return the byte or character after {@code search}, or -1 on EOF.
      * @throws IOException if an error occurred while reading the bytes or characters.
      */
     private int readAfter(final int search) throws IOException {
@@ -139,7 +139,7 @@ abstract class MimeTypeDetector {
      * and all control characters (character below 32, which include tabulations and line feeds).
      * This is the same criterion than {@link String#trim()}, but is not Unicode spaces.</p>
      *
-     * @return The first non-space character, or -1 on EOF.
+     * @return the first non-space character, or -1 on EOF.
      * @throws IOException if an error occurred while reading the bytes or characters.
      */
     private int afterSpaces(int c) throws IOException {
@@ -154,9 +154,9 @@ abstract class MimeTypeDetector {
      * After this method class, the stream position is on the first character after the separator if
      * a match has been found, or after the first unknown character otherwise.
      *
-     * @param  word The word to search, as US-ASCII characters.
-     * @param  n Number of valid characters in {@code word}.
-     * @param  separator The {@code ':'} or {@code '='} character.
+     * @param  word       the word to search, as US-ASCII characters.
+     * @param  n          number of valid characters in {@code word}.
+     * @param  separator  the {@code ':'} or {@code '='} character.
      * @return 1 if a match is found, 0 if no match, or -1 on EOF.
      * @throws IOException if an error occurred while reading the bytes or characters.
      */

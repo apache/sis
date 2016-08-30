@@ -44,8 +44,8 @@ public final strictfp class AbstractOperationTest extends TestCase {
         final ParameterDescriptor<?>[] parameters = {
             builder.addName("founder").create(String.class, null)
         };
-        return new NoOperation(singletonMap(AbstractOperation.NAME_KEY, "found city"),
-                builder.addName("found city").createGroup(parameters),
+        return new NoOperation(singletonMap(AbstractOperation.NAME_KEY, "new city"),
+                builder.addName("create").createGroup(parameters),
                 DefaultAttributeTypeTest.city());
     }
 
@@ -62,6 +62,6 @@ public final strictfp class AbstractOperationTest extends TestCase {
      */
     @Test
     public void testToString() {
-        assertEquals("NoOperation[“found city” (founder) : String]", foundCity().toString());
+        assertEquals("NoOperation[“new city” : String] = create(founder)", foundCity().toString());
     }
 }

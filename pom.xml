@@ -123,7 +123,21 @@ Apache SIS is a free software, Java language library for developing geospatial a
       <name>Adam Estrada</name>
       <id>aestrada</id>
       <roles>
-        <role>chair</role>
+        <role>PMC member</role>
+      </roles>
+    </developer>
+    <developer>
+      <name>Andrew Hart</name>
+      <id>ahart</id>
+      <roles>
+        <role>PMC member</role>
+      </roles>
+    </developer>
+    <developer>
+      <name>Charitha</name>
+      <id>charithcc</id>
+      <roles>
+        <role>PMC member</role>
       </roles>
     </developer>
     <developer>
@@ -135,6 +149,40 @@ Apache SIS is a free software, Java language library for developing geospatial a
       <organizationUrl>http://www.jpl.nasa.gov</organizationUrl>
       <timezone>-8</timezone>
       <roles>
+        <role>PMC emeritus</role>
+      </roles>
+    </developer>
+    <developer>
+      <name>Gregory D. Reddin</name>
+      <id>greddin</id>
+      <roles>
+        <role>PMC member</role>
+        <role>mentor</role>
+      </roles>
+    </developer>
+    <developer>
+      <name>Ian Holsman</name>
+      <id>ianh</id>
+      <roles>
+        <role>PMC member</role>
+        <role>mentor</role>
+      </roles>
+    </developer>
+    <developer>
+      <name>Joe Schaefer</name>
+      <id>joes</id>
+      <roles>
+        <role>PMC emeritus</role>
+      </roles>
+    </developer>
+    <developer>
+      <name>Johann Sorel</name>
+      <id>jsorel</id>
+      <email>johann.sorel@geomatys.com</email>
+      <organization>Geomatys</organization>
+      <organizationUrl>http://www.geomatys.com</organizationUrl>
+      <timezone>+1</timezone>
+      <roles>
         <role>committer</role>
       </roles>
     </developer>
@@ -142,7 +190,13 @@ Apache SIS is a free software, Java language library for developing geospatial a
       <name>Joseph F. White</name>
       <id>jwhite</id>
       <roles>
-        <role>developer</role>
+        <role>PMC member</role>
+      </roles>
+    </developer>
+    <developer>
+      <name>Marc le Bihan</name>
+      <roles>
+        <role>PMC member</role>
       </roles>
     </developer>
     <developer>
@@ -153,7 +207,19 @@ Apache SIS is a free software, Java language library for developing geospatial a
       <organizationUrl>http://www.geomatys.com</organizationUrl>
       <timezone>+1</timezone>
       <roles>
-        <role>developer</role>
+        <role>PMC member</role>
+        <role>chair</role>
+      </roles>
+    </developer>
+    <developer>
+      <name>Nga Thien Chung</name>
+      <id>nchung</id>
+      <email>nchung@apache.org</email>
+      <organization>NASA Jet Propulsion Laboratory</organization>
+      <organizationUrl>http://www.jpl.nasa.gov</organizationUrl>
+      <timezone>-8</timezone>
+      <roles>
+        <role>PMC member</role>
       </roles>
     </developer>
     <developer>
@@ -164,7 +230,7 @@ Apache SIS is a free software, Java language library for developing geospatial a
       <organizationUrl>http://www.attinteractive.com</organizationUrl>
       <timezone>-8</timezone>
       <roles>
-        <role>committer</role>
+        <role>PMC member</role>
       </roles>
     </developer>
     <developer>
@@ -176,37 +242,14 @@ Apache SIS is a free software, Java language library for developing geospatial a
       <organizationUrl>http://www.jpl.nasa.gov</organizationUrl>
       <timezone>-8</timezone>
       <roles>
-        <role>committer</role>
+        <role>PMC member</role>
       </roles>
     </developer>
     <developer>
-      <name>Sean McCleese</name>
-      <id>smcclees</id>
-      <email>smcclees@apache.org</email>
-      <organization>NASA Jet Propulsion Laboratory</organization>
-      <organizationUrl>http://www.jpl.nasa.gov</organizationUrl>
-      <timezone>-8</timezone>
+      <name>Peter Karich</name>
+      <id>pk</id>
       <roles>
-        <role>committer</role>
-      </roles>
-    </developer>
-    <developer>
-      <name>Travis L. Pinney</name>
-      <id>tlpinney</id>
-      <email>travis.pinney@gmail.com</email>
-      <roles>
-        <role>developer</role>
-      </roles>
-    </developer>
-    <developer>
-      <name>Nga Chung</name>
-      <id>nchung</id>
-      <email>nchung@apache.org</email>
-      <organization>NASA Jet Propulsion Laboratory</organization>
-      <organizationUrl>http://www.jpl.nasa.gov</organizationUrl>
-      <timezone>-8</timezone>
-      <roles>
-        <role>committer</role>
+        <role>PMC member</role>
       </roles>
     </developer>
     <developer>
@@ -214,10 +257,42 @@ Apache SIS is a free software, Java language library for developing geospatial a
       <id>rmarechal</id>
       <email>remi.marechal@geomatys.com</email>
       <organization>Geomatys</organization>
-      <organizationUrl>http://www.geomatys.com/</organizationUrl>
+      <organizationUrl>http://www.geomatys.com</organizationUrl>
       <timezone>+1</timezone>
       <roles>
-        <role>developer</role>
+        <role>committer</role>
+      </roles>
+    </developer>
+    <developer>
+      <name>Ross Laidlaw</name>
+      <id>rlaidlaw</id>
+      <roles>
+        <role>PMC member</role>
+      </roles>
+    </developer>
+    <developer>
+      <name>Sean William McCleese</name>
+      <id>smcclees</id>
+      <email>smcclees@apache.org</email>
+      <organization>NASA Jet Propulsion Laboratory</organization>
+      <organizationUrl>http://www.jpl.nasa.gov</organizationUrl>
+      <timezone>-8</timezone>
+      <roles>
+        <role>PMC member</role>
+      </roles>
+    </developer>
+    <developer>
+      <name>Suresh Marru</name>
+      <roles>
+        <role>PMC member</role>
+      </roles>
+    </developer>
+    <developer>
+      <name>Travis L. Pinney</name>
+      <id>tlpinney</id>
+      <email>travis.pinney@gmail.com</email>
+      <roles>
+        <role>PMC member</role>
       </roles>
     </developer>
   </developers>
@@ -230,12 +305,13 @@ Apache SIS is a free software, Java language library for developing geospatial a
       </roles>
     </contributor>
     <contributor>
-      <name>Andrew Hart</name>
-      <!-- id>ahart</id -->
-    </contributor>
-    <contributor>
-      <name>Charitha</name>
-      <!-- id>charithcc</id -->
+      <name>Antoine Hnawia</name>
+      <organization>Institut de Recherche pour le Développement</organization>
+      <organizationUrl>http://www.ird.fr</organizationUrl>
+      <timezone>+11</timezone>
+      <roles>
+        <role>developer</role>
+      </roles>
     </contributor>
     <contributor>
       <name>Cédric Briançon</name>
@@ -254,41 +330,10 @@ Apache SIS is a free software, Java language library for developing geospatial a
       </roles>
     </contributor>
     <contributor>
-      <name>Gregory D. Reddin</name>
-      <!-- id>greddin</id -->
-      <roles>
-        <role>mentor</role>
-      </roles>
-    </contributor>
-    <contributor>
       <name>Guilhem Legal</name>
       <email>guilhem.legal@geomatys.com</email>
       <organization>Geomatys</organization>
       <organizationUrl>http://www.geomatys.com</organizationUrl>
-      <timezone>+1</timezone>
-      <roles>
-        <role>developer</role>
-      </roles>
-    </contributor>
-    <contributor>
-      <name>Ian Holsman</name>
-      <!-- id>ianh</id -->
-      <roles>
-        <role>mentor</role>
-      </roles>
-    </contributor>
-    <contributor>
-      <name>Joe Schaefer</name>
-      <!-- id>joes</id -->
-      <roles>
-        <role>mentor</role>
-      </roles>
-    </contributor>
-    <contributor>
-      <name>Johann Sorel</name>
-      <email>johann.sorel@geomatys.com</email>
-      <organization>Geomatys</organization>
-      <organizationUrl>http://www.geomatys.com/</organizationUrl>
       <timezone>+1</timezone>
       <roles>
         <role>developer</role>
@@ -301,12 +346,24 @@ Apache SIS is a free software, Java language library for developing geospatial a
       </roles>
     </contributor>
     <contributor>
-      <name>Peter Karich</name>
-      <!-- id>pk</id -->
+      <name>Minh Chinh Vu</name>
+      <email>chinhvm.uet.1995@gmail.com</email>
+      <organization>VNSC</organization>
+      <organizationUrl>http://vnsc.org.vn</organizationUrl>
+      <timezone>+7</timezone>
+      <roles>
+        <role>developer</role>
+      </roles>
     </contributor>
     <contributor>
-      <name>Ross Laidlaw</name>
-      <!-- id>rlaidlaw</id -->
+      <name>Thi Phuong Hao Nguyen</name>
+      <email>nguyenthiphuonghao243@gmail.com</email>
+      <organization>VNSC</organization>
+      <organizationUrl>http://vnsc.org.vn</organizationUrl>
+      <timezone>+7</timezone>
+      <roles>
+        <role>developer</role>
+      </roles>
     </contributor>
     <contributor>
       <name>Touraïvane</name>

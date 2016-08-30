@@ -34,6 +34,7 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
 
 // Branch-dependent imports
 import org.opengis.feature.PropertyType;
+import org.opengis.feature.AttributeType;
 
 
 /**
@@ -41,7 +42,7 @@ import org.opengis.feature.PropertyType;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5
- * @version 0.6
+ * @version 0.8
  * @module
  */
 @DependsOn(DefaultAttributeTypeTest.class)
@@ -250,11 +251,11 @@ public final strictfp class DefaultFeatureTypeTest extends TestCase {
         final Map<String,Object> identification = new HashMap<String,Object>();
         final DefaultAttributeType<String>  city       = DefaultAttributeTypeTest.city(identification);
         final DefaultAttributeType<Integer> population = DefaultAttributeTypeTest.population(identification);
-        testComplex(city, population, 0, 0); // Simple
+        testComplex(city, population, 0, 0);    // Simple
         testComplex(city, population, 0, 1);
         testComplex(city, population, 0, 2);
         testComplex(city, population, 1, 2);
-        testComplex(city, population, 1, 1); // Simple
+        testComplex(city, population, 1, 1);    // Simple
     }
 
     /**
@@ -308,8 +309,8 @@ public final strictfp class DefaultFeatureTypeTest extends TestCase {
 
         final Map<String,String> identification = singletonMap(DefaultAttributeType.NAME_KEY, "City");
         try {
-            new DefaultFeatureType(identification, false, null, city, population, cityId);
-            fail("Duplicated attribute names shall not be allowed.");
+            final Object t = new DefaultFeatureType(identification, false, null, city, population, cityId);
+            fail("Duplicated attribute names shall not be allowed:\n" + t);
         } catch (IllegalArgumentException e) {
             final String message = e.getMessage();
             assertTrue(message, message.contains("name"));      // Property name.
@@ -357,6 +358,33 @@ public final strictfp class DefaultFeatureTypeTest extends TestCase {
             final String message = e.getMessage();
             assertTrue(message, message.contains("name"));      // Property name.
             assertTrue(message, message.contains("City"));      // Feature name.
+        }
+    }
+
+    /**
+     * Tests inclusion of a property of kind operation.
+     */
+    @Test
+    public void testOperationProperty() {
+        final Map<String,String> featureName = singletonMap(DefaultFeatureType.NAME_KEY, "Identified city");
+        final Map<String,String> identifierName = singletonMap(DefaultAttributeType.NAME_KEY, "identifier");
+        final DefaultFeatureType[] parent = {city()};
+        final DefaultFeatureType city = new DefaultFeatureType(featureName, false,
+                parent, new LinkOperation(identifierName, parent[0].getProperty("city")));
+        assertPropertiesEquals(city, true, "city", "population", "identifier");
+        /*
+         * Try to add an operation that depends on a non-existent property.
+         * Such construction shall not be allowed.
+         */
+        final PropertyType parliament = new LinkOperation(identifierName, DefaultAttributeTypeTest.parliament());
+        try {
+            final DefaultFeatureType illegal = new DefaultFeatureType(featureName, false, parent, parliament);
+            fail("Should not have been allowed to create this feature:\n" + illegal);
+        } catch (IllegalArgumentException e) {
+            final String message = e.getLocalizedMessage();
+            assertTrue(message, message.contains("identifier"));
+            assertTrue(message, message.contains("parliament"));
+            assertTrue(message, message.contains("Identified city"));
         }
     }
 
@@ -416,7 +444,7 @@ public final strictfp class DefaultFeatureTypeTest extends TestCase {
         assertPropertiesEquals(metroCapital, false, "country");
         assertPropertiesEquals(metroCapital, true, "city", "population", "region", "isGlobal", "parliament", "country");
         assertEquals("property(“region”).valueClass", CharSequence.class,
-                ((DefaultAttributeType) metroCapital.getProperty("region")).getValueClass());
+                ((AttributeType<?>) metroCapital.getProperty("region")).getValueClass());
 
         // Check based only on name.
         assertTrue ("maybeAssignableFrom", DefaultFeatureType.maybeAssignableFrom(capital, metroCapital));
@@ -460,7 +488,7 @@ public final strictfp class DefaultFeatureTypeTest extends TestCase {
         assertPropertiesEquals(worldMetropolis, false, "region", "temperature");
         assertPropertiesEquals(worldMetropolis, true, "city", "population", "region", "isGlobal", "universities", "temperature");
         assertEquals("property(“region”).valueClass", InternationalString.class,
-                ((DefaultAttributeType) worldMetropolis.getProperty("region")).getValueClass());
+                ((AttributeType<?>) worldMetropolis.getProperty("region")).getValueClass());
 
         // Check based only on name.
         assertTrue ("maybeAssignableFrom", DefaultFeatureType.maybeAssignableFrom(metropolis, worldMetropolis));
@@ -469,6 +497,22 @@ public final strictfp class DefaultFeatureTypeTest extends TestCase {
         // Public API.
         assertTrue ("isAssignableFrom", metropolis.isAssignableFrom(worldMetropolis));
         assertFalse("isAssignableFrom", worldMetropolis.isAssignableFrom(metropolis));
+    }
+
+    /**
+     * Tests the ommission of a property that duplicate a property already declared in the parent.
+     * This is a little bit different than {@link #testPropertyOverride()} since the duplicated property
+     * should be completely omitted.
+     */
+    @Test
+    @DependsOnMethod("testPropertyOverride")
+    public void testPropertyDuplication() {
+        DefaultFeatureType city = city();
+        city = new DefaultFeatureType(singletonMap(DefaultFeatureType.NAME_KEY, "New-City"),
+                false, new DefaultFeatureType[] {city()}, city.getProperty("city"));
+
+        assertPropertiesEquals(city, false);
+        assertPropertiesEquals(city, true, "city", "population");
     }
 
     /**

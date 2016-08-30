@@ -45,7 +45,7 @@ import org.apache.sis.internal.jdk7.StandardCharsets;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.7
+ * @version 0.8
  * @module
  */
 public final class JDK8 {
@@ -65,9 +65,9 @@ public final class JDK8 {
     /**
      * Compares two numbers as unsigned.
      *
-     * @param  x First unsigned value.
-     * @param  y Second unsigned value.
-     * @return Comparison result.
+     * @param  x  first unsigned value.
+     * @param  y  second unsigned value.
+     * @return comparison result.
      *
      * @since 0.7
      */
@@ -76,10 +76,37 @@ public final class JDK8 {
     }
 
     /**
+     * Returns the given value as an unsigned string.
+     * This implementation does not support values larger than {@link Long#MAX_VALUE}.
+     * This is only a placeholder; JDK8 provides a better implementation.
+     *
+     * @param  x  the value to format.
+     * @return a string representation of the given value.
+     *
+     * @since 0.8
+     */
+    public static String toUnsignedString(final long x) {
+        if (x >= 0) return Long.toString(x);
+        throw new ArithmeticException();
+    }
+
+    /**
+     * Returns the given integer as an unsigned long.
+     *
+     * @param  x  the integer to return as an unsigned long.
+     * @return the unsigned value of the given integer.
+     *
+     * @since 0.8
+     */
+    public static int toUnsignedLong(final int x) {
+        return x & 0xFFFFFFFF;
+    }
+
+    /**
      * Returns the given byte as an unsigned integer.
      *
-     * @param x The byte to return as an unsigned integer.
-     * @return The unsigned value of the given byte.
+     * @param  x  the byte to return as an unsigned integer.
+     * @return the unsigned value of the given byte.
      *
      * @since 0.7
      */
@@ -90,8 +117,8 @@ public final class JDK8 {
     /**
      * Returns the given short as an unsigned integer.
      *
-     * @param x The short to return as an unsigned integer.
-     * @return The unsigned value of the given short.
+     * @param  x  the short to return as an unsigned integer.
+     * @return the unsigned value of the given short.
      *
      * @since 0.7
      */
@@ -102,8 +129,8 @@ public final class JDK8 {
     /**
      * Safe cast of the given long to integer.
      *
-     * @param value The value to cast.
-     * @return The casted value.
+     * @param  value  the value to cast.
+     * @return the casted value.
      * @throws ArithmeticException if the value overflows.
      *
      * @since 0.7
@@ -117,11 +144,39 @@ public final class JDK8 {
     }
 
     /**
+     * Returns the sum of the given numbers.
+     * @param  x  first value to add.
+     * @param  y  second value to add.
+     * @return the result.
+     * @throws ArithmeticException if the result overflows.
+     *
+     * @since 0.8
+     */
+    public static long addExact(final long x, final long y) {
+        final long r = x + y;
+        if (((x ^ r) & (y ^ r)) >= 0) return r;
+        throw new ArithmeticException();
+    }
+
+    /**
+     * Returns the product of the arguments,
+     * @param  x  first value to multiply.
+     * @param  y  second value to multiply.
+     * @return the result.
+     * @throws ArithmeticException if the result overflows (Note: not implemented in this placeholder).
+     *
+     * @since 0.8
+     */
+    public static long multiplyExact(final long x, final long y) {
+        return x * y;   // Check for overflow not implemented in this placeholder.
+    }
+
+    /**
      * Safe product of the arguments.
      *
-     * @param x The first value.
-     * @param y The second value.
-     * @return The product.
+     * @param  x  the first value.
+     * @param  y  the second value.
+     * @return the product.
      * @throws ArithmeticException if the value overflows.
      *
      * @since 0.7
@@ -133,8 +188,8 @@ public final class JDK8 {
     /**
      * Returns the floating-point value adjacent to {@code value} in the direction of negative infinity.
      *
-     * @param  value The value for which to get the adjacent value.
-     * @return The adjacent value in the direction of negative infinity.
+     * @param  value  the value for which to get the adjacent value.
+     * @return the adjacent value in the direction of negative infinity.
      *
      * @since 0.4
      */
@@ -145,11 +200,11 @@ public final class JDK8 {
     /**
      * Returns the value of the given key, or the given default value if there is no value for that key.
      *
-     * @param <V> The type of values.
-     * @param map The map from which to get the value.
-     * @param key The key for the value to fetch.
-     * @param defaultValue The value to return if the map does not contain any value for the given key.
-     * @return The value for the given key (which may be {@code null}), or {@code defaultValue}.
+     * @param  <V>  the type of values.
+     * @param  map  the map from which to get the value.
+     * @param  key  the key for the value to fetch.
+     * @param  defaultValue the value to return if the map does not contain any value for the given key.
+     * @return the value for the given key (which may be {@code null}), or {@code defaultValue}.
      */
     public static <V> V getOrDefault(final Map<?,V> map, final Object key, final V defaultValue) {
         V value = map.get(key);
@@ -163,12 +218,12 @@ public final class JDK8 {
      * Stores the value in the given map, provided that no value were set.
      * This implementation presumes that the map can not contain null values.
      *
-     * @param  <K>   The type of keys.
-     * @param  <V>   The type of values.
-     * @param  map   The map where to store the value.
-     * @param  key   The key for the value to store.
-     * @param  value The value to store.
-     * @return The previous value, or {@code null} if none.
+     * @param  <K>    the type of keys.
+     * @param  <V>    the type of values.
+     * @param  map    the map where to store the value.
+     * @param  key    the key for the value to store.
+     * @param  value  the value to store.
+     * @return the previous value, or {@code null} if none.
      */
     public static <K,V> V putIfAbsent(final Map<K,V> map, final K key, final V value) {
         final V previous = map.put(key, value);
@@ -182,11 +237,11 @@ public final class JDK8 {
     /**
      * Removes the entry for the given key, provided that it is currently mapped to the given value.
      *
-     * @param  <K>   The type of keys.
-     * @param  <V>   The type of values.
-     * @param  map   The map from where to remove the value.
-     * @param  key   The key for the value to remove.
-     * @param  value The value that must exist for allowing removal.
+     * @param  <K>    the type of keys.
+     * @param  <V>    the type of values.
+     * @param  map    the map from where to remove the value.
+     * @param  key    the key for the value to remove.
+     * @param  value  the value that must exist for allowing removal.
      * @return {@code true} if the entry has been removed.
      *
      * @since 0.7
@@ -203,9 +258,9 @@ public final class JDK8 {
     /**
      * Removes all elements for which the given filter returns {@code true}.
      *
-     * @param  <E>        The type of elements in the given collection.
-     * @param  collection The collection from which to remove element.
-     * @param  filter     The condition for elements to remove.
+     * @param  <E>         the type of elements in the given collection.
+     * @param  collection  the collection from which to remove element.
+     * @param  filter      the condition for elements to remove.
      * @return {@code true} if at least one element has been removed.
      */
     public static <E> boolean removeIf(final Collection<E> collection, final Predicate<? super E> filter) {
@@ -222,13 +277,13 @@ public final class JDK8 {
     /**
      * Replaces the value for the given key if the current value is {@code oldValue}.
      *
-     * @param  <K>      The type of keys.
-     * @param  <V>      The type of values.
-     * @param  map      The map from where to replace the values.
-     * @param  key      The key of value to replace.
-     * @param  oldValue The expected current value.
-     * @param  newValue The new value to store if the current value is the expected one.
-     * @return Whether the replacement has been done.
+     * @param  <K>       the type of keys.
+     * @param  <V>       the type of values.
+     * @param  map       the map from where to replace the values.
+     * @param  key       the key of value to replace.
+     * @param  oldValue  the expected current value.
+     * @param  newValue  the new value to store if the current value is the expected one.
+     * @return whether the replacement has been done.
      *
      * @since 0.7
      */
@@ -244,10 +299,10 @@ public final class JDK8 {
     /**
      * Replaces the values for all entries in the given map.
      *
-     * @param  <K>      The type of keys.
-     * @param  <V>      The type of values.
-     * @param  map      The map from where to replace the values.
-     * @param  function The function performing the value replacements.
+     * @param  <K>       the type of keys.
+     * @param  <V>       the type of values.
+     * @param  map       the map from where to replace the values.
+     * @param  function  the function performing the value replacements.
      *
      * @since 0.7
      */
@@ -262,12 +317,12 @@ public final class JDK8 {
      * {@link ConcurrentMap#compute(java.lang.Object, java.util.function.BiFunction)}
      * on pre-JDK8 branches.
      *
-     * @param  <K> The type of keys.
-     * @param  <V> The type of values.
-     * @param  map The map where to store the value.
-     * @param  key The key for the value to compute and store.
-     * @param  remappingFunction The function for computing the value.
-     * @return The new value computed by the given function.
+     * @param  <K>  the type of keys.
+     * @param  <V>  the type of values.
+     * @param  map  the map where to store the value.
+     * @param  key  the key for the value to compute and store.
+     * @param  remappingFunction  the function for computing the value.
+     * @return the new value computed by the given function.
      *
      * @since 0.5
      */
@@ -297,13 +352,39 @@ public final class JDK8 {
     }
 
     /**
+     * Substitute for {@link Map#merge} on pre-JDK8 branches.
+     *
+     * @param  <K>    the type of keys.
+     * @param  <V>    the type of values.
+     * @param  map    the map where to store the value.
+     * @param  key    the key for the value to compute and store.
+     * @param  value  the value to store if none exists.
+     * @param  remappingFunction  the function for computing the value.
+     * @return the new value computed by the given function.
+     *
+     * @since 0.8
+     */
+    public static <K,V> V merge(final Map<K,V> map, final K key, final V value,
+            BiFunction<? super V, ? super V, ? extends V> remappingFunction)
+    {
+        final V oldValue = map.get(key);
+        final V newValue = (oldValue == null) ? value : remappingFunction.apply(oldValue, value);
+        if (newValue == null) {
+            map.remove(key);
+        } else {
+            map.put(key, newValue);
+        }
+        return newValue;
+    }
+
+    /**
      * Parses a date from a string in ISO 8601 format. More specifically, this method expects the
      * format defined by <cite>XML Schema Part 2: Datatypes for {@code xsd:dateTime}</cite>.
      *
      * <p>This method will be replaced by {@link java.time.format.DateTimeFormatter} on the JDK8 branch.</p>
      *
-     * @param  date The date to parse.
-     * @return The parsed date.
+     * @param  date  the date to parse.
+     * @return the parsed date.
      * @throws IllegalArgumentException if the given date can not be parsed.
      *
      * @see DatatypeConverter#parseDateTime(String)
@@ -318,8 +399,8 @@ public final class JDK8 {
      *
      * <p>This method will be replaced by {@link java.time.format.DateTimeFormatter} on the JDK8 branch.</p>
      *
-     * @param  date The date to format.
-     * @return The formatted date.
+     * @param  date  the date to format.
+     * @return the formatted date.
      *
      * @see DatatypeConverter#printDateTime(Calendar)
      */
@@ -337,8 +418,8 @@ public final class JDK8 {
     /**
      * Creates a buffered reader using UTF-8 encoding.
      *
-     * @param path The file to open.
-     * @return The reader.
+     * @param  path  the file to open.
+     * @return the reader.
      * @throws IOException if an error occurred while opening the reader.
      *
      * @since 0.7
@@ -350,8 +431,8 @@ public final class JDK8 {
     /**
      * Creates a buffered writer using UTF-8 encoding.
      *
-     * @param path The file to open.
-     * @return The writer.
+     * @param  path  the file to open.
+     * @return the writer.
      * @throws IOException if an error occurred while opening the writer.
      *
      * @since 0.7

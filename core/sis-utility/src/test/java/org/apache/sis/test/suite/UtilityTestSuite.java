@@ -26,7 +26,7 @@ import org.junit.BeforeClass;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.7
+ * @version 0.8
  * @module
  */
 @Suite.SuiteClasses({
@@ -56,6 +56,7 @@ import org.junit.BeforeClass;
     org.apache.sis.util.logging.WarningListenersTest.class,
     org.apache.sis.util.logging.MonolineFormatterTest.class,
     org.apache.sis.util.logging.LoggerAdapterTest.class,
+    org.apache.sis.math.VectorTest.class,
     org.apache.sis.math.MathFunctionsTest.class,
     org.apache.sis.math.DecimalFunctionsTest.class,
     org.apache.sis.math.StatisticsTest.class,
@@ -120,6 +121,8 @@ import org.junit.BeforeClass;
     org.apache.sis.util.collection.TreeTableFormatTest.class,
     org.apache.sis.util.collection.RangeSetTest.class,
     org.apache.sis.internal.util.StandardDateFormatTest.class,
+    org.apache.sis.internal.jdk8.OffsetDateTimeTest.class,
+    org.apache.sis.internal.jdk8.OffsetTimeTest.class,
 
     // Converters.
     org.apache.sis.internal.converter.AngleConverterTest.class,
