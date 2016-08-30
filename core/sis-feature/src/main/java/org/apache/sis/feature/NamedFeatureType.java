@@ -37,7 +37,7 @@ import org.apache.sis.util.resources.Errors;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5
- * @version 0.6
+ * @version 0.8
  * @module
  */
 final class NamedFeatureType implements FeatureType, Serializable {
@@ -50,6 +50,14 @@ final class NamedFeatureType implements FeatureType, Serializable {
      * The name of the feature type for which this {@code NamedFeatureType} is a placeholder.
      */
     private final GenericName name;
+
+    /**
+     * The feature type to use instead of the {@code NamedFeatureType}. Initially null, then set to the "real"
+     * feature type after {@link DefaultAssociationRole#resolve(DefaultFeatureType)} has been able to create it.
+     * This information is stored in case the same {@code NamedFeatureType} instance has been used in more than
+     * one {@link DefaultFeatureType}.
+     */
+    volatile FeatureType resolved;
 
     /**
      * Creates a new placeholder for a feature of the given name.
@@ -115,8 +123,18 @@ final class NamedFeatureType implements FeatureType, Serializable {
      * This feature type is considered independent of all other feature types except itself.
      */
     @Override
-    public boolean isAssignableFrom(final FeatureType type) {
-        return (type instanceof NamedFeatureType);
+    public boolean isAssignableFrom(FeatureType type) {
+        if (type == this) {
+            return true;
+        }
+        if (type instanceof NamedFeatureType) {
+            type = ((NamedFeatureType) type).resolved;
+        }
+        if (type == null) {
+            return false;
+        }
+        final FeatureType resolved = this.resolved;
+        return (resolved != null) && resolved.isAssignableFrom(type);
     }
 
     /**

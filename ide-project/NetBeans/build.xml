@@ -186,6 +186,9 @@
         <include name="**/*.laa"/>
         <include name="**/*.loa"/>
       </fileset>
+      <fileset dir="${project.root}/storage/sis-earth-observation/src/test/resources">
+        <include name="**/*.txt"/>
+      </fileset>
       <fileset dir="${project.root}/storage/sis-shapefile/src/test/resources">
         <include name="**/*.dbf"/>
         <include name="**/*.prj"/>

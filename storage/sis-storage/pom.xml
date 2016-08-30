@@ -63,6 +63,17 @@ Provides the interfaces and base classes to be implemented by various storage fo
       </roles>
     </developer>
     <developer>
+      <name>Johann Sorel</name>
+      <id>jsorel</id>
+      <email>johann.sorel@geomatys.com</email>
+      <organization>Geomatys</organization>
+      <organizationUrl>http://www.geomatys.com</organizationUrl>
+      <timezone>+1</timezone>
+      <roles>
+        <role>developer</role>
+      </roles>
+    </developer>
+    <developer>
       <name>Martin Desruisseaux</name>
       <id>desruisseaux</id>
       <email>desruisseaux@apache.org</email>
@@ -73,20 +84,9 @@ Provides the interfaces and base classes to be implemented by various storage fo
         <role>developer</role>
       </roles>
     </developer>
-  </developers>
-  <contributors>
-    <contributor>
-      <name>Johann Sorel</name>
-      <email>johann.sorel@geomatys.com</email>
-      <organization>Geomatys</organization>
-      <organizationUrl>http://www.geomatys.com</organizationUrl>
-      <timezone>+1</timezone>
-      <roles>
-        <role>developer</role>
-      </roles>
-    </contributor>
-    <contributor>
+    <developer>
       <name>Rémi Maréchal</name>
+      <id>rmarechal</id>
       <email>remi.marechal@geomatys.com</email>
       <organization>Geomatys</organization>
       <organizationUrl>http://www.geomatys.com</organizationUrl>
@@ -94,8 +94,8 @@ Provides the interfaces and base classes to be implemented by various storage fo
       <roles>
         <role>developer</role>
       </roles>
-    </contributor>
-  </contributors>
+    </developer>
+  </developers>
 
 
   <!-- ===========================================================

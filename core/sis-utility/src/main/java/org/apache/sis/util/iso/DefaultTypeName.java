@@ -38,22 +38,77 @@ import org.apache.sis.util.UnknownNameException;
  * uses that identifier prefixed by the {@code "OGC"} namespace.
  * Note that this is <strong>not</strong> a standard practice.
  * A more standard practice would be to use the <cite>definition identifiers in OGC namespace</cite>
- * (last column in the table below), but the set of data type identifiers defined by OGC is currently
+ * (third column in the table below), but the set of data type identifiers defined by OGC is currently
  * small and is sometime not an exact match.
  *
  * <table class="sis">
  *   <caption>Mapping from Java classes to type names (non-exhaustive list)</caption>
- *   <tr><th>Java class</th>                                   <th>Type name (unofficial)</th>      <th>Definition identifier in OGC namespace</th></tr>
- *   <tr><td>{@link org.opengis.util.InternationalString}</td> <td>{@code OGC:FreeText}</td>        <td></td></tr>
- *   <tr><td>{@link java.lang.String}</td>                     <td>{@code OGC:CharacterString}</td> <td>urn:ogc:def:dataType:OGC::string</td></tr>
- *   <tr><td>{@link java.net.URI}</td>                         <td>{@code OGC:URI}</td>             <td>urn:ogc:def:dataType:OGC::anyURI</td></tr>
- *   <tr><td>{@link java.lang.Boolean}</td>                    <td>{@code OGC:Boolean}</td>         <td>urn:ogc:def:dataType:OGC::boolean</td></tr>
- *   <tr><td>{@link java.lang.Integer}</td>                    <td>{@code OGC:Integer}</td>         <td>urn:ogc:def:dataType:OGC::nonNegativeInteger</td></tr>
- *   <tr><td>{@link java.lang.Double}</td>                     <td>{@code OGC:Real}</td>            <td></td></tr>
- *   <tr><td>{@link java.util.Date}</td>                       <td>{@code OGC:DateTime}</td>        <td></td></tr>
- *   <tr><td>{@link java.util.Locale}</td>                     <td>{@code OGC:PT_Locale}</td>       <td></td></tr>
- *   <tr><td>{@link org.opengis.metadata.Metadata}</td>        <td>{@code OGC:MD_Metadata}</td>     <td></td></tr>
- *   <tr><td>Unknown Java class</td>                           <td>{@code class:}&lt;the class name&gt;</td><td></td></tr>
+ *   <tr>
+ *     <th>Java class</th>
+ *     <th>Type name (unofficial)</th>
+ *     <th>Definition identifier in OGC namespace</th>
+ *     <th>Recommended URL in Web Processing Services</th>
+ *   </tr><tr>
+ *     <td>{@link org.opengis.util.InternationalString}</td>
+ *     <td>{@code OGC:FreeText}</td>
+ *     <td></td>
+ *     <td></td>
+ *   </tr><tr>
+ *     <td>{@link java.lang.String}</td>
+ *     <td>{@code OGC:CharacterString}</td>
+ *     <td>{@code urn:ogc:def:dataType:OGC::string}</td>
+ *     <td>{@code http://www.w3.org/2001/XMLSchema#string}</td>
+ *   </tr><tr>
+ *     <td>{@link java.net.URI}</td>
+ *     <td>{@code OGC:URI}</td>
+ *     <td>{@code urn:ogc:def:dataType:OGC::anyURI}</td>
+ *     <td></td>
+ *   </tr><tr>
+ *     <td>{@link java.lang.Boolean}</td>
+ *     <td>{@code OGC:Boolean}</td>
+ *     <td>{@code urn:ogc:def:dataType:OGC::boolean}</td>
+ *     <td>{@code http://www.w3.org/2001/XMLSchema#boolean}</td>
+ *   </tr><tr>
+ *     <td>{@link java.lang.Integer}</td>
+ *     <td>{@code OGC:Integer}</td>
+ *     <td>{@code urn:ogc:def:dataType:OGC::nonNegativeInteger}</td>
+ *     <td>{@code http://www.w3.org/2001/XMLSchema#integer}</td>
+ *   </tr><tr>
+ *     <td>{@link java.math.BigDecimal}</td>
+ *     <td>{@code OGC:Decimal}</td>
+ *     <td></td>
+ *     <td>{@code http://www.w3.org/2001/XMLSchema#decimal}</td>
+ *   </tr><tr>
+ *     <td>{@link java.lang.Double}</td>
+ *     <td>{@code OGC:Real}</td>
+ *     <td></td>
+ *     <td>{@code http://www.w3.org/2001/XMLSchema#double}</td>
+ *   </tr><tr>
+ *     <td>{@link java.lang.Float}</td>
+ *     <td>{@code OGC:Real}</td>
+ *     <td></td>
+ *     <td>{@code http://www.w3.org/2001/XMLSchema#float}</td>
+ *   </tr><tr>
+ *     <td>{@link java.util.Date}</td>
+ *     <td>{@code OGC:DateTime}</td>
+ *     <td></td>
+ *     <td></td>
+ *   </tr><tr>
+ *     <td>{@link java.util.Locale}</td>
+ *     <td>{@code OGC:PT_Locale}</td>
+ *     <td></td>
+ *     <td></td>
+ *   </tr><tr>
+ *     <td>{@link org.opengis.metadata.Metadata}</td>
+ *     <td>{@code OGC:MD_Metadata}</td>
+ *     <td></td>
+ *     <td></td>
+ *   </tr><tr>
+ *     <td>Unknown Java class</td>
+ *     <td>{@code class:}&lt;the class name&gt;</td>
+ *     <td></td>
+ *     <td></td>
+ *   </tr>
  * </table>
  *
  * The mapping defined by Apache SIS may change in any future version depending on standardization progress.
@@ -102,8 +157,8 @@ public class DefaultTypeName extends DefaultLocalName implements TypeName {
      * Constructs a type name from the given character sequence. The argument are given unchanged to the
      * {@linkplain DefaultLocalName#DefaultLocalName(NameSpace,CharSequence) super-class constructor}.
      *
-     * @param scope The scope of this name, or {@code null} for a global scope.
-     * @param name  The local name (never {@code null}).
+     * @param scope  the scope of this name, or {@code null} for a global scope.
+     * @param name   the local name (never {@code null}).
      *
      * @see DefaultNameFactory#createTypeName(NameSpace, CharSequence)
      */
@@ -123,8 +178,8 @@ public class DefaultTypeName extends DefaultLocalName implements TypeName {
      *       with the same values than the given name.</li>
      * </ul>
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      *
      * @since 0.5
@@ -179,7 +234,7 @@ public class DefaultTypeName extends DefaultLocalName implements TypeName {
      *       namespaces.</li>
      * </ul>
      *
-     * @return The Java class associated to this {@code TypeName},
+     * @return the Java class associated to this {@code TypeName},
      *         or {@code null} if there is no mapping from this name to a Java class.
      * @throws UnknownNameException if a mapping from this name to a Java class was expected to exist
      *         (typically because of the {@linkplain #scope() scope}) but the operation failed.
