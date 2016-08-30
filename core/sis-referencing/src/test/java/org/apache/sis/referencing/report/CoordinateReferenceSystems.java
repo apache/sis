@@ -458,6 +458,7 @@ public final strictfp class CoordinateReferenceSystems extends AuthorityCodesRep
         properties.setProperty("FACTORY.NAME",    "EPSG");
         properties.setProperty("FACTORY.VERSION", "8.9");
         properties.setProperty("FACTORY.VERSION.SUFFIX", ", together with other sources");
+        properties.setProperty("PRODUCT.VERSION.SUFFIX", " (provided that <a href=\"http://sis.apache.org/epsg.html\">a connection to an EPSG database exists</a>)");
         properties.setProperty("DESCRIPTION", "<p><b>Notation:</b></p>\n" +
                 "<ul>\n" +
                 "  <li>The " + YX_ORDER + " symbol in front of authority codes (${PERCENT.ANNOTATED} of them) identifies" +

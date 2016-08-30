@@ -17,6 +17,7 @@
 package org.apache.sis.feature.builder;
 
 import org.opengis.util.GenericName;
+import org.apache.sis.feature.Features;
 import org.apache.sis.feature.DefaultAssociationRole;
 
 // Branch-dependent imports
@@ -79,8 +80,13 @@ public final class AssociationRoleBuilder extends PropertyTypeBuilder {
         property      = template;
         minimumOccurs = template.getMinimumOccurs();
         maximumOccurs = template.getMaximumOccurs();
-        type          = template.getValueType();
-        typeName      = type.getName();
+        if (template instanceof DefaultAssociationRole && !((DefaultAssociationRole) template).isResolved()) {
+            type     = null;
+            typeName = Features.getValueTypeName(template);
+        } else {
+            type     = template.getValueType();
+            typeName = type.getName();
+        }
     }
 
     /**

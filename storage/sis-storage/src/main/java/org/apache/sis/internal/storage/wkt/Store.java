@@ -73,8 +73,8 @@ final class Store extends DataStore {
     /**
      * Creates a new WKT store from the given file, URL or stream.
      *
-     * @param  connector Information about the storage (URL, stream, <i>etc</i>).
-     * @throws DataStoreException If an error occurred while opening the stream.
+     * @param  connector information about the storage (URL, stream, <i>etc</i>).
+     * @throws DataStoreException if an error occurred while opening the stream.
      */
     public Store(final StorageConnector connector) throws DataStoreException {
         objects = new ArrayList<>();
@@ -98,7 +98,7 @@ final class Store extends DataStore {
             source = null;                                                  // Cleared first in case of error.
             final String wkt;
             try {
-                char[] buffer = new char[StoreProvider.READ_AHEAD_LIMIT];
+                char[] buffer = new char[FirstKeywordPeek.READ_AHEAD_LIMIT];
                 int length = 0;
                 int n;
                 while ((n = in.read(buffer, length, buffer.length - length)) >= 0) {
@@ -136,7 +136,7 @@ final class Store extends DataStore {
      * The current implementation retains only instances of {@link ReferenceSystem}
      * and ignore other cases.
      *
-     * @return The metadata associated to the parsed object, or {@code null} if none.
+     * @return the metadata associated to the parsed object, or {@code null} if none.
      * @throws DataStoreException if an error occurred during the parsing process.
      */
     @Override
@@ -158,7 +158,7 @@ final class Store extends DataStore {
     /**
      * Closes this data store and releases any underlying resources.
      *
-     * @throws DataStoreException If an error occurred while closing this data store.
+     * @throws DataStoreException if an error occurred while closing this data store.
      */
     @Override
     public void close() throws DataStoreException {

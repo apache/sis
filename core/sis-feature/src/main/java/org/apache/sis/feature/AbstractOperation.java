@@ -20,23 +20,26 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Collections;
 import java.util.HashMap;
+import java.io.IOException;
 import org.opengis.util.GenericName;
 import org.opengis.parameter.GeneralParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.ParameterValueGroup;
-import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Debug;
 
 // Branch-dependent imports
 import java.util.Objects;
+import org.apache.sis.internal.jdk8.UncheckedIOException;
 import org.opengis.feature.Attribute;
 import org.opengis.feature.AttributeType;
 import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureAssociation;
+import org.opengis.feature.FeatureOperationException;
 import org.opengis.feature.IdentifiedType;
 import org.opengis.feature.Operation;
 import org.opengis.feature.Property;
+import org.opengis.metadata.Identifier;
 
 
 /**
@@ -153,9 +156,10 @@ public abstract class AbstractOperation extends AbstractIdentifiedType implement
      * @param  parameters  the parameters to use for executing the operation.
      *                     Can be {@code null} if the operation does not take any parameters.
      * @return the operation result, or {@code null} if this operation does not produce any result.
+     * @throws FeatureOperationException if the operation execution can not complete.
      */
     @Override
-    public abstract Property apply(Feature feature, ParameterValueGroup parameters);
+    public abstract Property apply(Feature feature, ParameterValueGroup parameters) throws FeatureOperationException;
 
     /**
      * Returns the names of feature properties that this operation needs for performing its task.
@@ -227,14 +231,6 @@ public abstract class AbstractOperation extends AbstractIdentifiedType implement
         if (name != null) {
             buffer.append('”');
         }
-        String separator = " (";
-        for (final GeneralParameterDescriptor param : getParameters().descriptors()) {
-            buffer.append(separator).append(IdentifiedObjects.toString(param.getName()));
-            separator = ", ";
-        }
-        if (separator == ", ") {                    // Identity comparaison is okay here.
-            buffer.append(')');
-        }
         final IdentifiedType result = getResult();
         if (result != null) {
             final Object type;
@@ -245,7 +241,11 @@ public abstract class AbstractOperation extends AbstractIdentifiedType implement
             }
             buffer.append(" : ").append(type);
         }
-        formatResultFormula(buffer.append(']'));
+        try {
+            formatResultFormula(buffer.append("] = "));
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);      // Should never happen since we write in a StringBuilder.
+        }
         return buffer.toString();
     }
 
@@ -254,9 +254,35 @@ public abstract class AbstractOperation extends AbstractIdentifiedType implement
      * The "formula" may be for example a link to another property.
      *
      * @param  buffer  where to format the "formula".
-     * @return {@code true} if this method has formatted a formula, or {@code false} otherwise.
+     * @throws IOException if an error occurred while writing in {@code buffer}.
      */
-    boolean formatResultFormula(Appendable buffer) {
-        return false;
+    void formatResultFormula(Appendable buffer) throws IOException {
+        defaultFormula(getParameters(), buffer);
+    }
+
+    /**
+     * Default implementation of {@link #formatResultFormula(Appendable)},
+     * to be used also for operations that are not instance of {@link AbstractOperation}.
+     */
+    static void defaultFormula(final ParameterDescriptorGroup parameters, final Appendable buffer) throws IOException {
+        buffer.append(parameters != null ? name(parameters.getName()) : "operation").append('(');
+        if (parameters != null) {
+            boolean hasMore = false;
+            for (GeneralParameterDescriptor p : parameters.descriptors()) {
+                if (p != null) {
+                    if (hasMore) buffer.append(", ");
+                    buffer.append(name(p.getName()));
+                    hasMore = true;
+                }
+            }
+        }
+        buffer.append(')');
+    }
+
+    /**
+     * Returns a short string representation of the given identifier, or {@code null} if none.
+     */
+    private static String name(final Identifier id) {
+        return (id != null) ? id.getCode() : null;
     }
 }

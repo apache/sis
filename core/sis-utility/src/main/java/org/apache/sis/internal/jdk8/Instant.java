@@ -24,16 +24,11 @@ import org.apache.sis.internal.util.StandardDateFormat;
 /**
  * Placeholder for the {@link java.time.Instant} class.
  */
-public final class Instant {
+public final class Instant extends Temporal {
     /**
      * The parser to use for the {@link #parse(CharSequence)} method.
      */
     private static final StandardDateFormat parser = new StandardDateFormat();
-
-    /**
-     * Number of milliseconds since January 1st, 1970 midnight UTC.
-     */
-    private final long millis;
 
     /**
      * Creates a new instant.
@@ -41,7 +36,7 @@ public final class Instant {
      * @param  millis  number of milliseconds since January 1st, 1970 midnight UTC.
      */
     private Instant(final long millis) {
-        this.millis = millis;
+        super(millis);
     }
 
     /**

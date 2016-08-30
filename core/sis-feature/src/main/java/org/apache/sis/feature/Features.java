@@ -16,6 +16,8 @@
  */
 package org.apache.sis.feature;
 
+import org.opengis.util.GenericName;
+import org.opengis.util.NameFactory;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.maintenance.ScopeCode;
 import org.opengis.metadata.quality.ConformanceResult;
@@ -24,12 +26,18 @@ import org.opengis.metadata.quality.Element;
 import org.opengis.metadata.quality.Result;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.iso.DefaultNameFactory;
+import org.apache.sis.internal.system.DefaultFactories;
 
 // Branch-dependent imports
 import org.opengis.feature.Attribute;
 import org.opengis.feature.AttributeType;
 import org.opengis.feature.Feature;
+import org.opengis.feature.FeatureAssociationRole;
+import org.opengis.feature.IdentifiedType;
 import org.opengis.feature.InvalidPropertyValueException;
+import org.opengis.feature.Operation;
+import org.opengis.feature.PropertyType;
 
 
 /**
@@ -38,7 +46,7 @@ import org.opengis.feature.InvalidPropertyValueException;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
  * @since   0.5
- * @version 0.7
+ * @version 0.8
  * @module
  */
 public final class Features extends Static {
@@ -104,6 +112,43 @@ public final class Features extends Static {
             }
         }
         return (Attribute<V>) attribute;
+    }
+
+    /**
+     * Returns the name of the type of values that the given property can take.
+     * The type of value can be a {@link Class}, a {@link FeatureType} or another {@code PropertyType}
+     * depending on given argument:
+     *
+     * <ul>
+     *   <li>If {@code property} is an {@link AttributeType}, then this method gets the
+     *       {@linkplain DefaultAttributeType#getValueClass() value class} and
+     *       {@linkplain DefaultNameFactory#toTypeName(Class) maps that class to a name}.</li>
+     *   <li>If {@code property} is a {@link FeatureAssociationRole}, then this method gets
+     *       the name of the {@linkplain DefaultAssociationRole#getValueType() value type}.
+     *       This methods can work even if the associated {@code FeatureType} is not yet resolved.</li>
+     *   <li>If {@code property} is an {@link Operation}, then this method returns the name of the
+     *       {@linkplain AbstractOperation#getResult() result type}.</li>
+     * </ul>
+     *
+     * @param  property  the property for which to get the name of value type.
+     * @return the name of value type, or {@code null} if none.
+     *
+     * @since 0.8
+     */
+    public static GenericName getValueTypeName(final PropertyType property) {
+        if (property instanceof FeatureAssociationRole) {
+            // Tested first because this is the main interest for this method.
+            return DefaultAssociationRole.getValueTypeName((FeatureAssociationRole) property);
+        } else if (property instanceof AttributeType<?>) {
+            final DefaultNameFactory factory = DefaultFactories.forBuildin(NameFactory.class, DefaultNameFactory.class);
+            return factory.toTypeName(((AttributeType<?>) property).getValueClass());
+        } else if (property instanceof Operation) {
+            final IdentifiedType result = ((Operation) property).getResult();
+            if (result != null) {
+                return result.getName();
+            }
+        }
+        return null;
     }
 
     /**

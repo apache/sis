@@ -29,7 +29,7 @@ import org.apache.sis.util.resources.Errors;
  * <p>This class is used in some modules like {@code sis-netcdf}, when a JUnit test is testing some low-level
  * component where the real {@link WarningListeners} instance is not yet available.</p>
  *
- * @param <S> If the listener list had a source, that would be type type of the source.
+ * @param <S> if the listener list had a source, that would be type type of the source.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
@@ -50,8 +50,8 @@ public final strictfp class EmptyWarningListeners<S> extends WarningListeners<S>
     /**
      * Creates a new instance for the given locale and logger.
      *
-     * @param locale The locale to be returned by {@link #getLocale()}. Can be {@code null}.
-     * @param logger The name of the logger to be returned by {@link #getLogger()}.
+     * @param locale  the locale to be returned by {@link #getLocale()}. Can be {@code null}.
+     * @param logger  the name of the logger to be returned by {@link #getLogger()}.
      */
     public EmptyWarningListeners(final Locale locale, final String logger) {
         ArgumentChecks.ensureNonNull("logger", logger);
@@ -59,8 +59,8 @@ public final strictfp class EmptyWarningListeners<S> extends WarningListeners<S>
         this.logger = Logging.getLogger(logger);
     }
 
-    /** Returns the value given at construction time. */ @Override public Locale getLocale() {return locale;}
-    /** Returns the value given at construction time. */ @Override public Logger getLogger() {return logger;}
+    /** @return the value given at construction time. */ @Override public Locale getLocale() {return locale;}
+    /** @return the value given at construction time. */ @Override public Logger getLogger() {return logger;}
 
     /** Do not allow registration of warning listeners. */
     @Override public void addWarningListener(WarningListener<? super S> listener) {

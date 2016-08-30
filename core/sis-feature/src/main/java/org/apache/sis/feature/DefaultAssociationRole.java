@@ -54,7 +54,7 @@ import org.opengis.feature.FeatureAssociationRole;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5
- * @version 0.5
+ * @version 0.8
  * @module
  *
  * @see DefaultFeatureType
@@ -177,6 +177,30 @@ public class DefaultAssociationRole extends FieldType implements FeatureAssociat
     }
 
     /**
+     * Returns {@code true} if the associated {@code FeatureType} is complete (not just a name).
+     * This method returns {@code false} if this {@code FeatureAssociationRole} has been
+     * {@linkplain #DefaultAssociationRole(Map, GenericName, int, int) constructed with only a feature name}
+     * and that named feature has not yet been resolved.
+     *
+     * @return {@code true} if the associated feature is complete, or {@code false} if only its name is known.
+     *
+     * @see #getValueType()
+     *
+     * @since 0.8
+     */
+    public final boolean isResolved() {
+        final FeatureType type = valueType;
+        if (type instanceof NamedFeatureType) {
+            final FeatureType resolved = ((NamedFeatureType) type).resolved;
+            if (resolved == null) {
+                return false;
+            }
+            valueType = resolved;
+        }
+        return true;
+    }
+
+    /**
      * If the associated feature type is a placeholder for a {@code FeatureType} to be defined later,
      * replaces the placeholder by the actual instance if available. Otherwise do nothing.
      *
@@ -188,30 +212,34 @@ public class DefaultAssociationRole extends FieldType implements FeatureAssociat
      * @return {@code true} if this association references a resolved feature type after this method call.
      */
     final boolean resolve(final DefaultFeatureType creating) {
-        FeatureType type = valueType;
+        final FeatureType type = valueType;
         if (type instanceof NamedFeatureType) {
-            final GenericName name = type.getName();
-            if (name.equals(creating.getName())) {
-                type = creating;                                        // This is the most common case.
-            } else {
-                /*
-                 * The feature that we need to resolve is not the one we just created. Maybe we can find
-                 * this desired feature in an association of the 'creating' feature, instead than beeing
-                 * the 'creating' feature itself. This is a little bit unusual, but not illegal.
-                 */
-                final List<FeatureType> deferred = new ArrayList<>();
-                type = search(creating, name, deferred);
-                if (type == null) {
+            FeatureType resolved = ((NamedFeatureType) type).resolved;
+            if (resolved == null) {
+                final GenericName name = type.getName();
+                if (name.equals(creating.getName())) {
+                    resolved = creating;                                    // This is the most common case.
+                } else {
                     /*
-                     * Did not found the desired FeatureType in the 'creating' instance.
-                     * Try harder, by searching recursively in associations of associations.
+                     * The feature that we need to resolve is not the one we just created. Maybe we can find
+                     * this desired feature in an association of the 'creating' feature, instead than beeing
+                     * the 'creating' feature itself. This is a little bit unusual, but not illegal.
                      */
-                    if (deferred.isEmpty() || (type = deepSearch(deferred, name)) == null) {
-                        return false;
+                    final List<FeatureType> deferred = new ArrayList<>();
+                    resolved = search(creating, name, deferred);
+                    if (resolved == null) {
+                        /*
+                         * Did not found the desired FeatureType in the 'creating' instance.
+                         * Try harder, by searching recursively in associations of associations.
+                         */
+                        if (deferred.isEmpty() || (resolved = deepSearch(deferred, name)) == null) {
+                            return false;
+                        }
                     }
                 }
+                ((NamedFeatureType) type).resolved = resolved;
             }
-            valueType = type;
+            valueType = resolved;
         }
         return true;
     }
@@ -291,7 +319,7 @@ public class DefaultAssociationRole extends FieldType implements FeatureAssociat
         for (int i=0; i<deferred.size();) {
             FeatureType valueType = deferred.get(i++);
             if (done.put(valueType, Boolean.TRUE) == null) {
-                deferred.subList(0, i).clear(); // Discard previous value for making more room.
+                deferred.subList(0, i).clear();                 // Discard previous value for making more room.
                 valueType = search(valueType, name, deferred);
                 if (valueType != null) {
                     return valueType;
@@ -305,10 +333,17 @@ public class DefaultAssociationRole extends FieldType implements FeatureAssociat
     /**
      * Returns the type of feature values.
      *
+     * <p>This method can not be invoked if {@link #isResolved()} returns {@code false}.
+     * However it is still possible to {@linkplain Features#getValueTypeName(PropertyType)
+     * get the associated feature type name}.</p>
+     *
      * @return the type of feature values.
      * @throws IllegalStateException if the feature type has been specified
      *         {@linkplain #DefaultAssociationRole(Map, GenericName, int, int) only by its name}
      *         and not yet resolved.
+     *
+     * @see #isResolved()
+     * @see Features#getValueTypeName(PropertyType)
      */
     @Override
     public final FeatureType getValueType() {
@@ -317,9 +352,13 @@ public class DefaultAssociationRole extends FieldType implements FeatureAssociat
          * which use the 'valueType' field directly. Furthermore, this method is invoked
          * (indirectly) by DefaultFeatureType constructors.
          */
-        final FeatureType type = valueType;
+        FeatureType type = valueType;
         if (type instanceof NamedFeatureType) {
-            throw new IllegalStateException(Errors.format(Errors.Keys.UnresolvedFeatureName_1, getName()));
+            type = ((NamedFeatureType) type).resolved;
+            if (type == null) {
+                throw new IllegalStateException(Errors.format(Errors.Keys.UnresolvedFeatureName_1, getName()));
+            }
+            valueType = type;
         }
         return type;
     }

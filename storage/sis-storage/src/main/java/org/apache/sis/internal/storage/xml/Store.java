@@ -80,7 +80,7 @@ final class Store extends DataStore {
     /**
      * Creates a new XML store from the given file, URL or stream.
      *
-     * @param  connector Information about the storage (URL, stream, <i>etc</i>).
+     * @param  connector information about the storage (URL, stream, <i>etc</i>).
      * @throws DataStoreException if an error occurred while opening the stream.
      */
     public Store(final StorageConnector connector) throws DataStoreException {
