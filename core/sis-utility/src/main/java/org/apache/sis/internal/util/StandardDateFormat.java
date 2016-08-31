@@ -166,7 +166,7 @@ public final class StandardDateFormat extends SimpleDateFormat {
      * @return the date, or {@code null} if we failed to parse it.
      */
     @Override
-    public Date parse(String text, final ParsePosition position) {
+    public Date parse(final String text, final ParsePosition position) {
         if (isUserSpecifiedPattern) {
             return super.parse(text, position);
         }

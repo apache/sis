@@ -650,8 +650,10 @@ parse:      for (int i = 0; i < length;) {
             }
             if (i != 0) {
                 buffer.setLength(i);
-                c.setCitedResponsibleParties(Collections.singleton(new DefaultResponsibility(Role.OWNER, null,
-                        new AbstractParty(buffer, null))));     // Same limitation than MetadataBuilder.party().
+                // Same limitation than MetadataBuilder.party().
+                final AbstractParty party = new AbstractParty(buffer, null);
+                final DefaultResponsibility r = new DefaultResponsibility(Role.OWNER, null, party);
+                c.setCitedResponsibleParties(Collections.singleton(r));
             }
             constraints.getReferences().add(c);
         }
