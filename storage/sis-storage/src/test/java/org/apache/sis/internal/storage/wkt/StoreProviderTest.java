@@ -32,7 +32,7 @@ import static org.junit.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.7
- * @version 0.7
+ * @version 0.8
  * @module
  */
 @DependsOn(org.apache.sis.storage.StorageConnectorTest.class)
@@ -45,13 +45,13 @@ public final strictfp class StoreProviderTest extends TestCase {
     public void testKeywordsMap() {
         int min = Integer.MAX_VALUE;
         int max = Integer.MIN_VALUE;
-        for (final String keyword : StoreProvider.keywords()) {
+        for (final String keyword : StoreProvider.Peek.INSTANCE.keywords()) {
             final int length = keyword.length();
             if (length < min) min = length;
             if (length > max) max = length;
         }
-        assertEquals("MIN_LENGTH", min, StoreProvider.MIN_LENGTH);
-        assertEquals("MAX_LENGTH", max, StoreProvider.MAX_LENGTH);
+        assertEquals("MIN_LENGTH", min, StoreProvider.Peek.MIN_LENGTH);
+        assertEquals("MAX_LENGTH", max, StoreProvider.Peek.INSTANCE.maxLength);
     }
 
     /**

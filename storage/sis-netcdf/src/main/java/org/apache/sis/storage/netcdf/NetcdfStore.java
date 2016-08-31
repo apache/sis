@@ -24,6 +24,7 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.metadata.ModifiableMetadata;
@@ -57,19 +58,19 @@ public class NetcdfStore extends DataStore {
      * This constructor invokes {@link StorageConnector#closeAllExcept(Object)}, keeping open only the
      * needed resource.
      *
-     * @param  storage Information about the storage (URL, stream, {@link ucar.nc2.NetcdfFile} instance, <i>etc</i>).
+     * @param  connector information about the storage (URL, stream, {@link ucar.nc2.NetcdfFile} instance, <i>etc</i>).
      * @throws DataStoreException if an error occurred while opening the NetCDF file.
      */
-    public NetcdfStore(final StorageConnector storage) throws DataStoreException {
-        ArgumentChecks.ensureNonNull("storage", storage);
+    public NetcdfStore(final StorageConnector connector) throws DataStoreException {
+        ArgumentChecks.ensureNonNull("connector", connector);
         try {
-            decoder = NetcdfStoreProvider.decoder(listeners, storage);
+            decoder = NetcdfStoreProvider.decoder(listeners, connector);
         } catch (IOException e) {
             throw new DataStoreException(e);
         }
         if (decoder == null) {
-            throw new DataStoreException(Errors.format(Errors.Keys.IllegalInputTypeForReader_2,
-                    "NetCDF", Classes.getClass(storage.getStorage())));
+            throw new DataStoreContentException(Errors.format(Errors.Keys.IllegalInputTypeForReader_2,
+                    "NetCDF", Classes.getClass(connector.getStorage())));
         }
     }
 
@@ -78,7 +79,7 @@ public class NetcdfStore extends DataStore {
      * such as the spatiotemporal extent of the dataset, contact information about the creator or distributor,
      * data quality, usage constraints and more.
      *
-     * @return Information about the dataset.
+     * @return information about the dataset.
      * @throws DataStoreException if an error occurred while reading the data.
      */
     @Override
@@ -114,7 +115,7 @@ public class NetcdfStore extends DataStore {
      * Returns a string representation of this NetCDF store for debugging purpose.
      * The content of the string returned by this method may change in any future SIS version.
      *
-     * @return A string representation of this datastore for debugging purpose.
+     * @return a string representation of this datastore for debugging purpose.
      */
     @Debug
     @Override

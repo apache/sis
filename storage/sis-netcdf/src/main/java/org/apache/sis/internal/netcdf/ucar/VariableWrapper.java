@@ -26,6 +26,7 @@ import ucar.nc2.Dimension;
 import ucar.nc2.VariableIF;
 import org.apache.sis.internal.netcdf.Variable;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.DataStoreContentException;
 
 
 /**
@@ -34,7 +35,7 @@ import org.apache.sis.storage.DataStoreException;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
  * @since   0.3
- * @version 0.7
+ * @version 0.8
  * @module
  */
 final class VariableWrapper extends Variable {
@@ -206,7 +207,7 @@ final class VariableWrapper extends Variable {
         try {
             array = variable.read(new Section(areaLower, size, subsampling));
         } catch (InvalidRangeException e) {
-            throw new DataStoreException(e);
+            throw new DataStoreContentException(e);
         }
         return array.get1DJavaArray(array.getElementType());
     }

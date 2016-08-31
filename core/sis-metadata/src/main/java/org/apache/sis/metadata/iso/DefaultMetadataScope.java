@@ -87,8 +87,8 @@ public class DefaultMetadataScope extends ISOMetadata {
     /**
      * Constructs a metadata scope initialized to the given value.
      *
-     * @param resourceScope code for the scope.
-     * @param name Description of the scope, or {@code null} if none.
+     * @param resourceScope  code for the scope.
+     * @param name  description of the scope, or {@code null} if none.
      */
     public DefaultMetadataScope(final ScopeCode resourceScope, final CharSequence name) {
         this.resourceScope = resourceScope;
@@ -100,7 +100,7 @@ public class DefaultMetadataScope extends ISOMetadata {
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from, or {@code null} if none.
+     * @param object  the metadata to copy values from, or {@code null} if none.
      */
     public DefaultMetadataScope(final DefaultMetadataScope object) {
         super(object);
@@ -111,9 +111,9 @@ public class DefaultMetadataScope extends ISOMetadata {
     }
 
     /**
-     * Return the code for the scope.
+     * Returns the code for the scope.
      *
-     * @return The ode for the scope.
+     * @return the code for the scope.
      */
     @XmlElement(name = "resourceScope", required = true)
     @UML(identifier="resourceScope", obligation=MANDATORY, specification=ISO_19115)
@@ -124,7 +124,7 @@ public class DefaultMetadataScope extends ISOMetadata {
     /**
      * Sets the code for the scope.
      *
-     * @param newValue The new code for the scope.
+     * @param  newValue  the new code for the scope.
      */
     public void setResourceScope(final ScopeCode newValue) {
         checkWritePermission();
@@ -132,9 +132,9 @@ public class DefaultMetadataScope extends ISOMetadata {
     }
 
     /**
-     * Return a description of the scope, or {@code null} if none.
+     * Returns a description of the scope, or {@code null} if none.
      *
-     * @return Description of the scope, or {@code null} if none.
+     * @return description of the scope, or {@code null} if none.
      */
     @XmlElement(name = "name")
     @UML(identifier="name", obligation=OPTIONAL, specification=ISO_19115)
@@ -145,7 +145,7 @@ public class DefaultMetadataScope extends ISOMetadata {
     /**
      * Sets the description of the scope.
      *
-     * @param newValue The new description of the scope.
+     * @param  newValue  the new description of the scope.
      */
     public void setName(final InternationalString newValue) {
         checkWritePermission();

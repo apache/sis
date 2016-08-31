@@ -53,12 +53,12 @@ import org.apache.sis.internal.util.SetOfUnknownSize;
  * If the storage set is known to be immutable, then sub-classes may consider to cache some values,
  * especially the result of the {@link #size()} method.
  *
- * @param <S> The type of elements in the storage set.
- * @param <E> The type of elements in this set.
+ * @param <S> the type of elements in the storage set.
+ * @param <E> the type of elements in this set.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.3
- * @version 0.3
+ * @version 0.8
  * @module
  */
 class DerivedSet<S,E> extends SetOfUnknownSize<E> implements CheckedContainer<E>, Serializable {
@@ -97,8 +97,8 @@ class DerivedSet<S,E> extends SetOfUnknownSize<E> implements CheckedContainer<E>
     /**
      * Creates a new derived set from the specified storage set.
      *
-     * @param storage   The set which actually store the elements.
-     * @param converter The type of elements in this derived set.
+     * @param  storage    the set which actually store the elements.
+     * @param  converter  the type of elements in this derived set.
      */
     private DerivedSet(final Set<S> storage, final ObjectConverter<S,E> converter) {
         this.storage   = storage;
@@ -122,24 +122,6 @@ class DerivedSet<S,E> extends SetOfUnknownSize<E> implements CheckedContainer<E>
     @Override
     public final Iterator<E> iterator() {
         return new DerivedIterator<S,E>(storage.iterator(), converter);
-    }
-
-    /**
-     * Returns the number of elements in this set. The default implementation counts
-     * the number of elements returned by the {@link #iterator() iterator}.
-     * Subclasses are encouraged to cache this value if they know that the
-     * {@linkplain #storage} set is immutable.
-     *
-     * @return the number of elements in this set.
-     */
-    @Override
-    public int size() {
-        int count = 0;
-        for (final Iterator<E> it=iterator(); it.hasNext();) {
-            it.next();
-            count++;
-        }
-        return count;
     }
 
     /**
@@ -189,8 +171,8 @@ class DerivedSet<S,E> extends SetOfUnknownSize<E> implements CheckedContainer<E>
      * allows us to delegate the {@link #contains(Object)} and {@linkplain #remove(Object)}
      * operations to the {@linkplain #storage} set instead than iterating over all elements.
      *
-     * @param <S> The type of elements in the storage set.
-     * @param <E> The type of elements in this set.
+     * @param <S> the type of elements in the storage set.
+     * @param <E> the type of elements in this set.
      */
     private static class Invertible<S,E> extends DerivedSet<S,E> {
         /**
@@ -266,8 +248,8 @@ class DerivedSet<S,E> extends SetOfUnknownSize<E> implements CheckedContainer<E>
      * The bijection allows us to query the {@linkplain #storage} set size directly
      * instead than iterating over all elements.
      *
-     * @param <S> The type of elements in the storage set.
-     * @param <E> The type of elements in this set.
+     * @param <S> the type of elements in the storage set.
+     * @param <E> the type of elements in this set.
      */
     private static final class Bijective<S,E> extends Invertible<S,E> {
         /**

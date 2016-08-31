@@ -170,16 +170,16 @@ public class DefaultAttributeType<V> extends FieldType {
      *   </tr>
      * </table>
      *
-     * @param identification  The name and other information to be given to this attribute type.
-     * @param valueClass      The type of attribute values.
-     * @param minimumOccurs   The minimum number of occurrences of the attribute within its containing entity.
-     * @param maximumOccurs   The maximum number of occurrences of the attribute within its containing entity,
-     *                        or {@link Integer#MAX_VALUE} if there is no restriction.
-     * @param defaultValue    The default value for the attribute, or {@code null} if none.
-     * @param characterizedBy Other attribute types that describes this attribute type (can be {@code null} for none).
-     *                        For example if this new {@code DefaultAttributeType} describes a measurement,
-     *                        then {@code characterizedBy} could holds the measurement accuracy.
-     *                        See <cite>"Attribute characterization"</cite> in class Javadoc for more information.
+     * @param identification   the name and other information to be given to this attribute type.
+     * @param valueClass       the type of attribute values.
+     * @param minimumOccurs    the minimum number of occurrences of the attribute within its containing entity.
+     * @param maximumOccurs    the maximum number of occurrences of the attribute within its containing entity,
+     *                         or {@link Integer#MAX_VALUE} if there is no restriction.
+     * @param defaultValue     the default value for the attribute, or {@code null} if none.
+     * @param characterizedBy  other attribute types that describes this attribute type (can be {@code null} for none).
+     *                         For example if this new {@code DefaultAttributeType} describes a measurement,
+     *                         then {@code characterizedBy} could holds the measurement accuracy.
+     *                         See <cite>"Attribute characterization"</cite> in class Javadoc for more information.
      *
      * @see org.apache.sis.feature.builder.AttributeTypeBuilder
      */
@@ -211,9 +211,9 @@ public class DefaultAttributeType<V> extends FieldType {
     /**
      * Invoked on deserialization for restoring the {@link #characteristics} field.
      *
-     * @param  in The input stream from which to deserialize an attribute type.
-     * @throws IOException If an I/O error occurred while reading or if the stream contains invalid data.
-     * @throws ClassNotFoundException If the class serialized on the stream is not on the classpath.
+     * @param  in  the input stream from which to deserialize an attribute type.
+     * @throws IOException if an I/O error occurred while reading or if the stream contains invalid data.
+     * @throws ClassNotFoundException if the class serialized on the stream is not on the classpath.
      */
     private void readObject(final ObjectInputStream in) throws IOException, ClassNotFoundException {
         in.defaultReadObject();
@@ -230,7 +230,7 @@ public class DefaultAttributeType<V> extends FieldType {
     /**
      * Returns the type of attribute values.
      *
-     * @return The type of attribute values.
+     * @return the type of attribute values.
      */
     public final Class<V> getValueClass() {
         return valueClass;
@@ -255,7 +255,7 @@ public class DefaultAttributeType<V> extends FieldType {
      * <p>To be valid, an {@code Attribute} instance of this {@code AttributeType} shall have at least
      * this minimum number of elements in its {@link AbstractAttribute#getValues() collection of values}.</p>
      *
-     * @return The minimum number of attribute values.
+     * @return the minimum number of attribute values.
      */
     @Override
     public final int getMinimumOccurs() {
@@ -270,7 +270,7 @@ public class DefaultAttributeType<V> extends FieldType {
      * <p>To be valid, an {@code Attribute} instance of this {@code AttributeType} shall have no more than
      * this maximum number of elements in its {@link AbstractAttribute#getValues() collection of values}.</p>
      *
-     * @return The maximum number of attribute values, or {@link Integer#MAX_VALUE} if none.
+     * @return the maximum number of attribute values, or {@link Integer#MAX_VALUE} if none.
      */
     @Override
     public final int getMaximumOccurs() {
@@ -281,7 +281,7 @@ public class DefaultAttributeType<V> extends FieldType {
      * Returns the default value for the attribute.
      * This value is used when an attribute is created and no value for it is specified.
      *
-     * @return The default value for the attribute, or {@code null} if none.
+     * @return the default value for the attribute, or {@code null} if none.
      */
     public V getDefaultValue() {
         return defaultValue;
@@ -302,7 +302,7 @@ public class DefaultAttributeType<V> extends FieldType {
      * The {@linkplain Map#keySet() map keys} are the {@code String} representations
      * of characteristics {@linkplain #getName() name}, for more convenient lookups.
      *
-     * @return Other attribute types that describes this attribute type, or an empty map if none.
+     * @return other attribute types that describes this attribute type, or an empty map if none.
      *
      * @see AbstractAttribute#characteristics()
      */
@@ -313,7 +313,7 @@ public class DefaultAttributeType<V> extends FieldType {
     /**
      * Creates a new attribute instance of this type initialized to the {@linkplain #getDefaultValue() default value}.
      *
-     * @return A new attribute instance.
+     * @return a new attribute instance.
      *
      * @see AbstractAttribute#create(DefaultAttributeType)
      */
@@ -355,11 +355,11 @@ public class DefaultAttributeType<V> extends FieldType {
      * Returns a string representation of this attribute type.
      * The returned string is for debugging purpose and may change in any future SIS version.
      *
-     * @return A string representation of this attribute type for debugging purpose.
+     * @return a string representation of this attribute type for debugging purpose.
      */
     @Debug
     @Override
     public String toString() {
-        return toString("AttributeType", this, Classes.getShortName(valueClass)).toString();
+        return toString("AttributeType", getName(), Classes.getShortName(valueClass)).toString();
     }
 }

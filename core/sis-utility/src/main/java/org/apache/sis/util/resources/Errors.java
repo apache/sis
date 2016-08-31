@@ -81,6 +81,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final short CanNotAddToExclusiveSet_2 = 0;
 
         /**
+         * Can not assign characteristics to the “{0}” property.
+         */
+        public static final short CanNotAssignCharacteristics_1 = 233;
+
+        /**
          * Can not assign units “{1}” to dimension “{0}”.
          */
         public static final short CanNotAssignUnitToDimension_2 = 168;
@@ -231,9 +236,19 @@ public final class Errors extends IndexedResourceBundle {
         public static final short DeadThread_1 = 15;
 
         /**
+         * Operation “{0}” requires a “{1}” property, but no such property has been found in “{2}”.
+         */
+        public static final short DependencyNotFound_3 = 235;
+
+        /**
          * The “{0}” file points to a directory instead of a regular file.
          */
         public static final short DirectoryNotExpected_1 = 165;
+
+        /**
+         * This instance of ‘{0}’ has been disposed.
+         */
+        public static final short DisposedInstanceOf_1 = 234;
 
         /**
          * Element “{0}” is duplicated.

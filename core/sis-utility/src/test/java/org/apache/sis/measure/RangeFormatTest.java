@@ -34,6 +34,7 @@ import static org.junit.Assert.*;
 import static java.lang.StrictMath.*;
 import static java.lang.Double.POSITIVE_INFINITY;
 import static java.lang.Double.NEGATIVE_INFINITY;
+import static org.apache.sis.internal.util.StandardDateFormat.UTC;
 
 
 /**
@@ -306,7 +307,7 @@ public final strictfp class RangeFormatTest extends TestCase {
      */
     @Test
     public void testFormatDatesToCharacterIterator() {
-        format   = new RangeFormat(Locale.FRANCE, TimeZone.getTimeZone("UTC"));
+        format   = new RangeFormat(Locale.FRANCE, TimeZone.getTimeZone(UTC));
         minPos   = new FieldPosition(RangeFormat.Field.MIN_VALUE);
         maxPos   = new FieldPosition(RangeFormat.Field.MAX_VALUE);
         parsePos = new ParsePosition(0);

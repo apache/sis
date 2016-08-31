@@ -24,30 +24,25 @@ import org.apache.sis.internal.util.StandardDateFormat;
 /**
  * Placeholder for the {@link java.time.Instant} class.
  */
-public final class Instant {
+public final class Instant extends Temporal {
     /**
      * The parser to use for the {@link #parse(CharSequence)} method.
      */
     private static final StandardDateFormat parser = new StandardDateFormat();
 
     /**
-     * Number of milliseconds since January 1st, 1970 midnight UTC.
-     */
-    private final long millis;
-
-    /**
      * Creates a new instant.
      *
-     * @param millis Number of milliseconds since January 1st, 1970 midnight UTC.
+     * @param  millis  number of milliseconds since January 1st, 1970 midnight UTC.
      */
     private Instant(final long millis) {
-        this.millis = millis;
+        super(millis);
     }
 
     /**
      * Parses the given text.
      *
-     * @param  text the text to parse.
+     * @param  text  the text to parse.
      * @return the instant.
      * @throws DateTimeException if the text can not be parsed.
      */
@@ -66,7 +61,7 @@ public final class Instant {
     /**
      * Creates a new instant for the given time in milliseconds.
      *
-     * @param  millis number of milliseconds since January 1st, 1970 midnight UTC.
+     * @param  millis  number of milliseconds since January 1st, 1970 midnight UTC.
      * @return the instant for the given time.
      */
     public static Instant ofEpochMilli(final long millis) {
@@ -76,7 +71,7 @@ public final class Instant {
     /**
      * Returns the number of milliseconds since January 1st, 1970 midnight UTC.
      *
-     * @return Number of milliseconds since January 1st, 1970 midnight UTC.
+     * @return number of milliseconds since January 1st, 1970 midnight UTC.
      */
     public long toEpochMilli() {
         return millis;
@@ -85,7 +80,7 @@ public final class Instant {
     /**
      * Not a JDK method - used as a replacement of {@code Date.from(Instant)}.
      *
-     * @return This instant as a legacy date object.
+     * @return this instant as a legacy date object.
      */
     public Date toDate() {
         return new Date(millis);

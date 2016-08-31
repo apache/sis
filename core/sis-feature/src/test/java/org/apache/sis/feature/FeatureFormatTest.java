@@ -17,7 +17,9 @@
 package org.apache.sis.feature;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Random;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -32,7 +34,7 @@ import static org.apache.sis.test.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5
- * @version 0.6
+ * @version 0.8
  * @module
  */
 @DependsOn({
@@ -48,7 +50,7 @@ public final strictfp class FeatureFormatTest extends TestCase {
         final DefaultFeatureType feature = DefaultFeatureTypeTest.worldMetropolis();
         final FeatureFormat format = new FeatureFormat(Locale.US, null);
         final String text = format.format(feature);
-        assertMultilinesEquals("World metropolis\n" +
+        assertMultilinesEquals("World metropolis ⇾ Metropolis, University city\n" +
                 "┌──────────────┬─────────────────────┬─────────────┬───────────────┬────────────────────────────┐\n" +
                 "│ Name         │ Type                │ Cardinality │ Default value │ Characteristics            │\n" +
                 "├──────────────┼─────────────────────┼─────────────┼───────────────┼────────────────────────────┤\n" +
@@ -62,6 +64,40 @@ public final strictfp class FeatureFormatTest extends TestCase {
     }
 
     /**
+     * Tests the formatting of a {@link DefaultFeatureType} that contains operations.
+     */
+    @Test
+    @SuppressWarnings("serial")
+    public void testFeatureTypeWithOperations() {
+        DefaultFeatureType feature = DefaultFeatureTypeTest.city();
+        final AbstractIdentifiedType city = feature.getProperty("city");
+        feature = new DefaultFeatureType(name("Identified city"), false, new DefaultFeatureType[] {feature},
+                FeatureOperations.link(name("someId"), city),
+                FeatureOperations.compound(name("anotherId"), ":", "<", ">", city, feature.getProperty("population")),
+                AbstractOperationTest.foundCity());
+
+        final FeatureFormat format = new FeatureFormat(Locale.US, null);
+        final String text = format.format(feature);
+        assertMultilinesEquals("Identified city ⇾ City\n" +
+                "┌────────────┬─────────┬─────────────┬─────────────────────┐\n" +
+                "│ Name       │ Type    │ Cardinality │ Default value       │\n" +
+                "├────────────┼─────────┼─────────────┼─────────────────────┤\n" +
+                "│ city       │ String  │ [1 … 1]     │ Utopia              │\n" +
+                "│ population │ Integer │ [1 … 1]     │                     │\n" +
+                "│ someId     │ String  │ [1 … 1]     │ = city              │\n" +
+                "│ anotherId  │ String  │ [1 … 1]     │ = <city:population> │\n" +
+                "│ new city   │ String  │ [1 … 1]     │ = create(founder)   │\n" +
+                "└────────────┴─────────┴─────────────┴─────────────────────┘\n", text);
+    }
+
+    /**
+     * Convenience method returning the given name in a {@code properties} map.
+     */
+    private static Map<String,?> name(final String name) {
+        return Collections.singletonMap(DefaultFeatureType.NAME_KEY, name);
+    }
+
+    /**
      * Tests the formatting of an {@link AbstractFeature}.
      */
     @Test
@@ -72,7 +108,7 @@ public final strictfp class FeatureFormatTest extends TestCase {
         final DefaultFeatureType type = DefaultFeatureTypeTest.worldMetropolis();
         final AbstractFeature feature = isSparse ? new SparseFeature(type) : new DenseFeature(type);
         feature.setPropertyValue("city", "Tokyo");
-        feature.setPropertyValue("population", 13185502); // In 2011.
+        feature.setPropertyValue("population", 13185502);                               // In 2011.
         feature.setPropertyValue("universities", Arrays.asList("Waseda", "Keio"));
 
         final FeatureFormat format = new FeatureFormat(Locale.US, null);
@@ -101,11 +137,11 @@ public final strictfp class FeatureFormatTest extends TestCase {
         final DefaultFeatureType type = DefaultAssociationRoleTest.twinTownCity(false);
         final AbstractFeature twinTown = isSparse ? new SparseFeature(type) : new DenseFeature(type);
         twinTown.setPropertyValue("city", "Le Mans");
-        twinTown.setPropertyValue("population", 143240); // In 2011.
+        twinTown.setPropertyValue("population", 143240);                    // In 2011.
 
         final AbstractFeature feature = isSparse ? new SparseFeature(type) : new DenseFeature(type);
         feature.setPropertyValue("city", "Paderborn");
-        feature.setPropertyValue("population", 143174); // December 31th, 2011
+        feature.setPropertyValue("population", 143174);                     // December 31th, 2011
         feature.setPropertyValue("twin town", twinTown);
 
         final FeatureFormat format = new FeatureFormat(Locale.US, null);

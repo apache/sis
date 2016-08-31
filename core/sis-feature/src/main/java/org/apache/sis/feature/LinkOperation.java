@@ -30,7 +30,6 @@ import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.util.ArgumentChecks;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk8.UncheckedIOException;
 
 
 /**
@@ -154,15 +153,9 @@ final class LinkOperation extends AbstractOperation {
      * Appends a string representation of the "formula" used for computing the result.
      *
      * @param  buffer where to format the "formula".
-     * @return {@code true} since this method has formatted a formula.
      */
     @Override
-    boolean formatResultFormula(final Appendable buffer) {
-        try {
-            buffer.append(" → ").append(referentName);
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
-        }
-        return true;
+    void formatResultFormula(final Appendable buffer) throws IOException {
+        buffer.append(referentName);
     }
 }

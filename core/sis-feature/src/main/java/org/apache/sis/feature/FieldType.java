@@ -33,7 +33,7 @@ import org.apache.sis.util.resources.Errors;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5
- * @version 0.5
+ * @version 0.8
  * @module
  */
 abstract class FieldType extends AbstractIdentifiedType {
@@ -57,10 +57,10 @@ abstract class FieldType extends AbstractIdentifiedType {
      * Constructs a field type from the given properties. The identification map is given unchanged to
      * the {@linkplain AbstractIdentifiedType#AbstractIdentifiedType(Map) super-class constructor}.
      *
-     * @param identification The name and other information to be given to this field type.
-     * @param minimumOccurs  The minimum number of occurrences of the property within its containing entity.
-     * @param maximumOccurs  The maximum number of occurrences of the property within its containing entity,
-     *                       or {@link Integer#MAX_VALUE} if there is no restriction.
+     * @param identification  the name and other information to be given to this field type.
+     * @param minimumOccurs   the minimum number of occurrences of the property within its containing entity.
+     * @param maximumOccurs   the maximum number of occurrences of the property within its containing entity,
+     *                        or {@link Integer#MAX_VALUE} if there is no restriction.
      */
     FieldType(final Map<String,?> identification, final int minimumOccurs, final int maximumOccurs) {
         super(identification);
@@ -76,7 +76,7 @@ abstract class FieldType extends AbstractIdentifiedType {
      * Returns the minimum number of occurrences of the property within its containing entity.
      * The returned value is greater than or equal to zero.
      *
-     * @return The minimum number of occurrences of the property within its containing entity.
+     * @return the minimum number of occurrences of the property within its containing entity.
      */
     public int getMinimumOccurs() {
         return minimumOccurs;
@@ -87,7 +87,7 @@ abstract class FieldType extends AbstractIdentifiedType {
      * The returned value is greater than or equal to the {@link #getMinimumOccurs()} value.
      * If there is no maximum, then this method returns {@link Integer#MAX_VALUE}.
      *
-     * @return The maximum number of occurrences of the property within its containing entity,
+     * @return the maximum number of occurrences of the property within its containing entity,
      *         or {@link Integer#MAX_VALUE} if none.
      */
     public int getMaximumOccurs() {
@@ -127,13 +127,12 @@ abstract class FieldType extends AbstractIdentifiedType {
      *     PropertyType[“name” : ValueClass]
      * }
      *
-     * @param className The interface name of the object on which {@code toString()} is invoked.
-     * @param type      The property type, sometime {@code this} or sometime an other object.
-     * @param valueType The name of value class (attribute), or the feature type name (association).
+     * @param className  the interface name of the object on which {@code toString()} is invoked.
+     * @param name       the property type name, sometime {@link #getName()} or sometime the name of another object.
+     * @param valueType  the name of value class (attribute), or the feature type name (association).
      */
-    static StringBuilder toString(final String className, final AbstractIdentifiedType type, final Object valueType) {
+    static StringBuilder toString(final String className, final GenericName name, final Object valueType) {
         final StringBuilder buffer = new StringBuilder(40).append(className).append('[');
-        final GenericName name = type.getName();
         if (name != null) {
             buffer.append('“');
         }
@@ -152,15 +151,13 @@ abstract class FieldType extends AbstractIdentifiedType {
      *     Property[“name” : ValueClass] = {value1, value2, ...}
      * }
      *
-     * @param className The interface name of the object on which {@code toString()} is invoked.
-     * @param type      The property type associated to the object to format.
-     * @param valueType The name of value class (attribute), or the feature type name (association).
-     * @param values    The actual values.
+     * @param className  the interface name of the object on which {@code toString()} is invoked.
+     * @param name       the property type name, sometime {@link #getName()} or sometime the name of another object.
+     * @param valueType  the name of value class (attribute), or the feature type name (association).
+     * @param values     the actual values.
      */
-    static StringBuilder toString(final String className, final AbstractIdentifiedType type,
-            final Object valueType, final Iterator<?> values)
-    {
-        final StringBuilder buffer = toString(className, type, valueType);
+    static StringBuilder toString(final String className, final GenericName name, final Object valueType, final Iterator<?> values) {
+        final StringBuilder buffer = toString(className, name, valueType);
         if (values.hasNext()) {
             final Object value = values.next();
             final boolean isMultiValued = values.hasNext();

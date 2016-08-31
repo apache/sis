@@ -17,7 +17,10 @@
 package org.apache.sis.metadata.iso.extent;
 
 import java.util.Date;
+import java.util.List;
+import java.util.ArrayList;
 import javax.measure.unit.Unit;
+import org.opengis.geometry.Envelope;
 import org.opengis.temporal.TemporalPrimitive;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.extent.VerticalExtent;
@@ -28,17 +31,21 @@ import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.crs.VerticalCRS;
+import org.opengis.referencing.crs.GeographicCRS;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.datum.VerticalDatum;
 import org.opengis.referencing.datum.VerticalDatumType;
+import org.opengis.referencing.operation.TransformException;
+import org.apache.sis.metadata.InvalidMetadataException;
 import org.apache.sis.measure.Longitude;
 import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.measure.Range;
 import org.apache.sis.util.resources.Vocabulary;
+import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Static;
 
 import static java.lang.Math.*;
-import static org.apache.sis.internal.metadata.MetadataUtilities.getInclusion;
 import static org.apache.sis.internal.metadata.ReferencingServices.AUTHALIC_RADIUS;
 
 
@@ -56,7 +63,7 @@ import static org.apache.sis.internal.metadata.ReferencingServices.AUTHALIC_RADI
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.6
+ * @version 0.8
  * @module
  *
  * @see org.apache.sis.geometry.Envelopes
@@ -84,53 +91,78 @@ public final class Extents extends Static {
 
     /**
      * Returns a single geographic bounding box from the specified extent.
-     * If no bounding box is found, then this method returns {@code null}.
-     * If a single bounding box is found, then that box is returned directly.
-     * If more than one box is found, then all those boxes are
-     * {@linkplain DefaultGeographicBoundingBox#add added} together.
+     * This method tries to find the bounding box in the cheapest way
+     * before to fallback on more expansive computations:
      *
-     * @param  extent The extent to convert to a geographic bounding box, or {@code null}.
-     * @return A geographic bounding box extracted from the given extent, or {@code null} in none.
+     * <ol>
+     *   <li>First, this method searches geographic elements that are instance of {@link GeographicBoundingBox}.<ul>
+     *     <li>If exactly one such instance is found, then this method returns that instance directly (no copy).</li>
+     *     <li>If more than one instance is found, then this method computes and returns the
+     *         {@linkplain DefaultGeographicBoundingBox#add union} of all bounding boxes.</li>
+     *   </ul></li>
+     *   <li>If above step found no {@code GeographicBoundingBox}, then this method inspects geographic elements
+     *       that are instance of {@link BoundingPolygon}, taking in account only the envelopes associated to a
+     *       coordinate reference system of kind {@link GeographicCRS}. If such envelopes are found, then this
+     *       method computes and returns their union.</li>
+     *   <li>If above step found no polygon's envelope associated to a geographic CRS, then in last resort this
+     *       method uses all polygon's envelopes regardless their coordinate reference system (provided that the
+     *       CRS is not null), applying coordinate transformations if needed.</li>
+     *   <li>If above step found no polygon's envelope, then this method returns {@code null}.</li>
+     * </ol>
+     *
+     * @param  extent  the extent to convert to a geographic bounding box, or {@code null}.
+     * @return a geographic bounding box extracted from the given extent, or {@code null} if none.
+     *
+     * @see org.apache.sis.referencing.CRS#getDomainOfValidity(CoordinateReferenceSystem)
      */
     public static GeographicBoundingBox getGeographicBoundingBox(final Extent extent) {
-        GeographicBoundingBox candidate = null;
+        GeographicBoundingBox bounds = null;
         if (extent != null) {
             DefaultGeographicBoundingBox modifiable = null;
+            final List<Envelope> fallbacks = new ArrayList<Envelope>();
             for (final GeographicExtent element : extent.getGeographicElements()) {
-                final GeographicBoundingBox bounds;
-                if (element instanceof GeographicBoundingBox) {
-                    bounds = (GeographicBoundingBox) element;
-                } else if (element instanceof BoundingPolygon) {
-                    // TODO: iterates through all polygons and invoke Polygon.getEnvelope();
-                    continue;
-                } else {
-                    continue;
-                }
                 /*
-                 * A single geographic bounding box has been extracted. Now add it to previous
-                 * ones (if any). All exclusion boxes before the first inclusion box are ignored.
+                 * If a geographic bounding box can be obtained, add it to the previous boxes (if any).
+                 * All exclusion boxes before the first inclusion box are ignored.
                  */
-                if (candidate == null) {
-                    /*
-                     * Reminder: 'inclusion' is a mandatory attribute, so it should never be
-                     * null for a valid metadata object.  If the metadata object is invalid,
-                     * it is better to get an exception than having a code doing silently
-                     * some probably inappropriate work.
-                     */
-                    if (getInclusion(bounds.getInclusion())) {
-                        candidate = bounds;
+                if (element instanceof GeographicBoundingBox) {
+                    final GeographicBoundingBox item = (GeographicBoundingBox) element;
+                    if (bounds == null) {
+                        // We use DefaultGeographicBoundingBox.getInclusion(Boolean) below because
+                        // add(…) method that we use cares about the case where inclusion is false.
+                        if (DefaultGeographicBoundingBox.getInclusion(item.getInclusion())) {
+                            bounds = item;
+                        }
+                    } else {
+                        if (modifiable == null) {
+                            bounds = modifiable = new DefaultGeographicBoundingBox(bounds);
+                        }
+                        modifiable.add(item);
                     }
-                } else {
-                    if (modifiable == null) {
-                        modifiable = new DefaultGeographicBoundingBox();
-                        modifiable.setBounds(candidate);
-                        candidate = modifiable;
-                    }
-                    modifiable.add(bounds);
                 }
             }
+            /*
+             * If we found not explicit GeographicBoundingBox element, use the information that we
+             * collected in BoundingPolygon elements. This may involve coordinate transformations.
+             */
+            if (bounds == null) try {
+                for (final Envelope envelope : fallbacks) {
+                    final DefaultGeographicBoundingBox item = new DefaultGeographicBoundingBox();
+                    item.setBounds(envelope);
+                    if (bounds == null) {
+                        bounds = item;
+                    } else {
+                        if (modifiable == null) {
+                            bounds = modifiable = new DefaultGeographicBoundingBox(bounds);
+                        }
+                        modifiable.add(item);
+                    }
+                }
+            } catch (TransformException e) {
+                throw new InvalidMetadataException(Errors.format(Errors.Keys.CanNotTransformEnvelope), e);
+            }
         }
-        return candidate;
+        return bounds;
     }
 
     /**
@@ -188,8 +220,8 @@ public final class Extents extends Static {
      *   were found, this method would compute their union.</div></li>
      * </ul>
      *
-     * @param  extent The extent to convert to a vertical measurement range, or {@code null}.
-     * @return A vertical measurement range created from the given extent, or {@code null} if none.
+     * @param  extent  the extent to convert to a vertical measurement range, or {@code null}.
+     * @return a vertical measurement range created from the given extent, or {@code null} if none.
      *
      * @since 0.4
      */
@@ -262,8 +294,8 @@ public final class Extents extends Static {
     /**
      * Returns the union of all time ranges found in the given extent, or {@code null} if none.
      *
-     * @param  extent The extent to convert to a time range, or {@code null}.
-     * @return A time range created from the given extent, or {@code null} if none.
+     * @param  extent  the extent to convert to a time range, or {@code null}.
+     * @return a time range created from the given extent, or {@code null} if none.
      *
      * @since 0.4
      */
@@ -309,10 +341,10 @@ public final class Extents extends Static {
      *   <li>If {@code location} is outside the [0 … 1] range, then the result will be outside the temporal extent.</li>
      * </ul>
      *
-     * @param  extent   The extent from which to get an instant, or {@code null}.
-     * @param  location 0 for the start time, 1 for the end time, 0.5 for the average time, or the
-     *                  coefficient (usually in the [0 … 1] range) for interpolating an instant.
-     * @return An instant interpolated at the given location, or {@code null} if none.
+     * @param  extent    the extent from which to get an instant, or {@code null}.
+     * @param  location  0 for the start time, 1 for the end time, 0.5 for the average time, or the
+     *                   coefficient (usually in the [0 … 1] range) for interpolating an instant.
+     * @return an instant interpolated at the given location, or {@code null} if none.
      *
      * @since 0.4
      */
@@ -351,11 +383,11 @@ public final class Extents extends Static {
      * <p>This method never modify the given boxes, but may return directly one of the given arguments if it
      * already represents the intersection result.</p>
      *
-     * @param  b1 The first bounding box, or {@code null}.
-     * @param  b2 The second bounding box, or {@code null}.
-     * @return The intersection (may be any of the {@code b1} or {@code b2} argument if unchanged),
+     * @param  b1  the first bounding box, or {@code null}.
+     * @param  b2  the second bounding box, or {@code null}.
+     * @return the intersection (may be any of the {@code b1} or {@code b2} argument if unchanged),
      *         or {@code null} if the two given boxes are null.
-     * @throws IllegalArgumentException If the {@linkplain DefaultGeographicBoundingBox#getInclusion() inclusion status}
+     * @throws IllegalArgumentException if the {@linkplain DefaultGeographicBoundingBox#getInclusion() inclusion status}
      *         is not the same for both boxes.
      *
      * @see DefaultGeographicBoundingBox#intersect(GeographicBoundingBox)
@@ -379,8 +411,8 @@ public final class Extents extends Static {
      * {@linkplain org.apache.sis.referencing.CommonCRS#SPHERE GRS 1980 Authalic Sphere}.
      * However this may change in any future SIS version.</p>
      *
-     * @param  box The geographic bounding box for which to compute the area, or {@code null}.
-     * @return An estimation of the area in the given bounding box (m²),
+     * @param  box  the geographic bounding box for which to compute the area, or {@code null}.
+     * @return an estimation of the area in the given bounding box (m²),
      *         or {@linkplain Double#NaN NaN} if the given box was null.
      *
      * @since 0.4

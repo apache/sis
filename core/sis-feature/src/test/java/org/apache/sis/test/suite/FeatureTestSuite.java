@@ -27,7 +27,7 @@ import org.junit.BeforeClass;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
  * @since   0.5
- * @version 0.7
+ * @version 0.8
  * @module
  */
 @Suite.SuiteClasses({
@@ -40,6 +40,7 @@ import org.junit.BeforeClass;
     org.apache.sis.feature.MultiValuedAttributeTest.class,
     org.apache.sis.feature.DenseFeatureTest.class,
     org.apache.sis.feature.SparseFeatureTest.class,
+    org.apache.sis.feature.AbstractFeatureTest.class,
     org.apache.sis.feature.DefaultAssociationRoleTest.class,
     org.apache.sis.feature.SingletonAssociationTest.class,
     org.apache.sis.feature.AbstractOperationTest.class,
@@ -49,6 +50,8 @@ import org.junit.BeforeClass;
     org.apache.sis.feature.FeatureFormatTest.class,
     org.apache.sis.feature.FeaturesTest.class,
     org.apache.sis.internal.feature.AttributeConventionTest.class,
+    org.apache.sis.feature.builder.CharacteristicTypeBuilderTest.class,
+    org.apache.sis.feature.builder.AttributeTypeBuilderTest.class,
     org.apache.sis.feature.builder.FeatureTypeBuilderTest.class
 })
 public final strictfp class FeatureTestSuite extends TestSuite {

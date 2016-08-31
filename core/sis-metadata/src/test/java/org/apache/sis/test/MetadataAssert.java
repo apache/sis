@@ -26,6 +26,8 @@ import org.apache.sis.io.wkt.Convention;
 
 // Branch-specific imports
 import org.apache.sis.internal.jdk7.JDK7;
+import org.apache.sis.metadata.iso.citation.DefaultCitation;
+import org.apache.sis.metadata.iso.citation.DefaultResponsibility;
 
 
 /**
@@ -34,7 +36,7 @@ import org.apache.sis.internal.jdk7.JDK7;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.4
- * @version 0.6
+ * @version 0.8
  * @module
  */
 public strictfp class MetadataAssert extends Assert {
@@ -59,9 +61,9 @@ public strictfp class MetadataAssert extends Assert {
     /**
      * Asserts that the English title of the given citation is equals to the expected string.
      *
-     * @param message  The message to report in case of test failure.
-     * @param expected The expected English title.
-     * @param citation The citation to test.
+     * @param message   the message to report in case of test failure.
+     * @param expected  the expected English title.
+     * @param citation  the citation to test.
      *
      * @since 0.6
      *
@@ -75,12 +77,30 @@ public strictfp class MetadataAssert extends Assert {
     }
 
     /**
+     * Asserts that the given citation has only one responsible party,
+     * and its English name is equals to the expected string.
+     *
+     * @param message   the message to report in case of test failure.
+     * @param expected  the expected English responsibly party name.
+     * @param citation  the citation to test.
+     *
+     * @since 0.8
+     */
+    public static void assertPartyNameEquals(final String message, final String expected, final DefaultCitation citation) {
+        assertNotNull(message, citation);
+        final DefaultResponsibility r = (DefaultResponsibility) TestUtilities.getSingleton(citation.getCitedResponsibleParties());
+        final InternationalString name = TestUtilities.getSingleton(r.getParties()).getName();
+        assertNotNull(message, name);
+        assertEquals(message, expected, name.toString(Locale.US));
+    }
+
+    /**
      * Asserts that the WKT 2 of the given object is equal to the expected one.
      * This method expected the {@code “…”} quotation marks instead of {@code "…"}
      * for easier readability of {@link String} constants in Java code.
      *
-     * @param expected The expected text, or {@code null} if {@code object} is expected to be null.
-     * @param object The object to format in <cite>Well Known Text</cite> format, or {@code null}.
+     * @param expected  the expected text, or {@code null} if {@code object} is expected to be null.
+     * @param object    the object to format in <cite>Well Known Text</cite> format, or {@code null}.
      */
     public static void assertWktEquals(final String expected, final Object object) {
         assertWktEquals(Convention.WKT2, expected, object);
@@ -91,9 +111,9 @@ public strictfp class MetadataAssert extends Assert {
      * This method expected the {@code “…”} quotation marks instead of {@code "…"} for easier readability of
      * {@link String} constants in Java code.
      *
-     * @param convention The WKT convention to use.
-     * @param expected   The expected text, or {@code null} if {@code object} is expected to be null.
-     * @param object     The object to format in <cite>Well Known Text</cite> format, or {@code null}.
+     * @param convention  the WKT convention to use.
+     * @param expected    the expected text, or {@code null} if {@code object} is expected to be null.
+     * @param object      the object to format in <cite>Well Known Text</cite> format, or {@code null}.
      */
     public static void assertWktEquals(final Convention convention, final String expected, final Object object) {
         if (expected == null) {
@@ -115,9 +135,9 @@ public strictfp class MetadataAssert extends Assert {
      * This method is like {@link #assertWktEquals(String, Object)}, but the use of regular expression allows some
      * tolerance for example on numerical parameter values that may be subject to a limited form of rounding errors.
      *
-     * @param convention The WKT convention to use.
-     * @param expected   The expected regular expression, or {@code null} if {@code object} is expected to be null.
-     * @param object     The object to format in <cite>Well Known Text</cite> format, or {@code null}.
+     * @param convention  the WKT convention to use.
+     * @param expected    the expected regular expression, or {@code null} if {@code object} is expected to be null.
+     * @param object      the object to format in <cite>Well Known Text</cite> format, or {@code null}.
      *
      * @since 0.6
      */
