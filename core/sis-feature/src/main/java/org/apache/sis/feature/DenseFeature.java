@@ -76,8 +76,8 @@ final class DenseFeature extends AbstractFeature implements Cloneable {
      * Returns the index for the property of the given name, or {@link DefaultFeatureType#OPERATION_INDEX}
      * if the property is a parameterless operation.
      *
-     * @param  name The property name.
-     * @return The index for the property of the given name,
+     * @param  name  the property name.
+     * @return the index for the property of the given name,
      *         or a negative value if the property is a parameterless operation.
      * @throws IllegalArgumentException if the given argument is not a property name of this feature.
      */
@@ -92,9 +92,9 @@ final class DenseFeature extends AbstractFeature implements Cloneable {
     /**
      * Returns the property (attribute, operation or association) of the given name.
      *
-     * @param  name The property name.
-     * @return The property of the given name.
-     * @throws IllegalArgumentException If the given argument is not a property name of this feature.
+     * @param  name  the property name.
+     * @return the property of the given name.
+     * @throws IllegalArgumentException if the given argument is not a property name of this feature.
      */
     @Override
     public Object getProperty(final String name) throws IllegalArgumentException {
@@ -125,7 +125,7 @@ final class DenseFeature extends AbstractFeature implements Cloneable {
     /**
      * Sets the property (attribute, operation or association).
      *
-     * @param  property The property to set.
+     * @param  property  the property to set.
      * @throws IllegalArgumentException if the type of the given property is not one of the types
      *         known to this feature, or if the property can not be set or another reason.
      */
@@ -168,9 +168,9 @@ final class DenseFeature extends AbstractFeature implements Cloneable {
     /**
      * Returns the value for the property of the given name.
      *
-     * @param  name The property name.
-     * @return The value for the given property, or {@code null} if none.
-     * @throws IllegalArgumentException If the given argument is not an attribute or association name of this feature.
+     * @param  name  the property name.
+     * @return the value for the given property, or {@code null} if none.
+     * @throws IllegalArgumentException if the given argument is not an attribute or association name of this feature.
      */
     @Override
     public Object getPropertyValue(final String name) throws IllegalArgumentException {
@@ -199,10 +199,10 @@ final class DenseFeature extends AbstractFeature implements Cloneable {
     /**
      * Sets the value for the property of the given name.
      *
-     * @param  name  The attribute name.
-     * @param  value The new value for the given attribute (may be {@code null}).
-     * @throws ClassCastException If the value is not assignable to the expected value class.
-     * @throws IllegalArgumentException If the given value can not be assigned for another reason.
+     * @param  name   the attribute name.
+     * @param  value  the new value for the given attribute (may be {@code null}).
+     * @throws ClassCastException if the value is not assignable to the expected value class.
+     * @throws IllegalArgumentException if the given value can not be assigned for another reason.
      */
     @Override
     public void setPropertyValue(final String name, Object value) throws IllegalArgumentException {
@@ -262,7 +262,7 @@ final class DenseFeature extends AbstractFeature implements Cloneable {
      * the clone operation is <cite>deep</cite> or <cite>shallow</cite>) depends on the behavior or
      * property {@code clone()} methods.
      *
-     * @return A clone of this attribute.
+     * @return a clone of this attribute.
      * @throws CloneNotSupportedException if this feature can not be cloned, typically because
      *         {@code clone()} on a property instance failed.
      */
@@ -289,7 +289,7 @@ final class DenseFeature extends AbstractFeature implements Cloneable {
      * in order to keep the hash code value stable before and after the {@code properties} array is promoted from the
      * {@code Object[]} type to the {@code Property[]} type.
      *
-     * @return A hash code value.
+     * @return a hash code value.
      */
     @Override
     public int hashCode() {

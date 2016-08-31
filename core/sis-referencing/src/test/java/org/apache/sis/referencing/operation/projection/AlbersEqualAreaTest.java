@@ -241,7 +241,6 @@ public final strictfp class AlbersEqualAreaTest extends MapProjectionTestCase {
                 200);       // False northing
 
         tolerance = Formulas.LINEAR_TOLERANCE;
-        derivativeDeltas = new double[] {100, 100};
         final double delta = toRadians(100.0 / 60) / 1852;      // Approximatively 100 metres.
         derivativeDeltas = new double[] {delta, delta};
         verifyInDomain(new double[] {-40, 10},                  // Minimal input ordinate values

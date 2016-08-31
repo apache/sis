@@ -41,7 +41,9 @@ import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Configuration;
 import org.apache.sis.util.Debug;
 
-// Related to JDK7
+import static org.apache.sis.internal.util.StandardDateFormat.UTC;
+
+// Branch-dependent imports
 import org.apache.sis.internal.jdk7.JDK7;
 
 
@@ -428,7 +430,7 @@ loop:   for (int i=0; ; i++) {
             timeFormat = null;
         } else if (timeFormat == null) {
             timeFormat = new SimpleDateFormat(pattern);
-            timeFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+            timeFormat.setTimeZone(TimeZone.getTimeZone(UTC));
         } else {
             timeFormat.applyPattern(pattern);
         }

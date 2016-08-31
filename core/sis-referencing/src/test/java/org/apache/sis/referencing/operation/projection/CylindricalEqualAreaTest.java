@@ -162,7 +162,6 @@ public final strictfp class CylindricalEqualAreaTest extends MapProjectionTestCa
                 200);       // False northing
 
         tolerance = Formulas.LINEAR_TOLERANCE;
-        derivativeDeltas = new double[] {100, 100};
         final double delta = toRadians(100.0 / 60) / 1852;      // Approximatively 100 metres.
         derivativeDeltas = new double[] {delta, delta};
         verifyInDomain(CoordinateDomain.GEOGRAPHIC_SAFE, 0);

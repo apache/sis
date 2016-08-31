@@ -17,10 +17,10 @@
 package org.apache.sis.feature.builder;
 
 import org.opengis.util.GenericName;
+import org.apache.sis.feature.Features;
 import org.apache.sis.feature.DefaultAssociationRole;
 
 // Branch-dependent imports
-import org.apache.sis.feature.AbstractIdentifiedType;
 import org.apache.sis.feature.DefaultFeatureType;
 
 
@@ -52,6 +52,12 @@ public final class AssociationRoleBuilder extends PropertyTypeBuilder {
     private final GenericName typeName;
 
     /**
+     * The association created by this builder, or {@code null} if not yet created.
+     * This field must be cleared every time that a setter method is invoked on this builder.
+     */
+    private transient DefaultAssociationRole property;
+
+    /**
      * Creates a new {@code AssociationRole} builder for values of the given type.
      * The {@code type} argument can be null if unknown, but {@code typeName} is mandatory.
      *
@@ -70,10 +76,26 @@ public final class AssociationRoleBuilder extends PropertyTypeBuilder {
      */
     AssociationRoleBuilder(final FeatureTypeBuilder owner, final DefaultAssociationRole template) {
         super(owner, template);
+        property      = template;
         minimumOccurs = template.getMinimumOccurs();
         maximumOccurs = template.getMaximumOccurs();
-        type          = template.getValueType();
-        typeName      = type.getName();
+        if (!template.isResolved()) {
+            type     = null;
+            typeName = Features.getValueTypeName(template);
+        } else {
+            type     = template.getValueType();
+            typeName = type.getName();
+        }
+    }
+
+    /**
+     * If the {@code FeatureAssociationRole} created by the last call to {@link #build()} has been cached,
+     * clears that cache. This method must be invoked every time that a setter method is invoked.
+     */
+    @Override
+    final void clearCache() {
+        property = null;
+        super.clearCache();
     }
 
     /**
@@ -136,6 +158,34 @@ public final class AssociationRoleBuilder extends PropertyTypeBuilder {
     }
 
     /**
+     * Sets the minimum number of associations. If the given number is greater than the
+     * {@linkplain #getMaximumOccurs() maximal number} of associations, than the maximum
+     * is also set to that value.
+     *
+     * @param  occurs the new minimum number of associations.
+     * @return {@code this} for allowing method calls chaining.
+     */
+    @Override
+    public AssociationRoleBuilder setMinimumOccurs(final int occurs) {
+        super.setMinimumOccurs(occurs);
+        return this;
+    }
+
+    /**
+     * Sets the maximum number of associations. If the given number is less than the
+     * {@linkplain #getMinimumOccurs() minimal number} of associations, than the minimum
+     * is also set to that value.
+     *
+     * @param  occurs the new maximum number of associations.
+     * @return {@code this} for allowing method calls chaining.
+     */
+    @Override
+    public AssociationRoleBuilder setMaximumOccurs(final int occurs) {
+        super.setMaximumOccurs(occurs);
+        return this;
+    }
+
+    /**
      * {@inheritDoc}
      */
     @Override
@@ -163,14 +213,24 @@ public final class AssociationRoleBuilder extends PropertyTypeBuilder {
     }
 
     /**
-     * Creates a new property type from the current setting.
+     * Builds the association role from the information specified to this builder.
+     * If a role has already been built and this builder state has not changed since the role creation,
+     * then the previously created {@code FeatureAssociationRole} instance is returned.
+     *
+     * <div class="warning"><b>Warning:</b> In a future SIS version, the return type may be changed to the
+     * {@code org.opengis.feature.FeatureAssociationRole} interface. This change is pending GeoAPI revision.</div>
+     *
+     * @return the association role.
      */
     @Override
-    final AbstractIdentifiedType create() {
-        if (type != null) {
-            return new DefaultAssociationRole(identification(), type, minimumOccurs, maximumOccurs);
-        } else {
-            return new DefaultAssociationRole(identification(), typeName, minimumOccurs, maximumOccurs);
+    public DefaultAssociationRole build() {
+        if (property == null) {
+            if (type != null) {
+                property = new DefaultAssociationRole(identification(), type, minimumOccurs, maximumOccurs);
+            } else {
+                property = new DefaultAssociationRole(identification(), typeName, minimumOccurs, maximumOccurs);
+            }
         }
+        return property;
     }
 }

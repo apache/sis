@@ -132,9 +132,9 @@ public strictfp class MetadataTest extends XMLTestCase {
      * Sets the temporal extent. The current implementation does nothing, because {@code sis-metadata} does not have
      * any dependency to {@code sis-temporal}. However a future version or an other module may implement this method.
      *
-     * @param extent    The extent to set.
-     * @param startTime The start time in the {@code "yyyy-MM-dd"} format.
-     * @param endTime   The end time in the {@code "yyyy-MM-dd"} format.
+     * @param  extent     the extent to set.
+     * @param  startTime  the start time in the {@code "yyyy-MM-dd"} format.
+     * @param  endTime    the end time in the {@code "yyyy-MM-dd"} format.
      */
     protected void setTemporalBounds(final DefaultTemporalExtent extent, final String startTime, final String endTime) {
         /*
@@ -158,7 +158,7 @@ public strictfp class MetadataTest extends XMLTestCase {
     /**
      * Programmatically creates the metadata to marshall, or to compare against the unmarshalled metadata.
      *
-     * @return The hard-coded representation of {@code "Metadata.xml"} content.
+     * @return the hard-coded representation of {@code "Metadata.xml"} content.
      */
     private DefaultMetadata createHardCoded() {
         final DefaultMetadata metadata = new DefaultMetadata();
@@ -360,8 +360,8 @@ public strictfp class MetadataTest extends XMLTestCase {
             final DefaultDistribution distributionInfo = new DefaultDistribution();
             distributor.setRole(Role.DISTRIBUTOR);
             distributionInfo.setDistributors(singleton(new DefaultDistributor(distributor)));
-            distributionInfo.setDistributionFormats(singleton(
-                    new DefaultFormat(new Anchor(URI.create("SDN:L241:1:MEDATLAS"), "MEDATLAS ASCII"), "1.0")));
+            distributionInfo.setDistributionFormats(singleton(new DefaultFormat(
+                    new Anchor(URI.create("SDN:L241:1:MEDATLAS"), "MEDATLAS ASCII"), "1.0")));
             final DefaultDigitalTransferOptions transfer = new DefaultDigitalTransferOptions();
             transfer.setTransferSize(2.431640625);
             final DefaultOnlineResource onlines = new DefaultOnlineResource(URI.create(
@@ -379,7 +379,7 @@ public strictfp class MetadataTest extends XMLTestCase {
     /**
      * Returns the URL to the {@code "Metadata.xml"} file to use for this test.
      *
-     * @return The URL to {@code "Metadata.xml"} test file.
+     * @return the URL to {@code "Metadata.xml"} test file.
      */
     private URL getResource() {
         return MetadataTest.class.getResource("Metadata.xml");
@@ -388,7 +388,7 @@ public strictfp class MetadataTest extends XMLTestCase {
     /**
      * Tests marshalling of a XML document.
      *
-     * @throws Exception If an error occurred during marshalling.
+     * @throws Exception if an error occurred during marshalling.
      */
     @Test
     public void testMarshalling() throws Exception {
@@ -427,9 +427,9 @@ public strictfp class MetadataTest extends XMLTestCase {
     /**
      * Replaces the first occurrence of the given string by an other one.
      *
-     * @param buffer    The buffer in which to perform the replacement.
-     * @param toSearch  The string to search.
-     * @param replaceBy The value to use as a replacement.
+     * @param  buffer     the buffer in which to perform the replacement.
+     * @param  toSearch   the string to search.
+     * @param  replaceBy  the value to use as a replacement.
      */
     private static void replace(final StringBuffer buffer, final String toSearch, final String replaceBy) {
         final int i = buffer.indexOf(toSearch);
@@ -440,7 +440,7 @@ public strictfp class MetadataTest extends XMLTestCase {
     /**
      * Tests unmarshalling of a XML document.
      *
-     * @throws JAXBException If an error occurred during unmarshalling.
+     * @throws JAXBException if an error occurred during unmarshalling.
      */
     @Test
     public void testUnmarshalling() throws JAXBException {
@@ -564,8 +564,8 @@ public strictfp class MetadataTest extends XMLTestCase {
     /**
      * Verifies the name and identifier for the given object.
      *
-     * @param code   The expected identifier code.
-     * @param object The object to verify.
+     * @param  code    the expected identifier code.
+     * @param  object  the object to verify.
      */
     private static void verifyIdentifiers(final String code, final IdentifiedObject object) {
         assertIdentifierEquals("identifier", "Apache Spatial Information System", "SIS",

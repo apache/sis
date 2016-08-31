@@ -462,7 +462,7 @@ public abstract class AbstractAttribute<V> extends Field<V> implements Cloneable
     @Debug
     @Override
     public String toString() {
-        final StringBuilder buffer = FieldType.toString("Attribute", type,
+        final StringBuilder buffer = FieldType.toString("Attribute", type.getName(),
                 Classes.getShortName(type.getValueClass()), getValues().iterator());
         if (characteristics != null && !characteristics.isEmpty()) {
             buffer.append(JDK7.lineSeparator());

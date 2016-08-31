@@ -104,13 +104,13 @@ public abstract class DataStoreProvider {
      * }
      * </div>
      *
-     * @param  storage Information about the storage (URL, stream, JDBC connection, <i>etc</i>).
+     * @param  connector information about the storage (URL, stream, JDBC connection, <i>etc</i>).
      * @return {@link ProbeResult#SUPPORTED} if the given storage seems to be readable by the {@code DataStore}
      *         instances created by this provider.
      * @throws DataStoreException if an I/O or SQL error occurred. The error shall be unrelated to the logical
      *         structure of the storage.
      */
-    public abstract ProbeResult probeContent(StorageConnector storage) throws DataStoreException;
+    public abstract ProbeResult probeContent(StorageConnector connector) throws DataStoreException;
 
     /**
      * Returns a data store implementation associated with this provider.
@@ -119,9 +119,9 @@ public abstract class DataStoreProvider {
      * Implementors shall invoke {@link StorageConnector#closeAllExcept(Object)} after {@code DataStore}
      * creation, keeping open only the needed resource.
      *
-     * @param  storage Information about the storage (URL, stream, JDBC connection, <i>etc</i>).
-     * @return A data store implementation associated with this provider for the given storage.
-     * @throws DataStoreException If an error occurred while creating the data store instance.
+     * @param  storage  information about the storage (URL, stream, JDBC connection, <i>etc</i>).
+     * @return a data store implementation associated with this provider for the given storage.
+     * @throws DataStoreException if an error occurred while creating the data store instance.
      *
      * @see DataStores#open(Object)
      */

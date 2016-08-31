@@ -45,14 +45,17 @@ import org.apache.sis.feature.AbstractIdentifiedType;
 public abstract class PropertyTypeBuilder extends TypeBuilder {
     /**
      * The feature type builder instance that created this {@code PropertyTypeBuilder}.
+     * This is set at construction time and considered as immutable until it is set to {@code null}.
+     *
+     * @see #owner()
      */
-    final FeatureTypeBuilder owner;
+    private FeatureTypeBuilder owner;
 
     /**
      * The minimum number of property values.
      * The default value is 1, unless otherwise specified by {@link #setDefaultCardinality(int, int)}.
      *
-     * @see #setCardinality(int, int)
+     * @see #getMinimumOccurs()
      */
     int minimumOccurs;
 
@@ -60,15 +63,23 @@ public abstract class PropertyTypeBuilder extends TypeBuilder {
      * The maximum number of property values.
      * The default value is 1, unless otherwise specified by {@link #setDefaultCardinality(int, int)}.
      *
-     * @see #setCardinality(int, int)
+     * @see #getMaximumOccurs()
      */
     int maximumOccurs;
 
     /**
-     * The attribute or association created by this builder, or {@code null} if not yet created.
-     * This field must be cleared every time that a setter method is invoked on this builder.
+     * Creates a new builder initialized to the values of the given builder.
+     * This constructor is for {@link AttributeTypeBuilder#setValueClass(Class)} implementation.
+     *
+     * @param builder  the builder from which to copy values.
      */
-    private transient AbstractIdentifiedType property;
+    PropertyTypeBuilder(final PropertyTypeBuilder builder) {
+        super(builder);
+        owner         = builder.owner;
+        minimumOccurs = builder.minimumOccurs;
+        maximumOccurs = builder.maximumOccurs;
+        // Do not copy the 'property' reference since the 'valueClass' is different.
+    }
 
     /**
      * Creates a new {@code PropertyType} builder initialized to the values of an existing property.
@@ -81,7 +92,87 @@ public abstract class PropertyTypeBuilder extends TypeBuilder {
         this.owner    = owner;
         minimumOccurs = owner.defaultMinimumOccurs;
         maximumOccurs = owner.defaultMaximumOccurs;
-        property      = template;
+    }
+
+    /**
+     * Returns the feature type builder instance that created this {@code PropertyTypeBuilder}.
+     */
+    final FeatureTypeBuilder owner() {
+        ensureAlive(owner);
+        return owner;
+    }
+
+    /**
+     * Returns the minimum number of property values.
+     * The returned value is greater than or equal to zero.
+     *
+     * @return the minimum number of property values.
+     *
+     * @see org.apache.sis.feature.DefaultAttributeType#getMinimumOccurs()
+     */
+    public int getMinimumOccurs() {
+        return minimumOccurs;
+    }
+
+    /**
+     * Sets the minimum number of property values. If the given number is greater than the
+     * {@linkplain #getMaximumOccurs() maximal number} of property values, than the maximum
+     * is also set to that value.
+     *
+     * @param  occurs the new minimum number of property values.
+     * @return {@code this} for allowing method calls chaining.
+     *
+     * @see #getMinimumOccurs()
+     */
+    public PropertyTypeBuilder setMinimumOccurs(final int occurs) {
+        if (occurs != minimumOccurs) {
+            if (occurs < 0) {
+                throw new IllegalArgumentException(errors().getString(Errors.Keys.NegativeArgument_2, "occurs", occurs));
+            }
+            minimumOccurs = occurs;
+            if (occurs > maximumOccurs) {
+                maximumOccurs = occurs;
+            }
+            clearCache();
+        }
+        return this;
+    }
+
+    /**
+     * Returns the maximum number of property values.
+     * The returned value is greater than or equal to the {@link #getMinimumOccurs()} value.
+     * If there is no maximum, then this method returns {@link Integer#MAX_VALUE}.
+     *
+     * @return the maximum number of property values, or {@link Integer#MAX_VALUE} if none.
+     *
+     * @see org.apache.sis.feature.DefaultAttributeType#getMaximumOccurs()
+     */
+    public final int getMaximumOccurs() {
+        return maximumOccurs;
+    }
+
+    /**
+     * Sets the maximum number of property values. If the given number is less than the
+     * {@linkplain #getMinimumOccurs() minimal number} of property values, than the minimum
+     * is also set to that value.
+     *
+     * @param  occurs the new maximum number of property values.
+     * @return {@code this} for allowing method calls chaining.
+     *
+     * @see #getMaximumOccurs()
+     */
+    public PropertyTypeBuilder setMaximumOccurs(final int occurs) {
+        if (occurs != maximumOccurs) {
+            if (occurs < 0) {
+                throw new IllegalArgumentException(errors().getString(Errors.Keys.NegativeArgument_2, "occurs", occurs));
+            }
+            maximumOccurs = occurs;
+            if (occurs < minimumOccurs) {
+                minimumOccurs = occurs;
+            }
+            clearCache();
+        }
+        return this;
     }
 
     /**
@@ -94,7 +185,10 @@ public abstract class PropertyTypeBuilder extends TypeBuilder {
      * @param  minimumOccurs  new minimum number of property values.
      * @param  maximumOccurs  new maximum number of property values.
      * @return {@code this} for allowing method calls chaining.
+     *
+     * @deprecated Replaced by {@link #setMinimumOccurs(int)} and {@link #setMaximumOccurs(int)}.
      */
+    @Deprecated
     @SuppressWarnings("unchecked")
     public PropertyTypeBuilder setCardinality(final int minimumOccurs, final int maximumOccurs) {
         if (this.minimumOccurs != minimumOccurs || this.maximumOccurs != maximumOccurs) {
@@ -120,6 +214,7 @@ public abstract class PropertyTypeBuilder extends TypeBuilder {
      */
     @Override
     final GenericName name(final String scope, final String localPart) {
+        ensureAlive(owner);
         return owner.name(scope, localPart);
     }
 
@@ -128,24 +223,45 @@ public abstract class PropertyTypeBuilder extends TypeBuilder {
      * clears that cache. This method must be invoked every time that a setter method is invoked.
      */
     @Override
-    final void clearCache() {
-        property = null;
+    void clearCache() {
+        ensureAlive(owner);
         owner.clearCache();
     }
 
     /**
-     * Returns the property type from the current setting.
-     * This method may return an existing property if it was already created.
+     * Builds the property type from the information specified to this builder.
+     * If a type has already been built and this builder state has not changed since the type creation,
+     * then the previously created {@code PropertyType} instance is returned
+     * (see {@link AttributeTypeBuilder#build()} for more information).
+     *
+     * <div class="warning"><b>Warning:</b> In a future SIS version, the return type may be changed
+     * to {@code org.opengis.feature.PropertyType}. This change is pending GeoAPI revision.</div>
+     *
+     * @return the property type.
+     * @throws IllegalStateException if the builder contains inconsistent information.
      */
-    final AbstractIdentifiedType build() {
-        if (property == null) {
-            property = create();
-        }
-        return property;
+    @Override
+    public abstract AbstractIdentifiedType build() throws IllegalStateException;
+
+    /**
+     * Flags this builder as a disposed one. The builder should not be used anymore after this method call.
+     */
+    final void dispose() {
+        owner = null;
     }
 
     /**
-     * Creates a new property type from the current setting.
+     * Removes this property from the {@code FeatureTypeBuilder}.
+     * After this method has been invoked, this {@code PropertyTypeBuilder} instance
+     * is no longer in the list returned by {@link FeatureTypeBuilder#properties()}
+     * and attempts to invoke any setter method on {@code this} will cause an
+     * {@link IllegalStateException} to be thrown.
      */
-    abstract AbstractIdentifiedType create();
+    @Override
+    public void remove() {
+        if (owner != null) {
+            owner.replace(this, null);
+            dispose();
+        }
+    }
 }

@@ -68,11 +68,11 @@ public class StoreProvider extends DataStoreProvider {
      * @throws DataStoreException if an I/O or SQL error occurred.
      */
     @Override
-    public ProbeResult probeContent(final StorageConnector storage) throws DataStoreException {
+    public ProbeResult probeContent(final StorageConnector connector) throws DataStoreException {
         /*
          * Usual case. This include InputStream, DataInput, File, Path, URL, URI.
          */
-        final ByteBuffer buffer = storage.getStorageAs(ByteBuffer.class);
+        final ByteBuffer buffer = connector.getStorageAs(ByteBuffer.class);
         if (buffer != null) {
             if (buffer.remaining() < HEADER.length) {
                 return ProbeResult.INSUFFICIENT_BYTES;
@@ -101,7 +101,7 @@ public class StoreProvider extends DataStoreProvider {
          * We should enter in this block only if the user gave us explicitely a Reader.
          * A common case is a StringReader wrapping a String object.
          */
-        final Reader reader = storage.getStorageAs(Reader.class);
+        final Reader reader = connector.getStorageAs(Reader.class);
         if (reader != null) try {
             // Quick check for "<?xml " header.
             reader.mark(HEADER.length + READ_AHEAD_LIMIT);
@@ -129,12 +129,12 @@ public class StoreProvider extends DataStoreProvider {
     /**
      * Returns a {@link Store} implementation associated with this provider.
      *
-     * @param  storage Information about the storage (URL, stream, <i>etc</i>).
-     * @return A data store implementation associated with this provider for the given storage.
-     * @throws DataStoreException If an error occurred while creating the data store instance.
+     * @param  connector  information about the storage (URL, stream, <i>etc</i>).
+     * @return a data store implementation associated with this provider for the given storage.
+     * @throws DataStoreException if an error occurred while creating the data store instance.
      */
     @Override
-    public DataStore open(final StorageConnector storage) throws DataStoreException {
-        return new Store(storage);
+    public DataStore open(final StorageConnector connector) throws DataStoreException {
+        return new Store(connector);
     }
 }

@@ -34,7 +34,6 @@ import org.apache.sis.util.Classes;
 
 // Branch-dependent imports
 import org.apache.sis.internal.jdk7.Objects;
-import org.apache.sis.internal.jdk8.UncheckedIOException;
 
 
 /**
@@ -421,21 +420,14 @@ final class StringJoinOperation extends AbstractOperation {
      * Appends a string representation of the "formula" used for computing the result.
      *
      * @param  buffer where to format the "formula".
-     * @return {@code true} since this method has formatted a formula.
      */
     @Override
-    boolean formatResultFormula(final Appendable buffer) {
-        try {
-            buffer.append(" → ");
-            String separator = "(";
-            for (final String element : attributeNames) {
-                buffer.append(separator).append(element);
-                separator = ", ";
-            }
-            buffer.append(')');
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
+    void formatResultFormula(final Appendable buffer) throws IOException {
+        if (prefix != null) buffer.append(prefix);
+        for (int i=0; i<attributeNames.length; i++) {
+            if (i != 0) buffer.append(delimiter);
+            buffer.append(attributeNames[i]);
         }
-        return true;
+        if (suffix != null) buffer.append(suffix);
     }
 }

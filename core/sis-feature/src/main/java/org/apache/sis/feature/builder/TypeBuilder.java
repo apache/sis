@@ -18,7 +18,9 @@ package org.apache.sis.feature.builder;
 
 import java.util.Map;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
+import org.opengis.util.ScopedName;
 import org.opengis.util.GenericName;
 import org.apache.sis.feature.AbstractIdentifiedType;
 import org.apache.sis.util.resources.Vocabulary;
@@ -33,8 +35,8 @@ import org.apache.sis.internal.jdk7.Objects;
 
 
 /**
- * Properties common to all kind of types (feature, association, characteristics).
- * Those properties are:
+ * Information common to all kind of types (feature, association, characteristics).
+ * Those information are:
  *
  * <ul>
  *   <li>the name        — a unique name which can be defined within a scope (or namespace).</li>
@@ -43,6 +45,7 @@ import org.apache.sis.internal.jdk7.Objects;
  *   <li>the description — information beyond that required for concise definition of the element.</li>
  * </ul>
  *
+ * <div class="section">Default namespace</div>
  * In many cases, the names of all {@code AttributeType}s and {@code AssociationRole}s to create
  * within a {@code FeatureType} share the same namespace.
  * For making name creations more convenient, a default namespace can be
@@ -60,12 +63,22 @@ public abstract class TypeBuilder implements Localized {
      * The feature name, definition, designation and description.
      * The name is mandatory; all other information are optional.
      */
-    private final Map<String,Object> identification = new HashMap<String,Object>(4);
+    private final Map<String,Object> identification;
+
+    /**
+     * Creates a new builder initialized to the values of the given builder.
+     *
+     * @param builder  the builder from which to copy information.
+     */
+    TypeBuilder(final TypeBuilder builder) {
+        identification = new HashMap<String,Object>(builder.identification);
+    }
 
     /**
      * Creates a new builder initialized to the values of an existing type.
      */
     TypeBuilder(final AbstractIdentifiedType template, final Locale locale) {
+        identification = new HashMap<String,Object>(4);
         putIfNonNull(Errors.LOCALE_KEY, locale);
         if (template != null) {
             putIfNonNull(AbstractIdentifiedType.NAME_KEY,        template.getName());
@@ -136,6 +149,7 @@ public abstract class TypeBuilder implements Localized {
      * @return the name of the {@code IdentifiedType} to create (may be a default name or {@code null}).
      *
      * @see AbstractIdentifiedType#getName()
+     * @see #setName(GenericName)
      */
     public GenericName getName() {
         return (GenericName) identification().get(AbstractIdentifiedType.NAME_KEY);
@@ -169,6 +183,7 @@ public abstract class TypeBuilder implements Localized {
      * @return {@code this} for allowing method calls chaining.
      *
      * @see #getName()
+     * @see #setName(String)
      * @see AbstractIdentifiedType#NAME_KEY
      */
     public TypeBuilder setName(final GenericName name) {
@@ -192,6 +207,7 @@ public abstract class TypeBuilder implements Localized {
      * @return {@code this} for allowing method calls chaining.
      *
      * @see #getName()
+     * @see #setName(String, String)
      */
     public TypeBuilder setName(final String localPart) {
         ensureNonEmpty("localPart", localPart);
@@ -213,6 +229,7 @@ public abstract class TypeBuilder implements Localized {
      * @return {@code this} for allowing method calls chaining.
      *
      * @see #getName()
+     * @see #setName(String)
      */
     public TypeBuilder setName(String scope, final String localPart) {
         ensureNonEmpty("localPart", localPart);
@@ -308,6 +325,46 @@ public abstract class TypeBuilder implements Localized {
     }
 
     /**
+     * Returns the element of the given name in the given list. The given name does not need to contains
+     * all elements of a {@link ScopedName}; it can be only the tip (for example {@code "myName"} instead
+     * of {@code "myScope:myName"}) provided that ignoring the name head does not create ambiguity.
+     *
+     * @param  types  the collection where to search for an element of the given name.
+     * @param  name   name of the element to search.
+     * @return element of the given name, or {@code null} if none were found.
+     * @throws IllegalArgumentException if the given name is ambiguous.
+     */
+    final <E extends TypeBuilder> E forName(final List<E> types, final String name) {
+        E best      = null;                     // Best type found so far.
+        E ambiguity = null;                     // If two types are found at the same depth, the other type.
+        int depth   = Integer.MAX_VALUE;        // Number of path elements that we had to ignore in the GenericName.
+        for (final E type : types) {
+            GenericName candidate = type.getName();
+            for (int d=0; candidate != null; d++) {
+                if (name.equals(candidate.toString())) {
+                    if (d < depth) {
+                        best      = type;
+                        ambiguity = null;
+                        depth     = d;
+                        break;
+                    }
+                    if (d == depth) {
+                        ambiguity = type;
+                        break;
+                    }
+                }
+                if (!(candidate instanceof ScopedName)) break;
+                candidate = ((ScopedName) candidate).tail();
+            }
+        }
+        if (ambiguity != null) {
+            throw new IllegalArgumentException(errors().getString(
+                    Errors.Keys.AmbiguousName_3, best.getName(), ambiguity.getName(), name));
+        }
+        return best;
+    }
+
+    /**
      * Returns the locale used for formatting error messages, or {@code null} if unspecified.
      * If unspecified, the system default locale will be used.
      *
@@ -336,6 +393,17 @@ public abstract class TypeBuilder implements Localized {
     final void ensureNonNull(final String name, final Object value) {
         if (value == null) {
             throw new NullArgumentException(errors().getString(Errors.Keys.NullArgument_1, name));
+        }
+    }
+
+    /**
+     * Ensures that this instance is still alive.
+     *
+     * @param owner  the owner of this instance. A value of null means that this instance should not be used any more.
+     */
+    final void ensureAlive(final TypeBuilder owner) {
+        if (owner == null) {
+            throw new IllegalStateException(errors().getString(Errors.Keys.DisposedInstanceOf_1, getClass()));
         }
     }
 
@@ -371,7 +439,7 @@ public abstract class TypeBuilder implements Localized {
 
     /**
      * Partial implementation of {@link #toString()}. This method assumes that the class name
-     * has already been written in the buffer.
+     * has already be written in the buffer.
      */
     final StringBuilder toString(final StringBuilder buffer) {
         toStringInternal(buffer.append("[“").append(getDisplayName()).append('”'));
@@ -383,4 +451,24 @@ public abstract class TypeBuilder implements Localized {
      */
     void toStringInternal(StringBuilder buffer) {
     }
+
+    /**
+     * Invoked when a type builder has been removed from its parent.
+     * Subclasses should override this method in a way that flag the builder as not usable anymore.
+     */
+    void remove() {
+    }
+
+    /**
+     * Builds the feature or property type from the information specified to this builder.
+     * If a type has already been built and this builder state has not changed since the type creation,
+     * then the previously created {@code IdentifiedType} instance is returned.
+     *
+     * <div class="warning"><b>Warning:</b> In a future SIS version, the return type may be changed to the
+     * {@code org.opengis.feature.IdentifiedType} interface. This change is pending GeoAPI revision.</div>
+     *
+     * @return the feature or property type.
+     * @throws IllegalStateException if the builder contains inconsistent information.
+     */
+    public abstract AbstractIdentifiedType build() throws IllegalStateException;
 }

@@ -213,7 +213,7 @@ public class AbstractIdentifiedType implements Serializable {
      * and need some guarantees about its stability.
      * </div>
      *
-     * @return The type name.
+     * @return the type name.
      */
     public final GenericName getName() {
         return name;
@@ -222,7 +222,7 @@ public class AbstractIdentifiedType implements Serializable {
     /**
      * Returns a concise definition of the element.
      *
-     * @return Concise definition of the element.
+     * @return concise definition of the element.
      */
     public InternationalString getDefinition() {
         return definition;
@@ -232,7 +232,7 @@ public class AbstractIdentifiedType implements Serializable {
      * Returns a natural language designator for the element.
      * This can be used as an alternative to the {@linkplain #getName() name} in user interfaces.
      *
-     * @return Natural language designator for the element, or {@code null} if none.
+     * @return natural language designator for the element, or {@code null} if none.
      */
     public InternationalString getDesignation() {
         return designation;
@@ -242,7 +242,7 @@ public class AbstractIdentifiedType implements Serializable {
      * Returns optional information beyond that required for concise definition of the element.
      * The description may assist in understanding the element scope and application.
      *
-     * @return Information beyond that required for concise definition of the element, or {@code null} if none.
+     * @return information beyond that required for concise definition of the element, or {@code null} if none.
      */
     public InternationalString getDescription() {
         return description;
@@ -263,7 +263,7 @@ public class AbstractIdentifiedType implements Serializable {
     /**
      * Returns a hash code value for this type.
      *
-     * @return The hash code for this type.
+     * @return the hash code for this type.
      */
     @Override
     public int hashCode() {
@@ -273,7 +273,7 @@ public class AbstractIdentifiedType implements Serializable {
     /**
      * Compares this type with the given object for equality.
      *
-     * @param  obj The object to compare with this type.
+     * @param  obj  the object to compare with this type.
      * @return {@code true} if the given object is equals to this type.
      */
     @Override
@@ -292,10 +292,10 @@ public class AbstractIdentifiedType implements Serializable {
      * Returns the string representation of the given name, making sure that the name is non-null
      * and the string non-empty. This method is used for checking argument validity.
      *
-     * @param name      The name for which to get the string representation.
-     * @param container The feature or attribute which contains the named characteristics.
-     * @param argument  The name of the argument ({@code "properties"} or {@code "characterizedBy"}).
-     * @param index     Index of the characteristics having the given name.
+     * @param  name       the name for which to get the string representation.
+     * @param  container  the feature or attribute which contains the named characteristics.
+     * @param  argument   the name of the argument ({@code "properties"} or {@code "characterizedBy"}).
+     * @param  index      index of the characteristics having the given name.
      * @throws IllegalArgumentException if the given name is null or have an empty string representation.
      */
     static String toString(final GenericName name, final AbstractIdentifiedType container,

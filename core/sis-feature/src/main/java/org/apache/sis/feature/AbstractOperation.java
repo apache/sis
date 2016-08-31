@@ -20,16 +20,18 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Collections;
 import java.util.HashMap;
+import java.io.IOException;
 import org.opengis.util.GenericName;
+import org.opengis.metadata.Identifier;
 import org.opengis.parameter.GeneralParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.ParameterValueGroup;
-import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Debug;
 
 // Branch-dependent imports
 import org.apache.sis.internal.jdk7.Objects;
+import org.apache.sis.internal.jdk8.UncheckedIOException;
 
 
 /**
@@ -73,7 +75,7 @@ public abstract class AbstractOperation extends AbstractIdentifiedType {
      * Constructs an operation from the given properties. The identification map is given unchanged to
      * the {@linkplain AbstractIdentifiedType#AbstractIdentifiedType(Map) super-class constructor}.
      *
-     * @param identification The name and other information to be given to this operation.
+     * @param  identification  the name and other information to be given to this operation.
      */
     public AbstractOperation(final Map<String,?> identification) {
         super(identification);
@@ -85,7 +87,7 @@ public abstract class AbstractOperation extends AbstractIdentifiedType {
      * If the given map contains at least one key prefixed by {@value #RESULT_PREFIX}, then the values
      * associated to those keys will be used.
      *
-     * @param identification the map given by user to sub-class constructor.
+     * @param  identification  the map given by user to sub-class constructor.
      */
     final Map<String,Object> resultIdentification(final Map<String,?> identification) {
         final Map<String,Object> properties = new HashMap<String,Object>(6);
@@ -107,7 +109,7 @@ public abstract class AbstractOperation extends AbstractIdentifiedType {
     /**
      * Returns a description of the input parameters.
      *
-     * @return Description of the input parameters.
+     * @return description of the input parameters.
      */
     public abstract ParameterDescriptorGroup getParameters();
 
@@ -117,7 +119,7 @@ public abstract class AbstractOperation extends AbstractIdentifiedType {
      * <div class="warning"><b>Warning:</b> In a future SIS version, the return type may be changed
      * to {@code org.opengis.feature.IdentifiedType}. This change is pending GeoAPI revision.</div>
      *
-     * @return The type of the result, or {@code null} if none.
+     * @return the type of the result, or {@code null} if none.
      */
     public abstract AbstractIdentifiedType getResult();
 
@@ -146,11 +148,11 @@ public abstract class AbstractOperation extends AbstractIdentifiedType {
      * be changed to {@code org.opengis.feature.Feature} and {@code org.opengis.feature.Property} respectively.
      * This change is pending GeoAPI revision.</div>
      *
-     * @param  feature    The feature on which to execute the operation.
-     *                    Can be {@code null} if the operation does not need feature instance.
-     * @param  parameters The parameters to use for executing the operation.
-     *                    Can be {@code null} if the operation does not take any parameters.
-     * @return The operation result, or {@code null} if this operation does not produce any result.
+     * @param  feature     the feature on which to execute the operation.
+     *                     Can be {@code null} if the operation does not need feature instance.
+     * @param  parameters  the parameters to use for executing the operation.
+     *                     Can be {@code null} if the operation does not take any parameters.
+     * @return the operation result, or {@code null} if this operation does not produce any result.
      */
     public abstract Object apply(AbstractFeature feature, ParameterValueGroup parameters);
 
@@ -168,7 +170,7 @@ public abstract class AbstractOperation extends AbstractIdentifiedType {
      *
      * The default implementation returns an empty set.
      *
-     * @return The names of feature properties needed by this operation for performing its task.
+     * @return the names of feature properties needed by this operation for performing its task.
      */
     public Set<String> getDependencies() {
         return Collections.emptySet();
@@ -224,14 +226,6 @@ public abstract class AbstractOperation extends AbstractIdentifiedType {
         if (name != null) {
             buffer.append('”');
         }
-        String separator = " (";
-        for (final GeneralParameterDescriptor param : getParameters().descriptors()) {
-            buffer.append(separator).append(IdentifiedObjects.toString(param.getName()));
-            separator = ", ";
-        }
-        if (separator == ", ") {                    // Identity comparaison is okay here.
-            buffer.append(')');
-        }
         final AbstractIdentifiedType result = getResult();
         if (result != null) {
             final Object type;
@@ -242,7 +236,11 @@ public abstract class AbstractOperation extends AbstractIdentifiedType {
             }
             buffer.append(" : ").append(type);
         }
-        formatResultFormula(buffer.append(']'));
+        try {
+            formatResultFormula(buffer.append("] = "));
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);      // Should never happen since we write in a StringBuilder.
+        }
         return buffer.toString();
     }
 
@@ -250,10 +248,36 @@ public abstract class AbstractOperation extends AbstractIdentifiedType {
      * Appends a string representation of the "formula" used for computing the result.
      * The "formula" may be for example a link to another property.
      *
-     * @param  buffer where to format the "formula".
-     * @return {@code true} if this method has formatted a formula, or {@code false} otherwise.
+     * @param  buffer  where to format the "formula".
+     * @throws IOException if an error occurred while writing in {@code buffer}.
      */
-    boolean formatResultFormula(Appendable buffer) {
-        return false;
+    void formatResultFormula(Appendable buffer) throws IOException {
+        defaultFormula(getParameters(), buffer);
+    }
+
+    /**
+     * Default implementation of {@link #formatResultFormula(Appendable)},
+     * to be used also for operations that are not instance of {@link AbstractOperation}.
+     */
+    static void defaultFormula(final ParameterDescriptorGroup parameters, final Appendable buffer) throws IOException {
+        buffer.append(parameters != null ? name(parameters.getName()) : "operation").append('(');
+        if (parameters != null) {
+            boolean hasMore = false;
+            for (GeneralParameterDescriptor p : parameters.descriptors()) {
+                if (p != null) {
+                    if (hasMore) buffer.append(", ");
+                    buffer.append(name(p.getName()));
+                    hasMore = true;
+                }
+            }
+        }
+        buffer.append(')');
+    }
+
+    /**
+     * Returns a short string representation of the given identifier, or {@code null} if none.
+     */
+    private static String name(final Identifier id) {
+        return (id != null) ? id.getCode() : null;
     }
 }
