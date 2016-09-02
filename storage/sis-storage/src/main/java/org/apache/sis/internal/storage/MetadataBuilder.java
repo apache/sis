@@ -45,6 +45,8 @@ import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.iso.Types;
 
+import static org.apache.sis.internal.util.StandardDateFormat.MILLISECONDS_PER_DAY;
+
 // Branch-dependent imports
 import org.apache.sis.internal.jdk8.LocalDate;
 
@@ -645,13 +647,15 @@ parse:      for (int i = 0; i < length;) {
             }
             final DefaultCitation c = new DefaultCitation(notice);
             if (year != 0) {
-                final Date date = new Date(LocalDate.of(year, 1, 1).toEpochDay() * (24*60*60*1000L));
+                final Date date = new Date(LocalDate.of(year, 1, 1).toEpochDay() * MILLISECONDS_PER_DAY);
                 c.setDates(Collections.singleton(new DefaultCitationDate(date, DateType.IN_FORCE)));
             }
             if (i != 0) {
                 buffer.setLength(i);
-                c.setCitedResponsibleParties(Collections.singleton(new DefaultResponsibility(Role.OWNER, null,
-                        new AbstractParty(buffer, null))));     // Same limitation than MetadataBuilder.party().
+                // Same limitation than MetadataBuilder.party().
+                final AbstractParty party = new AbstractParty(buffer, null);
+                final DefaultResponsibility r = new DefaultResponsibility(Role.OWNER, null, party);
+                c.setCitedResponsibleParties(Collections.singleton(r));
             }
             constraints.getReferences().add(c);
         }

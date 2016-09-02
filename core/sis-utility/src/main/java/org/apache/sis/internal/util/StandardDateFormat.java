@@ -25,12 +25,20 @@ import java.text.SimpleDateFormat;
 
 
 /**
- * A date format used for parsing date in the {@code "yyyy-MM-dd'T'HH:mm:ss.SSSX"} pattern, but in which
- * the time is optional. The "Apache SIS for JDK8" branch can use the {@link java.time.format} package,
- * while other branches use {@link java.text.SimpleDateFormat}.
+ * A date format used for parsing dates in the {@code "yyyy-MM-dd'T'HH:mm:ss.SSSX"} pattern, but in which
+ * the time is optional. For this class, "Standard" is interpreted as "close to ISO 19162 requirements",
+ * which is not necessarily identical to other ISO standards.
  *
- * <p>External users should use nothing else than the parsing and formating methods. The methods for
- * configuring the {@code DateFormat} may not be available between different SIS branches.</p>
+ * <p>This class is implemented in two different way depending on the Apache SIS branch:</p>
+ * <ul>
+ *   <li>Branches for JDK8 and more use {@link java.time.format.DateTimeFormatter}.</li>
+ *   <li>Branches for older JDKs use {@link java.text.SimpleDateFormat} together with some hacks
+ *       for allowing some fields to be optional (for example adding ":00" is seconds are missing).</li>
+ * </ul>
+ *
+ * External users should use nothing else than the parsing and formating methods.
+ * The methods for configuring the {@code DateFormat} instances may or may not work
+ * depending on the branch.
  *
  * <p>The main usage for this class is Well Known Text (WKT) parsing and formatting.
  * ISO 19162 uses ISO 8601:2004 for the dates. Any precision is allowed: the date could have only the year,
@@ -46,6 +54,7 @@ import java.text.SimpleDateFormat;
 public final class StandardDateFormat extends SimpleDateFormat {
     /**
      * For cross-version compatibility.
+     * This number must be different between the JDK8 branch and pre-JDK8 branches.
      */
     private static final long serialVersionUID = 1552761359761440473L;
 
@@ -81,6 +90,11 @@ public final class StandardDateFormat extends SimpleDateFormat {
      * The pattern of dates.
      */
     public static final String PATTERN = SHORT_PATTERN + "'T'" + TIME_PATTERN;
+
+    /**
+     * The length of a day in number of milliseconds.
+     */
+    public static final int MILLISECONDS_PER_DAY = 24*60*60*1000;
 
     /**
      * {@code true} if the user has invoked {@link #applyPattern(String)} or {@link #applyLocalizedPattern(String)}.
@@ -140,22 +154,22 @@ public final class StandardDateFormat extends SimpleDateFormat {
      * Formats the given date. If hours, minutes, seconds and milliseconds are zero and the timezone is UTC,
      * then this method omits the clock part (unless the user has overridden the pattern).
      *
-     * @param  date    the date to format.
-     * @param  buffer  where to format the date.
-     * @param  pos     where to store information about a date field.
+     * @param  date        the date to format.
+     * @param  toAppendTo  where to format the date.
+     * @param  pos         ignored.
      * @return the given buffer, for method calls chaining.
      */
     @Override
-    public StringBuffer format(final Date date, final StringBuffer buffer, final FieldPosition pos) {
-        if (!isUserSpecifiedPattern && (date.getTime() % (24*60*60*1000)) == 0 && UTC.equals(getTimeZone().getID())) {
+    public StringBuffer format(final Date date, final StringBuffer toAppendTo, final FieldPosition pos) {
+        if (!isUserSpecifiedPattern && (date.getTime() % MILLISECONDS_PER_DAY) == 0 && UTC.equals(getTimeZone().getID())) {
             try {
                 super.applyPattern(SHORT_PATTERN);
-                return super.format(date, buffer, pos);
+                return super.format(date, toAppendTo, pos);
             } finally {
                 super.applyPattern(PATTERN);
             }
         }
-        return super.format(date, buffer, pos);
+        return super.format(date, toAppendTo, pos);
     }
 
     /**
@@ -166,7 +180,7 @@ public final class StandardDateFormat extends SimpleDateFormat {
      * @return the date, or {@code null} if we failed to parse it.
      */
     @Override
-    public Date parse(String text, final ParsePosition position) {
+    public Date parse(final String text, final ParsePosition position) {
         if (isUserSpecifiedPattern) {
             return super.parse(text, position);
         }

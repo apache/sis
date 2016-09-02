@@ -34,6 +34,7 @@ import org.apache.sis.test.TestUtilities;
 import org.junit.Test;
 
 import static org.apache.sis.test.Assert.*;
+import static org.apache.sis.internal.util.StandardDateFormat.MILLISECONDS_PER_DAY;
 
 
 /**
@@ -69,10 +70,10 @@ public final strictfp class RangeSetTest extends TestCase {
     /**
      * Verifies the value of {@link RangeSet#contains(Range, boolean)}.
      *
-     * @param ranges   The range set to test.
-     * @param range    The range to check for inclusion.
-     * @param exact    The expected value in exact mode.
-     * @param included The expected value in non-exact mode.
+     * @param  ranges    the range set to test.
+     * @param  range     the range to check for inclusion.
+     * @param  exact     the expected value in exact mode.
+     * @param  included  the expected value in non-exact mode.
      */
     private static <E extends Comparable<? super E>> void checkContains(final RangeSet<E> ranges,
             final Range<E> range, final boolean exact, final boolean included)
@@ -151,25 +152,24 @@ public final strictfp class RangeSetTest extends TestCase {
         /*
          * Add a singleton range.
          */
-        final long day = 24*60*60*1000L;
         final Date now = new Date();
-        final Date yesterday = new Date(now.getTime() - day);
+        final Date yesterday = new Date(now.getTime() - MILLISECONDS_PER_DAY);
         assertTrue(ranges.add(yesterday, now));
         assertEquals(1, ranges.size());
         checkContains(ranges, new Range<>(Date.class, yesterday, true, now, false), true, true);
         /*
          * Add a disjoint range.
          */
-        final Date lastWeek = new Date(now.getTime() - 7*day);
-        final Date other = new Date(lastWeek.getTime() + 2*day);
+        final Date lastWeek = new Date(now.getTime() - 7*MILLISECONDS_PER_DAY);
+        final Date other = new Date(lastWeek.getTime() + 2*MILLISECONDS_PER_DAY);
         assertTrue(ranges.add(new Range<>(Date.class, lastWeek, true, other, false)));
         assertEquals(2, ranges.size());
         /*
          * Verify the RangeSet content.
          */
         final Iterator<Range<Date>> it = ranges.iterator();
-        assertEqual(new Range<Date>(Date.class, lastWeek,  true, other, false), it.next(), ranges.first());
-        assertEqual(new Range<Date>(Date.class, yesterday, true, now,   false), it.next(), ranges.last());
+        assertEqual(new Range<>(Date.class, lastWeek,  true, other, false), it.next(), ranges.first());
+        assertEqual(new Range<>(Date.class, yesterday, true, now,   false), it.next(), ranges.last());
         assertFalse(it.hasNext());
     }
 
@@ -198,8 +198,8 @@ public final strictfp class RangeSetTest extends TestCase {
          * Verify the RangeSet content.
          */
         final Iterator<Range<String>> it = ranges.iterator();
-        assertEqual(new Range<String>(String.class, "FAA", true, "FCC", false), it.next(), ranges.first());
-        assertEqual(new Range<String>(String.class, "GAA", true, "GBB", false), it.next(), ranges.last());
+        assertEqual(new Range<>(String.class, "FAA", true, "FCC", false), it.next(), ranges.first());
+        assertEqual(new Range<>(String.class, "GAA", true, "GBB", false), it.next(), ranges.last());
         assertFalse(it.hasNext());
     }
 
@@ -324,8 +324,8 @@ public final strictfp class RangeSetTest extends TestCase {
         assertTrue(ranges.remove(-15, -5));
         assertEquals("size", 1, ranges.size());
         Range<Integer> r = ranges.first();
-        assertEquals(-20, (int) r.getMinValue());
-        assertEquals(-15, (int) r.getMaxValue());
+        assertEquals(-20, r.getMinValue().intValue());
+        assertEquals(-15, r.getMaxValue().intValue());
         /*
          *                          A             B
          * Range  :                 [-------------]
@@ -339,8 +339,8 @@ public final strictfp class RangeSetTest extends TestCase {
         assertTrue(ranges.remove(-25, -15));
         assertEquals("size", 1, ranges.size());
         r = ranges.first();
-        assertEquals(-15, (int) r.getMinValue());
-        assertEquals(-10, (int) r.getMaxValue());
+        assertEquals(-15, r.getMinValue().intValue());
+        assertEquals(-10, r.getMaxValue().intValue());
         /*
          *                   A                       B
          * Range  :          [-----------------------]
@@ -354,14 +354,14 @@ public final strictfp class RangeSetTest extends TestCase {
         assertTrue(ranges.remove(-17, -13));
         assertEquals("size", 2, ranges.size());
         r = ranges.getRange(0);
-        assertEquals(-20, (int) r.getMinValue());
-        assertEquals(-17, (int) r.getMaxValue());
+        assertEquals(-20, r.getMinValue().intValue());
+        assertEquals(-17, r.getMaxValue().intValue());
         r = ranges.getRange(1);
-        assertEquals(-17, (int) r.getMinValue());
-        assertEquals(-13, (int) r.getMaxValue());
+        assertEquals(-17, r.getMinValue().intValue());
+        assertEquals(-13, r.getMaxValue().intValue());
         r = ranges.getRange(2);
-        assertEquals(-13, (int) r.getMinValue());
-        assertEquals(-10, (int) r.getMaxValue());
+        assertEquals(-13, r.getMinValue().intValue());
+        assertEquals(-10, r.getMaxValue().intValue());
         /*
          *                       A                B
          * Range  :              [----------------]
@@ -541,7 +541,7 @@ public final strictfp class RangeSetTest extends TestCase {
      * in normal SIS build. We run this test only when the {@link RangeSet} implementation
      * changed, and we want to test the impact of that change on the performance.
      *
-     * @throws InterruptedException If the test has been interrupted.
+     * @throws InterruptedException if the test has been interrupted.
      */
     @Performance
     public void stress() throws InterruptedException {
