@@ -81,7 +81,7 @@ public class ISOMetadata extends ModifiableMetadata implements IdentifiedObject,
      * If the given object is an instance of {@link IdentifiedObject}, then this constructor
      * copies the {@linkplain #identifiers collection of identifiers}.
      *
-     * @param object The metadata to copy values from, or {@code null} if none.
+     * @param  object  the metadata to copy values from, or {@code null} if none.
      */
     protected ISOMetadata(final Object object) {
         if (object instanceof IdentifiedObject) {
@@ -113,7 +113,7 @@ public class ISOMetadata extends ModifiableMetadata implements IdentifiedObject,
      * since this method may be indirectly invoked by copy constructors (i.e. is may be
      * invoked before this metadata object is fully constructed).
      *
-     * @return The metadata standard, which is {@linkplain MetadataStandard#ISO_19115 ISO 19115} by default.
+     * @return the metadata standard, which is {@linkplain MetadataStandard#ISO_19115 ISO 19115} by default.
      */
     @Override
     public MetadataStandard getStandard() {
