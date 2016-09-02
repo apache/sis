@@ -28,6 +28,7 @@ import org.apache.sis.internal.metadata.VerticalDatumTypes;
 import org.apache.sis.metadata.iso.citation.HardCodedCitations;
 
 import static org.opengis.referencing.datum.Datum.*;
+import static org.apache.sis.internal.util.StandardDateFormat.MILLISECONDS_PER_DAY;
 
 
 /**
@@ -151,7 +152,7 @@ public final strictfp class HardCodedDatum {
      */
     public static final DefaultTemporalDatum MODIFIED_JULIAN = new DefaultTemporalDatum(
             properties("Modified Julian", null, null),
-            new Date(-40587 * (24*60*60*1000L)));
+            new Date(-40587L * MILLISECONDS_PER_DAY));
 
     /**
      * Image with {@link PixelInCell#CELL_CENTER}.

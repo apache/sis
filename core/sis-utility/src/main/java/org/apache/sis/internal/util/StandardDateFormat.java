@@ -16,21 +16,46 @@
  */
 package org.apache.sis.internal.util;
 
+import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
+import java.text.DateFormat;
+import java.text.NumberFormat;
 import java.text.FieldPosition;
 import java.text.ParsePosition;
-import java.text.SimpleDateFormat;
+import java.text.ParseException;
+
+// Branch-dependent imports
+import java.time.DateTimeException;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.time.temporal.Temporal;
+import java.time.temporal.ChronoField;
+import java.time.temporal.TemporalAccessor;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
+import java.time.format.DateTimeParseException;
 
 
 /**
- * A date format used for parsing date in the {@code "yyyy-MM-dd'T'HH:mm:ss.SSSX"} pattern, but in which
- * the time is optional. The "Apache SIS for JDK8" branch can use the {@link java.time.format} package,
- * while other branches use {@link java.text.SimpleDateFormat}.
+ * A date format used for parsing dates in the {@code "yyyy-MM-dd'T'HH:mm:ss.SSSX"} pattern, but in which
+ * the time is optional. For this class, "Standard" is interpreted as "close to ISO 19162 requirements",
+ * which is not necessarily identical to other ISO standards.
  *
- * <p>External users should use nothing else than the parsing and formating methods. The methods for
- * configuring the {@code DateFormat} may not be available between different SIS branches.</p>
+ * <p>This class is implemented in two different way depending on the Apache SIS branch:</p>
+ * <ul>
+ *   <li>Branches for JDK8 and more use {@link java.time.format.DateTimeFormatter}.</li>
+ *   <li>Branches for older JDKs use {@link java.text.SimpleDateFormat} together with some hacks
+ *       for allowing some fields to be optional (for example adding ":00" is seconds are missing).</li>
+ * </ul>
+ *
+ * External users should use nothing else than the parsing and formating methods.
+ * The methods for configuring the {@code DateFormat} instances may or may not work
+ * depending on the branch.
  *
  * <p>The main usage for this class is Well Known Text (WKT) parsing and formatting.
  * ISO 19162 uses ISO 8601:2004 for the dates. Any precision is allowed: the date could have only the year,
@@ -43,11 +68,12 @@ import java.text.SimpleDateFormat;
  * @version 0.8
  * @module
  */
-public final class StandardDateFormat extends SimpleDateFormat {
+public final class StandardDateFormat extends DateFormat {
     /**
      * For cross-version compatibility.
+     * This number must be different between the JDK8 branch and pre-JDK8 branches.
      */
-    private static final long serialVersionUID = 1552761359761440473L;
+    private static final long serialVersionUID = 2764313272939921664L;
 
     /**
      * The {@value} timezone ID.
@@ -55,43 +81,95 @@ public final class StandardDateFormat extends SimpleDateFormat {
     public static final String UTC = "UTC";
 
     /**
-     * Short version of {@link #PATTERN}, to be used when formatting temporal extents
-     * if the duration is greater than some threshold (typically one day). This pattern must
-     * be a prefix of {@link #PATTERN}, since we will use that condition for deciding
-     * if this pattern is really shorter (the user could have created his own date format
-     * with a different pattern).
+     * The thread-safe instance to use for reading and formatting dates.
+     * Only the year is mandatory, all other fields are optional.
      */
-    public static final String SHORT_PATTERN = "yyyy-MM-dd";
+    public static final DateTimeFormatter FORMAT =
+            new DateTimeFormatterBuilder()     .appendValue(ChronoField.YEAR,             4)    // Proleptic year (use negative number if needed).
+            .optionalStart().appendLiteral('-').appendValue(ChronoField.MONTH_OF_YEAR,    2)
+            .optionalStart().appendLiteral('-').appendValue(ChronoField.DAY_OF_MONTH,     2)
+            .optionalStart().appendLiteral('T').appendValue(ChronoField.HOUR_OF_DAY,      2)
+            .optionalStart().appendLiteral(':').appendValue(ChronoField.MINUTE_OF_HOUR,   2)
+            .optionalStart().appendLiteral(':').appendValue(ChronoField.SECOND_OF_MINUTE, 2)
+                            .parseLenient() .appendFraction(ChronoField.MILLI_OF_SECOND, 3, 3, true)
+            .optionalEnd().optionalEnd().optionalEnd()    // Move back to the optional block of HOUR_OF_DAY.
+            .optionalStart().appendOffsetId()
+            .toFormatter(Locale.ROOT);
 
     /**
-     * The pattern of time. We use 3 fraction digits for the seconds because {@code SimpleDateFormat} parses the
-     * milliseconds as an integer instead than as fraction digits. For example with 1 fraction digits, "00:00:01.4"
-     * is parsed as 1.004 seconds instead of 1.4. While surprising, this is conform to the {@code SimpleDateFormat}
-     * specification. Note that this is different than {@link java.time.LocalDateTime} which parse those numbers as
-     * fraction digits.
+     * The length of a day in number of milliseconds.
      */
-    public static final String TIME_PATTERN = "HH:mm:ss.SSSX";
+    public static final int MILLISECONDS_PER_DAY = 24*60*60*1000;
 
     /**
-     * Number of fraction digits in {@link #TIME_PATTERN}.
+     * Converts the given legacy {@code Date} object into a {@code java.time} implementation in given timezone.
+     * The method performs the following choice:
+     *
+     * <ul>
+     *   <li>If the given date has zero values in hours, minutes, seconds and milliseconds fields in UTC timezone,
+     *       then the returned implementation will be a {@link LocalDate}, dropping the timezone information (i.e.
+     *       the date is considered approximative). Note that this is consistent with ISO 19162 requirement that
+     *       dates are always in UTC, even if Apache SIS allows some flexibility.</li>
+     *   <li>Otherwise if the timezone is not {@code null} and not UTC, then this method returns an {@link OffsetDateTime}.</li>
+     *   <li>Otherwise this method returns an {@link Instant}.</li>
+     * </ul>
+     *
+     * @param  date the date to convert, or {@code null}.
+     * @param  zone the timezone of the temporal object to obtain, or {@code null} for UTC.
+     * @return the temporal object for the given date, or {@code null} if the given argument was null.
      */
-    private static final int NUM_FRACTION_DIGITS = 3;
+    public static Temporal toHeuristicTemporal(final Date date, final ZoneId zone) {
+        if (date == null) {
+            return null;
+        }
+        final long time = date.getTime();
+        if ((time % MILLISECONDS_PER_DAY) == 0) {
+            return LocalDate.ofEpochDay(time / MILLISECONDS_PER_DAY);
+        }
+        final Instant instant = Instant.ofEpochMilli(time);
+        if (zone != null && !zone.equals(ZoneOffset.UTC)) {
+            return OffsetDateTime.ofInstant(instant, zone);
+        }
+        return instant;
+    }
 
     /**
-     * The pattern of dates.
+     * Converts the given temporal object into a date.
+     * The given temporal object is typically the value parsed by {@link #FORMAT}.
+     *
+     * @param  temporal  the temporal object to convert, or {@code null}.
+     * @return the legacy date for the given temporal object, or {@code null} if the argument was null.
+     * @throws DateTimeException if a value for the field cannot be obtained.
+     * @throws ArithmeticException if the number of milliseconds is too large.
      */
-    public static final String PATTERN = SHORT_PATTERN + "'T'" + TIME_PATTERN;
+    public static Date toDate(final TemporalAccessor temporal) {
+        if (temporal == null) {
+            return null;
+        }
+        final long millis;
+        if (temporal instanceof Instant) {
+            millis = ((Instant) temporal).toEpochMilli();
+        } else if (temporal.isSupported(ChronoField.INSTANT_SECONDS)) {
+            millis = Math.addExact(Math.multiplyExact(temporal.getLong(ChronoField.INSTANT_SECONDS), 1000),
+                            temporal.get(ChronoField.NANO_OF_SECOND) / 1000000);
+        } else {
+            // Note that the timezone may be unknown here. We assume UTC.
+            millis = Math.multiplyExact(temporal.getLong(ChronoField.EPOCH_DAY), MILLISECONDS_PER_DAY);
+        }
+        return new Date(millis);
+    }
 
     /**
-     * {@code true} if the user has invoked {@link #applyPattern(String)} or {@link #applyLocalizedPattern(String)}.
+     * The {@code java.time} parser and formatter. This is usually the {@link #FORMAT} instance
+     * unless a different locale or timezone has been specified.
      */
-    private boolean isUserSpecifiedPattern;
+    private DateTimeFormatter format;
 
     /**
      * Creates a new format for a default locale in the UTC timezone.
      */
     public StandardDateFormat() {
-        this(Locale.CANADA);        // Canada locale symbols are close to the ISO ones.
+        format = FORMAT;
     }
 
     /**
@@ -100,7 +178,7 @@ public final class StandardDateFormat extends SimpleDateFormat {
      * @param locale  the locale of the format to create.
      */
     public StandardDateFormat(final Locale locale) {
-        this(locale, TimeZone.getTimeZone(UTC));
+        format = FORMAT.withLocale(locale);             // Same instance as FORMAT if the locales are equal.
     }
 
     /**
@@ -110,52 +188,97 @@ public final class StandardDateFormat extends SimpleDateFormat {
      * @param zone    the timezone.
      */
     public StandardDateFormat(final Locale locale, final TimeZone zone) {
-        super(PATTERN, locale);
-        super.setTimeZone(zone);
+        this(locale);
+        if (!UTC.equals(zone.getID())) {
+            setTimeZone(zone);
+        }
     }
 
     /**
-     * Sets a user-specified pattern.
+     * Returns the calendar, creating it when first needed. This {@code StandardDateFormat} class does not use the
+     * calendar, but we nevertheless create it if requested in order to comply with {@code DateFormat} contract.
      *
-     * @param pattern the user-specified pattern.
+     * @return a calendar, created when first needed.
      */
     @Override
-    public void applyPattern(final String pattern) {
-        super.applyPattern(pattern);
-        isUserSpecifiedPattern = true;
+    public final Calendar getCalendar() {
+        if (calendar == null) {
+            calendar = Calendar.getInstance(getTimeZone(), format.getLocale());
+        }
+        return calendar;
     }
 
     /**
-     * Sets a user-specified pattern.
+     * Returns the number format, creating it when first needed. This {@code StandardDateFormat} class does not use the
+     * number format, but we nevertheless create it if requested in order to comply with {@code DateFormat} contract.
      *
-     * @param pattern the user-specified pattern.
+     * @return a number format, created when first needed.
      */
     @Override
-    public void applyLocalizedPattern(final String pattern) {
-        super.applyLocalizedPattern(pattern);
-        isUserSpecifiedPattern = true;
+    public final NumberFormat getNumberFormat() {
+        if (numberFormat == null) {
+            numberFormat = NumberFormat.getInstance(format.getLocale());
+        }
+        return numberFormat;
+    }
+
+    /**
+     * Returns the timezone used for formatting instants.
+     *
+     * @return the timezone.
+     */
+    @Override
+    public final TimeZone getTimeZone() {
+        final ZoneId zone = format.getZone();
+        return TimeZone.getTimeZone(zone != null ? zone : ZoneOffset.UTC);
+    }
+
+    /**
+     * Sets the timezone.
+     *
+     * @param zone the new timezone.
+     */
+    @Override
+    public final void setTimeZone(final TimeZone zone) {
+        format = format.withZone(zone.toZoneId());
+        if (calendar != null) {
+            super.setTimeZone(zone);
+        }
+    }
+
+    /**
+     * Overridden for compliance with {@code DateFormat} contract, but has no incidence on this format.
+     *
+     * @param lenient value forwarded to {@link Calendar#setLenient(boolean)}.
+     */
+    @Override
+    public final void setLenient(boolean lenient) {
+        getCalendar().setLenient(lenient);
+    }
+
+    /**
+     * Overridden for compliance with {@code DateFormat} contract, but has no incidence on this format.
+     *
+     * @return value fetched {@link Calendar#getLenient()}.
+     */
+    @Override
+    public final boolean isLenient() {
+        return getCalendar().isLenient();
     }
 
     /**
      * Formats the given date. If hours, minutes, seconds and milliseconds are zero and the timezone is UTC,
      * then this method omits the clock part (unless the user has overridden the pattern).
      *
-     * @param  date    the date to format.
-     * @param  buffer  where to format the date.
-     * @param  pos     where to store information about a date field.
+     * @param  date        the date to format.
+     * @param  toAppendTo  where to format the date.
+     * @param  pos         ignored.
      * @return the given buffer, for method calls chaining.
      */
     @Override
-    public StringBuffer format(final Date date, final StringBuffer buffer, final FieldPosition pos) {
-        if (!isUserSpecifiedPattern && (date.getTime() % (24*60*60*1000)) == 0 && UTC.equals(getTimeZone().getID())) {
-            try {
-                super.applyPattern(SHORT_PATTERN);
-                return super.format(date, buffer, pos);
-            } finally {
-                super.applyPattern(PATTERN);
-            }
-        }
-        return super.format(date, buffer, pos);
+    public StringBuffer format(final Date date, final StringBuffer toAppendTo, final FieldPosition pos) {
+        format.formatTo(toHeuristicTemporal(date, null), toAppendTo);
+        return toAppendTo;
     }
 
     /**
@@ -167,143 +290,76 @@ public final class StandardDateFormat extends SimpleDateFormat {
      */
     @Override
     public Date parse(final String text, final ParsePosition position) {
-        if (isUserSpecifiedPattern) {
-            return super.parse(text, position);
+        try {
+            return toDate(format.parse(text, position));
+        } catch (DateTimeException | ArithmeticException e) {
+            position.setErrorIndex(getErrorIndex(e, position));
+            return null;
         }
-        final Fix fix = Fix.apply(text, position.getIndex(), 0);
-        if (fix == null) {
-            try {
-                super.applyPattern(SHORT_PATTERN);
-                return super.parse(text, position);
-            } finally {
-                super.applyPattern(PATTERN);
-            }
-        }
-        final Date date = super.parse(fix.text, position);
-        position.setIndex     (fix.adjustIndex(position.getIndex()));
-        position.setErrorIndex(fix.adjustIndex(position.getErrorIndex()));
-        return date;
     }
 
     /**
-     * Modifies if needed a given input string in order to make it compliant with JDK7 implementation of
-     * {@code SimpleDateFormat}. That implementation expects the exact some number of fraction digits in
-     * the second fields than specified by the {@code "ss.SSS"} part of the pattern. This method adds or
-     * removes fraction digits as needed.
+     * Parses the given text.
+     *
+     * @param  text  the text to parse.
+     * @return the date (never null).
+     * @throws ParseException if the parsing failed.
      */
-    static final class Fix {
-        /**
-         * The modified input string, with second fraction digits added or removed.
-         */
-        public final String text;
-
-        /**
-         * Index of the first character added or removed, or {@code input.length()} if none.
-         */
-        private final int lower;
-
-        /**
-         * Number of characters added (positive number) or removed (negative number).
-         */
-        final int change;
-
-        /**
-         * Wraps information about an input string that has been made parsable.
-         */
-        private Fix(final String text, final int lower, final int change) {
-            this.text   = text;
-            this.lower  = lower;
-            this.change = change;
+    @Override
+    public Date parse(final String text) throws ParseException {
+        try {
+            return toDate(format.parse(text));
+        } catch (DateTimeException | ArithmeticException e) {
+            ParseException p = new ParseException(e.getLocalizedMessage(), getErrorIndex(e, null));
+            p.initCause(e);
+            throw p;
         }
+    }
 
-        /**
-         * Performs various adjustments for making the given text compliant with the format expected by
-         * a {@link SimpleDateFormat} using the {@value #PATTERN} pattern.
-         *
-         * @param  text       the text to adapt.
-         * @param  s          index in {@code text} where to start the parsing.
-         * @param  timeField  0 if parsing starts on days, 1 if starting on hours field,
-         *                    2 if starting on minutes field or 3 if starting on seconds field.
-         * @return information about the input string made parsable,
-         *         or {@code null} if the given text does not contain a time field.
-         */
-        static Fix apply(final String text, int s, int timeField) {
-            final int length = text.length();
-search:     while (s < length) {
-                char c = text.charAt(s);
-                if (c < '0' || c > '9') {
-                    switch (c) {
-                        default: {
-                            break search;
-                        }
-                        case '-': {
-                            if (timeField != 0) break search;
-                            break;
-                        }
-                        case 'T': {
-                            if (timeField != 0) break search;
-                            timeField = 1;
-                            break;
-                        }
-                        case ':': {
-                            if (timeField == 0 || ++timeField > 3) break search;
-                            break;
-                        }
-                        case '.': {
-                            if (timeField != 3) break search;
-                            /*
-                             * If the user specified too few or too many fraction digits, add or truncate.
-                             * If the number of digits is already the expected ones (which should be rare),
-                             * nevertheless create a new Fix instance for notifying the parse method that
-                             * the text contains a time.
-                             */
-                            final int start = ++s;
-                            while (s < length && (c = text.charAt(s)) >= '0' && c <= '9') s++;
-                            final int change = NUM_FRACTION_DIGITS - (s - start);
-                            if (change == 0) {
-                                return new Fix(text, length, 0);                    // See above comment.
-                            }
-                            final StringBuilder buffer = new StringBuilder(text);
-                            if (change >= 0) {
-                                for (int i = change; --i >= 0;) {
-                                    buffer.insert(s, '0');
-                                }
-                            } else {
-                                final int upper = s;
-                                s = start + NUM_FRACTION_DIGITS;
-                                buffer.delete(s, upper);
-                            }
-                            return new Fix(buffer.toString(), s, change);
-                        }
-                    }
-                }
-                s++;
-            }
-            /*
-             * If the user did not specified any fraction digits, add them.
-             * (NUM_FRACTION_DIGITS + 1) shall be the length of the inserted string.
-             */
-            final String time;
-            switch (timeField) {
-                default: return null;
-                case 1:  time = ":00:00.000"; break;
-                case 2:  time =    ":00.000"; break;
-                case 3:  time =       ".000"; break;
-            }
-            return new Fix(new StringBuilder(text).insert(s, time).toString(), s, time.length());
+    /**
+     * Tries to infer the index where the parsing error occurred.
+     */
+    private static int getErrorIndex(final RuntimeException e, final ParsePosition position) {
+        if (e instanceof DateTimeParseException) {
+            return ((DateTimeParseException) e).getErrorIndex();
+        } else if (position != null) {
+            return position.getIndex();
+        } else {
+            return 0;
         }
+    }
 
-        /**
-         * Map an index in the modified string to the index in the original string.
-         *
-         * @param  index  the index in the modified string.
-         * @return the corresponding index in the original string.
-         */
-        int adjustIndex(int index) {
-            if (index >= lower) {
-                index = Math.max(lower, index - change);
-            }
-            return index;
-        }
+    /**
+     * Returns a hash code value for this format.
+     *
+     * @return a hash code value for this format.
+     */
+    @Override
+    public int hashCode() {
+        return 31 * format.hashCode();
+    }
+
+    /**
+     * Compares this format with the given object for equality.
+     *
+     * @param  obj the object to compare with this format.
+     * @return if the two objects format in the same way.
+     */
+    @Override
+    public boolean equals(final Object obj) {
+        return (obj instanceof StandardDateFormat) && format.equals(((StandardDateFormat) obj).format);
+    }
+
+    /**
+     * Returns a clone of this format.
+     *
+     * @return a clone of this format.
+     */
+    @Override
+    @SuppressWarnings("CloneDoesntCallSuperClone")
+    public Object clone() {
+        final StandardDateFormat clone = new StandardDateFormat();
+        clone.format = format;
+        return clone;
     }
 }
