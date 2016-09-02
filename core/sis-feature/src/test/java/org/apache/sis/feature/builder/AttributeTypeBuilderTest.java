@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.util.Set;
 import java.util.Collections;
 import com.esri.core.geometry.Geometry;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.internal.feature.AttributeConvention;
 import org.apache.sis.test.DependsOnMethod;
@@ -31,7 +32,6 @@ import static org.apache.sis.test.Assert.*;
 
 // Branch-dependent imports
 import org.opengis.feature.AttributeType;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 
 /**
@@ -55,7 +55,7 @@ public final strictfp class AttributeTypeBuilderTest extends TestCase {
         assertEquals("default name", "string", builder.getName().toString());
 
         builder.setName("myScope", "myName");
-        final AttributeType<?> att = (AttributeType<?>) builder.build();
+        final AttributeType<?> att = builder.build();
 
         assertEquals("name", "myScope:myName",   att.getName().toString());
         assertEquals("valueClass", String.class, att.getValueClass());
@@ -81,7 +81,7 @@ public final strictfp class AttributeTypeBuilderTest extends TestCase {
         assertSame(builder, builder.setDefaultValue("test default value."));
         assertSame(builder, builder.setCardinality(10, 60));
         assertSame(builder, builder.setMaximalLength(80));
-        final AttributeType<?> att = (AttributeType<?>) builder.build();
+        final AttributeType<?> att = builder.build();
 
         assertEquals("name",          "myScope:myName",      att.getName().toString());
         assertEquals("definition",    "test definition",     att.getDefinition().toString());
@@ -141,7 +141,7 @@ public final strictfp class AttributeTypeBuilderTest extends TestCase {
         /*
          * Verify the attribute created by the builder.
          */
-        final AttributeType<?> att = (AttributeType<?>) newb.build();
+        final AttributeType<?> att = newb.build();
         assertEquals("name",          "temperature",      att.getName().toString());
         assertEquals("definition",    "test definition",  att.getDefinition().toString());
         assertEquals("description",   "test description", att.getDescription().toString());

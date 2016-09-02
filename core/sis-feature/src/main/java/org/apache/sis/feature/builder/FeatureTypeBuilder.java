@@ -38,13 +38,13 @@ import org.apache.sis.util.ArraysExt;
 
 // Branch-dependent imports
 import java.util.Objects;
+import org.apache.sis.internal.jdk8.JDK8;
 import org.opengis.feature.AttributeType;
 import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
 import org.opengis.feature.PropertyType;
 import org.opengis.feature.FeatureAssociationRole;
 import org.opengis.feature.Operation;
-import org.apache.sis.internal.jdk8.JDK8;
 
 
 /**
