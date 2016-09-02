@@ -33,31 +33,9 @@ import static org.junit.Assert.*;
  */
 public final strictfp class StandardDateFormatTest extends TestCase {
     /**
-     * Verifies the condition documented in {@link StandardDateFormat#SHORT_PATTERN} javadoc.
-     */
-    @Test
-    public void testDatePatterns() {
-        assertTrue(StandardDateFormat.PATTERN.startsWith(StandardDateFormat.SHORT_PATTERN));
-    }
-
-    /**
-     * Tests {@link StandardDateFormat.Fix} class.
-     */
-    @Test
-    public void testAdaptText() {
-        StandardDateFormat.Fix fix = StandardDateFormat.Fix.apply("2016-06-27T16:48:12Z", 0, 0);
-        assertEquals("fix.input", "2016-06-27T16:48:12.000Z", fix.text);
-        assertEquals("An index before", 18, fix.adjustIndex(18));
-        assertEquals("An index after",  19, fix.adjustIndex(23));
-
-        fix = StandardDateFormat.Fix.apply("2016-06-27T16:48:12.48Z", 0, 0);
-        assertEquals("fix.input", "2016-06-27T16:48:12.480Z", fix.text);
-        assertEquals("An index before", 18, fix.adjustIndex(18));
-        assertEquals("An index after",  22, fix.adjustIndex(23));
-    }
-
-    /**
      * Tests parsing a date.
+     * Since the implementation is completely different in JDK8 branch than in previous branch,
+     * a key purpose of this test is to ensure that the parsing is consistent between the branches.
      *
      * @throws ParseException if an error occurred while parsing the date.
      */

@@ -79,6 +79,7 @@ import org.apache.sis.measure.Units;
 
 import static java.util.Collections.singletonMap;
 import static org.opengis.referencing.IdentifiedObject.NAME_KEY;
+import static org.apache.sis.internal.util.StandardDateFormat.MILLISECONDS_PER_DAY;
 
 
 /**
@@ -1333,14 +1334,14 @@ public enum CommonCRS {
         /**
          * Time measured as days since January 1st, 4713 BC at 12:00 UTC.
          */
-        JULIAN(Vocabulary.Keys.Julian, -2440588 * (24*60*60*1000L) + (12*60*60*1000L)),
+        JULIAN(Vocabulary.Keys.Julian, -2440588L * MILLISECONDS_PER_DAY + MILLISECONDS_PER_DAY/2),
 
         /**
          * Time measured as days since November 17, 1858 at 00:00 UTC.
          * A <cite>Modified Julian day</cite> (MJD) is defined relative to
          * <cite>Julian day</cite> (JD) as {@code MJD = JD − 2400000.5}.
          */
-        MODIFIED_JULIAN(Vocabulary.Keys.ModifiedJulian, -40587 * (24*60*60*1000L)),
+        MODIFIED_JULIAN(Vocabulary.Keys.ModifiedJulian, -40587L * MILLISECONDS_PER_DAY),
 
         /**
          * Time measured as days since May 24, 1968 at 00:00 UTC.
@@ -1348,14 +1349,14 @@ public enum CommonCRS {
          * A <cite>Truncated Julian day</cite> (TJD) is defined relative to
          * <cite>Julian day</cite> (JD) as {@code TJD = JD − 2440000.5}.
          */
-        TRUNCATED_JULIAN(Vocabulary.Keys.TruncatedJulian, -587 * (24*60*60*1000L)),
+        TRUNCATED_JULIAN(Vocabulary.Keys.TruncatedJulian, -587L * MILLISECONDS_PER_DAY),
 
         /**
          * Time measured as days since December 31, 1899 at 12:00 UTC.
          * A <cite>Dublin Julian day</cite> (DJD) is defined relative to
          * <cite>Julian day</cite> (JD) as {@code DJD = JD − 2415020}.
          */
-        DUBLIN_JULIAN(Vocabulary.Keys.DublinJulian, -25568 * (24*60*60*1000L) + (12*60*60*1000L)),
+        DUBLIN_JULIAN(Vocabulary.Keys.DublinJulian, -25568L * MILLISECONDS_PER_DAY + MILLISECONDS_PER_DAY/2),
 
         /**
          * Time measured as seconds since January 1st, 1970 at 00:00 UTC.

@@ -50,6 +50,7 @@ import org.junit.Test;
 
 import static org.apache.sis.test.ReferencingAssert.*;
 import static org.apache.sis.test.TestUtilities.getSingleton;
+import static org.apache.sis.internal.util.StandardDateFormat.MILLISECONDS_PER_DAY;
 
 
 /**
@@ -1038,7 +1039,7 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
         final TemporalDatum timeDatum = timeCRS.getDatum();
         assertNameAndIdentifierEqual("Time", 0, timeCRS);
         assertNameAndIdentifierEqual("Modified Julian", 0, timeDatum);
-        assertEquals("epoch", new Date(-40587 * (24*60*60*1000L)), timeDatum.getOrigin());
+        assertEquals("epoch", new Date(-40587L * MILLISECONDS_PER_DAY), timeDatum.getOrigin());
 
         // No more CRS.
         assertFalse(components.hasNext());
