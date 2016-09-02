@@ -28,6 +28,7 @@ import org.junit.Test;
 
 import static org.apache.sis.test.ReferencingAssert.*;
 import static org.apache.sis.test.TestUtilities.getSingleton;
+import static org.apache.sis.internal.util.StandardDateFormat.MILLISECONDS_PER_DAY;
 
 
 /**
@@ -47,7 +48,7 @@ public final strictfp class DefaultTemporalDatumTest extends XMLTestCase {
     /**
      * November 17, 1858 at 00:00 UTC as a Java timestamp.
      */
-    private static final long ORIGIN = -40587 * (24*60*60*1000L);
+    private static final long ORIGIN = -40587L * MILLISECONDS_PER_DAY;
 
     /**
      * Creates the temporal datum to use for testing purpose.

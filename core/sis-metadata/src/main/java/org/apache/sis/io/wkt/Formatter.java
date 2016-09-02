@@ -27,7 +27,6 @@ import java.util.Collections;
 import java.util.Locale;
 import java.util.Date;
 import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.text.NumberFormat;
 import java.text.FieldPosition;
 import java.lang.reflect.Array;
@@ -103,7 +102,7 @@ import org.apache.sis.internal.jdk7.JDK7;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.4
- * @version 0.7
+ * @version 0.8
  * @module
  *
  * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html">WKT 2 specification</a>
@@ -121,12 +120,6 @@ public class Formatter implements Localized {
      * The value used here is arbitrary and may change in any future SIS version.
      */
     private static final int VERTICAL_ACCURACY = 9;
-
-    /**
-     * The time span threshold for switching between the {@code "yyyy-MM-dd'T'HH:mm:ss.SX"}
-     * and {@code "yyyy-MM-dd"} date pattern when formatting a temporal extent.
-     */
-    private static final long TEMPORAL_THRESHOLD = 24 * 60 * 60 * 1000L;
 
     /**
      * The value of {@code X364.FOREGROUND_DEFAULT.sequence()}, hard-coded for avoiding
@@ -917,13 +910,12 @@ public class Formatter implements Localized {
     }
 
     /**
-     * Appends the given temporal extents, if non-null.
-     * This method uses a simplified format if the time span is large enough.
+     * Appends the given temporal extent, if non-null.
      * Examples:
      *
      * <ul>
-     *   <li>“{@code TemporalExtent[1980-04-12, 1980-04-18]}” (Δt = 6 days)</li>
-     *   <li>“{@code TemporalExtent[1980-04-12T18:00:00.0Z, 1980-04-12T21:00:00.0Z]}” (Δt = 3 hours)</li>
+     *   <li>“{@code TemporalExtent[1980-04-12, 1980-04-18]}”</li>
+     *   <li>“{@code TemporalExtent[1980-04-12T18:00:00.0Z, 1980-04-12T21:00:00.0Z]}”</li>
      * </ul>
      */
     private void appendTemporalExtent(final Range<Date> range) {
@@ -931,26 +923,10 @@ public class Formatter implements Localized {
             final Date min = range.getMinValue();
             final Date max = range.getMaxValue();
             if (min != null && max != null) {
-                String pattern = null;
-                if (dateFormat instanceof SimpleDateFormat && (max.getTime() - min.getTime()) >= TEMPORAL_THRESHOLD) {
-                    final String p = ((SimpleDateFormat) dateFormat).toPattern();
-                    if (p.length() > StandardDateFormat.SHORT_PATTERN.length() &&
-                        p.startsWith(StandardDateFormat.SHORT_PATTERN))
-                    {
-                        pattern = p;
-                        ((SimpleDateFormat) dateFormat).applyPattern(StandardDateFormat.SHORT_PATTERN);
-                    }
-                }
                 openElement(true, WKTKeywords.TimeExtent);
                 setColor(ElementKind.EXTENT);
-                try {
-                    append(min);
-                    append(max);
-                } finally {
-                    if (pattern != null) {
-                        ((SimpleDateFormat) dateFormat).applyPattern(pattern);
-                    }
-                }
+                append(min);
+                append(max);
                 resetColor();
                 closeElement(true);
             }

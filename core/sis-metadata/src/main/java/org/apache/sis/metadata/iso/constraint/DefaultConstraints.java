@@ -124,7 +124,7 @@ public class DefaultConstraints extends ISOMetadata implements Constraints {
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from, or {@code null} if none.
+     * @param object the metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(Constraints)
      */
@@ -159,8 +159,8 @@ public class DefaultConstraints extends ISOMetadata implements Constraints {
      *       metadata contained in the given object are not recursively copied.</li>
      * </ul>
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultConstraints castOrCopy(final Constraints object) {
@@ -181,7 +181,7 @@ public class DefaultConstraints extends ISOMetadata implements Constraints {
      * Returns the limitation affecting the fitness for use of the resource.
      * Example: <cite>"not to be used for navigation"</cite>.
      *
-     * @return Limitation affecting the fitness for use of the resource.
+     * @return limitation affecting the fitness for use of the resource.
      */
     @Override
     @XmlElement(name = "useLimitation")
@@ -193,7 +193,7 @@ public class DefaultConstraints extends ISOMetadata implements Constraints {
      * Sets the limitation affecting the fitness for use of the resource.
      * Example: <cite>"not to be used for navigation"</cite>.
      *
-     * @param newValues The new use limitations.
+     * @param  newValues  the new use limitations.
      */
     public void setUseLimitations(final Collection<? extends InternationalString> newValues) {
         useLimitations = writeCollection(newValues, useLimitations, InternationalString.class);
@@ -203,7 +203,7 @@ public class DefaultConstraints extends ISOMetadata implements Constraints {
      * Returns the spatial and / or temporal extents and or levels of the application
      * of the constraints restrictions.
      *
-     * @return Spatial and / or temporal extents.
+     * @return spatial and / or temporal extents.
      *
      * @since 0.5
      */
@@ -216,7 +216,7 @@ public class DefaultConstraints extends ISOMetadata implements Constraints {
     /**
      * Sets the spatial and / or temporal extents and or levels of the application of the constraints restrictions.
      *
-     * @param newValue The new spatial and / or temporal extents.
+     * @param  newValue  the new spatial and / or temporal extents.
      *
      * @since 0.5
      */
@@ -228,7 +228,7 @@ public class DefaultConstraints extends ISOMetadata implements Constraints {
     /**
      * Returns the graphics / symbols indicating the constraint.
      *
-     * @return The graphics / symbols indicating the constraint.
+     * @return the graphics / symbols indicating the constraint.
      *
      * @since 0.5
      */
@@ -241,7 +241,7 @@ public class DefaultConstraints extends ISOMetadata implements Constraints {
     /**
      * Sets the new graphics / symbols indicating the constraint.
      *
-     * @param newValues the new graphics / symbols indicating the constraint.
+     * @param  newValues  the new graphics / symbols indicating the constraint.
      *
      * @since 0.5
      */
@@ -253,7 +253,7 @@ public class DefaultConstraints extends ISOMetadata implements Constraints {
      * Returns citations for the limitation of constraint.
      * Example: "copyright statement, license agreement, etc."
      *
-     * @return Citations for the limitation of constraint.
+     * @return citations for the limitation of constraint.
      *
      * @since 0.5
      */
@@ -266,7 +266,7 @@ public class DefaultConstraints extends ISOMetadata implements Constraints {
     /**
      * Sets the citations for the limitation of constraint.
      *
-     * @param newValues The new citation for the limitation of constraint.
+     * @param  newValues  the new citation for the limitation of constraint.
      *
      * @since 0.5
      */
@@ -277,7 +277,7 @@ public class DefaultConstraints extends ISOMetadata implements Constraints {
     /**
      * Returns information concerning the parties to whom the resource can or cannot be released.
      *
-     * @return Information concerning the parties to whom the resource can or cannot be released, or {@code null} if none.
+     * @return information concerning the parties to whom the resource can or cannot be released, or {@code null} if none.
      *
      * @since 0.5
      */
@@ -290,7 +290,7 @@ public class DefaultConstraints extends ISOMetadata implements Constraints {
     /**
      * Sets the information concerning the parties to whom the resource.
      *
-     * @param newValue The new information concerning the parties to whom the resource can or cannot be released.
+     * @param  newValue  the new information concerning the parties to whom the resource can or cannot be released.
      *
      * @since 0.5
      */
@@ -302,7 +302,7 @@ public class DefaultConstraints extends ISOMetadata implements Constraints {
     /**
      * Returns the parties responsible for the resource constraints.
      *
-     * @return Parties responsible for the resource constraints.
+     * @return parties responsible for the resource constraints.
      *
      * @since 0.5
      */
@@ -315,7 +315,7 @@ public class DefaultConstraints extends ISOMetadata implements Constraints {
     /**
      * Sets the parties responsible for the resource constraints.
      *
-     * @param newValues The new parties responsible for the resource constraints.
+     * @param  newValues  the new parties responsible for the resource constraints.
      *
      * @since 0.5
      */

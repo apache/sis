@@ -19,7 +19,6 @@ package org.apache.sis.test;
 import java.util.Locale;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Citation;
-import org.opengis.metadata.citation.Responsibility;
 import org.opengis.referencing.IdentifiedObject;
 import org.apache.sis.io.wkt.Symbols;
 import org.apache.sis.io.wkt.WKTFormat;
@@ -27,6 +26,7 @@ import org.apache.sis.io.wkt.Convention;
 
 // Branch-specific imports
 import org.apache.sis.internal.jdk7.JDK7;
+import org.opengis.metadata.citation.Responsibility;
 
 
 /**

@@ -37,6 +37,7 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArraysExt;
 
 // Branch-dependent imports
+import org.apache.sis.internal.jdk8.JDK8;
 import org.apache.sis.internal.jdk7.JDK7;
 import org.apache.sis.internal.jdk7.Objects;
 import org.opengis.feature.AttributeType;
@@ -45,7 +46,6 @@ import org.opengis.feature.FeatureType;
 import org.opengis.feature.PropertyType;
 import org.opengis.feature.FeatureAssociationRole;
 import org.opengis.feature.Operation;
-import org.apache.sis.internal.jdk8.JDK8;
 
 
 /**

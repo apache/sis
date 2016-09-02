@@ -20,6 +20,8 @@ import java.util.Map;
 import java.util.Collection;
 import java.util.Collections;
 import org.opengis.util.GenericName;
+
+// Branch-dependent imports
 import org.opengis.feature.Feature;
 import org.opengis.feature.Attribute;
 import org.opengis.feature.AttributeType;
