@@ -39,6 +39,7 @@
                 <root id="src.fra-profile.dir" name="French profile"/>
             </source-roots>
             <test-roots>
+                <root id="test.webapp.dir" name="Test web application"/>
                 <root id="test.console.dir" name="Test Console"/>
                 <root id="test.earth-obs.dir" name="Test Earth observation"/>
                 <root id="test.geotiff.dir" name="Test GeoTIFF"/>
