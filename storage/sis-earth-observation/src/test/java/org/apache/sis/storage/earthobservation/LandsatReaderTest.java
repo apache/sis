@@ -17,6 +17,7 @@
 package org.apache.sis.storage.earthobservation;
 
 import java.util.Locale;
+import java.util.regex.Matcher;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -28,7 +29,7 @@ import org.apache.sis.internal.system.Modules;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
-import static org.apache.sis.test.Assert.assertMultilinesEquals;
+import static org.apache.sis.test.Assert.*;
 import static org.apache.sis.test.TestUtilities.formatNameAndValue;
 
 
@@ -41,6 +42,17 @@ import static org.apache.sis.test.TestUtilities.formatNameAndValue;
  * @module
  */
 public class LandsatReaderTest extends TestCase {
+    /**
+     * Tests the regular expression used for detecting the
+     * “Image courtesy of the U.S. Geological Survey” credit.
+     */
+    @Test
+    public void testCreditPattern() {
+        final Matcher m = LandsatReader.CREDIT.matcher("Image courtesy of the U.S. Geological Survey");
+        assertTrue("matches", m.find());
+        assertEquals("end", 22, m.end());
+    }
+
     /**
      * Tests {@link LandsatReader#read()}.
      *
@@ -56,7 +68,10 @@ public class LandsatReaderTest extends TestCase {
         try (BufferedReader in = new BufferedReader(new InputStreamReader(
                 LandsatReaderTest.class.getResourceAsStream("LandsatTest.txt"), "UTF-8")))
         {
-            actual = new LandsatReader(in, new EmptyWarningListeners<>(Locale.US, Modules.EARTH_OBSERVATION)).read();
+            final LandsatReader reader = new LandsatReader("LandsatTest.txt", Locale.ENGLISH,
+                    new EmptyWarningListeners<>(Locale.ENGLISH, Modules.EARTH_OBSERVATION));
+            reader.read(in);
+            actual = reader.getMetadata();
         }
         final String text = formatNameAndValue(DefaultMetadata.castOrCopy(actual).asTreeTable());
         assertMultilinesEquals(

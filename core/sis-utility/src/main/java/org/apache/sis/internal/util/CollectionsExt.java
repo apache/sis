@@ -51,7 +51,7 @@ import java.util.function.Function;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @since   0.3
- * @version 0.6
+ * @version 0.8
  * @module
  */
 public final class CollectionsExt extends Static {
@@ -68,9 +68,9 @@ public final class CollectionsExt extends Static {
      *
      * <p>This method is null-safe. Note however that the first element may be null.</p>
      *
-     * @param  <T> The type of elements contained in the iterable.
-     * @param  collection The iterable from which to get the first element, or {@code null}.
-     * @return The first element, or {@code null} if the given iterable is null or empty.
+     * @param  <T>         the type of elements contained in the iterable.
+     * @param  collection  the iterable from which to get the first element, or {@code null}.
+     * @return the first element, or {@code null} if the given iterable is null or empty.
      */
     public static <T> T first(final Iterable<T> collection) {
         if (collection != null) {
@@ -83,10 +83,41 @@ public final class CollectionsExt extends Static {
     }
 
     /**
+     * If the given iterable contains exactly one non-null element, returns that element.
+     * Otherwise returns {@code null}.
+     *
+     * @param  <T>         the type of elements contained in the iterable.
+     * @param  collection  the iterable from which to get the singleton element, or {@code null}.
+     * @return the singleton element, or {@code null} if the given iterable is null or does not
+     *         contain exactly one non-null element.
+     *
+     * @since 0.8
+     */
+    public static <T> T singletonOrNull(final Iterable<T> collection) {
+        if (collection != null) {
+            final Iterator<T> it = collection.iterator();
+            if (it != null) {                                       // This check for null is paranoiac.
+                T element = null;
+                while (it.hasNext()) {
+                    final T next = it.next();
+                    if (next != null) {
+                        if (element != null) {
+                            return null;
+                        }
+                        element = next;
+                    }
+                }
+                return element;
+            }
+        }
+        return null;
+    }
+
+    /**
      * Returns a {@linkplain Queue queue} which is always empty and accepts no element.
      *
-     * @param <E> The type of elements in the empty collection.
-     * @return An empty collection.
+     * @param  <E>  the type of elements in the empty collection.
+     * @return an empty collection.
      *
      * @see Collections#emptyList()
      * @see Collections#emptySet()
@@ -99,9 +130,9 @@ public final class CollectionsExt extends Static {
     /**
      * Returns the given value as a singleton if non-null, or returns an empty set otherwise.
      *
-     * @param  <E> The element type.
-     * @param  element The element to returns in a collection if non-null.
-     * @return A collection containing the given element if non-null, or an empty collection otherwise.
+     * @param  <E>      the element type.
+     * @param  element  the element to returns in a collection if non-null.
+     * @return a collection containing the given element if non-null, or an empty collection otherwise.
      */
     public static <E> Set<E> singletonOrEmpty(final E element) {
         return (element != null) ? Collections.singleton(element) : Collections.emptySet();
@@ -111,9 +142,9 @@ public final class CollectionsExt extends Static {
      * Returns a copy of the given array as a non-empty immutable set.
      * If the given array is empty, then this method returns {@code null}.
      *
-     * @param  <T> The type of elements.
-     * @param  elements The elements to copy in a set.
-     * @return An unmodifiable set which contains all the given elements, or {@code null}.
+     * @param  <T>       the type of elements.
+     * @param  elements  the elements to copy in a set.
+     * @return an unmodifiable set which contains all the given elements, or {@code null}.
      *
      * @since 0.6
      */
@@ -128,9 +159,9 @@ public final class CollectionsExt extends Static {
      * This method is generally not recommended, since public API should prefer empty array instead of null.
      * However this method is occasionally useful for managing private fields.
      *
-     * @param  <E> The type of elements in the array.
-     * @param  array The array, or {@code null}.
-     * @return The given array, or {@code null} if the given array was empty.
+     * @param  <E>    the type of elements in the array.
+     * @param  array  the array, or {@code null}.
+     * @return the given array, or {@code null} if the given array was empty.
      */
     public static <E> E[] nonEmpty(final E[] array) {
         return (array != null && array.length == 0) ? null : array;
@@ -143,10 +174,10 @@ public final class CollectionsExt extends Static {
      * with frameworks that may expect or return null (e.g. if we want to exclude completely an empty collection
      * from marshalling with JAXB).
      *
-     * @param  <T> The type of the collection.
-     * @param  <E> The type of elements in the collection.
-     * @param  c   The collection, or {@code null}.
-     * @return The given collection, or {@code null} if the given collection was empty.
+     * @param  <T>  the type of the collection.
+     * @param  <E>  the type of elements in the collection.
+     * @param  c    the collection, or {@code null}.
+     * @return the given collection, or {@code null} if the given collection was empty.
      */
     public static <T extends Collection<E>, E> T nonEmpty(final T c) {
         return (c != null && c.isEmpty()) ? null : c;
@@ -155,9 +186,9 @@ public final class CollectionsExt extends Static {
     /**
      * Returns the given collection, or {@link Collections#EMPTY_SET} if the given collection is null.
      *
-     * @param  <E> The type of elements in the collection.
-     * @param  c The collection, or {@code null}.
-     * @return The given collection, or an empty set if the given collection was null.
+     * @param  <E>  the type of elements in the collection.
+     * @param  c    the collection, or {@code null}.
+     * @return the given collection, or an empty set if the given collection was null.
      */
     public static <E> Collection<E> nonNull(final Collection<E> c) {
         return (c != null) ? c : Collections.<E>emptySet();
@@ -166,9 +197,9 @@ public final class CollectionsExt extends Static {
     /**
      * Returns the given set, or {@link Collections#EMPTY_SET} if the given set is null.
      *
-     * @param  <E> The type of elements in the collection.
-     * @param  c The collection, or {@code null}.
-     * @return The given collection, or an empty set if the given collection was null.
+     * @param  <E>  the type of elements in the collection.
+     * @param  c    the collection, or {@code null}.
+     * @return the given collection, or an empty set if the given collection was null.
      */
     public static <E> Set<E> nonNull(final Set<E> c) {
         return (c != null) ? c : Collections.<E>emptySet();
@@ -194,12 +225,12 @@ public final class CollectionsExt extends Static {
      * constructors of {@code AbstractIdentifiedObject} subclasses receiving a map of properties,
      * and the contract of our constructors do not allow those other types for now.</div>
      *
-     * @param  <E>        The type of elements in the array to be returned.
-     * @param  name       The parameter name, used only for formatting an error message in case of failure.
-     * @param  value      The value to return as an array, or {@code null}.
-     * @param  emptyArray An instance of {@code new E[0]}. This argument can not be null.
-     * @return The given value as an array of {@code <E>}. Never null.
-     * throws  IllegalArgumentException If the given value is not null, an instance of {@code <E>}
+     * @param  <E>         the type of elements in the array to be returned.
+     * @param  name        the parameter name, used only for formatting an error message in case of failure.
+     * @param  value       the value to return as an array, or {@code null}.
+     * @param  emptyArray  an instance of {@code new E[0]}. This argument can not be null.
+     * @return the given value as an array of {@code <E>}. Never null.
+     * throws  IllegalArgumentException if the given value is not null, an instance of {@code <E>}
      *         or an array of {@code <E>}.
      *
      * @since 0.4
@@ -235,10 +266,10 @@ public final class CollectionsExt extends Static {
      * Creates an initially empty set for elements of the given type.
      * This method will creates specialized set for code lists and enumerations.
      *
-     * @param  <E>   The type of elements in the set.
-     * @param  type  The type of elements in the set.
-     * @param  count The expected number of elements to put in the set.
-     * @return A new set for elements of the given type.
+     * @param  <E>    the type of elements in the set.
+     * @param  type   the type of elements in the set.
+     * @param  count  the expected number of elements to put in the set.
+     * @return a new set for elements of the given type.
      */
     @SuppressWarnings({"unchecked","rawtypes"})
     public static <E> Set<E> createSetForType(final Class<E> type, final int count) {
@@ -257,10 +288,10 @@ public final class CollectionsExt extends Static {
      * sense of {@link Object#equals(Object)}, then only the last instance of the duplicated
      * values will be included in the returned set.
      *
-     * @param  <E>         The type of array elements.
-     * @param  excludeNull {@code true} for excluding the {@code null} element from the returned set.
-     * @param  array       The array to copy in a set. May be {@code null} or contain null elements.
-     * @return A set containing the array elements, or {@code null} if the given array was null.
+     * @param  <E>          the type of array elements.
+     * @param  excludeNull  {@code true} for excluding the {@code null} element from the returned set.
+     * @param  array        the array to copy in a set. May be {@code null} or contain null elements.
+     * @return a set containing the array elements, or {@code null} if the given array was null.
      *
      * @see Collections#unmodifiableSet(Set)
      */
@@ -303,9 +334,9 @@ public final class CollectionsExt extends Static {
      * <strong>not</strong> be modified after this method call. In case of doubt, use the
      * standard {@link Collections#unmodifiableSet(Set)} method instead.</p>
      *
-     * @param  <E>  The type of elements in the set.
-     * @param  set  The set to make unmodifiable, or {@code null}.
-     * @return A unmodifiable version of the given set, or {@code null} if the given set was null.
+     * @param  <E>  the type of elements in the set.
+     * @param  set  the set to make unmodifiable, or {@code null}.
+     * @return a unmodifiable version of the given set, or {@code null} if the given set was null.
      */
     public static <E> Set<E> unmodifiableOrCopy(Set<E> set) {
         if (set != null) {
@@ -338,10 +369,10 @@ public final class CollectionsExt extends Static {
      * <strong>not</strong> be modified after this method call. In case of doubt, use the
      * standard {@link Collections#unmodifiableMap(Map)} method instead.</p>
      *
-     * @param  <K>  The type of keys in the map.
-     * @param  <V>  The type of values in the map.
-     * @param  map  The map to make unmodifiable, or {@code null}.
-     * @return A unmodifiable version of the given map, or {@code null} if the given map was null.
+     * @param  <K>  the type of keys in the map.
+     * @param  <V>  the type of values in the map.
+     * @param  map  the map to make unmodifiable, or {@code null}.
+     * @return a unmodifiable version of the given map, or {@code null} if the given map was null.
      */
     public static <K,V> Map<K,V> unmodifiableOrCopy(Map<K,V> map) {
         if (map != null) {
@@ -382,9 +413,9 @@ public final class CollectionsExt extends Static {
      *
      * This method may not preserve the {@link org.apache.sis.util.collection.CheckedContainer} interface.
      *
-     * @param  <E> The type of elements in the collection.
-     * @param  collection The collection to copy, or {@code null}.
-     * @return A copy of the given collection, or {@code null} if the given collection was null.
+     * @param  <E>         the type of elements in the collection.
+     * @param  collection  the collection to copy, or {@code null}.
+     * @return a copy of the given collection, or {@code null} if the given collection was null.
      */
     @SuppressWarnings("unchecked")
     public static <E> Collection<E> modifiableCopy(final Collection<E> collection) {
@@ -439,10 +470,10 @@ public final class CollectionsExt extends Static {
      * <tr><td>{@link Map} other than above</td><td class="sep">{@link LinkedHashMap}</td></tr>
      * </table>
      *
-     * @param  <K> The type of keys in the map.
-     * @param  <V> The type of values in the map.
-     * @param  map The map to copy, or {@code null}.
-     * @return A copy of the given map, or {@code null} if the given map was null.
+     * @param  <K>  the type of keys in the map.
+     * @param  <V>  the type of values in the map.
+     * @param  map  the map to copy, or {@code null}.
+     * @return a copy of the given map, or {@code null} if the given map was null.
      */
     @SuppressWarnings("unchecked")
     public static <K,V> Map<K,V> modifiableCopy(final Map<K,V> map) {
@@ -472,10 +503,10 @@ public final class CollectionsExt extends Static {
      * view. The intend is to avoid one level of indirection for performance and memory reasons.
      * This is okay only if the map is kept in a private field and never escape outside this class.
      *
-     * @param  <K> The type of keys in the map.
-     * @param  <V> The type of values in the map.
-     * @param  map The map to compact, or {@code null}.
-     * @return A potentially compacted map, or {@code null} if the given map was null.
+     * @param  <K>  the type of keys in the map.
+     * @param  <V>  the type of values in the map.
+     * @param  map  the map to compact, or {@code null}.
+     * @return a potentially compacted map, or {@code null} if the given map was null.
      */
     public static <K,V> Map<K,V> compact(final Map<K,V> map) {
         if (map != null) {
@@ -493,9 +524,9 @@ public final class CollectionsExt extends Static {
      * in the given list after this method call. This method makes no guaranteed about whether
      * the returned list is modifiable or not.
      *
-     * @param  <E>  The type of elements in the list.
-     * @param  list The list for which to take a snapshot, or {@code null} if none.
-     * @return A snapshot of the given list, or {@code list} itself if null or unmodifiable.
+     * @param  <E>   the type of elements in the list.
+     * @param  list  the list for which to take a snapshot, or {@code null} if none.
+     * @return a snapshot of the given list, or {@code list} itself if null or unmodifiable.
      */
     @SuppressWarnings("unchecked")
     public static <E> List<E> snapshot(final List<E> list) {
@@ -530,8 +561,8 @@ public final class CollectionsExt extends Static {
      *     List<?> list = toList(toCollection(object));
      * }
      *
-     * @param  value The value to return as a collection, or {@code null}.
-     * @return The value as a collection, or wrapped in a collection (never {@code null}).
+     * @param  value  the value to return as a collection, or {@code null}.
+     * @return the value as a collection, or wrapped in a collection (never {@code null}).
      */
     public static Collection<?> toCollection(final Object value) {
         if (value == null) {
@@ -580,9 +611,9 @@ public final class CollectionsExt extends Static {
      *     List<?> list = toList(toCollection(object));
      * }
      *
-     * @param  <T> The type of elements in the given collection.
-     * @param  collection The collection to cast or copy to a list.
-     * @return The given collection as a list, or a copy of the given collection.
+     * @param  <T>         the type of elements in the given collection.
+     * @param  collection  the collection to cast or copy to a list.
+     * @return the given collection as a list, or a copy of the given collection.
      */
     public static <T> List<T> toList(final Collection<T> collection) {
         if (collection instanceof List<?>) {
@@ -596,10 +627,10 @@ public final class CollectionsExt extends Static {
      * argument is not known at compile-time. If the {@code valueClass} is known at compile-time, then callers should
      * use {@link Collection#toArray(T[])} instead.
      *
-     * @param  <T>        The compile-time value of {@code valueClass}.
-     * @param  collection The collection from which to get the elements.
-     * @param  valueClass The runtime type of collection elements.
-     * @return The collection elements as an array, or {@code null} if {@code collection} is null.
+     * @param  <T>         the compile-time value of {@code valueClass}.
+     * @param  collection  the collection from which to get the elements.
+     * @param  valueClass  the runtime type of collection elements.
+     * @return the collection elements as an array, or {@code null} if {@code collection} is null.
      *
      * @since 0.6
      */
@@ -616,12 +647,12 @@ public final class CollectionsExt extends Static {
      * Adds a value in a pseudo multi-values map. The multi-values map is simulated by a map of lists.
      * The map can be initially empty - lists will be created as needed.
      *
-     * @param  <K>   The type of key elements in the map.
-     * @param  <V>   The type of value elements in the lists.
-     * @param  map   The multi-values map where to add an element.
-     * @param  key   The key of the element to add. Can be null if the given map supports null keys.
-     * @param  value The value of the element to add. Can be null.
-     * @return The list where the given value has been added. May be unmodifiable.
+     * @param  <K>    the type of key elements in the map.
+     * @param  <V>    the type of value elements in the lists.
+     * @param  map    the multi-values map where to add an element.
+     * @param  key    the key of the element to add. Can be null if the given map supports null keys.
+     * @param  value  the value of the element to add. Can be null.
+     * @return the list where the given value has been added. May be unmodifiable.
      */
     public static <K,V> List<V> addToMultiValuesMap(final Map<K,List<V>> map, final K key, final V value) {
         final List<V> singleton = Collections.singletonList(value);
@@ -647,12 +678,12 @@ public final class CollectionsExt extends Static {
      * <p>Code searching in the returned map shall ask for the original (non lower-case) name
      * <strong>before</strong> to ask for the lower-cases version of that name.</p>
      *
-     * @param  <E>          The type of elements.
-     * @param  elements     The elements to store in the map, or {@code null} if none.
-     * @param  nameFunction The function for computing a name from an element.
-     * @param  namesLocale  The locale to use for creating the "all lower cases" names.
-     * @return A (<cite>name</cite>, <cite>element</cite>) mapping with lower cases entries where possible.
-     * @throws InvalidParameterCardinalityException If the same name is used for more than one element.
+     * @param  <E>           the type of elements.
+     * @param  elements      the elements to store in the map, or {@code null} if none.
+     * @param  nameFunction  the function for computing a name from an element.
+     * @param  namesLocale   the locale to use for creating the "all lower cases" names.
+     * @return a (<cite>name</cite>, <cite>element</cite>) mapping with lower cases entries where possible.
+     * @throws InvalidParameterCardinalityException if the same name is used for more than one element.
      */
     public static <E> Map<String,E> toCaseInsensitiveNameMap(final Collection<? extends E> elements,
             final Function<E,String> nameFunction, final Locale namesLocale)
@@ -712,9 +743,9 @@ public final class CollectionsExt extends Static {
      * Returns {@code true} if the next elements returned by the given iterators are the same.
      * This method compares using the identity operation ({@code ==}), not {@code equals(Object)}.
      *
-     * @param  it1 The first iterator.
-     * @param  it2 The second iterator.
-     * @return If both iterators return the same objects.
+     * @param  it1  the first iterator.
+     * @param  it2  the second iterator.
+     * @return if both iterators return the same objects.
      */
     public static boolean identityEquals(final Iterator<?> it1, final Iterator<?> it2) {
         while (it1.hasNext()) {
