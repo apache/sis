@@ -336,6 +336,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final short ExcessiveStringSize = 153;
 
         /**
+         * A “{0}” statement was expected at line {2} or “{1}”.
+         */
+        public static final short ExpectedStatementAtLine_3 = 237;
+
+        /**
          * No factory of kind ‘{0}’ found.
          */
         public static final short FactoryNotFound_1 = 205;
@@ -870,6 +875,11 @@ public final class Errors extends IndexedResourceBundle {
          * No element for the “{0}” identifier, or the identifier is a forward reference.
          */
         public static final short NotABackwardReference_1 = 199;
+
+        /**
+         * “{0}” is not a key-value pair.
+         */
+        public static final short NotAKeyValuePair_1 = 236;
 
         /**
          * Argument ‘{0}’ shall not be NaN (Not-a-Number).

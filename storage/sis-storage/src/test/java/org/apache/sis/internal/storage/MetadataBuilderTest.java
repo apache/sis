@@ -72,7 +72,7 @@ public final strictfp class MetadataBuilderTest extends TestCase {
         final MetadataBuilder builder = new MetadataBuilder();
         builder.parseLegalNotice(notice);
         final LegalConstraints constraints = (LegalConstraints) getSingleton(getSingleton(
-                builder.result().getIdentificationInfo()).getResourceConstraints());
+                builder.build(false).getIdentificationInfo()).getResourceConstraints());
 
         assertEquals("useConstraints", Restriction.COPYRIGHT, getSingleton(constraints.getUseConstraints()));
         final Citation ref = getSingleton(constraints.getReferences());

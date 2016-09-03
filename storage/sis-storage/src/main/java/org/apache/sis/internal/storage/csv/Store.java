@@ -468,11 +468,11 @@ public final class Store extends DataStore {
             final MetadataBuilder builder = new MetadataBuilder();
             builder.add(encoding);
             try {
-                builder.add(envelope);
+                builder.addExtent(envelope);
             } catch (TransformException e) {
                 throw new DataStoreContentException(errors().getString(Errors.Keys.CanNotParseFile_2, "CSV", name), e);
             }
-            metadata = builder.result();
+            metadata = builder.build(true);
         }
         return metadata;
     }

@@ -21,7 +21,6 @@ import java.io.BufferedReader;
 import java.io.LineNumberReader;
 import java.io.IOException;
 import org.opengis.metadata.Metadata;
-import org.apache.sis.metadata.ModifiableMetadata;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.StorageConnector;
@@ -110,11 +109,9 @@ public class LandsatStore extends DataStore {
         if (metadata == null && source != null) try {
             try (BufferedReader reader = (source instanceof BufferedReader) ? (BufferedReader) source : new LineNumberReader(source)) {
                 source = null;      // Will be closed at the end of this try-catch block.
-                final LandsatReader parser = new LandsatReader(reader, listeners);
-                metadata = parser.read();
-                if (metadata instanceof ModifiableMetadata) {
-                    ((ModifiableMetadata) metadata).freeze();
-                }
+                final LandsatReader parser = new LandsatReader(name, getLocale(), listeners);
+                parser.read(reader);
+                metadata = parser.getMetadata();
             }
         } catch (IOException e) {
             throw new DataStoreException(e);

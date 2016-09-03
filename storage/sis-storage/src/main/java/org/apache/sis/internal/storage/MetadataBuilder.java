@@ -17,34 +17,53 @@
 package org.apache.sis.internal.storage;
 
 import java.util.Date;
+import java.util.Locale;
 import java.util.Collection;
 import java.util.Collections;
 import java.nio.charset.Charset;
 import org.opengis.util.InternationalString;
+import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Role;
 import org.opengis.metadata.citation.DateType;
 import org.opengis.metadata.constraint.Restriction;
+import org.opengis.metadata.maintenance.ScopeCode;
+import org.opengis.metadata.acquisition.Context;
+import org.opengis.metadata.acquisition.OperationType;
+import org.opengis.metadata.identification.Progress;
 import org.opengis.referencing.ReferenceSystem;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.geometry.AbstractEnvelope;
 import org.apache.sis.metadata.iso.DefaultMetadata;
+import org.apache.sis.metadata.iso.DefaultIdentifier;
+import org.apache.sis.metadata.iso.DefaultMetadataScope;
 import org.apache.sis.metadata.iso.extent.DefaultExtent;
+import org.apache.sis.metadata.iso.extent.DefaultTemporalExtent;
+import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.metadata.iso.content.DefaultAttributeGroup;
 import org.apache.sis.metadata.iso.content.DefaultSampleDimension;
 import org.apache.sis.metadata.iso.content.DefaultCoverageDescription;
+import org.apache.sis.metadata.iso.content.DefaultImageDescription;
 import org.apache.sis.metadata.iso.citation.AbstractParty;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.citation.DefaultCitationDate;
 import org.apache.sis.metadata.iso.citation.DefaultResponsibility;
+import org.apache.sis.metadata.iso.citation.DefaultIndividual;
+import org.apache.sis.metadata.iso.citation.DefaultOrganisation;
 import org.apache.sis.metadata.iso.constraint.DefaultLegalConstraints;
 import org.apache.sis.metadata.iso.identification.DefaultDataIdentification;
 import org.apache.sis.metadata.iso.distribution.DefaultDistribution;
 import org.apache.sis.metadata.iso.distribution.DefaultFormat;
+import org.apache.sis.metadata.iso.acquisition.DefaultAcquisitionInformation;
+import org.apache.sis.metadata.iso.acquisition.DefaultEvent;
+import org.apache.sis.metadata.iso.acquisition.DefaultInstrument;
+import org.apache.sis.metadata.iso.acquisition.DefaultOperation;
+import org.apache.sis.metadata.iso.acquisition.DefaultPlatform;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.iso.Types;
 
+import static java.util.Collections.singleton;
 import static org.apache.sis.internal.util.StandardDateFormat.MILLISECONDS_PER_DAY;
 
 // Branch-dependent imports
@@ -53,7 +72,9 @@ import java.time.LocalDate;
 
 /**
  * Helper methods for the metadata created by {@code DataStore} implementations.
- * This class creates the metadata objects only when first needed.
+ * This is not yet a general-purpose builder suitable for public API, since the
+ * methods provided in this class are tailored for Apache SIS data store needs.
+ * API of this class may change in any future SIS versions.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Rémi Marechal (Geomatys)
@@ -62,6 +83,24 @@ import java.time.LocalDate;
  * @module
  */
 public class MetadataBuilder {
+    /**
+     * Instructs {@link #newParty(byte)} that the next party to create should be an instance of
+     * {@link DefaultIndividual}.
+     *
+     * @see #partyType
+     * @see #newParty(byte)
+     */
+    public static final byte INDIVIDUAL = 1;
+
+    /**
+     * Instructs {@link #newParty(byte)} that the next party to create should be an instance of
+     * {@link DefaultOrganisation}.
+     *
+     * @see #partyType
+     * @see #newParty(byte)
+     */
+    public static final byte ORGANISATION = 2;
+
     /**
      * The metadata created by this reader, or {@code null} if none.
      */
@@ -98,7 +137,18 @@ public class MetadataBuilder {
     private DefaultExtent extent;
 
     /**
+     * Information about the platforms and sensors that collected the data, or {@code null} if none.
+     */
+    private DefaultAcquisitionInformation acquisition;
+
+    /**
+     * Platform where are installed the sensors that collected the data, or {@code null} if none.
+     */
+    private DefaultPlatform platform;
+
+    /**
      * Information about the content of a grid data cell, or {@code null} if none.
+     * May also be an instance of {@link DefaultImageDescription} if {@link #electromagnetic} is {@code true}.
      */
     private DefaultCoverageDescription coverageDescription;
 
@@ -123,41 +173,61 @@ public class MetadataBuilder {
     private DefaultDistribution distribution;
 
     /**
+     * Whether the next party to create should be an instance of {@link DefaultIndividual} or {@link DefaultOrganisation}.
+     * Value can be {@link #INDIVIDUAL}, {@link #ORGANISATION} or 0 if unknown, in which case an {@link AbstractParty}
+     * will be created.
+     *
+     * @see #INDIVIDUAL
+     * @see #ORGANISATION
+     * @see #newParty(byte)
+     */
+    private byte partyType;
+
+    /**
+     * {@code true} if the next {@code CoverageDescription} to create will be a description of measurements
+     * in the electromagnetic spectrum. In that case, the coverage description will actually be an instance
+     * of {@code ImageDescription}.
+     */
+    private boolean electromagnetic;
+
+    /**
      * Creates a new metadata reader.
      */
     public MetadataBuilder() {
     }
 
     /**
-     * Returns the metadata as an unmodifiable object, or {@cod null} if none.
-     * After this method has been invoked, the metadata can not be modified anymore.
+     * Commits all pending information under the "responsible party" node (author, address, <i>etc</i>).
+     * If there is no pending party information, then invoking this method has no effect
+     * except setting the {@code type} flag.
+     * If new party information are added after this method call, they will be stored in a new element.
      *
-     * @return the metadata, or {@code null} if none.
+     * <p>This method does not need to be invoked unless a new "responsible party" node,
+     * separated from the previous one, is desired.</p>
+     *
+     * @param  type  {@link #INDIVIDUAL}, {@link #ORGANISATION} or 0 if unknown.
      */
-    public final DefaultMetadata result() {
-        commit();
-        if (metadata != null) {
-            metadata.freeze();
-        }
-        return metadata;
-    }
-
-    /**
-     * Performs the links between the objects created in this builder. After this method has been invoked,
-     * all metadata objects should be reachable from the root {@link DefaultMetadata} object.
-     */
-    private void commit() {
-        /*
-         * Construction shall be ordered from children to parents.
-         */
-        if (extent != null) {
-            identification().getExtents().add(extent);
-            extent = null;
-        }
+    public final void newParty(final byte type) {
         if (party != null) {
             responsibility().getParties().add(party);
             party = null;
         }
+        partyType = type;
+    }
+
+    /**
+     * Commits all pending information under the metadata "identification info" node (author, bounding box, <i>etc</i>).
+     * If there is no pending identification information, then invoking this method has no effect.
+     * If new identification info are added after this method call, they will be stored in a new element.
+     *
+     * <p>This method does not need to be invoked unless a new "identification info" node,
+     * separated from the previous one, is desired.</p>
+     */
+    public final void newIdentification() {
+        /*
+         * Construction shall be ordered from children to parents.
+         */
+        newParty((byte) 0);
         if (responsibility != null) {
             citation().getCitedResponsibleParties().add(responsibility);
             responsibility = null;
@@ -166,10 +236,51 @@ public class MetadataBuilder {
             identification().setCitation(citation);
             citation = null;
         }
+        if (extent != null) {
+            identification().getExtents().add(extent);
+            extent = null;
+        }
         if (constraints != null) {
             identification().getResourceConstraints().add(constraints);
             constraints = null;
         }
+        if (identification != null) {
+            metadata().getIdentificationInfo().add(identification);
+            identification = null;
+        }
+    }
+
+    /**
+     * Commits all pending information under the metadata "acquisition" node (station, sensors, <i>etc</i>).
+     * If there is no pending acquisition information, then invoking this method has no effect.
+     * If new acquisition info are added after this method call, they will be stored in a new element.
+     *
+     * <p>This method does not need to be invoked unless a new "acquisition info" node,
+     * separated from the previous one, is desired.</p>
+     */
+    public final void newAcquisition() {
+        if (platform != null) {
+            acquisition().getPlatforms().add(platform);
+        }
+        if (acquisition != null) {
+            metadata().getAcquisitionInformation().add(acquisition);
+            acquisition = null;
+        }
+    }
+
+    /**
+     * Commits all pending information under the metadata "content info" node (bands, <i>etc</i>).
+     * If there is no pending coverage description, then invoking this method has no effect
+     * except setting the {@code electromagnetic} flag.
+     * If new coverage descriptions are added after this method call, they will be stored in a new element.
+     *
+     * <p>This method does not need to be invoked unless a new "coverage description" node is desired,
+     * or the {@code electromagnetic} flag needs to be set to {@code true}.</p>
+     *
+     * @param  electromagnetic  {@code true} if the next {@code CoverageDescription} to create
+     *         will be a description of measurements in the electromagnetic spectrum.
+     */
+    public final void newCoverage(final boolean electromagnetic) {
         if (sampleDimension != null) {
             attributGroup().getAttributes().add(sampleDimension);
             sampleDimension = null;
@@ -182,10 +293,18 @@ public class MetadataBuilder {
             metadata().getContentInfo().add(coverageDescription);
             coverageDescription = null;
         }
-        if (identification != null) {
-            metadata().getIdentificationInfo().add(identification);
-            identification = null;
-        }
+        this.electromagnetic = electromagnetic;
+    }
+
+    /**
+     * Commits all pending information under the metadata "distribution info" node (format, <i>etc</i>).
+     * If there is no pending distribution information, then invoking this method has no effect.
+     * If new distribution information are added after this method call, they will be stored in a new element.
+     *
+     * <p>This method does not need to be invoked unless a new "distribution info" node,
+     * separated from the previous one, is desired.</p>
+     */
+    public final void newDistribution() {
         if (format != null) {
             distribution().getDistributionFormats().add(format);
             format = null;
@@ -197,7 +316,7 @@ public class MetadataBuilder {
     }
 
     /**
-     * Creates the metadata object if it does not already exists, then return it.
+     * Creates the metadata object if it does not already exists, then returns it.
      *
      * @return the metadata (never {@code null}).
      */
@@ -209,7 +328,7 @@ public class MetadataBuilder {
     }
 
     /**
-     * Creates the identification information object if it does not already exists, then return it.
+     * Creates the identification information object if it does not already exists, then returns it.
      *
      * @return the identification information (never {@code null}).
      */
@@ -221,7 +340,7 @@ public class MetadataBuilder {
     }
 
     /**
-     * Creates the citation object if it does not already exists, then return it.
+     * Creates the citation object if it does not already exists, then returns it.
      *
      * @return the citation information (never {@code null}).
      */
@@ -233,7 +352,7 @@ public class MetadataBuilder {
     }
 
     /**
-     * Creates the responsibility object if it does not already exists, then return it.
+     * Creates the responsibility object if it does not already exists, then returns it.
      *
      * @return the responsibility party (never {@code null}).
      */
@@ -245,22 +364,28 @@ public class MetadataBuilder {
     }
 
     /**
-     * Creates the person or organization information object if it does not already exists, then return it.
+     * Creates the individual or organization information object if it does not already exists, then returns it.
      *
-     * <p><b>Limitation:</b> current implementation creates an {@code AbstractParty} instead than one of the subtypes.
-     * This is not valid, but we currently have no way to know if the party is an individual or an organization.</p>
+     * <p><b>Limitation:</b> if the party type is unknown, then this method creates an {@code AbstractParty} instead
+     * than one of the subtypes. This is not valid, but we currently have no way to guess if a party is an individual
+     * or an organization. For now we prefer to let users know that the type is unknown rather than to pick a
+     * potentially wrong type.</p>
      *
-     * @return the person or organization information (never {@code null}).
+     * @return the individual or organization information (never {@code null}).
      */
     private AbstractParty party() {
         if (party == null) {
-            party = new AbstractParty();        // See limitation in above javadoc.
+            switch (partyType) {
+                case INDIVIDUAL:   party = new DefaultIndividual();   break;
+                case ORGANISATION: party = new DefaultOrganisation(); break;
+                default:           party = new AbstractParty();       break;
+            }
         }
         return party;
     }
 
     /**
-     * Creates the constraints information object if it does not already exists, then return it.
+     * Creates the constraints information object if it does not already exists, then returns it.
      *
      * @return the constraints information (never {@code null}).
      */
@@ -272,7 +397,7 @@ public class MetadataBuilder {
     }
 
     /**
-     * Creates the extent information object if it does not already exists, then return it.
+     * Creates the extent information object if it does not already exists, then returns it.
      *
      * @return the extent information (never {@code null}).
      */
@@ -284,7 +409,31 @@ public class MetadataBuilder {
     }
 
     /**
-     * Creates the sample dimension object if it does not already exists, then return it.
+     * Creates the acquisition information object if it does not already exists, then returns it.
+     *
+     * @return the acquisition information (never {@code null}).
+     */
+    private DefaultAcquisitionInformation acquisition() {
+        if (acquisition == null) {
+            acquisition = new DefaultAcquisitionInformation();
+        }
+        return acquisition;
+    }
+
+    /**
+     * Creates a platform object if it does not already exists, then returns it.
+     *
+     * @return the platform information (never {@code null}).
+     */
+    private DefaultPlatform platform() {
+        if (platform == null) {
+            platform = new DefaultPlatform();
+        }
+        return platform;
+    }
+
+    /**
+     * Creates the sample dimension object if it does not already exists, then returns it.
      *
      * @return the sample dimension (never {@code null}).
      */
@@ -296,7 +445,7 @@ public class MetadataBuilder {
     }
 
     /**
-     * Creates the attribut group object if it does not already exists, then return it.
+     * Creates the attribut group object if it does not already exists, then returns it.
      *
      * @return the attribut group (never {@code null}).
      */
@@ -308,19 +457,19 @@ public class MetadataBuilder {
     }
 
     /**
-     * Creates the coverage description object if it does not already exists, then return it.
+     * Creates the coverage description object if it does not already exists, then returns it.
      *
      * @return the coverage description (never {@code null}).
      */
     private DefaultCoverageDescription coverageDescription() {
         if (coverageDescription == null) {
-            coverageDescription = new DefaultCoverageDescription();
+            coverageDescription = electromagnetic ? new DefaultImageDescription() : new DefaultCoverageDescription();
         }
         return coverageDescription;
     }
 
     /**
-     * Creates the distribution format object if it does not already exists, then return it.
+     * Creates the distribution format object if it does not already exists, then returns it.
      *
      * @return the distribution format (never {@code null}).
      */
@@ -332,7 +481,7 @@ public class MetadataBuilder {
     }
 
     /**
-     * Creates the distribution information object if it does not already exists, then return it.
+     * Creates the distribution information object if it does not already exists, then returns it.
      *
      * @return the distribution information (never {@code null}).
      */
@@ -344,13 +493,36 @@ public class MetadataBuilder {
     }
 
     /**
+     * Adds a language used for documenting metadata.
+     *
+     * @param  language  a language used for documenting metadata.
+     */
+    public final void add(final Locale language) {
+        if (language != null) {
+            metadata().getLanguages().add(language);
+        }
+    }
+
+    /**
      * Adds the given character encoding to the metadata.
      *
-     * @param encoding  the character encoding to add.
+     * @param  encoding  the character encoding to add.
      */
     public final void add(final Charset encoding) {
         if (encoding != null) {
             metadata().getCharacterSets().add(encoding);
+        }
+    }
+
+    /**
+     * Adds information about the scope of the resource.
+     * The scope is typically {@link ScopeCode#DATASET}.
+     *
+     * @param  scope  the scope of the resource, or {@code null} if none.
+     */
+    public final void add(final ScopeCode scope) {
+        if (scope != null) {
+            metadata().getMetadataScopes().add(new DefaultMetadataScope(scope, null));
         }
     }
 
@@ -379,7 +551,7 @@ public class MetadataBuilder {
      * @param  envelope  the extent to add in the metadata, or {@code null} if none.
      * @throws TransformException if an error occurred while converting the given envelope to extents.
      */
-    public final void add(final AbstractEnvelope envelope) throws TransformException {
+    public final void addExtent(final AbstractEnvelope envelope) throws TransformException {
         if (envelope != null) {
             add(envelope.getCoordinateReferenceSystem());
             if (!envelope.isAllNaN()) {
@@ -389,7 +561,47 @@ public class MetadataBuilder {
     }
 
     /**
-     * Adds a date of the given type.
+     * Adds a geographic bounding box initialized to the values in the given array.
+     * The array must contains at least 4 values starting at the given index in this exact order:
+     *
+     * <ul>
+     *   <li>{@code westBoundLongitude} (the minimal λ value), or {@code NaN}</li>
+     *   <li>{@code eastBoundLongitude} (the maximal λ value), or {@code NaN}</li>
+     *   <li>{@code southBoundLatitude} (the minimal φ value), or {@code NaN}</li>
+     *   <li>{@code northBoundLatitude} (the maximal φ value), or {@code NaN}</li>
+     * </ul>
+     *
+     * @param  ordinates  the geographic coordinates.
+     * @param  index      index of the first value to use in the given array.
+     */
+    public final void addExtent(final double[] ordinates, int index) {
+        final DefaultGeographicBoundingBox bbox = new DefaultGeographicBoundingBox(
+                    ordinates[index], ordinates[++index], ordinates[++index], ordinates[++index]);
+        if (!bbox.isEmpty()) {
+            extent().getGeographicElements().add(bbox);
+        }
+    }
+
+    /**
+     * Adds a temporal extent covered by the data.
+     *
+     * @param  startTime  when the data begins, or {@code null}.
+     * @param  endTime    when the data ends, or {@code null}.
+     * @throws UnsupportedOperationException if the temporal module is not on the classpath.
+     *
+     * @see #addAcquisitionTime(Date)
+     */
+    public final void addExtent(final Date startTime, final Date endTime) {
+        if (startTime != null || endTime != null) {
+            final DefaultTemporalExtent t = new DefaultTemporalExtent();
+            t.setBounds(startTime, endTime);
+            extent().getTemporalElements().add(t);
+        }
+    }
+
+    /**
+     * Adds a date of the given type. This is not the data acquisition time,
+     * but rather the metadata creation or last update time.
      *
      * @param date  the date to add, or {@code null}.
      * @param type  the type of the date to add, or {@code null}.
@@ -404,10 +616,10 @@ public class MetadataBuilder {
      * Returns the given character sequence as a non-empty character string with leading and trailing spaces removed.
      * If the given character sequence is null, empty or blank, then this method returns {@code null}.
      */
-    private static InternationalString trim(CharSequence string) {
-        string = CharSequences.trimWhitespaces(string);
-        if (string != null && string.length() != 0) {
-            return Types.toInternationalString(string);
+    private static InternationalString trim(CharSequence value) {
+        value = CharSequences.trimWhitespaces(value);
+        if (value != null && value.length() != 0) {
+            return Types.toInternationalString(value);
         } else {
             return null;
         }
@@ -430,17 +642,31 @@ public class MetadataBuilder {
     }
 
     /**
-     * Adds a title of the resource.
-     *
-     * @param title  the resource title, or {@code null} if none.
+     * Returns {@code true} if the given character sequences have equal content.
      */
-    public final void addTitle(final CharSequence title) {
-        final InternationalString i18n = trim(title);
+    private static boolean equals(final CharSequence s1, final CharSequence s2) {
+        if (s1 == s2) {
+            return true;
+        }
+        if (s1 == null || s2 == null) {
+            return false;
+        }
+        return s1.toString().equals(s2.toString());
+    }
+
+    /**
+     * Adds a title or alternate title of the resource.
+     *
+     * @param value  the resource title or alternate title, or {@code null} if none.
+     */
+    public final void addTitle(final CharSequence value) {
+        final InternationalString i18n = trim(value);
         if (i18n != null) {
             final DefaultCitation citation = citation();
-            if (citation.getTitle() == null) {
+            final InternationalString current = citation.getTitle();
+            if (current == null) {
                 citation.setTitle(i18n);
-            } else {
+            } else if (!equals(current, i18n)) {
                 citation.getAlternateTitles().add(i18n);
             }
         }
@@ -461,18 +687,49 @@ public class MetadataBuilder {
     }
 
     /**
-     * Adds an author name.
+     * Adds an author name. If an author was already defined with a different name,
+     * then a new party instance is created.
      *
-     * @param  author  the name of the author or publisher, or {@code null} if none.
+     * @param  name  the name of the author or publisher, or {@code null} if none.
      */
-    public final void addAuthor(final CharSequence author) {
-        final InternationalString i18n = trim(author);
+    public final void addAuthor(final CharSequence name) {
+        final InternationalString i18n = trim(name);
         if (i18n != null) {
             if (party != null) {
-                responsibility().getParties().add(party);       // Save the previous party before to create a new one.
-                party = null;
+                final InternationalString current = party.getName();
+                if (current != null) {
+                    if (equals(current, name)) {
+                        return;
+                    }
+                    newParty(partyType);
+                }
             }
             party().setName(i18n);
+        }
+    }
+
+    /**
+     * Adds recognition of those who contributed to the resource(s).
+     *
+     * @param  credit  recognition of those who contributed to the resource(s).
+     */
+    public final void addCredits(final CharSequence credit) {
+        final InternationalString i18n = trim(credit);
+        if (i18n != null) {
+            identification().getCredits().add(i18n);
+        }
+    }
+
+    /**
+     * Adds a data identifier (not necessarily the same as the metadata identifier).
+     * Empty strings (ignoring spaces) are ignored.
+     *
+     * @param  code  the identifier code, or {@code null} if none.
+     */
+    public final void addIdentifier(String code) {
+        if (code != null && !(code = code.trim()).isEmpty()) {
+            final DefaultIdentifier id = new DefaultIdentifier(code);
+            citation().getIdentifiers().add(id);
         }
     }
 
@@ -691,6 +948,73 @@ parse:      for (int i = 0; i < length;) {
     }
 
     /**
+     * Adds a platform on which instrument are installed. If a platform was already defined
+     * with a different identifier, then a new platform instance will be created.
+     *
+     * @param  identifier  identifier of the platform to add, or {@code null}.
+     */
+    public final void addPlatform(String identifier) {
+        if (identifier != null && !(identifier = identifier.trim()).isEmpty()) {
+            if (platform != null) {
+                final Identifier current = platform.getIdentifier();
+                if (current != null) {
+                    if (identifier.equals(current.getCode())) {
+                        return;
+                    }
+                    acquisition().getPlatforms().add(platform);
+                    platform = null;
+                }
+            }
+            platform().setIdentifier(new DefaultIdentifier(identifier));
+        }
+    }
+
+    /**
+     * Adds an instrument or sensor on the platform.
+     *
+     * @param  identifier  identifier of the sensor to add, or {@code null}.
+     */
+    public final void addInstrument(String identifier) {
+        if (identifier != null && !(identifier = identifier.trim()).isEmpty()) {
+            final DefaultInstrument instrument = new DefaultInstrument();
+            instrument.setIdentifier(new DefaultIdentifier(identifier));
+            platform().getInstruments().add(instrument);
+        }
+    }
+
+    /**
+     * Adds an event that describe the time at which data were acquired.
+     *
+     * @param  time  the acquisition time, or {@code null}.
+     *
+     * @see #addExtent(Date, Date)
+     */
+    public final void addAcquisitionTime(final Date time) {
+        if (time != null) {
+            final DefaultEvent event = new DefaultEvent();
+            event.setContext(Context.ACQUISITION);
+            event.setTime(time);
+            final DefaultOperation op = new DefaultOperation();
+            op.setSignificantEvents(singleton(event));
+            op.setType(OperationType.REAL);
+            op.setStatus(Progress.COMPLETED);
+            acquisition().getOperations().add(op);
+        }
+    }
+
+    /**
+     * Adds a new format. The given name should be a short name like "GeoTIFF".
+     * The long name will be inferred from the given short name, if possible.
+     *
+     * @param  abbreviation  the format short name or abbreviation, or {@code null}.
+     */
+    public final void addFormat(final CharSequence abbreviation) {
+        if (abbreviation != null && abbreviation.length() != 0) {
+            identification().getResourceFormats().add(new DefaultFormat(abbreviation, null));
+        }
+    }
+
+    /**
      * Adds a minimal value for the current sample dimension. If a minimal value was already defined, then
      * the new value will set only if it is smaller than the existing one. {@code NaN} values are ignored.
      *
@@ -733,5 +1057,77 @@ parse:      for (int i = 0; i < length;) {
             final DefaultFormat format = format();
             format.setFileDecompressionTechnique(append(format.getFileDecompressionTechnique(), i18n));
         }
+    }
+
+    /**
+     * Sets the area of the dataset obscured by clouds, expressed as a percentage of the spatial extent.
+     * This method does nothing if the given value is {@link Double#NaN}.
+     *
+     * <p>This method is available only if {@link #commitCoverageDescription(boolean)}
+     * has been invoked with the {@code electromagnetic} parameter set to {@code true}.</p>
+     *
+     * @param  value  the new cloud percentage.
+     * @throws IllegalArgumentException if the given value is out of range.
+     */
+    public final void setCloudCoverPercentage(final double value) {
+        if (!Double.isNaN(value)) {
+            ((DefaultImageDescription) coverageDescription()).setCloudCoverPercentage(value);
+        }
+    }
+
+    /**
+     * Sets the illumination azimuth measured in degrees clockwise from true north at the time the image is taken.
+     * For images from a scanning device, refer to the centre pixel of the image.
+     * This method does nothing if the given value is {@link Double#NaN}.
+     *
+     * <p>This method is available only if {@link #commitCoverageDescription(boolean)}
+     * has been invoked with the {@code electromagnetic} parameter set to {@code true}.</p>
+     *
+     * @param  value  the new illumination azimuth angle, or {@code null}.
+     * @throws IllegalArgumentException if the given value is out of range.
+     */
+    public final void setIlluminationAzimuthAngle(final double value) {
+        if (!Double.isNaN(value)) {
+            ((DefaultImageDescription) coverageDescription()).setIlluminationAzimuthAngle(value);
+        }
+    }
+
+    /**
+     * Sets the illumination elevation measured in degrees clockwise from the target plane
+     * at intersection of the optical line of sight with the Earth's surface.
+     * For images from a canning device, refer to the centre pixel of the image.
+     * This method does nothing if the given value is {@link Double#NaN}.
+     *
+     * <p>This method is available only if {@link #commitCoverageDescription(boolean)}
+     * has been invoked with the {@code electromagnetic} parameter set to {@code true}.</p>
+     *
+     * @param  value  the new illumination azimuth angle, or {@code null}.
+     * @throws IllegalArgumentException if the given value is out of range.
+     */
+    public final void setIlluminationElevationAngle(final double value) {
+        if (!Double.isNaN(value)) {
+            ((DefaultImageDescription) coverageDescription()).setIlluminationElevationAngle(value);
+        }
+    }
+
+    /**
+     * Returns the metadata (optionally as an unmodifiable object), or {@code null} if none.
+     * If {@code freeze} is {@code true}, then the returned metadata instance can not be modified.
+     *
+     * @param  freeze  {@code true} if this method should {@linkplain DefaultMetadata#freeze() freeze}
+     *         the metadata instance before to return it.
+     * @return the metadata, or {@code null} if none.
+     */
+    public final DefaultMetadata build(final boolean freeze) {
+        newIdentification();
+        newCoverage(false);
+        newDistribution();
+        newAcquisition();
+        final DefaultMetadata md = metadata;
+        metadata = null;
+        if (freeze && md != null) {
+            md.freeze();
+        }
+        return md;
     }
 }
