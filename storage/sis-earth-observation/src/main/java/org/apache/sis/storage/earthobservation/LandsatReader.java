@@ -18,10 +18,8 @@ package org.apache.sis.storage.earthobservation;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.List;
 import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -31,7 +29,7 @@ import javax.measure.unit.SI;
 import org.opengis.metadata.Metadata;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.DateType;
-import org.opengis.metadata.content.ContentInformation;
+import org.opengis.metadata.spatial.DimensionNameType;
 import org.opengis.metadata.content.CoverageContentType;
 import org.opengis.metadata.content.TransferFunctionType;
 import org.opengis.metadata.identification.Identification;
@@ -129,6 +127,12 @@ final class LandsatReader {
     static final Pattern CREDIT = Pattern.compile("\\bcourtesy\\h+of\\h+(the)?\\b\\s*", Pattern.CASE_INSENSITIVE);
 
     /**
+     * Number of spatial dimensions. This is the number of ordinate values to be stored
+     * in the {@link #gridSizes} and {@link #corners} arrays for each tuple.
+     */
+    static final int DIM = 2;
+
+    /**
      * The {@value} suffix added to attribute names that are followed by a band number.
      * This band suffix is itself followed by the {@code '_'} character, then the band number.
      * Example: {@code "REFLECTANCE_ADD_BAND_1"}.
@@ -136,19 +140,47 @@ final class LandsatReader {
     private static final String BAND_SUFFIX = "_BAND";
 
     /**
-     * Index of panchromatic, reflective or thermal images in {@link #gridSize} array.
-     * Each kind of images have its size described by 2 integers: the width and the height.
+     * A bit mask of the group in which to classify a given band.
+     * There is three groups: panchromatic, reflective or thermal bands:
+     *
+     * <ul>
+     *   <li><b>Panchromatic:</b> band  8.</li>
+     *   <li><b>Reflective:</b>   bands 1, 2, 3, 4, 5, 6, 7, 9.</li>
+     *   <li><b>Thermal:</b>      bands 10, 11.</li>
+     * </ul>
+     *
+     * For a band numbered from 1 to 11 inclusive, the group is computed by
+     * (constants 2 and 3 in that formula depends on the {@link #NUM_GROUPS} value):
+     *
+     * {@preformat java
+     *   group = (BAND_GROUPS >>> 2*(band - 1)) & 3;
+     * }
+     *
+     * The result is one of the {@link #PANCHROMATIC}, {@link #REFLECTIVE} or {@link #THERMAL} constant values
+     * divided by {@value #DIM}.
      */
-    private static final int PANCHROMATIC = 0,
-                             REFLECTIVE   = 2,
-                             THERMAL      = 4;
+    static final int BAND_GROUPS = 2692437;     // Value computed by LandsatReaderTest.verifyBandGroupsMask()
+
+    /**
+     * Maximum number of band groups that a metadata may contains.
+     * See {@link #BAND_GROUPS} javadoc for the list of groups.
+     */
+    private static final int NUM_GROUPS = 3;
+
+    /**
+     * Index of panchromatic, reflective or thermal groups in the {@link #gridSize} array.
+     * The image size is each group is given by {@value #DIM} integers: the width and the height.
+     */
+    static final int PANCHROMATIC = 0*DIM,
+                     REFLECTIVE   = 1*DIM,
+                     THERMAL      = 2*DIM;
 
     /**
      * Index of projected and geographic coordinates in the {@link #corners} array.
-     * Each kind of coordinates are stored as 4 corners of 2 ordinate values.
+     * Each kind of coordinates are stored as 4 corners of {@value #DIM} ordinate values.
      */
-    private static final int PROJECTED  = 0,
-                             GEOGRAPHIC = 8;
+    private static final int PROJECTED  = 0*DIM,
+                             GEOGRAPHIC = 4*DIM;
 
     /**
      * The keyword for end of metadata file.
@@ -243,8 +275,8 @@ final class LandsatReader {
         this.listeners = listeners;
         this.metadata  = new MetadataBuilder();
         this.bands     = new DefaultBand[BAND_NAMES.length];
-        this.gridSizes = new int[THERMAL + 2];                  // THERMAL is the last group of images grid size.
-        this.corners   = new double[GEOGRAPHIC + 8];            // GEOGRAPHIC is the last group of corners to store.
+        this.gridSizes = new int[NUM_GROUPS * DIM];
+        this.corners   = new double[GEOGRAPHIC + (4*DIM)];      // GEOGRAPHIC is the last group of corners to store.
         Arrays.fill(corners, Double.NaN);
     }
 
@@ -323,7 +355,7 @@ final class LandsatReader {
     /**
      * Parses the given value and stores it at the given index in the {@link #corners} array.
      * The given index must be one of the {@link #PROJECTED} or {@link #GEOGRAPHIC} constants
-     * plus the corner index.
+     * plus the ordinate index.
      */
     private void parseCorner(final int index, final String value) throws NumberFormatException {
         corners[index] = Double.parseDouble(value);
@@ -333,7 +365,7 @@ final class LandsatReader {
      * Parses the given value and stores it at the given index in the {@link #gridSizes} array.
      *
      * @param  index  {@link #PANCHROMATIC}, {@link #REFLECTIVE} or {@link #THERMAL},
-     *                plus one for parsing the height instead than the width.
+     *                +1 if parsing the height instead than the width.
      * @param  value  the value to parse.
      */
     private void parseGridSize(final int index, final String value) throws NumberFormatException {
@@ -718,7 +750,7 @@ final class LandsatReader {
         double ymin = Double.POSITIVE_INFINITY;
         double xmax = Double.NEGATIVE_INFINITY;
         double ymax = Double.NEGATIVE_INFINITY;
-        for (int i = base+8; --i >= base;) {
+        for (int i = base + (4*DIM); --i >= base;) {
             double v = corners[i];
             if (v < ymin) ymin = v;
             if (v > ymax) ymax = v;
@@ -749,9 +781,28 @@ final class LandsatReader {
             // May happen if the SCENE_CENTER_TIME attribute was found without DATE_ACQUIRED.
             warning(null, null, e);
         }
+        /*
+         * Set information about envelope (or geographic area) and grid size.
+         */
         if (toBoundingBox(GEOGRAPHIC)) {
             metadata.addExtent(corners, GEOGRAPHIC);
         }
+        for (int i = 0; i < gridSizes.length; i += DIM) {
+            final int width  = gridSizes[i  ];
+            final int height = gridSizes[i+1];
+            if (width != 0 || height != 0) {
+                metadata.newGridRepresentation();
+                metadata.setAxisName((short) 0, DimensionNameType.SAMPLE);
+                metadata.setAxisName((short) 1, DimensionNameType.LINE);
+                metadata.setAxisLength((short) 0, width);
+                metadata.setAxisLength((short) 1, height);
+            }
+        }
+        /*
+         * At this point we are done configuring he metadata builder. Creates the ISO 19115 metadata instance,
+         * then continue adding some more specific metadata elements by ourself. For example information about
+         * bands are splitted in 3 different AttributeGroups based on their grid size.
+         */
         final DefaultMetadata result = metadata.build(false);
         if (result != null) {
             /*
@@ -767,17 +818,27 @@ final class LandsatReader {
                 }
             }
             /*
-             * Set information about all non-null bands.
+             * Set information about all non-null bands. The bands are categorized in three groups:
+             * PANCHROMATIC, REFLECTIVE and THERMAL. The group in which each band belong is encoded
+             * in the BAND_GROUPS bitmask. The maximum number of groups is the same than the maximum
+             * number of
              */
-            final ContentInformation content = singletonOrNull(result.getContentInfo());
-            if (content instanceof DefaultCoverageDescription) {
-                final DefaultAttributeGroup attributes = new DefaultAttributeGroup(CoverageContentType.PHYSICAL_MEASUREMENT, null);
-                final List<DefaultBand> nonNulls = new ArrayList<>(bands.length);
-                for (final DefaultBand b : bands) {
-                    if (b != null) nonNulls.add(b);
+            final DefaultCoverageDescription content = (DefaultCoverageDescription) singletonOrNull(result.getContentInfo());
+            if (content != null) {
+                final DefaultAttributeGroup[] groups = new DefaultAttributeGroup[NUM_GROUPS];
+                for (int i=0; i < bands.length; i++) {
+                    final DefaultBand band = bands[i];
+                    if (band != null) {
+                        final int gi = (BAND_GROUPS >>> 2*i) & 3;
+                        DefaultAttributeGroup group = groups[gi];
+                        if (group == null) {
+                            group = new DefaultAttributeGroup(CoverageContentType.PHYSICAL_MEASUREMENT, null);
+                            content.getAttributeGroups().add(group);
+                            groups[gi] = group;
+                        }
+                        group.getAttributes().add(band);
+                    }
                 }
-                attributes.setAttributes(nonNulls);
-                ((DefaultCoverageDescription) content).setAttributeGroups(singleton(attributes));
             }
             result.setMetadataStandards(Citations.ISO_19115);
             result.freeze();

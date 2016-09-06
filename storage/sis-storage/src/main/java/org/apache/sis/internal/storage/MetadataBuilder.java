@@ -21,12 +21,15 @@ import java.util.Locale;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.nio.charset.Charset;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Role;
 import org.opengis.metadata.citation.DateType;
+import org.opengis.metadata.spatial.Dimension;
+import org.opengis.metadata.spatial.DimensionNameType;
 import org.opengis.metadata.constraint.Restriction;
 import org.opengis.metadata.maintenance.ScopeCode;
 import org.opengis.metadata.acquisition.Context;
@@ -42,6 +45,8 @@ import org.apache.sis.metadata.iso.DefaultMetadataScope;
 import org.apache.sis.metadata.iso.extent.DefaultExtent;
 import org.apache.sis.metadata.iso.extent.DefaultTemporalExtent;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
+import org.apache.sis.metadata.iso.spatial.DefaultDimension;
+import org.apache.sis.metadata.iso.spatial.DefaultGridSpatialRepresentation;
 import org.apache.sis.metadata.iso.content.DefaultAttributeGroup;
 import org.apache.sis.metadata.iso.content.DefaultSampleDimension;
 import org.apache.sis.metadata.iso.content.DefaultCoverageDescription;
@@ -150,6 +155,11 @@ public class MetadataBuilder {
     private DefaultPlatform platform;
 
     /**
+     * Information about the grid shape, or {@code null} if none.
+     */
+    private DefaultGridSpatialRepresentation gridRepresentation;
+
+    /**
      * Information about the content of a grid data cell, or {@code null} if none.
      * May also be an instance of {@link DefaultImageDescription} if {@link #electromagnetic} is {@code true}.
      */
@@ -199,7 +209,7 @@ public class MetadataBuilder {
      *
      * @see #parseDouble(String)
      */
-    private final Map<Double,Double> sharedNumbers = new HashMap<>();
+    private final Map<Number,Number> sharedNumbers = new HashMap<>();
 
     /**
      * Creates a new metadata reader.
@@ -276,6 +286,24 @@ public class MetadataBuilder {
         if (acquisition != null) {
             metadata().getAcquisitionInformation().add(acquisition);
             acquisition = null;
+        }
+    }
+
+    /**
+     * Commits all pending information under the metadata "spatial representation" node (dimensions, <i>etc</i>).
+     * If there is no pending spatial representation information, then invoking this method has no effect.
+     * If new spatial representation info are added after this method call, they will be stored in a new element.
+     *
+     * <p>This method does not need to be invoked unless a new "spatial representation info" node,
+     * separated from the previous one, is desired.</p>
+     */
+    public final void newGridRepresentation() {
+        if (gridRepresentation != null) {
+            if (!gridRepresentation.isEmpty()) {
+                gridRepresentation.setNumberOfDimensions(shared(gridRepresentation.getAxisDimensionProperties().size()));
+            }
+            metadata.getSpatialRepresentationInfo().add(gridRepresentation);
+            gridRepresentation = null;
         }
     }
 
@@ -441,6 +469,18 @@ public class MetadataBuilder {
             platform = new DefaultPlatform();
         }
         return platform;
+    }
+
+    /**
+     * Creates a grid representation object if it does not already exists, then returns it.
+     *
+     * @return the grid representation object (never {@code null}).
+     */
+    private DefaultGridSpatialRepresentation gridRepresentation() {
+        if (gridRepresentation == null) {
+            gridRepresentation = new DefaultGridSpatialRepresentation();
+        }
+        return gridRepresentation;
     }
 
     /**
@@ -1102,8 +1142,42 @@ parse:      for (int i = 0; i < length;) {
     }
 
     /**
+     * Returns the axis at the given dimension index. All previous dimensions are created if needed.
+     *
+     * @param  index  index of the desired dimension.
+     * @return dimension at the given index.
+     */
+    private DefaultDimension axis(final short index) {
+        final List<Dimension> axes = gridRepresentation().getAxisDimensionProperties();
+        for (int i=axes.size(); i <= index; i++) {
+            axes.add(new DefaultDimension());
+        }
+        return (DefaultDimension) axes.get(index);
+    }
+
+    /**
+     * Sets the number of cells along the given dimension.
+     *
+     * @param  dimension  the axis dimension, as a {@code short} for avoiding excessive values.
+     * @param  name       the name to set for the given dimension.
+     */
+    public final void setAxisName(final short dimension, final DimensionNameType name) {
+        axis(dimension).setDimensionName(name);
+    }
+
+    /**
+     * Sets the number of cells along the given dimension.
+     *
+     * @param  dimension  the axis dimension, as a {@code short} for avoiding excessive values.
+     * @param  length     number of cell values along the given dimension.
+     */
+    public final void setAxisLength(final short dimension, final int length) {
+        axis(dimension).setDimensionSize(shared(length));
+    }
+
+    /**
      * Adds a minimal value for the current sample dimension. If a minimal value was already defined, then
-     * the new value will set only if it is smaller than the existing one. {@code NaN} values are ignored.
+     * the new value will be set only if it is smaller than the existing one. {@code NaN} values are ignored.
      *
      * @param value  the minimal value to add to the existing range of sample values, or {@code NaN}.
      */
@@ -1119,7 +1193,7 @@ parse:      for (int i = 0; i < length;) {
 
     /**
      * Adds a maximal value for the current sample dimension. If a maximal value was already defined, then
-     * the new value will set only if it is greater than the existing one. {@code NaN} values are ignored.
+     * the new value will be set only if it is greater than the existing one. {@code NaN} values are ignored.
      *
      * @param value  the maximal value to add to the existing range of sample values, or {@code NaN}.
      */
@@ -1156,6 +1230,7 @@ parse:      for (int i = 0; i < length;) {
      */
     public final DefaultMetadata build(final boolean freeze) {
         newIdentification();
+        newGridRepresentation();
         newCoverage(false);
         newDistribution();
         newAcquisition();
@@ -1184,7 +1259,15 @@ parse:      for (int i = 0; i < length;) {
      * Returns a shared instance of the given value.
      */
     private Double shared(final Double value) {
-        final Double existing = sharedNumbers.putIfAbsent(value, value);
-        return (existing != null) ? existing : value;
+        final Number existing = sharedNumbers.putIfAbsent(value, value);
+        return (existing != null) ? (Double) existing : value;
+    }
+
+    /**
+     * Returns a shared instance of the given value.
+     */
+    private Integer shared(final Integer value) {
+        final Number existing = sharedNumbers.putIfAbsent(value, value);
+        return (existing != null) ? (Integer) existing : value;
     }
 }
