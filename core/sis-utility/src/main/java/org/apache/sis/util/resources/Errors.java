@@ -151,6 +151,11 @@ public final class Errors extends IndexedResourceBundle {
         public static final short CanNotParseFile_2 = 8;
 
         /**
+         * Can not read property “{1}” in file “{0}”.
+         */
+        public static final short CanNotReadPropertyInFile_2 = 237;
+
+        /**
          * Can not read “{0}”.
          */
         public static final short CanNotRead_1 = 9;
@@ -334,11 +339,6 @@ public final class Errors extends IndexedResourceBundle {
          * The character string is too long.
          */
         public static final short ExcessiveStringSize = 153;
-
-        /**
-         * A “{0}” statement was expected at line {2} or “{1}”.
-         */
-        public static final short ExpectedStatementAtLine_3 = 237;
 
         /**
          * No factory of kind ‘{0}’ found.
