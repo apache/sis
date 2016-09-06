@@ -116,7 +116,7 @@ public class DefaultResolution extends ISOMetadata implements Resolution {
     /**
      * Creates a new resolution initialized to the given scale.
      *
-     * @param scale The scale, or {@code null} if none.
+     * @param  scale  the scale, or {@code null} if none.
      *
      * @since 0.4
      */
@@ -147,7 +147,7 @@ public class DefaultResolution extends ISOMetadata implements Resolution {
      * metadata instances can also be obtained by unmarshalling an invalid XML document.
      * </div>
      *
-     * @param object The metadata to copy values from, or {@code null} if none.
+     * @param  object  the metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(Resolution)
      */
@@ -187,8 +187,8 @@ public class DefaultResolution extends ISOMetadata implements Resolution {
      *       metadata contained in the given object are not recursively copied.</li>
      * </ul>
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultResolution castOrCopy(final Resolution object) {
@@ -202,8 +202,8 @@ public class DefaultResolution extends ISOMetadata implements Resolution {
      * Sets the properties identified by the {@code code} argument, if non-null.
      * This discards any other properties.
      *
-     * @param code     The property which is going to be set.
-     * @param newValue The new value.
+     * @param  code      the property which is going to be set.
+     * @param  newValue  the new value.
      */
     private void setProperty(final byte code, final Object newValue) {
         checkWritePermission();
@@ -221,7 +221,7 @@ public class DefaultResolution extends ISOMetadata implements Resolution {
     /**
      * Returns the level of detail expressed as the scale of a comparable hardcopy map or chart.
      *
-     * @return Level of detail expressed as the scale of a comparable hardcopy, or {@code null}.
+     * @return level of detail expressed as the scale of a comparable hardcopy, or {@code null}.
      */
     @Override
     @XmlElement(name = "equivalentScale")
@@ -236,7 +236,7 @@ public class DefaultResolution extends ISOMetadata implements Resolution {
      * If and only if the {@code newValue} is non-null, then this method automatically
      * discards all other properties.
      *
-     * @param newValue The new equivalent scale.
+     * @param  newValue  the new equivalent scale.
      */
     public void setEquivalentScale(final RepresentativeFraction newValue) {
         setProperty(SCALE, newValue);
@@ -245,7 +245,7 @@ public class DefaultResolution extends ISOMetadata implements Resolution {
     /**
      * Returns the ground sample distance.
      *
-     * @return The ground sample distance, or {@code null}.
+     * @return the ground sample distance, or {@code null}.
      */
     @Override
     @XmlElement(name = "distance")
@@ -262,7 +262,7 @@ public class DefaultResolution extends ISOMetadata implements Resolution {
      * If and only if the {@code newValue} is non-null, then this method automatically
      * discards all other properties.
      *
-     * @param newValue The new distance, or {@code null}.
+     * @param  newValue  the new distance, or {@code null}.
      * @throws IllegalArgumentException if the given value is NaN, zero or negative.
      */
     public void setDistance(final Double newValue) {
@@ -274,7 +274,7 @@ public class DefaultResolution extends ISOMetadata implements Resolution {
     /**
      * Returns the vertical sampling distance.
      *
-     * @return The vertical sampling distance, or {@code null}.
+     * @return the vertical sampling distance, or {@code null}.
      *
      * @since 0.5
      */
@@ -291,7 +291,7 @@ public class DefaultResolution extends ISOMetadata implements Resolution {
      * If and only if the {@code newValue} is non-null, then this method automatically
      * discards all other properties.
      *
-     * @param newValue The new distance, or {@code null}.
+     * @param  newValue  the new distance, or {@code null}.
      * @throws IllegalArgumentException if the given value is NaN, zero or negative.
      *
      * @since 0.5
@@ -305,7 +305,7 @@ public class DefaultResolution extends ISOMetadata implements Resolution {
     /**
      * Returns the angular sampling measure.
      *
-     * @return The angular sampling measure, or {@code null}.
+     * @return the angular sampling measure, or {@code null}.
      *
      * @since 0.5
      */
@@ -322,7 +322,7 @@ public class DefaultResolution extends ISOMetadata implements Resolution {
      * If and only if the {@code newValue} is non-null, then this method automatically
      * discards all other properties.
      *
-     * @param newValue The new distance, or {@code null}.
+     * @param  newValue  the new distance, or {@code null}.
      * @throws IllegalArgumentException if the given value is NaN, zero or negative.
      *
      * @since 0.5
@@ -336,7 +336,7 @@ public class DefaultResolution extends ISOMetadata implements Resolution {
     /**
      * Returns a brief textual description of the spatial resolution of the resource.
      *
-     * @return Textual description of the spatial resolution, or {@code null}.
+     * @return textual description of the spatial resolution, or {@code null}.
      *
      * @since 0.5
      */
@@ -352,7 +352,7 @@ public class DefaultResolution extends ISOMetadata implements Resolution {
      * If and only if the {@code newValue} is non-null, then this method automatically
      * discards all other properties.
      *
-     * @param newValue The new distance.
+     * @param  newValue  the new distance.
      *
      * @since 0.5
      */
