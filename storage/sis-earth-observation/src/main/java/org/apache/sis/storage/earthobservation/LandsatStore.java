@@ -21,8 +21,10 @@ import java.io.BufferedReader;
 import java.io.LineNumberReader;
 import java.io.IOException;
 import org.opengis.metadata.Metadata;
+import org.opengis.util.FactoryException;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.DataStoreReferencingException;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
@@ -115,6 +117,8 @@ public class LandsatStore extends DataStore {
             }
         } catch (IOException e) {
             throw new DataStoreException(e);
+        } catch (FactoryException e) {
+            throw new DataStoreReferencingException(e);
         }
         return metadata;
     }
