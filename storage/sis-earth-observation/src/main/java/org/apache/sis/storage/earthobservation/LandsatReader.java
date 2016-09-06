@@ -534,8 +534,8 @@ final class LandsatReader {
                 break;
             }
             /*
-             * The file name for a band. This parameter is only present if the band is included in the product.
-             * We
+             * The file name of the TIFF image that contains the pixel values for a band.
+             * This parameter is only present if the band is included in the product.
              */
             case "FILE_NAME_BAND_": {
                 final DefaultBand db = band(key, band);
