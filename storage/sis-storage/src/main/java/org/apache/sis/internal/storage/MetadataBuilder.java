@@ -20,6 +20,8 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.nio.charset.Charset;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.Identifier;
@@ -51,6 +53,7 @@ import org.apache.sis.metadata.iso.citation.DefaultResponsibility;
 import org.apache.sis.metadata.iso.citation.DefaultIndividual;
 import org.apache.sis.metadata.iso.citation.DefaultOrganisation;
 import org.apache.sis.metadata.iso.constraint.DefaultLegalConstraints;
+import org.apache.sis.metadata.iso.identification.DefaultResolution;
 import org.apache.sis.metadata.iso.identification.DefaultDataIdentification;
 import org.apache.sis.metadata.iso.distribution.DefaultDistribution;
 import org.apache.sis.metadata.iso.distribution.DefaultFormat;
@@ -189,6 +192,14 @@ public class MetadataBuilder {
      * of {@code ImageDescription}.
      */
     private boolean electromagnetic;
+
+    /**
+     * For using the same instance of {@code Double} when the value is the same.
+     * We use this map because the same values appear many time in a Landsat file.
+     *
+     * @see #parseDouble(String)
+     */
+    private final Map<Double,Double> sharedNumbers = new HashMap<>();
 
     /**
      * Creates a new metadata reader.
@@ -493,6 +504,19 @@ public class MetadataBuilder {
     }
 
     /**
+     * Adds the given element in the collection if not already present.
+     * This method is used only for properties that are usually stored in {@code List} rather than {@code Set}
+     * and for which we do not keep a reference in this {@code MetadataBuilder} after the element has been added.
+     * This method is intended for adding elements that despite being modifiable, are not going to be modified by
+     * this {@code MetadataBuilder} class.
+     */
+    private static <E> void addIfNotPresent(final Collection<E> collection, final E element) {
+        if (!collection.contains(element)) {
+            collection.add(element);
+        }
+    }
+
+    /**
      * Adds a language used for documenting metadata.
      *
      * @param  language  a language used for documenting metadata.
@@ -578,7 +602,7 @@ public class MetadataBuilder {
         final DefaultGeographicBoundingBox bbox = new DefaultGeographicBoundingBox(
                     ordinates[index], ordinates[++index], ordinates[++index], ordinates[++index]);
         if (!bbox.isEmpty()) {
-            extent().getGeographicElements().add(bbox);
+            addIfNotPresent(extent().getGeographicElements(), bbox);
         }
     }
 
@@ -595,7 +619,7 @@ public class MetadataBuilder {
         if (startTime != null || endTime != null) {
             final DefaultTemporalExtent t = new DefaultTemporalExtent();
             t.setBounds(startTime, endTime);
-            extent().getTemporalElements().add(t);
+            addIfNotPresent(extent().getTemporalElements(), t);
         }
     }
 
@@ -608,7 +632,7 @@ public class MetadataBuilder {
      */
     public final void add(final Date date, final DateType type) {
         if (date != null) {
-            citation().getDates().add(new DefaultCitationDate(date, type));
+            addIfNotPresent(citation().getDates(), new DefaultCitationDate(date, type));
         }
     }
 
@@ -716,7 +740,7 @@ public class MetadataBuilder {
     public final void addCredits(final CharSequence credit) {
         final InternationalString i18n = trim(credit);
         if (i18n != null) {
-            identification().getCredits().add(i18n);
+            addIfNotPresent(identification().getCredits(), i18n);
         }
     }
 
@@ -728,8 +752,7 @@ public class MetadataBuilder {
      */
     public final void addIdentifier(String code) {
         if (code != null && !(code = code.trim()).isEmpty()) {
-            final DefaultIdentifier id = new DefaultIdentifier(code);
-            citation().getIdentifiers().add(id);
+            addIfNotPresent(citation().getIdentifiers(), new DefaultIdentifier(code));
         }
     }
 
@@ -978,7 +1001,7 @@ parse:      for (int i = 0; i < length;) {
         if (identifier != null && !(identifier = identifier.trim()).isEmpty()) {
             final DefaultInstrument instrument = new DefaultInstrument();
             instrument.setIdentifier(new DefaultIdentifier(identifier));
-            platform().getInstruments().add(instrument);
+            addIfNotPresent(platform().getInstruments(), instrument);
         }
     }
 
@@ -998,64 +1021,7 @@ parse:      for (int i = 0; i < length;) {
             op.setSignificantEvents(singleton(event));
             op.setType(OperationType.REAL);
             op.setStatus(Progress.COMPLETED);
-            acquisition().getOperations().add(op);
-        }
-    }
-
-    /**
-     * Adds a new format. The given name should be a short name like "GeoTIFF".
-     * The long name will be inferred from the given short name, if possible.
-     *
-     * @param  abbreviation  the format short name or abbreviation, or {@code null}.
-     */
-    public final void addFormat(final CharSequence abbreviation) {
-        if (abbreviation != null && abbreviation.length() != 0) {
-            identification().getResourceFormats().add(new DefaultFormat(abbreviation, null));
-        }
-    }
-
-    /**
-     * Adds a minimal value for the current sample dimension. If a minimal value was already defined, then
-     * the new value will set only if it is smaller than the existing one. {@code NaN} values are ignored.
-     *
-     * @param value  the minimal value to add to the existing range of sample values, or {@code NaN}.
-     */
-    public final void addMinimumSampleValue(final double value) {
-        if (!Double.isNaN(value)) {
-            final DefaultSampleDimension sampleDimension = sampleDimension();
-            final Double current = sampleDimension.getMinValue();
-            if (current == null || value < current) {
-                sampleDimension.setMinValue(value);
-            }
-        }
-    }
-
-    /**
-     * Adds a maximal value for the current sample dimension. If a maximal value was already defined, then
-     * the new value will set only if it is greater than the existing one. {@code NaN} values are ignored.
-     *
-     * @param value  the maximal value to add to the existing range of sample values, or {@code NaN}.
-     */
-    public final void addMaximumSampleValue(final double value) {
-        if (!Double.isNaN(value)) {
-            final DefaultSampleDimension sampleDimension = sampleDimension();
-            final Double current = sampleDimension.getMaxValue();
-            if (current == null || value > current) {
-                sampleDimension.setMaxValue(value);
-            }
-        }
-    }
-
-    /**
-     * Adds a compression name.
-     *
-     * @param value  the compression name, or {@code null}.
-     */
-    public final void addCompression(final CharSequence value) {
-        final InternationalString i18n = trim(value);
-        if (i18n != null) {
-            final DefaultFormat format = format();
-            format.setFileDecompressionTechnique(append(format.getFileDecompressionTechnique(), i18n));
+            addIfNotPresent(acquisition().getOperations(), op);
         }
     }
 
@@ -1071,7 +1037,7 @@ parse:      for (int i = 0; i < length;) {
      */
     public final void setCloudCoverPercentage(final double value) {
         if (!Double.isNaN(value)) {
-            ((DefaultImageDescription) coverageDescription()).setCloudCoverPercentage(value);
+            ((DefaultImageDescription) coverageDescription()).setCloudCoverPercentage(shared(value));
         }
     }
 
@@ -1088,7 +1054,7 @@ parse:      for (int i = 0; i < length;) {
      */
     public final void setIlluminationAzimuthAngle(final double value) {
         if (!Double.isNaN(value)) {
-            ((DefaultImageDescription) coverageDescription()).setIlluminationAzimuthAngle(value);
+            ((DefaultImageDescription) coverageDescription()).setIlluminationAzimuthAngle(shared(value));
         }
     }
 
@@ -1106,7 +1072,77 @@ parse:      for (int i = 0; i < length;) {
      */
     public final void setIlluminationElevationAngle(final double value) {
         if (!Double.isNaN(value)) {
-            ((DefaultImageDescription) coverageDescription()).setIlluminationElevationAngle(value);
+            ((DefaultImageDescription) coverageDescription()).setIlluminationElevationAngle(shared(value));
+        }
+    }
+
+    /**
+     * Adds a linear resolution in metres.
+     *
+     * @param  distance  the resolution in metres, or {@code NaN} if none.
+     */
+    public final void addResolution(final double distance) {
+        if (!Double.isNaN(distance)) {
+            final DefaultResolution r = new DefaultResolution();
+            r.setDistance(shared(distance));
+            addIfNotPresent(identification().getSpatialResolutions(), r);
+        }
+    }
+
+    /**
+     * Adds a new format. The given name should be a short name like "GeoTIFF".
+     * The long name will be inferred from the given short name, if possible.
+     *
+     * @param  abbreviation  the format short name or abbreviation, or {@code null}.
+     */
+    public final void addFormat(final CharSequence abbreviation) {
+        if (abbreviation != null && abbreviation.length() != 0) {
+            addIfNotPresent(identification().getResourceFormats(), new DefaultFormat(abbreviation, null));
+        }
+    }
+
+    /**
+     * Adds a minimal value for the current sample dimension. If a minimal value was already defined, then
+     * the new value will set only if it is smaller than the existing one. {@code NaN} values are ignored.
+     *
+     * @param value  the minimal value to add to the existing range of sample values, or {@code NaN}.
+     */
+    public final void addMinimumSampleValue(final double value) {
+        if (!Double.isNaN(value)) {
+            final DefaultSampleDimension sampleDimension = sampleDimension();
+            final Double current = sampleDimension.getMinValue();
+            if (current == null || value < current) {
+                sampleDimension.setMinValue(shared(value));
+            }
+        }
+    }
+
+    /**
+     * Adds a maximal value for the current sample dimension. If a maximal value was already defined, then
+     * the new value will set only if it is greater than the existing one. {@code NaN} values are ignored.
+     *
+     * @param value  the maximal value to add to the existing range of sample values, or {@code NaN}.
+     */
+    public final void addMaximumSampleValue(final double value) {
+        if (!Double.isNaN(value)) {
+            final DefaultSampleDimension sampleDimension = sampleDimension();
+            final Double current = sampleDimension.getMaxValue();
+            if (current == null || value > current) {
+                sampleDimension.setMaxValue(shared(value));
+            }
+        }
+    }
+
+    /**
+     * Adds a compression name.
+     *
+     * @param value  the compression name, or {@code null}.
+     */
+    public final void addCompression(final CharSequence value) {
+        final InternationalString i18n = trim(value);
+        if (i18n != null) {
+            final DefaultFormat format = format();
+            format.setFileDecompressionTechnique(append(format.getFileDecompressionTechnique(), i18n));
         }
     }
 
@@ -1129,5 +1165,26 @@ parse:      for (int i = 0; i < length;) {
             md.freeze();
         }
         return md;
+    }
+
+    /**
+     * Parses the given {@code double} value, returning a shared instance if possible.
+     * This is a helper method for callers who want to set themselves some additional
+     * metadata values on the instance returned by {@link #build(boolean)}.
+     *
+     * @param   value  the string value to parse.
+     * @return  the parsed value.
+     * @throws  NumberFormatException if the given value can not be parsed.
+     */
+    public final Double parseDouble(final String value) throws NumberFormatException {
+        return shared(Double.valueOf(value));
+    }
+
+    /**
+     * Returns a shared instance of the given value.
+     */
+    private Double shared(final Double value) {
+        final Double existing = sharedNumbers.putIfAbsent(value, value);
+        return (existing != null) ? existing : value;
     }
 }

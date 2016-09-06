@@ -18,14 +18,14 @@ package org.apache.sis.storage.earthobservation;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.io.LineNumberReader;
-import javax.measure.unit.Unit;
-import javax.measure.quantity.Length;
 import javax.measure.unit.SI;
 
 import org.opengis.metadata.Metadata;
@@ -33,10 +33,12 @@ import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.DateType;
 import org.opengis.metadata.content.ContentInformation;
 import org.opengis.metadata.content.CoverageContentType;
+import org.opengis.metadata.content.TransferFunctionType;
 import org.opengis.metadata.identification.Identification;
 import org.opengis.metadata.maintenance.ScopeCode;
 
 import org.apache.sis.metadata.iso.DefaultMetadata;
+import org.apache.sis.metadata.iso.DefaultIdentifier;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.metadata.iso.content.DefaultAttributeGroup;
 import org.apache.sis.metadata.iso.content.DefaultBand;
@@ -59,7 +61,6 @@ import java.time.OffsetDateTime;
 import java.time.OffsetTime;
 import java.time.DateTimeException;
 import java.time.temporal.Temporal;
-import org.opengis.metadata.content.AttributeGroup;
 
 
 /**
@@ -92,47 +93,62 @@ import org.opengis.metadata.content.AttributeGroup;
  */
 final class LandsatReader {
     /**
-     * The description of all bands that can be included in a Landsat coverage.
-     * This description is hard-coded and shared by all metadata instances.
+     * Names of Landsat bands.
      *
-     * @todo Move those information in a database after we implemented the {@code org.apache.sis.metadata.sql} package.
+     * @see #bands
+     * @see #band(int)
      */
-    private static final AttributeGroup BANDS;
-    static {
-        final double[] wavelengths = {433, 482, 562, 655, 865, 1610, 2200, 590, 1375, 10800, 12000};
-        final String[] nameband = {
-            "Coastal Aerosol",                      //   433 nm
-            "Blue",                                 //   482 nm
-            "Green",                                //   562 nm
-            "Red",                                  //   655 nm
-            "Near-Infrared",                        //   865 nm
-            "Short Wavelength Infrared (SWIR) 1",   //  1610 nm
-            "Short Wavelength Infrared (SWIR) 2",   //  2200 nm
-            "Panchromatic",                         //   590 nm
-            "Cirrus",                               //  1375 nm
-            "Thermal Infrared Sensor (TIRS) 1",     // 10800 nm
-            "Thermal Infrared Sensor (TIRS) 2"      // 12000 nm
-        };
-        final DefaultBand[] bands = new DefaultBand[wavelengths.length];
-        final Unit<Length> nm = SI.MetricPrefix.NANO(SI.METRE);
-        for (int i = 0; i < bands.length; i++) {
-            final DefaultBand band = new DefaultBand();
-            band.setDescription(new SimpleInternationalString(nameband[i]));
-            band.setPeakResponse(wavelengths[i]);
-            band.setBoundUnits(nm);
-            bands[i] = band;
-        }
-        final DefaultAttributeGroup attributes = new DefaultAttributeGroup(CoverageContentType.PHYSICAL_MEASUREMENT, null);
-        attributes.setAttributes(Arrays.asList(bands));
-        attributes.freeze();
-        BANDS = attributes;
-    }
+    private static final String[] BAND_NAMES = {
+        "Coastal Aerosol",                      //   433 nm
+        "Blue",                                 //   482 nm
+        "Green",                                //   562 nm
+        "Red",                                  //   655 nm
+        "Near-Infrared",                        //   865 nm
+        "Short Wavelength Infrared (SWIR) 1",   //  1610 nm
+        "Short Wavelength Infrared (SWIR) 2",   //  2200 nm
+        "Panchromatic",                         //   590 nm
+        "Cirrus",                               //  1375 nm
+        "Thermal Infrared Sensor (TIRS) 1",     // 10800 nm
+        "Thermal Infrared Sensor (TIRS) 2"      // 12000 nm
+    };
+
+    /**
+     * Peak response wavelength for the Landsat bands, in nanometres.
+     *
+     * @see #bands
+     * @see #band(int)
+     */
+    private static final short[] WAVELENGTHS = {
+        433, 482, 562, 655, 865, 1610, 2200, 590, 1375, 10800, 12000
+    };
 
     /**
      * The pattern determining if the value of {@code ORIGIN} key is of the form
      * “Image courtesy of the U.S. Geological Survey”.
      */
     static final Pattern CREDIT = Pattern.compile("\\bcourtesy\\h+of\\h+(the)?\\b\\s*", Pattern.CASE_INSENSITIVE);
+
+    /**
+     * The {@value} suffix added to attribute names that are followed by a band number.
+     * This band suffix is itself followed by the {@code '_'} character, then the band number.
+     * Example: {@code "REFLECTANCE_ADD_BAND_1"}.
+     */
+    private static final String BAND_SUFFIX = "_BAND";
+
+    /**
+     * Index of panchromatic, reflective or thermal images in {@link #gridSize} array.
+     * Each kind of images have its size described by 2 integers: the width and the height.
+     */
+    private static final int PANCHROMATIC = 0,
+                             REFLECTIVE   = 2,
+                             THERMAL      = 4;
+
+    /**
+     * Index of projected and geographic coordinates in the {@link #corners} array.
+     * Each kind of coordinates are stored as 4 corners of 2 ordinate values.
+     */
+    private static final int PROJECTED  = 0,
+                             GEOGRAPHIC = 8;
 
     /**
      * The keyword for end of metadata file.
@@ -184,6 +200,37 @@ final class LandsatReader {
     private final double[] corners;
 
     /**
+     * Image width and hight, in pixels. Values are (<var>width</var>,<var>height</var>) tuples.
+     * Tuples in this array are for {@link #PANCHROMATIC}, {@link #REFLECTIVE} or {@link #THERMAL}
+     * bands, in that order.
+     */
+    private final int[] gridSizes;
+
+    /**
+     * The bands description. Any element can be null if the corresponding band is not defined.
+     * The bands can be, in this exact order:
+     *
+     * <ol>
+     *   <li>Coastal Aerosol</li>
+     *   <li>Blue</li>
+     *   <li>Green</li>
+     *   <li>Red</li>
+     *   <li>Near-Infrared</li>
+     *   <li>Short Wavelength Infrared (SWIR) 1</li>
+     *   <li>Short Wavelength Infrared (SWIR) 2</li>
+     *   <li>Panchromatic</li>
+     *   <li>Cirrus</li>
+     *   <li>Thermal Infrared Sensor (TIRS) 1</li>
+     *   <li>Thermal Infrared Sensor (TIRS) 2</li>
+     * </ol>
+     *
+     * @see #BAND_NAMES
+     * @see #WAVELENGTHS
+     * @see #band(int)
+     */
+    private final DefaultBand[] bands;
+
+    /**
      * Creates a new metadata parser.
      *
      * @param  filename   an identifier of the file being read, or {@code null} if unknown.
@@ -195,7 +242,9 @@ final class LandsatReader {
         this.locale    = locale;
         this.listeners = listeners;
         this.metadata  = new MetadataBuilder();
-        this.corners   = new double[16];
+        this.bands     = new DefaultBand[BAND_NAMES.length];
+        this.gridSizes = new int[THERMAL + 2];                  // THERMAL is the last group of images grid size.
+        this.corners   = new double[GEOGRAPHIC + 8];            // GEOGRAPHIC is the last group of corners to store.
         Arrays.fill(corners, Double.NaN);
     }
 
@@ -225,43 +274,70 @@ final class LandsatReader {
                     /*
                      * Landsat metadata ends with the END keyword, without value after that keyword.
                      * If we find it, stop reading. All remaining lines (if any) will be ignored.
-                     * If a group was opened but not closed, report a warning.
                      */
                     if (end - start != END.length() || !line.regionMatches(true, start, END, 0, END.length())) {
                         throw new DataStoreException(errors().getString(Errors.Keys.NotAKeyValuePair_1, line));
                     }
-                    if (group != null) {
-                        missingEndGroup(reader);
-                    }
                     return;
-                } else {
-                    final String key = line.substring(start,
-                            CharSequences.skipTrailingWhitespaces(line, start, separator)).toUpperCase(Locale.US);
-                    start = CharSequences.skipLeadingWhitespaces(line, separator + 1, end);
-                    /*
-                     * In a Landsat file, String values are between quotes. Example: STATION_ID = "LGN".
-                     * If such quotes are found, remove them.
-                     */
-                    if (end - start >= 2 && line.charAt(start) == '"' && line.charAt(end - 1) == '"') {
-                        start = CharSequences.skipLeadingWhitespaces(line, start + 1, --end);
-                        end = CharSequences.skipTrailingWhitespaces(line, start, end);
+                }
+                /*
+                 * If the key ends with "_BAND_" followed by a number, remove the band number from the
+                 * key and parse that number as an integer value. Exemple: "REFLECTANCE_ADD_BAND_1".
+                 * We keep the "_BAND_" suffix in the key for avoiding ambiguity.
+                 */
+                String key = line.substring(start, CharSequences.skipTrailingWhitespaces(line, start, separator)).toUpperCase(Locale.US);
+                int band = 0;
+                for (int i=key.length(); --i >= 0;) {
+                    final char c = key.charAt(i);
+                    if (c < '0' || c > '9') {
+                        if (c == '_') {
+                            if (key.regionMatches(i - BAND_SUFFIX.length(), BAND_SUFFIX, 0, BAND_SUFFIX.length())) try {
+                                band = Integer.parseInt(key.substring(++i));
+                                key = key.substring(0, i);
+                            } catch (NumberFormatException e) {
+                                warning(key, reader, e);
+                            }
+                        }
+                        break;
                     }
-                    try {
-                        parseKeyValuePair(key, line.substring(start, end), reader);
-                    } catch (IllegalArgumentException | DateTimeException e) {
-                        warning(e);
-                    }
+                }
+                /*
+                 * In a Landsat file, String values are between quotes. Example: STATION_ID = "LGN".
+                 * If such quotes are found, remove them.
+                 */
+                start = CharSequences.skipLeadingWhitespaces(line, separator + 1, end);
+                if (end - start >= 2 && line.charAt(start) == '"' && line.charAt(end - 1) == '"') {
+                    start = CharSequences.skipLeadingWhitespaces(line, start + 1, --end);
+                    end = CharSequences.skipTrailingWhitespaces(line, start, end);
+                }
+                try {
+                    parseKeyValuePair(key, band, line.substring(start, end));
+                } catch (IllegalArgumentException | DateTimeException e) {
+                    warning(key, reader, e);
                 }
             }
         }
-        warning(Errors.Keys.UnexpectedEndOfFile_1, getFilename());
+        listeners.warning(errors().getString(Errors.Keys.UnexpectedEndOfFile_1, getFilename()), null);
     }
 
     /**
-     * Parses the given value and stores its value at the given index in the {@link #corners} array.
+     * Parses the given value and stores it at the given index in the {@link #corners} array.
+     * The given index must be one of the {@link #PROJECTED} or {@link #GEOGRAPHIC} constants
+     * plus the corner index.
      */
     private void parseCorner(final int index, final String value) throws NumberFormatException {
         corners[index] = Double.parseDouble(value);
+    }
+
+    /**
+     * Parses the given value and stores it at the given index in the {@link #gridSizes} array.
+     *
+     * @param  index  {@link #PANCHROMATIC}, {@link #REFLECTIVE} or {@link #THERMAL},
+     *                plus one for parsing the height instead than the width.
+     * @param  value  the value to parse.
+     */
+    private void parseGridSize(final int index, final String value) throws NumberFormatException {
+        gridSizes[index] = Integer.parseInt(value);
     }
 
     /**
@@ -269,14 +345,14 @@ final class LandsatReader {
      * Leading and trailing spaces, if any, have been removed.
      *
      * @param  key     the key in upper cases.
+     * @param  band    the band number, or 0 if none.
      * @param  value   the value, without quotes if those quotes existed.
-     * @param  reader  used only for reporting line number of warnings, if any.
      * @throws NumberFormatException if the value was expected to be a string but the parsing failed.
      * @throws DateTimeException if the value was expected to be a date but the parsing failed,
      *         or if the result of the parsing was not of the expected type.
      * @throws IllegalArgumentException if the value is out of range.
      */
-    private void parseKeyValuePair(final String key, final String value, final BufferedReader reader)
+    private void parseKeyValuePair(final String key, final int band, final String value)
             throws IllegalArgumentException, DateTimeException
     {
         switch (key) {
@@ -285,9 +361,6 @@ final class LandsatReader {
                 break;
             }
             case "END_GROUP": {
-                if (!value.equals(group) && group != null) {
-                    missingEndGroup(reader);
-                }
                 group = null;
                 break;
             }
@@ -420,14 +493,57 @@ final class LandsatReader {
              * Positive latitude value indicates north latitude; negative value indicates south latitude.
              * Units are in degrees.
              */
-            case "CORNER_UL_LON_PRODUCT": parseCorner( 8, value); break;
-            case "CORNER_UL_LAT_PRODUCT": parseCorner( 9, value); break;
-            case "CORNER_UR_LON_PRODUCT": parseCorner(10, value); break;
-            case "CORNER_UR_LAT_PRODUCT": parseCorner(11, value); break;
-            case "CORNER_LL_LON_PRODUCT": parseCorner(12, value); break;
-            case "CORNER_LL_LAT_PRODUCT": parseCorner(13, value); break;
-            case "CORNER_LR_LON_PRODUCT": parseCorner(14, value); break;
-            case "CORNER_LR_LAT_PRODUCT": parseCorner(15, value); break;
+            case "CORNER_UL_LON_PRODUCT": parseCorner(GEOGRAPHIC + 0, value); break;
+            case "CORNER_UL_LAT_PRODUCT": parseCorner(GEOGRAPHIC + 1, value); break;
+            case "CORNER_UR_LON_PRODUCT": parseCorner(GEOGRAPHIC + 2, value); break;
+            case "CORNER_UR_LAT_PRODUCT": parseCorner(GEOGRAPHIC + 3, value); break;
+            case "CORNER_LL_LON_PRODUCT": parseCorner(GEOGRAPHIC + 4, value); break;
+            case "CORNER_LL_LAT_PRODUCT": parseCorner(GEOGRAPHIC + 5, value); break;
+            case "CORNER_LR_LON_PRODUCT": parseCorner(GEOGRAPHIC + 6, value); break;
+            case "CORNER_LR_LAT_PRODUCT": parseCorner(GEOGRAPHIC + 7, value); break;
+            /*
+             * The upper-left (UL), upper-right (UR), lower-left (LL) and lower-right (LR) corner map
+             * projection X and Y coordinate, measured at the center of the pixel. Units are in meters.
+             */
+            case "CORNER_UL_PROJECTION_X_PRODUCT": parseCorner(PROJECTED + 0, value); break;
+            case "CORNER_UL_PROJECTION_Y_PRODUCT": parseCorner(PROJECTED + 1, value); break;
+            case "CORNER_UR_PROJECTION_X_PRODUCT": parseCorner(PROJECTED + 2, value); break;
+            case "CORNER_UR_PROJECTION_Y_PRODUCT": parseCorner(PROJECTED + 3, value); break;
+            case "CORNER_LL_PROJECTION_X_PRODUCT": parseCorner(PROJECTED + 4, value); break;
+            case "CORNER_LL_PROJECTION_Y_PRODUCT": parseCorner(PROJECTED + 5, value); break;
+            case "CORNER_LR_PROJECTION_X_PRODUCT": parseCorner(PROJECTED + 6, value); break;
+            case "CORNER_LR_PROJECTION_Y_PRODUCT": parseCorner(PROJECTED + 7, value); break;
+            /*
+             * The number of product lines and samples for the panchromatic, reflective and thermal bands.
+             * Those parameters are only present if the corresponding band is present in the product.
+             */
+            case "PANCHROMATIC_LINES":   parseGridSize(PANCHROMATIC + 1, value); break;
+            case "PANCHROMATIC_SAMPLES": parseGridSize(PANCHROMATIC,     value); break;
+            case "REFLECTIVE_LINES":     parseGridSize(REFLECTIVE + 1,   value); break;
+            case "REFLECTIVE_SAMPLES":   parseGridSize(REFLECTIVE,       value); break;
+            case "THERMAL_LINES":        parseGridSize(THERMAL + 1,      value); break;
+            case "THERMAL_SAMPLES":      parseGridSize(THERMAL,          value); break;
+            /*
+             * The grid cell size in meters used in creating the image for the band, if part of the product.
+             * This parameter is only included if the corresponding band is included in the product.
+             */
+            case "GRID_CELL_SIZE_PANCHROMATIC":
+            case "GRID_CELL_SIZE_REFLECTIVE":
+            case "GRID_CELL_SIZE_THERMAL": {
+                metadata.addResolution(Double.parseDouble(value));
+                break;
+            }
+            /*
+             * The file name for a band. This parameter is only present if the band is included in the product.
+             * We
+             */
+            case "FILE_NAME_BAND_": {
+                final DefaultBand db = band(key, band);
+                if (db != null) {
+                    db.getNames().add(new DefaultIdentifier(value));
+                }
+                break;
+            }
             /*
              * The file name for L1 metadata.
              * Exemple: "LC81230522014071LGN00_MTL.txt".
@@ -472,7 +588,101 @@ final class LandsatReader {
                 metadata.setIlluminationElevationAngle(Double.parseDouble(value));
                 break;
             }
+
+            ////
+            //// GROUP = MIN_MAX_PIXEL_VALUE
+            ////
+
+            /*
+             * Minimum achievable spectral radiance value for a band 1.
+             * This parameter is only present if this band is included in the product.
+             */
+            case "QUANTIZE_CAL_MIN_BAND_": {
+                final Double v = metadata.parseDouble(value);       // Done first in case an exception is thrown.
+                final DefaultBand db = band(key, band);
+                if (db != null) {
+                    db.setMinValue(v);
+                }
+                break;
+            }
+            /*
+             * Maximum achievable spectral radiance value for a band 1.
+             * This parameter is only present if this band is included in the product.
+             */
+            case "QUANTIZE_CAL_MAX_BAND_": {
+                final Double v = metadata.parseDouble(value);       // Done first in case an exception is thrown.
+                final DefaultBand db = band(key, band);
+                if (db != null) {
+                    db.setMaxValue(v);
+                }
+                break;
+            }
+
+            ////
+            //// GROUP = RADIOMETRIC_RESCALING
+            ////
+
+            /*
+             * The multiplicative rescaling factor used to convert calibrated DN to Radiance units for a band.
+             * Unit is W/(m² sr um)/DN.
+             */
+            case "RADIANCE_MULT_BAND_": {
+                setTransferFunction(key, band, true, value);
+                break;
+            }
+            /*
+             * The additive rescaling factor used to convert calibrated DN to Radiance units for a band.
+             * Unit is W/(m² sr um)/DN.
+             */
+            case "RADIANCE_ADD_BAND_": {
+                setTransferFunction(key, band, false, value);
+                break;
+            }
         }
+    }
+
+    /**
+     * Sets a component of the linear transfer function.
+     *
+     * @param  key      the key without its band number. Used only for formatting warning messages.
+     * @param  band     index of the band to set.
+     * @param  isScale  {@code true} for setting the scale factor, or {@code false} for setting the offset.
+     * @param  value    the value to set.
+     */
+    private void setTransferFunction(final String key, final int band, final boolean isScale, final String value) {
+        final Double v = metadata.parseDouble(value);       // Done first in case an exception is thrown.
+        final DefaultBand db = band(key, band);
+        if (db != null) {
+            db.setTransferFunctionType(TransferFunctionType.LINEAR);
+            if (isScale) {
+                db.setScaleFactor(v);
+            } else {
+                db.setOffset(v);
+            }
+        }
+    }
+
+    /**
+     * Returns the band at the given index, creating it if needed.
+     * If the given index is out of range, then this method logs a warning and returns {@code null}.
+     *
+     * @param  key    the key without its band number. Used only for formatting warning messages.
+     * @param  index  the band index.
+     */
+    private DefaultBand band(final String key, int index) {
+        if (index < 1 || index > BAND_NAMES.length) {
+            listeners.warning(errors().getString(Errors.Keys.UnexpectedValueInElement_2, key + index, index), null);
+            return null;
+        }
+        DefaultBand band = bands[--index];
+        if (band == null) {
+            band = new DefaultBand();
+            band.setDescription(new SimpleInternationalString(BAND_NAMES[index]));
+            band.setPeakResponse((double) WAVELENGTHS[index]);
+            band.setBoundUnits(SI.MetricPrefix.NANO(SI.METRE));
+            bands[index] = band;
+        }
+        return band;
     }
 
     /**
@@ -491,7 +701,7 @@ final class LandsatReader {
                 metadata.addExtent(t, t);
             } catch (UnsupportedOperationException e) {
                 // May happen if the temporal module (which is optional) is not on the classpath.
-                warning(e);
+                warning(null, null, e);
             }
         }
     }
@@ -508,7 +718,7 @@ final class LandsatReader {
         double ymin = Double.POSITIVE_INFINITY;
         double xmax = Double.NEGATIVE_INFINITY;
         double ymax = Double.NEGATIVE_INFINITY;
-        for (int i = base+8; --i >= 0;) {
+        for (int i = base+8; --i >= base;) {
             double v = corners[i];
             if (v < ymin) ymin = v;
             if (v > ymax) ymax = v;
@@ -537,10 +747,10 @@ final class LandsatReader {
             flushSceneTime();
         } catch (DateTimeException e) {
             // May happen if the SCENE_CENTER_TIME attribute was found without DATE_ACQUIRED.
-            warning(e);
+            warning(null, null, e);
         }
-        if (toBoundingBox(8)) {
-            metadata.addExtent(corners, 8);
+        if (toBoundingBox(GEOGRAPHIC)) {
+            metadata.addExtent(corners, GEOGRAPHIC);
         }
         final DefaultMetadata result = metadata.build(false);
         if (result != null) {
@@ -557,11 +767,17 @@ final class LandsatReader {
                 }
             }
             /*
-             * Set pre-defined information about all bands.
+             * Set information about all non-null bands.
              */
             final ContentInformation content = singletonOrNull(result.getContentInfo());
             if (content instanceof DefaultCoverageDescription) {
-                ((DefaultCoverageDescription) content).setAttributeGroups(singleton(BANDS));
+                final DefaultAttributeGroup attributes = new DefaultAttributeGroup(CoverageContentType.PHYSICAL_MEASUREMENT, null);
+                final List<DefaultBand> nonNulls = new ArrayList<>(bands.length);
+                for (final DefaultBand b : bands) {
+                    if (b != null) nonNulls.add(b);
+                }
+                attributes.setAttributes(nonNulls);
+                ((DefaultCoverageDescription) content).setAttributeGroups(singleton(attributes));
             }
             result.setMetadataStandards(Citations.ISO_19115);
             result.freeze();
@@ -577,30 +793,29 @@ final class LandsatReader {
     }
 
     /**
+     * Prepends the group name before the given key, if a group name exists.
+     * This is used only for formatting warning messages.
+     */
+    private String toLongName(String key) {
+        if (group != null) {
+            key = group + ':' + key;
+        }
+        return key;
+    }
+
+    /**
      * Invoked when a non-fatal exception occurred while reading metadata. This method
      * sends a record to the registered listeners if any, or logs the record otherwise.
      */
-    private void warning(final Exception e) {
-        listeners.warning(null, e);
-    }
-
-    /**
-     * Invoked when a non-fatal error occurred while reading metadata. This method
-     * sends a record to the registered listeners if any, or logs the record otherwise.
-     *
-     * @param  error     one of the {@link Errors.Keys} values.
-     * @param  argument  the argument (or an array of arguments) to format.
-     */
-    private void warning(final short error, final Object argument) {
-        listeners.warning(errors().getString(error, argument), null);
-    }
-
-    /**
-     * Invoked when an expected {@code END_GROUP} statement is missing.
-     */
-    private void missingEndGroup(final BufferedReader reader) {
-        final Object line = (reader instanceof LineNumberReader) ? ((LineNumberReader) reader).getLineNumber() : "?";
-        listeners.warning(errors().getString(Errors.Keys.ExpectedStatementAtLine_3, "END_GROUP " + group, getFilename(), line), null);
+    private void warning(String key, final BufferedReader reader ,final Exception e) {
+        if (key != null) {
+            String file = getFilename();
+            if (reader instanceof LineNumberReader) {
+                file = file + ":" + ((LineNumberReader) reader).getLineNumber();
+            }
+            key = errors().getString(Errors.Keys.CanNotReadPropertyInFile_2, toLongName(key), file);
+        }
+        listeners.warning(key, e);
     }
 
     /**
