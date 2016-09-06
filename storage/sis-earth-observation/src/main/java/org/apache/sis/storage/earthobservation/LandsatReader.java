@@ -19,12 +19,14 @@ package org.apache.sis.storage.earthobservation;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.io.LineNumberReader;
 import javax.measure.unit.SI;
+import javax.measure.unit.NonSI;
 
 import org.opengis.metadata.Metadata;
 import org.opengis.metadata.citation.Citation;
@@ -34,6 +36,11 @@ import org.opengis.metadata.content.CoverageContentType;
 import org.opengis.metadata.content.TransferFunctionType;
 import org.opengis.metadata.identification.Identification;
 import org.opengis.metadata.maintenance.ScopeCode;
+import org.opengis.parameter.ParameterValueGroup;
+import org.opengis.referencing.crs.ProjectedCRS;
+import org.opengis.referencing.operation.MathTransformFactory;
+import org.opengis.util.NoSuchIdentifierException;
+import org.opengis.util.FactoryException;
 
 import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.metadata.iso.DefaultIdentifier;
@@ -41,14 +48,23 @@ import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.metadata.iso.content.DefaultAttributeGroup;
 import org.apache.sis.metadata.iso.content.DefaultBand;
 import org.apache.sis.metadata.iso.content.DefaultCoverageDescription;
+import org.apache.sis.referencing.CRS;
+import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.DataStoreReferencingException;
+import org.apache.sis.util.Characters;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.logging.WarningListeners;
 import org.apache.sis.util.iso.SimpleInternationalString;
+import org.apache.sis.internal.referencing.ReferencingUtilities;
+import org.apache.sis.internal.referencing.provider.PolarStereographicB;
+import org.apache.sis.internal.referencing.provider.TransverseMercator;
 import org.apache.sis.internal.storage.MetadataBuilder;
+import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.util.StandardDateFormat;
+import org.apache.sis.internal.util.Constants;
 
 import static java.util.Collections.singleton;
 import static org.apache.sis.internal.util.CollectionsExt.singletonOrNull;
@@ -263,6 +279,23 @@ final class LandsatReader {
     private final DefaultBand[] bands;
 
     /**
+     * The enumeration for the {@code "DATUM"} element, to be used for creating the Coordinate Reference System.
+     */
+    private CommonCRS datum;
+
+    /**
+     * The Universal Transverse Mercator (UTM) zone as a number from 1 to 60 inclusive, or 0 if the zone has not
+     * yet been determined. If the parser determined that the projection is Polar Stereographic, then this field
+     * is set to -1.
+     */
+    private short utmZone;
+
+    /**
+     * The map projection parameters. This is used only for the polar stereographic case.
+     */
+    private ParameterValueGroup projection;
+
+    /**
      * Creates a new metadata parser.
      *
      * @param  filename   an identifier of the file being read, or {@code null} if unknown.
@@ -353,6 +386,17 @@ final class LandsatReader {
     }
 
     /**
+     * Parses the given string as a {@code double} value, returning a shared instance if possible.
+     *
+     * @param   value  the string value to parse.
+     * @return  the parsed value.
+     * @throws  NumberFormatException if the given value can not be parsed.
+     */
+    private Double parseDouble(final String value) throws NumberFormatException {
+        return metadata.shared(Double.valueOf(value));
+    }
+
+    /**
      * Parses the given value and stores it at the given index in the {@link #corners} array.
      * The given index must be one of the {@link #PROJECTED} or {@link #GEOGRAPHIC} constants
      * plus the ordinate index.
@@ -385,7 +429,7 @@ final class LandsatReader {
      * @throws IllegalArgumentException if the value is out of range.
      */
     private void parseKeyValuePair(final String key, final int band, final String value)
-            throws IllegalArgumentException, DateTimeException
+            throws IllegalArgumentException, DateTimeException, DataStoreException
     {
         switch (key) {
             case "GROUP": {
@@ -630,7 +674,7 @@ final class LandsatReader {
              * This parameter is only present if this band is included in the product.
              */
             case "QUANTIZE_CAL_MIN_BAND_": {
-                final Double v = metadata.parseDouble(value);       // Done first in case an exception is thrown.
+                final Double v = parseDouble(value);        // Done first in case an exception is thrown.
                 final DefaultBand db = band(key, band);
                 if (db != null) {
                     db.setMinValue(v);
@@ -642,7 +686,7 @@ final class LandsatReader {
              * This parameter is only present if this band is included in the product.
              */
             case "QUANTIZE_CAL_MAX_BAND_": {
-                final Double v = metadata.parseDouble(value);       // Done first in case an exception is thrown.
+                final Double v = parseDouble(value);        // Done first in case an exception is thrown.
                 final DefaultBand db = band(key, band);
                 if (db != null) {
                     db.setMaxValue(v);
@@ -670,6 +714,62 @@ final class LandsatReader {
                 setTransferFunction(key, band, false, value);
                 break;
             }
+
+            ////
+            //// GROUP = PROJECTION_PARAMETERS
+            ////
+
+            /*
+             * The map projection used in creating the image.
+             * Universal Transverse Mercator (UTM) or Polar Stereographic (PS).
+             */
+            case "MAP_PROJECTION": {
+                if ("UTM".equalsIgnoreCase(value)) {
+                    projection = null;
+                } else if ("PS".equalsIgnoreCase(value)) try {
+                    projection = DefaultFactories.forBuildin(MathTransformFactory.class)
+                                    .getDefaultParameters(Constants.EPSG + ':' + PolarStereographicB.IDENTIFIER);
+                    utmZone = -1;
+                } catch (NoSuchIdentifierException e) {
+                    // Should never happen with Apache SIS implementation of MathTransformFactory.
+                    throw new DataStoreReferencingException(e);
+                }
+                break;
+            }
+            /*
+             * The datum used in creating the image. This is usually "WGS84".
+             * We ignore the "ELLIPSOID" attribute because it is implied by the datum.
+             */
+            case "DATUM": {
+                for (final CommonCRS c : CommonCRS.values()) {
+                    if (CharSequences.equalsFiltered(c.name(), value, Characters.Filter.LETTERS_AND_DIGITS, true)) {
+                        datum = c;
+                        return;
+                    }
+                }
+                listeners.warning(errors().getString(Errors.Keys.UnexpectedValueInElement_2, value, key), null);
+                break;
+            }
+            /*
+             * The value used to indicate the zone number. This parameter is only included for the UTM projection.
+             * If this parameter is defined more than once (which should be illegal), only the first occurrence is
+             * retained. If the projection is polar stereographic, the parameter is ignored.
+             */
+            case "UTM_ZONE": {
+                if (utmZone == 0) {
+                    utmZone = Short.parseShort(value);
+                }
+                break;
+            }
+            /*
+             * Polar Stereographic projection parameters. Most parameters do not vary, except the latitude of
+             * true scale which is -71 for scenes over Antarctica and 71 for off-nadir scenes at the North Pole.
+             * If the datum is WGS84, then this is equivalent to EPSG:3031 and EPSG:3995 respectively.
+             */
+            case "VERTICAL_LON_FROM_POLE": setProjectionParameter(key, Constants.CENTRAL_MERIDIAN,    value, false); break;
+            case "TRUE_SCALE_LAT":         setProjectionParameter(key, Constants.STANDARD_PARALLEL_1, value, false); break;
+            case "FALSE_EASTING":          setProjectionParameter(key, Constants.FALSE_EASTING,       value, true);  break;
+            case "FALSE_NORTHING":         setProjectionParameter(key, Constants.FALSE_NORTHING,      value, true);  break;
         }
     }
 
@@ -682,7 +782,7 @@ final class LandsatReader {
      * @param  value    the value to set.
      */
     private void setTransferFunction(final String key, final int band, final boolean isScale, final String value) {
-        final Double v = metadata.parseDouble(value);       // Done first in case an exception is thrown.
+        final Double v = parseDouble(value);            // Done first in case an exception is thrown.
         final DefaultBand db = band(key, band);
         if (db != null) {
             db.setTransferFunctionType(TransferFunctionType.LINEAR);
@@ -715,6 +815,22 @@ final class LandsatReader {
             bands[index] = band;
         }
         return band;
+    }
+
+    /**
+     * Sets a map projection parameter. The parameter is ignored if the projection has not been set.
+     *
+     * @param key       the Landsat key, for formatting error message if needed.
+     * @param name      the projection parameter name.
+     * @param value     the parameter value.
+     * @param isLinear  {@code true} for value in metres, or {@code false} for value in degrees.
+     */
+    private void setProjectionParameter(final String key, final String name, final String value, final boolean isLinear) {
+        if (projection != null) {
+            projection.parameter(name).setValue(Double.parseDouble(value), isLinear ? SI.METRE : NonSI.DEGREE_ANGLE);
+        } else {
+            listeners.warning(errors().getString(Errors.Keys.UnexpectedParameter_1, key), null);
+        }
     }
 
     /**
@@ -771,8 +887,10 @@ final class LandsatReader {
     /**
      * Returns the metadata about the resources described in the Landsat file.
      * The {@link #read(BufferedReader)} method must be invoked at least once before.
+     *
+     * @throws FactoryException if an error occurred while creating the Coordinate Reference System.
      */
-    final Metadata getMetadata() {
+    final Metadata getMetadata() throws FactoryException {
         metadata.add(Locale.ENGLISH);
         metadata.add(ScopeCode.DATASET);
         try {
@@ -780,6 +898,32 @@ final class LandsatReader {
         } catch (DateTimeException e) {
             // May happen if the SCENE_CENTER_TIME attribute was found without DATE_ACQUIRED.
             warning(null, null, e);
+        }
+        /*
+         * Create the Coordinate Reference System. We normally have only one of UTM or Polar Stereographic,
+         * but this block is nevertheless capable to take both (such metadata are likely to be invalid, but
+         * we can not guess which of the two CRS is correct).
+         */
+        if (datum != null) {
+            if (utmZone > 0) {
+                metadata.add(datum.UTM(1, TransverseMercator.centralMeridian(utmZone)));
+            }
+            if (projection != null) {
+                final double sp = projection.parameter(Constants.STANDARD_PARALLEL_1).doubleValue();
+                ProjectedCRS crs = (ProjectedCRS) CRS.forCode(Constants.EPSG + ":" +
+                        (sp >= 0 ? Constants.EPSG_ARCTIC_POLAR_STEREOGRAPHIC         // Standard parallel = 71°N
+                                 : Constants.EPSG_ANTARCTIC_POLAR_STEREOGRAPHIC));   // Standard parallel = 71°S
+                if (datum != CommonCRS.WGS84 || Math.abs(sp) != 71
+                        || projection.parameter(Constants.FALSE_EASTING)   .doubleValue() != 0
+                        || projection.parameter(Constants.FALSE_NORTHING)  .doubleValue() != 0
+                        || projection.parameter(Constants.CENTRAL_MERIDIAN).doubleValue() != 0)
+                {
+                    crs = ReferencingUtilities.createProjectedCRS(
+                            Collections.singletonMap(ProjectedCRS.NAME_KEY, "Polar stereographic"),
+                            datum.geographic(), projection, crs.getCoordinateSystem());
+                }
+                metadata.add(crs);
+            }
         }
         /*
          * Set information about envelope (or geographic area) and grid size.

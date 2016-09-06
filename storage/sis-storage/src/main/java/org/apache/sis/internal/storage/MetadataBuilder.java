@@ -1243,30 +1243,27 @@ parse:      for (int i = 0; i < length;) {
     }
 
     /**
-     * Parses the given {@code double} value, returning a shared instance if possible.
+     * Returns a shared instance of the given value.
      * This is a helper method for callers who want to set themselves some additional
      * metadata values on the instance returned by {@link #build(boolean)}.
      *
-     * @param   value  the string value to parse.
-     * @return  the parsed value.
-     * @throws  NumberFormatException if the given value can not be parsed.
+     * @param   value  a double value.
+     * @return  the same value, but as an existing instance if possible.
      */
-    public final Double parseDouble(final String value) throws NumberFormatException {
-        return shared(Double.valueOf(value));
-    }
-
-    /**
-     * Returns a shared instance of the given value.
-     */
-    private Double shared(final Double value) {
+    public final Double shared(final Double value) {
         final Number existing = sharedNumbers.putIfAbsent(value, value);
         return (existing != null) ? (Double) existing : value;
     }
 
     /**
      * Returns a shared instance of the given value.
+     * This is a helper method for callers who want to set themselves some additional
+     * metadata values on the instance returned by {@link #build(boolean)}.
+     *
+     * @param   value  an integer value.
+     * @return  the same value, but as an existing instance if possible.
      */
-    private Integer shared(final Integer value) {
+    public final Integer shared(final Integer value) {
         final Number existing = sharedNumbers.putIfAbsent(value, value);
         return (existing != null) ? (Integer) existing : value;
     }

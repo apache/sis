@@ -199,6 +199,18 @@ public final class Constants extends Static {
     public static final short EPSG_AXIS_DEGREES = 9122;
 
     /**
+     * EPSG code of "WGS 84 / Arctic Polar Stereographic" projection.
+     * Latitude of standard parallel is 71°N. All other parameters are zero.
+     */
+    public static final short EPSG_ARCTIC_POLAR_STEREOGRAPHIC = 3995;
+
+    /**
+     * EPSG code of "WGS 84 / Antarctic Polar Stereographic" projection.
+     * Latitude of standard parallel is 71°S. All other parameters are zero.
+     */
+    public static final short EPSG_ANTARCTIC_POLAR_STEREOGRAPHIC = 3031;
+
+    /**
      * Do not allow instantiation of this class.
      */
     private Constants() {

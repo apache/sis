@@ -22,6 +22,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import org.opengis.metadata.Metadata;
+import org.opengis.util.FactoryException;
 import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.logging.EmptyWarningListeners;
@@ -77,9 +78,10 @@ public class LandsatReaderTest extends TestCase {
      *
      * @throws IOException if an error occurred while reading the test file.
      * @throws DataStoreException if a property value can not be parsed as a number or a date.
+     * @throws FactoryException if an error occurred while creating the Coordinate Reference System.
      */
     @Test
-    public void testRead() throws IOException, DataStoreException {
+    public void testRead() throws IOException, DataStoreException, FactoryException {
         final Metadata actual;
         try (BufferedReader in = new BufferedReader(new InputStreamReader(
                 LandsatReaderTest.class.getResourceAsStream("LandsatTest.txt"), "UTF-8")))
@@ -120,6 +122,7 @@ public class LandsatReaderTest extends TestCase {
                 + "  │   │   ├─Dimension name……………………………………………………… Line\n"
                 + "  │   │   └─Dimension size……………………………………………………… 7800\n"
                 + "  │   └─Transformation parameter availability…… false\n"
+                + "  ├─Reference system info………………………………………………………… EPSG:WGS 84 / UTM zone 49N\n"
                 + "  ├─Identification info\n"
                 + "  │   ├─Citation\n"
                 + "  │   │   ├─Date\n"
