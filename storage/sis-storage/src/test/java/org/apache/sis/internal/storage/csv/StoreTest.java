@@ -19,8 +19,8 @@ package org.apache.sis.internal.storage.csv;
 import java.util.Iterator;
 import java.io.StringReader;
 import org.opengis.metadata.Metadata;
+import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.extent.GeographicBoundingBox;
-import org.opengis.metadata.extent.SpatialTemporalExtent;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.test.TestCase;
@@ -38,7 +38,7 @@ import org.opengis.feature.Feature;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.7
- * @version 0.7
+ * @version 0.8
  * @module
  */
 public final class StoreTest extends TestCase {
@@ -60,21 +60,18 @@ public final class StoreTest extends TestCase {
      * @throws DataStoreException if an error occurred while parsing the data.
      */
     @Test
-    @org.junit.Ignore("Pending completion of sis-referencing")
     public void testGetMetadata() throws DataStoreException {
         final Metadata metadata;
         try (Store store = new Store(new StorageConnector(new StringReader(TEST_DATA)))) {
             metadata = store.getMetadata();
         }
-        final SpatialTemporalExtent extent = (SpatialTemporalExtent) getSingleton(getSingleton(getSingleton(
-                metadata.getIdentificationInfo()).getExtents()).getTemporalElements());
-        final GeographicBoundingBox bbox = (GeographicBoundingBox) getSingleton(extent.getSpatialExtent());
+        final Extent extent = getSingleton(getSingleton(metadata.getIdentificationInfo()).getExtents());
+        final GeographicBoundingBox bbox = (GeographicBoundingBox) getSingleton(extent.getGeographicElements());
         assertEquals("westBoundLongitude", 50.23, bbox.getWestBoundLongitude(), STRICT);
         assertEquals("eastBoundLongitude", 50.31, bbox.getEastBoundLongitude(), STRICT);
         assertEquals("southBoundLatitude",  9.23, bbox.getSouthBoundLatitude(), STRICT);
         assertEquals("northBoundLatitude",  9.27, bbox.getNorthBoundLatitude(), STRICT);
-        assertNull("Should not have a vertical extent.", extent.getVerticalExtent());
-        assertNotNull("Should have a temporal extent", extent.getExtent());
+        assertTrue("Should not have a vertical extent.", extent.getVerticalElements().isEmpty());
     }
 
     /**
@@ -85,7 +82,7 @@ public final class StoreTest extends TestCase {
     @Test
     public void testGetFeatures() throws DataStoreException {
         try (Store store = new Store(new StorageConnector(new StringReader(TEST_DATA)))) {
-            final Iterator<Feature> it = store.getFeatures();
+            final Iterator<Feature> it = store.getFeatures().iterator();
             assertFeatureEquals(it.next(), "a", new double[] {11, 2, 12, 3},        "walking", 1);
             assertFeatureEquals(it.next(), "b", new double[] {10, 2, 11, 3},        "walking", 2);
             assertFeatureEquals(it.next(), "a", new double[] {12, 3, 10, 3},        "walking", 2);

@@ -23,14 +23,27 @@
  *   <li><a href="http://docs.opengeospatial.org/is/14-084r2/14-084r2.html">OGC® Moving Features Encoding Extension:
  *     Simple Comma Separated Values (CSV)</a> with some rules relaxed. The Apache SIS implementation allows the CSV
  *     file to have no date, thus allowing use of OGC 14-084 syntax for static features in addition to moving ones.</li>
+ *   <li><a href="http://www.ietf.org/rfc/rfc4180.txt">Common Format and MIME Type for Comma-Separated Values (CSV) Files</a>.
+ *     This is supported indirectly since above OGC specification is an extension of this IETF specification.</li>
  * </ul>
  *
- * The above extends the <a href="http://www.ietf.org/rfc/rfc4180.txt">Common Format and MIME Type for
- * Comma-Separated Values (CSV) Files</a> specification.
+ * Example of moving features CSV file (adapted from OGC specification):
+ *
+ * {@preformat text
+ *   &#64;stboundedby, urn:x-ogc:def:crs:EPSG::4326, 2D, 9.23 50.23, 9.27 50.31, 2012-01-17T12:33:41Z, 2012-01-17T12:37:00Z, sec
+ *   &#64;columns,mfidref,trajectory,state,xsd:token,”type code”,xsd:integer
+ *   a,  10, 150, 11.0 2.0 12.0 3.0, walking, 1
+ *   b,  10, 190, 10.0 2.0 11.0 3.0, walking, 2
+ *   a, 150, 190, 12.0 3.0 10.0 3.0, walking, 2
+ *   c,  10, 190, 12.0 1.0 10.0 2.0 11.0 3.0, vehicle, 1
+ * }
+ *
+ * <div class="section">Departures from OGC specification</div>
+ * If the character encoding is not explicitely specified, then Apache SIS uses the platform default instead of UTF-8.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.7
- * @version 0.7
+ * @version 0.8
  * @module
  */
 package org.apache.sis.internal.storage.csv;

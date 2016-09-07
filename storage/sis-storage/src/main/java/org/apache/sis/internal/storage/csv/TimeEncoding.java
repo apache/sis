@@ -66,8 +66,8 @@ final class TimeEncoding {
     /**
      * Converts the given timestamp to the values used in the temporal coordinate reference system.
      *
-     * @param time Number of milliseconds elapsed since January 1st, 1970 midnight UTC.
-     * @return The value to use with the temporal coordinate reference system.
+     * @param  time  number of milliseconds elapsed since January 1st, 1970 midnight UTC.
+     * @return the value to use with the temporal coordinate reference system.
      */
     final double toCRS(final long time) {
         return (time - origin) / interval;
@@ -76,8 +76,8 @@ final class TimeEncoding {
     /**
      * Reverse of {@link #toCRS(long)}.
      *
-     * @param time The value used with the temporal coordinate reference system.
-     * @return Number of milliseconds elapsed since January 1st, 1970 midnight UTC.
+     * @param  time  the value used with the temporal coordinate reference system.
+     * @return number of milliseconds elapsed since January 1st, 1970 midnight UTC.
      */
     final long toMillis(final double time) {
         return Math.round(time * interval) + origin;

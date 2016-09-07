@@ -30,6 +30,7 @@ import java.text.ParseException;
 import java.time.DateTimeException;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
@@ -111,14 +112,14 @@ public final class StandardDateFormat extends DateFormat {
      *       the date is considered approximative). Note that this is consistent with ISO 19162 requirement that
      *       dates are always in UTC, even if Apache SIS allows some flexibility.</li>
      *   <li>Otherwise if the timezone is not {@code null} and not UTC, then this method returns an {@link OffsetDateTime}.</li>
-     *   <li>Otherwise this method returns an {@link Instant}.</li>
+     *   <li>Otherwise this method returns a {@link LocalDateTime} in the given timezone.</li>
      * </ul>
      *
      * @param  date the date to convert, or {@code null}.
      * @param  zone the timezone of the temporal object to obtain, or {@code null} for UTC.
      * @return the temporal object for the given date, or {@code null} if the given argument was null.
      */
-    public static Temporal toHeuristicTemporal(final Date date, final ZoneId zone) {
+    public static Temporal toHeuristicTemporal(final Date date, ZoneId zone) {
         if (date == null) {
             return null;
         }
@@ -127,10 +128,12 @@ public final class StandardDateFormat extends DateFormat {
             return LocalDate.ofEpochDay(time / MILLISECONDS_PER_DAY);
         }
         final Instant instant = Instant.ofEpochMilli(time);
-        if (zone != null && !zone.equals(ZoneOffset.UTC)) {
+        if (zone == null) {
+            zone = ZoneOffset.UTC;
+        } else if (!zone.equals(ZoneOffset.UTC)) {
             return OffsetDateTime.ofInstant(instant, zone);
         }
-        return instant;
+        return LocalDateTime.ofInstant(instant, zone);
     }
 
     /**
