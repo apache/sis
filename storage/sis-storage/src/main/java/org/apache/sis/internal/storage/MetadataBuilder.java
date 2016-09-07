@@ -67,6 +67,7 @@ import org.apache.sis.metadata.iso.acquisition.DefaultEvent;
 import org.apache.sis.metadata.iso.acquisition.DefaultInstrument;
 import org.apache.sis.metadata.iso.acquisition.DefaultOperation;
 import org.apache.sis.metadata.iso.acquisition.DefaultPlatform;
+import org.apache.sis.metadata.iso.acquisition.DefaultRequirement;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.iso.Types;
@@ -1062,6 +1063,19 @@ parse:      for (int i = 0; i < length;) {
             op.setType(OperationType.REAL);
             op.setStatus(Progress.COMPLETED);
             addIfNotPresent(acquisition().getOperations(), op);
+        }
+    }
+
+    /**
+     * Returns the identifier of the requirement to be satisfied by data acquisition.
+     *
+     * @param  identifier  requirement identifier, or {@code null}.
+     */
+    public final void addAcquisitionRequirement(String identifier) {
+        if (identifier != null && !(identifier = identifier.trim()).isEmpty()) {
+            final DefaultRequirement r = new DefaultRequirement();
+            r.setIdentifier(new DefaultIdentifier(identifier));
+            acquisition().getAcquisitionRequirements().add(r);
         }
     }
 
