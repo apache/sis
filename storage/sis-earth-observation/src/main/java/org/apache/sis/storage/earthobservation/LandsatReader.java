@@ -65,6 +65,7 @@ import org.apache.sis.internal.storage.MetadataBuilder;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.util.StandardDateFormat;
 import org.apache.sis.internal.util.Constants;
+import org.apache.sis.internal.util.Utilities;
 
 import static java.util.Collections.singleton;
 import static org.apache.sis.internal.util.CollectionsExt.singletonOrNull;
@@ -463,7 +464,10 @@ final class LandsatReader {
              * Routing, and Metrics (TRAM) order number and UUUUU = 5-digit TRAM unit number.
              * Example: "0501403126384_00011"
              */
-// TODO     case "REQUEST_ID":
+            case "REQUEST_ID": {
+                metadata.addAcquisitionRequirement(value);
+                break;
+            }
             /*
              * The unique Landsat scene identifier.
              * Format is {@code Ls8ppprrrYYYYDDDGGGVV}.
@@ -741,13 +745,7 @@ final class LandsatReader {
              * We ignore the "ELLIPSOID" attribute because it is implied by the datum.
              */
             case "DATUM": {
-                for (final CommonCRS c : CommonCRS.values()) {
-                    if (CharSequences.equalsFiltered(c.name(), value, Characters.Filter.LETTERS_AND_DIGITS, true)) {
-                        datum = c;
-                        return;
-                    }
-                }
-                listeners.warning(errors().getString(Errors.Keys.UnexpectedValueInElement_2, value, key), null);
+                datum = CommonCRS.valueOf(Utilities.toUpperCase(value, Characters.Filter.LETTERS_AND_DIGITS));
                 break;
             }
             /*
