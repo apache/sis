@@ -50,7 +50,9 @@ import org.apache.sis.metadata.iso.spatial.DefaultGridSpatialRepresentation;
 import org.apache.sis.metadata.iso.content.DefaultAttributeGroup;
 import org.apache.sis.metadata.iso.content.DefaultSampleDimension;
 import org.apache.sis.metadata.iso.content.DefaultCoverageDescription;
+import org.apache.sis.metadata.iso.content.DefaultFeatureCatalogueDescription;
 import org.apache.sis.metadata.iso.content.DefaultImageDescription;
+import org.apache.sis.metadata.iso.content.DefaultFeatureTypeInfo;
 import org.apache.sis.metadata.iso.citation.AbstractParty;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.citation.DefaultCitationDate;
@@ -77,6 +79,7 @@ import static org.apache.sis.internal.util.StandardDateFormat.MILLISECONDS_PER_D
 
 // Branch-dependent imports
 import java.time.LocalDate;
+import org.opengis.feature.FeatureType;
 
 
 /**
@@ -165,6 +168,11 @@ public class MetadataBuilder {
      * May also be an instance of {@link DefaultImageDescription} if {@link #electromagnetic} is {@code true}.
      */
     private DefaultCoverageDescription coverageDescription;
+
+    /**
+     * Information about the feature types, or {@code null} if none.
+     */
+    private DefaultFeatureCatalogueDescription featureDescription;
 
     /**
      * Information about content type for groups of attributes for a specific range dimension, or {@code null} if none.
@@ -334,6 +342,20 @@ public class MetadataBuilder {
             coverageDescription = null;
         }
         this.electromagnetic = electromagnetic;
+    }
+
+    /**
+     * Commits all pending information under the metadata "feature catalog" node.
+     * If there is no pending feature description, then invoking this method has no effect.
+     * If new feature descriptions are added after this method call, they will be stored in a new element.
+     *
+     * <p>This method does not need to be invoked unless a new "feature catalog description" node is desired.</p>
+     */
+    public final void newFeatureTypes() {
+        if (featureDescription != null) {
+            metadata().getContentInfo().add(featureDescription);
+            featureDescription = null;
+        }
     }
 
     /**
@@ -521,6 +543,18 @@ public class MetadataBuilder {
     }
 
     /**
+     * Creates the feature descriptions object if it does not already exists, then returns it.
+     *
+     * @return the feature descriptions (never {@code null}).
+     */
+    private DefaultFeatureCatalogueDescription featureDescription() {
+        if (featureDescription == null) {
+            featureDescription = new DefaultFeatureCatalogueDescription();
+        }
+        return featureDescription;
+    }
+
+    /**
      * Creates the distribution format object if it does not already exists, then returns it.
      *
      * @return the distribution format (never {@code null}).
@@ -588,6 +622,22 @@ public class MetadataBuilder {
     public final void add(final ScopeCode scope) {
         if (scope != null) {
             metadata().getMetadataScopes().add(new DefaultMetadataScope(scope, null));
+        }
+    }
+
+    /**
+     * Adds descriptions for the given feature.
+     *
+     * @param  type         the feature type to add, or {@code null}.
+     * @param  occurrences  number of instances of the given features, or {@code null} if unknown.
+     */
+    public final void add(final FeatureType type, final Integer occurrences) {
+        if (type != null) {
+            final DefaultFeatureTypeInfo info = new DefaultFeatureTypeInfo(type.getName());
+            if (occurrences != null) {
+                info.setFeatureInstanceCount(shared(occurrences));
+            }
+            featureDescription().getFeatureTypeInfo().add(info);
         }
     }
 
@@ -1245,6 +1295,7 @@ parse:      for (int i = 0; i < length;) {
     public final DefaultMetadata build(final boolean freeze) {
         newIdentification();
         newGridRepresentation();
+        newFeatureTypes();
         newCoverage(false);
         newDistribution();
         newAcquisition();

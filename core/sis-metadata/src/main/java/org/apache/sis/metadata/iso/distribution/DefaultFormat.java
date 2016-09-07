@@ -113,6 +113,7 @@ public class DefaultFormat extends ISOMetadata implements Format {
      * <table class="sis">
      *   <caption>Specification titles for well-known format names</caption>
      *   <tr><th>Name</th>    <th>Specification title</th></tr>
+     *   <tr><td>CSV</td>     <td>Common Format and MIME Type for Comma-Separated Values (CSV) Files</td></tr>
      *   <tr><td>GeoTIFF</td> <td>GeoTIFF Coverage Encoding Profile</td></tr>
      *   <tr><td>NetCDF</td>  <td>NetCDF Classic and 64-bit Offset Format</td></tr>
      *   <tr><td>PNG</td>     <td>PNG (Portable Network Graphics) Specification</td></tr>
@@ -137,6 +138,8 @@ public class DefaultFormat extends ISOMetadata implements Format {
                     title = "NetCDF Classic and 64-bit Offset Format";
                 } else if (keyword.equalsIgnoreCase("PNG")) {
                     title = "PNG (Portable Network Graphics) Specification";
+                } else if (keyword.equalsIgnoreCase("CSV")) {
+                    title = "Common Format and MIME Type for Comma-Separated Values (CSV) Files";
                 }
                 citation.setTitle(Types.toInternationalString(title));
                 citation.setAlternateTitles(Collections.singleton(Types.toInternationalString(name)));
