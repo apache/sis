@@ -83,7 +83,7 @@ public class NetcdfStore extends DataStore {
      * @throws DataStoreException if an error occurred while reading the data.
      */
     @Override
-    public Metadata getMetadata() throws DataStoreException {
+    public synchronized Metadata getMetadata() throws DataStoreException {
         if (metadata == null) try {
             final MetadataReader reader = new MetadataReader(decoder);
             metadata = reader.read();
@@ -102,7 +102,7 @@ public class NetcdfStore extends DataStore {
      * @throws DataStoreException if an error occurred while closing the NetCDF file.
      */
     @Override
-    public void close() throws DataStoreException {
+    public synchronized void close() throws DataStoreException {
         metadata = null;
         try {
             decoder.close();
