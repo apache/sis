@@ -75,7 +75,7 @@ public class DefaultFeatureTypeInfo extends ISOMetadata implements FeatureTypeIn
     /**
      * Constructs a feature type info initialized to the specified name.
      *
-     * @param featureTypeName Name of the feature type.
+     * @param  featureTypeName  name of the feature type.
      */
     public DefaultFeatureTypeInfo(final GenericName featureTypeName) {
         this.featureTypeName = featureTypeName;
@@ -93,7 +93,7 @@ public class DefaultFeatureTypeInfo extends ISOMetadata implements FeatureTypeIn
      * metadata instances can also be obtained by unmarshalling an invalid XML document.
      * </div>
      *
-     * @param object The metadata to copy values from, or {@code null} if none.
+     * @param  object  the metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(FeatureTypeInfo)
      */
@@ -119,8 +119,8 @@ public class DefaultFeatureTypeInfo extends ISOMetadata implements FeatureTypeIn
      *       metadata contained in the given object are not recursively copied.</li>
      * </ul>
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultFeatureTypeInfo castOrCopy(final FeatureTypeInfo object) {
@@ -133,7 +133,7 @@ public class DefaultFeatureTypeInfo extends ISOMetadata implements FeatureTypeIn
     /**
      * Returns the name of the feature type.
      *
-     * @return Name of the feature type.
+     * @return name of the feature type.
      *
      * @see org.apache.sis.feature.DefaultFeatureType#getName()
      */
@@ -146,7 +146,7 @@ public class DefaultFeatureTypeInfo extends ISOMetadata implements FeatureTypeIn
     /**
      * Sets the name of the feature type.
      *
-     * @param newValue The new name.
+     * @param  newValue  the new name.
      */
     public void setFeatureTypeName(final GenericName newValue) {
         checkWritePermission();
@@ -156,7 +156,7 @@ public class DefaultFeatureTypeInfo extends ISOMetadata implements FeatureTypeIn
     /**
      * Returns the number of occurrence of feature instances for this feature types, or {@code null} if none.
      *
-     * @return The number of occurrence of feature instances for this feature types, or {@code null} if none.
+     * @return the number of occurrence of feature instances for this feature types, or {@code null} if none.
      */
     @Override
     @ValueRange(minimum = 1)
@@ -168,7 +168,7 @@ public class DefaultFeatureTypeInfo extends ISOMetadata implements FeatureTypeIn
     /**
      * Sets a new number of occurrence of feature instances for this feature types.
      *
-     * @param newValue the new number of occurrence.
+     * @param  newValue  the new number of occurrence.
      * @throws IllegalArgumentException if the given value is negative.
      */
     public void setFeatureInstanceCount(final Integer newValue) {

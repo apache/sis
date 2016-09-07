@@ -29,9 +29,8 @@ import org.apache.sis.util.logging.WarningListeners;
  * Manages a series of features, coverages or sensor data.
  *
  * <div class="section">Thread safety policy</div>
- * This {@code DataStore} base class is thread-safe. However subclasses are usually not.
- * Unless otherwise specified by subclasses, users should assume that {@code DataStore}
- * instances are not thread-safe.
+ * This {@code DataStore} base class is thread-safe. However subclasses do not need to be thread-safe.
+ * Unless otherwise specified, users should assume that {@code DataStore} instances are not thread-safe.
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
@@ -77,7 +76,7 @@ public abstract class DataStore implements Localized, AutoCloseable {
     /**
      * Sets the locale to use for formatting warnings and other messages.
      *
-     * @param locale The new locale to use.
+     * @param locale  the new locale to use.
      */
     public synchronized void setLocale(final Locale locale) {
         ArgumentChecks.ensureNonNull("locale", locale);
@@ -89,7 +88,7 @@ public abstract class DataStore implements Localized, AutoCloseable {
      * information such as the spatiotemporal extent of the dataset, contact information about the creator
      * or distributor, data quality, update frequency, usage constraints and more.
      *
-     * @return Information about the dataset, or {@code null} if none.
+     * @return information about the dataset, or {@code null} if none.
      * @throws DataStoreException if an error occurred while reading the data.
      */
     public abstract Metadata getMetadata() throws DataStoreException;
@@ -117,7 +116,7 @@ public abstract class DataStore implements Localized, AutoCloseable {
      *     }
      * }
      *
-     * @param  listener The listener to add.
+     * @param  listener  the listener to add.
      * @throws IllegalArgumentException if the given listener is already registered in this data store.
      */
     public void addWarningListener(final WarningListener<? super DataStore> listener)
@@ -129,7 +128,7 @@ public abstract class DataStore implements Localized, AutoCloseable {
     /**
      * Removes a previously registered listener.
      *
-     * @param  listener The listener to remove.
+     * @param  listener  the listener to remove.
      * @throws NoSuchElementException if the given listener is not registered in this data store.
      */
     public void removeWarningListener(final WarningListener<? super DataStore> listener)

@@ -80,7 +80,7 @@ public class DefaultDataFile extends ISOMetadata implements DataFile {
      * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
      * given object are not recursively copied.
      *
-     * @param object The metadata to copy values from, or {@code null} if none.
+     * @param object the metadata to copy values from, or {@code null} if none.
      *
      * @see #castOrCopy(DataFile)
      */
@@ -106,8 +106,8 @@ public class DefaultDataFile extends ISOMetadata implements DataFile {
      *       metadata contained in the given object are not recursively copied.</li>
      * </ul>
      *
-     * @param  object The object to get as a SIS implementation, or {@code null} if none.
-     * @return A SIS implementation containing the values of the given object (may be the
+     * @param  object the object to get as a SIS implementation, or {@code null} if none.
+     * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultDataFile castOrCopy(final DataFile object) {
@@ -123,7 +123,7 @@ public class DefaultDataFile extends ISOMetadata implements DataFile {
      * This attribute may be omitted when the dataset is composed of a single file and/or the
      * data does not relate to a feature catalogue.
      *
-     * @return List of features types concerned by the transfer data file.
+     * @return list of features types concerned by the transfer data file.
      */
     @Override
     @XmlElement(name = "featureType", namespace = Namespaces.GMX)
@@ -134,7 +134,7 @@ public class DefaultDataFile extends ISOMetadata implements DataFile {
     /**
      * Sets the list of feature types concerned by the transfer data file.
      *
-     * @param newValues The new feature type values.
+     * @param newValues the new feature type values.
      */
     public void setFeatureTypes(final Collection<? extends LocalName> newValues) {
         featureTypes = writeCollection(newValues, featureTypes, LocalName.class);
@@ -143,7 +143,7 @@ public class DefaultDataFile extends ISOMetadata implements DataFile {
     /**
      * Returns the format of the transfer data file.
      *
-     * @return Format of the transfer data file, or {@code null}.
+     * @return format of the transfer data file, or {@code null}.
      */
     @Override
     @XmlElement(name = "fileFormat", namespace = Namespaces.GMX, required = true)
@@ -154,7 +154,7 @@ public class DefaultDataFile extends ISOMetadata implements DataFile {
     /**
      * Sets the format of the transfer data file.
      *
-     * @param newValue The new file format value.
+     * @param newValue the new file format value.
      */
     public void setFileFormat(final Format newValue) {
         checkWritePermission();
