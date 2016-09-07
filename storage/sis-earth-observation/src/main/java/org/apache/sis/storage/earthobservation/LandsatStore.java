@@ -107,7 +107,7 @@ public class LandsatStore extends DataStore {
      * @throws DataStoreException if an error occurred while reading the data.
      */
     @Override
-    public Metadata getMetadata() throws DataStoreException {
+    public synchronized Metadata getMetadata() throws DataStoreException {
         if (metadata == null && source != null) try {
             try (BufferedReader reader = (source instanceof BufferedReader) ? (BufferedReader) source : new LineNumberReader(source)) {
                 source = null;      // Will be closed at the end of this try-catch block.
@@ -129,7 +129,7 @@ public class LandsatStore extends DataStore {
      * @throws DataStoreException if an error occurred while closing the Landsat file.
      */
     @Override
-    public void close() throws DataStoreException {
+    public synchronized void close() throws DataStoreException {
         metadata = null;
     }
 
