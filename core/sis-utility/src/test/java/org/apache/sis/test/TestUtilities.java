@@ -108,7 +108,7 @@ public final strictfp class TestUtilities extends Static {
      * of different test cases. This method does nothing if verbose output is not enabled,
      * because only the output of failed tests should be printed in such case.
      *
-     * @param title The title to write.
+     * @param  title  the title to write.
      */
     public static void printSeparator(final String title) {
         if (TestCase.VERBOSE) {
@@ -162,7 +162,7 @@ public final strictfp class TestUtilities extends Static {
      * the developer to reproduce the test with the exact same sequence of numbers.
      * Using this method, the seed can be retrieved in the messages sent to the output stream.</p>
      *
-     * @return A new random number generator initialized with a random seed.
+     * @return a new random number generator initialized with a random seed.
      */
     public static Random createRandomNumberGenerator() {
         long seed;
@@ -186,8 +186,8 @@ public final strictfp class TestUtilities extends Static {
      *   <li>Once the test has been fixed, remove the argument from the {@code createRandomNumberGenerator()} call.</li>
      * </ul>
      *
-     * @param  seed The random generator seed.
-     * @return A new random number generator initialized with the given seed.
+     * @param  seed  the random generator seed.
+     * @return a new random number generator initialized with the given seed.
      *
      * @since 0.5
      */
@@ -200,8 +200,8 @@ public final strictfp class TestUtilities extends Static {
     /**
      * Parses the date for the given string using the {@code "yyyy-MM-dd HH:mm:ss"} pattern in UTC timezone.
      *
-     * @param  date The date as a {@link String}.
-     * @return The date as a {@link Date}.
+     * @param  date  the date as a {@link String}.
+     * @return the date as a {@link Date}.
      */
     public static Date date(final String date) {
         ArgumentChecks.ensureNonNull("date", date);
@@ -217,8 +217,8 @@ public final strictfp class TestUtilities extends Static {
     /**
      * Formats the given date using the {@code "yyyy-MM-dd HH:mm:ss"} pattern in UTC timezone.
      *
-     * @param  date The date to format.
-     * @return The date as a {@link String}.
+     * @param  date  the date to format.
+     * @return the date as a {@link String}.
      */
     public static String format(final Date date) {
         ArgumentChecks.ensureNonNull("date", date);
@@ -231,9 +231,9 @@ public final strictfp class TestUtilities extends Static {
      * Formats the given value using the given formatter, and parses the text back to its value.
      * If the parsed value is not equal to the original one, an {@link AssertionError} is thrown.
      *
-     * @param  formatter The formatter to use for formatting and parsing.
-     * @param  value The value to format.
-     * @return The formatted value.
+     * @param  formatter  the formatter to use for formatting and parsing.
+     * @param  value      the value to format.
+     * @return the formatted value.
      */
     public static String formatAndParse(final Format formatter, final Object value) {
         final String text = formatter.format(value);
@@ -252,8 +252,8 @@ public final strictfp class TestUtilities extends Static {
      * Dates and times, if any, will be formatted using the {@code "yyyy-MM-dd HH:mm:ss"} pattern in UTC timezone.
      * This method is used mostly as a convenient way to verify the content of an ISO 19115 metadata object.
      *
-     * @param  table The table for which to get a string representation.
-     * @return A unlocalized string representation of the given tree table.
+     * @param  table  the table for which to get a string representation.
+     * @return a unlocalized string representation of the given tree table.
      */
     public static String formatNameAndValue(final TreeTable table) {
         synchronized (TestUtilities.class) {
@@ -290,8 +290,8 @@ public final strictfp class TestUtilities extends Static {
      * In such case, we can not compare the actual text content. The best we can do is to compare
      * the tree structure.
      *
-     * @param  tree The string representation of a tree.
-     * @return The structure of the given tree, without text.
+     * @param  tree  the string representation of a tree.
+     * @return the structure of the given tree, without text.
      */
     public static CharSequence[] toTreeStructure(final CharSequence tree) {
         final CharSequence[] lines = CharSequences.split(tree, '\n');
@@ -314,9 +314,9 @@ public final strictfp class TestUtilities extends Static {
      * Returns the single element from the given array. If the given array is null or
      * does not contains exactly one element, then an {@link AssertionError} is thrown.
      *
-     * @param  <E> The type of array elements.
-     * @param  array The array from which to get the singleton.
-     * @return The singleton element from the array.
+     * @param  <E>    the type of array elements.
+     * @param  array  the array from which to get the singleton.
+     * @return the singleton element from the array.
      */
     public static <E> E getSingleton(final E[] array) {
         assertNotNull("Null array.", array);
@@ -328,9 +328,9 @@ public final strictfp class TestUtilities extends Static {
      * Returns the single element from the given collection. If the given collection is null
      * or does not contains exactly one element, then an {@link AssertionError} is thrown.
      *
-     * @param  <E> The type of collection elements.
-     * @param  collection The collection from which to get the singleton.
-     * @return The singleton element from the collection.
+     * @param  <E>         the type of collection elements.
+     * @param  collection  the collection from which to get the singleton.
+     * @return the singleton element from the collection.
      */
     public static <E> E getSingleton(final Iterable<? extends E> collection) {
         assertNotNull("Null collection.", collection);
@@ -344,10 +344,10 @@ public final strictfp class TestUtilities extends Static {
     /**
      * Returns a copy of the given array with the last ordinate values dropped for each coordinates.
      *
-     * @param  coordinates The source coordinates from which to drop the last ordinate values.
-     * @param  sourceDim   Number of dimensions of each point in the {@code coordinates} array.
-     * @param  targetDim   Number of dimensions to retain.
-     * @return Copy of the given {@code coordinates} array with only the {@code targetDim} first dimension for each point.
+     * @param  coordinates  the source coordinates from which to drop the last ordinate values.
+     * @param  sourceDim    number of dimensions of each point in the {@code coordinates} array.
+     * @param  targetDim    number of dimensions to retain.
+     * @return copy of the given {@code coordinates} array with only the {@code targetDim} first dimension for each point.
      *
      * @since 0.7
      */
@@ -365,7 +365,7 @@ public final strictfp class TestUtilities extends Static {
      * If the given failure is not null, re-thrown it as an {@link Error} or
      * {@link RuntimeException}. Otherwise do nothing.
      *
-     * @param failure The exception to re-thrown if non-null.
+     * @param  failure  the exception to re-thrown if non-null.
      */
     public static void rethrownIfNotNull(final Throwable failure) {
         if (failure != null) {
@@ -384,10 +384,10 @@ public final strictfp class TestUtilities extends Static {
      * {@linkplain java.lang.Thread.State#BLOCKED blocked} or the
      * {@linkplain java.lang.Thread.State#WAITING waiting} state.
      *
-     * @param  thread The thread to wait for blocked or waiting state.
-     * @throws IllegalThreadStateException If the thread has terminated its execution,
+     * @param  thread  the thread to wait for blocked or waiting state.
+     * @throws IllegalThreadStateException if the thread has terminated its execution,
      *         or has not reached the waiting or blocked state before the timeout.
-     * @throws InterruptedException If this thread has been interrupted while waiting.
+     * @throws InterruptedException if this thread has been interrupted while waiting.
      */
     public static void waitForBlockedState(final Thread thread) throws IllegalThreadStateException, InterruptedException {
         int retry = MAXIMAL_WAIT_TIME / 5; // 5 shall be the same number than in the call to Thread.sleep.
@@ -411,11 +411,11 @@ public final strictfp class TestUtilities extends Static {
      * value. This method is designed that way because the caller can usually produce a more
      * accurate error message about which value has not been garbage collected as expected.</p>
      *
-     * @param  stopCondition A condition which return {@code true} if this method can stop waiting,
+     * @param  stopCondition  a condition which return {@code true} if this method can stop waiting,
      *         or {@code false} if it needs to ask again for garbage collection.
      * @return {@code true} if the given condition has been meet, or {@code false} if we waited up
      *         to the timeout without meeting the given condition.
-     * @throws InterruptedException If this thread has been interrupted while waiting.
+     * @throws InterruptedException if this thread has been interrupted while waiting.
      */
     public static boolean waitForGarbageCollection(final Callable<Boolean> stopCondition) throws InterruptedException {
         assertTrue("GC-dependent tests not allowed in this run.", TestConfiguration.allowGarbageCollectorDependentTests());
