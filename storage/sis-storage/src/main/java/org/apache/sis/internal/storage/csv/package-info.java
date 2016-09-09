@@ -39,7 +39,18 @@
  * }
  *
  * <div class="section">Departures from OGC specification</div>
- * If the character encoding is not explicitely specified, then Apache SIS uses the platform default instead of UTF-8.
+ * Current implementation is not strictly compliant with the Moving Features specification.
+ * Departures are:
+ *
+ * <ul>
+ *   <li>If the character encoding is not explicitely specified, then Apache SIS uses the platform default instead of UTF-8.
+ *       If a file to read is known to be a Moving Features compliant file, the UTF-8 encoding should be associated to
+ *       {@link org.apache.sis.setup.OptionKey#ENCODING} in the {@link org.apache.sis.storage.StorageConnector}.</li>
+ *   <li>The Apache SIS implementation does not replace the XML entities by the referenced characters.
+ *       XML entities, if present, are included verbatim in the parsed text.</li>
+ *   <li>The Apache SIS implementation does not replace the \\s, \\t, and \\b escape sequences by space, tab, and comma.
+ *       Those escape sequences are included verbatim in the parsed text.</li>
+ * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.7
